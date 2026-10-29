@@ -1,0 +1,502 @@
+    Blocking waiting for file lock on build directory
+    Checking rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:202:9
+    |
+202 |         self.add(&mut self.subtotal.interval_kernel_invocations, 1);
+    |         ^^^^^---^----------------------------------------------^^^^
+    |         |    |   |
+    |         |    |   first mutable borrow occurs here
+    |         |    first borrow later used by call
+    |         second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.interval_kernel_invocations` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:202:18
+    |
+202 |         self.add(&mut self.subtotal.interval_kernel_invocations, 1);
+    |         ---- --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+    |         |    |
+    |         |    first borrow later used by call
+    |         first mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:206:9
+    |
+206 |         self.add(&mut self.subtotal.scalar_proxy_units, count);
+    |         ^^^^^---^-------------------------------------^^^^^^^^
+    |         |    |   |
+    |         |    |   first mutable borrow occurs here
+    |         |    first borrow later used by call
+    |         second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.scalar_proxy_units` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:206:18
+    |
+206 |         self.add(&mut self.subtotal.scalar_proxy_units, count);
+    |         ---- --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+    |         |    |
+    |         |    first borrow later used by call
+    |         first mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:210:9
+    |
+210 |         self.add(&mut self.subtotal.allocation_requests, 1);
+    |         ^^^^^---^--------------------------------------^^^^
+    |         |    |   |
+    |         |    |   first mutable borrow occurs here
+    |         |    first borrow later used by call
+    |         second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.allocation_requests` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:210:18
+    |
+210 |         self.add(&mut self.subtotal.allocation_requests, 1);
+    |         ---- --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+    |         |    |
+    |         |    first borrow later used by call
+    |         first mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:211:9
+    |
+211 |         self.add(&mut self.subtotal.allocation_items_requested, items);
+    |         ^^^^^---^---------------------------------------------^^^^^^^^
+    |         |    |   |
+    |         |    |   first mutable borrow occurs here
+    |         |    first borrow later used by call
+    |         second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.allocation_items_requested` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:211:18
+    |
+211 |         self.add(&mut self.subtotal.allocation_items_requested, items);
+    |         ---- --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+    |         |    |
+    |         |    first borrow later used by call
+    |         first mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:215:9
+    |
+215 |         self.add(&mut self.subtotal.coefficient_tables_attempted, 1);
+    |         ^^^^^---^-----------------------------------------------^^^^
+    |         |    |   |
+    |         |    |   first mutable borrow occurs here
+    |         |    first borrow later used by call
+    |         second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.coefficient_tables_attempted` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:215:18
+    |
+215 |         self.add(&mut self.subtotal.coefficient_tables_attempted, 1);
+    |         ---- --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+    |         |    |
+    |         |    first borrow later used by call
+    |         first mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:219:9
+    |
+219 |         self.add(&mut self.subtotal.coefficient_tables_completed, 1);
+    |         ^^^^^---^-----------------------------------------------^^^^
+    |         |    |   |
+    |         |    |   first mutable borrow occurs here
+    |         |    first borrow later used by call
+    |         second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.coefficient_tables_completed` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:219:18
+    |
+219 |         self.add(&mut self.subtotal.coefficient_tables_completed, 1);
+    |         ---- --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+    |         |    |
+    |         |    first borrow later used by call
+    |         first mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:223:9
+    |
+223 |         self.add(&mut self.subtotal.cache_api_attempts, 1);
+    |         ^^^^^---^-------------------------------------^^^^
+    |         |    |   |
+    |         |    |   first mutable borrow occurs here
+    |         |    first borrow later used by call
+    |         second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.cache_api_attempts` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:223:18
+    |
+223 |         self.add(&mut self.subtotal.cache_api_attempts, 1);
+    |         ---- --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+    |         |    |
+    |         |    first borrow later used by call
+    |         first mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:227:9
+    |
+227 |         self.add(&mut self.subtotal.cache_lookup_attempts, 1);
+    |         ^^^^^---^----------------------------------------^^^^
+    |         |    |   |
+    |         |    |   first mutable borrow occurs here
+    |         |    first borrow later used by call
+    |         second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.cache_lookup_attempts` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:227:18
+    |
+227 |         self.add(&mut self.subtotal.cache_lookup_attempts, 1);
+    |         ---- --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+    |         |    |
+    |         |    first borrow later used by call
+    |         first mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:229:13
+    |
+229 |             self.add(&mut self.subtotal.cache_hits, 1);
+    |             ^^^^^---^-----------------------------^^^^
+    |             |    |   |
+    |             |    |   first mutable borrow occurs here
+    |             |    first borrow later used by call
+    |             second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.cache_hits` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:229:22
+    |
+229 |             self.add(&mut self.subtotal.cache_hits, 1);
+    |             ---- --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+    |             |    |
+    |             |    first borrow later used by call
+    |             first mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:231:13
+    |
+231 |             self.add(&mut self.subtotal.cache_misses, 1);
+    |             ^^^^^---^-------------------------------^^^^
+    |             |    |   |
+    |             |    |   first mutable borrow occurs here
+    |             |    first borrow later used by call
+    |             second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.cache_misses` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:231:22
+    |
+231 |             self.add(&mut self.subtotal.cache_misses, 1);
+    |             ---- --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+    |             |    |
+    |             |    first borrow later used by call
+    |             first mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:236:9
+    |
+236 |         self.add(&mut self.subtotal.cache_insert_attempts, 1);
+    |         ^^^^^---^----------------------------------------^^^^
+    |         |    |   |
+    |         |    |   first mutable borrow occurs here
+    |         |    first borrow later used by call
+    |         second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.cache_insert_attempts` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:236:18
+    |
+236 |         self.add(&mut self.subtotal.cache_insert_attempts, 1);
+    |         ---- --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+    |         |    |
+    |         |    first borrow later used by call
+    |         first mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:240:9
+    |
+240 |         self.add(&mut self.subtotal.cache_inserts_completed, 1);
+    |         ^^^^^---^------------------------------------------^^^^
+    |         |    |   |
+    |         |    |   first mutable borrow occurs here
+    |         |    first borrow later used by call
+    |         second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.cache_inserts_completed` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:240:18
+    |
+240 |         self.add(&mut self.subtotal.cache_inserts_completed, 1);
+    |         ---- --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+    |         |    |
+    |         |    first borrow later used by call
+    |         first mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:277:9
+    |
+277 |           self.add(
+    |           ^    --- first borrow later used by call
+    |  _________|
+    | |
+278 | |             &mut self.subtotal.interval_kernel_invocations,
+    | |             ---------------------------------------------- first mutable borrow occurs here
+279 | |             other.subtotal.interval_kernel_invocations,
+280 | |         );
+    | |_________^ second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.interval_kernel_invocations` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:278:13
+    |
+277 |         self.add(
+    |         ---- --- first borrow later used by call
+    |         |
+    |         first mutable borrow occurs here
+278 |             &mut self.subtotal.interval_kernel_invocations,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:281:9
+    |
+281 |           self.add(
+    |           ^    --- first borrow later used by call
+    |  _________|
+    | |
+282 | |             &mut self.subtotal.scalar_proxy_units,
+    | |             ------------------------------------- first mutable borrow occurs here
+283 | |             other.subtotal.scalar_proxy_units,
+284 | |         );
+    | |_________^ second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.scalar_proxy_units` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:282:13
+    |
+281 |         self.add(
+    |         ---- --- first borrow later used by call
+    |         |
+    |         first mutable borrow occurs here
+282 |             &mut self.subtotal.scalar_proxy_units,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:285:9
+    |
+285 |           self.add(
+    |           ^    --- first borrow later used by call
+    |  _________|
+    | |
+286 | |             &mut self.subtotal.allocation_requests,
+    | |             -------------------------------------- first mutable borrow occurs here
+287 | |             other.subtotal.allocation_requests,
+288 | |         );
+    | |_________^ second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.allocation_requests` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:286:13
+    |
+285 |         self.add(
+    |         ---- --- first borrow later used by call
+    |         |
+    |         first mutable borrow occurs here
+286 |             &mut self.subtotal.allocation_requests,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:289:9
+    |
+289 |           self.add(
+    |           ^    --- first borrow later used by call
+    |  _________|
+    | |
+290 | |             &mut self.subtotal.allocation_items_requested,
+    | |             --------------------------------------------- first mutable borrow occurs here
+291 | |             other.subtotal.allocation_items_requested,
+292 | |         );
+    | |_________^ second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.allocation_items_requested` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:290:13
+    |
+289 |         self.add(
+    |         ---- --- first borrow later used by call
+    |         |
+    |         first mutable borrow occurs here
+290 |             &mut self.subtotal.allocation_items_requested,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:293:9
+    |
+293 |           self.add(
+    |           ^    --- first borrow later used by call
+    |  _________|
+    | |
+294 | |             &mut self.subtotal.coefficient_tables_attempted,
+    | |             ----------------------------------------------- first mutable borrow occurs here
+295 | |             other.subtotal.coefficient_tables_attempted,
+296 | |         );
+    | |_________^ second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.coefficient_tables_attempted` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:294:13
+    |
+293 |         self.add(
+    |         ---- --- first borrow later used by call
+    |         |
+    |         first mutable borrow occurs here
+294 |             &mut self.subtotal.coefficient_tables_attempted,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:297:9
+    |
+297 |           self.add(
+    |           ^    --- first borrow later used by call
+    |  _________|
+    | |
+298 | |             &mut self.subtotal.coefficient_tables_completed,
+    | |             ----------------------------------------------- first mutable borrow occurs here
+299 | |             other.subtotal.coefficient_tables_completed,
+300 | |         );
+    | |_________^ second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.coefficient_tables_completed` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:298:13
+    |
+297 |         self.add(
+    |         ---- --- first borrow later used by call
+    |         |
+    |         first mutable borrow occurs here
+298 |             &mut self.subtotal.coefficient_tables_completed,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:301:9
+    |
+301 |           self.add(
+    |           ^    --- first borrow later used by call
+    |  _________|
+    | |
+302 | |             &mut self.subtotal.cache_api_attempts,
+    | |             ------------------------------------- first mutable borrow occurs here
+303 | |             other.subtotal.cache_api_attempts,
+304 | |         );
+    | |_________^ second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.cache_api_attempts` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:302:13
+    |
+301 |         self.add(
+    |         ---- --- first borrow later used by call
+    |         |
+    |         first mutable borrow occurs here
+302 |             &mut self.subtotal.cache_api_attempts,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:305:9
+    |
+305 |           self.add(
+    |           ^    --- first borrow later used by call
+    |  _________|
+    | |
+306 | |             &mut self.subtotal.cache_lookup_attempts,
+    | |             ---------------------------------------- first mutable borrow occurs here
+307 | |             other.subtotal.cache_lookup_attempts,
+308 | |         );
+    | |_________^ second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.cache_lookup_attempts` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:306:13
+    |
+305 |         self.add(
+    |         ---- --- first borrow later used by call
+    |         |
+    |         first mutable borrow occurs here
+306 |             &mut self.subtotal.cache_lookup_attempts,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:309:9
+    |
+309 |         self.add(&mut self.subtotal.cache_hits, other.subtotal.cache_hits);
+    |         ^^^^^---^-----------------------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |         |    |   |
+    |         |    |   first mutable borrow occurs here
+    |         |    first borrow later used by call
+    |         second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.cache_hits` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:309:18
+    |
+309 |         self.add(&mut self.subtotal.cache_hits, other.subtotal.cache_hits);
+    |         ---- --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+    |         |    |
+    |         |    first borrow later used by call
+    |         first mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:310:9
+    |
+310 |         self.add(&mut self.subtotal.cache_misses, other.subtotal.cache_misses);
+    |         ^^^^^---^-------------------------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |         |    |   |
+    |         |    |   first mutable borrow occurs here
+    |         |    first borrow later used by call
+    |         second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.cache_misses` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:310:18
+    |
+310 |         self.add(&mut self.subtotal.cache_misses, other.subtotal.cache_misses);
+    |         ---- --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+    |         |    |
+    |         |    first borrow later used by call
+    |         first mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:311:9
+    |
+311 |           self.add(
+    |           ^    --- first borrow later used by call
+    |  _________|
+    | |
+312 | |             &mut self.subtotal.cache_insert_attempts,
+    | |             ---------------------------------------- first mutable borrow occurs here
+313 | |             other.subtotal.cache_insert_attempts,
+314 | |         );
+    | |_________^ second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.cache_insert_attempts` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:312:13
+    |
+311 |         self.add(
+    |         ---- --- first borrow later used by call
+    |         |
+    |         first mutable borrow occurs here
+312 |             &mut self.subtotal.cache_insert_attempts,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+
+error[E0499]: cannot borrow `*self` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:315:9
+    |
+315 |           self.add(
+    |           ^    --- first borrow later used by call
+    |  _________|
+    | |
+316 | |             &mut self.subtotal.cache_inserts_completed,
+    | |             ------------------------------------------ first mutable borrow occurs here
+317 | |             other.subtotal.cache_inserts_completed,
+318 | |         );
+    | |_________^ second mutable borrow occurs here
+
+error[E0499]: cannot borrow `self.subtotal.cache_inserts_completed` as mutable more than once at a time
+   --> crates/rodas5p-core/src/leja_setup_work.rs:316:13
+    |
+315 |         self.add(
+    |         ---- --- first borrow later used by call
+    |         |
+    |         first mutable borrow occurs here
+316 |             &mut self.subtotal.cache_inserts_completed,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ second mutable borrow occurs here
+
+For more information about this error, try `rustc --explain E0499`.
+error: could not compile `rodas5p-core` (lib) due to 48 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `rodas5p-core` (lib test) due to 48 previous errors

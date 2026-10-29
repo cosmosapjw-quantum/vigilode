@@ -1,0 +1,26 @@
+{
+  "scope": "Supplied prototype first native coupled step, not a complete adaptive dispatcher",
+  "input_zip_sha256": "54f4f4a99d552388fc28d01f5f367176e301c2af15c3cd8a9c7a30b4e5dfd4f1",
+  "base": "c03ca90f19a9e64ba7751c069325a48b54b39c2e",
+  "measured_source": "1e4a993874d6930ea2bb41bb0ff7392f21c33df7",
+  "nodes": [
+    {"id":"source_and_contract","status":"COMPLETE","evidence":"PLAN.md"},
+    {"id":"red_tests","status":"EXPECTED_RED_RECORDED","evidence":"runs/39345503351/RED.log"},
+    {"id":"native_implementation","status":"IMPLEMENTATION_VERIFIED_SCOPED","evidence":"../../crates/vigilode-coupled/src/lib.rs"},
+    {"id":"test_and_convergence","status":"19_TESTS_PASSED","evidence":"runs/39349031422/TESTS.log"},
+    {"id":"benchmark","status":"COMPLETE_BOUNDED","evidence":"runs/39349031422/SUMMARY.json"},
+    {"id":"raw_readback","status":"PASS_SCOPED","evidence":"runs/39349031422/AUDIT.json"},
+    {"id":"archive_source_validation","status":"PASS_SCOPED","evidence":"closeout_runs/39349959195/VALIDATION.json"},
+    {"id":"coderabbit","status":"BLOCKED_AUTHENTICATION_NOT_CONFIRMED","evidence":"closeout_runs/39349959195/CODERABBIT_STATUS.json"},
+    {"id":"critical_report","status":"COMPLETE_SCOPED","evidence":"CRITICAL_REVIEW_KO.md"}
+  ],
+  "native_subagent": "NOT_RUN_NO_NATIVE_RUNTIME",
+  "independent_personnel_review": false,
+  "root_workspace_tests_run": false,
+  "default_solver_changed": false,
+  "global_error_certified": false,
+  "full_adaptive_dispatcher_implemented": false,
+  "pr": 74,
+  "merge_performed": false,
+  "stop": "Native step/testing/benchmark/publication closed. External review requires authentication; do not silently start a new feature loop."
+}

@@ -1,0 +1,21 @@
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-production-1024/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized] target(s) in 2.57s
+     Running tests/dopri5_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/dopri5_contracts-04ae9241f8461c22)
+     Running tests/fast_dense_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/fast_dense_contracts-b0ebc8ead3437592)
+     Running tests/fast_vector_atol_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/fast_vector_atol_contracts-92bd4370bb842c24)
+     Running tests/frontier_session_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/frontier_session_contracts-cb7dbe77c1a5ee0b)
+     Running tests/int03_banded_fast_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/int03_banded_fast_contracts-bbe020a4271ab4f7)
+     Running tests/rodas5p_fast_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/rodas5p_fast_contracts-b214b186648c928a)

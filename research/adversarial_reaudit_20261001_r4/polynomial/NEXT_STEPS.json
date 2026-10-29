@@ -1,0 +1,147 @@
+{
+  "schema": "vigilode-r4-development-tasks-v1",
+  "source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "tasks": [
+    {
+      "id": "R4-ARITH-DEV-01",
+      "priority": "P2",
+      "depends_on": [],
+      "title": "Zero-aware ExpBound ordering",
+      "files": [
+        "crates/rodas5p-core/src/transform_bound.rs"
+      ],
+      "change": "Define one total order for nonnegative normalized ExpBound with ZERO below every positive value. Use it for row/column maxima, final norm choice, class minimization and future comparisons.",
+      "acceptance": [
+        "A=[[0,.25],[0,0]],h=1000.1,b2=[0,1] with stored=weight_phi_vectors passes exact Fraction transform-error enclosure.",
+        "Permuting rows and columns and transposing the nilpotent matrix preserves validity.",
+        "Zero, tiny positive, one, huge exponent bounds obey antisymmetry and transitivity.",
+        "Original R3 nilpotent lost-weight rejection remains unchanged."
+      ],
+      "stop_condition": "Exact transform counterexample closes and existing transform contracts pass; no speed claim."
+    },
+    {
+      "id": "R4-ARITH-DEV-02",
+      "priority": "P2",
+      "depends_on": [
+        "R4-ARITH-DEV-01"
+      ],
+      "title": "Bound reciprocal factorial without forming factorial",
+      "files": [
+        "crates/rodas5p-core/src/transform_bound.rs"
+      ],
+      "change": "Use normalized outward reciprocal recurrence r_k=r_(k-1)/k and nilpotent series term updates. Alternatively reject unsupported orders explicitly, with a documented bound.",
+      "acceptance": [
+        "p=4,30,50,170,171,172 reciprocal bounds enclose exact 1/p!.",
+        "Generated-weight A=0,h=1.1 transform errors are enclosed at all declared supported orders.",
+        "No finite or infinite factorial denominator silently changes a certified upper bound."
+      ],
+      "stop_condition": "Declared order range is sound under exact-rational checks; no unbounded API promise."
+    },
+    {
+      "id": "R4-ARITH-DEV-03",
+      "priority": "P3",
+      "depends_on": [
+        "R4-ARITH-DEV-01"
+      ],
+      "title": "Validate signed stored weights and tolerance domain",
+      "files": [
+        "crates/rodas5p-core/src/transform_bound.rs"
+      ],
+      "change": "For order zero use outward absolute signed difference or reject any stored weight inconsistent with b0. Reject negative/NaN tolerance before magnitude conversion; define positive infinity policy explicitly.",
+      "acceptance": [
+        "A=0,h=1,b0=1,stored0=-1 returns upper>=2 or typed invalid-input error.",
+        "Negative and NaN tolerances never admit a bound.",
+        "Legal zero tolerance admits exactly zero error."
+      ],
+      "stop_condition": "All malformed-input cases fail closed without changing valid source-produced weights."
+    },
+    {
+      "id": "R4-POLY-DEV-01",
+      "priority": "P2",
+      "depends_on": [
+        "R4-ARITH-DEV-01"
+      ],
+      "title": "Use scaled outward norms in certified polynomial path",
+      "files": [
+        "crates/rodas5p-core/src/polynomial_action.rs"
+      ],
+      "change": "Port and independently review standalone power-of-two scaled norm candidate. Keep mantissa/exponent bounds until a justified binary64 conversion; normalize actual recurrence inputs if needed.",
+      "acceptance": [
+        "[1e300,1e300], [1e-300,1e-300], minimum subnormal, mixed-range and zero norm bounds enclose exact sum of squares.",
+        "Amplitude-scaled polynomial actions either return a valid total bound or typed range rejection, never a spurious zero certificate.",
+        "Separate norm-only improvement from full action dynamic-range support."
+      ],
+      "stop_condition": "Bounded dynamic-range contract passes; unsupported extremes remain explicit."
+    },
+    {
+      "id": "R4-POLY-DEV-02",
+      "priority": "P2",
+      "depends_on": [
+        "R4-POLY-DEV-01"
+      ],
+      "title": "Add explicit total-error admission",
+      "files": [
+        "crates/rodas5p-core/src/polynomial_action.rs"
+      ],
+      "change": "Expose an admission method that requires Certified bound<=requested absolute budget; keep truncation budget as a distinct field. EstimateOnly must not satisfy certified admission.",
+      "acceptance": [
+        "A tiny truncation budget may be met while total roundoff bound exceeds it; the admission method rejects this case.",
+        "Cancellation-heavy sums report absolute error and conditioning separately.",
+        "The timing unbounded path remains labeled separately from certified execution."
+      ],
+      "stop_condition": "Consumer semantics cannot confuse truncation success with total-accuracy acceptance."
+    },
+    {
+      "id": "R4-POLY-DEV-03",
+      "priority": "P3",
+      "depends_on": [
+        "R4-POLY-DEV-02"
+      ],
+      "title": "Bound Laguerre recurrence propagation before adding certification",
+      "files": [
+        "crates/rodas5p-core/src/polynomial_action.rs"
+      ],
+      "change": "Implement the derived scalar recurrence majorant as a correctness baseline; evaluate tightness before optimizing transfer bounds. Preserve EstimateOnly until the full certificate is independently reviewed.",
+      "acceptance": [
+        "Local residual and coefficient rounding are independently enclosed for the registered symmetric domain.",
+        "Degree and scale sweeps report certificate tightness and rejection rate, not just observed error.",
+        "No transfer of symmetric bounds to nonnormal operators."
+      ],
+      "stop_condition": "Either useful certified region is established or looseness is documented and this candidate is rejected."
+    },
+    {
+      "id": "R4-POLY-DEV-04",
+      "priority": "P3",
+      "depends_on": [
+        "R4-POLY-DEV-02"
+      ],
+      "title": "Benchmark separate certified and unbounded frozen-operator regimes",
+      "files": [
+        "crates/rodas5p-cli/src/r3_campaigns.rs"
+      ],
+      "change": "Predeclare separate cached/uncached and certified/unbounded arms, identical accuracy targets, operator construction ownership and session design. Include block and vector product counts plus coefficient costs.",
+      "acceptance": [
+        "Timing is evaluated only after statistical-authority gate is resolved.",
+        "All reported speed claims name exact backend and certificate policy.",
+        "Reuse benefits are restricted to unchanged operator/enclosure/h/degree/scale cache identity."
+      ],
+      "stop_condition": "A preregistered study yields either bounded-population evidence or retained negative result; no general speed promotion."
+    },
+    {
+      "id": "R4-POLY-DEV-05",
+      "priority": "P3",
+      "depends_on": [
+        "R4-POLY-DEV-03"
+      ],
+      "title": "Joint Laguerre degree-scale selection under the existing scale cap",
+      "change": "Use the derived fixed-degree optimum beta=rho/[2(m+1)-h*rho] when positive, constrained to rho/beta<=16; compare continuous candidates with the fixed grid without relaxing error gates.",
+      "acceptance": [
+        "Analytic tail has the claimed unique minimum for 2(m+1)>h*rho.",
+        "Current exact zero branches remain separate.",
+        "A new preregistered experiment measures recurrence bounds, coefficient cost, error and degree; no unbounded cap lifting from truncation alone."
+      ],
+      "evidence_status": "derived; not numerically checked or implementation-verified",
+      "stop_condition": "Retain or reject the candidate based on total-error and work evidence, not degree alone."
+    }
+  ]
+}

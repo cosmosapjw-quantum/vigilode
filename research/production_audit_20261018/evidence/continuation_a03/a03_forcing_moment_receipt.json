@@ -1,0 +1,35 @@
+{
+  "unit": "A03_FORCING_MOMENT_CONSUMER_ONLY",
+  "cwd": "/home/cosmosapjw/vigilode",
+  "branch": "audit/production-readiness-20261018",
+  "head_at_capture": "c3036c63da02ca9b04cd39ccf580cd67d00ccb0c",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "cargo": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+  "sources": {
+    "crates/rodas5p-core/src/damped_moments.rs": "3d78f6768af5513d9eeb12ad556b1a72d613b8e3521345561a691db1947a5950",
+    "crates/rodas5p-core/tests/damped_forcing_moment_consumer.rs": "bfc59ee8816f4046c6ff0a0f9b07ce617913e91f003f5832375339c72270ac98"
+  },
+  "tests": [
+    "forcing_index_mapping_is_q_rd_to_i_dr",
+    "absolute_width_gate_refuses_narrow_limit_and_keeps_attempted_work",
+    "invalid_parameters_and_orders_refuse_before_kernel_and_retain_validation_work",
+    "kernel_refusal_retains_attempt_without_claiming_width_check",
+    "zero_damping_confluent_limit_is_admitted_by_the_consumer",
+    "subnormal_damping_product_is_not_treated_as_exact_zero",
+    "rounded_product_branch_boundary_matches_frozen_kernel_interval",
+    "large_rate_width_refusal_keeps_validation_kernel_and_width_work"
+  ],
+  "commands": [
+    {"command":"cargo test --locked --offline -p rodas5p-core --test damped_forcing_moment_consumer -- --nocapture", "exit_code":0, "log":"a03_adversarial_contract_final.log", "sha256":"1d48e5c01daad24beb09ba4f25c09086409089edb4dc51da9b7bf3ff167a4d02"},
+    {"command":"cargo clippy --locked --offline -p rodas5p-core --all-targets -- -D warnings", "exit_code":0, "log":"a03_adversarial_clippy.log", "sha256":"d8d8b293f287c67c3e72c887b72e7cafd2a4b3a2c367402fd8982608811db9db"},
+    {"command":"rustfmt --edition 2024 --check crates/rodas5p-core/src/damped_moments.rs crates/rodas5p-core/tests/damped_forcing_moment_consumer.rs crates/rodas5p-core/src/leja_action.rs crates/rodas5p-core/tests/leja_total_contract.rs", "exit_code":0, "log":"a03_final_fmt.log", "sha256":"1ca4a13146b2891c0e462123ac0cb848f92e6221f18b870a1b78c232d1956c35"},
+    {"command":"git diff --check", "exit_code":0, "log":"a03_final_diffcheck.log", "sha256":"1ca4a13146b2891c0e462123ac0cb848f92e6221f18b870a1b78c232d1956c35"}
+  ],
+  "preserved_failures": [
+    {"log":"a03_forcing_moment_first_failure.log", "exit_code":101, "sha256":"2b4d9a010e32c16c1f38e64bc206787f893d1b82dff61b5530598ea94db3cc1a", "classification":"expected initial red compile before consumer API implementation"},
+    {"log":"a03_adversarial_first.log", "exit_code":101, "sha256":"6ec785fd153ff0214b8c69d242f541dee9b0d7a83fd639bf73b73841c86075c2", "classification":"subnormal interval falsifier corrected to account for directed lower endpoint below zero"}
+  ],
+  "prior_clippy_log_sha256_correction": {"log":"a03_forcing_moment_clippy.log", "actual_sha256":"8eed180da590cca527fc13b177ac411656c872c0e74ecb063d3163d4dd3abd26", "note":"Previous receipt recorded the wrong hash; the final clippy command and output are bound above."},
+  "decision": "SCOPED PASS for the scalar forcing-moment consumer wrapper only. Formula maps Q_{r,d}(a,h) to compute_damped_moment(a,h,d,r); no packet solver, damping integration, carrier/output convention, or production authority admitted. Full A03 remains HOLD.",
+  "executor_identity": {"role":"implementation agent", "runtime_model":"not independently observed"}
+}

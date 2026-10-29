@@ -1,0 +1,170 @@
+{
+  "case_id": 10,
+  "exact_final": [
+    -0.0007028777160902871,
+    -0.003872421671585677,
+    0.0014002800840280099,
+    -0.9362108357928386,
+    0.3514388580451435,
+    0.2
+  ],
+  "initial_state": [
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.2
+  ],
+  "jvp_direction": [
+    0.29552020666133955,
+    0.963558185417193,
+    0.7457052121767203,
+    -0.1577456941432482,
+    -0.9161659367494549,
+    -0.8322674422239013
+  ],
+  "jvp_initial": [
+    0.0008229962701591802,
+    -0.6414444574475635,
+    -0.5604503473265023,
+    -320.72222872378177,
+    -0.4114981350795915,
+    0.0
+  ],
+  "kind": "model_contract",
+  "model_contract": {
+    "autonomous": true,
+    "case": 10,
+    "dense_dimension_limit": 256,
+    "dimension": 6,
+    "dimension_smoke": 6,
+    "dimension_standard": 6,
+    "grid": [
+      0,
+      0
+    ],
+    "id": 10,
+    "initial_state": [
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.2
+    ],
+    "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+    "name": "Uniform-field relativistic gyromotion",
+    "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+    "parallel_layers": [
+      "serial",
+      "data",
+      "ensemble"
+    ],
+    "parameters": {
+      "B": [
+        0,
+        0,
+        1
+      ],
+      "E": [
+        0,
+        0,
+        0
+      ],
+      "c": 1,
+      "initial_momentum": [
+        1,
+        0,
+        0.2
+      ],
+      "omega_c": 500.0
+    },
+    "reference_kind": "analytic-semidiscrete-endpoint",
+    "size": "smoke",
+    "supported_methods": [
+      "dopri5",
+      "rodas5p-mf",
+      "rodas5p-dense",
+      "switching"
+    ],
+    "t_span": [
+      0.0,
+      0.01
+    ],
+    "units": "dimensionless; normalized variables, not SI physical claims",
+    "variant": "uniform B and zero E exactly solvable subcase; dimensionless"
+  },
+  "model_id": "vigilode.local-bottleneck.case10.v1",
+  "parameters": {
+    "B": [
+      0,
+      0,
+      1
+    ],
+    "E": [
+      0,
+      0,
+      0
+    ],
+    "c": 1,
+    "initial_momentum": [
+      1,
+      0,
+      0.2
+    ],
+    "omega_c": 500.0
+  },
+  "rhs_initial": [
+    0.7001400420140049,
+    0.0,
+    0.140028008402801,
+    0.0,
+    -350.0700210070025,
+    0.0
+  ],
+  "rhs_probes": [
+    {
+      "rhs": [
+        0.7003089813534639,
+        0.0005832020164502532,
+        0.14066832636780105,
+        0.2916010082251266,
+        -350.15449067673194,
+        0.0
+      ],
+      "state": [
+        0.00016666666666666666,
+        0.0003333333333333333,
+        0.0005,
+        1.0006666666666666,
+        0.0008333333333333334,
+        0.201
+      ],
+      "t": 0.0011
+    },
+    {
+      "rhs": [
+        0.7004771704099841,
+        0.0011659074074733425,
+        0.14130797778576912,
+        0.5829537037366712,
+        -350.2385852049921,
+        0.0
+      ],
+      "state": [
+        0.0003333333333333333,
+        0.0006666666666666666,
+        0.001,
+        1.0013333333333334,
+        0.0016666666666666668,
+        0.202
+      ],
+      "t": 0.0073
+    }
+  ],
+  "schema_version": 1,
+  "size": "smoke",
+  "t_end": 0.01,
+  "t_start": 0.0
+}

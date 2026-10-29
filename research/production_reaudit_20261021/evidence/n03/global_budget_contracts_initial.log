@@ -1,0 +1,39 @@
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+error[E0425]: cannot find function `gray_scott_2d_verified` in crate `rodas5p_integrators`
+   --> crates/rodas5p-integrators/tests/global_budget_contracts.rs:284:53
+    |
+284 |     let (model, mut initial) = rodas5p_integrators::gray_scott_2d_verified(2).unwrap();
+    |                                                     ^^^^^^^^^^^^^^^^^^^^^^ not found in `rodas5p_integrators`
+    |
+help: consider importing this function
+    |
+  1 + use rodas5p_integrators::gray_scott_verified::gray_scott_2d_verified;
+    |
+help: if you import `gray_scott_2d_verified`, refer to it directly
+    |
+284 -     let (model, mut initial) = rodas5p_integrators::gray_scott_2d_verified(2).unwrap();
+284 +     let (model, mut initial) = gray_scott_2d_verified(2).unwrap();
+    |
+
+error[E0282]: type annotations needed
+   --> crates/rodas5p-integrators/tests/global_budget_contracts.rs:285:17
+    |
+285 |     let cells = initial.len() / 2;
+    |                 ^^^^^^^ cannot infer type
+
+Some errors have detailed explanations: E0282, E0425.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `rodas5p-integrators` (test "global_budget_contracts") due to 2 previous errors

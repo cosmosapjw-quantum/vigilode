@@ -1,0 +1,25 @@
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `test` profile [unoptimized] target(s) in 29.69s
+     Running tests/reaudit_bound_clients_contract.rs (/workspace/scratch/0dc1e721cf82/runtime/final-target/debug/deps/reaudit_bound_clients_contract-f03b3890c2dee742)
+
+running 4 tests
+test fixed_cli_and_scopes_do_not_allow_rebudgeting ... ok
+test same_algebraic_error_budget_has_exact_32_vs_40_work_witness ... ok
+test global_provider_and_replay_bind_same_completed_curve ... ok
+test actual_diagonal_driver_preserves_budget_without_resolvent_rhs_solves ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+

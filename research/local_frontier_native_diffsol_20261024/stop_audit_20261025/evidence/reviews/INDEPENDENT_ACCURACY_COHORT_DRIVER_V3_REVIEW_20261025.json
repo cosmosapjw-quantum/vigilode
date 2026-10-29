@@ -1,0 +1,262 @@
+{
+  "claim_ceiling": {
+    "historical_rows_retroactively_promoted": false,
+    "production": "HOLD",
+    "reference_admission_unchanged": true,
+    "scientific_admission": "HOLD",
+    "speed_ratio_old_vs_new": "NOT_EVALUABLE",
+    "timing": "diagnostic_only"
+  },
+  "created_utc": "2026-10-25T11:55:19.198148+00:00",
+  "decision": "BLOCKED_REPAIR_REQUIRED",
+  "findings": [
+    {
+      "consequence": "Contradictory endpoint or execution data can become group PASS_SCOPED and warmup admission despite the explicit prior output-identity repair contract.",
+      "evidence": "The assessment receives case/reference only and checks no header, final_time, method, parallel_layer, threads, instrumented flag or source commit. Direct probes returned PASS_SCOPED for no header/no final_time, final_time=NaN, final_time=-123 with method=wrong/threads=99/parallel_layer=serial/instrumented=true. It also returned PASS_SCOPED with final_state=[1,0], reference_state=[0,0] and claimed all-member maximum difference about 1e-4. The bound compare.py is never invoked by this driver.",
+      "id": "ACD3-01",
+      "lines": [
+        213,
+        228,
+        230,
+        237,
+        245,
+        250,
+        253,
+        412
+      ],
+      "minimal_repair": "Pass the expected attempt and frozen source/descriptor into assessment. Require exactly one matching header and one result; enforce finite endpoint time against the frozen descriptor, method/size/dimension/layer/thread/instrumentation/source identity and frozen solver settings. Check the emitted first-member state against the admitted vector and require its component difference not to exceed the declared all-member maximum, using a justified unchanged rounding rule. Retain audited Rust all-member maximum as the ensemble witness; do not add U twice or weaken 1e-4/U<=1e-5. Add positive real-shape and negative header/time/identity/state-consistency fixtures.",
+      "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/accuracy_cohort_followup/accuracy_cohort_driver.py",
+      "prior_finding": "ACD-02",
+      "severity": "MAJOR",
+      "title": "Endpoint and execution identity remain outside the parent acceptance predicate"
+    },
+    {
+      "consequence": "The stated 72-attempt/one-warmup/five-timed contract is not enforced and final summary can omit timed failures or fail before invocation TERMINAL.",
+      "evidence": "Using the supplied synthetic materialized fixture and valid recomputed approval, verify_plan accepted all 12 groups with empty attempt_ids, and separately accepted all 12 groups containing only their warmup while retaining all 72 execution attempts. Empty groups cause receipts[0] IndexError in finally; warmup-only reporting omits all 60 timed outcomes and can report PASS_SCOPED from warmup alone.",
+      "id": "ACD3-02",
+      "lines": [
+        151,
+        152,
+        177,
+        188,
+        521,
+        525,
+        582,
+        587,
+        589,
+        593
+      ],
+      "minimal_repair": "Validate unique attempt/group IDs, exact cases2/3/5 times dopri5/rodas5p-mf/rodas5p-dense/switching, exact six-item ordered membership per group, one warmup followed by timed0..4, complete disjoint coverage of the 72 attempts, consistent metadata and full argv including unchanged tolerances/max_steps/ensemble count. Reject empty, partial, duplicate, missing or mismatched memberships before side effects. Add negative structure tests and a summary test proving one failed timed result prevents group PASS.",
+      "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/accuracy_cohort_followup/accuracy_cohort_driver.py",
+      "prior_finding": "NEW_SELECTION_STRUCTURE",
+      "severity": "MAJOR",
+      "title": "Selection length checks do not enforce twelve disjoint warmup-plus-five groups"
+    },
+    {
+      "consequence": "A malformed output forces independent reconciliation despite a dead child, loses durable attempt cleanup proof and violates complete terminal accounting. The existing tests do not exercise assessment exceptions or a full successful approved execution.",
+      "evidence": "A real benign Python child emitted a result with finite JSON integer 10**400 in final_state. math.isfinite raised OverflowError. The child group was killed/reaped, raw stdout remained, and controller returned FAILED_CONTROLLER; however runs/<attempt>/TERMINAL.json was absent. COST_EVENTS phases were STARTED(controller), STARTED(child), TERMINAL(controller), with measured controller charge 0.37501684785820544 seconds and an open child reservation of 180 seconds. Child charged_seconds was zero and its elapsed time was attributed to controller remainder.",
+      "id": "ACD3-03",
+      "lines": [
+        80,
+        81,
+        240,
+        245,
+        402,
+        410,
+        412,
+        421,
+        546,
+        550,
+        555,
+        571
+      ],
+      "minimal_repair": "Make numeric validation total for all JSON numbers, including integer conversion overflow. Wrap post-child assessment in the terminal-finalization path so exceptions become typed OUTPUT_CONTRACT_FAILURE/CONTROLLER_ASSESSMENT_FAILURE while retaining raw hashes, exit code, elapsed time and dead-group proof. Close the child cost event exactly once only after durable terminal evidence; keep reservation open for genuinely unresolved cleanup/evidence failures. Add end-to-end synthetic success, malformed numeric and injected assessment-exception tests.",
+      "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/accuracy_cohort_followup/accuracy_cohort_driver.py",
+      "prior_finding": "ACD-01 and ACD-05 exception closure",
+      "severity": "MAJOR",
+      "title": "Assessment exception still bypasses attempt terminal evidence and terminal cost"
+    },
+    {
+      "consequence": "The prior requirement to validate driver/helper identity before lock/output/child side effects is not met; ordinary helper changes from another task can run accounting logic before their approved identity is checked.",
+      "evidence": "The canonical root and executor hash fields are fixed, but execute first opens/acquires the execution lock. execute_locked verifies only the envelope, invokes the imported cost helper, creates output/IDENTITY/START and appends the controller STARTED event; verify_executor is reached later inside verify_plan at line505. A stale approved helper/driver binding is therefore rejected only after unapproved executor code has already changed accounting/output.",
+      "id": "ACD3-04",
+      "lines": [
+        84,
+        96,
+        144,
+        147,
+        451,
+        457,
+        470,
+        477,
+        478,
+        484,
+        495,
+        505
+      ],
+      "minimal_repair": "Perform a side-effect-free canonical executor/path/hash preflight before mutable lock/output/accounting operations or cost-helper use. Use a separately defined canonical rejection-accounting path for invalid envelopes/executor identities rather than letting the unverified helper mutate the ledger. Keep pre-attempt and post-attempt identity checks. Add a mismatch test proving no cohort output/attempt reservation/child is created by an unverified executor.",
+      "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/accuracy_cohort_followup/accuracy_cohort_driver.py",
+      "prior_finding": "ACD-04 partial repair",
+      "severity": "MAJOR",
+      "title": "Executor hash verification occurs after lock/output/accounting side effects"
+    },
+    {
+      "consequence": "Repeated failed setup or expensive terminal ledger validation is omitted from cumulative cost. The claim that all controller work is charged and bounded remains unsupported.",
+      "evidence": "A synthetic approval SHA mismatch raised ValueError before the guarded accounting section and left COST_EVENTS at zero bytes with no invocation receipt. Lock contention, resume-identity mismatch, event-chain/cap rejection likewise precede the accounting try/finally. For admitted invocations the measured outer_elapsed stops before writing/fsyncing RECEIPT.json, validating/hashing/appending/fsyncing the terminal COST_EVENTS event and output serialization. terminal_accounting_reserve_seconds=20 is recorded but never charged.",
+      "id": "ACD3-05",
+      "lines": [
+        451,
+        459,
+        469,
+        470,
+        473,
+        475,
+        482,
+        483,
+        489,
+        498,
+        504,
+        595,
+        607,
+        615,
+        617
+      ],
+      "minimal_repair": "Account every started invocation, including lock/envelope/identity/budget rejections, in a canonical append-only failure receipt/accounting path without starting a cohort. Bound lock acquisition and cleanup. Include terminal commit work with an explicitly charged conservative allowance or separately observed outer wrapper; report measured time and conservative charge separately and avoid double-counting child time. Preserve existing charges/reservations. Test invalid approval, lock/cost/preflight rejection, delayed finalization, resume-only and interrupted cases.",
+      "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/accuracy_cohort_followup/accuracy_cohort_driver.py",
+      "prior_finding": "ACD-05 partial repair",
+      "severity": "MAJOR",
+      "title": "Whole-invocation accounting still excludes early rejection and terminal commit work"
+    }
+  ],
+  "independence": "Reviewer did not implement V2/V3 or the compare repair. Inspected actual source/diff/tests and ran only isolated Python synthetic tests/probes. No solver, build, checkout edit, commit or publication. This receipt is the only canonical review output written.",
+  "launch_approval": false,
+  "materialized_plan_review": "REQUIRED_AFTER_TARGETED_REPAIR_AND_FINAL_SOURCE_FREEZE",
+  "next_transition": "One controller-approved bounded lower-tier repair of ACD3-01..05, then fresh independent review of actual source/diff/raw tests. Only after source approval may a new nonlaunchable V3 selection/materialized plan be assembled with final committed source/tree, exact binary/build/descriptor identities, canonical cost/lock state and separate hash-bound approval. This receipt authorizes no solver/build/cohort launch or publication.",
+  "observed_runtime_identity": "NOT_INDEPENDENTLY_OBSERVED",
+  "preserved_contract": {
+    "cohort_cap_seconds": 16200,
+    "controller_reservation_seconds": 3240,
+    "cpu": 0,
+    "deadline_utc": "2026-10-27T08:07:00Z",
+    "endpoint_error_plus_U_cap": 0.0001,
+    "global_cap_seconds": 172800,
+    "groups": 12,
+    "intended_attempts": 72,
+    "original_solver_tolerances_and_max_steps": "unchanged",
+    "per_attempt_reservation_seconds": 180,
+    "process_group_rss_bytes": 12884901888,
+    "reference_U_cap": 1e-05,
+    "threads": 1,
+    "timed_per_group": 5,
+    "warmup_per_group": 1
+  },
+  "prior_findings_status": {
+    "ACD-01": "Three-field reference crash fixed; assessment exception terminal closure still open in ACD3-03.",
+    "ACD-02": "Child PASS fallback, false solver_success and vector shape fixed; endpoint/execution identity and state consistency still open in ACD3-01.",
+    "ACD-03": "Source implementation and synthetic descendant-RSS watchdog pass; 12GiB enforced in verify_plan. Real V3 selection not materialized.",
+    "ACD-04": "Canonical root and driver/helper/compare hash binding added; pre-side-effect enforcement still open in ACD3-04.",
+    "ACD-05": "Measured controller remainder, child reservation and admitted preflight/resume tests added; early rejection, finalization and exception closure remain open.",
+    "ACD-06": "SIGTERM cleanup, shared-lock retention, subreaper, dead-group proof and unresolved-resume refusal pass in isolated synthetic checks. Orphan that outlived immediate parent was killed/reaped."
+  },
+  "reviewed_files": [
+    {
+      "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/accuracy_cohort_followup/accuracy_cohort_driver.py",
+      "sha256": "3d0cda2272895cfdaa685fc02d927dcfc061dcd36768121831ec18c2221f938b"
+    },
+    {
+      "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/accuracy_cohort_followup/test_accuracy_cohort_driver.py",
+      "sha256": "b57110163ac78f1741331867c39ed3c59a00709d7f8452d8fd483ae7063e8f41"
+    },
+    {
+      "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/compare.py",
+      "sha256": "d74c2732d70871349574c3c84fdbf5637e459fe59a50df66a4f0179c85065396"
+    },
+    {
+      "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/crates/vigilode/examples/local_bottleneck_suite.rs",
+      "sha256": "e6f3c33fe857f0b99c857095989a0334a0dea19cf44bee5f7c056d815243ebc7"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/reference_launch_controller.py",
+      "sha256": "96b59afc9d093fce74c6c892ef85e7c7681358beababa9769a39c566c39523ac"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/accuracy_cohort_driver.py",
+      "sha256": "6d5eb9732f9b06e4b9012edf6c09c0ba0dfe81328c967fb6db8607cc91e3fc82"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/test_accuracy_cohort_driver.py",
+      "sha256": "8f9f025a282518353db113f8b2ebdb060c394fab815db67e72ed92bbb3c575fc"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/ACCURACY_COHORT_SELECTION_TEMPLATE_V2.json",
+      "sha256": "7ba35c033051634e88d3b7429fa020f366ea4c70186400e47d727dfeac247caf"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/INDEPENDENT_ACCURACY_COHORT_DRIVER_V2_REVIEW_20261025.json",
+      "sha256": "358ae55ef3291a856e07dbc6d5023e41f053cea1b528c3a6bbbb86e08dae6f52"
+    },
+    {
+      "path": "/tmp/vigilode-accuracy-driver-fix-20261025-2s1cgefd/REPAIR_PREPARATION_RECEIPT.json",
+      "sha256": "0170f4ef6681e55f6fd8f103a8117d1925b2455864d230c60acd1b8eb2c05a41"
+    },
+    {
+      "path": "/tmp/vigilode-independent-report.Iavhh9Az/checkout/research/local_frontier_native_diffsol_20261024/compare.py",
+      "sha256": "d74c2732d70871349574c3c84fdbf5637e459fe59a50df66a4f0179c85065396"
+    }
+  ],
+  "reviewed_source": {
+    "branch": "research/local-frontier-native-diffsol-20261024",
+    "checkout": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout",
+    "head": "b61b694b11b7de78cbb32405eb74ca3f78e72224",
+    "head_tree": "faaffd5f7819574469d537c7ea9548ef9ed67866",
+    "note": "HEAD tree is baseline; untracked V3 files are identified by SHA256, not represented as frozen committed tree.",
+    "working_tree_changes": [
+      "M research/local_frontier_native_diffsol_20261024/compare.py",
+      "?? research/local_frontier_native_diffsol_20261024/accuracy_cohort_followup/"
+    ]
+  },
+  "reviewer": "/root/accuracy_v3_fresh_review",
+  "role": "COSTROUTE01 research-review; read-only independent review",
+  "schema": "vigilode.accuracy-cohort-contract-review.v3",
+  "source_preparation_approval": false,
+  "verification": {
+    "additional_observed_probes": {
+      "empty_reporting_groups": "verify_plan accepted; static finalization path indexes empty receipts",
+      "invalid_approval": "ValueError; zero cost bytes and no receipt",
+      "missing_header_final_time": "PASS_SCOPED incorrectly",
+      "nan_final_time": "PASS_SCOPED incorrectly",
+      "orphan_after_parent_exit": {
+        "assessment_status": "OUTPUT_CONTRACT_FAILURE",
+        "execution_status": "COMPLETED",
+        "group_dead": true,
+        "leader_reaped": true,
+        "remaining_pids": []
+      },
+      "oversized_numeric_result": "OverflowError; no attempt terminal; controller closed; child180s reservation remains open",
+      "state_difference1_claimed_max1e_4": "PASS_SCOPED incorrectly",
+      "warmup_only_reporting_groups": "verify_plan accepted 12 groups with one reported attempt each; 60 timed attempts omitted",
+      "wrong_method_threads_layer_instrumentation_time": "PASS_SCOPED incorrectly"
+    },
+    "canonical_cost_ledger_mutated_by_reviewer": false,
+    "canonical_v3_selection_exists": false,
+    "compare_hash_matches_requested_report": true,
+    "compare_test_8_pass_claim_independently_rerun": false,
+    "provided_test_suite": {
+      "command": [
+        "python3",
+        "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/accuracy_cohort_followup/test_accuracy_cohort_driver.py",
+        "-v"
+      ],
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "exit_code": 0,
+      "synthetic_only": true,
+      "tests_passed": 20,
+      "timing_authority": "diagnostic_only",
+      "tool_wall_seconds": 2.396374767,
+      "unittest_elapsed_seconds": 2.28
+    },
+    "rust_all_member_static_review": "local_bottleneck_suite.rs396-427 checks every member dimension/finiteness/end time, maximum component error across every member, U added once; no Rust run performed."
+  }
+}

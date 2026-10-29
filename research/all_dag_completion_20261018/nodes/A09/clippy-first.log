@@ -1,0 +1,71 @@
+    Checking rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-readonly/crates/rodas5p-integrators)
+error: the loop variable `j` is used to index `k`
+   --> crates/rodas5p-integrators/src/actual_k_homotopy.rs:301:30
+    |
+301 |                     for j in 0..stages {
+    |                              ^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+    = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+    |
+301 -                     for j in 0..stages {
+301 +                     for (j, <item>) in k.iter().enumerate().take(stages) {
+    |
+
+error: the loop variable `j` is used to index `k`
+   --> crates/rodas5p-integrators/src/actual_k_homotopy.rs:339:18
+    |
+339 |         for j in 0..stages {
+    |                  ^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+339 -         for j in 0..stages {
+339 +         for (j, <item>) in k.iter().enumerate().take(stages) {
+    |
+
+error: the loop variable `j` is used to index `major`
+   --> crates/rodas5p-integrators/src/actual_k_homotopy.rs:377:18
+    |
+377 |         for j in 0..stages {
+    |                  ^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+377 -         for j in 0..stages {
+377 +         for (j, <item>) in major.iter_mut().enumerate().take(stages) {
+    |
+
+error: the loop variable `j` is used to index `s`
+   --> crates/rodas5p-integrators/src/actual_k_homotopy.rs:390:18
+    |
+390 |         for j in 0..=i {
+    |                  ^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+390 -         for j in 0..=i {
+390 +         for (j, <item>) in s.iter_mut().enumerate().take(i + 1) {
+    |
+
+error: the loop variable `i` is used to index `k`
+   --> crates/rodas5p-integrators/src/actual_k_homotopy.rs:451:18
+    |
+451 |         for i in 0..stages {
+    |                  ^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+451 -         for i in 0..stages {
+451 +         for (i, <item>) in k.iter().enumerate().take(stages) {
+    |
+
+error: could not compile `rodas5p-integrators` (lib) due to 5 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `rodas5p-integrators` (lib test) due to 5 previous errors

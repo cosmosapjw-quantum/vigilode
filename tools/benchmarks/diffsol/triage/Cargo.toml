@@ -1,0 +1,28 @@
+[package]
+name = "vigilode-diffsol-triage"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.94.1"
+description = "Isolated Diffsol 0.16.1 comparator for the component-triage campaign (vigilode-triage-row-v1 rows, parity documents)"
+publish = false
+
+[[bin]]
+name = "diffsol-triage"
+path = "src/main.rs"
+
+[dependencies]
+diffsol = { version = "=0.16.1", default-features = false, features = ["faer"] }
+# The linear-algebra crate diffsol 0.16.1 itself depends on (same version, unified features); only
+# used for the delegating LU counter (its LinearSolver trait is not re-exported by diffsol).
+diffsol-la = { version = "=0.1.0", default-features = false, features = ["faer"] }
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = { version = "=1.0.151", features = ["float_roundtrip"] }
+sha2 = "=0.10.9"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+
+[workspace]

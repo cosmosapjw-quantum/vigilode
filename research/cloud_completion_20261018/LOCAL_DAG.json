@@ -1,0 +1,238 @@
+{
+  "schema_version": 1,
+  "task": "cloud-completion local validation",
+  "source_commit": "4cb795d2b4d3d1cc43ac1ede37d48e4f4daaac3b",
+  "nodes": [
+    {
+      "id": "SRC",
+      "name": "Checkout and immutable source binding",
+      "status": "PASS",
+      "dependencies": [],
+      "evidence": [
+        "environment.json",
+        "SOURCE_IDENTITY.json"
+      ]
+    },
+    {
+      "id": "CHECK",
+      "name": "Offline compile and focused contracts",
+      "status": "PASS",
+      "dependencies": [
+        "SRC"
+      ],
+      "evidence": [
+        "evidence/local_runs/check/RESULT.json",
+        "evidence/local_runs/check/*.stdout",
+        "evidence/local_runs/check/*.stderr"
+      ]
+    },
+    {
+      "id": "SMOKE",
+      "name": "Packet and PR101 executable smoke",
+      "status": "PASS",
+      "dependencies": [
+        "CHECK"
+      ],
+      "evidence": [
+        "evidence/local_runs/smoke/RESULT.json",
+        "evidence/local_runs/smoke/*.stdout",
+        "evidence/local_runs/smoke/*.stderr"
+      ]
+    },
+    {
+      "id": "BENCH",
+      "name": "32-mode matched tolerance diagnostic bench",
+      "status": "PASS_DIAGNOSTIC_ONLY",
+      "dependencies": [
+        "CHECK",
+        "SMOKE"
+      ],
+      "evidence": [
+        "evidence/local_runs/bench/RESULT.json",
+        "evidence/local_runs/bench/structured_comparison.stdout"
+      ]
+    },
+    {
+      "id": "REPORT",
+      "name": "Evidence aggregation and claim classification",
+      "status": "PASS",
+      "dependencies": [
+        "CHECK",
+        "SMOKE",
+        "BENCH"
+      ],
+      "evidence": [
+        "executions.json",
+        "RESULT.json",
+        "LOCAL_REPORT_KO.md"
+      ]
+    },
+    {
+      "id": "REVIEW",
+      "name": "Independent read-only local evidence review",
+      "status": "PASS_FINDINGS_RESOLVED",
+      "dependencies": [
+        "REPORT"
+      ],
+      "evidence": [
+        "read-only review result in current session; corrected executions.json and LOCAL_REPORT_KO.md"
+      ]
+    },
+    {
+      "id": "RESEARCH_NODE_CHECK",
+      "name": "Postflight ledger and authority-reference checks",
+      "status": "KNOWN_INHERITED_HASH_MISMATCHES_L0124_L0138",
+      "dependencies": [
+        "REPORT"
+      ],
+      "evidence": [
+        "evidence/local_checks/postflight_checks.json",
+        "evidence/publication_checks.json",
+        "evidence/local_codex_replay_20261018/POSTFLIGHT_CHECKS.json"
+      ]
+    },
+    {
+      "id": "AUTHORITY_REFS",
+      "name": "Authority reference validation",
+      "status": "PASS",
+      "dependencies": [
+        "REPORT"
+      ],
+      "evidence": [
+        "evidence/local_checks/postflight_checks.json"
+      ]
+    },
+    {
+      "id": "PUBLISH",
+      "name": "Fast-forward commit and remote ref verification",
+      "status": "PASS_FAST_FORWARD_VERIFIED",
+      "dependencies": [
+        "REVIEW",
+        "RESEARCH_NODE_CHECK",
+        "AUTHORITY_REFS"
+      ],
+      "evidence": [
+        "git fetch origin research/cloud-completion-20261018",
+        "git merge-base --is-ancestor origin/research/cloud-completion-20261018 HEAD",
+        "git push origin research/cloud-completion-20261018",
+        "git ls-remote origin refs/heads/research/cloud-completion-20261018"
+      ],
+      "payload_commit": "78ed1c7953adbf4c05f55d717386e4b42fc1806b",
+      "remote_ref": "refs/heads/research/cloud-completion-20261018",
+      "remote_ref_sha_at_verification": "78ed1c7953adbf4c05f55d717386e4b42fc1806b",
+      "fast_forward": true
+    },
+    {
+      "id": "RERUN_LATEST_HEAD",
+      "name": "Fresh check, smoke, and calibrated diagnostic bench on fetched remote HEAD",
+      "status": "PASS_DIAGNOSTIC_ONLY",
+      "dependencies": [
+        "SRC"
+      ],
+      "evidence": [
+        "evidence/local_codex_rerun_20261018/LOCAL_RERUN_20261018.json",
+        "evidence/local_codex_rerun_20261018/check/RESULT.json",
+        "evidence/local_codex_rerun_20261018/smoke/RESULT.json",
+        "evidence/local_codex_rerun_20261018/bench/RESULT.json"
+      ]
+    },
+    {
+      "id": "PUBLISH_RERUN",
+      "name": "Publish fresh rerun evidence and verify remote ref",
+      "status": "PASS_FAST_FORWARD_VERIFIED",
+      "dependencies": [
+        "RERUN_LATEST_HEAD"
+      ],
+      "evidence": [
+        "git fetch origin research/cloud-completion-20261018",
+        "git merge-base --is-ancestor origin/research/cloud-completion-20261018 HEAD",
+        "git push origin HEAD:refs/heads/research/cloud-completion-20261018",
+        "git ls-remote origin refs/heads/research/cloud-completion-20261018"
+      ],
+      "payload_commit": "161a27a5cf720683da0a124f407a78e864c257e3",
+      "remote_ref": "refs/heads/research/cloud-completion-20261018",
+      "remote_ref_sha_at_verification": "161a27a5cf720683da0a124f407a78e864c257e3",
+      "fast_forward": true
+    },
+    {
+      "id": "RACE_TRIAGE_AC89",
+      "name": "First fresh check failure classification",
+      "status": "RESOLVED_TEST_HARNESS_RACE",
+      "dependencies": [
+        "SRC"
+      ],
+      "evidence": [
+        "evidence/local_codex_replay_20261018/first_attempt_race/core_contracts.stdout",
+        "evidence/local_codex_replay_20261018/first_attempt_race/core_contracts.stderr",
+        "evidence/local_codex_replay_20261018/PREREGISTRATION.json"
+      ],
+      "resolution": "core Leja test suite serialized; isolated and serial contract reruns passed"
+    },
+    {
+      "id": "REPLAY_F522",
+      "name": "Clean check, smoke, and calibrated diagnostic bench after runner fix",
+      "status": "PASS_DIAGNOSTIC_ONLY",
+      "dependencies": [
+        "RACE_TRIAGE_AC89"
+      ],
+      "evidence": [
+        "evidence/local_codex_replay_20261018/EXECUTION_RECORD.json",
+        "evidence/local_codex_replay_20261018/check/RESULT.json",
+        "evidence/local_codex_replay_20261018/smoke/RESULT.json",
+        "evidence/local_codex_replay_20261018/bench/RESULT.json"
+      ]
+    },
+    {
+      "id": "PUBLISH_REPLAY_F522",
+      "name": "Publish latest replay evidence and verify remote ref",
+      "status": "PASS_FAST_FORWARD_VERIFIED",
+      "dependencies": [
+        "REPLAY_F522"
+      ],
+      "evidence": [
+        "research/LEDGER.jsonl",
+        "git ls-remote origin refs/heads/research/cloud-completion-20261018",
+        "research/LEDGER.jsonl",
+        "evidence/local_codex_replay_20261018/POSTFLIGHT_CHECKS.json",
+        "commit 714a6d7df704806e52f084647a4ae653d61c581c",
+        "remote ref verified by git ls-remote"
+      ],
+      "payload_commit": "714a6d7df704806e52f084647a4ae653d61c581c",
+      "remote_ref": "refs/heads/research/cloud-completion-20261018",
+      "remote_ref_sha_at_verification": "714a6d7df704806e52f084647a4ae653d61c581c",
+      "fast_forward": true
+    }
+  ],
+  "scope_decisions": {
+    "check": "PASS",
+    "smoke": "PASS",
+    "bench": "PASS_DIAGNOSTIC_ONLY",
+    "allocation_warmed_step_scope": "PASS_AFTER_POSITIVE_CONTROL",
+    "overall_production": "HOLD",
+    "measured_speed_promotion": "HOLD",
+    "research_node_check": "KNOWN_INHERITED_HASH_MISMATCHES_L0124_L0138; L-0139 validated",
+    "authority_refs_check": "PASS",
+    "fresh_rerun_latest_head": "PASS_DIAGNOSTIC_ONLY",
+    "fresh_rerun_allocation": "PASS_AFTER_POSITIVE_CONTROL_FOR_MEASURED_RUNS_ONLY",
+    "latest_replay_check": "PASS",
+    "latest_replay_smoke": "PASS",
+    "latest_replay_bench": "PASS_DIAGNOSTIC_ONLY",
+    "latest_replay_allocation": "PASS_AFTER_POSITIVE_CONTROL_FOR_MEASURED_SCOPE_ONLY"
+  },
+  "open_inherited_issue": {
+    "ids": [
+      "L-0124_report_hash_mismatch",
+      "L-0138_report_hash_mismatch"
+    ],
+    "status": "INHERITED_UNCHANGED",
+    "blocks_numerical_validation": false,
+    "evidence": [
+      "evidence/publication_checks.json",
+      "evidence/local_codex_replay_20261018/POSTFLIGHT_CHECKS.json"
+    ],
+    "rule": "Do not rewrite historical ledger/report bytes to conceal mismatches."
+  },
+  "next_action": "Local replay is recorded and published. Overall production and measured speed remain HOLD; any further work must target separately scoped open development.",
+  "latest_checkout_commit": "714a6d7df704806e52f084647a4ae653d61c581c",
+  "latest_execution_commit": "f522eacb2d433d8628da194fb128cf7a84fc2e1e"
+}

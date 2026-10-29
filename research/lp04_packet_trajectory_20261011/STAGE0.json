@@ -1,0 +1,45 @@
+{
+  "schema": "vigilode-lp04-stage0-v1",
+  "node_id": "LP04",
+  "decision": "FEASIBLE",
+  "verdict": "PASS",
+  "claim": "Stage 0 decision FEASIBLE: uncertainty propagation and adaptive window transaction correctly carry inherited error bounds, preserve transactional atomicity under step rejections, accumulate work counters monotonically with zero online solver calls, and support clean output policy separation.",
+  "scientific_gates": {
+    "vg1_zero_online_solver_counters": {
+      "jacobian_calls": 0,
+      "jvp_calls": 0,
+      "krylov_iterations": 0,
+      "linear_solves": 0,
+      "passed": true
+    },
+    "vg2_multiwindow_convergence": {
+      "dahlquist_linear_limit_enclosure": true,
+      "multiwindow_step_continuity": true,
+      "passed": true
+    },
+    "vg3_transactional_atomicity_and_uncertainty": {
+      "rejected_attempts_preserve_accepted_state": true,
+      "work_accumulates_monotonically": true,
+      "output_policy_separation": true,
+      "inherited_radii_propagation": true,
+      "passed": true
+    },
+    "negative_admission_gate": {
+      "reversed_time_interval_rejected": true,
+      "nonpositive_step_rejected": true,
+      "nonpositive_tolerance_rejected": true,
+      "radii_dimension_mismatch_rejected": true,
+      "passed": true
+    }
+  },
+  "rust_test_suite": {
+    "command": "cargo test --offline --locked -p rodas5p-integrators --test packet_trajectory_contracts -- --test-threads=1",
+    "exit_code": 0,
+    "tests_passed": 6,
+    "status": "PASS"
+  },
+  "input_files_sha256": {
+    "crates/rodas5p-integrators/src/packet_trajectory.rs": "8dc6c6c8365e7ae5434ff5a3c972f997541fb47dcfb0e27ba963437f6f84270c",
+    "crates/rodas5p-integrators/tests/packet_trajectory_contracts.rs": "f129d623512f7b8c91940e7b5862eda907e31af81ac58dc9758660966eeaa3e7"
+  }
+}

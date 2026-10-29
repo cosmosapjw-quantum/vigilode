@@ -1,0 +1,204 @@
+\documentclass[aps,prd,reprint,amsmath,amssymb,longbibliography,nofootinbib]{revtex4-2}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,xurl}
+\usepackage{graphicx,booktabs,array,tabularx,xcolor}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black}
+\urlstyle{tt}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newcommand{\R}{\mathbb R}
+\newcommand{\C}{\mathbb C}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\baseline}{\code{3064d45}}
+\newcommand{\auditpath}{\path{research/rigorous_performance_audit_20261027/}}
+\begin{document}
+\title{VigilODE: Adversarial Audit, Constructive Error Bounds,\texorpdfstring{\\}{ }and Measured Implementation Economy}
+\author{VigilODE research audit}
+\noaffiliation
+\date{27 October 2026}
+\begin{abstract}
+We audit the latest available VigilODE checkpoint and profiling packet, separating adapter scheduling, integration kernels, and the mathematical obligations of structure-exploiting solvers. Previously completed repairs are treated as baseline facts. New production changes give incomplete comparisons their correct evidence type, optionally stop a dominated return comparator using conservative cost bounds, retain aligned dense-LU solve storage, eliminate an analytic partial-time-derivative temporary, and borrow projected matrix rows. Targeted native contracts pass 51 tests. With qualified numerical outputs, measured instruction counts decrease by 13.196\% for a 32-dimensional LU kernel, 2.605\% for a full 65-dimensional dense trajectory, and 1.731\% for a 16-dimensional adapter solve. Repeated wall and process-CPU timings remain too variable to establish reliable elapsed-time acceleration. We derive a minimax scalar relaxation for shifted dissipative systems, extend causal stage-error propagation to approximate inverses, and state the full-domain requirements for physical residual transport. The shifted-system research candidate satisfies all 27 finite operator checks but reaches the strict residual target in only 25 cases; it is not enabled as a solver default. An exact rational derivation separates ideal fixed-step DOPRI5 dispersion from an empirical adaptive tolerance law. None of these optimizations establishes an end-to-end physical certification of the separate V8 program.
+\end{abstract}
+\maketitle
+
+\section{Scope and principal conclusions}
+\label{sec:scope}
+The inspected baseline is commit \path{3064d453091af1dec7f99f0c8afabd98b447ea34}, on the checkpoint-followup research branch. This supersedes the earlier integration snapshot \code{dda8d2f}. The profiling packet carried by this baseline measures source \code{46939bbe} on an AMD Ryzen 9 5900X; its wall-clock values are explicitly diagnostic. The current experiments use a different, shared Intel host. Historical measurements guide the choice of surfaces but are not relabeled as current performance results \cite{ProfilePacket,CheckpointPacket,IntegrationPacket}.
+
+Three conclusions organize this audit. First, the sources do not establish a fundamental inconsistency in the project's structural mathematics. They do identify mathematical premises that an optimization cannot supply: a valid operator relation throughout a tube, inverse-action or propagation bounds, and control of reconstruction in the physical norm. Second, several costs are independent of those premises. Reallocating an unchanged stage RHS, copying a row before its dot product, and continuing an already dominated comparison are avoidable implementation costs. Third, the two classes of evidence must remain separate. Fewer work units do not prove lower wall time; a passing local error test does not certify global physical error; a contraction theorem does not prove that an iteration is economical.
+
+\input{results_summary.tex}
+
+The work is performed in an isolated branch. Existing V6/V8 physical ledgers and previously closed campaigns are preserved. The V8 represented-query membership results remain scoped results: the retained delivery records do not claim a uniform whole-domain rounding bound, an actual ODE tube enclosure, or a complete native physical restoration. Their central status remains 27/88, with global physical completion unspecified and L4 false. This audit neither reruns those physical campaigns nor increments that count \cite{V8Membership,V8Tube}.
+
+\section{Critical reading of the existing evidence}
+\label{sec:audit}
+\subsection{What was already repaired}
+The latest checkpoint already admits nonfatal incomplete return comparators through a cost lower bound, includes an implicit-first return sentinel, preserves a productive implicit replay, and incorporates earlier derivative fallback and small-interval fixes. The prior approximately 90-to-3 allocations per matrix-free attempt reduction is also historical work. Claiming any of these as newly fixed would overstate the present contribution. Our adapter contribution is an earlier stopping point, conservative numerical evaluation of the sufficient inequality, and truthful evidence semantics.
+
+\subsection{Where the measured time goes}
+The old packet reports that discarded entry pilots account for 85\% and 80\% of the selector-minus-direct instruction excess on rotation and tight gyromotion, respectively. These apply to the opt-in \code{adaptive\_evidence(ProvidedOnly)} preset; the default switching configuration is DOPRI-only and runs no such pilots. These are adapter costs. Independently, matrix-free RODAS costs approximately 6.9 times the dense method's instructions in the small case5 controlled comparison. Its least-squares correction consumes 39\% of the transition-39 matrix-free instruction count, including 18\% in QR factorization. These are inner-mode costs. None of these historical percentages is a current timing measurement \cite{ProfilePacket}.
+
+This distinction prevents two mistaken interventions. A faster LU solve cannot cure repeated losing entry pilots. Conversely, fewer selector probes do not fix the high cost of QR, orthogonalization, and operator construction inside a retained matrix-free step. The current dense-storage change applies to the Faer route, normally dimension above 64. The existing small-dense route was already optimized; it cannot receive credit for a new Faer improvement.
+
+\begin{table*}[t]
+\caption{Audit disposition. IDs refer to the 31-item latest profiling packet. ``Open'' means not established as resolved in this work; it does not imply that every proposed repair is necessary or valid.}
+\label{tab:audit}
+\centering\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.12\textwidth} >{\raggedright\arraybackslash}p{0.23\textwidth} >{\raggedright\arraybackslash}p{0.59\textwidth}@{}}
+\toprule
+IDs & Surface & Disposition and justification \\
+\midrule
+A1 & Provenance/authority references & Historical missing-reference gates remain open. They are not evidence of a numerical theorem failing; no repository-wide promotion is claimed. \\
+A2 & MF fresh-state allocation & Analytic supplied $f_t$ temporary removed. State copy/Arc construction and finite-difference $f_t$ remain. \\
+A3--A4 & FD Jacobian and adapter allocation & Open. These require retained FD buffers and an explicit adapter storage contract. \\
+A5 & Incomplete evidence semantics & Corrected: distinct lower-bound evidence, absent ratios for incomplete challengers, outward upper ratio for a completed winner versus a prefix. \\
+A6, D3--D4 & Accuracy/output comparison & New dense tests use 33 common times; adapter checks every returned component and identical accepted trajectories. No continuous-supremum or universal WRMS certificate is inferred. \\
+A7 & Gyromotion accuracy & Open physical requirement. A two-point empirical tolerance slope is separated from exact fixed-step dispersion in Sec.~\ref{sec:phase}. \\
+B1, B3--B4, B7--B9, C9 & Probe scheduling/restarts & Repeated entry-pilot, horizon, seed, facade, and return-ramp costs remain open. New comparator stopping closes only a related, precisely specified return-comparison waste. \\
+B2, B5, C1, C4 & Provider choice and cost proxy & Open coupled design question. No undeclared dense assembly replaces a JVP provider; no work-unit saving is treated as a time theorem. \\
+B6, C2, C5 & Krylov kernels/wrappers & Open. QR/Givens substitution changes rounding, rank and breakdown semantics and is outside the exact-storage patch. \\
+C3, C6--C8 & Records, controller, session, landing & Open; old instruction fractions are not portable release-build speedups. \\
+D1--D2, D5--D6 & Measurement coverage & New raw paired timing, qualified errors, larger dense sizes, and a sentinel control improve this experiment. The old trace-tool defects and broad holdout coverage remain open. \\
+New & Faer RHS and projected rows & Retained aligned solve storage and borrowed rows preserve the arithmetic path; separate tests and timings establish only the stated scope. \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Evidence defects that affect interpretation}
+A completed candidate and a partly executed challenger are not two completed integrations. The previous telemetry nevertheless used a completed-comparison label and sometimes displayed a prefix/complete ratio as if it were a method-cost ratio. We correct this without treating a partial state as admissible output. A completed candidate divided by the challenger's lower-bound cost can be a conservative upper bound on its eventual ratio; a partly completed candidate divided by a completed incumbent is not the analogous comparison and now has no such ratio.
+
+The profiling packet also admits endpoint-only accuracy in many rows, host-dependent timing classifications, and small cheap-RHS fixtures. Its reported gyromotion default error, approximately $3.16\times10^{-2}$ against a $10^{-4}$ cap, is not repaired by a faster selector. Its attribution to phase drift is a useful diagnostic, while its two-tolerance slope is insufficient to establish a universal law. Table~\ref{tab:audit} preserves unresolved findings instead of turning a finite optimization into a blanket closure.
+
+\input{theory_section.tex}
+
+\section{A precise dispersion check for the explicit mode}
+\label{sec:phase}
+The ideal rational tableau represented by the source DOPRI5 coefficients permits an exact rational calculation, independent of a numerical ODE run. This analyzes the mathematical tableau in exact arithmetic, not the bit-level polynomial of rounded binary64 coefficients and operations. For $y'=\lambda y$, its endpoint stability polynomial is
+\begin{align}
+R(z)={}&1+z+\tfrac12z^2+\tfrac16z^3+\tfrac1{24}z^4
+       +\tfrac1{120}z^5+\tfrac1{600}z^6,\\
+\log R(z)={}&z+\tfrac1{3600}z^6-\tfrac1{2100}z^7
+                +\tfrac1{3200}z^8+O(z^9).
+\end{align}
+For completeness, the endpoint-minus-embedded polynomial is
+\begin{equation}
+R(z)-\widehat R(z)=-\frac{97z^5}{120000}
+                    +\frac{13z^6}{40000}-\frac{z^7}{24000}.
+\end{equation}
+These coefficients are generated using exact \code{Fraction} arithmetic from the checked source tableau. An initial optional SymPy import was unavailable; the exact standard-library derivation replaces that dependency and is retained in the evidence directory.
+
+\setcounter{theorem}{4}
+\begin{proposition}[Oscillator dispersion]
+For a scalar oscillator $y'=i\omega y$ with $y_0\ne0$, using the ideal rational tableau in exact arithmetic, positive constant step $h$, small $\theta=\omega h$, and $N$ steps, the logarithmic amplitude and accumulated phase defects are
+\begin{align}
+\log\left|\frac{y_N}{y_0}\right|
+  &=-\frac{N\theta^6}{3600}+O(N\theta^8),\\
+\arg(y_N/y_0)-N\theta
+  &=\frac{N\theta^7}{2100}+O(N\theta^9).
+\end{align}
+Here the phase is continuously unwrapped near the exact solution.
+\end{proposition}
+\noindent\emph{Proof.} The strictly triangular tableau gives
+$R(z)=1+zb^T\sum_{k=0}^{6}z^kA^k\mathbf1$ exactly. Expansion of the formal logarithm yields the displayed coefficients. Substitution of $z=i\theta$ separates real and imaginary parts. Multiplication by $N$ gives the result.\hfill$\square$
+
+For fixed $T=Nh$, the leading amplitude and phase defects thus scale as $\omega^6Th^5$ and $\omega^7Th^6$, respectively. Under the additional idealized assumptions that the embedded difference controls a relative scalar error, that no absolute-tolerance or cancellation regime intervenes, and that an approximately constant controller step is attained, $h$ scales as $\mathrm{rtol}^{1/5}$. That conditional model suggests different amplitude and phase exponents. It is not a theorem for the adaptive, coupled gyromotion fixture. The appropriate remaining experiment separates amplitude, phase, and physical state errors across a preregistered tolerance ladder; the old two-point estimate alone cannot decide that issue.
+
+\section{Production changes and preserved contracts}
+\label{sec:code}
+\subsection{Adapter comparison}
+The new \code{stop\_dominated\_return\_comparator} option is false by default, including in the adaptive-evidence preset. It acts only on the ordinary explicit-first return comparator. The accepted explicit candidate has already completed its interval. Its exact integral work sum is accumulated in checked \code{u128}; conversion to binary64 is enclosed with adjacent representable values. The proposed callback ceiling rounds upward. After stopping, a separate prefix-dominance predicate rounds the right-hand side downward before admitting the decision. Only completed comparisons use the output-qualified comparison API.
+
+The comparison cost is the existing proxy,
+\begin{equation}
+C=N_f+N_{Jv}+N_{f_t}+nN_J+N_{\mathrm{solve}}.
+\end{equation}
+The native guard meters the callback subset. This is conservative because omitted solve costs are nonnegative, but it can stop later than a guard charging the full proxy. It is not a bound on seconds. Since even exactly representable positive integer costs receive an outward interval, conservative admission can intentionally reject an equality accepted by the old scalar comparison, including at small counts. Strict-margin cases whose margin exceeds these enclosures are unchanged.
+
+An observed fatal callback retains terminal priority. A discarded comparator's partial state is never committed. Equality of the complete accepted trajectory with an unshortened replay is conditional: both runs must have enough total attempt budget, and the skipped suffix cannot be assumed to contain or not contain a future fatal callback. A routine cannot predict an unexecuted callback failure. The tests check encountered-fatal precedence and an unchanged implicit-first sentinel, rather than claiming impossible future-error equivalence.
+
+\subsection{Dense Faer solve storage}
+The new \code{LuSolveWorkspace} owns an aligned single-column RHS and permutation scratch. It owns no Jacobian, factorization, or model epoch. The fast dense driver retains it for the chosen Faer route and invokes the same partial-pivot permutation and triangular-solve kernels as the old allocating solve. Because shape, stride, kernel selection, and operation order match, scratch reuse does not alter the computed values in the verified cohort. A dimension mismatch or nonfinite input is rejected before overwrite. A numerical failure can modify the caller RHS and remains a failure.
+
+The existing allocating API is retained as a same-binary control. The reusable path removes warmed solve allocations, while the convenience in-place API for immutable preconditioner contexts still creates temporary storage. Reusing scratch across new factorizations is safe at the same dimension; it does not authorize reusing stale factors. The storage remains $O(n)$ and the arithmetic $O(n^2)$ per solve; the unchanged $O(n^3)$ factorization limits full-trajectory gains.
+
+\subsection{Matrix-free and coupled storage}
+The supplied nonautonomous analytic partial-time callback writes directly into the existing MF buffer using the established \code{eval\_partial\_t\_into} contract. The destination is still zero-initialized, the same callback is invoked, and finite-output and work-count checks remain. Autonomous problems already use zero fill. Finite-difference partial-time callbacks and state-owning operator closures still allocate, so the MF allocation issue is only partly closed.
+
+The coupled projected residual borrows each row for its compensated dot product. With the same row entries and ascending order, this removes one vector allocation per projected row, and $d^2$ copied entries for projected dimension $d$, without changing the $O(d^2)$ dot-product arithmetic, basis, or full-space residual validation. Neither storage change upgrades an operational residual to a certified forward error.
+
+\section{Experimental protocol and results}
+\label{sec:experiments}
+\subsection{Build and execution identity}
+The baseline and candidate use Rust 1.94.1, a locked dependency graph, and the repository's \code{measurement} profile (LTO disabled, 16 codegen units). The original supplied compiler component contained a truncated LLVM shared object. Python and C++ probes passed; the Rust component was repaired using an official distribution whose SHA-256 matched the official checksum. The failing attempt and repair are recorded rather than silently reclassified. The baseline executable was copied and hashed before the candidate build could overwrite it.
+
+Timing is single-process and serial, with no concurrent compilation. Each arm is warmed; calibrated batches keep measurement duration away from individual-call timer granularity. Alternating ABBA and BAAB blocks reduce simple temporal-order bias. JSON serialization is outside the timer. We report paired block ratios and their observed ranges, without converting five blocks on a shared host into a population-confidence claim. The hardware, affinity, exact commands, exits, binaries, samples, and output digests are retained in the evidence packet.
+
+The host is an Intel Xeon Platinum 8573C environment, with logical CPUs 0--8
+available and benchmarks pinned to CPU 2. Faer and thread-pool settings are
+sequential. The 32 selected mode contracts comprise one composite LU test
+(seven pivoted dimensions), 16 fast/partial-time/dense contracts, 14 coupled
+contracts, and one actual nonautonomous MF trajectory contract. The adapter
+adds two arithmetic and 17 integration/evidence contracts, for 51 passing
+native tests in total. The standalone research primitive separately passes
+seven tests. Exact rational DOPRI algebra and the 27 shifted-system cells are
+different evidence categories and are not added to this native-test count.
+
+\subsection{Mode-level accuracy cohort}
+The dense full-trajectory fixture is
+\begin{equation}
+y'=\left(-200I+\frac{50}{n}\mathbf1\mathbf1^T\right)y,
+\quad y_i(0)=1+0.25\sin i.
+\end{equation}
+Writing $m=n^{-1}\sum_i y_i(0)$, its exact solution is
+\begin{equation}
+y_i(t)=e^{-200t}(y_i(0)-m)+e^{-150t}m.
+\end{equation}
+Dimensions 65, 96, and 192 select the actual Faer route. Both binaries use $[0,0.2]$, 33 common observation times, relative tolerance $10^{-7}$, absolute tolerance $10^{-10}$, initial step $10^{-5}$, and maximum grid-component error $10^{-7}$. Setup, the adaptive solve, rejections, observations, and counters are inside the full-trajectory timer. This dissipative two-eigenvalue fixture isolates storage economy; it is not broad-spectrum nonlinear validation.
+
+The independent LU microbenchmark holds the factors and RHS fixed and excludes factorization/setup. It establishes a solve-kernel effect, not a complete-ODE effect. Direct source comparisons and targeted tests cover the analytic-$f_t$ and borrowed-row contracts; no independent full-solver wall-time gain is attributed to those two changes.
+
+\subsection{Adapter accuracy cohort}
+The adapter fixture uses a smooth relaxing stiffness,
+\begin{align}
+\lambda(t)&=1+\frac{9999}{2}\{1-\tanh[40(t-0.4)]\},\\
+y_i'&=-\lambda(t)(y_i-\cos t)-\sin t,\qquad y_i(0)=1.
+\end{align}
+Thus every component has exact solution $\cos t$ on $[0,1]$. Dimensions 1, 8, and 16 exercise different dense comparator costs with the same prescribed physical solution. Both arms have identical tolerances and ample common attempt budgets; the feature is switched off/on in the same candidate binary. Every returned component is checked against a $10^{-5}$ cap. Timing is qualified only when the full accepted time/state trajectories match, accounting closes, and the accuracy check passes. The implicit-first sentinel is a parity control, not another claimed optimization. These observations do not bound the continuous error between output times.
+
+\input{results_detail.tex}
+
+\section{What needs mathematics, and what needs engineering}
+\label{sec:next}
+The priority mathematical obligation is a full-domain certificate connecting a structured or projected solve to the original target. Three pieces must be bound together: (i) a model/metric/domain identity for the declared dissipativity or polynomial relation; (ii) an inverse-action defect and residual-evaluation enclosure; and (iii) the causal stage and physical-output transport, with a closed radius or tube. A sampled norm, an eigenvalue plot, or an endpoint discrepancy is insufficient for this composition. The current core already contains important pieces, including original-space residual checks, conditioned polynomial contracts, and finite causal majorants; the next work should extend and connect them, not discard them.
+
+The shifted-factor theorem gives a concrete candidate for such an extension. It guarantees convergence in a declared dissipative metric for every positive shift ratio in exact arithmetic, but a uniform minimax rate can be much slower than the actual spectral rate of unrelaxed Richardson. The 27-cell experiment demonstrates exactly that tradeoff. A production proposal should compete with existing unrelaxed iteration, GMRES, and refactorization under the same original-target error contract. Admission requires a proved metric/drift bound and accounted floating action error. A small contraction factor alone is not a cost model.
+
+Structural chart extensions require a similar discipline. A commuting analytic carrier can be removed exactly under its declared relation. Arbitrary noncommuting time-dependent carriers require a time-ordered evolution or a bounded surrogate defect. The chart's physical amplification and flow sensitivity must be propagated even when transformed coordinates appear benign. The V8 query-membership work is relevant evidence about a representation; it is not the missing physical enclosure itself.
+
+The main engineering opportunities remain substantial: retained FD Jacobian and partial-time buffers; reusable JVP operator storage; persistent implicit sessions; fewer repeated losing entry pilots; rank-aware cheaper least squares; and an explicitly authorized small-system dense representation. The matrix-free cost proxy must be revised together with changes that remove diagnostic JVP counts or charge structural linear-algebra costs. Otherwise a counter reduction can make the selector's timing predictions worse. These changes should be admitted with matched outputs and actual total cost rather than a universal fixed weight fitted only to the current small examples.
+
+This study closes the selected implementation surfaces, supplies executable mathematical prerequisites, and preserves negative results. It does not close every profiling issue, establish a universal best solver, certify arbitrary physical models, or promote the independent V8 ledger.
+
+\appendix
+\section{Reproduction and source map}
+The complete packet is under \auditpath. The preregistration fixes the baseline, separate lanes, accuracy contracts, serial timing, and bounded current experiments. \code{RUN\_STATE.json} and the final manifest contain actual statuses. The report's theory body is accompanied by full prose proofs, a standalone Rust primitive, exact-CAS receipts, the 27-row numerical data, and the exact rational DOPRI derivation.
+
+The production paths changed are \path{crates/vigilode/src/switching.rs}, \path{crates/rodas5p-core/src/matrix.rs}, its export in \path{lib.rs}, \path{crates/rodas5p-integrators/src/rodas5p_fast.rs}, \path{rodas5p_matrix_free_fast.rs}, and \path{crates/vigilode-coupled/src/residual_first.rs}. New contract tests and benchmark examples accompany them. The new evidence enum is additive and can require downstream exhaustive matches to be updated; the new public configuration field can also affect fully enumerated struct literals. The conservative incomplete-comparison predicate can change equality decisions even at ordinary counts. These are explicit API/behavior consequences, separate from the default-disabled stopping optimization.
+
+The retained baseline binary is built from the unchanged baseline plus the same source-compatible trajectory harness. All benchmark commands are recorded, including task affinity. The resulting exact states and work counters are compared before ratios are interpreted. Reproduction on another host may change timings while preserving the algebraic and allocation conclusions.
+
+\begin{thebibliography}{9}
+\bibitem{TranquilliSandu2014} P. Tranquilli and A. Sandu, Rosenbrock--Krylov methods for large systems of differential equations, \emph{SIAM J. Sci. Comput.} \textbf{36}, A1313--A1338 (2014), \href{https://doi.org/10.1137/130923336}{doi:10.1137/130923336}, \href{https://arxiv.org/abs/1305.5481}{arXiv:1305.5481}. Primary text, Sec.~1 and Eqs.~(2a)--(2b), and joint Krylov/time-discretization order analysis.
+\bibitem{LiuMoursiVanderwerff2022} L. Liu, W. M. Moursi, and J. Vanderwerff, Strongly nonexpansive mappings revisited: uniform monotonicity and operator splitting (2022), \href{https://arxiv.org/abs/2205.09040}{arXiv:2205.09040}. Primary text, Sec.~2, Fact~2.5, Eq.~(14).
+\bibitem{ProfilePacket} VigilODE, Adapter profile audit, 27 October 2026, source measured at \code{46939bbe}, packet at \baseline, \path{external_reports/adapter_profile_audit_20261027/}; \href{https://github.com/cosmosapjw-quantum/vigilode/tree/3064d453091af1dec7f99f0c8afabd98b447ea34/external_reports/adapter_profile_audit_20261027}{immutable repository snapshot}. The v2 packet supersedes v1; historical wall times are diagnostic.
+\bibitem{CheckpointPacket} VigilODE, Adapter checkpoint followup, 27 October 2026, \path{research/adapter_checkpoint_followup_20261027/}, baseline \code{3064d453091af1dec7f99f0c8afabd98b447ea34}.
+\bibitem{IntegrationPacket} VigilODE, Adapter integration report, 27 October 2026, \path{research/adapter_integration_20261027/REPORT_KO.md}, earlier source \code{dda8d2f16758ce7d3369ad249344b2ac8bbd08ef}.
+\bibitem{V8Membership} VigilODE, V8 Query Membership source and delivery, 27 October 2026. Source archive SHA-256 \path{8f8d3489dca47b2faad9b349fed586940a15383fc4794c41df9defc9d5a27a64}. Scope and limitations retained from the delivered handoff and theory record.
+\bibitem{V8Tube} VigilODE, V8 Actual Tube source and delivery, 27 October 2026. Source archive SHA-256 \path{d1fe70d681dc7dfab690e1d973829997c2b4fad2bb3c70607030dc48e39506be}. No new physical campaign is asserted by this audit.
+\end{thebibliography}
+\end{document}

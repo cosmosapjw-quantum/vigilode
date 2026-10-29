@@ -1,0 +1,48 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling rodas5p-core v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 53.30s
+     Running tests/production_audit_packet.rs (target/debug/deps/production_audit_packet-1678bd1aadabbee6)
+
+running 6 tests
+
+thread 'kappa_zero_packet_refuses_damped_model' (793) panicked at crates/rodas5p-integrators/tests/production_audit_packet.rs:15:5:
+assertion failed: compile_packet(&one_mode(0.0, 0.0, 1.0), 0.1, 4, &mut work).is_err()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'dense_output_restricts_normalized_time_waveform' (791) panicked at crates/rodas5p-integrators/tests/production_audit_packet.rs:30:9:
+tau=0.25, error=2.9296461743461902e-5
+
+thread 'inherited_uncertainty_must_fit_proved_unit_energy_domain' (792) panicked at crates/rodas5p-integrators/tests/production_audit_packet.rs:58:5:
+assertion failed: run_packet_trajectory(&model, Some(&[100.0]), &config, &mut work).is_err()
+
+thread 'mutable_config_is_validated_at_run_boundary' (794) panicked at crates/rodas5p-integrators/tests/production_audit_packet.rs:76:5:
+assertion failed: run_packet_trajectory(&one_mode(0.0, 0.0, 0.0), None, &config,
+        &mut work).is_err()
+
+thread 'trajectory_tail_uses_force_bound_not_already_scaled_model_error' (796) panicked at crates/rodas5p-integrators/tests/production_audit_packet.rs:48:5:
+assertion failed: out.steps[1].total_mean_bound >= cert.mean_bound * (1.0 - 1e-14)
+test kappa_zero_packet_refuses_damped_model ... FAILED
+test inherited_uncertainty_must_fit_proved_unit_energy_domain ... FAILED
+test mutable_config_is_validated_at_run_boundary ... FAILED
+test trajectory_tail_uses_force_bound_not_already_scaled_model_error ... FAILED
+
+thread 'nonfinite_candidate_cannot_receive_certificate' (795) panicked at crates/rodas5p-integrators/tests/production_audit_packet.rs:68:5:
+assertion failed: compute_certificate(&cand, &packet, &table, &mut work).is_err()
+test nonfinite_candidate_cannot_receive_certificate ... FAILED
+test dense_output_restricts_normalized_time_waveform ... FAILED
+
+failures:
+
+failures:
+    dense_output_restricts_normalized_time_waveform
+    inherited_uncertainty_must_fit_proved_unit_energy_domain
+    kappa_zero_packet_refuses_damped_model
+    mutable_config_is_validated_at_run_boundary
+    nonfinite_candidate_cannot_receive_certificate
+    trajectory_tail_uses_force_bound_not_already_scaled_model_error
+
+test result: FAILED. 0 passed; 6 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test production_audit_packet`

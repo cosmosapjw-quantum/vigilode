@@ -1,0 +1,59 @@
+    Checking rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+error: float has excessive precision
+  --> crates/rodas5p-integrators/tests/production_audit_packet.rs:73:31
+   |
+73 |         [(0.3000360659831383, 0.09987949666586859), (-0.20017886072855834, 0.24985944127300486)],
+   |                               ^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#excessive_precision
+   = note: `-D clippy::excessive-precision` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::excessive_precision)]`
+help: consider changing the type or truncating it to
+   |
+73 -         [(0.3000360659831383, 0.09987949666586859), (-0.20017886072855834, 0.24985944127300486)],
+73 +         [(0.3000360659831383, 0.099_879_496_665_868_6), (-0.20017886072855834, 0.24985944127300486)],
+   |
+
+error: the loop variable `t` is used to index `reference`
+  --> crates/rodas5p-integrators/tests/production_audit_packet.rs:76:14
+   |
+76 |     for t in 0..2 { for j in 0..2 { let i=t*2+j; let d=(out.modes[i].0-reference[t][j].0).hypot(out.modes[i].1-reference[t][j].1); a...
+   |              ^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+   = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+   |
+76 -     for t in 0..2 { for j in 0..2 { let i=t*2+j; let d=(out.modes[i].0-reference[t][j].0).hypot(out.modes[i].1-reference[t][j].1); assert!(d <= out.mode_radii[i], "t={t} j={j} d={d:e} r={:e}",out.mode_radii[i]); } }
+76 +     for (t, <item>) in reference.iter().enumerate() { for j in 0..2 { let i=t*2+j; let d=(out.modes[i].0-reference[t][j].0).hypot(out.modes[i].1-reference[t][j].1); assert!(d <= out.mode_radii[i], "t={t} j={j} d={d:e} r={:e}",out.mode_radii[i]); } }
+   |
+
+error: the loop variable `j` is used to index `reference`
+  --> crates/rodas5p-integrators/tests/production_audit_packet.rs:76:30
+   |
+76 |     for t in 0..2 { for j in 0..2 { let i=t*2+j; let d=(out.modes[i].0-reference[t][j].0).hypot(out.modes[i].1-reference[t][j].1); a...
+   |                              ^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+   |
+76 -     for t in 0..2 { for j in 0..2 { let i=t*2+j; let d=(out.modes[i].0-reference[t][j].0).hypot(out.modes[i].1-reference[t][j].1); assert!(d <= out.mode_radii[i], "t={t} j={j} d={d:e} r={:e}",out.mode_radii[i]); } }
+76 +     for t in 0..2 { for (j, <item>) in reference.iter().enumerate() { let i=t*2+j; let d=(out.modes[i].0-reference[t][j].0).hypot(out.modes[i].1-reference[t][j].1); assert!(d <= out.mode_radii[i], "t={t} j={j} d={d:e} r={:e}",out.mode_radii[i]); } }
+   |
+
+error: the loop variable `t` is used to index `reference`
+  --> crates/rodas5p-integrators/tests/production_audit_packet.rs:77:14
+   |
+77 |     for t in 0..2 {
+   |              ^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+   |
+77 -     for t in 0..2 {
+77 +     for (t, <item>) in reference.iter().enumerate() {
+   |
+
+error: could not compile `rodas5p-integrators` (test "production_audit_packet") due to 4 previous errors
+warning: build failed, waiting for other jobs to finish...

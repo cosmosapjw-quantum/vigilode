@@ -1,0 +1,103 @@
+{
+  "schema": "vigilode.nonstiff.external-adapters.local.v1",
+  "source_commit": "45037fc24e8f8101605f309e1fdb3a9a4e3df56d",
+  "adapters": {
+    "vode": {
+      "status": "AVAILABLE",
+      "family": "Fortran VODE/DVODE via scipy.integrate.ode",
+      "methods": {
+        "nonstiff": "Adams",
+        "moderate-stiff_and_stiff-control": "BDF"
+      },
+      "options": {
+        "with_jacobian": false,
+        "first_step": 0.001,
+        "nsteps": 100000
+      },
+      "source_commit": "45037fc24e8f8101605f309e1fdb3a9a4e3df56d",
+      "adapter_source": "/home/cosmosapjw/vigilode-nonstiff-source-WjxDXM/research/nonstiff_explicit_20261023/vode_adapter.py",
+      "adapter_source_sha256": "3c3951218a4dda6ab0767d0240c4c2bf972cc18a581daa4346f359cb11795e03",
+      "adapter_source_copy": "external-adapters/vode_adapter.py",
+      "executable": "/usr/bin/python3",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "fortran_extension": "/home/cosmosapjw/.local/lib/python3.12/site-packages/scipy/integrate/_vode.cpython-312-x86_64-linux-gnu.so",
+      "fortran_extension_sha256": "27bf06e837caa49587df8ea76c3a10ed4f839c0e50789c7c05a4077be9bbf909",
+      "python_version": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+      "numpy_version": "2.4.2",
+      "scipy_version": "1.17.0",
+      "scipy_git_revision": "8c75ae75176236f233824e9a0483c26a69e6dfec",
+      "environment_lock_copy": "external-adapters/python-environment.lock",
+      "environment_lock_sha256": "b0f4533b0f3ff0d16b7be359de03ed154bad1904d5384ecc2705d34fd2cb9824",
+      "environment_lock_kind": "pip freeze --all snapshot of actual installed Python environment",
+      "thread_environment": {
+        "OPENBLAS_NUM_THREADS": null,
+        "OMP_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null,
+        "NUMEXPR_NUM_THREADS": null
+      },
+      "observed_threadpools": [
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "num_threads": 24,
+          "prefix": "libscipy_openblas",
+          "filepath": "/home/cosmosapjw/.local/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-096271d3.so",
+          "version": "0.3.31.dev",
+          "threading_layer": "pthreads",
+          "architecture": "Haswell"
+        },
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "num_threads": 24,
+          "prefix": "libscipy_openblas",
+          "filepath": "/home/cosmosapjw/.local/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-6cdc3b4a.so",
+          "version": "0.3.30",
+          "threading_layer": "pthreads",
+          "architecture": "Haswell"
+        }
+      ],
+      "timing_scope": "Per-process imports excluded from solver timer; problem/workspace/integration and Python/NumPy callbacks included; references and JSON excluded. Process wall separately retained.",
+      "output_policy": "VODE may interpolate internal steps at requested target times; native methods physically clip steps.",
+      "protocol_validation": "Bundled pinned adapter; saved states independently verified by analyze_bench.py before numerical/ratio admission.",
+      "not_compared": [
+        "scipy RK45",
+        "Radau",
+        "LSODA"
+      ]
+    },
+    "diffsol": {
+      "status": "NOT_RUN",
+      "reason": "No prepared local executable implementing nonstiff JSON stdin/stdout schema. Existing old adapter takes a request filename/structured case and returns warmup/measurements, not required schema; not connected or rebuilt.",
+      "local_candidate_binary": "/home/cosmosapjw/vigilode-bassrei/external_audits/vigilode_ncp_intensive_120m_v1_20261021/harness/bin/diffsol-adapter-v2",
+      "local_candidate_binary_sha256": "8042284844ef5ea6ca512290ef0ca0926555820c3f5a03b5af728acc1eddd220",
+      "local_candidate_driver": "/home/cosmosapjw/vigilode-bassrei/external_audits/vigilode_ncp_intensive_120m_v1_20261021/harness/diffsol_runner.py",
+      "local_candidate_driver_sha256": "271015aedba7ffa9295664735714b915df94ac39aa31b426e115d22caf7b7d55",
+      "solver_method": null,
+      "runtime_solver_version": null,
+      "runtime_solver_commit": null,
+      "protocol_verified_compatible": false,
+      "environment_lock": null,
+      "installed_or_upgraded": false
+    },
+    "julia": {
+      "status": "NOT_RUN",
+      "reason": "Julia executable is present, but no prepared compatible nonstiff adapter was supplied/discovered. Existing component adapter expects req.case as structured model and uses a different response schema; not connected or modified.",
+      "julia_executable_observed": "/home/cosmosapjw/.juliaup/bin/julia",
+      "julia_executable_sha256": "bbd85e5363104f068e4edaaa4e9e92b63d2cbada2c60376dae9724a4e95a977b",
+      "runtime_version": "NOT_QUERIED_NOT_EXECUTED",
+      "solver_method": null,
+      "solver_package_versions": null,
+      "local_candidate_source": "/home/cosmosapjw/vigilode-bassrei/tools/component_benchmark/julia_adapter.jl",
+      "local_candidate_source_sha256": "bf4185025a559b59bb23c3263dbab0846c372784fd66f42d60330d37835c5a56",
+      "protocol_verified_compatible": false,
+      "project_copy": null,
+      "manifest_copy": null,
+      "jit_warmup_policy": "NOT_RUN; no Julia process/JIT measurement",
+      "installed_or_upgraded": false
+    }
+  },
+  "ncp_used": false,
+  "ssh_used": false,
+  "external_adapter_args": []
+}

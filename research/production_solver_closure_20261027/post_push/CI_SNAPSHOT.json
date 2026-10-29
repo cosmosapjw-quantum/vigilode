@@ -1,0 +1,698 @@
+{
+  "schema_version": 1,
+  "observed_utc": "2026-10-27T21:15:55Z",
+  "observed_kst": "2026-10-28T06:15:55+09:00",
+  "source_commit": "78bb8775bf553ad2b514575a0ef4a025446f5d28",
+  "all_green": false,
+  "runs": [
+    {
+      "id": 40533866580,
+      "name": "A1 inner-tolerance parity",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "78bb8775bf553ad2b514575a0ef4a025446f5d28",
+      "html_url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40533866580"
+    },
+    {
+      "id": 40533866734,
+      "name": "Audit2 research and usable-solver checks",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "78bb8775bf553ad2b514575a0ef4a025446f5d28",
+      "html_url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40533866734"
+    },
+    {
+      "id": 40533866609,
+      "name": "E4 fresh-clone build reproducibility",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "78bb8775bf553ad2b514575a0ef4a025446f5d28",
+      "html_url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40533866609"
+    },
+    {
+      "id": 40533866504,
+      "name": "Production CI",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "78bb8775bf553ad2b514575a0ef4a025446f5d28",
+      "html_url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40533866504"
+    },
+    {
+      "id": 40533867036,
+      "name": "Ignored long tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "78bb8775bf553ad2b514575a0ef4a025446f5d28",
+      "html_url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40533867036"
+    },
+    {
+      "id": 40533866494,
+      "name": "Research ledger and authority references",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "78bb8775bf553ad2b514575a0ef4a025446f5d28",
+      "html_url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40533866494"
+    },
+    {
+      "id": 40533866550,
+      "name": "A1 two-arm authority receipt",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "78bb8775bf553ad2b514575a0ef4a025446f5d28",
+      "html_url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40533866550"
+    },
+    {
+      "id": 40533866519,
+      "name": "A2+A3 GMRES inner-cycle candidate",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "78bb8775bf553ad2b514575a0ef4a025446f5d28",
+      "html_url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40533866519"
+    }
+  ],
+  "jobs": [
+    {
+      "run_id": 40533866580,
+      "record": {
+        "jobs": [
+          {
+            "id": 122293696537,
+            "name": "a1-inner-tolerance-parity",
+            "status": "completed",
+            "conclusion": "failure",
+            "run_id": 40533866580,
+            "logs_url": null,
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1
+              },
+              {
+                "name": "Check out the repository",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2
+              },
+              {
+                "name": "Install the pinned Rust toolchain",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3
+              },
+              {
+                "name": "Run the A1 tolerance-arm contracts",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4
+              },
+              {
+                "name": "Run the committed external trace regression",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5
+              },
+              {
+                "name": "Run the affected G4/S5B0 behavioral contracts",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6
+              },
+              {
+                "name": "Run the downstream frozen-threshold CLI contract",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 7
+              },
+              {
+                "name": "Compile every workspace target",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 8
+              },
+              {
+                "name": "Run the workspace test closure",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 9
+              },
+              {
+                "name": "Lint the workspace",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 10
+              },
+              {
+                "name": "Check formatting and source stability",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 11
+              },
+              {
+                "name": "Post Check out the repository",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 22
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 23
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "run_id": 40533867036,
+      "record": {
+        "jobs": [
+          {
+            "id": 122293696290,
+            "name": "ignored-tests",
+            "status": "completed",
+            "conclusion": "failure",
+            "run_id": 40533867036,
+            "logs_url": null,
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2
+              },
+              {
+                "name": "Install the pinned Rust toolchain",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3
+              },
+              {
+                "name": "Every ignored test is reachable from CI",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4
+              },
+              {
+                "name": "Run the ignored tests in the measurement profile",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 5
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 10
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 11
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "run_id": 40533866504,
+      "record": {
+        "jobs": [
+          {
+            "id": 122293695395,
+            "name": "semver",
+            "status": "completed",
+            "conclusion": "failure",
+            "run_id": 40533866504,
+            "logs_url": null,
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2
+              },
+              {
+                "name": "Install the pinned Rust toolchain",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3
+              },
+              {
+                "name": "Run Swatinem/rust-cache@v2.7.8",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4
+              },
+              {
+                "name": "Install cargo-semver-checks",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5
+              },
+              {
+                "name": "Semver check against the base commit",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 6
+              },
+              {
+                "name": "Post Run Swatinem/rust-cache@v2.7.8",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 11
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 12
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 13
+              }
+            ]
+          },
+          {
+            "id": 122293695834,
+            "name": "docs",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 40533866504,
+            "logs_url": null,
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2
+              },
+              {
+                "name": "Install the pinned Rust toolchain",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3
+              },
+              {
+                "name": "Run Swatinem/rust-cache@v2.7.8",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4
+              },
+              {
+                "name": "Rustdoc without warnings",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5
+              },
+              {
+                "name": "Doc tests",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6
+              },
+              {
+                "name": "Build the examples",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 7
+              },
+              {
+                "name": "Run the examples",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 8
+              },
+              {
+                "name": "Run the serialized RHS-first deployment profiles",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 9
+              },
+              {
+                "name": "Post Run Swatinem/rust-cache@v2.7.8",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 17
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 18
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 19
+              }
+            ]
+          },
+          {
+            "id": 122293695979,
+            "name": "test",
+            "status": "completed",
+            "conclusion": "failure",
+            "run_id": 40533866504,
+            "logs_url": null,
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2
+              },
+              {
+                "name": "Install the pinned Rust toolchain",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3
+              },
+              {
+                "name": "Run Swatinem/rust-cache@v2.7.8",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4
+              },
+              {
+                "name": "Facade and light crates",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 5
+              },
+              {
+                "name": "Integrators",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 6
+              },
+              {
+                "name": "Post Run Swatinem/rust-cache@v2.7.8",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 11
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 12
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 13
+              }
+            ]
+          },
+          {
+            "id": 122293696142,
+            "name": "fmt",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 40533866504,
+            "logs_url": null,
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2
+              },
+              {
+                "name": "Install the pinned Rust toolchain",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3
+              },
+              {
+                "name": "Run Swatinem/rust-cache@v2.7.8",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4
+              },
+              {
+                "name": "Format check",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5
+              },
+              {
+                "name": "Post Run Swatinem/rust-cache@v2.7.8",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 9
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 10
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 11
+              }
+            ]
+          },
+          {
+            "id": 122293696184,
+            "name": "bench",
+            "status": "completed",
+            "conclusion": "failure",
+            "run_id": 40533866504,
+            "logs_url": null,
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2
+              },
+              {
+                "name": "Install the pinned Rust toolchain",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3
+              },
+              {
+                "name": "Run Swatinem/rust-cache@v2.7.8",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4
+              },
+              {
+                "name": "Install system libraries",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5
+              },
+              {
+                "name": "Bench crate tests",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 6
+              },
+              {
+                "name": "Post Run Swatinem/rust-cache@v2.7.8",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 11
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 12
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 13
+              }
+            ]
+          },
+          {
+            "id": 122293696253,
+            "name": "clippy",
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 40533866504,
+            "logs_url": null,
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2
+              },
+              {
+                "name": "Install the pinned Rust toolchain",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3
+              },
+              {
+                "name": "Run Swatinem/rust-cache@v2.7.8",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4
+              },
+              {
+                "name": "Clippy",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5
+              },
+              {
+                "name": "Post Run Swatinem/rust-cache@v2.7.8",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 9
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 10
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 11
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "run_id": 40533866494,
+      "record": {
+        "jobs": [
+          {
+            "id": 122293695297,
+            "name": "research-process",
+            "status": "completed",
+            "conclusion": "failure",
+            "run_id": 40533866494,
+            "logs_url": null,
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2
+              },
+              {
+                "name": "Run actions/setup-python@v5",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3
+              },
+              {
+                "name": "Test the research-process checks",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4
+              },
+              {
+                "name": "Check research nodes and the append-only ledger",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 5
+              },
+              {
+                "name": "Check authority commit references are published",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 6
+              },
+              {
+                "name": "Post Run actions/setup-python@v5",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 11
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 12
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 13
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "scope": "Completed runs on the frozen scientific implementation; later metadata-only commits require their own CI status."
+}

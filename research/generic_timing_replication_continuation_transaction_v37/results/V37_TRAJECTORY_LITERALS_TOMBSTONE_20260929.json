@@ -1,0 +1,34 @@
+{
+  "schema": "vigilode-trajectory-literal-tombstone-v1",
+  "date": "2026-09-29",
+  "finding": "F-003",
+  "test": "crates/rodas5p-integrators/tests/v37_continuation_transaction_contracts.rs::v37_exhaustion_is_a_charged_abstention_without_endpoint_or_failure_label",
+  "sealed_ledger": "research/generic_policy_redesign_v33/results/calibration192_shards/semilinear.json",
+  "sealed_commit": "84a3b0fb4fbd843f536c80363ffb86e4e6c6417e",
+  "first_divergent_commit": "ab8fbcdb709aa1e87603b1ef6f83c5e610c8cb04",
+  "bisect_record": "research/generic_timing_replication_continuation_transaction_v37/reports/SEALED_REPLAY_BISECT_20260928.md (branch claude/jolly-wozniak-7wl15h-wu8-build-provenance)",
+  "cause_class": "intended-numerical-change",
+  "cause": "The atlas lane switched from fixed GMRES tolerances to the WRMS inner-forcing rule (g4_live_rodas_step). Reverting that one call restores the sealed values at ab8fbcd and at b3e8165.",
+  "status": "NOT_REPRODUCIBLE_AT_HEAD_VALID_AT_SEALED_COMMIT",
+  "retired_literals": {
+    "exhausted_target_attempt_index": 12,
+    "completed_target_attempt_index": 18,
+    "completed_continuation_jvp_vectors": 36,
+    "report_continuation_jvp_vectors": 116
+  },
+  "observed_at_b3e8165": {
+    "exhausted_target_attempt_index": 12,
+    "completed_target_attempt_index": 17,
+    "completed_continuation_jvp_vectors": 52,
+    "report_continuation_jvp_vectors": 132
+  },
+  "semantic_invariants_kept_as_hard_assertions": [
+    "2 recommendations, 2 retained level-2 resumptions",
+    "1 completion, 1 exhaustion at the 80-vector cap, 0 failures",
+    "0 unsafe recommendations (self-estimate), 0 continuation budget breaches",
+    "RJF parity and hard gates pass",
+    "completed continuation below the cap; report totals equal row sums"
+  ],
+  "successor_snapshot": "research/generic_timing_replication_continuation_transaction_v37/results/V37_TRAJECTORY_SNAPSHOT_V2_20260929.json",
+  "note": "The sealed ledger is not edited. This tombstone retires the literals from the test only."
+}

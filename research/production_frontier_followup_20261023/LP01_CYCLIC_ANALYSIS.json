@@ -1,0 +1,419 @@
+{
+  "schema": "vigilode.lp01-cyclic-analysis.v1",
+  "observed_utc": "2026-10-23T10:24:02.526618+00:00",
+  "source_binary_commit": "49696c982446dfe5d274f5361819b218122b7449",
+  "orchestration_commit": "dbcaeee2256edbfd45a1c9177c23c567c92c592a",
+  "binary_sha256": "eb438eef4e1f97486f9015879db5f060f88903b630e6f5c3e1da7b4867171b6f",
+  "timing_authority": "diagnostic_only",
+  "all_statuses": {
+    "PASS_SAMPLED": 36
+  },
+  "new_solver_attempts": 36,
+  "new_child_attempts_including_git": 43,
+  "cumulative_lp_child_attempts": 124,
+  "new_elapsed_seconds": 67.25599775998853,
+  "arms": [
+    {
+      "arm_id": "A",
+      "case": "normal_100_f100",
+      "method": "full-rhs-dopri5",
+      "tolerance_index": "1",
+      "eligible": true,
+      "all_statuses": [
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED"
+      ],
+      "timed_solver_seconds": {
+        "n": 5,
+        "min": 0.002508519,
+        "median": 0.002561188,
+        "max": 0.006639236,
+        "max_over_min": 2.6466755882654267,
+        "median_absolute_deviation": 5.266899999999998e-05,
+        "iqr": 0.0029548400000000002
+      },
+      "timed_process_seconds": {
+        "n": 5,
+        "min": 1.0368617849890143,
+        "median": 1.090307316975668,
+        "max": 1.139848485821858,
+        "max_over_min": 1.0993253896747048,
+        "median_absolute_deviation": 0.023704113205894828,
+        "iqr": 0.035597548354417086
+      },
+      "worst_sampled_error": {
+        "state": 5.678409665011627e-07,
+        "phase": 8.356198577530449e-08,
+        "amplitude": 5.616589388024451e-07
+      },
+      "worst_reference_uncertainty": {
+        "state": 7.303805950261631e-82,
+        "phase": 0.0,
+        "amplitude": 0.0
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6640102796802076e-08,
+        "amplitude": 7.105427357601002e-15
+      },
+      "masked_count_total": 0,
+      "peak_sampled_rss_bytes": 3837952,
+      "selected_standard_counters_all_6_attempts": {
+        "rhs_calls": 365262,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 56160,
+        "rejected_steps": 4716
+      },
+      "quotient_work_all_6_attempts": null,
+      "quotient_workspace_bytes_per_run": null
+    },
+    {
+      "arm_id": "B",
+      "case": "normal_100_f100",
+      "method": "lawson",
+      "tolerance_index": "1",
+      "eligible": true,
+      "all_statuses": [
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED"
+      ],
+      "timed_solver_seconds": {
+        "n": 5,
+        "min": 0.002464837,
+        "median": 0.006486399,
+        "max": 0.006662159,
+        "max_over_min": 2.7028801498841504,
+        "median_absolute_deviation": 7.80659999999999e-05,
+        "iqr": 0.0001341720000000001
+      },
+      "timed_process_seconds": {
+        "n": 5,
+        "min": 0.9831426509190351,
+        "median": 1.0751725709997118,
+        "max": 1.303224896080792,
+        "max_over_min": 1.3255705007432503,
+        "median_absolute_deviation": 0.027551172068342566,
+        "iqr": 0.043832533061504364
+      },
+      "worst_sampled_error": {
+        "state": 1.965729736200076e-14,
+        "phase": 1.1368683772161603e-13,
+        "amplitude": 1.7985612998927536e-14
+      },
+      "worst_reference_uncertainty": {
+        "state": 7.303805950261631e-82,
+        "phase": 0.0,
+        "amplitude": 0.0
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6640102796802076e-08,
+        "amplitude": 7.105427357601002e-15
+      },
+      "masked_count_total": 0,
+      "peak_sampled_rss_bytes": 3874816,
+      "selected_standard_counters_all_6_attempts": {
+        "rhs_calls": 147462,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 24576,
+        "rejected_steps": 0
+      },
+      "quotient_work_all_6_attempts": {
+        "applied_block_actions": 786432,
+        "coefficient_pairs": 688128,
+        "coefficient_refreshes": 24576
+      },
+      "quotient_workspace_bytes_per_run": 824
+    },
+    {
+      "arm_id": "C",
+      "case": "damped_100_f10000",
+      "method": "full-rhs-dopri5",
+      "tolerance_index": "1",
+      "eligible": true,
+      "all_statuses": [
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED"
+      ],
+      "timed_solver_seconds": {
+        "n": 5,
+        "min": 0.00246078,
+        "median": 0.002499031,
+        "max": 0.006930506,
+        "max_over_min": 2.8163858613935417,
+        "median_absolute_deviation": 3.154999999999998e-05,
+        "iqr": 6.047400000000003e-05
+      },
+      "timed_process_seconds": {
+        "n": 5,
+        "min": 1.0591325180139393,
+        "median": 1.1493608630262315,
+        "max": 1.258676033001393,
+        "max_over_min": 1.1884027839704452,
+        "median_absolute_deviation": 0.09022834501229227,
+        "iqr": 0.1846384759992361
+      },
+      "worst_sampled_error": {
+        "state": 5.337005592316781e-07,
+        "phase": 8.329925549332984e-08,
+        "amplitude": 5.621719824100424e-07
+      },
+      "worst_reference_uncertainty": {
+        "state": 1.6352170077554285e-81,
+        "phase": 0.0,
+        "amplitude": 5.603988987448279e-82
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6640102796802076e-08,
+        "amplitude": 7.105427357601002e-15
+      },
+      "masked_count_total": 0,
+      "peak_sampled_rss_bytes": 3842048,
+      "selected_standard_counters_all_6_attempts": {
+        "rhs_calls": 364758,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 56160,
+        "rejected_steps": 4632
+      },
+      "quotient_work_all_6_attempts": null,
+      "quotient_workspace_bytes_per_run": null
+    },
+    {
+      "arm_id": "D",
+      "case": "damped_100_f10000",
+      "method": "lawson",
+      "tolerance_index": "1",
+      "eligible": true,
+      "all_statuses": [
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED"
+      ],
+      "timed_solver_seconds": {
+        "n": 5,
+        "min": 0.002666497,
+        "median": 0.00655104,
+        "max": 0.007422664,
+        "max_over_min": 2.7836761113925874,
+        "median_absolute_deviation": 0.0008716239999999997,
+        "iqr": 0.001349434
+      },
+      "timed_process_seconds": {
+        "n": 5,
+        "min": 1.0558797160629183,
+        "median": 1.1295215259306133,
+        "max": 1.503004837082699,
+        "max_over_min": 1.4234621749217664,
+        "median_absolute_deviation": 0.07364180986769497,
+        "iqr": 0.15594277693890035
+      },
+      "worst_sampled_error": {
+        "state": 7.453301832421662e-14,
+        "phase": 1.1368683772161603e-13,
+        "amplitude": 4.440892098500626e-14
+      },
+      "worst_reference_uncertainty": {
+        "state": 1.6352170077554285e-81,
+        "phase": 0.0,
+        "amplitude": 5.603988987448279e-82
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6640102796802076e-08,
+        "amplitude": 7.105427357601002e-15
+      },
+      "masked_count_total": 0,
+      "peak_sampled_rss_bytes": 3895296,
+      "selected_standard_counters_all_6_attempts": {
+        "rhs_calls": 147462,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 24576,
+        "rejected_steps": 0
+      },
+      "quotient_work_all_6_attempts": {
+        "applied_block_actions": 786432,
+        "coefficient_pairs": 688128,
+        "coefficient_refreshes": 24576
+      },
+      "quotient_workspace_bytes_per_run": 824
+    },
+    {
+      "arm_id": "E",
+      "case": "normal_1000_f1",
+      "method": "full-rhs-dopri5",
+      "tolerance_index": "1",
+      "eligible": true,
+      "all_statuses": [
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED"
+      ],
+      "timed_solver_seconds": {
+        "n": 5,
+        "min": 0.036084919,
+        "median": 0.036680301,
+        "max": 0.039363499,
+        "max_over_min": 1.0908573468046305,
+        "median_absolute_deviation": 0.00027610000000000134,
+        "iqr": 0.00027998800000000185
+      },
+      "timed_process_seconds": {
+        "n": 5,
+        "min": 1.0082141740713269,
+        "median": 1.1076155449263752,
+        "max": 1.248790801037103,
+        "max_over_min": 1.2386165887693188,
+        "median_absolute_deviation": 0.02569455816410482,
+        "iqr": 0.048766521038487554
+      },
+      "worst_sampled_error": {
+        "state": 7.949383288554214e-06,
+        "phase": 1.201407030748669e-06,
+        "amplitude": 7.858073992617065e-06
+      },
+      "worst_reference_uncertainty": {
+        "state": 7.270718253442626e-82,
+        "phase": 0.0,
+        "amplitude": 0.0
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6587703112210707e-07,
+        "amplitude": 7.105427357601002e-15
+      },
+      "masked_count_total": 0,
+      "peak_sampled_rss_bytes": 3854336,
+      "selected_standard_counters_all_6_attempts": {
+        "rhs_calls": 3060978,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 477888,
+        "rejected_steps": 32274
+      },
+      "quotient_work_all_6_attempts": null,
+      "quotient_workspace_bytes_per_run": null
+    },
+    {
+      "arm_id": "F",
+      "case": "normal_1000_f1",
+      "method": "lawson",
+      "tolerance_index": "1",
+      "eligible": true,
+      "all_statuses": [
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED",
+        "PASS_SAMPLED"
+      ],
+      "timed_solver_seconds": {
+        "n": 5,
+        "min": 0.002587709,
+        "median": 0.006788959,
+        "max": 0.009448633,
+        "max_over_min": 3.651350673510816,
+        "median_absolute_deviation": 0.002659674,
+        "iqr": 0.004169731
+      },
+      "timed_process_seconds": {
+        "n": 5,
+        "min": 1.0329388580285013,
+        "median": 1.0514680012129247,
+        "max": 1.2353993500582874,
+        "max_over_min": 1.1960043331279147,
+        "median_absolute_deviation": 0.018529143184423447,
+        "iqr": 0.16273973905481398
+      },
+      "worst_sampled_error": {
+        "state": 9.154248438798812e-14,
+        "phase": 0.0,
+        "amplitude": 9.059419880941277e-14
+      },
+      "worst_reference_uncertainty": {
+        "state": 7.270718253442626e-82,
+        "phase": 0.0,
+        "amplitude": 0.0
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6587703112210707e-07,
+        "amplitude": 7.105427357601002e-15
+      },
+      "masked_count_total": 0,
+      "peak_sampled_rss_bytes": 3829760,
+      "selected_standard_counters_all_6_attempts": {
+        "rhs_calls": 147462,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 24576,
+        "rejected_steps": 0
+      },
+      "quotient_work_all_6_attempts": {
+        "applied_block_actions": 786432,
+        "coefficient_pairs": 688128,
+        "coefficient_refreshes": 24576
+      },
+      "quotient_workspace_bytes_per_run": 824
+    }
+  ],
+  "paired_descriptive_median_ratios": [
+    {
+      "case": "normal_100_f100",
+      "same_actual_error_cap_pass": true,
+      "dopri_median_solver_over_lawson": 0.3948551422753981,
+      "dopri_median_process_over_lawson": 1.0140765737372595,
+      "interpretation": "diagnostic_only; separate cases and no universal speed inference"
+    },
+    {
+      "case": "damped_100_f10000",
+      "same_actual_error_cap_pass": true,
+      "dopri_median_solver_over_lawson": 0.3814708809593591,
+      "dopri_median_process_over_lawson": 1.0175643727367414,
+      "interpretation": "diagnostic_only; separate cases and no universal speed inference"
+    },
+    {
+      "case": "normal_1000_f1",
+      "same_actual_error_cap_pass": true,
+      "dopri_median_solver_over_lawson": 5.402934529432274,
+      "dopri_median_process_over_lawson": 1.0533991939352232,
+      "interpretation": "diagnostic_only; separate cases and no universal speed inference"
+    }
+  ],
+  "claim_limits": [
+    "4097 sampled times, three declared 2D homogeneous linear cases",
+    "No pooled old and new wall times: old grouped, new cyclic",
+    "No continuous phase certificate or nonlinear/noncommuting qualification",
+    "No production admission or statistical superiority from single diagnostic host"
+  ],
+  "review_repair": "Independent postrun review requested explicit Lawson quotient work totals; raw results and solver/scoring code unchanged."
+}

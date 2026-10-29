@@ -1,0 +1,71 @@
+{
+  "baseline_source_commit": "33e45625be0803771156704263c3b1c1f92d2b40",
+  "canonical_handoff": "HANDOFF_TASKS.json (preserved unchanged)",
+  "matched_accuracy_speed": "HOLD",
+  "original_nodes": {
+    "A01-A12": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE per preserved canonical DAG; this local receipt does not redefine node status"
+  },
+  "production_promotion": "HOLD",
+  "recompute_after_each_result": "applied; LOCAL-01 unlocked LOCAL-02/03, LOCAL-02 unlocked LOCAL-04/05; no READY task remains in the local handoff.",
+  "schema_version": 1,
+  "tasks": [
+    {
+      "depends_on": [],
+      "exit_code": 0,
+      "id": "LOCAL-01",
+      "result": "12 original IDs, 414 source hashes match; metadata/evidence existence validation only",
+      "status": "PASS"
+    },
+    {
+      "all_command_groups_exit_zero": true,
+      "command_groups": 6,
+      "depends_on": [
+        "LOCAL-01"
+      ],
+      "exit_code": 0,
+      "id": "LOCAL-02",
+      "source_and_dag_unchanged": true,
+      "status": "PASS"
+    },
+    {
+      "all_exit_zero": true,
+      "depends_on": [
+        "LOCAL-01"
+      ],
+      "handoff_example_smokes": 6,
+      "id": "LOCAL-03",
+      "required_example": "nonlinear_homotopy_run",
+      "required_exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "all_empirical_accuracy_gates_pass": true,
+      "all_rows_success": true,
+      "all_schema_source_error_gates_pass": true,
+      "depends_on": [
+        "LOCAL-02"
+      ],
+      "exit_code": 0,
+      "id": "LOCAL-04",
+      "measured_full_arm_allocation_calls_nonzero": true,
+      "positive_control_clone_allocations_per_row": 3,
+      "rows": 450,
+      "speed_promotion": "HOLD",
+      "status": "PASS_DIAGNOSTIC_ONLY"
+    },
+    {
+      "depends_on": [
+        "LOCAL-02"
+      ],
+      "id": "LOCAL-05",
+      "outputs": [
+        "LOCAL_VALIDATION_RECEIPT.json",
+        "LOCAL_REPORT_KO.md",
+        "LOCAL_EVIDENCE_MANIFEST.json",
+        "LOCAL_COMPLETION.json"
+      ],
+      "status": "PASS"
+    }
+  ],
+  "timing_authority": "DIAGNOSTIC_ONLY"
+}

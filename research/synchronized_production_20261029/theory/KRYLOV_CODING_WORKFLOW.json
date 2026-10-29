@@ -1,0 +1,525 @@
+{
+  "schema_version": 1,
+  "workflow_version": "1.0.0",
+  "task": "coding",
+  "unit_id": "PR-N01-live-workspace-and-directional-oracle",
+  "objective": "Implement admitted K1 basis-only storage refinement and K3 exact reference oracle",
+  "scope": "No MGS/QR arithmetic or stopping-rule change; no native quotient dispatch adoption",
+  "status": "complete",
+  "baseline_source": "bc5ddbe42b24b1a6364bf653c3e2d6d938ca4087",
+  "theory": "theory/KRYLOV.md",
+  "owner": "PR-N01",
+  "correction_episode": "Global episodes1 implementation and2 test-wrapper trait fix; episode3 same-source serial allocator diagnostic. CORRECTIONS.json is authoritative for all counters; no historical task reset.",
+  "stages": [
+    {
+      "id": "C1",
+      "status": "complete",
+      "reason": "Same PR101 source and production route; resource change separated from numeric parity",
+      "evidence_refs": [
+        "theory/KRYLOV.md"
+      ]
+    },
+    {
+      "id": "C2",
+      "status": "complete",
+      "reason": "K1 basis/directions live-field analysis; K3 original residual code path",
+      "evidence_refs": [
+        "theory/KRYLOV.md"
+      ]
+    },
+    {
+      "id": "C3",
+      "status": "complete",
+      "reason": "Same arithmetic K1; exact rational algebra plus independent Gaussian oracle K3",
+      "evidence_refs": [
+        "theory/KRYLOV.md"
+      ]
+    },
+    {
+      "id": "C4",
+      "status": "complete",
+      "reason": "Root owns source publication/build; agents own disjoint edits",
+      "evidence_refs": [
+        "theory/KRYLOV.md"
+      ]
+    },
+    {
+      "id": "C5",
+      "status": "complete",
+      "reason": "Implemented K1 and4 tests; exact K3 oracle and9 tests authored",
+      "evidence_refs": [
+        "crates/rodas5p-krylov/src/workspace.rs",
+        "crates/rodas5p-krylov/src/gmres_into.rs",
+        "crates/rodas5p-krylov/tests/basis_only_workspace_contracts.rs",
+        "research/synchronized_production_20261029/code/directional_quotient.py",
+        "research/synchronized_production_20261029/code/test_directional_quotient.py"
+      ]
+    },
+    {
+      "id": "C6",
+      "status": "complete",
+      "reason": "Published source tests validate K1 and K3. First compile failure fixed; full parallel Krylov command retains115pass/1fail; same-source serial allocator control3/3pass. Scoped Clippy passes.",
+      "evidence_refs": [
+        "lane-checks01/krylov-contracts/RECEIPT.json",
+        "lane-checks02/RUN.json",
+        "lane-charge03/RUN.json"
+      ]
+    },
+    {
+      "id": "C7",
+      "status": "complete",
+      "reason": "K1 preserves actual numeric/callback words under tested mixed paths; K3 exact Gaussian and original residual checks pass under stated coercivity/pole conditions. Native quotient and full physical trajectory qualification remain separate.",
+      "evidence_refs": [
+        "theory/KRYLOV.md",
+        "lane-checks02/proof-oracles/stderr.txt",
+        "lane-checks02/krylov-contracts/stdout.txt"
+      ]
+    },
+    {
+      "id": "C8",
+      "status": "complete",
+      "reason": "Pinned compiler/lock/source/binaries and raw receipts;24 probe/allocation samples exact parity. Allocation reduction observed; all adverse timing blocks retained; no overall speed promotion.",
+      "evidence_refs": [
+        "lane-bench02/RUN.json",
+        "lane-bench02/PAIRS.json",
+        "lane-bench02/TIMINGS.json"
+      ]
+    },
+    {
+      "id": "C9",
+      "status": "complete",
+      "reason": "Independent prior source/proof reviews plus KRYLOV_RESULTS_REVIEW.md data crossreview recomputed raw parity and all28 timing ratios; first failures preserved.",
+      "evidence_refs": [
+        "reviews/KRYLOV_REVIEW.md",
+        "KRYLOV_RESULTS_REVIEW.md"
+      ]
+    },
+    {
+      "id": "C10",
+      "status": "complete",
+      "reason": "Scoped code/oracle/receipts finalized and handed to parent synchronization; next local work is directed K3 provider and isolated K1/A1 timing with existing production gates preserved.",
+      "evidence_refs": [
+        "theory/KRYLOV.md",
+        "theory/KRYLOV_CODING_WORKFLOW.json"
+      ]
+    }
+  ],
+  "files": [
+    "crates/rodas5p-krylov/src/workspace.rs",
+    "crates/rodas5p-krylov/src/gmres_into.rs",
+    "crates/rodas5p-krylov/tests/basis_only_workspace_contracts.rs",
+    "research/synchronized_production_20261029/code/directional_quotient.py",
+    "research/synchronized_production_20261029/code/test_directional_quotient.py"
+  ],
+  "executions": [
+    {
+      "id": "proof-oracles",
+      "status": "completed",
+      "source": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "/workspace/scratch/f9615df1ce94/vigilode/research/synchronized_production_20261029/code",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "receipt": "lane-checks02/proof-oracles/RECEIPT.json",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "82c82aa5045e684acd6d6ef1a567b0aae5ee35933b32c3fae09bc513beb4eedd",
+      "scope": "Scoped checks only"
+    },
+    {
+      "id": "libraries",
+      "status": "completed",
+      "source": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+      "command": [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "-p",
+        "rodas5p-krylov",
+        "-p",
+        "vigilode-coupled",
+        "--lib"
+      ],
+      "exit_code": 0,
+      "receipt": "lane-checks02/libraries/RECEIPT.json",
+      "stdout_sha256": "209b440b5b5bdbcef60124ea5d5bcc66b0576f21f67430af6a9f962a5e035ebd",
+      "stderr_sha256": "11285d0b916a07cff5bfcef60b1bebf70e539e05cbfa865807d728f48a704504",
+      "scope": "Scoped checks only"
+    },
+    {
+      "id": "krylov-contracts",
+      "status": "failed",
+      "source": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+      "command": [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-krylov",
+        "--test",
+        "*",
+        "--no-fail-fast"
+      ],
+      "exit_code": 101,
+      "receipt": "lane-checks02/krylov-contracts/RECEIPT.json",
+      "stdout_sha256": "ce4a0c04d02034f21a9f8bef46f89f4a109ed8826b3abfd61c9371ddf8cf56c6",
+      "stderr_sha256": "e4fddd5bb128365879920edc7b754895955262baaa198f84225512aa66d58330",
+      "scope": "See per-test stdout; failed parallel allocator binary retained"
+    },
+    {
+      "id": "focused-clippy",
+      "status": "completed",
+      "source": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+      "command": [
+        "cargo",
+        "clippy",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "-p",
+        "rodas5p-krylov",
+        "--all-targets",
+        "--no-deps",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "receipt": "lane-checks02/focused-clippy/RECEIPT.json",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "ecbd88aa3cc6cf23cc243e077d8b7b2e629a5e9a459ec7ceebf38eaf5460c6a0",
+      "scope": "Scoped checks only"
+    },
+    {
+      "id": "first-compile",
+      "status": "failed",
+      "source": "7fce5a4cbf5e1de3dd25de3b247f638bc551be24",
+      "exit_code": 101,
+      "receipt": "lane-checks01/krylov-contracts/RECEIPT.json",
+      "reason": "RecordedOperator omitted required token trait member; corrected by DenseOperator identity/application delegation in episode2"
+    },
+    {
+      "id": "serial-charge",
+      "status": "completed",
+      "source": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+      "exit_code": 0,
+      "command": [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-krylov",
+        "--test",
+        "sp02_workspace_charge",
+        "--",
+        "--test-threads=1"
+      ],
+      "receipt": "lane-charge03/RUN.json",
+      "stdout_sha256": "6deabf2669166d1682966dd9413e577f97c881426193965aa0791ee34db39f21",
+      "reason": "Same-source serial run passed3/3; process-global LIVE_BYTES has no cross-test isolation under default parallel harness"
+    },
+    {
+      "id": "paired-benchmark",
+      "status": "completed",
+      "source": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+      "exit_code": 0,
+      "receipt": "lane-bench02/RUN.json",
+      "comparison_scope": "Identical returned checkpoints/Stats/callback counts in separate probe+allocation arms; timed arms assert status. Endpoint analytic binary64 diagnostic cap1e-5, no rigorous reference uncertainty or all-interior trajectory claim.",
+      "binary_sha256": {
+        "baseline": "8161613153b1442fcfef94656cc7b4f24544171e4a10fdfe99d62d1bcec8856f",
+        "candidate": "bc9dabfd20171da12c63324182990b7db4eedacbec8532877d58459f355c4e18"
+      }
+    }
+  ],
+  "checks": [
+    {
+      "id": "K1-focused",
+      "domain": "implementation",
+      "result": "pass_scoped",
+      "execution_ref": "krylov-contracts",
+      "evidence_refs": [
+        "lane-checks02/krylov-contracts/stdout.txt",
+        "lane-checks02/libraries/stdout.txt"
+      ],
+      "reason": "All3 new integration methods and poisoned augmented-reuse unit method passed; latter included within Krylov17 library methods"
+    },
+    {
+      "id": "K3-exact-oracle",
+      "domain": "math",
+      "result": "pass_scoped",
+      "execution_ref": "proof-oracles",
+      "evidence_refs": [
+        "lane-checks02/proof-oracles/stderr.txt"
+      ],
+      "reason": "Nine directional quotient methods passed within25 total research oracle methods; independent rational Gaussian solutions and original residual checks"
+    },
+    {
+      "id": "all-libraries",
+      "domain": "implementation",
+      "result": "pass_scoped",
+      "execution_ref": "libraries",
+      "evidence_refs": [
+        "lane-checks02/libraries/stdout.txt"
+      ],
+      "reason": "Krylov17 + facade37 + coupled45 passed; one inherited ignored coupled benchmark excluded"
+    },
+    {
+      "id": "parallel-krylov-command",
+      "domain": "implementation",
+      "result": "fail",
+      "execution_ref": "krylov-contracts",
+      "evidence_refs": [
+        "lane-checks02/krylov-contracts/stdout.txt"
+      ],
+      "reason": "29 binaries reported115 passed1 failed; sp02 lgmres charge saw2304>640 while sharing global allocator counters across tests"
+    },
+    {
+      "id": "serial-charge-control",
+      "domain": "implementation",
+      "result": "pass_scoped",
+      "execution_ref": "serial-charge",
+      "evidence_refs": [
+        "lane-charge03/stdout.txt",
+        "crates/rodas5p-krylov/tests/sp02_workspace_charge.rs"
+      ],
+      "reason": "3/3 passed with --test-threads=1, unchanged source and thresholds; parallel-harness defect remains explicit"
+    },
+    {
+      "id": "returned-parity",
+      "domain": "numerics",
+      "result": "pass_scoped",
+      "execution_ref": "paired-benchmark",
+      "evidence_refs": [
+        "lane-bench02/PAIRS.json"
+      ],
+      "reason": "Eight case/mode pairs,24 returned sample pairs independently reaggregated exactly excluding allocation field; per-arm callback totals match"
+    },
+    {
+      "id": "timing",
+      "domain": "numerics",
+      "result": "partial",
+      "execution_ref": "paired-benchmark",
+      "evidence_refs": [
+        "lane-bench02/TIMINGS.json"
+      ],
+      "reason": "Seven ABBA/BAAB blocks each: dense and banded medians regress; JVP medians improve slightly but both include adverse blocks. Diagnostic only."
+    }
+  ],
+  "remaining": [
+    "Native directed residual and source/epoch/metric provider for K3 quotient candidate",
+    "Factorial K1-only/A1-only/combined target-hardware measurements; broad speed not established",
+    "Parallel-safe isolation for inherited sp02 global allocator tests",
+    "Parent global production qualification gates and local handoff"
+  ],
+  "native_source": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+  "source_tree": "2989f07fb04134aa7bab38e38d7272e45d6a0917",
+  "verdict": "SCOPED_COMPLETE_PRODUCTION_HOLD",
+  "artifact_resolution": "Raw receipt keys below are relative to the campaign evidence root. Parent evidence archive/manifest binds their portable delivery locations; original local root /workspace/scratch/f9615df1ce94.",
+  "failures": [
+    {
+      "class": "implementation",
+      "source": "7fce5a4cbf5e1de3dd25de3b247f638bc551be24",
+      "evidence": "lane-checks01/krylov-contracts/stderr.txt",
+      "result": "E0046 missing token; corrected in episode2 without native solver edit"
+    },
+    {
+      "class": "implementation",
+      "source": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+      "evidence": "lane-checks02/krylov-contracts/stdout.txt",
+      "result": "Parallel process-global allocator charge contamination; serial same-source control passed, parallel binary invocation remains failed"
+    }
+  ],
+  "allocation_observations": [
+    {
+      "case": "dense-fd",
+      "mode": "probe",
+      "exact_returned_parity": true,
+      "baseline_allocations": [
+        null,
+        null,
+        null
+      ],
+      "candidate_allocations": [
+        null,
+        null,
+        null
+      ],
+      "endpoint_error": 6.944889108240204e-12
+    },
+    {
+      "case": "dense-fd",
+      "mode": "alloc",
+      "exact_returned_parity": true,
+      "baseline_allocations": [
+        324,
+        68,
+        68
+      ],
+      "candidate_allocations": [
+        315,
+        59,
+        59
+      ],
+      "endpoint_error": 6.944889108240204e-12
+    },
+    {
+      "case": "banded-fd",
+      "mode": "probe",
+      "exact_returned_parity": true,
+      "baseline_allocations": [
+        null,
+        null,
+        null
+      ],
+      "candidate_allocations": [
+        null,
+        null,
+        null
+      ],
+      "endpoint_error": 7.354006292814574e-12
+    },
+    {
+      "case": "banded-fd",
+      "mode": "alloc",
+      "exact_returned_parity": true,
+      "baseline_allocations": [
+        318,
+        62,
+        62
+      ],
+      "candidate_allocations": [
+        314,
+        58,
+        58
+      ],
+      "endpoint_error": 7.354006292814574e-12
+    },
+    {
+      "case": "time-jvp",
+      "mode": "probe",
+      "exact_returned_parity": true,
+      "baseline_allocations": [
+        null,
+        null,
+        null
+      ],
+      "candidate_allocations": [
+        null,
+        null,
+        null
+      ],
+      "endpoint_error": 4.4617096683907675e-09
+    },
+    {
+      "case": "time-jvp",
+      "mode": "alloc",
+      "exact_returned_parity": true,
+      "baseline_allocations": [
+        386,
+        129,
+        129
+      ],
+      "candidate_allocations": [
+        358,
+        101,
+        101
+      ],
+      "endpoint_error": 4.4617096683907675e-09
+    },
+    {
+      "case": "autonomous-jvp",
+      "mode": "probe",
+      "exact_returned_parity": true,
+      "baseline_allocations": [
+        null,
+        null,
+        null
+      ],
+      "candidate_allocations": [
+        null,
+        null,
+        null
+      ],
+      "endpoint_error": 2.0572032966015286e-10
+    },
+    {
+      "case": "autonomous-jvp",
+      "mode": "alloc",
+      "exact_returned_parity": true,
+      "baseline_allocations": [
+        389,
+        133,
+        133
+      ],
+      "candidate_allocations": [
+        361,
+        105,
+        105
+      ],
+      "endpoint_error": 2.0572032966015286e-10
+    }
+  ],
+  "timing_summary": [
+    {
+      "case": "dense-fd",
+      "median_baseline_over_candidate": 0.9654923704555187,
+      "min": 0.9389349165857733,
+      "max": 1.0368164466724923,
+      "regression_blocks": 5,
+      "blocks": 7
+    },
+    {
+      "case": "banded-fd",
+      "median_baseline_over_candidate": 0.9641515744474729,
+      "min": 0.8900926844952679,
+      "max": 0.9801250231238824,
+      "regression_blocks": 7,
+      "blocks": 7
+    },
+    {
+      "case": "time-jvp",
+      "median_baseline_over_candidate": 1.0148618184190137,
+      "min": 0.9822436256346055,
+      "max": 1.118594261461413,
+      "regression_blocks": 2,
+      "blocks": 7
+    },
+    {
+      "case": "autonomous-jvp",
+      "median_baseline_over_candidate": 1.0104865171557613,
+      "min": 0.9779192804685096,
+      "max": 1.0352120098777329,
+      "regression_blocks": 2,
+      "blocks": 7
+    }
+  ],
+  "receipt_sha256": {
+    "lane-checks01/RUN.json": "df05ccc45316e0a4d3763ed8318eb0b533e00e6b34c2fb3aba53a3ff87886a67",
+    "lane-checks02/RUN.json": "70004fdf605436b740ab5f7796799b4e1977aa48d805bde487ef0da5b93d75ff",
+    "lane-charge03/RUN.json": "cc25bb93a933e5577442e826bedd2975b5133625a1b2958f7ccce19d55375854",
+    "lane-bench02/PAIRS.json": "248e9a2eba82ecb75fc03acf579f1a2e9abb5188c04cf687709746b431a2f957",
+    "lane-bench02/TIMINGS.json": "6413cfabf68906c376a16d3dd1d754e051868df03b581ee296ff9f99cecef3a5",
+    "KRYLOV_RESULTS_REVIEW.md": "a5ab99771d7be9bbe21423a18ddb275534c6bd31fb9bc25bfc7fd6012e21199e"
+  }
+}

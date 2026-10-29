@@ -1,7 +1,11 @@
 use crate::{
-    common::{apply_left_with_raw, true_residual_into, validate_system},
+    accounting::{LoopExit, ResidualAccounting, reuse_final_residual},
+    common::{
+        apply_left_with_raw, residual_threshold, selected_residual_norm, true_residual_into,
+        validate_residual_scale, validate_system, validate_tolerances,
+    },
     kernels::{axpy, linear_combination_into, normalize, two_pass_mgs_into},
-    small::least_squares,
+    small::{LeastSquaresWorkspace, least_squares},
     workspace::{ArnoldiWorkspace, GmresWorkspace},
 };
 use rodas5p_core::{
@@ -34,17 +38,45 @@ impl GmresConfig {
                 "GMRES iteration limits must be positive".into(),
             ));
         }
-        if self.rtol < 0.0 || self.atol < 0.0 {
-            return Err(CoreError::InvalidInput(
-                "GMRES tolerances must be nonnegative".into(),
-            ));
-        }
-        Ok(())
+        validate_tolerances("GMRES", self.rtol, self.atol)
     }
 }
 
 pub(crate) struct ArnoldiResult {
     pub iterations: usize,
+}
+
+/// Classify Arnoldi breakdown against the scale of the complete current relation.
+///
+/// The scale has no additive floor: uniformly scaling the operator must not alter
+/// whether a nonzero next Arnoldi vector is retained.  A wholly zero relation is
+/// the one explicit exact-breakdown case.
+pub(crate) fn arnoldi_happy_breakdown(
+    projection_coefficients: &[f64],
+    h_next: f64,
+) -> CoreResult<bool> {
+    arnoldi_happy_breakdown_from_norm(safe_l2(projection_coefficients), h_next)
+}
+
+pub(crate) fn arnoldi_happy_breakdown_from_norm(
+    projection_norm: f64,
+    h_next: f64,
+) -> CoreResult<bool> {
+    if !h_next.is_finite() {
+        return Err(CoreError::NonFinite(
+            "GMRES Arnoldi next-vector norm is NaN/Inf".into(),
+        ));
+    }
+    if !projection_norm.is_finite() {
+        return Err(CoreError::NonFinite(
+            "GMRES Arnoldi projection norm is NaN/Inf".into(),
+        ));
+    }
+    let column_scale = projection_norm.hypot(h_next);
+    if column_scale == 0.0 {
+        return Ok(true);
+    }
+    Ok(h_next <= 100.0 * f64::EPSILON * column_scale)
 }
 
 // Keep augmentation vectors, cached images, accounting, and reusable scratch explicit;
@@ -118,12 +150,9 @@ pub(crate) fn arnoldi_augmented_with_workspace(
         let h_next = safe_l2(w);
         workspace.hessenberg[(j + 1, j)] = h_next;
         actual = j + 1;
-        let orthogonalization_scale = workspace.h_column[..previous_basis.len()]
-            .iter()
-            .map(|value| value.abs())
-            .fold(0.0, f64::max);
-        let breakdown_threshold = 100.0 * f64::EPSILON * (1.0 + orthogonalization_scale);
-        if h_next > breakdown_threshold {
+        let happy_breakdown =
+            arnoldi_happy_breakdown(&workspace.h_column[..previous_basis.len()], h_next)?;
+        if !happy_breakdown {
             for value in w {
                 *value /= h_next;
             }
@@ -145,7 +174,7 @@ pub(crate) fn arnoldi_augmented_with_workspace(
             &workspace.hessenberg_prefix,
             &workspace.rhs_small[..actual + 1],
         )?;
-        if h_next <= breakdown_threshold {
+        if happy_breakdown {
             break;
         }
     }
@@ -158,29 +187,203 @@ pub(crate) fn arnoldi_augmented_with_workspace(
     Ok(ArnoldiResult { iterations: actual })
 }
 
-pub fn solve_gmres_with_workspace(
+/// [`arnoldi_augmented_with_workspace`] with one small least-squares solve
+/// per call instead of one per column (research node
+/// `research/spd05_lgmres_ls_once_20261007`). The column loop is the legacy
+/// loop without the per-column prefix copy and solve; after it (normal end
+/// or happy breakdown) the final `(actual + 1) x actual` prefix is copied
+/// and solved once with the same right-hand side `[beta, 0, ...]`, which is
+/// the legacy loop's last solve, so the correction is bitwise the same. The
+/// one difference: an intermediate least-squares solution that would have
+/// been non-finite is never formed, so it cannot fail the call. With
+/// `least_squares` the solve uses the reused workspace of research node
+/// `research/spd04_ls_workspace_20261007` (bitwise the same solution).
+/// The legacy function is deliberately left untouched.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn arnoldi_augmented_ls_once_with_workspace(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    r_pre: &[f64],
+    beta: f64,
+    krylov_steps: usize,
+    augment_directions: &[Vec<f64>],
+    augment_images: &[Option<Vec<f64>>],
+    counters: &mut WorkCounters,
+    workspace: &mut ArnoldiWorkspace,
+    least_squares_workspace: Option<(&mut LeastSquaresWorkspace, &mut Vec<f64>)>,
+) -> CoreResult<ArnoldiResult> {
+    if augment_directions.len() != augment_images.len() {
+        return Err(CoreError::Dimension(
+            "Arnoldi augmentation direction/image mismatch".into(),
+        ));
+    }
+    let n = r_pre.len();
+    let total = krylov_steps + augment_directions.len();
+    workspace.prepare(n, total)?;
+    workspace.basis[0].copy_from_slice(r_pre);
+    if normalize(&mut workspace.basis[0])? == 0.0 {
+        return Err(CoreError::LinearSolve("zero Arnoldi residual".into()));
+    }
+
+    let mut actual = 0usize;
+    for j in 0..total {
+        if j < krylov_steps {
+            workspace.directions[j].copy_from_slice(&workspace.basis[j]);
+        } else {
+            workspace.directions[j].copy_from_slice(&augment_directions[j - krylov_steps]);
+        }
+
+        let (previous_basis, remaining_basis) = workspace.basis.split_at_mut(j + 1);
+        let w = &mut remaining_basis[0];
+        if j >= krylov_steps {
+            if let Some(image) = &augment_images[j - krylov_steps] {
+                w.copy_from_slice(image);
+            } else {
+                apply_left_with_raw(
+                    op,
+                    pc,
+                    &workspace.directions[j],
+                    w,
+                    &mut workspace.raw_operator_output,
+                    counters,
+                    ApplyCategory::Krylov,
+                )?;
+            }
+        } else {
+            apply_left_with_raw(
+                op,
+                pc,
+                &workspace.directions[j],
+                w,
+                &mut workspace.raw_operator_output,
+                counters,
+                ApplyCategory::Krylov,
+            )?;
+        }
+
+        two_pass_mgs_into(w, previous_basis, &mut workspace.h_column, counters)?;
+        for i in 0..previous_basis.len() {
+            workspace.hessenberg[(i, j)] = workspace.h_column[i];
+        }
+        let h_next = safe_l2(w);
+        workspace.hessenberg[(j + 1, j)] = h_next;
+        actual = j + 1;
+        let happy_breakdown =
+            arnoldi_happy_breakdown(&workspace.h_column[..previous_basis.len()], h_next)?;
+        if !happy_breakdown {
+            for value in w {
+                *value /= h_next;
+            }
+        } else {
+            w.fill(0.0);
+            break;
+        }
+    }
+
+    // The legacy loop's last solve: no column means no solve and an empty
+    // solution, as there.
+    if actual == 0 {
+        linear_combination_into(&workspace.directions[..0], &[], &mut workspace.correction)?;
+        return Ok(ArnoldiResult { iterations: 0 });
+    }
+    workspace
+        .hessenberg_prefix
+        .resize_zeros(actual + 1, actual)?;
+    for row in 0..actual + 1 {
+        for column in 0..actual {
+            workspace.hessenberg_prefix[(row, column)] = workspace.hessenberg[(row, column)];
+        }
+    }
+    workspace.rhs_small[..actual + 1].fill(0.0);
+    workspace.rhs_small[0] = beta;
+    match least_squares_workspace {
+        Some((small, solution)) => {
+            small.solve_into(
+                &workspace.hessenberg_prefix,
+                &workspace.rhs_small[..actual + 1],
+                solution,
+            )?;
+            linear_combination_into(
+                &workspace.directions[..actual],
+                solution,
+                &mut workspace.correction,
+            )?;
+        }
+        None => {
+            let solution = least_squares(
+                &workspace.hessenberg_prefix,
+                &workspace.rhs_small[..actual + 1],
+            )?;
+            linear_combination_into(
+                &workspace.directions[..actual],
+                &solution,
+                &mut workspace.correction,
+            )?;
+        }
+    }
+    Ok(ArnoldiResult { iterations: actual })
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gmres_with_workspace_and_residual_scale(
     op: &dyn LinearOperator,
     pc: &dyn Preconditioner,
     rhs: &[f64],
     x0: Option<&[f64]>,
     config: &GmresConfig,
+    residual_scale: Option<&[f64]>,
     workspace: &mut GmresWorkspace,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    solve_gmres_with_workspace_and_accounting(
+        op,
+        pc,
+        rhs,
+        x0,
+        config,
+        residual_scale,
+        workspace,
+        ResidualAccounting::DEFAULT,
+        counters,
+    )
+}
+
+/// [`solve_gmres_with_workspace_and_residual_scale`] with an explicit
+/// [`ResidualAccounting`] (research node
+/// `research/sp01_dupfix_adoption_20261010`). The solution, the outcome and
+/// every report field are the same under both accountings; with
+/// [`ResidualAccounting::ReuseConfirmed`] a solve that left its loop on a
+/// confirmed true residual after at least one cycle makes no final
+/// diagnostic operator application.
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gmres_with_workspace_and_accounting(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GmresConfig,
+    residual_scale: Option<&[f64]>,
+    workspace: &mut GmresWorkspace,
+    accounting: ResidualAccounting,
     counters: &mut WorkCounters,
 ) -> CoreResult<LinearSolveReport> {
     config.validate()?;
     let n = validate_system(op, pc, rhs, x0)?;
+    validate_residual_scale(residual_scale, n)?;
     let before = *counters;
-    let right_norm = safe_l2(rhs);
-    let threshold = config.atol.max(config.rtol * right_norm);
+    let right_norm = selected_residual_norm(rhs, residual_scale)?;
+    let threshold = residual_threshold("GMRES", config.rtol, config.atol, right_norm)?;
     workspace.common.prepare(n);
     if let Some(initial) = x0 {
         workspace.common.x.copy_from_slice(initial);
     }
 
     let mut total = 0usize;
-    loop {
-        if workspace.common.x.iter().all(|value| *value == 0.0) {
+    let mut cycles = 0usize;
+    let exit = loop {
+        let operator_residual = if workspace.common.x.iter().all(|value| *value == 0.0) {
             workspace.common.residual.copy_from_slice(rhs);
+            false
         } else {
             true_residual_into(
                 op,
@@ -191,10 +394,14 @@ pub fn solve_gmres_with_workspace(
                 counters,
                 ApplyCategory::Krylov,
             )?;
-        }
-        let residual_norm = safe_l2(&workspace.common.residual);
+            true
+        };
+        let residual_norm = selected_residual_norm(&workspace.common.residual, residual_scale)?;
         if residual_norm <= threshold {
-            break;
+            break LoopExit {
+                residual_norm,
+                confirmed: operator_residual && cycles > 0,
+            };
         }
         if total >= config.max_arnoldi {
             return Err(CoreError::LinearSolve(format!(
@@ -233,19 +440,24 @@ pub fn solve_gmres_with_workspace(
             counters,
         )?;
         total += arnoldi.iterations;
+        cycles += 1;
         counters.linear_iterations += arnoldi.iterations as u64;
-    }
+    };
 
-    true_residual_into(
-        op,
-        rhs,
-        &workspace.common.x,
-        &mut workspace.common.operator_output,
-        &mut workspace.common.residual,
-        counters,
-        ApplyCategory::Diagnostic,
-    )?;
-    let residual_norm = safe_l2(&workspace.common.residual);
+    let residual_norm = if reuse_final_residual(accounting, exit, false) {
+        exit.residual_norm
+    } else {
+        true_residual_into(
+            op,
+            rhs,
+            &workspace.common.x,
+            &mut workspace.common.operator_output,
+            &mut workspace.common.residual,
+            counters,
+            ApplyCategory::Diagnostic,
+        )?;
+        selected_residual_norm(&workspace.common.residual, residual_scale)?
+    };
     if !residual_norm.is_finite() || residual_norm > threshold {
         return Err(CoreError::LinearSolve(format!(
             "GMRES true residual {residual_norm:.3e} exceeds {threshold:.3e}"
@@ -266,6 +478,20 @@ pub fn solve_gmres_with_workspace(
     })
 }
 
+pub fn solve_gmres_with_workspace(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GmresConfig,
+    workspace: &mut GmresWorkspace,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    solve_gmres_with_workspace_and_residual_scale(
+        op, pc, rhs, x0, config, None, workspace, counters,
+    )
+}
+
 pub fn solve_gmres(
     op: &dyn LinearOperator,
     pc: &dyn Preconditioner,
@@ -280,6 +506,54 @@ pub fn solve_gmres(
         rhs,
         x0,
         config,
+        &mut GmresWorkspace::default(),
+        counters,
+    )
+}
+
+/// [`solve_gmres_with_residual_scale`] with an explicit
+/// [`ResidualAccounting`] and a fresh workspace.
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gmres_with_accounting(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GmresConfig,
+    residual_scale: Option<&[f64]>,
+    accounting: ResidualAccounting,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    solve_gmres_with_workspace_and_accounting(
+        op,
+        pc,
+        rhs,
+        x0,
+        config,
+        residual_scale,
+        &mut GmresWorkspace::default(),
+        accounting,
+        counters,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gmres_with_residual_scale(
+    op: &dyn LinearOperator,
+    pc: &dyn Preconditioner,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GmresConfig,
+    residual_scale: Option<&[f64]>,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    solve_gmres_with_workspace_and_residual_scale(
+        op,
+        pc,
+        rhs,
+        x0,
+        config,
+        residual_scale,
         &mut GmresWorkspace::default(),
         counters,
     )
@@ -372,7 +646,7 @@ impl GmresPrefixSession {
         let n = validate_system(op, pc, rhs, x0)?;
         let start_counters = *counters;
         let right_norm = safe_l2(rhs);
-        let threshold = config.atol.max(config.rtol * right_norm);
+        let threshold = residual_threshold("GMRES", config.rtol, config.atol, right_norm)?;
         let x_base = x0.map_or_else(|| vec![0.0; n], ToOwned::to_owned);
         let mut residual = vec![0.0; n];
         if x_base.iter().all(|value| *value == 0.0) {
@@ -511,9 +785,7 @@ impl GmresPrefixSession {
         }
         let next_norm = safe_l2(&work);
         self.hessenberg[(column + 1, column)] = next_norm;
-        let orthogonalization_scale = h_column.iter().map(|v| v.abs()).fold(0.0, f64::max);
-        let breakdown_threshold = 100.0 * f64::EPSILON * (1.0 + orthogonalization_scale);
-        self.happy_breakdown = next_norm <= breakdown_threshold;
+        self.happy_breakdown = arnoldi_happy_breakdown(&h_column, next_norm)?;
         if !self.happy_breakdown && column + 1 < maximum {
             self.basis
                 .push(work.iter().map(|value| value / next_norm).collect());

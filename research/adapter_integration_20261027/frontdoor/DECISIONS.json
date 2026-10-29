@@ -1,0 +1,44 @@
+{
+  "schema": "vigilode.frontdoor-review.v1",
+  "date": "2026-10-27",
+  "scope": "automatic solver optional-challenger availability; ordinary identity-mass forward IVP",
+  "finding": {
+    "id": "optional-permission-treated-as-obligation",
+    "severity": "high",
+    "mechanism": "Any derivative authorization forced stiff selection before RHS execution, rejecting otherwise valid explicit-only inputs when the optional challenger could not run.",
+    "implemented_fix": "Validate global request first; retain derivative declaration checks; disable only known unavailable optional challengers; require replay permission only when a challenger is eligible."
+  },
+  "fallback_reasons": [
+    "MissingJacobian", "MissingTimeDerivative", "DenseDimensionLimit", "MatrixFreeNotEnabled",
+    "Implicit(VectorAtolOnMatrixFreeRoute)", "Implicit(VectorAtolWithDeclaredBandOnDense)"
+  ],
+  "preserved_contracts": [
+    "identity mass", "no events", "endpoint output", "valid numeric inputs",
+    "valid enabled derivative declarations", "authorized callbacks only", "vector tolerances",
+    "all observation windows", "charged attempt budget", "failed partial results"
+  ],
+  "candidate_decisions": [
+    {"candidate": "separate-global-validity-from-challenger-availability", "decision": "implemented", "timing_claim": false},
+    {"candidate": "reuse-native-persistent-explicit-observed-session", "decision": "retained-existing-implementation", "timing_claim": false},
+    {"candidate": "silently-remove-intermediate-observations", "decision": "excluded-contract-change"},
+    {"candidate": "replace-landed-observations-with-dense-interpolation", "decision": "future-specialized-comparison", "required_evidence": "matched output-error and timing study"},
+    {"candidate": "ignore-all-implicit-refusals", "decision": "excluded-invalid-request-masking"}
+  ],
+  "test_sources": [
+    "crates/vigilode/tests/automatic_adapter_contracts.rs",
+    "crates/vigilode/tests/automatic_availability_contracts.rs"
+  ],
+  "new_contract_test_count": 10,
+  "execution_receipts": "owned by integration runner; this file does not assert a Cargo pass",
+  "limits": [
+    "No production readiness or timing promotion from this change alone.",
+    "No stiffness certificate from optional challenger unavailability.",
+    "No sensitivity request field exists in current Problem/Options.",
+    "Unavailable challenger diagnostics use current message/segment decision strings; a typed record remains future work."
+  ],
+  "next_steps": [
+    {"id": "frontdoor-common-validation", "priority": 1, "action": "Extract enabled derivative declaration checks shared by automatic and switching into a single pure helper.", "acceptance": "Identical preflight refusal behavior with zero user callback entries on malformed declarations."},
+    {"id": "frontdoor-typed-availability", "priority": 2, "action": "Add schema-versioned requested-versus-effective capability record.", "acceptance": "Consumers identify skipped candidates without parsing message strings; raw completion/failure preserved."},
+    {"id": "frontdoor-explicit-output-contracts", "priority": 2, "action": "Compare endpoint-only and landed-observation APIs without silently changing existing output semantics.", "acceptance": "Fixed-source paired timing plus exact requested output coverage and independently measured output errors."}
+  ]
+}

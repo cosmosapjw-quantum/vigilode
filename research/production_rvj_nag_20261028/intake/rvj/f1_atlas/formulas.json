@@ -1,0 +1,54 @@
+{
+  "symbols": {
+    "a": "first slow parameter",
+    "b": "second slow parameter",
+    "u": "first algebraic coordinate",
+    "v": "second algebraic coordinate",
+    "fa": "a time derivative",
+    "fb": "b time derivative",
+    "h": "slab duration",
+    "Dg": "whole-slab original algebraic residual bound",
+    "Df": "whole-slab slow ODE residual bound",
+    "E0": "incoming slow error radius",
+    "eps": "exact reconstruction rounding defect",
+    "t": "dimensionless physical time"
+  },
+  "expressions": {
+    "G1": "u**2+v-a",
+    "G2": "v**2+u-b",
+    "d": "4*u*v-1",
+    "Pu": "u**4-2*a*u**2+u+a**2-b",
+    "Pv": "v**4-2*b*v**2+v+b**2-a",
+    "u_velocity": "(2*v*fa-fb)/(4*u*v-1)",
+    "v_velocity": "(-fa+2*u*fb)/(4*u*v-1)",
+    "u_to_v_primitive": "a-u**2",
+    "v_to_u_primitive": "b-v**2",
+    "u_to_v_physical_jump": "(-G2+eps,0)",
+    "v_to_u_physical_jump": "(0,-G1+eps)",
+    "main_root_residual_radius": "2*Dg",
+    "slow_defect": "Df+Dg/2",
+    "main_slow_whole": "E0+h*(Df+Dg/2)",
+    "main_slow_end_unrounded": "E0/(1+h/2)+h*(Df+Dg/2)",
+    "main_root_whole": "2*(E0+h*(Df+Dg/2))+2*Dg",
+    "global_discriminant": "-27-256*a**3+288*a*b+256*a**2*b**2-256*b**3",
+    "diagonal_discriminant": "(4*c-3)**3*(4*c+1)",
+    "control_s": "-49/32+t/16",
+    "control_c": "s**2+s",
+    "control_parameter_velocity": "(2*s+1)/16",
+    "control_unique_branch_residual_radius": "5*Dg/9",
+    "control_path_residual_radius": "20*(Dg+Ex)/37",
+    "transition_slow_radius_increment": "0"
+  },
+  "domains": {
+    "main_X": "[-1/8,1/8]**2",
+    "main_Q": "[-1/4,1/4]**2",
+    "control_X": "[13/20,7/8]**2",
+    "control_Q": "[-8/5,-7/5]**2"
+  },
+  "extra_symbols": {
+    "c": "diagonal parameter a=b=c",
+    "s": "analytic selected algebraic root in control",
+    "Ex": "control whole-slab slow error bound"
+  },
+  "evaluation_convention": "Rational constants are exact; ** denotes polynomial power; tuple expressions are coordinate increments."
+}

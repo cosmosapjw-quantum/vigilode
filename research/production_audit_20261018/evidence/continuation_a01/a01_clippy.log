@@ -1,0 +1,31 @@
+    Checking rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+    Checking rodas5p-krylov v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-krylov)
+    Checking rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+error: very complex type used. Consider factoring parts into `type` definitions
+   --> crates/rodas5p-integrators/src/packet_window.rs:157:115
+    |
+157 | ...k: &mut PacketWorkCounters) -> Result<(Vec<IComplex>, Vec<IComplex>, Vec<IComplex>), PacketError> {
+    |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#type_complexity
+    = note: `-D clippy::type-complexity` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::type_complexity)]`
+
+error: the loop variable `j` is used to index `eta`
+   --> crates/rodas5p-integrators/src/packet_window.rs:236:14
+    |
+236 |     for j in 0..packet.model.num_modes() {
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+    = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+    |
+236 -     for j in 0..packet.model.num_modes() {
+236 +     for (j, <item>) in eta.iter().enumerate().take(packet.model.num_modes()) {
+    |
+
+error: could not compile `rodas5p-integrators` (lib test) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `rodas5p-integrators` (lib) due to 2 previous errors

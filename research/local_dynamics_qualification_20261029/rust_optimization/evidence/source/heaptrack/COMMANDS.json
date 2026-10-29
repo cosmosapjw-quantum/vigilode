@@ -1,0 +1,42 @@
+[
+  {
+    "argv": [
+      "flock",
+      "/tmp/vigilode-cargo-20261027.lock",
+      "taskset",
+      "-c",
+      "0",
+      "heaptrack",
+      "-o",
+      "/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/heaptrack/dense-fd.gz",
+      "/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-candidate/release/examples/rust_allocation_probe",
+      "--case",
+      "dense-fd",
+      "--mode",
+      "timing",
+      "--repeats",
+      "12"
+    ],
+    "exit": 0
+  },
+  {
+    "argv": [
+      "flock",
+      "/tmp/vigilode-cargo-20261027.lock",
+      "taskset",
+      "-c",
+      "0",
+      "heaptrack",
+      "-o",
+      "/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/heaptrack/time-jvp.gz",
+      "/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-candidate/release/examples/rust_allocation_probe",
+      "--case",
+      "time-jvp",
+      "--mode",
+      "timing",
+      "--repeats",
+      "12"
+    ],
+    "exit": 0
+  }
+]

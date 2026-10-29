@@ -1,0 +1,53 @@
+{
+  "schema": "vigilode.dense-primary-sources.v1",
+  "accessed": "2026-10-23",
+  "sources": [
+    {
+      "id": "SCIPY-RK45-117",
+      "url": "https://docs.scipy.org/doc/scipy-1.17.0/reference/generated/scipy.integrate.RK45.html",
+      "type": "official package documentation",
+      "status": "READ",
+      "supports": "SciPy RK45 uses Dormand-Prince5(4), advances the fifth-order member, and uses a quartic dense polynomial.",
+      "relevant_lines": [
+        33,
+        34,
+        140,
+        144
+      ]
+    },
+    {
+      "id": "SCIPY-RK45-SOURCE-117",
+      "url": "https://github.com/scipy/scipy/blob/v1.17.0/scipy/integrate/_ivp/rk.py",
+      "type": "official version-pinned source",
+      "status": "READ",
+      "supports": "RK45.P contains the seven-by-four exact rational literals adopted in this implementation. Retrieved display lines2041–2062 show every dense coefficient. The source attributes the extension to Shampine1986.",
+      "relevant_lines": [
+        2041,
+        2062
+      ]
+    },
+    {
+      "id": "SHAMPINE-1986",
+      "url": "https://doi.org/10.1090/S0025-5718-1986-0815836-3",
+      "title": "Some Practical Runge-Kutta Formulas",
+      "author": "L. F. Shampine",
+      "journal": "Mathematics of Computation 46(173),135–150",
+      "type": "original paper",
+      "status": "PUBLISHER_FETCH_403",
+      "use": "Bibliographic provenance from official SciPy documentation/source; not claimed to have read the full paper in this review."
+    },
+    {
+      "id": "WOLFRAM-DOPRI",
+      "url": "https://reference.wolfram.com/language/tutorial/NDSolveExplicitRungeKutta",
+      "type": "official computational system documentation",
+      "status": "READ_THROUGH_WOLFRAM_CONTEXT",
+      "supports": "Provides the standard Dormand-Prince tableau and identifies FSAL behavior; endpoint proof was already published and was reused."
+    }
+  ],
+  "algebra_source": "All new order and anchoring results are explicit calculations in DENSE_ORDER_CHECK.wl and DENSE_ANCHOR_CHECK.wl, not inferred from search snippets.",
+  "retrieval_notes": [
+    "Raw GitHub source endpoint was disabled; official GitHub blob view and coefficient find succeeded.",
+    "Publisher AMS page returned403; no claim of fullpaperaccess.",
+    "Full third-party page text is not reproduced in this repository."
+  ]
+}

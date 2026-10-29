@@ -1,0 +1,21 @@
+# Independent review: weighted packet trajectory
+
+Reviewer `/root/dense_completion` inspected the final native source, source-bound model constructor, immutable represented-curve residual construction, unequal-frequency Fraction oracle, runner and actual execution logs. Decision: **PROMOTE_SCOPED** for successful requested-time enclosures of the admitted undamped zero-carrier native collective equation, under the reused directed-primitive and frozen-curve contracts. This review does not promote full allocation accounting or a measured speed comparison.
+
+## Independently checked transitions
+
+1. `enclose_at_weighted` uses the weighted triangle inequality `||a0||_w <= ||Y0||_w+e0`. Its energy upper bound, actual positive stored weights and sum S feed the existing T1 estimate. Squared components are outward; the norm root and all gain quantities are upper bounds.
+2. Conserved energy gives `|m(a)| <= sqrt(S E+)`; every real segment joining exact and candidate states has mean bounded by `max(sqrt(S E+), M_Y)`. The weighted logarithmic norm is therefore bounded by `S |chi| max(S E+,M_Y²)`. The implemented `exp(lambda*t)*(e0+t*rho)` is a valid coarse variation-of-constants bound for lambda>=0.
+3. Returned Horner centers are compared with outward evaluation of the **same immutable polynomial**. `r_c = r + sqrt(sum(w_j delta_j²))` encloses the weighted error about these centers. Mean output has its own exact weighted polynomial displacement. This explicitly covers the rounding needed for multiwindow recentering.
+4. `integrate_verified_packet` carries `r_c` directly. The next constructor copies unchanged source weights, xi, width and chi and the current returned centers; it does not normalize weights. Since the equation is autonomous, shifting the next local window to zero preserves its target. Exact adjacent durations are checked by equality of directed subtraction endpoints. No rounded horizon is substituted.
+5. The result and points expose immutable getters only; the original model and initial disks are retained privately. A failed window returns an error and exposes no successful trajectory object. The work object is caller-owned, so attempted work survives refusal.
+6. The artificial box-conversion factor is exactly `sqrt(sum(w_j*(r/sqrt(w_j))²))=sqrt(N)*r` each repetition. Direct ball carry removes this source of `N^(K/2)` growth; the claim is about error-budget inflation, not every physical amplification factor.
+7. For the independent reference, the complexified real-coordinate norm is `max_j(|u_j|+|v_j|)`. On norm<=2B, the linear and cubic field norms are bounded by `2 Omega B+8 K B³`, and their derivative norm by `Omega+12 K B²`, with `K=|chi|S³`. The claimed `R=1/(4 Omega+32 K B²)` gives displacement<=B/2 and contraction<=3/8. Picard gives an analytic solution bounded by 2B, and Cauchy's coefficient estimate yields the geometric degree-28 tail. The Fraction oracle evaluates the original real/imaginary ODE recurrence, not the packet recurrence or floating residual implementation.
+
+## Evidence and limits
+
+The inspected `packet_tests.log` records 5 existing local-output tests and 3 new trajectory tests passing, including 120 rigorous rational disk/ball containment checks in six coupling/initial-state cases. The 64-mode, 32-window identity witness retains its weighted radius within the stated margin. `packet_verified_run.rs` uses a power-of-two window count; its mesh construction has the checked exact-duration contract, and emits all centers/radii with the model and tolerance metadata. The actual 16-mode/32-window runner receipt is present.
+
+No new blocking source or mathematical defect was found. The constructor can refuse a rounded center near its admitted initial-energy boundary; this is a documented typed refusal. Damping, physical-carrier output, adaptive mesh choice, complete measured allocation/cost accounting, and matched-accuracy speed remain distinct obligations. Existing warmed allocation assertions are excluded from this review's authority because the unrelated allocation-counter positive-control defect is being repaired separately.
+
+Source hashes and evidence references are in `evidence/review_packet.json`. No scientific calculation was rerun solely to duplicate the already inspected unchanged source-bound records.

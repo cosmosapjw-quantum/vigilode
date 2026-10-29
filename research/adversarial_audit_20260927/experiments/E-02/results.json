@@ -1,0 +1,2400 @@
+{
+ "id": "E-02",
+ "purpose": "Re-run the 18 n=96 scientific-validity-v2 calibration rows on the target tree (b3e8165) through the campaign-identical arm code path (execute_arm replicated verbatim; run_scientific_validity_v2_case refuses references whose implementation_revision (ab8fbcd) differs from the compiled revision) and compare per-row metrics, counters and campaign output checksums with the committed campaign records.",
+ "commands": [
+  "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/bin/cargo-wrapped.sh build --profile measurement --bin e0203_v2rows",
+  "RAYON_NUM_THREADS=1 /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/cargo-target/measurement/e0203_v2rows --manifest /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/refdir/reference_manifest.json --out /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/out/e0203_rows.json",
+  "python3 /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/analyze_e02.py"
+ ],
+ "inputs": [
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/refdir/reference_manifest.json",
+   "sha256": "e272f32f3e235f506cfa59060846a54e20195ea4d991800c0706645c3fb78da2"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/refdir/artifacts/hires-ramped-n96-v2.json",
+   "sha256": "7516932105c537c4aaca9efaa50a1fcd205967038666cec187fe80cd35325364"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/refdir/artifacts/nonautonomous-stiff-forcing-n96-v2.json",
+   "sha256": "9dd6d70a16ff8040bc89b3a87332da3980c0d9c23be9c08258f6edb6e9f3e695"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/refdir/artifacts/robertson-ramped-n96-v2.json",
+   "sha256": "581bc33bae4783c50279cc08de77011970ec81d2088005261e253dc0dd4bda80"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/refdir/artifacts/rotating-nonnormal-n96-v2.json",
+   "sha256": "c9fcbcde4f98f053b8d52be803dd2773fc6404ef54342c6b74bc9dc1d09e9e2e"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/refdir/artifacts/semilinear-advection-diffusion-ramped-n96-grid8x12-v2.1.json",
+   "sha256": "dddd16fb39064953dd059270b6d78ec866622bae5fb75b8a8761e85a3a7cf038"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/refdir/artifacts/van-der-pol-ramped-n96-v2.json",
+   "sha256": "79abbf7c4211bd98e971ef4249a39e4fff863f250272944808e5e525f826365a"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-01/calibration_all_cases_compact.json",
+   "sha256": "23194d4638f16f7b21a79382c274c19a44532c77c707c2d8ebb93908235c456c"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/harness/src/bin/e0203_v2rows.rs",
+   "sha256": "d9caeaaee062b5501079762d299110c31ce662e829724032eb913ae9b8275234"
+  }
+ ],
+ "outputs": [
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/out/e0203_rows.json",
+   "sha256": "62b75e30418b8a128a3ecac14892efc03cba8ad21be3fc467c53b7c6c5837c81"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/out/run_stderr.txt",
+   "sha256": "74b161f556637a8ae2dbe3e2b22c5e3dafa245c4049fb4403c84e68ab9a036c3"
+  }
+ ],
+ "env": {
+  "RAYON_NUM_THREADS": "1",
+  "profile": "measurement",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)"
+ },
+ "summary_metrics": {
+  "rows": 18,
+  "arms": 36,
+  "arm_checksum_bitwise_equal": 36,
+  "gap_bitwise_equal": 18,
+  "status_match": 18,
+  "config_match": 18,
+  "reference_checksum_match": 18,
+  "max_rel_diff_max_grid_wrms": 0.0,
+  "max_rel_diff_gap": 0.0,
+  "steps_match": 18,
+  "rhs_jvp_match": 18,
+  "dense_max_grid_wrms_gt_1": 16,
+  "clipped_max_grid_wrms_gt_1": 14,
+  "dense_solver_max_accepted_norm_le_1": 18,
+  "clipped_solver_max_accepted_norm_le_1": 18,
+  "median_dense_measured_max_grid_over_solver_max_norm": 327.5689647337506,
+  "median_clipped_measured_max_grid_over_solver_max_norm": 139.59458110606386,
+  "median_gap_over_dense_max": 0.9192821951727397,
+  "compiled_revision": "unavailable: invalid fair-comparison input: canonical v2 runner was built without VIGILODE_CODE_REVISION",
+  "committed_code_revision": "ab8fbcdb709aa1e87603b1ef6f83c5e610c8cb04",
+  "source_dirty_at_build": false
+ },
+ "rows": [
+  {
+   "case_id": "robertson-ramped-n96-rtol-1e-4-v2.1",
+   "family": "robertson-ramped",
+   "rtol": 0.0001,
+   "t_span": [
+    0.0,
+    0.1
+   ],
+   "committed_status": "output-policy-dominated",
+   "rerun_status": "output-policy-dominated",
+   "committed_config": {
+    "initial_step": 0.001,
+    "max_step": 0.1,
+    "min_step": 1e-12
+   },
+   "rerun_config": {
+    "initial_step": 0.001,
+    "max_step": 0.1,
+    "min_step": 1e-12
+   },
+   "reference_checksum_match": true,
+   "gap": {
+    "committed": 2680.2176470694767,
+    "rerun": 2680.2176470694767,
+    "rel_diff": 0.0,
+    "bitwise": true
+   },
+   "clipped": {
+    "checksum_committed": "b4703f17df6342da89da5854ea09590527224ec8f40a05951f1e7c08f9abf433",
+    "checksum_rerun": "b4703f17df6342da89da5854ea09590527224ec8f40a05951f1e7c08f9abf433",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 568.0906519248199,
+     "rerun": 568.0906519248199,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 568.0906519248199,
+     "rerun": 568.0906519248199,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 277.45495771537816,
+     "rerun": 277.45495771537816,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 100,
+     "rerun": 100
+    },
+    "output_clipped_steps": {
+     "committed": 98,
+     "rerun": 98
+    },
+    "rhs_calls": {
+     "committed": 800,
+     "rerun": 800
+    },
+    "jvp_calls": {
+     "committed": 17646,
+     "rerun": 17646
+    },
+    "accepted_steps": {
+     "committed": 100,
+     "rerun": 100
+    },
+    "rejected_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "solver_max_accepted_error_norm": 0.0047032603391978425,
+    "solver_mean_accepted_error_norm": 0.0008056056652202437,
+    "measured_max_grid_wrms": 568.0906519248199,
+    "measured_endpoint_wrms": 568.0906519248199,
+    "ratio_measured_max_grid_over_solver_max_norm": 120786.56314009395,
+    "reference_uncertainty_wrms": 2.559305690577144e-05
+   },
+   "dense": {
+    "checksum_committed": "342cbb3a2b232d0dc174bfe248992d9b8fe23d5b017505d49d624eea0681fa47",
+    "checksum_rerun": "342cbb3a2b232d0dc174bfe248992d9b8fe23d5b017505d49d624eea0681fa47",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 2721.5094918453087,
+     "rerun": 2721.5094918453087,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 234.27300926219309,
+     "rerun": 234.27300926219309,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 544.805757254806,
+     "rerun": 544.805757254806,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 13,
+     "rerun": 13
+    },
+    "output_clipped_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "rhs_calls": {
+     "committed": 136,
+     "rerun": 136
+    },
+    "jvp_calls": {
+     "committed": 4633,
+     "rerun": 4633
+    },
+    "accepted_steps": {
+     "committed": 13,
+     "rerun": 13
+    },
+    "rejected_steps": {
+     "committed": 4,
+     "rerun": 4
+    },
+    "solver_max_accepted_error_norm": 0.406861762369219,
+    "solver_mean_accepted_error_norm": 0.12112502869280548,
+    "measured_max_grid_wrms": 2721.5094918453087,
+    "measured_endpoint_wrms": 234.27300926219309,
+    "ratio_measured_max_grid_over_solver_max_norm": 6689.027437716284,
+    "reference_uncertainty_wrms": 2.559305690577144e-05
+   }
+  },
+  {
+   "case_id": "robertson-ramped-n96-rtol-1e-6-v2.1",
+   "family": "robertson-ramped",
+   "rtol": 1e-06,
+   "t_span": [
+    0.0,
+    0.1
+   ],
+   "committed_status": "output-policy-dominated",
+   "rerun_status": "output-policy-dominated",
+   "committed_config": {
+    "initial_step": 0.001,
+    "max_step": 0.1,
+    "min_step": 1e-12
+   },
+   "rerun_config": {
+    "initial_step": 0.001,
+    "max_step": 0.1,
+    "min_step": 1e-12
+   },
+   "reference_checksum_match": true,
+   "gap": {
+    "committed": 369.8941381648727,
+    "rerun": 369.8941381648727,
+    "rel_diff": 0.0,
+    "bitwise": true
+   },
+   "clipped": {
+    "checksum_committed": "918349df5b0988b5738f9fa620c6c150137450422d1102934a4d4e78267f1460",
+    "checksum_rerun": "918349df5b0988b5738f9fa620c6c150137450422d1102934a4d4e78267f1460",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 21.996216798179013,
+     "rerun": 21.996216798179013,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 21.996216798179013,
+     "rerun": 21.996216798179013,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 6.21996265062286,
+     "rerun": 6.21996265062286,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 100,
+     "rerun": 100
+    },
+    "output_clipped_steps": {
+     "committed": 98,
+     "rerun": 98
+    },
+    "rhs_calls": {
+     "committed": 800,
+     "rerun": 800
+    },
+    "jvp_calls": {
+     "committed": 22200,
+     "rerun": 22200
+    },
+    "accepted_steps": {
+     "committed": 100,
+     "rerun": 100
+    },
+    "rejected_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "solver_max_accepted_error_norm": 0.31197114912251017,
+    "solver_mean_accepted_error_norm": 0.011080878284752571,
+    "measured_max_grid_wrms": 21.996216798179013,
+    "measured_endpoint_wrms": 21.996216798179013,
+    "ratio_measured_max_grid_over_solver_max_norm": 70.50721472177275,
+    "reference_uncertainty_wrms": 2.559305690577144e-05
+   },
+   "dense": {
+    "checksum_committed": "79b57ed0577a2e0bdf34e724d2fa1da60ae24a9491fc1173ccc05a57bf221a3f",
+    "checksum_rerun": "79b57ed0577a2e0bdf34e724d2fa1da60ae24a9491fc1173ccc05a57bf221a3f",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 369.74956579871997,
+     "rerun": 369.74956579871997,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 3.275077763663655,
+     "rerun": 3.275077763663655,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 59.20693497464277,
+     "rerun": 59.20693497464277,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 23,
+     "rerun": 23
+    },
+    "output_clipped_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "rhs_calls": {
+     "committed": 200,
+     "rerun": 200
+    },
+    "jvp_calls": {
+     "committed": 6954,
+     "rerun": 6954
+    },
+    "accepted_steps": {
+     "committed": 23,
+     "rerun": 23
+    },
+    "rejected_steps": {
+     "committed": 2,
+     "rerun": 2
+    },
+    "solver_max_accepted_error_norm": 0.9507728743019604,
+    "solver_mean_accepted_error_norm": 0.3042633595064484,
+    "measured_max_grid_wrms": 369.74956579871997,
+    "measured_endpoint_wrms": 3.275077763663655,
+    "ratio_measured_max_grid_over_solver_max_norm": 388.89368406748366,
+    "reference_uncertainty_wrms": 2.559305690577144e-05
+   }
+  },
+  {
+   "case_id": "robertson-ramped-n96-rtol-1e-8-v2.1",
+   "family": "robertson-ramped",
+   "rtol": 1e-08,
+   "t_span": [
+    0.0,
+    0.1
+   ],
+   "committed_status": "output-policy-dominated",
+   "rerun_status": "output-policy-dominated",
+   "committed_config": {
+    "initial_step": 0.001,
+    "max_step": 0.1,
+    "min_step": 1e-12
+   },
+   "rerun_config": {
+    "initial_step": 0.001,
+    "max_step": 0.1,
+    "min_step": 1e-12
+   },
+   "reference_checksum_match": true,
+   "gap": {
+    "committed": 1.6872511830217782,
+    "rerun": 1.6872511830217782,
+    "rel_diff": 0.0,
+    "bitwise": true
+   },
+   "clipped": {
+    "checksum_committed": "bd829d344cf34a6521872c6408dd73c7ca28a6df9482affd09ae9c8fd33e805b",
+    "checksum_rerun": "bd829d344cf34a6521872c6408dd73c7ca28a6df9482affd09ae9c8fd33e805b",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 0.5914819554163395,
+     "rerun": 0.5914819554163395,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 0.000991456616393105,
+     "rerun": 0.000991456616393105,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 0.11398368986994392,
+     "rerun": 0.11398368986994392,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 123,
+     "rerun": 123
+    },
+    "output_clipped_steps": {
+     "committed": 99,
+     "rerun": 99
+    },
+    "rhs_calls": {
+     "committed": 1008,
+     "rerun": 1008
+    },
+    "jvp_calls": {
+     "committed": 32080,
+     "rerun": 32080
+    },
+    "accepted_steps": {
+     "committed": 123,
+     "rerun": 123
+    },
+    "rejected_steps": {
+     "committed": 3,
+     "rerun": 3
+    },
+    "solver_max_accepted_error_norm": 0.7608127586553304,
+    "solver_mean_accepted_error_norm": 0.1683089532263999,
+    "measured_max_grid_wrms": 0.5914819554163395,
+    "measured_endpoint_wrms": 0.000991456616393105,
+    "ratio_measured_max_grid_over_solver_max_norm": 0.7774343275495693,
+    "reference_uncertainty_wrms": 2.559305690577144e-05
+   },
+   "dense": {
+    "checksum_committed": "872ab0ad87add0b6c9d167e4be4b08a47f7e579d77534d55d9de91a9cd1d48b9",
+    "checksum_rerun": "872ab0ad87add0b6c9d167e4be4b08a47f7e579d77534d55d9de91a9cd1d48b9",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 2.278259616863152,
+     "rerun": 2.278259616863152,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 0.006237841211243535,
+     "rerun": 0.006237841211243535,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 0.33776911791286585,
+     "rerun": 0.33776911791286585,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 66,
+     "rerun": 66
+    },
+    "output_clipped_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "rhs_calls": {
+     "committed": 592,
+     "rerun": 592
+    },
+    "jvp_calls": {
+     "committed": 21102,
+     "rerun": 21102
+    },
+    "accepted_steps": {
+     "committed": 66,
+     "rerun": 66
+    },
+    "rejected_steps": {
+     "committed": 8,
+     "rerun": 8
+    },
+    "solver_max_accepted_error_norm": 0.9625015919879013,
+    "solver_mean_accepted_error_norm": 0.4696877422237892,
+    "measured_max_grid_wrms": 2.278259616863152,
+    "measured_endpoint_wrms": 0.006237841211243535,
+    "ratio_measured_max_grid_over_solver_max_norm": 2.3670190634778603,
+    "reference_uncertainty_wrms": 2.559305690577144e-05
+   }
+  },
+  {
+   "case_id": "hires-ramped-n96-rtol-1e-4-v2.1",
+   "family": "hires-ramped",
+   "rtol": 0.0001,
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "committed_status": "output-policy-dominated",
+   "rerun_status": "output-policy-dominated",
+   "committed_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "rerun_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "reference_checksum_match": true,
+   "gap": {
+    "committed": 3925.3236146157215,
+    "rerun": 3925.3236146157215,
+    "rel_diff": 0.0,
+    "bitwise": true
+   },
+   "clipped": {
+    "checksum_committed": "fa511c4ef16b913e719115bc5a89a6965f787d3ef5a07e509232113e2af2b289",
+    "checksum_rerun": "fa511c4ef16b913e719115bc5a89a6965f787d3ef5a07e509232113e2af2b289",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 24.23258986835212,
+     "rerun": 24.23258986835212,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 5.683185838618321,
+     "rerun": 5.683185838618321,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 10.897670248894359,
+     "rerun": 10.897670248894359,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 100,
+     "rerun": 100
+    },
+    "output_clipped_steps": {
+     "committed": 98,
+     "rerun": 98
+    },
+    "rhs_calls": {
+     "committed": 800,
+     "rerun": 800
+    },
+    "jvp_calls": {
+     "committed": 20185,
+     "rerun": 20185
+    },
+    "accepted_steps": {
+     "committed": 100,
+     "rerun": 100
+    },
+    "rejected_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "solver_max_accepted_error_norm": 0.0027794102779941255,
+    "solver_mean_accepted_error_norm": 0.0005611541056992292,
+    "measured_max_grid_wrms": 24.23258986835212,
+    "measured_endpoint_wrms": 5.683185838618321,
+    "ratio_measured_max_grid_over_solver_max_norm": 8718.608425755896,
+    "reference_uncertainty_wrms": 4.5582989928441775e-05
+   },
+   "dense": {
+    "checksum_committed": "386876353a8ca884ece50e76f29b7ad9cfc805c2daf6d4e750536dc88d1d20c4",
+    "checksum_rerun": "386876353a8ca884ece50e76f29b7ad9cfc805c2daf6d4e750536dc88d1d20c4",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 3923.2285484542876,
+     "rerun": 3923.2285484542876,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 213.55646489152656,
+     "rerun": 213.55646489152656,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 1369.2186138603922,
+     "rerun": 1369.2186138603922,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 14,
+     "rerun": 14
+    },
+    "output_clipped_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "rhs_calls": {
+     "committed": 136,
+     "rerun": 136
+    },
+    "jvp_calls": {
+     "committed": 4565,
+     "rerun": 4565
+    },
+    "accepted_steps": {
+     "committed": 14,
+     "rerun": 14
+    },
+    "rejected_steps": {
+     "committed": 3,
+     "rerun": 3
+    },
+    "solver_max_accepted_error_norm": 0.6778495423247566,
+    "solver_mean_accepted_error_norm": 0.20506824896571696,
+    "measured_max_grid_wrms": 3923.2285484542876,
+    "measured_endpoint_wrms": 213.55646489152656,
+    "ratio_measured_max_grid_over_solver_max_norm": 5787.757169532285,
+    "reference_uncertainty_wrms": 4.5582989928441775e-05
+   }
+  },
+  {
+   "case_id": "hires-ramped-n96-rtol-1e-6-v2.1",
+   "family": "hires-ramped",
+   "rtol": 1e-06,
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "committed_status": "output-policy-dominated",
+   "rerun_status": "output-policy-dominated",
+   "committed_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "rerun_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "reference_checksum_match": true,
+   "gap": {
+    "committed": 91.94488224147749,
+    "rerun": 91.94488224147749,
+    "rel_diff": 0.0,
+    "bitwise": true
+   },
+   "clipped": {
+    "checksum_committed": "07f525b49a5add076c3514989a65d0e907afd31122131970ada317b09cd1f755",
+    "checksum_rerun": "07f525b49a5add076c3514989a65d0e907afd31122131970ada317b09cd1f755",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 0.34518608345399104,
+     "rerun": 0.34518608345399104,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 0.004088886163807201,
+     "rerun": 0.004088886163807201,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 0.14048897839187766,
+     "rerun": 0.14048897839187766,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 100,
+     "rerun": 100
+    },
+    "output_clipped_steps": {
+     "committed": 98,
+     "rerun": 98
+    },
+    "rhs_calls": {
+     "committed": 800,
+     "rerun": 800
+    },
+    "jvp_calls": {
+     "committed": 22693,
+     "rerun": 22693
+    },
+    "accepted_steps": {
+     "committed": 100,
+     "rerun": 100
+    },
+    "rejected_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "solver_max_accepted_error_norm": 0.01625340955641752,
+    "solver_mean_accepted_error_norm": 0.003528569956686672,
+    "measured_max_grid_wrms": 0.34518608345399104,
+    "measured_endpoint_wrms": 0.004088886163807201,
+    "ratio_measured_max_grid_over_solver_max_norm": 21.237764436797647,
+    "reference_uncertainty_wrms": 4.5582989928441775e-05
+   },
+   "dense": {
+    "checksum_committed": "67b3a34414d289c864bdbae53a9032c4ac0cbe8f3524d27e21ead6c9179de700",
+    "checksum_rerun": "67b3a34414d289c864bdbae53a9032c4ac0cbe8f3524d27e21ead6c9179de700",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 91.77919831222674,
+     "rerun": 91.77919831222674,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 3.2967674443718695,
+     "rerun": 3.2967674443718695,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 20.327409800809203,
+     "rerun": 20.327409800809203,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 29,
+     "rerun": 29
+    },
+    "output_clipped_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "rhs_calls": {
+     "committed": 272,
+     "rerun": 272
+    },
+    "jvp_calls": {
+     "committed": 9493,
+     "rerun": 9493
+    },
+    "accepted_steps": {
+     "committed": 29,
+     "rerun": 29
+    },
+    "rejected_steps": {
+     "committed": 5,
+     "rerun": 5
+    },
+    "solver_max_accepted_error_norm": 0.9938466279213023,
+    "solver_mean_accepted_error_norm": 0.4094527000239254,
+    "measured_max_grid_wrms": 91.77919831222674,
+    "measured_endpoint_wrms": 3.2967674443718695,
+    "ratio_measured_max_grid_over_solver_max_norm": 92.34744651112734,
+    "reference_uncertainty_wrms": 4.5582989928441775e-05
+   }
+  },
+  {
+   "case_id": "hires-ramped-n96-rtol-1e-8-v2.1",
+   "family": "hires-ramped",
+   "rtol": 1e-08,
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "committed_status": "output-policy-dominated",
+   "rerun_status": "output-policy-dominated",
+   "committed_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "rerun_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "reference_checksum_match": true,
+   "gap": {
+    "committed": 0.4160863332363846,
+    "rerun": 0.4160863332363846,
+    "rel_diff": 0.0,
+    "bitwise": true
+   },
+   "clipped": {
+    "checksum_committed": "a4a535f38bb001957283ba396bd94289cc9a4baa10e39c382db76e33792e3baa",
+    "checksum_rerun": "a4a535f38bb001957283ba396bd94289cc9a4baa10e39c382db76e33792e3baa",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 0.36408258208083866,
+     "rerun": 0.36408258208083866,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 0.003501579812345617,
+     "rerun": 0.003501579812345617,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 0.09172733448432681,
+     "rerun": 0.09172733448432681,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 115,
+     "rerun": 115
+    },
+    "output_clipped_steps": {
+     "committed": 98,
+     "rerun": 98
+    },
+    "rhs_calls": {
+     "committed": 928,
+     "rerun": 928
+    },
+    "jvp_calls": {
+     "committed": 30470,
+     "rerun": 30470
+    },
+    "accepted_steps": {
+     "committed": 115,
+     "rerun": 115
+    },
+    "rejected_steps": {
+     "committed": 1,
+     "rerun": 1
+    },
+    "solver_max_accepted_error_norm": 0.9819001249267792,
+    "solver_mean_accepted_error_norm": 0.18791188823993465,
+    "measured_max_grid_wrms": 0.36408258208083866,
+    "measured_endpoint_wrms": 0.003501579812345617,
+    "ratio_measured_max_grid_over_solver_max_norm": 0.37079390544734725,
+    "reference_uncertainty_wrms": 4.5582989928441775e-05
+   },
+   "dense": {
+    "checksum_committed": "05dddfcde45b67794f297591306851e0d34a6f27353280636178328b04cb8ab2",
+    "checksum_rerun": "05dddfcde45b67794f297591306851e0d34a6f27353280636178328b04cb8ab2",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 0.4094536822508206,
+     "rerun": 0.4094536822508206,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 0.04441456038791687,
+     "rerun": 0.04441456038791687,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 0.1328468869966153,
+     "rerun": 0.1328468869966153,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 75,
+     "rerun": 75
+    },
+    "output_clipped_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "rhs_calls": {
+     "committed": 632,
+     "rerun": 632
+    },
+    "jvp_calls": {
+     "committed": 22462,
+     "rerun": 22462
+    },
+    "accepted_steps": {
+     "committed": 75,
+     "rerun": 75
+    },
+    "rejected_steps": {
+     "committed": 4,
+     "rerun": 4
+    },
+    "solver_max_accepted_error_norm": 0.9558889030783199,
+    "solver_mean_accepted_error_norm": 0.5361788143666376,
+    "measured_max_grid_wrms": 0.4094536822508206,
+    "measured_endpoint_wrms": 0.04441456038791687,
+    "ratio_measured_max_grid_over_solver_max_norm": 0.428348609270624,
+    "reference_uncertainty_wrms": 4.5582989928441775e-05
+   }
+  },
+  {
+   "case_id": "van-der-pol-ramped-n96-rtol-1e-4-v2.1",
+   "family": "van-der-pol-ramped",
+   "rtol": 0.0001,
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "committed_status": "output-policy-dominated",
+   "rerun_status": "output-policy-dominated",
+   "committed_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "rerun_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "reference_checksum_match": true,
+   "gap": {
+    "committed": 6988.728356179603,
+    "rerun": 6988.728356179603,
+    "rel_diff": 0.0,
+    "bitwise": true
+   },
+   "clipped": {
+    "checksum_committed": "3ec0db5495ea35e76f341964d06a8dcf3bf6fa28ef4d2f3ce845bb2b69f0e9c3",
+    "checksum_rerun": "3ec0db5495ea35e76f341964d06a8dcf3bf6fa28ef4d2f3ce845bb2b69f0e9c3",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 1318.945524808178,
+     "rerun": 1318.945524808178,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 1.3568943666071982,
+     "rerun": 1.3568943666071982,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 274.4653313106369,
+     "rerun": 274.4653313106369,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 100,
+     "rerun": 100
+    },
+    "output_clipped_steps": {
+     "committed": 98,
+     "rerun": 98
+    },
+    "rhs_calls": {
+     "committed": 800,
+     "rerun": 800
+    },
+    "jvp_calls": {
+     "committed": 23452,
+     "rerun": 23452
+    },
+    "accepted_steps": {
+     "committed": 100,
+     "rerun": 100
+    },
+    "rejected_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "solver_max_accepted_error_norm": 0.14484027735828783,
+    "solver_mean_accepted_error_norm": 0.016671732377951488,
+    "measured_max_grid_wrms": 1318.945524808178,
+    "measured_endpoint_wrms": 1.3568943666071982,
+    "ratio_measured_max_grid_over_solver_max_norm": 9106.206842904166,
+    "reference_uncertainty_wrms": 5.7241636692745316e-05
+   },
+   "dense": {
+    "checksum_committed": "8b3d58cd8fb1d4fb3f7629d1d85b356e5e10b26d6202e26658bd4f17d88244fd",
+    "checksum_rerun": "8b3d58cd8fb1d4fb3f7629d1d85b356e5e10b26d6202e26658bd4f17d88244fd",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 7967.33942884754,
+     "rerun": 7967.33942884754,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 6.193576064208508,
+     "rerun": 6.193576064208508,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 1853.974897141069,
+     "rerun": 1853.974897141069,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 29,
+     "rerun": 29
+    },
+    "output_clipped_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "rhs_calls": {
+     "committed": 312,
+     "rerun": 312
+    },
+    "jvp_calls": {
+     "committed": 11055,
+     "rerun": 11055
+    },
+    "accepted_steps": {
+     "committed": 29,
+     "rerun": 29
+    },
+    "rejected_steps": {
+     "committed": 10,
+     "rerun": 10
+    },
+    "solver_max_accepted_error_norm": 0.797020258809655,
+    "solver_mean_accepted_error_norm": 0.21323408607626315,
+    "measured_max_grid_wrms": 7967.33942884754,
+    "measured_endpoint_wrms": 6.193576064208508,
+    "ratio_measured_max_grid_over_solver_max_norm": 9996.407670674162,
+    "reference_uncertainty_wrms": 5.7241636692745316e-05
+   }
+  },
+  {
+   "case_id": "van-der-pol-ramped-n96-rtol-1e-6-v2.1",
+   "family": "van-der-pol-ramped",
+   "rtol": 1e-06,
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "committed_status": "output-policy-dominated",
+   "rerun_status": "output-policy-dominated",
+   "committed_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "rerun_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "reference_checksum_match": true,
+   "gap": {
+    "committed": 237.82807578105977,
+    "rerun": 237.82807578105977,
+    "rel_diff": 0.0,
+    "bitwise": true
+   },
+   "clipped": {
+    "checksum_committed": "10929606529a534e23d9133a0d99c60fddf49eecaddf84e7af2999db2acba613",
+    "checksum_rerun": "10929606529a534e23d9133a0d99c60fddf49eecaddf84e7af2999db2acba613",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 25.841194483033902,
+     "rerun": 25.841194483033902,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 0.003824770128436873,
+     "rerun": 0.003824770128436873,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 7.304907637873847,
+     "rerun": 7.304907637873847,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 148,
+     "rerun": 148
+    },
+    "output_clipped_steps": {
+     "committed": 98,
+     "rerun": 98
+    },
+    "rhs_calls": {
+     "committed": 1216,
+     "rerun": 1216
+    },
+    "jvp_calls": {
+     "committed": 39677,
+     "rerun": 39677
+    },
+    "accepted_steps": {
+     "committed": 148,
+     "rerun": 148
+    },
+    "rejected_steps": {
+     "committed": 4,
+     "rerun": 4
+    },
+    "solver_max_accepted_error_norm": 0.8828621553497262,
+    "solver_mean_accepted_error_norm": 0.22826654440445937,
+    "measured_max_grid_wrms": 25.841194483033902,
+    "measured_endpoint_wrms": 0.003824770128436873,
+    "ratio_measured_max_grid_over_solver_max_norm": 29.26979520692841,
+    "reference_uncertainty_wrms": 5.7241636692745316e-05
+   },
+   "dense": {
+    "checksum_committed": "b1cc72dbbdf505a38f799cfaba6446f98682b4e01b5af8637b43f8cbcf6dcf69",
+    "checksum_rerun": "b1cc72dbbdf505a38f799cfaba6446f98682b4e01b5af8637b43f8cbcf6dcf69",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 255.11615519324104,
+     "rerun": 255.11615519324104,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 0.05107941787197963,
+     "rerun": 0.05107941787197963,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 29.272754588616777,
+     "rerun": 29.272754588616777,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 87,
+     "rerun": 87
+    },
+    "output_clipped_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "rhs_calls": {
+     "committed": 752,
+     "rerun": 752
+    },
+    "jvp_calls": {
+     "committed": 26884,
+     "rerun": 26884
+    },
+    "accepted_steps": {
+     "committed": 87,
+     "rerun": 87
+    },
+    "rejected_steps": {
+     "committed": 7,
+     "rerun": 7
+    },
+    "solver_max_accepted_error_norm": 0.9420529209356099,
+    "solver_mean_accepted_error_norm": 0.5106359493102043,
+    "measured_max_grid_wrms": 255.11615519324104,
+    "measured_endpoint_wrms": 0.05107941787197963,
+    "ratio_measured_max_grid_over_solver_max_norm": 270.8087300869146,
+    "reference_uncertainty_wrms": 5.7241636692745316e-05
+   }
+  },
+  {
+   "case_id": "van-der-pol-ramped-n96-rtol-1e-8-v2.1",
+   "family": "van-der-pol-ramped",
+   "rtol": 1e-08,
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "committed_status": "output-policy-dominated",
+   "rerun_status": "output-policy-dominated",
+   "committed_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "rerun_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "reference_checksum_match": true,
+   "gap": {
+    "committed": 0.49959577792843557,
+    "rerun": 0.49959577792843557,
+    "rel_diff": 0.0,
+    "bitwise": true
+   },
+   "clipped": {
+    "checksum_committed": "a0c9546a29ee42e73c6f29d93664c42abbb7dc91a43f9e1b5f4f10ec5d96f53a",
+    "checksum_rerun": "a0c9546a29ee42e73c6f29d93664c42abbb7dc91a43f9e1b5f4f10ec5d96f53a",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 0.18447052767507416,
+     "rerun": 0.18447052767507416,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 0.00033330344045261255,
+     "rerun": 0.00033330344045261255,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 0.05696786960503346,
+     "rerun": 0.05696786960503346,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 307,
+     "rerun": 307
+    },
+    "output_clipped_steps": {
+     "committed": 99,
+     "rerun": 99
+    },
+    "rhs_calls": {
+     "committed": 2512,
+     "rerun": 2512
+    },
+    "jvp_calls": {
+     "committed": 87560,
+     "rerun": 87560
+    },
+    "accepted_steps": {
+     "committed": 307,
+     "rerun": 307
+    },
+    "rejected_steps": {
+     "committed": 7,
+     "rerun": 7
+    },
+    "solver_max_accepted_error_norm": 0.9735219348294688,
+    "solver_mean_accepted_error_norm": 0.4119890185357181,
+    "measured_max_grid_wrms": 0.18447052767507416,
+    "measured_endpoint_wrms": 0.00033330344045261255,
+    "ratio_measured_max_grid_over_solver_max_norm": 0.18948779793789416,
+    "reference_uncertainty_wrms": 5.7241636692745316e-05
+   },
+   "dense": {
+    "checksum_committed": "2a14a355733a71b6606d5c4b9385d56c278db31ee4868913c61c30ef72b2c6da",
+    "checksum_rerun": "2a14a355733a71b6606d5c4b9385d56c278db31ee4868913c61c30ef72b2c6da",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 0.5103137528022186,
+     "rerun": 0.5103137528022186,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 0.001291984859231126,
+     "rerun": 0.001291984859231126,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 0.12834652046824052,
+     "rerun": 0.12834652046824052,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 253,
+     "rerun": 253
+    },
+    "output_clipped_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "rhs_calls": {
+     "committed": 2072,
+     "rerun": 2072
+    },
+    "jvp_calls": {
+     "committed": 74074,
+     "rerun": 74074
+    },
+    "accepted_steps": {
+     "committed": 253,
+     "rerun": 253
+    },
+    "rejected_steps": {
+     "committed": 6,
+     "rerun": 6
+    },
+    "solver_max_accepted_error_norm": 0.9547118891970366,
+    "solver_mean_accepted_error_norm": 0.5613421776557123,
+    "measured_max_grid_wrms": 0.5103137528022186,
+    "measured_endpoint_wrms": 0.001291984859231126,
+    "ratio_measured_max_grid_over_solver_max_norm": 0.534521208520216,
+    "reference_uncertainty_wrms": 5.7241636692745316e-05
+   }
+  },
+  {
+   "case_id": "rotating-nonnormal-n96-rtol-1e-4-v2.1",
+   "family": "rotating-nonnormal",
+   "rtol": 0.0001,
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "committed_status": "output-policy-dominated",
+   "rerun_status": "output-policy-dominated",
+   "committed_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "rerun_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "reference_checksum_match": true,
+   "gap": {
+    "committed": 13239.701977753019,
+    "rerun": 13239.701977753019,
+    "rel_diff": 0.0,
+    "bitwise": true
+   },
+   "clipped": {
+    "checksum_committed": "7967b97e16cdd08f00962c8dafe1949909911c1a850e6111cf3ca3f11adb7ce8",
+    "checksum_rerun": "7967b97e16cdd08f00962c8dafe1949909911c1a850e6111cf3ca3f11adb7ce8",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 708.7875852434637,
+     "rerun": 708.7875852434637,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 387.48618087492423,
+     "rerun": 387.48618087492423,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 256.7338086000408,
+     "rerun": 256.7338086000408,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 100,
+     "rerun": 100
+    },
+    "output_clipped_steps": {
+     "committed": 98,
+     "rerun": 98
+    },
+    "rhs_calls": {
+     "committed": 800,
+     "rerun": 800
+    },
+    "jvp_calls": {
+     "committed": 26191,
+     "rerun": 26191
+    },
+    "accepted_steps": {
+     "committed": 100,
+     "rerun": 100
+    },
+    "rejected_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "solver_max_accepted_error_norm": 0.21374477061193595,
+    "solver_mean_accepted_error_norm": 0.0625491244644925,
+    "measured_max_grid_wrms": 708.7875852434637,
+    "measured_endpoint_wrms": 387.48618087492423,
+    "ratio_measured_max_grid_over_solver_max_norm": 3316.0464380684293,
+    "reference_uncertainty_wrms": 2.6829228099068283e-05
+   },
+   "dense": {
+    "checksum_committed": "8abcae5af53381c8764df0b082eaf39eaa6a79389c5a6740d39afc20ae1c3f59",
+    "checksum_rerun": "8abcae5af53381c8764df0b082eaf39eaa6a79389c5a6740d39afc20ae1c3f59",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 13889.830663211982,
+     "rerun": 13889.830663211982,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 2031.6591970033148,
+     "rerun": 2031.6591970033148,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 4141.598918750852,
+     "rerun": 4141.598918750852,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 48,
+     "rerun": 48
+    },
+    "output_clipped_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "rhs_calls": {
+     "committed": 464,
+     "rerun": 464
+    },
+    "jvp_calls": {
+     "committed": 16357,
+     "rerun": 16357
+    },
+    "accepted_steps": {
+     "committed": 48,
+     "rerun": 48
+    },
+    "rejected_steps": {
+     "committed": 10,
+     "rerun": 10
+    },
+    "solver_max_accepted_error_norm": 0.9374568822391476,
+    "solver_mean_accepted_error_norm": 0.5446459113888016,
+    "measured_max_grid_wrms": 13889.830663211982,
+    "measured_endpoint_wrms": 2031.6591970033148,
+    "ratio_measured_max_grid_over_solver_max_norm": 14816.500818721017,
+    "reference_uncertainty_wrms": 2.6829228099068283e-05
+   }
+  },
+  {
+   "case_id": "rotating-nonnormal-n96-rtol-1e-6-v2.1",
+   "family": "rotating-nonnormal",
+   "rtol": 1e-06,
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "committed_status": "output-policy-dominated",
+   "rerun_status": "output-policy-dominated",
+   "committed_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "rerun_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "reference_checksum_match": true,
+   "gap": {
+    "committed": 217.10587043649923,
+    "rerun": 217.10587043649923,
+    "rel_diff": 0.0,
+    "bitwise": true
+   },
+   "clipped": {
+    "checksum_committed": "977206cc9ff8b468957f8a00a2c811af0c031618338a62821afe7c6b6ca5fa70",
+    "checksum_rerun": "977206cc9ff8b468957f8a00a2c811af0c031618338a62821afe7c6b6ca5fa70",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 207.05749344393274,
+     "rerun": 207.05749344393274,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 3.803896597596929,
+     "rerun": 3.803896597596929,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 45.01447563625401,
+     "rerun": 45.01447563625401,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 179,
+     "rerun": 179
+    },
+    "output_clipped_steps": {
+     "committed": 98,
+     "rerun": 98
+    },
+    "rhs_calls": {
+     "committed": 1456,
+     "rerun": 1456
+    },
+    "jvp_calls": {
+     "committed": 50765,
+     "rerun": 50765
+    },
+    "accepted_steps": {
+     "committed": 179,
+     "rerun": 179
+    },
+    "rejected_steps": {
+     "committed": 3,
+     "rerun": 3
+    },
+    "solver_max_accepted_error_norm": 0.9922156465091583,
+    "solver_mean_accepted_error_norm": 0.3641284177744225,
+    "measured_max_grid_wrms": 207.05749344393274,
+    "measured_endpoint_wrms": 3.803896597596929,
+    "ratio_measured_max_grid_over_solver_max_norm": 208.68194749035493,
+    "reference_uncertainty_wrms": 2.6829228099068283e-05
+   },
+   "dense": {
+    "checksum_committed": "c7d2c197cf667b2b3ad327076ec14e777ba63e197e9166ba9b2b1677f30851d3",
+    "checksum_rerun": "c7d2c197cf667b2b3ad327076ec14e777ba63e197e9166ba9b2b1677f30851d3",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 365.0815802361907,
+     "rerun": 365.0815802361907,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 3.401458962045588,
+     "rerun": 3.401458962045588,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 82.44389354017326,
+     "rerun": 82.44389354017326,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 141,
+     "rerun": 141
+    },
+    "output_clipped_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "rhs_calls": {
+     "committed": 1136,
+     "rerun": 1136
+    },
+    "jvp_calls": {
+     "committed": 40579,
+     "rerun": 40579
+    },
+    "accepted_steps": {
+     "committed": 141,
+     "rerun": 141
+    },
+    "rejected_steps": {
+     "committed": 1,
+     "rerun": 1
+    },
+    "solver_max_accepted_error_norm": 0.9499189258182392,
+    "solver_mean_accepted_error_norm": 0.6216491078733766,
+    "measured_max_grid_wrms": 365.0815802361907,
+    "measured_endpoint_wrms": 3.401458962045588,
+    "ratio_measured_max_grid_over_solver_max_norm": 384.3291993805866,
+    "reference_uncertainty_wrms": 2.6829228099068283e-05
+   }
+  },
+  {
+   "case_id": "rotating-nonnormal-n96-rtol-1e-8-v2.1",
+   "family": "rotating-nonnormal",
+   "rtol": 1e-08,
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "committed_status": "output-policy-dominated",
+   "rerun_status": "output-policy-dominated",
+   "committed_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "rerun_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "reference_checksum_match": true,
+   "gap": {
+    "committed": 0.2384261799042036,
+    "rerun": 0.2384261799042036,
+    "rel_diff": 0.0,
+    "bitwise": true
+   },
+   "clipped": {
+    "checksum_committed": "240e877fde64408329ae5ece5bb42cc812f5da1522eed9f746cf4cadd0ac2a43",
+    "checksum_rerun": "240e877fde64408329ae5ece5bb42cc812f5da1522eed9f746cf4cadd0ac2a43",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 1.3796970056382118,
+     "rerun": 1.3796970056382118,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 0.05512719776982157,
+     "rerun": 0.05512719776982157,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 0.29001740310596325,
+     "rerun": 0.29001740310596325,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 468,
+     "rerun": 468
+    },
+    "output_clipped_steps": {
+     "committed": 99,
+     "rerun": 99
+    },
+    "rhs_calls": {
+     "committed": 3752,
+     "rerun": 3752
+    },
+    "jvp_calls": {
+     "committed": 131362,
+     "rerun": 131362
+    },
+    "accepted_steps": {
+     "committed": 468,
+     "rerun": 468
+    },
+    "rejected_steps": {
+     "committed": 1,
+     "rerun": 1
+    },
+    "solver_max_accepted_error_norm": 0.8472510447632697,
+    "solver_mean_accepted_error_norm": 0.50008851406234,
+    "measured_max_grid_wrms": 1.3796970056382118,
+    "measured_endpoint_wrms": 0.05512719776982157,
+    "ratio_measured_max_grid_over_solver_max_norm": 1.6284394267388749,
+    "reference_uncertainty_wrms": 2.6829228099068283e-05
+   },
+   "dense": {
+    "checksum_committed": "48033809e8a14ab0c1b21e93e6b7611650d57a28d78ee462eef78ec4bd1abf0d",
+    "checksum_rerun": "48033809e8a14ab0c1b21e93e6b7611650d57a28d78ee462eef78ec4bd1abf0d",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 1.6178232451219814,
+     "rerun": 1.6178232451219814,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 0.06023841958742165,
+     "rerun": 0.06023841958742165,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 0.35010728616106623,
+     "rerun": 0.35010728616106623,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 421,
+     "rerun": 421
+    },
+    "output_clipped_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "rhs_calls": {
+     "committed": 3376,
+     "rerun": 3376
+    },
+    "jvp_calls": {
+     "committed": 120692,
+     "rerun": 120692
+    },
+    "accepted_steps": {
+     "committed": 421,
+     "rerun": 421
+    },
+    "rejected_steps": {
+     "committed": 1,
+     "rerun": 1
+    },
+    "solver_max_accepted_error_norm": 0.8234836496866346,
+    "solver_mean_accepted_error_norm": 0.6050736137678345,
+    "measured_max_grid_wrms": 1.6178232451219814,
+    "measured_endpoint_wrms": 0.06023841958742165,
+    "ratio_measured_max_grid_over_solver_max_norm": 1.96460882464105,
+    "reference_uncertainty_wrms": 2.6829228099068283e-05
+   }
+  },
+  {
+   "case_id": "nonautonomous-stiff-forcing-n96-rtol-1e-4-v2.1",
+   "family": "nonautonomous-stiff-forcing",
+   "rtol": 0.0001,
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "committed_status": "output-policy-dominated",
+   "rerun_status": "output-policy-dominated",
+   "committed_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "rerun_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "reference_checksum_match": true,
+   "gap": {
+    "committed": 31361.324392192426,
+    "rerun": 31361.324392192426,
+    "rel_diff": 0.0,
+    "bitwise": true
+   },
+   "clipped": {
+    "checksum_committed": "421424ace20a29d79fc690b521b984221881d1f02ba5eed5bd8fb3d4e4ba63ae",
+    "checksum_rerun": "421424ace20a29d79fc690b521b984221881d1f02ba5eed5bd8fb3d4e4ba63ae",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 18962.615321213514,
+     "rerun": 18962.615321213514,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 318.8150353743336,
+     "rerun": 318.8150353743336,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 2649.513295661162,
+     "rerun": 2649.513295661162,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 132,
+     "rerun": 132
+    },
+    "output_clipped_steps": {
+     "committed": 98,
+     "rerun": 98
+    },
+    "rhs_calls": {
+     "committed": 1080,
+     "rerun": 1080
+    },
+    "jvp_calls": {
+     "committed": 36069,
+     "rerun": 36069
+    },
+    "accepted_steps": {
+     "committed": 132,
+     "rerun": 132
+    },
+    "rejected_steps": {
+     "committed": 3,
+     "rerun": 3
+    },
+    "solver_max_accepted_error_norm": 0.9590458079123865,
+    "solver_mean_accepted_error_norm": 0.19339041575031204,
+    "measured_max_grid_wrms": 18962.615321213514,
+    "measured_endpoint_wrms": 318.8150353743336,
+    "ratio_measured_max_grid_over_solver_max_norm": 19772.37704890301,
+    "reference_uncertainty_wrms": 4.116687950767782e-05
+   },
+   "dense": {
+    "checksum_committed": "e9e509b065d3b3dc33627faa9cc9ccd50a5689dbb94bdc3ea678cb42db93ad2f",
+    "checksum_rerun": "e9e509b065d3b3dc33627faa9cc9ccd50a5689dbb94bdc3ea678cb42db93ad2f",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 42189.21245991178,
+     "rerun": 42189.21245991178,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 723.6830798781572,
+     "rerun": 723.6830798781572,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 4885.616606788022,
+     "rerun": 4885.616606788022,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 80,
+     "rerun": 80
+    },
+    "output_clipped_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "rhs_calls": {
+     "committed": 728,
+     "rerun": 728
+    },
+    "jvp_calls": {
+     "committed": 25894,
+     "rerun": 25894
+    },
+    "accepted_steps": {
+     "committed": 80,
+     "rerun": 80
+    },
+    "rejected_steps": {
+     "committed": 11,
+     "rerun": 11
+    },
+    "solver_max_accepted_error_norm": 0.9912236442022874,
+    "solver_mean_accepted_error_norm": 0.5368094977316117,
+    "measured_max_grid_wrms": 42189.21245991178,
+    "measured_endpoint_wrms": 723.6830798781572,
+    "ratio_measured_max_grid_over_solver_max_norm": 42562.758371108706,
+    "reference_uncertainty_wrms": 4.116687950767782e-05
+   }
+  },
+  {
+   "case_id": "nonautonomous-stiff-forcing-n96-rtol-1e-6-v2.1",
+   "family": "nonautonomous-stiff-forcing",
+   "rtol": 1e-06,
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "committed_status": "output-policy-dominated",
+   "rerun_status": "output-policy-dominated",
+   "committed_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "rerun_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "reference_checksum_match": true,
+   "gap": {
+    "committed": 29.057867386618405,
+    "rerun": 29.057867386618405,
+    "rel_diff": 0.0,
+    "bitwise": true
+   },
+   "clipped": {
+    "checksum_committed": "016b9b4f3f1d47d38f20a0183f6d8c5113b4b447c1cd1ceb78292b05b2adc3c2",
+    "checksum_rerun": "016b9b4f3f1d47d38f20a0183f6d8c5113b4b447c1cd1ceb78292b05b2adc3c2",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 218.07550835330744,
+     "rerun": 218.07550835330744,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 11.807203538197665,
+     "rerun": 11.807203538197665,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 26.350504176427776,
+     "rerun": 26.350504176427776,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 275,
+     "rerun": 275
+    },
+    "output_clipped_steps": {
+     "committed": 98,
+     "rerun": 98
+    },
+    "rhs_calls": {
+     "committed": 2248,
+     "rerun": 2248
+    },
+    "jvp_calls": {
+     "committed": 77132,
+     "rerun": 77132
+    },
+    "accepted_steps": {
+     "committed": 275,
+     "rerun": 275
+    },
+    "rejected_steps": {
+     "committed": 6,
+     "rerun": 6
+    },
+    "solver_max_accepted_error_norm": 0.9614114329487768,
+    "solver_mean_accepted_error_norm": 0.43228617083917126,
+    "measured_max_grid_wrms": 218.07550835330744,
+    "measured_endpoint_wrms": 11.807203538197665,
+    "ratio_measured_max_grid_over_solver_max_norm": 226.8284949394047,
+    "reference_uncertainty_wrms": 4.116687950767782e-05
+   },
+   "dense": {
+    "checksum_committed": "089a8970589e7aa9e5acf295dcf6a6b3df7229c3e3774c5e2865f91817545835",
+    "checksum_rerun": "089a8970589e7aa9e5acf295dcf6a6b3df7229c3e3774c5e2865f91817545835",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 233.31837217110913,
+     "rerun": 233.31837217110913,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 4.805310516681601,
+     "rerun": 4.805310516681601,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 27.543289016254874,
+     "rerun": 27.543289016254874,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 231,
+     "rerun": 231
+    },
+    "output_clipped_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "rhs_calls": {
+     "committed": 2000,
+     "rerun": 2000
+    },
+    "jvp_calls": {
+     "committed": 71467,
+     "rerun": 71467
+    },
+    "accepted_steps": {
+     "committed": 231,
+     "rerun": 231
+    },
+    "rejected_steps": {
+     "committed": 19,
+     "rerun": 19
+    },
+    "solver_max_accepted_error_norm": 0.9968915441808304,
+    "solver_mean_accepted_error_norm": 0.5789946090161199,
+    "measured_max_grid_wrms": 233.31837217110913,
+    "measured_endpoint_wrms": 4.805310516681601,
+    "ratio_measured_max_grid_over_solver_max_norm": 234.045893490683,
+    "reference_uncertainty_wrms": 4.116687950767782e-05
+   }
+  },
+  {
+   "case_id": "nonautonomous-stiff-forcing-n96-rtol-1e-8-v2.1",
+   "family": "nonautonomous-stiff-forcing",
+   "rtol": 1e-08,
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "committed_status": "output-policy-dominated",
+   "rerun_status": "output-policy-dominated",
+   "committed_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "rerun_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "reference_checksum_match": true,
+   "gap": {
+    "committed": 0.4149237612881085,
+    "rerun": 0.4149237612881085,
+    "rel_diff": 0.0,
+    "bitwise": true
+   },
+   "clipped": {
+    "checksum_committed": "f63d0698da2328a35d8aeb2718a1381d1326d586bdc940a2c54dfe137c3b7130",
+    "checksum_rerun": "f63d0698da2328a35d8aeb2718a1381d1326d586bdc940a2c54dfe137c3b7130",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 2.068092896812291,
+     "rerun": 2.068092896812291,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 0.08930256439163826,
+     "rerun": 0.08930256439163826,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 0.2416710114873152,
+     "rerun": 0.2416710114873152,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 671,
+     "rerun": 671
+    },
+    "output_clipped_steps": {
+     "committed": 99,
+     "rerun": 99
+    },
+    "rhs_calls": {
+     "committed": 5448,
+     "rerun": 5448
+    },
+    "jvp_calls": {
+     "committed": 190938,
+     "rerun": 190938
+    },
+    "accepted_steps": {
+     "committed": 671,
+     "rerun": 671
+    },
+    "rejected_steps": {
+     "committed": 10,
+     "rerun": 10
+    },
+    "solver_max_accepted_error_norm": 0.9880160746098573,
+    "solver_mean_accepted_error_norm": 0.5258123868559461,
+    "measured_max_grid_wrms": 2.068092896812291,
+    "measured_endpoint_wrms": 0.08930256439163826,
+    "ratio_measured_max_grid_over_solver_max_norm": 2.0931773783426846,
+    "reference_uncertainty_wrms": 4.116687950767782e-05
+   },
+   "dense": {
+    "checksum_committed": "162f0c63b3504981a66f62e6580515ce18a7c010a1716a53e710e7c3bfa69597",
+    "checksum_rerun": "162f0c63b3504981a66f62e6580515ce18a7c010a1716a53e710e7c3bfa69597",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 2.2813043844141894,
+     "rerun": 2.2813043844141894,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 0.0651094854514736,
+     "rerun": 0.0651094854514736,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 0.2766823083903545,
+     "rerun": 0.2766823083903545,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 615,
+     "rerun": 615
+    },
+    "output_clipped_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "rhs_calls": {
+     "committed": 4936,
+     "rerun": 4936
+    },
+    "jvp_calls": {
+     "committed": 176462,
+     "rerun": 176462
+    },
+    "accepted_steps": {
+     "committed": 615,
+     "rerun": 615
+    },
+    "rejected_steps": {
+     "committed": 2,
+     "rerun": 2
+    },
+    "solver_max_accepted_error_norm": 0.9888250259546574,
+    "solver_mean_accepted_error_norm": 0.6065466499319863,
+    "measured_max_grid_wrms": 2.2813043844141894,
+    "measured_endpoint_wrms": 0.0651094854514736,
+    "ratio_measured_max_grid_over_solver_max_norm": 2.3070860107041815,
+    "reference_uncertainty_wrms": 4.116687950767782e-05
+   }
+  },
+  {
+   "case_id": "semilinear-advection-diffusion-ramped-n96-grid8x12-rtol-1e-4-v2.1",
+   "family": "semilinear-advection-diffusion-ramped",
+   "rtol": 0.0001,
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "committed_status": "output-policy-dominated",
+   "rerun_status": "output-policy-dominated",
+   "committed_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "rerun_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "reference_checksum_match": true,
+   "gap": {
+    "committed": 134174.29862186147,
+    "rerun": 134174.29862186147,
+    "rel_diff": 0.0,
+    "bitwise": true
+   },
+   "clipped": {
+    "checksum_committed": "2659e06bcb314b6eaaa09252674974c1d73b7b1f1305ea95f2116afa76687ec5",
+    "checksum_rerun": "2659e06bcb314b6eaaa09252674974c1d73b7b1f1305ea95f2116afa76687ec5",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 72450.97028250624,
+     "rerun": 72450.97028250624,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 851.257832002533,
+     "rerun": 851.257832002533,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 25742.05668632757,
+     "rerun": 25742.05668632757,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 100,
+     "rerun": 100
+    },
+    "output_clipped_steps": {
+     "committed": 98,
+     "rerun": 98
+    },
+    "rhs_calls": {
+     "committed": 800,
+     "rerun": 800
+    },
+    "jvp_calls": {
+     "committed": 20515,
+     "rerun": 20515
+    },
+    "accepted_steps": {
+     "committed": 100,
+     "rerun": 100
+    },
+    "rejected_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "solver_max_accepted_error_norm": 0.0037321383368034327,
+    "solver_mean_accepted_error_norm": 0.0007367711441876802,
+    "measured_max_grid_wrms": 72450.97028250624,
+    "measured_endpoint_wrms": 851.257832002533,
+    "ratio_measured_max_grid_over_solver_max_norm": 19412723.68391369,
+    "reference_uncertainty_wrms": 0.0038329446227617684
+   },
+   "dense": {
+    "checksum_committed": "55767729747437b4c7be6efd35f005e8b173c157b424288393c439d546a203fc",
+    "checksum_rerun": "55767729747437b4c7be6efd35f005e8b173c157b424288393c439d546a203fc",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 170190.82366410232,
+     "rerun": 170190.82366410232,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 12443.76483171046,
+     "rerun": 12443.76483171046,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 52344.13421907633,
+     "rerun": 52344.13421907633,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 15,
+     "rerun": 15
+    },
+    "output_clipped_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "rhs_calls": {
+     "committed": 160,
+     "rerun": 160
+    },
+    "jvp_calls": {
+     "committed": 5489,
+     "rerun": 5489
+    },
+    "accepted_steps": {
+     "committed": 15,
+     "rerun": 15
+    },
+    "rejected_steps": {
+     "committed": 5,
+     "rerun": 5
+    },
+    "solver_max_accepted_error_norm": 0.5970981785351632,
+    "solver_mean_accepted_error_norm": 0.271087741372458,
+    "measured_max_grid_wrms": 170190.82366410232,
+    "measured_endpoint_wrms": 12443.76483171046,
+    "ratio_measured_max_grid_over_solver_max_norm": 285029.8824920628,
+    "reference_uncertainty_wrms": 0.0038329446227617684
+   }
+  },
+  {
+   "case_id": "semilinear-advection-diffusion-ramped-n96-grid8x12-rtol-1e-6-v2.1",
+   "family": "semilinear-advection-diffusion-ramped",
+   "rtol": 1e-06,
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "committed_status": "output-policy-dominated",
+   "rerun_status": "output-policy-dominated",
+   "committed_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "rerun_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "reference_checksum_match": true,
+   "gap": {
+    "committed": 5328.9810898603555,
+    "rerun": 5328.9810898603555,
+    "rel_diff": 0.0,
+    "bitwise": true
+   },
+   "clipped": {
+    "checksum_committed": "79c69fa87d52a87ea17f7d1c1f23ee5bea24b32b0757243640ce4e7e84a05561",
+    "checksum_rerun": "79c69fa87d52a87ea17f7d1c1f23ee5bea24b32b0757243640ce4e7e84a05561",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 10.376641040247302,
+     "rerun": 10.376641040247302,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 2.8148297370731097,
+     "rerun": 2.8148297370731097,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 3.406200407223183,
+     "rerun": 3.406200407223183,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 100,
+     "rerun": 100
+    },
+    "output_clipped_steps": {
+     "committed": 98,
+     "rerun": 98
+    },
+    "rhs_calls": {
+     "committed": 800,
+     "rerun": 800
+    },
+    "jvp_calls": {
+     "committed": 22759,
+     "rerun": 22759
+    },
+    "accepted_steps": {
+     "committed": 100,
+     "rerun": 100
+    },
+    "rejected_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "solver_max_accepted_error_norm": 0.0065248689553155026,
+    "solver_mean_accepted_error_norm": 0.0018557302195427268,
+    "measured_max_grid_wrms": 10.376641040247302,
+    "measured_endpoint_wrms": 2.8148297370731097,
+    "ratio_measured_max_grid_over_solver_max_norm": 1590.3217537869389,
+    "reference_uncertainty_wrms": 0.0038329446227617684
+   },
+   "dense": {
+    "checksum_committed": "cd58e4a1a8dd083338d9929774d85ec5922a2cb0b0f73b197448033fc5447faa",
+    "checksum_rerun": "cd58e4a1a8dd083338d9929774d85ec5922a2cb0b0f73b197448033fc5447faa",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 5318.906887849224,
+     "rerun": 5318.906887849224,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 255.00124704064547,
+     "rerun": 255.00124704064547,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 1640.8675354723441,
+     "rerun": 1640.8675354723441,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 27,
+     "rerun": 27
+    },
+    "output_clipped_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "rhs_calls": {
+     "committed": 280,
+     "rerun": 280
+    },
+    "jvp_calls": {
+     "committed": 9911,
+     "rerun": 9911
+    },
+    "accepted_steps": {
+     "committed": 27,
+     "rerun": 27
+    },
+    "rejected_steps": {
+     "committed": 8,
+     "rerun": 8
+    },
+    "solver_max_accepted_error_norm": 0.7767789484736982,
+    "solver_mean_accepted_error_norm": 0.4238389083665861,
+    "measured_max_grid_wrms": 5318.906887849224,
+    "measured_endpoint_wrms": 255.00124704064547,
+    "ratio_measured_max_grid_over_solver_max_norm": 6847.388048170467,
+    "reference_uncertainty_wrms": 0.0038329446227617684
+   }
+  },
+  {
+   "case_id": "semilinear-advection-diffusion-ramped-n96-grid8x12-rtol-1e-8-v2.1",
+   "family": "semilinear-advection-diffusion-ramped",
+   "rtol": 1e-08,
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "committed_status": "output-policy-dominated",
+   "rerun_status": "output-policy-dominated",
+   "committed_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "rerun_config": {
+    "initial_step": 0.01,
+    "max_step": 1.0,
+    "min_step": 1e-12
+   },
+   "reference_checksum_match": true,
+   "gap": {
+    "committed": 188.0473427355134,
+    "rerun": 188.0473427355134,
+    "rel_diff": 0.0,
+    "bitwise": true
+   },
+   "clipped": {
+    "checksum_committed": "bf47b100dff60cbb1d24f50bd9dfcc0f59468a9441c2b0c15a67794895c504a9",
+    "checksum_rerun": "bf47b100dff60cbb1d24f50bd9dfcc0f59468a9441c2b0c15a67794895c504a9",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 19.839107260521796,
+     "rerun": 19.839107260521796,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 0.9852728571145193,
+     "rerun": 0.9852728571145193,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 6.135489237142364,
+     "rerun": 6.135489237142364,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 100,
+     "rerun": 100
+    },
+    "output_clipped_steps": {
+     "committed": 98,
+     "rerun": 98
+    },
+    "rhs_calls": {
+     "committed": 800,
+     "rerun": 800
+    },
+    "jvp_calls": {
+     "committed": 27346,
+     "rerun": 27346
+    },
+    "accepted_steps": {
+     "committed": 100,
+     "rerun": 100
+    },
+    "rejected_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "solver_max_accepted_error_norm": 0.6052118178968675,
+    "solver_mean_accepted_error_norm": 0.12822222639618525,
+    "measured_max_grid_wrms": 19.839107260521796,
+    "measured_endpoint_wrms": 0.9852728571145193,
+    "ratio_measured_max_grid_over_solver_max_norm": 32.78043599588553,
+    "reference_uncertainty_wrms": 0.0038329446227617684
+   },
+   "dense": {
+    "checksum_committed": "043ca1293efb77bc7a4226f962a56163bd84196cbc6fb7948e18840be452c74f",
+    "checksum_rerun": "043ca1293efb77bc7a4226f962a56163bd84196cbc6fb7948e18840be452c74f",
+    "checksum_bitwise": true,
+    "max_grid_wrms": {
+     "committed": 207.4822205317779,
+     "rerun": 207.4822205317779,
+     "rel_diff": 0.0
+    },
+    "endpoint_wrms": {
+     "committed": 3.8275298654879797,
+     "rerun": 3.8275298654879797,
+     "rel_diff": 0.0
+    },
+    "rms_grid_wrms": {
+     "committed": 63.481537848068925,
+     "rerun": 63.481537848068925,
+     "rel_diff": 0.0
+    },
+    "steps": {
+     "committed": 60,
+     "rerun": 60
+    },
+    "output_clipped_steps": {
+     "committed": 0,
+     "rerun": 0
+    },
+    "rhs_calls": {
+     "committed": 528,
+     "rerun": 528
+    },
+    "jvp_calls": {
+     "committed": 18843,
+     "rerun": 18843
+    },
+    "accepted_steps": {
+     "committed": 60,
+     "rerun": 60
+    },
+    "rejected_steps": {
+     "committed": 6,
+     "rerun": 6
+    },
+    "solver_max_accepted_error_norm": 0.956989378214647,
+    "solver_mean_accepted_error_norm": 0.5841034255550323,
+    "measured_max_grid_wrms": 207.4822205317779,
+    "measured_endpoint_wrms": 3.8275298654879797,
+    "ratio_measured_max_grid_over_solver_max_norm": 216.80723449496935,
+    "reference_uncertainty_wrms": 0.0038329446227617684
+   }
+  }
+ ],
+ "pass_fail": "PASS",
+ "hypothesis_verdicts": {
+  "H1": "EVIDENCE: see summary_metrics (reproduction status) and E-03 for H1a/H1b"
+ },
+ "notes": [
+  "Code path: execute_arm replicated verbatim (same public entry points integrate_sequential_matrix_free_adaptive_observed / _dense_observed, same LinearSolverConfig, AdaptiveStepConfig, OutputSchedule, wrms_basis.metrics/discrepancy_wrms, classify_* order). run_scientific_validity_v2_case was NOT callable because it refuses references with implementation_revision != compiled revision.",
+  "Checksum comparison uses the campaign formula vigilode-scientific-v2-mode-output-v1 over (mode tag, status tag, 101 times, states).",
+  "solver_max_accepted_error_norm is the maximum embedded error norm among accepted steps (the controller quantity; <= 1.0 means within tolerance in the local sense). measured_max_grid_wrms is the global WRMS error vs the exact Radau reference on the same basis."
+ ]
+}

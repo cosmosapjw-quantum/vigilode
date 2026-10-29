@@ -1,0 +1,42 @@
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling vigilode v0.1.0 (/tmp/vigilode-adapter-review.rjwwJ4Cn/checkout/crates/vigilode)
+warning: method `diagnostics` is never used
+   --> crates/vigilode/examples/local_bottleneck_support/models.rs:876:12
+    |
+111 | impl Model {
+    | ---------- method in this implementation
+...
+876 |     pub fn diagnostics(&self, y: &[f64]) -> Value {
+    |            ^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vigilode` (example "adapter_gyro_grid") generated 1 warning
+warning: methods `exact` and `diagnostics` are never used
+   --> crates/vigilode/examples/local_bottleneck_support/models.rs:795:12
+    |
+111 | impl Model {
+    | ---------- methods in this implementation
+...
+795 |     pub fn exact(&self, t: f64) -> Option<Vec<f64>> {
+    |            ^^^^^
+...
+876 |     pub fn diagnostics(&self, y: &[f64]) -> Value {
+    |            ^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vigilode` (example "adapter_attempt_trace") generated 1 warning
+    Finished `measurement` profile [optimized] target(s) in 7.13s

@@ -1,0 +1,22 @@
+{
+  "schema": "vigilode-a01-output-slice-independent-review-v1",
+  "decision": "SCOPED_PASS",
+  "source_files": {
+    "crates/rodas5p-integrators/src/packet_curve_output.rs": "a334ded39c29493a2bc2db2e84f0835bd97ef73b98daf61f50f61641cc6b541d",
+    "crates/rodas5p-integrators/src/packet_work.rs": "793ca4bc11c6ece04f2b5f792b73267e67cb6321f839f825c4c17e1b4c48b980",
+    "crates/rodas5p-integrators/tests/production_audit_packet_curve_output.rs": "56d3439dc0d5e383c0833080ed3c690567354490917d9f0b81bb2a0bc29ffbe7",
+    "crates/rodas5p-integrators/tests/packet_curve_output_fraction_oracle.py": "3f08a213fac408a37d902b5760ba7c9769e84c384ca40ed35343712a7d022cfd"
+  },
+  "review": {
+    "requested_profile": "research-review/Astra-xhigh",
+    "observed_runtime": "NOT_INDEPENDENTLY_OBSERVED",
+    "summary": "Private result view and borrowed ownership are sound; operation count is 29N+23 (52 for N=1, 81 for N=2), overflow attempted count is 7, rational Taylor oracle and exact squared complex-disk inclusion have no tolerance slack.",
+    "limitation": "M_Y^2 > S E regime is exercised but current test would not necessarily fail if max were replaced by energy-only term; source review confirms the implemented max. Full unequal-frequency reference and complete local packet certificate remain HOLD."
+  },
+  "validation": {
+    "focused_test": {"command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_packet_curve_output", "passed": 5, "failed": 0, "exit_code": 0, "log": "curve_output_repair_final_test.log", "sha256": "c7c92800b605859050d3a514fcae047133cf06b3865701fa5738f89a28547f14"},
+    "compile_fail_doctest": {"command": "cargo test --locked --offline -p rodas5p-integrators --doc packet_window::packet_curve::output", "passed": 2, "failed": 0, "exit_code": 0, "log": "curve_output_repair_doctest.log", "sha256": "a5a2ea776d59bc170a85711c1dbff5249ec67d88d8bbf2fdb9bf090b88d60561"},
+    "format_and_diff": "PASS"
+  },
+  "claim_ceiling": "A01 same-curve T1 output-radius subunit only; full A01, A02, global trajectory, and production authority remain HOLD."
+}

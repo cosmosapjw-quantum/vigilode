@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "kind": "append_only_local_task_state_reconciliation",
+  "revision": "R02",
+  "canonical_handoff": "HANDOFF_TASKS.json",
+  "canonical_handoff_sha256": "806272ac703bda2fe2578a9489b8c06a9cf8d7b0fbd78b725148117984733ed0",
+  "handoff_mutated": false,
+  "effective_terminal_state_source": "LOCAL_COMPLETION.json",
+  "effective_terminal_state_sha256": "e30707c86d5ca5187336ac60786fc8ddf531eef4921f08540cc0836dbfdb7399",
+  "tasks": [
+    {
+      "depends_on": [],
+      "exit_code": 0,
+      "id": "LOCAL-01",
+      "result": "12 original IDs, 414 source hashes match; metadata/evidence existence validation only",
+      "status": "PASS"
+    },
+    {
+      "all_command_groups_exit_zero": true,
+      "command_groups": 6,
+      "depends_on": [
+        "LOCAL-01"
+      ],
+      "exit_code": 0,
+      "id": "LOCAL-02",
+      "source_and_dag_unchanged": true,
+      "status": "PASS"
+    },
+    {
+      "all_exit_zero": true,
+      "depends_on": [
+        "LOCAL-01"
+      ],
+      "handoff_example_smokes": 6,
+      "id": "LOCAL-03",
+      "required_example": "nonlinear_homotopy_run",
+      "required_exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "all_empirical_accuracy_gates_pass": true,
+      "all_rows_success": true,
+      "all_schema_source_error_gates_pass": true,
+      "depends_on": [
+        "LOCAL-02"
+      ],
+      "exit_code": 0,
+      "id": "LOCAL-04",
+      "measured_full_arm_allocation_calls_nonzero": true,
+      "positive_control_clone_allocations_per_row": 3,
+      "rows": 450,
+      "speed_promotion": "HOLD",
+      "status": "PASS_DIAGNOSTIC_ONLY"
+    },
+    {
+      "depends_on": [
+        "LOCAL-02"
+      ],
+      "id": "LOCAL-05",
+      "outputs": [
+        "LOCAL_VALIDATION_RECEIPT.json",
+        "LOCAL_REPORT_KO.md",
+        "LOCAL_EVIDENCE_MANIFEST.json",
+        "LOCAL_COMPLETION.json"
+      ],
+      "status": "PASS"
+    }
+  ],
+  "supplemental_run": {
+    "id": "LOCAL-02-R02",
+    "status": "PASS",
+    "receipt": "LOCAL_VALIDATION_R02.json"
+  },
+  "interpretation": "HANDOFF_TASKS.json is preserved as the original ready plan; LOCAL_COMPLETION.json records its terminal outcomes. No dependency-ready work remains in the effective task state."
+}

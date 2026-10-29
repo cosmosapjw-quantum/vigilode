@@ -1,0 +1,41 @@
+{
+  "command": [
+    "timeout",
+    "--signal=TERM",
+    "--kill-after=10s",
+    "1260s",
+    "python3",
+    "research/production_frontier_followup_20261023/src/long_phase_campaign.py",
+    "--binary",
+    "/mnt/extdrive/vigilode-frontier-20261023/target/measurement/examples/frontier_long_phase",
+    "--binary-sha256",
+    "eb438eef4e1f97486f9015879db5f060f88903b630e6f5c3e1da7b4867171b6f",
+    "--source-commit",
+    "49696c982446dfe5d274f5361819b218122b7449",
+    "--source-tree",
+    "39a3a7484cfa5257c93116b438de47e04efe1a4e",
+    "--output",
+    "research/production_frontier_followup_20261023/results/lp01_linear_20261023_01",
+    "--cpu",
+    "0",
+    "--lp-seconds",
+    "1200",
+    "--shared-remaining-seconds",
+    "4800",
+    "--shared-remaining-processes",
+    "450"
+  ],
+  "started_utc": "2026-10-23T10:05:15.886354+00:00",
+  "source_commit": "49696c982446dfe5d274f5361819b218122b7449",
+  "source_tree": "39a3a7484cfa5257c93116b438de47e04efe1a4e",
+  "binary_sha256": "eb438eef4e1f97486f9015879db5f060f88903b630e6f5c3e1da7b4867171b6f",
+  "cpu": 0,
+  "thread_environment": {
+    "RAYON_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "outer_wrapper_processes": 1,
+  "timing_authority": "diagnostic_only"
+}

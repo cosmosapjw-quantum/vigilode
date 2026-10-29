@@ -1,7 +1,463 @@
 use rodas5p_core::{CoreError, CoreResult, WorkCounters};
 
-fn time_tolerance(left: f64, right: f64) -> f64 {
-    128.0 * f64::EPSILON * left.abs().max(right.abs()).max(1.0)
+/// Clock policy of the production drivers (re-audit R3, R3-TIME-01/03):
+/// every step integrates the represented interval `t_end - t`
+/// ([`represent`]), fixed-step drivers step on the indexed grid
+/// `t0 + k h` ([`FixedGrid`]), and the end is reached by exact comparison.
+pub const PRODUCTION_CLOCK_POLICY: &str = "represented-indexed-v1";
+
+/// Clock policy of the sealed research replay drivers: the nominal step is
+/// integrated, the clock accumulates `t += h`, and the span ends within
+/// `10 eps max(|tf|, 1)`. The G4-S5B0 regime atlas, the unified gates and
+/// the homotopy experiment and order-policy drivers keep this policy so
+/// their sealed evidence stays reproducible; results produced under it are
+/// not results of [`PRODUCTION_CLOCK_POLICY`].
+pub const RESEARCH_REPLAY_CLOCK_POLICY: &str = "nominal-accumulated-v0";
+
+/// How a step is limited by a target time (span end, hard stop or clipped
+/// output time).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(crate) struct Landing {
+    /// The step to take.
+    pub(crate) step: f64,
+    /// The step was chosen to land on the target.
+    pub(crate) lands: bool,
+    /// The proposed step would have passed the target and was shortened.
+    pub(crate) shortened: bool,
+}
+
+/// Limit a proposed step by `target`.
+///
+/// A step that would pass the target is shortened to land on it exactly
+/// ([`step_to`]); it counts as shortened only when it passes by more than
+/// the rounding residue of the time sum, `64 eps max(|t|, |t + h|,
+/// |target|)` capped at `2^-10 h`. A step that would stop short of the
+/// target by no more than that residue is extended to land on it,
+/// so fixed steps of 0.1 reach 1.0 exactly instead of 0.9999999999999999
+/// and then taking a 1e-16 step (re-audit R2 review). This is a step-size
+/// rule only; which interval owns a requested time is still decided by
+/// exact comparison, so adjacent representable requests stay distinct.
+pub(crate) fn land(t: f64, proposed: f64, target: f64) -> CoreResult<Landing> {
+    land_capped(t, proposed, target, StepCap::NONE)
+}
+
+/// How an adaptive driver's `max_step` binds the represented step
+/// (re-audit R4, R4-TIME-DEV-04).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum MaxStepPolicy {
+    /// No represented step exceeds `max_step`; when no representable time
+    /// after `t` lies within it, the run fails with a typed time-resolution
+    /// error.
+    StrictRepresentedCap,
+    /// The represented step may exceed `max_step` by at most one clock
+    /// resolution at its end (`ulp(t + h)`): the rounding of `t + h`
+    /// (0.07 + 0.01 represents 0.010000000000000009), and a sub-ULP
+    /// `max_step` becomes a full-ULP step. Not a hard maximum. The default,
+    /// as before R4.
+    #[default]
+    AllowClockResolutionSlack,
+}
+
+/// A `max_step` and its policy.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(crate) struct StepCap {
+    pub(crate) max: f64,
+    pub(crate) policy: MaxStepPolicy,
+}
+
+impl StepCap {
+    pub(crate) const NONE: Self = Self {
+        max: f64::INFINITY,
+        policy: MaxStepPolicy::AllowClockResolutionSlack,
+    };
+
+    /// Whether a represented step `h` ending at `end` exceeds the cap
+    /// beyond what the policy allows.
+    fn exceeded(&self, h: f64, end: f64) -> bool {
+        match self.policy {
+            MaxStepPolicy::StrictRepresentedCap => h > self.max,
+            MaxStepPolicy::AllowClockResolutionSlack => {
+                h > self.max && h - self.max > end.next_up() - end
+            }
+        }
+    }
+}
+
+/// [`land`] with a hard maximum `cap` on the represented step (an adaptive
+/// driver's `max_step`): the rounding residue is never used to stretch a
+/// step past `cap`, and the represented step is checked against it
+/// ([`represent`]).
+pub(crate) fn land_capped(t: f64, proposed: f64, target: f64, cap: StepCap) -> CoreResult<Landing> {
+    let mut landing = land_nominal(t, proposed, target, cap)?;
+    if landing.step > 0.0 {
+        landing.step = represent(t, landing.step, cap)?;
+        landing.lands = t + landing.step == target;
+    }
+    Ok(landing)
+}
+
+fn land_nominal(t: f64, proposed: f64, target: f64, cap: StepCap) -> CoreResult<Landing> {
+    let to_target = step_to(t, target)?;
+    let natural = t + proposed;
+    // Rounding residue of the time sum: relative to the largest magnitude
+    // involved, including t, so it does not collapse for a target near zero
+    // reached from t < 0 (-0.3 + 3 * 0.1 is 5.6e-17, not 0), and at most
+    // 2^-10 of the step, so a step is never stretched or shortened silently
+    // by more than 0.1% at a large epoch.
+    let residue = (64.0 * f64::EPSILON * t.abs().max(natural.abs()).max(target.abs()))
+        .min(proposed * 2.0_f64.powi(-10));
+    if natural > target || proposed >= to_target {
+        // Passing the target by no more than the residue is a landing, not
+        // a shortened step (0.07 + 0.01 = 0.08000000000000002).
+        return Ok(Landing {
+            step: to_target,
+            lands: t + to_target == target,
+            shortened: natural - target > residue,
+        });
+    }
+    if natural == target {
+        return Ok(Landing {
+            step: proposed,
+            lands: true,
+            shortened: false,
+        });
+    }
+    let gap = target - natural;
+    // The extension respects a hard maximum up to one clock resolution at
+    // the target, like `represent`.
+    let extend = gap <= residue && !cap.exceeded(to_target, target);
+    Ok(Landing {
+        step: if extend { to_target } else { proposed },
+        lands: extend && t + to_target == target,
+        shortened: false,
+    })
+}
+
+/// The step toward the span end `tf` for a proposed step, by [`land`].
+pub(crate) fn end_step(t: f64, proposed: f64, tf: f64) -> CoreResult<f64> {
+    Ok(land(t, proposed, tf)?.step)
+}
+
+/// [`end_step`] with a hard maximum on the represented step.
+pub(crate) fn end_step_capped(t: f64, proposed: f64, tf: f64, cap: StepCap) -> CoreResult<f64> {
+    Ok(land_capped(t, proposed, tf, cap)?.step)
+}
+
+/// The step the stage equations must use for a step of nominal size `step`
+/// from `t` (re-audit R3, R3-TIME-01).
+///
+/// A stepper moves the clock to `t_end = t + step` rounded, but used to
+/// integrate the nominal `step`; at `t = 1e12` a step of `1e-4` moved the
+/// clock by one ULP (`1.22e-4`) and integrated `1e-4`, so eight steps over
+/// an 8-ULP span integrated 0.8192 of it. The returned `h` has
+/// `t + h == t_end` and is the represented interval `t_end - t` (exact
+/// when `t` and `t_end` are within a factor of two, otherwise within a few
+/// roundings of `h`, checked by [`check_clock`]), so the stage equations,
+/// dense output, error estimate and controller history all see the
+/// interval the clock records.
+///
+/// A represented step above `cap` is replaced by the one ending at the
+/// representable time below `t_end`; when that does not advance `t`, the
+/// time resolution at `t` is coarser than `cap` and the result is a typed
+/// error instead of a silently enlarged step.
+pub(crate) fn represent(t: f64, step: f64, cap: StepCap) -> CoreResult<f64> {
+    if !(t.is_finite() && step.is_finite() && step > 0.0) {
+        return Err(CoreError::InvalidInput(format!(
+            "time resolution: step {step:e} at t = {t:e} must be finite and positive"
+        )));
+    }
+    let t_end = t + step;
+    if !(t_end > t && t_end.is_finite()) {
+        return Err(CoreError::InvalidInput(format!(
+            "time resolution: step h = {step:e} does not advance the represented time t = {t:e}"
+        )));
+    }
+    let mut h = step_to(t, t_end)?;
+    // The represented step may exceed the nominal one by the rounding of
+    // t_end, up to one clock resolution at t_end; that is representation,
+    // not enlargement (an exact 0.07 + 0.01 == 0.08 landing has
+    // h = 0.010000000000000009). Only a larger excess is capped.
+    if cap.exceeded(h, t_end) {
+        let below = t_end.next_down();
+        if below <= t {
+            return Err(CoreError::InvalidInput(format!(
+                "time resolution: the next representable time after t = {t:e} is {:e} away, \
+                 above the maximum step {:e} ({:?})",
+                t_end - t,
+                cap.max,
+                cap.policy
+            )));
+        }
+        h = step_to(t, below)?;
+        // Strict: one step below may still be above a sub-ULP cap.
+        if cap.exceeded(h, below) {
+            return Err(CoreError::InvalidInput(format!(
+                "time resolution: no representable time after t = {t:e} within the maximum step {:e} ({:?})",
+                cap.max, cap.policy
+            )));
+        }
+    }
+    check_clock(t, h)?;
+    Ok(h)
+}
+
+/// True when a represented step `h` from `t` is below `min_step`: it ends
+/// before the represented time `t + min_step` (re-audit R3 review). Comparing
+/// the step sizes themselves would reject `0.02 -> 0.03`, whose represented
+/// step 0.009999999999999998 rounds below a `min_step` of 0.01.
+pub(crate) fn below_min_step(t: f64, h: f64, min_step: f64) -> bool {
+    t + h < t + min_step
+}
+
+/// The adaptive drivers' step toward `tf`: `None` when the proposal does not
+/// advance the represented time at all (the driver stops with
+/// `success = false`, as before the represented clock), otherwise the
+/// represented step, or a typed time-resolution error when the time
+/// resolution at `t` exceeds `max_step`.
+///
+/// After a rejected attempt from the same `t` (re-audit R4, TIME-DEV-02),
+/// the represented step is strictly shorter than the rejected one: at a
+/// coarse clock a proposal of 2.55 ULPs represents as the rejected 3 ULPs
+/// again, and the drivers used to retry the identical step until
+/// `max_attempts`. The step ends at the representable time below the
+/// rejected end instead, or the run fails with a typed time-resolution
+/// error when there is none after `t`.
+pub(crate) fn adaptive_end_step(
+    t: f64,
+    proposed: f64,
+    tf: f64,
+    cap: StepCap,
+    controller: &crate::AdaptiveControllerState,
+) -> CoreResult<Option<f64>> {
+    if cap.policy == MaxStepPolicy::StrictRepresentedCap && t.next_up() - t > cap.max {
+        return Err(CoreError::InvalidInput(format!(
+            "time resolution: no representable time after t = {t:e} within the strict maximum step {:e}",
+            cap.max
+        )));
+    }
+    let nominal = proposed.min(cap.max);
+    if nominal.is_nan() || nominal <= 0.0 || t + nominal <= t {
+        return Ok(None);
+    }
+    let step = end_step_capped(t, nominal, tf, cap)?;
+    match controller.last_rejected_trial() {
+        Some(rejected) if step >= rejected => {
+            let below = (t + rejected).next_down();
+            if below <= t {
+                return Err(CoreError::InvalidInput(format!(
+                    "time resolution: the rejected step {rejected:e} at t = {t:e} is one clock \
+                     resolution and cannot be shortened"
+                )));
+            }
+            let shorter = step_to(t, below)?;
+            check_clock(t, shorter)?;
+            Ok(Some(shorter))
+        }
+        _ => Ok(Some(step)),
+    }
+}
+
+/// A typed error unless the represented interval `fl(t + h) - t` equals `h`
+/// to within `4 eps h` (exact residual of the sum by TwoSum).
+pub(crate) fn check_clock(t: f64, h: f64) -> CoreResult<()> {
+    let sum = t + h;
+    let virtual_h = sum - t;
+    let residual = (t - (sum - virtual_h)) + (h - virtual_h);
+    if sum > t && residual.abs() <= 4.0 * f64::EPSILON * h {
+        Ok(())
+    } else {
+        Err(CoreError::InvalidInput(format!(
+            "inconsistent clock: step h = {h:e} at t = {t:e} moves the clock by {:e}",
+            h - residual
+        )))
+    }
+}
+
+/// Split a represented step `h` from `t` into two represented halves for
+/// step doubling (re-audit R3, R3-TIME-01: the second half used to start at
+/// `t + h/2` rounded and integrate `h/2`, which need not end at `t + h`).
+/// Returns `(h1, t_mid, h2)` with `t + h1 == t_mid`, `t_mid + h2 == t + h`
+/// and `t < t_mid < t + h`, or a typed error when the time resolution at `t`
+/// cannot hold a midpoint.
+pub(crate) fn split_clock(t: f64, h: f64) -> CoreResult<(f64, f64, f64)> {
+    let t_end = t + h;
+    let t_mid = t + 0.5 * h;
+    if !(t < t_mid && t_mid < t_end) {
+        return Err(CoreError::InvalidInput(format!(
+            "time resolution: no representable midpoint in ({t:e}, {t_end:e}) for step doubling"
+        )));
+    }
+    let h1 = step_to(t, t_mid)?;
+    let h2 = step_to(t_mid, t_end)?;
+    if t + h1 != t_mid || t_mid + h2 != t_end {
+        return Err(CoreError::InvalidInput(format!(
+            "inconsistent clock: step-doubling halves of h = {h:e} at t = {t:e} do not tile the step"
+        )));
+    }
+    check_clock(t, h1)?;
+    check_clock(t_mid, h2)?;
+    Ok((h1, t_mid, h2))
+}
+
+/// The time grid of a fixed-step integration (re-audit R3, R3-TIME-03).
+///
+/// Step `k` ends at the indexed time `t0 + k h`, formed with one rounding,
+/// and the last step ends at `tf` exactly; the clock never accumulates
+/// `t += h`. The count is `round(span / h)` when that many steps reach `tf`
+/// to within the rounding residue of the grid (at most `64 eps` of the
+/// largest magnitude and `h / 1024`), otherwise `ceil(span / h)` with a
+/// shorter final step. 1000 steps of 0.01 on (0, 10) are 1000 steps; the
+/// accumulated clock used to end 1.7e-13 short and add a micro-step.
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct FixedGrid {
+    t0: f64,
+    tf: f64,
+    h: f64,
+    steps: u64,
+}
+
+impl FixedGrid {
+    pub(crate) fn new(t0: f64, tf: f64, h: f64) -> CoreResult<Self> {
+        if !(t0.is_finite() && tf.is_finite() && h.is_finite() && h > 0.0 && tf >= t0) {
+            return Err(CoreError::InvalidInput(
+                "fixed-step grid needs finite t0 <= tf and a finite positive step".into(),
+            ));
+        }
+        let span = tf - t0;
+        if !span.is_finite() {
+            return Err(CoreError::InvalidInput(
+                "fixed-step grid span overflows binary64".into(),
+            ));
+        }
+        let ratio = span / h;
+        if ratio > 2.0_f64.powi(52) {
+            return Err(CoreError::InvalidInput(format!(
+                "fixed-step grid of {ratio:e} steps is beyond the indexed range"
+            )));
+        }
+        let rounded = ratio.round();
+        let residue = (64.0 * f64::EPSILON * t0.abs().max(tf.abs()).max(span)).min(h / 1024.0);
+        let steps = if span == 0.0 {
+            0
+        } else if rounded >= 1.0 && (rounded * h - span).abs() <= residue {
+            rounded as u64
+        } else {
+            ratio.ceil().max(1.0) as u64
+        };
+        Ok(Self { t0, tf, h, steps })
+    }
+
+    fn reached_within_residue(&self, t: f64, point: f64, k: u64) -> bool {
+        k < self.steps
+            && point - t <= (64.0 * f64::EPSILON * t.abs().max(point.abs())).min(self.h / 1024.0)
+    }
+
+    /// The indexed time of grid point `k`: `t0 + k h`, and `tf` at the end.
+    pub(crate) fn time(&self, k: u64) -> f64 {
+        if k >= self.steps {
+            self.tf
+        } else {
+            (self.t0 + k as f64 * self.h).min(self.tf)
+        }
+    }
+
+    /// The nominal step from `t` to the first grid point after it. Grid
+    /// points that round to or below `t` are skipped (several indexed times
+    /// can round to one represented time when `h` is below one ULP but above
+    /// half of one); a clipped step inside an interval returns to its grid
+    /// point. A nominal step that does not advance `t` at all is a typed
+    /// time-resolution error.
+    pub(crate) fn step_from(&self, t: f64) -> CoreResult<f64> {
+        if t >= self.tf {
+            return Err(CoreError::InvalidInput(
+                "fixed-step grid is already at its end".into(),
+            ));
+        }
+        // A nominal step below half an ULP of t is below the time
+        // resolution; skipping grid points would silently enlarge it.
+        require_progress(t, self.h)?;
+        let estimate = ((t - self.t0) / self.h).floor();
+        let mut k = if estimate.is_finite() && estimate > 0.0 {
+            (estimate as u64).min(self.steps)
+        } else {
+            0
+        };
+        while k > 0 && self.time(k) > t {
+            k -= 1;
+        }
+        // A grid point within the rounding residue after t counts as
+        // reached: after a clipped landing on a literal output 0.3, the
+        // indexed point 0.1 * 3 = 0.30000000000000004 is not a step of its
+        // own (re-audit R3 review).
+        while self.time(k) <= t || self.reached_within_residue(t, self.time(k), k) {
+            k += 1;
+        }
+        step_to(t, self.time(k))
+    }
+}
+
+/// A typed failure for a step that would not move the represented time:
+/// `t + h == t` (re-audit R2, R2-OUT-01: a fixed step below half an ULP of
+/// `t` used to loop, and an end slack used to report success instead).
+pub(crate) fn require_progress(t: f64, h: f64) -> CoreResult<()> {
+    if t + h > t {
+        Ok(())
+    } else {
+        Err(CoreError::InvalidInput(format!(
+            "time resolution: step h = {h:e} does not advance the represented time t = {t:e}"
+        )))
+    }
+}
+
+/// A step size `h > 0` with `t + h == target` in binary64, so a step that is
+/// meant to land on `target` (the span end, a hard stop or a clipped output
+/// time) lands on it exactly, and the drivers can use exact comparisons.
+///
+/// `target - t` is exact when the two are within a factor of two
+/// (Sterbenz); otherwise a few neighbouring step sizes are tried. When no
+/// step size lands exactly, the largest tried step that stays below
+/// `target` is returned, so a step never overshoots its target. When even
+/// that does not advance `t`, the result is a typed error rather than a
+/// zero-length step. `target == t` gives 0.
+pub(crate) fn step_to(t: f64, target: f64) -> CoreResult<f64> {
+    if !(t.is_finite() && target.is_finite()) || target < t {
+        return Err(CoreError::InvalidInput(
+            "step target must be finite and not before the current time".into(),
+        ));
+    }
+    if target == t {
+        return Ok(0.0);
+    }
+    let mut h = target - t;
+    if !h.is_finite() {
+        // The distance itself overflows (e.g. -1e308 to 1e308): no single
+        // step can land, and every finite proposal stays below the target.
+        return Ok(f64::MAX);
+    }
+    let mut below: Option<f64> = None;
+    for _ in 0..8 {
+        if !(h.is_finite() && h > 0.0) {
+            break;
+        }
+        let landed = t + h;
+        if landed == target {
+            return Ok(h);
+        }
+        if landed < target {
+            if landed > t {
+                below = Some(below.map_or(h, |best: f64| best.max(h)));
+            }
+            h = h.next_up();
+        } else {
+            h = h.next_down();
+        }
+    }
+    below.ok_or_else(|| {
+        CoreError::InvalidInput(format!(
+            "no binary64 step advances t = {t:e} toward {target:e}"
+        ))
+    })
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -37,7 +493,16 @@ impl OutputSchedule {
         }
         let span = end - start;
         let intervals = (span / spacing).round() as usize;
-        if (start + intervals as f64 * spacing - end).abs() > time_tolerance(start, end) {
+        // At t0 = 1e12 a 4-ULP span with spacing 1 has zero intervals and
+        // was accepted by an epoch-scaled slack, giving the schedule [tf] and
+        // y0 reported as y(tf) (re-audit R3, R3-TIME-02).
+        // The tolerance is the rounding of the inputs themselves (a few eps
+        // of the largest magnitude, so decimal grids such as
+        // uniform(1.1, 1.2, 0.1) pass) but never more than 2^-10 of the
+        // spacing, and a nonzero span needs at least one interval.
+        let tolerance =
+            (8.0 * f64::EPSILON * start.abs().max(end.abs()).max(span)).min(spacing / 1024.0);
+        if (span > 0.0 && intervals == 0) || (intervals as f64 * spacing - span).abs() > tolerance {
             return Err(CoreError::InvalidInput(
                 "output spacing must divide the integration interval".into(),
             ));
@@ -55,17 +520,167 @@ impl OutputSchedule {
         &self.times
     }
 
-    fn validate_span(&self, t0: f64, tf: f64) -> CoreResult<()> {
+    /// The schedule must name the span's represented endpoints exactly, and
+    /// a nonzero span needs both of them as distinct requests (re-audit R3,
+    /// R3-TIME-02: `[tf]` for `t0 < tf` passed as both endpoints and
+    /// returned the initial state labelled as the final time; endpoints a
+    /// few ULP off were accepted and relabelled).
+    pub(crate) fn validate_span(&self, t0: f64, tf: f64) -> CoreResult<()> {
         let first = *self.times.first().expect("nonempty schedule");
         let last = *self.times.last().expect("nonempty schedule");
-        if (first - t0).abs() > time_tolerance(first, t0)
-            || (last - tf).abs() > time_tolerance(last, tf)
-        {
+        if first != t0 || last != tf {
+            return Err(CoreError::InvalidInput(format!(
+                "output schedule must start at t0 = {t0:e} and end at tf = {tf:e} exactly \
+                 (got {first:e} .. {last:e})"
+            )));
+        }
+        if tf > t0 && self.times.len() < 2 {
             return Err(CoreError::InvalidInput(
-                "output schedule must include the integration start and end".into(),
+                "a nonzero integration span needs distinct start and end requests".into(),
             ));
         }
         Ok(())
+    }
+}
+
+/// Sampling policy for dense-output integrations.
+///
+/// Requested output times are sampled from accepted intervals and never change
+/// their size.  `hard_stops` are the separate, explicit discontinuity or
+/// breakpoint landings for which a step may be shortened.  Keeping these two
+/// concerns separate prevents an ordinary observation grid from contaminating
+/// adaptive-controller history.
+#[derive(Clone, Debug, PartialEq)]
+pub struct OutputSamplingPlan {
+    output: OutputSchedule,
+    hard_stops: Vec<f64>,
+}
+
+impl OutputSamplingPlan {
+    pub fn new(output: OutputSchedule, hard_stops: Vec<f64>) -> CoreResult<Self> {
+        if !hard_stops.iter().all(|time| time.is_finite())
+            || hard_stops.windows(2).any(|pair| pair[1] <= pair[0])
+        {
+            return Err(CoreError::InvalidInput(
+                "hard stops must be finite and strictly increasing".into(),
+            ));
+        }
+        Ok(Self { output, hard_stops })
+    }
+
+    pub fn dense(output: OutputSchedule) -> Self {
+        Self {
+            output,
+            hard_stops: Vec::new(),
+        }
+    }
+
+    pub fn output(&self) -> &OutputSchedule {
+        &self.output
+    }
+
+    pub fn hard_stops(&self) -> &[f64] {
+        &self.hard_stops
+    }
+
+    pub(crate) fn validate_span(&self, t0: f64, tf: f64) -> CoreResult<()> {
+        self.output.validate_span(t0, tf)?;
+        // Exact bounds: the cursor compares stops to represented times
+        // exactly, so a stop just before t0 could never be consumed.
+        if self.hard_stops.iter().any(|time| *time < t0 || *time > tf) {
+            return Err(CoreError::InvalidInput(
+                "hard stop lies outside the integration span".into(),
+            ));
+        }
+        Ok(())
+    }
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct HardStopCursor {
+    stops: Vec<f64>,
+    next_index: usize,
+    max_step: StepCap,
+}
+
+impl HardStopCursor {
+    pub(crate) fn new(plan: &OutputSamplingPlan, t_span: (f64, f64)) -> CoreResult<Self> {
+        plan.validate_span(t_span.0, t_span.1)?;
+        Ok(Self {
+            stops: plan.hard_stops.clone(),
+            next_index: 0,
+            max_step: StepCap::NONE,
+        })
+    }
+
+    /// Hard maximum on represented steps (an adaptive driver's `max_step`).
+    pub(crate) fn with_max_step(mut self, max_step: StepCap) -> Self {
+        self.max_step = max_step;
+        self
+    }
+
+    /// Return the actual trial size and whether a hard stop shortened an
+    /// otherwise requested step.  Output times are deliberately absent here.
+    pub(crate) fn limit_step(
+        &mut self,
+        t: f64,
+        proposed_h: f64,
+        tf: f64,
+    ) -> CoreResult<(f64, bool)> {
+        if !(t.is_finite() && proposed_h.is_finite() && proposed_h > 0.0 && tf.is_finite()) {
+            return Err(CoreError::InvalidInput(
+                "hard-stop step limit requires finite time and positive step".into(),
+            ));
+        }
+        let base = end_step_capped(t, proposed_h, tf, self.max_step)?;
+        if base <= 0.0 {
+            return Err(CoreError::InvalidInput(
+                "hard-stop step limit became nonpositive".into(),
+            ));
+        }
+        while let Some(&stop) = self.stops.get(self.next_index) {
+            if stop < t {
+                return Err(CoreError::InvalidInput(
+                    "hard-stop cursor advanced past a breakpoint".into(),
+                ));
+            }
+            if stop == t {
+                self.next_index += 1;
+                continue;
+            }
+            let landing = land_capped(t, base, stop, self.max_step)?;
+            require_progress(t, landing.step)?;
+            return Ok((landing.step, landing.shortened));
+        }
+        require_progress(t, base)?;
+        Ok((base, false))
+    }
+
+    /// Consume and report a declared hard stop reached by an accepted step.
+    ///
+    /// `limit_step`'s boolean records whether scheduling shortened the step,
+    /// because controllers need that distinction.  Multistep history instead
+    /// cares about the breakpoint identity itself, including the case where a
+    /// natural step happens to land there without shortening.
+    pub(crate) fn consume_landing(&mut self, t: f64) -> CoreResult<bool> {
+        if !t.is_finite() {
+            return Err(CoreError::InvalidInput(
+                "hard-stop landing time must be finite".into(),
+            ));
+        }
+        let Some(&stop) = self.stops.get(self.next_index) else {
+            return Ok(false);
+        };
+        if stop < t {
+            return Err(CoreError::InvalidInput(
+                "hard-stop cursor advanced past a breakpoint".into(),
+            ));
+        }
+        if stop == t {
+            self.next_index += 1;
+            return Ok(true);
+        }
+        Ok(false)
     }
 }
 
@@ -82,13 +697,43 @@ pub struct ObservedIntegrationResult {
 
 pub(crate) struct OutputCollector {
     schedule: OutputSchedule,
+    end: f64,
     next_index: usize,
     times: Vec<f64>,
     states: Vec<Vec<f64>>,
     clipped_steps: usize,
+    max_step: StepCap,
+    // Contract-tested staging for the pending generic verified-output driver.
+    // The sealed PR101 route currently owns its own transaction buffers.
+    #[cfg_attr(not(test), allow(dead_code))]
+    prepared_centers: Vec<Vec<f64>>,
+    #[cfg_attr(not(test), allow(dead_code))]
+    prepared_radii: Vec<Vec<f64>>,
+    #[cfg_attr(not(test), allow(dead_code))]
+    prepared_times: Vec<f64>,
+    #[cfg_attr(not(test), allow(dead_code))]
+    prepared_count: usize,
+    #[cfg_attr(not(test), allow(dead_code))]
+    radii: Vec<Vec<f64>>,
+    #[cfg_attr(not(test), allow(dead_code))]
+    prepared_valid: bool,
+    verified_mode: bool,
+}
+
+// Used by the contract-tested generic staging API below; integration pending.
+#[cfg_attr(not(test), allow(dead_code))]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(crate) struct DenseOutputPreparationWork {
+    pub(crate) requests_attempted: u64,
+    pub(crate) center_components: u64,
+    pub(crate) radius_components: u64,
 }
 
 impl OutputCollector {
+    pub(crate) fn output_clipped_steps(&self) -> usize {
+        self.clipped_steps
+    }
+
     pub(crate) fn new(
         schedule: &OutputSchedule,
         t_span: (f64, f64),
@@ -100,13 +745,119 @@ impl OutputCollector {
                 "initial state for output collection must be finite and nonempty".into(),
             ));
         }
+        let times = vec![schedule.times[0]];
+        let states = vec![y0.to_vec()];
+        let prepared_centers = Vec::new();
+        let prepared_radii = Vec::new();
+        let prepared_times = Vec::new();
+        let radii = Vec::new();
         Ok(Self {
             schedule: schedule.clone(),
+            end: t_span.1,
             next_index: 1,
-            times: vec![schedule.times[0]],
-            states: vec![y0.to_vec()],
+            times,
+            states,
             clipped_steps: 0,
+            max_step: StepCap::NONE,
+            prepared_centers,
+            prepared_radii,
+            prepared_times,
+            prepared_count: 0,
+            radii,
+            prepared_valid: false,
+            verified_mode: false,
         })
+    }
+
+    /// Hard maximum on represented steps (an adaptive driver's `max_step`).
+    pub(crate) fn with_max_step(mut self, max_step: StepCap) -> Self {
+        self.max_step = max_step;
+        self
+    }
+
+    /// Enable the isolated, preallocated verified-output transaction path.
+    /// Ordinary integrators retain the original append-only collector cost.
+    #[cfg_attr(not(test), allow(dead_code))]
+    pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
+        if self.verified_mode
+            || self.prepared_valid
+            || self.prepared_count != 0
+            || self.next_index != 1
+            || initial_radius.len() != self.states[0].len()
+            || initial_radius
+                .iter()
+                .any(|radius| !radius.is_finite() || *radius < 0.0)
+        {
+            return Err(CoreError::InvalidInput(
+                "verified output requires a finite nonnegative initial radius".into(),
+            ));
+        }
+        let count = self.schedule.times.len();
+        let dimension = initial_radius.len();
+        let mut times = Vec::new();
+        times.try_reserve_exact(count).map_err(|e| {
+            CoreError::InvalidInput(format!("cannot reserve verified output times: {e}"))
+        })?;
+        times.resize(count, 0.0);
+        times[0] = self.schedule.times[0];
+        let mut states = Vec::new();
+        states.try_reserve_exact(count).map_err(|e| {
+            CoreError::InvalidInput(format!("cannot reserve verified output states: {e}"))
+        })?;
+        for index in 0..count {
+            let mut row = Vec::new();
+            row.try_reserve_exact(dimension).map_err(|e| {
+                CoreError::InvalidInput(format!("cannot reserve verified state row: {e}"))
+            })?;
+            row.resize(dimension, 0.0);
+            if index == 0 {
+                row.copy_from_slice(&self.states[0]);
+            }
+            states.push(row);
+        }
+        let mut radii = Vec::new();
+        radii.try_reserve_exact(count).map_err(|e| {
+            CoreError::InvalidInput(format!("cannot reserve verified output radii: {e}"))
+        })?;
+        for index in 0..count {
+            let mut row = Vec::new();
+            row.try_reserve_exact(dimension).map_err(|e| {
+                CoreError::InvalidInput(format!("cannot reserve verified radius row: {e}"))
+            })?;
+            row.resize(dimension, 0.0);
+            if index == 0 {
+                row.copy_from_slice(initial_radius);
+            }
+            radii.push(row);
+        }
+        let mut staged_centers = Vec::new();
+        let mut staged_radii = Vec::new();
+        for target in [&mut staged_centers, &mut staged_radii] {
+            target.try_reserve_exact(count).map_err(|e| {
+                CoreError::InvalidInput(format!("cannot reserve verified radius staging: {e}"))
+            })?;
+            for _ in 0..count {
+                let mut row = Vec::new();
+                row.try_reserve_exact(dimension).map_err(|e| {
+                    CoreError::InvalidInput(format!("cannot reserve verified radius row: {e}"))
+                })?;
+                row.resize(dimension, 0.0);
+                target.push(row);
+            }
+        }
+        let mut staged_times = Vec::new();
+        staged_times.try_reserve_exact(count).map_err(|e| {
+            CoreError::InvalidInput(format!("cannot reserve verified staging times: {e}"))
+        })?;
+        staged_times.resize(count, 0.0);
+        self.times = times;
+        self.states = states;
+        self.radii = radii;
+        self.prepared_centers = staged_centers;
+        self.prepared_radii = staged_radii;
+        self.prepared_times = staged_times;
+        self.verified_mode = true;
+        Ok(self)
     }
 
     pub(crate) fn limit_step(&self, t: f64, proposed_h: f64, tf: f64) -> CoreResult<(f64, bool)> {
@@ -115,47 +866,109 @@ impl OutputCollector {
                 "output-aware step limit requires finite time and positive step".into(),
             ));
         }
-        let base = proposed_h.min(tf - t);
+        let base = end_step_capped(t, proposed_h, tf, self.max_step)?;
         if base <= 0.0 {
             return Err(CoreError::InvalidInput(
                 "output-aware step limit became nonpositive".into(),
             ));
         }
-        let Some(&next) = self.schedule.times.get(self.next_index) else {
+        let Some(next) = self.due(self.next_index) else {
+            require_progress(t, base)?;
             return Ok((base, false));
         };
-        let tolerance = time_tolerance(t, next);
-        if next < t - tolerance {
+        if next <= t {
             return Err(CoreError::InvalidInput(
                 "output collector advanced past a requested time".into(),
             ));
         }
-        let to_next = next - t;
-        if to_next <= tolerance {
+        let landing = land_capped(t, base, next, self.max_step)?;
+        require_progress(t, landing.step)?;
+        Ok((landing.step, landing.shortened))
+    }
+
+    /// [`Self::limit_step`] for a step `h` the driver has already landed
+    /// toward the span end with this collector's cap (`adaptive_end_step`
+    /// with the same `StepCap`): the re-landing toward the span end is
+    /// skipped (speed research node SPD01). An interior due time is still
+    /// landed on.
+    ///
+    /// Not identical to `limit_step` in two cases: (1) a step shortened by
+    /// the post-rejection rule whose end lies within the rounding residue
+    /// of the span end, which the re-landing extends back to it; (2) a step
+    /// below `2^16 eps max(|t|, |tf|)`, where the residue is capped by
+    /// `h 2^-10` and the re-landing of the represented (slightly larger)
+    /// `h` can extend it to the span end while the first landing did not
+    /// (independent review of the speed cycle: t0 = 2^40, a unit step;
+    /// legacy one attempt, fused two). Opt-in only; not for promotion as
+    /// is.
+    pub(crate) fn limit_landed_step(&self, t: f64, h: f64) -> CoreResult<(f64, bool)> {
+        if !(t.is_finite() && h.is_finite() && h > 0.0) {
             return Err(CoreError::InvalidInput(
-                "output collector encountered a duplicate requested time".into(),
+                "output-aware step limit requires finite time and positive step".into(),
             ));
         }
-        if base > to_next + tolerance {
-            Ok((to_next, true))
-        } else if (base - to_next).abs() <= tolerance {
-            Ok((to_next, false))
-        } else {
-            Ok((base, false))
+        let Some(next) = self.due(self.next_index) else {
+            require_progress(t, h)?;
+            return Ok((h, false));
+        };
+        if next <= t {
+            return Err(CoreError::InvalidInput(
+                "output collector advanced past a requested time".into(),
+            ));
         }
+        if next == self.end {
+            require_progress(t, h)?;
+            return Ok((h, false));
+        }
+        let landing = land_capped(t, h, next, self.max_step)?;
+        require_progress(t, landing.step)?;
+        Ok((landing.step, landing.shortened))
+    }
+
+    /// The cap this collector lands with.
+    pub(crate) fn max_step(&self) -> StepCap {
+        self.max_step
+    }
+
+    /// The time at which request `index` is due: its own represented time
+    /// (the last request is the span end exactly, [`OutputSchedule::validate_span`]).
+    fn due(&self, index: usize) -> Option<f64> {
+        let time = *self.schedule.times.get(index)?;
+        debug_assert!(index + 1 < self.schedule.times.len() || time == self.end);
+        Some(time)
     }
 
     pub(crate) fn accept(&mut self, t: f64, y: &[f64], clipped: bool) -> CoreResult<()> {
-        if !t.is_finite() || !y.iter().all(|value| value.is_finite()) {
+        if !y.iter().all(|value| value.is_finite()) {
             return Err(CoreError::NonFinite(
                 "accepted output state contains NaN/Inf".into(),
             ));
         }
-        let Some(&next) = self.schedule.times.get(self.next_index) else {
+        self.accept_prechecked(t, y, clipped)
+    }
+
+    /// [`Self::accept`] for a state the driver has already checked to be
+    /// finite (speed research node SPD01): the scan of `y` is skipped.
+    pub(crate) fn accept_prechecked(&mut self, t: f64, y: &[f64], clipped: bool) -> CoreResult<()> {
+        if self.verified_mode {
+            return Err(CoreError::InvalidInput(
+                "verified outputs must advance through a prepared dense interval".into(),
+            ));
+        }
+        if !t.is_finite() {
+            return Err(CoreError::NonFinite(
+                "accepted output state contains NaN/Inf".into(),
+            ));
+        }
+        let Some(next) = self.due(self.next_index) else {
             return Ok(());
         };
-        let tolerance = time_tolerance(t, next);
-        if t > next + tolerance {
+        if y.len() != self.states[0].len() {
+            return Err(CoreError::Dimension(
+                "accepted output state has the wrong dimension".into(),
+            ));
+        }
+        if t > next {
             return Err(CoreError::InvalidInput(
                 "accepted step overshot a requested output time".into(),
             ));
@@ -163,12 +976,233 @@ impl OutputCollector {
         if clipped {
             self.clipped_steps += 1;
         }
-        if (t - next).abs() <= tolerance {
-            self.times.push(next);
+        if t == next {
+            self.times.push(self.schedule.times[self.next_index]);
             self.states.push(y.to_vec());
             self.next_index += 1;
         }
         Ok(())
+    }
+
+    /// Consume every requested time in one accepted dense interval exactly
+    /// once.  This intentionally does not update `clipped_steps`: sampling an
+    /// already accepted interval is not a step-size policy decision.
+    pub(crate) fn accept_dense_interval<F>(
+        &mut self,
+        t_old: f64,
+        t_new: f64,
+        y_new: &[f64],
+        mut interpolate: F,
+    ) -> CoreResult<()>
+    where
+        F: FnMut(f64) -> CoreResult<Vec<f64>>,
+    {
+        if self.verified_mode {
+            return Err(CoreError::InvalidInput(
+                "verified dense output requires an explicit radius callback".into(),
+            ));
+        }
+        if !(t_old.is_finite()
+            && t_new.is_finite()
+            && t_new > t_old
+            && y_new.iter().all(|value| value.is_finite()))
+        {
+            return Err(CoreError::InvalidInput(
+                "dense output interval must be finite, increasing, and finite-valued".into(),
+            ));
+        }
+        while let Some(next) = self.due(self.next_index) {
+            if next <= t_old {
+                return Err(CoreError::InvalidInput(
+                    "dense output interval begins after a requested time".into(),
+                ));
+            }
+            if next > t_new {
+                break;
+            }
+            let state = if next == t_new {
+                y_new.to_vec()
+            } else {
+                let theta = (next - t_old) / (t_new - t_old);
+                if !(theta.is_finite() && theta > 0.0 && theta <= 1.0) {
+                    return Err(CoreError::InvalidInput(
+                        "dense output requested time lies outside the accepted interval".into(),
+                    ));
+                }
+                interpolate(theta)?
+            };
+            if !state.iter().all(|value| value.is_finite()) {
+                return Err(CoreError::NonFinite(
+                    "dense output state contains NaN/Inf".into(),
+                ));
+            }
+            self.times.push(self.schedule.times[self.next_index]);
+            self.states.push(state);
+            self.next_index += 1;
+        }
+        Ok(())
+    }
+
+    /// Prepare all requested centers and outward radii for one dense interval.
+    /// The committed output prefix is unchanged on every error. The callback
+    /// fills preallocated rows; work counters include a request before either
+    /// callback is invoked, including one that refuses.
+    #[cfg_attr(not(test), allow(dead_code))]
+    pub(crate) fn prepare_dense_interval_with_radii<C, R>(
+        &mut self,
+        t_old: f64,
+        t_new: f64,
+        y_new: &[f64],
+        mut center_at: C,
+        mut radius_at: R,
+        work: &mut DenseOutputPreparationWork,
+    ) -> CoreResult<()>
+    where
+        C: FnMut(f64, &mut [f64]) -> CoreResult<()>,
+        R: FnMut(f64, &mut [f64]) -> CoreResult<()>,
+    {
+        if !self.verified_mode {
+            return Err(CoreError::InvalidInput(
+                "verified dense output buffers were not enabled".into(),
+            ));
+        }
+        self.prepared_valid = false;
+        self.prepared_count = 0;
+        let result = self.prepare_dense_interval_inner(
+            t_old,
+            t_new,
+            y_new,
+            &mut center_at,
+            &mut radius_at,
+            work,
+        );
+        self.prepared_valid = result.is_ok();
+        if result.is_err() {
+            self.prepared_count = 0;
+        }
+        result
+    }
+
+    #[cfg_attr(not(test), allow(dead_code))]
+    fn prepare_dense_interval_inner<C, R>(
+        &mut self,
+        t_old: f64,
+        t_new: f64,
+        y_new: &[f64],
+        center_at: &mut C,
+        radius_at: &mut R,
+        work: &mut DenseOutputPreparationWork,
+    ) -> CoreResult<()>
+    where
+        C: FnMut(f64, &mut [f64]) -> CoreResult<()>,
+        R: FnMut(f64, &mut [f64]) -> CoreResult<()>,
+    {
+        self.prepared_count = 0;
+        if !(t_old.is_finite()
+            && t_new.is_finite()
+            && t_new > t_old
+            && y_new.len() == self.states.first().map_or(0, Vec::len)
+            && y_new.iter().all(|value| value.is_finite()))
+        {
+            return Err(CoreError::InvalidInput(
+                "dense output interval must be finite, increasing, and finite-valued".into(),
+            ));
+        }
+        // The interval (t_old, t_new] owns exactly the requests due in it,
+        // by exact comparison; t_old's own requests were consumed by the
+        // interval that ended there.
+        while let Some(&next) = self
+            .schedule
+            .times
+            .get(self.next_index + self.prepared_count)
+        {
+            if next <= t_old {
+                return Err(CoreError::InvalidInput(
+                    "dense output interval begins after a requested time".into(),
+                ));
+            }
+            if next > t_new {
+                break;
+            }
+            let row = self.prepared_count;
+            let theta = if next == t_new {
+                self.prepared_centers[row].copy_from_slice(y_new);
+                1.0
+            } else {
+                let theta = (next - t_old) / (t_new - t_old);
+                if !(theta.is_finite() && theta > 0.0 && theta <= 1.0) {
+                    return Err(CoreError::InvalidInput(
+                        "dense output requested time lies outside the accepted interval".into(),
+                    ));
+                }
+                work.requests_attempted = work.requests_attempted.saturating_add(1);
+                work.center_components = work
+                    .center_components
+                    .saturating_add(self.prepared_centers[row].len() as u64);
+                center_at(theta, &mut self.prepared_centers[row])?;
+                theta
+            };
+            if next == t_new {
+                work.requests_attempted = work.requests_attempted.saturating_add(1);
+                work.center_components = work
+                    .center_components
+                    .saturating_add(self.prepared_centers[row].len() as u64);
+            }
+            if !self.prepared_centers[row]
+                .iter()
+                .all(|value| value.is_finite())
+            {
+                return Err(CoreError::NonFinite(
+                    "dense output state contains NaN/Inf".into(),
+                ));
+            }
+            work.radius_components = work
+                .radius_components
+                .saturating_add(self.prepared_radii[row].len() as u64);
+            radius_at(theta, &mut self.prepared_radii[row])?;
+            if self.prepared_radii[row]
+                .iter()
+                .any(|value| !value.is_finite() || *value < 0.0)
+            {
+                return Err(CoreError::NonFinite(
+                    "dense output radius must be finite and nonnegative".into(),
+                ));
+            }
+            self.prepared_times[row] = self.schedule.times[self.next_index + row];
+            self.prepared_count += 1;
+        }
+        Ok(())
+    }
+
+    /// Commit the last successful preparation. No allocation or callback is
+    /// performed here, so this is safe as the final operation of a transaction.
+    #[cfg_attr(not(test), allow(dead_code))]
+    pub(crate) fn commit_prepared_dense_interval(&mut self) {
+        if !self.verified_mode || !self.prepared_valid {
+            return;
+        }
+        for row in 0..self.prepared_count {
+            self.times[self.next_index] = self.prepared_times[row];
+            self.states[self.next_index].copy_from_slice(&self.prepared_centers[row]);
+            self.radii[self.next_index].copy_from_slice(&self.prepared_radii[row]);
+            self.next_index += 1;
+        }
+        self.prepared_count = 0;
+        self.prepared_valid = false;
+    }
+
+    #[cfg_attr(not(test), allow(dead_code))]
+    pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+        &self.prepared_radii[..self.prepared_count]
+    }
+
+    #[cfg_attr(not(test), allow(dead_code))]
+    pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+        if self.verified_mode {
+            &self.radii[..self.next_index]
+        } else {
+            &[]
+        }
     }
 
     pub(crate) fn finish(self) -> CoreResult<(Vec<f64>, Vec<Vec<f64>>, usize)> {
@@ -177,7 +1211,16 @@ impl OutputCollector {
                 "integration ended before all requested outputs were recorded".into(),
             ));
         }
-        Ok((self.times, self.states, self.clipped_steps))
+        let n = self.next_index;
+        let mut times = self.times;
+        let mut states = self.states;
+        times.truncate(n);
+        states.truncate(n);
+        Ok((times, states, self.clipped_steps))
+    }
+
+    pub(crate) fn is_complete(&self) -> bool {
+        self.next_index == self.schedule.times.len()
     }
 
     /// Return the outputs accumulated so far without pretending that the
@@ -188,6 +1231,360 @@ impl OutputCollector {
     /// auditable.  Successful integrations must continue to use [`finish`],
     /// which enforces complete coverage of the requested schedule.
     pub(crate) fn finish_partial(self) -> (Vec<f64>, Vec<Vec<f64>>, usize) {
-        (self.times, self.states, self.clipped_steps)
+        let n = self.next_index;
+        let mut times = self.times;
+        let mut states = self.states;
+        times.truncate(n);
+        states.truncate(n);
+        (times, states, self.clipped_steps)
+    }
+}
+
+#[cfg(test)]
+mod transactional_dense_output_tests {
+    use super::*;
+
+    #[test]
+    fn prepared_dense_interval_refusal_keeps_committed_prefix() {
+        let schedule = OutputSchedule::new(vec![0.0, 0.5, 1.0]).unwrap();
+        let mut collector = OutputCollector::new(&schedule, (0.0, 1.0), &[2.0])
+            .unwrap()
+            .with_verified_radii(&[0.01])
+            .unwrap();
+        let mut work = DenseOutputPreparationWork::default();
+        let failed = collector.prepare_dense_interval_with_radii(
+            0.0,
+            1.0,
+            &[3.0],
+            |theta, center| {
+                center[0] = 2.0 + theta;
+                Ok(())
+            },
+            |theta, radius| {
+                radius[0] = 0.1 * theta;
+                if theta < 1.0 {
+                    Err(CoreError::InvalidInput("injected radius refusal".into()))
+                } else {
+                    Ok(())
+                }
+            },
+            &mut work,
+        );
+        assert!(failed.is_err());
+        assert_eq!(collector.next_index, 1);
+        assert_eq!(collector.times[0], 0.0);
+        assert_eq!(collector.states[0], [2.0]);
+        assert_eq!(work.requests_attempted, 1);
+        assert_eq!(collector.committed_output_radii().len(), 1);
+
+        collector
+            .prepare_dense_interval_with_radii(
+                0.0,
+                1.0,
+                &[3.0],
+                |theta, center| {
+                    center[0] = 2.0 + theta;
+                    Ok(())
+                },
+                |theta, radius| {
+                    radius[0] = 0.1 * theta;
+                    Ok(())
+                },
+                &mut work,
+            )
+            .unwrap();
+        assert_eq!(collector.next_index, 1);
+        assert_eq!(collector.prepared_dense_radii(), &[vec![0.05], vec![0.1]]);
+        collector.commit_prepared_dense_interval();
+        assert_eq!(collector.next_index, 3);
+        assert_eq!(collector.times, [0.0, 0.5, 1.0]);
+        assert_eq!(collector.states[1], [2.5]);
+        assert_eq!(collector.states[2], [3.0]);
+        assert_eq!(collector.committed_output_radii()[1], [0.05]);
+        assert_eq!(collector.committed_output_radii()[2], [0.1]);
+        assert_eq!(work.requests_attempted, 3);
+    }
+
+    #[test]
+    fn prepared_dense_interval_rejects_nonfinite_radius_without_commit() {
+        let schedule = OutputSchedule::new(vec![0.0, 1.0]).unwrap();
+        let mut collector = OutputCollector::new(&schedule, (0.0, 1.0), &[1.0])
+            .unwrap()
+            .with_verified_radii(&[0.0])
+            .unwrap();
+        let error = collector.prepare_dense_interval_with_radii(
+            0.0,
+            1.0,
+            &[2.0],
+            |_theta, center| {
+                center[0] = 2.0;
+                Ok(())
+            },
+            |_theta, radius| {
+                radius[0] = f64::NAN;
+                Ok(())
+            },
+            &mut DenseOutputPreparationWork::default(),
+        );
+        assert!(matches!(error, Err(CoreError::NonFinite(_))));
+        assert_eq!(collector.next_index, 1);
+        assert_eq!(collector.times[0], 0.0);
+        assert_eq!(collector.states[0], [1.0]);
+    }
+
+    #[test]
+    fn verified_radius_mode_cannot_be_reentered_after_preparation() {
+        let schedule = OutputSchedule::new(vec![0.0, 1.0]).unwrap();
+        let mut collector = OutputCollector::new(&schedule, (0.0, 1.0), &[1.0])
+            .unwrap()
+            .with_verified_radii(&[0.25])
+            .unwrap();
+        collector
+            .prepare_dense_interval_with_radii(
+                0.0,
+                1.0,
+                &[2.0],
+                |_theta, center| {
+                    center[0] = 2.0;
+                    Ok(())
+                },
+                |_theta, radius| {
+                    radius[0] = 0.5;
+                    Ok(())
+                },
+                &mut DenseOutputPreparationWork::default(),
+            )
+            .unwrap();
+
+        assert!(matches!(
+            collector.with_verified_radii(&[0.0]),
+            Err(CoreError::InvalidInput(_))
+        ));
+    }
+
+    #[test]
+    fn late_preparation_refusal_invalidates_earlier_staged_rows() {
+        let schedule = OutputSchedule::new(vec![0.0, 0.25, 0.5, 1.0]).unwrap();
+        let mut collector = OutputCollector::new(&schedule, (0.0, 1.0), &[1.0])
+            .unwrap()
+            .with_verified_radii(&[0.0])
+            .unwrap();
+        let error = collector.prepare_dense_interval_with_radii(
+            0.0,
+            1.0,
+            &[2.0],
+            |theta, center| {
+                center[0] = 1.0 + theta;
+                Ok(())
+            },
+            |theta, radius| {
+                radius[0] = theta;
+                if theta > 0.25 {
+                    Err(CoreError::InvalidInput("injected late refusal".into()))
+                } else {
+                    Ok(())
+                }
+            },
+            &mut DenseOutputPreparationWork::default(),
+        );
+        assert!(matches!(error, Err(CoreError::InvalidInput(_))));
+        assert_eq!(collector.next_index, 1);
+        assert_eq!(collector.prepared_dense_radii().len(), 0);
+        collector.commit_prepared_dense_interval();
+        assert_eq!(collector.next_index, 1);
+        assert_eq!(collector.times[0], 0.0);
+        assert_eq!(collector.states[0], [1.0]);
+        assert_eq!(collector.committed_output_radii(), &[vec![0.0]]);
+    }
+
+    #[test]
+    fn ordinary_collector_has_no_verified_radius_prefix() {
+        let schedule = OutputSchedule::new(vec![0.0, 1.0]).unwrap();
+        let collector = OutputCollector::new(&schedule, (0.0, 1.0), &[1.0]).unwrap();
+        assert!(collector.committed_output_radii().is_empty());
+    }
+}
+
+/// Property test of the fused landing of speed research node SPD01
+/// (`research/spd01_fast_driver_overhead_20261005`): the fused rule
+/// `limit_landed_step(t, h)` against the legacy composition
+/// `limit_step(t, h, tf)` on a step `h` that `adaptive_end_step` has already
+/// landed with the same cap. Discrepancies are classified: A (the step lands
+/// exactly on `tf`), B (an interior step), C (a step shortened by the
+/// post-rejection rule whose end lies within the residue of `tf`, which the
+/// legacy re-landing can extend back to `tf`).
+#[cfg(test)]
+mod spd01_landing_property {
+    use super::*;
+    use crate::AdaptiveControllerState;
+
+    struct SplitMix(u64);
+
+    impl SplitMix {
+        fn next(&mut self) -> u64 {
+            self.0 = self.0.wrapping_add(0x9E37_79B9_7F4A_7C15);
+            let mut z = self.0;
+            z = (z ^ (z >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+            z = (z ^ (z >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+            z ^ (z >> 31)
+        }
+        fn unit(&mut self) -> f64 {
+            (self.next() >> 11) as f64 * 2.0_f64.powi(-53)
+        }
+        fn uniform(&mut self, lo: f64, hi: f64) -> f64 {
+            lo + (hi - lo) * self.unit()
+        }
+    }
+
+    #[derive(Default, Debug)]
+    struct Counts {
+        samples: u64,
+        skipped: u64,
+        compared: u64,
+        interior_due: u64,
+        class_c_fired: u64,
+        discrepancy_a: u64,
+        discrepancy_b: u64,
+        discrepancy_c: u64,
+        discrepancy_a_tiny: u64,
+        discrepancy_b_tiny: u64,
+    }
+
+    fn same(a: &CoreResult<(f64, bool)>, b: &CoreResult<(f64, bool)>) -> bool {
+        match (a, b) {
+            (Ok((x, p)), Ok((y, q))) => x.to_bits() == y.to_bits() && p == q,
+            (Err(_), Err(_)) => true,
+            _ => false,
+        }
+    }
+
+    #[test]
+    fn fused_landing_equals_the_legacy_composition() {
+        let total: u64 = std::env::var("SPD01_PROPERTY_SAMPLES")
+            .ok()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(1_000_000);
+        let mut rng = SplitMix(0x5bd1_0105_2026_1005);
+        let mut counts = Counts::default();
+        let epochs = [0.0, 1.0e3, 1.0e6, 1.0e12, 1.0e100];
+        for _ in 0..total {
+            counts.samples += 1;
+            let t0 = epochs[(rng.next() % 5) as usize];
+            // The span length relative to the epoch's resolution: from a few
+            // ULPs of the epoch to a sizeable span.
+            let span = if t0 == 0.0 {
+                10.0_f64.powf(rng.uniform(-3.0, 3.0))
+            } else {
+                t0 * 10.0_f64.powf(rng.uniform(-15.0, 0.0))
+            };
+            let tf = t0 + span;
+            if tf <= t0 || !tf.is_finite() {
+                counts.skipped += 1;
+                continue;
+            }
+            let t = t0 + rng.unit() * (tf - t0);
+            if t >= tf {
+                counts.skipped += 1;
+                continue;
+            }
+            let h0 = (tf - t0) * 10.0_f64.powf(rng.uniform(-16.0, 0.0));
+            let cap = StepCap {
+                max: if rng.unit() < 0.5 {
+                    f64::INFINITY
+                } else {
+                    (tf - t0) * 10.0_f64.powf(rng.uniform(-6.0, 0.0))
+                },
+                policy: if rng.unit() < 0.5 {
+                    MaxStepPolicy::AllowClockResolutionSlack
+                } else {
+                    MaxStepPolicy::StrictRepresentedCap
+                },
+            };
+            let rejected = if rng.unit() < 0.3 {
+                Some(h0 * rng.uniform(0.5, 1.5))
+            } else {
+                None
+            };
+            let controller = AdaptiveControllerState::with_last_rejected_trial(rejected);
+            let Ok(Some(h)) = adaptive_end_step(t, h0, tf, cap, &controller) else {
+                counts.skipped += 1;
+                continue;
+            };
+            // Did the post-rejection shortening fire?
+            let shortened = rejected.is_some()
+                && end_step_capped(t, h0.min(cap.max), tf, cap)
+                    .map(|plain| h.to_bits() != plain.to_bits())
+                    .unwrap_or(false);
+            if shortened {
+                counts.class_c_fired += 1;
+            }
+            let interior = rng.unit() < 0.3;
+            let schedule = if interior {
+                let mid = t + rng.unit() * (tf - t);
+                if mid <= t || mid >= tf {
+                    counts.skipped += 1;
+                    continue;
+                }
+                OutputSchedule::new(vec![t0, mid, tf]).unwrap()
+            } else {
+                OutputSchedule::new(vec![t0, tf]).unwrap()
+            };
+            let collector = OutputCollector::new(&schedule, (t0, tf), &[1.0])
+                .unwrap()
+                .with_max_step(cap);
+            let legacy = collector.limit_step(t, h, tf);
+            let fused = collector.limit_landed_step(t, h);
+            counts.compared += 1;
+            if interior {
+                counts.interior_due += 1;
+            }
+            if same(&legacy, &fused) {
+                continue;
+            }
+            let tiny = h < 2.0_f64.powi(16) * f64::EPSILON * t.abs().max(tf.abs());
+            if shortened {
+                counts.discrepancy_c += 1;
+            } else if t + h == tf {
+                if tiny {
+                    counts.discrepancy_a_tiny += 1;
+                } else {
+                    counts.discrepancy_a += 1;
+                }
+            } else if tiny {
+                counts.discrepancy_b_tiny += 1;
+            } else {
+                counts.discrepancy_b += 1;
+            }
+        }
+        println!("{counts:?}");
+        if let Ok(path) = std::env::var("SPD01_PROPERTY") {
+            let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../..")
+                .join(path);
+            assert!(
+                !path.exists(),
+                "immutable output exists: {}",
+                path.display()
+            );
+            let text = format!(
+                "{{\"schema\": \"vigilode-spd01-property-v1\", \"seed\": \"0x5bd1010520261005\", \
+                 \"samples\": {}, \"skipped\": {}, \"compared\": {}, \"interior_due\": {}, \
+                 \"class_c_fired\": {}, \"discrepancy_a\": {}, \"discrepancy_b\": {}, \
+                 \"discrepancy_c\": {}, \"discrepancy_a_tiny\": {}, \"discrepancy_b_tiny\": {}}}\n",
+                counts.samples,
+                counts.skipped,
+                counts.compared,
+                counts.interior_due,
+                counts.class_c_fired,
+                counts.discrepancy_a,
+                counts.discrepancy_b,
+                counts.discrepancy_c,
+                counts.discrepancy_a_tiny,
+                counts.discrepancy_b_tiny
+            );
+            std::fs::write(&path, text).unwrap();
+        }
+        assert_eq!(counts.discrepancy_a, 0, "class A discrepancies: {counts:?}");
+        assert_eq!(counts.discrepancy_b, 0, "class B discrepancies: {counts:?}");
     }
 }

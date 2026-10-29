@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "data_kind": "synthetic_contract_test",
+  "scope": "same-checkpoint paired native candidates; not a universal best-method oracle",
+  "performance_claim_authorized": false,
+  "validation_scope": "reported values and identities only; raw verification is a caller-provided attestation",
+  "windows": [
+    {
+      "window_id": "window0",
+      "paired_block_id": "repeat0",
+      "rows": 2,
+      "assessment": [
+        {
+          "row_index": 0,
+          "candidate_id": "selected",
+          "selected": true,
+          "total_seconds": 2.0,
+          "physical_error_plus_uncertainty_upper": 1.0000000000000002e-06,
+          "reported_physical_error": 1e-06,
+          "reported_reference_uncertainty": 0.0
+        },
+        {
+          "row_index": 1,
+          "candidate_id": "alternative",
+          "selected": false,
+          "total_seconds": 0.5,
+          "physical_error_plus_uncertainty_upper": 1.0000000000000002e-06,
+          "reported_physical_error": 1e-06,
+          "reported_reference_uncertainty": 0.0
+        }
+      ],
+      "selected_candidate_id": "selected",
+      "reported_selection_reason": "measured_cost",
+      "eligible_candidates": 2,
+      "status": "COMPARABLE",
+      "best_measured_candidate_id": "alternative",
+      "selected_total_seconds": 2.0,
+      "best_measured_total_seconds": 0.5,
+      "observed_cost_ratio": 4.0,
+      "observed_excess_seconds": 1.5,
+      "interpretation": "same physical error ceiling; achieved errors may differ; no causal diagnosis or statistical confidence implied"
+    }
+  ],
+  "rejected_rows": [],
+  "summary": {
+    "COMPARABLE": 1
+  },
+  "input_sha256": "72f1db9e9e5487f28900251e705192d51b9edf595153ed8a03f014b1a7d367b4",
+  "analyzer_sha256": "c1e789038a5b1492f51a1ed79a6260cd7342f56c331f906f206855233ee804ab"
+}

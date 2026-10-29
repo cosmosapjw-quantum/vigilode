@@ -1,0 +1,124 @@
+{
+  "schema": "vigilode-r3-statistics-v1",
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "source_tree": "182fa306067b84ee10ec1f1b1e5fbad9e769aae1",
+  "verdict": "REWORK_BOUNDED_RAW_ADMISSION",
+  "findings": [
+    {
+      "id": "R3-STAT-01",
+      "severity": "P2",
+      "title_ko": "원자료 재검증이 ABBA·warmup·batch 프로토콜 위반을 승인함",
+      "status": "CONFIRMED",
+      "evidence_status": [
+        "implementation-verified"
+      ],
+      "failure_layer": [
+        "EVIDENCE_AUTHORITY",
+        "IMPLEMENTATION"
+      ],
+      "source_locations": [
+        {
+          "path": "crates/rodas5p-fair-ab/src/paired_timing.rs",
+          "lines": "288–323",
+          "symbol": "PairedTimingCase::validate"
+        },
+        {
+          "path": "crates/rodas5p-fair-ab/src/paired_timing.rs",
+          "lines": "798–814",
+          "symbol": "PairedTimingAssessment::verify_against_raw"
+        }
+      ],
+      "input": "Synthetic 1.3 ratio / 30 pairs / six labelled sessions with matching ratio-1 A/A; mutate raw case before assessment",
+      "variants": [
+        "empty_order",
+        "wrong_order",
+        "wrong_batch",
+        "negative_warmup",
+        "nan_warmup"
+      ],
+      "expected": "Malformed raw protocol must fail admission before a confirmatory assessment exists",
+      "observed": "All five variants produce gate_decision=Promote and verify_against_raw=Ok(Promote)",
+      "scope": "Public library receipt admission; no current CLI false promotion reproduced, no claim that measure_paired_case emits malformed order",
+      "evidence": [
+        "native_probe.jsonl",
+        "EXECUTION_RECEIPT.json",
+        "probe/src/main.rs"
+      ],
+      "remediation": "Recompute finite nonnegative warmup calibration and require batch equality; validate recorded seeded ABBA order and pair lengths before assessment/raw verification",
+      "candidate_status": "standalone candidate_receipt_check accepts valid fixture and rejects all five malformed fixtures; not applied to production",
+      "next_steps": [
+        "STAT-DEV-01",
+        "STAT-DEV-02"
+      ]
+    }
+  ],
+  "closures": [
+    {
+      "prior_id": "R2-STAT-01",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCERS",
+      "evidence_status": "implementation-verified",
+      "cases": [
+        "unlabelled actual producer -> 0 independent sessions/Inconclusive",
+        "same PID declared label77 -> 1 session/Inconclusive",
+        "candidate0..5/A-A100..105 -> Inconclusive",
+        "matched labels0..5 -> raw-verified Promote on synthetic constant ratios"
+      ],
+      "residual": "Declared IDs are not OS-bound; documented limitation, not new finding"
+    },
+    {
+      "prior_id": "R2-STAT-02",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCERS",
+      "evidence_status": "implementation-verified",
+      "cases": [
+        "16 legacy + 1 modern -> calls17 / unknown16 / vector None",
+        "reverse order identical",
+        "JSON roundtrip plus further modern merge remains Unknown",
+        "public IntegratorRunRecord::cost returns None"
+      ],
+      "consumer_source_review": "Private front and attainment now explicitly list NotEvaluated records; actual regression results to be joined from root runtime evidence"
+    },
+    {
+      "prior_id": "R2-STAT-03",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCERS",
+      "evidence_status": [
+        "implementation-verified",
+        "numerically checked"
+      ],
+      "cases": [
+        "B=1 preview yields Inconclusive and verified gate rejects",
+        "B=10000 original fixture agrees with exact 46656-draw percentile endpoints"
+      ],
+      "residual": "Reported MC bands do not establish population CI coverage"
+    }
+  ],
+  "research": [
+    {
+      "id": "R3-STAT-RESEARCH-01",
+      "claim": "Fixed-threshold Bernoulli Hoeffding bounds can propagate conditional bootstrap Monte Carlo error into a conservative gate",
+      "evidence_status": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "formula": "epsilon=sqrt(log(2/delta)/(2B)); U=clip(K/B+epsilon); L=clip(K/B-epsilon); Promote if U<0.025, Block if L>0.975, otherwise Inconclusive",
+      "assumptions": [
+        "iid bootstrap replicates conditional on fixed empirical data",
+        "fixed threshold and B",
+        "two-sided failure budget delta",
+        "PRNG implementation is a numerical demonstration, not proof of ideal iid sampling"
+      ],
+      "execution": "bootstrap_mc_candidate.json",
+      "claim_ceiling": "Conditional resampling error only; no population coverage guarantee and no observed speedup",
+      "independent_decision": "PENDING_ROOT_REVIEW",
+      "production_status": "NOT_APPLIED"
+    }
+  ],
+  "acknowledged_limits_not_findings": [
+    "Caller-supplied session IDs are not an OS process/campaign identity",
+    "No paired-timing runner feeds CLI; CLI wall gates honestly remain NotEvaluated",
+    "Self-consistency-only consumer cannot expose coherently fabricated bounds; raw verification needed",
+    "Six-session percentile bootstrap finite population coverage is a separate statistical-method research question"
+  ],
+  "native_records": 10,
+  "new_findings_count": 1
+}

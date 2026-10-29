@@ -1,0 +1,729 @@
+{
+  "schema_version": "1.0",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "branch": "claude/jolly-wozniak-7wl15h-wu22-reaudit-r2",
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "source_tree": "182fa306067b84ee10ec1f1b1e5fbad9e769aae1",
+  "node_count": 21,
+  "nodes": [
+    {
+      "id": "TIME-01",
+      "priority": "P1",
+      "title": "Bind physical step equations to the represented integration interval",
+      "depends_on": [],
+      "targets": [
+        "crates/rodas5p-integrators/src/output.rs",
+        "crates/rodas5p-integrators/src/integrate.rs",
+        "crates/rodas5p-integrators/src/dense_output_v2.rs",
+        "crates/rodas5p-integrators/src/bdf.rs",
+        "crates/rodas5p-integrators/src/radau.rs",
+        "crates/rodas5p-integrators/src/adaptive_exponential.rs"
+      ],
+      "implementation": [
+        "Use one planning value containing represented t_start, t_end and consumed h_eff; require t_end > t_start and verify the addition/subtraction relationship explicitly.",
+        "In the local Sterbenz regime choose t_end from the nominal proposal and targets, then h_eff=t_end-t_start; pass that same h_eff through stage equations, dense extension, error/controller history and work receipt.",
+        "Recheck user max_step and method constraints against h_eff, not the nominal h; if the next representable endpoint would exceed a hard maximum, report time-resolution failure instead of silently enlarging the step.",
+        "Outside exact subtraction regime retain a documented multi-piece or compensated local-clock policy; do not claim the local prototype solves opposite-sign cancellation globally.",
+        "Check internal Radau/BDF half-step clocks separately; outer-step advancement does not prove each substep advances.",
+        "Feed actual successive h_eff to variable-step BDF coefficients, or explicitly restart BDF history where the fixed-step coefficient assumptions fail."
+      ],
+      "acceptance": [
+        "Constant flow on the 8-ULP span at t0=+-1e12 with nominal h=1e-4 reaches y(tf)=1 within 1e-12 or returns a typed failure; no successful 0.8192 endpoint.",
+        "Repeat identical local problem with time origin 0, large positive/negative origins and power-of-two unit changes; distinguish representational conditioning from truncation.",
+        "Check exact requested endpoints, adjacent interior samples, hard stops, opposite-sign crossing and below-ULP steps.",
+        "Check nonautonomous analytic problems and BDF history/order with changed effective h, including power-of-two ULP boundaries.",
+        "Every successful recorded step has a receipt connecting physical h, represented endpoints and all accepted internal reports."
+      ],
+      "failure_status": "Typed time-resolution or inconsistent-clock failure; never silently relabel a state to an unintegrated physical time.",
+      "deliverables": [
+        "source-bound regression results",
+        "reviewed implementation diff"
+      ],
+      "claim_ceiling": "Standalone candidate checks constant-flow local clock consistency only; production, nonautonomous order and full BDF history still require implementation and tests.",
+      "detail_file": "time/NEXT_STEPS.json",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "TIME-02",
+      "priority": "P2",
+      "title": "Make nonzero-span output endpoint ownership unambiguous",
+      "depends_on": [],
+      "targets": [
+        "crates/rodas5p-integrators/src/output.rs:OutputSchedule::uniform",
+        "crates/rodas5p-integrators/src/output.rs:OutputSchedule::validate_span",
+        "crates/rodas5p-integrators/src/output.rs:OutputCollector::new/due"
+      ],
+      "implementation": [
+        "For nonzero spans require at least two represented output points and require actual endpoints in the output schedule.",
+        "Reject uniform grids whose rounded interval count is zero for a nonzero span; do not let an epoch-scaled validation tolerance certify divisibility.",
+        "Adopt strict endpoint equality, as in the standalone candidate, or expose an explicit endpoint-alias policy returning canonical actual timestamps and separate requested labels.",
+        "Keep one-point schedules valid only for an exactly zero span."
+      ],
+      "acceptance": [
+        "uniform(1e12,nextafter^4(1e12),1) rejects as indivisible or produces both true endpoints with a documented rule; it must not silently emit only y0 labelled tf.",
+        "Explicit [tf] for t0<tf is rejected.",
+        "Two adjacent distinct endpoint values remain distinct, including subnormal and large-epoch spans.",
+        "The valid [t0,tf] control integrates to the analytic final value, while shifted endpoint labels are either rejected or canonically reported with alias metadata.",
+        "Dense and clipped collectors produce identical endpoint semantics."
+      ],
+      "failure_status": "Typed invalid-schedule error before integration; no success receipt with initial state at the final timestamp.",
+      "deliverables": [
+        "source-bound regression results",
+        "reviewed implementation diff"
+      ],
+      "claim_ceiling": "Minimal admission contract only; production API compatibility decision remains with maintainers.",
+      "detail_file": "time/NEXT_STEPS.json",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "TIME-03",
+      "priority": "P2",
+      "title": "Separate fixed-grid construction from long-run accumulated clock drift",
+      "depends_on": [
+        "TIME-01",
+        "TIME-02"
+      ],
+      "targets": [
+        "crates/rodas5p-integrators/src/output.rs",
+        "crates/rodas5p-integrators/src/bdf.rs"
+      ],
+      "implementation": [
+        "Define fixed-step grid ownership by indexed or compensated local timestamps, including exact final landing.",
+        "Base BDF history on actual intervals; do not merely enlarge a tolerance to hide an extra step.",
+        "Version the research replay clock policy explicitly before changing sealed research-driver histories."
+      ],
+      "acceptance": [
+        "1000 nominal steps of 0.01 on (0,10) have the documented grid count without a final roundoff micro-step.",
+        "BDF startup count and applied-order history match the chosen grid policy; endpoint accuracy remains controlled.",
+        "Existing sealed research replays retain identity or receive a distinct, documented policy version and new evidence."
+      ],
+      "failure_status": "Preserve the documented existing limitation until the new grid contract is tested; no generic fixed-step invariance claim.",
+      "deliverables": [
+        "source-bound regression results",
+        "reviewed implementation diff"
+      ],
+      "claim_ceiling": "Only the stated acceptance contract; no automatic production or performance promotion",
+      "detail_file": "time/NEXT_STEPS.json",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "ARITH-01",
+      "priority": "P2",
+      "title": "Bind weighting loss to original-target convergence",
+      "depends_on": [],
+      "targets": [
+        "crates/rodas5p-core/src/binary_scaling.rs",
+        "crates/rodas5p-integrators/src/exponential.rs",
+        "crates/rodas5p-core/src/matrix_functions.rs"
+      ],
+      "implementation": [
+        "Introduce weighting quality/transform-error status in action reports, including prefix and dense wrappers.",
+        "Minimal safe behavior rejects lost>0 before successful original-target convergence unless a trusted output bound is supplied.",
+        "Keep the work counter; do not mistake it for an acceptance bound."
+      ],
+      "acceptance": [
+        "R3 positive and negative h nilpotent witnesses cannot report unqualified original-target convergence.",
+        "Original PHI-R1/R2 fixtures remain within 1e-12.",
+        "A=0 control documents conservative rejection or bounded acceptance.",
+        "No report consumer can discard non-authoritative transform status."
+      ],
+      "failure_status": "TRANSFORM_ERROR_UNBOUNDED, typed failure or converged=false",
+      "deliverables": [
+        "native regression stdout/exit and source hash",
+        "exact Fraction oracle comparison",
+        "consumer state transition test"
+      ],
+      "claim_ceiling": "Closes unsafe partial-loss success; does not implement general full-range action arithmetic.",
+      "detail_file": "arithmetic/NEXT_STEPS.json",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "ARITH-02",
+      "priority": "RESEARCH",
+      "title": "Propagate coefficient rounding to physical output",
+      "depends_on": [
+        "ARITH-01"
+      ],
+      "targets": [
+        "research-only module specified in implementation"
+      ],
+      "implementation": [
+        "Represent coefficient rounding/loss bounds using mantissa/exponent or interval arithmetic; never round a nonzero bound down to zero.",
+        "Offer structural action bounds for nilpotent/triangular/dissipative cases and fail closed for unsupported general operators.",
+        "Separate transform, projection, truncation, and roundoff error fields."
+      ],
+      "acceptance": [
+        "Exact nilpotent Fraction fixtures with positive/negative h bound the actual first-component error.",
+        "Normal, subnormal and near-overflow inputs exercise each bound branch.",
+        "Cases with only a coarse logarithmic-norm bound remain rejected when too conservative; do not relax tolerance."
+      ],
+      "failure_status": "HOLD",
+      "deliverables": [
+        "source-bound regression results",
+        "reviewed implementation diff"
+      ],
+      "claim_ceiling": "Only certified operator classes and implemented rounding model; no generic matrix-free certificate.",
+      "detail_file": "arithmetic/NEXT_STEPS.json",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "ARITH-03",
+      "priority": "P2",
+      "title": "Preserve dense reference amplitude/transform authority at consumers",
+      "depends_on": [
+        "ARITH-01"
+      ],
+      "targets": [
+        "crates/rodas5p-core/src/matrix_functions.rs",
+        "crates/rodas5p-integrators/src/g3_fused_adaptive_gate.rs"
+      ],
+      "implementation": [
+        "Use a report-returning fused dense interface carrying amplitude flags and weighting loss.",
+        "Consumer classifies flagged reference as NotEvaluated unless an independent higher-precision/structural oracle resolves it.",
+        "Retain raw flags in comparison records rather than only a vector."
+      ],
+      "acceptance": [
+        "diag(700,-700) mixed-range witness is not admitted as a precision oracle silently.",
+        "Homogeneous scalar amplitude sweep retains accuracy and authority.",
+        "Demonstrate actual final gate behavior with injected flagged report."
+      ],
+      "failure_status": "HOLD",
+      "deliverables": [
+        "source-bound regression results",
+        "reviewed implementation diff"
+      ],
+      "claim_ceiling": "Reference authority correctness, not a claim that existing G3 campaigns are invalid.",
+      "detail_file": "arithmetic/NEXT_STEPS.json",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "ARITH-04",
+      "priority": "RESEARCH",
+      "title": "Separate range-safe budget evaluation from certified budget lower bound",
+      "depends_on": [],
+      "targets": [
+        "research-only module specified in implementation"
+      ],
+      "implementation": [
+        "Keep current range-safe nearest-rounded budget as a diagnostic API.",
+        "Implement explicit outward rounding or analytic error enclosure for mantissa ratio, integer power, product and subnormal conversion.",
+        "Return an uncertainty interval and explicit certificate status."
+      ],
+      "acceptance": [
+        "Exact represented-input rational encloses current R2-POL-01 fixture.",
+        "Boundary cases one ULP around each branch do not falsely accept.",
+        "Zero, underflow, overflow, minimum step and maximum supported exponent have explicit semantics."
+      ],
+      "failure_status": "HOLD",
+      "deliverables": [
+        "source-bound regression results",
+        "reviewed implementation diff"
+      ],
+      "claim_ceiling": "A verified arithmetic budget bound does not certify the numerical output-error estimate.",
+      "detail_file": "arithmetic/NEXT_STEPS.json",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "STAT-DEV-01",
+      "priority": "P2",
+      "title": "원자료 프로토콜 admission 일원화",
+      "depends_on": [],
+      "targets": [
+        "crates/rodas5p-fair-ab/src/paired_timing.rs",
+        "crates/rodas5p-fair-ab/tests/r2_timing_authority_contracts.rs"
+      ],
+      "implementation": [
+        "원자료 warmup의 유한성·비음수성 검사",
+        "batch calibration 재계산 및 exact integer equality",
+        "pair 길이에 대응하는 seeded ABBA order equality",
+        "producer/replay/raw verifier가 동일 admission 호출"
+      ],
+      "acceptance": [
+        "기존 R2 closure fixture 유지",
+        "five malformed variants rejected before assessment",
+        "valid producer and serialize/deserialize receipt accepted",
+        "AA raw cases에도 같은 검증 적용"
+      ],
+      "failure_status": "INVALID_RAW_TIMING_PROTOCOL",
+      "deliverables": [
+        "regression tests",
+        "schema compatibility note",
+        "source-bound raw receipt"
+      ],
+      "claim_ceiling": "Only the stated acceptance contract; no automatic production or performance promotion",
+      "detail_file": "statistics/NEXT_STEPS.json",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "STAT-DEV-02",
+      "priority": "P2",
+      "title": "paired runner 및 raw receipt 결속",
+      "depends_on": [
+        "STAT-DEV-01"
+      ],
+      "targets": [
+        "crates/rodas5p-cli/src/main.rs",
+        "crates/rodas5p-fair-ab/src/paired_timing.rs"
+      ],
+      "implementation": [
+        "campaign UUID and session provenance",
+        "actual order and batched elapsed seconds",
+        "candidate/reference executable and problem identity",
+        "CLI consumes verify_against_raw before wall gate"
+      ],
+      "acceptance": [
+        "six independent observed sessions; matched A/A",
+        "all durations from real monotonic clock",
+        "no raw receipt -> NotEvaluated",
+        "replayed raw protocol corruption rejected",
+        "honest failures and unsuccessful session observations retained"
+      ],
+      "failure_status": "TIMING_NOT_EVALUATED",
+      "deliverables": [
+        "portable run manifest",
+        "raw sample artifacts",
+        "campaign receipt",
+        "CLI integration test"
+      ],
+      "claim_ceiling": "Only the stated acceptance contract; no automatic production or performance promotion",
+      "detail_file": "statistics/NEXT_STEPS.json",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "STAT-DEV-03",
+      "priority": "RESEARCH",
+      "title": "조건부 MC 오차 gate를 preview에 적용",
+      "depends_on": [
+        "STAT-DEV-01"
+      ],
+      "targets": [
+        "crates/rodas5p-fair-ab/src/paired_timing.rs"
+      ],
+      "implementation": [
+        "Bernoulli below-threshold count",
+        "predeclared two-sided simulation failure budget",
+        "conservative Promote/Block/Inconclusive",
+        "retain old endpoint diagnostic separately"
+      ],
+      "acceptance": [
+        "46656-outcome oracle endpoints reproduced",
+        "exact conditional CDF compared against MC bounds",
+        "atom-at-threshold and all-equal cases",
+        "no population-coverage claim",
+        "B extension policy fixed ahead of data or separate confidence-sequence proof"
+      ],
+      "failure_status": "MC_UNRESOLVED",
+      "deliverables": [
+        "theorem assumptions",
+        "preview field schema",
+        "independent exact fixtures",
+        "decision reviewer scope"
+      ],
+      "claim_ceiling": "Only the stated acceptance contract; no automatic production or performance promotion",
+      "detail_file": "statistics/NEXT_STEPS.json",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "STAT-DEV-04",
+      "priority": "RESEARCH",
+      "title": "성능 estimand와 session×case 설계 고정",
+      "depends_on": [
+        "STAT-DEV-02",
+        "STAT-DEV-03"
+      ],
+      "targets": [
+        "benchmark protocol documentation",
+        "statistical simulation harness"
+      ],
+      "implementation": [
+        "specify case weights and within-session pair counts",
+        "balanced intended design plus missing-cell sensitivity",
+        "separate empirical resampling error and population coverage",
+        "frozen holdout before final claim"
+      ],
+      "acceptance": [
+        "session duplication cannot increase independent count",
+        "pair multiplication within session cannot manufacture authority",
+        "coverage study under predeclared dependence and missingness models",
+        "real wall campaign run after protocol freeze"
+      ],
+      "failure_status": "STATISTICAL_AUTHORITY_HOLD",
+      "deliverables": [
+        "design contract",
+        "coverage report",
+        "frozen campaign recipe"
+      ],
+      "claim_ceiling": "Only the stated acceptance contract; no automatic production or performance promotion",
+      "detail_file": "statistics/NEXT_STEPS.json",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "HOM-01",
+      "priority": "P1",
+      "title": "Define and enforce the stage target coefficient semantics",
+      "depends_on": [],
+      "targets": [
+        "crates/rodas5p-core/src/coefficients.rs",
+        "crates/rodas5p-integrators/src/block.rs",
+        "crates/rodas5p-integrators/src/sequential.rs"
+      ],
+      "implementation": [
+        "Choose canonical strict-lower construction with validated Gamma inverse transformation, or retain full native coefficients and include their leakage in a verified target enclosure. Explicitly bind alpha+Gamma versus rounded L semantics. Do not silently zero coefficients inside certificate only."
+      ],
+      "acceptance": [
+        "Record native coefficient bits and target identifier.",
+        "Prove mathematical equality or quantified data-perturbation allowance between sequential and full-block consumers.",
+        "Any proof invoking H^8=0 checks exact structural zeros in its own target."
+      ],
+      "failure_status": "TARGET_SEMANTICS_UNRESOLVED",
+      "deliverables": [
+        "target_semantics.json",
+        "coefficient_structural_contracts.rs"
+      ],
+      "claim_ceiling": "Only the stated acceptance contract; no automatic production or performance promotion",
+      "detail_file": "homotopy/NEXT_STEPS.json",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "HOM-02",
+      "priority": "P1",
+      "title": "Implement Rust outward certificate reference for small targets",
+      "depends_on": [
+        "HOM-01",
+        "ARITH-04"
+      ],
+      "targets": [
+        "new research-only interval certificate module",
+        "new targeted Rust contracts"
+      ],
+      "implementation": [
+        "Add residual enclosure, verified inverse witness interface, positive outward recurrence, output/embedded projection rounding and fixed candidate scale. Use exact oracle fixtures for arithmetic edge cases."
+      ],
+      "acceptance": [
+        "All24 recorded bounded fixtures enclosed on matching target.",
+        "underflow/cancellation/overflow handled with explicit fail-closed semantics.",
+        "Certification kind distinguishes stage-target bound from ODE error estimator."
+      ],
+      "failure_status": "CERTIFICATE_NOT_VALIDATED",
+      "deliverables": [
+        "rust_certificate_probe",
+        "native_certificate_results.json"
+      ],
+      "claim_ceiling": "Only the stated acceptance contract; no automatic production or performance promotion",
+      "detail_file": "homotopy/NEXT_STEPS.json",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "HOM-03",
+      "priority": "P2",
+      "title": "Construct scalable structure-preserving inverse witness",
+      "depends_on": [
+        "HOM-01"
+      ],
+      "targets": [
+        "operator/preconditioner witness interface"
+      ],
+      "implementation": [
+        "Start diagonal/block-triangular/banded W. For a general approximate inverse V verify |I-VW|<=R and a suitable comparison inverse, without assuming JVP access implies entrywise absolute bounds."
+      ],
+      "acceptance": [
+        "Matrix/operator identity ties witness to h,J,preconditioner and tolerances.",
+        "All inverse residual arithmetic enclosed.",
+        "Witness work/storage and rebuild/reuse cost recorded."
+      ],
+      "failure_status": "INVERSE_WITNESS_UNAVAILABLE",
+      "deliverables": [
+        "inverse_witness_contract",
+        "structured_fixture_results"
+      ],
+      "claim_ceiling": "Only the stated acceptance contract; no automatic production or performance promotion",
+      "detail_file": "homotopy/NEXT_STEPS.json",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "HOM-04",
+      "priority": "P2",
+      "title": "Run block structured three-level certificate and radius predictor",
+      "depends_on": [
+        "HOM-02",
+        "HOM-03"
+      ],
+      "targets": [
+        "parallel certificate experimental module"
+      ],
+      "implementation": [
+        "Predict D from authorized past step data, assemble comparison H, evaluate finite path sum with block operations, then validate radius closure and output budgets. Keep all failed predictors in ledger."
+      ],
+      "acceptance": [
+        "No exact root/candidate reference leakage into D prediction.",
+        "All closure failures reject or fallback.",
+        "Independently compare enclosures with exact/small interval oracle.",
+        "Measure serial and actual worker execution including certificate work."
+      ],
+      "failure_status": "RADIUS_CLOSURE_OR_COST_FAIL",
+      "deliverables": [
+        "radius_predictor_contract",
+        "parallel_certificate_receipts"
+      ],
+      "claim_ceiling": "Only the stated acceptance contract; no automatic production or performance promotion",
+      "detail_file": "homotopy/NEXT_STEPS.json",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "HOM-05",
+      "priority": "P2",
+      "title": "Replace q2 eighth diagnostic only after equivalent admission",
+      "depends_on": [
+        "HOM-02",
+        "HOM-03"
+      ],
+      "targets": [
+        "crates/rodas5p-integrators/src/transactional_q1_q2.rs"
+      ],
+      "implementation": [
+        "Keep the seventh-batch q2 candidate exactly fixed. Substitute rigorous native-target output/embedded admission for q=0 diagnostic, then remove only that unapplied diagnostic batch."
+      ],
+      "acceptance": [
+        "Candidate output/stages bit identity before/after diagnostic removal.",
+        "Wrong or unverified certificate cannot fast-accept.",
+        "W batch7 and certificate work separately accounted; fallback transaction preserved."
+      ],
+      "failure_status": "ADMISSION_EQUIVALENCE_NOT_ESTABLISHED",
+      "deliverables": [
+        "q2_diagnostic_replacement_contracts",
+        "work_ledger_comparison.json"
+      ],
+      "claim_ceiling": "Only the stated acceptance contract; no automatic production or performance promotion",
+      "detail_file": "homotopy/NEXT_STEPS.json",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "HOM-06",
+      "priority": "P2",
+      "title": "Measure matched-accuracy full-attempt speedup",
+      "depends_on": [
+        "HOM-04",
+        "HOM-05",
+        "STAT-DEV-04",
+        "PROCESS-01"
+      ],
+      "targets": [
+        "fair-ab campaign runner"
+      ],
+      "implementation": [
+        "Compare serial baseline versus P=1,2,4,8 at equal output grid and tolerance. Include witness construction, RHS/JVP, certificate, rejected attempts and fallback in independent-session paired timings."
+      ],
+      "acceptance": [
+        "Same correctness/accuracy gate for all lanes.",
+        "No synthetic clock promoted as speed measurement.",
+        "Report p1,pf,certificate fraction,vector work,memory and total wall time.",
+        "Fail if significant work-accuracy regression or admission mismatch."
+      ],
+      "failure_status": "SPEEDUP_UNPROVEN",
+      "deliverables": [
+        "matched_accuracy_campaign.json",
+        "paired_timing_report"
+      ],
+      "claim_ceiling": "Only the stated acceptance contract; no automatic production or performance promotion",
+      "detail_file": "homotopy/NEXT_STEPS.json",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "POLY-01",
+      "priority": "RESEARCH",
+      "title": "Implement joint Chebyshev and Laguerre Rust actions for certified symmetric domain",
+      "depends_on": [
+        "ARITH-01"
+      ],
+      "targets": [
+        "new research-only polynomial action module",
+        "crates/rodas5p-core/src/work.rs"
+      ],
+      "implementation": [
+        "Separate supplied w_k action from h^k b_k transformation.",
+        "Accept documented symmetric operator and spectral-enclosure capability; reject unsupported operators.",
+        "Implement distinct-vector block recurrence and same-vector reuse separately.",
+        "Record block products, equivalent vector products, coefficient setup, allocation and fallback."
+      ],
+      "acceptance": [
+        "All20 joint actions and100 column comparisons against independent high-precision oracle.",
+        "h=0,A=0,scalar interval and nonnormal rejection.",
+        "No silent reuse of a bound for changed operator/spectrum/h.",
+        "Do not label exact truncation bound as total binary64 certificate."
+      ],
+      "failure_status": "POLYNOMIAL_DOMAIN_OR_ACCURACY_UNSUPPORTED",
+      "deliverables": [
+        "native joint-action fixtures",
+        "work-accounting contracts",
+        "operator domain schema"
+      ],
+      "claim_ceiling": "Symmetric nonpositive declared domain only",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "POLY-02",
+      "priority": "RESEARCH",
+      "title": "Enclose total polynomial error or expose EstimateOnly",
+      "depends_on": [
+        "POLY-01",
+        "ARITH-02"
+      ],
+      "targets": [
+        "polynomial coefficient and recurrence module"
+      ],
+      "implementation": [
+        "Bound coefficient quadrature/Bessel evaluation, recurrence rounding, summation and transformed-input error.",
+        "Retain cancellation and output-relative conditioning separately.",
+        "Use interval or validated analytical bounds; refinement difference is diagnostic only."
+      ],
+      "acceptance": [
+        "Independent exact/interval fixtures enclose each component and total error.",
+        "Degree choice one ULP near threshold cannot understate bound.",
+        "Overflow or unavailable spectral witness produces explicit failure."
+      ],
+      "failure_status": "TOTAL_ERROR_NOT_CERTIFIED",
+      "deliverables": [
+        "error budget derivation",
+        "native enclosure receipts"
+      ],
+      "claim_ceiling": "Supported arithmetic/operator model only; Leja remains separate unimplemented work",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "POLY-03",
+      "priority": "RESEARCH",
+      "title": "Run matched-accuracy polynomial work and wall campaign",
+      "depends_on": [
+        "POLY-01",
+        "STAT-DEV-04",
+        "PROCESS-01"
+      ],
+      "targets": [
+        "fair-ab campaign runner"
+      ],
+      "implementation": [
+        "Freeze baseline/degree policy, accuracy, corpus and holdout before timing.",
+        "Compare Laguerre/Chebyshev/Arnoldi with identical input/output and verified results.",
+        "Measure coefficient setup versus frozen-operator reuse, memory, failures and fallback."
+      ],
+      "acceptance": [
+        "No 245/56 degree ratio reported as speedup.",
+        "Measured raw sessions/A-A and work records pass common admission.",
+        "Unsupported inputs and failures retained in denominator."
+      ],
+      "failure_status": "SPEEDUP_UNPROVEN",
+      "deliverables": [
+        "raw paired receipts",
+        "accuracy/work/time comparison"
+      ],
+      "claim_ceiling": "Measured campaign population only",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    },
+    {
+      "id": "PROCESS-01",
+      "priority": "P2",
+      "title": "Commit exact next experiment protocol before execution",
+      "depends_on": [],
+      "targets": [
+        "research/<next-node>/PREREGISTRATION.md",
+        "research/LEDGER.jsonl"
+      ],
+      "implementation": [
+        "Commit exact command/input hashes, hypotheses, pass/kill thresholds and sealed holdout before run.",
+        "Retain this review process deviation; never retroactively relabel it as confirmatory.",
+        "Append numerical result and reachable-source ledger row after execution."
+      ],
+      "acceptance": [
+        "Commit chronology proves preregistration precedes new outputs.",
+        "Existing ledger prefix unchanged.",
+        "Claim distinguishes process verdict, numerical evidence and production readiness."
+      ],
+      "failure_status": "PREREGISTRATION_NONCOMPLIANT",
+      "deliverables": [
+        "published protocol commit",
+        "new raw outputs",
+        "append-only ledger row"
+      ],
+      "claim_ceiling": "Process compliance does not itself establish a mathematical or speed claim",
+      "status": "PROPOSED_NOT_IMPLEMENTED",
+      "owner_role": "maintainer / research implementer"
+    }
+  ],
+  "topological_order": [
+    "TIME-01",
+    "TIME-02",
+    "ARITH-01",
+    "ARITH-04",
+    "STAT-DEV-01",
+    "HOM-01",
+    "PROCESS-01",
+    "TIME-03",
+    "ARITH-02",
+    "ARITH-03",
+    "STAT-DEV-02",
+    "STAT-DEV-03",
+    "HOM-02",
+    "HOM-03",
+    "POLY-01",
+    "STAT-DEV-04",
+    "HOM-04",
+    "HOM-05",
+    "POLY-02",
+    "HOM-06",
+    "POLY-03"
+  ],
+  "execution_waves": [
+    [
+      "TIME-01",
+      "TIME-02",
+      "ARITH-01",
+      "STAT-DEV-01",
+      "PROCESS-01"
+    ],
+    [
+      "TIME-03",
+      "ARITH-02",
+      "ARITH-03",
+      "ARITH-04",
+      "STAT-DEV-02",
+      "STAT-DEV-03",
+      "HOM-01",
+      "POLY-01"
+    ],
+    [
+      "STAT-DEV-04",
+      "HOM-02",
+      "HOM-03",
+      "POLY-02"
+    ],
+    [
+      "HOM-04",
+      "HOM-05",
+      "POLY-03"
+    ],
+    [
+      "HOM-06"
+    ]
+  ],
+  "note": "Priority on research nodes means prerequisite importance, not additional confirmed P1 findings."
+}

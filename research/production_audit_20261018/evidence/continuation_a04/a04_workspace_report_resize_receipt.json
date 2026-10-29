@@ -1,0 +1,39 @@
+{
+  "unit": "A04_LEJA_REPORT_BUFFER_DIMENSION_REPAIR",
+  "cwd": "/home/cosmosapjw/vigilode",
+  "branch": "audit/production-readiness-20261018",
+  "head": "c3036c63da02ca9b04cd39ccf580cd67d00ccb0c",
+  "executor_identity": {
+    "role_observed": "delegated implementation worker",
+    "model_or_runtime_identity": "not independently exposed or observed"
+  },
+  "sources": {
+    "crates/rodas5p-core/src/leja_action.rs": "26c6601742fb12dd3d6fb83897e9dc5ba3ab8a4dda4e35b97b11c58401a35977",
+    "crates/rodas5p-core/tests/leja_total_contract.rs": "db1f923acde465e3a2160d2812b745511daac99be7c22da7aad66c9a57d003af"
+  },
+  "change": "ensure_capacity grows/truncates all five report columns and fused to the active dimension. Same-dimension resizing uses Vec resize/truncate without capacity growth; arithmetic, thresholds, counters and EstimateOnly authority are unchanged.",
+  "first_failure": {
+    "command": "cargo test --locked --offline -p rodas5p-core --test leja_total_contract test_a04_workspace_report_buffers_follow_dimension_growth_and_shrink -- --nocapture",
+    "exit_code": 101,
+    "log": "a04_workspace_report_growth_first_failure.log",
+    "log_sha256": "5d7e03b8afd97cc2bd97f9f8c30b521ef968050f4e78323882d8c2ffd9b6f930",
+    "observed": "Expected reproduction: report.fused[..1] panicked because its length was zero after CertifiedLejaWorkspace::new(0, 1)."
+  },
+  "validation": {
+    "test_command": "cargo test --locked --offline -p rodas5p-core --test leja_total_contract -- --nocapture",
+    "test_exit_code": 0,
+    "test_result": "15 passed, 0 failed",
+    "test_log": "a04_workspace_report_growth_shrink_contract.log",
+    "test_log_sha256": "fda15227678e07ab0fa37d743e884af3778a1757275aa06b16c37d1dc3730be2",
+    "clippy_command": "cargo clippy --locked --offline -p rodas5p-core --all-targets -- -D warnings",
+    "clippy_exit_code": 0,
+    "clippy_log": "a04_workspace_report_growth_clippy.log",
+    "clippy_log_sha256": "1c16d8b074e12256ba26775bb8e045f9fc340dc9cb99c145441c4c79b0e95ad0",
+    "format_command": "rustfmt --edition 2024 --check crates/rodas5p-core/src/leja_action.rs crates/rodas5p-core/tests/leja_total_contract.rs",
+    "rustfmt_exit_code": 0,
+    "git_diff_check_exit_code": 0,
+    "format_log": "a04_workspace_report_growth_format.log",
+    "format_log_sha256": "ba8c68bf7ed328493976b7d04262960ce1ebff02a7aff9e8e7bdaeaa6c101cf9"
+  },
+  "authority": "EstimateOnly unchanged"
+}

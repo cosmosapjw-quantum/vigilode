@@ -1,0 +1,31 @@
+    Blocking waiting for file lock on build directory
+    Checking rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+    Checking rodas5p-krylov v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-krylov)
+    Checking rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+warning: fields `a`, `chi`, `mean`, and `schur` are never read
+  --> crates/rodas5p-integrators/src/collective_direct.rs:36:5
+   |
+33 | pub struct CollectiveStageFactors {
+   |            ---------------------- fields in this struct
+...
+36 |     a: f64,
+   |     ^
+37 |     chi: f64,
+   |     ^^^
+38 |     mean: [f64; 2],
+   |     ^^^^
+...
+42 |     schur: [f64; 4],
+   |     ^^^^^
+   |
+   = note: `CollectiveStageFactors` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `mat2_mul` is never used
+  --> crates/rodas5p-integrators/src/collective_direct.rs:49:4
+   |
+49 | fn mat2_mul(a: [Interval;4], b: [Interval;4]) -> CoreResult<[Interval;4]> {
+   |    ^^^^^^^^
+
+warning: `rodas5p-integrators` (lib) generated 2 warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 43.53s

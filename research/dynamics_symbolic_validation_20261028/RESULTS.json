@@ -1,0 +1,608 @@
+{
+  "schema": "vigilode.dynamics-symbolic-results.v1",
+  "research_identifier": "20261028",
+  "production": "HOLD",
+  "scope": "bounded code improvements and independent cumulative package validation; overall release qualification remains open",
+  "execution_source": "58ec9b053163da6b6f0906010e0422c104db72fd",
+  "extended_validation_source": "c06b1ce5f04c86cb374071dcac7e83b7a100493c",
+  "native_source_between_runs": "identical crates and Cargo.lock; git diff checked",
+  "commands": [
+    {
+      "label": "all-targets-scoped",
+      "exit_code": 0,
+      "wall_seconds": 6.136479700995551,
+      "source_sha": "58ec9b053163da6b6f0906010e0422c104db72fd",
+      "source_unchanged": true,
+      "test_summaries": []
+    },
+    {
+      "label": "coupled-lib",
+      "exit_code": 0,
+      "wall_seconds": 160.94861847099673,
+      "source_sha": "58ec9b053163da6b6f0906010e0422c104db72fd",
+      "source_unchanged": true,
+      "test_summaries": [
+        {
+          "passed": 39,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered": 0
+        }
+      ]
+    },
+    {
+      "label": "coupled-release",
+      "exit_code": 0,
+      "wall_seconds": 159.34703604000242,
+      "source_sha": "58ec9b053163da6b6f0906010e0422c104db72fd",
+      "source_unchanged": true,
+      "test_summaries": [
+        {
+          "passed": 39,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered": 0
+        }
+      ]
+    },
+    {
+      "label": "docs-scoped",
+      "exit_code": 0,
+      "wall_seconds": 70.77986856200005,
+      "source_sha": "58ec9b053163da6b6f0906010e0422c104db72fd",
+      "source_unchanged": true,
+      "test_summaries": []
+    },
+    {
+      "label": "facade-lib",
+      "exit_code": 0,
+      "wall_seconds": 4.1772756459977245,
+      "source_sha": "58ec9b053163da6b6f0906010e0422c104db72fd",
+      "source_unchanged": true,
+      "test_summaries": [
+        {
+          "passed": 31,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 0
+        }
+      ]
+    },
+    {
+      "label": "givens-exact",
+      "exit_code": 0,
+      "wall_seconds": 3.6162980799999787,
+      "source_sha": "58ec9b053163da6b6f0906010e0422c104db72fd",
+      "source_unchanged": true,
+      "test_summaries": [
+        {
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 0
+        }
+      ]
+    },
+    {
+      "label": "switch-timing",
+      "exit_code": 0,
+      "wall_seconds": 0.6174964940000791,
+      "source_sha": "58ec9b053163da6b6f0906010e0422c104db72fd",
+      "source_unchanged": true,
+      "test_summaries": [
+        {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 39
+        }
+      ]
+    },
+    {
+      "label": "trace-support",
+      "exit_code": 0,
+      "wall_seconds": 7.187508841001545,
+      "source_sha": "58ec9b053163da6b6f0906010e0422c104db72fd",
+      "source_unchanged": true,
+      "test_summaries": []
+    },
+    {
+      "label": "cumulative-package-integration",
+      "exit_code": 0,
+      "wall_seconds": 41.12129292100144,
+      "source_sha": "c06b1ce5f04c86cb374071dcac7e83b7a100493c",
+      "source_unchanged": true,
+      "binaries": 53,
+      "passed": 375,
+      "failed": 0,
+      "ignored": 0
+    }
+  ],
+  "independent_exact_query_audit": {
+    "queries": 84,
+    "accepted_intervals": 164,
+    "exact_singletons": 164,
+    "preserved_refusals": 4
+  },
+  "trace_performance": [
+    {
+      "family": "square",
+      "paired_ratios": [
+        2.900454469076173,
+        2.882913451826862,
+        2.960078067416752,
+        3.0381128841868295,
+        2.6935067739240424,
+        2.883492542752284,
+        3.2501695033351288
+      ],
+      "median_ratio": 2.900454469076173,
+      "minimum_ratio": 2.6935067739240424,
+      "maximum_ratio": 3.2501695033351288,
+      "new_faster_pairs": 7,
+      "pairs": 7,
+      "operations_per_call": {
+        "pr97_eager": {
+          "interval_additions": 6.0,
+          "interval_multiplications": 11.0
+        },
+        "requested_support": {
+          "interval_additions": 0.0,
+          "interval_multiplications": 2.0
+        }
+      }
+    },
+    {
+      "family": "cubic_padded",
+      "paired_ratios": [
+        3.7899201652059817,
+        3.8776323262193784,
+        4.076529113711066,
+        3.9391359988981556,
+        4.118178435587894,
+        4.067645570514027,
+        3.977076350862987
+      ],
+      "median_ratio": 3.977076350862987,
+      "minimum_ratio": 3.7899201652059817,
+      "maximum_ratio": 4.118178435587894,
+      "new_faster_pairs": 7,
+      "pairs": 7,
+      "operations_per_call": {
+        "requested_support": {
+          "interval_additions": 0.0,
+          "interval_multiplications": 1.0
+        },
+        "pr97_eager": {
+          "interval_additions": 10.0,
+          "interval_multiplications": 15.0
+        }
+      }
+    },
+    {
+      "family": "fifth_padded",
+      "paired_ratios": [
+        3.2735676584375666,
+        3.197167850287797,
+        3.4450077286937923,
+        3.397478026884039,
+        3.1602363704372234,
+        3.1819209647894904,
+        3.983030990917085
+      ],
+      "median_ratio": 3.2735676584375666,
+      "minimum_ratio": 3.1602363704372234,
+      "maximum_ratio": 3.983030990917085,
+      "new_faster_pairs": 7,
+      "pairs": 7,
+      "operations_per_call": {
+        "requested_support": {
+          "interval_additions": 0.0,
+          "interval_multiplications": 2.0
+        },
+        "pr97_eager": {
+          "interval_additions": 10.0,
+          "interval_multiplications": 15.0
+        }
+      }
+    },
+    {
+      "family": "dense_six",
+      "paired_ratios": [
+        1.0737722330915431,
+        1.0857340047544797,
+        1.0754530350663056,
+        1.0794699715125122,
+        1.054198780502753,
+        1.164708183145465,
+        0.9895939755109927
+      ],
+      "median_ratio": 1.0754530350663056,
+      "minimum_ratio": 0.9895939755109927,
+      "maximum_ratio": 1.164708183145465,
+      "new_faster_pairs": 6,
+      "pairs": 7,
+      "operations_per_call": {
+        "requested_support": {
+          "interval_additions": 8.0,
+          "interval_multiplications": 14.0
+        },
+        "pr97_eager": {
+          "interval_additions": 10.0,
+          "interval_multiplications": 15.0
+        }
+      }
+    },
+    {
+      "family": "mixed_six",
+      "paired_ratios": [
+        1.1828928589851608,
+        1.2211541635990872,
+        1.3538759122053734,
+        1.3611441743827337,
+        1.2941219534195825,
+        1.314124560568097,
+        1.2946370365407562
+      ],
+      "median_ratio": 1.2946370365407562,
+      "minimum_ratio": 1.1828928589851608,
+      "maximum_ratio": 1.3611441743827337,
+      "new_faster_pairs": 7,
+      "pairs": 7,
+      "operations_per_call": {
+        "pr97_eager": {
+          "interval_additions": 10.0,
+          "interval_multiplications": 15.0
+        },
+        "requested_support": {
+          "interval_additions": 5.0,
+          "interval_multiplications": 10.0
+        }
+      }
+    }
+  ],
+  "controller_performance": [
+    {
+      "dimension": 2,
+      "scenario": "candidate_only",
+      "paired_ratios": [
+        1.0210504120468802,
+        1.0604973948994874,
+        2.1548792210126524,
+        0.770632917187122,
+        0.9780445060943725,
+        0.8386717982051421,
+        0.7688763753231193
+      ],
+      "median_ratio": 0.9780445060943725,
+      "minimum_ratio": 0.7688763753231193,
+      "maximum_ratio": 2.1548792210126524,
+      "new_faster_pairs": 3,
+      "pairs": 7,
+      "copies_saved_per_pair": 2,
+      "legacy_copies": 20002,
+      "new_copies": 20000
+    },
+    {
+      "dimension": 2,
+      "scenario": "guarded_protected",
+      "paired_ratios": [
+        1.0576735372190431,
+        1.1433709294212204,
+        0.6628650924913488,
+        0.918551637823141,
+        1.1388187315639804,
+        0.9807074878671947,
+        0.8958877868737474
+      ],
+      "median_ratio": 0.9807074878671947,
+      "minimum_ratio": 0.6628650924913488,
+      "maximum_ratio": 1.1433709294212204,
+      "new_faster_pairs": 3,
+      "pairs": 7,
+      "copies_saved_per_pair": 20000,
+      "legacy_copies": 40000,
+      "new_copies": 20000
+    },
+    {
+      "dimension": 2,
+      "scenario": "unguarded_protected",
+      "paired_ratios": [
+        0.8304516894610529,
+        1.0331271517251464,
+        0.8219449726271623,
+        1.1083347286801737,
+        1.0162225360688733,
+        1.0306476676088283,
+        0.8409865106327502
+      ],
+      "median_ratio": 1.0162225360688733,
+      "minimum_ratio": 0.8219449726271623,
+      "maximum_ratio": 1.1083347286801737,
+      "new_faster_pairs": 4,
+      "pairs": 7,
+      "copies_saved_per_pair": 0,
+      "legacy_copies": 0,
+      "new_copies": 0
+    },
+    {
+      "dimension": 32,
+      "scenario": "candidate_only",
+      "paired_ratios": [
+        0.9241782839110367,
+        1.0618602870942289,
+        0.9985869525207869,
+        1.0489146626941903,
+        0.9456747016243479,
+        1.0487441264831336,
+        0.9956046932143061
+      ],
+      "median_ratio": 0.9985869525207869,
+      "minimum_ratio": 0.9241782839110367,
+      "maximum_ratio": 1.0618602870942289,
+      "new_faster_pairs": 3,
+      "pairs": 7,
+      "copies_saved_per_pair": 32,
+      "legacy_copies": 160032,
+      "new_copies": 160000
+    },
+    {
+      "dimension": 32,
+      "scenario": "guarded_protected",
+      "paired_ratios": [
+        1.1058618789282983,
+        1.160714390923606,
+        1.1511620078100866,
+        1.0261842743352294,
+        1.006735927247067,
+        1.0214141414141413,
+        1.0406558739633904
+      ],
+      "median_ratio": 1.0406558739633904,
+      "minimum_ratio": 1.006735927247067,
+      "maximum_ratio": 1.160714390923606,
+      "new_faster_pairs": 7,
+      "pairs": 7,
+      "copies_saved_per_pair": 160000,
+      "legacy_copies": 320000,
+      "new_copies": 160000
+    },
+    {
+      "dimension": 32,
+      "scenario": "unguarded_protected",
+      "paired_ratios": [
+        0.9385564311069712,
+        0.9896970200405687,
+        1.0452652339572552,
+        0.9890026890648269,
+        0.9931419494276049,
+        1.0507311154241596,
+        1.0418805135001272
+      ],
+      "median_ratio": 0.9931419494276049,
+      "minimum_ratio": 0.9385564311069712,
+      "maximum_ratio": 1.0507311154241596,
+      "new_faster_pairs": 3,
+      "pairs": 7,
+      "copies_saved_per_pair": 0,
+      "legacy_copies": 0,
+      "new_copies": 0
+    },
+    {
+      "dimension": 4096,
+      "scenario": "candidate_only",
+      "paired_ratios": [
+        0.8365442923652955,
+        0.9981989827926051,
+        1.0575645482550011,
+        1.0515944940139301,
+        0.9499415347637042,
+        1.0662009941359702,
+        1.0176220500057698
+      ],
+      "median_ratio": 1.0176220500057698,
+      "minimum_ratio": 0.8365442923652955,
+      "maximum_ratio": 1.0662009941359702,
+      "new_faster_pairs": 4,
+      "pairs": 7,
+      "copies_saved_per_pair": 4096,
+      "legacy_copies": 1052672,
+      "new_copies": 1048576
+    },
+    {
+      "dimension": 4096,
+      "scenario": "guarded_protected",
+      "paired_ratios": [
+        1.0501236560827896,
+        0.907395155920879,
+        1.0609889189571153,
+        1.0343122265351927,
+        1.1804193119273305,
+        1.0419268741206746,
+        1.1983885682938933
+      ],
+      "median_ratio": 1.0501236560827896,
+      "minimum_ratio": 0.907395155920879,
+      "maximum_ratio": 1.1983885682938933,
+      "new_faster_pairs": 6,
+      "pairs": 7,
+      "copies_saved_per_pair": 1048576,
+      "legacy_copies": 2097152,
+      "new_copies": 1048576
+    },
+    {
+      "dimension": 4096,
+      "scenario": "unguarded_protected",
+      "paired_ratios": [
+        0.995572147942351,
+        0.9888379337198235,
+        0.9854020903515591,
+        0.9861555767067578,
+        0.9877689104788341,
+        0.9929614181438998,
+        0.9974885251580498
+      ],
+      "median_ratio": 0.9888379337198235,
+      "minimum_ratio": 0.9854020903515591,
+      "maximum_ratio": 0.9974885251580498,
+      "new_faster_pairs": 0,
+      "pairs": 7,
+      "copies_saved_per_pair": 0,
+      "legacy_copies": 0,
+      "new_copies": 0
+    },
+    {
+      "dimension": 65536,
+      "scenario": "candidate_only",
+      "paired_ratios": [
+        1.0463219538827853,
+        1.0733772636200827,
+        0.9846229331658121,
+        1.0744365372755105,
+        1.0318820582452397,
+        0.9526235631287,
+        1.0984215278855098
+      ],
+      "median_ratio": 1.0463219538827853,
+      "minimum_ratio": 0.9526235631287,
+      "maximum_ratio": 1.0984215278855098,
+      "new_faster_pairs": 5,
+      "pairs": 7,
+      "copies_saved_per_pair": 65536,
+      "legacy_copies": 2162688,
+      "new_copies": 2097152
+    },
+    {
+      "dimension": 65536,
+      "scenario": "guarded_protected",
+      "paired_ratios": [
+        1.087971812758189,
+        1.0571885889730952,
+        0.9157141755842938,
+        1.2507487752304123,
+        1.126628344540896,
+        1.1460365018328704,
+        1.1588100726934458
+      ],
+      "median_ratio": 1.126628344540896,
+      "minimum_ratio": 0.9157141755842938,
+      "maximum_ratio": 1.2507487752304123,
+      "new_faster_pairs": 6,
+      "pairs": 7,
+      "copies_saved_per_pair": 2097152,
+      "legacy_copies": 4194304,
+      "new_copies": 2097152
+    },
+    {
+      "dimension": 65536,
+      "scenario": "unguarded_protected",
+      "paired_ratios": [
+        1.0457474226804124,
+        0.9226225634967514,
+        0.9031870114251352,
+        0.8235709244883557,
+        0.9123831775700935,
+        0.916267942583732,
+        0.8483540205072854
+      ],
+      "median_ratio": 0.9123831775700935,
+      "minimum_ratio": 0.8235709244883557,
+      "maximum_ratio": 1.0457474226804124,
+      "new_faster_pairs": 1,
+      "pairs": 7,
+      "copies_saved_per_pair": 0,
+      "legacy_copies": 0,
+      "new_copies": 0
+    }
+  ],
+  "givens": {
+    "returned_solutions_exact_residual_pass": 3,
+    "no_returned_solution": 3,
+    "unchanged_historical_status_pin_passes_current_measurement": true,
+    "prior_ci_discrepancy": "OPEN_PROFILE_SPECIFIC"
+  },
+  "counts": {
+    "new_unit_test_methods": 6,
+    "encoded_controller_word_enumerations": 15552,
+    "distinct_legal_words": "not counted; terminal prefixes repeat",
+    "timed_trace_calls": 286720,
+    "trace_warmup_calls": 20480,
+    "controller_measured_pairs": 84,
+    "controller_warmup_runs": 24,
+    "integration_binaries": 53,
+    "integration_tests": 375,
+    "library_test_methods_measurement": 70,
+    "coupled_library_methods_repeated_release": 39,
+    "benchmark_ignored_default_explicitly_executed": 1
+  },
+  "preservation": "PRESERVATION.json",
+  "historical_replay": "NOT_RUN; source-bound historical evidence reused, not recounted",
+  "correction_budgets": {
+    "R-STRUCT": [
+      3,
+      3
+    ],
+    "R-ADAPT": [
+      3,
+      3
+    ],
+    "R-HOMO": [
+      1,
+      3
+    ],
+    "I-PROD": [
+      1,
+      3
+    ],
+    "Q-LEDGER": [
+      1,
+      3
+    ],
+    "PR-N03": [
+      2,
+      3
+    ],
+    "PR-N04": [
+      1,
+      3
+    ],
+    "PR-N05": [
+      2,
+      3
+    ],
+    "PR-N01": [
+      0,
+      3
+    ],
+    "PR-N02": [
+      0,
+      3
+    ],
+    "PR-N06": [
+      0,
+      3
+    ]
+  },
+  "open_gates": [
+    "Q-LEDGER typed authority",
+    "Q-API full downstream contract",
+    "Q-GIVENS prior CI/profile discrepancy",
+    "Q-NEGATIVE retained scientific cost failure",
+    "ten full interaction campaigns",
+    "full N01-N06 tasks",
+    "full workspace/optional-feature/release qualification",
+    "standalone vendor graph",
+    "SUNDIALS/MPI comparator qualification",
+    "actual-client/full-model physical certificate",
+    "native trace whole-path certificate"
+  ],
+  "archive_verification": {
+    "files": 52,
+    "all_payload_hashes_pass": true
+  }
+}

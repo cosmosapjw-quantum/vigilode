@@ -1,0 +1,84 @@
+{
+  "schema": "vigilode.production-frontier-first-failures.v1",
+  "immutable_log_paths": [
+    "receipts/build01/tests.stdout",
+    "receipts/build01/tests.stderr",
+    "receipts/build01/tests.exit",
+    "receipts/build01/tests2.stdout",
+    "receipts/build01/tests2.stderr",
+    "receipts/build01/tests2.exit",
+    "receipts/build02/facade_tests.stdout",
+    "receipts/build02/facade_tests.stderr",
+    "receipts/build02/facade_tests.exit",
+    "results/lp01_linear_20261023_01/normal_100_f100__full-rhs-dopri5__t0__r0.stdout",
+    "results/lp01_linear_20261023_01/normal_100_f100__full-rhs-dopri5__t0__r0.stderr",
+    "results/lp01_linear_20261023_01/normal_100_f100__full-rhs-dopri5__t0__r0.score.json",
+    "results/lp01_linear_20261023_01/normal_100_f100__full-rhs-dopri5__t0__r0.receipt.json",
+    "results/lp01_linear_20261023_01/damped_100_f10000__full-rhs-dopri5__t0__r0.stdout",
+    "results/lp01_linear_20261023_01/damped_100_f10000__full-rhs-dopri5__t0__r0.stderr",
+    "results/lp01_linear_20261023_01/damped_100_f10000__full-rhs-dopri5__t0__r0.score.json",
+    "results/lp01_linear_20261023_01/damped_100_f10000__full-rhs-dopri5__t0__r0.receipt.json",
+    "results/lp01_linear_20261023_01/normal_1000_f1__full-rhs-dopri5__t0__r0.stdout",
+    "results/lp01_linear_20261023_01/normal_1000_f1__full-rhs-dopri5__t0__r0.stderr",
+    "results/lp01_linear_20261023_01/normal_1000_f1__full-rhs-dopri5__t0__r0.score.json",
+    "results/lp01_linear_20261023_01/normal_1000_f1__full-rhs-dopri5__t0__r0.receipt.json"
+  ],
+  "classifications": [
+    {
+      "id": "FA_FIXTURE_LATE_JACOBIAN_UNREACHABLE",
+      "source": "receipts/build01/tests.*",
+      "class": "TEST_FIXTURE_FAILURE",
+      "disposition": "Corrected trigger to a reachable callback; preserved original raw files; no scientific solver claim."
+    },
+    {
+      "id": "FA_FATAL_JVP_UNCHARGED",
+      "source": "receipts/build01/tests2.*",
+      "class": "IMPLEMENTATION_ACCOUNTING_FAILURE",
+      "disposition": "Added actual partial-work hook; subsequent core2/2 and FA3/3 passed; arbitrary custom operator errors remain outside scope."
+    },
+    {
+      "id": "FA_AUTONOMOUS_FT_TELEMETRY_EXPECTATION",
+      "source": "receipts/build02/facade_tests.*",
+      "class": "TEST_EXPECTATION_FAILURE",
+      "disposition": "Distinguished native autonomous zero-dfdt evaluation from user callback count; final FA3/3 passed."
+    },
+    {
+      "id": "LP01_LOOSE_DOPRI_normal_100_f100",
+      "source": "results/lp01_linear_20261023_01/normal_100_f100__full-rhs-dopri5__t0__r0",
+      "class": "ACTUAL_ERROR_CAP_FAILURE",
+      "disposition": "Warmup state and relative amplitude exceeded1e-5; phase passed. Preserve stdout/stderr/score/receipt. Five subsequent timed slots retained as NOT_RUN_FAILED_WARMUP."
+    },
+    {
+      "id": "LP01_LOOSE_DOPRI_damped_100_f10000",
+      "source": "results/lp01_linear_20261023_01/damped_100_f10000__full-rhs-dopri5__t0__r0",
+      "class": "ACTUAL_ERROR_CAP_FAILURE",
+      "disposition": "Warmup state and relative amplitude exceeded1e-5; phase passed. Preserve stdout/stderr/score/receipt. Five subsequent timed slots retained as NOT_RUN_FAILED_WARMUP."
+    },
+    {
+      "id": "LP01_LOOSE_DOPRI_normal_1000_f1",
+      "source": "results/lp01_linear_20261023_01/normal_1000_f1__full-rhs-dopri5__t0__r0",
+      "class": "ACTUAL_ERROR_CAP_FAILURE",
+      "disposition": "Warmup state and relative amplitude exceeded1e-5; phase passed. Preserve stdout/stderr/score/receipt. Five subsequent timed slots retained as NOT_RUN_FAILED_WARMUP."
+    }
+  ],
+  "note": "Raw failing stdout/stderr/exit files preserved. Failure classification does not erase failed attempts or reset budgets.",
+  "lp01_suppressed_timed_rows": [
+    "normal_100_f100__full-rhs-dopri5__t0__r1",
+    "normal_100_f100__full-rhs-dopri5__t0__r2",
+    "normal_100_f100__full-rhs-dopri5__t0__r3",
+    "normal_100_f100__full-rhs-dopri5__t0__r4",
+    "normal_100_f100__full-rhs-dopri5__t0__r5",
+    "damped_100_f10000__full-rhs-dopri5__t0__r1",
+    "damped_100_f10000__full-rhs-dopri5__t0__r2",
+    "damped_100_f10000__full-rhs-dopri5__t0__r3",
+    "damped_100_f10000__full-rhs-dopri5__t0__r4",
+    "damped_100_f10000__full-rhs-dopri5__t0__r5",
+    "normal_1000_f1__full-rhs-dopri5__t0__r1",
+    "normal_1000_f1__full-rhs-dopri5__t0__r2",
+    "normal_1000_f1__full-rhs-dopri5__t0__r3",
+    "normal_1000_f1__full-rhs-dopri5__t0__r4",
+    "normal_1000_f1__full-rhs-dopri5__t0__r5"
+  ],
+  "lp01_failed_warmups": 3,
+  "lp01_not_run_after_failed_warmup": 15
+}

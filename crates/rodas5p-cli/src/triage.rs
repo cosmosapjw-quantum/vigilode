@@ -1,0 +1,1933 @@
+//! Component-triage harness (research node `research/component_triage_20261019`).
+//!
+//! The binding interface is `HARNESS_CONTRACT.md` (CT-HARNESS v1) of that
+//! node: `triage-list`, `triage-run` and `triage-profile-run` print the
+//! problem registry, one raw row (`vigilode-triage-row-v1`) and the
+//! callgrind workload summary; `triage-exact` and `triage-parity` give the
+//! Python tooling the exact solutions and right-hand-side samples it checks
+//! its reference models against. The arm registry is
+//! [`crate::triage_arms`]; the problem builders and the existing arms are
+//! the ones of [`crate::stiff_benchmark`] and `rodas5p_integrators`.
+//!
+//! Nothing here judges a component: rows are raw (PA-03).
+
+use std::{fmt, sync::Arc};
+
+use anyhow::Result;
+use rodas5p_core::{CoreError, CoreResult, DenseMatrix, WorkCounters};
+use rodas5p_integrators::{
+    AdaptiveStepConfig, BandedJacobian, OdeProblem, OutputSamplingPlan, OutputSchedule,
+    ScientificCaseSpec, ScientificCorpusV2, ScientificFamily, complex_dahlquist_problem,
+    constant_affine_mass_problem, gray_scott_2d, manufactured_mass_nonlinear_problem,
+    manufactured_vector_problem, oscillatory_prothero_robinson_problem, prothero_robinson_problem,
+    robertson_problem, scalar_linear_problem, semilinear_advection_diffusion_problem,
+    stiff_van_der_pol_problem,
+};
+use serde::Deserialize;
+use serde_json::{Value, json};
+
+use crate::stiff_benchmark::{self, BenchmarkProblem};
+use crate::triage_arms::{self, ArmOutcome, ArmSpec, PreparedArm, ProblemFeatures, SegmentOutput};
+
+pub(crate) const LIST_SCHEMA: &str = "vigilode-triage-list-v1";
+pub(crate) const ROW_SCHEMA: &str = "vigilode-triage-row-v1";
+pub(crate) const PROFILE_SCHEMA: &str = "vigilode-triage-profile-v1";
+pub(crate) const EXACT_SCHEMA: &str = "vigilode-triage-exact-v1";
+pub(crate) const PARITY_SCHEMA: &str = "vigilode-triage-parity-v1";
+pub(crate) const CONTRACT: &str = "CT-HARNESS v1";
+/// `HARNESS_CONTRACT.md`: callbacks counted when attempted (DP-02).
+pub(crate) const COUNTER_SEMANTICS: &str = "work-counters-v2-attempted";
+/// `h0_base = H0_BASE_FRACTION (tf - t0)` unless the problem declares one.
+pub(crate) const H0_BASE_FRACTION: f64 = 1.0e-6;
+pub(crate) const H0_SCALES: [f64; 3] = [0.5, 1.0, 2.0];
+pub(crate) const MIN_STEP: f64 = 1.0e-14;
+pub(crate) const MAX_ATTEMPTS: usize = 1_000_000;
+pub(crate) const UNIFORM_POINTS: usize = 101;
+/// `triage-profile-run` keeps every repetition's results in one buffer
+/// reserved for this many repetitions, so `Ir(K + 1) - Ir(K)` is exactly one
+/// integration for `K + 1 <= PROFILE_BUFFER_REPETITIONS`.
+pub(crate) const PROFILE_BUFFER_REPETITIONS: usize = 8;
+
+pub(crate) const APPLICABILITY_RULE: &str = "a problem is applicable to an arm iff: \
+requires.jacobian is 'analytic' and problem.jacobian == 'analytic', or 'jvp' and problem.jvp, \
+or 'any' (analytic or jvp); requires.structure is null or equals problem.structure; \
+requires.mass is true (the arm accepts a non-identity mass matrix) or problem.mass is false; \
+requires.fixed_dimension is null or (contains problem.dimension and the problem is not a \
+callback-fault probe: the compile-time-N arms integrate their own built-in copy of the base \
+problem, which an injected callback fault cannot reach); requires.autonomous is false or \
+problem.autonomous. `applicable_problems` lists the result; `triage-run` exits 2 for an \
+inapplicable pair or an unwired arm.";
+
+/// A command-line error with exit code 2 (`HARNESS_CONTRACT.md`): unknown
+/// arm or problem, inapplicable pair, unwired arm, invalid grid request.
+#[derive(Debug)]
+pub(crate) struct UsageError(pub String);
+
+impl fmt::Display for UsageError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl std::error::Error for UsageError {}
+
+fn usage(message: String) -> anyhow::Error {
+    UsageError(message).into()
+}
+
+/// Print a handler's line, or exit with code 2 on a [`UsageError`].
+pub(crate) fn print_line_or_exit(result: Result<String>) -> Result<()> {
+    match result {
+        Ok(line) => {
+            println!("{line}");
+            Ok(())
+        }
+        Err(error) => print_or_exit(Err(error)),
+    }
+}
+
+/// Print a handler's JSON, or exit with code 2 on a [`UsageError`].
+pub(crate) fn print_or_exit(result: Result<Value>) -> Result<()> {
+    match result {
+        Ok(value) => {
+            println!("{value}");
+            Ok(())
+        }
+        Err(error) if error.downcast_ref::<UsageError>().is_some() => {
+            eprintln!("error: {error}");
+            std::process::exit(2);
+        }
+        Err(error) => Err(error),
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, clap::ValueEnum)]
+pub(crate) enum Grid {
+    #[value(name = "endpoint")]
+    Endpoint,
+    #[value(name = "uniform101")]
+    Uniform101,
+}
+
+impl Grid {
+    pub(crate) fn id(self) -> &'static str {
+        match self {
+            Self::Endpoint => "endpoint",
+            Self::Uniform101 => "uniform101",
+        }
+    }
+
+    /// The requested output times on `t_span`: both ends, or 101 equispaced
+    /// times `t0 + (tf - t0) i / 100` (the corpus v2 base grid) with both
+    /// ends exact.
+    pub(crate) fn times(self, (t0, tf): (f64, f64)) -> Vec<f64> {
+        match self {
+            Self::Endpoint => vec![t0, tf],
+            Self::Uniform101 => {
+                let last = (UNIFORM_POINTS - 1) as f64;
+                let mut times: Vec<f64> = (0..UNIFORM_POINTS)
+                    .map(|i| t0 + (tf - t0) * i as f64 / last)
+                    .collect();
+                times[0] = t0;
+                times[UNIFORM_POINTS - 1] = tf;
+                times
+            }
+        }
+    }
+}
+
+/// The cell flags shared by `triage-run`, `triage-profile-run` and the
+/// allocation audit's `triage` mode.
+#[derive(Clone, Debug, clap::Args)]
+pub(crate) struct CellArgs {
+    #[arg(long)]
+    pub arm: String,
+    #[arg(long)]
+    pub problem: String,
+    #[arg(long)]
+    pub rtol: f64,
+    #[arg(long, value_enum)]
+    pub grid: Grid,
+    /// One of 0.5, 1, 2: `h0 = h0_scale * h0_base`.
+    #[arg(long, default_value_t = 1.0)]
+    pub h0_scale: f64,
+}
+
+// ------------------------------------------------------------------ problems
+
+/// One registered problem: its declared features and its builder.
+pub(crate) struct ProblemSpec {
+    pub id: &'static str,
+    pub tier: &'static str,
+    /// `dense` (explicit Jacobian, no other declaration), `banded` (a band
+    /// callback for the banded arms), `sparse_linear_part` (a declared
+    /// sparse linear part) or `unstructured` (JVP only).
+    pub structure: &'static str,
+    pub oscillatory: bool,
+    pub source: &'static str,
+    build: fn() -> CoreResult<Built>,
+}
+
+struct Built {
+    problem: OdeProblem,
+    y0: Vec<f64>,
+    t_span: (f64, f64),
+    atol_scale: f64,
+    breakpoints: Vec<f64>,
+    /// Branch-fixed segments of a segmented corpus problem (empty: one).
+    segments: Vec<((f64, f64), OdeProblem)>,
+    band: Option<BandedJacobian>,
+}
+
+impl Built {
+    fn plain((problem, y0): (OdeProblem, Vec<f64>), t_span: (f64, f64), atol_scale: f64) -> Self {
+        Self {
+            problem,
+            y0,
+            t_span,
+            atol_scale,
+            breakpoints: Vec::new(),
+            segments: Vec::new(),
+            band: None,
+        }
+    }
+}
+
+fn corpus(spec: ScientificCaseSpec) -> CoreResult<Built> {
+    let case = spec.build()?;
+    let segments = if case.integration_segments.len() > 1 {
+        case.integration_segments
+            .iter()
+            .map(|segment| (segment.t_span, segment.problem.clone()))
+            .collect()
+    } else {
+        Vec::new()
+    };
+    Ok(Built {
+        problem: case.problem,
+        y0: case.y0,
+        t_span: spec.t_span,
+        atol_scale: spec.atol / spec.rtol,
+        breakpoints: spec.mandatory_breakpoints.clone(),
+        segments,
+        band: None,
+    })
+}
+
+fn holdout(family: ScientificFamily) -> CoreResult<Built> {
+    let spec = ScientificCorpusV2::holdout_specs()
+        .into_iter()
+        .find(|spec| spec.family == family)
+        .ok_or_else(|| CoreError::InvalidInput(format!("no holdout spec for {family:?}")))?;
+    corpus(spec)
+}
+
+fn semilinear_2d(dimension: usize) -> CoreResult<Built> {
+    let spec = ScientificCorpusV2::calibration_specs()
+        .into_iter()
+        .find(|spec| {
+            spec.family == ScientificFamily::SemilinearAdvectionDiffusionRamped
+                && spec.dimension == dimension
+        })
+        .ok_or_else(|| {
+            CoreError::InvalidInput(format!("no semilinear calibration spec n = {dimension}"))
+        })?;
+    corpus(spec)
+}
+
+fn brusselator_1d(cells: usize) -> CoreResult<Built> {
+    let mut built = Built::plain(
+        stiff_benchmark::brusselator_problem(cells)?,
+        (0.0, 10.0),
+        1.0,
+    );
+    built.band = Some(stiff_benchmark::brusselator_band(cells));
+    Ok(built)
+}
+
+fn brusselator_1d_jvp(cells: usize) -> CoreResult<Built> {
+    let (_, y0) = stiff_benchmark::brusselator_problem(cells)?;
+    Ok(Built::plain(
+        (stiff_benchmark::brusselator_jvp_only_problem(cells)?, y0),
+        (0.0, 10.0),
+        1.0,
+    ))
+}
+
+fn gray_scott(grid: usize) -> CoreResult<Built> {
+    Ok(Built::plain(gray_scott_2d(grid)?, (0.0, 20.0), 1.0))
+}
+
+static PROBLEMS: &[ProblemSpec] = &[
+    // ------------------------------------------------------------ tier G
+    ProblemSpec {
+        id: "robertson",
+        tier: "G",
+        structure: "dense",
+        oscillatory: false,
+        source: "rodas5p_integrators::problems::robertson_problem; t_span and atol_scale of rodas5p-cli stiff_benchmark::default_problems",
+        build: || Ok(Built::plain(robertson_problem()?, (0.0, 40.0), 1.0e-4)),
+    },
+    ProblemSpec {
+        id: "hires",
+        tier: "G",
+        structure: "dense",
+        oscillatory: false,
+        source: "rodas5p-cli stiff_benchmark::hires_problem; t_span and atol_scale of stiff_benchmark::default_problems",
+        build: || {
+            Ok(Built::plain(
+                stiff_benchmark::hires_problem()?,
+                (0.0, 321.8122),
+                1.0e-4,
+            ))
+        },
+    },
+    ProblemSpec {
+        id: "van-der-pol-mu1000",
+        tier: "G",
+        structure: "dense",
+        oscillatory: true,
+        source: "rodas5p_integrators::problems::stiff_van_der_pol_problem(1e3); t_span and atol_scale of stiff_benchmark::default_problems",
+        build: || {
+            Ok(Built::plain(
+                stiff_van_der_pol_problem(1.0e3)?,
+                (0.0, 2000.0),
+                1.0,
+            ))
+        },
+    },
+    ProblemSpec {
+        id: "oregonator",
+        tier: "G",
+        structure: "unstructured",
+        oscillatory: true,
+        source: "rodas5p_integrators::ScientificCorpusV2::holdout_specs() family oregonator (JVP only); atol_scale = spec.atol / spec.rtol",
+        build: || holdout(ScientificFamily::Oregonator),
+    },
+    ProblemSpec {
+        id: "pollution",
+        tier: "G",
+        structure: "unstructured",
+        oscillatory: false,
+        source: "rodas5p_integrators::ScientificCorpusV2::holdout_specs() family pollution (JVP only); atol_scale = spec.atol / spec.rtol",
+        build: || holdout(ScientificFamily::Pollution),
+    },
+    ProblemSpec {
+        id: "prothero-robinson-nl",
+        tier: "G",
+        structure: "dense",
+        oscillatory: false,
+        source: "rodas5p_integrators::problems::prothero_robinson_problem(-1e6, 10, 0): y' = -1e6 (y - sin t) + cos t + 10 (y - sin t)^2, exact sin t, analytic J, JVP, df/dt (the existing builder is this equation; no new builder needed); t_span [0, 1], atol_scale 1e-3 per the triage registration",
+        build: || {
+            Ok(Built::plain(
+                prothero_robinson_problem(-1.0e6, 10.0, 0.0),
+                (0.0, 1.0),
+                1.0e-3,
+            ))
+        },
+    },
+    ProblemSpec {
+        id: "scalar-linear",
+        tier: "G",
+        structure: "dense",
+        oscillatory: false,
+        source: "rodas5p_integrators::problems::scalar_linear_problem(-1e4, 1), exact; t_span [0, 1e-2] (100 time constants) and atol_scale 1e-3 chosen here: no existing adaptive test uses lambda = -1e4",
+        build: || {
+            Ok(Built::plain(
+                scalar_linear_problem(-1.0e4, 1.0),
+                (0.0, 1.0e-2),
+                1.0e-3,
+            ))
+        },
+    },
+    ProblemSpec {
+        id: "complex-dahlquist-32",
+        tier: "G",
+        structure: "dense",
+        oscillatory: true,
+        source: "rodas5p_integrators::problems::complex_dahlquist_problem(16 blocks = dimension 32, damping 120, frequency 180, t0 0) on t_span [0, 0.02] with atol = 0.01 rtol: the G1 adaptive global-error corpus (rodas5p_fair_ab::adaptive_global_error::g1_adaptive_corpus); exact",
+        build: || {
+            Ok(Built::plain(
+                complex_dahlquist_problem(16, 120.0, 180.0, 0.0)?,
+                (0.0, 0.02),
+                0.01,
+            ))
+        },
+    },
+    ProblemSpec {
+        id: "manufactured-vector-32",
+        tier: "G",
+        structure: "dense",
+        oscillatory: false,
+        source: "rodas5p_integrators::problems::manufactured_vector_problem(32, stiffness 1e3, nonlinearity 1e2, nonnormality 0.5, t0 0) on t_span [0, 0.02] with atol = 0.01 rtol: the G1 adaptive global-error corpus (rodas5p_fair_ab::adaptive_global_error::g1_adaptive_corpus); exact. Its linear part has eigenvalues up to about +362 (nonnormal Toeplitz), so errors grow like exp(362 t): longer spans fail for every arm",
+        build: || {
+            Ok(Built::plain(
+                manufactured_vector_problem(32, 1.0e3, 1.0e2, 0.5, 0.0)?,
+                (0.0, 0.02),
+                0.01,
+            ))
+        },
+    },
+    ProblemSpec {
+        id: "oscillatory-prothero-robinson",
+        tier: "G",
+        structure: "dense",
+        oscillatory: true,
+        source: "rodas5p_integrators::problems::oscillatory_prothero_robinson_problem(-1e4, 1e3, 140, 0) on t_span [0, 0.02] with atol = 0.01 rtol: the G1 adaptive global-error corpus (rodas5p_fair_ab::adaptive_global_error::g1_adaptive_corpus); exact",
+        build: || {
+            Ok(Built::plain(
+                oscillatory_prothero_robinson_problem(-1.0e4, 1.0e3, 140.0, 0.0)?,
+                (0.0, 0.02),
+                0.01,
+            ))
+        },
+    },
+    ProblemSpec {
+        id: "mass-affine",
+        tier: "G",
+        structure: "dense",
+        oscillatory: false,
+        source: "rodas5p_integrators::problems::constant_affine_mass_problem (constant noncommuting mass, quadratic forcing; no exact solution in Rust); t_span [0, 1] and atol_scale 1e-3 chosen here",
+        build: || {
+            let (problem, y0, _, _) = constant_affine_mass_problem();
+            Ok(Built::plain((problem, y0), (0.0, 1.0), 1.0e-3))
+        },
+    },
+    ProblemSpec {
+        id: "mass-nonlinear",
+        tier: "G",
+        structure: "dense",
+        oscillatory: false,
+        source: "rodas5p_integrators::problems::manufactured_mass_nonlinear_problem(1e3, 1e2, 0.4, 0): the parameters of path_controller's mass case; exact; t_span [0, 1] and atol_scale 1e-3 chosen here",
+        build: || {
+            let (problem, y0, _, _) = manufactured_mass_nonlinear_problem(1.0e3, 1.0e2, 0.4, 0.0)?;
+            Ok(Built::plain((problem, y0), (0.0, 1.0), 1.0e-3))
+        },
+    },
+    ProblemSpec {
+        id: "semilinear-advdiff-32",
+        tier: "G",
+        structure: "dense",
+        oscillatory: false,
+        source: "rodas5p_integrators::problems::semilinear_advection_diffusion_problem(32, 0.01, 5, -1, 10, 0) on t_span [0, 0.02] with atol = 0.01 rtol: the G1 adaptive global-error corpus (rodas5p_fair_ab::adaptive_global_error::g1_adaptive_corpus); exact",
+        build: || {
+            Ok(Built::plain(
+                semilinear_advection_diffusion_problem(32, 0.01, 5.0, -1.0, 10.0, 0.0)?,
+                (0.0, 0.02),
+                0.01,
+            ))
+        },
+    },
+    // ------------------------------------------------------------ tier P
+    ProblemSpec {
+        id: "brusselator-1d-50",
+        tier: "P",
+        structure: "banded",
+        oscillatory: true,
+        source: "rodas5p-cli stiff_benchmark::brusselator_problem(50 cells, n = 100), analytic dense J, band stiff_benchmark::brusselator_band; t_span and atol_scale of stiff_benchmark",
+        build: || brusselator_1d(50),
+    },
+    ProblemSpec {
+        id: "brusselator-1d-250",
+        tier: "P",
+        structure: "banded",
+        oscillatory: true,
+        source: "rodas5p-cli stiff_benchmark::brusselator_problem(250 cells, n = 500), analytic dense J, band stiff_benchmark::brusselator_band; t_span and atol_scale of stiff_benchmark",
+        build: || brusselator_1d(250),
+    },
+    ProblemSpec {
+        id: "brusselator-1d-1000",
+        tier: "P",
+        structure: "banded",
+        oscillatory: true,
+        source: "rodas5p-cli stiff_benchmark::brusselator_problem(1000 cells, n = 2000), analytic dense J, band stiff_benchmark::brusselator_band; t_span and atol_scale of stiff_benchmark",
+        build: || brusselator_1d(1000),
+    },
+    ProblemSpec {
+        id: "brusselator-1d-jvp-250",
+        tier: "P",
+        structure: "unstructured",
+        oscillatory: true,
+        source: "rodas5p-cli stiff_benchmark::brusselator_jvp_only_problem(250 cells, n = 500), JVP only, y0 of brusselator_problem; t_span and atol_scale of stiff_benchmark",
+        build: || brusselator_1d_jvp(250),
+    },
+    ProblemSpec {
+        id: "brusselator-1d-jvp-1000",
+        tier: "P",
+        structure: "unstructured",
+        oscillatory: true,
+        source: "rodas5p-cli stiff_benchmark::brusselator_jvp_only_problem(1000 cells, n = 2000), JVP only, y0 of brusselator_problem; t_span and atol_scale of stiff_benchmark",
+        build: || brusselator_1d_jvp(1000),
+    },
+    ProblemSpec {
+        id: "brusselator-2d",
+        tier: "P",
+        structure: "unstructured",
+        oscillatory: true,
+        source: "rodas5p_integrators::ScientificCorpusV2::holdout_specs() family brusselator-2d (JVP only, segments [0, 1.1], [1.1, 11.5]); atol_scale = spec.atol / spec.rtol",
+        build: || holdout(ScientificFamily::Brusselator2d),
+    },
+    ProblemSpec {
+        id: "medical-akzo",
+        tier: "P",
+        structure: "unstructured",
+        oscillatory: false,
+        source: "rodas5p_integrators::ScientificCorpusV2::holdout_specs() family medical-akzo (JVP only, segments [0, 5], [5, 20]); atol_scale = spec.atol / spec.rtol",
+        build: || holdout(ScientificFamily::MedicalAkzo),
+    },
+    ProblemSpec {
+        id: "gray-scott-16",
+        tier: "P",
+        structure: "sparse_linear_part",
+        oscillatory: false,
+        source: "rodas5p_integrators::gray_scott_2d(16), n = 512, JVP and declared sparse linear part; t_span [0, 20] and atol = rtol of research/pc01_right_preconditioner_20261011 PREREGISTRATION F4",
+        build: || gray_scott(16),
+    },
+    ProblemSpec {
+        id: "gray-scott-32",
+        tier: "P",
+        structure: "sparse_linear_part",
+        oscillatory: false,
+        source: "rodas5p_integrators::gray_scott_2d(32), n = 2048, JVP and declared sparse linear part; t_span [0, 20] and atol = rtol of research/pc01_right_preconditioner_20261011 PREREGISTRATION F4",
+        build: || gray_scott(32),
+    },
+    ProblemSpec {
+        id: "gray-scott-64",
+        tier: "P",
+        structure: "sparse_linear_part",
+        oscillatory: false,
+        source: "rodas5p_integrators::gray_scott_2d(64), n = 8192, JVP and declared sparse linear part; t_span [0, 20] and atol = rtol of research/pc01_right_preconditioner_20261011 PREREGISTRATION F4",
+        build: || gray_scott(64),
+    },
+    ProblemSpec {
+        id: "semilinear-advdiff-2d-96",
+        tier: "P",
+        structure: "unstructured",
+        oscillatory: false,
+        source: "rodas5p_integrators::ScientificCorpusV2::calibration_specs() family semilinear-advection-diffusion-ramped n = 96 (JVP only, exact); atol_scale = spec.atol / spec.rtol",
+        build: || semilinear_2d(96),
+    },
+    ProblemSpec {
+        id: "semilinear-advdiff-2d-384",
+        tier: "P",
+        structure: "unstructured",
+        oscillatory: false,
+        source: "rodas5p_integrators::ScientificCorpusV2::calibration_specs() family semilinear-advection-diffusion-ramped n = 384 (JVP only, exact); atol_scale = spec.atol / spec.rtol",
+        build: || semilinear_2d(384),
+    },
+    ProblemSpec {
+        id: "semilinear-advdiff-2d-1536",
+        tier: "P",
+        structure: "unstructured",
+        oscillatory: false,
+        source: "rodas5p_integrators::ScientificCorpusV2::calibration_specs() family semilinear-advection-diffusion-ramped n = 1536 (JVP only, exact); atol_scale = spec.atol / spec.rtol",
+        build: || semilinear_2d(1536),
+    },
+];
+
+/// Every registered problem, in listing order.
+#[allow(dead_code)]
+pub(crate) fn problem_specs() -> &'static [ProblemSpec] {
+    PROBLEMS
+}
+
+/// A corpus problem or a probe (`triage-run --problem` accepts both).
+pub(crate) fn find_problem(id: &str) -> Option<&'static ProblemSpec> {
+    PROBLEMS
+        .iter()
+        .find(|problem| problem.id == id)
+        .or_else(|| find_probe(id).map(|probe| &probe.problem))
+}
+
+// ------------------------------------------------------------------- probes
+
+/// The fault of a fail-closed probe (campaign check C3).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum ProbeKind {
+    /// `y0[0] = NaN`.
+    NanY0,
+    /// `y0[0] = +Inf`.
+    InfY0,
+    /// The RHS returns NaN in every component once `t > t_late`.
+    NanRhsLate,
+    /// The RHS returns `Err` once `t > t_late`.
+    ErrRhsLate,
+    /// The Jacobian (explicit, in place, band) and the JVP return NaN once
+    /// `t > t_late`.
+    NanJacLate,
+}
+
+/// The fault time of the late probes: `t0 + PROBE_LATE_FRACTION (tf - t0)`.
+pub(crate) const PROBE_LATE_FRACTION: f64 = 0.25;
+
+impl ProbeKind {
+    pub(crate) fn id(self) -> &'static str {
+        match self {
+            Self::NanY0 => "nan-y0",
+            Self::InfY0 => "inf-y0",
+            Self::NanRhsLate => "nan-rhs-late",
+            Self::ErrRhsLate => "err-rhs-late",
+            Self::NanJacLate => "nan-jac-late",
+        }
+    }
+
+    /// The entry validation must refuse the cell (status `refused`).
+    pub(crate) fn must_refuse(self) -> bool {
+        matches!(self, Self::NanY0 | Self::InfY0)
+    }
+
+    /// The fault is injected into the problem's callbacks (not its data).
+    pub(crate) fn callback_fault(self) -> bool {
+        !self.must_refuse()
+    }
+
+    pub(crate) fn expect(self) -> &'static str {
+        match self {
+            Self::NanY0 | Self::InfY0 => {
+                "refused by entry validation (non-finite initial state); never success"
+            }
+            Self::NanRhsLate => {
+                "fails closed at run time: success=false with a typed status, no non-finite \
+                 accepted state, no abort"
+            }
+            Self::ErrRhsLate => {
+                "fails closed at run time: the callback error ends the run with a typed status \
+                 (success=false), no abort"
+            }
+            Self::NanJacLate => {
+                "fails closed at run time: success=false with a typed status, no non-finite \
+                 accepted state, no abort"
+            }
+        }
+    }
+}
+
+/// One probe: its fault, its base problem and the problem registry entry
+/// `triage-run --problem <id>` builds.
+pub(crate) struct ProbeSpec {
+    pub id: &'static str,
+    pub kind: ProbeKind,
+    pub base: &'static str,
+    pub problem: ProblemSpec,
+}
+
+impl ProbeSpec {
+    pub(crate) fn json(&self) -> Value {
+        json!({
+            "id": self.kind.id(),
+            "base": self.base,
+            "must_refuse": self.kind.must_refuse(),
+            "callback_fault": self.kind.callback_fault(),
+            "fault_time_fraction": if self.kind.callback_fault() {
+                json!(PROBE_LATE_FRACTION)
+            } else {
+                Value::Null
+            },
+            "expect": self.kind.expect(),
+        })
+    }
+}
+
+macro_rules! probe {
+    ($id:literal, $kind:ident, $base:literal, $structure:literal, $oscillatory:literal) => {
+        ProbeSpec {
+            id: $id,
+            kind: ProbeKind::$kind,
+            base: $base,
+            problem: ProblemSpec {
+                id: $id,
+                tier: "probe",
+                structure: $structure,
+                oscillatory: $oscillatory,
+                source: concat!(
+                    "fail-closed probe (campaign check C3): base problem ",
+                    $base,
+                    " with fault ",
+                    stringify!($kind),
+                    "; see `probe` for the fault and the expected outcome"
+                ),
+                build: || probe_build(ProbeKind::$kind, $base),
+            },
+        }
+    };
+}
+
+static PROBES: &[ProbeSpec] = &[
+    probe!("probe-nan-y0-robertson", NanY0, "robertson", "dense", false),
+    probe!("probe-inf-y0-robertson", InfY0, "robertson", "dense", false),
+    probe!(
+        "probe-nan-rhs-late-robertson",
+        NanRhsLate,
+        "robertson",
+        "dense",
+        false
+    ),
+    probe!(
+        "probe-err-rhs-late-robertson",
+        ErrRhsLate,
+        "robertson",
+        "dense",
+        false
+    ),
+    probe!(
+        "probe-nan-jac-late-robertson",
+        NanJacLate,
+        "robertson",
+        "dense",
+        false
+    ),
+    probe!(
+        "probe-nan-y0-brusselator-1d-50",
+        NanY0,
+        "brusselator-1d-50",
+        "banded",
+        true
+    ),
+    probe!(
+        "probe-inf-y0-brusselator-1d-50",
+        InfY0,
+        "brusselator-1d-50",
+        "banded",
+        true
+    ),
+    probe!(
+        "probe-nan-rhs-late-brusselator-1d-50",
+        NanRhsLate,
+        "brusselator-1d-50",
+        "banded",
+        true
+    ),
+    probe!(
+        "probe-err-rhs-late-brusselator-1d-50",
+        ErrRhsLate,
+        "brusselator-1d-50",
+        "banded",
+        true
+    ),
+    probe!(
+        "probe-nan-jac-late-brusselator-1d-50",
+        NanJacLate,
+        "brusselator-1d-50",
+        "banded",
+        true
+    ),
+    probe!(
+        "probe-nan-y0-mass-affine",
+        NanY0,
+        "mass-affine",
+        "dense",
+        false
+    ),
+    probe!(
+        "probe-inf-y0-mass-affine",
+        InfY0,
+        "mass-affine",
+        "dense",
+        false
+    ),
+    probe!(
+        "probe-nan-rhs-late-mass-affine",
+        NanRhsLate,
+        "mass-affine",
+        "dense",
+        false
+    ),
+    probe!(
+        "probe-err-rhs-late-mass-affine",
+        ErrRhsLate,
+        "mass-affine",
+        "dense",
+        false
+    ),
+    probe!(
+        "probe-nan-jac-late-mass-affine",
+        NanJacLate,
+        "mass-affine",
+        "dense",
+        false
+    ),
+];
+
+/// Every registered probe, in listing order.
+#[allow(dead_code)]
+pub(crate) fn probe_specs() -> &'static [ProbeSpec] {
+    PROBES
+}
+
+pub(crate) fn find_probe(id: &str) -> Option<&'static ProbeSpec> {
+    PROBES.iter().find(|probe| probe.id == id)
+}
+
+/// Build the base problem and inject the probe's fault.
+fn probe_build(kind: ProbeKind, base: &str) -> CoreResult<Built> {
+    let spec = PROBLEMS
+        .iter()
+        .find(|problem| problem.id == base)
+        .ok_or_else(|| CoreError::InvalidInput(format!("unknown probe base {base}")))?;
+    let mut built = (spec.build)()?;
+    if !built.segments.is_empty() {
+        return Err(CoreError::InvalidInput(format!(
+            "probe base {base} is segmented"
+        )));
+    }
+    let (t0, tf) = built.t_span;
+    let t_late = t0 + PROBE_LATE_FRACTION * (tf - t0);
+    match kind {
+        ProbeKind::NanY0 => built.y0[0] = f64::NAN,
+        ProbeKind::InfY0 => built.y0[0] = f64::INFINITY,
+        _ => {
+            built.problem = faulty_problem(&built.problem, kind, t_late)?;
+            if kind == ProbeKind::NanJacLate {
+                built.band = built.band.map(|band| faulty_band(band, t_late));
+            }
+        }
+    }
+    Ok(built)
+}
+
+fn injected_error(t: f64) -> CoreError {
+    CoreError::InvalidInput(format!(
+        "triage probe: injected right-hand-side error at t = {t:e}"
+    ))
+}
+
+/// `base` with the late fault of `kind` in its callbacks. Every callback
+/// delegates to the base problem's own evaluation (so the arithmetic before
+/// `t_late` is the base's); the explicit Jacobian, the in-place Jacobian,
+/// the batch RHS, the JVP and `df/dt` are carried over when the base has
+/// them. The exact solution is dropped.
+fn faulty_problem(base: &OdeProblem, kind: ProbeKind, t_late: f64) -> CoreResult<OdeProblem> {
+    let nan_rhs = kind == ProbeKind::NanRhsLate;
+    let err_rhs = kind == ProbeKind::ErrRhsLate;
+    let nan_jac = kind == ProbeKind::NanJacLate;
+    let inner = base.clone();
+    let rhs = Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
+        if err_rhs && t > t_late {
+            return Err(injected_error(t));
+        }
+        inner.eval_rhs_into(t, y, out, &mut WorkCounters::default())?;
+        if nan_rhs && t > t_late {
+            out.fill(f64::NAN);
+        }
+        Ok(())
+    });
+    // The batch RHS exists iff an empty batch call is charged as one.
+    let mut probe_counters = WorkCounters::default();
+    base.eval_rhs_batch(&[], &[], &mut probe_counters)?;
+    type BatchFn = Arc<dyn Fn(&[f64], &[Vec<f64>]) -> CoreResult<Vec<Vec<f64>>> + Send + Sync>;
+    let batch: Option<BatchFn> = if probe_counters.rhs_batch_calls > 0 {
+        let inner = base.clone();
+        Some(Arc::new(move |times: &[f64], states: &[Vec<f64>]| {
+            if err_rhs && let Some(t) = times.iter().find(|t| **t > t_late) {
+                return Err(injected_error(*t));
+            }
+            let mut out = inner.eval_rhs_batch(times, states, &mut WorkCounters::default())?;
+            if nan_rhs {
+                for (t, row) in times.iter().zip(&mut out) {
+                    if *t > t_late {
+                        row.fill(f64::NAN);
+                    }
+                }
+            }
+            Ok(out)
+        }))
+    } else {
+        None
+    };
+    type JacobianFn = Arc<dyn Fn(f64, &[f64]) -> CoreResult<DenseMatrix> + Send + Sync>;
+    let jacobian: Option<JacobianFn> = if base.has_explicit_jacobian() {
+        let inner = base.clone();
+        Some(Arc::new(move |t: f64, y: &[f64]| {
+            let mut matrix = inner.dense_jacobian(t, y, &mut WorkCounters::default())?;
+            if nan_jac && t > t_late {
+                matrix.as_mut_slice().fill(f64::NAN);
+            }
+            Ok(matrix)
+        }))
+    } else {
+        None
+    };
+    type JvpFn = Arc<dyn Fn(f64, &[f64], &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
+    let jvp: Option<JvpFn> = base.jvp_callback().cloned().map(|jvp| {
+        Arc::new(move |t: f64, y: &[f64], v: &[f64], out: &mut [f64]| {
+            jvp(t, y, v, out)?;
+            if nan_jac && t > t_late {
+                out.fill(f64::NAN);
+            }
+            Ok(())
+        }) as JvpFn
+    });
+    type PartialTFn = Arc<dyn Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
+    let partial_t: Option<PartialTFn> = if base.autonomous {
+        None
+    } else {
+        let inner = base.clone();
+        Some(Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
+            let ft = inner.eval_partial_t(t, y, &mut WorkCounters::default())?;
+            out.copy_from_slice(&ft);
+            Ok(())
+        }))
+    };
+    let mut problem = OdeProblem::new(
+        format!("{}-probe-{}", base.name, kind.id()),
+        base.dimension,
+        rhs,
+        batch,
+        jacobian,
+        jvp,
+        partial_t,
+        base.autonomous,
+        base.mass_matrix.clone(),
+        None,
+    )?;
+    if base.has_explicit_jacobian() {
+        let inner = base.clone();
+        problem = problem.with_jacobian_into(Arc::new(
+            move |t: f64, y: &[f64], out: &mut DenseMatrix| {
+                inner.dense_jacobian_into(t, y, out, &mut WorkCounters::default())?;
+                if nan_jac && t > t_late {
+                    out.as_mut_slice().fill(f64::NAN);
+                }
+                Ok(())
+            },
+        ));
+    }
+    Ok(problem)
+}
+
+/// `band` writing NaN once `t > t_late`.
+fn faulty_band(band: BandedJacobian, t_late: f64) -> BandedJacobian {
+    let fill = band.fill.clone();
+    BandedJacobian {
+        lower: band.lower,
+        upper: band.upper,
+        fill: Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
+            fill(t, y, out)?;
+            if t > t_late {
+                out.fill(f64::NAN);
+            }
+            Ok(())
+        }),
+    }
+}
+
+/// A built problem: the whole-domain problem (parity, exact solution,
+/// features) and its integration segments, each a [`BenchmarkProblem`]
+/// whose `y0` is the segment's initial-state buffer.
+pub(crate) struct TriageProblem {
+    pub spec: &'static ProblemSpec,
+    pub problem: OdeProblem,
+    pub y0: Vec<f64>,
+    pub t_span: (f64, f64),
+    pub atol_scale: f64,
+    pub breakpoints: Vec<f64>,
+    pub band: Option<BandedJacobian>,
+    pub segments: Vec<BenchmarkProblem>,
+    /// `None`: the default `h0_base = 1e-6 (tf - t0)`.
+    pub h0_base: Option<f64>,
+    /// The probe this problem is, if any.
+    pub probe: Option<&'static ProbeSpec>,
+}
+
+impl TriageProblem {
+    pub(crate) fn build(spec: &'static ProblemSpec) -> CoreResult<Self> {
+        let built = (spec.build)()?;
+        let probe = find_probe(spec.id);
+        // A probe integrates under its base's id, so the arms keyed on the
+        // problem id (the compile-time-N small driver) find their problem.
+        let bench_id = probe.map_or(spec.id, |probe| probe.base);
+        let segment = |t_span: (f64, f64), problem: OdeProblem| BenchmarkProblem {
+            id: bench_id,
+            problem,
+            y0: built.y0.clone(),
+            t_span,
+            atol_scale: built.atol_scale,
+        };
+        let segments = if built.segments.is_empty() {
+            vec![segment(built.t_span, built.problem.clone())]
+        } else {
+            built
+                .segments
+                .iter()
+                .map(|(t_span, problem)| segment(*t_span, problem.clone()))
+                .collect()
+        };
+        Ok(Self {
+            spec,
+            problem: built.problem,
+            y0: built.y0,
+            t_span: built.t_span,
+            atol_scale: built.atol_scale,
+            breakpoints: built.breakpoints,
+            band: built.band,
+            segments,
+            h0_base: None,
+            probe,
+        })
+    }
+
+    pub(crate) fn analytic(&self) -> bool {
+        self.problem.has_explicit_jacobian()
+    }
+
+    pub(crate) fn exact_solution(&self) -> bool {
+        self.problem.exact(self.t_span.0).is_some()
+    }
+
+    pub(crate) fn features(&self) -> ProblemFeatures<'_> {
+        ProblemFeatures {
+            analytic: self.analytic(),
+            jvp: self.problem.has_jvp(),
+            structure: self.spec.structure,
+            mass: self.problem.mass_matrix.is_some(),
+            dimension: self.problem.dimension,
+            autonomous: self.problem.autonomous,
+            callback_fault: self.probe.is_some_and(|probe| probe.kind.callback_fault()),
+        }
+    }
+
+    pub(crate) fn h0_base(&self) -> f64 {
+        self.h0_base
+            .unwrap_or(H0_BASE_FRACTION * (self.t_span.1 - self.t_span.0))
+    }
+
+    pub(crate) fn json(&self) -> Value {
+        let spec = self.spec;
+        json!({
+            "id": spec.id,
+            "tier": spec.tier,
+            "dimension": self.problem.dimension,
+            "structure": spec.structure,
+            "jacobian": if self.analytic() { "analytic" } else { "jvp" },
+            "jvp": self.problem.has_jvp(),
+            "mass": self.problem.mass_matrix.is_some(),
+            "autonomous": self.problem.autonomous,
+            "exact_solution": self.exact_solution(),
+            "oscillatory": spec.oscillatory,
+            "t_span": [self.t_span.0, self.t_span.1],
+            "atol_scale": self.atol_scale,
+            "breakpoints": self.breakpoints,
+            "h0_base": self.h0_base(),
+            "source": spec.source,
+        })
+    }
+}
+
+fn build_problem(id: &str) -> Result<TriageProblem> {
+    let spec = find_problem(id).ok_or_else(|| usage(format!("unknown problem {id}")))?;
+    Ok(TriageProblem::build(spec)?)
+}
+
+// --------------------------------------------------------------------- list
+
+pub(crate) fn list_json() -> Result<Value> {
+    let built = PROBLEMS
+        .iter()
+        .map(TriageProblem::build)
+        .collect::<CoreResult<Vec<_>>>()?;
+    let arms = triage_arms::arms()
+        .iter()
+        .map(|arm| {
+            let applicable: Vec<&str> = built
+                .iter()
+                .filter(|p| triage_arms::applicable(&arm.requires, &p.features()))
+                .map(|p| p.spec.id)
+                .collect();
+            json!({
+                "id": arm.id,
+                "components": arm.components,
+                "wired": arm.wired,
+                "unwired_reason": arm.unwired_reason,
+                "requires": arm.requires.json(),
+                "applicable_problems": applicable,
+            })
+        })
+        .collect::<Vec<_>>();
+    let probes = PROBES
+        .iter()
+        .map(|probe| {
+            let problem = TriageProblem::build(&probe.problem)?;
+            let applicable_arms: Vec<&str> = triage_arms::arms()
+                .iter()
+                .filter(|arm| {
+                    arm.wired && triage_arms::applicable(&arm.requires, &problem.features())
+                })
+                .map(|arm| arm.id)
+                .collect();
+            let mut entry = problem.json();
+            entry["probe"] = probe.json();
+            entry["applicable_arms"] = json!(applicable_arms);
+            Ok(entry)
+        })
+        .collect::<CoreResult<Vec<_>>>()?;
+    Ok(json!({
+        "schema": LIST_SCHEMA,
+        "contract": CONTRACT,
+        "applicability_rule": APPLICABILITY_RULE,
+        "counter_semantics": COUNTER_SEMANTICS,
+        "cell_defaults": {
+            "h0_base": "1e-6 * (tf - t0) unless the problem declares h0_base",
+            "h0_scales": H0_SCALES,
+            "min_step": MIN_STEP,
+            "max_step": "tf - t0",
+            "max_attempts_per_segment": MAX_ATTEMPTS,
+            "grids": ["endpoint", "uniform101"],
+        },
+        "arms": arms,
+        "problems": built.iter().map(TriageProblem::json).collect::<Vec<_>>(),
+        "probes": probes,
+    }))
+}
+
+// -------------------------------------------------------------------- cells
+
+/// Row status (`HARNESS_CONTRACT.md`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Status {
+    Ok,
+    SolverFailure,
+    Refused,
+    Error,
+}
+
+impl Status {
+    pub(crate) fn id(self) -> &'static str {
+        match self {
+            Self::Ok => "ok",
+            Self::SolverFailure => "solver_failure",
+            Self::Refused => "refused",
+            Self::Error => "error",
+        }
+    }
+}
+
+fn core_error_kind(error: &CoreError) -> &'static str {
+    match error {
+        CoreError::Dimension(_) => "dimension",
+        CoreError::InvalidInput(_) => "invalid-input",
+        CoreError::NonFinite(_) => "non-finite",
+        CoreError::FatalCallback(_) => "fatal-callback",
+        CoreError::LinearSolve(_) => "linear-solve",
+        CoreError::NonlinearSolve(_) => "nonlinear-solve",
+        CoreError::Coefficients(_) => "coefficients",
+    }
+}
+
+/// Messages of the explicit pre-work validation of the entry points the
+/// arms call, matched as prefixes of an `InvalidInput` or `Dimension`
+/// message. Each is raised before the first callback or step:
+/// `AdaptiveStepConfig::validate` (adaptive.rs), the output collector's
+/// initial-state check (output.rs), `LinearSolverConfig::validate`
+/// (core solver_types.rs) and `validate_problem_linear_config` (sequential.rs),
+/// the entry input checks of the adaptive drivers (integrate.rs,
+/// dense_output_v2.rs, bdf.rs, radau.rs, transactional_q1_q2.rs,
+/// rodas5p_fast.rs, rodas5p_matrix_free_fast.rs), `OutputSchedule::validate_span`
+/// (output.rs), the U-form workspace's `validate_strict` and
+/// `set_krylov_workspace`, `TransactionalQ1Q2Config::validate`, the router's
+/// `route_problem`, and the arm-coverage checks of `stiff_benchmark`.
+const REFUSAL_PREFIXES: &[&str] = &[
+    "adaptive atol must",
+    "adaptive rtol must",
+    "adaptive atol and rtol cannot",
+    "adaptive initial step must",
+    "adaptive minimum step must",
+    "adaptive maximum step must",
+    "adaptive attempt budget must",
+    "adaptive safety factor must",
+    "adaptive minimum factor must",
+    "adaptive maximum factor must",
+    "adaptive rejection factor cap must",
+    "linear tolerances must be finite",
+    "iteration limits must be positive",
+    "recycle_dim must be positive",
+    "recycle_rank_tol must lie",
+    "GCRO-DR requires recycle_dim < restart",
+    "direct solve cannot use a Krylov preconditioner",
+    "direct linear solver or explicit preconditioner requires an explicit Jacobian",
+    "invalid adaptive interval",
+    "invalid adaptive dense-output interval",
+    "invalid adaptive BDF integration input",
+    "invalid adaptive Radau integration input",
+    "invalid adaptive Homotopy integration input",
+    "invalid adaptive transactional q1/q2 integration input",
+    "invalid RODAS5P fast integration input",
+    "invalid RODAS5P matrix-free U-form integration input",
+    "the RODAS5P fast driver supports the identity mass matrix only",
+    "output schedule must start at t0",
+    "a nonzero integration span needs distinct start and end requests",
+    "strict matrix-free RODAS5P (U form) forbids",
+    "the matrix-free U-form driver supports the identity mass matrix only",
+    "Krylov workspace options only supported",
+    "lgmres_into requires LinearMethod::Lgmres",
+    "ls_workspace on LGMRES requires lgmres_into",
+    "transactional q1/q2 thread and Krylov limits",
+    "transactional q1/q2 max Arnoldi count",
+    "transactional q1/q2 tolerances contain",
+    "transactional q1/q2 gate parameters",
+    "no route: the problem has neither",
+    // `StructureError` (problem.rs): every variant is raised before any
+    // integration step, by the declaration or by the router's band
+    // verification at (t0, y0).
+    "structure declared for dimension",
+    "band (lower",
+    "a banded declaration needs a band Jacobian callback",
+    "a band Jacobian callback was given for a non-banded declaration",
+    "a dense declaration needs an explicit Jacobian",
+    "band verification rejected the declaration",
+    "band verification could not evaluate the declaration",
+    "initial state for output collection must be finite",
+    "the residual-accounting entry point takes",
+    "the small arm covers",
+    "the small arm expects dimension",
+    "the banded arms cover the Brusselators",
+    "unknown benchmark arm",
+];
+
+/// Status rule (`HARNESS_CONTRACT.md`): a typed error is `refused` only when
+/// it is one of the identified pre-work validations above, raised by the
+/// first segment, or when the harness's own arm preparation failed (no
+/// integrator was called). Every other typed error, including invalid-input
+/// errors raised during a run (the clock's time-resolution errors, "output
+/// collector advanced past a requested time", ...) and any error whose
+/// origin cannot be told, is `error`.
+pub(crate) fn is_refusal(error: &CoreError) -> bool {
+    match error {
+        CoreError::Dimension(message) | CoreError::InvalidInput(message) => REFUSAL_PREFIXES
+            .iter()
+            .any(|prefix| message.starts_with(prefix)),
+        _ => false,
+    }
+}
+
+/// The typed result of one segment run (or of a failed preparation).
+pub(crate) type SegmentRun = CoreResult<ArmOutcome>;
+
+/// One cell: an arm on a problem at one tolerance, grid and initial step,
+/// with everything built that is not the integration itself.
+pub(crate) struct Cell {
+    pub arm: &'static ArmSpec,
+    pub problem: TriageProblem,
+    pub rtol: f64,
+    pub atol: f64,
+    pub grid: Grid,
+    pub h0_scale: f64,
+    pub h0: f64,
+    pub output_times: Vec<f64>,
+    prepared: std::result::Result<PreparedArm, (String, &'static str)>,
+    outputs: Vec<SegmentOutput>,
+}
+
+impl Cell {
+    /// Build a cell. Unknown arms or problems, unwired arms, inapplicable
+    /// pairs and an `h0_scale` outside {0.5, 1, 2} are [`UsageError`]s.
+    pub(crate) fn new(args: &CellArgs) -> Result<Self> {
+        let arm = triage_arms::find_arm(&args.arm)
+            .ok_or_else(|| usage(format!("unknown arm {}", args.arm)))?;
+        let problem = build_problem(&args.problem)?;
+        if !arm.wired {
+            return Err(usage(format!(
+                "arm {} is not wired: {}",
+                arm.id,
+                arm.unwired_reason.unwrap_or("")
+            )));
+        }
+        if !triage_arms::applicable(&arm.requires, &problem.features()) {
+            return Err(usage(format!(
+                "arm {} is not applicable to problem {}",
+                arm.id, problem.spec.id
+            )));
+        }
+        if !H0_SCALES.contains(&args.h0_scale) {
+            return Err(usage(format!(
+                "h0-scale must be one of {H0_SCALES:?}, got {}",
+                args.h0_scale
+            )));
+        }
+        let (t0, tf) = problem.t_span;
+        let h0 = args.h0_scale * problem.h0_base();
+        let adaptive = AdaptiveStepConfig {
+            atol: args.rtol * problem.atol_scale,
+            rtol: args.rtol,
+            initial_step: h0,
+            min_step: MIN_STEP,
+            max_step: tf - t0,
+            max_attempts: MAX_ATTEMPTS,
+            ..AdaptiveStepConfig::default()
+        };
+        let output_times = args.grid.times(problem.t_span);
+        let outputs = problem
+            .segments
+            .iter()
+            .map(|segment| {
+                let (a, b) = segment.t_span;
+                let mut times = vec![a];
+                times.extend(output_times.iter().copied().filter(|t| *t > a && *t < b));
+                times.push(b);
+                let schedule = OutputSchedule::new(times)?;
+                Ok(SegmentOutput {
+                    sampling: OutputSamplingPlan::dense(schedule.clone()),
+                    schedule,
+                })
+            })
+            .collect::<CoreResult<Vec<_>>>()?;
+        let prepared = triage_arms::prepare(
+            arm,
+            &problem.segments,
+            problem.spec.structure,
+            problem.band.clone(),
+            adaptive.clone(),
+        )
+        .map_err(|e| (e.to_string(), core_error_kind(&e)));
+        Ok(Self {
+            arm,
+            atol: adaptive.atol,
+            problem,
+            rtol: args.rtol,
+            grid: args.grid,
+            h0_scale: args.h0_scale,
+            h0,
+            output_times,
+            prepared,
+            outputs,
+        })
+    }
+
+    pub(crate) fn segment_count(&self) -> usize {
+        self.problem.segments.len()
+    }
+
+    /// One integration of the cell: every segment in order, each starting
+    /// from the end state of the previous one, until one fails. The segment
+    /// results are appended to `runs`, which should have spare capacity for
+    /// [`Self::segment_count`] more; nothing else is allocated here besides
+    /// what the arm allocates.
+    pub(crate) fn integrate_into(&mut self, runs: &mut Vec<SegmentRun>) {
+        // A failed preparation is reported by `merge`; nothing runs.
+        let Ok(prepared) = &self.prepared else {
+            return;
+        };
+        for (index, segment) in self.problem.segments.iter_mut().enumerate() {
+            if index == 0 {
+                segment.y0.copy_from_slice(&self.problem.y0);
+            } else {
+                match runs.last() {
+                    Some(Ok(previous))
+                        if previous.observed.success
+                            && previous.observed.t.last() == Some(&segment.t_span.0) =>
+                    {
+                        let end = previous.observed.y.last().expect("a successful run");
+                        segment.y0.copy_from_slice(end);
+                    }
+                    _ => return,
+                }
+            }
+            runs.push(triage_arms::run_arm(
+                prepared,
+                index,
+                segment,
+                &self.outputs[index],
+            ));
+        }
+    }
+
+    pub(crate) fn integrate(&mut self) -> CellRun {
+        let mut runs = Vec::with_capacity(self.segment_count());
+        self.integrate_into(&mut runs);
+        self.merge(&runs)
+    }
+
+    /// Cap the attempts of every integration (tests: a one-attempt probe
+    /// still shows a refusal, which happens before any attempt).
+    #[allow(dead_code)]
+    pub(crate) fn limit_attempts(&mut self, max_attempts: usize) {
+        if let Ok(prepared) = &mut self.prepared {
+            prepared.adaptive.max_attempts = max_attempts;
+        }
+    }
+
+    /// The row data of one integration (the segment results of one
+    /// [`Self::integrate_into`]): the outputs on the requested grid (segment
+    /// boundaries that are not requested are dropped), the summed work of
+    /// the segments that returned (`None` when none did), and the status.
+    pub(crate) fn merge(&self, runs: &[SegmentRun]) -> CellRun {
+        let requested = &self.output_times;
+        let mut out = CellRun {
+            status: Status::Ok,
+            error: None,
+            error_kind: None,
+            success: false,
+            attempts: None,
+            accepted_steps: None,
+            rejected_steps: None,
+            output_times: Vec::with_capacity(requested.len()),
+            states: Vec::with_capacity(requested.len()),
+            counters: None,
+            extra: Vec::with_capacity(runs.len()),
+            segments: self.segment_count(),
+            segments_completed: 0,
+        };
+        let mut failed = false;
+        if let Err((message, kind)) = &self.prepared {
+            // The harness's own preparation failed: no integrator was called.
+            out.status = Status::Refused;
+            out.error_kind = Some(*kind);
+            out.error = Some(message.clone());
+            failed = true;
+        }
+        for (index, run) in runs.iter().enumerate() {
+            if failed {
+                break;
+            }
+            match run {
+                Err(error) => {
+                    out.status = if index == 0 && is_refusal(error) {
+                        Status::Refused
+                    } else {
+                        Status::Error
+                    };
+                    out.error_kind = Some(core_error_kind(error));
+                    out.error = Some(error.to_string());
+                    failed = true;
+                }
+                Ok(run) => {
+                    out.counters
+                        .get_or_insert_with(WorkCounters::default)
+                        .accumulate(run.observed.counters);
+                    *out.attempts.get_or_insert(0) += run.attempts;
+                    *out.accepted_steps.get_or_insert(0) += run.accepted_steps;
+                    *out.rejected_steps.get_or_insert(0) += run.rejected_steps;
+                    for (t, y) in run.observed.t.iter().zip(&run.observed.y) {
+                        let is_requested = requested.binary_search_by(|x| x.total_cmp(t)).is_ok();
+                        if is_requested && out.output_times.last() != Some(t) {
+                            out.output_times.push(*t);
+                            out.states.push(y.clone());
+                        }
+                    }
+                    out.extra.push(run.extra.clone());
+                    if !run.observed.success {
+                        out.status = Status::SolverFailure;
+                        out.error = Some(run.observed.message.clone());
+                        failed = true;
+                    } else {
+                        out.segments_completed += 1;
+                    }
+                }
+            }
+        }
+        if !failed {
+            let complete = out.segments_completed == out.segments
+                && out.output_times.len() == requested.len()
+                && out
+                    .output_times
+                    .iter()
+                    .zip(requested)
+                    .all(|(a, b)| a.to_bits() == b.to_bits());
+            if complete {
+                out.success = true;
+            } else {
+                out.status = Status::SolverFailure;
+                out.error = Some(format!(
+                    "{} of {} requested outputs observed in {} of {} segments",
+                    out.output_times.len(),
+                    requested.len(),
+                    out.segments_completed,
+                    out.segments
+                ));
+            }
+        }
+        out
+    }
+
+    /// The status, success, attempts and counters of one integration as
+    /// [`Self::merge`] gives them, without collecting the outputs (no
+    /// allocation): the `triage-profile-run` summary.
+    pub(crate) fn summary(&self, runs: &[SegmentRun]) -> RunSummary {
+        let mut out = RunSummary {
+            status: Status::Ok,
+            success: false,
+            attempts: None,
+            counters: None,
+        };
+        if self.prepared.is_err() {
+            out.status = Status::Refused;
+            return out;
+        }
+        let requested = &self.output_times;
+        let (mut observed, mut last, mut completed) = (0_usize, None::<f64>, 0_usize);
+        for (index, run) in runs.iter().enumerate() {
+            match run {
+                Err(error) => {
+                    out.status = if index == 0 && is_refusal(error) {
+                        Status::Refused
+                    } else {
+                        Status::Error
+                    };
+                    return out;
+                }
+                Ok(run) => {
+                    out.counters
+                        .get_or_insert_with(WorkCounters::default)
+                        .accumulate(run.observed.counters);
+                    *out.attempts.get_or_insert(0) += run.attempts;
+                    for t in &run.observed.t {
+                        let is_requested = requested.binary_search_by(|x| x.total_cmp(t)).is_ok();
+                        if is_requested && last.is_none_or(|l| l != *t) {
+                            observed += 1;
+                            last = Some(*t);
+                        }
+                    }
+                    if !run.observed.success {
+                        out.status = Status::SolverFailure;
+                        return out;
+                    }
+                    completed += 1;
+                }
+            }
+        }
+        // `merge` also checks the observed times bitwise; the collectors
+        // record each requested time once, in order, so the count suffices.
+        if completed == self.segment_count() && observed == requested.len() {
+            out.success = true;
+        } else {
+            out.status = Status::SolverFailure;
+        }
+        out
+    }
+
+    pub(crate) fn status_json(&self) -> Value {
+        json!({
+            "arm": self.arm.id,
+            "problem": self.problem.spec.id,
+            "rtol": self.rtol,
+            "grid": self.grid.id(),
+            "h0_scale": self.h0_scale,
+        })
+    }
+}
+
+/// [`Cell::summary`] of one integration.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(crate) struct RunSummary {
+    pub status: Status,
+    pub success: bool,
+    pub attempts: Option<usize>,
+    pub counters: Option<WorkCounters>,
+}
+
+/// The merged result of one integration of a cell.
+#[derive(Debug)]
+pub(crate) struct CellRun {
+    pub status: Status,
+    pub error: Option<String>,
+    pub error_kind: Option<&'static str>,
+    pub success: bool,
+    /// `None` (row `null`) when no segment returned.
+    pub attempts: Option<usize>,
+    pub accepted_steps: Option<usize>,
+    pub rejected_steps: Option<usize>,
+    pub output_times: Vec<f64>,
+    pub states: Vec<Vec<f64>>,
+    /// The summed counters of the segments that returned; `None` (row
+    /// `null`) when the integrator returned an error without counters.
+    pub counters: Option<WorkCounters>,
+    pub extra: Vec<Option<triage_arms::ExtraWork>>,
+    pub segments: usize,
+    pub segments_completed: usize,
+}
+
+impl CellRun {
+    /// Bitwise equality of the observed output arrays (times and states)
+    /// and of the status.
+    pub(crate) fn same_output(&self, other: &Self) -> bool {
+        let bits = |v: &[f64]| v.iter().map(|x| x.to_bits()).collect::<Vec<_>>();
+        self.status == other.status
+            && self.success == other.success
+            && bits(&self.output_times) == bits(&other.output_times)
+            && self.states.len() == other.states.len()
+            && self
+                .states
+                .iter()
+                .zip(&other.states)
+                .all(|(a, b)| bits(a) == bits(b))
+    }
+
+    pub(crate) fn extra_json(&self) -> Value {
+        if self.extra.iter().all(Option::is_none) {
+            return Value::Null;
+        }
+        let one = |extra: &Option<triage_arms::ExtraWork>| {
+            extra
+                .as_ref()
+                .map_or(Value::Null, triage_arms::ExtraWork::json)
+        };
+        if self.segments == 1 {
+            one(&self.extra[0])
+        } else {
+            json!({ "segments": self.extra.iter().map(one).collect::<Vec<_>>() })
+        }
+    }
+}
+
+pub(crate) fn hex(value: f64) -> String {
+    stiff_benchmark::f64_bits_hex(value)
+}
+
+pub(crate) fn hex_vec(values: &[f64]) -> Vec<String> {
+    values.iter().map(|v| hex(*v)).collect()
+}
+
+/// The field names of `WorkCounters`, read from its `Deserialize` impl, so
+/// the row lists every field even when serde skips a zero one.
+pub(crate) fn work_counter_fields() -> &'static [&'static str] {
+    use serde::de::{self, Visitor};
+
+    struct Probe<'a>(&'a mut Option<&'static [&'static str]>);
+
+    impl<'de> de::Deserializer<'de> for Probe<'_> {
+        type Error = de::value::Error;
+
+        fn deserialize_any<V: Visitor<'de>>(self, _: V) -> Result<V::Value, Self::Error> {
+            Err(de::Error::custom("field-name probe"))
+        }
+
+        fn deserialize_struct<V: Visitor<'de>>(
+            self,
+            _: &'static str,
+            fields: &'static [&'static str],
+            _: V,
+        ) -> Result<V::Value, Self::Error> {
+            *self.0 = Some(fields);
+            Err(de::Error::custom("field-name probe"))
+        }
+
+        serde::forward_to_deserialize_any! {
+            bool i8 i16 i32 i64 i128 u8 u16 u32 u64 u128 f32 f64 char str string
+            bytes byte_buf option unit unit_struct newtype_struct seq tuple
+            tuple_struct map enum identifier ignored_any
+        }
+    }
+
+    let mut fields = None;
+    let _ = WorkCounters::deserialize(Probe(&mut fields));
+    fields.unwrap_or(&[])
+}
+
+/// Every field of `WorkCounters`, raw: serde's serialization with the
+/// fields it skips while zero filled in as 0.
+pub(crate) fn counters_json(counters: &WorkCounters) -> Value {
+    let mut value = serde_json::to_value(counters).expect("WorkCounters serializes");
+    if let Value::Object(map) = &mut value {
+        for field in work_counter_fields() {
+            map.entry(*field).or_insert(json!(0));
+        }
+    }
+    value
+}
+
+fn env_nonempty(name: &str) -> Option<String> {
+    std::env::var(name).ok().filter(|value| !value.is_empty())
+}
+
+/// `binary`: the sha256 of the running executable (or
+/// `VIGILODE_BINARY_SHA256` when the driver has hashed it already) and the
+/// build profile (`VIGILODE_BUILD_PROFILE`, otherwise inferred: cargo builds
+/// the `bench` and `release` profiles into the same `target/release`, so the
+/// binary cannot tell them apart).
+pub(crate) fn binary_json() -> Value {
+    let (sha256, sha256_source) = match env_nonempty("VIGILODE_BINARY_SHA256") {
+        Some(sha) => (Some(sha), "env"),
+        None => (
+            std::env::current_exe()
+                .ok()
+                .and_then(|exe| std::fs::read(exe).ok())
+                .map(|bytes| rodas5p_core::sha256_hex(&bytes)),
+            "computed",
+        ),
+    };
+    let (profile, profile_source) = match env_nonempty("VIGILODE_BUILD_PROFILE") {
+        Some(profile) => (profile, "env"),
+        None if cfg!(debug_assertions) => ("dev".to_owned(), "inferred"),
+        None => {
+            let dir = std::env::current_exe().ok().and_then(|exe| {
+                exe.parent()
+                    .and_then(|p| p.file_name())
+                    .map(|n| n.to_string_lossy().into_owned())
+            });
+            let profile = match dir.as_deref() {
+                Some("release") => "release-or-bench".to_owned(),
+                Some(other) => other.to_owned(),
+                None => "unknown".to_owned(),
+            };
+            (profile, "inferred")
+        }
+    };
+    json!({
+        "sha256": sha256,
+        "sha256_source": sha256_source,
+        "profile": profile,
+        "profile_source": profile_source,
+    })
+}
+
+/// `source`: from `VIGILODE_SOURCE_COMMIT` and `VIGILODE_TREE_CLEAN` (the
+/// binary does not shell out to git); `null` when unset.
+pub(crate) fn source_json() -> Value {
+    let tree_clean =
+        env_nonempty("VIGILODE_TREE_CLEAN").and_then(|v| match v.to_ascii_lowercase().as_str() {
+            "1" | "true" | "yes" => Some(true),
+            "0" | "false" | "no" => Some(false),
+            _ => None,
+        });
+    json!({
+        "commit": env_nonempty("VIGILODE_SOURCE_COMMIT"),
+        "tree_clean": tree_clean,
+    })
+}
+
+/// The `vigilode-triage-row-v1` row of the first run of a cell; `binary`
+/// and `source` are [`binary_json`] and [`source_json`].
+pub(crate) fn row_json(
+    cell: &Cell,
+    run: &CellRun,
+    deterministic: bool,
+    repetitions: usize,
+    campaign: Option<&str>,
+    binary: Value,
+    source: Value,
+) -> Value {
+    let problem = &cell.problem;
+    json!({
+        "schema": ROW_SCHEMA,
+        "campaign": campaign,
+        "arm": cell.arm.id,
+        "components": cell.arm.components,
+        "problem": problem.spec.id,
+        "tier": problem.spec.tier,
+        "dimension": problem.problem.dimension,
+        "rtol": cell.rtol,
+        "atol": cell.atol,
+        "grid": cell.grid.id(),
+        "h0_scale": cell.h0_scale,
+        "h0": cell.h0,
+        "status": run.status.id(),
+        "error": run.error,
+        "error_kind": run.error_kind,
+        "success": run.success,
+        "attempts": run.attempts,
+        "accepted_steps": run.accepted_steps,
+        "rejected_steps": run.rejected_steps,
+        "segments": run.segments,
+        "segments_completed": run.segments_completed,
+        "output_times": run.output_times,
+        "states_hex": run.states.iter().map(|y| hex_vec(y)).collect::<Vec<_>>(),
+        "counters": run.counters.as_ref().map(counters_json),
+        "extra_work": run.extra_json(),
+        "counter_semantics": COUNTER_SEMANTICS,
+        "deterministic": deterministic,
+        "repetitions": repetitions,
+        "binary": binary,
+        "source": source,
+    })
+}
+
+/// `triage-run`: the cell `repetitions` times in-process; the row of the
+/// first run, `deterministic` comparing every run's outputs bitwise.
+pub(crate) fn run_row(
+    args: &CellArgs,
+    repetitions: usize,
+    campaign: Option<&str>,
+) -> Result<Value> {
+    if repetitions == 0 {
+        return Err(usage("triage-run needs at least one repetition".into()));
+    }
+    let mut cell = Cell::new(args)?;
+    let first = cell.integrate();
+    let mut deterministic = true;
+    for _ in 1..repetitions {
+        let again = cell.integrate();
+        deterministic &= first.same_output(&again);
+    }
+    Ok(row_json(
+        &cell,
+        &first,
+        deterministic,
+        repetitions,
+        campaign,
+        binary_json(),
+        source_json(),
+    ))
+}
+
+/// `triage-profile-run`: the callgrind workload, printed as one line.
+///
+/// Builds the cell, then runs only the `repetitions` (possibly 0)
+/// integrations: every repetition's segment results are appended to one
+/// buffer reserved before the loop for [`PROFILE_BUFFER_REPETITIONS`]
+/// repetitions and are never dropped (the buffer is leaked; the process
+/// ends), so for `K < PROFILE_BUFFER_REPETITIONS`, `Ir(K + 1) - Ir(K)` is one
+/// integration call. The first run is summarized once, right after it,
+/// without collecting its outputs ([`Cell::summary`]). Every K, including
+/// 0, then serializes both the summary with the first run's values (a
+/// zero ledger for K = 0) and the one with nulls and prints one of them, so
+/// the summary work does not depend on K either. No determinism check
+/// runs in-process (`deterministic` is null: the driver compares `Ir(1)`
+/// with `Ir(1b)`, and `triage-run --repetitions K` compares outputs). No
+/// hashing, no environment reads.
+pub(crate) fn profile_run(args: &CellArgs, repetitions: usize) -> Result<String> {
+    let mut cell = Cell::new(args)?;
+    let mut runs: Vec<SegmentRun> =
+        Vec::with_capacity(PROFILE_BUFFER_REPETITIONS * cell.segment_count());
+    let mut printed: Option<String> = None;
+    for repetition in 0..repetitions {
+        cell.integrate_into(&mut runs);
+        if repetition == 0 {
+            // Right after the first run, where the heap is the same for
+            // every K >= 1 (rendered after the loop, its allocator costs
+            // would depend on K).
+            let first = cell.summary(&runs);
+            printed = Some(render_profile(&cell, repetitions, Some(&first)));
+        }
+    }
+    let printed = printed.unwrap_or_else(|| render_profile(&cell, repetitions, None));
+    // Dropping K results would scale with K: leak them.
+    std::mem::forget(runs);
+    Ok(printed)
+}
+
+/// The `triage-profile-run` line: both renderings (first-run values, a zero
+/// ledger standing in for K = 0, and nulls) are serialized for every K and
+/// one is returned, so `Ir(1) - Ir(0)` holds no summary work.
+fn render_profile(cell: &Cell, repetitions: usize, first: Option<&RunSummary>) -> String {
+    let summary = |values: Option<&RunSummary>| -> String {
+        let mut out = cell.status_json();
+        out["schema"] = json!(PROFILE_SCHEMA);
+        out["repetitions"] = json!(repetitions);
+        out["deterministic"] = Value::Null;
+        out["status"] = json!(values.map(|v| v.status.id()));
+        out["success"] = json!(values.map(|v| v.success));
+        out["attempts"] = json!(values.and_then(|v| v.attempts));
+        out["counters"] = json!(values.and_then(|v| v.counters.as_ref().map(counters_json)));
+        out.to_string()
+    };
+    let placeholder = RunSummary {
+        status: Status::Ok,
+        success: true,
+        attempts: Some(0),
+        counters: Some(WorkCounters::default()),
+    };
+    let with_values = summary(Some(first.unwrap_or(&placeholder)));
+    let with_nulls = summary(None);
+    if first.is_some() {
+        std::hint::black_box(with_nulls);
+        with_values
+    } else {
+        std::hint::black_box(with_values);
+        with_nulls
+    }
+}
+
+// ------------------------------------------------------- exact and parity
+
+/// `triage-exact`: the exact solution at the grid, as IEEE hex.
+pub(crate) fn exact_json(problem_id: &str, grid: Grid) -> Result<Value> {
+    let problem = build_problem(problem_id)?;
+    if !problem.exact_solution() {
+        return Err(usage(format!("problem {problem_id} has no exact solution")));
+    }
+    let times = grid.times(problem.t_span);
+    let states = times
+        .iter()
+        .map(|t| {
+            problem
+                .problem
+                .exact(*t)
+                .map(|y| hex_vec(&y))
+                .ok_or_else(|| anyhow::anyhow!("exact solution missing at t = {t}"))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    Ok(json!({
+        "schema": EXACT_SCHEMA,
+        "problem": problem_id,
+        "grid": grid.id(),
+        "dimension": problem.problem.dimension,
+        "output_times": times,
+        "output_times_hex": hex_vec(&times),
+        "states_hex": states,
+    }))
+}
+
+fn matrix_hex(rows: usize, cols: usize, entry: impl Fn(usize, usize) -> f64) -> Vec<Vec<String>> {
+    (0..rows)
+        .map(|i| (0..cols).map(|j| hex(entry(i, j))).collect())
+        .collect()
+}
+
+/// `triage-parity`: `f(t, y)`, the analytic Jacobian (dense rows up to
+/// `jacobian_max_dense`, nonzero triplets `[i, j, hex]` above) and a JVP
+/// `J v` with `v_i = sin(i + 1)` at the deterministic states of
+/// `stiff_benchmark::parity_states` (`y0` and a perturbation) at `t0` and
+/// the span midpoint, all as IEEE hex. The whole-domain problem is used
+/// for segmented corpus problems.
+pub(crate) fn parity_json(problem_id: &str, jacobian_max_dense: usize) -> Result<Value> {
+    let problem = build_problem(problem_id)?;
+    let p = &problem.problem;
+    let n = p.dimension;
+    let (t0, tf) = problem.t_span;
+    let times = [t0, t0 + 0.5 * (tf - t0)];
+    let v: Vec<f64> = (0..n).map(|i| ((i + 1) as f64).sin()).collect();
+    let mut samples = Vec::new();
+    for t in times {
+        for y in stiff_benchmark::parity_states(&problem.y0) {
+            let mut counters = WorkCounters::default();
+            let f = p.eval_rhs(t, &y, &mut counters).map(|f| hex_vec(&f));
+            let jacobian = if p.has_explicit_jacobian() {
+                let j = p.dense_jacobian(t, &y, &mut counters)?;
+                if n <= jacobian_max_dense {
+                    json!({"format": "dense", "rows_hex": matrix_hex(n, n, |i, k| j[(i, k)])})
+                } else {
+                    let mut triplets = Vec::new();
+                    for i in 0..n {
+                        for k in 0..n {
+                            let x = j[(i, k)];
+                            if x.to_bits() != 0 {
+                                triplets.push(json!([i, k, hex(x)]));
+                            }
+                        }
+                    }
+                    json!({"format": "coo", "nonzeros_hex": triplets})
+                }
+            } else {
+                Value::Null
+            };
+            let jvp = match p.jvp_callback() {
+                Some(jvp) => {
+                    let mut out = vec![0.0; n];
+                    jvp(t, &y, &v, &mut out).map(|()| hex_vec(&out)).ok()
+                }
+                None => None,
+            };
+            samples.push(json!({
+                "t_hex": hex(t),
+                "y_hex": hex_vec(&y),
+                "f_hex": f.as_ref().ok(),
+                "f_error": f.as_ref().err().map(ToString::to_string),
+                "jacobian": jacobian,
+                "jvp_hex": jvp,
+            }));
+        }
+    }
+    let mass = p
+        .mass_matrix
+        .as_ref()
+        .map(|m| matrix_hex(n, n, |i, k| m[(i, k)]));
+    Ok(json!({
+        "schema": PARITY_SCHEMA,
+        "problem": problem_id,
+        "dimension": n,
+        "autonomous": p.autonomous,
+        "jacobian": if p.has_explicit_jacobian() { "analytic" } else { "jvp" },
+        "jvp_direction_hex": hex_vec(&v),
+        "mass_hex": mass,
+        "samples": samples,
+    }))
+}

@@ -1,0 +1,274 @@
+{
+  "schema_version": 1,
+  "runner_invocations": [
+    {
+      "phase": "check",
+      "argv": [
+        "python3",
+        "research/cloud_completion_20261018/run_local.py",
+        "--mode",
+        "check",
+        "--output",
+        "artifacts/generated/cloud_local_check"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-cloud-completion-20261018",
+      "outer_exit_code": 0,
+      "stdout_session_result": "completed; exit code observed as 0",
+      "stderr": "child logs preserved under evidence/local_runs/check/"
+    },
+    {
+      "phase": "smoke",
+      "argv": [
+        "python3",
+        "research/cloud_completion_20261018/run_local.py",
+        "--mode",
+        "smoke",
+        "--output",
+        "artifacts/generated/cloud_local_smoke"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-cloud-completion-20261018",
+      "outer_exit_code": 0,
+      "stdout_session_result": "completed; exit code observed as 0",
+      "stderr": "child logs preserved under evidence/local_runs/smoke/"
+    },
+    {
+      "phase": "bench",
+      "argv": [
+        "python3",
+        "research/cloud_completion_20261018/run_local.py",
+        "--mode",
+        "bench",
+        "--profile",
+        "measurement",
+        "--modes",
+        "32",
+        "--repeats",
+        "5",
+        "--output",
+        "artifacts/generated/cloud_local_bench"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-cloud-completion-20261018",
+      "outer_exit_code": 0,
+      "stdout_session_result": "completed; exit code observed as 0",
+      "stderr": "child logs preserved under evidence/local_runs/bench/"
+    }
+  ],
+  "child_commands": [
+    {
+      "name": "all_targets",
+      "command": [
+        "cargo",
+        "check",
+        "--locked",
+        "--offline",
+        "--workspace",
+        "--all-targets"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 57.4792860209709,
+      "stdout": "evidence/local_runs/check/all_targets.stdout",
+      "stderr": "evidence/local_runs/check/all_targets.stderr",
+      "phase": "check"
+    },
+    {
+      "name": "core_contracts",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-core",
+        "--test",
+        "leja_enclosed_contract",
+        "--test",
+        "leja_total_contract",
+        "--test",
+        "leja_setup_work_contract"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 33.907438136055134,
+      "stdout": "evidence/local_runs/check/core_contracts.stdout",
+      "stderr": "evidence/local_runs/check/core_contracts.stderr",
+      "phase": "check"
+    },
+    {
+      "name": "leja_unit",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-core",
+        "--lib",
+        "cloud_"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 6.833681710995734,
+      "stdout": "evidence/local_runs/check/leja_unit.stdout",
+      "stderr": "evidence/local_runs/check/leja_unit.stderr",
+      "phase": "check"
+    },
+    {
+      "name": "integrator_contracts",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "affine_transport_contract",
+        "--test",
+        "production_audit_packet_verified",
+        "--test",
+        "production_audit_packet_curve_output",
+        "--test",
+        "production_audit_pr101_cloud",
+        "--test",
+        "a05_dense_global_output",
+        "--test",
+        "collective_rodas5p_contracts",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 37.82554907898884,
+      "stdout": "evidence/local_runs/check/integrator_contracts.stdout",
+      "stderr": "evidence/local_runs/check/integrator_contracts.stderr",
+      "phase": "check"
+    },
+    {
+      "name": "allocation_probe",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "collective_rodas5p_allocation_contract",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 5.061711734975688,
+      "stdout": "evidence/local_runs/check/allocation_probe.stdout",
+      "stderr": "evidence/local_runs/check/allocation_probe.stderr",
+      "phase": "check"
+    },
+    {
+      "name": "leja_fraction",
+      "command": [
+        "/usr/bin/python3",
+        "research/cloud_completion_20261018/leja_fraction_oracle.py",
+        "/home/cosmosapjw/vigilode-cloud-completion-20261018/artifacts/generated/cloud_local_check/leja_runs.json",
+        "--output",
+        "/home/cosmosapjw/vigilode-cloud-completion-20261018/artifacts/generated/cloud_local_check/leja_fraction.json"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.5454358430579305,
+      "stdout": "evidence/local_runs/check/leja_fraction.stdout",
+      "stderr": "evidence/local_runs/check/leja_fraction.stderr",
+      "phase": "check"
+    },
+    {
+      "name": "pr101_fraction",
+      "command": [
+        "/usr/bin/python3",
+        "crates/rodas5p-integrators/tests/pr101_cloud_fraction_oracle.py",
+        "/home/cosmosapjw/vigilode-cloud-completion-20261018/artifacts/generated/cloud_local_check/integrator_contracts.stdout"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.06939712597522885,
+      "stdout": "evidence/local_runs/check/pr101_fraction.stdout",
+      "stderr": "evidence/local_runs/check/pr101_fraction.stderr",
+      "phase": "check"
+    },
+    {
+      "name": "packet_run",
+      "command": [
+        "cargo",
+        "run",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--example",
+        "packet_verified_run",
+        "--",
+        "16",
+        "32"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 1.4450217039557174,
+      "stdout": "evidence/local_runs/smoke/packet_run.stdout",
+      "stderr": "evidence/local_runs/smoke/packet_run.stderr",
+      "phase": "smoke"
+    },
+    {
+      "name": "pr101_run",
+      "command": [
+        "cargo",
+        "run",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--example",
+        "pr101_verified_run"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 13.241484802099876,
+      "stdout": "evidence/local_runs/smoke/pr101_run.stdout",
+      "stderr": "evidence/local_runs/smoke/pr101_run.stderr",
+      "phase": "smoke"
+    },
+    {
+      "name": "comparison_build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--profile",
+        "measurement",
+        "-p",
+        "rodas5p-integrators",
+        "--example",
+        "collective_structured_compare"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 80.17869536799844,
+      "stdout": "evidence/local_runs/bench/comparison_build.stdout",
+      "stderr": "evidence/local_runs/bench/comparison_build.stderr",
+      "phase": "bench"
+    },
+    {
+      "name": "structured_comparison",
+      "command": [
+        "cargo",
+        "run",
+        "--locked",
+        "--offline",
+        "--profile",
+        "measurement",
+        "-p",
+        "rodas5p-integrators",
+        "--example",
+        "collective_structured_compare",
+        "--",
+        "32",
+        "5"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 1.0504625940229744,
+      "stdout": "evidence/local_runs/bench/structured_comparison.stdout",
+      "stderr": "evidence/local_runs/bench/structured_comparison.stderr",
+      "phase": "bench"
+    }
+  ]
+}

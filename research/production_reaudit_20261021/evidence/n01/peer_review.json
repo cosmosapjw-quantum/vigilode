@@ -1,0 +1,20 @@
+{
+  "schema": "vigilode.peer-source-review.v1",
+  "reviewer": "/root/dense_transaction_audit",
+  "status": "PASS",
+  "mode": "source review without Cargo",
+  "findings": [
+    "61 fields preserve one-to-one ordering; source destructures exhaustive and enum matches wildcard-free",
+    "Owned router conversion retains mismatch Vec storage",
+    "Stats public fields recursively facade/std, no internal source types in record fields",
+    "Capability refusal precedence and 6 route mapping match solve/build",
+    "384-case well-formed 1D empty-span matrix checks route/refusal logic, not numerical success across general problems"
+  ],
+  "migration_risk": "Public Rust field types change; enum patterns, annotations and internal WorkCounters methods need migration; PartialEq bridge is not full type compatibility.",
+  "source_sha256": {
+    "crates/vigilode/src/records.rs": "8c133fdc78b8f6664fc8ff57ddddaace38e97d016a854c50fa7ced5eb6ad486e",
+    "crates/vigilode/src/capabilities.rs": "415a6a0ec2893431fba147697ed7c0c4ccb021fd3c9ed2a0cc351e5f034d7dd5",
+    "crates/vigilode/src/solution.rs": "d879c9eb6155a0a73b3adda8445d8bcf30d4830863a97b02930290bbddb3d761",
+    "crates/vigilode/src/solve.rs": "d05233df298e206bb096b7e763c280a9248e1ecb8da8cd0c8748b66af2d9f53d"
+  }
+}

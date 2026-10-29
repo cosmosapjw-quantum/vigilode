@@ -1,0 +1,60 @@
+--------------------------------------------------------------------------------
+Profile data file '~/vigilode-integration-followup-20261027/profile_r2/prof/callgrind/gyro-tight__rodas-fd.out' (creator: callgrind-3.22.0)
+--------------------------------------------------------------------------------
+I1 cache: 
+D1 cache: 
+LL cache: 
+Timerange: Basic block 0 - 57220349
+Trigger: Program termination
+Profiled target:  ~/vigilode-integration-followup-20261027/profile_r2/prof_bin repeat-arm gyro-tight rodas-fd 1 (PID 3742045, part 1)
+Events recorded:  Ir
+Events shown:     Ir
+Event sort order: Ir
+Thresholds:       99
+Include dirs:     
+User annotated:   
+Auto-annotation:  on
+
+--------------------------------------------------------------------------------
+Ir                   
+--------------------------------------------------------------------------------
+333,432,630 (100.0%)  PROGRAM TOTALS
+
+--------------------------------------------------------------------------------
+Ir                   file:function
+--------------------------------------------------------------------------------
+70,183,008 (21.05%)  crates/vigilode/examples/local_bottleneck_support/models.rs:adapter_checkpoint_trace::models::Model::component [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+26,824,776 ( 8.05%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/adapters/zip.rs:rodas5p_integrators::rodas5p_fast::Workspace::attempt
+25,204,612 ( 7.56%)  crates/vigilode/examples/local_bottleneck_support/models.rs:adapter_checkpoint_trace::models::Model::apply [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+18,374,640 ( 5.51%)  crates/rodas5p-integrators/src/rodas5p_fast.rs:rodas5p_integrators::rodas5p_fast::lu_solve_in_place [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+15,078,133 ( 4.52%)  crates/rodas5p-integrators/src/rodas5p_fast.rs:rodas5p_integrators::rodas5p_fast::Workspace::attempt [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+11,569,408 ( 3.47%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/adapters/zip.rs:rodas5p_integrators::rodas5p_fast::lu_solve_in_place
+ 6,729,824 ( 2.02%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:rodas5p_integrators::rodas5p_fast::lu_solve_in_place
+ 5,722,800 ( 1.72%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:vigilode::fd::Guard::vector_call
+ 5,444,352 ( 1.63%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/range.rs:rodas5p_integrators::rodas5p_fast::lu_solve_in_place
+ 5,291,576 ( 1.59%)  crates/vigilode/examples/adapter_checkpoint_trace.rs:adapter_checkpoint_trace::fixture::{{closure}} [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 5,152,324 ( 1.55%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs:adapter_checkpoint_trace::models::Model::component
+ 5,075,718 ( 1.52%)  crates/rodas5p-integrators/src/rodas5p_fast.rs:rodas5p_integrators::rodas5p_fast::lu_in_place [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 4,796,400 ( 1.44%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:vigilode::fd::Guard::fd_rhs
+ 4,194,946 ( 1.26%)  ./malloc/./malloc/malloc.c:_int_malloc [/usr/lib/x86_64-linux-gnu/libc.so.6]
+ 3,901,072 ( 1.17%)  crates/vigilode/src/fd.rs:vigilode::fd::dense_fd_jacobian::{{closure}} [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 3,544,501 ( 1.06%)  crates/rodas5p-integrators/src/output.rs:rodas5p_integrators::output::land_capped [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 3,463,800 ( 1.04%)  crates/vigilode/src/fd.rs:vigilode::fd::Guard::vector_call [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 3,175,872 ( 0.95%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:rodas5p_integrators::rodas5p_fast::lu_solve_in_place
+ 2,873,408 ( 0.86%)  crates/rodas5p-integrators/src/rodas5p_fast.rs:rodas5p_integrators::rodas5p_fast::Workspace::solve [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 2,813,888 ( 0.84%)  crates/vigilode/src/fd.rs:vigilode::fd::Guard::fd_rhs [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 2,759,984 ( 0.83%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:rodas5p_integrators::rodas5p_fast::Workspace::attempt
+ 2,749,844 ( 0.82%)  ./string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:__memcpy_avx_unaligned_erms [/usr/lib/x86_64-linux-gnu/libc.so.6]
+ 2,722,224 ( 0.82%)  crates/rodas5p-integrators/src/output.rs:rodas5p_integrators::output::step_to [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 2,722,176 ( 0.82%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:rodas5p_integrators::rodas5p_fast::lu_solve_in_place
+ 2,506,536 ( 0.75%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/num/f64.rs:adapter_checkpoint_trace::models::Model::component
+ 2,419,712 ( 0.73%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ops/arith.rs:rodas5p_integrators::rodas5p_fast::Workspace::attempt
+ 2,341,641 ( 0.70%)  ./malloc/./malloc/malloc.c:_int_free [/usr/lib/x86_64-linux-gnu/libc.so.6]
+ 2,268,480 ( 0.68%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:rodas5p_integrators::rodas5p_fast::Workspace::solve
+ 2,268,480 ( 0.68%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/mod.rs:rodas5p_integrators::rodas5p_fast::lu_solve_in_place
+ 2,183,700 ( 0.65%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:rodas5p_integrators::problem::OdeProblem::eval_rhs_into
+ 2,108,400 ( 0.63%)  crates/vigilode/src/solve.rs:vigilode::solve::build::{{closure}} [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 2,033,100 ( 0.61%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/f64.rs:vigilode::fd::Guard::vector_call
+ 2,029,794 ( 0.61%)  ./malloc/./malloc/malloc.c:calloc [/usr/lib/x86_64-linux-gnu/libc.so.6]
+ 2,003,509 ( 0.60%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:rodas5p_integrators::rodas5p_fast::Workspace::attempt
+ 1,814,784 ( 0.54%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/adapters/take.rs:rodas5p_integrators::rodas5p_fast::lu_solve_in_place

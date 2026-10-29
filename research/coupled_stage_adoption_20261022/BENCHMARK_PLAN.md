@@ -1,0 +1,21 @@
+# Local coupled trajectory benchmark plan
+
+This is a bounded sandbox experiment, with no NCP use and no claim about NCP performance. The benchmark reuses the existing coupled residual-first kernel and tests the newly connected adaptive path. The comparator is the existing raw-U matrix-free sequential adaptive driver; it uses the same RODAS5P coefficients, physical output schedule and tolerance settings. Native-K output is not substituted for the raw-U target.
+
+The registered cases have analytic solutions: repeated three-rate decay (including a larger low-dimensional invariant-subspace case), smooth diagonal Riccati dynamics, a stiff three-rate decay, a two-by-two nonnormal triangular system repeated across components, a damped oscillator repeated across components, and a broad logarithmic decay spectrum that should expose a small projection's limitations. Timings include the complete integration and workspace construction, but exclude model construction, worker-pool construction, analytic reference evaluation and serialization.
+
+For each case, use relative tolerances 1e-5 and 1e-7 and absolute tolerance 0.01 times relative tolerance. Each configuration has one untimed warm-up and three timed repeats. Candidate runs use one or two local workers; the sequential comparator uses one. Each output contains elapsed times, achieved maximum absolute error and maximum tolerance-scaled RMS error across five observation times, accepted/rejected counts, candidate work, fallback work, and failures. Invalid or failed configurations remain in the result set. No timing threshold determines correctness.
+
+Compare costs only for completed trajectories satisfying a stated achieved-error threshold. Equal requested tolerance alone does not establish equal achieved accuracy. The analysis therefore plots work versus measured error and reports both matched-error eligible timings and configurations that miss the threshold. A small local worker pool does not reproduce a 64-core server.
+
+A separate fixed-maximum-step refinement sequence for the smooth nonlinear case is used to distinguish temporal error reduction from tolerance-controller changes. It reports observed slopes and the algebraic-error/roundoff floor; no asymptotic order is inferred after errors reach the floor. Forced-fallback tests and callback/accounting edge cases are covered by semantic tests owned by the implementation agents.
+
+## Frozen configuration matrix
+
+The executable registers `few-mode` (384 variables), `few-mode-large` (6,144), `riccati` (96), `stiff` (96), `nonnormal` (64), `oscillatory` (96), and `broad` (64). There are 42 accuracy/timing configurations: seven cases × two tolerances × {raw sequential, coupled with one worker, coupled with two workers}. Eight additional Riccati configurations compare maximum steps 0.2, 0.1, 0.05, and 0.025 for both paths at loose integration tolerance and tighter candidate algebraic screening. One forced-fallback Riccati configuration completes the matrix of 51.
+
+The campaign has a 900-second local wall budget and a 120-second timeout per configuration. Exhausted or timed-out entries are recorded, not removed. The forced-fallback path additionally pays for its candidate attempt and independent full raw-target residual verification; this work is not present in the bare existing matrix-free baseline and is not described as free. The measured change includes both adaptive coupling and the new small-block reduced Newton solve, so a comparison to the bare raw sequential driver does not isolate the effect of either change individually.
+
+## Build profile chosen before measuring
+
+Use the repository's existing `measurement` Cargo profile (`opt-level=3`, `lto=false`, `codegen-units=16`) for this bounded sandbox campaign. The release profile uses fat LTO and one codegen unit, which increases build resource requirements; no timing result was inspected when choosing the measurement profile. Both candidate and comparator execute inside the same optimized binary. Record its SHA256 and source commit. Results describe this profile and do not establish release-profile performance. Build with `cargo build --profile measurement --locked --offline -p vigilode-coupled --example adaptive_bench`.

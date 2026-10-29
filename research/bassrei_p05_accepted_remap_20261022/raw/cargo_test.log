@@ -1,0 +1,165 @@
+=== stdout ===
+
+running 8 tests
+test a_continuing_control_leaves_the_run_bit_identical ... ok
+test a_restart_from_the_stop_reaches_tf ... ok
+test a_stop_at_tf_is_a_success ... ok
+test a_stop_at_the_kth_accepted_step_returns_that_step ... ok
+test a_stop_on_the_last_budgeted_attempt_is_a_client_stop ... ok
+test the_client_stop_record_serializes ... ok
+test the_control_allocates_nothing ... ok
+test the_control_sees_every_accepted_step_once_in_order ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+
+running 4 tests
+test a_client_step_allocates_nothing ... ok
+test banded_delegate_reproduces_the_banded_driver_bitwise ... ok
+test invalid_client_inputs_are_refused ... ok
+test retryable_client_errors_are_rejections_with_their_work_kept ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+
+running 5 tests
+test invalid_vector_rejected ... ok
+test robertson_vector_atol_accuracy ... ok
+test uniform_vector_equals_scalar_bitwise ... ok
+test vector_entries_weight_their_own_component ... ok
+test zero_component_follows_zero_scale_rule ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 9 tests
+test direct_fixed_step_mildly_stiff_pr_band ... ok
+test direct_fixed_step_nonstiff_order_is_five ... ok
+test direct_fixed_step_stiff_pr_order_is_reduced_band ... ok
+test direct_fixed_step_with_mass_matrix_is_order_five ... ok
+test finite_difference_partial_t_is_accurate_and_keeps_the_order ... ok
+test forcing_fixed_outer_rtol_error_is_bounded_by_tolerance_floor ... ok
+test forcing_fixed_outer_rtol_keeps_order_five ... ok
+test forcing_rule_tight_tolerance_matches_direct_without_abort ... ok
+test preconditioned_gmres_paths_keep_the_direct_order ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.62s
+
+
+running 4 tests
+test bdf_v2_semantic_baseline_explicitly_retires_the_legacy_source_byte_freeze ... ok
+test generic_solver_core_does_not_embed_physical_client_bindings ... ok
+test radau3_cell_g_baseline_has_embedded_semantics_instead_of_a_source_byte_claim ... ok
+test required_vectorized_jf_modules_exist_in_the_generic_base ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
+
+
+running 8 tests
+test c1_exact_solve_matches_a_dense_lu_and_is_backward_stable ... ok
+test c3_mixed_direction_is_refused_by_the_exact_mode_and_krylov_converges ... ok
+test c4_stale_states_and_shapes_are_typed_refusals ... ok
+test c5_counted_flops_equal_the_closed_forms ... ok
+test c6_client_runs_allocate_independently_of_the_step_count ... ok
+test c6_solver_calls_allocate_nothing ... ok
+test c7_client_runs_are_deterministic_and_agree_with_the_banded_driver ... ok
+test c8_bordered_jacobian_schur_solve_and_riccati_law ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+
+running 10 tests
+test c10_invalid_declarations_and_shapes_are_typed_refusals ... ok
+test c2_dense_columns_are_unit_rhs_and_the_band_is_exact ... ok
+test c3_rhs_conserves_the_number_ledger ... ok
+test c8_callbacks_allocate_nothing ... ok
+test c8_drivers_allocate_independently_of_the_step_count ... ok
+test c9_runs_are_deterministic_and_uniform_vector_atol_is_scalar ... ok
+test sanity_absorber_cell_average_matches_quadrature ... ok
+test sanity_jvp_callback_and_autonomy_flags ... ok
+test sanity_partial_t_is_right_sided_at_an_exact_threshold_tie ... ok
+test sanity_partial_t_matches_central_differences_away_from_kinks ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+
+running 10 tests
+test aligned_edges_are_increasing_with_the_face_at_x_chi ... ok
+test r1_a_refusal_inside_a_run_keeps_the_accepted_state_and_all_work ... ok
+test r1_refusals_roll_back_bit_for_bit_and_keep_their_work ... ok
+test r2_one_remap_preserves_the_total_and_every_column ... ok
+test r3_refine_coarsen_cycles_are_exact_and_allocate_nothing ... ok
+test r4_rebind_makes_the_old_factorization_stale_and_the_rebound_client_restarts ... ok
+test r4_refined_meshes_rebuild_the_client_and_keep_its_work ... ok
+test r4_restarts_take_the_controllers_proposal_or_a_fresh_step ... ok
+test r5_remaps_allocate_nothing_and_restarts_a_constant_count ... ok
+test segmented_runs_are_deterministic_and_conserve_the_total ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.09s
+
+
+running 4 tests
+test a_non_autonomous_fast_step_with_analytic_ft_allocates_nothing ... ok
+test fast_runs_match_the_pre_change_golden_digests ... ok
+test into_form_equals_allocating_form_bitwise_with_equal_counters ... ok
+test into_form_refuses_shapes_and_non_finite_output ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test a_column_extent_step_allocates_nothing ... ok
+test a_fast_step_allocates_nothing ... ok
+test a_vector_atol_step_allocates_nothing ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test dense_event_stats_match_the_pre_mirror_snapshot ... ok
+test every_enum_variant_preserves_its_wire_representation ... ok
+test every_record_preserves_all_nonzero_fields_and_json_order ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+=== stderr ===
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `release` profile [optimized] target(s) in 0.30s
+     Running tests/accept_control_contracts.rs (/home/cosmosapjw/vigilode-bassrei-target/release/deps/accept_control_contracts-022d3e28c5a3b385)
+     Running tests/client_stage_system_contracts.rs (/home/cosmosapjw/vigilode-bassrei-target/release/deps/client_stage_system_contracts-98b3944599f7cf22)
+     Running tests/fast_vector_atol_contracts.rs (/home/cosmosapjw/vigilode-bassrei-target/release/deps/fast_vector_atol_contracts-ed87c369122ff882)
+     Running tests/fixed_step_order_contracts.rs (/home/cosmosapjw/vigilode-bassrei-target/release/deps/fixed_step_order_contracts-e273964019470f32)
+     Running tests/generic_scope_contracts.rs (/home/cosmosapjw/vigilode-bassrei-target/release/deps/generic_scope_contracts-035e7e611bff6682)
+     Running tests/lrs_block_solver_contracts.rs (/home/cosmosapjw/vigilode-bassrei-target/release/deps/lrs_block_solver_contracts-971c37f0c88c7a4d)
+     Running tests/lrs_photon_fv_contracts.rs (/home/cosmosapjw/vigilode-bassrei-target/release/deps/lrs_photon_fv_contracts-2d094542b9fbc303)
+     Running tests/lrs_photon_remap_contracts.rs (/home/cosmosapjw/vigilode-bassrei-target/release/deps/lrs_photon_remap_contracts-1bf6a617e85bef4b)
+     Running tests/partial_t_into_contracts.rs (/home/cosmosapjw/vigilode-bassrei-target/release/deps/partial_t_into_contracts-0f36645569e94f1a)
+     Running tests/rodas5p_fast_allocations.rs (/home/cosmosapjw/vigilode-bassrei-target/release/deps/rodas5p_fast_allocations-7e97143cae47be55)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `release` profile [optimized] target(s) in 0.04s
+     Running tests/records_contracts.rs (/home/cosmosapjw/vigilode-bassrei-target/release/deps/records_contracts-470c4e332899e17b)

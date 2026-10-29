@@ -1,0 +1,1378 @@
+{
+  "claim_ceiling": "HOLD: no broad production qualification; every result is scoped to its source, runner, model and receipt.",
+  "classification": "SCOPED_LOCAL_VALIDATION_NO_BROAD_PRODUCTION_ADMISSION",
+  "correction_counters": [
+    {
+      "id": "R-STRUCT",
+      "maximum": 3,
+      "source": "LOCAL_CODEX_HANDOFF_KO.md",
+      "used": 3
+    },
+    {
+      "id": "R-HOMO",
+      "maximum": 3,
+      "source": "LOCAL_CODEX_HANDOFF_KO.md",
+      "used": 1
+    },
+    {
+      "id": "R-ADAPT",
+      "maximum": 3,
+      "source": "LOCAL_CODEX_HANDOFF_KO.md",
+      "used": 3
+    },
+    {
+      "id": "I-PROD",
+      "maximum": 3,
+      "source": "LOCAL_CODEX_HANDOFF_KO.md",
+      "used": 1
+    },
+    {
+      "accounting_note": "Incremented in the same pre-existing task episode; frozen historical snapshot retained; task identity and max not reset.",
+      "frozen_snapshot_used": 1,
+      "id": "Q-LEDGER",
+      "maximum": 3,
+      "source": "LOCAL_CODEX_HANDOFF_KO.md",
+      "used": 3
+    },
+    {
+      "id": "PR-N03",
+      "maximum": 3,
+      "source": "LOCAL_CODEX_HANDOFF_KO.md",
+      "used": 2
+    },
+    {
+      "id": "PR-N04",
+      "maximum": 3,
+      "source": "LOCAL_CODEX_HANDOFF_KO.md",
+      "used": 1
+    },
+    {
+      "accounting_note": "Incremented in the same pre-existing task episode; frozen historical snapshot retained; task identity and max not reset.",
+      "frozen_snapshot_used": 2,
+      "id": "PR-N05",
+      "maximum": 3,
+      "source": "LOCAL_CODEX_HANDOFF_KO.md",
+      "used": 3
+    },
+    {
+      "id": "PR-N01",
+      "maximum": 3,
+      "source": "cumulative_validation_20261028/SUMMARY.json",
+      "used": 0
+    },
+    {
+      "id": "PR-N02",
+      "maximum": 3,
+      "source": "cumulative_validation_20261028/SUMMARY.json",
+      "used": 0
+    },
+    {
+      "id": "PR-N06",
+      "maximum": 3,
+      "source": "cumulative_validation_20261028/SUMMARY.json",
+      "used": 0
+    },
+    {
+      "id": "Q-GIVENS",
+      "maximum": 3,
+      "source": "cumulative_validation_20261028/SUMMARY.json",
+      "used": 0
+    },
+    {
+      "id": "Q-FAIR-AB",
+      "maximum": 3,
+      "source": "cumulative_validation_20261028/SUMMARY.json",
+      "used": 0
+    },
+    {
+      "id": "Q-BENCH",
+      "maximum": 3,
+      "source": "cumulative_validation_20261028/SUMMARY.json",
+      "used": 0
+    },
+    {
+      "accounting_note": "Incremented in the same pre-existing task episode; frozen historical snapshot retained; task identity and max not reset.",
+      "frozen_snapshot_used": 0,
+      "id": "Q-LINT",
+      "maximum": 3,
+      "source": "cumulative_validation_20261028/SUMMARY.json",
+      "used": 1
+    },
+    {
+      "accounting_note": "Incremented in the same pre-existing task episode; frozen historical snapshot retained; task identity and max not reset.",
+      "frozen_snapshot_used": 0,
+      "id": "Q-API",
+      "maximum": 3,
+      "source": "cumulative_validation_20261028/SUMMARY.json",
+      "used": 1
+    },
+    {
+      "id": "Q-NEGATIVE",
+      "maximum": 3,
+      "source": "cumulative_validation_20261028/SUMMARY.json",
+      "used": 0
+    }
+  ],
+  "host_toolchain": {
+    "affinity_at_initial_identity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ],
+    "cargo": "1.94.1",
+    "host": "cosmosapjw",
+    "platform": "Linux 7.0.0-38-generic x86_64 glibc 2.39",
+    "rustc": "1.94.1",
+    "threads": "suite runners set Rayon/OMP/OpenBLAS/Rust test threads to 1; F6 native receipt uses CPU 0"
+  },
+  "interaction_statuses": [
+    {
+      "current_evidence": "No interaction-level receipt found in the current suite snapshot; F6 manufactured certificate and component suites do not close this gate.",
+      "current_status": "PENDING_NOT_RUN",
+      "id": "I-STATE",
+      "name": "I-STATE",
+      "parents": [
+        "PR-N04"
+      ],
+      "purpose": "Complete probe-session continuation vs uninterrupted session, including rejection and registered intermediate observations.",
+      "registered_status": "PROSPECTIVE_NOT_RUN",
+      "theory_refs": [
+        "EXECUTION_CONTRACT.md:S1"
+      ]
+    },
+    {
+      "current_evidence": "No interaction-level receipt found in the current suite snapshot; F6 manufactured certificate and component suites do not close this gate.",
+      "current_status": "PENDING_NOT_RUN",
+      "id": "I-EPOCH",
+      "name": "I-EPOCH",
+      "parents": [
+        "PR-N01",
+        "PR-N03",
+        "PR-N04",
+        "PR-N05"
+      ],
+      "purpose": "Warm LU/causal/polynomial plans survive identical keys and invalidate on step, chart, norm, model, provider or arithmetic epoch change.",
+      "registered_status": "PROSPECTIVE_NOT_RUN",
+      "theory_refs": [
+        "algebra_contract/THEORY.md",
+        "EXECUTION_CONTRACT.md"
+      ]
+    },
+    {
+      "current_evidence": "No interaction-level receipt found in the current suite snapshot; F6 manufactured certificate and component suites do not close this gate.",
+      "current_status": "PENDING_NOT_RUN",
+      "id": "I-WORK",
+      "name": "I-WORK",
+      "parents": [
+        "Q-FAIR-AB",
+        "PR-N04",
+        "PR-N05"
+      ],
+      "purpose": "Original-target refusal, diagnostic residual, fatal callback failure and all joined worker work; independent physical callback counters.",
+      "registered_status": "PROSPECTIVE_NOT_RUN",
+      "theory_refs": [
+        "EXECUTION_CONTRACT.md:S2"
+      ]
+    },
+    {
+      "current_evidence": "No interaction-level receipt found in the current suite snapshot; F6 manufactured certificate and component suites do not close this gate.",
+      "current_status": "PENDING_NOT_RUN",
+      "id": "I-BUDGET",
+      "name": "I-BUDGET",
+      "parents": [
+        "PR-N01",
+        "PR-N02",
+        "PR-N03",
+        "PR-N05"
+      ],
+      "purpose": "Correct flow/discrete anchor, physical norm, no missing or double-counted edge, internal vs observation clock, same-state Pareto labels.",
+      "registered_status": "PROSPECTIVE_NOT_RUN",
+      "theory_refs": [
+        "error_contract/THEORY.md:E1-E5"
+      ]
+    },
+    {
+      "current_evidence": "No interaction-level receipt found in the current suite snapshot; F6 manufactured certificate and component suites do not close this gate.",
+      "current_status": "PENDING_NOT_RUN",
+      "id": "I-POLY",
+      "name": "I-POLY",
+      "parents": [
+        "PR-N01",
+        "PR-N05"
+      ],
+      "purpose": "Target-specific fused distinct/same-vector outputs, degree and rounded-boundary cases, quotient coefficient defects, denominator/refinement-floor refusal and fallback.",
+      "registered_status": "PROSPECTIVE_NOT_RUN",
+      "theory_refs": [
+        "algebra_contract/THEORY.md",
+        "../polyalgorithm_alternatives_20261028/polynomial/THEORY.md"
+      ]
+    },
+    {
+      "current_evidence": "No interaction-level receipt found in the current suite snapshot; F6 manufactured certificate and component suites do not close this gate.",
+      "current_status": "PENDING_NOT_RUN",
+      "id": "I-ROOT",
+      "name": "I-ROOT",
+      "parents": [
+        "PR-N02",
+        "PR-N04"
+      ],
+      "purpose": "Old/new accuracy planner crossed with identical root backend; zero/linear/cubic, branch ambiguity, representation/update/clock floors.",
+      "registered_status": "PROSPECTIVE_NOT_RUN",
+      "theory_refs": [
+        "error_contract/THEORY.md",
+        "../polyalgorithm_alternatives_20261028/homotopy/THEORY.md"
+      ]
+    },
+    {
+      "current_evidence": "No interaction-level receipt found in the current suite snapshot; F6 manufactured certificate and component suites do not close this gate.",
+      "current_status": "PENDING_NOT_RUN",
+      "id": "I-STRUCTURE",
+      "name": "I-STRUCTURE",
+      "parents": [
+        "PR-N03",
+        "PR-N05"
+      ],
+      "purpose": "Exact and near quotient relation against original full-space stage residual; virtual and exact domain enclosure; effectful/stage-observer compatibility.",
+      "registered_status": "PROSPECTIVE_NOT_RUN",
+      "theory_refs": [
+        "algebra_contract/THEORY.md"
+      ]
+    },
+    {
+      "current_evidence": "No interaction-level receipt found in the current suite snapshot; F6 manufactured certificate and component suites do not close this gate.",
+      "current_status": "PENDING_NOT_RUN",
+      "id": "I-NEGATIVE",
+      "name": "I-NEGATIVE",
+      "parents": [
+        "Q-NEGATIVE",
+        "PR-N01",
+        "PR-N06"
+      ],
+      "purpose": "Nonnormal spectrum trap, two-root ambiguity, unstable variable-step product, old W-filtered failure, loose upper floor vs true lower impossibility.",
+      "registered_status": "PROSPECTIVE_NOT_RUN",
+      "theory_refs": [
+        "error_contract/THEORY.md",
+        "../polyalgorithm_alternatives_20261028/geometry/THEORY.md"
+      ]
+    },
+    {
+      "current_evidence": "No interaction-level receipt found in the current suite snapshot; F6 manufactured certificate and component suites do not close this gate.",
+      "current_status": "PENDING_NOT_RUN",
+      "id": "I-PROFILE",
+      "name": "I-PROFILE",
+      "parents": [
+        "L-RELEASE",
+        "L-HARDWARE"
+      ],
+      "purpose": "Test, measurement and actual release/LTO results on floating/branch-sensitive fixtures with executable/compiler/libm identity.",
+      "registered_status": "PROSPECTIVE_NOT_RUN",
+      "theory_refs": [
+        "validation_design/COMMANDS.json"
+      ]
+    },
+    {
+      "current_evidence": "No interaction-level receipt found in the current suite snapshot; F6 manufactured certificate and component suites do not close this gate.",
+      "current_status": "PENDING_NOT_RUN",
+      "id": "I-CLIENT",
+      "name": "I-CLIENT",
+      "parents": [
+        "R-QUALIFY"
+      ],
+      "purpose": "Every returned physical state/observation, independent oracle and strongest eligible persistent/structural/CG/coupled comparator, all work charged.",
+      "registered_status": "PROSPECTIVE_NOT_RUN",
+      "theory_refs": [
+        "validation_design/AUDIT.md"
+      ]
+    }
+  ],
+  "node_statuses": [
+    {
+      "current_evidence_note": "No evidence in the current serial-suite receipt snapshot closes this DAG node; software checks do not imply scientific PASS.",
+      "current_evidence_status": "PENDING_OR_INCOMPLETE",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json"
+      ],
+      "id": "S-PRS",
+      "inherited_status": "complete_scoped",
+      "name": "Inspect PRs after PR91",
+      "prior_current_native_status": {
+        "reason": "inherited survey; no native qualification",
+        "status": "NOT_RUN"
+      },
+      "purpose": "Use remote primary evidence before choosing remaining work.",
+      "source_locked_replay": "REUSED_WITH_EXPLICIT_IDENTITY"
+    },
+    {
+      "correction_budget": {
+        "counter_source": "LOCAL_CODEX_HANDOFF_KO.md",
+        "maximum": 3,
+        "used": 3
+      },
+      "current_evidence_note": "No evidence in the current serial-suite receipt snapshot closes this DAG node; software checks do not imply scientific PASS.",
+      "current_evidence_status": "PENDING_OR_INCOMPLETE",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json"
+      ],
+      "id": "R-STRUCT",
+      "inherited_status": "complete_scoped",
+      "name": "Charged structural attempts and full residual enclosure",
+      "prior_current_native_status": {
+        "reason": "historical theory/code only",
+        "status": "NOT_RUN"
+      },
+      "purpose": "Retain all failed work and replace repeated full-state stage verification by a proved two-channel enclosure.",
+      "source_locked_replay": "REUSED_WITH_EXPLICIT_IDENTITY"
+    },
+    {
+      "correction_budget": {
+        "counter_source": "LOCAL_CODEX_HANDOFF_KO.md",
+        "maximum": 3,
+        "used": 1
+      },
+      "current_evidence_note": "No evidence in the current serial-suite receipt snapshot closes this DAG node; software checks do not imply scientific PASS.",
+      "current_evidence_status": "PENDING_OR_INCOMPLETE",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json"
+      ],
+      "id": "R-HOMO",
+      "inherited_status": "complete_scoped",
+      "name": "Scalar homotopy and rational cubic inverse",
+      "prior_current_native_status": {
+        "reason": "historical theory/code only",
+        "status": "NOT_RUN"
+      },
+      "purpose": "Remove Vec overhead and expensive radical prediction while retaining the original outward physical error certificate.",
+      "source_locked_replay": "REUSED_WITH_EXPLICIT_IDENTITY"
+    },
+    {
+      "correction_budget": {
+        "counter_source": "LOCAL_CODEX_HANDOFF_KO.md",
+        "maximum": 3,
+        "used": 3
+      },
+      "current_evidence_note": "No evidence in the current serial-suite receipt snapshot closes this DAG node; software checks do not imply scientific PASS.",
+      "current_evidence_status": "PENDING_OR_INCOMPLETE",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json"
+      ],
+      "id": "R-ADAPT",
+      "inherited_status": "complete_scoped",
+      "name": "Exact return evidence and causal proposal reuse",
+      "prior_current_native_status": {
+        "reason": "historical theory/code only",
+        "status": "NOT_RUN"
+      },
+      "purpose": "Separate adapter decisions from expensive implicit-mode arithmetic and retain both favorable and adverse nonlinear outcomes.",
+      "source_locked_replay": "REUSED_WITH_EXPLICIT_IDENTITY"
+    },
+    {
+      "correction_budget": {
+        "counter_source": "LOCAL_CODEX_HANDOFF_KO.md",
+        "maximum": 3,
+        "used": 1
+      },
+      "current_evidence_note": "No evidence in the current serial-suite receipt snapshot closes this DAG node; software checks do not imply scientific PASS.",
+      "current_evidence_status": "PENDING_OR_INCOMPLETE",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json"
+      ],
+      "id": "I-PROD",
+      "inherited_status": "complete_scoped",
+      "name": "Explicit production configuration and callback permissions",
+      "prior_current_native_status": {
+        "reason": "scoped integration evidence",
+        "status": "NOT_RUN"
+      },
+      "purpose": "Provide strict serialized deployment files, RHS-only default, selective supplied-JVP opt-in, and preserved partial solutions.",
+      "source_locked_replay": "REUSED_WITH_EXPLICIT_IDENTITY"
+    },
+    {
+      "current_evidence_note": "No evidence in the current serial-suite receipt snapshot closes this DAG node; software checks do not imply scientific PASS.",
+      "current_evidence_status": "PENDING_OR_INCOMPLETE",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json"
+      ],
+      "id": "V-CLOUD",
+      "inherited_status": "complete_scoped",
+      "name": "Native contracts, small paired benchmarks and profiles",
+      "prior_current_native_status": {
+        "reason": "plan/history only",
+        "status": "NOT_RUN"
+      },
+      "purpose": "Verify this changed dependency set and bind each numerical claim to its source, binary, logs and exact accuracy contract.",
+      "source_locked_replay": "REUSED_WITH_EXPLICIT_IDENTITY"
+    },
+    {
+      "current_evidence_note": "No evidence in the current serial-suite receipt snapshot closes this DAG node; software checks do not imply scientific PASS.",
+      "current_evidence_status": "PENDING_OR_INCOMPLETE",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json"
+      ],
+      "id": "P-PUSH",
+      "inherited_status": "complete_scoped",
+      "name": "Publish implementation, evidence and local handoff",
+      "prior_current_native_status": {
+        "reason": "delivery history only",
+        "status": "NOT_RUN"
+      },
+      "purpose": "Create a reviewable non-force branch/PR and persist the REVTeX report and reproducibility bundle.",
+      "source_locked_replay": "REUSED_WITH_EXPLICIT_IDENTITY"
+    },
+    {
+      "current_evidence_note": "Both current release test commands at suite source a1a459f2 exited 0; bounded suite receipt only, not deployment qualification.",
+      "current_evidence_status": "PASS_SCOPED_SOFTWARE_ONLY",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json",
+        "evidence-20261028T170155Z/suites-a1/release-contracts/command_00/RECEIPT.json",
+        "research/cumulative_validation_20261028/SUMMARY.json"
+      ],
+      "id": "L-RELEASE",
+      "inherited_status": "pending_local",
+      "name": "Pinned native release verification on the deployment machine",
+      "prior_current_native_status": {
+        "reason": "facade/coupled/all-targets/docs/smoke/release commands completed; integrators first attempt 1800s timeout after 917 pass; bounded repeat completed 1196 pass/54 ignored; format and authority gates remain failed",
+        "status": "PARTIAL_SCOPED_WITH_TIMEOUT_EXTENSION"
+      },
+      "purpose": "Verify the actual release/LTO/libm/CPU environment rather than transferring shared-host timing claims.",
+      "source_locked_replay": "NOT_RUN"
+    },
+    {
+      "current_evidence_note": "Local benchmark/profile commands completed at suite source a1a459f2. Profiles are guest instruction counts; no hardware or broad timing authority.",
+      "current_evidence_status": "DIAGNOSTIC_ONLY",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json"
+      ],
+      "id": "L-HARDWARE",
+      "inherited_status": "pending_local",
+      "name": "Matched-accuracy measurements on target hardware",
+      "prior_current_native_status": {
+        "reason": "single rapid analytic cohort at matched achieved error; no general hardware qualification",
+        "status": "DIAGNOSTIC_ONLY_RAPID"
+      },
+      "purpose": "Choose scalar/rational and serial/parallel deployment paths from measured total cost, including certificate and pool overhead.",
+      "source_locked_replay": "NOT_RUN"
+    },
+    {
+      "correction_budget": {
+        "counter_source": "cumulative_validation_20261028/SUMMARY.json",
+        "maximum": 3,
+        "used": 0
+      },
+      "current_evidence_note": "No candidate native receipt. Existing registered task/correction counter retained; no task budget reset.",
+      "current_evidence_status": "NOT_RUN",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json"
+      ],
+      "id": "PR-N01",
+      "inherited_status": "pending_local",
+      "name": "Fused polynomial actions, resolvent alternatives and small-Krylov cost",
+      "prior_current_native_status": {
+        "reason": "no direct receipt",
+        "status": "NOT_RUN"
+      },
+      "purpose": "Address observed safe_l2, QR, MGS and GMRES cost that the callback-unit proxy misses.",
+      "source_locked_replay": "NOT_RUN"
+    },
+    {
+      "correction_budget": {
+        "counter_source": "cumulative_validation_20261028/SUMMARY.json",
+        "maximum": 3,
+        "used": 0
+      },
+      "current_evidence_note": "No candidate native receipt. Existing registered task/correction counter retained; no task budget reset.",
+      "current_evidence_status": "NOT_RUN",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json"
+      ],
+      "id": "PR-N02",
+      "inherited_status": "pending_local",
+      "name": "Tighter finite-step cubic accuracy planning",
+      "prior_current_native_status": {
+        "reason": "no direct receipt",
+        "status": "NOT_RUN"
+      },
+      "purpose": "Reduce step count rather than only root cost using the actual decay envelope and a finite-step error proof.",
+      "source_locked_replay": "NOT_RUN"
+    },
+    {
+      "correction_budget": {
+        "counter_source": "LOCAL_CODEX_HANDOFF_KO.md",
+        "maximum": 3,
+        "used": 2
+      },
+      "current_evidence_note": "No candidate native receipt. Existing registered task/correction counter retained; no task budget reset.",
+      "current_evidence_status": "NOT_RUN",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json"
+      ],
+      "id": "PR-N03",
+      "inherited_status": "pending_local",
+      "name": "Adaptive structural consumer with physical-error accounting",
+      "prior_current_native_status": {
+        "reason": "no direct receipt",
+        "status": "NOT_RUN"
+      },
+      "purpose": "Connect the new charged stage certificate to adaptive trajectory decisions with temporal and endpoint errors included.",
+      "source_locked_replay": "NOT_RUN"
+    },
+    {
+      "correction_budget": {
+        "counter_source": "LOCAL_CODEX_HANDOFF_KO.md",
+        "maximum": 3,
+        "used": 1
+      },
+      "current_evidence_note": "No candidate native receipt. Existing registered task/correction counter retained; no task budget reset.",
+      "current_evidence_status": "NOT_RUN",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json"
+      ],
+      "id": "PR-N04",
+      "inherited_status": "pending_local",
+      "name": "Owned session continuation and generic homotopy workspace",
+      "prior_current_native_status": {
+        "reason": "no direct receipt",
+        "status": "NOT_RUN"
+      },
+      "purpose": "Remove remaining restart/allocation work without pretending a state-plus-step snapshot contains FSAL/controller/workspace identity.",
+      "source_locked_replay": "NOT_RUN"
+    },
+    {
+      "correction_budget": {
+        "accounting_note": "Same controlling task; cumulative update, no reset.",
+        "counter_source": "LOCAL_CODEX_HANDOFF_KO.md",
+        "frozen_snapshot_used": 2,
+        "maximum": 3,
+        "used": 3
+      },
+      "current_evidence_note": "F6 fixed manufactured whole-path trace native execution at 29931029 and allocation tests at a1a459f2 were performed; exact oracle checked all 992 slabs. Generic causal closure, actual clients and full task remain HOLD.",
+      "current_evidence_status": "PASS_SCOPED_F6_ONLY_OVERALL_HOLD",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json",
+        "research/local_dynamics_qualification_20261029/evidence/f6-analysis/SUMMARY.json"
+      ],
+      "id": "PR-N05",
+      "inherited_status": "pending_local",
+      "name": "Generic causal closure and parallel work/span selection",
+      "prior_current_native_status": {
+        "reason": "no direct receipt",
+        "status": "NOT_RUN"
+      },
+      "purpose": "Extend finite causal reuse to harder nonlinear carriers with explicit remainder and parallel cost conditions.",
+      "source_locked_replay": "NOT_RUN"
+    },
+    {
+      "correction_budget": {
+        "counter_source": "cumulative_validation_20261028/SUMMARY.json",
+        "maximum": 3,
+        "used": 0
+      },
+      "current_evidence_note": "No candidate native receipt. Existing registered task/correction counter retained; no task budget reset.",
+      "current_evidence_status": "NOT_RUN",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json"
+      ],
+      "id": "PR-N06",
+      "inherited_status": "pending_local",
+      "name": "Temporal residence and exploration-loss theory",
+      "prior_current_native_status": {
+        "reason": "no direct receipt",
+        "status": "NOT_RUN"
+      },
+      "purpose": "Resolve the nonlinear reentrant loss by proving when past cost evidence can inform future windows and by accounting for unsuccessful exploration.",
+      "source_locked_replay": "NOT_RUN"
+    },
+    {
+      "current_evidence_note": "Qualification remains blocked by authority/API and incomplete route/client evidence.",
+      "current_evidence_status": "HOLD",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json"
+      ],
+      "id": "R-QUALIFY",
+      "inherited_status": "pending_local",
+      "name": "Scoped release qualification for the actual client",
+      "prior_current_native_status": {
+        "reason": "authority/API blockers",
+        "status": "HOLD"
+      },
+      "purpose": "Approve only the validated provider/output/model combinations and register unsupported features explicitly.",
+      "source_locked_replay": "NOT_RUN"
+    },
+    {
+      "correction_budget": {
+        "accounting_note": "Same controlling task; cumulative update, no reset.",
+        "counter_source": "LOCAL_CODEX_HANDOFF_KO.md",
+        "frozen_snapshot_used": 1,
+        "maximum": 3,
+        "used": 3
+      },
+      "current_evidence_note": "Typed repository repair and mixed NumPy/SciPy dependency attribution regression pass (41 tests); final full authority remains FAIL. Q-LEDGER correction budget 3/3 exhausted.",
+      "current_evidence_status": "FAIL_FULL_AUTHORITY_SCOPED_REPAIR_PASS",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json",
+        "research/dynamics_symbolic_validation_20261028/LOCAL_CODEX_HANDOFF_KO.md",
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/SUMMARY.json"
+      ],
+      "id": "Q-LEDGER",
+      "inherited_status": "registration_repaired_full_authority_pending",
+      "name": "Research registration and published-reference qualification",
+      "prior_current_native_status": {
+        "reason": "current authority scanner missing 49; attempted typed repair rejected independently",
+        "status": "FAIL"
+      },
+      "purpose": "Mechanical registration is repaired retrospectively; qualify full historical references in a full-history clone.",
+      "source_locked_replay": "REUSED_PR94_CI_FAIL_53"
+    },
+    {
+      "correction_budget": {
+        "counter_source": "cumulative_validation_20261028/SUMMARY.json",
+        "maximum": 3,
+        "used": 0
+      },
+      "current_evidence_note": "The 0255297e exact differential test passed; 3 Fraction-oracle fixtures report PASS_SCOPED.",
+      "current_evidence_status": "PASS_SCOPED_CURRENT",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json"
+      ],
+      "id": "Q-GIVENS",
+      "inherited_status": "pending_local",
+      "name": "Portable Givens residual fixture",
+      "prior_current_native_status": {
+        "reason": "independently reviewed",
+        "status": "PASS_SCOPED"
+      },
+      "purpose": "Separate generated-input/profile sensitivity from unsafe convergence.",
+      "source_locked_replay": "NOT_RUN"
+    },
+    {
+      "correction_budget": {
+        "counter_source": "cumulative_validation_20261028/SUMMARY.json",
+        "maximum": 3,
+        "used": 0
+      },
+      "current_evidence_note": "Earlier callback-accounting scope passed; broader interaction/provider callback admission remains open.",
+      "current_evidence_status": "PRIOR_PASS_SCOPED_CURRENT_RECHECK_PENDING",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json"
+      ],
+      "id": "Q-FAIR-AB",
+      "inherited_status": "pending_local",
+      "name": "Attempted, admitted and refused work",
+      "prior_current_native_status": {
+        "reason": "independently reviewed",
+        "status": "PASS_SCOPED"
+      },
+      "purpose": "Repair the inherited equality of attempted operator entries and budget-admitted inner calls.",
+      "source_locked_replay": "NOT_RUN"
+    },
+    {
+      "correction_budget": {
+        "counter_source": "cumulative_validation_20261028/SUMMARY.json",
+        "maximum": 3,
+        "used": 0
+      },
+      "current_evidence_note": "7 adapter integration tests pass; package/vendor/SUNDIALS deployment qualification remains pending.",
+      "current_evidence_status": "PASS_SCOPED_ADAPTER_ONLY_ENVIRONMENT_PENDING",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json"
+      ],
+      "id": "Q-BENCH",
+      "inherited_status": "pending_local",
+      "name": "Qualified external comparator build",
+      "prior_current_native_status": {
+        "reason": "adapter 7 only",
+        "status": "PASS_SCOPED"
+      },
+      "purpose": "Reproduce the declared SUNDIALS6.4.1 comparator or qualify intentional6/7 portability.",
+      "source_locked_replay": "NOT_RUN"
+    },
+    {
+      "correction_budget": {
+        "accounting_note": "Same controlling task; cumulative update, no reset.",
+        "counter_source": "cumulative_validation_20261028/SUMMARY.json",
+        "frozen_snapshot_used": 0,
+        "maximum": 3,
+        "used": 1
+      },
+      "current_evidence_note": "Coupled all-target strict Clippy at source 0255297e exited 0; first attempt lacked target environment and remains an incomplete attempt.",
+      "current_evidence_status": "PASS_SCOPED_CURRENT",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json",
+        "research/dynamics_symbolic_validation_20261028/POST_PUBLICATION_CHECKS.json"
+      ],
+      "id": "Q-LINT",
+      "inherited_status": "pending_local",
+      "name": "Broader integrator Clippy",
+      "prior_current_native_status": {
+        "reason": "Clippy exit 0; focused 202/1 ignored",
+        "status": "PASS_SCOPED"
+      },
+      "purpose": "Resolve23 inherited diagnostic sites while retaining operation order/API behavior.",
+      "source_locked_replay": "NOT_RUN"
+    },
+    {
+      "correction_budget": {
+        "accounting_note": "Same controlling task; cumulative update, no reset.",
+        "counter_source": "cumulative_validation_20261028/SUMMARY.json",
+        "frozen_snapshot_used": 0,
+        "maximum": 3,
+        "used": 1
+      },
+      "current_evidence_note": "Baseline fixtures pass; current fixtures reproduce targeted E0063/E0004. This is a real downstream source break, not compatibility approval.",
+      "current_evidence_status": "BREAKING_CHANGE_REPRODUCED",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json",
+        "external evidence qapi-final3/SUMMARY.json; baseline 3064d453; tested current 0255297e"
+      ],
+      "id": "Q-API",
+      "inherited_status": "pending_local",
+      "name": "Public SwitchingConfig compatibility",
+      "prior_current_native_status": {
+        "reason": "compatibility absent",
+        "status": "HOLD"
+      },
+      "purpose": "Resolve newly introduced exhaustive-literal break before a release.",
+      "source_locked_replay": "NOT_RUN"
+    },
+    {
+      "correction_budget": {
+        "counter_source": "cumulative_validation_20261028/SUMMARY.json",
+        "maximum": 3,
+        "used": 0
+      },
+      "current_evidence_note": "Historical W-filtered cost failure 15/7 > 1.3 and inaccurate Off arm remain failures; a negative regression does not promote the route.",
+      "current_evidence_status": "REPRODUCED_SCIENTIFIC_FAIL_RETAINED",
+      "evidence_refs": [
+        "research/cumulative_validation_20261028/SUMMARY.json",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json"
+      ],
+      "id": "Q-NEGATIVE",
+      "inherited_status": "pending_local",
+      "name": "Retained negative evidence and ignored suite",
+      "prior_current_native_status": {
+        "reason": "W-filtered 15/7>1.3 cost gate; inaccurate Off interior error 311.467",
+        "status": "REPRODUCED_SCIENTIFIC_FAIL"
+      },
+      "purpose": "Give the known W-filtered research failure an explicit regression contract and execute the rest of ignored coverage.",
+      "source_locked_replay": "REUSED_HISTORICAL_COST_FAIL_15_OVER_7"
+    }
+  ],
+  "preserved_contract": {
+    "coverage_paths": 73,
+    "dag_edges": 34,
+    "dag_nodes": 23,
+    "interaction_gates": 10,
+    "source_locked_coverage_is_planned_not_executed": true
+  },
+  "raw_artifact_manifest": [
+    {
+      "bytes": 41057,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/gate-draft.json",
+      "sha256": "8381c6dc0db14bac4dbaba9040b9f9558582b38268ed9b3e06dd44f86805fded"
+    },
+    {
+      "bytes": 34871,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/f6-analysis/SUMMARY.json",
+      "sha256": "0bd0b5fb3f4c66bfaffd739c3d21fd8f479ae91d02fc1c4dfbe4509d4f81b25b"
+    },
+    {
+      "bytes": 5791,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/f6-analysis/REPORT_KO.md",
+      "sha256": "6563423618aaabd61ad346fde31f9cc9fe74bce81785392d7c78f371ff4587cf"
+    },
+    {
+      "bytes": 1602,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/final-f6-native/RECEIPT.json",
+      "sha256": "e49b35a2e32cf94ced258d1d5fae9da902664b3b624c2076eec8a4abc4b7bf41"
+    },
+    {
+      "bytes": 5759216,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/final-f6-native/stdout.log",
+      "sha256": "2f37066ca4ca39821b5f61cc2ad6b14f5dc10a053f70bbfd809658fbe1e5ed9f"
+    },
+    {
+      "bytes": 2260,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/final-f6-native/stderr.log",
+      "sha256": "e04712e6ef0b69392f69c94ef011331edbd24f860e6a51030d84480dba562f66"
+    },
+    {
+      "bytes": 140569,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/final-f6-native/SOURCE_INPUTS.json",
+      "sha256": "7b5aed93c45d0e7a7ca4b0e3d4c0263fb2398db4da7810d36404b74225ebcd78"
+    },
+    {
+      "bytes": 1691,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/final-f6-oracle/RECEIPT.json",
+      "sha256": "c5f49b6f01fa032c9deaf11ba9a8a601b0574ecaa5a34758759c027caac572a3"
+    },
+    {
+      "bytes": 10677416,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/final-f6-oracle-result.json",
+      "sha256": "d93f79a45077afeb0270c14d112f4ec149a2ebd4896637ff27eaa7aca620ae91"
+    },
+    {
+      "bytes": 37013,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/qapi-final3/SUMMARY.json",
+      "sha256": "69baa345d385b324fb92a576f5772e1af6dd81be8a173b5ebd2d681ef4c473f3"
+    },
+    {
+      "bytes": 203,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/qapi-run3.stdout",
+      "sha256": "aa5b9ffea490def9d4ea1824c37d44620d48d970338f2bcc8b8f3c3a946fe26c"
+    },
+    {
+      "bytes": 0,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/qapi-run3.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/qapi-run3.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "bytes": 926,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/givens-final-025/RUN.json",
+      "sha256": "b96c88b5323258e18eddbaec43bba5300eab0f87c43e2244d23eedf963f49743"
+    },
+    {
+      "bytes": 1631,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/givens-final-025/givens-exact/RECEIPT.json",
+      "sha256": "7b5ce55f3bb9252a6083ef4f2bec4505dba665dadd1ff029e76c3d8b180a308a"
+    },
+    {
+      "bytes": 714,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/givens-final-025/givens-exact/stdout.log",
+      "sha256": "28e3016e26000a7d6da832749d94c4ee9cdf2caf74345a0acc28b152d6e1b8b2"
+    },
+    {
+      "bytes": 553,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/givens-final-025/givens-exact/stderr.log",
+      "sha256": "f14d4dbd2bf8ba0454b44efa9c9d3b0dca4346110a9f1e38349aa752a11ff382"
+    },
+    {
+      "bytes": 140782,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/givens-final-025/givens-exact/SOURCE_INPUTS.json",
+      "sha256": "6aef9f5317bc938892cb5699489522d8360d4263e40dd127b5ca9099bb7e6c24"
+    },
+    {
+      "bytes": 1613,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/suites-a1/facade-contracts/command_00/RECEIPT.json",
+      "sha256": "44e9030002a73fbc3202489c40a11c1b22eeee5c5d567b21568a5215ccf514fa"
+    },
+    {
+      "bytes": 1620,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/suites-a1/coupled-contracts/command_00/RECEIPT.json",
+      "sha256": "2074b9d31b88053e96fff77145c30631c1a469ed13ad2fbc2afa1863d5bdde95"
+    },
+    {
+      "bytes": 1605,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/suites-a1/all-targets/command_00/RECEIPT.json",
+      "sha256": "b04bc41744f902668d78fab03b0c40f17a92f9007fbf1ce6b414f1dc82ed4a3e"
+    },
+    {
+      "bytes": 1689,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/suites-a1/release-contracts/command_00/RECEIPT.json",
+      "sha256": "ecd46e0064f40a50c055328bb90f61be8188a3f55687b6987d1e60d8a3f2dba7"
+    },
+    {
+      "bytes": 1605,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/suites-a1/release-contracts/command_01/RECEIPT.json",
+      "sha256": "22d5e80f60fe96268ba619b7523757fb5bb35074c1413faf531605f939b274d5"
+    },
+    {
+      "bytes": 1601,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/suites-a1/docs/command_00/RECEIPT.json",
+      "sha256": "738fd662891eaa202d25c2d793d85d19d7b25f10987fa87c8415500fca1eb4b4"
+    },
+    {
+      "bytes": 1597,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/suites-a1/docs/command_01/RECEIPT.json",
+      "sha256": "23929597cb973fb1bd89665be16c7629ed3e753a61b5fb389f2729c0ff5adf11"
+    },
+    {
+      "bytes": 4174,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/suites-a1/smoke-release/smoke-release/RECEIPT.json",
+      "sha256": "6a53014fd79a1930eafff9d9269dfff8e2f3dbfd1ace8bef900f55f062f8ef1e"
+    },
+    {
+      "bytes": 854,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/suites-a1/smoke-release/smoke-release/SUMMARY.json",
+      "sha256": "f72a785876f2d08782606b7f451070654e2675dc16935e9648ad84ece2d0f36d"
+    },
+    {
+      "bytes": 1590,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/suites-a1/local-benchmarks/command_00/RECEIPT.json",
+      "sha256": "b6aa02e5b15c48f693ba6c9ff67dfae732d36ed3e38e8e1fc83d9afd02f954bc"
+    },
+    {
+      "bytes": 1785,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/suites-a1/local-benchmarks/command_07/RECEIPT.json",
+      "sha256": "5d59679cbcaa2d8873f42b800cd0daf516f9cb6939a148795ab19f23ba230275"
+    },
+    {
+      "bytes": 488,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/suites-a1/local-profiles/cubic/SUMMARY.json",
+      "sha256": "e000e9b9a52b6fd1bc16adec0070ac6ee23a2bee335932c9ad25a686c6a1139e"
+    },
+    {
+      "bytes": 420,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/suites-a1/local-profiles/structural/SUMMARY.json",
+      "sha256": "7d79b6378f2b165c3a7e4a65860a6367f4a9a8d191f9c78367e62180472057ce"
+    },
+    {
+      "bytes": 46224,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/qledger-20261029/full_authority_final.stdout",
+      "sha256": "63e49b2e637b8c3c073a191bbfb6024e5109e06b835bce1a16d69a6c0dca48f3"
+    },
+    {
+      "bytes": 2,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/qledger-20261029/full_authority_final.exit",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "bytes": 46224,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/qledger-repair-20261029/full_authority.stdout",
+      "sha256": "63e49b2e637b8c3c073a191bbfb6024e5109e06b835bce1a16d69a6c0dca48f3"
+    },
+    {
+      "bytes": 2,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/qledger-repair-20261029/full_authority.exit",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "bytes": 1603,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/final-025-clippy-retry/RECEIPT.json",
+      "sha256": "68a091662264e0c75997dbb66b4be2a5fc23ca5819388d40cecb30222fc8fb65"
+    },
+    {
+      "bytes": 1683,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/vendor-fresh-build/RECEIPT.json",
+      "sha256": "ab36d109ef6c09b96ef33db00830d94b001a428ba190cf9aab2c09a699f31938"
+    },
+    {
+      "bytes": 1609,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/sundials-mpi-adapters/RECEIPT.json",
+      "sha256": "7e45dd9bf5a098c79f19a259aa8c2065f266da0616409d8e877083b3cc1b2c7a"
+    },
+    {
+      "bytes": 502,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/sundials-mpi-adapters/stdout.log",
+      "sha256": "3cd76c14e37e672364600e8f5746bdde36372a80bc2b0f2dd855039fc3a6f309"
+    },
+    {
+      "bytes": 1026,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/EXEC_SOURCE_IDENTITY.json",
+      "sha256": "077e0e396063412678ce48753c8304cd032f7e1339491cc37da1e3c2908b8a45"
+    },
+    {
+      "bytes": 1069,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/IDENTITY.json",
+      "sha256": "1ee4b8efacb1014e37cc5949224dc29c4ac5366e166b083a02c359431e6fe378"
+    },
+    {
+      "bytes": 103149,
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/f6-analysis/BENCHMARK_SUMMARY.json",
+      "sha256": "cabcf30badd540ebb33487f9bee8dbf48bb9802e345f12e1f6d64bd29b40d15a"
+    }
+  ],
+  "reproduction": {
+    "native_scoped_runner": "python3 research/dynamics_symbolic_validation_20261028/code/run_scoped.py --source-sha 0255297e4f865bb78753cad9fe51d6f27536d188 --remote-ref origin/validation/local-dynamics-exec-20261028T170155Z --output <NEW_EXTERNAL_EVIDENCE_DIR> --cargo cargo",
+    "note": "Do not rerun completed suites absent source/assumption/feature change; all commands and exact outputs are in linked immutable receipts.",
+    "qapi": "python3 research/local_dynamics_qualification_20261029/api_fixture/run_fixtures.py --repo \"$PWD\" --source-sha 0255297e4f865bb78753cad9fe51d6f27536d188 --remote-ref origin/validation/local-dynamics-exec-20261028T170155Z --output <NEW_EXTERNAL_EVIDENCE_DIR>",
+    "suite_runner": "See immutable argv receipts under /home/cosmosapjw/evidence-20261028T170155Z/suites-a1/<suite>/command_*/RECEIPT.json; executed via /home/cosmosapjw/evidence-20261028T170155Z/run-final-suites.sh at source a1a459f2.",
+    "published_execution_ref": "origin/validation/local-dynamics-exec-20261028T170155Z",
+    "prepare": "Fetch the execution branch and create a new detached worktree at 0255297e4f865bb78753cad9fe51d6f27536d188; verify HEAD and the fetched execution ref both equal that SHA before running."
+  },
+  "schema": "vigilode.local_dynamics_qualification.summary.v1",
+  "source_lanes": {
+    "authority_repair": {
+      "note": "qledger-repair attempt does not replace full repository/object authority gate",
+      "status": "FAIL_FULL_AUTHORITY_PENDING"
+    },
+    "current_final_execution": {
+      "cargo_lock_sha256": "efb379071fa42c2b6bdbe969163ac2f41cf318c262c5c67d0910450298333351",
+      "commit": "0255297e4f865bb78753cad9fe51d6f27536d188",
+      "remote_ref": "origin/validation/local-dynamics-20261028T170155Z",
+      "tree": "4b1b7e7da6fa5e1fdcd064c0de1d19671c31e5b3"
+    },
+    "current_suite_receipts": {
+      "commit": "a1a459f2be186d9f67ff86bf38c19ae24b769768",
+      "scope": "8 registered suite runners; not the native F6 source"
+    },
+    "delivery_handoff_sha": "bf308589e21b524d0ddc6e571b260f5e94a853f0",
+    "f6_native": {
+      "allocation_followup_commit": "a1a459f2be186d9f67ff86bf38c19ae24b769768",
+      "binary_path": "/home/cosmosapjw/target-20261028T170155Z/measurement/examples/rvj_trace_campaign",
+      "binary_sha256": "789d54cd69eba31981c81546b8fe2c686f72ad723d3c281d7dbc86613ff5ef95",
+      "commit": "299310290c2e254149ee30f4a9834c1123066815"
+    },
+    "givens_current": {
+      "commit": "0255297e4f865bb78753cad9fe51d6f27536d188",
+      "tree": "4b1b7e7da6fa5e1fdcd064c0de1d19671c31e5b3"
+    },
+    "historical_dynamics_execution_source": "58ec9b053163da6b6f0906010e0422c104db72fd",
+    "qapi_baseline": "3064d453091af1dec7f99f0c8afabd98b447ea34",
+    "qapi_current": "0255297e4f865bb78753cad9fe51d6f27536d188"
+  },
+  "specialized_evidence": {
+    "f6_trace": {
+      "cap": "1e-8 whole-path error cap",
+      "first_grid_meeting_native_and_external_caps": 256,
+      "interpretation": "PASS_SCOPED manufactured trace validation; coarse grids fail cap; no production/physical client admission; no per-route setup time.",
+      "native_exit": 0,
+      "negative_controls_rejected": 8,
+      "negative_controls_total": 8,
+      "oracle_checks": 65672,
+      "oracle_exit": 0,
+      "rows": 10,
+      "slabs": 992,
+      "status": "PASS_SCOPED_ALL_EXPORTED_SLABS_CHECKED"
+    },
+    "givens": {
+      "command_exit": 0,
+      "interpretation": "exact residual-oracle scoped tests; does not qualify all Krylov regimes.",
+      "oracle_fixtures": [
+        "1e-14",
+        "1e0",
+        "1e14"
+      ],
+      "status": "PASS_SCOPED_CURRENT"
+    },
+    "local_benchmark_profile": {
+      "adapter_performance": [
+        {
+          "baseline": "pr91",
+          "binary_sha256": "8eb9065e8ee2aaca7dc86bd2fd1fb558040972f9fad9190abe17835abf61d15d",
+          "candidate": "observed-pr91",
+          "case": "stiff-cubic",
+          "instruction_change_percent": -0.15858516339457562,
+          "median_speedup": 0.9747398578014568,
+          "range": [
+            0.9414600995170352,
+            1.0050648821349162
+          ]
+        },
+        {
+          "baseline": "rhs-only",
+          "binary_sha256": "8eb9065e8ee2aaca7dc86bd2fd1fb558040972f9fad9190abe17835abf61d15d",
+          "candidate": "observed-strict-sentinel",
+          "case": "reentrant-nonlinear",
+          "instruction_change_percent": 141.7912268628906,
+          "median_speedup": 0.3782717621960742,
+          "range": [
+            0.37624458713249037,
+            0.38562194120739224
+          ]
+        }
+      ],
+      "benchmark_summary_sha256": "cabcf30badd540ebb33487f9bee8dbf48bb9802e345f12e1f6d64bd29b40d15a",
+      "binary_sha256_by_profile": {
+        "cubic": "a9864ba4719d03018c1d52b8667307c87e07e19164874e1dca590ff5fb1cfea4",
+        "structural": "ae5ca4505e4d0d1621e9256e94245d0fefb5b9c0c2407d30bcfb12b065a465ec"
+      },
+      "checkout": "/home/cosmosapjw/vigilode-suite-20261028T170155Z",
+      "cubic": {
+        "generic_algebraic_checksums_match": false,
+        "generic_rational_checksums_match": false,
+        "generic_scalar_checksums_match": true,
+        "generic_vs_algebraic_median_ratio": 1.133580789139193,
+        "generic_vs_rational_median_ratio": 1.27780290307624,
+        "generic_vs_scalar_median_ratio": 1.2440530270447367,
+        "interpretation": "Algebraic/rational checksum mismatch prevents treating their lower time ratio as matched-output improvement.",
+        "paired_blocks": 10,
+        "repetitions": 128,
+        "steps": 512
+      },
+      "limits": [
+        "Bounded benchmark/profile workloads do not establish general production application speed.",
+        "Callgrind guest instruction counts are not native wall time.",
+        "Structural checks are recorded benchmark checks, not independent external-reference validation.",
+        "Thread-1 and thread-2 results are separate cohorts."
+      ],
+      "raw_file_hash_entries": 197,
+      "source_sha": "a1a459f2be186d9f67ff86bf38c19ae24b769768",
+      "structural": [
+        {
+          "all_grid_bits_equal_to_pr91": true,
+          "dimension": 1,
+          "max_common_grid_error": 4.440892098500626e-16,
+          "paired_median_speedup": {
+            "enclosed": 1.3170543692490069,
+            "fused": 1.054942229942319
+          },
+          "threads": 1
+        },
+        {
+          "all_grid_bits_equal_to_pr91": true,
+          "dimension": 64,
+          "max_common_grid_error": 2.384490382922877e-10,
+          "paired_median_speedup": {
+            "enclosed": 2.042401250885769,
+            "fused": 1.0934060379624662
+          },
+          "threads": 1
+        },
+        {
+          "all_grid_bits_equal_to_pr91": true,
+          "dimension": 2048,
+          "max_common_grid_error": 2.397597120840089e-10,
+          "paired_median_speedup": {
+            "enclosed": 2.270099051427941,
+            "fused": 1.1570251013173527
+          },
+          "threads": 1
+        },
+        {
+          "all_grid_bits_equal_to_pr91": true,
+          "dimension": 2048,
+          "max_common_grid_error": 2.397597120840089e-10,
+          "paired_median_speedup": {
+            "enclosed": 2.1901636316728963,
+            "fused": 1.072363826507245
+          },
+          "threads": 2
+        }
+      ]
+    },
+    "qapi": {
+      "baseline_fixtures_exit": [
+        0,
+        0
+      ],
+      "current_fixtures_exit": [
+        101,
+        101
+      ],
+      "legacy_json_deserialize": "NOT_APPLICABLE",
+      "status": "BREAKING_CHANGE_REPRODUCED",
+      "targeted_diagnostics": [
+        "E0063 SwitchingConfig missing fields",
+        "E0004 non-exhaustive SwitchingEvidence match"
+      ]
+    },
+    "sundials_mpi": {
+      "exit": 0,
+      "scope": "headers/link and adapter integration test scope only; not full vendor/deployment qualification",
+      "scoped_adapter_tests_passed": 7,
+      "status": "PENDING_ENVIRONMENT_AND_DISTRIBUTION_QUALIFICATION"
+    }
+  },
+  "suites": [
+    {
+      "exit_codes": [
+        0
+      ],
+      "id": "facade-contracts",
+      "source_sha": "a1a459f2be186d9f67ff86bf38c19ae24b769768",
+      "status": "PASS_SCOPED_SOFTWARE_CHECK_ONLY",
+      "summary": "297 tests passed; no scientific admission."
+    },
+    {
+      "exit_codes": [
+        0
+      ],
+      "id": "coupled-contracts",
+      "source_sha": "a1a459f2be186d9f67ff86bf38c19ae24b769768",
+      "status": "PASS_SCOPED_SOFTWARE_CHECK_ONLY",
+      "summary": "156 passed, 1 ignored; no scientific admission."
+    },
+    {
+      "exit_codes": [
+        0
+      ],
+      "id": "all-targets",
+      "source_sha": "a1a459f2be186d9f67ff86bf38c19ae24b769768",
+      "status": "PASS_SCOPED_COMPILE_ONLY",
+      "summary": "workspace package all-target check; compile-only."
+    },
+    {
+      "exit_codes": [
+        0,
+        0
+      ],
+      "id": "release-contracts",
+      "source_sha": "a1a459f2be186d9f67ff86bf38c19ae24b769768",
+      "status": "PASS_SCOPED_SOFTWARE_CHECK_ONLY",
+      "summary": "both release test commands completed; aggregate stdout test rows include 2055 passed and 76 ignored; command scopes overlap other suites.",
+      "wall_seconds": [
+        915.4759190760087,
+        1692.9183113279287
+      ]
+    },
+    {
+      "exit_codes": [
+        0,
+        0
+      ],
+      "id": "docs",
+      "source_sha": "a1a459f2be186d9f67ff86bf38c19ae24b769768",
+      "status": "PASS_SCOPED_DOCS_ONLY",
+      "summary": "cargo doc and doc tests completed; across the docs suite, 2 doctests passed (scoped documentation check)."
+    },
+    {
+      "exit_codes": [
+        0
+      ],
+      "id": "smoke-release",
+      "rows": [
+        {
+          "accounting_complete": true,
+          "attempts": 13,
+          "jvp": 0,
+          "maximum_returned_state_error": 3.3718316472253207e-09,
+          "mode": "rhs-only",
+          "pass": true,
+          "rate": 1,
+          "rhs": 79
+        },
+        {
+          "accounting_complete": true,
+          "attempts": 396,
+          "jvp": 0,
+          "maximum_returned_state_error": 1.543376355546291e-11,
+          "mode": "rhs-only",
+          "pass": true,
+          "rate": 1000,
+          "rhs": 2377
+        },
+        {
+          "accounting_complete": true,
+          "attempts": 13,
+          "jvp": 0,
+          "maximum_returned_state_error": 3.3718316472253207e-09,
+          "mode": "selective-jvp",
+          "pass": true,
+          "rate": 1,
+          "rhs": 79
+        },
+        {
+          "accounting_complete": true,
+          "attempts": 180,
+          "jvp": 426,
+          "maximum_returned_state_error": 1.0654127077097675e-09,
+          "mode": "selective-jvp",
+          "pass": true,
+          "rate": 1000,
+          "rhs": 1117
+        }
+      ],
+      "source_sha": "a1a459f2be186d9f67ff86bf38c19ae24b769768",
+      "status": "PASS_SCOPED_SMOKE_ONLY",
+      "summary": "4 returned-state rows report pass; max reported state error 3.3718316472253207e-9; smoke only."
+    },
+    {
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "id": "local-benchmarks",
+      "source_sha": "a1a459f2be186d9f67ff86bf38c19ae24b769768",
+      "status": "DIAGNOSTIC_ONLY",
+      "summary": "8 commands exit 0; results/profiles remain cohort diagnostics, not production qualification."
+    },
+    {
+      "exit_codes": [
+        0,
+        0
+      ],
+      "id": "local-profiles",
+      "source_sha": "a1a459f2be186d9f67ff86bf38c19ae24b769768",
+      "status": "DIAGNOSTIC_ONLY_GUEST_INSTRUCTIONS",
+      "summaries": {
+        "cubic": {
+          "binary_unchanged": true,
+          "instructions_per_repetition": {
+            "algebraic": 2225167.0,
+            "generic": 3018359.75,
+            "rational": 2104980.0,
+            "scalar": 2187948.65
+          },
+          "interpretation": "guest instruction count; startup subtracted; not native wall time",
+          "ratio_to_first_arm": {
+            "algebraic": 0.7372106654947277,
+            "generic": 1.0,
+            "rational": 0.6973920189599666,
+            "scalar": 0.7248800114035445
+          },
+          "source_changes_during_profile": [],
+          "status": "completed"
+        },
+        "structural": {
+          "binary_unchanged": true,
+          "instructions_per_repetition": {
+            "enclosed": 107185903.0,
+            "fused": 312580908.25,
+            "pr91": 310184546.0
+          },
+          "interpretation": "guest instruction count; startup subtracted; not native wall time",
+          "ratio_to_first_arm": {
+            "enclosed": 0.34555526502600165,
+            "fused": 1.007725601681007,
+            "pr91": 1.0
+          },
+          "source_changes_during_profile": [],
+          "status": "completed"
+        }
+      },
+      "summary": "Valgrind guest instruction counts with startup subtracted; not wall-time."
+    }
+  ],
+  "post_native_checker_source": {
+    "commit": "c9c734529cf5bbbc33683987006bf71fca3f122d",
+    "tree": "32243dae409795171a63210e38a2709b605a4bf6",
+    "native_change": "none since 0255297e; only checker and checker tests",
+    "checker_tests": "41 passed, exit 0",
+    "full_authority": "exit 1: missing 31, repository-unavailable 16, invalid-repository 11, unreachable 4",
+    "source_readback": "origin/validation/local-dynamics-20261028T170155Z"
+  }
+}

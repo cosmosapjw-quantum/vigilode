@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "review_id": "A03-INDEPENDENT-REVIEW-01",
+  "reviewed_unit": "A03-LOCAL-DAMPED-CONTRACT-01",
+  "reviewer_agent": "/root/a02_supplement_review",
+  "review_role": "READ_ONLY_INDEPENDENT_SCIENTIFIC_REVIEW",
+  "review_content_authored_by": "reviewer; persisted by controller from reviewer response",
+  "independence": {
+    "reviewer_authored_reviewed_packet": false,
+    "reviewer_implemented_reviewed_code": false,
+    "runtime_model_identity": "NOT_INDEPENDENTLY_OBSERVED",
+    "recursive_delegation": false
+  },
+  "decision": "READY_SCOPED",
+  "ready_scope": "A03-SCALAR-RATE-01 bounded implementation only",
+  "ready_for_controller_dispatch": true,
+  "full_A03_decision": "HOLD",
+  "scientific_execution_admission": "NOT_GRANTED",
+  "source_identity": {
+    "cwd": "/home/cosmosapjw/vigilode",
+    "branch": "audit/production-readiness-20261018",
+    "observed_head": "7e2873887ed6038b47b667c976435810851c5dba",
+    "observed_tree": "9275e35d3d5afe1ae4e40e1c0d9aca1034994ca6",
+    "input_manifest": "RESEARCH_DECISION.json#/source_identity/source_sha256",
+    "input_manifest_document_sha256": "00daf13ce6d45f7aac9d913e1cb170b5b8bc281a2b8ad93f950c9f419d92793c",
+    "input_hashes_checked": 21,
+    "input_hashes_matching_worktree": 21,
+    "input_hashes_matching_HEAD": 19,
+    "input_hash_mismatches": [],
+    "inputs_not_present_in_HEAD": [
+      {"path":"AGENTS.md","sha256":"de166fcc5af50745fdf44a4df9b163f3f6c91e33fd29602a44e064a1059b51be","classification":"HASH_BOUND_WORKTREE_POLICY_INPUT"},
+      {"path":"research/production_audit_20261018/evidence/continuation_a01_lcert/INDEPENDENT_REVIEW_KO.md","sha256":"90c6e21f769e6c6aca66a96129d03ff3f553b43fd1319e31982de7508eae602c","classification":"HASH_BOUND_WORKTREE_REVIEW_INPUT"}
+    ],
+    "identity_conclusion":"All declared input bytes match; the two worktree inputs are not commit-resident objects."
+  },
+  "reviewed_artifact_sha256": {
+    "DERIVATION_KO.md":"2fbde354008641a7b50df91bf6755d7648ac2c84ae0d2d21f135e1634a25e8fe",
+    "PREREGISTRATION.md":"8f6a8635f0d9b3366cc457411c0f2dc6b54892e387bfadb505961e462e548f51",
+    "RESEARCH_DECISION.json":"00daf13ce6d45f7aac9d913e1cb170b5b8bc281a2b8ad93f950c9f419d92793c"
+  },
+  "mathematical_review": {
+    "damping_transform":"a=exp(-kappa*t)b gives the exact factor exp(-2*kappa*t) on cubic forcing; use actual stored S and do not assume S=1.",
+    "scalar_hull":"Q_{r,d}=I_{d,r}; Q is nonincreasing in nonnegative rate and nondecreasing in horizon, so [Q(a_hi,t_lo).lo,Q(a_lo,t_hi).hi] encloses the interval query.",
+    "full_residual":"A3.12 retains basis defect, convolved defect, and g(U)-g(M_Q); candidate U is not exchanged for reconstructed M_Q, and stored-coefficient rounding remains in residual or curve definition.",
+    "T1":"mu_w=-kappa+S*abs(chi)*abs(m)^2 has factor 1; factor 3 belongs only to cubic Lipschitz/singular norm.",
+    "output_bound":"A3.16 follows from R_Y(s)=exp(-kappa*s)*R_scaled(s/h)/h in the T1 residual integral; actual reconstructed-mean tube and returned-center displacement are required.",
+    "positive_cell":"A3.8 beta-cell mass identity is valid; finite width/work caps and typed refusal remain required.",
+    "kappa_to_zero":"Continuous bridge is valid, but small positive kappa may not be replaced by exact zero; stable confluent representation remains open.",
+    "carrier":"RHS uses width*xi and omits carrier metadata; nonzero lab phase needs an explicit origin and verified enclosure or typed refusal."
+  },
+  "independent_reviewer_calculation": {
+    "kind":"EXACT_FRACTION_ALGEBRA_CHECK",
+    "claim":"A3.8 positive beta-cell polynomial mass identity",
+    "native_implementation_execution":false,
+    "inputs":{"horizon_T":"1/2","cell_l":"1/8","cell_u":"3/8","r_values":[0,1,2,3,4],"d_values":[0,1,2,3,4]},
+    "method":"Python standard-library Fraction, comb and factorial; compare the positive double beta sum with a direct binomial antiderivative.",
+    "cases":25,
+    "passed":25,
+    "exit_code":0,
+    "tool_command_chunk_id":"05b9cb",
+    "scope_limit":"Finite algebra checks only; not scalar kernel, packet, allocation, trajectory, or performance execution."
+  },
+  "findings": [
+    {"id":"A03-R01-TOLERANCE-PROVENANCE","classification":"FUTURE_LOCAL_CONTRACT_CAVEAT","blocks_A03_SCALAR_RATE_01":false,"finding":"rtol=1e-8 and atol=1e-11 have no bound existing damped-local source; user's selection applied to Robertson/A07 only.","required_action":"Later stable-representation contract must label them proposed local acceptance values and bind norm and authorization. Do not call them inherited damped tolerances."},
+    {"id":"A03-R01-INPUT-RESIDENCE","classification":"PROVENANCE_CLARIFICATION","blocks_A03_SCALAR_RATE_01":false,"finding":"Two of 21 hash-bound inputs are worktree inputs absent from frozen HEAD.","required_action":"Preserve hashes and distinguish worktree policy/review from commit-resident source."}
+  ],
+  "next_bounded_unit": {
+    "id":"A03-SCALAR-RATE-01",
+    "status":"READY_SCOPED",
+    "scope":["Exact normalized rate/time interval construction and provenance binding","Monotone endpoint hull for existing forcing-moment kernel","Caller-owned scratch for large-rate endpoint path","Optional positive-cell fallback only after prescribed width failure","Fixed outward width gate and typed refusal","Attempted operation/allocation/refusal accounting","Frozen S01-S10 targeted verification and allocation positive control"],
+    "limits":{"maximum_r":64,"maximum_d":64,"maximum_fallback_depth":20,"maximum_fallback_leaves":4096,"maximum_attempted_cell_evaluations":8191,"maximum_interval_primitive_attempts":10000000,"oracle_initial_degree":128,"oracle_degree_increment":64,"oracle_maximum_degree":2048},
+    "width_gates":{"S01_S02_S03_S04_S07":"2^-40","S05":"2^-35","S10":"0"},
+    "execution_conditions":["Preserve reviewed equations and actual binary64 input semantics.","Freeze implementation source and complete run inputs before authoritative execution.","Charge attempted work before fallible operations and preserve first failures.","Require same allocator to detect the three-Vec positive control before any zero-allocation admission.","Retest only prior scalar dependencies changed by implementation.","Review actual diff and raw execution outcomes before numerical admission."],
+    "excluded":["Native damped candidate/local packet certificate","Damped multiwindow trajectory","Orders beyond fixed cap","New lab-frame phase certificate","Tolerance changes","Speed or production promotion"]
+  },
+  "author_execution_status":{"declared_source_reads_and_metadata":"EXECUTED","tests":"NOT_RUN","builds":"NOT_RUN","numerical_oracles":"NOT_RUN","benchmarks":"NOT_RUN","code_modified":false},
+  "claim_ceilings":{"conditional_derivation":"READY_SCOPED","A03_SCALAR_RATE_01_implementation_contract":"READY_SCOPED","A03_SCALAR_RATE_01_numerical_validation":"NOT_RUN","local_kappa_positive_inclusion":"HOLD_NOT_IMPLEMENTED","stable_confluent_representation":"OPEN","full_damped_trajectory":"HOLD","high_order_support":"HOLD_BEYOND_CURRENT_CAP","new_lab_phase":"HOLD_UNIMPLEMENTED","zero_allocation":"NOT_MEASURED_FOR_NEW_ADAPTER","speed":"NOT_MEASURED","timing_authority":"DIAGNOSTIC_ONLY","full_A03":"HOLD","production_promotion":"HOLD"}
+}

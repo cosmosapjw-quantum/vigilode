@@ -1,0 +1,47 @@
+{
+  "source_sha256": "019bc0fd92d45f7badea0ddb4c4fb10e2cc775286e0d8315e9d0eb9d21e84a9d",
+  "executions": [
+    {
+      "command": [
+        "flock",
+        "/workspace/scratch/0dc1e721cf82/runtime1024/cargo-frontier.lock",
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-core",
+        "--example",
+        "structured_residual_sweep"
+      ],
+      "exit_code": 0,
+      "elapsed_including_build_lock_seconds": 0.2787310050043743,
+      "stdout": "research/local_frontier_20261024/evidence/STRUCTURED_CERTIFICATION.tests.stdout",
+      "stderr": "research/local_frontier_20261024/evidence/STRUCTURED_CERTIFICATION.0.stderr",
+      "stdout_sha256": "6346f8af2ea7353d84794b90b2cc578c997bc7848fe7bcdc4e9cd0d854ab8487",
+      "stderr_sha256": "5c5e637b48be6791b77882e0717859028cc2ce7a1a641c64176de50da6ae3c85"
+    },
+    {
+      "command": [
+        "flock",
+        "/workspace/scratch/0dc1e721cf82/runtime1024/cargo-frontier.lock",
+        "cargo",
+        "run",
+        "--locked",
+        "--offline",
+        "--profile",
+        "measurement",
+        "-p",
+        "rodas5p-core",
+        "--example",
+        "structured_residual_sweep"
+      ],
+      "exit_code": 0,
+      "elapsed_including_build_lock_seconds": 0.985858771004132,
+      "stdout": "research/local_frontier_20261024/evidence/STRUCTURED_CERTIFICATION.jsonl",
+      "stderr": "research/local_frontier_20261024/evidence/STRUCTURED_CERTIFICATION.1.stderr",
+      "stdout_sha256": "225c35ee9404ea3ed5937a40086733b5f8985955864d47360d78598c49eccd64",
+      "stderr_sha256": "67f332904adf4d2219d914c10312c17d6d9aacb811b013072f2f29e238973875"
+    }
+  ]
+}

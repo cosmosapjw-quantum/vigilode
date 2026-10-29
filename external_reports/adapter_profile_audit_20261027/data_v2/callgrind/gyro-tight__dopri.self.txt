@@ -1,0 +1,60 @@
+--------------------------------------------------------------------------------
+Profile data file '~/vigilode-integration-followup-20261027/profile_r2/prof/callgrind/gyro-tight__dopri.out' (creator: callgrind-3.22.0)
+--------------------------------------------------------------------------------
+I1 cache: 
+D1 cache: 
+LL cache: 
+Timerange: Basic block 0 - 7257569
+Trigger: Program termination
+Profiled target:  ~/vigilode-integration-followup-20261027/profile_r2/prof_bin repeat-arm gyro-tight dopri 1 (PID 3740181, part 1)
+Events recorded:  Ir
+Events shown:     Ir
+Event sort order: Ir
+Thresholds:       99
+Include dirs:     
+User annotated:   
+Auto-annotation:  on
+
+--------------------------------------------------------------------------------
+Ir                  
+--------------------------------------------------------------------------------
+44,890,256 (100.0%)  PROGRAM TOTALS
+
+--------------------------------------------------------------------------------
+Ir                   file:function
+--------------------------------------------------------------------------------
+12,299,112 (27.40%)  crates/vigilode/examples/local_bottleneck_support/models.rs:adapter_checkpoint_trace::models::Model::component [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 4,416,943 ( 9.84%)  crates/vigilode/examples/local_bottleneck_support/models.rs:adapter_checkpoint_trace::models::Model::apply [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 3,818,544 ( 8.51%)  crates/rodas5p-integrators/src/dopri5.rs:rodas5p_integrators::dopri5::integrate_dopri5_impl [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 3,086,853 ( 6.88%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/adapters/zip.rs:rodas5p_integrators::dopri5::integrate_dopri5_impl
+ 1,830,225 ( 4.08%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:rodas5p_integrators::dopri5::evaluate_rhs
+ 1,525,126 ( 3.40%)  crates/rodas5p-integrators/src/output.rs:rodas5p_integrators::output::land_capped [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 1,171,296 ( 2.61%)  crates/rodas5p-integrators/src/output.rs:rodas5p_integrators::output::step_to [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 1,103,291 ( 2.46%)  crates/rodas5p-integrators/src/dopri5.rs:rodas5p_integrators::dopri5::error_norm [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 1,086,224 ( 2.42%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:rodas5p_integrators::dopri5::integrate_dopri5_impl
+   927,314 ( 2.07%)  crates/vigilode/examples/adapter_checkpoint_trace.rs:adapter_checkpoint_trace::fixture::{{closure}} [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+   902,911 ( 2.01%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs:adapter_checkpoint_trace::models::Model::component
+   744,291 ( 1.66%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:rodas5p_integrators::dopri5::integrate_dopri5_impl
+   732,090 ( 1.63%)  crates/rodas5p-integrators/src/dopri5.rs:rodas5p_integrators::dopri5::evaluate_rhs [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+   703,272 ( 1.57%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/mod.rs:rodas5p_integrators::dopri5::integrate_dopri5_impl
+   585,672 ( 1.30%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/f64.rs:rodas5p_integrators::dopri5::evaluate_rhs
+   512,463 ( 1.14%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:rodas5p_integrators::dopri5::evaluate_rhs
+   447,370 ( 1.00%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/range.rs:rodas5p_integrators::dopri5::integrate_dopri5_impl
+   439,254 ( 0.98%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/num/f64.rs:adapter_checkpoint_trace::models::Model::component
+   433,882 ( 0.97%)  ./string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:__memcpy_avx_unaligned_erms [/usr/lib/x86_64-linux-gnu/libc.so.6]
+   427,035 ( 0.95%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/f64.rs:rodas5p_integrators::output::land_capped
+   410,666 ( 0.91%)  ./math/../sysdeps/ieee754/dbl-64/e_pow.c:__ieee754_pow_fma [/usr/lib/x86_64-linux-gnu/libm.so.6]
+   364,125 ( 0.81%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/f64.rs:rodas5p_integrators::dopri5::error_norm
+   341,642 ( 0.76%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:rodas5p_integrators::dopri5::evaluate_rhs
+   341,640 ( 0.76%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/f64.rs:rodas5p_integrators::dopri5::integrate_dopri5_impl
+   329,346 ( 0.73%)  crates/rodas5p-integrators/src/adaptive.rs:rodas5p_integrators::adaptive::AdaptiveControllerState::propose_factor_prevalidated [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+   317,239 ( 0.71%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:adapter_checkpoint_trace::models::Model::apply
+   309,180 ( 0.69%)  crates/rodas5p-integrators/src/adaptive.rs:rodas5p_integrators::adaptive::adaptive_next_step_after_attempt_prevalidated [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+   305,025 ( 0.68%)  crates/rodas5p-integrators/src/output.rs:rodas5p_integrators::output::OutputCollector::limit_step [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+   292,836 ( 0.65%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs:adapter_checkpoint_trace::models::Model::apply
+   292,836 ( 0.65%)  crates/vigilode/examples/adapter_checkpoint_trace.rs:adapter_checkpoint_trace::rec [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+   268,433 ( 0.60%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:adapter_checkpoint_trace::models::Model::apply
+   268,422 ( 0.60%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/f64.rs:rodas5p_integrators::output::step_to
+   244,030 ( 0.54%)  crates/vigilode/src/explicit.rs:rodas5p_integrators::dopri5::evaluate_rhs
+   199,290 ( 0.44%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs:rodas5p_integrators::dopri5::integrate_dopri5_impl
+   176,205 ( 0.39%)  crates/rodas5p-integrators/src/adaptive_output.rs:rodas5p_integrators::adaptive_output::AdaptiveOutputSession::trial [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]

@@ -1,0 +1,151 @@
+{
+  "parent": "baseline/NEXT_DEVELOPMENT_DAG.json",
+  "executed_nodes": [
+    {
+      "id": "F1",
+      "task": "Build overlapping regular closure charts and certify same-branch chart transitions; separate unrelated-root discriminant crossings",
+      "prior_status": "NOT_RUN",
+      "status": "COMPLETE_SCOPED",
+      "evidence_report": "f1_atlas/task_report.json",
+      "review": {
+        "SPEC": "ACCEPTED_SCOPED",
+        "QUALITY": "ACCEPTED_SCOPED",
+        "accepted_scope": "Two fully overlapping primitive charts on same regular carrier; exact slow-state-preserving switches, branch identity by unique box root, closed-slab residual certification, unrelated discriminant crossing.",
+        "exclusions": [
+          "No enlarged determinant coverage",
+          "No continuation through selected d=0"
+        ],
+        "findings": []
+      }
+    },
+    {
+      "id": "F2",
+      "task": "Compile one larger sparse multivariable closure with measured offline circuit growth and compare Newton/Krawczyk at matched physical error including certificate cost",
+      "depends_on": [
+        "F1"
+      ],
+      "prior_status": "NOT_RUN",
+      "status": "COMPLETE_SCOPED",
+      "evidence_report": "f23_native/task_report.json",
+      "review": {
+        "SPEC": "ACCEPTED_SCOPED",
+        "QUALITY": "ACCEPTED_SCOPED",
+        "accepted_scope": "Structured cyclic n=4,8,16 family, finite rational O(n) circuit, measured source/object/codegen/compile growth. Newton uses structured solve; post-Newton Krawczyk is inclusion validation.",
+        "proof": "T(q)=x-q_next²/4 maps Q to Q and has factor1/8. Reduced dissipativity6/7 and residual defect df+dg/7.",
+        "exclusions": [
+          "No generic sparse elimination complexity claim",
+          "No F1 chart switches needed inside this unique global contraction box"
+        ],
+        "findings": []
+      }
+    },
+    {
+      "id": "F3",
+      "task": "Native floating-point outward residual implementation and matched-accuracy wall-clock campaign",
+      "depends_on": [
+        "F2"
+      ],
+      "prior_status": "NOT_RUN",
+      "status": "COMPLETE_SCOPED",
+      "evidence_report": "f23_native/task_report.json",
+      "review": {
+        "SPEC": "ACCEPTED_SCOPED",
+        "QUALITY": "ACCEPTED_SCOPED",
+        "accepted_scope": "Native IEEE binary64 nextafter outward primitive intervals with FMA disabled, exact dyadic constants/time steps; interval Hermite/Bernstein residual bounds and directed recurrence.",
+        "evidence": "Read native primitive arithmetic, coefficient construction, dyadic input restrictions, 816 exact-corner assertions and 27 representative Fraction slab comparisons in reported campaign. Secondary independent review native_secondary_review.json agrees; runtime RN/FTZ/DAZ checks present in final source.",
+        "exclusions": [
+          "Runtime arithmetic assumptions are explicit",
+          "Timing only measured environment; universal speedup not established"
+        ],
+        "findings": []
+      }
+    },
+    {
+      "id": "F4",
+      "task": "Classify higher-order wall at A^2+6B=0 using original analytic equations",
+      "prior_status": "NOT_RUN",
+      "status": "COMPLETE_SCOPED",
+      "evidence_report": "f4_degenerate/task_report.json",
+      "review": {
+        "SPEC": "ACCEPTED_SCOPED",
+        "QUALITY": "ACCEPTED_SCOPED",
+        "accepted_scope": "Analytic IFT germ, exact weighted jets and rank locus; explicit immersed front lift plus verified published recognition criterion proves smooth cuspidal butterfly. Central epsilon0 plane branch has Puiseux characteristic(4,5). Fractional edge asymptotics valid fixed A>0.",
+        "exclusions": [
+          "Central point lies outside nonparallel-normal regular carrier",
+          "No global topology, analytic normal-form equivalence, uniform neighborhood in A, or interval-certified numerical roots"
+        ],
+        "findings": [
+          "REPORT-DRIFT-003"
+        ]
+      }
+    },
+    {
+      "id": "F5",
+      "task": "Prove geometric/transversality range and global chart count for generalized Weierstrass collision family",
+      "prior_status": "NOT_RUN",
+      "status": "PARTIAL_WITH_SOURCE_CORRECTION",
+      "evidence_report": "f5_global/task_report.json",
+      "review": {
+        "SPEC": "PARTIAL_FULL_GLOBAL_COUNT_OPEN",
+        "QUALITY": "ACCEPTED_SCOPED",
+        "accepted_scope": "Vertical quotient determinant including D; independent original-incidence horizontal collisions and independent reduced 4x4 tangent determinant384/37 at baseline prove +4 ordered/+2 unordered isolated reduced contribution. Conditional baseline total120/60 requires reuse of archived nonhorizontal116/58 proof; generalized full count not established. At eta1,p−1/2,q4/27 vertical point is isolated nonreduced of local quotient length3; no full D0-stratum classification. Horizontal p!=0 chart exhaustion accepted. Local q unfolding coefficient6400/243 and nonvertical splitting a²=−120(q−4/27)/13+O((q−4/27)²) accepted using symmetry of the analytic zero germ.",
+        "findings": [
+          "F5-GLOBAL-001",
+          "F5-TRANSVERSE-002",
+          "F5-NORMALIZATION-004"
+        ],
+        "exclusions": [
+          "Conditional baseline120/60/31 requires independently retained complete b!=0 atlas",
+          "Full parameter discriminant, infinity boundary and finite-etale base degree not computed",
+          "p0 horizontal complex chart and full D0 locus classification remain open",
+          "Generic global saturation input generated but not executed"
+        ]
+      }
+    },
+    {
+      "id": "F6",
+      "task": "Implement trace-only symmetric-observable ODE client including multiplicities and explicit observable contract",
+      "prior_status": "NOT_RUN",
+      "status": "COMPLETE_SCOPED",
+      "evidence_report": "f6_trace/task_report.json",
+      "review": {
+        "SPEC": "ACCEPTED_SCOPED",
+        "QUALITY": "ACCEPTED_SCOPED",
+        "accepted_scope": "All-complex-root polynomial traces with algebraic multiplicities, exact Newton recurrence/companion identities, controlled coupled ODE crossing triple root, rational full-slab certificates.",
+        "proof": "On [1/2,1]² reduced Jacobian logarithmic row bounds −91/128 and −39/64 imply chosen contraction1/2. Polynomial trace recurrence is globally regular through repeated roots.",
+        "exclusions": [
+          "No selected physical branch or real-root subset trace",
+          "Manufactured forcing, not arbitrary application benchmark"
+        ],
+        "findings": [
+          "REPORT-DRIFT-003"
+        ]
+      }
+    }
+  ],
+  "remaining_nodes": [
+    {
+      "id": "F5-GLOBAL-REPAIR",
+      "depends_on": [
+        "F5"
+      ],
+      "status": "OPEN",
+      "action": "Rebuild saturated full-incidence atlas including horizontal h=0,b=0; prove characteristic-zero complete count and parameter strata, with orbit stabilizers.",
+      "inputs": [
+        "f5_global/full_incidence.py",
+        "f5_global/sources/v13.txt",
+        "reviews/horizontal_independent_check.json"
+      ],
+      "acceptance": "Every regular chart covered, finite lengths and multiplicities certified, conditional inherited count independently closed."
+    },
+    {
+      "id": "F5-D-WALL",
+      "depends_on": [
+        "F5"
+      ],
+      "status": "OPEN",
+      "action": "Extend the proved length3 classification at eta=1,p=-1/2,q=4/27 to the full D=0 parameter stratum; handle the p=0 distinct-starting-x horizontal chart.",
+      "acceptance": "Normal form or local algebra with exact multiplicity and parameter crossing law."
+    }
+  ]
+}

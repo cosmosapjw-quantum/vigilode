@@ -1,7 +1,9 @@
+use rodas5p_core::{LinearMethod, LinearSolverConfig, PreconditionerKind, WorkCounters};
 use rodas5p_integrators::{
-    AdaptiveStepConfig, OutputSchedule, TransactionalQ1Q2Config,
-    integrate_transactional_q1_q2_adaptive_observed, prothero_robinson_problem,
-    scalar_linear_problem,
+    AdaptiveStepConfig, KrylovState, OutputSchedule, TransactionalQ1Q2Config,
+    constant_affine_mass_problem, integrate_transactional_q1_q2_adaptive_observed,
+    prothero_robinson_problem, scalar_linear_problem, sequential_matrix_free_step,
+    transactional_q1_q2_step,
 };
 
 fn endpoint_schedule(tf: f64) -> OutputSchedule {
@@ -79,4 +81,102 @@ fn adaptive_rejections_do_not_commit_outputs_or_hide_attempted_work() {
     assert!(result.observed.counters.jvp_vectors > 0);
     assert_eq!(result.observed.counters.jacobian_builds, 0);
     assert_eq!(result.observed.counters.direct_factorizations, 0);
+}
+
+#[test]
+fn matrix_free_shifted_applications_are_folded_into_physical_jvp_and_mass_work() {
+    let (problem, mut y, _, _) = constant_affine_mass_problem();
+    let config = LinearSolverConfig {
+        method: LinearMethod::Gcrodr,
+        preconditioner: PreconditionerKind::None,
+        restart: 2,
+        maxiter: 8,
+        recycle_dim: 1,
+        ..LinearSolverConfig::default()
+    };
+    let mut counters = WorkCounters::default();
+    let mut recycle = KrylovState::for_method(config.method);
+    for time in [0.0, 0.01] {
+        let before = counters;
+        let step = sequential_matrix_free_step(
+            &problem,
+            time,
+            &y,
+            0.01,
+            &config,
+            recycle.as_mut(),
+            1.0e-10,
+            1.0e-8,
+            true,
+            &mut counters,
+        )
+        .unwrap();
+        let delta = counters.delta(before);
+        let shifted = delta.shifted_operator_applications_since(WorkCounters::default());
+        assert!(delta.jvp_vectors >= shifted);
+        assert_eq!(delta.jvp_calls, delta.jvp_vectors);
+        assert_eq!(delta.mass_matvecs, shifted);
+        y = step.y_new;
+    }
+    assert!(counters.recycle_refresh_matvecs > 0);
+}
+
+#[test]
+fn matrix_free_solver_failure_keeps_successful_shifted_applications_accounted() {
+    let (problem, y0, _, _) = constant_affine_mass_problem();
+    let config = LinearSolverConfig {
+        method: LinearMethod::Gmres,
+        preconditioner: PreconditionerKind::None,
+        restart: 1,
+        maxiter: 1,
+        ..LinearSolverConfig::default()
+    };
+    let mut counters = WorkCounters::default();
+    let error = sequential_matrix_free_step(
+        &problem,
+        0.0,
+        &y0,
+        0.1,
+        &config,
+        None,
+        1.0e-10,
+        1.0e-8,
+        false,
+        &mut counters,
+    )
+    .unwrap_err();
+    assert!(error.to_string().contains("linear solve failed"));
+    let shifted = counters.shifted_operator_applications_since(WorkCounters::default());
+    assert!(shifted > 0);
+    assert_eq!(counters.jvp_vectors, shifted);
+    assert_eq!(counters.jvp_calls, shifted);
+    assert_eq!(counters.mass_matvecs, shifted);
+}
+
+#[test]
+fn transactional_solver_failure_keeps_successful_shifted_applications_accounted() {
+    let (problem, y0, _, _) = constant_affine_mass_problem();
+    let mut counters = WorkCounters::default();
+    let error = transactional_q1_q2_step(
+        &problem,
+        0.0,
+        &y0,
+        0.1,
+        &TransactionalQ1Q2Config {
+            gmres_restart: 1,
+            gmres_max_arnoldi: 1,
+            ..TransactionalQ1Q2Config::default()
+        },
+        1.0e-10,
+        1.0e-8,
+        false,
+        &mut counters,
+    )
+    .unwrap_err();
+    assert!(error.to_string().contains("linear solve failed"));
+    let shifted = counters.shifted_operator_applications_since(WorkCounters::default());
+    assert!(shifted > 0);
+    assert!(counters.jvp_vectors >= shifted);
+    assert_eq!(counters.jvp_calls, counters.jvp_vectors);
+    assert!(counters.mass_matvecs >= shifted);
 }

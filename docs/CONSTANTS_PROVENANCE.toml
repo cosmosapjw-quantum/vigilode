@@ -1,0 +1,140 @@
+# Provenance of every policy constant that decides a research verdict
+# (audit F-046). `crates/rodas5p-integrators/tests/constants_provenance_contracts.rs`
+# keeps this table in sync with the source: each value must equal the source
+# literal bit for bit, and every `V<digits>_` constant of the atlas must have
+# a row.
+#
+# class: derived | fitted | declared | cited | unsourced
+#   derived   - follows from a stated derivation in the tree
+#   fitted    - selected on data; fit_dataset, n and selection_criterion say how
+#   declared  - chosen by the author as a rule; no derivation claimed
+#   cited     - taken from a cited external source
+#   unsourced - no derivation or fit artifact exists in the tree
+# Any claim that depends on an unsourced constant, or on a fitted constant
+# with n < 30, inherits that label.
+# role: theory-bound | calibration-only | product-policy (external re-audit,
+#   6.5). A calibration-only constant may not carry threshold authority
+#   outside its calibration scope; an unsourced calibration-only constant is
+#   to be refitted or retired, not promoted. Listing a constant does not
+#   validate its value.
+# status: active | frozen | retired
+
+[[constant]]
+name = "V25_ERROR_DROP_THRESHOLD"
+role = "calibration-only"
+value = "0.012790399606947056"
+location = "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs"
+class = "unsourced"
+source_artifact = ""
+source_sha256 = ""
+fit_dataset = "unknown; no v2.5 fit artifact is in the tree"
+n = ""
+selection_criterion = "unknown"
+sensitivity = "not measured"
+valid_scope = "K3 and causal k=1 prefix-probe feature on the G4/S5B0 atlas"
+status = "frozen"
+
+[[constant]]
+name = "V29_PREFIX_RESERVE_JVP"
+role = "product-policy"
+value = "80"
+location = "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs"
+class = "declared"
+source_artifact = "research/generic_enforced_prefix_budget_v35/reports/PHYS_MATH_AUDIT.md"
+source_sha256 = "335185ce7d1b12d5a15d6a849eabc2b993707f54c6f9b0e0a76f4725da16177f"
+fit_dataset = ""
+n = ""
+selection_criterion = "declared absolute cap in B_k = min{80, max(0, floor(0.25 R_k) - S_k)}"
+sensitivity = "not measured"
+valid_scope = "v2.9 to v3.7 speculative prefix budget"
+status = "frozen"
+
+[[constant]]
+name = "V29_PREFIX_BUDGET_FRACTION"
+role = "product-policy"
+value = "0.25"
+location = "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs"
+class = "declared"
+source_artifact = "research/generic_enforced_prefix_budget_v35/reports/PHYS_MATH_AUDIT.md"
+source_sha256 = "335185ce7d1b12d5a15d6a849eabc2b993707f54c6f9b0e0a76f4725da16177f"
+fit_dataset = ""
+n = ""
+selection_criterion = "declared cumulative fraction in B_k; enforced_prefix_jvp_cap reads this constant"
+sensitivity = "not measured"
+valid_scope = "v2.9 to v3.7 speculative prefix budget"
+status = "frozen"
+
+[[constant]]
+name = "V29_STAGE_GROWTH_BASELINE"
+role = "calibration-only"
+value = "3.24"
+location = "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs"
+class = "unsourced"
+source_artifact = ""
+source_sha256 = ""
+fit_dataset = "unknown; no v2.9 fit artifact is in the tree"
+n = ""
+selection_criterion = "unknown"
+sensitivity = "not measured"
+valid_scope = "normalizer of a34 = (r4/r3)/baseline in the v2.9 stage-growth witness"
+status = "frozen"
+
+[[constant]]
+name = "V36_FROZEN_ZETA34_TAU"
+role = "calibration-only"
+value = "13.39706618860016"
+location = "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs"
+class = "fitted"
+source_artifact = "research/generic_policy_redesign_v33/results/calibration_analysis/FROZEN_ZETA34_POLICY.json"
+source_sha256 = "f771b85174248171c84d726247deb1268ed777121fca2b84dc932b03d92f9dae"
+fit_dataset = "research/generic_policy_redesign_v33/results/calibration192_shards (six families, N = 192)"
+n = "24 candidates, 23 eligible events"
+selection_criterion = "unsafe == 0 on calibration, then a one-rank backoff to the preceding distinct zeta34 (tau_selected 16.88239704018631)"
+sensitivity = "the only N = 320 holdout positive (zeta34 = 14.32) lies between tau_final and tau_selected, so the v3.5 verdict flips within one rank"
+valid_scope = "calibration tolerance arm only; fitted with n < 30"
+status = "frozen"
+
+[[constant]]
+name = "V37_CONTINUATION_JVP_CAP"
+role = "product-policy"
+value = "80"
+location = "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs"
+class = "declared"
+source_artifact = "research/generic_timing_replication_continuation_transaction_v37/contracts/V37_TIMING_REPLICATION_CONTINUATION_TRANSACTION_CONTRACT.md"
+source_sha256 = "ba77a7162095f62c3be97cd62a070d9a77ca03cc0e0287668151106e726b2ee3"
+fit_dataset = ""
+n = ""
+selection_criterion = "declared continuation cap B^C = 80 JVP vectors"
+sensitivity = "not measured"
+valid_scope = "v3.7 continuation transaction"
+status = "frozen"
+
+[[constant]]
+name = "TIER_L_REQUIRED_WALL_SPEEDUP"
+role = "product-policy"
+value = "1.15"
+location = "crates/rodas5p-cli/src/main.rs"
+class = "declared"
+source_artifact = ""
+source_sha256 = ""
+fit_dataset = ""
+n = ""
+selection_criterion = "declared promotion threshold on median wall ratio"
+sensitivity = "below the recorded v3.6 paired-wall noise (pair ratios 0.547 to 4.43 at N = 384); audit F-053"
+valid_scope = "Tier-L wall-time gate"
+status = "active"
+
+[[constant]]
+name = "TIER_N_REQUIRED_WALL_SPEEDUP"
+role = "product-policy"
+value = "1.15"
+location = "crates/rodas5p-cli/src/main.rs"
+class = "declared"
+source_artifact = ""
+source_sha256 = ""
+fit_dataset = ""
+n = ""
+selection_criterion = "declared promotion threshold on median wall ratio"
+sensitivity = "see TIER_L_REQUIRED_WALL_SPEEDUP"
+valid_scope = "Tier-N wall-time gate"
+status = "active"

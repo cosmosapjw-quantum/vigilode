@@ -1,0 +1,199 @@
+{
+  "schema": "vigilode.independent-reference-admission-review.v1",
+  "created_utc": "2026-10-25T11:23:14.020800+00:00",
+  "reviewer": "/root/runner_gate_independent_review",
+  "reviewer_role": "read-only independent reviewer; did not implement or compute candidate references",
+  "runtime_model_identity": "NOT_INDEPENDENTLY_OBSERVED",
+  "decision": "PASS_SCOPED_ADMITTED_REFERENCE",
+  "case": 2,
+  "scope": "Admit only the existing full-vector empirical endpoint reference for this exact standard-size model descriptor and interval.",
+  "reviewed_reference": {
+    "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/EXTERNAL_REFERENCE_PRECOMMIT.json",
+    "sha256": "6a66646bfb1dd6c826cb66e340419703281f07dc41d6260725b4c19927624559"
+  },
+  "reviewed_evidence": {
+    "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/REFERENCE_EVIDENCE.json",
+    "sha256": "efa94eb3f0bfe1e83735aad6e8be6099480b951b569c9c30f917dd38c12e3414"
+  },
+  "reviewed_binding": {
+    "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/REFERENCE_BINDING_PRECOMMIT.json",
+    "sha256": "e5324aaca4c1f4258ed5b867f2aa72f85a37e44a4d966f86bf9f6a67155361a5"
+  },
+  "model": {
+    "id": "vigilode.local-bottleneck.case2.v1",
+    "descriptor_sha256": "452e48b84a2130ff037c711c7aca48f12b4f00b1014e3b74143da8b9b7e38e16",
+    "dimension": 8,
+    "state_order": [
+      "y1",
+      "y2",
+      "y3",
+      "y4",
+      "y5",
+      "y6",
+      "y7",
+      "y8"
+    ],
+    "t_span": [
+      0.0,
+      321.8122
+    ],
+    "norm": "max_component_absolute"
+  },
+  "frozen_source_binding": {
+    "commit": "2a4bf90d1445b67542bdac5030b4c5d10da20445",
+    "tree": "98a0af41837653065e5346d1dd21272474f34c52",
+    "models_source_path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/crates/vigilode/examples/local_bottleneck_support/models.rs",
+    "models_source_sha256_at_commit": "288cc9c54b9380dc35a59d52185cd0fe8f0b36947fafb08283048020efbdad2d",
+    "build_receipt": {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/native_diffsol_packet_build_20261025T1036/build_artifacts/BUILD_RECEIPT.json",
+      "sha256": "48804247685ea922d7ca95b87b1b5c9efb1b260074986b312e5ac24182a0c022"
+    },
+    "binary_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/native_diffsol_offline_locked_build_20261025T0924/target/measurement/examples/local_bottleneck_suite",
+    "binary_sha256": "b7eecc929570fd8ef25d3d7aca7d9a9d6aa4ea60ca84774996fc13f5556c9124",
+    "descriptor_command_receipt": {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/frozen_binary_describe_batch_20261025T0930/case02/ATTEMPT.json",
+      "sha256": "241da3e2055182fa0935799b3b0271ef584dee537051410cf6bf1c25b58e888c"
+    },
+    "descriptor_files": [
+      {
+        "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/descriptor_frozen.stdout",
+        "sha256": "452e48b84a2130ff037c711c7aca48f12b4f00b1014e3b74143da8b9b7e38e16"
+      },
+      {
+        "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/descriptor_patched_debug.stdout",
+        "sha256": "452e48b84a2130ff037c711c7aca48f12b4f00b1014e3b74143da8b9b7e38e16"
+      },
+      {
+        "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/describe_contracts/case02_standard.stdout",
+        "sha256": "452e48b84a2130ff037c711c7aca48f12b4f00b1014e3b74143da8b9b7e38e16"
+      },
+      {
+        "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/frozen_binary_describe_batch_20261025T0930/case02/stdout.bin",
+        "sha256": "452e48b84a2130ff037c711c7aca48f12b4f00b1014e3b74143da8b9b7e38e16"
+      }
+    ],
+    "status": "Saved frozen, patched-debug, contract, and measurement-binary descriptors have identical bytes and parsed objects. Measurement binary hash agrees with post-publication clean-source build receipt; published git blob checked directly. Later unrelated dirty worktree changes are outside this frozen reference review."
+  },
+  "checks": {
+    "all_bound_evidence_sha256_verified": true,
+    "finite_full_vector_verified": true,
+    "dimension_initial_state_parameters_order_and_t_end_verified": true,
+    "independent_rhs_probe_count": 3,
+    "rhs_probe_max_abs_differences": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rhs_probe_comparison_tolerance": "128*f64_epsilon*max(1,abs(expected),abs(actual)); all observed differences exactly zero",
+    "saved_success_stdout_matches_evidence_vectors": true,
+    "saved_success_complete_markers_and_exit_zero": true,
+    "scripts_check_entire_interpolating_function_domains": true,
+    "source_and_numerical_basis": "Local Hairer HIRES equations and driver at first endpoint 321.8122; first eight of sixteen published endpoint values agree with independent Wolfram StiffnessSwitching WP40/goal22 full-domain run. The second eight values at 421.8122 are excluded.",
+    "recomputed_full_vector_crosscheck_spread_decimal": "4.688210274312329817212808526094954590253E-19",
+    "max_reference_float_rounding_decimal": "4.2759012176611577160656452178955078125E-19",
+    "empirical_uncertainty": 1e-12,
+    "uncertainty_limit": 1e-05,
+    "spread_plus_rounding_below_U": true
+  },
+  "evidence_files": [
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/hairer_equation.f",
+      "sha256": "9e58224ea54ccfa503d9f38e7c15816894691b55def62a55c485908e95cf9ee1"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/hairer_driver_radau5.f",
+      "sha256": "ad06e336d887f065674f1586ed9bd3164f44aa74548fe8d1bf7b9da21ecd3d58"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/hairer_res_exact_pic.txt",
+      "sha256": "31f311a46e49829492c549b0748fd6b48051ec7389e5f895387568ee9553da73"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/hires_reference_attempt2.wl",
+      "sha256": "8dc22be9b098d23712c039f7c9de18733a194d41b2d2f150aa8a18b72b32cfc9"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/stdout_attempt2.txt",
+      "sha256": "2fc76322f355d942bf90d63e2f75472bede293bbdae95945087f7a9736ec8b94"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/stderr_attempt2.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/resource_attempt2.txt",
+      "sha256": "4677e2f0d2e7b9c5d9137c35cb2676f78c41697125a2d06b8a0e8f9c40bc7a2a"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/ATTEMPT_001.json",
+      "sha256": "775e48569c9cbfd456a59c777495ffe4e3bdfdf338d0b34765fa83803180f65d"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/hires_reference.wl",
+      "sha256": "4987913ea406e7b25cc67bf79eca9a6163955b96beee18a12bd6c23a8673e7b1"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/resource.txt",
+      "sha256": "ab96e6858de2d958b76a38a7b5435a3b92d87f34b986e07c3c341f8dbc149b9f"
+    }
+  ],
+  "cost_accounting": {
+    "global_chain_snapshot": {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/COST_EVENTS.jsonl",
+      "sha256": "94e6a1b573b90e9f11585f197e380104b4bfad60ad6f823efeafbbeced6453ff"
+    },
+    "event_count": 186,
+    "hash_chain_verified": true,
+    "reviewed_terminal_events": [
+      {
+        "attempt_id": "hires-wolfram-1",
+        "category": "reference",
+        "charge_basis": "exact_resource_wall",
+        "charged_seconds": 21.6,
+        "event_id": "hires-wolfram-1-terminal",
+        "evidence_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/resource.txt",
+        "evidence_sha256": "ab96e6858de2d958b76a38a7b5435a3b92d87f34b986e07c3c341f8dbc149b9f",
+        "exact_duration_known": true,
+        "observed_utc": "2026-10-25T08:26:12.056138+00:00",
+        "phase": "TERMINAL",
+        "prev_event_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "schema": "vigilode.local-continuation-cost-event.v1"
+      },
+      {
+        "attempt_id": "hires-wolfram-2",
+        "category": "reference",
+        "charge_basis": "exact_resource_wall",
+        "charged_seconds": 44.73,
+        "event_id": "hires-wolfram-2-terminal",
+        "evidence_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/resource_attempt2.txt",
+        "evidence_sha256": "4677e2f0d2e7b9c5d9137c35cb2676f78c41697125a2d06b8a0e8f9c40bc7a2a",
+        "exact_duration_known": true,
+        "observed_utc": "2026-10-25T08:26:12.056138+00:00",
+        "phase": "TERMINAL",
+        "prev_event_sha256": "04e243501e037012df7960e95628b7027b53ec4242406ca6ef11edfbc2a1b986",
+        "schema": "vigilode.local-continuation-cost-event.v1"
+      }
+    ],
+    "reviewed_attempts_charged_seconds": 66.33,
+    "all_listed_resource_hashes_verified": true,
+    "cost_reset": false,
+    "reviewer_solver_launches": 0,
+    "scope": "Checks recorded reference attempt wall charges, including saved HIRES failure. Does not claim complete CPU accounting or timing authority."
+  },
+  "limitations": [
+    "Attempt 1 remains FAILED_REFERENCE despite process exit 0: WP50 BDF incomplete domain. Its failed stdout/stderr were tool-output-only; the preserved ATTEMPT_001.json and resource.txt document this capture limitation. Neither partial endpoint nor failed attempt is used for admission.",
+    "U is a conservative empirical crosscheck allowance, not a directed-rounding enclosure, mathematical error bound, or solution certificate.",
+    "No trajectory-wide error, solver allocation, switching correctness, performance advantage, or broader physical-model claim is admitted.",
+    "Historical PRECOMMIT and CANDIDATE status strings remain preserved; this additive review resolves descriptor/reference admission only."
+  ],
+  "claim_ceiling": {
+    "reference_status": "ADMITTED_EMPIRICAL_FULL_VECTOR_ENDPOINT",
+    "certified_enclosure": false,
+    "production_admission": "HOLD",
+    "historical_805_rows_retroactively_promoted": false,
+    "historical_results_reclassified": false,
+    "launch_authorization": false,
+    "new_solver_work_requires_fresh_bounded_plan": true
+  },
+  "findings": []
+}

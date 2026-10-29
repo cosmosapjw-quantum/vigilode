@@ -1,0 +1,147 @@
+{
+  "schema": "vigilode.general-ode-benchmark-plan.v1",
+  "status": "PLANNED_NOT_EXECUTED_EXTERNAL",
+  "ncp_allowed": false,
+  "host": "local or this work environment only",
+  "resources": {
+    "numeric_threads": 1,
+    "concurrent_benchmark_processes": 1,
+    "max_campaign_wall_seconds": 3600,
+    "per_configuration_timeout_seconds": 30,
+    "memory_budget_gib": 4
+  },
+  "comparators_allowed": [
+    "VODE/DVODE",
+    "diffsol",
+    "Julia OrdinaryDiffEq"
+  ],
+  "comparators_forbidden_as_competitive": [
+    "internal BDF1/BDF2 reference",
+    "internal Radau1/Radau3 reference"
+  ],
+  "problem_families": [
+    {
+      "family": "nonstiff smooth",
+      "cases": [
+        "exponential decay",
+        "logistic/Riccati",
+        "nonautonomous forcing"
+      ],
+      "dimensions": [
+        1,
+        2,
+        32,
+        128
+      ]
+    },
+    {
+      "family": "stiff smooth",
+      "cases": [
+        "Robertson",
+        "Van der Pol multiple mu",
+        "stiff diagonal",
+        "Prothero-Robinson"
+      ],
+      "dimensions": [
+        2,
+        3,
+        32
+      ]
+    },
+    {
+      "family": "oscillatory",
+      "cases": [
+        "rotation",
+        "damped rotation",
+        "chirped frequency",
+        "nonlinear phase modulation"
+      ],
+      "cycles": [
+        10,
+        100,
+        1000
+      ]
+    },
+    {
+      "family": "nonnormal/transitions",
+      "cases": [
+        "Jordan transient growth",
+        "time-dependent stable triangular",
+        "smooth stiffness transition"
+      ]
+    },
+    {
+      "family": "structured scale",
+      "cases": [
+        "compact-band manufactured linear ODE",
+        "provided-JVP manufactured operator"
+      ],
+      "dimensions": [
+        64,
+        256,
+        1024
+      ]
+    }
+  ],
+  "tolerances": [
+    0.0001,
+    1e-06,
+    1e-08,
+    1e-10
+  ],
+  "comparison": "common actual-error targets; each method may use different input tolerance to meet the same target",
+  "references": {
+    "analytic_where_available": true,
+    "independent_high_accuracy_elsewhere": true,
+    "uncertainty_fraction_max": 0.1
+  },
+  "outputs": {
+    "identical_observation_times_per_case": true,
+    "include_output_cost": true,
+    "assess": [
+      "maximum sampled state error",
+      "phase error",
+      "relative amplitude error",
+      "invariant drift where defined"
+    ]
+  },
+  "timing": {
+    "warmup_charged_separately": true,
+    "grouped_sample_target_ms": 10,
+    "cyclic_method_order": true,
+    "minimum_independent_processes": 5,
+    "samples_per_process": 7,
+    "include_setup": true,
+    "keep_raw_samples": true,
+    "uncertainty": "process-level bootstrap or median/MAD; do not treat grouped repeats as independent hosts"
+  },
+  "receipt_fields": [
+    "source_commit_and_digest",
+    "binary_sha256",
+    "compiler_flags",
+    "dependency_versions",
+    "host_cpu_affinity",
+    "solver_options",
+    "reference_uncertainty",
+    "complete_output_error",
+    "attempts",
+    "rhs",
+    "jacobian",
+    "jvp",
+    "factorization",
+    "rejections",
+    "setup_time",
+    "wall_time",
+    "exit_code",
+    "failure_reason"
+  ],
+  "decision_labels": [
+    "promote-scoped",
+    "hold-evidence",
+    "optimization-possible",
+    "specialized-only",
+    "prune-default"
+  ],
+  "missing_dependency_policy": "NOT_RUN with reason; do not install unpinned substitutes or forge comparison",
+  "current_new_execution": "Only production_core_survey and equal-observation session microbenchmarks in this package; external plan remains unrun."
+}

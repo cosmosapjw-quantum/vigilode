@@ -1,0 +1,145 @@
+{
+  "schema": "vigilode.frontier.research-loop-record.v1",
+  "skill": "physmath-research-loop",
+  "skill_version_context": "Read current user skill RESEARCH_POLICY,THEORY_LOOP,CODING_LOOP,EVIDENCE_AND_HANDOFF before work",
+  "theory_loop": [
+    {
+      "id": "R1",
+      "title": "목표·반증·자원 계약",
+      "evidence": "SEARCH_PROTOCOL.json",
+      "outcome": "범용 production,small-machine,원래 residual,실패 보존,no NCP"
+    },
+    {
+      "id": "R2",
+      "title": "기존 근거 재사용",
+      "evidence": "evidence/SOURCE_SURVEY.json",
+      "outcome": "193branch snapshot와 별도 solver 개발 tip;unchanged 연구 재실행 안 함"
+    },
+    {
+      "id": "R3",
+      "title": "가정 명세",
+      "evidence": "analysis/SYNTHESIS_KO.md",
+      "outcome": "구조선언과 전공간norm,자기수반,물리norm,일반성 경계를 명시"
+    },
+    {
+      "id": "R4",
+      "title": "후보 분기",
+      "evidence": "RESEARCH_TREE.json",
+      "outcome": "6독립 root,각 최대3형제,측정 후4자식 확장"
+    },
+    {
+      "id": "R5",
+      "title": "구성적 정리",
+      "evidence": "analysis/SYNTHESIS_KO.md",
+      "outcome": "resolvent d actions,affine/harmonic O(N),RKL global error/cost,remap error transport"
+    },
+    {
+      "id": "R6",
+      "title": "독립 반례·계산",
+      "evidence": "results/ADVERSARIAL_EXACT_CHECKS.json",
+      "outcome": "CAS와 exact rational,negative positivity,Jordan/nonnormal,subnormal regression"
+    },
+    {
+      "id": "R7",
+      "title": "판별 실험",
+      "evidence": "SUMMARY.json",
+      "outcome": "같은 cap의 전체궤적,별도thread,공간/시간 분리;실패도보존"
+    },
+    {
+      "id": "R8",
+      "title": "조건부 선택",
+      "evidence": "DECISIONS.json",
+      "outcome": "production HOLD,scope별선택,localpruning"
+    },
+    {
+      "id": "R9",
+      "title": "코드 연결",
+      "evidence": "REPORT_KO.md",
+      "outcome": "crateAPI와standalonePDE를명확히구분"
+    },
+    {
+      "id": "R10",
+      "title": "인계",
+      "evidence": "HANDOFF_PROMPT_KO.md",
+      "outcome": "구체 작업·시험·비용·stop criteria와기계계획"
+    }
+  ],
+  "coding_loop": [
+    {
+      "id": "C1",
+      "title": "기준 소스",
+      "evidence": "PUBLISH_MAP.json",
+      "outcome": "로컬/원격 전체 tree 동등성"
+    },
+    {
+      "id": "C2",
+      "title": "식·데이터·코드",
+      "evidence": "analysis/AFFINE_QUOTIENT.md",
+      "outcome": "declared operator 입력을 임의probe 추정과 구분"
+    },
+    {
+      "id": "C3",
+      "title": "수치 계약",
+      "evidence": "analysis/POLYNOMIAL.md",
+      "outcome": "original residual,denominator margin,finite checks,transactional output"
+    },
+    {
+      "id": "C4",
+      "title": "자원 제어",
+      "evidence": "BENCHMARK_PLAN.json",
+      "outcome": "one timed process,1thread,offline recovery,noNCP"
+    },
+    {
+      "id": "C5",
+      "title": "구현",
+      "evidence": "REPORT_KO.md",
+      "outcome": "pilot,affine/harmonic,polynomial,PDEkernels"
+    },
+    {
+      "id": "C6",
+      "title": "구현 시험",
+      "evidence": "evidence/native_integrator_tests_final.log",
+      "outcome": "native59,PDE9등영수증;전체workspace검사라는주장없음"
+    },
+    {
+      "id": "C7",
+      "title": "과학 검증",
+      "evidence": "results/FINAL_EVIDENCE_AUDIT.json",
+      "outcome": "실제오차와전역인증구별,참조물리출력검사"
+    },
+    {
+      "id": "C8",
+      "title": "재현",
+      "evidence": "REPRODUCE.md",
+      "outcome": "compiler,source,binary,archiveSHA,실패영수증"
+    },
+    {
+      "id": "C9",
+      "title": "독립 감사",
+      "evidence": "analysis/ADVERSARIAL_AUDIT.md",
+      "outcome": "독립agent검토와source/metric그림검사"
+    },
+    {
+      "id": "C10",
+      "title": "판정",
+      "evidence": "DECISIONS.json",
+      "outcome": "기본값승격보류,외부비교NOT_RUN,다음작업명시"
+    }
+  ],
+  "services": {
+    "Exa": "primary-source discovery; REFERENCES.md",
+    "SciSpace": "paper discovery/primary-source retrieval; REFERENCES.md",
+    "Wolfram": "affine/phi identities; first protected-symbol failure retained then corrected; evidence/WOLFRAM_CHECKS.json"
+  },
+  "parallel_workstreams": [
+    "switching",
+    "affine quotient/harmonic",
+    "causal",
+    "polynomial resolvent",
+    "spherical2D3DPDE",
+    "productionvalidation/adversarial"
+  ],
+  "unchanged_evidence_reexecution": false,
+  "native_campaigns_completed": true,
+  "external_qualification_completed": false
+}

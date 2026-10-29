@@ -1,0 +1,117 @@
+{
+  "status": "SCOPED_IMPLEMENTATION_AND_THEORY_COMPLETE",
+  "baseline_commit": "3064d453091af1dec7f99f0c8afabd98b447ea34",
+  "native_tests_passed": 51,
+  "research_rust_tests_passed": 7,
+  "theory_cells": 27,
+  "theory_residual_successes": 25,
+  "theory_residual_failures": 2,
+  "warmed_lu_allocations": 0,
+  "dense_observation_equality": true,
+  "adapter_accepted_trajectory_equality": true,
+  "instruction_profile": [
+    {
+      "kind": "lu",
+      "n": 32,
+      "small_reps": 100,
+      "large_reps": 1000,
+      "totals": [
+        {
+          "optimized": false,
+          "reps": 100,
+          "Ir": 1958214
+        },
+        {
+          "optimized": false,
+          "reps": 1000,
+          "Ir": 14098368
+        },
+        {
+          "optimized": true,
+          "reps": 100,
+          "Ir": 1778685
+        },
+        {
+          "optimized": true,
+          "reps": 1000,
+          "Ir": 12316826
+        }
+      ],
+      "baseline_Ir_per_rep": 13489.06,
+      "candidate_Ir_per_rep": 11709.045555555556,
+      "baseline_over_candidate": 1.1520204559798544,
+      "reduction_fraction": 0.13195985816983857,
+      "accuracy_pass": true
+    },
+    {
+      "kind": "dense",
+      "n": 65,
+      "small_reps": 2,
+      "large_reps": 6,
+      "totals": [
+        {
+          "optimized": false,
+          "reps": 2,
+          "Ir": 181790275
+        },
+        {
+          "optimized": false,
+          "reps": 6,
+          "Ir": 420674540
+        },
+        {
+          "optimized": true,
+          "reps": 2,
+          "Ir": 177101128
+        },
+        {
+          "optimized": true,
+          "reps": 6,
+          "Ir": 409761440
+        }
+      ],
+      "baseline_Ir_per_rep": 59721066.25,
+      "candidate_Ir_per_rep": 58165078.0,
+      "baseline_over_candidate": 1.026751244965235,
+      "reduction_fraction": 0.02605426104561559,
+      "accuracy_pass": true
+    },
+    {
+      "kind": "adapter",
+      "n": 16,
+      "small_reps": 2,
+      "large_reps": 10,
+      "totals": [
+        {
+          "optimized": false,
+          "reps": 2,
+          "Ir": 33705745
+        },
+        {
+          "optimized": false,
+          "reps": 10,
+          "Ir": 66819782
+        },
+        {
+          "optimized": true,
+          "reps": 2,
+          "Ir": 33557265
+        },
+        {
+          "optimized": true,
+          "reps": 10,
+          "Ir": 66098240
+        }
+      ],
+      "baseline_Ir_per_rep": 4139254.625,
+      "candidate_Ir_per_rep": 4067621.875,
+      "baseline_over_candidate": 1.0176104741790926,
+      "reduction_fraction": 0.017305712378107185,
+      "accuracy_pass": true
+    }
+  ],
+  "wall_time_acceleration": "NOT_ESTABLISHED_ALL_BLOCK_RANGES_CROSS_UNITY",
+  "all_new_timing_and_profile_wall_seconds": 167.85758903699025,
+  "historical_v8_ledger": "UNCHANGED",
+  "production_cayley_default": "NOT_ENABLED"
+}

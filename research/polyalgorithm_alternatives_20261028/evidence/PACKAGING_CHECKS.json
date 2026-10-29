@@ -1,0 +1,71 @@
+{
+  "scope": "New-node packaging, append-only ledger and scoped published-reference checks; not repository-wide CI",
+  "initial_authority_check": {
+    "result": "FAIL",
+    "citations": 62,
+    "distinct_shas": 27,
+    "missing": 25,
+    "reachable": 2,
+    "reason": "fresh depth1 clone lacked the surveyed PR branches and ancestors",
+    "log": "evidence/AUTHORITY_INITIAL.txt"
+  },
+  "diagnosed_repair": "Fetched actual existing remote head branches of PR73--92 at depth64; no allowlist or checker change.",
+  "checks": [
+    {
+      "name": "research_node",
+      "argv": [
+        "python3",
+        "tools/check-research-node.py",
+        "--base",
+        "7eb2dd0ffda39afb2871d76700a720986ff09fe0"
+      ],
+      "exit_code": 0,
+      "stdout": "check-research-node: PASS (173 ledger rows, base=7eb2dd0ffda39afb2871d76700a720986ff09fe0, new nodes=['polyalgorithm_alternatives_20261028'])\n",
+      "stderr": ""
+    },
+    {
+      "name": "authority_scoped",
+      "argv": [
+        "python3",
+        "tools/check-authority-refs.py",
+        "--paths",
+        "research/polyalgorithm_alternatives_20261028"
+      ],
+      "exit_code": 1,
+      "stdout": "FAIL: research/polyalgorithm_alternatives_20261028/LOCAL_DEVELOPMENT_PLAN.json:1153: 78bb8775bf553ad2b514575a0ef4a025446f5d28 is missing (no remote branch contains it) [frozen_scientific_commit]\nFAIL: research/polyalgorithm_alternatives_20261028/LOCAL_DEVELOPMENT_PLAN.json:1153: 78bb8775bf553ad2b514575a0ef4a025446f5d28 is missing (no remote branch contains it) [publication.scientific_commit]\ncheck-authority-refs: FAIL (62 citations, 27 distinct SHAs: missing=1, reachable=26)\n",
+      "stderr": ""
+    },
+    {
+      "name": "diff_whitespace",
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "full_repository_ci": "NOT_RUN; inherited unresolved Q-tasks remain",
+  "native_solver_tests": "NOT_RUN",
+  "after_fetch_depth64_scoped_authority": {
+    "result": "FAIL",
+    "missing": 1,
+    "reachable": 26,
+    "reason": "original PR92 boundary remained shallow; git object records parent78bb but parent object absent"
+  },
+  "final_repair": "git fetch --deepen2 of the actual PR92 branch restored its direct parent; no checker/allowlist/reference changes.",
+  "final_scoped_authority": {
+    "argv": [
+      "python3",
+      "tools/check-authority-refs.py",
+      "--paths",
+      "research/polyalgorithm_alternatives_20261028"
+    ],
+    "exit_code": 0,
+    "stdout": "check-authority-refs: PASS (62 citations, 27 distinct SHAs: reachable=27)\n",
+    "stderr": ""
+  }
+}

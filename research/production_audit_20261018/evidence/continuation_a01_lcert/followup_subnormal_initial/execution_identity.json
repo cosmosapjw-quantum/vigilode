@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "node": "A01-LCERT-01",
+  "followup": "subnormal_initial_amplitude",
+  "exec_sha": "6b722a918deb0ab178b8e77090cac1280dbb3051",
+  "exec_tree": "c3ad93694e5dcf01ec968f170ab9d853afad1b24",
+  "command_argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "-p",
+    "rodas5p-integrators",
+    "--test",
+    "production_audit_packet_local_certificate",
+    "subnormal_initial_amplitude_is_enclosed_or_typed_refused",
+    "--",
+    "--exact",
+    "--nocapture"
+  ],
+  "exit_code": 0,
+  "raw_log": "targeted_test.log",
+  "raw_log_sha256": "f3c2ac41b912f0c212901316e46c27b9d0554accef1dd70e5f1465337fd69942",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "cargo": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+  "python": "3.12.3",
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/packet_window.rs": "0df3a08b7ed5a3afb9bd4bd863163434cf4addc114004c8d5209b435d80dde63",
+    "crates/rodas5p-integrators/src/packet_curve.rs": "f92fbcb318f8e8d5b6643a605c7c7a311a018fb67e72e3b63c48b68a80e53dc6",
+    "crates/rodas5p-integrators/src/packet_curve_output.rs": "d0a20373c8b93693d6c0af9d282aae54b91172884a6339434e1a24c1d41dca8e",
+    "crates/rodas5p-integrators/src/packet_work.rs": "036f9291090d687a845fedde5af28f756ed16e6dd5ae3d4dbe97223d7a81efe1",
+    "crates/rodas5p-integrators/src/collective_model.rs": "1cbcd3bfb6f1251e3f8dfcf3559d9db373610da89bebd7dab0432265a51a3a56",
+    "crates/rodas5p-integrators/tests/production_audit_packet_local_certificate.rs": "171d33c3789df14f344033eda88750724701c80039edf54102113e3a5c8238e9",
+    "Cargo.lock": "04c7d6c147bf19ebb1a627463705d9dcf27337a3ff228dd1169f19eb73c71400"
+  },
+  "concurrent_uncommitted_overlay_sha256": {
+    "crates/rodas5p-integrators/src/dense_output_v2.rs": "bd48c41a8aa20f2511a70bba78c4f63bc670aa511a492eb097f74dab3ec7b09f",
+    "crates/rodas5p-integrators/src/lib.rs": "9e736f1e23270d534891f6d7c45998677416b821ffb183ff68fdfffd8f6fc18c",
+    "crates/rodas5p-integrators/src/bound_pr101.rs": "3fbeef9caba3c62dfbf940309effd22c7378a115a7660610bc045890fb3f3206"
+  },
+  "exact_reference": "For width=chi=0, a(t)=a(0)=f64::from_bits(1)+0i. Differences between subnormal binary64 grid points in the assertions are exact.",
+  "results": [
+    {
+      "time": 0.0,
+      "outcome": "included",
+      "work_delta": {
+        "output_value_items": 2,
+        "certificate_items": 108,
+        "output_horner_terms": 18,
+        "curve_time_normalization_ops": 3,
+        "curve_output_certificate_ops": 52,
+        "curve_frozen_query_attempts": 1
+      }
+    },
+    {
+      "time": 0.0625,
+      "outcome": "included",
+      "work_delta": {
+        "output_value_items": 2,
+        "certificate_items": 108,
+        "output_horner_terms": 18,
+        "curve_time_normalization_ops": 3,
+        "curve_output_certificate_ops": 52,
+        "curve_frozen_query_attempts": 1
+      }
+    },
+    {
+      "time": 0.125,
+      "outcome": "included",
+      "work_delta": {
+        "output_value_items": 2,
+        "certificate_items": 108,
+        "output_horner_terms": 18,
+        "curve_time_normalization_ops": 3,
+        "curve_output_certificate_ops": 52,
+        "curve_frozen_query_attempts": 1
+      }
+    }
+  ],
+  "authority": "local_solution_inclusion_only"
+}

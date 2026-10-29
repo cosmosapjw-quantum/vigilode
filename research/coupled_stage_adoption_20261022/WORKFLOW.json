@@ -1,0 +1,164 @@
+{
+  "schema_version": "vigilode.research_loop_execution.v1",
+  "skill": "physmath-research-loop",
+  "workflow_version": "1.0.0",
+  "approval_version": "v0.2",
+  "baseline_commit": "8878e55a54e3a5f99fa81d6d3b08e05c94ed3db2",
+  "preregistration_commit": "2ba9bdb49e91722f1381ed4e33ee0d65ab8d5a7b",
+  "ncp_used": false,
+  "policy_changes": [
+    {
+      "original": "Previous plans mentioned NCP",
+      "replacement": "No new NCP use; historical files preserved",
+      "authority": "latest user instruction"
+    },
+    {
+      "original": "Potential new raw/native kernel implementation",
+      "replacement": "Reuse existing coupled PR74/75 kernels; connect exact raw-U target",
+      "reason": "Complete PDF/source intake found already integrated code"
+    },
+    {
+      "original": "release fat LTO benchmark build",
+      "replacement": "existing measurement profile identical across arms",
+      "reason": "registered before benchmark for bounded sandbox build resources"
+    }
+  ],
+  "theory_loop": [
+    {
+      "id": "R1",
+      "name": "연구 위치·계약",
+      "action": "원래 raw-U 식과 local-only 실행 범위를 사전등록.",
+      "evidence": "PREREGISTRATION.md"
+    },
+    {
+      "id": "R2",
+      "name": "근거·재사용",
+      "action": "첨부 전문 및35쪽 PDF와 통합된 coupled/hybrid 소스 대조; 기존 PR의 중복 구현을 피함.",
+      "evidence": "SOURCE_INTEGRATION_KO.md"
+    },
+    {
+      "id": "R3",
+      "name": "주장·전제 정렬",
+      "action": "자율·단위 질량·JVP 계약, full W와 projected W의 가역성, 조건부 L2/영역 가정을 명시.",
+      "evidence": "THEORY_KO.md"
+    },
+    {
+      "id": "R4",
+      "name": "가설·표현 탐색",
+      "action": "native-K 변환보다 현재 raw-U target의 직접 연결을 선택; 반복 대각 구조를 실제 계산에 사용.",
+      "evidence": "THEORY_KO.md"
+    },
+    {
+      "id": "R5",
+      "name": "구성적 유도",
+      "action": "삼각 homotopy 유일성, 유한 Newton 전파, 불변부분공간, 인과오차재귀, 조건부5차와 복잡도 증명.",
+      "evidence": "THEORY_KO.md"
+    },
+    {
+      "id": "R6",
+      "name": "독립 검증",
+      "action": "Wolfram 기호 검산과 root 독립 검토; 정리2의 fullW 가역성 누락을 교정.",
+      "evidence": "SYMBOLIC_CHECK.json"
+    },
+    {
+      "id": "R7",
+      "name": "판별 검증",
+      "action": "독립 denseLU 대조·원래 raw target·수렴·비정규/진동 holdout으로 구현 의존성을 판별.",
+      "evidence": "evidence/"
+    },
+    {
+      "id": "R8",
+      "name": "결과 판정",
+      "action": "수학 정리의 조건부 범위와 실제 표본 궤적 관측을 구별; 일반 생산 승격은 유지 보류.",
+      "evidence": "DECISIONS.json"
+    },
+    {
+      "id": "R9",
+      "name": "정식 결과·코딩 연결",
+      "action": "식이 raw_step/adaptive/common block solve에 연결; report와 API map 작성.",
+      "evidence": "API_MAP.json"
+    },
+    {
+      "id": "R10",
+      "name": "종료·재개",
+      "action": "기존 12개 항목을 보존하고 신규 6개 항목을 더해 총 18개 다음 작업으로 통합, 기존 실험의 불필요한 반복 금지 및 NCP금지.",
+      "evidence": "NEXT_STEPS.json"
+    }
+  ],
+  "coding_loop": [
+    {
+      "id": "C1",
+      "name": "목표·baseline",
+      "action": "8878e55 기준과 입력해시; 별도 개발·응용 브랜치 통합 상태 확인.",
+      "evidence": "INPUTS.json"
+    },
+    {
+      "id": "C2",
+      "name": "식–데이터–코드",
+      "action": "raw-U/native-K 경계와 기존 API17개 조사; adaptive 비연결 경계를 특정.",
+      "evidence": "API_MAP.json"
+    },
+    {
+      "id": "C3",
+      "name": "수치 설계",
+      "action": "공통Wm blockforwardsolve, 동일rawfallback, root/embedded 예산분리, transactional state.",
+      "evidence": "THEORY_KO.md"
+    },
+    {
+      "id": "C4",
+      "name": "실행 DAG·자원",
+      "action": "이론/소스조사/적응구현/fallback/축약대수/실험을 독립agent에 분담;2buildjobs, local1/2worker.",
+      "evidence": "PREREGISTRATION.md"
+    },
+    {
+      "id": "C5",
+      "name": "구현",
+      "action": "새 adaptive entry, 출력 façade, raw fallback, causal estimate, 작은 block solve를 실제 작성.",
+      "evidence": "API_MAP.json"
+    },
+    {
+      "id": "C6",
+      "name": "구현 검증",
+      "action": "실제 cargo회귀·계약 실행, 실패fixture와 수정을 별도 보존.",
+      "evidence": "evidence/"
+    },
+    {
+      "id": "C7",
+      "name": "과학 검증",
+      "action": "같은raw원래잔차, 독립recurrence와 정확해, 조건부오차식 대조.",
+      "evidence": "evidence/"
+    },
+    {
+      "id": "C8",
+      "name": "수치·재현성",
+      "action": "사전등록51개로컬설정,1warmup/3repeats,동일sampled-error예산, 실패보존.",
+      "evidence": "evidence/local_bench/"
+    },
+    {
+      "id": "C9",
+      "name": "독립 검토",
+      "action": "callback오류분류, 출력원자성, 작업계수, 가정누락 교정; 새문제없으면 감사반복종료.",
+      "evidence": "SOURCE_REVIEW.json"
+    },
+    {
+      "id": "C10",
+      "name": "판정·인계",
+      "action": "구현·검증·게시상태를분리하고 sourcecheckpoint 및 재현명령제공.",
+      "evidence": "REPRODUCE.md"
+    }
+  ],
+  "reused_evidence": {
+    "published_legacy_experiments_rerun": false,
+    "changed_kernel_regression_tests_rerun": true,
+    "reason": "block linear algebra and candidate residual record changed; regression rerun is necessary"
+  },
+  "new_strong_no_go_claim": false,
+  "uncompleted_general_claims": [
+    "unrestricted production solver",
+    "global certified error bound",
+    "universal parallel speedup",
+    "nonautonomous or nonidentity mass capability",
+    "zero allocation",
+    "NCP performance extrapolation"
+  ]
+}

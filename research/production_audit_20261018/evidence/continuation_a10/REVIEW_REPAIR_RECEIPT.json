@@ -1,0 +1,69 @@
+{
+  "unit": "A10_BERNSTEIN_REVIEW_REPAIR",
+  "cwd": "/home/cosmosapjw/vigilode",
+  "branch": "audit/production-readiness-20261018",
+  "head": "c3036c63da02ca9b04cd39ccf580cd67d00ccb0c",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "cargo": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+  "sources": {
+    "crates/rodas5p-integrators/src/packet_window.rs": "cca2b7c008f062e38d784de3127789d05dba0d07e322349a81ac7744a9004084",
+    "crates/rodas5p-integrators/src/packet_work.rs": "846fafd24f163a0c1ab7f89a094a9552f2c92c2a0ff93beef3703c8ed1efc9ad",
+    "crates/rodas5p-integrators/tests/production_audit_packet.rs": "ac0b7244e752dcb5ee6c60646f5e14b3e6cb88f3794227ed9fa226e2521e74b2"
+  },
+  "prior_receipt_sha256": "cc55a328312e6ffee8cfc5b3085bd002cb950aee48697867a2f34470224d1329",
+  "logs": [
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a10/invalid_first_failure.log",
+      "sha256": "961b301181bd36c55e7ee503d8d10dc3f4af7066ae3ea22b629fd07f4a13a33f",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_packet bernstein_rejects_public_invalid_interval_before_work",
+      "exit_code": 101,
+      "copied_exactly_from": "/tmp/vigilode_a10_invalid_first.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a10/overflow_first_failure.log",
+      "sha256": "b8c92086c49aa85697a95984397609dbb44e2ed59cb69906f9d72f4d06f497e3",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_packet bernstein_subdivision_overflow_retains_attempted_refinement_work",
+      "exit_code": 101,
+      "copied_exactly_from": "/tmp/vigilode_a10_overflow_first.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a10/review_repair_focused.log",
+      "sha256": "299f84008baa19e241c2db38365f387708061bd60dfe6e11957cea0379383edb",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_packet bernstein_",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a10_review_repair_focused.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a10/review_repair_suite_final.log",
+      "sha256": "ec2f6adc8822991e80782a8ba07c1d433364b8a4004e7c75ea2ad2dc0b8105e0",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_packet",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a10_review_repair_suite_final.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a10/review_repair_clippy_final.log",
+      "sha256": "238fb12f0367d324b7ed8555dad9a1c43515d8580086b47f2c0714d47fd974f9",
+      "command": "cargo clippy --locked --offline -p rodas5p-integrators --lib --test production_audit_packet -- -D warnings",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a10_review_repair_clippy_final.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a10/review_repair_fmt_final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a10_review_repair_fmt_final.log"
+    }
+  ],
+  "decision": "REVIEW_REPAIR_COMPLETE_PENDING_INDEPENDENT_REVIEW; FULL_A10_HOLD",
+  "scope": [
+    "reject malformed public interval endpoints before cheap arithmetic with typed refusal and zero work",
+    "charge attempted cheap, basis, and subdivision terms before fallible operations",
+    "no formula, threshold, max-depth, tail, authority, or caller-path change"
+  ],
+  "limits": [
+    "A10 remains diagnostic candidate-gate fallback only",
+    "residual polynomial and A01 outward path do not invoke Bernstein fallback",
+    "roundoff_enclosed=false; no production certificate"
+  ]
+}

@@ -1,0 +1,69 @@
+--- PRIOR_CONTRACT.md
++++ A02_VERIFIED_TRAJECTORY_CONTRACT.md
+@@ -1,6 +1,6 @@
+ # A02-TXN-01: 검증된 κ=0 궤적의 동결 연구 계약
+ 
+-판정: **READY_FOR_REVIEW**. 이 문서는 구현 전 독립 증명 검토를 위한 계약이다. 신규 수식의 독립 채택, A02 구현, 표적 검증, 과학적 승격은 아직 수행하지 않았다. 원래 A02 전체 궤적 목표를 보존하며, 아래 첫 구현 단위는 그 목표의 핵심 수송·관측·거절 의무를 구현한다. 전체 DAG와 기존 HOLD를 이 문서만으로 변경하지 않는다.
++판정: **HOLD_PENDING_INDEPENDENT_SUPPLEMENT_REVIEW**. 이 문서는 구현 전 독립 검토를 위한 계약이다. 이전 검토의 D1–D5 수학 판정은 READY였으나, C1 입력 동결과 C2 retained-window seed 계약은 HOLD였다. 이번 보완은 그 두 조건을 다루며 `implementation_approved=false`를 유지한다. 이전 원문과 전달받은 검토 판정은 `evidence/continuation_a02_research/supplement_01/PRIOR_CONTRACT.md`, `PRIOR_DECISION.json`, `PRIOR_REVIEW_HANDOFF.json`에 보존했다. 신규 수식의 독립 채택, A02 구현, 표적 검증, 과학적 승격은 아직 수행하지 않았다. 원래 A02 전체 궤적 목표를 보존하며, 아래 첫 구현 단위는 그 목표의 핵심 수송·관측·거절 의무를 구현한다. 전체 DAG와 기존 HOLD를 이 문서만으로 변경하지 않는다.
+ 
+ ## 1. Source와 재사용 조건
+ 
+@@ -125,23 +125,45 @@
+ 
+ Preallocated warmed query/advance의 zero allocation은 같은 allocator의 `CollectiveModel::clone` 세 Vec 양성 대조군 검출 후에만 주장한다. 현재 packet compiler/candidate와 retained owner setup은 할당하므로 그 비용을 포함해 보고한다. 전체 trajectory allocation-free 승격에는 별도 preallocation 구현·관측이 필요하며 local warmed 결과로 대체하지 않는다. Wall timing은 `DIAGNOSTIC_ONLY`다.
+ 
++### Window 시작 seed와 commit 세대의 불변성 (C2 보완)
++
++각 `PreparedVerifiedWindow`와 성공 후의 `RetainedVerifiedWindow`는 private immutable `WindowStartSeed`를 **소유**한다. 이 seed는 `lineage_id`, `accepted_generation`, 시작 global binary64 시각 `t_k`, 시작 binary64 중심 `c_k`, component radii `r_k`, 반환 중심 기준 weighted seed `e_k`, 고정 원래 `E_global`, 해당 시작 중심에서 outward 산출한 `E_center,k`, static model identity의 ξ/w/width/χ/carrier/κ 비트, 이 seed에서 만든 owner/curve identity, physical end의 global binary64 시각, 그 끝과 `t_k`의 정확한 차를 감싼 interval, represented horizon `H`, 동결 config/grid identity를 포함한다. physical end와 H는 같은 scalar로 대체하지 않는다. Vec/slice가 필요한 데이터는 private 소유 저장소 또는 변경 불가능한 공유 owner에 보존한다. 이후 live accepted state의 배열을 가리키는 가변 참조나, 현재 상태에서 읽어오는 getter를 historical seed의 대용으로 쓰지 않는다. `E_center,k` 역시 과거 중심에서 도출한 값을 유지한다.
++
++모든 historical global query는 이 window의 시작 seed로만 D, u, Δ, G, p_j, K_time과 출력 identity를 구성한다. 두 번째 이후 window가 commit되어 live `(t,c,r,e)`가 바뀌어도 첫 window query에는 첫 seed를 쓴다. 연속 residual owner만 보존하고 시작 uncertainty/gain/time-origin을 버린 record는 full trajectory certificate가 아니다. Retained window와 그 seed는 외부에서 생성·수정·재결속할 수 없어야 한다. `MeanOnly`가 공개 출력에서 mode vectors를 생략해도 이 내부 seed는 같은 정보를 보존한다.
++
++Prepare는 시작 accepted generation과 seed 전체를 private token으로 묶는다. `advance_verified`의 commit 직전에는 같은 lineage/generation이고 시작 `t,c,r,e,E_global`, model/config/grid binding이 현재 accepted 상태와 bitwise 일치하는지 확인한다. 토큰의 generation만 재사용하거나 같은 scalar time으로 상태 동치를 추정하지 않는다. 다른 window가 이미 commit되었으면 이전 준비 결과의 commit/replay는 typed `stale prepared window` refusal이다. 검사를 거절한 work도 누적하지만 accepted snapshot/cursor/history는 보존한다. generation 증가의 checked overflow도 typed refusal다. 아직 commit되지 않은 준비 결과를 accepted trajectory의 인증 output으로 공개하는 경로는 없다. 성공하여 retained가 된 과거 window의 query는 live generation과 달라도 그 자신의 immutable seed로 계속 유효하다.
++
++AT07/AT09의 실행 순서는 manifest에 고정했다. epoch0에서 P0와 Q0를 준비하고 P0만 commit한다. 첫 window 내부 global `1/32`의 전체 출력 bits를 저장한다. Q0의 stale commit을 거절하고 epoch1에서 P1을 새로 준비·commit한다. 두 commit 뒤 retained window0에서 같은 `1/32`, 시작·끝·requested point를 다시 query하여 저장한 identity/center/radius bits와 원래 초기값 기준 reference를 검사한다. P0의 commit 재사용도 거절한다. 각 owner의 join 출력은 같은 true flow를 독립 포함해야 하며 서로 다른 owner의 중심 bits가 같다는 조건은 추가하지 않는다.
++
+ ## 8. 동결 acceptance matrix
+ 
+ 모든 항목은 구현 전 기준이며 이 계약 작성에서 실행하지 않았다. 독립 검토자는 새 수식 및 source 경계를 채택/수정/HOLD로 판정한다. 채택 후 source/preregistration checkpoint를 게시하고, 그 EXEC_SHA의 입력 해시를 고정한 뒤 영향 범위만 실행한다. 첫 실패 raw log를 덮어쓰지 않는다.
+ 
+-| ID | 입력/방법 | 완료 기준 |
++### C1: 입력·config·tolerance 출처 동결
++
++정확한 machine 입력은 `evidence/continuation_a02_research/supplement_01/FROZEN_ACCEPTANCE_INPUTS.json`이다. 모든 model/config/grid/radius binary64 scalar는 hex `bits`가 권위이며 decimal `display`는 설명이다. 모든 resolved config 필드(order/degree/sweeps/table 차수, initial/min/max h, max_steps, output policy)를 기록했으므로 미래 default 변경에 의존하지 않는다. `AT01`–`AT12` 각각은 fixture/config/oracle/변이·실행 순서와 limits를 이 manifest에 연결한다. 입력 hash와 code source binding은 같은 폴더의 `SOURCE_BINDINGS.json`, 순수 실행 전 계약은 `PREREGISTRATION.md`다. 구현 source checkpoint 뒤에는 이 입력들을 `EXEC_SHA`에 결속하여 먼저 고정하고 실행한다.
++
++물리 tolerance는 기존 fixed-grid `mean=mode=1e-5` (`packet_trajectory_contracts.rs:216–224`, 설정 222행), inherited uncertainty `mean=mode=1e-4` (302–321행, 설정 314행), actual rejection `mean=mode=2e-4` (379–389행, 설정 382행)를 그대로 보존한다. 기본 order=8, degree=10, sweeps=4, min_h=1e-6, max_h=2·initial_h, max_steps=1000의 출처는 `packet_trajectory.rs:99–112`다. Rejection의 기존 order=2, degree=3, min_h=1/64를 그대로 쓴다. 해석적 inclusion 검사에는 물리 tolerance 이외의 slack을 더하지 않는다.
++
++AT02는 기존 A01 unequal-frequency **local** fixture의 ξ,w,z,width,carrier,κ, 네 χ/uncertainty arms, 전체 horizon=1/32, 다섯 요청 시각과 Fraction reference를 재사용한다 (`production_audit_packet_local_certificate.rs:50–75,96–105`). 그 local fixture에는 `mean_tolerance`/`mode_tolerance`가 **없다**. 새 multi-window trajectory gate는 별도 fixed-grid fixture의 변경 없는 `1e-5/1e-5`를 이 계약에서 명시적으로 선택하고 독립 검토에 회부한다. 따라서 “local oracle의 기존 물리 tolerance를 재사용했다”는 주장은 하지 않는다. 새 schedule은 `initial_h=max_h=1/64`, order=4, degree=4, sweeps=2, min_h=1e-6, max_steps=1000으로 동결한다. Degree40/48은 독립 reference의 차수이며 solver degree=4와 다르다. 원래 초기값에서 한 번 만든 reference를 쓰고 committed 중심에서 reference를 재시작하지 않는다.
++
++AT05의 모든 유한 binary64 시각 자체는 dyadic rational이다. 이 검사는 “비dyadic binary64”를 사용하지 않는다. `t_k=bits(0.1)`, `t_request=bits(0.9)`의 **정확한 실수 차**가 단일 binary64에 표현되지 않는 경우를 쓴다. 정확한 차는 `28823037615171175 / 36028797018963968`이며, rounded `u=bits(0.8)`와의 차는 `-1/36028797018963968`다. 따라서 subtraction enclosure가 non-singleton이고 Δ>0인 경로를 확인한다. 첫 physical window 끝은 `bits(1.1)`이고 H는 그 exact span 전체를 감싸도록 따로 저장한다. 잘못된 offset binding은 exact identity 음성 대조군으로 검출한다. 기존 반경이 one-ulp 시간 오차까지 우연히 감쌀 수 있으므로 음성 대조군에서 근거 없이 반드시 numerical disk inclusion이 실패한다고 가정하지 않는다.
++
++| ID | 동결 fixture/config 및 방법 | 완료 기준 |
+ |---|---|---|
+-| AT01 | 독립 exact one-mode linear 및 cubic 해; 최소 두 accepted windows; 각 window 중간/endpoint | 동일 실제 반환 mode/mean 중심의 outward disk inclusion; 원래 tolerance 전 관측점 통과 |
+-| AT02 | 기존 unequal-frequency Fraction fixture의 ξ,w,z,width,carrier,κ와 4 χ/uncertainty arms; 전체 horizon `1/32`, 최소 두 windows, 기존 다섯 global times | 원래 초기값부터의 독립 degree40/48 reference와 80 disk checks를 유지; ε40≤2^-120, ε48≤2^-160, ε48≤ε40; slack-free inclusion; center/radius 음성 대조군 거절 |
+-| AT03 | 비영 initial product disks, 최소 두 windows, weighted/marginal bounds 둘 다 관측 | 초기 불확실성의 전시간 수송, global E 보존, returned-center e_next의 inclusion |
+-| AT04 | χ=ω=0 및 N>1, 작은 양의 weight와 heterogeneous initial radii | 수송 수식에 window당 sqrt(N) 인공 증폭 없음; χ=0 component inherited bound는 원래 r_j 보존; tolerance를 키우지 않음 |
+-| AT05 | 비dyadic global origin/요청시각, 실제로 non-singleton offset interval인 fixture | Δ>0 경로 실행; 원래 binary64 global label의 exact-reference 포함; local u를 원래 global time으로 잘못 취급하는 음성 대조군 검출 |
+-| AT06 | 큰 window의 실제 tolerance rejection 후 작은 accepted trial; 첫/중간 evaluation refusal; setup/constructor refusal | accepted 전체 snapshot와 cursor bit identity; trial output 불노출; 누적 work 정확; 이후 결과는 동일 accepted state에서 시작한 직접 경로와 일치 |
+-| AT07 | 초기점, requested grid point, window join, 임의 내부 query; MeanOnly/AllModes | owner/time/center/radius identity 일치; retained continuous residual로 각 query 포함; 모든 요청점 tolerance gate |
+-| AT08 | NaN/Inf, negative/bad radii, malformed shape, huge checked sizes, zero/short horizon, subnormal time/state/radius, overflow | 지원 산술에서 포함 또는 typed refusal; accepted state 보존; underflow exact-zero 가정 없음; 실패 비용 남김 |
+-| AT09 | public fields/view/state 위조·수정 compile-fail와 후보 사후변이 | 임의 인증 상태 생성/재결속 차단; frozen owner outputs는 외부 후보변이와 독립 |
+-| AT10 | 같은 allocator의 세 Vec clone 양성 대조군; 그 후 warmed successful query/advance | 양성 대조군 ≥3 allocations; 측정 구간의 warmed allocations=0; setup/retention allocation 별도 실측·기록 |
+-| AT11 | 산술·identity·copy·setup·query/rejection counter source tally | 성공/첫 실패/중간 실패의 exact delta 일치; prior work 누락·reset 없음 |
+-| AT12 | 원시 command/environment/inputs/outputs/exit/source identities와 독립 review | 원본 실패 보존; 기존 ledger hash mismatch를 신규 수치 실패와 구분; A02 scoped scientific decision은 실제 검토 이후 |
++| AT01 | `F_ONE_LINEAR`, `F_ONE_CUBIC` / `C_FIXED`; local one-mode model 입력과 기존 fixed-grid global config를 명시적으로 연결; 원래 초기값의 exact Fraction analytic flow | 최소 두 accepted windows, 각 window start/interior/end의 실제 반환 mode/mean disk inclusion과 `1e-5/1e-5` gate |
++| AT02 | `F_UNEQUAL_0/P/M/U` / `C_UNEQUAL`; 4 arms×5 원래 global times; solver order4/degree4/sweeps2, h≤1/64 | 원래 초기값부터 degree40/48 reference와 80 disk checks, ε40≤2^-120, ε48≤2^-160, ε48≤ε40; slack-free inclusion과 두 음성 대조군; 새 trajectory gate는 별도 출처 `1e-5/1e-5` |
++| AT03 | `F_INHERITED` / `C_INHERITED`, `F_UNEQUAL_U` / `C_UNEQUAL`; 각각 기존 `[1e-6,2e-6]`, `[2^-30;3]` | 최소 두 windows, 초기 product uncertainty 전시간 수송, E_global 고정, returned-center e_next 포함; 각 fixture의 동결 tolerance |
++| AT04 | `F_STATIONARY_SMALL_W` / `C_INHERITED`; χ=ω=0, w=`[2^-40,1/2,1/2]`, heterogeneous radii manifest 고정 | sqrt(N) 인공 재확장 없음, source-tallied outward Duhamel inherited branch와 일치, `1e-4/1e-4` 유지 |
++| AT05 | `F_OFFSET` / `C_OFFSET`; stored binary64 origin0.1/request0.9/end1.1; 정확한 차의 non-singleton enclosure | Δ>0, 원래 global label의 exact analytic reference 포함, 잘못된 rounded-offset identity 대조군 검출; `1e-5/1e-5` 유지 |
++| AT06 | `F_REJECTION` / `C_REJECTION` actual rejection; `F_FIXED` / `C_FIXED`의 private first/second-query fault seams와 setup refusal | h=1/4 actual tolerance rejection 후 ≥2 commits; snapshot/cursor/history bit identity; trial output 불노출; work 정확; direct accepted-size replay 일치. Fault seam은 transaction 검증이며 arithmetic 포함 주장에 쓰지 않음 |
++| AT07 | `F_FIXED` / `C_FIXED`, MeanOnly/AllModes; 첫 window를 두 commit 뒤 다시 query | 첫 seed 불변, `1/32` 재query의 identity/center/radius bits 재현과 global reference 포함; start/end/requested/interior 및 join 검증 |
++| AT08 | Manifest의 고정 NaN/Inf/bad radii/shape/checked-size/zero/subnormal/overflow/damping 변이 | 지원 입력의 exact inclusion 또는 typed refusal를 구분 보고; accepted state 보존, underflow exact-zero 가정 금지, work 누적 |
++| AT09 | `F_FIXED` / `C_FIXED`; private 인증 필드 compile-fail, candidate 사후변이, P0/Q0→P0 commit→Q0 stale refusal→P1 commit→window0 query | 위조·재결속 차단, stale prepared snapshot과 이미 사용한 P0 commit typed refusal; retained 첫 window query는 두 commits 뒤에도 유효 |
++| AT10 | `F_FIXED` / `C_FIXED`; 같은 allocator의 세 Vec clone calibration 뒤 각 1회 warmed query/advance 계측 | clone ≥3 allocation 검출 후에만 warmed 구간 allocation=0 인정; 실패 calibration은 `ALLOCATION_UNAVAILABLE`; setup/retention allocation 별도 기록 |
++| AT11 | `F_FIXED`, `F_REJECTION`의 manifest 고정 operation sequence; 실행 전 source tally | 성공/첫·중간 fault/refusal/stale/rejection/commit/historical query exact integer work delta; prior work 누락·reset 없음 |
++| AT12 | 동결 manifest/preregistration/source/prior review, command/environment/output/exit identities | 원본 첫 실패 보존, 기존 L-0124 ledger mismatch와 신규 수치 실패 구분, scoped decision은 실제 실행·독립 검토 이후 |
++
++미래 bounded 실행은 targeted test binary 최대 1800초, unequal Fraction oracle 600초, analytic Fraction oracle 120초, 각 fixture max_steps=1000으로 제한한다. 이 보완에서는 solver/test/build를 실행하지 않았다. Source·manifest·문서 readback은 연구 입력 준비 근거이며 수치 완료 근거로 사용하지 않는다.
+ 
+ 전체 A02의 최종 완료는 full trajectory inclusion, 고정 요청시각 및 전체 시간 query, 비영 uncertainty, unchanged tolerance, rejection atomicity/work, 실제 산술 범위, 독립 review가 모두 닫힌 뒤에만 판정한다. κ>0/A03, Leja/A04, generic dense/A05, speed/A07 및 전체 production은 이 계약의 판정 범위 밖이며 기존 의무를 유지한다.

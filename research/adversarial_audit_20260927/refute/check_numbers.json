@@ -1,0 +1,118 @@
+{
+ "checker": "numbers",
+ "checked": 152,
+ "discrepancies": [
+  {
+   "where": "1.1 결론, '여기에 측정된 사실 하나를 더한다' 문단",
+   "report_says": "SciPy Radau보다 17/18 행에서 오차가 크다(중앙값 2.6배)",
+   "source_says": "행별 dense_base max_grid_wrms / SciPy Radau(A arm) max_grid_wrms 를 18행에서 재계산하면 >1 인 행 17/18, 중앙값 5.28배, 최대 438배(semilinear rtol 1e-8: 207.48 vs 0.4733), 최소 0.90배. '2.6배'는 E-03 README의 서술문(수기)에만 있고 같은 README의 행별 표와 results.json 수치로는 재현되지 않는다. 원장 F-004도 '2.6x는 독립 재계산되지 않았다'고 적고 있다.",
+   "source": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-03/e03a_rows.json (rows[].arms.dense_base.max_grid_wrms_tight) + /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-03/results.json (e03c_scipy_rows[].max_grid_wrms_tight); README.md:40-41",
+   "severity": "wrong",
+   "suggested_text": "같은 tolerance에서 SciPy Radau보다 17/18 행에서 오차가 크다(행별 비 중앙값 5.3배, 최대 438배)."
+  },
+  {
+   "where": "4.2 실험 결과 표, E-03 행",
+   "report_says": "VigilODE dense 오차가 SciPy Radau보다 17/18 행에서 큼(중앙값 2.6배, 최대 70배)",
+   "source_says": "행별 비 재계산: 17/18 행에서 큼, 중앙값 5.28배, 최대 438배(semilinear rtol 1e-8). 70배(1.70e5 vs 2.41e3)는 semilinear rtol 1e-4 한 행의 값으로 README가 예시로 든 것이지 최대값이 아니다. semilinear rtol 1e-6은 33.9배.",
+   "source": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-03/e03a_rows.json, /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-03/results.json (e03c_scipy_rows); README.md:40-41 및 Per-row table",
+   "severity": "wrong",
+   "suggested_text": "VigilODE dense 오차가 SciPy Radau보다 17/18 행에서 큼(행별 비 중앙값 5.3배, 최대 438배 = semilinear rtol 1e-8; semilinear rtol 1e-4는 70배)"
+  },
+  {
+   "where": "4.2 실험 결과 표, E-07 행",
+   "report_says": "5차 조건 17/17 최대 잔차 1.3e-15",
+   "source_says": "summary_metrics.max_resid_main_by_order_exact_fixture: 1차 5.52e-15, 2차 1.59e-15, 3차 6.7e-16, 4차 1.28e-15, 5차 1.23e-15. 17개 조건 전체의 최대 잔차는 5.5e-15(1차 조건, sum b - 1)이다. 1.3e-15는 4차 조건만의 최대값, 1.2e-15는 5차 트리 9개만의 최대값. crate f64 계수 기준 최대는 2.9e-15. README 본문(1.2e-15)과 hypothesis_verdicts(1.3e-15)는 같은 README의 per-tree 표(+5.52e-15)와 어긋난다. 판정 기준 1e-13 미만이므로 PASS는 영향 없음.",
+   "source": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-07/results.json (.summary_metrics.max_resid_main_by_order_exact_fixture, max_resid_main_by_order_crate_f64_coefficients); README.md per-tree 표",
+   "severity": "wrong",
+   "suggested_text": "5차까지의 차수 조건 17/17 만족, 최대 잔차 5.5e-15(5차 트리 9개만 보면 1.2e-15, 기준 1e-13)"
+  },
+  {
+   "where": "4.2 실험 결과 표, E-06 행",
+   "report_says": "‖v‖≤1은 최대 2.44e-14",
+   "source_says": "reference_results.json 재계산: ‖v‖=1 에서 k=1..4 최대 3.397e-14(k=0 포함 3.463e-14), ‖v‖=1e-8 에서 k=1..4 최대 3.392e-14(k=0 포함 3.467e-14). results.json summary_metrics도 worst_relerr_k1_to_4_at_vnorm_1 = 3.397e-14. 2.44e-14는 README/hypothesis_verdicts 서술문에만 있고 원자료와 다르다. 기준 2.2e-13 이내이므로 판정은 영향 없음.",
+   "source": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-06/reference_results.json (rows[].relerr_k), /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-06/results.json (.summary_metrics.worst_relerr_k1_to_4_at_vnorm_1, _at_vnorm_1e-8)",
+   "severity": "wrong",
+   "suggested_text": "‖v‖≤1은 최대 3.5e-14, `matrix_exp_pade13`은 최대 3.5e-14"
+  },
+  {
+   "where": "4.3 Baseline 표, '기본 + feature 테스트 suite' 행",
+   "report_says": "1075 passed, 0 failed",
+   "source_says": "기본 + feature 3개 실행의 합은 438 + 315 + 321 = 1074 passed, 0 failed, 6 ignored. test_results_summary.txt 전체 합계(327줄)는 1075 passed / 1 failed / 6 ignored 이며, 추가된 1 passed와 1 failed는 12단계 `--ignored` 실행(rc=101)에서 나온 것이다. '1075 passed, 0 failed'는 어느 범위와도 일치하지 않는다.",
+   "source": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/baseline/test_results_summary.txt; 02_test_default.log(438), 04_test_audit2.log(315), 06_test_bateman.log(321), 12_ignored_tests.log(1 passed, 1 failed); timeline.log",
+   "severity": "wrong",
+   "suggested_text": "기본 + feature 테스트 suite | 1074 passed, 0 failed (`--ignored` 실행의 1 passed, 1 failed를 합치면 1075 passed, 1 failed)"
+  },
+  {
+   "where": "4.2 실험 결과 표, E-08 행",
+   "report_says": "`rhs_calls`, `ft_calls`는 24개 arm 모두 실제 호출 수와 일치",
+   "source_says": "24개 arm 중 22개에서 일치. JVP-only 문제의 fixed_direct arm 2개(PR-jvp-only, robertson-ramped-n96-jvp-only)는 hard error로 counter를 버려 rhs_calls=0 대 실제 1, ft_calls=0 대 실제 1 (check.rhs_calls_minus_atomic = -1). results.json의 지표는 'rhs_calls_mismatches_on_ok_runs: 0'으로 성공한 실행(17개 arm)에 한정된 값이다.",
+   "source": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-08/e08_out.jsonl (arm=fixed_direct, check.rhs_calls_minus_atomic / ft_calls_minus_atomic), /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-08/results.json (.summary_metrics.rhs_calls_mismatches_on_ok_runs, hypothesis_verdicts[2])",
+   "severity": "imprecise",
+   "suggested_text": "`rhs_calls`, `ft_calls`는 성공한 실행 전부에서 실제 호출 수와 일치(24개 arm 중 22개 일치, hard error로 끝난 fixed_direct arm 2개는 rhs 1회, ft 1회를 보고하지 않음)"
+  },
+  {
+   "where": "4.2 실험 결과 표, E-09 행",
+   "report_says": "오차 차이 1e-15 이하",
+   "source_says": "direct_vs_gmres_agreement.max_abs_diff_err_grid: 1.42e-15 (manufactured_mass_nonlinear), 7.4e-16, 8.3e-16. README는 '<= 1.4e-15'.",
+   "source": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-09/results.json (.summary_metrics.direct_vs_gmres_agreement), README.md",
+   "severity": "imprecise",
+   "suggested_text": "오차 차이 1.4e-15 이하"
+  },
+  {
+   "where": "4.2 실험 결과 표, E-04 행 / 1.1 결론 항목 2 / 4.1 H2",
+   "report_says": "production rule은 `0.1–0.3·rtol` 바닥 (advection-diffusion(n=512) 문장에 이어서 서술); 1.1: 오차가 `0.1–0.3·rtol`에서 바닥을 친다",
+   "source_says": "0.1–0.3·rtol 바닥은 Prothero-Robinson(P1PR) 문제의 값이다. advection-diffusion(P2)에서는 0.01–0.8·rtol (rtol=1e-4에서 오차가 7.7e-5 = 0.77·rtol까지 증가). P1PR에서도 rtol=1e-8은 2.3e-9..1.3e-8 (0.23–1.3·rtol, k=9 값은 rtol 초과), rtol=1e-10은 1.1e-11..7.4e-11 (0.11–0.74·rtol)로 0.1–0.3 범위는 rtol=1e-4, 1e-6에서만 성립한다.",
+   "source": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-04/README.md (Status 문단), /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-04/results.json (.hypothesis_verdicts[0], [2])",
+   "severity": "imprecise",
+   "suggested_text": "production rule은 Prothero-Robinson에서 약 0.1–0.3·rtol(rtol=1e-8, 1e-10에서는 최대 1.3·rtol, 0.74·rtol), advection-diffusion에서 0.01–0.8·rtol의 h와 무관한 바닥"
+  },
+  {
+   "where": "1.1 결론 항목 2",
+   "report_says": "`rtol ≤ 1e-8`의 stiff 입력에서는 GMRES를 한 번도 돌리지 않고 step 0에서 오류를 반환한다",
+   "source_says": "step-0 오류는 h에 따라 달라진다. P1 rtol=1e-10: ladder의 모든 h(1/8..1/1024). P1 rtol=1e-8: h ≥ 1/256 에서만(h=1/512, 1/1024는 실행됨). P1PR rtol=1e-10: h ≥ 1/32 에서만. P1PR rtol=1e-8과 P2(advection-diffusion)는 오류 없음.",
+   "source": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-04/results.json (.summary_metrics.{p1,p1pr,p2}.forcing:*.failed_k, .hypothesis_verdicts[3]); README.md slope table 'failed at h' 열",
+   "severity": "imprecise",
+   "suggested_text": "`rtol ≤ 1e-8`의 stiff 입력(|λ|≈1e6)에서는 큰 고정 h에서 GMRES를 한 번도 돌리지 않고 step 0에서 오류를 반환한다(P1 rtol=1e-10은 모든 h, rtol=1e-8은 h ≥ 1/256)"
+  },
+  {
+   "where": "4.2 실험 결과 표, E-04 행",
+   "report_says": "direct LU와 GMRES η=1e-12만 4회 halving 동안 기울기 4.5 이상 유지(5.33, 5.27, 5.15, 5.05)",
+   "source_says": "괄호 안 기울기는 direct LU의 값이다. GMRES η=1e-12는 5.33, 5.27, 5.13, 4.94.",
+   "source": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-04/README.md slope table (p2 direct, p2 gmres:1e-12), results.json .hypothesis_verdicts[0]",
+   "severity": "imprecise",
+   "suggested_text": "direct LU(5.33, 5.27, 5.15, 5.05)와 GMRES η=1e-12(5.33, 5.27, 5.13, 4.94)만 4회 halving 동안 기울기 4.5 이상 유지"
+  },
+  {
+   "where": "1.1 결론 항목 3",
+   "report_says": "release 프로파일에서는 프로세스가 종료된다(`E-05`, exit 134)",
+   "source_says": "E-05 기록에는 exit code가 없다: children[0].exit_code = null, signal_or_abort = true ('child exit_code None'). exit 134(SIGABRT)는 반박자의 재실행 기록(원장 F-010 refutations lens a/b)에서 나온 값이다. 실행 바이너리는 measurement 프로파일(release 상속, panic=abort)이다.",
+   "source": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-05/e05_raw.json (.children[0]), results.json .hypothesis_verdicts[2]; /home/cosmosapjw/vigilode/VIGILODE_ADVERSARIAL_AUDIT_LEDGER_20260927.json F-010 .refutations[0].strongest_attempt.artifact; /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/tree/Cargo.toml:33-49",
+   "severity": "imprecise",
+   "suggested_text": "panic=abort인 release/measurement 프로파일에서는 프로세스가 종료된다(`E-05`에서 SIGABRT, 반박자 재실행에서 exit 134)"
+  },
+  {
+   "where": "4.1 사전 등록 가설 판정 표, H1b 행",
+   "report_says": "H1b | PARTIAL",
+   "source_says": "E-03 results.json의 사전 등록 규칙에 따른 판정은 H1b: REFUTED (5배 초과 행 0/18). 원장 hypotheses_tested는 F-002, F-004, F-033을 합쳐 PARTIAL로 기록한다. 두 출처의 라벨이 다르다.",
+   "source": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-03/results.json (.hypothesis_verdicts.H1b), README.md Verdicts; 원장 .hypotheses_tested[1].verdict",
+   "severity": "imprecise",
+   "suggested_text": "H1b | PARTIAL (E-03의 사전 등록 규칙만으로는 REFUTED: interpolated/accepted 비가 5배를 넘는 행 0/18. 구조적 사실을 포함한 종합 판정이 PARTIAL)"
+  },
+  {
+   "where": "4.1 사전 등록 가설 판정 표, H1a 행",
+   "report_says": "18쌍 중 2쌍은 통과했다",
+   "source_says": "통과 쌍 수는 비교 종류마다 다르다. VigilODE h0 쌍 2/18 통과(16/18 위반), VigilODE max_step 쌍 1/18 통과(17/18 위반), SciPy first_step 쌍 1/18 통과, SciPy max_step 쌍 2/17 통과. 커밋된 campaign 쌍은 0/18 통과.",
+   "source": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-03/results.json (.summary_metrics.E03a_vigilode_same_code_path, .E03b_scipy_radau_control)",
+   "severity": "imprecise",
+   "suggested_text": "비교 종류에 따라 18쌍 중 1–2쌍은 통과했다(h0 쌍 2/18, max_step 쌍 1/18, SciPy 쌍 1/18과 2/17)"
+  },
+  {
+   "where": "4.1 사전 등록 가설 판정 표, H3 행",
+   "report_says": "v3.6 이후 schema family 83개와 산문 4744줄이 늘었으나 admitted 결과와 candidate 실행은 0이다",
+   "source_says": "83은 v3.6 이후의 증가분이 아니라 tree 전체(research, docs, crates, tools)의 distinct schema 문자열 수다. schema_families.txt에는 v3.5/v3.6의 g4-s5b0-enforced-prefix-budget-v1, g4-s5b0-frozen-full-e-shadow-v1 등 v3.6 이전 family가 포함된다. 4744줄은 post-v3.6 노드 8개(audit2_* 7개 + scientific_validity_v2)의 Markdown 줄 수로 일치. 또한 F-024 반박자 주석은 v3.7(8월 24일, PASS_CONSUMED_CONTINUATION_TRANSACTION, 62 completions / 2 exhaustions)이 v3.6 이후의 측정 수치가 있는 receipt이므로 'since v3.7'로 쓰거나 v3.7을 따로 분류해야 한다고 적었다.",
+   "source": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/D11/schema_families.txt (83줄), /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/D11/evidence_ratio_summary.json (distinct_schema_family_strings, post_v36_nodes_audit2_and_sv2.md_lines); 원장 F-024 .minimal_repro.steps, .refutations[0].note",
+   "severity": "imprecise",
+   "suggested_text": "tree 전체에 schema family 문자열이 83개 있고, v3.6 이후 추가된 노드 8개(audit2 7개 + scientific_validity_v2)의 산문이 4744줄이지만 이 노드들의 admitted 결과와 candidate 실행은 0이다(v3.7 replay receipt는 집계에서 제외)"
+  }
+ ]
+}

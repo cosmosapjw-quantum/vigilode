@@ -1,0 +1,161 @@
+{
+  "schema": "spherical-information.next-steps.v1",
+  "source_reference": "14c74978b93339a79d7228a324fa77552dae548e",
+  "execution_location": "local host; no NCP",
+  "tasks": [
+    {
+      "id": "SG-N01",
+      "priority": 0,
+      "depends_on": [],
+      "title": "Cache exact fixed-grid collision action",
+      "target": "Existing sphere_photon_fv_support/thomson6_factors; actual B=V^T U",
+      "deliverables": [
+        "small-matrix phi1 or verified symmetric decomposition",
+        "rank-deficient fallback",
+        "stable large/small optical-depth evaluation"
+      ],
+      "acceptance": [
+        "compare unchanged FVM oracle at same source hash",
+        "mass and positivity at stated float tolerance",
+        "same coupled observer error before speed comparison"
+      ],
+      "status": "ready"
+    },
+    {
+      "id": "SG-N02",
+      "priority": 0,
+      "depends_on": [],
+      "title": "Define native conservative information-remap state",
+      "target": "Photon bin contents N, radial state-counting weights, angular cell areas",
+      "deliverables": [
+        "full occupation f=N/(nu*Omega) mapping",
+        "bin-wise conservative positive remap",
+        "joint number-energy fallback for explicit thermal model"
+      ],
+      "acceptance": [
+        "number and fixed bin-energy moments preserved",
+        "FD [0,1] and BE/MB positive domains",
+        "rho-only number drift regression remains visible"
+      ],
+      "status": "ready"
+    },
+    {
+      "id": "SG-N03",
+      "priority": 1,
+      "depends_on": [],
+      "title": "Port centered Fisher blocks into moment inversion",
+      "target": "Entropy closure score and quadrature interface",
+      "deliverables": [
+        "centered variance",
+        "triangular whitening application instead of ill-conditioned explicit inverse",
+        "finite-grid susceptibility certificate"
+      ],
+      "acceptance": [
+        "original-coordinate residual and known-solution error",
+        "isotropic identity and quantum-domain tests",
+        "setup-inclusive timing with slower cases retained"
+      ],
+      "status": "ready"
+    },
+    {
+      "id": "SG-N04",
+      "priority": 1,
+      "depends_on": [
+        "SG-N02"
+      ],
+      "title": "Connect accepted-step remap and observer-tolerance refinement",
+      "target": "Integrator accepted-step hook, grid topology and caches",
+      "deliverables": [
+        "transactional dimension change",
+        "all cache/norm identities refreshed",
+        "refinement until declared observer bounds met"
+      ],
+      "acceptance": [
+        "coarse/fine/coarse invariants",
+        "same initial fine data and observer budget across methods",
+        "remap budget accumulated separately from ODE error"
+      ],
+      "status": "pending_dependencies"
+    },
+    {
+      "id": "SG-N05",
+      "priority": 1,
+      "depends_on": [
+        "SG-N01"
+      ],
+      "title": "Benchmark transport/collision coupling order",
+      "target": "Existing native stiff/nonstiff driver plus exact subflow",
+      "deliverables": [
+        "explicit choice of Strang2 or justified higher-order IMEX/exponential coupling",
+        "time-dependent optical-depth treatment",
+        "matter-feedback handling"
+      ],
+      "acceptance": [
+        "step-halving verifies declared combined order",
+        "stiff and nonstiff work-precision",
+        "full wall/setup/remap times and physical ledgers"
+      ],
+      "status": "pending_dependencies"
+    },
+    {
+      "id": "SG-N06",
+      "priority": 2,
+      "depends_on": [
+        "SG-N03"
+      ],
+      "title": "Test Newton-free fixed Fisher iteration",
+      "target": "Certified neighborhood around feasible entropy closure",
+      "deliverables": [
+        "uniform a,b throughout admissible ball",
+        "fallback when certificate weakens",
+        "residual-only iteration"
+      ],
+      "acceptance": [
+        "measured contraction versus proven q",
+        "no disguised Newton solve",
+        "failure preserves feasibility/domain information"
+      ],
+      "status": "pending_dependencies"
+    },
+    {
+      "id": "SG-N07",
+      "priority": 2,
+      "depends_on": [],
+      "title": "Port shellwise cutoff and Laguerre analysis basis",
+      "target": "Massive dressed fields with known coefficient/tail bounds",
+      "deliverables": [
+        "v=0/v=1 branches",
+        "L2 and Linfinity bounds",
+        "positive inverse-temperature margin"
+      ],
+      "acceptance": [
+        "fixed target error at reduced evaluation count",
+        "tail provenance recorded",
+        "massless photon retains correct fallback"
+      ],
+      "status": "ready"
+    },
+    {
+      "id": "SG-N08",
+      "priority": 2,
+      "depends_on": [
+        "SG-N01",
+        "SG-N04",
+        "SG-N05"
+      ],
+      "title": "End-to-end spherical work-precision comparison",
+      "target": "Local host only; existing application initial conditions",
+      "deliverables": [
+        "anisotropy/beam/vacuum/optical-depth/remap-frequency matrix",
+        "unbiased timing including setup",
+        "target detector/energy/number and polarization observables"
+      ],
+      "acceptance": [
+        "raw failures and slower cases preserved",
+        "same global observer error",
+        "production decision based on full client evidence, not prototype count"
+      ],
+      "status": "pending_dependencies"
+    }
+  ]
+}

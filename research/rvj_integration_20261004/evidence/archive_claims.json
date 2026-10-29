@@ -1,0 +1,407 @@
+{
+  "schema": "rvj-archive-one-pass-audit-v1",
+  "date": "2026-10-04",
+  "reviewer": "/root/archive_audit",
+  "kind": "independent_source_review_not_final_method_promotion",
+  "scientific_experiments_executed": false,
+  "historical_suites_rerun": false,
+  "audit_passes": 1,
+  "files": [
+    {
+      "path": "stages/11_rvj_independent_loop11_20261004/files/RESEARCH_NOTE_KO.md",
+      "sha256": "a572a2923ec8ae026d1bd2537cebae18fb7a13a41f5c0a2e93df6b69a85815a6"
+    },
+    {
+      "path": "stages/11_rvj_independent_loop11_20261004/files/CLAIM_LEDGER.json",
+      "sha256": "50cac43acb53eb72276a31a76ea5035cb8822b06599366b1fbb08fd788c11300"
+    },
+    {
+      "path": "stages/11_rvj_independent_loop11_20261004/files/RESEARCH_CONTRACT.json",
+      "sha256": "753e99741bfc2110b644db3a564d09e27e27d06bde1dbd5ce7891b89902d6b25"
+    },
+    {
+      "path": "stages/11_rvj_independent_loop11_20261004/files/FINAL_VERIFICATION.json",
+      "sha256": "d22a1d2a63eabccab098b8992c1f0f1507986339e25d1ba098ca41053767d568"
+    },
+    {
+      "path": "stages/11_rvj_independent_loop11_20261004/files/NEXT_DEVELOPMENT_DAG.json",
+      "sha256": "66d4f0b1264ed0a4f8e017c8aa4cc75cba593c8ab7c0e856ad05bf22509b2166"
+    },
+    {
+      "path": "stages/11_rvj_independent_loop11_20261004/files/code/shift_jet.py",
+      "sha256": "6dde74ed79252e962c065db2385b4cc8263be44aa230f1b5cc02c017239d50c0"
+    },
+    {
+      "path": "stages/11_rvj_independent_loop11_20261004/files/code/fft_bridge.py",
+      "sha256": "48ca048acae868d728d72544a9822cd5472cc1c1004cc68fb24dff84d08611bc"
+    },
+    {
+      "path": "stages/11_rvj_independent_loop11_20261004/files/tests/test_fusion.py",
+      "sha256": "89719827cd72d1109eb6eb6b996f95de83b0a707c60cfef1a24ebf9d0ee43a28"
+    },
+    {
+      "path": "stages/11_rvj_independent_loop11_20261004/files/tests/test_fft.py",
+      "sha256": "d107259bea9dee3216684d64ede5284c25688c3dfd70b81d1a49417b386a9d66"
+    },
+    {
+      "path": "stages/11_rvj_independent_loop11_20261004/files/inputs/loop10/code/fourier_volterra.py",
+      "sha256": "7a51c9a1c6a1f9c428bd1c941d1ec5c4f3649fe887ac368f702c0b6605d0dd28"
+    }
+  ],
+  "claims": [
+    {
+      "id": "ARCHIVE-SHIFT",
+      "status": "accepted_scoped_source_audit",
+      "statement": "Current H-dissipative resolvent jet and exact residual identity",
+      "requires": [
+        "current_operator",
+        "h>=0",
+        "real gamma0>0",
+        "abs(delta)<gamma0",
+        "same RHS identity",
+        "H metric binding"
+      ],
+      "native_status": "not_assessed_by_this_reviewer",
+      "historical_runs_rerun": false
+    },
+    {
+      "id": "ARCHIVE-FFT",
+      "status": "accepted_scoped_source_audit",
+      "statement": "Untrusted FFT predictor through unchanged exact original-target certificate",
+      "requires": [
+        "two-mode conservative model",
+        "constant-q invariant leaf",
+        "full product support",
+        "checked phase enclosure",
+        "trusted certificate construction"
+      ],
+      "native_status": "not_assessed_by_this_reviewer",
+      "historical_runs_rerun": false
+    },
+    {
+      "id": "ARCHIVE-ALGEBRA",
+      "status": "accepted_scoped_source_audit",
+      "statement": "Rank-preserving nonreduced algebra; parity preserves odd sector",
+      "requires": [
+        "specified family",
+        "multiplicity retained",
+        "correct evaluation map"
+      ],
+      "historical_runs_rerun": false
+    },
+    {
+      "id": "ARCHIVE-CAUCHY",
+      "status": "accepted_scoped_source_audit",
+      "statement": "Cauchy-FFT central coefficient analytic alias bound",
+      "requires": [
+        "holomorphic disk",
+        "sample error bound",
+        "rounding bound"
+      ],
+      "historical_runs_rerun": false
+    },
+    {
+      "id": "ARCHIVE-PROMOTION",
+      "status": "hold",
+      "statement": "Generic method order and production speedup",
+      "blockers": [
+        "native directed enclosure",
+        "real coupled action client",
+        "matched baseline cost campaign",
+        "final independent decision"
+      ]
+    },
+    {
+      "id": "ARCHIVE-COMPLEX-GAIN",
+      "status": "retained_prior_derived_claim_source_checked",
+      "statement": "For fixed H-dissipative J, h>=0 and Re(gamma)>0, inverse gain <=abs(gamma)/Re(gamma)",
+      "source": "02 RESEARCH_NOTE section10",
+      "native_rounding_certificate": "still implementation work",
+      "historical_runs_rerun": false
+    },
+    {
+      "id": "ARCHIVE-RVJ-NOGO",
+      "status": "retained_prior_counterexamples_source_checked",
+      "statement": "Generic raw RVJ uniform5 rejected; approximate-W instability and embedded blindness remain method-labelled negatives",
+      "source": [
+        "02 sections2,3,5",
+        "03 sections4,6"
+      ],
+      "does_not_imply": "Existing RODAS5P bug",
+      "historical_runs_rerun": false
+    }
+  ],
+  "integration_gaps": [
+    {
+      "id": "A-PORT-01",
+      "priority": "P1",
+      "classification": "integration_precondition_gap",
+      "source": "code/shift_jet.py:44-60",
+      "title": "Require verified dissipativity before exposing tail/residual error bounds",
+      "published_scoped_claim_disproved": false
+    },
+    {
+      "id": "A-PORT-02",
+      "priority": "P1",
+      "classification": "integration_certification_gap",
+      "source": "code/shift_jet.py:74-90",
+      "title": "Separate f64 numerical diagnostic from directed current-target certificate",
+      "published_scoped_claim_disproved": false
+    },
+    {
+      "id": "A-PORT-03",
+      "priority": "P2",
+      "classification": "integration_api_boundary",
+      "source": "inputs/loop10/code/fourier_volterra.py:176-198",
+      "title": "Bind checked phase enclosure and invariant provenance in native certificate constructor",
+      "published_scoped_claim_disproved": false
+    },
+    {
+      "id": "A-PORT-04",
+      "priority": "P2",
+      "classification": "claim_ceiling",
+      "source": "RESEARCH_NOTE_KO.md:section 5",
+      "title": "Reuse counts leave serial depth and matched optimal baseline unresolved",
+      "published_scoped_claim_disproved": false
+    },
+    {
+      "id": "A-PORT-05",
+      "priority": "P2",
+      "classification": "port_regression_risk",
+      "source": "code/fft_bridge.py:16-51",
+      "title": "Preserve full convolution padding and formal polynomial-axis conjugation",
+      "published_scoped_claim_disproved": false
+    }
+  ],
+  "recommended_port": "checked real dissipative shared current shifted-resolvent primitive, with directed residual gate and prospective cost selection",
+  "not_a_valid_port": "inventing extra matrix resolvent inside existing scalar analytic Fourier primitive merely to demonstrate reuse",
+  "preserve_failures": [
+    "generic_RVJ_uniform_stiff_no_go",
+    "approximate_W_instability",
+    "embedded_blindness",
+    "forcing_alias",
+    "extrapolation_31_769",
+    "neutral_stationary_box_failure",
+    "direct_6_vs_homotopy_18_RHS",
+    "full_horizon_timeouts",
+    "geometry_missing_inputs"
+  ],
+  "recommendation": "PORT_SCOPED_PRIMITIVE__HOLD_GENERIC_METHOD_AND_SPEEDUP",
+  "early_history_coverage_extension": {
+    "reason": "Previously unread primary01–07 and V01/V02 handoff/claim/failure records",
+    "repeated_08_11_audit": false,
+    "files": [
+      {
+        "stage_id": "01",
+        "path": "stages/01_rosenbrock_ag_research_20261002/files/RESEARCH_NOTE_KO.md",
+        "sha256": "1db2ebf626738c5e157f1c5293e6a6f5c6b6e09d7503ddce555e19eb64ec2842",
+        "read_scope": "selected sections",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "02",
+        "path": "stages/02_rosenbrock_ag_loop2_20261002/files/HANDOFF_KO.md",
+        "sha256": "abcdfe6df9aa844de0fa614981333ec71abc6b860850fede510264ef3ba322ab",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "02",
+        "path": "stages/02_rosenbrock_ag_loop2_20261002/files/RESEARCH_NOTE_KO.md",
+        "sha256": "62c52e0608ee9d4e2fc099e4d5f41b1e5a97ec054f41de0843c00dc79e86c893",
+        "read_scope": "selected sections",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "02",
+        "path": "stages/02_rosenbrock_ag_loop2_20261002/files/results/FAILURE_REGISTRY.json",
+        "sha256": "9bf3cf50f9d4fb81cca9ff8c5b8506ba505a3f2872bff5b4e66dcbaa0e5e494e",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "03",
+        "path": "stages/03_rosenbrock_ag_loop3_20261002/files/HANDOFF_KO.md",
+        "sha256": "62fe56578b461254b478699a479b1e128262df84cf87a7480ef77cdc62c5b4cd",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "03",
+        "path": "stages/03_rosenbrock_ag_loop3_20261002/files/RESEARCH_NOTE_KO.md",
+        "sha256": "f9b1d4815be00b0582d610ba95247cf4455b32fb5d52fecdda94db6a36d89e3d",
+        "read_scope": "selected sections",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "03",
+        "path": "stages/03_rosenbrock_ag_loop3_20261002/files/results/FAILURE_REGISTRY.json",
+        "sha256": "725065d7e74226c90be2a481d7b9706d6fe9770042365167bb4fb937935536df",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "04",
+        "path": "stages/04_rvj_independent_loop4_20261003/files/RESEARCH_NOTE_KO.md",
+        "sha256": "6b9e6c6805ffb487f8017a120f8650bd027977ffa63103a76724a01865ee9dd9",
+        "read_scope": "selected sections",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "04",
+        "path": "stages/04_rvj_independent_loop4_20261003/files/CLAIM_LEDGER.json",
+        "sha256": "75d7869c3ce5141fda9181320e21a0cff890d73f7278c5888c068d46b2f64f8d",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "04",
+        "path": "stages/04_rvj_independent_loop4_20261003/files/FAILURE_REGISTRY.json",
+        "sha256": "2c202e3e77b88ee48562daafaf761edaa1544408fd40940bb68e6e267c790914",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "05",
+        "path": "stages/05_rvj_independent_loop5_20261003/files/RESEARCH_NOTE_KO.md",
+        "sha256": "254c44bf3e80b8f6850da1fef3d9db6e3bc1bcee040b8dbcd6d47fc80ac4b228",
+        "read_scope": "selected sections",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "05",
+        "path": "stages/05_rvj_independent_loop5_20261003/files/CLAIM_LEDGER.json",
+        "sha256": "728c0d08638baf690e61b271b4f7b518fc9e507c07c0a3b2399d6eebd5fe2e13",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "05",
+        "path": "stages/05_rvj_independent_loop5_20261003/files/FAILURE_REGISTRY.json",
+        "sha256": "c9ed877e1db8519eafa5f57d5e030d8479ee33966cb147eb3648d9f9594b31b3",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "06",
+        "path": "stages/06_rvj_independent_loop6_20261003/files/RESEARCH_NOTE_KO.md",
+        "sha256": "9f1b846aa290986a857fb564dc0bf8c264a5b98079eff080788bf2b01d7ab5e0",
+        "read_scope": "selected sections",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "06",
+        "path": "stages/06_rvj_independent_loop6_20261003/files/CLAIM_LEDGER.json",
+        "sha256": "8cb850542627ff3de082cdf939383c151f0e4bdf7eb7ec8126b16a0b8f306f21",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "06",
+        "path": "stages/06_rvj_independent_loop6_20261003/files/FAILURE_REGISTRY.json",
+        "sha256": "8b5a61183c66a414b13bb40569453e94e657170fc5c76142174c506895cc3646",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "07",
+        "path": "stages/07_rvj_independent_loop7_20261003/files/HANDOFF_KO.md",
+        "sha256": "a61f8dfb757351893ebffdf4ddcc1d21dfb8170e5444d9ecb1b1c631b426c538",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "07",
+        "path": "stages/07_rvj_independent_loop7_20261003/files/RESEARCH_NOTE_KO.md",
+        "sha256": "5ed7003afa9da63e6950f7456b1052f7f869bf642d4cc386966fd93ae8dc6724",
+        "read_scope": "selected sections",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "07",
+        "path": "stages/07_rvj_independent_loop7_20261003/files/CLAIM_LEDGER.json",
+        "sha256": "d9a91f3ab4d861a9dbd31e9abfb7cb187262867b65d7a62474c62242cfd51d33",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "07",
+        "path": "stages/07_rvj_independent_loop7_20261003/files/FAILURE_REGISTRY.json",
+        "sha256": "4b9292e4ca417f607840fcd21c6101661a2c656d1d6d6ce8a89a5abe123c69da",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "V01",
+        "path": "stages/V01_vigilode_thread_transfer_review_20261002/files/reviews/thread_transfer_20261002/README_KO.md",
+        "sha256": "c3adfa1eac296429aedcfee1a06b0ef655e2295c996540bfa7e7bba990e3d49d",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "V01",
+        "path": "stages/V01_vigilode_thread_transfer_review_20261002/files/reviews/thread_transfer_20261002/REVIEW_KO.md",
+        "sha256": "7452aa855933485421b8a5a272e99a1f2a0d03a4f28f61149105df6673430f1b",
+        "read_scope": "selected sections",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "V01",
+        "path": "stages/V01_vigilode_thread_transfer_review_20261002/files/reviews/thread_transfer_20261002/TRANSFER_MATRIX.json",
+        "sha256": "781f29948296edeebf9806e252d9d70aff8f58eadb6eaf7c4dc8e17aab532936",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "V01",
+        "path": "stages/V01_vigilode_thread_transfer_review_20261002/files/reviews/thread_transfer_20261002/results/FAILURE_REGISTRY.json",
+        "sha256": "3de2798cefcd5651d4dd9f61477361307d9730e6ca65141531ca391a9152bf38",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "V02",
+        "path": "stages/V02_vigilode_native_reaudit_PR70_resume_20261003/files/README_KO.md",
+        "sha256": "9cac8ba762fa2be2bd5db33291ae4e749fe50ac91de422af624d5c387d0a685b",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "V02",
+        "path": "stages/V02_vigilode_native_reaudit_PR70_resume_20261003/files/overlay/docs/reviews/20261003_native_reaudit/LOCAL_HANDOFF_KO.md",
+        "sha256": "63d8e35a6d2ee76b6dd10ea768c881ca823b8aa88bf145d62a3564de3e6afeb8",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "V02",
+        "path": "stages/V02_vigilode_native_reaudit_PR70_resume_20261003/files/overlay/docs/reviews/20261003_native_reaudit/REVIEW_REMAINING_KO.md",
+        "sha256": "34c19cae3e514b2f1b23b9cfd59dc6828a9080f66b2f3c022c108084a540e7d6",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "V02",
+        "path": "stages/V02_vigilode_native_reaudit_PR70_resume_20261003/files/overlay/docs/reviews/20261003_native_reaudit/EXECUTION_RECORD_KO.md",
+        "sha256": "428f4515401defae34f653555dd097a43d96b34f8ba153ed794717043ff038f4",
+        "read_scope": "full record",
+        "scientific_execution": false
+      },
+      {
+        "stage_id": "V02",
+        "path": "stages/V02_vigilode_native_reaudit_PR70_resume_20261003/files/overlay/docs/reviews/20261003_native_reaudit/FINAL_VERIFICATION.json",
+        "sha256": "9f1f462b26171f5a608ebfb7c25cc158be6807525d25600a9a19979b1e98585e",
+        "read_scope": "full record",
+        "scientific_execution": false
+      }
+    ],
+    "coverage_limits": [
+      "No full early-stage implementation audit",
+      "No full original geometry source or missing inputs",
+      "No historical oracle/raw trajectory suite rerun",
+      "No live native current-source comparison by this archive reviewer",
+      "File hash proves identity only; partial section reading is not all-content review"
+    ],
+    "integration_matrix": "history_matrix.json"
+  }
+}

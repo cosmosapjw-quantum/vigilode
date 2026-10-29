@@ -1,0 +1,55 @@
+{
+  "approval_contract": {
+    "admitted_reference_sha256": {
+      "2": "6a66646bfb1dd6c826cb66e340419703281f07dc41d6260725b4c19927624559",
+      "3": "920f13442cd6180672c6ffe9eb7649f3a47ebc624c5e5cf3dd7545d58153b5b2",
+      "5": "3430e71022f24211cff9169a8878e018976de0d3ff09f479629a2014774aa9e8"
+    },
+    "binary_sha256": "EXACT_MATCH_PLAN",
+    "decision": "APPROVED_ACCURACY_COHORT_V2",
+    "plan_core_sha256": "COMPUTE_AFTER_FINAL_PLAN_CORE",
+    "schema": "vigilode.accuracy-cohort-approval.v1",
+    "source_head": "EXACT_MATCH_PLAN",
+    "source_tree": "EXACT_MATCH_PLAN"
+  },
+  "approval_receipt": {
+    "path": "TO_BIND_INDEPENDENT_APPROVAL_JSON",
+    "sha256": "TO_BIND_APPROVAL_SHA256"
+  },
+  "cohort_cap_seconds": 16200.0,
+  "cost_events_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/COST_EVENTS.jsonl",
+  "cost_root": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z",
+  "deadline_utc": "2026-10-27T08:07:00Z",
+  "global_cap_seconds": 172800.0,
+  "output_root": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/TO_BIND_NEW_EXCLUSIVE_ACCURACY_OUTPUT",
+  "references": {
+    "2": {
+      "descriptor_sha256": "452e48b84a2130ff037c711c7aca48f12b4f00b1014e3b74143da8b9b7e38e16",
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/EXTERNAL_REFERENCE_PRECOMMIT.json",
+      "sha256": "6a66646bfb1dd6c826cb66e340419703281f07dc41d6260725b4c19927624559"
+    },
+    "3": {
+      "descriptor_sha256": "47f8915b336a078bacd7e62c1feb2ee919e1cdf15bf051f302dea884433599fc",
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case03/EXTERNAL_REFERENCE_PRECOMMIT.json",
+      "sha256": "920f13442cd6180672c6ffe9eb7649f3a47ebc624c5e5cf3dd7545d58153b5b2"
+    },
+    "5": {
+      "descriptor_sha256": "32921b7c60ed227a57af704a245da3658b816ce598893cd45c80e594272fe998",
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case05/EXTERNAL_REFERENCE_PRECOMMIT.json",
+      "sha256": "3430e71022f24211cff9169a8878e018976de0d3ff09f479629a2014774aa9e8"
+    }
+  },
+  "schema": "vigilode.accuracy-cohort-plan.v1",
+  "selection_sha256": "7ba35c033051634e88d3b7429fa020f366ea4c70186400e47d727dfeac247caf",
+  "shared_lock_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/.julia_comparison_campaign.lock",
+  "source": {
+    "binary_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/native_diffsol_offline_locked_build_20261025T0924/target/measurement/examples/local_bottleneck_suite",
+    "binary_sha256": "TO_BIND_FINAL_BINARY_SHA256",
+    "cargo_lock_sha256": "TO_BIND_FINAL_CARGO_LOCK_SHA256",
+    "head": "TO_BIND_FINAL_CLEAN_HEAD",
+    "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout",
+    "tree": "TO_BIND_FINAL_CLEAN_TREE"
+  },
+  "status": "NONLAUNCHABLE_TEMPLATE_PENDING_INDEPENDENT_ASTRA_REVIEW",
+  "template_note": "Planning only. Do not launch until source/binary/Cargo.lock and approval hashes are frozen and the current cost chain plus shared lock gate are independently reviewed."
+}

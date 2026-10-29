@@ -1,0 +1,527 @@
+{
+  "schema": "vigilode.production-hardening.decisions.v1",
+  "baseline_commit": "fbc3c272fa06b443de148631ea78bfa6a34f1b2b",
+  "source_commit": "5913fe062706c820e768b9e150e5cd1c274f7bf9",
+  "source_tree": "7a70caf85569dbe6c77ecb9a53fe666cd40ae618",
+  "broad_production": "HOLD",
+  "ncp_used": false,
+  "validation": {
+    "rust_tests_passed": 67,
+    "python_protocol_tests_passed": 7,
+    "benchmark_configurations": 72,
+    "benchmark_runs": 288,
+    "saved_state_replays_passed": 288,
+    "raw_hashes_verified": 576,
+    "density_invariance_pairs_passed": 24,
+    "same_error_cap_comparisons": 22,
+    "same_error_cap_dense_median_wins": 20,
+    "same_error_cap_landing_median_wins": 2,
+    "insufficient_error_cap_pairs": 2
+  },
+  "decisions": [
+    {
+      "component": "Extreme-step and rejected-interval repairs",
+      "decision": "promote",
+      "scope": "Native DOPRI increment arithmetic and shared AdaptiveOutputSession strictretry progress; confirmedregressions, notallfloatingpointinputs",
+      "evidence": [
+        "CORE_AUDIT.json",
+        "evidence/validation_v1/SUMMARY.json"
+      ]
+    },
+    {
+      "component": "Quartic sampled observations",
+      "decision": "promote",
+      "scope": "Opt-in smooth nonstiff identitymassDOPRI with requested sampletimes; no independentinteriorerrorcertificate,events,retainedinterpolantormass",
+      "evidence": [
+        "evidence/DENSE_ORDER_CHECK.json",
+        "evidence/local_bench/SUMMARY.json",
+        "evidence/validation_v1/SUMMARY.json"
+      ]
+    },
+    {
+      "component": "Affine physical embedded-error metric",
+      "decision": "specialized_only",
+      "scope": "Client-declared fixedaffinereduction; fullphysicaltolerances; client mustproveRHS/liftconsistency",
+      "evidence": [
+        "AFFINE_SYMBOLIC_CHECK.json",
+        "THEORY_NORM_KO.md",
+        "evidence/validation_v1/SUMMARY.json"
+      ],
+      "remaining": "ActualBASS/REIfull33 nonlinearclient andstiffRODAS integration"
+    },
+    {
+      "component": "Duplicate facade poison pass",
+      "decision": "promote",
+      "scope": "Removeone n-storepass peractualRHS; retainkernelpoison+finitechecks",
+      "evidence": [
+        "CORE_AUDIT.json",
+        "evidence/validation_v1/SUMMARY.json"
+      ],
+      "speed_claim": "Structural memory work reduction only; notisolatedelapsedtimeattribution"
+    },
+    {
+      "component": "Large-vector kernel performance",
+      "decision": "optimization_possible",
+      "scope": "Currentdenseobservationshelpmoderateaccuracycases; latestexternalcohortstillfavorsJuliaTsit5",
+      "next_steps": [
+        "N26",
+        "N30"
+      ],
+      "evidence": [
+        "LATEST_BENCHMARK_AUDIT.json",
+        "evidence/local_bench/SUMMARY.json"
+      ]
+    },
+    {
+      "component": "Uniform1e-8/longtimeoscillator qualification",
+      "decision": "hold",
+      "scope": "Dense drivenandbothrapidpoliciesmiss1e-8innewgrid; longtimephase/amplitudeunmeasured",
+      "evidence": [
+        "evidence/local_bench/SUMMARY.json"
+      ]
+    },
+    {
+      "component": "Unconditional explicit default forstiffIVPs",
+      "decision": "prune",
+      "scope": "Policychoice;keepstiffRODASpathandopt-inexplicit",
+      "evidence": [
+        "../nonstiff_explicit_20261023/DECISIONS.json"
+      ],
+      "reason": "PreviouslymeasuredstiffcontrolstronglyfavoredRODAS;unchangedevidencereused"
+    },
+    {
+      "component": "Parallel homotopy/Picard RK and polynomial alternatives",
+      "decision": "hold",
+      "scope": "Reuseexistingconditionaltheory;no newimplementationorwalltimevalidation",
+      "next_steps": [
+        "N27",
+        "N28"
+      ]
+    },
+    {
+      "component": "Automatic explicit/implicit routing andgeneralproduction",
+      "decision": "hold",
+      "scope": "Needboundedswitching,clientmetrics,longtimeaccuracy,representativecoupledRHSandcrossplatformreleasechecks",
+      "next_steps": [
+        "N02",
+        "N03",
+        "N25",
+        "N26",
+        "N30"
+      ]
+    }
+  ],
+  "common_error_cap_pairs": [
+    {
+      "case": "decay",
+      "dimension": 1,
+      "error_cap": 0.0001,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 6,
+        "dense": 1
+      },
+      "landing_over_dense_median": 2.6814053127677804,
+      "ratio_min_max_envelope": [
+        2.645771916214119,
+        9.600835758525484
+      ],
+      "landing_error": 6.661338147750939e-16,
+      "dense_error": 3.1357180962254816e-05
+    },
+    {
+      "case": "decay",
+      "dimension": 1,
+      "error_cap": 1e-06,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 6,
+        "dense": 7
+      },
+      "landing_over_dense_median": 2.659188442744848,
+      "ratio_min_max_envelope": [
+        1.7467244028495599,
+        9.458683761689114
+      ],
+      "landing_error": 6.661338147750939e-16,
+      "dense_error": 2.3960129436062516e-09
+    },
+    {
+      "case": "decay",
+      "dimension": 1,
+      "error_cap": 1e-08,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 6,
+        "dense": 7
+      },
+      "landing_over_dense_median": 2.659188442744848,
+      "ratio_min_max_envelope": [
+        1.7467244028495599,
+        9.458683761689114
+      ],
+      "landing_error": 6.661338147750939e-16,
+      "dense_error": 2.3960129436062516e-09
+    },
+    {
+      "case": "logistic",
+      "dimension": 1,
+      "error_cap": 0.0001,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 9,
+        "dense": 13
+      },
+      "landing_over_dense_median": 2.8626529128841187,
+      "ratio_min_max_envelope": [
+        2.713814043983256,
+        4.514852595000561
+      ],
+      "landing_error": 1.942890293094024e-15,
+      "dense_error": 1.5057995422784742e-07
+    },
+    {
+      "case": "logistic",
+      "dimension": 1,
+      "error_cap": 1e-06,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 9,
+        "dense": 13
+      },
+      "landing_over_dense_median": 2.8626529128841187,
+      "ratio_min_max_envelope": [
+        2.713814043983256,
+        4.514852595000561
+      ],
+      "landing_error": 1.942890293094024e-15,
+      "dense_error": 1.5057995422784742e-07
+    },
+    {
+      "case": "logistic",
+      "dimension": 1,
+      "error_cap": 1e-08,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 9,
+        "dense": 16
+      },
+      "landing_over_dense_median": 2.6213957967484283,
+      "ratio_min_max_envelope": [
+        2.399030568368384,
+        4.323488368526783
+      ],
+      "landing_error": 1.942890293094024e-15,
+      "dense_error": 3.5391505281978652e-09
+    },
+    {
+      "case": "driven",
+      "dimension": 1,
+      "error_cap": 0.0001,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 18,
+        "dense": 22
+      },
+      "landing_over_dense_median": 4.5157066996238,
+      "ratio_min_max_envelope": [
+        3.387808007880854,
+        5.184214716910115
+      ],
+      "landing_error": 1.3516948577576479e-15,
+      "dense_error": 5.111879952002241e-06
+    },
+    {
+      "case": "driven",
+      "dimension": 1,
+      "error_cap": 1e-06,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 18,
+        "dense": 25
+      },
+      "landing_over_dense_median": 4.157655179312759,
+      "ratio_min_max_envelope": [
+        2.965417867435159,
+        4.4983607381075
+      ],
+      "landing_error": 1.3516948577576479e-15,
+      "dense_error": 1.0634328806435889e-07
+    },
+    {
+      "case": "driven",
+      "dimension": 1,
+      "error_cap": 1e-08,
+      "status": "INSUFFICIENT_SAMPLED_TOLERANCES",
+      "selected_config_ids": {
+        "landing": 18,
+        "dense": null
+      }
+    },
+    {
+      "case": "rapid",
+      "dimension": 2,
+      "error_cap": 0.0001,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 30,
+        "dense": 31
+      },
+      "landing_over_dense_median": 1.479099383160118,
+      "ratio_min_max_envelope": [
+        1.4081620639160541,
+        2.367028239973369
+      ],
+      "landing_error": 1.8833796308626027e-05,
+      "dense_error": 2.6077586772865757e-05
+    },
+    {
+      "case": "rapid",
+      "dimension": 2,
+      "error_cap": 1e-06,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 33,
+        "dense": 34
+      },
+      "landing_over_dense_median": 1.059222980650654,
+      "ratio_min_max_envelope": [
+        0.5658051364148077,
+        1.3629487796641833
+      ],
+      "landing_error": 2.2825685563887532e-07,
+      "dense_error": 2.4804777887244e-07
+    },
+    {
+      "case": "rapid",
+      "dimension": 2,
+      "error_cap": 1e-08,
+      "status": "INSUFFICIENT_SAMPLED_TOLERANCES",
+      "selected_config_ids": {
+        "landing": null,
+        "dense": null
+      }
+    },
+    {
+      "case": "damped",
+      "dimension": 2,
+      "error_cap": 0.0001,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 36,
+        "dense": 40
+      },
+      "landing_over_dense_median": 1.7161921349492408,
+      "ratio_min_max_envelope": [
+        0.21567256476996535,
+        1.9675114998059278
+      ],
+      "landing_error": 1.469196299341835e-09,
+      "dense_error": 2.9181317077672797e-07
+    },
+    {
+      "case": "damped",
+      "dimension": 2,
+      "error_cap": 1e-06,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 36,
+        "dense": 40
+      },
+      "landing_over_dense_median": 1.7161921349492408,
+      "ratio_min_max_envelope": [
+        0.21567256476996535,
+        1.9675114998059278
+      ],
+      "landing_error": 1.469196299341835e-09,
+      "dense_error": 2.9181317077672797e-07
+    },
+    {
+      "case": "damped",
+      "dimension": 2,
+      "error_cap": 1e-08,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 36,
+        "dense": 43
+      },
+      "landing_over_dense_median": 0.7122176972730955,
+      "ratio_min_max_envelope": [
+        0.1052254508201676,
+        1.1462856043110086
+      ],
+      "landing_error": 1.469196299341835e-09,
+      "dense_error": 2.6525126591708803e-09
+    },
+    {
+      "case": "nonnormal",
+      "dimension": 2,
+      "error_cap": 0.0001,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 45,
+        "dense": 46
+      },
+      "landing_over_dense_median": 3.913902521577255,
+      "ratio_min_max_envelope": [
+        2.8540385010618623,
+        7.897573611192414
+      ],
+      "landing_error": 5.188042592643973e-13,
+      "dense_error": 2.499369323113676e-05
+    },
+    {
+      "case": "nonnormal",
+      "dimension": 2,
+      "error_cap": 1e-06,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 45,
+        "dense": 49
+      },
+      "landing_over_dense_median": 3.627993620581469,
+      "ratio_min_max_envelope": [
+        0.499993999169485,
+        7.115636660909008
+      ],
+      "landing_error": 5.188042592643973e-13,
+      "dense_error": 2.422938949189235e-07
+    },
+    {
+      "case": "nonnormal",
+      "dimension": 2,
+      "error_cap": 1e-08,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 45,
+        "dense": 52
+      },
+      "landing_over_dense_median": 2.612854937109287,
+      "ratio_min_max_envelope": [
+        1.3682654790525361,
+        5.563875743610364
+      ],
+      "landing_error": 5.188042592643973e-13,
+      "dense_error": 2.6318962891843588e-09
+    },
+    {
+      "case": "large-vector",
+      "dimension": 4096,
+      "error_cap": 0.0001,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 54,
+        "dense": 55
+      },
+      "landing_over_dense_median": 1.8202624860499834,
+      "ratio_min_max_envelope": [
+        1.5608392926571018,
+        2.917073226287865
+      ],
+      "landing_error": 1.9529211581215122e-11,
+      "dense_error": 3.772795165134235e-06
+    },
+    {
+      "case": "large-vector",
+      "dimension": 4096,
+      "error_cap": 1e-06,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 54,
+        "dense": 58
+      },
+      "landing_over_dense_median": 1.6615162478714083,
+      "ratio_min_max_envelope": [
+        1.1529937757321862,
+        2.2471583233209937
+      ],
+      "landing_error": 1.9529211581215122e-11,
+      "dense_error": 5.72528918441062e-08
+    },
+    {
+      "case": "large-vector",
+      "dimension": 4096,
+      "error_cap": 1e-08,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 54,
+        "dense": 61
+      },
+      "landing_over_dense_median": 0.8886029816418071,
+      "ratio_min_max_envelope": [
+        0.692767156869461,
+        1.0540439801074342
+      ],
+      "landing_error": 1.9529211581215122e-11,
+      "dense_error": 5.741896957900394e-10
+    },
+    {
+      "case": "large-vector",
+      "dimension": 16384,
+      "error_cap": 0.0001,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 69,
+        "dense": 64
+      },
+      "landing_over_dense_median": 2.045890987086148,
+      "ratio_min_max_envelope": [
+        0.8606205945115771,
+        2.7787171489522144
+      ],
+      "landing_error": 1.9529211581215122e-11,
+      "dense_error": 3.772795165134235e-06
+    },
+    {
+      "case": "large-vector",
+      "dimension": 16384,
+      "error_cap": 1e-06,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 69,
+        "dense": 67
+      },
+      "landing_over_dense_median": 1.7009053751290388,
+      "ratio_min_max_envelope": [
+        1.2791373430793076,
+        1.9366018545411092
+      ],
+      "landing_error": 1.9529211581215122e-11,
+      "dense_error": 5.72528918441062e-08
+    },
+    {
+      "case": "large-vector",
+      "dimension": 16384,
+      "error_cap": 1e-08,
+      "status": "COMPARABLE",
+      "selected_config_ids": {
+        "landing": 69,
+        "dense": 70
+      },
+      "landing_over_dense_median": 1.0582085778724721,
+      "ratio_min_max_envelope": [
+        0.9301476311719721,
+        1.195999192518306
+      ],
+      "landing_error": 1.9529211581215122e-11,
+      "dense_error": 5.741896957900394e-10
+    }
+  ],
+  "uncertainty": [
+    "Threetimedrepeatsarenotconfidenceintervals",
+    "PinnedCPUinasandboxisnotdedicatedhardware",
+    "AnalyticdiagonalfixturesarenotlargecoupledFVM",
+    "Savedsamplesarenotuniformglobalerrorcertificates",
+    "Differentexternalcohorttimesarenotpooled"
+  ],
+  "closed_findings": [
+    "F-CORE-01",
+    "F-CORE-02",
+    "DENSE-CLOCK-01",
+    "DENSE-LIFT-INIT"
+  ],
+  "partially_closed_findings": [
+    "F-CORE-03"
+  ],
+  "reused_evidence_policy": "Reauditnewexternalcohortonce;unchangedendpointproofsandprevioussolverexperimentsnotreexecuted"
+}

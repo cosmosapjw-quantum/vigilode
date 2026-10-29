@@ -1,0 +1,48 @@
+{
+  "schema": "vigilode.joint-controller.initial-pilot-analysis.v1",
+  "input_summary_sha256": "3b162fd355997ce16cef8493d528a22606f5437719296d823061bdbe063fa9d7",
+  "status": "ANALYZED_WITH_REPAIR_REQUIRED",
+  "new_ode_runs_by_analysis": 0,
+  "findings": [
+    {
+      "id": "JC-E01",
+      "class": "numerical-selection",
+      "case": "case5",
+      "observation": {
+        "previous_rhs": 1887,
+        "adaptive_rhs": 2463,
+        "extra_explicit_attempts": 96,
+        "extra_rhs": 576,
+        "proposal_growth_factor": 6.875261794666667,
+        "work_rate_reduction_factor": 11.709502998352692
+      },
+      "mechanism": "negative initial-prefix cost evidence survives a large improving regime change because only deterioration invalidates it",
+      "repair": "symmetric step-size/work-rate regime-change invalidation with budgeted retries",
+      "regression": "case5",
+      "post_repair_untouched_transition_centres": [
+        0.43,
+        0.87
+      ]
+    },
+    {
+      "id": "JC-E02",
+      "class": "execution-economics",
+      "observation": "all three adaptive five-batch phase totals exceed best directly measured total after charging calibration and pool startup once",
+      "mechanism": "explicit calibration cost exceeds recovered dispatch savings at short horizon; stale evidence fallback is correctness-preserving but can forgo parallel gain",
+      "repair": "pre-calibration value-of-information/admission budget; keep post-calibration sunk-cost dispatch separate",
+      "future_cost_interval_coverage": "unmeasured empirical sample ranges"
+    },
+    {
+      "id": "JC-E03",
+      "class": "measurement-semantics",
+      "observation": "RODAS probe batches include entry pilots and same-window return comparators; some comparators commit useful output",
+      "repair": "final summary uses median_rodas_probe_batches; discarded work always filters not committed"
+    }
+  ],
+  "visual_review": {
+    "path": "figures/initial_native/native_selection_pilots.png",
+    "method": "view_image",
+    "result": "PASS_SCOPED",
+    "notes": "Regression, timing spread, charged calibration costs and candidate/verifier work are visible; no initial results overwritten"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "tool": "Wolfram Language evaluator connector",
+  "date_kst": "2026-10-21",
+  "code": "Clear[mu,s,H,h,y]; qdot=-H-s(3mu^2-1); mudot=-3s mu(1-mu^2); {Expand[3H+3qdot+D[mudot,mu]], Series[y Exp[h y]-y/(1-h y),{h,0,3}]}",
+  "actual_output": "{0, SeriesData[h, 0, {-1/2*y^3, (-5*y^4)/6}, 2, 4, 1]}",
+  "tool_warning": "Symbol::undefined2: Global symbols H were undefined; symbolic computation nevertheless returned the requested expressions.",
+  "scope": "Algebraic Liouville identity in LRS Bianchi I and Taylor defect of frozen multiplicative nonlinearity; not a whole-solver proof."
+}

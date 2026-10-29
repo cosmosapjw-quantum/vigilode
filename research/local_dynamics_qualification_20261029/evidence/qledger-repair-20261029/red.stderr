@@ -1,0 +1,44 @@
+........F..F..............F......F.....
+======================================================================
+FAIL: test_ledger_commit_cannot_downgrade_to_object_exists (__main__.AuthorityRefsTests.test_ledger_commit_cannot_downgrade_to_object_exists)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/cosmosapjw/vigilode-local-20261028T170155Z/tools/test_check_authority_refs.py", line 309, in test_ledger_commit_cannot_downgrade_to_object_exists
+    self.assertEqual(proc.returncode, 1, proc.stdout)
+AssertionError: 0 != 1 : object-present           b90f6c5103c38490b19306e723e5ce61182ee733 research/LEDGER.jsonl:1 [commit.identifier; repository=test/local; object_kind=commit; required_relation=object-exists]
+check-authority-refs: PASS (1 citations, 1 distinct authority identities: object-present=1)
+
+
+======================================================================
+FAIL: test_malformed_jsonl_preserves_external_url_repository (__main__.AuthorityRefsTests.test_malformed_jsonl_preserves_external_url_repository)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/cosmosapjw/vigilode-local-20261028T170155Z/tools/test_check_authority_refs.py", line 275, in test_malformed_jsonl_preserves_external_url_repository
+    self.assertEqual(proc.returncode, 1, proc.stdout)
+AssertionError: 0 != 1 : reachable                7bda28187bd947603665e961b6fd31094708ef57 research/node/receipt.jsonl:1 [Source https://github.com/test/external/commit/7bda28187bd947603665e961b6fd31094708ef57 malformed-json; repository=test/local; object_kind=git-object; required_relation=published-source]
+check-authority-refs: PASS (1 citations, 1 distinct authority identities: reachable=1)
+
+
+======================================================================
+FAIL: test_repository_identity_rejects_lookalike_host (__main__.AuthorityRefsTests.test_repository_identity_rejects_lookalike_host)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/cosmosapjw/vigilode-local-20261028T170155Z/tools/test_check_authority_refs.py", line 330, in test_repository_identity_rejects_lookalike_host
+    self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+AssertionError: 0 != 2 : check-authority-refs: PASS (1 citations, 1 distinct authority identities: reachable=1)
+
+
+======================================================================
+FAIL: test_typed_record_does_not_hide_extra_authority (__main__.AuthorityRefsTests.test_typed_record_does_not_hide_extra_authority)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/cosmosapjw/vigilode-local-20261028T170155Z/tools/test_check_authority_refs.py", line 298, in test_typed_record_does_not_hide_extra_authority
+    self.assertEqual(proc.returncode, 1, proc.stdout)
+AssertionError: 0 != 1 : object-present           44ea9e6ba255ef85fc9eb84def7ff258ac6b69c7 research/node/receipt.json:1 [identifier; repository=test/local; object_kind=commit; required_relation=object-exists]
+check-authority-refs: PASS (1 citations, 1 distinct authority identities: object-present=1)
+
+
+----------------------------------------------------------------------
+Ran 39 tests in 4.278s
+
+FAILED (failures=4)

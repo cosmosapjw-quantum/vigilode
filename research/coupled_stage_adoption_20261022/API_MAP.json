@@ -1,0 +1,406 @@
+{
+  "schema": "vigilode.source-integration-map.v1",
+  "date": "2026-10-22",
+  "inspection_baseline": "8878e55a54e3a5f99fa81d6d3b08e05c94ed3db2",
+  "evidence_kind": "source-inspection-and-published-evidence-reuse",
+  "new_execution_claimed": false,
+  "ncp_used": false,
+  "source_document": "SOURCE_INTEGRATION_KO.md",
+  "scope": {
+    "autonomous": true,
+    "identity_mass": true,
+    "supplied_jvp": true,
+    "fixed_dimension": true,
+    "default_router_changed": false,
+    "generic_continuous_certificate": false
+  },
+  "raw_native_boundary": {
+    "candidate_target": "rodas5p-raw-u-coupled-operational-v1",
+    "candidate_output_weights": "b_code",
+    "candidate_embedded": "last raw-U stage",
+    "legacy_fallback_target": "rodas5p-native-k-sequential",
+    "same_raw_target_fallback_backend": "Rodas5pMfFastWorkspace",
+    "native_finish_step_accepts_raw_u": false,
+    "bit_equivalence_claimed": false
+  },
+  "existing_apis": [
+    {
+      "id": "candidate",
+      "path": "crates/vigilode-coupled/src/lib.rs",
+      "symbols": [
+        "coupled_step_residual_first",
+        "Config",
+        "Attempt",
+        "Candidate",
+        "Work"
+      ],
+      "disposition": "existing_reuse",
+      "constraint": "Autonomous identity mass supplied-JVP candidate; operational residual screen, not physical/global acceptance."
+    },
+    {
+      "id": "basis",
+      "path": "crates/vigilode-coupled/src/algebra.rs",
+      "symbols": [
+        "Basis",
+        "small_solve"
+      ],
+      "disposition": "existing_reuse",
+      "constraint": "Twice-reorthogonalized basis and J0V with bounded small dense algebra."
+    },
+    {
+      "id": "root_driver",
+      "path": "crates/vigilode-coupled/src/solver.rs",
+      "symbols": [
+        "homotopy",
+        "full_check",
+        "run"
+      ],
+      "disposition": "existing_reuse",
+      "constraint": "Direct lambda=1, subdivision rescue, original-space residual, leakage-driven expansion."
+    },
+    {
+      "id": "residual_first",
+      "path": "crates/vigilode-coupled/src/residual_first.rs",
+      "symbols": [
+        "correct"
+      ],
+      "disposition": "existing_reuse",
+      "constraint": "Request derivatives only for actual Newton updates."
+    },
+    {
+      "id": "legacy_fallback",
+      "path": "crates/vigilode-coupled/src/fallback.rs",
+      "symbols": [
+        "coupled_or_sequential",
+        "coupled_or_sequential_budgeted"
+      ],
+      "disposition": "existing_preserve",
+      "constraint": "Native-K fallback retains separate target ID."
+    },
+    {
+      "id": "raw_fallback_backend",
+      "path": "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+      "symbols": [
+        "Rodas5pMfFastWorkspace::new",
+        "Rodas5pMfFastWorkspace::attempt",
+        "Rodas5pMfFastWorkspace::y_new",
+        "Rodas5pMfFastWorkspace::stage",
+        "Rodas5pMfFastWorkspace::record_accepted_step"
+      ],
+      "disposition": "existing_reuse",
+      "constraint": "Raw-U sequential fallback; no explicit Jacobian or nonidentity mass."
+    },
+    {
+      "id": "controller",
+      "path": "crates/rodas5p-integrators/src/adaptive.rs",
+      "symbols": [
+        "AdaptiveStepConfig",
+        "AdaptiveControllerState",
+        "rodas_next_step_after_attempt"
+      ],
+      "disposition": "existing_reuse",
+      "constraint": "Method-bound estimator order and rejection/controller semantics."
+    },
+    {
+      "id": "output_clock",
+      "path": "crates/rodas5p-integrators/src/output.rs",
+      "symbols": [
+        "OutputCollector",
+        "adaptive_end_step",
+        "step_to"
+      ],
+      "disposition": "existing_internal_requires_facade",
+      "constraint": "Existing represented-clock/output rules are pub(crate)."
+    },
+    {
+      "id": "execution",
+      "path": "crates/rodas5p-integrators/src/parallel.rs",
+      "symbols": [
+        "ParallelExecution"
+      ],
+      "disposition": "existing_reuse",
+      "constraint": "Local pool; complete partial-failure accounting is implemented by caller collecting task outcomes as values."
+    },
+    {
+      "id": "model_identity",
+      "path": "crates/rodas5p-integrators/src/problem.rs",
+      "symbols": [
+        "OdeProblem::linearize_matrix_free",
+        "OdeProblem::model_epoch",
+        "OdeProblem::jvp_only_clone"
+      ],
+      "disposition": "existing_reuse",
+      "constraint": "Callback purity within fixed epoch remains client obligation."
+    },
+    {
+      "id": "causal_transport",
+      "path": "crates/rodas5p-integrators/src/causal_majorant.rs",
+      "symbols": [
+        "upper_causal_solve",
+        "upper_path_sum_action",
+        "RadiusBox",
+        "MajorantEntries"
+      ],
+      "disposition": "existing_conditional_reuse",
+      "constraint": "Finite strict-lower nonnegative propagation requires valid bounds and tube closure."
+    },
+    {
+      "id": "target_identity",
+      "path": "crates/rodas5p-integrators/src/raw_stage_target.rs",
+      "symbols": [
+        "RawStageReceipt",
+        "raw_coefficient_digest",
+        "raw_stage_allowance"
+      ],
+      "disposition": "existing_reuse",
+      "constraint": "Raw-U/native-K coefficient conversion allowance; not bit equivalence."
+    },
+    {
+      "id": "model_scoped_trajectory",
+      "path": "crates/vigilode-hybrid/src/trajectory.rs",
+      "symbols": [
+        "integrate",
+        "Integration",
+        "Trial"
+      ],
+      "disposition": "existing_scope_reference",
+      "constraint": "Continuous certificate only for supported generated model; not generic callback certificate."
+    },
+    {
+      "id": "structured_candidates",
+      "path": "crates/vigilode-hybrid/src/model.rs",
+      "symbols": [
+        "Model::admits_packet",
+        "Model::packet",
+        "Model::shift_factor"
+      ],
+      "disposition": "existing_scope_reference",
+      "constraint": "Exact closure packet and band-plus-rank-one solve; structured raw-U stages remain sequential."
+    },
+    {
+      "id": "old_common_w",
+      "path": "crates/rodas5p-integrators/src/audit2_matrix_free_research.rs",
+      "symbols": [
+        "Audit2MatrixFreeCommonWSession::solve_rows"
+      ],
+      "disposition": "existing_not_selected",
+      "constraint": "One GMRES workspace runs rows sequentially; does not integrate or share a Krylov basis."
+    },
+    {
+      "id": "quadratic_chart",
+      "path": "crates/rodas5p-integrators/src/stage_chart_candidate.rs",
+      "symbols": [
+        "StageChart",
+        "stage_chart_candidate",
+        "stage_residual"
+      ],
+      "disposition": "existing_specialized",
+      "constraint": "Quadratic declared target, not a general OdeProblem root backend."
+    },
+    {
+      "id": "default_router",
+      "path": "crates/rodas5p-integrators/src/routing.rs",
+      "symbols": [
+        "route_problem",
+        "integrate_rodas5p_routed_observed"
+      ],
+      "disposition": "existing_preserve",
+      "constraint": "No unvalidated automatic coupled selection is added to the default router."
+    }
+  ],
+  "branch_coverage": [
+    {
+      "branch": "research/coupled-matrix-free-rust-20261020",
+      "tip": "15c43ce76734d0a560fcec5909ac49f1e6f2d347",
+      "ancestor_of_baseline": true
+    },
+    {
+      "branch": "research/coupled-economy-20261020",
+      "tip": "6c945b6c6e0e024d8f733c21da8d35fbcc3c5f2a",
+      "ancestor_of_baseline": true
+    },
+    {
+      "branch": "research/hybrid-structure-ad-20261020",
+      "tip": "9bb05bed4cd7df720f2b429c2b47e97ed76712d5",
+      "ancestor_of_baseline": true
+    },
+    {
+      "branch": "research/cumulative-evidence-20261020",
+      "tip": "ebb5b81ebe77314b6fee941096fd6cba6d8597fc",
+      "ancestor_of_baseline": true
+    },
+    {
+      "branch": "production/vigilode-plan-20261021",
+      "tip": "cc2e1a009ac6802ef01a289392e9715074a882ba",
+      "ancestor_of_baseline": true
+    },
+    {
+      "branch": "research/bassrei-port-20261021",
+      "tip": "555e71e03fe31e6c9b21961c8e2d263b1794eb6f",
+      "ancestor_of_baseline": true
+    },
+    {
+      "branch": "research/orchestration-sandbox-20261022-vigilode",
+      "tip": "f9da4aae865623d71bff20c6157318cbaf19ba6c",
+      "ancestor_of_baseline": false
+    }
+  ],
+  "branch_content_checks": [
+    {
+      "branch": "research/bassrei-port-20261021",
+      "paths": [
+        "crates/vigilode-coupled",
+        "crates/vigilode-hybrid"
+      ],
+      "different_files_from_baseline": 0
+    },
+    {
+      "branch": "research/orchestration-sandbox-20261022-vigilode",
+      "paths": [
+        "crates/vigilode-coupled",
+        "crates/vigilode-hybrid"
+      ],
+      "different_files_from_baseline": 0
+    }
+  ],
+  "new_adoption_units": [
+    {
+      "id": "raw_u_fallback",
+      "status_at_intake": "planned_new_connection",
+      "uses": [
+        "candidate",
+        "raw_fallback_backend"
+      ],
+      "must_preserve": [
+        "input_callback_model_errors_not_hidden_by_fallback",
+        "failed_candidate_and_fallback_work",
+        "raw_target_output_mapping"
+      ]
+    },
+    {
+      "id": "adaptive_output_facade",
+      "status_at_intake": "planned_new_connection",
+      "uses": [
+        "controller",
+        "output_clock"
+      ],
+      "must_preserve": [
+        "represented_clock",
+        "requested_output_landing",
+        "precheck_before_commit",
+        "no_crate_dependency_cycle"
+      ]
+    },
+    {
+      "id": "companion_adaptive_driver",
+      "status_at_intake": "planned_new_connection",
+      "uses": [
+        "candidate",
+        "raw_fallback_backend",
+        "controller",
+        "output_clock"
+      ],
+      "must_preserve": [
+        "root_vs_physical_acceptance",
+        "rejection_rollback",
+        "all_attempt_costs",
+        "failure_partial_outputs"
+      ]
+    },
+    {
+      "id": "conditional_causal_bound",
+      "status_at_intake": "planned_new_connection",
+      "uses": [
+        "causal_transport",
+        "target_identity"
+      ],
+      "must_preserve": [
+        "explicit_client_bound_assumptions",
+        "full_original_residual",
+        "separate_endpoint_embedded_maps",
+        "not_global_or_dense_certificate_without_further_proof"
+      ]
+    },
+    {
+      "id": "repeated_diagonal_block_solve",
+      "status_at_intake": "planned_arithmetic_change",
+      "uses": [
+        "basis",
+        "root_driver"
+      ],
+      "must_preserve": [
+        "repeated_diagonal_and_zero_upper_structure_checks",
+        "full_linear_residual_check",
+        "no_old_new_bit_identity_claim"
+      ],
+      "algebraic_work": {
+        "before": "O((s*m)^3)",
+        "after": "O(m^3+s^2*m^2)",
+        "stages": 8
+      },
+      "full_sm_matrix_storage_retained": true
+    }
+  ],
+  "intake_corrections": [
+    "PR74/PR75 coupled and PR77 hybrid implementations already exist; do not rewrite from the old idea document.",
+    "Current eager stage derivative savings use (s-1)*m=7*m, following stage-0 elimination after PR75.",
+    "Coupled crate is already a root workspace member; its historical README exclusion statement is stale.",
+    "PR77 structured speedup is not an all-at-once homotopy speedup.",
+    "Projected singularity and original-space leakage remain distinct failures despite invertible full W."
+  ],
+  "attachment_sha256": {
+    "Pasted text(20261022-105556).txt": "a517b6fc3f2729b359b879426d604fb303403265e2540ecfcdb0a3b9f2a3da7d",
+    "Pasted markdown (2)(10).md": "c877a1bbd30439c4488373754ba1c189ea4a99c2e2b8544d37cf8703e93d74ad",
+    "VigilODE_Complete_Research_Report_20261022_KO.pdf": "9543d9103966488319deb92862f49b63c248b3797f3616839806973fd94875e7"
+  },
+  "implementation_map": [
+    {
+      "id": "adaptive_output_facade",
+      "path": "crates/rodas5p-integrators/src/adaptive_output.rs",
+      "symbols": [
+        "AdaptiveOutputSession",
+        "AdaptiveOutputTrial"
+      ],
+      "status": "implemented_source_reviewed_tests_separate"
+    },
+    {
+      "id": "companion_adaptive_driver",
+      "path": "crates/vigilode-coupled/src/adaptive.rs",
+      "symbols": [
+        "integrate_coupled_observed",
+        "CoupledIntegrationResult",
+        "CoupledTrajectoryAttempt"
+      ],
+      "status": "implemented_source_reviewed_tests_separate"
+    },
+    {
+      "id": "raw_u_fallback",
+      "path": "crates/vigilode-coupled/src/raw_step.rs",
+      "symbols": [
+        "RawStepSession",
+        "RawStepAttempt",
+        "RawSelectedStep"
+      ],
+      "status": "implemented_source_reviewed_tests_separate"
+    },
+    {
+      "id": "conditional_causal_bound",
+      "path": "crates/vigilode-coupled/src/raw_step.rs",
+      "symbols": [
+        "RootErrorPolicy",
+        "L2Assumptions",
+        "conditional_l2_error_estimate"
+      ],
+      "status": "implemented_source_reviewed_tests_separate",
+      "authority": "conditional-f64-estimate-user-assumptions-not-certified"
+    },
+    {
+      "id": "repeated_diagonal_block_solve",
+      "path": "crates/vigilode-coupled/src/algebra.rs",
+      "symbols": [
+        "small_solve"
+      ],
+      "status": "implemented_source_reviewed_tests_separate"
+    }
+  ]
+}

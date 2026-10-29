@@ -1,0 +1,1356 @@
+{
+  "schema_version": 1,
+  "kind": "prospective cumulative validation coverage, not executed test evidence",
+  "source_commit": "384dba091a3d9e1aac0ecddec264958298239253",
+  "conversation_baseline": "3064d453091af1dec7f99f0c8afabd98b447ea34",
+  "observed_main": "8d0c79184e09efb5bdadc24a6315c60a71a44264",
+  "ancestry": [
+    {
+      "ancestor": "3064d453091af1dec7f99f0c8afabd98b447ea34",
+      "descendant": "68a28357d960c4c2743c299770f0a33ef63245b2",
+      "merge_base_is_ancestor_exit": 0
+    },
+    {
+      "ancestor": "68a28357d960c4c2743c299770f0a33ef63245b2",
+      "descendant": "206298b4068d923bb47c7160b111b7439098660c",
+      "merge_base_is_ancestor_exit": 0
+    },
+    {
+      "ancestor": "206298b4068d923bb47c7160b111b7439098660c",
+      "descendant": "7eb2dd0ffda39afb2871d76700a720986ff09fe0",
+      "merge_base_is_ancestor_exit": 0
+    },
+    {
+      "ancestor": "7eb2dd0ffda39afb2871d76700a720986ff09fe0",
+      "descendant": "384dba091a3d9e1aac0ecddec264958298239253",
+      "merge_base_is_ancestor_exit": 0
+    }
+  ],
+  "main_is_ancestor_of_source": true,
+  "changed_scope": [
+    "crates",
+    ".github",
+    "Cargo.toml",
+    "Cargo.lock",
+    "rust-toolchain.toml"
+  ],
+  "per_pr_changed_path_count": {
+    "90": 13,
+    "91": 20,
+    "92": 44,
+    "93": 0
+  },
+  "cumulative_changed_path_count": 73,
+  "paths": [
+    {
+      "path": ".github/workflows/production.yml",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "2ff0e03b9c312a649199adca7f89e99c5e8c5e5ea44c164ff9f90bcd070b8f5c",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-PRODUCTION",
+        "Q-API"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-core/examples/invariant_module_bench.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "10cef97da5d201df468a03c62594ff4a04add4b00d342f39c12b52bb2ce31a92",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-core/examples/lu_workspace_bench.rs",
+      "changed_in_prs": [
+        90
+      ],
+      "source_sha256": "a5757b4ae1ccad2188c74e10e270e56bf7ceaee15006bb92e6512009c9344dfa",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G90-LU"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-core/src/lib.rs",
+      "changed_in_prs": [
+        90
+      ],
+      "source_sha256": "d5a19770ce1cc7d5b0444cfe27ba9a03bf1baf930d56c8f2525798424463a426",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G90-LU"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-core/src/matrix.rs",
+      "changed_in_prs": [
+        90
+      ],
+      "source_sha256": "40a3f19200d2dda72ddaf6d14c96f726fc978f4c83f687ca2d0abcaa2a49760d",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G90-LU"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-core/tests/lu_workspace_contracts.rs",
+      "changed_in_prs": [
+        90
+      ],
+      "source_sha256": "0779c07156c0d52246628bba8d92030221c3419680d81f9fff0d77f30a5df8d2",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G90-LU"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/conditional_continuation_sweep.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "1527ebd00a96413f7b2b950b1935ec5b4cc235adf2b1439aec74c1c57b3746fd",
+      "gate_ids": [
+        "G-BUILD",
+        "G-FEATURES",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/fixed_point_continuation_bench.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "65d0542114293518fb153fc7847a24c20c69aa93796d8be15f02efbce4f67c05",
+      "gate_ids": [
+        "G-BUILD",
+        "G-FEATURES",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/frontier_long_phase.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "a8ed090301faa95b20f5fbc29f67c36cc5608deceb49d287b047513b5e640106",
+      "gate_ids": [
+        "G-BUILD",
+        "G-FEATURES",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/frontier_polynomial_provider.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "a89ebb7468cc448a5f4dfda1030a066288a9a5bf1ab266a3d666909aaa6f3cc2",
+      "gate_ids": [
+        "G-BUILD",
+        "G-FEATURES",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/mode_dense_trajectory_20261027.rs",
+      "changed_in_prs": [
+        90
+      ],
+      "source_sha256": "e498bf9cd4e4c9d3e16c0e54d70013632433f1ff47303147d45907fbfd9f057f",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G90-MODE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "eec1d00c4d964b611cd2925ca6f37b4382dd126a1de057921e8dc0f02e0972c4",
+      "gate_ids": [
+        "G-BUILD",
+        "G-FEATURES",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/fixed_point_continuation.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "6f479a98d9eb3493dafcf0476dea8a6a978dd6e273dcaa928d654a2b1c4266ae",
+      "gate_ids": [
+        "G-BUILD",
+        "G-FEATURES",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/lib.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "82957fb0b21d96c861b64a52a5c51225312709d004586f16f46927f06eee8d16",
+      "gate_ids": [
+        "G-BUILD",
+        "G-FEATURES",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+      "changed_in_prs": [
+        90
+      ],
+      "source_sha256": "33d0d7831ab5fffe558df69d37adc71ef7f4ec984420a757af2185f935cdfa66",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G90-MODE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/rodas5p_lagged.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "5d454206bf3377b0e1105ea4f92a86d26f9c8ad202455be595cd98b1743b8db5",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-LAGGED"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+      "changed_in_prs": [
+        90
+      ],
+      "source_sha256": "642ce89b21f3ff55e03215c572af028ccd4f124128226a25cfc7c7083c720274",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G90-MODE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/fixed_point_continuation_contracts.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "2962425b6ada4c64ea4e67acff1647113585de6f828a7d1e3e3bf62cb834076a",
+      "gate_ids": [
+        "G-BUILD",
+        "G-FEATURES",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/frontier_physical_budget.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "006b4164b1f302f4ec880d0b9437da54078c9a338b509b04cc2b4a3a2a4ff77d",
+      "gate_ids": [
+        "G-BUILD",
+        "G-FEATURES",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/frontier_polynomial_provider.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "fe6342b88432be7f06263b1ed715e4d8325a807a31fd9396e20792f21c000638",
+      "gate_ids": [
+        "G-BUILD",
+        "G-FEATURES",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/frontier_session_contracts.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "11b8353e8682a544e7bb76a9a7b8c75aceacc163ddde6fd51ed89a76f0b81617",
+      "gate_ids": [
+        "G-BUILD",
+        "G-FEATURES",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/examples/causal_reuse_bench.rs",
+      "changed_in_prs": [
+        91
+      ],
+      "source_sha256": "291ef1256d63eb9b63188c27ab5f61a0c4b5543e2c43991d4ab0421b1412090b",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-CAUSAL"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/examples/cubic_accuracy_bench_20261027.rs",
+      "changed_in_prs": [
+        91
+      ],
+      "source_sha256": "cb382d662b3b20b21fcc3011a025dbed2150952752bbf89a94e78e334ad11cbf",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-HOMOTOPY",
+        "G92-HOMOTOPY"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/examples/cubic_production_bench.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "134a34323bf27993000aaab211cc4e2e4446aaa8de16a94aa9070091988f448f",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-HOMOTOPY",
+        "G92-HOMOTOPY"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/examples/rhs_homotopy_bench_20261027.rs",
+      "changed_in_prs": [
+        91
+      ],
+      "source_sha256": "c748fc2ea3f1f1f554fdcf32fd3d82d9cf36467954d334ac9d55f87f32d220e7",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-HOMOTOPY",
+        "G92-HOMOTOPY"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/examples/structural_bound_bench_20261027.rs",
+      "changed_in_prs": [
+        91
+      ],
+      "source_sha256": "cab612304040be3a975ac98bc33d0a37cc94d18cc35f76d51f8dca2b94abbdae",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-STRUCTURAL",
+        "G92-STRUCTURAL"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/examples/structural_mean_field_bench_20261027.rs",
+      "changed_in_prs": [
+        91
+      ],
+      "source_sha256": "6662812b5fc30ad0a224e35803aa57862e611a6cb9daefab600649458d159e4f",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-STRUCTURAL",
+        "G92-STRUCTURAL"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/examples/structural_production_bench_20261027.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "6f36ea393ef1578d9d0986a7c93e0227b171a79cf5938941c2e0e937a9c875a3",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-STRUCTURAL",
+        "G92-STRUCTURAL"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/examples/support/structural_mean_field_pr91.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "1e70ac544c6b8a775c60fc2497566f12b08945b5148cc288c1215f5b47d1f11a",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-STRUCTURAL",
+        "G92-STRUCTURAL"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/adaptive.rs",
+      "changed_in_prs": [
+        91
+      ],
+      "source_sha256": "e837e288d6c2d063f3344ce2521ae8c9c0233f2ed7ee559e112fcfb14129c028",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-CAUSAL"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/causal.rs",
+      "changed_in_prs": [
+        91
+      ],
+      "source_sha256": "fc297cd8b42c49f95d999078726186c3f09d15818a9355b2c369640aeef04b41",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-CAUSAL"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/lib.rs",
+      "changed_in_prs": [
+        91
+      ],
+      "source_sha256": "7376ba9cc9ec2111cea01c801c0c0e4ce3f53b8e281bb5a5d3221e671366ba1f",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-CAUSAL"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/raw_step.rs",
+      "changed_in_prs": [
+        91
+      ],
+      "source_sha256": "432281286ffb11e2383748350d16fd9fa6b5d34d97379dca5630f6feeb696ac3",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-CAUSAL"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/residual_first.rs",
+      "changed_in_prs": [
+        90
+      ],
+      "source_sha256": "9b0d1e47741ab89ff3ed8b76ecf06da9c915032cfca4235e105be4aa4ce059b5",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G90-MODE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/rhs_homotopy.rs",
+      "changed_in_prs": [
+        91,
+        92
+      ],
+      "source_sha256": "167b838b2ddc90175cd66e5db38e0f5d9e4f12277efb33e1104a3c0456f9768c",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-HOMOTOPY",
+        "G92-HOMOTOPY"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/solver.rs",
+      "changed_in_prs": [
+        91
+      ],
+      "source_sha256": "f7da8b7421fb90e28434f7a2f68974586992f0c2fd383350ccd3465a718d138a",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-CAUSAL"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/structural_mean_field.rs",
+      "changed_in_prs": [
+        91,
+        92
+      ],
+      "source_sha256": "ebc43ae0ef3faada53764f0895c4b6587645d0ee51497a39bfe77d7fcd347330",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-STRUCTURAL",
+        "G92-STRUCTURAL"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/switching.rs",
+      "changed_in_prs": [
+        91
+      ],
+      "source_sha256": "f99e64b6c28a8ef256d5d87ec53e0604574fc74758aadc4bd18a1821c5ec1905",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-CAUSAL"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/tests/causal_reuse_contracts.rs",
+      "changed_in_prs": [
+        91
+      ],
+      "source_sha256": "1411cc1c8a2d9662a49c1cd26bb98bf3c86d371f9399857e3a6d3cc5fe43b079",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-CAUSAL"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/tests/cubic_solver_production_contracts.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "ceaf44b8c132815a30dafe3382e495d3282c6340ae78d221ddd4746a68497629",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-HOMOTOPY",
+        "G92-HOMOTOPY"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs",
+      "changed_in_prs": [
+        91
+      ],
+      "source_sha256": "1c3bc00531b59940bf6dfed0939abb0e9a96f7d46233a7b1564dcff52eb8ad9c",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-HOMOTOPY",
+        "G92-HOMOTOPY"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/tests/structural_mean_field_contracts.rs",
+      "changed_in_prs": [
+        91
+      ],
+      "source_sha256": "57d407b9e95703c1c2587149cd2f20ed44340bcd39b7bf081cd2ac27da27ffa7",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-STRUCTURAL",
+        "G92-STRUCTURAL"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/tests/structural_production_contracts.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "51cdbdcf5ca134392a043d0b657619587867217454f57599d25ff78dbfef67e0",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-STRUCTURAL",
+        "G92-STRUCTURAL"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode-coupled/tests/switching_contracts.rs",
+      "changed_in_prs": [
+        91
+      ],
+      "source_sha256": "50d020782769c8df37a201a2a84d745ead216c315e90e161d1c13cec06e4eab4",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-CAUSAL"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/examples/adapter_attempt_trace.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "02d85331d805d443f4249cc333886e47f89d9ba167a2dac38ed0f20e6f2dff70",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/examples/adapter_checkpoint_trace.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "985c0b230d0a2cbcb098df49b536a57d4e26d8604f660b528118458a1b6ef58a",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/examples/adapter_gyro_grid.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "c218d095998114213e73c800b370f74f45214f8f3c76242fa83070d1883e2d91",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/examples/adapter_integration_pilot.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "43d0002f3de4f6d7db60652fb457ca842960db3b3621bf5138bc95514c759875",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/examples/adapter_phase_grid.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "7cce77ee56d62834ec21069dec3f940a840b1fcd48d2e4c4bdd01aa6dfe75333",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/examples/adaptive_causal_bench.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "d8fae50873660aed420e1342af4de4df2c0586ea37f7fa59eb34f2217583a95e",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/examples/audit_adapter_20261027.rs",
+      "changed_in_prs": [
+        90
+      ],
+      "source_sha256": "7eadc2b0028c4c7343506e2a0b8474ebcd44e519f0f86fe14c16566beee6795e",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G90-ADAPTER"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/examples/local_bottleneck_suite.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "bf884a53286efeefe8c7262c9eea6299555a4f21bbf76896b6cd4212e427f2f0",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/examples/local_bottleneck_support/models.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "1bfbc7aa146ecbe0fa9a164e92e67d6bffbf7b6966ebea6bb452d4fd1c40d74e",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/examples/nonstiff_bench.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "6039602762ceb21d283307fb65d39c7803246d17596c43e593c839abf0ef5c38",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/examples/production_from_json.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "d708f829ce324df67dc8478051476622bbc172fb6a3bc293a1b95ed3ea3f1cad",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-PRODUCTION",
+        "Q-API"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/examples/production_hardening_bench.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "04255d847ea19ed115556b597bcaec311719df0914caca421910a68135f79184",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/examples/production_return_bench_20261027.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "2657e4a96ef370eeb1764b19a8bd63ed6590d5a09cae9d8d7f97ddb23ef862d8",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G90-ADAPTER",
+        "G91-ADAPTER",
+        "G92-ADAPTER"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/examples/selective_jvp_20261027.rs",
+      "changed_in_prs": [
+        91
+      ],
+      "source_sha256": "56bc6e61871d468dc1bcac3c088ab0131d4a27678c68e2327324b6c4fd044976",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-ADAPTER"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/examples/support/production_return_cases.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "5934fdb19da9a51939c45f42a68c4a65a46718f312defbbc5c78738fa8495d59",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G90-ADAPTER",
+        "G91-ADAPTER",
+        "G92-ADAPTER"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/src/causal_budget.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "38e49c94126c0a9db6bd4ed26f950371d15f83eb3e2988c49503f20047654af7",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/src/execution_policy.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "bbc4d80f4c9ca5a2a14d7cbfcaf2bdf0387f10221a6329a5af7a74dfec17c4ab",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/src/lawson.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "467320cac3ac7098b9097f8550552c7006501d014f0fe337abe07e30983d740b",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/src/lib.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "288d14c142da8a33979db972b49fba098bc970ef80ca20f7bfb0f9af6d0b0dae",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-PRODUCTION",
+        "Q-API"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/src/production.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "f46d917cb8205799840b38a5ae8b310b0e785969b5c482b478adfc557a89888c",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-PRODUCTION",
+        "Q-API"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/src/selection.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "802d485721ddb0ec7902c3d31aa4eedcca6cb78323274d6a95e5cb170693df7f",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-HYGIENE"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/src/switching.rs",
+      "changed_in_prs": [
+        90,
+        91,
+        92
+      ],
+      "source_sha256": "119f2a70d5d8be82816e9c236f4b06644faffe2df545a93b824deeb6ce356bbf",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G90-ADAPTER",
+        "G91-ADAPTER",
+        "G92-ADAPTER",
+        "Q-API"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/tests/comparator_dominance_contracts.rs",
+      "changed_in_prs": [
+        90
+      ],
+      "source_sha256": "bce1765140085bd43d4b7da052a92f38a74f11be731b240edc2b5412059348ab",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G90-ADAPTER"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/tests/entry_checkpoint_seed_contracts.rs",
+      "changed_in_prs": [
+        91
+      ],
+      "source_sha256": "4ba797699e180e9e0ab2cad4619ecf26356156cd19fcd39711c66ff7c35c192a",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G91-ADAPTER"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/tests/evidence_switch_contracts.rs",
+      "changed_in_prs": [
+        90
+      ],
+      "source_sha256": "9a39bf763f8e97c1c16f09a5a53cddf786cc12ef7e53d5da5f09af6b9f35a22e",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G90-ADAPTER",
+        "G91-ADAPTER",
+        "G92-ADAPTER"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/tests/production_setup_contracts.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "ec0c0607f04bd66183e3eded0145bfe6401fab42af8595f12d68f44668818a97",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G92-PRODUCTION",
+        "Q-API"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/tests/return_sentinel_contracts.rs",
+      "changed_in_prs": [
+        90
+      ],
+      "source_sha256": "e653f64443597f69a27aa37bf410fb38fe87c78f27a914f19a27bb49e6133d3a",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G90-ADAPTER",
+        "G91-ADAPTER",
+        "G92-ADAPTER"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/tests/strict_return_work_contracts.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "e852ff7860d9b9ae4f9ae411988ae8d5b99dc3d56b63d6025b0d7842d087e585",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G90-ADAPTER",
+        "G91-ADAPTER",
+        "G92-ADAPTER"
+      ],
+      "status": "pending_local_validation"
+    },
+    {
+      "path": "crates/vigilode/tests/switching_persistent_explicit.rs",
+      "changed_in_prs": [
+        92
+      ],
+      "source_sha256": "272df88ef74f1ce01ba36cdea3f73bfece587afa07c2e528680332dd54fe3e04",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE",
+        "G90-ADAPTER",
+        "G91-ADAPTER",
+        "G92-ADAPTER"
+      ],
+      "status": "pending_local_validation"
+    }
+  ],
+  "gate_groups": {
+    "G90-LU": {
+      "prs": [
+        90
+      ],
+      "targets": [
+        "crates/rodas5p-core/tests/lu_workspace_contracts.rs"
+      ],
+      "acceptance": "Preserve solve bits and true residual; warmed allocation0 at declared sizes; failed or shape-invalid calls remain well-defined."
+    },
+    "G90-MODE": {
+      "prs": [
+        90
+      ],
+      "targets": [
+        "crates/rodas5p-integrators/tests/rodas5p_fast_contracts.rs",
+        "crates/rodas5p-integrators/tests/partial_t_into_contracts.rs",
+        "crates/rodas5p-integrators/tests/fast_dense_contracts.rs",
+        "crates/rodas5p-integrators/tests/work_counter_lane_contracts.rs",
+        "crates/vigilode-coupled/tests/economy_contracts.rs",
+        "crates/vigilode-coupled/tests/economy_robustness.rs"
+      ],
+      "acceptance": "Preserve original stage/trajectory and counters across workspace/borrowed-row changes; no extra allocation claim without counter."
+    },
+    "G90-ADAPTER": {
+      "prs": [
+        90
+      ],
+      "targets": [
+        "crates/vigilode/tests/comparator_dominance_contracts.rs",
+        "crates/vigilode/tests/evidence_switch_contracts.rs",
+        "crates/vigilode/tests/return_sentinel_contracts.rs"
+      ],
+      "acceptance": "Complete versus prefix evidence, fatal priority, exact checkpoint, paid failed work; default-off behavior."
+    },
+    "G91-CAUSAL": {
+      "prs": [
+        91
+      ],
+      "targets": [
+        "crates/vigilode-coupled/tests/causal_contracts.rs",
+        "crates/vigilode-coupled/tests/causal_reuse_contracts.rs",
+        "crates/vigilode-coupled/tests/switching_contracts.rs"
+      ],
+      "acceptance": "Input/epoch-qualified reuse, same full stage/output bits, all worker results joined and charged; strong forward comparator."
+    },
+    "G91-STRUCTURAL": {
+      "prs": [
+        91
+      ],
+      "targets": [
+        "crates/vigilode-coupled/tests/structural_mean_field_contracts.rs"
+      ],
+      "acceptance": "Exact original raw-U model, arbitrary transverse state/forcing, independently computed adjoint norm; n1 degeneration."
+    },
+    "G91-HOMOTOPY": {
+      "prs": [
+        91
+      ],
+      "targets": [
+        "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs"
+      ],
+      "acceptance": "Accepted-stage seed, original residual and branch, physical bound across all returned points; evaluation-order comparisons."
+    },
+    "G91-ADAPTER": {
+      "prs": [
+        91
+      ],
+      "targets": [
+        "crates/vigilode/tests/entry_checkpoint_seed_contracts.rs",
+        "crates/vigilode/tests/evidence_switch_contracts.rs"
+      ],
+      "acceptance": "Prior checkpoint proposal only, positive budget, supplied-JVP only, checked strict entry-work boundaries."
+    },
+    "G92-STRUCTURAL": {
+      "prs": [
+        92
+      ],
+      "targets": [
+        "crates/vigilode-coupled/tests/structural_production_contracts.rs"
+      ],
+      "acceptance": "Charged errors enclose original full-space residual including represented mean/RHS/lift errors; all workers joined."
+    },
+    "G92-HOMOTOPY": {
+      "prs": [
+        92
+      ],
+      "targets": [
+        "crates/vigilode-coupled/tests/cubic_solver_production_contracts.rs"
+      ],
+      "acceptance": "Generic/scalar/algebraic/rational all pass unchanged original outward residual and physical cap; all predictor/fallback work paid."
+    },
+    "G92-ADAPTER": {
+      "prs": [
+        92
+      ],
+      "targets": [
+        "crates/vigilode/tests/strict_return_work_contracts.rs",
+        "crates/vigilode/tests/switching_persistent_explicit.rs",
+        "crates/vigilode/tests/return_sentinel_contracts.rs"
+      ],
+      "acceptance": "Checked ties, >2^53 integer distinction, overflow, wrong replay endpoint, past-only observed proposal and sentinel adverse cases."
+    },
+    "G92-PRODUCTION": {
+      "prs": [
+        92
+      ],
+      "targets": [
+        "crates/vigilode/tests/production_setup_contracts.rs"
+      ],
+      "acceptance": "Strict JSON contract, RHS-only/selective-provider permissions, four original1e-6 smoke cases and atomic callback counts; partial failure solution."
+    },
+    "G92-LAGGED": {
+      "prs": [
+        92
+      ],
+      "targets": [
+        "crates/rodas5p-integrators/tests/reaudit_lagged_failure_work.rs",
+        "crates/rodas5p-integrators/tests/a1_zero_tolerance_scale.rs",
+        "crates/rodas5p-integrators/tests/b1_lagged_contracts.rs",
+        "crates/rodas5p-integrators/tests/b1b_gmres_contracts.rs",
+        "crates/rodas5p-integrators/tests/b1c_staleness_contracts.rs",
+        "crates/rodas5p-integrators/tests/b1d_resolvent_contracts.rs",
+        "crates/rodas5p-integrators/tests/n05_diagonal_staleness_contracts.rs",
+        "crates/rodas5p-integrators/tests/reaudit_bound_clients_contract.rs"
+      ],
+      "acceptance": "Original missing-one-JVP regression preserved; physical A-P ledger distinguished from solver attempts; no numerical change attributed."
+    },
+    "G92-HYGIENE": {
+      "prs": [
+        92
+      ],
+      "targets": [
+        "research/production_solver_closure_20261027/CI_HYGIENE.md"
+      ],
+      "acceptance": "Verify actual final change identity; existing format-only intermediate receipt is not final binary timing equivalence."
+    },
+    "G93-THEORY": {
+      "prs": [
+        93
+      ],
+      "targets": [
+        "research/polyalgorithm_alternatives_20261028/polynomial/CHECK.py",
+        "research/polyalgorithm_alternatives_20261028/homotopy/CHECK.py",
+        "research/polyalgorithm_alternatives_20261028/geometry/CHECK.py"
+      ],
+      "acceptance": "Exact checks reproducible with new receipts; old negative controls and source hashes retained; no native speed claim."
+    },
+    "G-BUILD": {
+      "prs": [
+        90,
+        91,
+        92,
+        93
+      ],
+      "targets": [
+        ".github/workflows/e4-fresh-clone-build.yml"
+      ],
+      "acceptance": "Fresh default and explicit vendor/offline graph/build; reached-stage accounting, unchanged locked graph."
+    },
+    "G-RELEASE": {
+      "prs": [
+        90,
+        91,
+        92,
+        93
+      ],
+      "targets": [
+        "research/production_solver_closure_20261027/run_local.py"
+      ],
+      "acceptance": "Whole-package current-tree release and inherited suites, no ignored/skipped counts promoted."
+    },
+    "G-FEATURES": {
+      "prs": [
+        90,
+        91,
+        92,
+        93
+      ],
+      "targets": [
+        "crates/rodas5p-integrators/Cargo.toml"
+      ],
+      "acceptance": "Explicit audit2-research, audit2-bateman-authority, audit2-stage-certificate targets; ordinary default builds do not cover them."
+    },
+    "Q-API": {
+      "prs": [
+        90,
+        91,
+        92
+      ],
+      "targets": [
+        "crates/vigilode/src/switching.rs"
+      ],
+      "acceptance": "Pre-conversation and PR91 downstream exhaustive literals/enums; explicit migration or compatibility decision."
+    }
+  },
+  "inherited_plan": {
+    "path": "research/polyalgorithm_alternatives_20261028/LOCAL_DEVELOPMENT_PLAN.json",
+    "sha256": "8a05bdf42d999f724662d64b5fc9a36bc5bb0caa3a9f5022b7333dcc914bc3f1",
+    "nodes": 23,
+    "edges": 34,
+    "execution_suites": [
+      "facade-contracts",
+      "coupled-contracts",
+      "all-targets",
+      "release-contracts",
+      "docs",
+      "smoke-release",
+      "local-benchmarks",
+      "local-profiles"
+    ],
+    "budgets": [
+      {
+        "id": "R-STRUCT",
+        "correction_loops_used": 3,
+        "correction_loops_max": 3
+      },
+      {
+        "id": "R-HOMO",
+        "correction_loops_used": 1,
+        "correction_loops_max": 3
+      },
+      {
+        "id": "R-ADAPT",
+        "correction_loops_used": 3,
+        "correction_loops_max": 3
+      },
+      {
+        "id": "I-PROD",
+        "correction_loops_used": 1,
+        "correction_loops_max": 3
+      },
+      {
+        "id": "PR-N01",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3
+      },
+      {
+        "id": "PR-N02",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3
+      },
+      {
+        "id": "PR-N03",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3
+      },
+      {
+        "id": "PR-N04",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3
+      },
+      {
+        "id": "PR-N05",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3
+      },
+      {
+        "id": "PR-N06",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3
+      },
+      {
+        "id": "Q-LEDGER",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3
+      },
+      {
+        "id": "Q-GIVENS",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3
+      },
+      {
+        "id": "Q-FAIR-AB",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3
+      },
+      {
+        "id": "Q-BENCH",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3
+      },
+      {
+        "id": "Q-LINT",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3
+      },
+      {
+        "id": "Q-API",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3
+      },
+      {
+        "id": "Q-NEGATIVE",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3
+      }
+    ]
+  },
+  "new_interactions": [
+    "I-STATE",
+    "I-EPOCH",
+    "I-WORK",
+    "I-BUDGET",
+    "I-POLY",
+    "I-ROOT",
+    "I-STRUCTURE",
+    "I-NEGATIVE",
+    "I-PROFILE",
+    "I-CLIENT"
+  ],
+  "status": "design_complete_native_execution_pending",
+  "manual_scientific_judgment_required": true
+}

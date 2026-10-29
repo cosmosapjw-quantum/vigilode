@@ -1,0 +1,58 @@
+{
+  "unit": "FAIR_AB_DENSE_OUTPUT_ERROR_CONVERSION",
+  "cwd": "/home/cosmosapjw/vigilode",
+  "branch": "audit/production-readiness-20261018",
+  "head_at_validation": "c3036c63da02ca9b04cd39ccf580cd67d00ccb0c",
+  "source_identity": {
+    "crates/rodas5p-fair-ab/src/adaptive_global_error.rs": "84b812999916b9014f686f71cd20bbb1c87cc70e8e254799a2c02cf45bf284fd",
+    "test_location": "inline module tests in adaptive_global_error.rs; same source hash"
+  },
+  "repair": {
+    "existing_core_error": "preserved unchanged",
+    "invalid_segment": "explicit exhaustive arm maps to CoreError::InvalidInput while preserving the original malformed-segment reason",
+    "modified_segment": "explicit exhaustive arm maps to CoreError::InvalidInput while preserving the generated-coefficient identity message",
+    "continuous_residual_provider_unavailable": "explicit exhaustive arm maps to CoreError::InvalidInput while preserving the point-callback limitation message",
+    "success_on_these_error_variants": false,
+    "mapping_is_exhaustive": "yes; no catch-all arm, so future DenseOutputError variants remain compile-time visible"
+  },
+  "regression": "dense_core_preserves_dense_error_reason_as_invalid_input checks all three variants produce Err(CoreError::InvalidInput(message)) and checks the exact display message.",
+  "preserved_workspace_failure": {
+    "original_log": "../continuation_workspace_final.log",
+    "preserved_copy": "initial_workspace_check.log",
+    "sha256": "0007c3bde232d35d7744d7204129e80db5ef3ae175606d5cc3e91dd887142ec4",
+    "command": "cargo check --locked --offline --workspace --all-targets",
+    "exit_code": 101,
+    "failure": "non-exhaustive match for DenseOutputError::InvalidSegment, ModifiedSegment, and ContinuousResidualProviderUnavailable"
+  },
+  "validation": [
+    {
+      "command": "cargo test --locked --offline -p rodas5p-fair-ab --lib dense_core_preserves_dense_error_reason_as_invalid_input -- --nocapture",
+      "exit_code": 0,
+      "log": "focused_test.log",
+      "sha256": "d0807842a410eea3d004b7f43072108c980ef91fc1eacb2a25ed8ec91475e14e"
+    },
+    {
+      "command": "cargo clippy --locked --offline -p rodas5p-fair-ab --lib -- -D warnings",
+      "exit_code": 0,
+      "log": "clippy.log",
+      "sha256": "5c01b3f55c3a1a7aacd0290851f9b2f0806a57b2e8d5e513860ba8934364f595"
+    },
+    {
+      "command": "rustfmt --edition 2024 --check crates/rodas5p-fair-ab/src/adaptive_global_error.rs",
+      "exit_code": 0,
+      "log": "rustfmt.log",
+      "sha256": "1ca4a13146b2891c0e462123ac0cb848f92e6221f18b870a1b78c232d1956c35"
+    },
+    {
+      "command": "git diff --check -- crates/rodas5p-fair-ab/src/adaptive_global_error.rs",
+      "exit_code": 0,
+      "log": "diffcheck.log",
+      "sha256": "1ca4a13146b2891c0e462123ac0cb848f92e6221f18b870a1b78c232d1956c35"
+    }
+  ],
+  "decision": "Scoped compile integration repair complete. Explicit exhaustive error conversion only; no numerical or scientific authority changes.",
+  "executor_identity": {
+    "role": "implementation agent",
+    "runtime_model": "not independently observed"
+  }
+}

@@ -1,0 +1,284 @@
+{
+  "schema_version": 1,
+  "workflow_version": "1.0.0",
+  "task": "research",
+  "unit_id": "PR-N01-krylov-live-workspace-directional-quotient",
+  "objective": "Prove source-grounded removal of unused GMRES direction storage and derive directional quotient/recycle contracts before implementation",
+  "scope": "PR101 GMRES-into current facade route; no change of MGS, arithmetic, stopping rule or full-space token semantics",
+  "status": "complete",
+  "dependencies": [
+    {
+      "id": "SOURCE",
+      "identity": "bc5ddbe42b24b1a6364bf653c3e2d6d938ca4087",
+      "description": "Latest PR101 source and profile evidence"
+    },
+    {
+      "id": "PR93-THEORY",
+      "identity": "384dba091a3d9e1aac0ecddec264958298239253",
+      "description": "Existing polynomial/resolvent derivations reused with unchanged target semantics"
+    },
+    {
+      "id": "NATIVE-SOURCE",
+      "identity": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+      "description": "Published K1 implementation and exact K3 oracle execution source; source7fce first compile failure retained"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "PROOFS",
+      "kind": "derivation",
+      "locator": "theory/KRYLOV.md",
+      "scope": "K1–K4 source-grounded proofs and code contracts",
+      "dependency_ids": [
+        "SOURCE",
+        "PR93-THEORY"
+      ]
+    },
+    {
+      "id": "CHECKS",
+      "kind": "calculation",
+      "locator": "theory/KRYLOV_LITERATURE.json",
+      "scope": "Exact rational8 cases; Wolfram6 symbolic degrees; primary-literature record",
+      "dependency_ids": [
+        "SOURCE"
+      ]
+    },
+    {
+      "id": "NATIVE-CODING",
+      "kind": "implementation",
+      "locator": "theory/KRYLOV_CODING_WORKFLOW.json",
+      "scope": "K1 native differential tests and K3 exact oracle execution, with retained failures and benchmark limitations",
+      "dependency_ids": [
+        "SOURCE",
+        "NATIVE-SOURCE"
+      ]
+    }
+  ],
+  "stages": [
+    {
+      "id": "R1",
+      "status": "complete",
+      "evidence_refs": [
+        "PROOFS"
+      ],
+      "dependency_ids": [
+        "SOURCE",
+        "PR93-THEORY"
+      ],
+      "reason": "Scope and latest source fixed in section1",
+      "reuse": null
+    },
+    {
+      "id": "R2",
+      "status": "complete",
+      "evidence_refs": [
+        "PROOFS"
+      ],
+      "dependency_ids": [
+        "SOURCE",
+        "PR93-THEORY"
+      ],
+      "reason": "Prior PR results and actual route reused in section2",
+      "reuse": null
+    },
+    {
+      "id": "R3",
+      "status": "complete",
+      "evidence_refs": [
+        "PROOFS"
+      ],
+      "dependency_ids": [
+        "SOURCE",
+        "PR93-THEORY"
+      ],
+      "reason": "Machine, norm, epoch and numerical assumptions explicit",
+      "reuse": null
+    },
+    {
+      "id": "R4",
+      "status": "complete",
+      "evidence_refs": [
+        "PROOFS"
+      ],
+      "dependency_ids": [
+        "SOURCE",
+        "PR93-THEORY"
+      ],
+      "reason": "Storage refinement, directional quotient and shifted-image candidates constructed",
+      "reuse": null
+    },
+    {
+      "id": "R5",
+      "status": "complete",
+      "evidence_refs": [
+        "PROOFS"
+      ],
+      "dependency_ids": [
+        "SOURCE",
+        "PR93-THEORY"
+      ],
+      "reason": "K1 induction; K2 residual identity; K3 coefficient/coercivity proofs; K4 defect identity",
+      "reuse": null
+    },
+    {
+      "id": "R6",
+      "status": "complete",
+      "evidence_refs": [
+        "PROOFS"
+      ],
+      "dependency_ids": [
+        "SOURCE",
+        "PR93-THEORY"
+      ],
+      "reason": "Independent root, state_audit and proof_audit reviewed source and K1–K4; same-RHS and K4 metric/certificate wording corrected",
+      "reuse": null
+    },
+    {
+      "id": "R7",
+      "status": "complete",
+      "evidence_refs": [
+        "CHECKS"
+      ],
+      "dependency_ids": [
+        "SOURCE",
+        "PR93-THEORY"
+      ],
+      "reason": "Eight rational and six symbolic checks completed",
+      "reuse": null
+    },
+    {
+      "id": "R8",
+      "status": "complete",
+      "evidence_refs": [
+        "PROOFS"
+      ],
+      "dependency_ids": [
+        "SOURCE",
+        "PR93-THEORY"
+      ],
+      "reason": "Admitted K1 storage patch and K3 exact oracle; K4 remains an explicit future native contract",
+      "reuse": null
+    },
+    {
+      "id": "R9",
+      "status": "complete",
+      "evidence_refs": [
+        "PROOFS"
+      ],
+      "dependency_ids": [
+        "SOURCE",
+        "PR93-THEORY"
+      ],
+      "reason": "Implementation and oracle contracts in sections3,5,8",
+      "reuse": null
+    },
+    {
+      "id": "R10",
+      "status": "complete",
+      "evidence_refs": [
+        "PROOFS"
+      ],
+      "dependency_ids": [
+        "SOURCE",
+        "PR93-THEORY"
+      ],
+      "reason": "Theory and coding contracts checkpointed; subsequent native execution tracked in coding workflow",
+      "reuse": null
+    }
+  ],
+  "claims": [
+    {
+      "id": "K1",
+      "statement": "Omitting unused directions preparation preserves GMRES-into arithmetic and callback trace under listed machine-state assumptions",
+      "scope": "Unaugmented into/monitored paths; resource telemetry intentionally distinct",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "evidence_refs": [
+        "PROOFS",
+        "NATIVE-CODING"
+      ],
+      "obligations": [
+        "Deployment-hardware qualification and full production gates remain under parent campaign; no MGS/QR replacement claimed"
+      ]
+    },
+    {
+      "id": "K3",
+      "statement": "Directional p(J)v defect yields explicit shifted quotient residual with weighted coercivity error bound",
+      "scope": "D nonzero, sigma nonnegative, frozen J/v/metric, alpha positive; exact arithmetic plus stated roundoff owners",
+      "basis": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "evidence_refs": [
+        "PROOFS",
+        "CHECKS",
+        "NATIVE-CODING"
+      ],
+      "obligations": [
+        "Native directed residual/provider contract before solver dispatch adoption"
+      ]
+    },
+    {
+      "id": "K4",
+      "statement": "Same-J shifted recycle images have an exact affine update with a propagated defect bound",
+      "scope": "Identity or explicitly handled fixed preconditioner, same U and J epoch; QR reorthogonalization still required",
+      "basis": [
+        "derived"
+      ],
+      "evidence_refs": [
+        "PROOFS"
+      ],
+      "obligations": [
+        "Native provider contract and rounding implementation"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "EXACT-IDENTITIES",
+      "domain": "math",
+      "result": "pass_scoped",
+      "evidence_refs": [
+        "CHECKS"
+      ],
+      "reason": "Exact rational matrix residual and Wolfram coefficient cancellation",
+      "execution_ref": "LIGHT-CHECK"
+    }
+  ],
+  "executions": [
+    {
+      "id": "LIGHT-CHECK",
+      "status": "completed",
+      "command": "Python3 Fraction inline exact 3x3 checks and Wolfram coefficient expansion d=1..6",
+      "environment": "Current workspace Python3; Wolfram Language evaluator",
+      "evidence_refs": [
+        "CHECKS"
+      ],
+      "exit_code": 0,
+      "reason": "8 rational identities pass; Wolfram output six zeros"
+    }
+  ],
+  "decisions": [
+    {
+      "action": "propose K1 source patch; K3 opt-in oracle; K4 theory contract only",
+      "reason": "Source proof isolates dead storage; new numerical paths need explicit certification owners"
+    },
+    {
+      "action": "root admitted K1 and opt-in K3 oracle before source edits",
+      "reason": "Independent theory/source review accepted scoped proof contracts"
+    },
+    {
+      "action": "close scoped theory-to-code unit with actual execution evidence",
+      "reason": "K1 unit+integration tests and K3 nine exact oracle tests passed at pinned source; full parallel allocator test failure retained separately"
+    }
+  ],
+  "overrides": [],
+  "failures": [],
+  "next_actions": [
+    "Reuse proven K1 and tested exact K3 oracle; native directed K3 provider is the next numerical obligation",
+    "Use parent standalone handoff for target-hardware A/A and factorial K1/A1 performance isolation; retain broad production HOLD"
+  ]
+}

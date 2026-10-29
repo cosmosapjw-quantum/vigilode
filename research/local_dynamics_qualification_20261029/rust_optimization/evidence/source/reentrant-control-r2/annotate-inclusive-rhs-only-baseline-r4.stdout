@@ -1,0 +1,73 @@
+--------------------------------------------------------------------------------
+Profile data file '/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/reentrant-control-r2/callgrind-rhs-only-baseline-r4.callgrind' (creator: callgrind-3.22.0)
+--------------------------------------------------------------------------------
+I1 cache: 
+D1 cache: 
+LL cache: 
+Timerange: Basic block 0 - 24338323
+Trigger: Program termination
+Profiled target:  /home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027 reentrant-nonlinear rhs-only 4 (PID 2152447, part 1)
+Events recorded:  Ir
+Events shown:     Ir
+Event sort order: Ir
+Thresholds:       99.9
+Include dirs:     
+User annotated:   
+Auto-annotation:  off
+
+--------------------------------------------------------------------------------
+Ir                   
+--------------------------------------------------------------------------------
+154,852,599 (100.0%)  PROGRAM TOTALS
+
+--------------------------------------------------------------------------------
+Ir                    file:function
+--------------------------------------------------------------------------------
+154,852,599 (100.0%)  ???:0x000000000001f540 [/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2]
+154,473,409 (99.76%)  ???:(below main) [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+154,473,397 (99.76%)  ./csu/../csu/libc-start.c:__libc_start_main@@GLIBC_2.34 [/usr/lib/x86_64-linux-gnu/libc.so.6]
+154,473,214 (99.76%)  ./csu/../sysdeps/nptl/libc_start_call_main.h:(below main) [/usr/lib/x86_64-linux-gnu/libc.so.6]
+154,471,161 (99.75%)  ???:main [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+154,360,585 (99.68%)  ???:std::sys::backtrace::__rust_begin_short_backtrace [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+154,360,581 (99.68%)  ???:production_return_bench_20261027::main [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+153,739,476 (99.28%)  ???:vigilode::explicit::Dopri5::solve_impl [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+ 82,465,376 (53.25%)  ???:rodas5p_integrators::dopri5::evaluate_rhs [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+ 59,533,956 (38.45%)  ???:production_return_bench_20261027::cases::solve::{{closure}} [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+ 24,328,026 (15.71%)  ???:production_return_bench_20261027::cases::rate [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+ 17,723,768 (11.45%)  ./math/../sysdeps/ieee754/dbl-64/s_sincos.c:__sincos_fma [/usr/lib/x86_64-linux-gnu/libm.so.6]
+ 11,945,596 ( 7.71%)  ???:rodas5p_integrators::dopri5_dense::Dopri5OutputSession::trial [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+ 11,531,512 ( 7.45%)  ???:rodas5p_integrators::dopri5::error_norm [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+ 10,412,188 ( 6.72%)  ./math/../sysdeps/ieee754/dbl-64/s_sin.c:__sincos_fma
+  9,514,248 ( 6.14%)  ???:rodas5p_integrators::output::land_capped [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+  7,963,202 ( 5.14%)  ./math/./w_exp_template.c:exp@@GLIBC_2.29 [/usr/lib/x86_64-linux-gnu/libm.so.6]
+  7,552,076 ( 4.88%)  ???:rodas5p_integrators::output::OutputCollector::limit_step [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+  6,065,578 ( 3.92%)  ./math/../sysdeps/ieee754/dbl-64/s_tanh.c:tanh [/usr/lib/x86_64-linux-gnu/libm.so.6]
+  5,216,182 ( 3.37%)  ???:0x00000000048a1400 [???]
+  4,941,564 ( 3.19%)  ./math/../sysdeps/ieee754/dbl-64/e_exp.c:__ieee754_exp_fma [/usr/lib/x86_64-linux-gnu/libm.so.6]
+  4,134,246 ( 2.67%)  ./math/./w_log1p_template.c:log1p [/usr/lib/x86_64-linux-gnu/libm.so.6]
+  3,696,192 ( 2.39%)  ???:rodas5p_integrators::output::step_to [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+  3,651,140 ( 2.36%)  ???:rodas5p_integrators::output::adaptive_end_step [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+  3,448,376 ( 2.23%)  ???:0x00000000048a1350 [???]
+  3,360,264 ( 2.17%)  ???:rodas5p_integrators::adaptive::adaptive_next_step_after_attempt_prevalidated [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+  3,174,028 ( 2.05%)  ./math/../sysdeps/ieee754/dbl-64/s_log1p.c:__log1p_fma [/usr/lib/x86_64-linux-gnu/libm.so.6]
+  2,503,548 ( 1.62%)  ???:0x00000000048a12e0 [???]
+  2,496,622 ( 1.61%)  ???:rodas5p_integrators::dopri5_dense::Dopri5OutputSession::accept [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+  2,443,484 ( 1.58%)  ./math/../sysdeps/ieee754/dbl-64/s_expm1.c:__expm1_fma [/usr/lib/x86_64-linux-gnu/libm.so.6]
+  2,405,952 ( 1.55%)  ???:rodas5p_integrators::adaptive::AdaptiveControllerState::propose_factor_prevalidated [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+  2,310,025 ( 1.49%)  ./string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:__memcpy_avx_unaligned_erms [/usr/lib/x86_64-linux-gnu/libc.so.6]
+  1,505,944 ( 0.97%)  ./math/../sysdeps/x86/fpu/fenv_private.h:__sincos_fma
+  1,484,600 ( 0.96%)  ./math/./w_pow_template.c:pow@@GLIBC_2.29 [/usr/lib/x86_64-linux-gnu/libm.so.6]
+  1,320,906 ( 0.85%)  ???:serde_json::value::ser::<impl serde_core::ser::Serialize for serde_json::value::Value>::serialize'2 [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+  1,233,360 ( 0.80%)  ???:0x00000000048a1370 [???]
+  1,210,520 ( 0.78%)  ./math/../sysdeps/ieee754/dbl-64/e_pow.c:__ieee754_pow_fma [/usr/lib/x86_64-linux-gnu/libm.so.6]
+    477,988 ( 0.31%)  ???:rodas5p_integrators::dopri5::Dopri5Workspace::accept_fsal [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+    473,510 ( 0.31%)  ???:rodas5p_integrators::output::OutputCollector::accept_prechecked [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+    411,597 ( 0.27%)  ./math/../sysdeps/ieee754/dbl-64/math_config.h:__ieee754_exp_fma
+    378,159 ( 0.24%)  ./elf/./elf/rtld.c:_dl_start [/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2]
+    377,486 ( 0.24%)  ./elf/../sysdeps/unix/sysv/linux/dl-sysdep.c:_dl_sysdep_start [/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2]
+    315,067 ( 0.20%)  ???:serde_json::value::ser::<impl serde_core::ser::Serialize for serde_json::value::Value>::serialize [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+    310,984 ( 0.20%)  ./elf/./elf/rtld.c:dl_main [/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2]
+    248,224 ( 0.16%)  ./elf/./elf/dl-reloc.c:_dl_relocate_object [/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2]
+    220,382 ( 0.14%)  ./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:__memset_avx2_unaligned_erms [/usr/lib/x86_64-linux-gnu/libc.so.6]
+    152,309 ( 0.10%)  ./elf/./elf/dl-lookup.c:_dl_lookup_symbol_x [/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2]
+

@@ -1,0 +1,119 @@
+{
+  "approval_contract": {
+    "approval_reference": "The approved payload is a separately reviewed immutable receipt; approval_receipt.path and sha256 bind its exact bytes.",
+    "approved_plan_core_sha256_required": "SHA256 of canonical JSON for every plan field except approval_receipt; use reference_launch_controller.plan_core_sha on the final executable plan.",
+    "decision_required": "APPROVED_SINGLE_REFERENCE_TASK",
+    "descriptor_binding": "Every allowed task requires descriptor case_id equal to selected case and size standard, checked before and after the child.",
+    "refresh_rule": "Any change to executable task, source, descriptor, environment, limits, output path, current cost snapshot, status or launch flag requires a newly reviewed approval receipt.",
+    "schema": "vigilode.independent-reference-launch-approval.v1",
+    "selected_case_required": "Must equal the sole tasks[0].case.",
+    "sparse_support_binding": "Case8 and case20 load the sparse support unconditionally; exact actual sibling path and SHA are required and checked before and after the child."
+  },
+  "approval_receipt": {
+    "path": "TODO_INDEPENDENT_REVIEW_APPROVAL_RECEIPT",
+    "sha256": "TODO_64_HEX_SHA256"
+  },
+  "blocked_process_tokens": [
+    "julia",
+    "cargo build",
+    "cargo test",
+    "cargo run",
+    "measurement",
+    "local_bottleneck_suite",
+    "native_dvode",
+    "vigilode-a07"
+  ],
+  "campaign_reservation_seconds": 900,
+  "child_hard_timeout_seconds": 900,
+  "controller_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/reference_launch_controller.py",
+  "controller_sha256": "96b59afc9d093fce74c6c892ef85e7c7681358beababa9769a39c566c39523ac",
+  "cost_events_lock_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/COST_EVENTS.lock",
+  "cost_events_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/COST_EVENTS.jsonl",
+  "cost_ledger_note": "Refresh and hash current canonical COST_EVENTS chain plus all native/controller costs after source freeze. No historical cost reset; fixed cap172800s and absolute deadline.",
+  "cost_ledger_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/COST_LEDGER_V6.json",
+  "cost_ledger_sha256": "TODO_REFRESH_FINAL_COST_LEDGER_SHA256",
+  "cost_root": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z",
+  "cpu": 0,
+  "descriptor_manifest_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/REFERENCE_MODEL_INVENTORY.json",
+  "descriptor_manifest_sha256": "800f68fb91c8609933cdbfae497cb1eff2129d7e0e70e20d998801962c119edc",
+  "execution_lock_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/.julia_comparison_campaign.lock",
+  "execution_policy": {
+    "full_vector_reference_artifacts_only": true,
+    "independent_cases_require_separate_plan_approval": true,
+    "no_automatic_3600_second_extension": true,
+    "no_concurrent_solver_timing_or_build": true,
+    "scientific_status": "NOT_ASSESSED_BY_CONTROLLER",
+    "sequence": [
+      20
+    ],
+    "stop_on_first_failure": true,
+    "whole_process_timeout_includes_preflight_and_final_receipts": true
+  },
+  "expected_cost_events_sha256": "TODO_REFRESH_AND_LOCK_CURRENT_COST_EVENTS_SHA256",
+  "finalize_reserve_seconds": 15,
+  "hard_deadline_utc": "2026-10-27T08:07:00Z",
+  "idle_timeout_seconds": 120,
+  "isolated_depot_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/full_followup_julia_env/depot",
+  "julia_executable_path": "/home/cosmosapjw/.julia/juliaup/julia-1.12.7+0.x64.linux.gnu/bin/julia",
+  "julia_executable_sha256": "582718c20c563d824b88a08e2a9d0afcf5015b3053f425697cecc79ec4e9ea36",
+  "julia_version": "1.12.7",
+  "launch_enabled": false,
+  "manifest_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/full_followup_julia_env/Manifest.toml",
+  "manifest_sha256": "efae48f9d5364cc06dadcb23dd90a29544e16698287ea691d08701a03cc322b8",
+  "new_48h_cap_seconds": 172800.0,
+  "output_limit_bytes": 536870912,
+  "output_root": "TODO_NEW_EXCLUSIVE_CASE20_OUTPUT_DIR_UNDER_CONTINUATION_ROOT",
+  "overall_hard_timeout_seconds": 900,
+  "poll_seconds": 5,
+  "prior_reference_context": {
+    "case20": "No case20 reference solve is authorized by this nonlaunchable template. Freeze a clean reviewed source commit, refresh cumulative costs and obtain a new exact plan approval before one bounded attempt.",
+    "case8_attempt": "ATTEMPT_001 under references/case08 is preserved failed/partial context; do not overwrite or reuse as a successful reference. New run gets fresh output directory.",
+    "cases9_11": "Independent cases: a failed case8 does not block a separately predeclared and reviewed case9 or case11 plan. Each invocation refreshes the same cumulative cost snapshot, uses a fresh exclusive output and obtains separate approval; never substitutes a task in an already approved plan."
+  },
+  "project_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/full_followup_julia_env/Project.toml",
+  "project_sha256": "aac35708e8d49ce88ee2d6e82b220a357d722683522f1e8e5a8b7d0b50e484f4",
+  "rss_limit_bytes": 12884901888,
+  "schema": "vigilode.independent-reference-launch-plan.v1",
+  "shared_execution_lock_participants": [
+    {
+      "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/julia_comparison.py",
+      "sha256": "8e0a5510f56052938ec09eaae216cb12b76f017b6b216b73f696bc46be0cb8b3"
+    },
+    {
+      "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+      "sha256": "5b056f7d2218af991d86272a04bf78d63eb66ce35531ec09da27683ccf64ed6b"
+    }
+  ],
+  "shared_execution_lock_receipt": {
+    "path": "TODO_POST_REPAIR_SHARED_EXECUTION_LOCK_REVIEW_RECEIPT",
+    "sha256": "TODO_64_HEX_SHA256"
+  },
+  "shared_execution_lock_status": "HOLD_CONTINUATION_PARTICIPATION_PENDING_INDEPENDENT_REVIEW",
+  "source": {
+    "head": "TODO_POST_REPAIR_COMMITTED_HEAD",
+    "repo": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout",
+    "tree": "TODO_POST_REPAIR_COMMITTED_TREE"
+  },
+  "status": "NONLAUNCHABLE_TEMPLATE_SOURCE_AND_REVIEW_GATES_PENDING",
+  "tasks": [
+    {
+      "case": 20,
+      "descriptor_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/describe_contracts/case20_standard.stdout",
+      "descriptor_sha256": "fab044d7ed2e4fe6ae80abe3b308143401b2079ef90d612e7699478cddfbb41b",
+      "julia_script_path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/independent_sparse_references.jl",
+      "julia_script_sha256": "f3a62d2502d45be25a41bb96a9c469ab75a52898efd2b93c3a6368b7d199ff6b",
+      "mode": "solve",
+      "required_outputs": [
+        "PROBE_CONTROL.json",
+        "REFERENCE_EVIDENCE.json",
+        "EXTERNAL_REFERENCE.json"
+      ],
+      "sparse_support_path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/sparse_jacobian_support.jl",
+      "sparse_support_sha256": "054f6d66207dde7f1778fd736b995a88c0d5b001f2d53216ad6dab9ab8d8262c"
+    }
+  ],
+  "template_note": "NONLAUNCHABLE. Exactly one predeclared case8 OR case9 OR case11 per invocation, each with a900s whole-controller reservation/cap including preflight and final receipts. Use the separate case templates before review. Requires frozen source, case-specific script/descriptor hashes, versioned Julia binary/environment, current global cost snapshot and hash-bound independent single-task plan approval. Never resets global task/cost root, cap or absolute deadline. Shared mutex participation remains HOLD until independent hash-bound review.",
+  "terminal_matrix_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/TERMINAL_MATRIX.json",
+  "terminal_matrix_sha256": "3609f1450300fb669f31b774ac1aacb1131f03b7e05afacf2871ef1d2530bb0b",
+  "thread_count": 1
+}

@@ -1,0 +1,198 @@
+{
+  "schema": "vigilode.spherical-information.paper-i-map.v1",
+  "input_archive_sha256": "25c67a4f0fcc3a44eee9d8bd8fad17aa38e01d84d4967182baca160bc27b5585",
+  "source_mappings": [
+    {
+      "file": "appendices/A_radial_proofs.tex",
+      "labels": [
+        "eq:rho-beta-chain",
+        "eq:angular-power-functional",
+        "eq:angular-functional-gradient",
+        "eq:divergence-preserving-lift",
+        "eq:angular-bregman-local-expansion"
+      ],
+      "use": "Contracted entropy, metric and lift identity",
+      "sha256": "f4be682718338b3a5530267a90d5b600077327367cdbd3396cd0f5044e329a7b"
+    },
+    {
+      "file": "sections/04_two_axis_budget.tex",
+      "labels": [
+        "eq:exact-two-axis-budget",
+        "eq:adjacent-angular-budget"
+      ],
+      "use": "Separate spectral/angular errors; grid projection is derived separately",
+      "sha256": "fdebfad5eb34c3aa118755344865a6f578b995c218856c6ffc7d14228b56c4d5"
+    },
+    {
+      "file": "sections/03b_angular_response.tex",
+      "labels": [
+        "eq:kinetic-fisher-metric",
+        "eq:radial-temperature-derivative"
+      ],
+      "use": "Occupation metric and response sensitivity",
+      "sha256": "6a99832fce6764807bf8e1ccf038d8a876c7fa3cb5b4a01230034e1d6f75b6ab"
+    },
+    {
+      "file": "sections/06f_entropy_observable_budget.tex",
+      "labels": [
+        "eq:entropy-ball-divergence",
+        "eq:entropy-budget-fisher-local"
+      ],
+      "use": "Unnormalized divergence and conditional observable uncertainty; radius is not inferred from moments",
+      "sha256": "8357b6efea2cd93b3d1f9815d5035dc4e473db87ab9dc706831e88433254e774"
+    },
+    {
+      "file": "appendices/G_poisson_calculus.tex",
+      "labels": [
+        "eq:poisson-composition",
+        "eq:poisson-entropy-contraction"
+      ],
+      "use": "Positive shellwise smoothing is kinematic resolution, not a physical evolution equation",
+      "sha256": "9ce7fc4766e8d0b75bea807fbf6f5d29dbbd3fd1d02996edb8abbba942e08229"
+    }
+  ],
+  "claims": [
+    {
+      "id": "T1",
+      "statement": "Positive conservative cell-average information loss equals exact discrete Bregman sum.",
+      "basis": [
+        "derived"
+      ],
+      "assumptions": [
+        "positive weights",
+        "positive scalar energy",
+        "one-field thermal section"
+      ],
+      "proof": "analysis/PAPER_I_METHODS_KO.md"
+    },
+    {
+      "id": "T2",
+      "statement": "Nested partition losses telescope and refinement gain is nonnegative.",
+      "basis": [
+        "derived"
+      ],
+      "assumptions": [
+        "fixed reference data",
+        "nested partition"
+      ],
+      "proof": "analysis/PAPER_I_METHODS_KO.md"
+    },
+    {
+      "id": "T3",
+      "statement": "Cell information loss sandwiches weighted L2 variance via extrema of F curvature.",
+      "basis": [
+        "derived"
+      ],
+      "assumptions": [
+        "positive bounded cell energy"
+      ],
+      "proof": "analysis/PAPER_I_METHODS_KO.md"
+    },
+    {
+      "id": "T4",
+      "statement": "Observable error obeys target-kernel variance weighted information bound.",
+      "basis": [
+        "derived"
+      ],
+      "assumptions": [
+        "same finite reference field",
+        "same positive quadrature",
+        "known kernel"
+      ],
+      "proof": "analysis/PAPER_I_METHODS_KO.md"
+    },
+    {
+      "id": "T5",
+      "statement": "Optimal leading-order cell-area density scales as [Fsecond(rho)|grad rho|^2]^(-1/2); cell count is no worse than uniform in that asymptotic model.",
+      "basis": [
+        "derived"
+      ],
+      "assumptions": [
+        "C2 positive field",
+        "small shape-regular approximately isotropic cells",
+        "fixed shape constant",
+        "area floor/ceiling handled separately"
+      ],
+      "proof": "analysis/PAPER_I_METHODS_KO.md"
+    },
+    {
+      "id": "T6",
+      "statement": "z=(2sqrt(3kappa)/3)rho^(3/8) flattens the scalar local Fisher metric.",
+      "basis": [
+        "derived"
+      ],
+      "assumptions": [
+        "rho>0",
+        "local metric, not exact finite Bregman distance"
+      ],
+      "proof": "analysis/PAPER_I_METHODS_KO.md"
+    },
+    {
+      "id": "T7",
+      "statement": "Massless MB joint(n,rho) entropy has positive-definite displayed Hessian and conservative mean preserves both moments.",
+      "basis": [
+        "derived"
+      ],
+      "assumptions": [
+        "massless Maxwell-Boltzmann thermochemical section",
+        "n>0",
+        "rho>0"
+      ],
+      "proof": "analysis/PAPER_I_METHODS_KO.md"
+    },
+    {
+      "id": "T8",
+      "statement": "Joint Fisher metric is diagonal in n and dimensionless temperature tau=rho/(3n).",
+      "basis": [
+        "derived"
+      ],
+      "assumptions": [
+        "same as T7"
+      ],
+      "proof": "analysis/PAPER_I_METHODS_KO.md"
+    },
+    {
+      "id": "NCONS",
+      "statement": "Zero-fugacity massless MB energy-only coarse thermalization creates DeltaN=eta/4.",
+      "basis": [
+        "derived"
+      ],
+      "assumptions": [
+        "same reference state-counting normalization",
+        "mean energy projection",
+        "zero-log-fugacity MB"
+      ],
+      "proof": "analysis/PAPER_I_METHODS_KO.md"
+    }
+  ],
+  "implementation_contract": {
+    "conservative_state": [
+      "energy rho for one-field scalar prototype",
+      "per-energy occupation f or joint(n,rho) for number-conserving clients"
+    ],
+    "auxiliary_coordinates": [
+      "Fisher z for reconstruction/error weighting"
+    ],
+    "input": [
+      "positive angular weights",
+      "cell partition",
+      "positive reference field",
+      "target kernels",
+      "declared per-target error budget"
+    ],
+    "output": [
+      "cell information loss",
+      "nested information gain",
+      "target error bound",
+      "mass/energy conservation residual"
+    ],
+    "scope": "Finite reference-data compression certificate; continuum/PDE error needs independent resolution and temporal estimates."
+  },
+  "unresolved": [
+    "actual full transport speedup",
+    "long-time error accumulation",
+    "polarization coherency PSD coupling",
+    "continuum unresolved-tail certificate"
+  ],
+  "algebra_check": "analysis/PAPER_I_SYMBOLIC_CHECK.json"
+}

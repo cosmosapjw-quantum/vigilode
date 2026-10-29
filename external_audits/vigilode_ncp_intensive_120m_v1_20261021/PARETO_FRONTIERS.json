@@ -1,0 +1,231 @@
+{
+  "A-decay-n8": {
+    "description": "A nonstiff smooth; n=8, rtol=1e-6",
+    "points": [
+      {
+        "solver": "vigilode",
+        "backend": "native-rodas5p-fast",
+        "latency_s": 0.000161126,
+        "peak_rss_kib": 13312.0,
+        "accuracy_pass": true
+      },
+      {
+        "solver": "SciPy VODE Adams",
+        "backend": "VODE Adams",
+        "latency_s": 0.0004311869852244854,
+        "peak_rss_kib": 62976.0,
+        "accuracy_pass": true
+      },
+      {
+        "solver": "Julia OrdinaryDiffEq",
+        "backend": null,
+        "latency_s": 3.1103000000000004e-05,
+        "peak_rss_kib": 982880.0,
+        "accuracy_pass": true
+      }
+    ],
+    "frontier": [
+      {
+        "solver": "vigilode",
+        "backend": "native-rodas5p-fast",
+        "latency_s": 0.000161126,
+        "peak_rss_kib": 13312.0,
+        "accuracy_pass": true
+      },
+      {
+        "solver": "Julia OrdinaryDiffEq",
+        "backend": null,
+        "latency_s": 3.1103000000000004e-05,
+        "peak_rss_kib": 982880.0,
+        "accuracy_pass": true
+      }
+    ],
+    "limitations": [
+      "Only matched exact-confirmation measurements with memory observed; missing RSS/corrected cases excluded.",
+      "No timing authority; descriptive empirical Pareto only."
+    ]
+  },
+  "B-stiffdiag-n32-L1000": {
+    "description": "B diagonal stiff; n=32, spectral ratio about 1000, rtol=1e-6",
+    "points": [
+      {
+        "solver": "vigilode",
+        "backend": "native-rodas5p-fast",
+        "latency_s": 0.001023896,
+        "peak_rss_kib": 13312.0,
+        "accuracy_pass": true
+      },
+      {
+        "solver": "Julia OrdinaryDiffEq",
+        "backend": null,
+        "latency_s": 0.0010587670000000002,
+        "peak_rss_kib": 1008580.0,
+        "accuracy_pass": true
+      }
+    ],
+    "frontier": [
+      {
+        "solver": "vigilode",
+        "backend": "native-rodas5p-fast",
+        "latency_s": 0.001023896,
+        "peak_rss_kib": 13312.0,
+        "accuracy_pass": true
+      }
+    ],
+    "limitations": [
+      "Only matched exact-confirmation measurements with memory observed; missing RSS/corrected cases excluded.",
+      "No timing authority; descriptive empirical Pareto only."
+    ]
+  },
+  "C-rotation-w10": {
+    "description": "C rotation omega=10; rtol=1e-6, atol=1e-10",
+    "points": [],
+    "frontier": [],
+    "limitations": [
+      "Only matched exact-confirmation measurements with memory observed; missing RSS/corrected cases excluded.",
+      "No timing authority; descriptive empirical Pareto only."
+    ]
+  },
+  "D-damping-z1": {
+    "description": "D critical damping zeta=1; rtol=1e-6",
+    "points": [
+      {
+        "solver": "vigilode",
+        "backend": "native-rodas5p-fast",
+        "latency_s": 0.000114631,
+        "peak_rss_kib": 13312.0,
+        "accuracy_pass": true
+      },
+      {
+        "solver": "Julia OrdinaryDiffEq",
+        "backend": null,
+        "latency_s": 0.000351836,
+        "peak_rss_kib": 1010380.0,
+        "accuracy_pass": true
+      }
+    ],
+    "frontier": [
+      {
+        "solver": "vigilode",
+        "backend": "native-rodas5p-fast",
+        "latency_s": 0.000114631,
+        "peak_rss_kib": 13312.0,
+        "accuracy_pass": true
+      }
+    ],
+    "limitations": [
+      "Only matched exact-confirmation measurements with memory observed; missing RSS/corrected cases excluded.",
+      "No timing authority; descriptive empirical Pareto only."
+    ]
+  },
+  "E-nonnormal-transient": {
+    "description": "E triangular nonnormal exact transient; rtol=1e-6",
+    "points": [
+      {
+        "solver": "vigilode",
+        "backend": "native-rodas5p-fast",
+        "latency_s": 0.000108518,
+        "peak_rss_kib": 13312.0,
+        "accuracy_pass": true
+      },
+      {
+        "solver": "Julia OrdinaryDiffEq",
+        "backend": null,
+        "latency_s": 0.00017287200000000002,
+        "peak_rss_kib": 1003080.0,
+        "accuracy_pass": true
+      }
+    ],
+    "frontier": [
+      {
+        "solver": "vigilode",
+        "backend": "native-rodas5p-fast",
+        "latency_s": 0.000108518,
+        "peak_rss_kib": 13312.0,
+        "accuracy_pass": true
+      }
+    ],
+    "limitations": [
+      "Only matched exact-confirmation measurements with memory observed; missing RSS/corrected cases excluded.",
+      "No timing authority; descriptive empirical Pareto only."
+    ]
+  },
+  "F-heat-n128": {
+    "description": "F periodic heat Fourier mode n=128; rtol=1e-6",
+    "points": [
+      {
+        "solver": "vigilode",
+        "backend": "native-rodas5p-fast",
+        "latency_s": 0.014555132,
+        "peak_rss_kib": 13824.0,
+        "accuracy_pass": true
+      },
+      {
+        "solver": "SciPy VODE BDF",
+        "backend": "VODE BDF",
+        "latency_s": 0.25239770498592407,
+        "peak_rss_kib": 63488.0,
+        "accuracy_pass": true
+      },
+      {
+        "solver": "Julia OrdinaryDiffEq",
+        "backend": null,
+        "latency_s": 0.009195117000000001,
+        "peak_rss_kib": 1010336.0,
+        "accuracy_pass": true
+      }
+    ],
+    "frontier": [
+      {
+        "solver": "vigilode",
+        "backend": "native-rodas5p-fast",
+        "latency_s": 0.014555132,
+        "peak_rss_kib": 13824.0,
+        "accuracy_pass": true
+      },
+      {
+        "solver": "Julia OrdinaryDiffEq",
+        "backend": null,
+        "latency_s": 0.009195117000000001,
+        "peak_rss_kib": 1010336.0,
+        "accuracy_pass": true
+      }
+    ],
+    "limitations": [
+      "Only matched exact-confirmation measurements with memory observed; missing RSS/corrected cases excluded.",
+      "No timing authority; descriptive empirical Pareto only."
+    ]
+  },
+  "G-mixed-nearzero": {
+    "description": "G mixed scale / near-zero; rtol=1e-6",
+    "points": [
+      {
+        "solver": "vigilode",
+        "backend": "native-rodas5p-fast",
+        "latency_s": 0.000194584,
+        "peak_rss_kib": 13312.0,
+        "accuracy_pass": true
+      },
+      {
+        "solver": "Julia OrdinaryDiffEq",
+        "backend": null,
+        "latency_s": 0.00020507900000000002,
+        "peak_rss_kib": 1004464.0,
+        "accuracy_pass": true
+      }
+    ],
+    "frontier": [
+      {
+        "solver": "vigilode",
+        "backend": "native-rodas5p-fast",
+        "latency_s": 0.000194584,
+        "peak_rss_kib": 13312.0,
+        "accuracy_pass": true
+      }
+    ],
+    "limitations": [
+      "Only matched exact-confirmation measurements with memory observed; missing RSS/corrected cases excluded.",
+      "No timing authority; descriptive empirical Pareto only."
+    ]
+  }
+}

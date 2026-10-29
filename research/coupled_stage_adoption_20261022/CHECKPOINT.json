@@ -1,0 +1,72 @@
+{
+  "schema_version": "vigilode.coupled_adoption.checkpoint.v1",
+  "implementation_commit": "e419f920f0b8d0b123af03df5e802e8fc612a75d",
+  "baseline_commit": "8878e55a54e3a5f99fa81d6d3b08e05c94ed3db2",
+  "preregistration_commit": "2ba9bdb49e91722f1381ed4e33ee0d65ab8d5a7b",
+  "branch": "research/coupled-stage-adoption-20261022",
+  "ncp_used": false,
+  "source_sha256": {
+    "Cargo.lock": "3c3310208cb895851aced4b4506ccd761e04c62d93113372919542478163a1e5",
+    "crates/rodas5p-integrators/src/adaptive_output.rs": "4f2106a46ea8784a0946c4691faa3cd168a6866c9461a43d3849c8ca6134a2d8",
+    "crates/vigilode-coupled/src/adaptive.rs": "5b7468d8b93e60d73fd69a1a8165665e9cb34d2c5e850314ba5facd70dd4cc88",
+    "crates/vigilode-coupled/src/raw_step.rs": "b4aa3d61f79fe26b45532b7249d39e7671614856acd3af832155d3e78342a16a",
+    "crates/vigilode-coupled/src/algebra.rs": "f16f905c3daaba06f1e8042a515556779cb45c5857eb0faf6a4dbef34cbd6051",
+    "crates/vigilode-coupled/src/solver.rs": "c81ad7d27536ba1c29a10ed3f4c767bde7752a241f8cfe7b0fe86e22fdee775d",
+    "crates/vigilode-coupled/src/lib.rs": "6676334f3d9736e1837b310d7e2c6487e63e070d5632dbc75c92d72b5e412bba",
+    "crates/vigilode-coupled/examples/adaptive_bench.rs": "cee64ff2389ffa57b934547e0471fca62824a572ab1cb3fd3e05c8f4bb5904bb",
+    "crates/vigilode-coupled/tests/raw_step_contracts.rs": "35edf581db0019aaae42fab9afde4893cd21db7786a590a6f75ddd496276de79",
+    "crates/vigilode-coupled/tests/adaptive_trajectory.rs": "1b9e4f729abb7aaa83562f9de431c358f05adb6c22702206c2234fd174d870cb"
+  },
+  "test_results": {
+    "passed": 62,
+    "failed": 0,
+    "receipt": "evidence/checks_source_v3/SUMMARY.json"
+  },
+  "prior_failed_runs": [
+    "evidence/test_first.json",
+    "evidence/checks_source_v1/SUMMARY.json",
+    "evidence/checks_source_v2/SUMMARY.json"
+  ],
+  "supported_scope": [
+    "autonomous ODE",
+    "identity mass represented by mass_matrix=None",
+    "user-provided JVP",
+    "forward time",
+    "endpoint landing output"
+  ],
+  "unsupported_scope": [
+    "nonautonomous equations",
+    "nonidentity/singular mass",
+    "dense interpolation in new driver",
+    "global verified error certificate",
+    "zero allocation"
+  ],
+  "proof_details": "THEORY_KO.md",
+  "next_development": "NEXT_STEPS.json",
+  "benchmark_commit": "53920cc617c317927fcabe90f6b66f1a9fbf79bd",
+  "benchmark_source_sha256": {
+    "crates/vigilode-coupled/examples/adaptive_bench.rs": "6b7d19acd0d10c0fcb84e700855b744b74402be90c1cedaf2fae0c8398153f00",
+    "research/coupled_stage_adoption_20261022/analyze_local_bench.py": "0d60850d7351a5f84fe80ea9e9bae0b9e3314e81a0cef42a06c89ddf3a664933",
+    "research/coupled_stage_adoption_20261022/run_local_bench.py": "d186050bf7301740060bcebbe6e8800dad02f534fac3c289b9f50ef06c258c2f"
+  },
+  "benchmark_timing_boundary": "Full integration and workspace construction; reference evaluation and JSON serialization happen after timer stops",
+  "postprocessing_source_sha256": {
+    "research/coupled_stage_adoption_20261022/analyze_local_bench.py": "874f2715d2bd084629843059bca754d7d708c75608e8a822cee66fa75528f60a",
+    "research/coupled_stage_adoption_20261022/pack_local_bench.py": "9dfc11541a87a6d33ce50f72a2185c6d69feaa3890b49e7da96340c78e59ec10"
+  },
+  "postprocessing_note": "Final analysis differs from benchmark source; no solver or timing rerun. Raw inputs are preserved and all 102 archived files are hash-verified.",
+  "benchmark_results": {
+    "configurations": 51,
+    "successful_warmups": 51,
+    "successful_timed_solves": 153,
+    "elapsed_campaign_seconds": 216.6881293769984,
+    "raw_archive": "evidence/local_bench/RAW_OUTPUTS.tar.gz",
+    "raw_archive_sha256": "1fd239dcce784a6638f66649dc880050914c1c049bc3781fac2142e756225265",
+    "summary": "evidence/local_bench/SUMMARY.json"
+  },
+  "ledger_entries": [
+    "L-0158",
+    "L-0159",
+    "L-0160"
+  ]
+}

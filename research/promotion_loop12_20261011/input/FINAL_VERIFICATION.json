@@ -1,0 +1,107 @@
+{
+  "schema": "rvj-loop12-final-verification-v1",
+  "date": "2026-10-11",
+  "status": "SCOPED_CONSTRUCTIVE_THEOREMS_AND_REFERENCE_VERIFIED__HOLD",
+  "new_unit_tests": {
+    "passed": 23,
+    "failed": 0,
+    "command": "bash REPLAY.sh",
+    "exit_code": 0,
+    "log": "evidence/FINAL_REPLAY.log"
+  },
+  "exact_symbolic_checks": {
+    "passed": 34,
+    "failed": 0,
+    "evidence": "evidence/SYMBOLIC_CHECKS.json"
+  },
+  "connected_Wolfram": {
+    "executed": true,
+    "warning_free": true,
+    "role": "symbolic identity cross-check, not independent final reviewer",
+    "evidence": "evidence/WOLFRAM_CHECKS.json"
+  },
+  "main_runs": 7,
+  "largest_mode_count": 1025,
+  "full_mode_audit_points_per_run": 6,
+  "floating_oracle": "DOP853 at two tolerances; not a formal validated oracle",
+  "oracle_resolution_exception": {
+    "case": "width0",
+    "double_oracle_resolves_certificate": false,
+    "resolution": "100-digit analytic exact-coalescence audit",
+    "max_ratio": 0.00209047781533
+  },
+  "adaptive_order": {
+    "trials": [
+      4,
+      8,
+      12,
+      16
+    ],
+    "accepted": 16,
+    "all_rejected_work_counted": true,
+    "separate_selected_order_oracle": true
+  },
+  "exact_same_map_comparisons": {
+    "n": [
+      7,
+      31,
+      127
+    ],
+    "all_equal": true,
+    "kernel_term_ratios": [
+      7,
+      31,
+      127
+    ]
+  },
+  "constructive_complexity_case": {
+    "guaranteed_accuracy_family_explicit": true,
+    "tol": "1e-7",
+    "selected_p_D_S": [
+      18,
+      36,
+      18
+    ],
+    "actual_n": 17,
+    "evidence": "evidence/CONSTRUCTIVE_CONVERGENCE.json",
+    "kappa": 0
+  },
+  "final_source_replay": {
+    "cases": 7,
+    "exact_candidate_and_certificate_equal": true,
+    "new_oracle_campaign": false
+  },
+  "online_implementation": {
+    "Jacobian": 0,
+    "JVP": 0,
+    "VJP": 0,
+    "finite_difference_directional": 0,
+    "Krylov": 0,
+    "factorization": 0,
+    "high_order_vector_field_derivatives": 0
+  },
+  "limits": [
+    "common kappa>=0 proved for kernel bounds but executed code kappa=0",
+    "known diagonal frequency packet and rank1 mean feedback; not arbitrary current Jacobian",
+    "single finite window and adaptive kernel order, not full adaptive timestep integrator",
+    "core exact Fraction arithmetic, not native interval f64",
+    "all initial amplitudes retained, no arbitrary scalar compression",
+    "arithmetic work reduction versus stated full-waveform schedule, not optimal solver wall-clock theorem"
+  ],
+  "parent_scientific_campaign_rerun": false,
+  "native_Rust_executed": false,
+  "Vigilode_read_or_mutation": false,
+  "harness_live_core_read": true,
+  "history_source_archives_indexed": 13,
+  "owner_self_review": true,
+  "independent_final_review": "UNAVAILABLE",
+  "promotion": "HOLD",
+  "novelty_or_priority_claim": false,
+  "failures": "evidence/FAILURE_REGISTRY.json",
+  "last_test_check": {
+    "passed": 23,
+    "failed": 0,
+    "log": "evidence/LAST_TESTS.log",
+    "exit_code": 0
+  }
+}

@@ -1,0 +1,25 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-readonly/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.49s
+     Running tests/all_dag_a06_direct.rs (/workspace/scratch/0dc1e721cf82/runtime/all-dag-target/debug/deps/all_dag_a06_direct-51e4d57669fd506f)
+
+running 3 tests
+test exactly_singular_schur_refuses_and_invalidates_reusable_factors ... FAILED
+test non_neumann_inverse_covers_exact_dyadic_solutions_at_native_sizes ... ok
+test opt_in_witnesses_preserve_every_stage_and_charge_eight_interval_passes ... ok
+
+failures:
+
+---- exactly_singular_schur_refuses_and_invalidates_reusable_factors stdout ----
+
+thread 'exactly_singular_schur_refuses_and_invalidates_reusable_factors' (452) panicked at crates/rodas5p-integrators/tests/all_dag_a06_direct.rs:18:6:
+called `Result::unwrap()` on an `Err` value: DetuningOutOfRange { index: 0, value: -2.0 }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    exactly_singular_schur_refuses_and_invalidates_reusable_factors
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test all_dag_a06_direct`

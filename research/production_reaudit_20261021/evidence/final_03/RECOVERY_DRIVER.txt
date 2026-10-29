@@ -1,0 +1,149 @@
+#!/usr/bin/env python3
+"""Recover only interrupted/unrun final02 groups; preserve failed raw evidence."""
+import ast
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import platform
+import re
+import shutil
+import subprocess
+import sys
+import time
+
+ROOT = Path('/workspace/scratch/0dc1e721cf82/vigilode')
+HERE = ROOT / 'research/production_reaudit_20261021'
+OLD = HERE / 'evidence/final_02'
+OUT = HERE / 'evidence/final_03'
+NATIVE = '/workspace/scratch/0dc1e721cf82/runtime/final-target'
+CLIPPY = '/workspace/scratch/0dc1e721cf82/runtime/clippy-final-target'
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+def write(path, value):
+    temp = path.with_suffix(path.suffix + '.tmp')
+    temp.write_text(json.dumps(value, indent=2) + '\n')
+    temp.replace(path)
+
+spec = importlib.util.spec_from_file_location('frozen_targeted', HERE / 'run_targeted.py')
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+tree = ast.parse((HERE / 'run_targeted.py').read_text())
+main = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'main')
+assignment = next(node for node in main.body if isinstance(node, ast.Assign)
+                  and any(isinstance(target, ast.Name) and target.id == 'groups' for target in node.targets))
+groups = eval(compile(ast.Expression(assignment.value), '<frozen group matrix>', 'eval'), module.__dict__)
+before = json.loads((OLD / 'SOURCE_BEFORE.json').read_text())
+assert module.source_manifest() == before, 'source changed after interrupted final02'
+assert [name for name, _ in groups][:12] == [
+    'core', 'krylov', 'ported', 'compatibility', 'homotopy_unit', 'dense_transaction',
+    'lagged', 'global_budget', 'n05_stage_target', 'n05_diagonal', 'comparison_clients', 'facade']
+assert len(groups) == 19
+OUT.mkdir(exist_ok=False)
+shutil.copyfile(Path(__file__), OUT / 'RECOVERY_DRIVER.txt')
+shutil.copyfile(OLD / 'SOURCE_BEFORE.json', OUT / 'SOURCE_BEFORE.json')
+write(OLD / 'SOURCE_AFTER.json', module.source_manifest())
+source_sha = sha(OLD / 'SOURCE_BEFORE.json')
+
+known_printed_counts = [13, 9, 72, 11, 2, 56, 26, 9, 4, 3, 8]
+prefix = []
+for (name, argv), passed in zip(groups, known_printed_counts):
+    log = OLD / (name + '.log')
+    counts = re.findall(r'test result: \w+\. (\d+) passed; (\d+) failed; (\d+) ignored;', log.read_text())
+    assert sum(int(row[0]) for row in counts) == passed
+    assert sum(int(row[1]) for row in counts) == 0
+    prefix.append({'id': name, 'kind': 'native', 'argv': argv, 'exit_code': 0,
+                   'exit_code_provenance': 'Actual printed JSON from unified execution session21421 before ENOSPC; progress file subsequently truncated',
+                   'passed': passed, 'failed': 0, 'ignored': sum(int(row[2]) for row in counts),
+                   'log': str(log.relative_to(ROOT)), 'log_sha256': sha(log), 'target_dir': NATIVE,
+                   'elapsed_seconds_diagnostic': None, 'attempt': 'final_02'})
+facade_log = OLD / 'facade.log'
+failed = {'id': 'facade', 'kind': 'native', 'argv': groups[11][1], 'exit_code': None,
+          'status': 'FAILED_LINKER_OUTPUT_AND_LOST_EXIT_RECEIPT',
+          'exit_code_provenance': 'Cargo return code was not durably recorded before the runner failed writing PROGRESS.json; do not infer a numeric code',
+          'passed': 0, 'failed': 0, 'ignored': 0, 'log': str(facade_log.relative_to(ROOT)),
+          'log_sha256': sha(facade_log), 'target_dir': NATIVE}
+terminal = '''Final02 execution session21421 exited1. Prior group JSON reports recorded actual exit_code0 for core13, krylov9, ported72, compatibility11, homotopy_unit2, dense_transaction56, lagged26, global_budget9, n05_stage_target4, n05_diagonal3, comparison_clients8.
+Traceback (most recent call last):
+  File "research/production_reaudit_20261021/run_targeted.py", line76, in <module>
+    if __name__=='__main__': raise SystemExit(main())
+  File "research/production_reaudit_20261021/run_targeted.py", line68, in main
+    rows.append(row); (out/'PROGRESS.json').write_text(json.dumps(rows,indent=2)+'\\n')
+  File "pathlib.py", line1048, in write_text
+    return f.write(data)
+OSError: [Errno28] No space left on device
+This is a faithful condensed transcription of the observed terminal traceback, not an invented Cargo exit code. The complete facade linker output remains facade.log. The zero-byte PROGRESS.json is preserved unchanged.
+'''
+(OLD / 'INTERRUPTION.log').write_text(terminal)
+write(OLD / 'INTERRUPTION.json', {
+    'schema': 'vigilode.execution-interruption.v1', 'runner_exit_code': 1, 'session_id': 21421,
+    'error': 'OSError ENOSPC writing PROGRESS.json after facade linker failure',
+    'progress_bytes_retained': (OLD / 'PROGRESS.json').stat().st_size,
+    'known_successful_groups': prefix, 'interrupted_group': failed,
+    'not_started': [name for name, _ in groups[12:]],
+    'source_unchanged_after_interruption': True,
+    'cleanup': 'Root reported successful cargo clean of inactive runtime/target and runtime/dense-target. This recovery driver deletes no source, archive, or target.'})
+common = {'schema': 'vigilode.production_reaudit.execution.v1',
+          'toolchain': subprocess.check_output(['rustc', '--version'], text=True).strip(),
+          'cargo': subprocess.check_output(['cargo', '--version'], text=True).strip(),
+          'platform': platform.platform(), 'target_dir': NATIVE, 'clippy_target_dir': CLIPPY,
+          'source_manifest_before_sha256': source_sha,
+          'not_run': ['full workspace suite', 'full native benchmark crate: exact dependencies/native toolchain missing', 'controlled-host speed campaign']}
+write(OLD / 'EXECUTION.json', {**common, 'status': 'FAIL', 'source_unchanged': True,
+    'source_manifest_after_sha256': sha(OLD / 'SOURCE_AFTER.json'), 'commands': prefix + [failed],
+    'native_tests_passed': 213, 'doc_tests_passed': 0, 'python_tests_passed': 0,
+    'ignored_tests': sum(row['ignored'] for row in prefix),
+    'scope': 'Reconstructed interrupted receipt. Successful exit codes are from actual printed output; facade numeric exit code unavailable. Original truncated progress and logs preserved.'})
+
+rows = []
+for name, argv in groups[11:]:
+    start = time.monotonic()
+    log = OUT / (name + '.log')
+    env = dict(os.environ)
+    env.update(CARGO_TARGET_DIR=CLIPPY if name == 'clippy' else NATIVE,
+               CARGO_BUILD_JOBS='1', RUST_TEST_THREADS='1', PYTHONDONTWRITEBYTECODE='1')
+    with log.open('w') as handle:
+        result = subprocess.run(argv, cwd=ROOT, env=env, stdout=handle, stderr=subprocess.STDOUT)
+    raw = log.read_text()
+    counts = re.findall(r'test result: \w+\. (\d+) passed; (\d+) failed; (\d+) ignored;', raw)
+    row = {'id': name, 'kind': 'python' if name == 'python_contracts' else ('doctest' if 'doc' in name else 'native'),
+           'argv': argv, 'exit_code': result.returncode, 'elapsed_seconds_diagnostic': time.monotonic()-start,
+           'passed': sum(int(c[0]) for c in counts), 'failed': sum(int(c[1]) for c in counts),
+           'ignored': sum(int(c[2]) for c in counts), 'log': str(log.relative_to(ROOT)),
+           'log_sha256': sha(log), 'target_dir': env['CARGO_TARGET_DIR'], 'attempt': 'final_03'}
+    if name == 'python_contracts':
+        line = next((line for line in reversed(raw.splitlines()) if re.search(r'\d+ (?:passed|failed|error|skipped)', line)), '')
+        for field, word in [('passed','passed'),('failed','failed'),('skipped','skipped'),('errors','error')]:
+            match = re.search(r'(\d+) '+word, line)
+            row[field] = int(match.group(1)) if match else 0
+    rows.append(row)
+    write(OUT / 'PROGRESS.json', rows)
+    print(json.dumps({key: row[key] for key in ['id','exit_code','passed','failed','ignored']}), flush=True)
+
+after = module.source_manifest()
+write(OUT / 'SOURCE_AFTER.json', after)
+unchanged = before == after
+selected = prefix + rows
+aggregate = {**common, 'source_manifest_after_sha256': sha(OUT / 'SOURCE_AFTER.json'),
+    'source_unchanged': unchanged, 'status': 'PASS_TARGETED' if unchanged and all(row['exit_code']==0 for row in selected) else 'FAIL',
+    'commands': selected, 'native_tests_passed': sum(row['passed'] for row in selected if row['kind']=='native'),
+    'doc_tests_passed': sum(row['passed'] for row in selected if row['kind']=='doctest'),
+    'python_tests_passed': sum(row['passed'] for row in selected if row['kind']=='python'),
+    'python_tests_skipped': sum(row.get('skipped',0) for row in selected if row['kind']=='python'),
+    'ignored_tests': sum(row['ignored'] for row in selected if row['kind']!='python'),
+    'composition': {'policy': 'Reuse only actual successful final02 groups; retry interrupted facade and execute previously unrun groups under exactly identical source/profile/target policy.',
+                    'first_attempt': 'evidence/final_02/EXECUTION.json', 'recovery_attempt': 'evidence/final_03/EXECUTION.json',
+                    'preserved_failed_attempt': failed, 'required_groups': [name for name,_ in groups],
+                    'final02_groups_reused': [row['id'] for row in prefix], 'final03_groups_executed': [row['id'] for row in rows],
+                    'source_manifests_identical': unchanged},
+    'scope': 'Changed-dependency native/compatibility matrix plus Python contracts. Failed disk-exhaustion attempt preserved. Does not promote global accuracy or timing.'}
+write(OUT / 'EXECUTION.json', {**aggregate, 'commands': rows,
+    'native_tests_passed': sum(row['passed'] for row in rows if row['kind']=='native'),
+    'scope': 'Recovery attempt only: interrupted facade and previously unrun groups. See AGGREGATE_EXECUTION.json for all19 groups.'})
+write(OUT / 'AGGREGATE_EXECUTION.json', aggregate)
+write(HERE / 'EXECUTION.json', aggregate)
+print(json.dumps({key: aggregate[key] for key in ['status','source_unchanged','native_tests_passed','doc_tests_passed','python_tests_passed','python_tests_skipped','ignored_tests']}), flush=True)
+raise SystemExit(aggregate['status'] != 'PASS_TARGETED')

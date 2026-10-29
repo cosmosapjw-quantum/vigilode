@@ -1,0 +1,299 @@
+{
+  "query": "Which primary research establishes rigorous global error bounds for switching between numerical ODE integrators using local defects and logarithmic norms, while differentiating bounded computational speculation from accuracy acceptance?",
+  "retrieved_at": "2026-10-29",
+  "papers": [
+    {
+      "title": "On nonlinear difference and differential equations",
+      "doi": "10.1007/BF01934923",
+      "abstract": "A generalization of the logarithmic norm to nonlinear operators, the Dahlquist constant is introduced as a useful tool for the estimation and analysis of error propagation in general nonlinear first-order ODE's. It is a counterpart to the Lipschitz constant which has similar applications to difference equations. While Lipschitz constants can also be used for ODE's, estimates based on the Dahlquist constant always give sharper results. The analogy between difference and differential equations is investigated, and some existence and uniqueness results for nonlinear (algebraic) equations are given. We finally apply the formalism to the implicit Euler method, deriving a rigorous global error bound for stiff nonlinear problems.",
+      "urls": {
+        "order": [
+          "Html"
+        ],
+        "data": {
+          "Html": [
+            "https://link.springer.com/article/10.1007/BF01934923"
+          ]
+        },
+        "is_show": true
+      },
+      "authors": {
+        "total": 1,
+        "data": [
+          {
+            "display_name": "Gustaf Söderlind",
+            "id": 2063173829,
+            "slug": "gustaf-soderlind",
+            "unique_id": "4oifxid2ku",
+            "full_slug": "gustaf-soderlind-4oifxid2ku",
+            "affiliation_full_slug": "royal-institute-of-technology-1g8qvoge"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Rigorous defect control and the numerical solution of ordinary differential equations",
+      "doi": null,
+      "abstract": "Modern numerical ordinary differential equation initial-value problem (ODE-IVP) solvers compute a piecewise polynomial approximate solution to the mathematical problem. Evaluating the mathematical problem at this approximate solution defines the defect. Corless and Corliss proposed rigorous defect control of numerical ODE-IVP. This thesis automates rigorous defect control for explicit, first-order, nonlinear ODE-IVP. Defect control is residual-based backward error analysis for ODE, a special case of Wilkinson’s backward error analysis. This thesis describes a complete software implementation of the Corless and Corliss algorithm and extensive numerical studies. Basic time-stepping software is adapted to defect control and implemented. Advances in software developed for validated computing applications and advances in programming languages supporting operator overloading enable the computation of a tight rigorous enclosure of the defect evaluated at the approximate solution with Taylor models. Rigorously bounding a norm of the defect, the Corless and Corliss algorithm controls to mathematical certainty the norm of the defect to be less than a user specified tolerance over the integration interval. The validated computing software used in this thesis happens to compute a rigorous supremum norm. The defect of an approximate solution to the mathematical problem is associated with a new problem, the perturbed reference problem. This approximate solution is",
+      "urls": {
+        "order": [
+          "Pdf",
+          "Html"
+        ],
+        "data": {
+          "Pdf": [
+            "https://macsphere.mcmaster.ca/bitstream/11375/22733/2/ernsthausen_john_m_finalsubmission2017october_msc.pdf"
+          ],
+          "Html": [
+            "https://macsphere.mcmaster.ca/handle/11375/22733"
+          ]
+        },
+        "is_show": true
+      },
+      "authors": {
+        "total": 1,
+        "data": [
+          {
+            "display_name": "John+ Ernsthausen",
+            "id": 3065483070,
+            "slug": "john-ernsthausen",
+            "unique_id": "1yzr9pgr4f",
+            "full_slug": "john-ernsthausen-1yzr9pgr4f"
+          }
+        ]
+      }
+    },
+    {
+      "title": "On the Error in QR Integration",
+      "doi": "10.1137/06067818X",
+      "abstract": "An important change of variables for a linear time varying system $\\dot x=A(t)x, t\\ge 0$, is that induced by the QR-factorization of the underlying fundamental matrix solution: $X=QR$, with $Q$ orthogonal and $R$ upper triangular (with positive diagonal). To find this change of variable, one needs to solve a nonlinear matrix differential equation for $Q$. Practically, this means finding a numerical approximation to $Q$ by using some appropriate discretization scheme, whereby one attempts to control the local error during the integration. Our contribution in this work is to obtain global error bounds for the numerically computed $Q$. These bounds depend on the local error tolerance used to integrate for $Q$, and on structural properties of the problem itself, but not on the length of the interval over which we integrate. This is particularly important, since—in principle—$Q$ may need to be found on the half-line $t\\ge 0$.",
+      "urls": {
+        "order": [
+          "Html",
+          "Others"
+        ],
+        "data": {
+          "Html": [
+            "https://epubs.siam.org/doi/abs/10.1137/06067818X",
+            "https://kuscholarworks.ku.edu/handle/1808/17247"
+          ],
+          "Others": [
+            "http://dx.doi.org/10.1137/06067818X",
+            "https://kuscholarworks.ku.edu/bitstream/1808/17247/1/VanVleck_SIAMNA_46%283%291166.pdf"
+          ]
+        },
+        "is_show": true
+      },
+      "authors": {
+        "total": 2,
+        "data": [
+          {
+            "display_name": "Luca Dieci",
+            "id": 228259077,
+            "slug": "luca-dieci",
+            "unique_id": "1yyahp6id4",
+            "full_slug": "luca-dieci-1yyahp6id4"
+          },
+          {
+            "display_name": "Erik S. Van Vleck",
+            "id": 2147730123,
+            "slug": "erik-s-van-vleck",
+            "unique_id": "31t3elq91t",
+            "full_slug": "erik-s-van-vleck-31t3elq91t"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Robust and reliable defect control for Runge-Kutta methods",
+      "doi": "10.1145/1206040.1206041",
+      "abstract": "The quest for reliable integration of initial value problems (IVPs) for ordinary differential equations (ODEs) is a long-standing problem in numerical analysis. At one end of the reliability spectrum are fixed stepsize methods implemented using standard floating point, where the onus lies entirely with the user to ensure the stepsize chosen is adequate for the desired accuracy. At the other end of the reliability spectrum are rigorous interval-based methods, that can provide provably correct bounds on the error of a numerical solution. This rigour comes at a price, however: interval methods are generally two to three orders of magnitude more expensive than fixed stepsize floating-point methods. Along the spectrum between these two extremes lie various methods of different expense that estimate and control some measure of the local errors and adjust the stepsize accordingly.In this article, we continue previous investigations into a class of interpolants for use in Runge-Kutta methods that have a defect function whose qualitative behavior is asymptotically independent of the problem being integrated. In particular the point, in a step, where the maximum defect occurs as h → 0 is known a priori. This property allows the defect to be monitored and controlled in an efficient and robust manner even for modestly large stepsizes. Our interpolants also have a defect with the highest possible order given the constraints imposed by the order of the underlying discrete formula. We demonstrate the approach on three Runge-Kutta methods of orders 5, 6, and 8, and provide Fortran and preliminary Matlab interfaces to these three new integrators. We also consider how sensitive such methods are to roundoff errors. Numerical results for four problems on a range of accuracy requests are presented.",
+      "urls": {
+        "order": [
+          "Pdf",
+          "Html"
+        ],
+        "data": {
+          "Pdf": [
+            "http://www.cs.toronto.edu/~wayne/research/papers/enright.pdf"
+          ],
+          "Html": [
+            "https://dblp.uni-trier.de/db/journals/toms/toms33.html#EnrightH07",
+            "https://dl.acm.org/doi/10.1145/1206040.1206041"
+          ]
+        },
+        "is_show": true
+      },
+      "authors": {
+        "total": 2,
+        "data": [
+          {
+            "display_name": "Wayne H. Enright",
+            "id": 2070586936,
+            "slug": "wayne-h-enright",
+            "unique_id": "3ot4qnk364",
+            "full_slug": "wayne-h-enright-3ot4qnk364",
+            "affiliation_full_slug": "university-of-toronto-3dwwuuvf"
+          },
+          {
+            "display_name": "Wayne B. Hayes",
+            "id": 2106340646,
+            "slug": "wayne-b-hayes",
+            "unique_id": "1pjelhq4b4",
+            "full_slug": "wayne-b-hayes-1pjelhq4b4",
+            "affiliation_full_slug": "university-of-california-irvine-3ptiah2u"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Error Estimation Techniques Based on Defect Computation and Global Reconstruction",
+      "doi": "10.1063/1.3498373",
+      "abstract": "The well‐known technique of defect correction has been used in various moldings for numerical integration of differential or integral equations. Essentially, it can be traced back to [10] where the idea was presented in in the context of initial value problems for ODEs, and to [9] where a general discussion of the principle is given. Here we focus on use of this principle as a tool in estimating local or global errors in a reliable and efficient way. Our general setting and guiding principle is presented in Section. In Section we first consider boundary value problems for ODEs. Since the main purpose of an error estimate is mesh adaptation, an essential requirement is that it has to be robust with respect to arbitrarily distributed mesh points, and we will exemplify how this can be achieved. In particular, we consider explicit first and second order problems. We sketch the idea how to argue asymptotic correctness and present a numerical example. We also propose a related approach for estimating the error ...",
+      "urls": {
+        "order": [
+          "Html"
+        ],
+        "data": {
+          "Html": [
+            "https://ui.adsabs.harvard.edu/abs/2010AIPC.1281..210A/abstract",
+            "https://aip.scitation.org/doi/10.1063/1.3498373"
+          ]
+        },
+        "is_show": true
+      },
+      "authors": {
+        "total": 1,
+        "data": [
+          {
+            "display_name": "Winfried Auzinger",
+            "id": 137077961,
+            "slug": "winfried-auzinger",
+            "unique_id": "11vlj9gqsu",
+            "full_slug": "winfried-auzinger-11vlj9gqsu"
+          }
+        ]
+      }
+    },
+    {
+      "title": "The logarithmic norm. History and modern theory",
+      "doi": "10.1007/S10543-006-0069-9",
+      "abstract": "In his 1958 thesis Stability and Error Bounds, Germund Dahlquist introduced the logarithmic norm in order to derive error bounds in initial value problems, using differential inequalities that distinguished between forward and reverse time integration. Originally defined for matrices, the logarithmic norm can be extended to bounded linear operators, but the extensions to nonlinear maps and unbounded operators have required a functional analytic redefinition of the concept. This compact survey is intended as an elementary, but broad and largely self-contained, introduction to the versatile and powerful modern theory. Its wealth of applications range from the stability theory of IVPs and BVPs, to the solvability of algebraic, nonlinear, operator, and functional equations.",
+      "urls": {
+        "order": [
+          "Html"
+        ],
+        "data": {
+          "Html": [
+            "https://link.springer.com/article/10.1007%2Fs10543-006-0069-9",
+            "https://lup.lub.lu.se/search/publication/67c82d12-1002-46bd-8084-d81f7409792d"
+          ]
+        },
+        "is_show": true
+      },
+      "authors": {
+        "total": 1,
+        "data": [
+          {
+            "display_name": "Gustaf Söderlind",
+            "id": 2063173829,
+            "slug": "gustaf-soderlind",
+            "unique_id": "4oifxid2ku",
+            "full_slug": "gustaf-soderlind-4oifxid2ku",
+            "affiliation_full_slug": "lund-university-1sy7t175"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Ashadowinglemmaapproachto globalerror analysis for initialvalue odes",
+      "doi": null,
+      "abstract": "The authors show that for dynamical systems that possess a type of piecewise hyperbolicity in which there is no decrease in the number of stable modes, the global error in a numerical approximation may be obtained as a reasonable magnification of the local error. In particular, under certain conditions the authors prove the existence of a trajectory on an infinite time interval of the given ordinary differential equation uniformly close to a given numerically computed orbit of the same differential equation by allowing for different initial conditions. For finite time intervals a general result is proved for obtaining a posteriori bounds on the global error based on computable quantities and on finding and bounding the norm ofa right inverse ofa particular matrix. Two methods for finding and bounding/estimating the norm of a right inverse are considered. One method is based upon the choice of the pseudo or generalized inverse. The other method is based upon solving multipoint boundary value problems (BVPs) with the choice ofboundary conditions motivated by the piecewise hyperbolicity concept. Numerical results are presented for the logistic equation, the forced pendulum equation, and the space discretized Chafee-Infante equation. 1. Introduction. In this paper we consider initial value ordinary differential equations and their discretization. We investigate both theoretically and numerically the global error in computing numerical approximations. It is well known (see (Ge), IS )) that the global error between the numerical approximation and the actual trajectory with the same initial condition may become large. In fact, for a numerical method of order p with a fixed stepsize of h and a differential equation with Lipschitz constant L, classical error estimates are of the form exp(Lt)h p at time t. On the other hand, local error control provides a tight bound in many instances. For example, the local error is a good estimate of the global error for many stiff initial value problems in which one-sided Lipschitz constants appear. Our contribution is to show that global errors stay reasonably bounded for the wider class of initial value problems that are piecewise hyperbolic with no decrease in the number of stable modes where in fact the number of stable modes may increase. These are not stable initial value problems in the classical sense, and the global error may not be of the order of the local error. We will show that if the initial condition for the discrete approximation is allowed to differ from that of the continuous trajectory, then for a large class ofproblems the global errormaybe represented as a reasonable magnification ofthe local error. This is importantwhen one is employing numerical simulations to study qualitative as well as quantitative features of dynamical systems. In this paperwe reserve the word orbit to denote a discrete sequence ofpoints and the word trajectory to denote a continuous function of time. We consider the class of problems in which there is no decrease in the number of stable modes ofthe linear variational equation along solution paths. This is reminiscent ofthe case in which there are several hyperbolic fixed points (i.e., saddle points) and a trajectory that passes near these fixed points in which the dimension of the stable manifold of these fixed points is not decreasing. This situation arises in certain space discretized parabolic partial differential",
+      "authors": {
+        "total": 2,
+        "data": [
+          {
+            "display_name": "Shui-Nee Chow",
+            "id": 2147291753,
+            "slug": "shui-nee-chow",
+            "unique_id": "4ndo77krsd",
+            "full_slug": "shui-nee-chow-4ndo77krsd"
+          },
+          {
+            "display_name": "Erik S. Van Vleck",
+            "id": 2631783359,
+            "slug": "erik-s-van-vleck",
+            "unique_id": "ayo7ulzvml",
+            "full_slug": "erik-s-van-vleck-ayo7ulzvml"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Error estimation for numerical approximations of ODEs via composition\n  techniques. Part I: One-step methods",
+      "doi": "10.48550/arxiv.2409.10548",
+      "abstract": "In this study, we introduce a refined method for ascertaining error estimations in numerical simulations of dynamical systems via an innovative application of composition techniques. Our approach involves a dual application of a basic one-step numerical method of order p in this part, and for the class of Backward Difference Formulas schemes in the second part [Deeb A., Dutykh D. and AL Zohbi M. Error estimation for numerical approximations of ODEs via composition techniques. Part II: BDF methods, Submitted, 2024]. This dual application uses complex coefficients, resulting outputs in the complex plane. The methods innovation lies in the demonstration that the real parts of these outputs correspond to approximations of the solutions with an enhanced order of p + 1, while the imaginary parts serve as error estimations of the same order, a novel proof presented herein using Taylor expansion and perturbation technique. The linear stability of the resulted scheme is enhanced compared to the basic one. The performance of the composition in computing the approximation is also compared. Results show that the proposed technique provide higher accuracy with less computational time. This dual composition technique has been rigorously applied to a variety of dynamical problems, showcasing its efficacy in adapting the time step,particularly in situations where numerical schemes do not have theoretical error estimation. Consequently, the technique holds potential for advancing adaptive time-stepping strategies in numerical simulations, an area where accurate local error estimation is crucial yet often challenging to obtain. ",
+      "authors": {
+        "total": 2,
+        "data": [
+          {
+            "display_name": "Ahmad Deeb",
+            "full_slug": null
+          },
+          {
+            "display_name": "Denys Dutykh",
+            "full_slug": null
+          }
+        ]
+      }
+    },
+    {
+      "title": "Error estimation for numerical approximations of ODEs via composition techniques. Part I: one-step methods",
+      "doi": "10.1007/s40314-026-03864-5",
+      "abstract": "In this study, we introduce a refined method for estimating errors in numerical simulations of dynamical systems through an innovative application of composition techniques. Our approach involves a dual application: a basic one-step numerical method of order p\\documentclass[12pt]{minimal} \\usepackage{amsmath} \\usepackage{wasysym} \\usepackage{amsfonts} \\usepackage{amssymb} \\usepackage{amsbsy} \\usepackage{mathrsfs} \\usepackage{upgreek} \\setlength{\\oddsidemargin}{-69pt} \\begin{document}$$\\textrm{p}$$\\end{document} in this part, and a class of Backward Difference Formulas (BDF) schemes in Part II (Deeb et al. 2026). This dual application uses complex coefficients, resulting in outputs in the complex plane. The method’s innovation lies in demonstrating that the real parts of these outputs correspond to approximations of the solutions with an enhanced order of p+1\\documentclass[12pt]{minimal} \\usepackage{amsmath} \\usepackage{wasysym} \\usepackage{amsfonts} \\usepackage{amssymb} \\usepackage{amsbsy} \\usepackage{mathrsfs} \\usepackage{upgreek} \\setlength{\\oddsidemargin}{-69pt} \\begin{document}$$\\textrm{p}+1$$\\end{document}, while the imaginary parts serve as error estimates of the same order, a novel proof presented herein. The linear stability of the resulting scheme is improved over that of the basic one. The performance of the composition in computing the approximation is also compared. The results show that the proposed technique attains higher accuracy with reduced computational time relative to the basic integrators; compared with established methods of the same order it remains competitive in cost while additionally supplying a built-in error estimate, and it is most advantageous for integrators that lack a native error estimator. This dual composition technique has been rigorously applied to a variety of dynamical problems, demonstrating its efficacy in adapting the time step, particularly in situations where numerical schemes lack theoretical error estimates. Consequently, the technique has the potential to advance adaptive time-stepping strategies in numerical simulations.",
+      "urls": {
+        "order": [
+          "Pdf"
+        ],
+        "data": {
+          "Pdf": [
+            "https://export.arxiv.org/pdf/2409.10548v1.pdf"
+          ]
+        },
+        "is_show": true
+      },
+      "authors": {
+        "total": 2,
+        "data": [
+          {
+            "display_name": "Ahmad Deeb",
+            "id": 2118972707,
+            "slug": "ahmad-deeb",
+            "unique_id": "39vum8bfy8",
+            "full_slug": "ahmad-deeb-39vum8bfy8",
+            "affiliation_full_slug": "university-of-la-rochelle-1msdaood"
+          },
+          {
+            "display_name": "D. Dutykh",
+            "full_slug": null
+          }
+        ]
+      }
+    },
+    {
+      "title": "Idempotent-Numeric: An Invariant-Manifold and Idempotent Projection Computing Architecture for Robust Scientific Analysis",
+      "doi": "10.5281/zenodo.22834515",
+      "abstract": "Standard textbook numerical algorithms—spanning nonlinear root-finding, ill-conditioned linear solvers, polynomial interpolation, numerical calculus, and ordinary differential equation (ODE) integrators—suffer from pervasive numerical pathologies: division-by-zero explosions near critical points, conditioning decay in dense linear systems, Runge oscillations and unphysical overshoots in splines, truncation-roundoff tradeoffs in numerical derivatives, and secular energy drift in Hamiltonian dynamics. In this work, we present Idempotent-Numeric (IdemNumeric), a high-performance scientific computing architecture that unifies numerical analysis under the geometric framework of closed invariant-manifold projections satisfying the algebraic idempotency condition Π2 ≡ Π. Rather than proposing disconnected heuristic patches, IdemNumeric establishes an integrative framework across five core pillars: Metric-clamped Newton root enclosure preventing singularity divergence; Scale-invariant Ruiz-Birkhoff equilibration (ΠBirkhoff) and pre-factored linear constraint manifold projectors (Πconstraint), achieving up to 1.8× direct speedup over unprojected pseudo-inverses with exact machine-zero feasibility; Chebyshev-Gauss-Lobatto spectral fitting paired with Fritsch-Carlson shape-preserving monotone cone splines (Πmono) that strictly eliminate unphysical overshoots (0.00% overshoot); Pseudospectral differentiation matrices and positive Clenshaw-Curtis quadrature; and Energy-conserving invariant manifold integrators (|ΔE| ≤ 10-14), numerical Jacobian Hurwitz/Schur stability regularizers for stiff continuation, and C1-smooth permutation-ring CPG oscillators on invariant tori TK, coupled with Takens permutation entropy chaos diagnostics. Benchmarks against standard SciPy and NumPy implementations confirm up to 4× faster root convergence, exact energy preservation, and significant condition improvements across 64 automated verification tests. ",
+      "authors": {
+        "total": 1,
+        "data": [
+          {
+            "display_name": "A. Emre Cetin",
+            "full_slug": null
+          }
+        ]
+      }
+    }
+  ],
+  "adoption": "Primary-source leads only. Own derivation supplies the clock/fiber and ownership theorems; no novelty claim about logarithmic norms."
+}

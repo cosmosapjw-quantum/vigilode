@@ -1,0 +1,155 @@
+{
+  "review_id": "F23-NATIVE-SECONDARY",
+  "reviewer_role": "Independent task reviewer; implemented F1, did not implement or modify F2/F3",
+  "node_ids": [
+    "F2",
+    "F3"
+  ],
+  "spec_verdict": "PASS_WITH_EXPLICIT_SCOPED_LIMITATIONS",
+  "quality_verdict": "PASS_SCOPED_SCIENTIFIC_CERTIFICATION_AND_MEASUREMENT",
+  "blocking_findings": [],
+  "reviewed_files": [
+    "native.cpp",
+    "reference.py",
+    "tests.py",
+    "results.json",
+    "run.py",
+    "generate.py",
+    "circuits.hpp",
+    "derivation.md",
+    "measurements.md",
+    "task_report.json",
+    "source_hashes.json",
+    "tests.log"
+  ],
+  "review_method": "Read implementation, theorem derivation, existing logs and reported results; independently reconstruct interval/Krawczyk/domain arguments. No blanket campaign or existing test rerun. One targeted malformed-input countercheck built separately in reviews/.",
+  "accepted_guarantees": [
+    {
+      "id": "N1",
+      "claim": "Native outward original-residual certificates are mathematically valid under the documented binary64 environment for this bounded model.",
+      "reason": "Dyadic model coefficients are exact. Every non-dyadic Bernstein ratio and every 1/7,6/7,8/7 radius coefficient is computed by outward interval division. Each coefficient circuit encloses the exact rational Hermite candidate; Bernstein hulls enclose its entire slab. One-nextafter enclosures are valid for the stated RN binary64 operations with no FMA/FTZ/DAZ and no overflow.",
+      "evidence": [
+        "native.cpp I arithmetic and certificate",
+        "reference.py certificate",
+        "derivation.md Native outward polynomial certificate",
+        "results.json environment"
+      ]
+    },
+    {
+      "id": "N2",
+      "claim": "Radius accumulation and same-branch continuation are valid across all slabs of the supported domain.",
+      "reason": "The fixed point map q_i=x_i-q_{i+1}^2/4 maps Q into itself with L=1/8. It gives 8/7 root residual sensitivity and parameter Lipschitz bound. Slow field has inward boundary signs on X and reduced contraction rate 6/7. Delta=Df+Dg/7, Ewhole=E+h*Delta, Eend=E/(1+6h/7)+h*Delta, Qwhole=(8/7)*(Ewhole+Dg) are valid upper bounds. Native arithmetic propagates Eend upward; exact zero initial root and global box uniqueness identify a single branch without chart switches.",
+      "evidence": [
+        "derivation.md Model and physical branch",
+        "native.cpp certificate and main slab loop",
+        "tests.py test_01_contraction_constants"
+      ]
+    },
+    {
+      "id": "N3",
+      "claim": "The method called krawczyk provides a valid post-Newton interval root enclosure for every uncached noninitial root solve in the recorded campaign.",
+      "reason": "J has entries J_jj=1 and J_{j-1,j}=q_j/2. Code uses M_ij=delta_ij-R_ij-R_{i,j-1}*Q_j/2, matching I-RJ. R is an arbitrary binary64 preconditioner, which is admissible. Outward g and J ranges and strict component radius tests imply K(B) strictly inside B. The same test implies ||I-RJ(q)||<1 and therefore R nonsingular. Cube membership in Q plus global contraction fixes branch identity.",
+      "evidence": [
+        "native.cpp krawczyk",
+        "derivation.md Krawczyk comparison",
+        "results.json counts.krawczyk_inclusions",
+        "closure_probe.cpp"
+      ]
+    },
+    {
+      "id": "N4",
+      "claim": "The reported wall-clock comparison is fair within the stated first-passing-tested-grid tolerance contract.",
+      "reason": "Compiled, structured Newton and Newton-plus-Krawczyk all use the same model and final whole-path certificate; all first pass at N64 on the tested grid with almost identical root error bounds about 1.42e-9. Newton uses the same O(n) cyclic solve and warm-start/cache instead of an artificially expensive generic factorization. Krawczyk preconditioner and inclusion time remains included in integration and total time; shared certificate time is included. Offline source/object growth and compilation cost are separately reported. The documentation explicitly declines universal speedup and optimal-step claims.",
+      "evidence": [
+        "run.py",
+        "results.json matched_physical_budget",
+        "measurements.md",
+        "derivation.md Campaign, validation and limits"
+      ]
+    },
+    {
+      "id": "N5",
+      "claim": "Validation counts separate native certification from representative exact reference comparisons.",
+      "reason": "The native executable certifies every reported slab: 2160 distinct slabs, 15120 across 252 timed repeats of 36 configurations. The independent Fraction oracle is applied to 27 first/middle/last matched-run slabs and 135 bound comparisons only. Existing tests and documentation correctly state this representative coverage rather than implying all native slabs have been independently recomputed exactly.",
+      "evidence": [
+        "results.json counts and verification",
+        "tests.py test_04_exact_fraction_slabs",
+        "tests.log",
+        "derivation.md validation paragraph"
+      ]
+    }
+  ],
+  "nonblocking_findings": [
+    {
+      "id": "N-INFO-1",
+      "severity": "INFORMATIONAL",
+      "location": "native.cpp I(double a=0)",
+      "finding": "The singleton interval constructor itself permits NaN or infinity; it is not a hardened general-purpose interval API. The supported scientific guarantee is explicitly for bounded finite model inputs, and the documented certificate paths do not rely on admitting nonfinite inputs.",
+      "countercheck": "A review-only probe confirms I(NaN) admits a singleton, but NaN in a slow endpoint, algebraic endpoint, Krawczyk parameter, or Krawczyk candidate is rejected by downstream interval validity checks (4/4). No false certificate was observed.",
+      "action": "Optional future hardening: reject nonfinite singleton inputs explicitly if exposing the interval type as a public general-purpose API. No change required for the present scoped campaign.",
+      "evidence": [
+        "native_nonfinite_probe.cpp",
+        "native_nonfinite_probe.log"
+      ]
+    },
+    {
+      "id": "N-INFO-2",
+      "severity": "INFORMATIONAL",
+      "finding": "Timing records use seven in-process repeats in fixed configuration order; they are measurements, not a statistical speedup theorem. Certificate cost dominates and n16 compiled/Newton total ordering reverses. This is already correctly disclosed.",
+      "action": "Preserve the existing scope language and raw repeats; broader randomized and hardware campaigns are future work."
+    }
+  ],
+  "counterchecks": {
+    "executions": [
+      {
+        "command": "g++ -std=c++17 -O2 -fno-fast-math -ffp-contract=off -frounding-math native_nonfinite_probe.cpp -o native_nonfinite_probe",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "command": "./native_nonfinite_probe",
+        "exit_code": 0,
+        "stdout": "singleton_admits_nan=1 malformed_certificate_or_kraw_inputs_rejected=4/4\n",
+        "stderr": ""
+      }
+    ],
+    "source_hash_mismatches": []
+  },
+  "count_summary": {
+    "distinct_configurations": 36,
+    "timed_integrations": 252,
+    "distinct_slabs": 2160,
+    "timed_slabs": 15120,
+    "fraction_reference_slabs": 27
+  },
+  "compiler_contract": {
+    "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+    "machine": "x86_64",
+    "python": "3.12.14",
+    "compiler": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0",
+    "flags": [
+      "-std=c++17",
+      "-O2",
+      "-fno-fast-math",
+      "-ffp-contract=off",
+      "-frounding-math"
+    ],
+    "rounding_assumptions": "IEEE binary64 RN; no FTZ/DAZ, no fast-math, FMA disabled; finite bounded input domain",
+    "cpu_model": "AMD EPYC 9V74 80-Core Processor"
+  },
+  "remaining_obligations": [
+    "Do not generalize this finite structured cycle to arbitrary sparse algebraic systems or a generic compiler.",
+    "Do not claim all 2160 distinct native slabs have an exact-Fraction oracle comparison; exact independent coverage is 27.",
+    "No generic nonfinite-input interval-library guarantee, verified compiler guarantee, near-singular/stiff result, or universal timing advantage.",
+    "F1-dependent identity is the contraction-domain branch contract; this larger family does not test a nontrivial chart transition."
+  ],
+  "source_snapshot_sha256": {
+    "native.cpp": "43f3f2ce97694cd832938074f0516c15ba848d4431e7bf6ae88031411a566bb2",
+    "reference.py": "3ce35e719d6685d9585b6626c5395fc9c418d04373197e47daa9ed20a18b4c2b",
+    "tests.py": "fd93ad92bb3b0dd052836f77fef3e5dcceb09c308a43d4f0959224a2761459fa",
+    "results.json": "4f695cd9c4bd67e668d778cfeb1c753011373db64ee15f4eaaf86f3d323ca186",
+    "derivation.md": "9336a0268d4c2ff1ede9d938532745f160fc409633010dd369da562b98b4eb51",
+    "run.py": "f6addbc5d5469d1f0435e30ce399f66152adb9c3caa8f3ab83ad4e1534a52f5c"
+  }
+}

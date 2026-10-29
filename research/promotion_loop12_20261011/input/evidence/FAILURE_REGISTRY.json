@@ -1,0 +1,66 @@
+{
+  "schema": "rvj-loop12-failures-v1",
+  "events": [
+    {
+      "id": "F01",
+      "kind": "SOURCE_PATH",
+      "observation": "specified duplicated Dropbox folder absent",
+      "resolution": "direct connector search resolved actual single-level folder, read core live"
+    },
+    {
+      "id": "F02",
+      "kind": "IMPLEMENTATION_IMPORT",
+      "evidence": "IMPORT_COLLISION.log",
+      "observation": "package name code collided with Python stdlib",
+      "resolution": "renamed package rvj_packet"
+    },
+    {
+      "id": "F03",
+      "kind": "NEGATIVE_BASELINE",
+      "evidence": "RED.log",
+      "observation": "2 tests failed for suppressed kernel tail and pointwise instead of causal convolution",
+      "resolution": "explicit analytic kernel tail and factorial causal integral"
+    },
+    {
+      "id": "F04",
+      "kind": "IMPLEMENTATION_BIT_COMPLEXITY",
+      "evidence": "PHASE_RADIUS_TIMEOUT.log",
+      "observation": "unrounded rational radius repeatedly squared caused denominator growth",
+      "resolution": "outward dyadic radius after each squaring; repeated phase tests pass"
+    },
+    {
+      "id": "F05",
+      "kind": "AUDIT_COST_RUNTIME",
+      "evidence": [
+        "MAIN_TIMEOUT1.log",
+        "MAIN_PARTIAL1.json"
+      ],
+      "observation": "audit recomputed per-mode convolution at every sample; partial5cases retained",
+      "resolution": "shared two-polynomial output reconstruction; main completed exit0"
+    },
+    {
+      "id": "F06",
+      "kind": "NUMERICAL_ORACLE_RESOLUTION",
+      "evidence": [
+        "MAIN_RESULTS.json",
+        "COALESCENCE_HIGH_PRECISION.json"
+      ],
+      "observation": "Delta0 true bound smaller than double oracle noise; raw ratio above1",
+      "resolution": "independent analytic100digit solution gives ratio0.00209; double discrepancy retained"
+    },
+    {
+      "id": "F07",
+      "kind": "EXPECTED_ACCURACY_REJECTION",
+      "evidence": [
+        "ADAPTIVE_ORDER.json",
+        "SELECTED_ORDER_ORACLE.json"
+      ],
+      "observation": "Delta4 orders4,8,12 rejected target1e-7",
+      "resolution": "order16 accepted with full tail; no target/model changed"
+    }
+  ],
+  "not_failures": [
+    "unchanged prior no-go and generic RVJ counterexamples",
+    "lack of native Rust timing is unperformed scope, not a mathematical counterexample"
+  ]
+}

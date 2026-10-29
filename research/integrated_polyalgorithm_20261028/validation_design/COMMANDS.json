@@ -1,0 +1,719 @@
+{
+  "schema_version": 1,
+  "execution_status": "ALL_COMMANDS_PROSPECTIVE_NOT_RUN",
+  "runner_contract": "Parent harness executes argv arrays without shell interpolation and records scientific/command/provenance status separately. Zero selected tests does not pass. Manual/scientific acceptance requires evidence beyond exit0.",
+  "native_lock": "/tmp/vigilode-cargo-20261027.lock",
+  "toolchain": "1.94.1",
+  "env": {
+    "CARGO_BUILD_JOBS": "2",
+    "RAYON_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "RUSTDOCFLAGS": "-D warnings",
+    "native_lock": "/tmp/vigilode-cargo-20261027.lock",
+    "host_receipt": "evidence/HOST.json",
+    "fresh_target_directory": "Use a previously unused CARGO_TARGET_DIR for independent local release qualification; do not reuse cloud fingerprint diagnostics."
+  },
+  "commands": [
+    {
+      "id": "pr90-lu",
+      "gate_ids": [
+        "G90-LU"
+      ],
+      "argv": [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-core",
+        "--test",
+        "lu_workspace_contracts",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "All existing assertions pass; log reached test identities and actual ignored counts.",
+      "native_lock": true
+    },
+    {
+      "id": "pr90-modes",
+      "gate_ids": [
+        "G90-MODE"
+      ],
+      "argv": [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "rodas5p_fast_contracts",
+        "--test",
+        "partial_t_into_contracts",
+        "--test",
+        "fast_dense_contracts",
+        "--test",
+        "work_counter_lane_contracts",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Retain original solve, partial-time and callback counting contracts.",
+      "native_lock": true
+    },
+    {
+      "id": "pr90-economy",
+      "gate_ids": [
+        "G90-MODE"
+      ],
+      "argv": [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode-coupled",
+        "--test",
+        "economy_contracts",
+        "--test",
+        "economy_robustness",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Original residual/economy contracts pass without tolerance change.",
+      "native_lock": true
+    },
+    {
+      "id": "pr90-adapter",
+      "gate_ids": [
+        "G90-ADAPTER"
+      ],
+      "argv": [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "--test",
+        "comparator_dominance_contracts",
+        "--test",
+        "evidence_switch_contracts",
+        "--test",
+        "return_sentinel_contracts",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Original complete/prefix/fatal/checkpoint predicates and accounting pass.",
+      "native_lock": true
+    },
+    {
+      "id": "pr90-private-arithmetic",
+      "gate_ids": [
+        "G90-ADAPTER"
+      ],
+      "argv": [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "--lib",
+        "comparator_dominance_arithmetic_contract",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "At least one intended private arithmetic test actually selected and passed; zero selected is NOT_RUN.",
+      "native_lock": true
+    },
+    {
+      "id": "pr91-coupled",
+      "gate_ids": [
+        "G91-CAUSAL",
+        "G91-STRUCTURAL",
+        "G91-HOMOTOPY"
+      ],
+      "argv": [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode-coupled",
+        "--test",
+        "causal_contracts",
+        "--test",
+        "causal_reuse_contracts",
+        "--test",
+        "switching_contracts",
+        "--test",
+        "structural_mean_field_contracts",
+        "--test",
+        "rhs_homotopy_contracts",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Original reuse, structural and homotopy contracts pass; failures and ignored tests remain explicit.",
+      "native_lock": true
+    },
+    {
+      "id": "pr91-entry",
+      "gate_ids": [
+        "G91-ADAPTER"
+      ],
+      "argv": [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "--test",
+        "entry_checkpoint_seed_contracts",
+        "--test",
+        "evidence_switch_contracts",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Checkpoint and strict-entry evidence pass. Correct current target name is evidence_switch_contracts; old REPRODUCE prose contains evidence_switching_contracts.",
+      "native_lock": true
+    },
+    {
+      "id": "pr92-coupled",
+      "gate_ids": [
+        "G92-STRUCTURAL",
+        "G92-HOMOTOPY"
+      ],
+      "argv": [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode-coupled",
+        "--test",
+        "structural_production_contracts",
+        "--test",
+        "cubic_solver_production_contracts",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Original outward and physical accuracy assertions plus failed-work counters pass.",
+      "native_lock": true
+    },
+    {
+      "id": "pr92-facade",
+      "gate_ids": [
+        "G92-ADAPTER",
+        "G92-PRODUCTION"
+      ],
+      "argv": [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "--test",
+        "strict_return_work_contracts",
+        "--test",
+        "production_setup_contracts",
+        "--test",
+        "switching_persistent_explicit",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Original integer, config, session and provider-permission assertions pass.",
+      "native_lock": true
+    },
+    {
+      "id": "pr92-lagged",
+      "gate_ids": [
+        "G92-LAGGED"
+      ],
+      "argv": [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "--no-fail-fast",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "reaudit_lagged_failure_work",
+        "--test",
+        "b1b_gmres_contracts",
+        "--test",
+        "b1c_staleness_contracts",
+        "--test",
+        "n05_diagonal_staleness_contracts",
+        "--test",
+        "reaudit_bound_clients_contract",
+        "--test",
+        "b1d_resolvent_contracts",
+        "--test",
+        "b1_lagged_contracts",
+        "--test",
+        "a1_zero_tolerance_scale",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Eight original affected/adjacent targets; preserve missing-one-JVP regression. Do not sum these again into overlapping whole-package test counts.",
+      "native_lock": true
+    },
+    {
+      "id": "default-workspace",
+      "gate_ids": [
+        "G-BUILD",
+        "G-RELEASE"
+      ],
+      "argv": [
+        "cargo",
+        "test",
+        "--workspace",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "--lib",
+        "--tests",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Whole workspace default-feature contracts; includes fair-AB/CLI inherited dependencies. Known Q failures must be diagnosed, not treated as new scientific failures by default.",
+      "native_lock": true
+    },
+    {
+      "id": "research-features",
+      "gate_ids": [
+        "G-FEATURES"
+      ],
+      "argv": [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--all-features",
+        "--lib",
+        "--tests",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Explicitly reaches four required-feature target families and current feature-gated contracts. Feature success does not substitute for default build.",
+      "native_lock": true
+    },
+    {
+      "id": "all-fmt",
+      "gate_ids": [
+        "G-BUILD",
+        "G92-HYGIENE"
+      ],
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Whole workspace formatting succeeds, with failure scope recorded.",
+      "native_lock": true
+    },
+    {
+      "id": "integrator-clippy",
+      "gate_ids": [
+        "G92-HYGIENE",
+        "G-BUILD"
+      ],
+      "argv": [
+        "cargo",
+        "clippy",
+        "-p",
+        "rodas5p-integrators",
+        "--all-targets",
+        "--locked",
+        "--offline",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Q-LINT actual broad command green after scoped fixes; downstream E4 offline stages separately reached.",
+      "native_lock": true
+    },
+    {
+      "id": "pr90-cayley-compile",
+      "gate_ids": [
+        "G90-MODE"
+      ],
+      "argv": [
+        "rustc",
+        "--edition=2024",
+        "--test",
+        "-O",
+        "research/rigorous_performance_audit_20261027/theory/cayley_reuse.rs",
+        "-o",
+        "{output}/vigilode-cayley-contracts"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Pinned rustc emits binary; execution is a separate command and compile alone is not test PASS.",
+      "native_lock": true
+    },
+    {
+      "id": "pr90-cayley-execute",
+      "gate_ids": [
+        "G90-MODE"
+      ],
+      "argv": [
+        "{output}/vigilode-cayley-contracts"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "All seven original research primitive tests execute; this is not a production default promotion.",
+      "native_lock": true
+    },
+    {
+      "id": "pr90-dopri",
+      "gate_ids": [
+        "G90-MODE"
+      ],
+      "argv": [
+        "python3",
+        "research/rigorous_performance_audit_20261027/evidence/dopri_phase_exact.py"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Exact algebra/indexing assertions pass. Compare mathematical fields; elapsed/path metadata can differ.",
+      "native_lock": false,
+      "replay_in_fresh_mirror": true,
+      "mirror_files": [
+        "research/rigorous_performance_audit_20261027/evidence/dopri_phase_exact.py"
+      ],
+      "protected_output": "research/rigorous_performance_audit_20261027/evidence/DOPRI_PHASE_EXACT.json",
+      "stdout_alone_complete_result": false
+    },
+    {
+      "id": "pr91-exact",
+      "gate_ids": [
+        "G91-CAUSAL",
+        "G91-STRUCTURAL",
+        "G91-HOMOTOPY"
+      ],
+      "argv": [
+        "python3",
+        "research/derivative_free_causal_homotopy_20261027/theory/exact_checks.py"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Exact algebra/indexing assertions pass. Compare mathematical fields; elapsed/path metadata can differ.",
+      "native_lock": false,
+      "replay_in_fresh_mirror": true,
+      "mirror_files": [
+        "research/derivative_free_causal_homotopy_20261027/theory/exact_checks.py",
+        "fixtures/rodas5p_coefficients_snapshot.json"
+      ],
+      "protected_output": "research/derivative_free_causal_homotopy_20261027/theory/EXACT_RESULTS.json",
+      "stdout_alone_complete_result": false
+    },
+    {
+      "id": "pr91-constants",
+      "gate_ids": [
+        "G91-CAUSAL",
+        "G91-STRUCTURAL",
+        "G91-HOMOTOPY"
+      ],
+      "argv": [
+        "python3",
+        "research/derivative_free_causal_homotopy_20261027/theory/exact_constant_checks.py"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Exact algebra/indexing assertions pass. Compare mathematical fields; elapsed/path metadata can differ.",
+      "native_lock": false,
+      "replay_in_fresh_mirror": true,
+      "mirror_files": [
+        "research/derivative_free_causal_homotopy_20261027/theory/exact_constant_checks.py"
+      ],
+      "protected_output": "research/derivative_free_causal_homotopy_20261027/theory/EXACT_CONSTANT_RESULTS.json",
+      "stdout_alone_complete_result": false
+    },
+    {
+      "id": "pr91-structural",
+      "gate_ids": [
+        "G91-CAUSAL",
+        "G91-STRUCTURAL",
+        "G91-HOMOTOPY"
+      ],
+      "argv": [
+        "python3",
+        "research/derivative_free_causal_homotopy_20261027/evidence/exact_structural_constants.py"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Exact algebra/indexing assertions pass. Compare mathematical fields; elapsed/path metadata can differ.",
+      "native_lock": false,
+      "replay_in_fresh_mirror": true,
+      "mirror_files": [
+        "research/derivative_free_causal_homotopy_20261027/evidence/exact_structural_constants.py",
+        "fixtures/rodas5p_coefficients_snapshot.json"
+      ],
+      "protected_output": "research/derivative_free_causal_homotopy_20261027/evidence/EXACT_STRUCTURAL_CONSTANTS.json",
+      "stdout_alone_complete_result": false
+    },
+    {
+      "id": "pr93-polynomial",
+      "gate_ids": [
+        "G93-THEORY"
+      ],
+      "argv": [
+        "python3",
+        "research/polyalgorithm_alternatives_20261028/polynomial/CHECK.py"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "All declared exact checks pass; store stdout in new evidence, never replace original receipt. Does not validate native outward implementation.",
+      "native_lock": false,
+      "stdout_alone_complete_result": true
+    },
+    {
+      "id": "pr93-homotopy",
+      "gate_ids": [
+        "G93-THEORY"
+      ],
+      "argv": [
+        "python3",
+        "research/polyalgorithm_alternatives_20261028/homotopy/CHECK.py"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "All declared exact checks pass; store stdout in new evidence, never replace original receipt. Does not validate native outward implementation.",
+      "native_lock": false,
+      "stdout_alone_complete_result": true
+    },
+    {
+      "id": "pr93-geometry",
+      "gate_ids": [
+        "G93-THEORY"
+      ],
+      "argv": [
+        "python3",
+        "research/polyalgorithm_alternatives_20261028/geometry/CHECK.py",
+        "--preregistration-sha",
+        "866668348f840bd43558859d2795576e292b6ca7"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "All declared exact checks pass; store stdout in new evidence, never replace original receipt. Does not validate native outward implementation.",
+      "native_lock": false,
+      "stdout_alone_complete_result": true
+    },
+    {
+      "id": "pr93-artifacts",
+      "gate_ids": [
+        "G93-THEORY"
+      ],
+      "argv": [
+        "python3",
+        "research/polyalgorithm_alternatives_20261028/verify.py"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Artifact hashes/record consistency only; numerical solver validation stays NOT_RUN.",
+      "native_lock": false
+    },
+    {
+      "id": "node-ledger",
+      "gate_ids": [
+        "G-BUILD"
+      ],
+      "argv": [
+        "python3",
+        "tools/check-research-node.py",
+        "--base",
+        "{conversation_baseline}"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Append-only ledger and required research node fields; not theorem truth.",
+      "native_lock": false
+    },
+    {
+      "id": "full-authority",
+      "gate_ids": [
+        "G-BUILD"
+      ],
+      "argv": [
+        "python3",
+        "tools/check-authority-refs.py"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Q-LEDGER typed authority must be resolved with actual external/tree/equal-source evidence; current failure is retained.",
+      "native_lock": false
+    },
+    {
+      "id": "semver-preconversation",
+      "gate_ids": [
+        "Q-API"
+      ],
+      "argv": [
+        "cargo",
+        "semver-checks",
+        "--baseline-rev",
+        "3064d453091af1dec7f99f0c8afabd98b447ea34",
+        "-p",
+        "vigilode"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Check all conversation API changes; nonblocking workflow status is not compatibility.",
+      "native_lock": true,
+      "tool_requirement": "cargo-semver-checks0.51.0 plus explicit downstream exhaustive literal/enum fixtures"
+    },
+    {
+      "id": "semver-pr91",
+      "gate_ids": [
+        "Q-API"
+      ],
+      "argv": [
+        "cargo",
+        "semver-checks",
+        "--baseline-rev",
+        "206298b4068d923bb47c7160b111b7439098660c",
+        "-p",
+        "vigilode"
+      ],
+      "cwd": "repository_root",
+      "status": "NOT_RUN",
+      "acceptance": "Separately attributes the PR92 field changes; preserve intentional migration if chosen.",
+      "native_lock": true,
+      "tool_requirement": "cargo-semver-checks0.51.0"
+    }
+  ],
+  "unchanged_native_suite_delegation": {
+    "runner": "research/production_solver_closure_20261027/run_local.py",
+    "plan": "research/production_solver_closure_20261027/DEVELOPMENT_PLAN.json",
+    "suites": [
+      "facade-contracts",
+      "coupled-contracts",
+      "all-targets",
+      "release-contracts",
+      "docs",
+      "smoke-release",
+      "local-benchmarks",
+      "local-profiles"
+    ],
+    "dry_run_argv": [
+      "python3",
+      "research/production_solver_closure_20261027/run_local.py",
+      "--suite",
+      "{suite}",
+      "--output",
+      "{output}/suites/{suite}"
+    ],
+    "execute_additional_argv": [
+      "--execute",
+      "--timeout",
+      "{caller_timeout_seconds}"
+    ],
+    "note": "Do not take an outer native lock around this nested runner; it acquires the same lock itself. All eight original suite argv remain unmodified."
+  },
+  "additional_environment_gates": [
+    {
+      "id": "E4-OFFLINE",
+      "source_workflow": ".github/workflows/e4-fresh-clone-build.yml",
+      "status": "previously_skipped_pending_local",
+      "requirement": "After Q-LINT, execute vendor, frozen graph equivalence and offline compile/test stages using workflow argv; do not change Cargo.lock."
+    },
+    {
+      "id": "Q-BENCH",
+      "source_manifest": "crates/vigilode-bench/Cargo.toml",
+      "argv": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "crates/vigilode-bench/Cargo.toml",
+        "--locked"
+      ],
+      "status": "requires_qualified_SUNDIALS_and_MPI_discovery",
+      "requirement": "Version/compiler/linkage recorded before meaningful comparator test."
+    },
+    {
+      "id": "Q-NEGATIVE",
+      "argv": [
+        "cargo",
+        "test",
+        "--workspace",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "--",
+        "--ignored",
+        "--test-threads=1"
+      ],
+      "status": "pending_negative_contract_review",
+      "requirement": "Known15/7>1.3 research FAIL retained; reached negative-regression PASS is a different assertion. Every ignored target accounted."
+    }
+  ],
+  "manual_scientific_gates": [
+    "Q-GIVENS exact-bit and high-precision true-residual oracle",
+    "Q-API downstream compile fixtures and release decision",
+    "PR90 shifted27check/25success negative result replay only if claim depends on it; numpy/scipy source snapshot, fresh mirror required",
+    "Matched-accuracy cold/warm paired measurements against strong comparators and fresh binaries",
+    "Actual client long trajectory, failure/restart/resource, profile/CPU/libm qualification",
+    "I-STATE/I-EPOCH/I-WORK/I-BUDGET/I-POLY/I-ROOT/I-STRUCTURE/I-NEGATIVE/I-PROFILE/I-CLIENT from AUDIT.md"
+  ]
+}

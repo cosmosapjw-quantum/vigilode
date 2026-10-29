@@ -1,0 +1,35 @@
+crates/rodas5p-cli/src/main.rs                     | 174 +++++++++++----
+ .../tests/frozen_full_e_shadow_cli_contracts.rs    |   7 +-
+ crates/rodas5p-core/src/lib.rs                     |   4 +-
+ crates/rodas5p-core/src/matrix_functions.rs        |  61 +++++-
+ crates/rodas5p-core/src/norms.rs                   |  13 ++
+ crates/rodas5p-core/src/work.rs                    |  27 ++-
+ crates/rodas5p-core/tests/work_unit_contracts.rs   |  40 ++++
+ crates/rodas5p-fair-ab/src/global_error.rs         |  12 +-
+ crates/rodas5p-fair-ab/src/paired_timing.rs        | 119 ++++++++---
+ .../tests/paired_timing_contracts.rs               |  97 +++++++++
+ crates/rodas5p-integrators/Cargo.toml              |   5 +
+ crates/rodas5p-integrators/src/adaptive.rs         |  19 ++
+ .../src/adaptive_exponential.rs                    |   2 +-
+ .../src/audit2_reusable_transaction_research.rs    |  29 ++-
+ .../src/audit2_stage_certificate_research.rs       |   7 +-
+ crates/rodas5p-integrators/src/bdf.rs              |   6 +-
+ crates/rodas5p-integrators/src/dense_output_v2.rs  |  17 +-
+ crates/rodas5p-integrators/src/exponential.rs      | 170 +++++++++++----
+ .../src/g4_s5b0_regime_atlas.rs                    |  13 ++
+ crates/rodas5p-integrators/src/homotopy_policy.rs  |  36 ++++
+ crates/rodas5p-integrators/src/integrate.rs        |  16 +-
+ crates/rodas5p-integrators/src/lib.rs              |   1 +
+ crates/rodas5p-integrators/src/output.rs           |  32 ++-
+ .../tests/audit0930_accounting_contracts.rs        |  71 ++++++
+ .../tests/audit0930_reuse_certificate_contracts.rs |  69 ++++++
+ .../tests/audit0930_validation_contracts.rs        |  62 ++++++
+ .../tests/frozen_full_e_shadow_contracts.rs        |  14 +-
+ .../tests/output_time_covariance_contracts.rs      | 174 +++++++++++++++
+ .../tests/phi_action_certificate_contracts.rs      |  10 +-
+ .../tests/phi_normalized_augmentation_contracts.rs | 237 +++++++++++++++++++++
+ .../v37_continuation_transaction_contracts.rs      | 152 ++++++++-----
+ .../ADDENDUM_20260930_PHI_NORMALIZATION_PINS.md    |  48 +++++
+ .../reports/ADDENDUM_20260930_PHI_NORMALIZATION.md |  45 ++++
+ .../V37_TRAJECTORY_SNAPSHOT_V4_20260930.json       |  40 ++++
+ 34 files changed, 1592 insertions(+), 237 deletions(-)

@@ -99,6 +99,7 @@ pub struct WorkLedger {
 }
 
 impl WorkLedger {
+    /// Requested operator applications, including attempts refused by a budget.
     pub fn operator_total(self) -> u64 {
         self.operator_krylov + self.operator_refresh + self.operator_diagnostic
     }

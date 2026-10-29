@@ -1,0 +1,39 @@
+   Compiling rodas5p-core v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+error[E0463]: can't find crate for `rodas5p_integrators`
+ --> crates/rodas5p-integrators/tests/c1_transaction_contracts.rs:9:5
+  |
+9 | use rodas5p_integrators::transaction::{
+  |     ^^^^^^^^^^^^^^^^^^^ can't find crate
+
+error[E0282]: type annotations needed for `Arc<_, _>`
+   --> crates/rodas5p-integrators/tests/c1_transaction_contracts.rs:259:21
+    |
+259 |                 let budget = Arc::clone(&budget);
+    |                     ^^^^^^
+...
+269 |                         match budget.reserve(request) {
+    |                               ------ type must be known at this point
+    |
+help: consider giving `budget` an explicit type, where the placeholders `_` are specified
+    |
+259 |                 let budget: Arc<T, A> = Arc::clone(&budget);
+    |                           +++++++++++
+
+Some errors have detailed explanations: E0282, E0463.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `rodas5p-integrators` (test "c1_transaction_contracts") due to 2 previous errors

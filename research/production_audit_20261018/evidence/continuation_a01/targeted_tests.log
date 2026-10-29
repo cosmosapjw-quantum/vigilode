@@ -1,0 +1,53 @@
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.14s
+     Running tests/packet_trajectory_contracts.rs (target/debug/deps/packet_trajectory_contracts-b2b63b4d95d00dce)
+
+running 6 tests
+test test_negative_admission_gates ... ok
+test test_vg3_inherited_radii_propagation ... ok
+test test_vg1_zero_online_solver_counters_across_trajectory ... ok
+test test_vg3_transactional_atomicity_on_step_rejection ... ok
+test test_vg3_output_policy_separation ... ok
+test test_vg2_multiwindow_overlap_and_dahlquist_linear_limit ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/packet_window_contracts.rs (target/debug/deps/packet_window_contracts-308dfee491eaba91)
+
+running 6 tests
+test test_negative_refusal_contracts ... ok
+test test_vg2_dahlquist_linear_boundary_zero_defect ... ok
+test test_vg1_zero_online_solver_counters_contract ... ok
+test test_vg3_reconstruction_initial_state_consistency ... ok
+test test_vg3_certificate_mode_bounds_enclosure_consistency ... ok
+test test_vg2_picard_sweeps_convergence_and_defect_reduction ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/production_audit_packet.rs (target/debug/deps/production_audit_packet-1678bd1aadabbee6)
+
+running 11 tests
+test candidate_cannot_be_reused_with_a_different_compiled_packet ... ok
+test inherited_uncertainty_must_fit_proved_unit_energy_domain ... ok
+test kappa_zero_packet_refuses_damped_model ... ok
+test model_identity_compares_exact_float_bits_including_signed_zero ... ok
+test mutable_config_is_validated_at_run_boundary ... ok
+test admitted_small_uncertainty_remains_supported ... ok
+test nonfinite_candidate_cannot_receive_certificate ... ok
+test public_packet_descriptor_mutation_is_refused_by_certificate_and_output ... ok
+test trajectory_tail_uses_force_bound_not_already_scaled_model_error ... ok
+test dense_output_restricts_normalized_time_waveform ... ok
+test tiny_nonempty_interval_is_actually_advanced ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/production_audit_split.rs (target/debug/deps/production_audit_split-d078fa7b7d0d2cfe)
+
+running 4 tests
+test periodic_gray_scott_two_cell_linear_split_matches_full_rhs ... ok
+test sparse_matvec_rejects_short_vectors ... ok
+test sparse_descriptor_is_checked_after_public_field_mutation ... ok
+test split_nan_callback_fails_closed ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

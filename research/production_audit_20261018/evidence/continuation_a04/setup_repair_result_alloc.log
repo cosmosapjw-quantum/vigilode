@@ -1,0 +1,24 @@
+   Compiling rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.83s
+     Running unittests src/lib.rs (target/debug/deps/rodas5p_core-0d792e112be9ec0a)
+
+running 1 test
+test leja_action::tests::failed_exponential_does_not_charge_unattempted_result_vectors ... FAILED
+
+failures:
+
+---- leja_action::tests::failed_exponential_does_not_charge_unattempted_result_vectors stdout ----
+
+thread 'leja_action::tests::failed_exponential_does_not_charge_unattempted_result_vectors' (4111880) panicked at crates/rodas5p-core/src/leja_action.rs:2592:9:
+assertion `left == right` failed
+  left: 10
+ right: 26
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    leja_action::tests::failed_exponential_does_not_charge_unattempted_result_vectors
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-core --lib`

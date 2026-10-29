@@ -1,0 +1,152 @@
+{
+  "schema": "vigilode.final-independent-benchmark-review.v1",
+  "source_commit": "5913fe062706c820e768b9e150e5cd1c274f7bf9",
+  "source_tree": "7a70caf85569dbe6c77ecb9a53fe666cd40ae618",
+  "decision": "PASS_SCOPED_AUDIT_PUBLICATION",
+  "general_production": "HOLD",
+  "independent_implementation_role": true,
+  "no_solver_reruns": true,
+  "checked": {
+    "raw_hashes": 576,
+    "independent_full_state_replays": 288,
+    "unique_complete_round_keys": 288,
+    "configuration_summaries": 72,
+    "same_error_cap_selections": 24,
+    "density_invariance_pairs": 24,
+    "all_repeated_states_identical": true,
+    "all_repeated_work_identical": true,
+    "compiled_test_log_hashes": 12,
+    "rust_contract_tests": 67,
+    "python_protocol_tests": 7
+  },
+  "evidence": {
+    "independent_replay": "evidence/FINAL_RAW_REPLAY_AUDIT.json",
+    "reproduction_script": "evidence/audit_final_benchmark.py",
+    "compiled_closure": "evidence/FINAL_COMPILED_REVIEW.json",
+    "original_analyzer": "evidence/local_bench/SUMMARY.json"
+  },
+  "numeric_outcome": {
+    "comparables": 22,
+    "dense_favored_medians": 20,
+    "landing_favored_medians": 2,
+    "insufficient_pairs": 2,
+    "contrary_comparisons": [
+      {
+        "case": "damped",
+        "dimension": 2,
+        "error_cap": 1e-08,
+        "status": "COMPARABLE",
+        "selected_config_ids": {
+          "landing": 36,
+          "dense": 43
+        },
+        "landing_over_dense_median": 0.7122176972730955,
+        "ratio_min_max_envelope": [
+          0.1052254508201676,
+          1.1462856043110086
+        ],
+        "landing_error": 1.469196299341835e-09,
+        "dense_error": 2.6525126591708803e-09
+      },
+      {
+        "case": "large-vector",
+        "dimension": 4096,
+        "error_cap": 1e-08,
+        "status": "COMPARABLE",
+        "selected_config_ids": {
+          "landing": 54,
+          "dense": 61
+        },
+        "landing_over_dense_median": 0.8886029816418071,
+        "ratio_min_max_envelope": [
+          0.692767156869461,
+          1.0540439801074342
+        ],
+        "landing_error": 1.9529211581215122e-11,
+        "dense_error": 5.741896957900394e-10
+      }
+    ],
+    "unavailable_comparisons": [
+      {
+        "case": "driven",
+        "dimension": 1,
+        "error_cap": 1e-08,
+        "status": "INSUFFICIENT_SAMPLED_TOLERANCES",
+        "selected_config_ids": {
+          "landing": 18,
+          "dense": null
+        }
+      },
+      {
+        "case": "rapid",
+        "dimension": 2,
+        "error_cap": 1e-08,
+        "status": "INSUFFICIENT_SAMPLED_TOLERANCES",
+        "selected_config_ids": {
+          "landing": null,
+          "dense": null
+        }
+      }
+    ]
+  },
+  "plot_review": {
+    "opened": [
+      "evidence/local_bench/WORK_PRECISION.png",
+      "evidence/local_bench/RHS_WORK.png"
+    ],
+    "conclusions": [
+      "Both policies plotted at achieved sampled error, with observed min-max ranges.",
+      "Dense reduces RHS sharply for observation-limited simple cases; rapid reduction is small because oscillation resolution dominates.",
+      "Tight-target dense losses and noisy envelopes remain visible; three repetitions are not confidence intervals."
+    ]
+  },
+  "timing_scope": {
+    "same_source_policy_comparison": true,
+    "old_source_speed_claim": false,
+    "new_external_solver_comparison": false,
+    "affinity": [
+      0
+    ],
+    "cgroup_cpu_max": "1600000 200000",
+    "statistical_authority": "diagnostic_only",
+    "warmups": 1,
+    "timed_repetitions": 3
+  },
+  "findings": [
+    {
+      "id": "FB-P2-01",
+      "severity": "P2",
+      "status": "OPEN_FUTURE_OPTIMIZATION",
+      "evidence": {
+        "path": "analyze_bench.py",
+        "lines": [
+          107,
+          124
+        ]
+      },
+      "observation": "Random receipt order combined with seekable gzip archive access repeatedly decompresses archived data. Frozen analyzer completed correctly; this is postprocessing cost, not solver failure.",
+      "action": "Read archive once in stream order and retain only small per-record scores/hashes; compare resulting numeric summaries bytewise or valuewise before adoption. Existing evidence/audit_final_benchmark.py demonstrates one-pass auditing."
+    },
+    {
+      "id": "FB-P2-02",
+      "severity": "P2",
+      "status": "OPEN_HARNESS_HARDENING_ACTUAL_CAMPAIGN_VALIDATED",
+      "evidence": {
+        "path": "analyze_bench.py",
+        "lines": [
+          130,
+          144
+        ]
+      },
+      "observation": "Eligibility checks timed count and successful replays but does not require the exact unique warmup/timed round-key set. The actual campaign has all288 unique correct keys, independently verified, so current results are unaffected.",
+      "action": "Add campaign-level strict coverage validation and negative tests for duplicate timed IDs, missing warmup, foreign config, nonzero completed exit; refuse affected configurations instead of silently selecting them."
+    }
+  ],
+  "claim_limits": [
+    "Same error cap is not exactly equal attained error; landing can over-resolve simple problems because every output must be an accepted endpoint.",
+    "All saved times were checked; no uniform-time or requested-rtol certificate is inferred.",
+    "This is a benchmark of new-source landing versus new-source dense policy, not proof of speedup from removing one poison pass.",
+    "Physical norm correctness is supported by targeted contracts; this campaign does not benchmark a full33 physical client.",
+    "Large vectors remain repeated diagonal fixtures and logistic/rapid are known preregistered validation models, not new blind data."
+  ]
+}

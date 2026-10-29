@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "registered_source_commit": "af7f3e9f55d652554042d2386bf07abb7d857d75",
+  "scientific_status": "PASS_SCOPED_EXACT_SUPPORT",
+  "error_groups": 6,
+  "compiler_fixtures": 9,
+  "source_inputs_unchanged_during_run": true,
+  "source_publication_preceded_runs": true,
+  "ledger_rows": [
+    "L-0177",
+    "L-0178"
+  ],
+  "derived_example_results": {
+    "invalid_mixed_anchor": "1/10 bound versus 1/5 actual",
+    "finite_menu_declared_cost": 7,
+    "equal_split_declared_cost": 10,
+    "refinement_floor": "3/10000",
+    "minimum_sufficient_corrections": 6,
+    "theta_zero_equality": "1/1000"
+  },
+  "helper_safety_tests": {
+    "count": 4,
+    "status": "PASS",
+    "scope": "temporary fixture repositories; not solver tests"
+  },
+  "native_solver_tests": "NOT_RUN",
+  "native_benchmarks": "NOT_RUN",
+  "native_profiles": "NOT_RUN",
+  "production_qualified": false,
+  "prospective_coverage": {
+    "paths": 73,
+    "gate_groups": 18,
+    "interactions": 10
+  },
+  "open_qualification": [
+    "Q-LEDGER",
+    "Q-GIVENS",
+    "Q-FAIR-AB",
+    "Q-BENCH",
+    "Q-LINT",
+    "Q-API",
+    "Q-NEGATIVE"
+  ],
+  "notes": [
+    "Finite cases support proofs but do not replace native outward arithmetic.",
+    "The d-1 action bound and toy cost7/10 are not measured elapsed improvements.",
+    "Independent PR source inclusion does not itself prove semantic preservation."
+  ]
+}

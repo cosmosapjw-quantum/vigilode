@@ -1,0 +1,54 @@
+{
+  "schema": "spherical-information.thomson-provenance.v1",
+  "source_drafts": [
+    {
+      "path": "inputs/paper_II/sections/03_nested_information.tex",
+      "equation": "eq:kinetic-bregman"
+    },
+    {
+      "path": "inputs/paper_II/sections/06b_quantitative_resolution.tex",
+      "equation": "eq:massive-fisher-block"
+    }
+  ],
+  "literature": [
+    {
+      "title": "A tensor formalism for transfer and Compton scattering of polarized light",
+      "authors": [
+        "Jamie Portsmouth",
+        "Edmund Bertschinger"
+      ],
+      "url": "https://arxiv.org/pdf/astro-ph/0412094",
+      "equations": [
+        "160",
+        "168"
+      ],
+      "accessed_date": "2026-10-23",
+      "relation": "supports physical scalar/tensor Thomson collision formula; low-rank exponential derived here; physics not claimed novel"
+    }
+  ],
+  "code_inputs": [
+    {
+      "path": "/workspace/scratch/0dc1e721cf82/vigilode-reaudit-1023/research/bassrei_p06_full_sphere_scoped_20261022/FULL_SPHERE_FVM_REFERENCE.py",
+      "sha256": "773552acc6c42de5f65972453a32e9f9dff7ac96bde33b358b05e18edd8de891",
+      "commit": "14c74978b93339a79d7228a324fa77552dae548e"
+    }
+  ],
+  "new_contribution": "exact finite-grid low-rank collision action and positive polarized rank6 semigroup; reuse existing scalar rank6 RHS",
+  "execution": {
+    "command": "python3 src/thomson_demo.py --repo /workspace/scratch/0dc1e721cf82/vigilode-reaudit-1023",
+    "exit_code": 0,
+    "source_sha256": "65c92074a1e02084bd06423261f663ab77e765656d7f165c181f7ed0e13ded24",
+    "result_sha256": "6b36969a6ee9191f48b93887860e9bb1025686b94263a829ac4358e766b63a52",
+    "status": "pass_scoped",
+    "elapsed_seconds": 1.0959490060049575
+  },
+  "portability_update": {
+    "current_source_sha256": "e6b4d45de5474df4e3a05aeadef24d19398e09643c2fe25b65ba39d72847b7ca",
+    "preserved_scientific_source": "evidence/thomson_demo_pre_portable_loader.py",
+    "preserved_scientific_results": "results/thomson_before_portable_loader.json",
+    "bundled_origin": "reference/FULL_SPHERE_FVM_REFERENCE.origin.json",
+    "loader_execution": "results/thomson_loader_results.json",
+    "portability_checks": "results/thomson_portability_checks.json",
+    "scientific_kernels_unchanged": true
+  }
+}

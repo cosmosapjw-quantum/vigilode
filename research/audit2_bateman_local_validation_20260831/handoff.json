@@ -1,0 +1,130 @@
+{
+  "schema": "vigilode-audit2-bateman-local-validation-handoff/v2",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "execution_policy": "HOST_CODEX_ONLY",
+  "local_llm_allowed": false,
+  "publication": {
+    "draft_pr": 40,
+    "draft_pr_url": "https://github.com/cosmosapjw-quantum/vigilode/pull/40",
+    "required_state": "OPEN_DRAFT_UNMERGED",
+    "base_pr": 39,
+    "base_branch": "research/audit2-real-client-authority-construction-20260830",
+    "base_head": "6b00a886c4eb38d3fe199e3d77852cc1eb35eb39",
+    "base_tree": "4a9ede5c442514f1ae86d018419a2afeee5b6d01",
+    "controller_commit": "b5f553b5be24598c71bc7af15c97e67f503610a5",
+    "controller_tree": "7e96da6f612eade18acc77b700b6e847d68160c9",
+    "final_documentation_head_authority": "PR_40_REMOTE_READBACK_AND_RECEIPT_COMMENT",
+    "required_checks": "ALL_EXECUTED_REQUIRED_CHECKS_SUCCESS_BEFORE_CANDIDATE"
+  },
+  "source": {
+    "execution_head": "6b00a886c4eb38d3fe199e3d77852cc1eb35eb39",
+    "execution_tree": "4a9ede5c442514f1ae86d018419a2afeee5b6d01",
+    "execution_parent": "cac7d1b7337a6dff25a60072009658f6ddf155d9",
+    "scientific_implementation_origin": {
+      "head": "cac7d1b7337a6dff25a60072009658f6ddf155d9",
+      "tree": "c23abbee0d47e2dbe002e01516bf34e2481bc333",
+      "parent": "f954e39130e5141256731d0745666a872c0267ea",
+      "parent_tree": "4314da2f9e1533737d4169526ebd2d84515ab19d"
+    },
+    "implementation_to_execution_delta": "DOCUMENTATION_ONLY_13_PATHS",
+    "required_status": "CLEAN_INCLUDING_UNTRACKED"
+  },
+  "controller": {
+    "path": "tools/run_audit2_bateman_local_validation.py",
+    "sha256": "f53f5bc2ea77721adc562c2640a58d24ae975f14795f7401c750c900c2980f29",
+    "argv": [
+      "<ABSOLUTE_PYTHON_3_12_13>",
+      "tools/run_audit2_bateman_local_validation.py",
+      "--source-worktree",
+      "<ABSOLUTE_CLEAN_EXECUTION_SOURCE_WORKTREE_AT_6b00a886>"
+    ],
+    "scientific_knobs": [],
+    "state_root": "<PASSWD_ACCOUNT_HOME>/.local/state/vigilode/bateman-local-six-case-v1",
+    "state_root_caller_override": false,
+    "candidate_build_target": "<CANONICAL_STATE_ROOT>/build-cache/6b00a886c4eb38d3fe199e3d77852cc1eb35eb39/<RUN_ID>",
+    "candidate_build_target_caller_override": false,
+    "guard_key_sha256": "799d2f31e0fcd3e255a1be55c27d0387d798851a36bee75f04710929fa3c3852",
+    "guard_key_unchanged_by_source_binding_amendment": true,
+    "one_shot_marker_created_before_spawn": true,
+    "spawn_attempt_consumes_one_shot": true,
+    "candidate_argv": [
+      "cargo",
+      "run",
+      "--locked",
+      "-p",
+      "rodas5p-integrators",
+      "--features",
+      "audit2-bateman-authority",
+      "--example",
+      "audit2_bateman_local_six_case"
+    ]
+  },
+  "adjudicator": {
+    "path": "tools/adjudicate_audit2_bateman_local_validation.py",
+    "sha256": "28697e81ea39532a2ffa86789a426c0f0a7107a1ea1a1a4269bc333cc8cf977d",
+    "candidate_execution_allowed": false,
+    "output_must_be_outside_sealed_package": true,
+    "out_argument_kind": "NEW_DIRECTORY",
+    "candidate_free_package_file_set": "EXACTLY_CLOSED",
+    "trusted_host_git_and_current_python_only": true
+  },
+  "environment": {
+    "python": "3.12.13",
+    "numpy": "2.3.5",
+    "mpmath": "1.3.0",
+    "rust": "1.94.1",
+    "cargo": "1.94.1",
+    "cargo_network": "OFFLINE",
+    "ambient_build_overrides": "FORBIDDEN",
+    "cargo_home_config": "MUST_BE_ABSENT"
+  },
+  "candidate_status_at_freeze": {
+    "executions": 0,
+    "canonical_state_root_present": true,
+    "one_shot_marker_present": false,
+    "preserved_candidate_free_run": "20260831T044826Z-bd0730fa",
+    "preserved_run_sha256sums_sha256": "bc976e12052f2adac89a1b7eab34ef7171520e90541f1e7cab0a292e845fe9af",
+    "preserved_historical_adjudication_verdict": "INCONCLUSIVE_PACKAGE_INTEGRITY",
+    "preserved_adjudication_sha256": "96dd02efae7532fc0a52c6261e4459f408187d66d7f093aa9c74cbe434464112",
+    "retroactive_re_adjudication": "NOT_PERFORMED",
+    "repaired_schema_future_prefix_policy": "INCONCLUSIVE_NOT_RUN_PREFLIGHT",
+    "result_receipt": "NONE",
+    "scientific_outcome": "NOT_OBSERVED"
+  },
+  "frozen_inputs": {
+    "authority_manifest_sha256": "673045bf6b9e723fceb6a3b8df8e9e9e9075c942cf1c438f0ebd03574dbac360",
+    "authority_verifier_sha256": "542715ca749efbf2060d608f2089ee8457e32f9c61fd0d35f613d5ecec26487d",
+    "authority_proof_sha256": "057cceba92fed0d707db1d586b53adebee5aed00583b224811d091f1d453ab12",
+    "receipt_validator_sha256": "8391e03e6f94f305f2675799c923d787547cad662cef8d8f8384a8c1bbe94e67",
+    "compile_time_prompt_sha256": "ce96761b5cd067fe21e8d01e52a74767a65a8d9eaaa8c2c18ed1db8ca47de776",
+    "compile_time_handoff_sha256": "391861375a01a772e918aad28cfee887600b929cb7ed6b00b555a8bbc2aadb91",
+    "example_source_sha256": "0873ed8189a7e0f77ebd4eef05ce6067f84958e7f118aa3e686654e7dc3c48f9",
+    "readiness_source_sha256": "74dc27607ff1fc764e3ea89912b333418c86a1dfb5e3c14764481b94821b7521",
+    "cargo_lock_sha256": "d9255cd442dfbca2890152549ae7edc60e890aa062a1046d8f0b8e44678d678a",
+    "cargo_toml_sha256": "86e27546665f923265a8addd3c464ac6017fe35558ab95fe0af7248cd99fb73b",
+    "rust_toolchain_sha256": "f53198ae4fdecfd87da36fe431c771b54c51e975d01c0e99f653bc14d5d48211"
+  },
+  "mathematics": {
+    "verdict": "COMPLETE_WITH_CLIENT_DEPENDENT_CONSTANTS",
+    "M01": "PREEXISTING_MATHEMATICAL_AUTHORITY",
+    "X01": "CONDITIONAL_ON_ELIGIBLE_ADJUDICATED_ACCEPT_OR_REJECT",
+    "M02_M03": "AT_MOST_PARTIAL_IF_REQUIRED_TELEMETRY_PRESENT",
+    "M04_M12_X02": "NOT_EVALUATED",
+    "manifest_ieee754_bits_are_admission_authority": true,
+    "ledger_decimal_delta_max": "94_ULP_LT_5_1e-18_WITHIN_FROZEN_1e-15",
+    "accept_is_not_stronger_certificate_without_Ehat_Theta_sum_ai_qi_and_per_solve_gmres": true,
+    "formal_tools_in_admission": false
+  },
+  "outcomes": {
+    "allowed": [
+      "ACCEPT",
+      "REJECT",
+      "INCONCLUSIVE"
+    ],
+    "validator_infrastructure_failure": "INCONCLUSIVE",
+    "rerun_after_marker": "FORBIDDEN"
+  },
+  "claim_ceiling": "EXPLORATORY_NONAUTHORITATIVE_REUSABLE_PRECONDITIONER_TRANSACTIONAL_STEP_SUBSTRATE",
+  "merge_tag_release_authorized": false,
+  "holdout_access": "NOT_OPENED_OR_EXECUTED"
+}

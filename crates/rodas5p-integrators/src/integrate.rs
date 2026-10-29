@@ -1,12 +1,14 @@
 use crate::output::OutputCollector;
 use crate::{
-    AdaptiveControllerState, AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics,
-    AdaptiveStepConfig, HomotopyStepConfig, KrylovState, ObservedIntegrationResult, OdeProblem,
-    OutputSchedule, SabrConfig, StageHistory, StepResult, TransactionalQ1Q2Config,
-    TransactionalQ1Q2RunDiagnostics, homotopy_step, sabr_step, sequential_matrix_free_step,
-    sequential_step, transactional_q1_q2_step,
+    AdaptiveControllerState, AdaptiveFailureKind, AdaptiveObservedIntegrationResult,
+    AdaptiveRunDiagnostics, AdaptiveStepConfig, HomotopyStepConfig, KrylovState,
+    ObservedIntegrationResult, OdeProblem, OutputSchedule, RODAS5P_ESTIMATOR_ORDER, SabrConfig,
+    StageHistory, StageSolveAccounting, StageSolveLogEntry, StepResult, TransactionalQ1Q2Config,
+    TransactionalQ1Q2RunDiagnostics, homotopy_step, rodas_next_step_after_attempt, sabr_step,
+    sequential_matrix_free_step_with_inner_forcing_and_residual_accounting, sequential_step,
 };
 use rodas5p_core::{CoreError, CoreResult, LinearSolverConfig, WorkCounters};
+use rodas5p_krylov::ResidualAccounting;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum IntegrationMethod {
@@ -30,6 +32,33 @@ fn effective(r: &StepResult) -> f64 {
     r.error_norm + r.certificate.as_ref().map_or(0.0, |c| c.fixed_point_error)
 }
 
+fn adaptive_failure_kind(error: &CoreError) -> Option<AdaptiveFailureKind> {
+    match error {
+        CoreError::LinearSolve(_) => Some(AdaptiveFailureKind::LinearSolve),
+        CoreError::NonlinearSolve(_) => Some(AdaptiveFailureKind::NonlinearSolve),
+        CoreError::NonFinite(_) => Some(AdaptiveFailureKind::NonFinite),
+        _ => None,
+    }
+}
+
+fn adaptive_rejection_kind(error: f64, state: &[f64]) -> AdaptiveFailureKind {
+    if error.is_finite() && state.iter().all(|value| value.is_finite()) {
+        AdaptiveFailureKind::LocalError
+    } else {
+        AdaptiveFailureKind::NonFinite
+    }
+}
+
+fn record_work_failure(counters: &mut WorkCounters, kind: AdaptiveFailureKind) {
+    let target = match kind {
+        AdaptiveFailureKind::LocalError => &mut counters.local_error_failures,
+        AdaptiveFailureKind::LinearSolve => &mut counters.linear_solve_failures,
+        AdaptiveFailureKind::NonlinearSolve => &mut counters.nonlinear_solve_failures,
+        AdaptiveFailureKind::NonFinite => &mut counters.nonfinite_step_failures,
+    };
+    *target = target.saturating_add(1);
+}
+
 #[allow(clippy::too_many_arguments)]
 pub fn integrate_fixed(
     problem: &OdeProblem,
@@ -49,6 +78,16 @@ pub fn integrate_fixed(
         ));
     }
     let config = linear_config.cloned().unwrap_or_default();
+    match method {
+        IntegrationMethod::Sequential => {
+            crate::sequential::validate_problem_linear_config(problem, &config)?;
+        }
+        IntegrationMethod::Sabr => {
+            if let Some(cfg) = linear_config {
+                crate::sequential::validate_problem_linear_config(problem, cfg)?;
+            }
+        }
+    }
     let mut counters = WorkCounters::default();
     let mut history = StageHistory::default();
     let mut recycle = KrylovState::for_method(config.method);
@@ -61,9 +100,12 @@ pub fn integrate_fixed(
     let mut errors = Vec::new();
     let sabr_cfg = sabr_config.unwrap_or_default();
     let mut attempts = 0;
-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
+    // Indexed grid t0 + k h (re-audit R3, R3-TIME-03).
+    let grid = crate::output::FixedGrid::new(t_span.0, tf, h)?;
+    while t < tf {
         attempts += 1;
-        let step = h.min(tf - t);
+        let step = crate::output::end_step(t, grid.step_from(t)?, tf)?;
+        crate::output::require_progress(t, step)?;
         let r = match method {
             IntegrationMethod::Sequential => {
                 let r = sequential_step(
@@ -137,8 +179,18 @@ pub fn integrate_adaptive(
         return Err(CoreError::InvalidInput("invalid adaptive interval".into()));
     }
     let config = linear_config.cloned().unwrap_or_default();
+    match method {
+        IntegrationMethod::Sequential => {
+            crate::sequential::validate_problem_linear_config(problem, &config)?;
+        }
+        IntegrationMethod::Sabr => {
+            if let Some(cfg) = linear_config {
+                crate::sequential::validate_problem_linear_config(problem, cfg)?;
+            }
+        }
+    }
     let mut y = y0.to_vec();
-    let mut h = adaptive.initial_step.min(tf - t);
+    let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
     let mut history = StageHistory::default();
@@ -152,8 +204,14 @@ pub fn integrate_adaptive(
     let mut attempts = 0;
     while t < tf && attempts < adaptive.max_attempts {
         attempts += 1;
-        h = h.min(adaptive.max_step).min(tf - t);
-        if h < adaptive.min_step {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
+            break;
+        };
+        h = next_h;
+        // A final piece that lands on tf is taken even below min_step.
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let state_snapshot = recycle.clone();
@@ -188,8 +246,10 @@ pub fn integrate_adaptive(
         };
         let r = match trial {
             Ok(value) => value,
-            Err(CoreError::NonFinite(_) | CoreError::LinearSolve(_)) => {
+            Err(error) if adaptive_failure_kind(&error).is_some() => {
+                let failure = adaptive_failure_kind(&error).expect("guarded adaptive failure");
                 counters.rejected_steps += 1;
+                record_work_failure(&mut counters, failure);
                 recycle = state_snapshot;
                 history = history_snapshot;
                 h *= adaptive.min_factor;
@@ -211,19 +271,25 @@ pub fn integrate_adaptive(
                 history.push(r.h, r.stages.clone());
             }
             controller.record_acceptance(error)?;
-            h *= controller.propose_factor(&adaptive, error, 5, true)?;
+            h *= controller.propose_factor(&adaptive, error, RODAS5P_ESTIMATOR_ORDER, true)?;
         } else {
+            record_work_failure(&mut counters, adaptive_rejection_kind(error, &r.y_new));
             recycle = state_snapshot;
             history = history_snapshot;
             h *= if error.is_finite() {
                 controller.record_rejection(error)?;
-                controller.propose_factor(&adaptive, error.max(1.0e-16), 5, false)?
+                controller.propose_factor(
+                    &adaptive,
+                    error.max(1.0e-16),
+                    RODAS5P_ESTIMATOR_ORDER,
+                    false,
+                )?
             } else {
                 adaptive.min_factor
             };
         }
     }
-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let success = t >= tf;
     Ok(IntegrationResult {
         t: times,
         y: states,
@@ -261,6 +327,16 @@ pub fn integrate_fixed_observed(
         ));
     }
     let config = linear_config.cloned().unwrap_or_default();
+    match method {
+        IntegrationMethod::Sequential => {
+            crate::sequential::validate_problem_linear_config(problem, &config)?;
+        }
+        IntegrationMethod::Sabr => {
+            if let Some(cfg) = linear_config {
+                crate::sequential::validate_problem_linear_config(problem, cfg)?;
+            }
+        }
+    }
     let mut counters = WorkCounters::default();
     let mut history = StageHistory::default();
     let mut recycle = KrylovState::for_method(config.method);
@@ -269,8 +345,10 @@ pub fn integrate_fixed_observed(
     let mut collector = OutputCollector::new(output, t_span, y0)?;
     let sabr_cfg = sabr_config.unwrap_or_default();
     let mut internal_steps = 0_usize;
-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
-        let (step, clipped) = collector.limit_step(t, h, tf)?;
+    // Indexed grid t0 + k h (re-audit R3, R3-TIME-03).
+    let grid = crate::output::FixedGrid::new(t_span.0, tf, h)?;
+    while t < tf {
+        let (step, clipped) = collector.limit_step(t, grid.step_from(t)?, tf)?;
         let r = match method {
             IntegrationMethod::Sequential => {
                 let r = sequential_step(
@@ -366,19 +444,36 @@ pub fn integrate_adaptive_observed_with_config(
         return Err(CoreError::InvalidInput("invalid adaptive interval".into()));
     }
     let config = linear_config.cloned().unwrap_or_default();
+    match method {
+        IntegrationMethod::Sequential => {
+            crate::sequential::validate_problem_linear_config(problem, &config)?;
+        }
+        IntegrationMethod::Sabr => {
+            if let Some(cfg) = linear_config {
+                crate::sequential::validate_problem_linear_config(problem, cfg)?;
+            }
+        }
+    }
     let mut y = y0.to_vec();
-    let mut h = adaptive.initial_step.min(tf - t);
+    let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
     let mut history = StageHistory::default();
     let mut recycle = KrylovState::for_method(config.method);
     let sabr_cfg = sabr_config.unwrap_or_default();
-    let mut collector = OutputCollector::new(output, t_span, y0)?;
+    let mut collector =
+        OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.step_cap());
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut internal_steps = 0_usize;
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = h.min(adaptive.max_step).min(tf - t);
-        if h < adaptive.min_step {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
+            break;
+        };
+        h = next_h;
+        // A final piece that lands on tf is taken even below min_step.
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
@@ -414,12 +509,29 @@ pub fn integrate_adaptive_observed_with_config(
         };
         let report = match trial {
             Ok(value) => value,
-            Err(CoreError::NonFinite(_) | CoreError::LinearSolve(_)) => {
+            Err(error) if adaptive_failure_kind(&error).is_some() => {
+                let failure = adaptive_failure_kind(&error).expect("guarded adaptive failure");
                 counters.rejected_steps += 1;
+                record_work_failure(&mut counters, failure);
                 recycle = state_snapshot;
                 history = history_snapshot;
-                diagnostics.record(trial_h, f64::INFINITY, 5, "rodas5p-embedded", false);
-                h = trial_h * adaptive.min_factor;
+                diagnostics.record_with_failure(
+                    trial_h,
+                    f64::INFINITY,
+                    RODAS5P_ESTIMATOR_ORDER,
+                    "rodas5p-embedded",
+                    false,
+                    Some(failure),
+                );
+                h = rodas_next_step_after_attempt(
+                    &mut controller,
+                    adaptive,
+                    h,
+                    trial_h,
+                    f64::INFINITY,
+                    false,
+                    clipped,
+                )?;
                 continue;
             }
             Err(error) => return Err(error),
@@ -427,13 +539,19 @@ pub fn integrate_adaptive_observed_with_config(
         let error = effective(&report);
         let accepted =
             report.accepted && error <= 1.0 && report.y_new.iter().all(|value| value.is_finite());
-        diagnostics.record(
+        crate::adaptive::reconcile_outer_rejection(&mut counters, report.accepted, accepted);
+        let failure = (!accepted).then_some(adaptive_rejection_kind(error, &report.y_new));
+        diagnostics.record_with_failure(
             trial_h,
             error,
-            5,
+            RODAS5P_ESTIMATOR_ORDER,
             "rodas5p-embedded-plus-algebraic",
             accepted,
+            failure,
         );
+        if let Some(failure) = failure {
+            record_work_failure(&mut counters, failure);
+        }
         if accepted {
             t = report.t_new;
             y = report.y_new;
@@ -442,22 +560,31 @@ pub fn integrate_adaptive_observed_with_config(
             if method == IntegrationMethod::Sequential {
                 history.push(report.h, report.stages);
             }
-            controller.record_acceptance(error)?;
-            h = trial_h * controller.propose_factor(adaptive, error, 5, true)?;
+            h = rodas_next_step_after_attempt(
+                &mut controller,
+                adaptive,
+                h,
+                trial_h,
+                error,
+                true,
+                clipped,
+            )?;
         } else {
             recycle = state_snapshot;
             history = history_snapshot;
-            h = trial_h
-                * if error.is_finite() {
-                    controller.record_rejection(error)?;
-                    controller.propose_factor(adaptive, error.max(1.0e-16), 5, false)?
-                } else {
-                    adaptive.min_factor
-                };
+            h = rodas_next_step_after_attempt(
+                &mut controller,
+                adaptive,
+                h,
+                trial_h,
+                error,
+                false,
+                clipped,
+            )?;
         }
     }
     diagnostics.fallback_steps = counters.fallback_steps as usize;
-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let success = t >= tf;
     let observed = if success {
         let (times, states, output_clipped_steps) = collector.finish()?;
         ObservedIntegrationResult {
@@ -470,14 +597,15 @@ pub fn integrate_adaptive_observed_with_config(
             output_clipped_steps,
         }
     } else {
+        let (times, states, output_clipped_steps) = collector.finish_partial();
         ObservedIntegrationResult {
-            t: Vec::new(),
-            y: Vec::new(),
+            t: times,
+            y: states,
             success: false,
             message: "maximum step count or minimum step reached".into(),
             counters,
             internal_steps,
-            output_clipped_steps: 0,
+            output_clipped_steps,
         }
     };
     Ok(AdaptiveObservedIntegrationResult {
@@ -503,18 +631,28 @@ pub fn integrate_homotopy_adaptive_observed(
             "invalid adaptive Homotopy integration input".into(),
         ));
     }
+    if let Some(cfg) = fallback_config {
+        crate::sequential::validate_problem_linear_config(problem, cfg)?;
+    }
     let mut y = y0.to_vec();
-    let mut h = adaptive.initial_step.min(tf - t);
+    let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
     let mut recycle = fallback_config.and_then(|config| KrylovState::for_method(config.method));
-    let mut collector = OutputCollector::new(output, t_span, y0)?;
+    let mut collector =
+        OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.step_cap());
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = h.min(adaptive.max_step).min(tf - t);
-        if h < adaptive.min_step {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
+            break;
+        };
+        h = next_h;
+        // A final piece that lands on tf is taken even below min_step.
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
@@ -534,11 +672,28 @@ pub fn integrate_homotopy_adaptive_observed(
         );
         let report = match trial {
             Ok(report) => report,
-            Err(CoreError::NonFinite(_) | CoreError::LinearSolve(_)) => {
+            Err(error) if adaptive_failure_kind(&error).is_some() => {
+                let failure = adaptive_failure_kind(&error).expect("guarded adaptive failure");
                 recycle = recycle_snapshot;
                 counters.rejected_steps += 1;
-                diagnostics.record(trial_h, f64::INFINITY, 5, "homotopy-step-failed", false);
-                h = trial_h * adaptive.min_factor;
+                record_work_failure(&mut counters, failure);
+                diagnostics.record_with_failure(
+                    trial_h,
+                    f64::INFINITY,
+                    RODAS5P_ESTIMATOR_ORDER,
+                    "homotopy-step-failed",
+                    false,
+                    Some(failure),
+                );
+                h = rodas_next_step_after_attempt(
+                    &mut controller,
+                    adaptive,
+                    h,
+                    trial_h,
+                    f64::INFINITY,
+                    false,
+                    clipped,
+                )?;
                 continue;
             }
             Err(error) => return Err(error),
@@ -550,33 +705,48 @@ pub fn integrate_homotopy_adaptive_observed(
         let accepted = report.step.accepted
             && error <= 1.0
             && report.step.y_new.iter().all(|value| value.is_finite());
-        diagnostics.record(
+        crate::adaptive::reconcile_outer_rejection(&mut counters, report.step.accepted, accepted);
+        let failure = (!accepted).then_some(adaptive_rejection_kind(error, &report.step.y_new));
+        diagnostics.record_with_failure(
             trial_h,
             error,
-            5,
+            RODAS5P_ESTIMATOR_ORDER,
             "homotopy-native-rodas-endpoint",
             accepted,
+            failure,
         );
+        if let Some(failure) = failure {
+            record_work_failure(&mut counters, failure);
+        }
         if accepted {
             t = report.step.t_new;
             y = report.step.y_new;
             collector.accept(t, &y, clipped)?;
             internal_steps += 1;
-            controller.record_acceptance(error)?;
-            h = trial_h * controller.propose_factor(adaptive, error, 5, true)?;
+            h = rodas_next_step_after_attempt(
+                &mut controller,
+                adaptive,
+                h,
+                trial_h,
+                error,
+                true,
+                clipped,
+            )?;
         } else {
             recycle = recycle_snapshot;
-            h = trial_h
-                * if error.is_finite() {
-                    controller.record_rejection(error)?;
-                    controller.propose_factor(adaptive, error.max(1.0e-16), 5, false)?
-                } else {
-                    adaptive.min_factor
-                };
+            h = rodas_next_step_after_attempt(
+                &mut controller,
+                adaptive,
+                h,
+                trial_h,
+                error,
+                false,
+                clipped,
+            )?;
         }
     }
 
-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let success = t >= tf;
     let observed = if success {
         let (times, states, output_clipped_steps) = collector.finish()?;
         ObservedIntegrationResult {
@@ -589,20 +759,44 @@ pub fn integrate_homotopy_adaptive_observed(
             output_clipped_steps,
         }
     } else {
+        let (times, states, output_clipped_steps) = collector.finish_partial();
         ObservedIntegrationResult {
-            t: Vec::new(),
-            y: Vec::new(),
+            t: times,
+            y: states,
             success: false,
             message: "maximum step count or minimum step reached".into(),
             counters,
             internal_steps,
-            output_clipped_steps: 0,
+            output_clipped_steps,
         }
     };
     Ok(AdaptiveObservedIntegrationResult {
         observed,
         diagnostics,
     })
+}
+
+fn protected_adaptive_failure(
+    collector: OutputCollector,
+    counters: WorkCounters,
+    mut diagnostics: AdaptiveRunDiagnostics,
+    internal_steps: usize,
+    error: &CoreError,
+) -> AdaptiveObservedIntegrationResult {
+    diagnostics.fallback_steps = counters.fallback_steps as usize;
+    let (times, states, output_clipped_steps) = collector.finish_partial();
+    AdaptiveObservedIntegrationResult {
+        observed: ObservedIntegrationResult {
+            t: times,
+            y: states,
+            success: false,
+            message: format!("post-start integration error: {error}"),
+            counters,
+            internal_steps,
+            output_clipped_steps,
+        },
+        diagnostics,
+    }
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -614,6 +808,72 @@ pub fn integrate_sequential_matrix_free_adaptive_observed(
     adaptive: &AdaptiveStepConfig,
     output: &OutputSchedule,
 ) -> CoreResult<AdaptiveObservedIntegrationResult> {
+    sequential_matrix_free_adaptive_inner(
+        problem,
+        t_span,
+        y0,
+        linear_config,
+        adaptive,
+        output,
+        ResidualAccounting::DEFAULT,
+        None,
+    )
+}
+
+/// A run of
+/// [`integrate_sequential_matrix_free_adaptive_observed_with_residual_accounting`].
+#[derive(Clone, Debug)]
+pub struct SequentialAccountingResult {
+    pub result: AdaptiveObservedIntegrationResult,
+    pub accounting: ResidualAccounting,
+    /// Every successful stage solve's report, in order (all attempts and
+    /// refinement passes).
+    pub solve_log: Vec<StageSolveLogEntry>,
+}
+
+/// [`integrate_sequential_matrix_free_adaptive_observed`] (the protected
+/// matrix-free K-form driver with WRMS inner forcing) with an explicit GMRES
+/// residual accounting and the stage solves' reports logged (research node
+/// `research/sp01_dupfix_adoption_20261010`). With the kernels' default
+/// accounting it is that driver bit for bit.
+pub fn integrate_sequential_matrix_free_adaptive_observed_with_residual_accounting(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    linear_config: &LinearSolverConfig,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    accounting: ResidualAccounting,
+) -> CoreResult<SequentialAccountingResult> {
+    let mut solve_log = Vec::new();
+    let result = sequential_matrix_free_adaptive_inner(
+        problem,
+        t_span,
+        y0,
+        linear_config,
+        adaptive,
+        output,
+        accounting,
+        Some(&mut solve_log),
+    )?;
+    Ok(SequentialAccountingResult {
+        result,
+        accounting,
+        solve_log,
+    })
+}
+
+#[allow(clippy::too_many_arguments)]
+fn sequential_matrix_free_adaptive_inner(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    linear_config: &LinearSolverConfig,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    accounting: ResidualAccounting,
+    mut solve_log: Option<&mut Vec<StageSolveLogEntry>>,
+) -> CoreResult<AdaptiveObservedIntegrationResult> {
     adaptive.validate()?;
     let (mut t, tf) = t_span;
     if y0.len() != problem.dimension || tf < t {
@@ -622,22 +882,40 @@ pub fn integrate_sequential_matrix_free_adaptive_observed(
         ));
     }
     let mut y = y0.to_vec();
-    let mut h = adaptive.initial_step.min(tf - t);
+    let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
     let mut recycle = KrylovState::for_method(linear_config.method);
-    let mut collector = OutputCollector::new(output, t_span, y0)?;
+    let mut collector =
+        OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.step_cap());
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = h.min(adaptive.max_step).min(tf - t);
-        if h < adaptive.min_step {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
+            break;
+        };
+        h = next_h;
+        // A final piece that lands on tf is taken even below min_step.
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
-        let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
+        let (trial_h, clipped) = match collector.limit_step(t, h, tf) {
+            Ok(value) => value,
+            Err(error) => {
+                return Ok(protected_adaptive_failure(
+                    collector,
+                    counters,
+                    diagnostics,
+                    internal_steps,
+                    &error,
+                ));
+            }
+        };
         let recycle_snapshot = recycle.clone();
-        let trial = sequential_matrix_free_step(
+        let trial = sequential_matrix_free_step_with_inner_forcing_and_residual_accounting(
             problem,
             t,
             &y,
@@ -647,57 +925,139 @@ pub fn integrate_sequential_matrix_free_adaptive_observed(
             adaptive.atol,
             adaptive.rtol,
             false,
+            StageSolveAccounting {
+                accounting,
+                solve_log: solve_log.as_deref_mut(),
+            },
             &mut counters,
-        );
+        )
+        .map(|report| report.step);
         let report = match trial {
             Ok(report) => report,
-            Err(CoreError::NonFinite(_) | CoreError::LinearSolve(_)) => {
+            Err(error) if adaptive_failure_kind(&error).is_some() => {
+                let failure = adaptive_failure_kind(&error).expect("guarded adaptive failure");
                 recycle = recycle_snapshot;
                 counters.rejected_steps += 1;
-                diagnostics.record(
+                record_work_failure(&mut counters, failure);
+                diagnostics.record_with_failure(
                     trial_h,
                     f64::INFINITY,
-                    5,
+                    RODAS5P_ESTIMATOR_ORDER,
                     "protected-matrix-free-rodas5p-step-failed",
                     false,
+                    Some(failure),
                 );
-                h = trial_h * adaptive.min_factor;
+                h = match rodas_next_step_after_attempt(
+                    &mut controller,
+                    adaptive,
+                    h,
+                    trial_h,
+                    f64::INFINITY,
+                    false,
+                    clipped,
+                ) {
+                    Ok(next) => next,
+                    Err(error) => {
+                        return Ok(protected_adaptive_failure(
+                            collector,
+                            counters,
+                            diagnostics,
+                            internal_steps,
+                            &error,
+                        ));
+                    }
+                };
                 continue;
             }
-            Err(error) => return Err(error),
+            Err(error) => {
+                return Ok(protected_adaptive_failure(
+                    collector,
+                    counters,
+                    diagnostics,
+                    internal_steps,
+                    &error,
+                ));
+            }
         };
         let error = report.error_norm;
         let accepted =
             report.accepted && error <= 1.0 && report.y_new.iter().all(|value| value.is_finite());
-        diagnostics.record(
+        crate::adaptive::reconcile_outer_rejection(&mut counters, report.accepted, accepted);
+        let failure = (!accepted).then_some(adaptive_rejection_kind(error, &report.y_new));
+        diagnostics.record_with_failure(
             trial_h,
             error,
-            5,
+            RODAS5P_ESTIMATOR_ORDER,
             "protected-matrix-free-rodas5p-embedded",
             accepted,
+            failure,
         );
+        if let Some(failure) = failure {
+            record_work_failure(&mut counters, failure);
+        }
         if accepted {
             t = report.t_new;
             y = report.y_new;
-            collector.accept(t, &y, clipped)?;
             internal_steps += 1;
-            controller.record_acceptance(error)?;
-            h = trial_h * controller.propose_factor(adaptive, error, 5, true)?;
+            if let Err(error) = collector.accept(t, &y, clipped) {
+                return Ok(protected_adaptive_failure(
+                    collector,
+                    counters,
+                    diagnostics,
+                    internal_steps,
+                    &error,
+                ));
+            }
+            h = match rodas_next_step_after_attempt(
+                &mut controller,
+                adaptive,
+                h,
+                trial_h,
+                error,
+                true,
+                clipped,
+            ) {
+                Ok(next) => next,
+                Err(error) => {
+                    return Ok(protected_adaptive_failure(
+                        collector,
+                        counters,
+                        diagnostics,
+                        internal_steps,
+                        &error,
+                    ));
+                }
+            };
         } else {
             recycle = recycle_snapshot;
-            h = trial_h
-                * if error.is_finite() {
-                    controller.record_rejection(error)?;
-                    controller.propose_factor(adaptive, error.max(1.0e-16), 5, false)?
-                } else {
-                    adaptive.min_factor
-                };
+            h = match rodas_next_step_after_attempt(
+                &mut controller,
+                adaptive,
+                h,
+                trial_h,
+                error,
+                false,
+                clipped,
+            ) {
+                Ok(next) => next,
+                Err(error) => {
+                    return Ok(protected_adaptive_failure(
+                        collector,
+                        counters,
+                        diagnostics,
+                        internal_steps,
+                        &error,
+                    ));
+                }
+            };
         }
     }
 
-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
-    let observed = if success {
-        let (times, states, output_clipped_steps) = collector.finish()?;
+    let success = t >= tf;
+    let observed = if success && collector.is_complete() {
+        let (times, states, output_clipped_steps) = collector
+            .finish()
+            .expect("complete protected output collector must finish");
         ObservedIntegrationResult {
             t: times,
             y: states,
@@ -707,16 +1067,27 @@ pub fn integrate_sequential_matrix_free_adaptive_observed(
             internal_steps,
             output_clipped_steps,
         }
-    } else {
+    } else if !success {
+        let (times, states, output_clipped_steps) = collector.finish_partial();
         ObservedIntegrationResult {
-            t: Vec::new(),
-            y: Vec::new(),
+            t: times,
+            y: states,
             success: false,
             message: "maximum step count or minimum step reached".into(),
             counters,
             internal_steps,
-            output_clipped_steps: 0,
+            output_clipped_steps,
         }
+    } else {
+        return Ok(protected_adaptive_failure(
+            collector,
+            counters,
+            diagnostics,
+            internal_steps,
+            &CoreError::InvalidInput(
+                "integration reached endpoint before all requested outputs were recorded".into(),
+            ),
+        ));
     };
     Ok(AdaptiveObservedIntegrationResult {
         observed,
@@ -740,6 +1111,29 @@ pub fn integrate_transactional_q1_q2_adaptive_observed(
     adaptive: &AdaptiveStepConfig,
     output: &OutputSchedule,
 ) -> CoreResult<TransactionalQ1Q2AdaptiveResult> {
+    integrate_transactional_q1_q2_adaptive_observed_with_admission(
+        problem,
+        t_span,
+        y0,
+        step_config,
+        adaptive,
+        output,
+        crate::Q2Admission::OperationalDiagnostic,
+    )
+}
+
+/// [`integrate_transactional_q1_q2_adaptive_observed`] with an explicit
+/// q=2 admission (re-audit R3, HOM-05).
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_transactional_q1_q2_adaptive_observed_with_admission(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    step_config: &TransactionalQ1Q2Config,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    admission: crate::Q2Admission<'_>,
+) -> CoreResult<TransactionalQ1Q2AdaptiveResult> {
     adaptive.validate()?;
     step_config.validate()?;
     let (mut t, tf) = t_span;
@@ -749,21 +1143,32 @@ pub fn integrate_transactional_q1_q2_adaptive_observed(
         ));
     }
     let mut y = y0.to_vec();
-    let mut h = adaptive.initial_step.min(tf - t);
+    let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
-    let mut collector = OutputCollector::new(output, t_span, y0)?;
+    let mut collector =
+        OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.step_cap());
     let mut diagnostics = AdaptiveRunDiagnostics::default();
     let mut transactional = TransactionalQ1Q2RunDiagnostics::default();
     let mut internal_steps = 0_usize;
+    // One execution context for the whole integration (re-audit R4,
+    // R4-HOM-DEV-04); the steps used to build a pool each.
+    let execution = crate::ParallelExecution::rayon(step_config.threads)?;
+    transactional.pool_creations += u64::from(execution.threads() > 1);
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = h.min(adaptive.max_step).min(tf - t);
-        if h < adaptive.min_step {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
+            break;
+        };
+        h = next_h;
+        // A final piece that lands on tf is taken even below min_step.
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
-        let trial = transactional_q1_q2_step(
+        let trial = crate::transactional_q1_q2_step_with_execution(
             problem,
             t,
             &y,
@@ -772,20 +1177,33 @@ pub fn integrate_transactional_q1_q2_adaptive_observed(
             adaptive.atol,
             adaptive.rtol,
             false,
+            admission,
+            &execution,
             &mut counters,
         );
         let report = match trial {
             Ok(report) => report,
-            Err(CoreError::NonFinite(_) | CoreError::LinearSolve(_)) => {
+            Err(error) if adaptive_failure_kind(&error).is_some() => {
+                let failure = adaptive_failure_kind(&error).expect("guarded adaptive failure");
                 counters.rejected_steps += 1;
-                diagnostics.record(
+                record_work_failure(&mut counters, failure);
+                diagnostics.record_with_failure(
                     trial_h,
                     f64::INFINITY,
-                    5,
+                    RODAS5P_ESTIMATOR_ORDER,
                     "transactional-q1-q2-step-failed",
                     false,
+                    Some(failure),
                 );
-                h = trial_h * adaptive.min_factor;
+                h = rodas_next_step_after_attempt(
+                    &mut controller,
+                    adaptive,
+                    h,
+                    trial_h,
+                    f64::INFINITY,
+                    false,
+                    clipped,
+                )?;
                 continue;
             }
             Err(error) => return Err(error),
@@ -794,34 +1212,51 @@ pub fn integrate_transactional_q1_q2_adaptive_observed(
         let accepted = report.step.accepted
             && error <= 1.0
             && report.step.y_new.iter().all(|value| value.is_finite());
-        diagnostics.record(
+        // The kernel counted its own verdict (embedded error <= 1); the outer
+        // check adds the contraction tail (A1 counter-drift defect).
+        crate::adaptive::reconcile_outer_rejection(&mut counters, report.step.accepted, accepted);
+        let failure = (!accepted).then_some(adaptive_rejection_kind(error, &report.step.y_new));
+        diagnostics.record_with_failure(
             trial_h,
             error,
-            5,
+            RODAS5P_ESTIMATOR_ORDER,
             "rodas5p-embedded-plus-transactional-algebraic",
             accepted,
+            failure,
         );
+        if let Some(failure) = failure {
+            record_work_failure(&mut counters, failure);
+        }
         transactional.record(&report, accepted);
         if accepted {
             t = report.step.t_new;
             y = report.step.y_new;
             collector.accept(t, &y, clipped)?;
             internal_steps += 1;
-            controller.record_acceptance(error)?;
-            h = trial_h * controller.propose_factor(adaptive, error, 5, true)?;
+            h = rodas_next_step_after_attempt(
+                &mut controller,
+                adaptive,
+                h,
+                trial_h,
+                error,
+                true,
+                clipped,
+            )?;
         } else {
-            h = trial_h
-                * if error.is_finite() {
-                    controller.record_rejection(error)?;
-                    controller.propose_factor(adaptive, error.max(1.0e-16), 5, false)?
-                } else {
-                    adaptive.min_factor
-                };
+            h = rodas_next_step_after_attempt(
+                &mut controller,
+                adaptive,
+                h,
+                trial_h,
+                error,
+                false,
+                clipped,
+            )?;
         }
     }
 
     diagnostics.fallback_steps = transactional.accepted_sequential_fallback_steps;
-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let success = t >= tf;
     let observed = if success {
         let (times, states, output_clipped_steps) = collector.finish()?;
         ObservedIntegrationResult {

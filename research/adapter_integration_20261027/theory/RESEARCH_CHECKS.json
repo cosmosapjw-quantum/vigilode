@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "date_utc": "2026-10-27",
+  "purpose": "Focused verification of continuation/controller/cost theory; no rerun of unchanged published research.",
+  "source_commits": [
+    "e8572eac8f6b1e019d8bf3dcb6d8b957fc1d1824",
+    "bc99943c5a74b174500ed9d858caea215ebf1d4b"
+  ],
+  "scispace": {
+    "status": "fulfilled",
+    "query": "What numerical analysis and software design results justify preserving adaptive Runge–Kutta or Rosenbrock step-size controller state when continuing an ODE solve across requested output windows, and how do forced final-step clipping, FSAL reuse, and Jacobian reuse affect correctness and computational cost?",
+    "selection": "Used for discovery; checked selected primary sources directly. Search metadata was not accepted as canonical publication metadata.",
+    "selected_primary_sources": [
+      {
+        "title": "Optimized step size control within the Rosenbrock solvers for stiff chemical ordinary differential equation systems in KPP version 2.2.3_rs4",
+        "authors": [
+          "Raphael Dreger",
+          "Timo Kirfel",
+          "Andrea Pozzer",
+          "Simon Rosanka",
+          "Rolf Sander",
+          "Domenico Taraborrelli"
+        ],
+        "year": 2025,
+        "doi": "10.5194/gmd-18-4273-2025",
+        "url": "https://gmd.copernicus.org/articles/18/4273/2025/",
+        "checked_sections": [
+          "Abstract",
+          "step control equations (4)-(6)",
+          "Appendix A"
+        ],
+        "use": "History-dependent control is a substantive algorithmic state; no transfer of reported chemistry speedups to VigilODE."
+      },
+      {
+        "title": "Efficient adaptive step size control for exponential integrators",
+        "authors": [
+          "Pranab Jyoti Deka",
+          "Lukas Einkemmer"
+        ],
+        "year": 2022,
+        "doi": "10.1016/j.camwa.2022.07.011",
+        "url": "https://arxiv.org/abs/2102.02524",
+        "checked_sections": [
+          "Abstract",
+          "journal reference"
+        ],
+        "use": "Accuracy-limited maximum step may differ from cost-minimizing step when inner iteration work depends on h."
+      }
+    ]
+  },
+  "official_documentation": {
+    "url": "https://computing.llnl.gov/projects/sundials/usage-notes",
+    "checked_sections": [
+      "On the integration return and output times",
+      "Dense output"
+    ],
+    "use": "Architectural distinction between requested output and an actual stop barrier."
+  },
+  "wolfram": [
+    {
+      "tool": "wolframlanguageevaluator",
+      "assumptions": "g>1,h0>0,n positive integer;0<q<1,m nonnegative integer",
+      "checks": [
+        "finite geometric sum",
+        "Neumann tail",
+        "idealized restart counts"
+      ],
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Out[1]= <|\"geometric_identity\" -> True, \"neumann_tail\" -> True, \"restart_counts_h0_1e_6_g5_L_001\" -> {{1, 7, 7}, {4, 28, 8}, {16, 112, 9}, {64, 448, 10}}|>"
+          }
+        ],
+        "structuredContent": null,
+        "isError": false
+      }
+    },
+    {
+      "tool": "wolframlanguageevaluator",
+      "assumptions": "k,h,s,e,ep,q positive; a,b real",
+      "checks": [
+        "unclamped controller clipping ratio",
+        "integral ratio",
+        "current PI ratio"
+      ],
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Out[1]= <|\"general_clipping_identity\" -> True, \"I_clipping_ratio\" -> 1, \"PI_clipping_ratio\" -> k^(3/10)|>"
+          }
+        ],
+        "structuredContent": null,
+        "isError": false
+      }
+    }
+  ],
+  "local_exact_check": {
+    "command": "python3 research/adapter_integration_20261027/theory/check_theory.py",
+    "exit_code": 0,
+    "result": "THEORY_CHECKS.json",
+    "scope": "Exact rational instances of the proved identities; no native performance claim."
+  },
+  "source_audit": [
+    {
+      "path": "crates/vigilode/src/switching.rs",
+      "symbols": [
+        "implicit_seed",
+        "run_batch",
+        "drive_windows"
+      ],
+      "finding": "Coalescing and warm seeding already exist; RODAS seed is mean accepted h; DOPRI probe ceiling is post-attempt and completion-first."
+    },
+    {
+      "path": "crates/vigilode/src/solve.rs",
+      "symbols": [
+        "Rodas5p::solve_observed_bounded"
+      ],
+      "finding": "Interior observation times are exact landings; structure verification can add 2n to the callback ceiling."
+    },
+    {
+      "path": "crates/vigilode/src/fd.rs",
+      "symbols": [
+        "Guard::call_charged",
+        "Guard::charge"
+      ],
+      "finding": "Counts after entered callbacks, checks >ceiling, then prevents later callback entries; parallel in-flight work requires separate accounting."
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/adaptive.rs",
+      "symbols": [
+        "AdaptiveControllerState",
+        "propose_factor_prevalidated"
+      ],
+      "finding": "PI/history/rejection state is more than h; raw PI exponents -0.7/q and0.4/q. The existing next_step_after_attempt_impl wrapper restores requested_h on accepted slivers and bounds/restores informative clipped requests; raw PI clipping ratio is not the actual final native proposal."
+    }
+  ]
+}

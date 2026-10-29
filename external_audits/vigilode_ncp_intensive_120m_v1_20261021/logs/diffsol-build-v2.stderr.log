@@ -1,0 +1,9 @@
+   Compiling vigilode-diffsol-adapter v0.1.0 (/dev/shm/vigilode_ncp_intensive_120m_v1_20261021T062109Z/harness/diffsol-adapter)
+error[E0599]: no method named `iter` found for struct `NalgebraVecRef<'a, T>` in the current scope
+  --> src/main.rs:52:74
+   |
+52 |         let states: Vec<Vec<f64>>=(0..mat.ncols()).map(|j| mat.column(j).iter().copied().collect()).collect();
+   |                                                                          ^^^^ method not found in `NalgebraVecRef<'_, f64>`
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `vigilode-diffsol-adapter` (bin "vigilode-diffsol-adapter") due to 1 previous error

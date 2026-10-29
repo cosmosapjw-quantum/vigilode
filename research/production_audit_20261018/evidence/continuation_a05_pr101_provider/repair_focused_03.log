@@ -1,0 +1,82 @@
+warning: fields `prepared_centers`, `prepared_radii`, `prepared_times`, `prepared_count`, `radii`, and `prepared_valid` are never read
+   --> crates/rodas5p-integrators/src/output.rs:706:5
+    |
+698 | pub(crate) struct OutputCollector {
+    |                   --------------- fields in this struct
+...
+706 |     prepared_centers: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^^^
+707 |     prepared_radii: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^
+708 |     prepared_times: Vec<f64>,
+    |     ^^^^^^^^^^^^^^
+709 |     prepared_count: usize,
+    |     ^^^^^^^^^^^^^^
+710 |     radii: Vec<Vec<f64>>,
+    |     ^^^^^
+711 |     prepared_valid: bool,
+    |     ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: struct `DenseOutputPreparationWork` is never constructed
+   --> crates/rodas5p-integrators/src/output.rs:716:19
+    |
+716 | pub(crate) struct DenseOutputPreparationWork {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `with_verified_radii`, `prepare_dense_interval_with_radii`, `prepare_dense_interval_inner`, `commit_prepared_dense_interval`, `prepared_dense_radii`, and `committed_output_radii` are never used
+    --> crates/rodas5p-integrators/src/output.rs:766:19
+     |
+ 722 | impl OutputCollector {
+     | -------------------- methods in this implementation
+...
+ 766 |     pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
+     |                   ^^^^^^^^^^^^^^^^^^^
+...
+1035 |     pub(crate) fn prepare_dense_interval_with_radii<C, R>(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1070 |     fn prepare_dense_interval_inner<C, R>(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1162 |     pub(crate) fn commit_prepared_dense_interval(&mut self) {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+...
+1180 |     pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `rodas5p-integrators` (lib) generated 3 warnings
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.91s
+     Running tests/production_audit_pr101_provider.rs (target/debug/deps/production_audit_pr101_provider-f3b1ae2860c14b03)
+
+running 8 tests
+test generic_problem_with_matching_metadata_cannot_request_pr101_authority ... ok
+test pr101_certificate_mismatch_and_rejected_tube_preserve_work ... ok
+test pr101_exact_dyadic_linear_segment_encloses_endpoints_and_midpoint ... PR101_FRACTION_BOUND=5.99307640551242640e-13
+ok
+test pr101_full_tube_and_inherited_initial_radius_are_included ... ok
+test pr101_near_one_quartic_emits_fraction_oracle_fixture ... 
+PR101_NEAR1_Q=8.40942944676586923e-1,8.40942944676586923e-1;2.44140125207817805e-4,2.44140125207817832e-4;8.69780843942318613e-9,8.69780843942318778e-9;-1.76878459753373783e-8,-1.76878459753373783e-8;9.48982971809839210e-9,9.48982971809839210e-9
+PR101_NEAR1_RPOLY=4.58874154853110172e-1,4.58874156851513837e-1;1.12030099739808335e2,1.12030099739808946e2;3.35424035549206773e-2,3.35424035549208022e-2;-1.75310522849805826e-2,-1.75310522849805479e-2;9.48982963323072824e-3,9.48982963323074559e-3;-2.12548479736285108e-11,-2.12548479736283913e-11;-9.53539395756495579e-15,-9.53539395756493054e-15;3.35684380057788483e-15,3.35684380057788877e-15;-9.00568657159936069e-16,-9.00568657159934492e-16;7.42424931421310352e-28,7.42424931421314209e-28;-4.69399883778502951e-32,-4.69399883778501254e-32;-1.05359140989899222e-36,-1.05359140989898621e-36;4.99620233594331354e-41,4.99620233594333699e-41;8.72193184970723082e-46,8.72193184970728527e-46;-3.30887621939690139e-50,-3.30887621939688572e-50;-4.72601590924155980e-55,-4.72601590924152865e-55;1.49413076598152623e-59,1.49413076598153353e-59;1.80570602151777930e-64,1.80570602151779212e-64;-4.89326417536761073e-69,-4.89326417536758190e-69;-5.12513064042554107e-74,-5.12513064042550337e-74;1.21525790382778533e-78,1.21525790382779252e-78;1.12308706524860176e-83,1.12308706524861017e-83;-2.36716017174680746e-88,-2.36716017174679406e-88;-1.95732992229467486e-93,-1.95732992229465783e-93;3.71299158765138308e-98,3.71299158765140842e-98;2.77772107699890017e-103,2.77772107699892347e-103;-4.79027254740078730e-108,-4.79027254740075629e-108;-3.27192115320991484e-113,-3.27192115320988657e-113;5.17248909751997190e-118,5.17248909752000712e-118;-4.81848689483704608e-127,-4.81848689483699688e-127;3.57182734711030197e-132,3.57182734711037580e-132;1.23433042903194758e-136,1.23433042903196038e-136;-8.59010188338747762e-142,-8.59010188338729699e-142;-2.77656534472933974e-146,-2.77656534472931173e-146;1.82706439946306323e-151,1.82706439946310223e-151;5.49515282927029164e-156,5.49515282927034857e-156;-3.45268298489854385e-161,-3.45268298489847120e-161;-9.53228057722824476e-166,-9.53228057722814355e-166;5.79109124748559740e-171,5.79109124748572150e-171;1.43519852799968406e-175,1.43519852799969893e-175;-8.55463267610699337e-181,-8.55463267610681785e-181;-1.84573866231199160e-185,-1.84573866231197200e-185;1.09761855796486627e-190,1.09761855796488795e-190;1.97538691859845013e-195,1.97538691859847143e-195;-1.19877181572196204e-200,-1.19877181572194072e-200;-1.66794248476924939e-205,-1.66794248476923125e-205;1.07853131043382189e-210,1.07853131043383843e-210;9.39670314843595613e-216,9.39670314843606048e-216;-7.42752666826561338e-221,-7.42752666826554261e-221
+PR101_NEAR1_A=9.99023437500000000e-1
+PR101_NEAR1_H=2.44140625000000000e-4
+PR101_NEAR1_DELTA=2.44140625000000000e-4,2.44140625000000000e-4
+PR101_NEAR1_RESIDUAL=1.12549537182155547e2
+PR101_NEAR1_T=9.99267578125000000e-1
+PR101_NEAR1_Y=8.41187085301586923e-1
+PR101_NEAR1_RHS=-1.11514467739082093e2,-1.11514467737194678e2
+PR101_NEAR1_OUTPUT=8.41187085301586923e-1,1.12549539685421850e-4
+ok
+test pr101_refuses_invalid_radius_domain_nan_and_overflow_with_work ... ok
+test pr101_warmed_provider_operations_make_no_heap_allocations ... ok
+test pr101_warmed_segment_verification_and_output_make_no_allocations ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+EXIT_CODE=0

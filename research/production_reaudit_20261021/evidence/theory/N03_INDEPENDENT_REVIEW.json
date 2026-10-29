@@ -1,0 +1,51 @@
+{
+  "schema": "vigilode.n03-independent-review.v1",
+  "reviewer": "research_dag_audit",
+  "reviewed_at_utc": "2026-10-21T04:51:08.299546+00:00",
+  "status": "PASS_SCOPED_SOURCE_AND_MATHEMATICAL_REVIEW",
+  "runtime_validation": "PENDING_OWNER_TESTS",
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/global_budget.rs": "f4270f3b37d1fb1675e4b98649eb4a5b4403690ea8830f4401a79c6704653e04",
+    "crates/rodas5p-integrators/src/generic_verified.rs": "b8944a94d0909e4746f080abebc8aa33d43c850d704c4c13c2f4ed0f9fcffb1a",
+    "crates/rodas5p-integrators/tests/global_budget_contracts.rs": "449ef5167124ff75ad8f41bd05c7dd05f2a1c958ef0d362ad4204a61a3897ff1"
+  },
+  "checks": [
+    {
+      "id": "G1",
+      "result": "PASS",
+      "reason": "Outward G=exp(max(mu,0)*h) and G*(R+jump+h*rho) bound every point on the segment in one fixed Euclidean norm. Original sealed provider receipt already certifies exact solution inclusion on the tube where mu/rho apply; looser replay R does not require changing that tube."
+    },
+    {
+      "id": "QUERY",
+      "result": "PASS",
+      "reason": "Interval curve evaluation minus represented query center is separately charged in L2, so curve and returned-center radii are distinguished."
+    },
+    {
+      "id": "TX",
+      "result": "PASS",
+      "reason": "Failed replay retains scientific snapshot/previous endpoint/output cursor, charges attempted work, and private source_complete prevents mutable public telemetry from forging horizon completion."
+    },
+    {
+      "id": "G2",
+      "result": "PASS",
+      "reason": "Log/exp optimum is heuristic seed only; each count is exact up to2^53 and repeated directed division/addition validates sum A_j/n_j^p and cost ceiling. No exact optimizer or W*+sum(c) guarantee is asserted for floating implementation."
+    },
+    {
+      "id": "BINDING",
+      "result": "FIXED_VERIFIED",
+      "reason": "Independent review requested trajectory binding in addition to model identity. Current run_identity Arc and binds_run verify exact originating trajectory; wrapper run/global fields are private with readonly accessors."
+    },
+    {
+      "id": "G2-ROUNDING",
+      "result": "FIXED_VERIFIED_SOURCE",
+      "reason": "Equal integer denominator grouping validates sum(A_j)/n^p outward; minimum with independent pointwise bound is sound and pointwise fallback survives grouped numerator overflow. This constructs exact uniform(1+9)/20=0.5 without relaxing budget, closing the32vs40 witness."
+    }
+  ],
+  "limits": [
+    "Sealed source providers and fixed Euclidean norm only.",
+    "Allocator coefficients/costs are caller-supplied algebraic data; passing allocation inequality is not ODE authority.",
+    "Global replay can conservatively refuse a source-certified run without invalidating its existing certificate.",
+    "Directed primitive counters do not count hidden scalar FLOPs or allocator/runtime costs.",
+    "No old scientific campaigns or published proofs rerun in this independent code review."
+  ]
+}

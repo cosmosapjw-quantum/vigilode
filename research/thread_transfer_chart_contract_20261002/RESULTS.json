@@ -1,0 +1,56 @@
+{
+ "schema": "vigilode-thread-transfer-chart-contract-v1",
+ "sympy": "1.14.0",
+ "mpmath": "1.3.0",
+ "identity": {
+  "general_identity": true,
+  "semilinear_a": "2*x",
+  "semilinear_r_C": "0",
+  "semilinear_r_D": "0",
+  "semilinear_exact": true
+ },
+ "fail_closed": {
+  "cases": {
+   "to_chart_D_zero": true,
+   "to_chart_small_D": true,
+   "to_chart_ill_conditioned": true,
+   "to_chart_other_branch": true,
+   "from_chart_D_zero": true,
+   "from_chart_small_D": true,
+   "from_chart_other_branch": true,
+   "valid_point_maps": true
+  },
+  "holds": true
+ },
+ "flows": {
+  "fast_mode": {
+   "kappa": 40,
+   "w0": "1/10",
+   "t": "1/10",
+   "w_end": "0.0018315638888734180294",
+   "y_relative_difference": "0.0",
+   "x_relative_difference": "0.0",
+   "holds": true
+  },
+  "finite_epsilon": {
+   "eps": "1/1000",
+   "with_residual": "0.0",
+   "residual_dropped": "0.00099034",
+   "holds": true
+  }
+ },
+ "moving_frame": {
+  "frame": "S = x^2",
+  "connection": "-2*x",
+  "equals_minus_2x": true
+ },
+ "gate": {
+  "identity": true,
+  "fail_closed": true,
+  "fast_mode_kept": true,
+  "finite_epsilon_not_replaced": true,
+  "connection_retained": true
+ },
+ "verdict": "PASS",
+ "claim_ceiling": "model-specific chart theorem and tests; no production replacement"
+}

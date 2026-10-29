@@ -1,0 +1,144 @@
+{
+  "schema": "vigilode-code-audit-v1",
+  "baseline_commit": "555e71e03fe31e6c9b21961c8e2d263b1794eb6f",
+  "comparison_commit": "5fd6e459a3f67cee90e002821b9b4b740c47475b",
+  "scope": "Changed solver client and photon-transport application surfaces; selective static inspection and targeted adversarial regression tests. No rerun of unchanged published campaigns.",
+  "reviewed_files": {
+    "crates/rodas5p-integrators/src/client_stage.rs": "ca3c1c74ff42dcf68f1463ee731065949963ae77123c98467cac2424ceb8bc27",
+    "crates/rodas5p-integrators/src/rodas5p_fast.rs": "92b1318000c9a43500bdfedafc803b5490c07c4b215b1e1e233e513ec316aad9",
+    "crates/rodas5p-integrators/src/problem.rs": "890aa2218931a12ec7fcea7c72a0fb25eb588e7984a04ad2c5d89b4d5e95e066",
+    "crates/rodas5p-integrators/examples/lrs_photon_fv_support/mod.rs": "ca5b58cb9d83594345012ff5ebf33d5d59c52326ce8dd266a6056ec1eadfc10e",
+    "crates/rodas5p-integrators/examples/lrs_photon_fv_support/block_solver.rs": "dddcec27a66226af9efa17433e896dda8edc23f12601788378638a2058b041b7",
+    "crates/rodas5p-integrators/examples/lrs_photon_fv_support/border.rs": "120514bdceebbe0b0364fab6771d1892b4f83d0b8f6109e98032c821253b44aa",
+    "crates/rodas5p-integrators/examples/lrs_photon_fv_support/chem.rs": "659fc061dbbeeaccc6df56620b302eb008061c82cc2c7efc0662d9379e5e92e4",
+    "crates/rodas5p-integrators/examples/lrs_photon_fv_support/remesh.rs": "e4528c6cfe78193eb447a4728903b131a9d1ceb8d3943163d93fa2f918dede3c",
+    "crates/rodas5p-integrators/examples/sphere_photon_fv_support/mod.rs": "a7b15cd41bf8c9f8582fe899496a6e24581d2be7cdea370996b9f170df5a1486"
+  },
+  "findings": [
+    {
+      "id": "CA-01",
+      "severity": "medium",
+      "relevance": "FIX_SOON",
+      "kind": "implementation",
+      "status": "fixed_and_regression_verified",
+      "path": "crates/rodas5p-integrators/examples/lrs_photon_fv_support/block_solver.rs",
+      "symbol": "BlockStageSolver::precondition",
+      "observation": "Missing input/output length checks reach indexing loops; short slices panic and excess entries are not rejected.",
+      "impact": "Malformed diagnostic API calls can panic instead of returning typed errors; driver-internal sweep uses validated dimensions.",
+      "repair": "Validate both dimensions before any output mutation; test short and oversized input and output for one- and two-level preconditioners."
+    },
+    {
+      "id": "CA-02",
+      "severity": "medium",
+      "relevance": "FIX_SOON",
+      "kind": "implementation",
+      "status": "fixed_and_regression_verified",
+      "path": "crates/rodas5p-integrators/examples/lrs_photon_fv_support/block_solver.rs",
+      "symbol": "BlockStageSolver::factor_with",
+      "observation": "Invalid shift exits before clearing Factored state.",
+      "impact": "A failed factor update leaves old factors usable by solve, apply and precondition. Driver-generated positive shifts did not exercise this misuse in published results.",
+      "repair": "Invalidate factor state before shift validation while retaining linearization for a corrected retry."
+    },
+    {
+      "id": "CA-03",
+      "severity": "medium",
+      "relevance": "FIX_SOON",
+      "kind": "telemetry",
+      "status": "fixed_and_regression_verified",
+      "path": "crates/rodas5p-integrators/examples/lrs_photon_fv_support/block_solver.rs",
+      "symbol": "BlockStageSolver::solve_with, Mode::Krylov",
+      "observation": "Driver increments linear_solves before client call and nested solve_gmres_into increments it again on success.",
+      "impact": "Successful Krylov stages count twice in work telemetry; direct client does not. Numerical trajectory is unaffected.",
+      "repair": "Accumulate nested Krylov work except driver-owned linear_solves, including work on error."
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "command": "cargo test -p rodas5p-integrators --locked --offline --test lrs_block_solver_failure_contracts --test lrs_block_solver_contracts",
+    "environment": {
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_PROFILE_DEV_DEBUG": "0",
+      "CARGO_PROFILE_TEST_DEBUG": "0",
+      "rust_toolchain": "1.94.1"
+    },
+    "tests_passed": 11,
+    "tests_failed": 0,
+    "log": "evidence/code_audit/regression_after.log",
+    "exit_code": 0,
+    "tests": [
+      {
+        "suite": "lrs_block_solver_failure_contracts",
+        "passed": 3,
+        "coverage": [
+          "shape errors without output mutation in both preconditioner modes",
+          "invalid shift invalidates every factor consumer and allows valid retry",
+          "nested GMRES preserves driver-owned solve count while retaining Krylov work"
+        ]
+      },
+      {
+        "suite": "lrs_block_solver_contracts",
+        "passed": 8,
+        "coverage": [
+          "dense LU residual and backward error",
+          "mixed drift GMRES",
+          "stale-state and dimension errors",
+          "closed-form flop count",
+          "zero successful-kernel allocations",
+          "driver allocation count independent of attempt count",
+          "driver determinism and banded parity",
+          "bordered Jacobian and Schur parity"
+        ]
+      }
+    ],
+    "pre_fix": {
+      "status": "EXPECTED_FAILURE",
+      "tests_failed": 3,
+      "tests_passed": 0,
+      "exit_code": 101,
+      "log": "evidence/code_audit/regression_before.log",
+      "observations": [
+        "linear_solves 14 instead of13",
+        "short preconditioner input index out of bounds len9 index9",
+        "solve remained usable after failed factor update"
+      ]
+    },
+    "environment_interruption": {
+      "exit_code": 130,
+      "log": "evidence/code_audit/environment_interrupted.log",
+      "detail": "Default-concurrency dependency compilation interrupted after memory pressure before tests started; rerun used two jobs and zero debug information; target cache preserved."
+    },
+    "warning": "Pre-existing dead-code warning for packet_trajectory::VerifiedTrialFault::EndpointAdmission."
+  },
+  "production_assessment": {
+    "broad": "HOLD",
+    "scoped": "Fixed-grid, unpolarized, non-tilted Bianchi-I and specified chemistry test cases have published application-budget evidence; adoption requires matching physical/model/accuracy assumptions.",
+    "remaining": [
+      "Spatial discretization and angular/energy refinement error separate from temporal-reference agreement.",
+      "Accumulated remesh approximation error and positivity policy are not controlled by local RODAS estimate.",
+      "Full-sphere structured linear solver and polarized/tilted/recoil physics are not implemented in this branch.",
+      "Application modules remain example-owned rather than a stable reusable domain crate.",
+      "NCP timings have documented unequal scopes and support diagnostic comparisons only."
+    ]
+  },
+  "complementary_review": {
+    "file": "crates/rodas5p-core/src/low_rank_bordered.rs",
+    "result": "No functional defect in bounded static check of augmentation sign, transpose, packing, capacities, atomic output and mutex access.",
+    "documentation_finding": "Failure paths allocate error Strings; promise zero allocation only for successful applications.",
+    "status": "documentation_finding_fixed_by_implementer"
+  },
+  "workflow": {
+    "skill": "physmath-research-loop",
+    "version": "1.3.0",
+    "selected_scope": [
+      "C9 changed-code audit",
+      "C5 targeted repair",
+      "C6 regression verification",
+      "C10 scoped readiness and handoff"
+    ],
+    "review_budget": "One complementary code-review pass; no recursive reviews and no historical campaign reruns."
+  },
+  "changed_file_sha256": {
+    "crates/rodas5p-integrators/examples/lrs_photon_fv_support/block_solver.rs": "148b26cc05f46e842bea748317fc0af443ce87fb3450ec84a473d32bd5e5bcde",
+    "crates/rodas5p-integrators/tests/lrs_block_solver_failure_contracts.rs": "2a9d721475db96b5d46b04d0295f87f9aec2af102e80edf6eb2d3836e775eb77"
+  }
+}

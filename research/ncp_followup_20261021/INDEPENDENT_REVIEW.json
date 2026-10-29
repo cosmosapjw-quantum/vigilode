@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "reviewer": "independent followup_reviewer agent",
+  "base_commit": "7a63876a97fc17f640771ec06658269947049994",
+  "review_method": [
+    "Independent substitution of Schur equations and block triangular products",
+    "Independent norm-bound derivation",
+    "Read-only code/index/error-path review",
+    "Independent phase-space measure/Thomson/ALE normalization derivation",
+    "Review of targeted test definitions and available receipts"
+  ],
+  "result": "pass_scoped_static_and_mathematical_review",
+  "production_decision": "HOLD",
+  "execution_authority": "Final Cargo/Python execution results are separate validation receipts; this review does not claim to execute final native matrix.",
+  "findings": [
+    {
+      "id": "IR-01",
+      "severity": "medium",
+      "domain": "implementation",
+      "status": "closed_in_source",
+      "finding": "Constructor capacity may panic instead of typed refusal",
+      "correction": "checked bytes and try_reserve_exact with capacity regression"
+    },
+    {
+      "id": "IR-02",
+      "severity": "high",
+      "domain": "numerics",
+      "status": "closed_in_source",
+      "finding": "n1,d1,v1e16 cyclic accumulation yields J=-1 for identically zero RHS",
+      "correction": "n1 exact zero and n2 coalesced coefficients; adversarial regression present"
+    },
+    {
+      "id": "IR-03",
+      "severity": "low",
+      "domain": "evidence",
+      "status": "closed_in_source",
+      "finding": "Complexity metadata described unexecuted stencil path",
+      "correction": "null unless actual stencil builds>0"
+    },
+    {
+      "id": "IR-04",
+      "severity": "low",
+      "domain": "physics",
+      "status": "closed_in_document",
+      "finding": "Photon phase-space expression is per proper volume, not total number",
+      "correction": "dn/du_gamma and explicit proper-volume convention"
+    },
+    {
+      "id": "IR-05",
+      "severity": "low",
+      "domain": "math",
+      "status": "closed_in_schur_theory",
+      "finding": "log iteration formula boundary q0/epsilon>=1 requires explicit handling",
+      "correction": "T3 has 0<q<1,0<epsilon<1 and separate trivial cases"
+    }
+  ],
+  "verified_mathematical_scopes": [
+    "Exact band/border Schur elimination",
+    "Conditional fixed-preconditioner GMRES norm contraction",
+    "Triangular Schur minimal polynomial degree2",
+    "Conditional block inverse infinity norm bound",
+    "Positive overlap remap conservation and L1 contraction",
+    "O(n+m) sorted-overlap work",
+    "Cumulative remap perturbation bound",
+    "Non-tilted LRS Bianchi-I weighted conservative transport",
+    "Cold unpolarized Thomson rank2 gain",
+    "ALE relative velocity and volume identity",
+    "Single-photon absorption exchange and signed anisotropic stress",
+    "Exact finite-rank augmentation into enlarged border with zero auxiliary RHS"
+  ],
+  "remaining_integration_gates": [
+    "Accepted-step AMR driver with complete mesh/state/tolerance/cache transaction",
+    "Live BASS/rei adapter and source-owned rates/units",
+    "Geometry/space/time/remap independent refinement",
+    "True operator residual for approximate border preconditioning",
+    "NCP accuracy-matched performance and complete physical references",
+    "Dedicated augmented-border native client test and original-dimension embedding/restriction wrapper"
+  ],
+  "reviewed_sha256": {
+    "crates/rodas5p-core/src/bordered.rs": "78d13743118e2405743d5caa48de2de20c77f827b90d2e54014bd4c3866de16c",
+    "crates/rodas5p-core/tests/bordered_schur_contracts.rs": "f5c3c46e69602fbb9d5eb853afacb2aa3c15e9394944a73f70dfd45adf5ac203",
+    "crates/rodas5p-core/tests/bordered_allocation_contract.rs": "2554b157080cb9ee6b762be5c70e134113be5d2c46975eac63c8292746f9f014",
+    "crates/rodas5p-krylov/tests/bordered_preconditioner_contracts.rs": "5e00df5ec25775ff725d93f241ce43922430c2676a553f5632bb260a8a1b6cb3",
+    "crates/rodas5p-integrators/src/conservative_remap.rs": "4ba4f712a57ebb03888db1aa4127448a2a66a964c15bd596292c1b6c92c97e08",
+    "crates/rodas5p-integrators/examples/component_benchmark_support/mod.rs": "732a4b474cdb44bf6164983ab0a742fc0e6a8db129b00142b529d2d0b8be1705",
+    "crates/rodas5p-integrators/examples/component_benchmark_native.rs": "290a65dcde217372341d7e519d1e1f9471d8df343ec651c9bcb518443ad5aaa3",
+    "research/ncp_followup_20261021/REMAP_THEORY.md": "e080ee9cb32ebd560d76d6c258dd6c0d96f64231b9e82e0aff1a3808e0de275a",
+    "research/ncp_followup_20261021/SCHUR_THEORY.md": "f6154a386b2d213ff2c5c81f58e27f5c0cebeb3004d689ba2b7a6e0a3feb0b3b",
+    "research/ncp_followup_20261021/ADVICE_REVIEW_KO.md": "442fd4f5457da1a38f4cf840d30d22b63466f418f2677f16ee30839d0bd44fff",
+    "research/ncp_followup_20261021/BASS_REI_PORT_RESEARCH.md": "47715469655f42e6ac22e204ded3da55c90ba628cdc08faf3a7f30fd1b3f2106",
+    "research/ncp_followup_20261021/BASS_REI_FVM_REFERENCE.py": "14be5e4d01821f126a575bf901a5041f8ec811a359a0689989a547dee7c14b18",
+    "research/ncp_followup_20261021/BASS_REI_INPUTS.json": "056c152d5b3aefe87e7a8c27d7b19d9375eed0818e88d408c433d11d61eaacaa",
+    "research/ncp_followup_20261021/LOW_RANK_EXTENSION.md": "ad75e855f8f2dfa1a247357c8849709dba9a983ca78aaf799a311cec5b598d64"
+  },
+  "addendum": {
+    "scope": "SCHUR_THEORY T5 and LOW_RANK_EXTENSION",
+    "method": "Independent elimination of auxiliary z; input block and dimension consistency",
+    "result": "pass_scoped_derived_algebra",
+    "native_augmented_client_test": "not_run"
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "unit_id": "causal-switch-reconsideration",
+  "scope": "autonomous identity-mass supplied-JVP raw-U trajectory; opt-in",
+  "implementation": [
+    "crates/vigilode-coupled/src/switching.rs",
+    "crates/vigilode-coupled/src/adaptive.rs",
+    "crates/vigilode-coupled/src/raw_step.rs",
+    "crates/vigilode-coupled/src/solver.rs"
+  ],
+  "apis": [
+    "integrate_switching_causal_observed",
+    "integrate_sequential_raw_observed",
+    "RawStepSession::attempt_protected"
+  ],
+  "candidate_routes": [
+    "Forward",
+    "Picard",
+    "ResidualFirst"
+  ],
+  "automatic_choice": "declared candidate versus protected same-target sequential solve",
+  "default_policy": {
+    "calibration": "one accepted protected step",
+    "work_proxy": "attempted RHS + JVP calls",
+    "retention_ratio": 1.25,
+    "reentry_ratio": 1.0,
+    "initial_cooldown_accepted_steps": 4,
+    "maximum_cooldown_accepted_steps": 64,
+    "backoff_factor": 2,
+    "protected_work_ewma_old_weight": 0.75,
+    "exploration_overhead_fraction": 0.25,
+    "failed_probe_cooldown": "clamp(ceil(C/(epsilon*P))-1,1,max_cooldown)",
+    "failed_probe_reference": "successful same-attempt protected score preferred, else last finite positive protected reference",
+    "legacy_policy": "exploration_overhead_fraction=null restores exponential failure cooldown",
+    "valid_expensive_candidate_cooldown": "exponential",
+    "overflow_telemetry": "nullable scores with work_scores_finite=false"
+  },
+  "claims": [
+    {
+      "id": "CS1",
+      "statement": "Routing retains existing residual/embedded/conditional acceptance conditions",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "scope": "existing contracts and policy assumptions; not a global estimator theorem"
+    },
+    {
+      "id": "CS2",
+      "statement": "P <= 1 + floor(A/c) for persistently declining projected probes",
+      "basis": [
+        "derived"
+      ],
+      "scope": "controller not reinitialized; A accepted protected steps after first probe; c=1 for priced policy and initial cooldown for legacy"
+    },
+    {
+      "id": "CS3",
+      "statement": "Work heuristic can use a reference from another state or step size",
+      "basis": [
+        "implementation-verified"
+      ],
+      "scope": "No wall-time or regret guarantee inferred"
+    },
+    {
+      "id": "CS4",
+      "statement": "C/((L+1)P) <= epsilon for L=ceil(C/(epsilon*P))-1 with minimum1 and without upper clipping",
+      "basis": [
+        "derived"
+      ],
+      "scope": "exact real arithmetic and stationary representative attempted-work scores; accepted-progress interpretation additionally requires accepted protected fallback on failed-probe attempt; rejected trials use previous reference as prediction only; no elapsed-time or nonstationary-regret guarantee"
+    }
+  ],
+  "validation": {
+    "parent_coupled_tests": 73,
+    "parent_coupled_tests_status": "pass_scoped",
+    "new_integration_contracts": 5,
+    "new_controller_unit_contracts": 3,
+    "unit_execution_locator": "root validation package",
+    "parent_coupled_tests_before_round3": 76,
+    "parent_coupled_tests_before_round3_status": "pass_scoped",
+    "new_controller_unit_contracts_total": 8,
+    "round3_expected_total_tests": 81,
+    "round3_execution_locator": "evidence/runs/causal-round3-tests.receipt.json",
+    "final_coupled_tests": 81,
+    "final_coupled_tests_status": "pass_scoped"
+  },
+  "correction_rounds": [
+    {
+      "round": 1,
+      "change": "explicit protected dispatch and controller integration",
+      "result": "73 coupled tests pass"
+    },
+    {
+      "round": 2,
+      "change": "controller unit contracts plus primary benchmark diagnosis",
+      "result": "76 coupled tests pass after cache recovery; default adaptive slower than fixed on 7 primary workloads"
+    },
+    {
+      "round": 3,
+      "change": "cost-priced failure cadence, legacy option, finite work telemetry, five extra unit contracts",
+      "result": "81 coupled tests pass; actual benchmark results in final root benchmark analysis"
+    }
+  ],
+  "remaining_obligations": [
+    "Use benchmark evidence to qualify each actual workload; equal callback weights do not measure wall time.",
+    "No new general fully derivative-free stiff engine is introduced.",
+    "General solver default dispatch is unchanged."
+  ],
+  "benchmark_diagnosis_before_round3": {
+    "broad": {
+      "fixed_attempts": 61,
+      "fixed_candidate_failures": 50,
+      "adaptive_probes": 4,
+      "adaptive_candidate_skipped": 57,
+      "fixed_jvp": 22657,
+      "adaptive_jvp": 25443
+    },
+    "changing_rate": {
+      "fixed_attempts": 47,
+      "fixed_candidate_failures": 33,
+      "adaptive_probes": 4,
+      "adaptive_candidate_skipped": 43,
+      "fixed_jvp": 11131,
+      "adaptive_jvp": 13993
+    },
+    "interpretation": "fewer failed probes did not imply less total work; long cooldown hid successful projected roots"
+  }
+}

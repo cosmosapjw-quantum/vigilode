@@ -1,0 +1,94 @@
+{
+  "schema": "vigilode.reaudit.retained-sibling-review.v1",
+  "source_tip": "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406",
+  "review": "PASS_REUSE_SCOPED_EVIDENCE",
+  "raw_rows": 450,
+  "raw_input_hashes_verified": 15,
+  "groups": [
+    {
+      "modes": 8,
+      "rtol": 1e-10,
+      "dense_over_structured": 0.4406952074522642,
+      "matched_accuracy": true,
+      "rows": 50
+    },
+    {
+      "modes": 8,
+      "rtol": 1e-08,
+      "dense_over_structured": 0.4369304946096755,
+      "matched_accuracy": true,
+      "rows": 50
+    },
+    {
+      "modes": 8,
+      "rtol": 1e-06,
+      "dense_over_structured": 0.49593963474139136,
+      "matched_accuracy": true,
+      "rows": 50
+    },
+    {
+      "modes": 32,
+      "rtol": 1e-10,
+      "dense_over_structured": 1.5511242627785058,
+      "matched_accuracy": true,
+      "rows": 50
+    },
+    {
+      "modes": 32,
+      "rtol": 1e-08,
+      "dense_over_structured": 1.5583132775160164,
+      "matched_accuracy": true,
+      "rows": 50
+    },
+    {
+      "modes": 32,
+      "rtol": 1e-06,
+      "dense_over_structured": 1.5691709418328124,
+      "matched_accuracy": true,
+      "rows": 50
+    },
+    {
+      "modes": 128,
+      "rtol": 1e-10,
+      "dense_over_structured": 9.031626525231076,
+      "matched_accuracy": true,
+      "rows": 50
+    },
+    {
+      "modes": 128,
+      "rtol": 1e-08,
+      "dense_over_structured": 8.917564352011924,
+      "matched_accuracy": true,
+      "rows": 50
+    },
+    {
+      "modes": 128,
+      "rtol": 1e-06,
+      "dense_over_structured": 9.185087290232849,
+      "matched_accuracy": true,
+      "rows": 50
+    }
+  ],
+  "all_success": true,
+  "all_empirical_accuracy_gates_pass": true,
+  "allocation_positive_controls": 450,
+  "full_arm_allocations_min": 38,
+  "full_arm_allocations_max": 1857,
+  "reference_authority": "empirical_two_resolution_not_certified",
+  "speed_promotion": "HOLD",
+  "timing_scope": "original example includes allocator counting; every arm identically instrumented; no uninstrumented speed authority",
+  "erratum": "Original LOCAL_REPORT_KO timing direction reversed; LOCAL_TIMING_ERRATUM_KO corrects it. Dense faster at8, structured faster at32/128.",
+  "campaign_rerun": false,
+  "component_campaign": {
+    "scope": "read source checkpoints only; no full production promotion",
+    "inventory": 246,
+    "canonical_p3_cases": 15,
+    "panel_pairs": 16,
+    "rounds_planned": 17,
+    "P1": "169 probes PASS and one FD-resolution HOLD recorded in P2_GATE_REVIEW",
+    "P2": "receipt-gated execution helper checkpoint, scientific admission HOLD",
+    "P3": "config checkpoint frozen; launch HOLD pending separate exec binding. No completed paired P3 inference claimed.",
+    "P4": "not completed",
+    "budget": "Preserve cumulative72instance-hour ledger; this audit starts no remote job."
+  }
+}

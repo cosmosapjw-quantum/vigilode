@@ -1,0 +1,79 @@
+$ cargo test --locked --offline -p rodas5p-integrators --test production_audit_bound_collective -- --nocapture
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+warning: unused import: `ContinuousResidualVerificationError`
+  --> crates/rodas5p-integrators/src/bound_collective.rs:12:33
+   |
+12 |     ContinuousResidualProvider, ContinuousResidualVerificationError,
+   |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: fields `prepared_centers`, `prepared_radii`, `prepared_times`, `prepared_count`, `radii`, and `prepared_valid` are never read
+   --> crates/rodas5p-integrators/src/output.rs:706:5
+    |
+698 | pub(crate) struct OutputCollector {
+    |                   --------------- fields in this struct
+...
+706 |     prepared_centers: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^^^
+707 |     prepared_radii: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^
+708 |     prepared_times: Vec<f64>,
+    |     ^^^^^^^^^^^^^^
+709 |     prepared_count: usize,
+    |     ^^^^^^^^^^^^^^
+710 |     radii: Vec<Vec<f64>>,
+    |     ^^^^^
+711 |     prepared_valid: bool,
+    |     ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: struct `DenseOutputPreparationWork` is never constructed
+   --> crates/rodas5p-integrators/src/output.rs:716:19
+    |
+716 | pub(crate) struct DenseOutputPreparationWork {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `with_verified_radii`, `prepare_dense_interval_with_radii`, `prepare_dense_interval_inner`, `commit_prepared_dense_interval`, `prepared_dense_radii`, and `committed_output_radii` are never used
+    --> crates/rodas5p-integrators/src/output.rs:766:19
+     |
+ 722 | impl OutputCollector {
+     | -------------------- methods in this implementation
+...
+ 766 |     pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
+     |                   ^^^^^^^^^^^^^^^^^^^
+...
+1035 |     pub(crate) fn prepare_dense_interval_with_radii<C, R>(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1070 |     fn prepare_dense_interval_inner<C, R>(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1162 |     pub(crate) fn commit_prepared_dense_interval(&mut self) {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^
+...
+1180 |     pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `rodas5p-integrators` (lib) generated 4 warnings (run `cargo fix --lib -p rodas5p-integrators` to apply 1 suggestion)
+error[E0618]: expected function, found `CollectiveModel`
+   --> crates/rodas5p-integrators/tests/production_audit_bound_collective.rs:256:20
+    |
+ 37 | fn model(xi: Vec<f64>, weights: Vec<f64>, width: f64, chi: f64, kappa: f64) -> CollectiveModel {
+    | ---------------------------------------------------------------------------------------------- this function of the same name is available here, but it's shadowed by the local binding
+...
+204 |     let model = model(vec![-0.5, 0.25], vec![0.25, 0.75], 0.7, 0.6, 0.2);
+    |         ----- `model` has type `CollectiveModel`
+...
+256 |     let undamped = model(vec![0.0], vec![1.0], 0.0, 0.0, 0.375)
+    |                    ^^^^^---------------------------------------
+    |                    |
+    |                    call expression requires function
+
+For more information about this error, try `rustc --explain E0618`.
+error: could not compile `rodas5p-integrators` (test "production_audit_bound_collective") due to 1 previous error
+exit_code=101

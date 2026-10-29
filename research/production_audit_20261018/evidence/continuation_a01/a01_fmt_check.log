@@ -1,0 +1,1393 @@
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/lib.rs:335:
+     OutputPolicy, PacketTrajectoryResult, TrajectoryConfig, TrajectoryStep, run_packet_trajectory,
+ };
+ pub use packet_window::{
+-    CausalWeights, CompiledPacket, PacketCandidate, PacketCertificate, PacketError, compile_packet,
+-    compute_certificate, evaluate_mode_at, generate_candidate, reconstruct_modes,
+-    reconstruct_outward_at_times, OutwardPacketOutput, OutwardPacketRequest,
++    CausalWeights, CompiledPacket, OutwardPacketOutput, OutwardPacketRequest, PacketCandidate,
++    PacketCertificate, PacketError, compile_packet, compute_certificate, evaluate_mode_at,
++    generate_candidate, reconstruct_modes, reconstruct_outward_at_times,
+ };
+ pub use packet_work::PacketWorkCounters;
+ pub use parallel::ParallelExecution;
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:14:
+ use serde::{Deserialize, Serialize};
+ use thiserror::Error;
+ 
+-use rodas5p_core::{CoreError, CoreResult};
+ use rodas5p_core::directed::{Interval, add_up, sqrt_up};
++use rodas5p_core::{CoreError, CoreResult};
+ 
+ use crate::collective_model::CollectiveModel;
+ use crate::packet_work::PacketWorkCounters;
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:76:
+ }
+ 
+ #[derive(Clone, Copy, Debug)]
+-struct IComplex { re: Interval, im: Interval }
++struct IComplex {
++    re: Interval,
++    im: Interval,
++}
+ 
+ type OutwardReplay = (Vec<IComplex>, Vec<IComplex>, Vec<IComplex>);
+ 
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:83:
+ impl IComplex {
+     fn point(x: (f64, f64)) -> Result<Self, PacketError> {
+-        Ok(Self { re: Interval::point(x.0).map_err(|_| PacketError::OutwardRefusal("non-finite complex input"))?, im: Interval::point(x.1).map_err(|_| PacketError::OutwardRefusal("non-finite complex input"))? })
++        Ok(Self {
++            re: Interval::point(x.0)
++                .map_err(|_| PacketError::OutwardRefusal("non-finite complex input"))?,
++            im: Interval::point(x.1)
++                .map_err(|_| PacketError::OutwardRefusal("non-finite complex input"))?,
++        })
+     }
+     fn mul(self, b: Self) -> Result<Self, PacketError> {
+-        let rr = self.re.mul(b.re).map_err(|_| PacketError::OutwardRefusal("interval complex multiplication"))?;
+-        let ii = self.im.mul(b.im).map_err(|_| PacketError::OutwardRefusal("interval complex multiplication"))?;
+-        let ri = self.re.mul(b.im).map_err(|_| PacketError::OutwardRefusal("interval complex multiplication"))?;
+-        let ir = self.im.mul(b.re).map_err(|_| PacketError::OutwardRefusal("interval complex multiplication"))?;
+-        Ok(Self { re: rr.sub(ii).map_err(|_| PacketError::OutwardRefusal("interval complex subtraction"))?, im: ri.add(ir).map_err(|_| PacketError::OutwardRefusal("interval complex addition"))? })
++        let rr = self
++            .re
++            .mul(b.re)
++            .map_err(|_| PacketError::OutwardRefusal("interval complex multiplication"))?;
++        let ii = self
++            .im
++            .mul(b.im)
++            .map_err(|_| PacketError::OutwardRefusal("interval complex multiplication"))?;
++        let ri = self
++            .re
++            .mul(b.im)
++            .map_err(|_| PacketError::OutwardRefusal("interval complex multiplication"))?;
++        let ir = self
++            .im
++            .mul(b.re)
++            .map_err(|_| PacketError::OutwardRefusal("interval complex multiplication"))?;
++        Ok(Self {
++            re: rr
++                .sub(ii)
++                .map_err(|_| PacketError::OutwardRefusal("interval complex subtraction"))?,
++            im: ri
++                .add(ir)
++                .map_err(|_| PacketError::OutwardRefusal("interval complex addition"))?,
++        })
+     }
+     fn scale(self, x: Interval) -> Result<Self, PacketError> {
+         Ok(Self {
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:96:
+-            re: self.re.mul(x).map_err(|_| PacketError::OutwardRefusal("interval complex scale"))?,
+-            im: self.im.mul(x).map_err(|_| PacketError::OutwardRefusal("interval complex scale"))?,
++            re: self
++                .re
++                .mul(x)
++                .map_err(|_| PacketError::OutwardRefusal("interval complex scale"))?,
++            im: self
++                .im
++                .mul(x)
++                .map_err(|_| PacketError::OutwardRefusal("interval complex scale"))?,
+         })
+     }
+ }
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:101:
+ 
+-fn ic_poly_force(p: &[IComplex], chi: f64, work: &mut PacketWorkCounters) -> Result<Vec<IComplex>, PacketError> {
++fn ic_poly_force(
++    p: &[IComplex],
++    chi: f64,
++    work: &mut PacketWorkCounters,
++) -> Result<Vec<IComplex>, PacketError> {
+     let n = p.len();
+     let zero = IComplex::point((0.0, 0.0))?;
+     let mut p2 = vec![zero; n.saturating_mul(2).saturating_sub(1)];
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:106:
+-    for (j, &a) in p.iter().enumerate() { for (k, &b) in p.iter().enumerate() {
+-        work.certificate_items += 1;
+-        let bc = IComplex { re: b.re, im: -b.im };
+-        p2[j + k] = IComplex { re: p2[j+k].re.add(a.mul(bc)?.re).map_err(|_| PacketError::OutwardRefusal("force accumulation"))?, im: p2[j+k].im.add(a.mul(bc)?.im).map_err(|_| PacketError::OutwardRefusal("force accumulation"))? };
+-    }}
++    for (j, &a) in p.iter().enumerate() {
++        for (k, &b) in p.iter().enumerate() {
++            work.certificate_items += 1;
++            let bc = IComplex {
++                re: b.re,
++                im: -b.im,
++            };
++            p2[j + k] = IComplex {
++                re: p2[j + k]
++                    .re
++                    .add(a.mul(bc)?.re)
++                    .map_err(|_| PacketError::OutwardRefusal("force accumulation"))?,
++                im: p2[j + k]
++                    .im
++                    .add(a.mul(bc)?.im)
++                    .map_err(|_| PacketError::OutwardRefusal("force accumulation"))?,
++            };
++        }
++    }
+     let mut out = vec![zero; n.saturating_mul(3).saturating_sub(2)];
+-    for (j, &a) in p2.iter().enumerate() { for (k, &b) in p.iter().enumerate() {
+-        work.certificate_items += 1;
+-        let q = a.mul(b)?;
+-        out[j+k] = IComplex { re: out[j+k].re.add(q.re).map_err(|_| PacketError::OutwardRefusal("force accumulation"))?, im: out[j+k].im.add(q.im).map_err(|_| PacketError::OutwardRefusal("force accumulation"))? };
+-    }}
++    for (j, &a) in p2.iter().enumerate() {
++        for (k, &b) in p.iter().enumerate() {
++            work.certificate_items += 1;
++            let q = a.mul(b)?;
++            out[j + k] = IComplex {
++                re: out[j + k]
++                    .re
++                    .add(q.re)
++                    .map_err(|_| PacketError::OutwardRefusal("force accumulation"))?,
++                im: out[j + k]
++                    .im
++                    .add(q.im)
++                    .map_err(|_| PacketError::OutwardRefusal("force accumulation"))?,
++            };
++        }
++    }
+     let c = Interval::point(chi).map_err(|_| PacketError::OutwardRefusal("chi"))?;
+-    for x in &mut out { let re = -x.im.mul(c).map_err(|_| PacketError::OutwardRefusal("force scale"))?; let im = x.re.mul(c).map_err(|_| PacketError::OutwardRefusal("force scale"))?; *x = IComplex { re, im }; }
++    for x in &mut out {
++        let re = -x
++            .im
++            .mul(c)
++            .map_err(|_| PacketError::OutwardRefusal("force scale"))?;
++        let im =
++            x.re.mul(c)
++                .map_err(|_| PacketError::OutwardRefusal("force scale"))?;
++        *x = IComplex { re, im };
++    }
+     Ok(out)
+ }
+ 
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:122:
+ fn ic_beta(j: usize, k: usize) -> Result<Interval, PacketError> {
+     if j + 1 > (1_u64 << 53) as usize || k + j + 1 > (1_u64 << 53) as usize {
+-        return Err(PacketError::OutwardRefusal("beta integer exceeds exact binary64 range"));
++        return Err(PacketError::OutwardRefusal(
++            "beta integer exceeds exact binary64 range",
++        ));
+     }
+-    let mut v = Interval::point(1.0).map_err(|_| PacketError::OutwardRefusal("beta setup"))?
+-        .div(Interval::point((j + 1) as f64).map_err(|_| PacketError::OutwardRefusal("beta denominator"))?)
++    let mut v = Interval::point(1.0)
++        .map_err(|_| PacketError::OutwardRefusal("beta setup"))?
++        .div(
++            Interval::point((j + 1) as f64)
++                .map_err(|_| PacketError::OutwardRefusal("beta denominator"))?,
++        )
+         .map_err(|_| PacketError::OutwardRefusal("beta divide"))?;
+     for m in 1..=k {
+-        let numerator = Interval::point(m as f64).map_err(|_| PacketError::OutwardRefusal("beta numerator"))?;
+-        let denominator = Interval::point((j + m + 1) as f64).map_err(|_| PacketError::OutwardRefusal("beta denominator"))?;
+-        v = v.mul(numerator).map_err(|_| PacketError::OutwardRefusal("beta multiply"))?
+-            .div(denominator).map_err(|_| PacketError::OutwardRefusal("beta divide"))?;
++        let numerator =
++            Interval::point(m as f64).map_err(|_| PacketError::OutwardRefusal("beta numerator"))?;
++        let denominator = Interval::point((j + m + 1) as f64)
++            .map_err(|_| PacketError::OutwardRefusal("beta denominator"))?;
++        v = v
++            .mul(numerator)
++            .map_err(|_| PacketError::OutwardRefusal("beta multiply"))?
++            .div(denominator)
++            .map_err(|_| PacketError::OutwardRefusal("beta divide"))?;
+     }
+     Ok(v)
+ }
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:137:
+ 
+ fn inverse_factorial_interval(n: usize) -> Result<Interval, PacketError> {
+-    if n > (1_u64 << 53) as usize { return Err(PacketError::OutwardRefusal("factorial integer exceeds exact binary64 range")); }
+-    let mut out = Interval::point(1.0).map_err(|_| PacketError::OutwardRefusal("factorial setup"))?;
+-    for i in 2..=n { out = out.div(Interval::point(i as f64).map_err(|_| PacketError::OutwardRefusal("factorial integer"))?).map_err(|_| PacketError::OutwardRefusal("factorial divide"))?; }
++    if n > (1_u64 << 53) as usize {
++        return Err(PacketError::OutwardRefusal(
++            "factorial integer exceeds exact binary64 range",
++        ));
++    }
++    let mut out =
++        Interval::point(1.0).map_err(|_| PacketError::OutwardRefusal("factorial setup"))?;
++    for i in 2..=n {
++        out = out
++            .div(
++                Interval::point(i as f64)
++                    .map_err(|_| PacketError::OutwardRefusal("factorial integer"))?,
++            )
++            .map_err(|_| PacketError::OutwardRefusal("factorial divide"))?;
++    }
+     Ok(out)
+ }
+ 
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:145:
+-fn ic_convolve(kernel: &[IComplex], force: &[IComplex], work: &mut PacketWorkCounters) -> Result<Vec<IComplex>, PacketError> {
++fn ic_convolve(
++    kernel: &[IComplex],
++    force: &[IComplex],
++    work: &mut PacketWorkCounters,
++) -> Result<Vec<IComplex>, PacketError> {
+     let zero = IComplex::point((0.0, 0.0))?;
+     let mut out = vec![zero; kernel.len() + force.len()];
+-    for (j, &a) in kernel.iter().enumerate() { for (k, &b) in force.iter().enumerate() {
+-        work.certificate_items += 1;
+-        let q = a.mul(b)?.scale(ic_beta(j, k)?)?;
+-        out[j+k+1] = IComplex {
+-            re: out[j+k+1].re.add(q.re).map_err(|_| PacketError::OutwardRefusal("convolution accumulation"))?,
+-            im: out[j+k+1].im.add(q.im).map_err(|_| PacketError::OutwardRefusal("convolution accumulation"))?,
+-        };
+-    }}
++    for (j, &a) in kernel.iter().enumerate() {
++        for (k, &b) in force.iter().enumerate() {
++            work.certificate_items += 1;
++            let q = a.mul(b)?.scale(ic_beta(j, k)?)?;
++            out[j + k + 1] = IComplex {
++                re: out[j + k + 1]
++                    .re
++                    .add(q.re)
++                    .map_err(|_| PacketError::OutwardRefusal("convolution accumulation"))?,
++                im: out[j + k + 1]
++                    .im
++                    .add(q.im)
++                    .map_err(|_| PacketError::OutwardRefusal("convolution accumulation"))?,
++            };
++        }
++    }
+     Ok(out)
+ }
+ 
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:159:
+-fn outward_picard_replay(packet: &CompiledPacket, degree: usize, sweeps: usize, work: &mut PacketWorkCounters) -> Result<OutwardReplay, PacketError> {
++fn outward_picard_replay(
++    packet: &CompiledPacket,
++    degree: usize,
++    sweeps: usize,
++    work: &mut PacketWorkCounters,
++) -> Result<OutwardReplay, PacketError> {
+     let porder = packet.order;
+     let zero = IComplex::point((0.0, 0.0))?;
+-    let wh = Interval::point(packet.model.width()).map_err(|_| PacketError::OutwardRefusal("width"))?
++    let wh = Interval::point(packet.model.width())
++        .map_err(|_| PacketError::OutwardRefusal("width"))?
+         .mul(Interval::point(packet.horizon).map_err(|_| PacketError::OutwardRefusal("horizon"))?)
+         .map_err(|_| PacketError::OutwardRefusal("width horizon"))?;
+     let mut basis = IComplex::point((1.0, 0.0))?;
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:169:
+         let mut mu = Interval::point(0.0).map_err(|_| PacketError::OutwardRefusal("moment"))?;
+         let mut nu = IComplex::point((0.0, 0.0))?;
+         for j in 0..packet.model.num_modes() {
+-            let w = Interval::point(packet.model.weights()[j]).map_err(|_| PacketError::OutwardRefusal("weight"))?;
++            let w = Interval::point(packet.model.weights()[j])
++                .map_err(|_| PacketError::OutwardRefusal("weight"))?;
+             let mut xp = Interval::point(1.0).map_err(|_| PacketError::OutwardRefusal("moment"))?;
+-            for _ in 0..k { xp = xp.mul(Interval::point(packet.model.xi()[j]).map_err(|_| PacketError::OutwardRefusal("xi"))?).map_err(|_| PacketError::OutwardRefusal("moment multiplication"))?; }
+-            mu = mu.add(w.mul(xp).map_err(|_| PacketError::OutwardRefusal("moment multiplication"))?).map_err(|_| PacketError::OutwardRefusal("moment sum"))?;
+-            let term = IComplex::point(packet.model.initial_amplitudes()[j])?.scale(w.mul(xp).map_err(|_| PacketError::OutwardRefusal("moment multiplication"))?)?;
+-            nu = IComplex { re: nu.re.add(term.re).map_err(|_| PacketError::OutwardRefusal("moment sum"))?, im: nu.im.add(term.im).map_err(|_| PacketError::OutwardRefusal("moment sum"))? };
++            for _ in 0..k {
++                xp = xp
++                    .mul(
++                        Interval::point(packet.model.xi()[j])
++                            .map_err(|_| PacketError::OutwardRefusal("xi"))?,
++                    )
++                    .map_err(|_| PacketError::OutwardRefusal("moment multiplication"))?;
++            }
++            mu = mu
++                .add(
++                    w.mul(xp)
++                        .map_err(|_| PacketError::OutwardRefusal("moment multiplication"))?,
++                )
++                .map_err(|_| PacketError::OutwardRefusal("moment sum"))?;
++            let term = IComplex::point(packet.model.initial_amplitudes()[j])?.scale(
++                w.mul(xp)
++                    .map_err(|_| PacketError::OutwardRefusal("moment multiplication"))?,
++            )?;
++            nu = IComplex {
++                re: nu
++                    .re
++                    .add(term.re)
++                    .map_err(|_| PacketError::OutwardRefusal("moment sum"))?,
++                im: nu
++                    .im
++                    .add(term.im)
++                    .map_err(|_| PacketError::OutwardRefusal("moment sum"))?,
++            };
+             work.certificate_items += 1;
+         }
+-        free.push(basis.mul(nu)?); kernel.push(basis.scale(mu)?);
+-        if k < porder { let f = wh.div(Interval::point((k+1) as f64).map_err(|_| PacketError::OutwardRefusal("factorial"))?).map_err(|_| PacketError::OutwardRefusal("basis"))?; basis = IComplex { re: -basis.im.mul(f).map_err(|_| PacketError::OutwardRefusal("basis"))?, im: basis.re.mul(f).map_err(|_| PacketError::OutwardRefusal("basis"))? }; }
++        free.push(basis.mul(nu)?);
++        kernel.push(basis.scale(mu)?);
++        if k < porder {
++            let f = wh
++                .div(
++                    Interval::point((k + 1) as f64)
++                        .map_err(|_| PacketError::OutwardRefusal("factorial"))?,
++                )
++                .map_err(|_| PacketError::OutwardRefusal("basis"))?;
++            basis = IComplex {
++                re: -basis
++                    .im
++                    .mul(f)
++                    .map_err(|_| PacketError::OutwardRefusal("basis"))?,
++                im: basis
++                    .re
++                    .mul(f)
++                    .map_err(|_| PacketError::OutwardRefusal("basis"))?,
++            };
++        }
+     }
+-    let mut p = free.clone(); p.resize(degree+1, zero);
+-    for _ in 0..sweeps { let f = ic_poly_force(&p, packet.model.chi(), work)?; let c = ic_convolve(&kernel, &f, work)?; let mut next = free.clone(); next.resize(degree+1, zero); for (i, x) in c.into_iter().enumerate().take(degree + 1) { let y=x.scale(Interval::point(packet.horizon).map_err(|_| PacketError::OutwardRefusal("horizon"))?)?; next[i]=IComplex{re:next[i].re.add(y.re).map_err(|_|PacketError::OutwardRefusal("picard sum"))?,im:next[i].im.add(y.im).map_err(|_|PacketError::OutwardRefusal("picard sum"))?}; } p=next; }
+-    Ok((p,free,kernel))
++    let mut p = free.clone();
++    p.resize(degree + 1, zero);
++    for _ in 0..sweeps {
++        let f = ic_poly_force(&p, packet.model.chi(), work)?;
++        let c = ic_convolve(&kernel, &f, work)?;
++        let mut next = free.clone();
++        next.resize(degree + 1, zero);
++        for (i, x) in c.into_iter().enumerate().take(degree + 1) {
++            let y = x.scale(
++                Interval::point(packet.horizon)
++                    .map_err(|_| PacketError::OutwardRefusal("horizon"))?,
++            )?;
++            next[i] = IComplex {
++                re: next[i]
++                    .re
++                    .add(y.re)
++                    .map_err(|_| PacketError::OutwardRefusal("picard sum"))?,
++                im: next[i]
++                    .im
++                    .add(y.im)
++                    .map_err(|_| PacketError::OutwardRefusal("picard sum"))?,
++            };
++        }
++        p = next;
++    }
++    Ok((p, free, kernel))
+ }
+ 
+-fn outward_residual_l1(p: &[IComplex], free: &[IComplex], kernel: &[IComplex], h: f64, chi: f64, work: &mut PacketWorkCounters) -> Result<f64, PacketError> {
++fn outward_residual_l1(
++    p: &[IComplex],
++    free: &[IComplex],
++    kernel: &[IComplex],
++    h: f64,
++    chi: f64,
++    work: &mut PacketWorkCounters,
++) -> Result<f64, PacketError> {
+     let force = ic_poly_force(p, chi, work)?;
+     let convolution = ic_convolve(kernel, &force, work)?;
+     let scale = Interval::point(h).map_err(|_| PacketError::OutwardRefusal("horizon"))?;
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:192:
+-    let mut rho = Interval::point(0.0).map_err(|_| PacketError::OutwardRefusal("residual setup"))?;
++    let mut rho =
++        Interval::point(0.0).map_err(|_| PacketError::OutwardRefusal("residual setup"))?;
+     for i in 0..p.len().max(free.len()).max(convolution.len()) {
+         let pi = p.get(i).copied().unwrap_or(IComplex::point((0.0, 0.0))?);
+         let fi = free.get(i).copied().unwrap_or(IComplex::point((0.0, 0.0))?);
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:196:
+-        let ci = convolution.get(i).copied().unwrap_or(IComplex::point((0.0, 0.0))?).scale(scale)?;
+-        let re = pi.re.sub(fi.re).map_err(|_| PacketError::OutwardRefusal("residual subtraction"))?
+-            .sub(ci.re).map_err(|_| PacketError::OutwardRefusal("residual subtraction"))?;
+-        let im = pi.im.sub(fi.im).map_err(|_| PacketError::OutwardRefusal("residual subtraction"))?
+-            .sub(ci.im).map_err(|_| PacketError::OutwardRefusal("residual subtraction"))?;
+-        let term = Interval::new(0.0, outward_add(re.mag(), im.mag(), "residual magnitude")?).map_err(|_| PacketError::OutwardRefusal("residual magnitude"))?;
+-        rho = rho.add(term).map_err(|_| PacketError::OutwardRefusal("residual sum"))?;
++        let ci = convolution
++            .get(i)
++            .copied()
++            .unwrap_or(IComplex::point((0.0, 0.0))?)
++            .scale(scale)?;
++        let re = pi
++            .re
++            .sub(fi.re)
++            .map_err(|_| PacketError::OutwardRefusal("residual subtraction"))?
++            .sub(ci.re)
++            .map_err(|_| PacketError::OutwardRefusal("residual subtraction"))?;
++        let im = pi
++            .im
++            .sub(fi.im)
++            .map_err(|_| PacketError::OutwardRefusal("residual subtraction"))?
++            .sub(ci.im)
++            .map_err(|_| PacketError::OutwardRefusal("residual subtraction"))?;
++        let term = Interval::new(0.0, outward_add(re.mag(), im.mag(), "residual magnitude")?)
++            .map_err(|_| PacketError::OutwardRefusal("residual magnitude"))?;
++        rho = rho
++            .add(term)
++            .map_err(|_| PacketError::OutwardRefusal("residual sum"))?;
+         work.certificate_items += 1;
+     }
+     Ok(rho.hi)
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:206:
+ }
+ 
+-fn ic_restrict_physical(p: &[IComplex], tau: Interval, work: &mut PacketWorkCounters) -> Result<Vec<IComplex>, PacketError> {
++fn ic_restrict_physical(
++    p: &[IComplex],
++    tau: Interval,
++    work: &mut PacketWorkCounters,
++) -> Result<Vec<IComplex>, PacketError> {
+     let mut power = Interval::point(1.0).map_err(|_| PacketError::OutwardRefusal("tau"))?;
+     let mut out = Vec::with_capacity(p.len());
+-    for &coefficient in p { out.push(coefficient.scale(power)?); power = power.mul(tau).map_err(|_| PacketError::OutwardRefusal("tau power"))?; work.certificate_items += 1; }
++    for &coefficient in p {
++        out.push(coefficient.scale(power)?);
++        power = power
++            .mul(tau)
++            .map_err(|_| PacketError::OutwardRefusal("tau power"))?;
++        work.certificate_items += 1;
++    }
+     Ok(out)
+ }
+ 
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:215:
+-fn ic_gamma_physical(force: &[IComplex], omega_time: Interval, time: Interval, order: usize, work: &mut PacketWorkCounters) -> Result<IComplex, PacketError> {
++fn ic_gamma_physical(
++    force: &[IComplex],
++    omega_time: Interval,
++    time: Interval,
++    order: usize,
++    work: &mut PacketWorkCounters,
++) -> Result<IComplex, PacketError> {
+     let zero = IComplex::point((0.0, 0.0))?;
+     let mut basis = IComplex::point((1.0, 0.0))?;
+     let mut total = zero;
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:220:
+         let mut acc = zero;
+         for (k, &fk) in force.iter().enumerate() {
+             let q = fk.scale(ic_beta(l, k)?)?;
+-            acc = IComplex { re: acc.re.add(q.re).map_err(|_| PacketError::OutwardRefusal("gamma sum"))?, im: acc.im.add(q.im).map_err(|_| PacketError::OutwardRefusal("gamma sum"))? };
++            acc = IComplex {
++                re: acc
++                    .re
++                    .add(q.re)
++                    .map_err(|_| PacketError::OutwardRefusal("gamma sum"))?,
++                im: acc
++                    .im
++                    .add(q.im)
++                    .map_err(|_| PacketError::OutwardRefusal("gamma sum"))?,
++            };
+             work.certificate_items += 1;
+         }
+         let q = basis.mul(acc)?;
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:227:
+-        total = IComplex { re: total.re.add(q.re).map_err(|_| PacketError::OutwardRefusal("gamma sum"))?, im: total.im.add(q.im).map_err(|_| PacketError::OutwardRefusal("gamma sum"))? };
+-        if l < order { let divisor=Interval::point((l+1) as f64).map_err(|_| PacketError::OutwardRefusal("gamma factorial"))?; let f=omega_time.div(divisor).map_err(|_| PacketError::OutwardRefusal("gamma basis"))?; basis=IComplex { re: -basis.im.mul(f).map_err(|_| PacketError::OutwardRefusal("gamma basis"))?, im: basis.re.mul(f).map_err(|_| PacketError::OutwardRefusal("gamma basis"))? }; }
++        total = IComplex {
++            re: total
++                .re
++                .add(q.re)
++                .map_err(|_| PacketError::OutwardRefusal("gamma sum"))?,
++            im: total
++                .im
++                .add(q.im)
++                .map_err(|_| PacketError::OutwardRefusal("gamma sum"))?,
++        };
++        if l < order {
++            let divisor = Interval::point((l + 1) as f64)
++                .map_err(|_| PacketError::OutwardRefusal("gamma factorial"))?;
++            let f = omega_time
++                .div(divisor)
++                .map_err(|_| PacketError::OutwardRefusal("gamma basis"))?;
++            basis = IComplex {
++                re: -basis
++                    .im
++                    .mul(f)
++                    .map_err(|_| PacketError::OutwardRefusal("gamma basis"))?,
++                im: basis
++                    .re
++                    .mul(f)
++                    .map_err(|_| PacketError::OutwardRefusal("gamma basis"))?,
++            };
++        }
+     }
+     total.scale(time)
+ }
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:232:
+ 
+-fn outward_scalar_bounds(packet: &CompiledPacket, p: &[IComplex], eta: &[f64], rho: f64, work: &mut PacketWorkCounters) -> Result<(f64, f64, f64, f64), PacketError> {
++fn outward_scalar_bounds(
++    packet: &CompiledPacket,
++    p: &[IComplex],
++    eta: &[f64],
++    rho: f64,
++    work: &mut PacketWorkCounters,
++) -> Result<(f64, f64, f64, f64), PacketError> {
+     let mut s = Interval::point(0.0).map_err(|_| PacketError::OutwardRefusal("S setup"))?;
+     let mut e = Interval::point(0.0).map_err(|_| PacketError::OutwardRefusal("E setup"))?;
+     let mut a0 = Interval::point(0.0).map_err(|_| PacketError::OutwardRefusal("A0 setup"))?;
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:237:
+     let mut support = 0.0_f64;
+     for (j, &eta_j) in eta.iter().enumerate() {
+-        let w = Interval::point(packet.model.weights()[j]).map_err(|_| PacketError::OutwardRefusal("weight"))?;
++        let w = Interval::point(packet.model.weights()[j])
++            .map_err(|_| PacketError::OutwardRefusal("weight"))?;
+         s = s.add(w).map_err(|_| PacketError::OutwardRefusal("S sum"))?;
+-        let z = outward_add(outward_complex_upper(packet.model.initial_amplitudes()[j], "initial magnitude")?, eta_j, "initial uncertainty sum")?;
+-        if !z.is_finite() { return Err(PacketError::OutwardRefusal("initial uncertainty overflow")); }
++        let z = outward_add(
++            outward_complex_upper(packet.model.initial_amplitudes()[j], "initial magnitude")?,
++            eta_j,
++            "initial uncertainty sum",
++        )?;
++        if !z.is_finite() {
++            return Err(PacketError::OutwardRefusal("initial uncertainty overflow"));
++        }
+         let zi = Interval::point(z).map_err(|_| PacketError::OutwardRefusal("initial bound"))?;
+-        e = e.add(w.mul(zi.mul(zi).map_err(|_| PacketError::OutwardRefusal("E product"))?).map_err(|_| PacketError::OutwardRefusal("E product"))?).map_err(|_| PacketError::OutwardRefusal("E sum"))?;
+-        a0 = a0.add(w.mul(zi).map_err(|_| PacketError::OutwardRefusal("A0 product"))?).map_err(|_| PacketError::OutwardRefusal("A0 sum"))?;
+-        support = support.max(packet.model.xi()[j].abs()); work.certificate_items += 1;
++        e = e
++            .add(
++                w.mul(
++                    zi.mul(zi)
++                        .map_err(|_| PacketError::OutwardRefusal("E product"))?,
++                )
++                .map_err(|_| PacketError::OutwardRefusal("E product"))?,
++            )
++            .map_err(|_| PacketError::OutwardRefusal("E sum"))?;
++        a0 = a0
++            .add(
++                w.mul(zi)
++                    .map_err(|_| PacketError::OutwardRefusal("A0 product"))?,
++            )
++            .map_err(|_| PacketError::OutwardRefusal("A0 sum"))?;
++        support = support.max(packet.model.xi()[j].abs());
++        work.certificate_items += 1;
+     }
+     let mut rp_i = Interval::point(0.0).map_err(|_| PacketError::OutwardRefusal("P norm setup"))?;
+-    for x in p { rp_i = rp_i.add(Interval::point(outward_add(x.re.mag(), x.im.mag(), "P norm")?).map_err(|_| PacketError::OutwardRefusal("P norm"))?).map_err(|_| PacketError::OutwardRefusal("P norm sum"))?; }
++    for x in p {
++        rp_i = rp_i
++            .add(
++                Interval::point(outward_add(x.re.mag(), x.im.mag(), "P norm")?)
++                    .map_err(|_| PacketError::OutwardRefusal("P norm"))?,
++            )
++            .map_err(|_| PacketError::OutwardRefusal("P norm sum"))?;
++    }
+     let rp = rp_i.hi;
+-    let re = sqrt_up(s.mul(e).map_err(|_| PacketError::OutwardRefusal("energy product"))?.hi).map_err(|_| PacketError::OutwardRefusal("energy square root"))?;
++    let re = sqrt_up(
++        s.mul(e)
++            .map_err(|_| PacketError::OutwardRefusal("energy product"))?
++            .hi,
++    )
++    .map_err(|_| PacketError::OutwardRefusal("energy square root"))?;
+     let r = rp.max(re);
+     let fail = |_| PacketError::OutwardRefusal("scalar interval arithmetic");
+-    let q = Interval::point(3.0).map_err(fail)?
+-        .mul(Interval::point(packet.model.chi().abs()).map_err(fail)?).map_err(fail)?
+-        .mul(s).map_err(fail)?.mul(Interval::point(r).map_err(fail)?).map_err(fail)?
+-        .mul(Interval::point(r).map_err(fail)?).map_err(fail)?.mul(Interval::point(packet.horizon).map_err(fail)?).map_err(fail)?.hi;
+-    if !q.is_finite() || q >= 1.0 { return Err(PacketError::OutwardRefusal("q >= 1")); }
+-    let x = Interval::point(packet.model.width().abs()).map_err(fail)?.mul(Interval::point(support).map_err(fail)?).map_err(fail)?.mul(Interval::point(packet.horizon).map_err(fail)?).map_err(fail)?.hi;
+-    if !x.is_finite() || x >= (packet.order + 2) as f64 { return Err(PacketError::OutwardRefusal("geometric tail condition")); }
+-    let mut bpow = Interval::point(1.0).map_err(fail)?; let xi = Interval::point(x).map_err(fail)?;
+-    for _ in 0..=packet.order { bpow=bpow.mul(xi).map_err(fail)?; }
+-    let denom = Interval::point(1.0).map_err(fail)?.sub(xi.div(Interval::point((packet.order+2) as f64).map_err(fail)?).map_err(fail)?).map_err(fail)?;
+-    let b = bpow.mul(inverse_factorial_interval(packet.order + 1)?).map_err(fail)?.div(denom).map_err(fail)?.hi;
+-    let mut eta_mean=Interval::point(0.0).map_err(fail)?; for (&w,&v) in packet.model.weights().iter().zip(eta) { eta_mean=eta_mean.add(Interval::point(w).map_err(fail)?.mul(Interval::point(v).map_err(fail)?).map_err(fail)?).map_err(fail)?; }
+-    let nonlinear = Interval::point(packet.horizon).map_err(fail)?.mul(s).map_err(fail)?.mul(Interval::point(packet.model.chi().abs()).map_err(fail)?).map_err(fail)?.mul(Interval::point(rp).map_err(fail)?).map_err(fail)?.mul(Interval::point(rp).map_err(fail)?).map_err(fail)?.mul(Interval::point(rp).map_err(fail)?).map_err(fail)?.mul(Interval::point(b).map_err(fail)?).map_err(fail)?;
+-    let numerator = Interval::point(rho).map_err(fail)?.add(a0.mul(Interval::point(b).map_err(fail)?).map_err(fail)?).map_err(fail)?.add(nonlinear).map_err(fail)?.add(eta_mean).map_err(fail)?;
+-    let emean = numerator.div(Interval::point(1.0).map_err(fail)?.sub(Interval::point(q).map_err(fail)?).map_err(fail)?).map_err(|_| PacketError::OutwardRefusal("mean denominator"))?.hi;
+-    if !emean.is_finite() { return Err(PacketError::OutwardRefusal("mean radius overflow")); }
++    let q = Interval::point(3.0)
++        .map_err(fail)?
++        .mul(Interval::point(packet.model.chi().abs()).map_err(fail)?)
++        .map_err(fail)?
++        .mul(s)
++        .map_err(fail)?
++        .mul(Interval::point(r).map_err(fail)?)
++        .map_err(fail)?
++        .mul(Interval::point(r).map_err(fail)?)
++        .map_err(fail)?
++        .mul(Interval::point(packet.horizon).map_err(fail)?)
++        .map_err(fail)?
++        .hi;
++    if !q.is_finite() || q >= 1.0 {
++        return Err(PacketError::OutwardRefusal("q >= 1"));
++    }
++    let x = Interval::point(packet.model.width().abs())
++        .map_err(fail)?
++        .mul(Interval::point(support).map_err(fail)?)
++        .map_err(fail)?
++        .mul(Interval::point(packet.horizon).map_err(fail)?)
++        .map_err(fail)?
++        .hi;
++    if !x.is_finite() || x >= (packet.order + 2) as f64 {
++        return Err(PacketError::OutwardRefusal("geometric tail condition"));
++    }
++    let mut bpow = Interval::point(1.0).map_err(fail)?;
++    let xi = Interval::point(x).map_err(fail)?;
++    for _ in 0..=packet.order {
++        bpow = bpow.mul(xi).map_err(fail)?;
++    }
++    let denom = Interval::point(1.0)
++        .map_err(fail)?
++        .sub(
++            xi.div(Interval::point((packet.order + 2) as f64).map_err(fail)?)
++                .map_err(fail)?,
++        )
++        .map_err(fail)?;
++    let b = bpow
++        .mul(inverse_factorial_interval(packet.order + 1)?)
++        .map_err(fail)?
++        .div(denom)
++        .map_err(fail)?
++        .hi;
++    let mut eta_mean = Interval::point(0.0).map_err(fail)?;
++    for (&w, &v) in packet.model.weights().iter().zip(eta) {
++        eta_mean = eta_mean
++            .add(
++                Interval::point(w)
++                    .map_err(fail)?
++                    .mul(Interval::point(v).map_err(fail)?)
++                    .map_err(fail)?,
++            )
++            .map_err(fail)?;
++    }
++    let nonlinear = Interval::point(packet.horizon)
++        .map_err(fail)?
++        .mul(s)
++        .map_err(fail)?
++        .mul(Interval::point(packet.model.chi().abs()).map_err(fail)?)
++        .map_err(fail)?
++        .mul(Interval::point(rp).map_err(fail)?)
++        .map_err(fail)?
++        .mul(Interval::point(rp).map_err(fail)?)
++        .map_err(fail)?
++        .mul(Interval::point(rp).map_err(fail)?)
++        .map_err(fail)?
++        .mul(Interval::point(b).map_err(fail)?)
++        .map_err(fail)?;
++    let numerator = Interval::point(rho)
++        .map_err(fail)?
++        .add(a0.mul(Interval::point(b).map_err(fail)?).map_err(fail)?)
++        .map_err(fail)?
++        .add(nonlinear)
++        .map_err(fail)?
++        .add(eta_mean)
++        .map_err(fail)?;
++    let emean = numerator
++        .div(
++            Interval::point(1.0)
++                .map_err(fail)?
++                .sub(Interval::point(q).map_err(fail)?)
++                .map_err(fail)?,
++        )
++        .map_err(|_| PacketError::OutwardRefusal("mean denominator"))?
++        .hi;
++    if !emean.is_finite() {
++        return Err(PacketError::OutwardRefusal("mean radius overflow"));
++    }
+     Ok((emean, b, r, rp))
+ }
+ 
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:836:
+         return Err(PacketError::CandidatePacketMismatch);
+     }
+     let n = packet.model.num_modes();
+-    if request.initial_radii.len() != n { return Err(PacketError::OutwardRefusal("initial radius length mismatch")); }
+-    for &eta in request.initial_radii { if !eta.is_finite() || eta < 0.0 { return Err(PacketError::OutwardRefusal("initial radius must be finite and nonnegative")); } }
++    if request.initial_radii.len() != n {
++        return Err(PacketError::OutwardRefusal(
++            "initial radius length mismatch",
++        ));
++    }
++    for &eta in request.initial_radii {
++        if !eta.is_finite() || eta < 0.0 {
++            return Err(PacketError::OutwardRefusal(
++                "initial radius must be finite and nonnegative",
++            ));
++        }
++    }
+     // Replay every generated coefficient from the immutable stored model in
+     // directed arithmetic before a returned center can be used.  A mismatch
+     // is a refusal, never a widened post-hoc radius.
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:844:
+-    let (replayed, replayed_free, replayed_kernel) = outward_picard_replay(packet, cand.degree, cand.sweeps, work)?;
++    let (replayed, replayed_free, replayed_kernel) =
++        outward_picard_replay(packet, cand.degree, cand.sweeps, work)?;
+     if replayed.len() != cand.mean.len()
+-        || replayed.iter().zip(&cand.mean).any(|(x, &(re, im))| !x.re.contains(re) || !x.im.contains(im))
++        || replayed
++            .iter()
++            .zip(&cand.mean)
++            .any(|(x, &(re, im))| !x.re.contains(re) || !x.im.contains(im))
+     {
+-        return Err(PacketError::OutwardRefusal("candidate center is outside directed replay"));
++        return Err(PacketError::OutwardRefusal(
++            "candidate center is outside directed replay",
++        ));
+     }
+     let rho = outward_residual_l1(
+-        &replayed, &replayed_free, &replayed_kernel, packet.horizon, packet.model.chi(), work,
++        &replayed,
++        &replayed_free,
++        &replayed_kernel,
++        packet.horizon,
++        packet.model.chi(),
++        work,
+     )?;
+-    let (emean, full_b, theorem_r, theorem_rp) = outward_scalar_bounds(packet, &replayed, request.initial_radii, rho, work)?;
++    let (emean, full_b, theorem_r, theorem_rp) =
++        outward_scalar_bounds(packet, &replayed, request.initial_radii, rho, work)?;
+     let h = packet.horizon;
+     let mut output = OutwardPacketOutput {
+-        times: Vec::with_capacity(request.times.len()), modes: Vec::with_capacity(request.times.len() * n),
+-        mode_radii: Vec::with_capacity(request.times.len() * n), means: Vec::with_capacity(request.times.len()),
+-        mean_radii: Vec::with_capacity(request.times.len()), roundoff_enclosed: false,
++        times: Vec::with_capacity(request.times.len()),
++        modes: Vec::with_capacity(request.times.len() * n),
++        mode_radii: Vec::with_capacity(request.times.len() * n),
++        means: Vec::with_capacity(request.times.len()),
++        mean_radii: Vec::with_capacity(request.times.len()),
++        roundoff_enclosed: false,
+     };
+     for &t in request.times {
+-        if !t.is_finite() || t < 0.0 || t > h { return Err(PacketError::OutwardRefusal("physical time outside packet horizon")); }
+-        let tau = if t.to_bits() == 0 { Interval::point(0.0) } else if t.to_bits() == h.to_bits() { Interval::point(1.0) } else { Interval::point(t).and_then(|a| a.div(Interval::point(h)?)) }
+-            .map_err(|_| PacketError::OutwardRefusal("physical time normalization"))?;
+-        if tau.lo < 0.0 || tau.hi > 1.0 { return Err(PacketError::OutwardRefusal("physical time normalization escapes unit interval")); }
++        if !t.is_finite() || t < 0.0 || t > h {
++            return Err(PacketError::OutwardRefusal(
++                "physical time outside packet horizon",
++            ));
++        }
++        let tau = if t.to_bits() == 0 {
++            Interval::point(0.0)
++        } else if t.to_bits() == h.to_bits() {
++            Interval::point(1.0)
++        } else {
++            Interval::point(t).and_then(|a| a.div(Interval::point(h)?))
++        }
++        .map_err(|_| PacketError::OutwardRefusal("physical time normalization"))?;
++        if tau.lo < 0.0 || tau.hi > 1.0 {
++            return Err(PacketError::OutwardRefusal(
++                "physical time normalization escapes unit interval",
++            ));
++        }
+         let restricted_i = ic_restrict_physical(&replayed, tau, work)?;
+         let force_i = ic_poly_force(&restricted_i, packet.model.chi(), work)?;
+         let mut restricted_c = cand.mean.clone();
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:868:
+         let mut tau_power = 1.0;
+         let tau_c = t / h;
+-        for coefficient in &mut restricted_c { *coefficient = c_scale(*coefficient, tau_power); tau_power *= tau_c; }
++        for coefficient in &mut restricted_c {
++            *coefficient = c_scale(*coefficient, tau_power);
++            tau_power *= tau_c;
++        }
+         let force_c = force(&restricted_c, packet.model.chi(), work);
+-        let x = Interval::point(packet.model.width()).and_then(|w| w.mul(Interval::point(t)?))
++        let x = Interval::point(packet.model.width())
++            .and_then(|w| w.mul(Interval::point(t)?))
+             .map_err(|_| PacketError::OutwardRefusal("physical frequency-time product"))?;
+         output.times.push(t);
+-        let mut mean_re = Interval::point(0.0).map_err(|_| PacketError::OutwardRefusal("mean setup"))?;
++        let mut mean_re =
++            Interval::point(0.0).map_err(|_| PacketError::OutwardRefusal("mean setup"))?;
+         let mut mean_im = mean_re;
+-        let mut mean_radius = Interval::point(0.0).map_err(|_| PacketError::OutwardRefusal("mean setup"))?;
++        let mut mean_radius =
++            Interval::point(0.0).map_err(|_| PacketError::OutwardRefusal("mean setup"))?;
+         for j in 0..n {
+             // b_p(i width xi t), with both ordinary returned center and an
+             // outward recurrence over the represented physical time.
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:883:
+             let mut ib = IComplex::point(center_b)?;
+             let mut center_beta = center_b;
+             let mut ibeta = ib;
+-            let ix = x.mul(Interval::point(xi).map_err(|_| PacketError::OutwardRefusal("frequency"))?)
++            let ix = x
++                .mul(Interval::point(xi).map_err(|_| PacketError::OutwardRefusal("frequency"))?)
+                 .map_err(|_| PacketError::OutwardRefusal("frequency-time product"))?;
+             for k in 1..=packet.order {
+                 let f = (packet.model.width() * xi * t) / k as f64;
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:890:
+                 center_b = (-f * center_b.1, f * center_b.0);
+                 let denominator = Interval::point(k as f64)
+                     .map_err(|_| PacketError::OutwardRefusal("factorial"))?;
+-                let factor = ix.div(denominator)
++                let factor = ix
++                    .div(denominator)
+                     .map_err(|_| PacketError::OutwardRefusal("basis"))?;
+                 ib = IComplex {
+-                    re: -ib.im.mul(factor).map_err(|_| PacketError::OutwardRefusal("basis"))?,
+-                    im: ib.re.mul(factor).map_err(|_| PacketError::OutwardRefusal("basis"))?,
++                    re: -ib
++                        .im
++                        .mul(factor)
++                        .map_err(|_| PacketError::OutwardRefusal("basis"))?,
++                    im: ib
++                        .re
++                        .mul(factor)
++                        .map_err(|_| PacketError::OutwardRefusal("basis"))?,
+                 };
+                 center_beta = c_add(center_beta, center_b);
+                 ibeta = IComplex {
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:901:
+-                    re: ibeta.re.add(ib.re).map_err(|_| PacketError::OutwardRefusal("basis sum"))?,
+-                    im: ibeta.im.add(ib.im).map_err(|_| PacketError::OutwardRefusal("basis sum"))?,
++                    re: ibeta
++                        .re
++                        .add(ib.re)
++                        .map_err(|_| PacketError::OutwardRefusal("basis sum"))?,
++                    im: ibeta
++                        .im
++                        .add(ib.im)
++                        .map_err(|_| PacketError::OutwardRefusal("basis sum"))?,
+                 };
+                 work.certificate_items += 1;
+             }
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:911:
+                 let mut acc = (0.0, 0.0);
+                 let mut beta_weight = 1.0 / (l + 1) as f64;
+                 for (k, &fk) in force_c.iter().enumerate() {
+-                    if k > 0 { beta_weight *= k as f64 / (l + k + 1) as f64; }
++                    if k > 0 {
++                        beta_weight *= k as f64 / (l + k + 1) as f64;
++                    }
+                     acc = c_add(acc, c_scale(fk, beta_weight));
+                 }
+                 gamma_sum = c_add(gamma_sum, c_mul(basis_center, acc));
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:918:
+-                if l < packet.order { let f = omega_time / (l + 1) as f64; basis_center = (-f * basis_center.1, f * basis_center.0); }
++                if l < packet.order {
++                    let f = omega_time / (l + 1) as f64;
++                    basis_center = (-f * basis_center.1, f * basis_center.0);
++                }
+             }
+             let center = c_add(c_mul(center_beta, z), c_scale(gamma_sum, t));
+             let iz = IComplex::point(z)?;
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:922:
+-            let igamma = ic_gamma_physical(&force_i, ix, Interval::point(t).map_err(|_| PacketError::OutwardRefusal("physical time"))?, packet.order, work)?;
++            let igamma = ic_gamma_physical(
++                &force_i,
++                ix,
++                Interval::point(t).map_err(|_| PacketError::OutwardRefusal("physical time"))?,
++                packet.order,
++                work,
++            )?;
+             let linear_iv = ibeta.mul(iz)?;
+-            let iv = IComplex { re: linear_iv.re.add(igamma.re).map_err(|_| PacketError::OutwardRefusal("mode reconstruction"))?, im: linear_iv.im.add(igamma.im).map_err(|_| PacketError::OutwardRefusal("mode reconstruction"))? };
+-            if !iv.re.contains(center.0) || !iv.im.contains(center.1) { return Err(PacketError::OutwardRefusal("returned mode center outside reconstruction interval")); }
+-            let re_disp = iv.re.sub(Interval::point(center.0).map_err(|_| PacketError::OutwardRefusal("mode center"))?).map_err(|_| PacketError::OutwardRefusal("mode displacement"))?.mag();
+-            let im_disp = iv.im.sub(Interval::point(center.1).map_err(|_| PacketError::OutwardRefusal("mode center"))?).map_err(|_| PacketError::OutwardRefusal("mode displacement"))?.mag();
+-            let arithmetic = Interval::point(re_disp).map_err(|_| PacketError::OutwardRefusal("mode displacement"))?.add(Interval::point(im_disp).map_err(|_| PacketError::OutwardRefusal("mode displacement"))?).map_err(|_| PacketError::OutwardRefusal("mode displacement"))?;
+-            let nonlinear_a = Interval::point(3.0).map_err(|_| PacketError::OutwardRefusal("mode radius"))?.mul(Interval::point(theorem_r).map_err(|_| PacketError::OutwardRefusal("mode radius"))?).map_err(|_| PacketError::OutwardRefusal("mode radius"))?.mul(Interval::point(theorem_r).map_err(|_| PacketError::OutwardRefusal("mode radius"))?).map_err(|_| PacketError::OutwardRefusal("mode radius"))?.mul(Interval::point(emean).map_err(|_| PacketError::OutwardRefusal("mode radius"))?).map_err(|_| PacketError::OutwardRefusal("mode radius"))?;
+-            let nonlinear_b = Interval::point(theorem_rp).map_err(|_| PacketError::OutwardRefusal("mode radius"))?.mul(Interval::point(theorem_rp).map_err(|_| PacketError::OutwardRefusal("mode radius"))?).map_err(|_| PacketError::OutwardRefusal("mode radius"))?.mul(Interval::point(theorem_rp).map_err(|_| PacketError::OutwardRefusal("mode radius"))?).map_err(|_| PacketError::OutwardRefusal("mode radius"))?.mul(Interval::point(full_b).map_err(|_| PacketError::OutwardRefusal("mode radius"))?).map_err(|_| PacketError::OutwardRefusal("mode radius"))?;
+-            let nonlinear_radius = Interval::point(t).map_err(|_| PacketError::OutwardRefusal("mode radius"))?.mul(Interval::point(packet.model.chi().abs()).map_err(|_| PacketError::OutwardRefusal("mode radius"))?).map_err(|_| PacketError::OutwardRefusal("mode radius"))?.mul(nonlinear_a.add(nonlinear_b).map_err(|_| PacketError::OutwardRefusal("mode radius"))?).map_err(|_| PacketError::OutwardRefusal("mode radius"))?;
+-            let radius = arithmetic.add(Interval::point(outward_complex_upper(z, "mode initial magnitude")?).map_err(|_| PacketError::OutwardRefusal("mode radius"))?.mul(Interval::point(full_b).map_err(|_| PacketError::OutwardRefusal("mode radius"))?).map_err(|_| PacketError::OutwardRefusal("mode radius"))?).map_err(|_| PacketError::OutwardRefusal("mode radius"))?.add(nonlinear_radius).map_err(|_| PacketError::OutwardRefusal("mode radius"))?.add(Interval::point(request.initial_radii[j]).map_err(|_| PacketError::OutwardRefusal("mode radius"))?).map_err(|_| PacketError::OutwardRefusal("mode radius"))?.hi;
+-            if !radius.is_finite() { return Err(PacketError::OutwardRefusal("mode radius overflow")); }
+-            output.modes.push(center); output.mode_radii.push(radius);
+-            let w = Interval::point(packet.model.weights()[j]).map_err(|_| PacketError::OutwardRefusal("weight"))?;
+-            mean_re = mean_re.add(w.mul(Interval::point(center.0).map_err(|_| PacketError::OutwardRefusal("center"))?).map_err(|_| PacketError::OutwardRefusal("mean accumulation"))?).map_err(|_| PacketError::OutwardRefusal("mean accumulation"))?;
+-            mean_im = mean_im.add(w.mul(Interval::point(center.1).map_err(|_| PacketError::OutwardRefusal("center"))?).map_err(|_| PacketError::OutwardRefusal("mean accumulation"))?).map_err(|_| PacketError::OutwardRefusal("mean accumulation"))?;
+-            mean_radius = mean_radius.add(w.mul(Interval::point(radius).map_err(|_| PacketError::OutwardRefusal("radius"))?).map_err(|_| PacketError::OutwardRefusal("mean radius accumulation"))?).map_err(|_| PacketError::OutwardRefusal("mean radius accumulation"))?;
++            let iv = IComplex {
++                re: linear_iv
++                    .re
++                    .add(igamma.re)
++                    .map_err(|_| PacketError::OutwardRefusal("mode reconstruction"))?,
++                im: linear_iv
++                    .im
++                    .add(igamma.im)
++                    .map_err(|_| PacketError::OutwardRefusal("mode reconstruction"))?,
++            };
++            if !iv.re.contains(center.0) || !iv.im.contains(center.1) {
++                return Err(PacketError::OutwardRefusal(
++                    "returned mode center outside reconstruction interval",
++                ));
++            }
++            let re_disp = iv
++                .re
++                .sub(
++                    Interval::point(center.0)
++                        .map_err(|_| PacketError::OutwardRefusal("mode center"))?,
++                )
++                .map_err(|_| PacketError::OutwardRefusal("mode displacement"))?
++                .mag();
++            let im_disp = iv
++                .im
++                .sub(
++                    Interval::point(center.1)
++                        .map_err(|_| PacketError::OutwardRefusal("mode center"))?,
++                )
++                .map_err(|_| PacketError::OutwardRefusal("mode displacement"))?
++                .mag();
++            let arithmetic = Interval::point(re_disp)
++                .map_err(|_| PacketError::OutwardRefusal("mode displacement"))?
++                .add(
++                    Interval::point(im_disp)
++                        .map_err(|_| PacketError::OutwardRefusal("mode displacement"))?,
++                )
++                .map_err(|_| PacketError::OutwardRefusal("mode displacement"))?;
++            let nonlinear_a = Interval::point(3.0)
++                .map_err(|_| PacketError::OutwardRefusal("mode radius"))?
++                .mul(
++                    Interval::point(theorem_r)
++                        .map_err(|_| PacketError::OutwardRefusal("mode radius"))?,
++                )
++                .map_err(|_| PacketError::OutwardRefusal("mode radius"))?
++                .mul(
++                    Interval::point(theorem_r)
++                        .map_err(|_| PacketError::OutwardRefusal("mode radius"))?,
++                )
++                .map_err(|_| PacketError::OutwardRefusal("mode radius"))?
++                .mul(
++                    Interval::point(emean)
++                        .map_err(|_| PacketError::OutwardRefusal("mode radius"))?,
++                )
++                .map_err(|_| PacketError::OutwardRefusal("mode radius"))?;
++            let nonlinear_b = Interval::point(theorem_rp)
++                .map_err(|_| PacketError::OutwardRefusal("mode radius"))?
++                .mul(
++                    Interval::point(theorem_rp)
++                        .map_err(|_| PacketError::OutwardRefusal("mode radius"))?,
++                )
++                .map_err(|_| PacketError::OutwardRefusal("mode radius"))?
++                .mul(
++                    Interval::point(theorem_rp)
++                        .map_err(|_| PacketError::OutwardRefusal("mode radius"))?,
++                )
++                .map_err(|_| PacketError::OutwardRefusal("mode radius"))?
++                .mul(
++                    Interval::point(full_b)
++                        .map_err(|_| PacketError::OutwardRefusal("mode radius"))?,
++                )
++                .map_err(|_| PacketError::OutwardRefusal("mode radius"))?;
++            let nonlinear_radius = Interval::point(t)
++                .map_err(|_| PacketError::OutwardRefusal("mode radius"))?
++                .mul(
++                    Interval::point(packet.model.chi().abs())
++                        .map_err(|_| PacketError::OutwardRefusal("mode radius"))?,
++                )
++                .map_err(|_| PacketError::OutwardRefusal("mode radius"))?
++                .mul(
++                    nonlinear_a
++                        .add(nonlinear_b)
++                        .map_err(|_| PacketError::OutwardRefusal("mode radius"))?,
++                )
++                .map_err(|_| PacketError::OutwardRefusal("mode radius"))?;
++            let radius = arithmetic
++                .add(
++                    Interval::point(outward_complex_upper(z, "mode initial magnitude")?)
++                        .map_err(|_| PacketError::OutwardRefusal("mode radius"))?
++                        .mul(
++                            Interval::point(full_b)
++                                .map_err(|_| PacketError::OutwardRefusal("mode radius"))?,
++                        )
++                        .map_err(|_| PacketError::OutwardRefusal("mode radius"))?,
++                )
++                .map_err(|_| PacketError::OutwardRefusal("mode radius"))?
++                .add(nonlinear_radius)
++                .map_err(|_| PacketError::OutwardRefusal("mode radius"))?
++                .add(
++                    Interval::point(request.initial_radii[j])
++                        .map_err(|_| PacketError::OutwardRefusal("mode radius"))?,
++                )
++                .map_err(|_| PacketError::OutwardRefusal("mode radius"))?
++                .hi;
++            if !radius.is_finite() {
++                return Err(PacketError::OutwardRefusal("mode radius overflow"));
++            }
++            output.modes.push(center);
++            output.mode_radii.push(radius);
++            let w = Interval::point(packet.model.weights()[j])
++                .map_err(|_| PacketError::OutwardRefusal("weight"))?;
++            mean_re = mean_re
++                .add(
++                    w.mul(
++                        Interval::point(center.0)
++                            .map_err(|_| PacketError::OutwardRefusal("center"))?,
++                    )
++                    .map_err(|_| PacketError::OutwardRefusal("mean accumulation"))?,
++                )
++                .map_err(|_| PacketError::OutwardRefusal("mean accumulation"))?;
++            mean_im = mean_im
++                .add(
++                    w.mul(
++                        Interval::point(center.1)
++                            .map_err(|_| PacketError::OutwardRefusal("center"))?,
++                    )
++                    .map_err(|_| PacketError::OutwardRefusal("mean accumulation"))?,
++                )
++                .map_err(|_| PacketError::OutwardRefusal("mean accumulation"))?;
++            mean_radius = mean_radius
++                .add(
++                    w.mul(
++                        Interval::point(radius)
++                            .map_err(|_| PacketError::OutwardRefusal("radius"))?,
++                    )
++                    .map_err(|_| PacketError::OutwardRefusal("mean radius accumulation"))?,
++                )
++                .map_err(|_| PacketError::OutwardRefusal("mean radius accumulation"))?;
+             work.output_value_items += 2;
+         }
+         // A lower endpoint is a finite returned center without midpoint
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:942:
+         // overflow.  The directed widths enclose its displacement to every
+         // point in the accumulated weighted-center intervals.
+         let mean = (mean_re.lo, mean_im.lo);
+-        let re_width = mean_re.sub(Interval::point(mean.0).map_err(|_| PacketError::OutwardRefusal("mean center"))?).map_err(|_| PacketError::OutwardRefusal("mean width"))?.hi;
+-        let im_width = mean_im.sub(Interval::point(mean.1).map_err(|_| PacketError::OutwardRefusal("mean center"))?).map_err(|_| PacketError::OutwardRefusal("mean width"))?.hi;
+-        let rounding = Interval::point(re_width).map_err(|_| PacketError::OutwardRefusal("mean width"))?.add(Interval::point(im_width).map_err(|_| PacketError::OutwardRefusal("mean width"))?).map_err(|_| PacketError::OutwardRefusal("mean width"))?.hi;
+-        let radius = Interval::point(mean_radius.hi).map_err(|_| PacketError::OutwardRefusal("mean radius"))?.add(Interval::point(rounding).map_err(|_| PacketError::OutwardRefusal("mean radius"))?).map_err(|_| PacketError::OutwardRefusal("mean radius"))?.hi;
+-        output.means.push(mean); output.mean_radii.push(radius);
++        let re_width = mean_re
++            .sub(Interval::point(mean.0).map_err(|_| PacketError::OutwardRefusal("mean center"))?)
++            .map_err(|_| PacketError::OutwardRefusal("mean width"))?
++            .hi;
++        let im_width = mean_im
++            .sub(Interval::point(mean.1).map_err(|_| PacketError::OutwardRefusal("mean center"))?)
++            .map_err(|_| PacketError::OutwardRefusal("mean width"))?
++            .hi;
++        let rounding = Interval::point(re_width)
++            .map_err(|_| PacketError::OutwardRefusal("mean width"))?
++            .add(Interval::point(im_width).map_err(|_| PacketError::OutwardRefusal("mean width"))?)
++            .map_err(|_| PacketError::OutwardRefusal("mean width"))?
++            .hi;
++        let radius = Interval::point(mean_radius.hi)
++            .map_err(|_| PacketError::OutwardRefusal("mean radius"))?
++            .add(
++                Interval::point(rounding)
++                    .map_err(|_| PacketError::OutwardRefusal("mean radius"))?,
++            )
++            .map_err(|_| PacketError::OutwardRefusal("mean radius"))?
++            .hi;
++        output.means.push(mean);
++        output.mean_radii.push(radius);
+     }
+     Ok(output)
+ }
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:1214:
+ 
+     #[test]
+     fn rp_greater_than_energy_radius_controls_nonlinear_tail() {
+-        let model = CollectiveModel::new(vec![1.0], vec![1.0], vec![(0.5, 0.0)], 0.2, 1.0, 0.0, 0.0).unwrap();
++        let model =
++            CollectiveModel::new(vec![1.0], vec![1.0], vec![(0.5, 0.0)], 0.2, 1.0, 0.0, 0.0)
++                .unwrap();
+         let mut work = PacketWorkCounters::new();
+         let packet = compile_packet(&model, 1.0e-3, 2, &mut work).unwrap();
+         let p = vec![IComplex::point((2.0, 0.0)).unwrap()]; // R_P=2 > R_E=0.5
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:1:
+ //! New adversarial regressions for the 2026-10-18 packet audit.
+ use rodas5p_integrators::{
+-    CausalWeights, CollectiveModel, PacketError, PacketWorkCounters, TrajectoryConfig,
+-    compile_packet, compute_certificate, evaluate_mode_at, generate_candidate, reconstruct_modes,
+-    reconstruct_outward_at_times, run_packet_trajectory, OutwardPacketRequest,
++    CausalWeights, CollectiveModel, OutwardPacketRequest, PacketError, PacketWorkCounters,
++    TrajectoryConfig, compile_packet, compute_certificate, evaluate_mode_at, generate_candidate,
++    reconstruct_modes, reconstruct_outward_at_times, run_packet_trajectory,
+ };
+ 
+ fn one_mode(width: f64, chi: f64, kappa: f64) -> CollectiveModel {
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:25:
+     let packet = compile_packet(&model, 0.1, 8, &mut work).unwrap();
+     let table = CausalWeights::compile(8, 24);
+     let cand = generate_candidate(&packet, 8, 2, &table, &mut work).unwrap();
+-    let out = reconstruct_outward_at_times(&cand, &packet, OutwardPacketRequest { times: &[0.05, 0.1], initial_radii: &[0.0] }, &mut work).unwrap();
++    let out = reconstruct_outward_at_times(
++        &cand,
++        &packet,
++        OutwardPacketRequest {
++            times: &[0.05, 0.1],
++            initial_radii: &[0.0],
++        },
++        &mut work,
++    )
++    .unwrap();
+     assert_eq!(out.modes.len(), 2);
+-    for i in 0..2 { assert!(out.mode_radii[i].is_finite() && out.mode_radii[i] >= 0.0); }
++    for i in 0..2 {
++        assert!(out.mode_radii[i].is_finite() && out.mode_radii[i] >= 0.0);
++    }
+     assert!(!out.roundoff_enclosed);
+ }
+ 
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:38:
+     let packet = compile_packet(&model, 0.01, 8, &mut work).unwrap();
+     let table = CausalWeights::compile(8, 24);
+     let cand = generate_candidate(&packet, 8, 5, &table, &mut work).unwrap();
+-    let out = reconstruct_outward_at_times(&cand, &packet, OutwardPacketRequest { times: &[0.005, 0.01], initial_radii: &[0.0] }, &mut work).unwrap();
+-    assert!(out.modes.iter().all(|&(re, im)| re.is_finite() && im.is_finite()));
++    let out = reconstruct_outward_at_times(
++        &cand,
++        &packet,
++        OutwardPacketRequest {
++            times: &[0.005, 0.01],
++            initial_radii: &[0.0],
++        },
++        &mut work,
++    )
++    .unwrap();
++    assert!(
++        out.modes
++            .iter()
++            .all(|&(re, im)| re.is_finite() && im.is_finite())
++    );
+     assert!(out.mode_radii.iter().all(|r| r.is_finite() && *r >= 0.0));
+     assert!(out.mean_radii.iter().all(|r| r.is_finite() && *r >= 0.0));
+ }
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:52:
+     let table = CausalWeights::compile(10, 30);
+     let cand = generate_candidate(&packet, 10, 6, &table, &mut work).unwrap();
+     let times = [0.005, 0.01];
+-    let out = reconstruct_outward_at_times(&cand, &packet, OutwardPacketRequest { times: &times, initial_radii: &[0.0] }, &mut work).unwrap();
++    let out = reconstruct_outward_at_times(
++        &cand,
++        &packet,
++        OutwardPacketRequest {
++            times: &times,
++            initial_radii: &[0.0],
++        },
++        &mut work,
++    )
++    .unwrap();
+     for (i, &t) in times.iter().enumerate() {
+         let phase = (0.2 + 0.7 * 0.25) * t;
+         let exact = (0.5 * phase.cos(), 0.5 * phase.sin());
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:59:
+         let distance = (out.modes[i].0 - exact.0).hypot(out.modes[i].1 - exact.1);
+-        assert!(distance <= out.mode_radii[i], "t={t}, center={:?}, exact={exact:?}, radius={:e}, mean={:?}, mean_radius={:e}, candidate={:?}", out.modes[i], out.mode_radii[i], out.means[i], out.mean_radii[i], cand.mean);
++        assert!(
++            distance <= out.mode_radii[i],
++            "t={t}, center={:?}, exact={exact:?}, radius={:e}, mean={:?}, mean_radius={:e}, candidate={:?}",
++            out.modes[i],
++            out.mode_radii[i],
++            out.means[i],
++            out.mean_radii[i],
++            cand.mean
++        );
+     }
+ }
+ 
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:64:
+ #[test]
+ fn outward_multimode_encloses_frozen_mpmath_reference_at_midpoint_and_endpoint() {
+-    let model = CollectiveModel::new(vec![-0.4, 0.7], vec![0.35, 0.65], vec![(0.3, 0.1), (-0.2, 0.25)], 0.2, 0.1, 0.0, 0.0).unwrap();
++    let model = CollectiveModel::new(
++        vec![-0.4, 0.7],
++        vec![0.35, 0.65],
++        vec![(0.3, 0.1), (-0.2, 0.25)],
++        0.2,
++        0.1,
++        0.0,
++        0.0,
++    )
++    .unwrap();
+     let mut work = PacketWorkCounters::new();
+     let packet = compile_packet(&model, 0.01, 10, &mut work).unwrap();
+     let table = CausalWeights::compile(10, 30);
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:70:
+     let cand = generate_candidate(&packet, 10, 6, &table, &mut work).unwrap();
+-    let out = reconstruct_outward_at_times(&cand, &packet, OutwardPacketRequest { times: &[0.005, 0.01], initial_radii: &[0.0, 0.0] }, &mut work).unwrap();
++    let out = reconstruct_outward_at_times(
++        &cand,
++        &packet,
++        OutwardPacketRequest {
++            times: &[0.005, 0.01],
++            initial_radii: &[0.0, 0.0],
++        },
++        &mut work,
++    )
++    .unwrap();
+     let reference = [
+-        [(0.3000360659831383, 0.09987949666586859), (-0.20017886072855834, 0.24985944127300486)],
+-        [(0.3000720910958233, 0.09975897745945944), (-0.20035761568763076, 0.24971875592645612)],
++        [
++            (0.3000360659831383, 0.09987949666586859),
++            (-0.20017886072855834, 0.24985944127300486),
++        ],
++        [
++            (0.3000720910958233, 0.09975897745945944),
++            (-0.20035761568763076, 0.24971875592645612),
++        ],
+     ];
+-    for (t, row) in reference.iter().enumerate() { for (j, &value) in row.iter().enumerate() { let i=t*2+j; let d=(out.modes[i].0-value.0).hypot(out.modes[i].1-value.1); assert!(d <= out.mode_radii[i], "t={t} j={j} d={d:e} r={:e}",out.mode_radii[i]); } }
+     for (t, row) in reference.iter().enumerate() {
+-        let mean = (0.35 * row[0].0 + 0.65 * row[1].0, 0.35 * row[0].1 + 0.65 * row[1].1);
++        for (j, &value) in row.iter().enumerate() {
++            let i = t * 2 + j;
++            let d = (out.modes[i].0 - value.0).hypot(out.modes[i].1 - value.1);
++            assert!(
++                d <= out.mode_radii[i],
++                "t={t} j={j} d={d:e} r={:e}",
++                out.mode_radii[i]
++            );
++        }
++    }
++    for (t, row) in reference.iter().enumerate() {
++        let mean = (
++            0.35 * row[0].0 + 0.65 * row[1].0,
++            0.35 * row[0].1 + 0.65 * row[1].1,
++        );
+         let d = (out.means[t].0 - mean.0).hypot(out.means[t].1 - mean.1);
+-        assert!(d <= out.mean_radii[t], "mean t={t} d={d:e} r={:e}", out.mean_radii[t]);
++        assert!(
++            d <= out.mean_radii[t],
++            "mean t={t} d={d:e} r={:e}",
++            out.mean_radii[t]
++        );
+     }
+ }
+ 
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:88:
+     let packet = compile_packet(&model, 0.01, 8, &mut work).unwrap();
+     let table = CausalWeights::compile(8, 24);
+     let cand = generate_candidate(&packet, 8, 5, &table, &mut work).unwrap();
+-    let out = reconstruct_outward_at_times(&cand, &packet, OutwardPacketRequest { times: &[0.01], initial_radii: &[1e-4] }, &mut work).unwrap();
++    let out = reconstruct_outward_at_times(
++        &cand,
++        &packet,
++        OutwardPacketRequest {
++            times: &[0.01],
++            initial_radii: &[1e-4],
++        },
++        &mut work,
++    )
++    .unwrap();
+     assert!(out.mode_radii[0] >= 1e-4);
+ }
+ 
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:95:
+ #[test]
+ fn outward_packet_refuses_nonfinite_uncertainty() {
+-    let model = one_mode(0.0, 0.0, 0.0); let mut work = PacketWorkCounters::new();
+-    let packet = compile_packet(&model, 0.01, 4, &mut work).unwrap(); let table=CausalWeights::compile(4,12);
+-    let cand=generate_candidate(&packet,4,1,&table,&mut work).unwrap();
+-    assert!(matches!(reconstruct_outward_at_times(&cand,&packet,OutwardPacketRequest{times:&[0.01],initial_radii:&[f64::NAN]},&mut work),Err(PacketError::OutwardRefusal(_))));
++    let model = one_mode(0.0, 0.0, 0.0);
++    let mut work = PacketWorkCounters::new();
++    let packet = compile_packet(&model, 0.01, 4, &mut work).unwrap();
++    let table = CausalWeights::compile(4, 12);
++    let cand = generate_candidate(&packet, 4, 1, &table, &mut work).unwrap();
++    assert!(matches!(
++        reconstruct_outward_at_times(
++            &cand,
++            &packet,
++            OutwardPacketRequest {
++                times: &[0.01],
++                initial_radii: &[f64::NAN]
++            },
++            &mut work
++        ),
++        Err(PacketError::OutwardRefusal(_))
++    ));
+ }
+ 
+ #[test]
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:104:
+ fn outward_packet_refuses_nonfinite_physical_time() {
+-    let model=one_mode(0.0,0.0,0.0); let mut work=PacketWorkCounters::new(); let packet=compile_packet(&model,0.01,4,&mut work).unwrap(); let table=CausalWeights::compile(4,12); let cand=generate_candidate(&packet,4,1,&table,&mut work).unwrap();
+-    assert!(matches!(reconstruct_outward_at_times(&cand,&packet,OutwardPacketRequest{times:&[f64::INFINITY],initial_radii:&[0.0]},&mut work),Err(PacketError::OutwardRefusal(_))));
++    let model = one_mode(0.0, 0.0, 0.0);
++    let mut work = PacketWorkCounters::new();
++    let packet = compile_packet(&model, 0.01, 4, &mut work).unwrap();
++    let table = CausalWeights::compile(4, 12);
++    let cand = generate_candidate(&packet, 4, 1, &table, &mut work).unwrap();
++    assert!(matches!(
++        reconstruct_outward_at_times(
++            &cand,
++            &packet,
++            OutwardPacketRequest {
++                times: &[f64::INFINITY],
++                initial_radii: &[0.0]
++            },
++            &mut work
++        ),
++        Err(PacketError::OutwardRefusal(_))
++    ));
+ }
+ 
+ #[test]
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:110:
+ fn outward_overflow_refusal_preserves_attempted_certificate_work() {
+-    let model=one_mode(0.0,0.1,0.0); let mut work=PacketWorkCounters::new(); let packet=compile_packet(&model,0.01,4,&mut work).unwrap(); let table=CausalWeights::compile(4,12); let cand=generate_candidate(&packet,4,2,&table,&mut work).unwrap();
+-    let before=work.certificate_items;
+-    assert!(matches!(reconstruct_outward_at_times(&cand,&packet,OutwardPacketRequest{times:&[0.01],initial_radii:&[f64::MAX]},&mut work),Err(PacketError::OutwardRefusal(_))));
++    let model = one_mode(0.0, 0.1, 0.0);
++    let mut work = PacketWorkCounters::new();
++    let packet = compile_packet(&model, 0.01, 4, &mut work).unwrap();
++    let table = CausalWeights::compile(4, 12);
++    let cand = generate_candidate(&packet, 4, 2, &table, &mut work).unwrap();
++    let before = work.certificate_items;
++    assert!(matches!(
++        reconstruct_outward_at_times(
++            &cand,
++            &packet,
++            OutwardPacketRequest {
++                times: &[0.01],
++                initial_radii: &[f64::MAX]
++            },
++            &mut work
++        ),
++        Err(PacketError::OutwardRefusal(_))
++    ));
+     assert!(work.certificate_items > before);
+ }
+ 
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:117:
+ #[test]
+ fn outward_subnormal_physical_time_is_finite_or_typed_refusal() {
+-    let model=one_mode(0.0,0.0,0.0); let mut work=PacketWorkCounters::new(); let packet=compile_packet(&model,0.01,4,&mut work).unwrap(); let table=CausalWeights::compile(4,12); let cand=generate_candidate(&packet,4,1,&table,&mut work).unwrap();
+-    match reconstruct_outward_at_times(&cand,&packet,OutwardPacketRequest{times:&[f64::from_bits(1)],initial_radii:&[0.0]},&mut work) { Ok(out) => assert!(out.modes.iter().all(|&(a,b)| a.is_finite() && b.is_finite())), Err(PacketError::OutwardRefusal(_)) => {} Err(e) => panic!("unexpected {e:?}") }
++    let model = one_mode(0.0, 0.0, 0.0);
++    let mut work = PacketWorkCounters::new();
++    let packet = compile_packet(&model, 0.01, 4, &mut work).unwrap();
++    let table = CausalWeights::compile(4, 12);
++    let cand = generate_candidate(&packet, 4, 1, &table, &mut work).unwrap();
++    match reconstruct_outward_at_times(
++        &cand,
++        &packet,
++        OutwardPacketRequest {
++            times: &[f64::from_bits(1)],
++            initial_radii: &[0.0],
++        },
++        &mut work,
++    ) {
++        Ok(out) => assert!(
++            out.modes
++                .iter()
++                .all(|&(a, b)| a.is_finite() && b.is_finite())
++        ),
++        Err(PacketError::OutwardRefusal(_)) => {}
++        Err(e) => panic!("unexpected {e:?}"),
++    }
+ }
+ 
+ #[test]
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:124:
+ fn outward_uncertainty_radius_contains_perturbed_one_mode_solution() {
+-    let model=one_mode(0.0,0.2,0.0); let mut work=PacketWorkCounters::new(); let packet=compile_packet(&model,0.01,8,&mut work).unwrap(); let table=CausalWeights::compile(8,24); let cand=generate_candidate(&packet,8,5,&table,&mut work).unwrap();
+-    let out=reconstruct_outward_at_times(&cand,&packet,OutwardPacketRequest{times:&[0.01],initial_radii:&[0.1]},&mut work).unwrap();
+-    let amp: f64=0.6; let phase=0.2*amp*amp*0.01; let d=(out.modes[0].0-amp*phase.cos()).hypot(out.modes[0].1-amp*phase.sin());
+-    assert!(d <= out.mode_radii[0], "d={d:e} r={:e}",out.mode_radii[0]);
++    let model = one_mode(0.0, 0.2, 0.0);
++    let mut work = PacketWorkCounters::new();
++    let packet = compile_packet(&model, 0.01, 8, &mut work).unwrap();
++    let table = CausalWeights::compile(8, 24);
++    let cand = generate_candidate(&packet, 8, 5, &table, &mut work).unwrap();
++    let out = reconstruct_outward_at_times(
++        &cand,
++        &packet,
++        OutwardPacketRequest {
++            times: &[0.01],
++            initial_radii: &[0.1],
++        },
++        &mut work,
++    )
++    .unwrap();
++    let amp: f64 = 0.6;
++    let phase = 0.2 * amp * amp * 0.01;
++    let d = (out.modes[0].0 - amp * phase.cos()).hypot(out.modes[0].1 - amp * phase.sin());
++    assert!(d <= out.mode_radii[0], "d={d:e} r={:e}", out.mode_radii[0]);
+ }
+ 
+ #[test]

@@ -1,0 +1,137 @@
+{
+  "schema": "vigilode.production-smoke-batch.v1",
+  "started_utc": "2026-10-27T14:12:46.785211+00:00",
+  "source_sha256": {
+    "Cargo.toml": "716ff1b052b1333e0ee5867f266426f6ecbec11578444f2e2b9c02baa03b037e",
+    "Cargo.lock": "efb379071fa42c2b6bdbe969163ac2f41cf318c262c5c67d0910450298333351",
+    "rust-toolchain.toml": "f53198ae4fdecfd87da36fe431c771b54c51e975d01c0e99f653bc14d5d48211",
+    "crates/vigilode/src/production.rs": "f46d917cb8205799840b38a5ae8b310b0e785969b5c482b478adfc557a89888c",
+    "crates/vigilode/src/switching.rs": "ebea1dd7b76da45def13f6d9e1137f693786f23308f2e0cc589debc82b658347",
+    "crates/vigilode/examples/production_from_json.rs": "d708f829ce324df67dc8478051476622bbc172fb6a3bc293a1b95ed3ea3f1cad"
+  },
+  "profile": "measurement",
+  "commands": [
+    {
+      "name": "build",
+      "argv": [
+        "cargo",
+        "build",
+        "--profile",
+        "measurement",
+        "--locked",
+        "-p",
+        "vigilode",
+        "--example",
+        "production_from_json",
+        "--offline"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 14.417324555004598
+    },
+    {
+      "name": "template_rhs-only",
+      "argv": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_from_json",
+        "--template",
+        "rhs-only"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.0035707659990293905
+    },
+    {
+      "name": "rhs-only_1",
+      "argv": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_from_json",
+        "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/evidence/production_smoke_pass0/rhs-only.json",
+        "1"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.004416968993609771
+    },
+    {
+      "name": "rhs-only_1000",
+      "argv": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_from_json",
+        "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/evidence/production_smoke_pass0/rhs-only.json",
+        "1000"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.008673206997627858
+    },
+    {
+      "name": "template_selective-jvp",
+      "argv": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_from_json",
+        "--template",
+        "selective-jvp"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.005650213002809323
+    },
+    {
+      "name": "selective-jvp_1",
+      "argv": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_from_json",
+        "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/evidence/production_smoke_pass0/selective-jvp.json",
+        "1"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.003294530004495755
+    },
+    {
+      "name": "selective-jvp_1000",
+      "argv": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_from_json",
+        "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/evidence/production_smoke_pass0/selective-jvp.json",
+        "1000"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.013100194002618082
+    }
+  ],
+  "binary_sha256": "1536b4842026c7261284e256c5b1693e7b6b03120a332248e4ddfe3c34a05f87",
+  "source_unchanged": true,
+  "status": "completed",
+  "summary": [
+    {
+      "mode": "rhs-only",
+      "rate": 1,
+      "pass": true,
+      "maximum_returned_state_error": 3.3718316472253207e-09,
+      "rhs": 79,
+      "jvp": 0,
+      "attempts": 13,
+      "accounting_complete": true
+    },
+    {
+      "mode": "rhs-only",
+      "rate": 1000,
+      "pass": true,
+      "maximum_returned_state_error": 1.543376355546291e-11,
+      "rhs": 2377,
+      "jvp": 0,
+      "attempts": 396,
+      "accounting_complete": true
+    },
+    {
+      "mode": "selective-jvp",
+      "rate": 1,
+      "pass": true,
+      "maximum_returned_state_error": 3.3718316472253207e-09,
+      "rhs": 79,
+      "jvp": 0,
+      "attempts": 13,
+      "accounting_complete": true
+    },
+    {
+      "mode": "selective-jvp",
+      "rate": 1000,
+      "pass": true,
+      "maximum_returned_state_error": 1.0654127077097675e-09,
+      "rhs": 1117,
+      "jvp": 426,
+      "attempts": 180,
+      "accounting_complete": true
+    }
+  ]
+}

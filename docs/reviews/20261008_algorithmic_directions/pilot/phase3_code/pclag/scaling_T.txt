@@ -1,0 +1,33 @@
+### matched-accuracy cost ratio arm/direct vs N, work = T; per E: R (frontier; x = extrapolated) / C (cheapest-run)
+  bruss2d (alpha 0.02) lag     N=32: gm 1.538 [1.48/1.50 1.52/1.54 1.56/1.58 1.60/1.67] | N=64: gm 1.404 [1.34/1.36 1.38/1.38 1.43/1.47 1.48/1.53] | N=128: gm 1.065 [1.05/1.03 1.06/1.05 1.07/1.10 1.09/1.10] | N=256: gm 0.807 [0.81/0.80 0.81/0.80 0.81/0.81 0.80x/-]
+                               fit: ratio ~ N^-0.32 (x0.80 per doubling); ratio = 1 at N ~ 147; ratio = 0.7 at N ~ 450  (extrapolated beyond measured N)
+  bruss2d (alpha 0.02) lin     N=32: gm 1.539 [1.56/1.53 1.54/1.52 1.53/1.52 1.52/1.53] | N=64: gm 1.132 [1.14/1.10 1.14/1.13 1.13/1.10 1.12/1.14] | N=128: gm 0.874 [0.89/0.86 0.88/0.86 0.87/0.86 0.86/0.86] | N=256: gm 0.598 [0.61/0.59 0.60/0.60 0.60/0.60 0.59x/-]
+                               fit: ratio ~ N^-0.45 (x0.73 per doubling); ratio = 1 at N ~ 86; ratio = 0.7 at N ~ 191
+  bruss2d (alpha 0.02) dst     N=32: gm 1.784 [1.79/1.79 1.79/1.77 1.78/1.79 1.78/1.78] | N=64: gm 0.864 [0.87/0.86 0.87/0.86 0.86/0.87 0.86/0.87] | N=128: gm 0.711 [0.71/0.71 0.71/0.71 0.71/0.71 0.71/0.71] | N=256: gm 1.793 [1.79/1.80 1.79/1.79 1.79/1.80 1.80x/-]
+                               fit: ratio ~ N^-0.03 (x0.98 per doubling); ratio = 1 at N ~ 62860; ratio = 0.7 at N ~ 62617467251  (extrapolated beyond measured N)
+  bruss2d (alpha 0.02) mf      N=32: gm 1.139 [1.43/1.35 1.23/1.17 1.06/0.89 0.91/0.78] | N=64: gm 1.295 [1.75/1.67 1.43/1.43 1.17/0.96 0.96/0.78] | N=128: gm 2.070 [2.75/2.63 2.27/2.27 1.88/1.61 1.56/1.31]
+                               fit: ratio ~ N^0.43 (x1.35 per doubling); ratio = 1 at N ~ inf; ratio = 0.7 at N ~ inf  (extrapolated beyond measured N)
+  bruss2d (alpha 0.02) lag-w4  N=32: gm 1.683 [1.65/1.58 1.67/1.64 1.69/1.82 1.72/1.71] | N=64: gm 1.517 [1.48/1.44 1.51/1.53 1.53/1.55 1.55/1.54] | N=128: gm 1.129 [1.14/1.51 1.13/1.15 1.13/1.18 1.12x/-]
+                               fit: ratio ~ N^-0.29 (x0.82 per doubling); ratio = 1 at N ~ 218; ratio = 0.7 at N ~ 754  (extrapolated beyond measured N)
+  bruss2d (alpha 0.02) lin-w4  N=32: gm 1.635 [1.65/1.57 1.64/1.60 1.63/1.62 1.62/1.54] | N=64: gm 1.241 [1.23/1.16 1.24/1.18 1.24/1.32 1.25/1.17] | N=128: gm 0.913 [0.92/1.19 0.92/0.91 0.91/0.96 0.91x/-]
+                               fit: ratio ~ N^-0.42 (x0.75 per doubling); ratio = 1 at N ~ 104; ratio = 0.7 at N ~ 244  (extrapolated beyond measured N)
+                               fit: ratio ~ N^-0.28 (x0.82 per doubling); ratio = 1 at N ~ 164; ratio = 0.7 at N ~ 577  (extrapolated beyond measured N)
+  bruss2d (alpha 0.1)  lag     N=64: gm 1.281 [1.21x/1.28 1.26x/1.28 1.31/1.37 1.36/1.42] | N=128: gm 1.054 [1.06x/1.07 1.06x/1.07 1.05/1.05 1.05/1.03]
+                               fit: ratio ~ N^-0.28 (x0.82 per doubling); ratio = 1 at N ~ 154; ratio = 0.7 at N ~ 545  (extrapolated beyond measured N)
+  bruss2d (alpha 0.1)  lin     N=64: gm 1.259 [1.27x/1.27 1.26x/1.27 1.26/1.24 1.25/1.22] | N=128: gm 0.902 [0.93x/0.91 0.91x/0.91 0.89/0.87 0.87/0.83]
+                               fit: ratio ~ N^-0.48 (x0.72 per doubling); ratio = 1 at N ~ 103; ratio = 0.7 at N ~ 217  (extrapolated beyond measured N)
+  bruss2d (alpha 0.1)  dst     N=64: gm 0.803 [0.81x/0.80 0.80x/0.80 0.80/0.80 0.80/0.79] | N=128: gm 0.766 [0.77x/0.76 0.77x/0.76 0.77/0.76 0.76/0.76]
+                               fit: ratio ~ N^-0.07 (x0.95 per doubling); ratio = 1 at N ~ 3; ratio = 0.7 at N ~ 485  (extrapolated beyond measured N)
+  bruss2d (alpha 0.1)  mf      N=64: gm 4.099 [4.89x/4.01 4.35x/4.01 3.87/3.41 3.44/2.98] | N=128: gm 6.963 [8.60x/6.88 7.47x/6.88 6.49/5.56 5.64/4.87]
+                               fit: ratio ~ N^0.76 (x1.70 per doubling); ratio = 1 at N ~ inf; ratio = 0.7 at N ~ inf  (extrapolated beyond measured N)
+  semilin2d            lag     N=32: gm 1.792 [1.75/1.87 1.78/1.89 1.80/1.89 1.83/1.73] | N=64: gm 1.452 [1.43/1.45 1.45/1.43 1.46/1.40 1.47/1.38] | N=128: gm 1.464 [1.44/1.56 1.46/1.41 1.47/1.56 1.49/1.41] | N=256: gm 1.260 [1.26/1.31 1.26/1.23 1.26/1.18 1.26x/-]
+                               fit: ratio ~ N^-0.15 (x0.90 per doubling); ratio = 1 at N ~ 1213; ratio = 0.7 at N ~ 12848  (extrapolated beyond measured N)
+  semilin2d            lin     N=32: gm 2.224 [2.39/2.41 2.28/2.18 2.17/2.01 2.07/1.96] | N=64: gm 2.020 [2.22/2.22 2.08/2.05 1.96/1.82 1.84/1.72] | N=128: gm 1.842 [2.06/2.05 1.91/1.84 1.77/1.61 1.65/1.60] | N=256: gm 1.657 [1.90/1.91 1.73/1.67 1.58/1.54 1.44x/-]
+                               fit: ratio ~ N^-0.14 (x0.91 per doubling); ratio = 1 at N ~ 9449; ratio = 0.7 at N ~ 118957  (extrapolated beyond measured N)
+  semilin2d            mf      N=32: gm 2.871 [4.42/4.12 3.32/3.23 2.49/2.26 1.86/1.41] | N=64: gm 3.176 [5.48/4.86 3.81/3.42 2.65/2.53 1.84/1.28] | N=128: gm 4.142 [7.60/5.94 5.07/4.45 3.38/3.27 2.26/1.57]
+                               fit: ratio ~ N^0.26 (x1.20 per doubling); ratio = 1 at N ~ inf; ratio = 0.7 at N ~ inf  (extrapolated beyond measured N)
+  semilin2d            lag-w4  N=32: gm 1.948 [2.00/1.81 1.96/1.95 1.93/1.88 1.90/1.82] | N=64: gm 1.592 [1.68/1.78 1.62/1.40 1.56/1.39 1.51/1.49] | N=128: gm 1.444 [1.65/1.94 1.51/1.45 1.38/2.19 1.26x/-]
+                               fit: ratio ~ N^-0.22 (x0.86 per doubling); ratio = 1 at N ~ 645; ratio = 0.7 at N ~ 3355  (extrapolated beyond measured N)
+  semilin2d            lin-w4  N=32: gm 2.300 [2.54/2.41 2.38/2.26 2.22/1.96 2.08/2.04] | N=64: gm 2.082 [2.34/2.24 2.17/1.88 2.00/1.80 1.85/1.82] | N=128: gm 1.756 [2.22/2.34 1.90/1.76 1.62/2.46 1.39x/-]
+                               fit: ratio ~ N^-0.19 (x0.87 per doubling); ratio = 1 at N ~ 2451; ratio = 0.7 at N ~ 15309  (extrapolated beyond measured N)
+                               fit: ratio ~ N^0.00 (x1.00 per doubling); ratio = 1 at N ~ inf; ratio = 0.7 at N ~ inf  (extrapolated beyond measured N)

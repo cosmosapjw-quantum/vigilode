@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "node": "N4",
+  "status": "complete_scoped",
+  "decision": "OPT_IN_FIXED_P_CONTINUATION",
+  "basis": [
+    "derived",
+    "numerically checked",
+    "implementation-verified"
+  ],
+  "module": "crates/rodas5p-integrators/src/fixed_point_continuation.rs",
+  "api": "rodas5p_integrators::fixed_point_continuation::continue_fixed_point",
+  "runtime_callbacks": [
+    "F values with evaluation-error enclosure",
+    "fixed P apply with evaluation-error enclosure"
+  ],
+  "derivative_jvp_newton_callbacks": false,
+  "guarantees": {
+    "domain": "declared infinity balls covering lambda in [0,1]",
+    "whole_domain_assumptions": [
+      "fixed invertible P",
+      "q<1 for T=x-PF",
+      "uniform beta <= (1-q)radius",
+      "continuous same F in lambda",
+      "truthful full-domain and callback error bounds"
+    ],
+    "original_residual": "norm(computed F)+eF <= requested tolerance",
+    "root_error": "(norm(computed PF)+eP+norm(P)*eF)/(1-q), outward arithmetic",
+    "branch_transition": "old root enclosure fully contained in next patch; identical target/scaling/epoch/branch; IDs alone insufficient",
+    "final_target": "fresh F(x,1) evaluation",
+    "failure": "unchanged caller output and retained cumulative attempted work"
+  },
+  "implementation_rounds": [
+    {
+      "round": 1,
+      "change": "declared patches/identity, original residual, enclosed branch continuation and transactional bounded solver",
+      "tests_passed": 12,
+      "receipt": "evidence/n4-round1-tests.receipt.json"
+    },
+    {
+      "round": 2,
+      "change": "exact-safe fast interior domain comparison; reject inconsistent inverse norm product; boundary/P failure coverage",
+      "tests_passed": 15,
+      "receipt": "evidence/n4-round2-tests.receipt.json"
+    }
+  ],
+  "final_tests": {
+    "passed": 15,
+    "failed": 0
+  },
+  "benchmark": {
+    "configurations": 6,
+    "repetitions_per_method_per_configuration": 101,
+    "methods": 2,
+    "timed_solver_invocations": 1212,
+    "all_candidate_configurations_pass": true,
+    "scope": "Separable monotone cubic roots, dimensions1/128. Fixed-P includes lambda0 and1; vector bisection final target only; both allocations included; atlas/model setup excluded. No ODE integration timing claim.",
+    "comparison": [
+      {
+        "dimension": 1,
+        "coefficient": 0.015625,
+        "baseline_over_final_fixed_p": 1.4906937394247037,
+        "bisection_over_final_fixed_p": 0.35532994923857864,
+        "fixed_p_f_calls": 11,
+        "bisection_final_only_f_calls": 32,
+        "final_original_residual_upper": 7.475431385017802e-11,
+        "same_work_and_residual_as_round1": true,
+        "pass": true
+      },
+      {
+        "dimension": 1,
+        "coefficient": 0.0625,
+        "baseline_over_final_fixed_p": 1.5172413793103448,
+        "bisection_over_final_fixed_p": 0.2463054187192118,
+        "fixed_p_f_calls": 16,
+        "bisection_final_only_f_calls": 29,
+        "final_original_residual_upper": 2.339117788352488e-11,
+        "same_work_and_residual_as_round1": true,
+        "pass": true
+      },
+      {
+        "dimension": 1,
+        "coefficient": 0.125,
+        "baseline_over_final_fixed_p": 1.5459132189707367,
+        "bisection_over_final_fixed_p": 0.20181634712411706,
+        "fixed_p_f_calls": 20,
+        "bisection_final_only_f_calls": 30,
+        "final_original_residual_upper": 9.54241130557424e-11,
+        "same_work_and_residual_as_round1": true,
+        "pass": true
+      },
+      {
+        "dimension": 128,
+        "coefficient": 0.015625,
+        "baseline_over_final_fixed_p": 5.313336590131901,
+        "bisection_over_final_fixed_p": 1.5646311675622864,
+        "fixed_p_f_calls": 12,
+        "bisection_final_only_f_calls": 34,
+        "final_original_residual_upper": 8.509476413440213e-11,
+        "same_work_and_residual_as_round1": true,
+        "pass": true
+      },
+      {
+        "dimension": 128,
+        "coefficient": 0.0625,
+        "baseline_over_final_fixed_p": 5.420672083735023,
+        "bisection_over_final_fixed_p": 1.102052058945049,
+        "fixed_p_f_calls": 17,
+        "bisection_final_only_f_calls": 34,
+        "final_original_residual_upper": 2.863625959623185e-11,
+        "same_work_and_residual_as_round1": true,
+        "pass": true
+      },
+      {
+        "dimension": 128,
+        "coefficient": 0.125,
+        "baseline_over_final_fixed_p": 5.4749262536873164,
+        "bisection_over_final_fixed_p": 0.8918572939277566,
+        "fixed_p_f_calls": 21,
+        "bisection_final_only_f_calls": 34,
+        "final_original_residual_upper": 2.330419147586463e-11,
+        "same_work_and_residual_as_round1": true,
+        "pass": true
+      }
+    ],
+    "raw": "evidence/n4-round2-benchmark.stdout",
+    "receipt": "evidence/n4-round2-benchmark.receipt.json",
+    "baseline_raw": "evidence/n4-benchmark.stdout",
+    "timing_interpretation": "Descriptive short-run medians; repeat independent processes locally before performance decisions. Scalar times sub-microsecond."
+  },
+  "geometry_transfer": {
+    "sources": [
+      "two_step minor-revision draft \u00a72 regular carrier and \u00a76 continuation",
+      "curved_mirror integrated v13 carrier/projection/target distinction"
+    ],
+    "adopted": "valid-domain patches and independently verified branch overlap; folds are explicit patch boundaries",
+    "not_claimed": "reflection-specific fold classifications transferred to arbitrary ODEs"
+  },
+  "independent_review": {
+    "agent": "/root/geometry_transfer",
+    "scope": "fixed-P/self-map proof, error transport, branch overlap, actual callback/identity/output paths; round2 fast comparison proof",
+    "blocking_findings": 0,
+    "closed_optional_finding": "inverse-action norm upper product below one refused",
+    "assumptions": "standard binary64 round-to-nearest without fast-math; truthful declared bounds"
+  },
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/fixed_point_continuation.rs": "23e4421e7f16a31108d02059d21a42122909040bd57f0a66f2983f8277bfc12f",
+    "crates/rodas5p-integrators/tests/fixed_point_continuation_contracts.rs": "828c0af0fcd5e57c68f9733dc1d2e6756106fab615702c0fc7cef67e4824e473",
+    "crates/rodas5p-integrators/examples/fixed_point_continuation_bench.rs": "4a5a15d3ae41e38284cd32563c9c576d0dd74f7a90aa25805bdaef2c196c6415",
+    "crates/rodas5p-core/src/directed.rs": "2adadb6a5d77073e0a7d3d60aedfbf37e124d15a586a880d7d5a8c8d5307a814",
+    "Cargo.lock": "efb379071fa42c2b6bdbe969163ac2f41cf318c262c5c67d0910450298333351"
+  },
+  "remaining": [
+    "automatic generation of whole-domain bounds for opaque F",
+    "adaptive creation of new regular patches beyond supplied atlas",
+    "phase/global ODE accuracy qualification",
+    "local profiling with real expensive F and total provider setup cost",
+    "comparison to existing Newton corrector on matched general-vector contracts"
+  ],
+  "default_general_ode_dispatch_changed": false
+}

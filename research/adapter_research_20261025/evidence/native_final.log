@@ -1,0 +1,112 @@
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-adapters/crates/rodas5p-integrators)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-adapters/crates/vigilode)
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.48s
+     Running tests/automatic_adapter_contracts.rs (target/debug/deps/automatic_adapter_contracts-99036eeef1d43d2b)
+
+running 4 tests
+test authorized_trials_require_replay_safe_callback_contract ... ok
+test matrix_free_permission_and_dense_ceiling_are_not_bypassed ... ok
+test default_automatic_is_rhs_only_and_returns_actual_selection_history ... ok
+test permitted_competition_keeps_total_attempt_budget ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/cofactor_chart_contracts.rs (target/debug/deps/cofactor_chart_contracts-7572ff4cbca666fc)
+
+running 4 tests
+test invalid_carrier_and_reconstruction_are_refused ... ok
+test reconstructed_velocity_satisfies_the_original_nonlinear_equations ... ok
+test carrier_has_zero_primitive_and_preserves_initial_value ... ok
+test reduced_dopri_solves_the_published_stiff_case_without_derivatives ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/evidence_switch_contracts.rs (target/debug/deps/evidence_switch_contracts-aabcfc3b2ee7a413)
+
+running 7 tests
+test completed_window_carries_post_acceptance_proposal_not_terminal_snapshot ... ok
+test evidence_factory_never_grants_derivative_permission ... ok
+test one_attempt_completed_window_is_success_without_renewing_global_budget ... ok
+test implicit_advance_invalidates_saved_explicit_proposal ... ok
+test native_explicit_step_proposal_is_carried_only_from_committed_state ... ok
+test entry_pilots_are_separated_bounded_and_fully_charged ... ok
+test carry_removes_repeated_startup_work_without_relaxing_tolerance ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/execution_policy_contracts.rs (target/debug/deps/execution_policy_contracts-734c2545169bce0a)
+
+running 9 tests
+test exact_key_and_nesting_cannot_reuse_unsafe_evidence ... ok
+test expired_calibration_falls_back_and_requests_probe ... ok
+test actual_dispatch_preserves_order_and_no_implicit_replay ... ok
+test single_item_calibration_never_replays_or_builds_pool ... ok
+test invalid_or_wrong_output_clears_prior_evidence ... ok
+test slow_parallel_stays_serial ... ok
+test measured_gain_and_overhead_payback ... ok
+test real_calibration_and_shape_validation ... ok
+test internal_nested_wrapper_is_forced_serial ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/frontier_switch_contracts.rs (target/debug/deps/frontier_switch_contracts-a95cb23f4295f144)
+
+running 6 tests
+test screening_configuration_is_checked_before_callbacks ... ok
+test derivative_forbidden_ignores_even_configured_implicit_pilots ... ok
+test implicit_pilot_failure_is_fatal_and_counts_every_callback ... ok
+test pilot_shares_global_budget_and_no_partial_pilot_state_is_committed ... ok
+test stiff_decay_pilot_must_finish_the_same_prefix_before_entry ... ok
+test rapid_rotation_rejects_uneconomical_jvp_entry_and_retains_accuracy ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/oscillatory_chart_contracts.rs (target/debug/deps/oscillatory_chart_contracts-25dbb25022464e96)
+
+running 10 tests
+test involution_shares_coefficients_but_preserves_independent_amplitudes ... ok
+test physical_chart_roundtrip_preserves_arbitrary_initial_data ... ok
+test phase_handles_large_relative_growth_without_intermediate_exponential_overflow ... ok
+test forcing_negative_control_retains_fast_phase ... ok
+test nonlinear_equivariance_removes_carrier_from_residual ... ok
+test physical_error_transport_accounts_for_velocity_amplification ... ok
+test phase_does_not_lose_large_frequency_when_beta_dt_underflows ... ok
+test constant_frequency_and_small_beta_have_correct_phase_limit ... ok
+test malformed_and_nonfinite_inputs_are_rejected ... ok
+test time_dependent_chart_chain_rule_matches_original_chirp ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/switching_contracts.rs (target/debug/deps/switching_contracts-7afda70c935434c2)
+
+running 14 tests
+test default_is_rhs_only_even_when_derivatives_are_declared ... ok
+test fatal_callback_is_not_retried_with_another_method ... ok
+test forbidden_persistent_failure_keeps_native_partial_state_and_counts ... ok
+test request_preflight_rejects_unsupported_and_resource_contracts_without_callbacks ... ok
+test serialization_preserves_route_and_original_driver_records ... ok
+test forbidden_route_preserves_native_observed_session_bit_for_bit ... ok
+test budget_failure_preserves_accepted_state_and_never_forges_success ... ok
+test bounded_probe_can_return_to_the_rhs_only_route ... ok
+test finite_difference_requires_its_separate_opt_in ... ok
+test malformed_output_stops_before_fallback ... ok
+test zero_span_and_representationally_tiny_windows_do_not_loop ... ok
+test endpoint_accuracy_for_rotation_is_checked_separately_from_stiffness_routing ... ok
+test stiff_work_pressure_enters_authorized_fallback_from_accepted_state ... ok
+test all_attempts_and_discarded_probes_share_one_budget ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

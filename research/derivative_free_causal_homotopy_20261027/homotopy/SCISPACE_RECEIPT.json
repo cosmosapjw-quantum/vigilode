@@ -1,0 +1,706 @@
+{
+  "status": "fulfilled",
+  "value": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Found 10 relevant papers on 'Under what contraction and safeguarding conditions does Anderson acceleration converge for derivative-free fixed-point iterations, and how can it reduce residual evaluations in homotopy continuation?'.\n\n\n1. Convergence Analysis for Anderson Acceleration\n   ID: 2lb39og3kz\n   2015 · Alex Toth, Carl Tim Kelley · SIAM Journal on Numerical Analysis\n   DOI: 10.1137/130919398\n   Abstract: Anderson($m$) is a method for acceleration of fixed point iteration which stores m+1 prior evaluations of the fixed point map and computes the new iteration as a linear combination of those evaluations. Anderson(0) is fixed point iteration. In this paper we show that Anderson($m$) is locally r-linearly convergent if the fixed point map is a contraction and the coefficients in the linear combination remain bounded. Without assumptions on the coefficients, we prove q-linear convergence of Anderson(1) and, in the case of linear problems, Anderson($m$). We observe that the optimization problem for the coefficients can be formulated and solved in nonstandard ways and report on numerical experiments which illustrate the ideas.\n\n2. One-step convergence of inexact Anderson acceleration for contractive and non-contractive mappings\n   ID: 2o1lzb6g\n   2022 · Fei Xue · Electronic Transactions on Numerical Analysis\n   DOI: 10.1553/etna_vol55s285\n   Abstract: We give a one-step convergence analysis of inexact Anderson acceleration for the fixed point iteration $x_{k+1}=g(x_k)$ with a potentially non-contractive mapping $g$, where $g(x_k)$ is evaluated approximately and the minimization of the nonlinear residual norms is performed in the vector 2-norm by the linear least-squares method. If $g$ is non-contractive, then the original fixed point iteration does not converge, but a recent analysis by S. Pollock and L. Rebholz [IMA J. Numer. Anal., 41 (2021),pp. 2841â2872] shows that Anderson acceleration may still converge provided that the minimization at each step has a sufficient gain. In this paper, we show that inexact Anderson acceleration exhibits essentially the same convergence behavior as the exact algorithm if each $g(x_k)$ is evaluated with an error proportional to the nonlinear residual norm $\\|w_k\\|=\\|g(x_k)-x_k\\|$, regardless of whether $g$ is contractive or not. This means that the existing relationship between exact and inexact Anderson acceleration can be generalized in a unified framework for both contractive and non-contractive mappings. Numerical experiments show that the inexact algorithm can converge as rapidly as the exact counterpart while it can lower the computational cost. \n\n3. A nonmonotone globalization framework for Anderson acceleration for contractive and nonexpansive fixed point problems\n   ID: xk3lsnp20o78\n   2026 · Wei Bian, Zekai Li\n   DOI: 10.48550/arxiv.2609.28950\n   Abstract: Anderson acceleration (AA) is an effective technique for accelerating fixed point iterations, but it generally lacks global convergence guarantees. We propose a nonmonotone globalized Anderson acceleration framework that retains the local acceleration of AA while ensuring global convergence. For contractive mappings, without requiring prior knowledge of the contraction factor, we prove that the proposed method reduces exactly to pure AA after finitely many iterations and enjoys global $r$-linear convergence for memory size $m\\geq1$ and global residual $q$-linear convergence for $m=1$, with convergence factors no greater than the contraction factor of the underlying fixed point mapping. For nonexpansive mappings, we prove that the fixed point residuals converge globally to zero. A class-agnostic parameter selection rule is further developed to ensure these convergence properties in both settings. Numerical experiments demonstrate the robustness and efficiency of the proposed method. \n\n4. One-step convergence of inexact anderson acceleration for contractive and non-contractive mappings∗\n   ID: 24ia6rva\n   Fei Xue\n   Abstract: Abstract. We give a one-step convergence analysis of inexact Anderson acceleration for the fixed point iteration xk+1 = g(xk) with a potentially non-contractive mapping g, where g(xk) is evaluated approximately and the minimization of the nonlinear residual norms is performed in the vector 2-norm by the linear least-squares method. If g is non-contractive, then the original fixed point iteration does not converge, but a recent analysis by S. Pollock and L. Rebholz [IMA J. Numer. Anal., 41 (2021), pp. 2841–2872] shows that Anderson acceleration may still converge provided that the minimization at each step has a sufficient gain. In this paper, we show that inexact Anderson acceleration exhibits essentially the same convergence behavior as the exact algorithm if each g(xk) is evaluated with an error proportional to the nonlinear residual norm ‖wk‖ = ‖g(xk)− xk‖, regardless of whether g is contractive or not. This means that the existing relationship between exact and inexact Anderson acceleration can be generalized in a unified framework for both contractive and non-contractive mappings. Numerical experiments show that the inexact algorithm can converge as rapidly as the exact counterpart while it can lower the computational cost.\n\n5. Anderson Acceleration for Fixed-Point Iterations\n   ID: 2kjqeohzne\n   2011 · Homer F. Walker, Peng Ni · SIAM Journal on Numerical Analysis\n   DOI: 10.1137/10078356X\n   Abstract: This paper concerns an acceleration method for fixed-point iterations that originated in work of D. G. Anderson [J. Assoc. Comput. Mach., 12 (1965), pp. 547-560], which we accordingly call Anderson acceleration here. This method has enjoyed considerable success and wide usage in electronic structure computations, where it is known as Anderson mixing; however, it seems to have been untried or underexploited in many other important applications. Moreover, while other acceleration methods have been extensively studied by the mathematics and numerical analysis communities, this method has received relatively little attention from these communities over the years. A recent paper by H. Fang and Y. Saad [Numer. Linear Algebra Appl., 16 (2009), pp. 197-221] has clarified a remarkable relationship of Anderson acceleration to quasi-Newton (secant updating) methods and extended it to define a broader Anderson family of acceleration methods. In this paper, our goals are to shed additional light on Anderson acceleration and to draw further attention to its usefulness as a general tool. We first show that, on linear problems, Anderson acceleration without truncation is “essentially equivalent” in a certain sense to the generalized minimal residual (GMRES) method. We also show that the Type 1 variant in the Fang-Saad Anderson family is similarly essentially equivalent to the Arnoldi (full orthogonalization) method. We then discuss practical considerations for implementing Anderson acceleration and illustrate its performance through numerical experiments involving a variety of applications.\n\n6. On the Convergence of CROP-Anderson Acceleration Method\n   ID: 3dagyin28kql\n   2024 · Ning Wan, Agnieszka Miȩdlar\n   DOI: 10.48550/arxiv.2410.03970\n   Abstract: Anderson Acceleration is a well-established method that allows to speed up or encourage convergence of fixed-point iterations. It has been successfully used in a variety of applications, in particular within the Self-Consistent Field (SCF) iteration method for quantum chemistry and physics computations. In recent years, the Conjugate Residual with OPtimal trial vectors (CROP) algorithm was introduced and shown to have a better performance than the classical Anderson Acceleration with less storage needed. This paper aims to delve into the intricate connections between the classical Anderson Acceleration method and the CROP algorithm. Our objectives include a comprehensive study of their convergence properties, explaining the underlying relationships, and substantiating our findings through some numerical examples. Through this exploration, we contribute valuable insights that can enhance the understanding and application of acceleration methods in practical computations, as well as the developments of new and more efficient acceleration schemes. \n\n7. A polynomially accelerated fixed-point iteration for vector problems\n   ID: 94o4wbdkq0ci\n   2025 · Federica Alemanno · E-Journal of Analysis and Applied Mathematics\n   DOI: 10.62780/ejaam/2025-005\n   Abstract: Fixed-point solvers are ubiquitous in nonlinear PDEs, yet their progress collapses whenever the Jacobian at the solution carries an eigenvalue arbitrarily close to one. We ask whether such stagnation can be removed without storing long histories or solving dense least squares. Under two assumptions---(A1) the linearised error $e_n$ is dominated by a multiplier $m$ with $|m|<1$ and (A2) residuals shrink monotonically---we construct a quadratic blend of three iterates whose error polynomial has a double root at $m$. This three-point polynomial accelerator (TPA) cancels the stubborn mode up to $o(\\|e_n\\|)$, reduces to Aitken's $\\Delta^2$ process in one dimension, and matches a doubly blended Anderson step with depth $m=2$ when the regularisation vanishes, yet it keeps the Picard memory footprint. The only extra ingredient is a residual-based estimate of $w=(1-m)^{-1}$ obtained from a closed-form regularised least-squares fit that remains stable even when two residuals nearly coincide. Numerical experiments on linear systems with clustered spectra, a $320$-dimensional nonlinear $\\tanh$ fixed point, and a $50\\times 50$ Poisson discretisation show that TPA reaches the $10^{-8}$ residual tolerance in $32$, $36$, and $244$ map evaluations (respectively). In the same settings SOR requires $663$ steps and Anderson acceleration with depth $m=5$ consumes $52$, $38$, and $955$ evaluations. TPA therefore supplies a parameter-free, constant-memory drop-in accelerator whenever a single contraction factor throttles convergence.\n\n8. Anderson Acceleration of Proximal Gradient Methods\n   ID: 2089ujym39\n   2020 · Vien V. Mai, Mikael Johansson\n   Abstract: Anderson acceleration is a well-established and simple technique for speeding up fixed-point computations with countless applications. Previous studies of Anderson acceleration in optimization have only been able to provide convergence guarantees for unconstrained and smooth problems. This work introduces novel methods for adapting Anderson acceleration to (non-smooth and constrained) proximal gradient algorithms. Under some technical conditions, we extend the existing local convergence results of Anderson acceleration for smooth fixed-point mappings to the proposed scheme. We also prove analytically that it is not, in general, possible to guarantee global convergence of native Anderson acceleration. We therefore propose a simple scheme for stabilization that combines the global worst-case guarantees of proximal gradient methods with the local adaptation and practical speed-up of Anderson acceleration.\n\n9. Anderson Acceleration of Proximal Gradient Methods\n   ID: 47hynhw1tm\n   2019 · Vien V. Mai, Mikael Johansson · arXiv: Optimization and Control\n   Abstract: Anderson acceleration is a well-established and simple technique for speeding up fixed-point computations with countless applications. Previous studies of Anderson acceleration in optimization have only been able to provide convergence guarantees for unconstrained and smooth problems. This work introduces novel methods for adapting Anderson acceleration to (non-smooth and constrained) proximal gradient algorithms. Under some technical conditions, we extend the existing local convergence results of Anderson acceleration for smooth fixed-point mappings to the proposed scheme. We also prove analytically that it is not, in general, possible to guarantee global convergence of native Anderson acceleration. We therefore propose a simple scheme for stabilization that combines the global worst-case guarantees of proximal gradient methods with the local adaptation and practical speed-up of Anderson acceleration.\n\n10. Anderson acceleration for contractive and noncontractive operators\n   ID: 4ju3z63h3n\n   2021 · Sara Pollock, Leo G. Rebholz · Ima Journal of Numerical Analysis\n   DOI: 10.1093/IMANUM/DRAA095\n   Abstract: A one-step analysis of Anderson acceleration with general algorithmic depths is presented. The resulting residual bounds within both contractive and noncontractive settings reveal the balance between the contributions from the higher and lower order terms, which are both dependent on the success of the optimization problem solved at each step of the algorithm. The new residual bounds show the additional terms introduced by the extrapolation produce terms that are of a higher order than was previously understood. In the contractive setting, these bounds sharpen previous convergence and acceleration results. The bounds rely on sufficient linear independence of the differences between consecutive residuals, rather than assumptions on the boundedness of the optimization coefficients, allowing the introduction of a theoretically sound safeguarding strategy. Several numerical tests illustrate the analysis primarily in the noncontractive setting, and demonstrate the use of the method, the safeguarding strategy, and theory-based guidance on dynamic selection of the algorithmic depth, on a p-Laplace equation, a nonlinear Helmholtz equation, and the steady Navier-Stokes equations with high Reynolds number in three spatial dimensions."
+      }
+    ],
+    "structuredContent": {
+      "searchTerm": "Under what contraction and safeguarding conditions does Anderson acceleration converge for derivative-free fixed-point iterations, and how can it reduce residual evaluations in homotopy continuation?",
+      "papers": [
+        {
+          "id": 2071486596,
+          "title": "Convergence Analysis for Anderson Acceleration",
+          "is_archived": false,
+          "full_slug": "convergence-analysis-for-anderson-acceleration-2lb39og3kz",
+          "journal": {
+            "display_name": "SIAM Journal on Numerical Analysis",
+            "official_page": "http://www.siam.org/journals/sinum.php",
+            "issn": "0036-1429",
+            "alias": [
+              "Society for Industrial and Applied Mathematics journal on numerical analysis"
+            ],
+            "id": 203348814,
+            "slug": "siam-journal-on-numerical-analysis",
+            "unique_id": "g0w7fct8",
+            "full_slug": "siam-journal-on-numerical-analysis-g0w7fct8"
+          },
+          "conference_series": null,
+          "date": "2015-03-24T00:00:00Z",
+          "is_oa": false,
+          "publication_type": "Journal Article",
+          "doi": "10.1137/130919398",
+          "unique_id": "2lb39og3kz",
+          "abstract": "Anderson($m$) is a method for acceleration of fixed point iteration which stores m+1 prior evaluations of the fixed point map and computes the new iteration as a linear combination of those evaluations. Anderson(0) is fixed point iteration. In this paper we show that Anderson($m$) is locally r-linearly convergent if the fixed point map is a contraction and the coefficients in the linear combination remain bounded. Without assumptions on the coefficients, we prove q-linear convergence of Anderson(1) and, in the case of linear problems, Anderson($m$). We observe that the optimization problem for the coefficients can be formulated and solved in nonstandard ways and report on numerical experiments which illustrate the ideas.",
+          "authors": {
+            "total": 2,
+            "data": [
+              {
+                "display_name": "Alex Toth",
+                "id": 2499228717,
+                "slug": "alex-toth",
+                "unique_id": "41q5dembxi",
+                "full_slug": "alex-toth-41q5dembxi"
+              },
+              {
+                "display_name": "Carl Tim Kelley",
+                "id": 2156835810,
+                "slug": "carl-tim-kelley",
+                "unique_id": "3w6m3gfwq5",
+                "full_slug": "carl-tim-kelley-3w6m3gfwq5"
+              }
+            ]
+          },
+          "affiliations": {
+            "total": 0,
+            "data": []
+          },
+          "fulltext_url": null,
+          "fulltext_url_no_follow": true,
+          "paper_urls": {
+            "order": [
+              "Html",
+              "Others"
+            ],
+            "data": {
+              "Html": [
+                "https://epubs.siam.org/doi/abs/10.1137/130919398",
+                "https://dblp.uni-trier.de/db/journals/siamnum/siamnum53.html#TothK15"
+              ],
+              "Others": [
+                "http://dx.doi.org/10.1137/130919398"
+              ]
+            },
+            "is_show": true
+          },
+          "metrics": {
+            "citations": {
+              "total": 253
+            }
+          },
+          "tldr": "This paper shows that Anderson is locally r-linearly convergent if the fixed point map is a contraction and the coefficients in the linear combination remain bounded and proves q-linear convergence of Anderson(1) and, in the case of linear problems, Anderson($m$).",
+          "podcast": null,
+          "podcast_generation_allowed": true,
+          "entity_type": "PAPER"
+        },
+        {
+          "id": 4000275504,
+          "title": "One-step convergence of inexact Anderson acceleration for contractive and non-contractive mappings",
+          "is_archived": false,
+          "full_slug": "one-step-convergence-of-inexact-anderson-acceleration-for-2o1lzb6g",
+          "journal": {
+            "display_name": "Electronic Transactions on Numerical Analysis",
+            "official_page": "http://www.emis.de/journals/etna",
+            "issn": "1068-9613",
+            "alias": [
+              "ETNA"
+            ],
+            "id": 66827569,
+            "slug": "electronic-transactions-on-numerical-analysis",
+            "unique_id": "1zmqhll2",
+            "full_slug": "electronic-transactions-on-numerical-analysis-1zmqhll2"
+          },
+          "conference_series": null,
+          "date": "2022-01-01T00:00:00Z",
+          "is_oa": true,
+          "publication_type": "Journal Article",
+          "doi": "10.1553/etna_vol55s285",
+          "unique_id": "2o1lzb6g",
+          "abstract": "We give a one-step convergence analysis of inexact Anderson acceleration for the fixed point iteration $x_{k+1}=g(x_k)$ with a potentially non-contractive mapping $g$, where $g(x_k)$ is evaluated approximately and the minimization of the nonlinear residual norms is performed in the vector 2-norm by the linear least-squares method. If $g$ is non-contractive, then the original fixed point iteration does not converge, but a recent analysis by S. Pollock and L. Rebholz [IMA J. Numer. Anal., 41 (2021),pp. 2841â2872] shows that Anderson acceleration may still converge provided that the minimization at each step has a sufficient gain. In this paper, we show that inexact Anderson acceleration exhibits essentially the same convergence behavior as the exact algorithm if each $g(x_k)$ is evaluated with an error proportional to the nonlinear residual norm $\\|w_k\\|=\\|g(x_k)-x_k\\|$, regardless of whether $g$ is contractive or not. This means that the existing relationship between exact and inexact Anderson acceleration can be generalized in a unified framework for both contractive and non-contractive mappings. Numerical experiments show that the inexact algorithm can converge as rapidly as the exact counterpart while it can lower the computational cost. ",
+          "authors": {
+            "total": 1,
+            "data": [
+              {
+                "display_name": "Fei Xue",
+                "id": 2629278152,
+                "slug": "fei-xue",
+                "unique_id": "1ja7e3t1r9",
+                "full_slug": "fei-xue-1ja7e3t1r9"
+              }
+            ]
+          },
+          "affiliations": {
+            "total": 0,
+            "data": []
+          },
+          "fulltext_url": null,
+          "fulltext_url_no_follow": true,
+          "paper_urls": {
+            "order": [
+              "Html"
+            ],
+            "data": {
+              "Html": [
+                "https://doi.org/10.1553/etna_vol55s285"
+              ]
+            },
+            "is_show": true
+          },
+          "metrics": {
+            "citations": {
+              "total": 1
+            }
+          },
+          "tldr": "In this article , the inexact Anderson acceleration with a potentially non-contractive mapping was analyzed and it was shown that inexact acceleration exhibits essentially the same convergence behavior as the exact algorithm if each iteration is evaluated with an error proportional to the nonlinear residual norm.",
+          "podcast": null,
+          "podcast_generation_allowed": true,
+          "entity_type": "PAPER"
+        },
+        {
+          "id": 4131894780,
+          "title": "A nonmonotone globalization framework for Anderson acceleration for contractive and nonexpansive fixed point problems",
+          "is_archived": false,
+          "full_slug": "a-nonmonotone-globalization-framework-for-anderson-xk3lsnp20o78",
+          "journal": null,
+          "conference_series": null,
+          "date": "2026-09-24T00:00:00Z",
+          "is_oa": null,
+          "publication_type": "Journal Article",
+          "doi": "10.48550/arxiv.2609.28950",
+          "unique_id": "xk3lsnp20o78",
+          "abstract": "Anderson acceleration (AA) is an effective technique for accelerating fixed point iterations, but it generally lacks global convergence guarantees. We propose a nonmonotone globalized Anderson acceleration framework that retains the local acceleration of AA while ensuring global convergence. For contractive mappings, without requiring prior knowledge of the contraction factor, we prove that the proposed method reduces exactly to pure AA after finitely many iterations and enjoys global $r$-linear convergence for memory size $m\\geq1$ and global residual $q$-linear convergence for $m=1$, with convergence factors no greater than the contraction factor of the underlying fixed point mapping. For nonexpansive mappings, we prove that the fixed point residuals converge globally to zero. A class-agnostic parameter selection rule is further developed to ensure these convergence properties in both settings. Numerical experiments demonstrate the robustness and efficiency of the proposed method. ",
+          "authors": {
+            "total": 2,
+            "data": [
+              {
+                "display_name": "Wei Bian",
+                "full_slug": null
+              },
+              {
+                "display_name": "Zekai Li",
+                "full_slug": null
+              }
+            ]
+          },
+          "affiliations": {
+            "total": 0,
+            "data": []
+          },
+          "fulltext_url": "pdf/a-nonmonotone-globalization-framework-for-anderson-xk3lsnp20o78.pdf",
+          "fulltext_url_no_follow": false,
+          "paper_urls": {
+            "order": [
+              "Pdf"
+            ],
+            "data": {
+              "Pdf": [
+                "https://arxiv.org/pdf/2609.28950"
+              ]
+            },
+            "is_show": true
+          },
+          "metrics": {
+            "citations": {
+              "total": null
+            }
+          },
+          "tldr": null,
+          "podcast": null,
+          "podcast_generation_allowed": true,
+          "entity_type": "PAPER"
+        },
+        {
+          "id": 4000660541,
+          "title": "One-step convergence of inexact anderson acceleration for contractive and non-contractive mappings∗",
+          "is_archived": false,
+          "full_slug": "one-step-convergence-of-inexact-anderson-acceleration-for-24ia6rva",
+          "journal": null,
+          "conference_series": null,
+          "date": null,
+          "is_oa": false,
+          "publication_type": null,
+          "doi": null,
+          "unique_id": "24ia6rva",
+          "abstract": "Abstract. We give a one-step convergence analysis of inexact Anderson acceleration for the fixed point iteration xk+1 = g(xk) with a potentially non-contractive mapping g, where g(xk) is evaluated approximately and the minimization of the nonlinear residual norms is performed in the vector 2-norm by the linear least-squares method. If g is non-contractive, then the original fixed point iteration does not converge, but a recent analysis by S. Pollock and L. Rebholz [IMA J. Numer. Anal., 41 (2021), pp. 2841–2872] shows that Anderson acceleration may still converge provided that the minimization at each step has a sufficient gain. In this paper, we show that inexact Anderson acceleration exhibits essentially the same convergence behavior as the exact algorithm if each g(xk) is evaluated with an error proportional to the nonlinear residual norm ‖wk‖ = ‖g(xk)− xk‖, regardless of whether g is contractive or not. This means that the existing relationship between exact and inexact Anderson acceleration can be generalized in a unified framework for both contractive and non-contractive mappings. Numerical experiments show that the inexact algorithm can converge as rapidly as the exact counterpart while it can lower the computational cost.",
+          "authors": {
+            "total": 1,
+            "data": [
+              {
+                "display_name": "Fei Xue",
+                "id": 2307568115,
+                "slug": "fei-xue",
+                "unique_id": "2ov9haijri",
+                "full_slug": "fei-xue-2ov9haijri"
+              }
+            ]
+          },
+          "affiliations": {
+            "total": 0,
+            "data": []
+          },
+          "metrics": {
+            "citations": {
+              "total": 1
+            }
+          },
+          "tldr": "In this article , the inexact Anderson acceleration with a potentially non-contractive mapping g(xk) is analyzed, and it is shown that inexact acceleration exhibits essentially the same convergence behavior as the exact algorithm, regardless of whether g is contractive or not.",
+          "podcast": null,
+          "podcast_generation_allowed": true,
+          "entity_type": "PAPER"
+        },
+        {
+          "id": 1966801132,
+          "title": "Anderson Acceleration for Fixed-Point Iterations",
+          "is_archived": false,
+          "full_slug": "anderson-acceleration-for-fixed-point-iterations-2kjqeohzne",
+          "journal": {
+            "display_name": "SIAM Journal on Numerical Analysis",
+            "official_page": "http://www.siam.org/journals/sinum.php",
+            "issn": "0036-1429",
+            "alias": [
+              "Society for Industrial and Applied Mathematics journal on numerical analysis"
+            ],
+            "id": 203348814,
+            "slug": "siam-journal-on-numerical-analysis",
+            "unique_id": "g0w7fct8",
+            "full_slug": "siam-journal-on-numerical-analysis-g0w7fct8"
+          },
+          "conference_series": null,
+          "date": "2011-07-01T00:00:00Z",
+          "is_oa": true,
+          "publication_type": "Journal Article",
+          "doi": "10.1137/10078356X",
+          "unique_id": "2kjqeohzne",
+          "abstract": "This paper concerns an acceleration method for fixed-point iterations that originated in work of D. G. Anderson [J. Assoc. Comput. Mach., 12 (1965), pp. 547-560], which we accordingly call Anderson acceleration here. This method has enjoyed considerable success and wide usage in electronic structure computations, where it is known as Anderson mixing; however, it seems to have been untried or underexploited in many other important applications. Moreover, while other acceleration methods have been extensively studied by the mathematics and numerical analysis communities, this method has received relatively little attention from these communities over the years. A recent paper by H. Fang and Y. Saad [Numer. Linear Algebra Appl., 16 (2009), pp. 197-221] has clarified a remarkable relationship of Anderson acceleration to quasi-Newton (secant updating) methods and extended it to define a broader Anderson family of acceleration methods. In this paper, our goals are to shed additional light on Anderson acceleration and to draw further attention to its usefulness as a general tool. We first show that, on linear problems, Anderson acceleration without truncation is “essentially equivalent” in a certain sense to the generalized minimal residual (GMRES) method. We also show that the Type 1 variant in the Fang-Saad Anderson family is similarly essentially equivalent to the Arnoldi (full orthogonalization) method. We then discuss practical considerations for implementing Anderson acceleration and illustrate its performance through numerical experiments involving a variety of applications.",
+          "authors": {
+            "total": 2,
+            "data": [
+              {
+                "display_name": "Homer F. Walker",
+                "id": 2150679950,
+                "slug": "homer-f-walker",
+                "unique_id": "56bye0q78s",
+                "full_slug": "homer-f-walker-56bye0q78s"
+              },
+              {
+                "display_name": "Peng Ni",
+                "id": 2509724645,
+                "slug": "peng-ni",
+                "unique_id": "52ix4smzcz",
+                "full_slug": "peng-ni-52ix4smzcz"
+              }
+            ]
+          },
+          "affiliations": {
+            "total": 0,
+            "data": []
+          },
+          "fulltext_url": null,
+          "fulltext_url_no_follow": true,
+          "paper_urls": {
+            "order": [
+              "Html",
+              "Others"
+            ],
+            "data": {
+              "Html": [
+                "https://epubs.siam.org/doi/abs/10.1137/10078356X",
+                "https://dl.acm.org/doi/10.1137/10078356X"
+              ],
+              "Others": [
+                "http://dx.doi.org/10.1137/10078356X",
+                "https://dl.acm.org/citation.cfm?id=2079043"
+              ]
+            },
+            "is_show": true
+          },
+          "metrics": {
+            "citations": {
+              "total": 705
+            }
+          },
+          "tldr": "It is shown that, on linear problems, Anderson acceleration without truncation is “essentially equivalent” in a certain sense to the generalized minimal residual (GMRES) method and the Type 1 variant in the Fang-Saad Anderson family is similarly essentially equivalent to the Arnoldi (full orthogonalization) method.",
+          "podcast": null,
+          "podcast_generation_allowed": true,
+          "entity_type": "PAPER"
+        },
+        {
+          "id": 4047370356,
+          "title": "On the Convergence of CROP-Anderson Acceleration Method",
+          "is_archived": false,
+          "full_slug": "on-the-convergence-of-crop-anderson-acceleration-method-3dagyin28kql",
+          "journal": null,
+          "conference_series": null,
+          "date": "2024-10-04T00:00:00Z",
+          "is_oa": null,
+          "publication_type": "Journal Article",
+          "doi": "10.48550/arxiv.2410.03970",
+          "unique_id": "3dagyin28kql",
+          "abstract": "Anderson Acceleration is a well-established method that allows to speed up or encourage convergence of fixed-point iterations. It has been successfully used in a variety of applications, in particular within the Self-Consistent Field (SCF) iteration method for quantum chemistry and physics computations. In recent years, the Conjugate Residual with OPtimal trial vectors (CROP) algorithm was introduced and shown to have a better performance than the classical Anderson Acceleration with less storage needed. This paper aims to delve into the intricate connections between the classical Anderson Acceleration method and the CROP algorithm. Our objectives include a comprehensive study of their convergence properties, explaining the underlying relationships, and substantiating our findings through some numerical examples. Through this exploration, we contribute valuable insights that can enhance the understanding and application of acceleration methods in practical computations, as well as the developments of new and more efficient acceleration schemes. ",
+          "authors": {
+            "total": 2,
+            "data": [
+              {
+                "display_name": "Ning Wan",
+                "full_slug": null
+              },
+              {
+                "display_name": "Agnieszka Miȩdlar",
+                "full_slug": null
+              }
+            ]
+          },
+          "affiliations": {
+            "total": 0,
+            "data": []
+          },
+          "fulltext_url": "pdf/on-the-convergence-of-crop-anderson-acceleration-method-3dagyin28kql.pdf",
+          "fulltext_url_no_follow": false,
+          "paper_urls": {
+            "order": [
+              "Pdf"
+            ],
+            "data": {
+              "Pdf": [
+                "http://arxiv.org/pdf/2410.03970"
+              ]
+            },
+            "is_show": true
+          },
+          "metrics": {
+            "citations": {
+              "total": null
+            }
+          },
+          "tldr": "This paper investigates the convergence properties of the CROP-Anderson Acceleration method, exploring its connections with the classical Anderson Acceleration, and provides numerical examples to substantiate findings, enhancing understanding and application of acceleration methods in quantum chemistry and physics computations.",
+          "podcast": null,
+          "podcast_generation_allowed": true,
+          "entity_type": "PAPER"
+        },
+        {
+          "id": 4112032090,
+          "title": "A polynomially accelerated fixed-point iteration for vector problems",
+          "is_archived": false,
+          "full_slug": "a-polynomially-accelerated-fixed-point-iteration-for-vector-94o4wbdkq0ci",
+          "journal": {
+            "display_name": "E-Journal of Analysis and Applied Mathematics",
+            "official_page": "http://content.sciendo.com/view/journals/ejaam/ejaam-overview.xml?rskey=HZuVub&result=1",
+            "issn": "2544-9990",
+            "alias": null,
+            "id": 4000029119,
+            "slug": "e-journal-of-analysis-and-applied-mathematics",
+            "unique_id": "1jqizs9p",
+            "full_slug": "e-journal-of-analysis-and-applied-mathematics-1jqizs9p"
+          },
+          "conference_series": null,
+          "date": "2025-11-12T00:00:00Z",
+          "is_oa": null,
+          "publication_type": "Journal Article",
+          "doi": "10.62780/ejaam/2025-005",
+          "unique_id": "94o4wbdkq0ci",
+          "abstract": "Fixed-point solvers are ubiquitous in nonlinear PDEs, yet their progress collapses whenever the Jacobian at the solution carries an eigenvalue arbitrarily close to one. We ask whether such stagnation can be removed without storing long histories or solving dense least squares. Under two assumptions---(A1) the linearised error $e_n$ is dominated by a multiplier $m$ with $|m|<1$ and (A2) residuals shrink monotonically---we construct a quadratic blend of three iterates whose error polynomial has a double root at $m$. This three-point polynomial accelerator (TPA) cancels the stubborn mode up to $o(\\|e_n\\|)$, reduces to Aitken's $\\Delta^2$ process in one dimension, and matches a doubly blended Anderson step with depth $m=2$ when the regularisation vanishes, yet it keeps the Picard memory footprint. The only extra ingredient is a residual-based estimate of $w=(1-m)^{-1}$ obtained from a closed-form regularised least-squares fit that remains stable even when two residuals nearly coincide. Numerical experiments on linear systems with clustered spectra, a $320$-dimensional nonlinear $\\tanh$ fixed point, and a $50\\times 50$ Poisson discretisation show that TPA reaches the $10^{-8}$ residual tolerance in $32$, $36$, and $244$ map evaluations (respectively). In the same settings SOR requires $663$ steps and Anderson acceleration with depth $m=5$ consumes $52$, $38$, and $955$ evaluations. TPA therefore supplies a parameter-free, constant-memory drop-in accelerator whenever a single contraction factor throttles convergence.",
+          "authors": {
+            "total": 1,
+            "data": [
+              {
+                "display_name": "Federica Alemanno",
+                "id": 2318718909,
+                "slug": "federica-alemanno",
+                "unique_id": "2n7baybbr4",
+                "full_slug": "federica-alemanno-2n7baybbr4",
+                "affiliation_full_slug": "vita-salute-san-raffaele-university-12d9mite"
+              }
+            ]
+          },
+          "affiliations": {
+            "total": 1,
+            "data": [
+              {
+                "display_name": "Vita-Salute San Raffaele University",
+                "city": "Milan",
+                "region": null,
+                "country": "Italy",
+                "id": 154387261,
+                "slug": "vita-salute-san-raffaele-university",
+                "unique_id": "12d9mite",
+                "full_slug": "vita-salute-san-raffaele-university-12d9mite"
+              }
+            ]
+          },
+          "fulltext_url": "https://export.arxiv.org/pdf/2511.09012v2.pdf",
+          "fulltext_url_no_follow": true,
+          "paper_urls": {
+            "order": [],
+            "data": {}
+          },
+          "metrics": {
+            "citations": {
+              "total": null
+            }
+          },
+          "tldr": "Researchers develop a polynomial accelerator, the three-point polynomial accelerator (TPA), to overcome stagnation in fixed-point solvers for nonlinear PDEs, achieving faster convergence with reduced memory footprint and no additional parameters.",
+          "podcast": null,
+          "podcast_generation_allowed": true,
+          "entity_type": "PAPER"
+        },
+        {
+          "id": 3034926706,
+          "title": "Anderson Acceleration of Proximal Gradient Methods",
+          "is_archived": false,
+          "full_slug": "anderson-acceleration-of-proximal-gradient-methods-2089ujym39",
+          "journal": null,
+          "conference_series": {
+            "display_name": "International Conference on Machine Learning",
+            "id": 1180662882,
+            "slug": "international-conference-on-machine-learning",
+            "unique_id": "p7gcurns",
+            "full_slug": "international-conference-on-machine-learning-p7gcurns"
+          },
+          "date": "2020-07-12T00:00:00Z",
+          "is_oa": true,
+          "publication_type": "Proceedings Article",
+          "doi": null,
+          "unique_id": "2089ujym39",
+          "abstract": "Anderson acceleration is a well-established and simple technique for speeding up fixed-point computations with countless applications. Previous studies of Anderson acceleration in optimization have only been able to provide convergence guarantees for unconstrained and smooth problems. This work introduces novel methods for adapting Anderson acceleration to (non-smooth and constrained) proximal gradient algorithms. Under some technical conditions, we extend the existing local convergence results of Anderson acceleration for smooth fixed-point mappings to the proposed scheme. We also prove analytically that it is not, in general, possible to guarantee global convergence of native Anderson acceleration. We therefore propose a simple scheme for stabilization that combines the global worst-case guarantees of proximal gradient methods with the local adaptation and practical speed-up of Anderson acceleration.",
+          "authors": {
+            "total": 2,
+            "data": [
+              {
+                "display_name": "Vien V. Mai",
+                "id": 2734671895,
+                "slug": "vien-v-mai",
+                "unique_id": "1eakhry076",
+                "full_slug": "vien-v-mai-1eakhry076",
+                "affiliation_full_slug": "royal-institute-of-technology-1g8qvoge"
+              },
+              {
+                "display_name": "Mikael Johansson",
+                "id": 2187911621,
+                "slug": "mikael-johansson",
+                "unique_id": "4zfixgqe8t",
+                "full_slug": "mikael-johansson-4zfixgqe8t",
+                "affiliation_full_slug": "royal-institute-of-technology-1g8qvoge"
+              }
+            ]
+          },
+          "affiliations": {
+            "total": 1,
+            "data": [
+              {
+                "display_name": "Royal Institute of Technology",
+                "city": "Stockholm",
+                "region": null,
+                "country": "Sweden",
+                "id": 86987016,
+                "slug": "royal-institute-of-technology",
+                "unique_id": "1g8qvoge",
+                "full_slug": "royal-institute-of-technology-1g8qvoge"
+              }
+            ]
+          },
+          "fulltext_url": "https://arxiv.org/pdf/1910.08590.pdf",
+          "fulltext_url_no_follow": true,
+          "paper_urls": {
+            "order": [
+              "Html",
+              "Others"
+            ],
+            "data": {
+              "Html": [
+                "https://dblp.uni-trier.de/db/conf/icml/icml2020.html#Mai020",
+                "https://icml.cc/Conferences/2020/AcceptedPapersInitial#406"
+              ],
+              "Others": [
+                "http://dblp.uni-trier.de/db/journals/corr/corr1910.html#abs-1910-08590"
+              ]
+            },
+            "is_show": true
+          },
+          "metrics": {
+            "citations": {
+              "total": 25
+            }
+          },
+          "tldr": "This work introduces novel methods for adapting Anderson acceleration to (non-smooth and constrained) proximal gradient algorithms and proposes a simple scheme for stabilization that combines the global worst-case guarantees of proximalgradient methods with the local adaptation and practical speed-up of Anderson acceleration.",
+          "podcast": null,
+          "podcast_generation_allowed": true,
+          "entity_type": "PAPER"
+        },
+        {
+          "id": 2980477753,
+          "title": "Anderson Acceleration of Proximal Gradient Methods",
+          "is_archived": false,
+          "full_slug": "anderson-acceleration-of-proximal-gradient-methods-47hynhw1tm",
+          "journal": {
+            "display_name": "arXiv: Optimization and Control",
+            "official_page": null,
+            "issn": null,
+            "alias": null,
+            "id": 2597149478,
+            "slug": "arxiv-optimization-and-control",
+            "unique_id": "3t3padxb",
+            "full_slug": "arxiv-optimization-and-control-3t3padxb"
+          },
+          "conference_series": null,
+          "date": "2019-10-18T00:00:00Z",
+          "is_oa": true,
+          "publication_type": "Posted Content",
+          "doi": null,
+          "unique_id": "47hynhw1tm",
+          "abstract": "Anderson acceleration is a well-established and simple technique for speeding up fixed-point computations with countless applications. Previous studies of Anderson acceleration in optimization have only been able to provide convergence guarantees for unconstrained and smooth problems. This work introduces novel methods for adapting Anderson acceleration to (non-smooth and constrained) proximal gradient algorithms. Under some technical conditions, we extend the existing local convergence results of Anderson acceleration for smooth fixed-point mappings to the proposed scheme. We also prove analytically that it is not, in general, possible to guarantee global convergence of native Anderson acceleration. We therefore propose a simple scheme for stabilization that combines the global worst-case guarantees of proximal gradient methods with the local adaptation and practical speed-up of Anderson acceleration.",
+          "authors": {
+            "total": 2,
+            "data": [
+              {
+                "display_name": "Vien V. Mai",
+                "id": 2734671895,
+                "slug": "vien-v-mai",
+                "unique_id": "1eakhry076",
+                "full_slug": "vien-v-mai-1eakhry076",
+                "affiliation_full_slug": "royal-institute-of-technology-1g8qvoge"
+              },
+              {
+                "display_name": "Mikael Johansson",
+                "id": 2187911621,
+                "slug": "mikael-johansson",
+                "unique_id": "4zfixgqe8t",
+                "full_slug": "mikael-johansson-4zfixgqe8t",
+                "affiliation_full_slug": "royal-institute-of-technology-1g8qvoge"
+              }
+            ]
+          },
+          "affiliations": {
+            "total": 1,
+            "data": [
+              {
+                "display_name": "Royal Institute of Technology",
+                "city": "Stockholm",
+                "region": null,
+                "country": "Sweden",
+                "id": 86987016,
+                "slug": "royal-institute-of-technology",
+                "unique_id": "1g8qvoge",
+                "full_slug": "royal-institute-of-technology-1g8qvoge"
+              }
+            ]
+          },
+          "fulltext_url": "https://arxiv.org/pdf/1910.08590",
+          "fulltext_url_no_follow": true,
+          "paper_urls": {
+            "order": [
+              "Html"
+            ],
+            "data": {
+              "Html": [
+                "https://arxiv.org/abs/1910.08590",
+                "http://ui.adsabs.harvard.edu/abs/2019arXiv191008590M/abstract"
+              ]
+            },
+            "is_show": true
+          },
+          "metrics": {
+            "citations": {
+              "total": null
+            }
+          },
+          "tldr": "In this paper, the authors propose a simple scheme for stabilization that combines the global worst-case guarantees of proximal gradient methods with the local adaptation and practical speed-up of Anderson acceleration.",
+          "podcast": null,
+          "podcast_generation_allowed": true,
+          "entity_type": "PAPER"
+        },
+        {
+          "id": 3120161765,
+          "title": "Anderson acceleration for contractive and noncontractive operators",
+          "is_archived": false,
+          "full_slug": "anderson-acceleration-for-contractive-and-noncontractive-4ju3z63h3n",
+          "journal": {
+            "display_name": "Ima Journal of Numerical Analysis",
+            "official_page": "http://imanum.oxfordjournals.org",
+            "issn": "0272-4979",
+            "alias": [
+              "Institute of Mathematics and its Applications journal of numerical analysis",
+              "Institute of Mathematics and Its Applications journal of numerical analysis"
+            ],
+            "id": 201897549,
+            "slug": "ima-journal-of-numerical-analysis",
+            "unique_id": "3tacv5k3",
+            "full_slug": "ima-journal-of-numerical-analysis-3tacv5k3"
+          },
+          "conference_series": null,
+          "date": "2021-10-22T00:00:00Z",
+          "is_oa": true,
+          "publication_type": "Journal Article",
+          "doi": "10.1093/IMANUM/DRAA095",
+          "unique_id": "4ju3z63h3n",
+          "abstract": "A one-step analysis of Anderson acceleration with general algorithmic depths is presented. The resulting residual bounds within both contractive and noncontractive settings reveal the balance between the contributions from the higher and lower order terms, which are both dependent on the success of the optimization problem solved at each step of the algorithm. The new residual bounds show the additional terms introduced by the extrapolation produce terms that are of a higher order than was previously understood. In the contractive setting, these bounds sharpen previous convergence and acceleration results. The bounds rely on sufficient linear independence of the differences between consecutive residuals, rather than assumptions on the boundedness of the optimization coefficients, allowing the introduction of a theoretically sound safeguarding strategy. Several numerical tests illustrate the analysis primarily in the noncontractive setting, and demonstrate the use of the method, the safeguarding strategy, and theory-based guidance on dynamic selection of the algorithmic depth, on a p-Laplace equation, a nonlinear Helmholtz equation, and the steady Navier-Stokes equations with high Reynolds number in three spatial dimensions.",
+          "authors": {
+            "total": 2,
+            "data": [
+              {
+                "display_name": "Sara Pollock",
+                "id": 2169517971,
+                "slug": "sara-pollock",
+                "unique_id": "2dyw747dk7",
+                "full_slug": "sara-pollock-2dyw747dk7",
+                "affiliation_full_slug": "university-of-florida-10mwfd5s"
+              },
+              {
+                "display_name": "Leo G. Rebholz",
+                "id": 2106910206,
+                "slug": "leo-g-rebholz",
+                "unique_id": "4bcvbnxtsx",
+                "full_slug": "leo-g-rebholz-4bcvbnxtsx",
+                "affiliation_full_slug": "clemson-university-1q0prrem"
+              }
+            ]
+          },
+          "affiliations": {
+            "total": 2,
+            "data": [
+              {
+                "display_name": "University of Florida",
+                "city": "Gainesville",
+                "region": "Florida",
+                "country": "United States",
+                "id": 33213144,
+                "slug": "university-of-florida",
+                "unique_id": "10mwfd5s",
+                "full_slug": "university-of-florida-10mwfd5s"
+              },
+              {
+                "display_name": "Clemson University",
+                "city": "Clemson",
+                "region": "South Carolina",
+                "country": "United States",
+                "id": 8078737,
+                "slug": "clemson-university",
+                "unique_id": "1q0prrem",
+                "full_slug": "clemson-university-1q0prrem"
+              }
+            ]
+          },
+          "fulltext_url": "https://arxiv.org/pdf/1909.04638.pdf",
+          "fulltext_url_no_follow": true,
+          "paper_urls": {
+            "order": [
+              "Html",
+              "Others"
+            ],
+            "data": {
+              "Html": [
+                "https://dblp.uni-trier.de/db/journals/corr/corr1909.html#abs-1909-04638",
+                "https://arxiv.org/abs/1909.04638"
+              ],
+              "Others": [
+                "http://dblp.uni-trier.de/db/journals/corr/corr1909.html#abs-1909-04638"
+              ]
+            },
+            "is_show": true
+          },
+          "metrics": {
+            "citations": {
+              "total": 80
+            }
+          },
+          "tldr": "The resulting residual bounds within both contractive and noncontractive settings reveal the balance between the contributions from the higher and lower order terms, which are both dependent on the success of the optimization problem solved at each step of the algorithm.",
+          "podcast": null,
+          "podcast_generation_allowed": true,
+          "entity_type": "PAPER"
+        }
+      ]
+    },
+    "isError": false
+  }
+}

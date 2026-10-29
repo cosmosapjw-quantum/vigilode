@@ -1,0 +1,108 @@
+{
+  "case_id": 1,
+  "exact_final": null,
+  "initial_state": [
+    1.0,
+    0.0,
+    0.0
+  ],
+  "jvp_direction": [
+    0.29552020666133955,
+    0.963558185417193,
+    0.7457052121767203
+  ],
+  "jvp_initial": [
+    -0.011820808266453582,
+    0.011820808266453582,
+    0.0
+  ],
+  "kind": "model_contract",
+  "model_contract": {
+    "autonomous": true,
+    "case": 1,
+    "dense_dimension_limit": 256,
+    "dimension": 3,
+    "dimension_smoke": 3,
+    "dimension_standard": 3,
+    "grid": [
+      0,
+      0
+    ],
+    "id": 1,
+    "initial_state": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+    "name": "Robertson",
+    "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+    "parallel_layers": [
+      "serial",
+      "data",
+      "ensemble"
+    ],
+    "parameters": {
+      "k1": 0.04,
+      "k2": 10000.0,
+      "k3": 30000000.0
+    },
+    "reference_kind": "external-reference-required",
+    "size": "smoke",
+    "supported_methods": [
+      "dopri5",
+      "rodas5p-mf",
+      "rodas5p-dense",
+      "switching"
+    ],
+    "t_span": [
+      0.0,
+      0.01
+    ],
+    "units": "dimensionless; normalized variables, not SI physical claims",
+    "variant": "canonical 3-species; ensemble extension separate"
+  },
+  "model_id": "vigilode.local-bottleneck.case1.v1",
+  "parameters": {
+    "k1": 0.04,
+    "k2": 10000.0,
+    "k3": 30000000.0
+  },
+  "rhs_initial": [
+    -0.04,
+    0.04,
+    0.0
+  ],
+  "rhs_probes": [
+    {
+      "rhs": [
+        -0.03334666666666666,
+        -13.299986666666667,
+        13.333333333333334
+      ],
+      "state": [
+        1.0003333333333333,
+        0.0006666666666666666,
+        0.001
+      ],
+      "t": 0.0011
+    },
+    {
+      "rhs": [
+        -0.013359999999999997,
+        -53.31997333333334,
+        53.333333333333336
+      ],
+      "state": [
+        1.0006666666666666,
+        0.0013333333333333333,
+        0.002
+      ],
+      "t": 0.0073
+    }
+  ],
+  "schema_version": 1,
+  "size": "smoke",
+  "t_end": 0.01,
+  "t_start": 0.0
+}

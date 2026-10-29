@@ -1,0 +1,44 @@
+{
+  "schema": "vigilode.n05-independent-review.v1",
+  "reviewer": "research_dag_audit",
+  "reviewed_at_utc": "2026-10-21T04:50:12.004919+00:00",
+  "status": "PASS_SCOPED_SOURCE_AND_MATHEMATICAL_REVIEW",
+  "runtime_validation": "OWNER_REPORTED_PLANNER4_AND_DIAGONAL3_PASS",
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/stage_target_policy.rs": "87315f1b7d53128f17238686665dee6219d90c1a4a4b790538bfe3da22e03990",
+    "crates/rodas5p-integrators/src/rodas5p_lagged.rs": "3f726d226fbee4ee093fff751adc9c61cd85a819a53d1ac8c8fad53163fb1e66"
+  },
+  "checks": [
+    {
+      "claim": "normalized-stage transfer",
+      "result": "PASS",
+      "reason": "T_ij=gamma*C_ij*R+A_ij*(R-I), backward p_i=b_i+sum_(j>i)p_j*T_ji and normalized raw residual transfer m_i=R*p_i. Cayley constant(gamma*C-A)/2 and linear(gamma*C+A)/2 are correct."
+    },
+    {
+      "claim": "operator bounds",
+      "result": "PASS",
+      "reason": "Outward Gershgorin proves weighted Hilbert dissipativity. Cayley polynomial coefficient sums bound contractions. Exact symmetry plus equal weights admits real-negative spectral calculus; individual Bernstein bounds are summed across stage residuals, avoiding pointwise-sum/sup interchange."
+    },
+    {
+      "claim": "controller and raw tolerance conversion",
+      "result": "PASS",
+      "reason": "min_i((atol+rtol*abs(initial_i))/s_i) lower-bounds candidate-end controller scales in the fixed RMS norm. Both output perturbation and estimator contamination are charged, as is actual returned-center displacement. Raw Euclidean threshold uses min(s)*sqrt(n)*normalized_target/(h*gamma) outwardly."
+    },
+    {
+      "claim": "diagonal U-form staleness",
+      "result": "PASS",
+      "reason": "Exact ideal map (I-hP*gamma*JP)^-1 [(1-hP/h)I+hP*gamma*(J-JP)] is bounded rowwise with directed intervals and fixed scales. Unsupported old offdiagonal entries, positive old diagonal, underflow, nonfinite arithmetic fail closed."
+    }
+  ],
+  "limits": [
+    "Frozen owned linear model and represented tableau only.",
+    "Controller metric bounds an embedded-estimate/stage-perturbation quantity in candidate-end weighting, not true ODE truncation or global error.",
+    "No nonlinear Jacobian-drift authority.",
+    "Ideal-matrix staleness does not certify floating LU inverse error.",
+    "Review-time hashes precede root final export/source freeze."
+  ],
+  "runtime_receipts": [
+    "evidence/integrator/n05_planner_contracts.log",
+    "evidence/integrator/n05_diagonal_contracts.log"
+  ]
+}

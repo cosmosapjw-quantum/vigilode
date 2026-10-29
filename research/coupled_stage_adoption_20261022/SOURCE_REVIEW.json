@@ -1,0 +1,130 @@
+{
+  "schema": "vigilode.adoption-source-review.v1",
+  "date": "2026-10-22",
+  "reviewer_role": "independent collaborating implementation reviewer",
+  "review_kind": "source inspection after author revisions; test execution owned by integration task",
+  "baseline": "8878e55a54e3a5f99fa81d6d3b08e05c94ed3db2",
+  "sources_reviewed": [
+    "crates/rodas5p-integrators/src/adaptive_output.rs",
+    "crates/vigilode-coupled/src/adaptive.rs",
+    "crates/vigilode-coupled/src/raw_step.rs",
+    "crates/vigilode-coupled/src/algebra.rs",
+    "crates/vigilode-coupled/src/solver.rs"
+  ],
+  "findings": [
+    {
+      "id": "INT-R01",
+      "severity": "high",
+      "issue": "Native fallback errors were all classified as callbacks; legitimate failed linear solves terminated adaptive integration instead of permitting a smaller trial.",
+      "resolution": "The raw dispatcher marks solver-origin retryable failures only after a guarded callback layer proves no callback error was returned; the adaptive driver records failure work then shrinks h.",
+      "status": "resolved_source_reviewed"
+    },
+    {
+      "id": "INT-R02",
+      "severity": "medium",
+      "issue": "A public output session could accept an endpoint without matching a previously issued trial.",
+      "resolution": "Session retains its pending trial, verifies exact represented endpoint/clipped flag and dimension, and delegates finite/overshoot validation before committing.",
+      "status": "resolved_source_reviewed"
+    },
+    {
+      "id": "INT-R03",
+      "severity": "documentation",
+      "issue": "Compact receipts could be mistaken for fixed-memory integration.",
+      "resolution": "Documented O(max_attempts) receipt storage; every failure and fallback remains retained.",
+      "status": "resolved_documented_limit"
+    },
+    {
+      "id": "INT-R04",
+      "severity": "medium",
+      "issue": "Native linear-solver failure classification could be counted as nonlinear failure after normalization to RootIteration.",
+      "resolution": "RawStepAttempt.retry_failure_kind preserves AdaptiveFailureKind::LinearSolve/NonlinearSolve/NonFinite from trusted solver-origin failures; adaptive counters use that field.",
+      "status": "resolved_source_reviewed"
+    },
+    {
+      "id": "INT-R05",
+      "severity": "documentation",
+      "issue": "Raw-U stages must not pass through native-K finish_step; new block LU must not inherit old bit-identity claims.",
+      "resolution": "Raw workspace output/embedded mapping retained; notes separate targets and arithmetic paths.",
+      "status": "resolved_source_reviewed"
+    }
+  ],
+  "checked_contracts": [
+    {
+      "id": "raw_target",
+      "result": "source_consistent",
+      "detail": "Candidate and new fallback use b_code output and final raw stage as embedded vector; historical native-K fallback remains separate."
+    },
+    {
+      "id": "state_rollback",
+      "result": "source_consistent",
+      "detail": "Physical t/y advance after output accept; rejected trials do not record accepted fallback history."
+    },
+    {
+      "id": "frozen_identity",
+      "result": "source_consistent",
+      "detail": "Coupled Frozen is new each attempt; raw fallback always fresh; dimension checked; epoch change checked; guarded callbacks detect partial/nonfinite output."
+    },
+    {
+      "id": "failure_accounting",
+      "result": "source_consistent",
+      "detail": "Candidate, fallback, and extra full-space validation work are merged before any failure branch; trusted solver failure category is retained for aggregate counters."
+    },
+    {
+      "id": "causal_estimate",
+      "result": "source_consistent_conditional_only",
+      "detail": "Strict-lower norm recurrence matches raw stage differences; caller inverse/Lipschitz/tube assumptions and floating-point noncertification are explicit."
+    },
+    {
+      "id": "small_block_solve",
+      "result": "source_consistent",
+      "detail": "Repeated diagonal and zero upper blocks checked; one diagonal LU plus forward solves; full projected linear residual checked."
+    },
+    {
+      "id": "memory",
+      "result": "bounded_by_config_not_zero_allocation",
+      "detail": "No eight-stage vectors retained in trajectory receipts, but receipt storage grows with max_attempts; kernel and output storage remain additional."
+    }
+  ],
+  "execution_status": "not_executed_by_this_reviewer",
+  "production_conclusion": "No broad-production promotion follows from source review or conditional f64 estimates alone.",
+  "limits": [
+    "No full-workspace claim",
+    "No new historical benchmark replay",
+    "No NCP",
+    "No independent human review",
+    "No generic global/dense/PDE certificate"
+  ],
+  "execution_observations": [
+    {
+      "path": "evidence/test_first.log",
+      "observation": "Initial integration-owned run: 4 block-solve unit tests passed; 8 adaptive tests passed; singular-retry fixture failed its preliminary exact gamma*rate equality before solver execution. Author notified; preserve this original log and record the corrected fixture rerun separately.",
+      "is_final_validation": false
+    }
+  ],
+  "execution_followup": {
+    "source_commit": "e419f920f0b8d0b123af03df5e802e8fc612a75d",
+    "tests_passed": 62,
+    "tests_failed": 0,
+    "receipt": "evidence/checks_source_v3/SUMMARY.json",
+    "failure_history_preserved": true,
+    "additional_runtime_finding": {
+      "problem": "native fallback counter omitted JVP callback that returned Err",
+      "correction": "guarded callback boundary attempted/completed counts replace overlapping counters; compact receipt preserves completed counts without double charging",
+      "regression": "raw_step_contracts external AtomicU64 count equality on both successful and failed paths"
+    }
+  },
+  "final_document_review": {
+    "date": "2026-10-23",
+    "tests_rerun": false,
+    "result": "No new material source/scope issue found; historical commit-specific hashes match",
+    "corrections": [
+      "Explicitly fixed basis/Newton/homotopy iteration budgets in linear-in-n statement",
+      "Final postprocessing hashes recorded separately from measured source"
+    ],
+    "performance_limits": [
+      "Broad-spectrum fallback dominates",
+      "2-worker timings are slower in12/14 matched settings",
+      "No universal speedup or new global certificate"
+    ]
+  }
+}

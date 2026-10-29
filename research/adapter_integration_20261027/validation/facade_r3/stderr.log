@@ -1,0 +1,101 @@
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-current/crates/vigilode)
+warning: constant `METHODS` is never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:100:11
+    |
+100 | pub const METHODS: [&str; 4] = ["dopri5", "rodas5p-mf", "rodas5p-dense", "switching"];
+    |           ^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `LAYERS` is never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:101:11
+    |
+101 | pub const LAYERS: [&str; 3] = ["serial", "data", "ensemble"];
+    |           ^^^^^^
+
+warning: multiple methods are never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:194:12
+    |
+111 | impl Model {
+    | ---------- methods in this implementation
+...
+194 |     pub fn name(&self) -> &'static str {
+    |            ^^^^
+...
+197 |     pub fn variant(&self) -> &'static str {
+    |            ^^^^^^^
+...
+200 |     pub fn autonomous(&self) -> bool {
+    |            ^^^^^^^^^^
+...
+203 |     pub fn exact_kind(&self) -> &'static str {
+    |            ^^^^^^^^^^
+...
+210 |     pub fn metadata(&self) -> Value {
+    |            ^^^^^^^^
+...
+213 |     pub fn parameters(&self) -> Value {
+    |            ^^^^^^^^^^
+...
+876 |     pub fn diagnostics(&self, y: &[f64]) -> Value {
+    |            ^^^^^^^^^^^
+
+warning: constant `NAMES` is never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:905:7
+    |
+905 | const NAMES: [&str; 24] = [
+    |       ^^^^^
+
+warning: constant `VARIANTS` is never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:931:7
+    |
+931 | const VARIANTS: [&str; 24] = [
+    |       ^^^^^^^^
+
+warning: `vigilode` (test "local_bottleneck_models") generated 5 warnings
+    Finished `test` profile [unoptimized] target(s) in 15.16s
+     Running unittests src/lib.rs (/tmp/vigilode-target-current-20261027/debug/deps/vigilode-3170004f02da2a6b)
+     Running tests/adaptive_entry_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/adaptive_entry_contracts-d07a5dcfed2a8fbd)
+     Running tests/automatic_adapter_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/automatic_adapter_contracts-840c9186f8236a5f)
+     Running tests/automatic_availability_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/automatic_availability_contracts-d8469d2a078d0a3b)
+     Running tests/capabilities_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/capabilities_contracts-8ce891f74b31fae4)
+     Running tests/causal_budget_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/causal_budget_contracts-2746ec048d601a3d)
+     Running tests/cofactor_chart_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/cofactor_chart_contracts-73cd15f655b6f318)
+     Running tests/events_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/events_contracts-90f79fac2862838e)
+     Running tests/evidence_switch_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/evidence_switch_contracts-685afee5eec84606)
+     Running tests/execution_identity_drift.rs (/tmp/vigilode-target-current-20261027/debug/deps/execution_identity_drift-1d328dad8af3103e)
+     Running tests/execution_policy_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/execution_policy_contracts-b09ac18ae92170e1)
+     Running tests/explicit_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/explicit_contracts-1bbc40c084403daa)
+     Running tests/explicit_ensemble_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/explicit_ensemble_contracts-df712dad4ab0abe1)
+     Running tests/explicit_hardening_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/explicit_hardening_contracts-106c1f3fbda1bfb0)
+     Running tests/facade_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/facade_contracts-f1a506c68880d0c4)
+     Running tests/frontier_affine_facade.rs (/tmp/vigilode-target-current-20261027/debug/deps/frontier_affine_facade-668a13fd6e660d79)
+     Running tests/frontier_fatal_session_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/frontier_fatal_session_contracts-9a115b9eb5520027)
+     Running tests/frontier_switch_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/frontier_switch_contracts-54caf36eb1e3b991)
+     Running tests/lawson_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/lawson_contracts-b416af73ea6ad7e5)
+     Running tests/local_bottleneck_models.rs (/tmp/vigilode-target-current-20261027/debug/deps/local_bottleneck_models-072349b64449369f)
+     Running tests/oscillatory_chart_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/oscillatory_chart_contracts-f331967325a8dbd1)
+     Running tests/p0_api_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/p0_api_contracts-d570af96f9e9fd6b)
+     Running tests/p0_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/p0_contracts-d28f15a3f1c2e90f)
+     Running tests/production_rhs_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/production_rhs_contracts-1e308162c85cf618)
+     Running tests/production_selection_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/production_selection_contracts-dcdd5af32f530e73)
+     Running tests/production_session_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/production_session_contracts-965a4ed1867acaf8)
+     Running tests/records_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/records_contracts-8f37f02f674fcd15)
+     Running tests/selection_evidence_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/selection_evidence_contracts-1981cd524f4a8016)
+     Running tests/switching_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/switching_contracts-fd6a20d6a1da0808)
+     Running tests/switching_economy_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/switching_economy_contracts-e4e0a2f3f86bbcae)
+     Running tests/switching_integration_contracts.rs (/tmp/vigilode-target-current-20261027/debug/deps/switching_integration_contracts-7de85a5bc3fb00a9)
+     Running tests/switching_persistent_explicit.rs (/tmp/vigilode-target-current-20261027/debug/deps/switching_persistent_explicit-e1de9fd73d1114ae)

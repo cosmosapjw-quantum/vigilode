@@ -1,0 +1,30 @@
+{
+  "status": "IMPLEMENTATION_VERIFIED",
+  "scope": "standalone scalar primitive, not native ODE integration",
+  "records": [
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/rust1941/bin/rustc",
+        "--edition=2024",
+        "--test",
+        "theory_lane/cayley_reuse.rs",
+        "-o",
+        "theory_lane/cayley_reuse_tests"
+      ],
+      "elapsed_seconds": 0.22630565900180954,
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "theory_lane/cayley_reuse_tests",
+        "--nocapture"
+      ],
+      "elapsed_seconds": 0.0035717159989872016,
+      "exit_code": 0,
+      "stdout": "\nrunning 7 tests\ntest tests::dimensional_residual_factor_and_zero_are_preserved ... ok\ntest tests::drift_can_remove_convergence_admission ... ok\ntest tests::large_equal_shifts_avoid_sum_overflow ... ok\ntest tests::unrepresentable_ratio_is_refused ... ok\ntest tests::same_shift_and_scalar_endpoints_are_enclosed ... ok\ntest tests::nonfinite_and_negative_declarations_refuse ... ok\ntest tests::wrong_metric_or_domain_refuses ... ok\n\ntest result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+      "stderr": ""
+    }
+  ]
+}

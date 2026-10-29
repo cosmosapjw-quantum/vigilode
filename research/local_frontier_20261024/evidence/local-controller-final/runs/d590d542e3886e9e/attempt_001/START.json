@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-10-24T01:01:04.270785+00:00",
+  "command": [
+    "/workspace/scratch/0dc1e721cf82/runtime1024/target/measurement/examples/local_bottleneck_suite",
+    "--case",
+    "15",
+    "--size",
+    "smoke",
+    "--method",
+    "switching",
+    "--parallel-layer",
+    "serial",
+    "--threads",
+    "1",
+    "--rtol",
+    "1e-06",
+    "--atol",
+    "1e-09",
+    "--max-steps",
+    "5000",
+    "--ensemble-count",
+    "4",
+    "--instrument"
+  ],
+  "wrapped_command": [
+    "/workspace/scratch/0dc1e721cf82/runtime1024/target/measurement/examples/local_bottleneck_suite",
+    "--case",
+    "15",
+    "--size",
+    "smoke",
+    "--method",
+    "switching",
+    "--parallel-layer",
+    "serial",
+    "--threads",
+    "1",
+    "--rtol",
+    "1e-06",
+    "--atol",
+    "1e-09",
+    "--max-steps",
+    "5000",
+    "--ensemble-count",
+    "4",
+    "--instrument"
+  ],
+  "timeout_seconds": 5,
+  "address_space_limit_gib": 4,
+  "cpus": [
+    0
+  ],
+  "thread_environment": {
+    "RAYON_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "BLIS_NUM_THREADS": "1",
+    "VECLIB_MAXIMUM_THREADS": "1",
+    "VIGILODE_SOURCE_COMMIT": "2f87ac31f52ac031bdd29ce7cbb67728cb01ef6a"
+  }
+}

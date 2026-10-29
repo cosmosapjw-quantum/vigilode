@@ -1,0 +1,29 @@
+{
+  "command": [
+    "timeout",
+    "--signal=TERM",
+    "--kill-after=5s",
+    "900s",
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "-j",
+    "2",
+    "-p",
+    "vigilode",
+    "--test",
+    "frontier_fatal_session_contracts",
+    "--",
+    "--test-threads=1"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 53.418875040952116,
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/rodas5p_fast.rs": "a2fa1f0b255b5983d7bd03f93de1481e2a76eae1c773a23be2dea53fdfd4aafd",
+    "crates/vigilode/src/solve.rs": "97f812d88b7bb4fd7cd4605b92eb919688d72143815a3d71c5581105ee1e0dc7",
+    "crates/vigilode/tests/frontier_fatal_session_contracts.rs": "d8ca9c09589ba6862f74e2cb4d979f5c14cabffd96d871458be5f53471a15ec1"
+  },
+  "stdout_sha256": "aa0e581ef2fb32963809cb9b9ae90eb8a10959238db5e065acfeb6b6b126779f",
+  "stderr_sha256": "7f96b47f4ae608e3311e0d6a94c07a782c7700a29218abec5a19555f313a68b3"
+}

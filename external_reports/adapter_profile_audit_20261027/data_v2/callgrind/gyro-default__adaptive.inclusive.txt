@@ -1,0 +1,80 @@
+--------------------------------------------------------------------------------
+Profile data file '~/vigilode-integration-followup-20261027/profile_r2/prof/callgrind/gyro-default__adaptive.out' (creator: callgrind-3.22.0)
+--------------------------------------------------------------------------------
+I1 cache: 
+D1 cache: 
+LL cache: 
+Timerange: Basic block 0 - 7239877
+Trigger: Program termination
+Profiled target:  ~/vigilode-integration-followup-20261027/profile_r2/prof_bin repeat-arm gyro-default adaptive 3 (PID 3742646, part 1)
+Events recorded:  Ir
+Events shown:     Ir
+Event sort order: Ir
+Thresholds:       99
+Include dirs:     
+User annotated:   
+Auto-annotation:  on
+
+--------------------------------------------------------------------------------
+Ir                  
+--------------------------------------------------------------------------------
+45,325,593 (100.0%)  PROGRAM TOTALS
+
+--------------------------------------------------------------------------------
+Ir                   file:function
+--------------------------------------------------------------------------------
+45,325,593 (100.0%)  ???:0x000000000001f540 [/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2]
+44,890,083 (99.04%)  ???:(below main) [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+44,890,071 (99.04%)  ./csu/../csu/libc-start.c:__libc_start_main@@GLIBC_2.34 [/usr/lib/x86_64-linux-gnu/libc.so.6]
+44,889,888 (99.04%)  ./csu/../sysdeps/nptl/libc_start_call_main.h:(below main) [/usr/lib/x86_64-linux-gnu/libc.so.6]
+44,887,835 (99.03%)  ???:main [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+44,887,820 (99.03%)  /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/rt.rs:std::rt::lang_start_internal [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+44,775,036 (98.79%)  /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/function.rs:std::rt::lang_start_internal
+44,775,035 (98.79%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/rt.rs:std::rt::lang_start::{{closure}} [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+44,775,028 (98.79%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/sys/backtrace.rs:std::sys::backtrace::__rust_begin_short_backtrace [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+44,775,024 (98.79%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ops/function.rs:std::sys::backtrace::__rust_begin_short_backtrace
+44,775,023 (98.79%)  ~/vigilode-integ-dda8d2f/crates/vigilode/examples/adapter_checkpoint_trace.rs:adapter_checkpoint_trace::main
+44,773,205 (98.78%)  crates/vigilode/examples/adapter_checkpoint_trace.rs:adapter_checkpoint_trace::main [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+44,764,202 (98.76%)  crates/vigilode/examples/adapter_checkpoint_trace.rs:adapter_checkpoint_trace::main::{{closure}} [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+44,701,327 (98.62%)  ~/vigilode-integ-dda8d2f/crates/vigilode/src/switching.rs:vigilode::switching::SwitchingSolver::solve
+44,687,626 (98.59%)  crates/vigilode/src/switching.rs:vigilode::switching::SwitchingSolver::solve [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+44,684,794 (98.59%)  ~/vigilode-integ-dda8d2f/crates/vigilode/src/session.rs:vigilode::session::<impl vigilode::explicit::Dopri5>::with_session
+44,660,789 (98.53%)  crates/vigilode/src/switching.rs:vigilode::session::<impl vigilode::explicit::Dopri5>::with_session
+44,660,438 (98.53%)  crates/vigilode/src/switching.rs:vigilode::switching::drive_windows [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+36,785,139 (81.16%)  crates/vigilode/src/session.rs:vigilode::switching::drive_windows
+36,771,339 (81.13%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/dopri5.rs:rodas5p_integrators::dopri5::Dopri5Session<F>::advance_to
+28,390,680 (62.64%)  crates/rodas5p-integrators/src/dopri5.rs:rodas5p_integrators::dopri5::Dopri5Session<F>::advance_to [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+18,480,924 (40.77%)  ~/vigilode-integ-dda8d2f/crates/vigilode/src/session.rs:vigilode::session::<impl vigilode::explicit::Dopri5>::with_session::{{closure}}
+17,635,401 (38.91%)  ~/vigilode-integ-dda8d2f/crates/vigilode/examples/local_bottleneck_support/models.rs:adapter_checkpoint_trace::models::Model::apply
+17,120,856 (37.77%)  crates/vigilode/src/session.rs:vigilode::session::<impl vigilode::explicit::Dopri5>::with_session::{{closure}} [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+16,865,361 (37.21%)  crates/vigilode/examples/local_bottleneck_support/models.rs:adapter_checkpoint_trace::models::Model::apply [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+16,734,345 (36.92%)  ~/vigilode-integ-dda8d2f/crates/vigilode/examples/adapter_checkpoint_trace.rs:adapter_checkpoint_trace::fixture::{{closure}}
+16,734,345 (36.92%)  crates/vigilode/examples/adapter_checkpoint_trace.rs:adapter_checkpoint_trace::fixture::{{closure}} [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+13,007,631 (28.70%)  crates/vigilode/examples/local_bottleneck_support/models.rs:adapter_checkpoint_trace::models::Model::component [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 7,576,602 (16.72%)  crates/vigilode/src/switching.rs:vigilode::switching::run [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 7,531,336 (16.62%)  ~/vigilode-integ-dda8d2f/crates/vigilode/src/solve.rs:vigilode::solve::Rodas5p::solve_observed_bounded
+ 7,499,805 (16.55%)  crates/vigilode/src/solve.rs:vigilode::solve::Rodas5p::solve_observed_bounded [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 7,452,109 (16.44%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/routing.rs:rodas5p_integrators::routing::integrate_rodas5p_routed_observed_with_options
+ 7,449,697 (16.44%)  crates/rodas5p-integrators/src/routing.rs:rodas5p_integrators::routing::integrate_rodas5p_routed_observed_with_options [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 7,445,989 (16.43%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:rodas5p_integrators::rodas5p_matrix_free_fast::integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace
+ 7,444,846 (16.43%)  crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:rodas5p_integrators::rodas5p_matrix_free_fast::integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 7,444,585 (16.42%)  crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:rodas5p_integrators::rodas5p_matrix_free_fast::integrate_mf_fast_inner [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 6,733,980 (14.86%)  crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:rodas5p_integrators::rodas5p_matrix_free_fast::Rodas5pMfFastWorkspace::integrate_observed_with_observer [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 6,652,393 (14.68%)  crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:rodas5p_integrators::rodas5p_matrix_free_fast::Rodas5pMfFastWorkspace::attempt [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 6,651,277 (14.67%)  crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:rodas5p_integrators::rodas5p_matrix_free_fast::Rodas5pMfFastWorkspace::attempt_inner [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 6,131,419 (13.53%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-krylov/src/gmres_into.rs:rodas5p_krylov::gmres_into::solve_gmres_into_with_accounting
+ 5,358,252 (11.82%)  crates/rodas5p-krylov/src/gmres_into.rs:rodas5p_krylov::gmres_into::solve_gmres_into_with_accounting [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 3,683,907 ( 8.13%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/dopri5_dense.rs:rodas5p_integrators::dopri5_dense::Dopri5OutputSession::trial
+ 3,683,907 ( 8.13%)  crates/rodas5p-integrators/src/dopri5_dense.rs:rodas5p_integrators::dopri5_dense::Dopri5OutputSession::trial [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 3,647,244 ( 8.05%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/adaptive_output.rs:rodas5p_integrators::adaptive_output::AdaptiveOutputSession::trial
+ 3,570,747 ( 7.88%)  crates/rodas5p-integrators/src/adaptive_output.rs:rodas5p_integrators::adaptive_output::AdaptiveOutputSession::trial [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 3,439,656 ( 7.59%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/adapters/zip.rs:rodas5p_integrators::dopri5::Dopri5Session<F>::advance_to
+ 2,931,012 ( 6.47%)  crates/rodas5p-integrators/src/output.rs:rodas5p_integrators::output::land_capped [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 2,778,961 ( 6.13%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-core/src/operator.rs:rodas5p_core::operator::apply_counted
+ 2,761,636 ( 6.09%)  crates/rodas5p-core/src/operator.rs:rodas5p_core::operator::apply_counted [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 2,630,191 ( 5.80%)  crates/rodas5p-core/src/operator.rs:<rodas5p_core::operator::ShiftedOperator as rodas5p_core::operator::LinearOperator>::apply_with_work [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 2,568,709 ( 5.67%)  ~/vigilode-integ-dda8d2f/crates/vigilode/src/solve.rs:vigilode::solve::build::{{closure}}
+ 2,509,336 ( 5.54%)  crates/vigilode/src/solve.rs:vigilode::solve::build::{{closure}} [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 2,454,274 ( 5.41%)  ~/vigilode-integ-dda8d2f/crates/vigilode/src/fd.rs:vigilode::fd::Guard::vector_call
+ 2,418,108 ( 5.33%)  crates/rodas5p-krylov/src/gmres_into.rs:rodas5p_krylov::gmres_into::arnoldi_column [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 2,405,920 ( 5.31%)  crates/rodas5p-core/src/operator.rs:<rodas5p_core::operator::ClosureOperator<F> as rodas5p_core::operator::LinearOperator>::apply_with_work [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]

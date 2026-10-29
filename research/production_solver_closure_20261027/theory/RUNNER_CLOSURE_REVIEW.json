@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/production_adapter",
+  "reviewed_utc": "2026-10-27T14:32:01.784761+00:00",
+  "status": "pass_scoped",
+  "scope": "Cancellation, recorded input identity, local suite portability and development-plan closure; no solver reruns or mathematical expansion",
+  "source_sha256": {
+    "record_command.py": "c9d60c39301d218ee38f20a65fca0b5834741a24df75826c944ff66915ad996a",
+    "run_local.py": "7748e219cb4b4df70d891842aad345e28318ba51d1432404dedb1ccc5f79676f",
+    "run_instruction_profile.py": "7acc9451ba52b2204e63bdd7ddc358d56f19f872b6082f552b4d5963308b8b1d",
+    "run_smoke.py": "e07aa9b77db7d79e3babf15ee12e7be9e913386a4448de0ea03065f972ff56a9",
+    "verify_package.py": "b7bf3d0be2a58aaeb36cb1d4a196fcf47989c718249a08bad9f59293a7f8824b",
+    "build_development_plan.py": "a6d0443ba79d39b1b102f03be7c2662171c19ff3b9f12175dd7d35e01da3eac9",
+    "DEVELOPMENT_PLAN.json": "0b4f30cbd9012f2fece79671d269b6089397edf896a4fb0e6341e89f21f7151b",
+    "check_runner_contracts.py": "0acf7d81667909bd799714c7bfeb57ea4868714818d758d0658b6647b7bef5ac",
+    "evidence/runner_contracts/SUMMARY.json": "432d7c14614bffef5e5e686ab016af183519c265bb75a240c7ab1e5fe915c54e"
+  },
+  "parent_executed_contracts": [
+    {
+      "name": "success",
+      "pass": true,
+      "exit_code": 0,
+      "receipt": "research/production_solver_closure_20261027/evidence/runner_contracts/success/RECEIPT.json"
+    },
+    {
+      "name": "mutation",
+      "pass": true,
+      "exit_code": 2,
+      "receipt": "research/production_solver_closure_20261027/evidence/runner_contracts/mutation/RECEIPT.json"
+    },
+    {
+      "name": "child_exit",
+      "pass": true,
+      "exit_code": 7,
+      "receipt": "research/production_solver_closure_20261027/evidence/runner_contracts/child_exit/RECEIPT.json"
+    },
+    {
+      "name": "new_discovered_input",
+      "pass": true,
+      "exit_code": 2,
+      "receipt": "research/production_solver_closure_20261027/evidence/runner_contracts/new_discovered_input/RECEIPT.json"
+    },
+    {
+      "name": "timeout",
+      "pass": true,
+      "exit_code": 124,
+      "descendant_no_longer_executing": true,
+      "receipt": "research/production_solver_closure_20261027/evidence/runner_contracts/timeout/RECEIPT.json"
+    },
+    {
+      "name": "signal",
+      "pass": true,
+      "exit_code": 143,
+      "descendant_no_longer_executing": true,
+      "receipt": "research/production_solver_closure_20261027/evidence/runner_contracts/signal/RECEIPT.json"
+    },
+    {
+      "name": "missing_executable",
+      "pass": true,
+      "exit_code": 127
+    }
+  ],
+  "test_count": 7,
+  "test_runner_identity_matches_reviewed_source": true,
+  "reviewer_native_executions": 0,
+  "dag": {
+    "nodes": 16,
+    "suites": 8,
+    "unique_ids": true,
+    "acyclic": true
+  },
+  "closures": [
+    {
+      "id": "RPLAN-01",
+      "status": "closed_scoped",
+      "change": "New recorder owns command process group, forwards bounded cancellation through SIGTERM/SIGKILL and cleans remaining group after direct exit; nested profiler children remain in that group.",
+      "basis": [
+        "read code",
+        "timeout and SIGTERM tests with resistant owned grandchild"
+      ]
+    },
+    {
+      "id": "RPLAN-02",
+      "status": "closed_scoped",
+      "change": "Source snapshot rescans input roots, captures additions/removals and preserves command exit separately from stale-source wrapper exit2.",
+      "basis": [
+        "read code",
+        "mutation and new-discovered-input tests"
+      ]
+    },
+    {
+      "id": "RPLAN-03",
+      "status": "closed_in_execution_scope",
+      "change": "Effective RAYON/RUSTDOCFLAGS captured; executable content and explicit plan input hashed; local receipt paths corrected.",
+      "basis": [
+        "read code",
+        "success test checks effective environment fields",
+        "plan output inspection"
+      ],
+      "remaining_local_obligation": "Deployment CPU/compiler/libm/affinity inventory remains L-RELEASE qualification work; standalone smoke is used through the outer recorded suite."
+    },
+    {
+      "id": "RPLAN-04",
+      "status": "closed_scoped",
+      "change": "Four structural paired benchmark cells, paired adapter helper and separate instruction-profile suite are explicit commands with matching native CLI.",
+      "basis": [
+        "read generated plan",
+        "compare native CLI argument positions"
+      ]
+    },
+    {
+      "id": "RPLAN-05",
+      "status": "closed_scoped",
+      "change": "PR-N06 states temporal variation/dwell hypotheses and residence/exploration loss separately from PR-N01 arithmetic costs.",
+      "basis": [
+        "read canonical PR-N06 contract",
+        "DAG traversal"
+      ]
+    },
+    {
+      "id": "RUNNER-SPAWN-SIGNAL",
+      "status": "closed_by_inspection",
+      "change": "Recorder stores pending signal while publishing child handle and polls wait; outer runner forwards a signal received around its Popen assignment.",
+      "basis": [
+        "read code"
+      ]
+    },
+    {
+      "id": "RUNNER-LOCK-CANCEL",
+      "status": "closed_by_inspection",
+      "change": "Nonblocking flock loop checks cancellation before retrying.",
+      "basis": [
+        "read code"
+      ]
+    },
+    {
+      "id": "PROFILE-INPUTS",
+      "status": "closed_by_inspection",
+      "change": "Unique arm names and finite positive timeout required; re-scan source identity and fail on source or binary changes; child inherits outer group.",
+      "basis": [
+        "read code"
+      ]
+    },
+    {
+      "id": "PACKAGE-ARCHIVE-SCOPE",
+      "status": "closed_by_inspection",
+      "change": "Full verification now requires RAW_MANIFEST; source-only mode is explicit and incompatible with extraction.",
+      "basis": [
+        "read code"
+      ]
+    }
+  ],
+  "remaining_blocking_findings": [],
+  "supported_execution_contract": "POSIX/WSL; helpers stay in the recorder-owned process group; supplied time/resource settings recorded; helpers do not daemonize or start detached native sessions",
+  "limitations": [
+    "Race fixes are independently code-inspected; the seven actual process tests exercise cancellation/mutation failures rather than exhaustive scheduler interleavings.",
+    "Final archive/source manifests and deployment release qualification are separate parent/local tasks.",
+    "Operational helper corrections do not rerun or alter the completed native solver experiments."
+  ]
+}

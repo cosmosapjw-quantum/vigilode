@@ -1,0 +1,15 @@
+{
+  "id": "authority-refs-first-attempt",
+  "argv": [
+    "python3",
+    "tools/check-authority-refs.py"
+  ],
+  "timeout_seconds": 120,
+  "timeout": true,
+  "wrapper_exit_code": 1,
+  "checker_exit_code": null,
+  "observed_utc": "2026-10-28T10:57:37.690029+00:00",
+  "exception": "subprocess.TimeoutExpired: Command [python3, tools/check-authority-refs.py] timed out after 120 seconds",
+  "diagnostic": "Partial-clone remote.origin.promisor=true; git cat-file on a missing historical SHA was observed during the check. No completed verdict or captured partial stdout/stderr was retained by the original wrapper.",
+  "followup": "Same unmodified checker with GIT_NO_LAZY_FETCH=1 records local known-object authority and missing references; missing objects are not promoted."
+}

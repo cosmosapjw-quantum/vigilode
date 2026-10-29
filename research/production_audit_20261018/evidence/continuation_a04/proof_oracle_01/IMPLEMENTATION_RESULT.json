@@ -1,0 +1,72 @@
+{
+  "schema": "vigilode-a04-proof-oracle-implementation-result-v1",
+  "unit": "A04-PROOF-ORACLE-01",
+  "execution_status": "COMPLETED_BOUNDED_IMPLEMENTATION_AND_EXECUTION",
+  "independent_admission": "PENDING_REVIEW",
+  "source_identity": "FINAL_V3_SOURCE_IDENTITY.json",
+  "reviewed_input_bindings": "REVIEWED_INPUT_BINDINGS.json",
+  "rust_test": {
+    "record": "final_v3_run_record.json",
+    "log": "final_v3_test.log",
+    "exit_code": 0,
+    "tests_passed": 1
+  },
+  "fraction_oracle": {
+    "record": "fraction_final_v3_run_record.json",
+    "log": "fraction_final_v3.log",
+    "results": "fraction_final_v3_results.json",
+    "exit_code": 0,
+    "status": "PASS_SCOPED_FIXTURES",
+    "exact_comparisons": 218,
+    "orders_used": [
+      64
+    ]
+  },
+  "native_receipt": "native_final_v3.json",
+  "fixtures": {
+    "actions": 12,
+    "standalone_coefficient_tables": 4,
+    "successful_actions": 8,
+    "typed_nonfinite_refusals": 4,
+    "all_expected_native_outcomes_matched": true
+  },
+  "arithmetic_falsifiers": 0,
+  "allocation": {
+    "positive_control": 3,
+    "warmed_success_counts": {
+      "A04-F02-SCALAR-DISTINCT": 0,
+      "A04-F03-NEWTON-DISTINCT": 0,
+      "A04-F04-NEWTON-SAME-SIGNED": 0
+    },
+    "scope": "F02/F03/F04 only; no Err-path claim",
+    "calibration_failure_classification": "ALLOCATION_UNAVAILABLE; allocation admission withheld, numerical oracle still executes and no calibration panic"
+  },
+  "f09_scope": "finite-input arithmetic-overflow refusal at initial outward L2 norm; no matvec-overflow coverage claim",
+  "first_failure": {
+    "class": "IMPLEMENTATION_COMPILE_API_COMPATIBILITY",
+    "exit_code": 101,
+    "log": "first_test.log",
+    "cause": "Distinct requires &[Vec<f64>;5], not [&Vec<f64>;5]",
+    "repair": "test-only borrowing conversion to fixed-size array reference",
+    "subsequent_test_exit_code": 0
+  },
+  "production_source_changes": false,
+  "cargo_manifest_or_lock_changes": false,
+  "tolerances_or_fixture_changes": false,
+  "full_A04_authority": "EstimateOnly",
+  "full_A04_decision": "HOLD",
+  "not_executed": [
+    "workspace-wide tests",
+    "other feature combinations",
+    "benchmark",
+    "independent admission review",
+    "commit/push"
+  ],
+  "changed_paths": [
+    "crates/rodas5p-core/tests/production_audit_leja_arithmetic_oracle.rs",
+    "crates/rodas5p-core/tests/leja_fraction_oracle.py",
+    "research/production_audit_20261018/evidence/continuation_a04/proof_oracle_01/*"
+  ],
+  "next_action": "Independent read-only source/formula/receipt review; controller handles scientific decision and next DAG transition. No production repair is triggered.",
+  "controller_requested_followup": "Removed unconditional calibration assertion; explicit numerical and allocation verdicts retained separately in final v3."
+}

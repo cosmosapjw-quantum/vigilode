@@ -1,0 +1,58 @@
+flowchart TD
+  S_PRS["S-PRS: Inspect PRs after PR91"]
+  R_STRUCT["R-STRUCT: Charged structural attempts and full residual enclosure"]
+  R_HOMO["R-HOMO: Scalar homotopy and rational cubic inverse"]
+  R_ADAPT["R-ADAPT: Exact return evidence and causal proposal reuse"]
+  I_PROD["I-PROD: Explicit production configuration and callback permissions"]
+  V_CLOUD["V-CLOUD: Native contracts, small paired benchmarks and profiles"]
+  P_PUSH["P-PUSH: Publish implementation, evidence and local handoff"]
+  L_RELEASE["L-RELEASE: Pinned native release verification on the deployment machine"]
+  L_HARDWARE["L-HARDWARE: Matched-accuracy measurements on target hardware"]
+  PR_N01["PR-N01: Small Krylov arithmetic and calibrated cost evidence"]
+  PR_N02["PR-N02: Tighter finite-step cubic accuracy planning"]
+  PR_N03["PR-N03: Adaptive structural consumer with physical-error accounting"]
+  PR_N04["PR-N04: Owned session continuation and generic homotopy workspace"]
+  PR_N05["PR-N05: Generic causal closure and parallel work/span selection"]
+  PR_N06["PR-N06: Temporal residence and exploration-loss theory"]
+  R_QUALIFY["R-QUALIFY: Scoped release qualification for the actual client"]
+  Q_LEDGER["Q-LEDGER: Research registration and published-reference qualification"]
+  Q_GIVENS["Q-GIVENS: Portable Givens residual fixture"]
+  Q_FAIR_AB["Q-FAIR-AB: Attempted, admitted and refused work"]
+  Q_BENCH["Q-BENCH: Qualified external comparator build"]
+  Q_LINT["Q-LINT: Broader integrator Clippy"]
+  Q_API["Q-API: Public SwitchingConfig compatibility"]
+  Q_NEGATIVE["Q-NEGATIVE: Retained negative evidence and ignored suite"]
+  S_PRS --> R_STRUCT
+  S_PRS --> R_HOMO
+  S_PRS --> R_ADAPT
+  R_STRUCT --> I_PROD
+  R_HOMO --> I_PROD
+  R_ADAPT --> I_PROD
+  I_PROD --> V_CLOUD
+  V_CLOUD --> P_PUSH
+  P_PUSH --> L_RELEASE
+  Q_GIVENS --> L_RELEASE
+  Q_FAIR_AB --> L_RELEASE
+  Q_LINT --> L_RELEASE
+  Q_NEGATIVE --> L_RELEASE
+  L_RELEASE --> L_HARDWARE
+  L_HARDWARE --> PR_N01
+  L_RELEASE --> PR_N02
+  L_RELEASE --> PR_N03
+  L_RELEASE --> PR_N04
+  L_HARDWARE --> PR_N05
+  PR_N04 --> PR_N05
+  L_HARDWARE --> PR_N06
+  PR_N01 --> PR_N06
+  L_RELEASE --> R_QUALIFY
+  L_HARDWARE --> R_QUALIFY
+  Q_LEDGER --> R_QUALIFY
+  Q_BENCH --> R_QUALIFY
+  Q_API --> R_QUALIFY
+  P_PUSH --> Q_LEDGER
+  P_PUSH --> Q_GIVENS
+  P_PUSH --> Q_FAIR_AB
+  P_PUSH --> Q_BENCH
+  P_PUSH --> Q_LINT
+  P_PUSH --> Q_API
+  P_PUSH --> Q_NEGATIVE

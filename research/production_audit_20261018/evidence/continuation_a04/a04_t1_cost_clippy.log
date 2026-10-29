@@ -1,0 +1,17 @@
+    Blocking waiting for file lock on build directory
+    Checking rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+error: this block may be rewritten with the `?` operator
+    --> crates/rodas5p-core/src/leja_action.rs:1896:5
+     |
+1896 | /     if let Err(error) = outcome {
+1897 | |         return Err(error);
+1898 | |     }
+     | |_____^ help: replace it with: `outcome?;`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#question_mark
+     = note: `-D clippy::question-mark` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::question_mark)]`
+
+error: could not compile `rodas5p-core` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `rodas5p-core` (lib test) due to 1 previous error

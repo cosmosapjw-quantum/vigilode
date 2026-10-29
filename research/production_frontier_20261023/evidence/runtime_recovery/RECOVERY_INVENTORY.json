@@ -1,0 +1,53 @@
+{
+  "status": "READY",
+  "inputs": [
+    {
+      "path": "/workspace/scratch/0dc1e721cf82/project_sources/06-rust-1.94.1-x86_64-unknown-linux-gnu.tar.xz",
+      "bytes": 192287020,
+      "sha256": "294b3d81fa72e62581276290c60c81eb8b58498d333d422ca1dfc432877d0c40"
+    },
+    {
+      "path": "/workspace/scratch/0dc1e721cf82/project_sources/15-GENERIC_VECTOR_JF_OFFLINE_CARGO_VENDOR_20260816-1-.zip",
+      "bytes": 112967859,
+      "sha256": "9c7671ba5eef9f511560df402418f8cd46bed161e8743f0a5dd5696daf92fb8d"
+    },
+    {
+      "path": "/workspace/scratch/0dc1e721cf82/project_sources/17-BASS_RUSTCORE_OFFLINE_LOCKED_20260818-105221-2-.zip",
+      "bytes": 33103685,
+      "sha256": "f30a4da90c68819d16df44632da91fa76e443df3b8dcf1d55c843bede1e1fb29"
+    }
+  ],
+  "ncp_used": false,
+  "global_environment_modified": false,
+  "prior_scratch_runtime": "absent after workspace maintenance",
+  "completed_utc": "2026-10-23T07:14:21.284188+00:00",
+  "repository": "/workspace/scratch/0dc1e721cf82/vigilode-production-tree-1023",
+  "source_commit": "9b210c76dffb8909902f733e80d6cfa32405006e",
+  "cargo_lock_sha256": "3c3310208cb895851aced4b4506ccd761e04c62d93113372919542478163a1e5",
+  "rustc_version": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "cargo_version": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+  "toolchain_prefix": "/workspace/scratch/0dc1e721cf82/task_runtime_tree1023/rust-1.94.1",
+  "environment_script": "/workspace/scratch/0dc1e721cf82/task_runtime_tree1023/env.sh",
+  "environment_sha256": "0cbe48edccf7e87c2c3e269f0c821cf834ed785e9e8faa286a4154ba228c7883",
+  "cargo_home": "/workspace/scratch/0dc1e721cf82/task_runtime_tree1023/cargo",
+  "cargo_target_dir": "/workspace/scratch/0dc1e721cf82/task_runtime_tree1023/target",
+  "cargo_build_jobs": 2,
+  "vendor_packages_verified": 118,
+  "vendor_file_hashes_verified": 4382,
+  "cargo_metadata_locked_offline": {
+    "exit_code": 0,
+    "packages": 125,
+    "stdout_sha256": "f793a55d42767b3558f1464b8d4a822d62021720cd466f377d71743b3ad13ea5",
+    "stderr_bytes": 0
+  },
+  "smoke_compile_and_execute": "PASS",
+  "scientific_tests_run": false,
+  "benchmark_run": false,
+  "signature_check": "Detached signature supplied; signing key not provided and no cryptographic signature verification claimed.",
+  "commands": [
+    "bash <inspected-install.sh> --prefix=<task-runtime> --components=rustc,cargo,rust-std-x86_64-unknown-linux-gnu,rustfmt-preview --disable-ldconfig",
+    "cargo metadata --locked --offline --format-version 1",
+    "rustc runtime_smoke.rs -o runtime_smoke; ./runtime_smoke"
+  ],
+  "dependency_recovery_record": "DEPENDENCY_RECOVERY.json"
+}

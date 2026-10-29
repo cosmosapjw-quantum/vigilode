@@ -1,0 +1,65 @@
+{
+  "schema": "vigilode.r4.time.findings.v1",
+  "source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "preregistration_commit": "b2914f3e3c03eda60a8547619db6284aac8250a2",
+  "verdict": "REWORK",
+  "production_modified": false,
+  "native_execution": {"build_exit": 0, "run_exit": 0, "rows": 36, "dependency_versions_and_checksums_match": 93},
+  "prior_closures": [
+    {"id": "R3-TIME-01", "original_reproducer": "CLOSED", "broader_node": "REWORK", "evidence": "Six native fixed Rodas/BDF/Radau observations at +/-1e12 all within 2.89e-15; BDF geometry and split-estimator residuals below prevent a global closure claim."},
+    {"id": "R3-TIME-02", "original_reproducer": "CLOSED", "evidence": "Uniform 4-ULP singleton constructor and explicit singleton schedule both rejected; valid explicit endpoints error2.89e-15. Runtime owner also passed nine represented-clock contract tests including dense wrappers."},
+    {"id": "R3-TIME-03", "original_reproducer": "CLOSED_FOR_REGISTERED_CONTRACT", "evidence": "Runtime owner: r3_represented_clock_contracts nine passed includes the1000-step indexed-grid test. This lane did not duplicate that execution."}
+  ],
+  "findings": [
+    {
+      "id": "R4-TIME-01",
+      "severity": "P2",
+      "title": "Fixed BDF can solve the wrong time-grid equation under a change of time units",
+      "status": "CONFIRMED_ACKNOWLEDGED_RESIDUAL_WITH_NEW_COUNTEREXAMPLE",
+      "failure_class": "NUMERICAL_IMPLEMENTATION",
+      "novelty": "The absolute same_step floor is explicitly disclosed in R3 closure. The resulting2.08% wrong constant-flow endpoint and the unit-covariance counterexample are newly executed here; not classified as an undisclosed regression.",
+      "evidence_status": ["derived", "numerically checked", "implementation-verified"],
+      "source_locations": ["crates/rodas5p-integrators/src/bdf.rs:384-386", "crates/rodas5p-integrators/src/bdf.rs:475-495", "crates/rodas5p-integrators/src/bdf.rs:530-535"],
+      "input": {"boundary_power": 0, "t0": 0.9999999999999991, "tf": 1.0000000000000018, "nominal_h": 1.4988010832439614e-16, "velocity": 375299968947541.3, "initial_y": 0.0},
+      "observed": {"returned_Ok": true, "endpoint": 0.9791691102325774, "rounded_exact_binary64_input_endpoint": 1.0, "max_exact_flow_error": 0.02083088976742259, "unequal_steps_classified_equal": 5, "exact_mixed_branch_endpoint": 0.9791691102325772, "native_vs_wrong_equation_endpoint": 1.1102230246251565e-16},
+      "controls": {"same_dimensionless_failure_powers": [-40, 0], "same_dimensionless_passing_powers": [10, 40], "variable_public_kernel_candidate_powers": [-40, 0, 10, 40], "candidate_max_error": 1.8318679906315083e-15},
+      "mechanism": "same_step compares the difference with32eps*max(|h|,|previous_h|,1). Distinct tiny represented intervals therefore select equal-step3,-4,1 coefficients. For exact linear flow their residual is v*(h-previous_h), not0. Exact rational replay identifies that wrong residual as the source of the native answer.",
+      "scope": "Public fixed BDF reference implementation, scalar identity-mass constant flow on the preregistered unit grid. No new full-BDF or production-comparator promotion.",
+      "evidence": ["native_raw.jsonl:bdf_unit_boundary", "EXACT_ORACLE.json", "DERIVATIONS_KO.md"],
+      "remediation": ["R4-TIME-DEV-01"]
+    },
+    {
+      "id": "R4-TIME-02",
+      "severity": "P2",
+      "title": "Unequal represented half steps retain an equal-half Richardson divisor",
+      "status": "CONFIRMED_UPDATED_PATH_MISMATCH",
+      "failure_class": "NUMERICAL_METHOD_IMPLEMENTATION",
+      "novelty": "Newly reproduced geometry mismatch on the updated path: R3 split_clock correctly tiles represented time but can produce unequal substeps, while the existing equal-half estimator is used without a geometry correction. The identical witness was not executed on the previous source; prior correctness and an introduced regression are not established.",
+      "evidence_status": ["derived", "numerically checked", "implementation-verified"],
+      "source_locations": ["crates/rodas5p-integrators/src/output.rs:212-243", "crates/rodas5p-integrators/src/radau.rs:582-600", "crates/rodas5p-integrators/src/adaptive.rs:397-404"],
+      "input": {"t0": 1000000000000.0, "span_ulps": 3, "H": 0.0003662109375, "h1": 0.000244140625, "h2": 0.0001220703125, "ode": "y'=2(t-t0)/H^2", "initial_y": 0.0, "method": "Radau IIA one-stage", "atol": 0.5, "rtol": 1e-12},
+      "observed": {"success": true, "accepted_macro_steps": 1, "endpoint": 1.5555555555555554, "exact_endpoint": 1.0, "native_estimator_norm": 0.8888888888861239, "actual_scaled_error": 1.111111111107654, "exact_fine_error": "5/9", "exact_estimator_difference_magnitude": "4/9"},
+      "mechanism": "The divisor2^p-1 assumes equal halves. With eta=(h1/H)^(p+1)+(h2/H)^(p+1), the leading fine-error magnitude is eta/(1-eta)*|fine-coarse|. Here p=1, eta=5/9 and the correct factor is5/4; the relation is exact for the quadratic primitive.",
+      "candidate": {"ratio_factor": "5/4", "candidate_abs_error": 0.5555555555555559, "difference_from_exact_error": 3.3306690738754696e-16, "status": "STANDALONE_CHECKED_NOT_PRODUCTION_PATCHED"},
+      "scope": "Executed on native public Radau1 kernels and adaptive observed driver. Dense driver shares the trial by source inspection, not a second native execution. Nonconstant BDF startup is only a followup risk because it also changes order/history; no unchecked transfer of the Radau1 correction.",
+      "interpretation_limit": "This shows violation of the estimator's geometry assumptions; it does not assume adaptive tolerances are rigorous global error bounds for arbitrary ODEs.",
+      "evidence": ["native_raw.jsonl:doubling_geometry_kernel", "native_raw.jsonl:doubling_geometry_adaptive", "EXACT_ORACLE.json", "DERIVATIONS_KO.md"],
+      "remediation": ["R4-TIME-DEV-02", "R4-TIME-DEV-03"]
+    }
+  ],
+  "contract_observations": [
+    {"id": "R4-TIME-CAP", "classification": "DISCLOSED_POLICY_WITH_CONTRADICTORY_HARD_CAP_WORDING", "counted_as_correctness_finding": false, "observed": "Adaptive Rodas succeeds at max_step0.75ULP and1.5ULP with actual accepted steps1ULP and2ULP (ratio4/3). Values remain accurate.0.49ULP returns success=false. Closure notes disclose one-resolution slack, while comments/tests also promise a hard maximum or typed rejection.", "remediation": "R4-TIME-DEV-04"}
+  ],
+  "other_results": {
+    "constant_flow_midpoint_cases": "At oneULP Radau1/BDF explicitly reject no midpoint; two and threeULP flows complete exactly at the endpoint.",
+    "nonautonomous_quadratic": "All four registered conditioned gates pass. Origin0 error3.33e-15; shifted2^30/unit1 error2.84e-8; shifted2^30/unit1024 error5.38e-10. These are not origin-independent bitwise claims.",
+    "cross_zero": "Both(-0.7,0.3) and(-1e-300,1e-300) constant flows pass exact-input comparison; maximum2.52e-15."
+  },
+  "oracle_interpretation": {
+    "frozen_code_preserved": true,
+    "constant_flow_gate": "This generic field checks returned samples only. Endpoint completion additionally requires native success and final time; the0.49ULP refused run is not a successful integration.",
+    "conditioned_quadratic_gate": "Applicable only to CONTRACT item6 origin/unit conditioning. The frozen helper also emits this auxiliary field for the item8 estimator witness; it is NOT_APPLICABLE there. Item8 uses the exact local geometry, native_estimator_norms and actual_scaled_endpoint_error. No tolerance or input was changed after execution."
+  },
+  "independent_decision": "PENDING_ROOT_REVIEWER",
+  "evidence": ["EXECUTION_RECEIPT.json", "DEPENDENCY_MATCH.json", "RESOLVED_Cargo.lock", "native_raw.jsonl", "EXACT_ORACLE.json"]
+}

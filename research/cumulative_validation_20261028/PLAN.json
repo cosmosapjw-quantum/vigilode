@@ -1,0 +1,174 @@
+{
+  "schema": "vigilode.cumulative-validation-plan.v1",
+  "status": "PREREGISTERED_NOT_RUN",
+  "delivery_sha": "e935878fefe795a1b7e88aba64e5e30ef7be1578",
+  "delivery_tree": "bff4df3e8f2be76dccfb072302556d4fea4b5dc2",
+  "observed_main": "8d0c79184e09efb5bdadc24a6315c60a71a44264",
+  "pr_base": "main",
+  "source_plan_sha256": "8719595bcf61c29317bbb3328b93678a15f43c9b48134303aad5b4af1c310005",
+  "command_catalog_sha256": "b868160554e75bb017c4ac0e0752846ba274fa20ab17796e0c9a92a745b6d201",
+  "coverage_sha256": "464f041a79362c181b53678b9026b25a48bddd726b87b2033311772102d87afe",
+  "inherited_counts": {
+    "dag_nodes": 23,
+    "dag_edges": 34,
+    "native_suites": 8,
+    "changed_paths": 73,
+    "interactions": 10,
+    "candidate_options": 17
+  },
+  "command_ids": [
+    "pr90-lu",
+    "pr90-modes",
+    "pr90-economy",
+    "pr90-adapter",
+    "pr90-private-arithmetic",
+    "pr91-coupled",
+    "pr91-entry",
+    "pr92-coupled",
+    "pr92-facade",
+    "pr92-lagged",
+    "default-workspace",
+    "research-features",
+    "all-fmt",
+    "integrator-clippy",
+    "pr90-cayley-compile",
+    "pr90-cayley-execute",
+    "pr90-dopri",
+    "pr91-exact",
+    "pr91-constants",
+    "pr91-structural",
+    "pr93-polynomial",
+    "pr93-homotopy",
+    "pr93-geometry",
+    "pr93-artifacts",
+    "node-ledger",
+    "full-authority",
+    "semver-preconversation",
+    "semver-pr91"
+  ],
+  "q_gates": [
+    "Q-LEDGER",
+    "Q-GIVENS",
+    "Q-FAIR-AB",
+    "Q-BENCH",
+    "Q-LINT",
+    "Q-API",
+    "Q-NEGATIVE"
+  ],
+  "interaction_ids": [
+    "I-STATE",
+    "I-EPOCH",
+    "I-WORK",
+    "I-BUDGET",
+    "I-POLY",
+    "I-ROOT",
+    "I-STRUCTURE",
+    "I-NEGATIVE",
+    "I-PROFILE",
+    "I-CLIENT"
+  ],
+  "correction_budgets": [
+    {
+      "id": "R-STRUCT",
+      "correction_loops_used": 3,
+      "correction_loops_max": 3
+    },
+    {
+      "id": "R-HOMO",
+      "correction_loops_used": 1,
+      "correction_loops_max": 3
+    },
+    {
+      "id": "R-ADAPT",
+      "correction_loops_used": 3,
+      "correction_loops_max": 3
+    },
+    {
+      "id": "I-PROD",
+      "correction_loops_used": 1,
+      "correction_loops_max": 3
+    },
+    {
+      "id": "PR-N01",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3
+    },
+    {
+      "id": "PR-N02",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3
+    },
+    {
+      "id": "PR-N03",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3
+    },
+    {
+      "id": "PR-N04",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3
+    },
+    {
+      "id": "PR-N05",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3
+    },
+    {
+      "id": "PR-N06",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3
+    },
+    {
+      "id": "Q-LEDGER",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3
+    },
+    {
+      "id": "Q-GIVENS",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3
+    },
+    {
+      "id": "Q-FAIR-AB",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3
+    },
+    {
+      "id": "Q-BENCH",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3
+    },
+    {
+      "id": "Q-LINT",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3
+    },
+    {
+      "id": "Q-API",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3
+    },
+    {
+      "id": "Q-NEGATIVE",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3
+    }
+  ],
+  "execution": {
+    "cargo_jobs_max": 2,
+    "native_concurrent_max": 1,
+    "timed_concurrent_max": 1,
+    "initial_command_timeout_seconds": 1800,
+    "native_lock": "/tmp/vigilode-cargo-20261027.lock",
+    "run_local_owns_lock": true,
+    "baseline_target": "/tmp/vigilode-cumulative-validation-20261028/target-baseline",
+    "candidate_target": "/tmp/vigilode-cumulative-validation-20261028/target-candidate",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "RUSTDOCFLAGS": "-D warnings"
+    }
+  },
+  "claim_rule": "No source/coverage/evidence replay/exact support/compile-only action is physical solver qualification. Broad production HOLD until all advertised mandatory gates pass."
+}

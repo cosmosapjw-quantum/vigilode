@@ -1,0 +1,21 @@
+A07 callback instrumentation separation prep (no Cargo build or measurement run)
+
+Parent instruction: timing builds must compile out callback atomics and branches; allocator/callback audit is separate. A01 source freeze is still pending.
+
+Source changes:
+- Timing native arm uses plain_robertson_problem; timing Diffsol closures contain no callback counters or Arc captures.
+- allocation-audit feature retains callback counters and allocation instrumentation.
+- Timing rows report callback_counters=null and unavailable_counters_reason="callback counters disabled to preserve timing path".
+- Validator requires exact callback receipt keys for allocator rows and rejects callback receipts in timed rows, malformed/unknown fields, and incorrect row counts.
+- Cold process failure rows now include all schema fields.
+- README and captured manifest instrumentation text describe the separate measurement boundary.
+
+Checks:
+1. rustfmt --edition 2021 --check tools/benchmarks/diffsol/a07/src/main.rs
+   exit_code=0
+2. python3 -m py_compile tools/benchmarks/diffsol/a07/src/cold_pairs.py tools/benchmarks/diffsol/a07/src/validate_report.py tools/benchmarks/diffsol/a07/src/robertson.py
+   exit_code=0
+3. Synthetic validator contract fixture: valid 20 cold + 160 warm + 2 allocator rows accepted; unknown field and missing allocator receipt rejected.
+   exit_code=0
+
+No Cargo build, timing sample, or allocation sample run. Rust compile remains pending A01 source freeze.

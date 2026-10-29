@@ -1,0 +1,40 @@
+[
+  {
+    "id": "core",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "rodas5p-core",
+      "--test",
+      "bordered_schur_contracts",
+      "--test",
+      "bordered_allocation_contract",
+      "--locked",
+      "--offline",
+      "-j",
+      "1"
+    ],
+    "exit_code": 0,
+    "reason": null,
+    "elapsed_seconds": 2.752799927999149
+  },
+  {
+    "id": "krylov",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "rodas5p-krylov",
+      "--test",
+      "bordered_preconditioner_contracts",
+      "--locked",
+      "--offline",
+      "-j",
+      "1"
+    ],
+    "exit_code": 101,
+    "reason": null,
+    "elapsed_seconds": 0.2677827379957307
+  }
+]

@@ -1,0 +1,25 @@
+   Compiling crossbeam-utils v0.8.22
+   Compiling either v1.17.0
+   Compiling rodas5p-krylov v0.1.0 (/workspace/scratch/06cfffc081e2/vigilode/crates/rodas5p-krylov)
+   Compiling crossbeam-epoch v0.9.20
+   Compiling crossbeam-deque v0.8.7
+   Compiling rayon-core v1.13.0
+   Compiling rayon v1.12.0
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/06cfffc081e2/vigilode/crates/rodas5p-integrators)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `measurement` profile [optimized] target(s) in 1m 45s
+     Running tests/fast_dense_contracts.rs (/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/deps/fast_dense_contracts-76546d9ad1e4c9ba)
+     Running tests/partial_t_into_contracts.rs (/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/deps/partial_t_into_contracts-664dd23eca3a9bc2)
+     Running tests/rodas5p_fast_contracts.rs (/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/deps/rodas5p_fast_contracts-d0e40bc3f97ad543)

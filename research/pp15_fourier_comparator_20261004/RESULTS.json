@@ -1,0 +1,207 @@
+{
+ "schema": "vigilode-pp15-check-v1",
+ "rows": [
+  {
+   "omega": 1.0,
+   "reference_difference": null,
+   "arms": {
+    "client_direct": {
+     "ok": true,
+     "t_final": 0.5,
+     "actual_error": 2.8853648623886502e-12,
+     "certified": true,
+     "bound": 2.76688225489253e-11,
+     "encloses": true,
+     "steps": 4,
+     "candidate_builds": 8,
+     "candidate_rejections": 4,
+     "predictor_calls": 24,
+     "certificate_calls": 8,
+     "step_halvings": 0
+    },
+    "client_fft": {
+     "ok": true,
+     "t_final": 0.5,
+     "actual_error": 2.885309351237419e-12,
+     "certified": true,
+     "bound": 2.7669050710166516e-11,
+     "encloses": true,
+     "steps": 4,
+     "candidate_builds": 8,
+     "candidate_rejections": 4,
+     "predictor_calls": 24,
+     "certificate_calls": 8,
+     "step_halvings": 0
+    },
+    "rodas_1e-8": {
+     "ok": true,
+     "t_final": 0.5,
+     "actual_error": 4.238699672582848e-10,
+     "certified": false,
+     "success": true,
+     "attempts": 10,
+     "accepted": 10,
+     "rejected": 0,
+     "rhs_evaluations": 80,
+     "rhs_calls": 80,
+     "jacobian_builds": 10,
+     "direct_factorizations": 10,
+     "direct_solve_calls": 80
+    },
+    "rodas_1e-10": {
+     "ok": true,
+     "t_final": 0.5,
+     "actual_error": 3.8670251107832415e-12,
+     "certified": false,
+     "success": true,
+     "attempts": 11,
+     "accepted": 11,
+     "rejected": 0,
+     "rhs_evaluations": 88,
+     "rhs_calls": 88,
+     "jacobian_builds": 11,
+     "direct_factorizations": 11,
+     "direct_solve_calls": 88
+    }
+   },
+   "closest_rodas_to_client_bound": "rodas_1e-10"
+  },
+  {
+   "omega": 40.0,
+   "reference_difference": null,
+   "arms": {
+    "client_direct": {
+     "ok": true,
+     "t_final": 0.5,
+     "actual_error": 2.251357872426585e-13,
+     "certified": true,
+     "bound": 2.8925401457239183e-12,
+     "encloses": true,
+     "steps": 4,
+     "candidate_builds": 8,
+     "candidate_rejections": 4,
+     "predictor_calls": 24,
+     "certificate_calls": 8,
+     "step_halvings": 0
+    },
+    "client_fft": {
+     "ok": true,
+     "t_final": 0.5,
+     "actual_error": 2.2467782024500063e-13,
+     "certified": true,
+     "bound": 2.8941211521454044e-12,
+     "encloses": true,
+     "steps": 4,
+     "candidate_builds": 8,
+     "candidate_rejections": 4,
+     "predictor_calls": 24,
+     "certificate_calls": 8,
+     "step_halvings": 0
+    },
+    "rodas_1e-8": {
+     "ok": true,
+     "t_final": 0.5,
+     "actual_error": 3.4991274297290567e-10,
+     "certified": false,
+     "success": true,
+     "attempts": 38,
+     "accepted": 31,
+     "rejected": 7,
+     "rhs_evaluations": 297,
+     "rhs_calls": 297,
+     "jacobian_builds": 31,
+     "direct_factorizations": 38,
+     "direct_solve_calls": 304
+    },
+    "rodas_1e-10": {
+     "ok": true,
+     "t_final": 0.5,
+     "actual_error": 4.5588609847498704e-12,
+     "certified": false,
+     "success": true,
+     "attempts": 72,
+     "accepted": 64,
+     "rejected": 8,
+     "rhs_evaluations": 568,
+     "rhs_calls": 568,
+     "jacobian_builds": 64,
+     "direct_factorizations": 72,
+     "direct_solve_calls": 576
+    }
+   },
+   "closest_rodas_to_client_bound": "rodas_1e-10"
+  },
+  {
+   "omega": 10000.0,
+   "reference_difference": 3.3509115057370004e-15,
+   "arms": {
+    "client_direct": {
+     "ok": true,
+     "t_final": 0.5,
+     "actual_error": 1.865018556257425e-13,
+     "certified": true,
+     "bound": 2.2026386428211665e-12,
+     "encloses": true,
+     "steps": 4,
+     "candidate_builds": 8,
+     "candidate_rejections": 4,
+     "predictor_calls": 24,
+     "certificate_calls": 8,
+     "step_halvings": 0
+    },
+    "client_fft": {
+     "ok": true,
+     "t_final": 0.5,
+     "actual_error": 1.8650012090226653e-13,
+     "certified": true,
+     "bound": 2.2027153768783057e-12,
+     "encloses": true,
+     "steps": 4,
+     "candidate_builds": 8,
+     "candidate_rejections": 4,
+     "predictor_calls": 24,
+     "certificate_calls": 8,
+     "step_halvings": 0
+    },
+    "rodas_1e-8": {
+     "ok": true,
+     "t_final": 0.5,
+     "actual_error": 9.288597795469034e-07,
+     "certified": false,
+     "success": true,
+     "attempts": 2373,
+     "accepted": 1696,
+     "rejected": 677,
+     "rhs_evaluations": 18307,
+     "rhs_calls": 18307,
+     "jacobian_builds": 1696,
+     "direct_factorizations": 2373,
+     "direct_solve_calls": 18984
+    },
+    "rodas_1e-10": {
+     "ok": true,
+     "t_final": 0.5,
+     "actual_error": 4.24530282455704e-10,
+     "certified": false,
+     "success": true,
+     "attempts": 6315,
+     "accepted": 4972,
+     "rejected": 1343,
+     "rhs_evaluations": 49177,
+     "rhs_calls": 49177,
+     "jacobian_builds": 4972,
+     "direct_factorizations": 6315,
+     "direct_solve_calls": 50520
+    }
+   },
+   "closest_rodas_to_client_bound": "rodas_1e-10"
+  }
+ ],
+ "gate": {
+  "g1_certified_arms_enclose": true,
+  "g2_matched_error_named": true,
+  "g3": "see REVIEW.md (independent reviewer)"
+ },
+ "speed_conclusion": "none (timing authority HOLD; counters are in different units)",
+ "verdict_pending_g3": "PASS"
+}

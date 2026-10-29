@@ -1,0 +1,164 @@
+{
+  "schema": "vigilode.adapter-integration.decisions.v1",
+  "date_utc": "2026-10-27",
+  "broad_production": {
+    "status": "HOLD",
+    "scope": "Universal production automatic ODE selection",
+    "reasons": [
+      "Historical rate can miss current explicit wins",
+      "Fixed work score does not price providers and setup reliably",
+      "General trajectory/phase accuracy and user-local robustness remain to be established",
+      "Default gyromotion fails registered physical cap",
+      "Relaxation pays a measured 12.2% confirmation overhead"
+    ]
+  },
+  "default_api_changed_to_adaptive": false,
+  "default_derivative_permission": "Forbidden",
+  "measured_feature_effects": [
+    {
+      "case": "stiff-forced",
+      "a": "evidence",
+      "b": "adaptive",
+      "b_over_a_seconds": 0.8983987831750654,
+      "paired_ratio_range": [
+        0.8601206058065815,
+        0.9361855945372296
+      ],
+      "comparison_eligible": true,
+      "classification": "observed_paired_improvement",
+      "accuracy_pass": true
+    },
+    {
+      "case": "stiff-forced",
+      "a": "adaptive-unseeded",
+      "b": "adaptive",
+      "b_over_a_seconds": 0.8721116860460512,
+      "paired_ratio_range": [
+        0.8503623370829413,
+        0.8973985016080807
+      ],
+      "comparison_eligible": true,
+      "classification": "observed_paired_improvement",
+      "accuracy_pass": true
+    },
+    {
+      "case": "case5",
+      "a": "adaptive-no-startup-retry",
+      "b": "adaptive",
+      "b_over_a_seconds": 0.7960281579641929,
+      "paired_ratio_range": [
+        0.7718679895585056,
+        0.9087522854775799
+      ],
+      "comparison_eligible": true,
+      "classification": "observed_paired_improvement",
+      "accuracy_pass": true
+    },
+    {
+      "case": "relaxation",
+      "a": "evidence",
+      "b": "adaptive",
+      "b_over_a_seconds": 1.121686353529331,
+      "paired_ratio_range": [
+        1.086637642026499,
+        1.159449425529999
+      ],
+      "comparison_eligible": true,
+      "classification": "observed_paired_regression",
+      "accuracy_pass": true
+    }
+  ],
+  "candidate_dispositions": [
+    {
+      "id": "optional-provider-availability",
+      "status": "PROMOTE_SCOPED",
+      "scope": "Known optional-provider limitations only",
+      "evidence": "263 tests plus exact observed native path/counter equivalence"
+    },
+    {
+      "id": "tiny-tail-and-saturated-limit",
+      "status": "PROMOTE_SCOPED",
+      "scope": "Valid user options; explicit and implicit native endpoint landing",
+      "evidence": "Representable 1e-15 span and overflow contracts"
+    },
+    {
+      "id": "growth-only-entry-seed",
+      "status": "SPECIALIZED_ONLY",
+      "implementation": "reuse_entry_pilot_step; adaptive factory enables, baseline/default false",
+      "condition": "Completed economical nonfatal pilot, finite mean greater than user h0",
+      "evidence": {
+        "case": "stiff-forced",
+        "a": "adaptive-unseeded",
+        "b": "adaptive",
+        "b_over_a_seconds": 0.8721116860460512,
+        "paired_ratio_range": [
+          0.8503623370829413,
+          0.8973985016080807
+        ],
+        "comparison_eligible": true,
+        "classification": "observed_paired_improvement",
+        "accuracy_pass": true
+      }
+    },
+    {
+      "id": "zero-progress-entry-retry",
+      "status": "SPECIALIZED_ONLY",
+      "implementation": "retry_unresolved_entry_once; adaptive factory enables, baseline/default false",
+      "condition": "First qualifying incomplete nonfatal zero-accepted entry pilot per explicit tenure, at most one specially expedited retry",
+      "evidence": {
+        "case": "case5",
+        "a": "adaptive-no-startup-retry",
+        "b": "adaptive",
+        "b_over_a_seconds": 0.7960281579641929,
+        "paired_ratio_range": [
+          0.7718679895585056,
+          0.9087522854775799
+        ],
+        "comparison_eligible": true,
+        "classification": "observed_paired_improvement",
+        "accuracy_pass": true
+      }
+    },
+    {
+      "id": "adaptive-negative-memory",
+      "status": "SPECIALIZED_ONLY",
+      "scope": "Changing-regime problems with renewed economical implicit candidates",
+      "evidence": "Transition39/79 RHS -83.5%/-57.1%; elapsed time unqualified"
+    },
+    {
+      "id": "same-window-return-comparison",
+      "status": "SPECIALIZED_ONLY",
+      "scope": "Robustness against stale-rate false-positive return",
+      "tradeoff": "Relaxation +12.2% time; historical screen still permits false negatives"
+    },
+    {
+      "id": "unconditional-mean-step-seed",
+      "status": "PRUNE",
+      "reason": "R1 case5 down-seed added one attempt and8RHS; replaced by growth-only condition"
+    },
+    {
+      "id": "automatic-competition-everywhere",
+      "status": "PRUNE_FROM_DEFAULT",
+      "reason": "Stable simple problems do not amortize comparison/output service cost"
+    },
+    {
+      "id": "persistent-implicit-session",
+      "status": "OPTIMIZATION_POSSIBLE",
+      "reason": "Coalescing and mean step do not retain full implicit controller/workspace between calls"
+    },
+    {
+      "id": "structural-algebraic-and-causal-methods",
+      "status": "SPECIALIZED_ONLY",
+      "reason": "Retained separate APIs and prior evidence; general interface needs declared structure, original-target accuracy, identities and total-cost proof"
+    },
+    {
+      "id": "parallel-execution-default",
+      "status": "HOLD",
+      "reason": "No new parallel speed claim; prior calibration-inclusive measurements did not beat best direct control"
+    }
+  ],
+  "search_method": "Bounded evidence-guided branch exploration and pruning; not an implemented MCTS/UCT search",
+  "revision_cycles": 2,
+  "raw_failures_preserved": true,
+  "ncp_used": false
+}

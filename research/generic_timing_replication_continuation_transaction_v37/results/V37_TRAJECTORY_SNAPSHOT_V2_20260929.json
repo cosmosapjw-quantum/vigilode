@@ -1,0 +1,27 @@
+{
+  "schema": "vigilode-trajectory-snapshot-v1",
+  "version": 2,
+  "date": "2026-09-29",
+  "finding": "F-003",
+  "supersedes": "research/generic_timing_replication_continuation_transaction_v37/results/V37_TRAJECTORY_LITERALS_TOMBSTONE_20260929.json",
+  "family": "semilinear-advection-diffusion-ramped",
+  "profile_under_test": "stage-growth-calibration-192",
+  "provenance": {
+    "code": "audit base e1c3a5f plus branch claude/jolly-wozniak-7wl15h-wu13-holdout-hygiene (no solver change in that branch)",
+    "cargo_profile": "dev with CARGO_PROFILE_DEV_DEBUG=0",
+    "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+    "RAYON_NUM_THREADS": 1,
+    "command": "cargo test -p rodas5p-integrators --test v37_continuation_transaction_contracts -- --ignored",
+    "values_sha256": "90f9c891fe727b783fedd36ae7c6f612f433cbf77158f3d4fadee25d165c0315",
+    "values_sha256_of": "compact sorted-key JSON of `values`"
+  },
+  "agrees_with": "the values the 2026-09-28 bisect measured at b3e8165 (SEALED_REPLAY_BISECT_20260928.md)",
+  "values": {
+    "completed_continuation_jvp_vectors": 52,
+    "completed_target_attempt_index": 17,
+    "exhausted_target_attempt_index": 12,
+    "report_continuation_jvp_vectors": 132,
+    "report_prefix_jvp_vectors": 120
+  },
+  "note": "A numerical change that moves these values adds a V3 snapshot file; this file is never edited."
+}

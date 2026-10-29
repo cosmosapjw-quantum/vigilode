@@ -1,0 +1,766 @@
+{
+  "schema_version": 1,
+  "workflow_version": "1.0.0",
+  "task": "both",
+  "unit_id": "N6_GEOMETRY_TRANSFER_20261024",
+  "objective": "Develop and verify a geometry-informed finite invariant-module shifted solver and identify its real bottleneck",
+  "scope": "conditional dense immutable structural provider; local small tests; no NCP; no automatic production dispatcher promotion",
+  "status": "complete",
+  "production_status": "specialized_candidate_optimization_possible",
+  "dependencies": [
+    {
+      "id": "source_0",
+      "identity": "sha256:c1f493466bfb10ee17be2134110de5fad68b438f09acd58160c562ba7bc8faa0",
+      "description": "crates/rodas5p-core/src/invariant_module.rs"
+    },
+    {
+      "id": "source_1",
+      "identity": "sha256:ad60ab702e347ba286628b63309d9c30285cbca37f96477e39f168abf8764be8",
+      "description": "crates/rodas5p-core/src/shared_shift_jet.rs"
+    },
+    {
+      "id": "source_2",
+      "identity": "sha256:7e0c550fee10cbc08c935cc00095656d24f67f002f32374b505bef2e4e4c29fc",
+      "description": "crates/rodas5p-core/tests/invariant_module_contracts.rs"
+    },
+    {
+      "id": "source_3",
+      "identity": "sha256:c5b1c14e790b0827cdd84baf5f7e4d585aaa52aa5cd4ecefcadff795a93f3074",
+      "description": "crates/rodas5p-core/examples/invariant_module_bench.rs"
+    },
+    {
+      "id": "source_4",
+      "identity": "sha256:2407ea70035b8eeb8627a6cfe3369ba9f1604a28747af07e8ac7c4f0e9aadbc4",
+      "description": "research/local_frontier_20261024/src/check_geometry_transfer.py"
+    },
+    {
+      "id": "draft_0",
+      "identity": "sha256:d5620c487671000c89d7ac13130697023efbab4036b4228222767955e49de33c",
+      "description": "two_step_normal_reflection_walls_minor_revision_v0_1.pdf"
+    },
+    {
+      "id": "draft_1",
+      "identity": "sha256:d9dc4abb2c15c1e2a242c0e0d4a1e3cf87a6332ef98511c62a7d7deab3288d81",
+      "description": "curved_mirror_integrated_research_report_v13.pdf"
+    },
+    {
+      "id": "draft_2",
+      "identity": "sha256:8d8ab35da3a808dca2591ea9f433e8c8686578b9cb65ebbaed263088a2e60ee7",
+      "description": "curved_mirror_research_note_v7_source.zip"
+    },
+    {
+      "id": "draft_3",
+      "identity": "sha256:ca3e6c6303e31b429faf5f7ccb513d074d074e979d6fb1a0350173e4b9977019",
+      "description": "algebraic_geometry_stage5_integrated_release.zip"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "derivation",
+      "kind": "derivation",
+      "locator": "analysis/GEOMETRY_TRANSFER.md#3",
+      "scope": "rank, residual identity, dissipative inverse, chart similarity, arithmetic complexity",
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ]
+    },
+    {
+      "id": "source_provenance",
+      "kind": "source",
+      "locator": "evidence/GEOMETRY_SOURCES.json",
+      "scope": "four actually read historical sources; no republication",
+      "dependency_ids": [
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ]
+    },
+    {
+      "id": "exact_checks",
+      "kind": "calculation",
+      "locator": "analysis/GEOMETRY_EXACT_CHECKS.json",
+      "scope": "six exact rational checks of new transfer identities",
+      "dependency_ids": [
+        "source_4"
+      ]
+    },
+    {
+      "id": "tests",
+      "kind": "implementation",
+      "locator": "evidence/N6_tests_round3.json",
+      "scope": "15 invariant-module tests and 6 shared-shift tests passed",
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2"
+      ]
+    },
+    {
+      "id": "benchmark",
+      "kind": "calculation",
+      "locator": "analysis/N6_BENCHMARK_SUMMARY.json",
+      "scope": "one synthetic fixture family, 150 certified rows including 15 warmups",
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_3"
+      ]
+    },
+    {
+      "id": "review",
+      "kind": "review",
+      "locator": "analysis/GEOMETRY_TRANSFER.md#4",
+      "scope": "parent review of theorem and repeated dissipativity scan; round2 fix; benchmark fairness round3",
+      "dependency_ids": [
+        "source_0",
+        "source_1"
+      ]
+    },
+    {
+      "id": "handoff",
+      "kind": "artifact",
+      "locator": "analysis/GEOMETRY_TRANSFER.md#6",
+      "scope": "concrete residual-provider and local-profile steps",
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4"
+      ]
+    }
+  ],
+  "stages": [
+    {
+      "id": "R1",
+      "status": "complete",
+      "evidence_refs": [
+        "derivation"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    },
+    {
+      "id": "R2",
+      "status": "complete",
+      "evidence_refs": [
+        "source_provenance"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    },
+    {
+      "id": "R3",
+      "status": "complete",
+      "evidence_refs": [
+        "derivation"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    },
+    {
+      "id": "R4",
+      "status": "complete",
+      "evidence_refs": [
+        "derivation"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    },
+    {
+      "id": "R5",
+      "status": "complete",
+      "evidence_refs": [
+        "derivation"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    },
+    {
+      "id": "R6",
+      "status": "complete",
+      "evidence_refs": [
+        "exact_checks",
+        "review"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    },
+    {
+      "id": "R7",
+      "status": "complete",
+      "evidence_refs": [
+        "benchmark",
+        "exact_checks"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    },
+    {
+      "id": "R8",
+      "status": "complete",
+      "evidence_refs": [
+        "benchmark",
+        "derivation"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    },
+    {
+      "id": "R9",
+      "status": "complete",
+      "evidence_refs": [
+        "derivation",
+        "tests"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    },
+    {
+      "id": "R10",
+      "status": "complete",
+      "evidence_refs": [
+        "handoff"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    },
+    {
+      "id": "C1",
+      "status": "complete",
+      "evidence_refs": [
+        "derivation"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    },
+    {
+      "id": "C2",
+      "status": "complete",
+      "evidence_refs": [
+        "derivation"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    },
+    {
+      "id": "C3",
+      "status": "complete",
+      "evidence_refs": [
+        "derivation"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    },
+    {
+      "id": "C4",
+      "status": "complete",
+      "evidence_refs": [
+        "tests",
+        "benchmark"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    },
+    {
+      "id": "C5",
+      "status": "complete",
+      "evidence_refs": [
+        "tests"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    },
+    {
+      "id": "C6",
+      "status": "complete",
+      "evidence_refs": [
+        "tests"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    },
+    {
+      "id": "C7",
+      "status": "complete",
+      "evidence_refs": [
+        "exact_checks"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    },
+    {
+      "id": "C8",
+      "status": "complete",
+      "evidence_refs": [
+        "benchmark"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    },
+    {
+      "id": "C9",
+      "status": "complete",
+      "evidence_refs": [
+        "review"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    },
+    {
+      "id": "C10",
+      "status": "complete",
+      "evidence_refs": [
+        "handoff"
+      ],
+      "dependency_ids": [
+        "source_0",
+        "source_1",
+        "source_2",
+        "source_3",
+        "source_4",
+        "draft_0",
+        "draft_1",
+        "draft_2",
+        "draft_3"
+      ],
+      "reason": "Completed for the bounded transfer unit; broad ODE integration remains a separate obligation."
+    }
+  ],
+  "claims": [
+    {
+      "id": "residual_identity",
+      "statement": "r=(I-VW)b+V delta+alpha(BV-VH)z for x=Vz and delta=Wb-(I-alpha H)z",
+      "scope": "all real compatible finite matrices and vectors",
+      "basis": [
+        "derived"
+      ],
+      "evidence_refs": [
+        "derivation",
+        "exact_checks"
+      ],
+      "obligations": []
+    },
+    {
+      "id": "certified_error",
+      "statement": "B+B^T<=0 and alpha>=0 imply inverse 2-norm <=1, so original residual l1 bounds solution error l2",
+      "scope": "finite fixed operator; code admits via sufficient outward symmetric-part row bounds",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "evidence_refs": [
+        "derivation",
+        "tests"
+      ],
+      "obligations": []
+    },
+    {
+      "id": "factorization_reduction",
+      "statement": "d actual distinct shifts cost O(d*m^3) reduced versus O(d*n^3) full factorization; full original dense certification remains O(s*r*n^2)",
+      "scope": "fixed admitted n-by-m chart and setup amortization; does not imply a wall-time ratio",
+      "basis": [
+        "derived"
+      ],
+      "evidence_refs": [
+        "derivation"
+      ],
+      "obligations": []
+    },
+    {
+      "id": "measured_scope",
+      "statement": "Reused module beats fresh full LU in medians for n=16,64,128 but does not consistently beat reused full LU; admission is more expensive than fresh LU",
+      "scope": "synthetic repeated Jordan blocks, m=2, alpha=.25, nine measured repetitions each",
+      "basis": [
+        "numerically checked"
+      ],
+      "evidence_refs": [
+        "benchmark"
+      ],
+      "obligations": [
+        "local affinity-controlled crossover measurements",
+        "whole-ODE integration with current operator epochs"
+      ]
+    },
+    {
+      "id": "multiplicity",
+      "statement": "Retaining the nilpotent part is necessary in the stated 2x2 Jordan example; removing it gives first-component error 2/9",
+      "scope": "exact example at alpha=1 with H=[[-2,1],[0,-2]], b=(1,2)",
+      "basis": [
+        "derived",
+        "numerically checked"
+      ],
+      "evidence_refs": [
+        "derivation",
+        "exact_checks"
+      ],
+      "obligations": []
+    }
+  ],
+  "checks": [
+    {
+      "id": "rational",
+      "domain": "math",
+      "result": "pass_scoped",
+      "evidence_refs": [
+        "exact_checks"
+      ],
+      "reason": "six exact checks, not a replacement for general proofs",
+      "execution_ref": "exact_execution"
+    },
+    {
+      "id": "contracts",
+      "domain": "implementation",
+      "result": "pass_scoped",
+      "evidence_refs": [
+        "tests"
+      ],
+      "reason": "21 tests passed in final round",
+      "execution_ref": "test_execution"
+    },
+    {
+      "id": "microbench",
+      "domain": "numerics",
+      "result": "pass_scoped",
+      "evidence_refs": [
+        "benchmark"
+      ],
+      "reason": "150 rows certified, timing restricted to stated synthetic scope",
+      "execution_ref": "benchmark_execution"
+    }
+  ],
+  "executions": [
+    {
+      "id": "exact_execution",
+      "status": "completed",
+      "command": [
+        "python3",
+        "research/local_frontier_20261024/src/check_geometry_transfer.py"
+      ],
+      "environment": "Python Fraction exact arithmetic",
+      "evidence_refs": [
+        "exact_checks"
+      ],
+      "exit_code": 0,
+      "reason": "six transfer checks"
+    },
+    {
+      "id": "test_execution",
+      "status": "completed",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-core",
+        "--test",
+        "invariant_module_contracts",
+        "--test",
+        "shared_shift_jet_contracts"
+      ],
+      "environment": "Rust1.94.1; jobs1; codegenunits1; no incrementals; lock serialized",
+      "evidence_refs": [
+        "tests"
+      ],
+      "exit_code": 0,
+      "reason": "15 new + 6 regression tests"
+    },
+    {
+      "id": "benchmark_execution",
+      "status": "completed",
+      "command": [
+        "cargo",
+        "run",
+        "--locked",
+        "--offline",
+        "--profile",
+        "measurement",
+        "-p",
+        "rodas5p-core",
+        "--example",
+        "invariant_module_bench"
+      ],
+      "environment": "Rust1.94.1; single-thread env; no CPU affinity; exact receipt in evidence/N6_microbenchmark.json",
+      "evidence_refs": [
+        "benchmark"
+      ],
+      "exit_code": 0,
+      "reason": "15 warmup + 135 timing rows"
+    }
+  ],
+  "decisions": [
+    {
+      "candidate": "finite invariant module",
+      "decision": "specialized_opt_in",
+      "reason": "verified conditional solver with factorization reduction, no consistent gain over reused full LU yet"
+    },
+    {
+      "candidate": "dense original residual",
+      "decision": "optimization_target",
+      "reason": "O(n^2) outward work masks much of reduced solve saving"
+    },
+    {
+      "candidate": "CRT and symmetry modules",
+      "decision": "next_provider_extension",
+      "reason": "reuse V/W/H contracts once algebraic relation and projector norm are provided"
+    },
+    {
+      "candidate": "affine prefix maps",
+      "decision": "conditional_research",
+      "reason": "requires actual affine maps known before scan"
+    },
+    {
+      "candidate": "geometric collision totals as speed proof",
+      "decision": "not_used",
+      "reason": "no mathematical map from those counts to solver arithmetic cost"
+    }
+  ],
+  "overrides": [
+    {
+      "previous": "benchmark public certifier refreshed dissipativity only for baseline solves",
+      "evidence": "same immutable operator bound is valid for every mode",
+      "replacement": "reuse and direct modes use plan.certify_candidates; cold fresh_full_lu retains fresh check",
+      "impact": "fair warm-path comparison; original residual unchanged",
+      "result": "final benchmark scope recorded"
+    }
+  ],
+  "failures": [],
+  "next_actions": [
+    {
+      "priority": 1,
+      "action": "immutable sparse/banded original residual provider",
+      "acceptance": "same dense exact oracle; checked pattern and epoch; O(nnz) row work; no dropped small entries"
+    },
+    {
+      "priority": 2,
+      "action": "local reuse/shift crossover profiling",
+      "acceptance": "separate setup, factorization, lift, original residual; compare cached full LU and direct structural solve"
+    },
+    {
+      "priority": 3,
+      "action": "operator callback structural provider",
+      "acceptance": "certified action error and BV-VH defect; no dense B requirement; original residual retained"
+    },
+    {
+      "priority": 4,
+      "action": "adaptive opt-in integration",
+      "acceptance": "current epoch; leakage refusal fallback; failed-attempt accounting; measured cost/cooldown policy"
+    }
+  ],
+  "modification_rounds": [
+    {
+      "round": 1,
+      "tests_passed": 12
+    },
+    {
+      "round": 2,
+      "tests_passed": 19,
+      "change": "cached immutable dissipativity and finite matrix check"
+    },
+    {
+      "round": 3,
+      "tests_passed": 21,
+      "change": "safe cached full-space candidate certificate and fair baselines"
+    }
+  ]
+}

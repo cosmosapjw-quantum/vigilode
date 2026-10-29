@@ -1,0 +1,37 @@
+{
+  "schema": "vigilode.rvj-postpublication-doc-check.v1",
+  "parent_published_sha": "25e76dd84f1ca71fd460201bdf31476d3cce9545",
+  "source_state": "parent plus exactly four rustdoc-comment edits; publication follows this build-only check",
+  "edited_path": "crates/vigilode-coupled/src/cyclic_closure.rs",
+  "before_sha256": "2ff8c6a76bfda7422d6340887e0b95e43375c29e3dfb79fd9bbcf3dea98adcc0",
+  "after_sha256": "3bfecf2091b2d44de5656028a7404aace9f4aab57ab3a695ccb5b0b931a2ea85",
+  "non_doc_comment_lines_identical": true,
+  "patch_sha256": "83b0b44c98251700804b2e56d0ead1f1f5b95809a94bf7f0aa1ac70e945e650c",
+  "argv": [
+    "/tmp/vigilode-rvj-rust/bin/cargo",
+    "doc",
+    "-p",
+    "vigilode",
+    "-p",
+    "vigilode-coupled",
+    "--no-deps",
+    "--locked",
+    "--offline"
+  ],
+  "environment_subset": {
+    "RUSTC": "/tmp/vigilode-rvj-rust/bin/rustc",
+    "RUSTDOC": "/tmp/vigilode-rvj-rust/bin/rustdoc",
+    "RUSTDOCFLAGS": "-D warnings",
+    "CARGO_HOME": "/tmp/vigilode-rvj-cargo",
+    "CARGO_TARGET_DIR": "/tmp/vigilode-rvj-target",
+    "CARGO_BUILD_JOBS": "2"
+  },
+  "started_utc": "2026-10-28T11:06:50.425608+00:00",
+  "finished_utc": "2026-10-28T11:07:59.299533+00:00",
+  "elapsed_seconds": 68.8739295560008,
+  "exit_code": 0,
+  "scientific_native_reexecution": false,
+  "correction_task": "PR-N03",
+  "cumulative_correction_used": 2,
+  "limit": 3
+}

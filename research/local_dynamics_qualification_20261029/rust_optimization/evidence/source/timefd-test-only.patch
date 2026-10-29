@@ -1,0 +1,188 @@
+diff --git a/crates/rodas5p-integrators/tests/time_fd_workspace_contracts.rs b/crates/rodas5p-integrators/tests/time_fd_workspace_contracts.rs
+new file mode 100644
+index 00000000..d503512e
+--- /dev/null
++++ b/crates/rodas5p-integrators/tests/time_fd_workspace_contracts.rs
+@@ -0,0 +1,182 @@
++//! Finite-difference time derivatives must use prepared driver storage.
++//! The callback arm computes the same differences on the stack, so the
++//! allocation delta isolates the two fallback RHS buffers at fixed output.
++
++use std::alloc::{GlobalAlloc, Layout, System};
++use std::cell::Cell;
++use std::sync::Arc;
++
++use rodas5p_core::{DenseMatrix, LinearMethod, LinearSolverConfig, WorkCounters};
++use rodas5p_integrators::{
++    AdaptiveStepConfig, OdeProblem, OutputSchedule, integrate_rodas5p_fast_observed,
++    integrate_rodas5p_mf_fast_observed,
++};
++
++struct Counting;
++thread_local! {
++    static ALLOCATIONS: Cell<usize> = const { Cell::new(0) };
++}
++unsafe impl GlobalAlloc for Counting {
++    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
++        let _ = ALLOCATIONS.try_with(|n| n.set(n.get() + 1));
++        unsafe { System.alloc(layout) }
++    }
++    unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
++        let _ = ALLOCATIONS.try_with(|n| n.set(n.get() + 1));
++        unsafe { System.alloc_zeroed(layout) }
++    }
++    unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
++        let _ = ALLOCATIONS.try_with(|n| n.set(n.get() + 1));
++        unsafe { System.realloc(ptr, layout, new_size) }
++    }
++    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
++        unsafe { System.dealloc(ptr, layout) }
++    }
++}
++#[global_allocator]
++static COUNTING: Counting = Counting;
++
++fn counted<T>(f: impl FnOnce() -> T) -> (T, usize) {
++    let before = ALLOCATIONS.with(Cell::get);
++    let result = f();
++    (result, ALLOCATIONS.with(Cell::get) - before)
++}
++
++fn problem(with_callback: bool) -> OdeProblem {
++    // Deliberately accumulate: scratch reused after an earlier call must be
++    // zeroed just as eval_rhs's freshly allocated output is zeroed.
++    let rhs = Arc::new(|t: f64, y: &[f64], out: &mut [f64]| {
++        out[0] += t + y[0];
++        Ok(())
++    });
++    let partial_t = with_callback.then(|| {
++        Arc::new(|t: f64, y: &[f64], out: &mut [f64]| {
++            let eps = f64::EPSILON.sqrt() * t.abs().max(1.0);
++            let fp = t + eps + y[0];
++            let fm = t - eps + y[0];
++            out[0] += (fp - fm) / (2.0 * eps);
++            Ok(())
++        }) as Arc<dyn Fn(f64, &[f64], &mut [f64]) -> rodas5p_core::CoreResult<()> + Send + Sync>
++    });
++    OdeProblem::new(
++        "time-fd-workspace",
++        1,
++        rhs,
++        None,
++        Some(Arc::new(|_, _| DenseMatrix::new(1, 1, vec![1.0]))),
++        Some(Arc::new(|_, _, v, out| {
++            out[0] = v[0];
++            Ok(())
++        })),
++        partial_t,
++        false,
++        None,
++        None,
++    )
++    .unwrap()
++    .with_jacobian_into(Arc::new(|_, _, jac| {
++        jac[(0, 0)] = 1.0;
++        Ok(())
++    }))
++}
++
++fn adaptive(rtol: f64) -> AdaptiveStepConfig {
++    AdaptiveStepConfig {
++        atol: rtol * 1.0e-3,
++        rtol,
++        initial_step: 1.0e-3,
++        max_attempts: 100_000,
++        ..AdaptiveStepConfig::default()
++    }
++}
++
++fn same_outputs(a: &[(f64, Vec<f64>)], b: &[(f64, Vec<f64>)]) {
++    assert_eq!(a.len(), b.len());
++    for ((ta, ya), (tb, yb)) in a.iter().zip(b) {
++        assert_eq!(ta.to_bits(), tb.to_bits());
++        assert_eq!(ya.len(), yb.len());
++        for (x, y) in ya.iter().zip(yb) {
++            assert_eq!(x.to_bits(), y.to_bits());
++        }
++    }
++}
++
++fn output_pairs(times: &[f64], states: &[Vec<f64>]) -> Vec<(f64, Vec<f64>)> {
++    times.iter().copied().zip(states.iter().cloned()).collect()
++}
++
++fn compare_counters_except_fallback_rhs(a: &WorkCounters, b: &WorkCounters) {
++    let mut expected = b.clone();
++    expected.rhs_calls += 2 * expected.ft_calls;
++    expected.rhs_evaluations += 2 * expected.ft_calls;
++    assert_eq!(*a, expected);
++}
++
++#[test]
++fn dense_fd_scratch_matches_stack_callback_and_has_no_step_allocations() {
++    let fallback = problem(false);
++    let callback = problem(true);
++    let schedule = OutputSchedule::new(vec![0.0, 0.5]).unwrap();
++    // Warm coefficient and allocator-local state before counting.
++    integrate_rodas5p_fast_observed(&fallback, (0.0, 0.5), &[0.25], &adaptive(1e-6), &schedule)
++        .unwrap();
++    for rtol in [1e-5, 1e-8] {
++        let (fd, fd_alloc) = counted(|| {
++            integrate_rodas5p_fast_observed(&fallback, (0.0, 0.5), &[0.25], &adaptive(rtol), &schedule)
++                .unwrap()
++        });
++        let (cb, cb_alloc) = counted(|| {
++            integrate_rodas5p_fast_observed(&callback, (0.0, 0.5), &[0.25], &adaptive(rtol), &schedule)
++                .unwrap()
++        });
++        assert!(fd.observed.success && cb.observed.success);
++        same_outputs(
++            &output_pairs(&fd.observed.t, &fd.observed.y),
++            &output_pairs(&cb.observed.t, &cb.observed.y),
++        );
++        assert_eq!((fd.attempts, fd.accepted_steps, fd.rejected_steps),
++                   (cb.attempts, cb.accepted_steps, cb.rejected_steps));
++        compare_counters_except_fallback_rhs(&fd.observed.counters, &cb.observed.counters);
++        assert!(fd.observed.counters.ft_calls > 0);
++        assert_eq!(fd_alloc, cb_alloc, "fallback allocated per f_t call at rtol={rtol:e}");
++    }
++}
++
++#[test]
++fn matrix_free_fd_scratch_matches_stack_callback_and_has_no_step_allocations() {
++    let fallback = problem(false);
++    let callback = problem(true);
++    let schedule = OutputSchedule::new(vec![0.0, 0.5]).unwrap();
++    let linear = LinearSolverConfig {
++        method: LinearMethod::Gmres,
++        ..LinearSolverConfig::default()
++    };
++    integrate_rodas5p_mf_fast_observed(
++        &fallback, (0.0, 0.5), &[0.25], &linear, &adaptive(1e-6), &schedule,
++    )
++    .unwrap();
++    for rtol in [1e-5, 1e-8] {
++        let (fd, fd_alloc) = counted(|| {
++            integrate_rodas5p_mf_fast_observed(
++                &fallback, (0.0, 0.5), &[0.25], &linear, &adaptive(rtol), &schedule,
++            )
++            .unwrap()
++        });
++        let (cb, cb_alloc) = counted(|| {
++            integrate_rodas5p_mf_fast_observed(
++                &callback, (0.0, 0.5), &[0.25], &linear, &adaptive(rtol), &schedule,
++            )
++            .unwrap()
++        });
++        assert!(fd.observed.success && cb.observed.success);
++        same_outputs(
++            &output_pairs(&fd.observed.t, &fd.observed.y),
++            &output_pairs(&cb.observed.t, &cb.observed.y),
++        );
++        assert_eq!((fd.attempts, fd.accepted_steps, fd.rejected_steps),
++                   (cb.attempts, cb.accepted_steps, cb.rejected_steps));
++        compare_counters_except_fallback_rhs(&fd.observed.counters, &cb.observed.counters);
++        assert!(fd.observed.counters.ft_calls > 0);
++        assert_eq!(fd_alloc, cb_alloc, "fallback allocated per f_t call at rtol={rtol:e}");
++    }
++}

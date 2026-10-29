@@ -1,0 +1,204 @@
+{
+  "schema": "vigilode.reaudit.research_next_dag.v1",
+  "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+  "production_candidate_status": "HOLD_FOR_INDEPENDENT_DECISION",
+  "performed_work": [
+    "same-input joint Laguerre recurrence",
+    "quadratic causal enclosure derivation",
+    "Fraction exact fixture",
+    "actual-tableau numeric scalar/componentwise comparison"
+  ],
+  "nodes": [
+    {
+      "id": "DEV-P0",
+      "objective": "Close numerical correctness and action result semantics",
+      "depends_on": [],
+      "acceptance": [
+        "Pin integration commit and prior findings dispositions",
+        "Expose total-vs-truncation-vs-heuristic status without implicit promotion"
+      ],
+      "deliverables": [
+        "source_manifest.json",
+        "native_regressions.log"
+      ],
+      "stop_condition": "REWORK if oracle or consumer tolerance mismatch",
+      "status": "PROPOSED"
+    },
+    {
+      "id": "DEV-P1",
+      "objective": "Shared matrix-function action contract",
+      "depends_on": [
+        "DEV-P0"
+      ],
+      "acceptance": [
+        "Same operator/vector/tolerance contract across methods",
+        "Zero h/A limits and repeated singular eigenvalues",
+        "Counters distinguish vector JVPs and blocks"
+      ],
+      "deliverables": [
+        "action_contract.rs",
+        "contract_tests.rs"
+      ],
+      "stop_condition": "BLOCKED_BY_DOMAIN if operator domain unsupported",
+      "status": "PROPOSED"
+    },
+    {
+      "id": "DEV-P2",
+      "objective": "Normal-domain Chebyshev exp/phi1..4 baseline",
+      "depends_on": [
+        "DEV-P1"
+      ],
+      "acceptance": [
+        "Certified spectral interval authority",
+        "Coefficient and roundoff budget independent of truncation",
+        "Native-vs-Decimal tests over same input campaign"
+      ],
+      "deliverables": [
+        "chebyshev_backend.rs",
+        "precision_sweep.json"
+      ],
+      "stop_condition": "HOLD if total error upper unavailable",
+      "status": "PROPOSED"
+    },
+    {
+      "id": "DEV-P3",
+      "objective": "Laguerre joint recurrence plus stable scale planner",
+      "depends_on": [
+        "DEV-P1"
+      ],
+      "acceptance": [
+        "Reproduce L64 same-case failures",
+        "Same24D cap16 five outputs absolute error<=1e-10",
+        "Do not declare cap16 universal",
+        "Bound coefficient quadrature and recurrence roundoff, or mark heuristic"
+      ],
+      "deliverables": [
+        "laguerre_backend.rs",
+        "laguerre_precision_sweep.json"
+      ],
+      "stop_condition": "REWORK on false certificate; fallback on unresolved bound",
+      "status": "PROPOSED"
+    },
+    {
+      "id": "DEV-P4",
+      "objective": "Leja backend exploratory implementation",
+      "depends_on": [
+        "DEV-P1"
+      ],
+      "acceptance": [
+        "Version-pinned primary algorithm and node table provenance",
+        "Divided-difference stability/degree/scaling checks",
+        "Normal and nonnormal adversarial reference comparisons"
+      ],
+      "deliverables": [
+        "leja_prototype.rs",
+        "leja_admission_results.json"
+      ],
+      "stop_condition": "EXPLORATORY until reviewed error contract",
+      "status": "PROPOSED"
+    },
+    {
+      "id": "DEV-H0",
+      "objective": "Stage-error enclosure input semantics",
+      "depends_on": [
+        "DEV-P0"
+      ],
+      "acceptance": [
+        "Separate error-majorant from synthetic solution-norm schema",
+        "Bind residual to actual stage target and norm",
+        "Construct local derivative/domain enclosure causally"
+      ],
+      "deliverables": [
+        "stage_error_contract.rs",
+        "exact_rational_fixtures.json"
+      ],
+      "stop_condition": "UNRESOLVED_BOUND on missing premise",
+      "status": "PROPOSED"
+    },
+    {
+      "id": "DEV-H1",
+      "objective": "Verified scalar and componentwise majorants",
+      "depends_on": [
+        "DEV-H0"
+      ],
+      "acceptance": [
+        "Directed residual/inverse/majorant rounding including underflow",
+        "Prove U>=abs(W inverse), not assume abs(approx inverse)",
+        "Reproduce rational12 exact inequalities and actual-tableau24 comparisons",
+        "Include upper-triangular nonnormal benchmark distinguishing scalar and componentwise pessimism"
+      ],
+      "deliverables": [
+        "stage_enclosure.rs",
+        "interval_oracle_results.json"
+      ],
+      "stop_condition": "HOLD until native interval contract closes",
+      "status": "PROPOSED"
+    },
+    {
+      "id": "DEV-H2",
+      "objective": "Transactional admission and full accounting",
+      "depends_on": [
+        "DEV-H1"
+      ],
+      "acceptance": [
+        "Endpoint/embedded WRMS budgets separate",
+        "All q1/q2 diagnostics, rejected candidates and fallback work retained",
+        "Manufactured nonlinear and stiff-limit order experiments"
+      ],
+      "deliverables": [
+        "transactional_consumer_patch",
+        "order_and_false_accept_campaign.json"
+      ],
+      "stop_condition": "REWORK on accepted endpoint violation",
+      "status": "PROPOSED"
+    },
+    {
+      "id": "DEV-B0",
+      "objective": "Paired full-cost parallel benchmark",
+      "depends_on": [
+        "DEV-P2",
+        "DEV-P3",
+        "DEV-H2"
+      ],
+      "acceptance": [
+        "1/2/4/8 workers, pinned affinity and BLAS threads",
+        "Matched sequential caching/kernels",
+        "Independent process clusters, all failed attempts included",
+        "Measured certificate cost and work-accuracy CI"
+      ],
+      "deliverables": [
+        "benchmark_raw.jsonl",
+        "paired_ci_report.json"
+      ],
+      "stop_condition": "NO_SPEEDUP_CLAIM until independent CI gate",
+      "status": "PROPOSED"
+    },
+    {
+      "id": "DEV-T0",
+      "objective": "Time-window parallel pilot",
+      "depends_on": [
+        "DEV-B0"
+      ],
+      "acceptance": [
+        "Separate target from within-stage solver",
+        "Fixed4..16 windows with stable coarse propagator",
+        "Compare contraction, invariants, total work and wall-clock"
+      ],
+      "deliverables": [
+        "time_window_pilot.py",
+        "window_results.json"
+      ],
+      "stop_condition": "EXPLORATORY; adaptive/events integration deferred",
+      "status": "PROPOSED"
+    }
+  ],
+  "claim_flags": {
+    "production_code_changed": false,
+    "wall_speedup_measured": false,
+    "stiff_uniform_order_proved": false,
+    "Leja_executed": false,
+    "Laguerre_roundoff_bound_proved": false,
+    "actual_tableau_directed_certificate": false,
+    "exact_rational_majorant_verified": true
+  }
+}

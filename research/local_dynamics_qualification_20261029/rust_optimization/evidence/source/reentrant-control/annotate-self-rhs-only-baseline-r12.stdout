@@ -1,0 +1,73 @@
+--------------------------------------------------------------------------------
+Profile data file '/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/reentrant-control/callgrind-rhs-only-baseline-r12.callgrind' (creator: callgrind-3.22.0)
+--------------------------------------------------------------------------------
+I1 cache: 
+D1 cache: 
+LL cache: 
+Timerange: Basic block 0 - 72566106
+Trigger: Program termination
+Profiled target:  /home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027 reentrant-nonlinear rhs-only 12 (PID 2120269, part 1)
+Events recorded:  Ir
+Events shown:     Ir
+Event sort order: Ir
+Thresholds:       99.9
+Include dirs:     
+User annotated:   
+Auto-annotation:  off
+
+--------------------------------------------------------------------------------
+Ir                   
+--------------------------------------------------------------------------------
+462,382,084 (100.0%)  PROGRAM TOTALS
+
+--------------------------------------------------------------------------------
+Ir                    file:function
+--------------------------------------------------------------------------------
+117,676,392 (25.45%)  ???:vigilode::explicit::Dopri5::solve_impl [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+ 68,794,260 (14.88%)  ???:rodas5p_integrators::dopri5::evaluate_rhs [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+ 52,571,136 (11.37%)  ???:production_return_bench_20261027::cases::solve::{{closure}} [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+ 34,594,536 ( 7.48%)  ???:rodas5p_integrators::dopri5::error_norm [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+ 31,236,564 ( 6.76%)  ./math/../sysdeps/ieee754/dbl-64/s_sin.c:__sincos_fma
+ 18,494,190 ( 4.00%)  ???:production_return_bench_20261027::cases::rate [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+ 17,454,168 ( 3.77%)  ???:rodas5p_integrators::output::land_capped [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+ 17,416,908 ( 3.77%)  ./math/../sysdeps/ieee754/dbl-64/s_sincos.c:__sincos_fma [/usr/lib/x86_64-linux-gnu/libm.so.6]
+ 13,564,311 ( 2.93%)  ./math/../sysdeps/ieee754/dbl-64/e_exp.c:__ieee754_exp_fma [/usr/lib/x86_64-linux-gnu/libm.so.6]
+ 11,088,576 ( 2.40%)  ???:rodas5p_integrators::output::step_to [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+ 10,674,030 ( 2.31%)  ./math/../sysdeps/ieee754/dbl-64/s_tanh.c:tanh [/usr/lib/x86_64-linux-gnu/libm.so.6]
+  9,509,004 ( 2.06%)  ./math/../sysdeps/ieee754/dbl-64/s_log1p.c:__log1p_fma [/usr/lib/x86_64-linux-gnu/libm.so.6]
+  8,223,180 ( 1.78%)  ./math/./w_exp_template.c:exp@@GLIBC_2.29 [/usr/lib/x86_64-linux-gnu/libm.so.6]
+  7,330,452 ( 1.59%)  ./math/../sysdeps/ieee754/dbl-64/s_expm1.c:__expm1_fma [/usr/lib/x86_64-linux-gnu/libm.so.6]
+  6,815,993 ( 1.47%)  ./string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:__memcpy_avx_unaligned_erms [/usr/lib/x86_64-linux-gnu/libc.so.6]
+  6,069,336 ( 1.31%)  ???:rodas5p_integrators::dopri5_dense::Dopri5OutputSession::accept [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+  4,517,832 ( 0.98%)  ./math/../sysdeps/x86/fpu/fenv_private.h:__sincos_fma
+  3,460,260 ( 0.75%)  ./math/../sysdeps/ieee754/dbl-64/e_pow.c:__ieee754_pow_fma [/usr/lib/x86_64-linux-gnu/libm.so.6]
+  3,182,832 ( 0.69%)  ???:rodas5p_integrators::output::OutputCollector::limit_step [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+  2,856,696 ( 0.62%)  ???:rodas5p_integrators::adaptive::adaptive_next_step_after_attempt_prevalidated [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+  2,770,296 ( 0.60%)  ???:rodas5p_integrators::adaptive::AdaptiveControllerState::propose_factor_prevalidated [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+  2,227,140 ( 0.48%)  ???:rodas5p_integrators::dopri5_dense::Dopri5OutputSession::trial [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+  2,054,910 ( 0.44%)  ./math/./w_log1p_template.c:log1p [/usr/lib/x86_64-linux-gnu/libm.so.6]
+  1,439,160 ( 0.31%)  ???:rodas5p_integrators::output::adaptive_end_step [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+  1,371,504 ( 0.30%)  ???:rodas5p_integrators::output::OutputCollector::accept_prechecked [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+  1,233,021 ( 0.27%)  ./math/../sysdeps/ieee754/dbl-64/math_config.h:__ieee754_exp_fma
+    822,234 ( 0.18%)  ???:0x00000000048a1400 [???]
+    821,964 ( 0.18%)  ???:0x00000000048a1350 [???]
+    753,720 ( 0.16%)  ./math/./w_pow_template.c:pow@@GLIBC_2.29 [/usr/lib/x86_64-linux-gnu/libm.so.6]
+    700,308 ( 0.15%)  ???:rodas5p_integrators::dopri5::Dopri5Workspace::accept_fsal [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+    655,612 ( 0.14%)  ./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:__memset_avx2_unaligned_erms [/usr/lib/x86_64-linux-gnu/libc.so.6]
+    444,912 ( 0.10%)  ???:rodas5p_integrators::output::require_progress [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+    180,192 ( 0.04%)  ???:0x00000000048a12e0 [???]
+    171,300 ( 0.04%)  ./math/../sysdeps/ieee754/dbl-64/math_config.h:__ieee754_pow_fma
+    100,751 ( 0.02%)  ./malloc/./malloc/malloc.c:_int_malloc [/usr/lib/x86_64-linux-gnu/libc.so.6]
+     81,815 ( 0.02%)  ???:serde_json::value::ser::<impl serde_core::ser::Serialize for serde_json::value::Value>::serialize'2 [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+     79,442 ( 0.02%)  ???:alloc::collections::btree::map::BTreeMap<K,V,A>::insert [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+     76,757 ( 0.02%)  ./elf/./elf/dl-lookup.c:do_lookup_x [/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2]
+     68,520 ( 0.01%)  ???:0x00000000048a1370 [???]
+     60,784 ( 0.01%)  ./malloc/./malloc/malloc.c:_int_free [/usr/lib/x86_64-linux-gnu/libc.so.6]
+     54,043 ( 0.01%)  ./elf/./elf/dl-tunables.c:__GI___tunables_init [/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2]
+     52,008 ( 0.01%)  ./stdio-common/./stdio-common/vfscanf-internal.c:__vfscanf_internal [/usr/lib/x86_64-linux-gnu/libc.so.6]
+     42,600 ( 0.01%)  ./string/../sysdeps/x86_64/multiarch/memcmp-avx2-movbe.S:__memcmp_avx2_movbe [/usr/lib/x86_64-linux-gnu/libc.so.6]
+     41,572 ( 0.01%)  ./elf/../sysdeps/x86_64/dl-machine.h:_dl_relocate_object
+     37,289 ( 0.01%)  ./malloc/./malloc/malloc.c:malloc [/usr/lib/x86_64-linux-gnu/libc.so.6]
+     31,974 ( 0.01%)  ???:<&mut serde_json::ser::Serializer<W,F> as serde_core::ser::Serializer>::serialize_str [/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-baseline/release/examples/production_return_bench_20261027]
+     31,703 ( 0.01%)  ./elf/./elf/do-rel.h:_dl_relocate_object
+

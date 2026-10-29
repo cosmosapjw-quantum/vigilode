@@ -1,0 +1,22 @@
+{
+  "incidents": [
+    {
+      "classification": "AUDIT_HELPER_PATH_ERROR",
+      "observed": "Initial invocation passed a relative target directory; Cargo resolves target-dir against repo cwd while runner cwd is workspace root.",
+      "scientific_effect": "None: native build against same source and locked dependencies; all executables are explicitly captured by Cargo.",
+      "resolution": "Stable shared target alias runtime_r4/target-shared symlink points to actual repo/runtime_r4/target-shared; unexecuted separate corrected runner normalizes paths; registered runner restored byte-identically.",
+      "preserved": "Initial native build command and artifact paths in native/suite_summary.json."
+    },
+    {
+      "classification": "AUDIT_HELPER_CONTROL_ERROR",
+      "observed": "While diagnosing relative target path, attempted process-group termination from ps inventory returned ProcessLookupError: [Errno 3] No such process.",
+      "effect": "No termination confirmation; no retry of termination. Build subsequently completed exit 0 in 230.67 seconds.",
+      "resolution": "No process control needed; path alias aligned shared cache.",
+      "solver_failure": false
+    }
+  ],
+  "registered_runner_sha256": "f40ac513e8b3606e42fe74d779b77a95331ff6dbecf22c621acc482a8e341366",
+  "corrected_runner_sha256": "50c2a3372c82336e5cbd7eb3ad43965f39213b9a1847bfb6ca5eab2d3a8e3b51",
+  "executed_runner": "run_bounded_suite.py (registered bytes, already loaded by Python before helper patch)",
+  "corrected_runner_executed": false
+}

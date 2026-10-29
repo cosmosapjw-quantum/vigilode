@@ -1,0 +1,190 @@
+{
+  "schema": "vigilode.reaudit.n02_implementation.v1",
+  "node": "N02",
+  "date": "2026-10-21",
+  "implementation_status": "IMPLEMENTED_SOURCE_FROZEN",
+  "promotion_status": "HOLD_PENDING_NATIVE_INTEGRATION_AND_NCP_EVIDENCE",
+  "historical_results_modified": false,
+  "scientific_benchmarks_rerun": false,
+  "new_protocol": {
+    "path": "crates/vigilode-bench/protocols/n02_independent_reference_v1.json",
+    "tier": "radau5_cvode_refinement_v1",
+    "relative_tolerances": [
+      1e-11,
+      1e-12,
+      1e-13
+    ],
+    "absolute_tolerance_factors": [
+      1,
+      0.1,
+      0.01
+    ],
+    "agreement_threshold": 1e-10,
+    "refinement_threshold": 1e-10,
+    "common_error_rtol": 1.0,
+    "require_every_level_success": true,
+    "baseline": "finest RADAU5",
+    "reference_authority": "independent empirical grid agreement, not an enclosure"
+  },
+  "source_binding": {
+    "schema": "vigilode-bench.source.v1",
+    "authority": "build-embedded exact source manifest, compared before and after wp",
+    "coverage": [
+      "all repository crates",
+      "Cargo path dependencies within repository",
+      "root manifests/locks/toolchain",
+      "fixture coefficient assets",
+      "literal Rust compile-time include closure",
+      "native bridges and vendored native source"
+    ],
+    "external_registry_trust": "Cargo.lock package checksums verified by Cargo",
+    "system_shared_library_bytes_in_build_source_manifest": false,
+    "git_required": false,
+    "runtime_head_used_as_build_commit": false,
+    "dirty_git_default": "REFUSE",
+    "dirty_exception": "explicit --allow-dirty-source retains content verification",
+    "changed_source_corpus_or_binary": "REFUSE_RESULT_PUBLICATION",
+    "boundary_not_continuous_monitoring": true,
+    "low_level_library_has_provenance": false
+  },
+  "tests": [
+    {
+      "kind": "actual_standalone_source_guard",
+      "passed": 8,
+      "failed": 0
+    },
+    {
+      "kind": "actual_standalone_reference_policy",
+      "passed": 6,
+      "failed": 0
+    },
+    {
+      "kind": "actual_harness_with_explicit_mock_adapters",
+      "passed": 18,
+      "failed": 0,
+      "includes_overlap": [
+        "6 reference policy tests",
+        "5 existing metric tests",
+        "2 existing model tests"
+      ],
+      "new_mock_harness_contract_tests": 5
+    },
+    {
+      "kind": "actual_build_script_rust_compilation",
+      "status": "PASS",
+      "native_build_script_executed": false
+    },
+    {
+      "kind": "actual_repository_manifest_snapshot_and_verify",
+      "status": "PASS",
+      "receipt": "evidence/n02/source_probe.log"
+    }
+  ],
+  "full_bench_typecheck": {
+    "status": "BLOCKED_NOT_RUN",
+    "reason": "41 exact locked dependency versions unavailable; gfortran and SUNDIALS development dependencies absent",
+    "native_adapter_integration_pass_claim": false
+  },
+  "next_steps": [
+    {
+      "id": "N02-V1",
+      "executor": "local Codex 6 Luna low",
+      "action": "Obtain exact locked dependencies and native development prerequisites; cargo test --locked --manifest-path crates/vigilode-bench/Cargo.toml; correct only integration/compile errors, without changing thresholds or published files.",
+      "required_result": "native adapters and full bench crate compile/test receipt"
+    },
+    {
+      "id": "N02-V2",
+      "executor": "NCP runner",
+      "action": "Build measurement profile in a source-clean checkout with target and all artifacts outside the repository; run wp with --require-independent-reference and new preregistered corpus.",
+      "required_result": "VERIFIED_BUILD_SOURCE receipt, independent full-ladder reference receipts, all rows/repetitions including failures"
+    },
+    {
+      "id": "N02-V3",
+      "executor": "production promotion gate",
+      "action": "Verify source/corpus/binary hashes and raw receipt coverage; distinguish empirical grid pass, scoped certificates, and broad production eligibility.",
+      "required_result": "No broad production inference from process exit or empirical reference agreement"
+    }
+  ],
+  "files": [
+    {
+      "path": "crates/vigilode-bench/build.rs",
+      "sha256": "b75aa931516e40dd4bfcb6eb0adf25dccc5c29696bf6e400a5fbd75aeb35c0b6"
+    },
+    {
+      "path": "crates/vigilode-bench/src/source_identity.rs",
+      "sha256": "bf4dfb3053e1cc1fa09765b850bbd40b29c4991a1857eb77dc3888cf359c50b4"
+    },
+    {
+      "path": "crates/vigilode-bench/src/main.rs",
+      "sha256": "81d8c87e1192f89bef661a74428edcaa1579d4c80ee35619051e42db1b32090c"
+    },
+    {
+      "path": "crates/vigilode-bench/src/lib.rs",
+      "sha256": "346bc76c65b24773c4287f5a5360987fedff39cfabd15df07d7a3086fe5d7e0f"
+    },
+    {
+      "path": "crates/vigilode-bench/src/corpus.rs",
+      "sha256": "2e36f656204f8089c87b6a65674273c7b5cc6cbb87632fdf3d05d987a8f99be3"
+    },
+    {
+      "path": "crates/vigilode-bench/src/harness.rs",
+      "sha256": "10a555102243fdcbac9b3afaeb3f8aa0499c6aca7e782cac13ffcf10a5b10330"
+    },
+    {
+      "path": "crates/vigilode-bench/src/reference_policy.rs",
+      "sha256": "9deeac060a1f979dad4aa86fce519f4b88c1932bab7c1a939af47aa5a8f695fc"
+    },
+    {
+      "path": "crates/vigilode-bench/src/report.rs",
+      "sha256": "fdcbfdf3df5bb2ee4196076a24abeb12b3b2e943570126b3704e51637ed453a8"
+    },
+    {
+      "path": "crates/vigilode-bench/tests/report.rs",
+      "sha256": "4f328a86f003854803a53ddac470c980387ce996afdc2bdf8e8122fb95dd9755"
+    },
+    {
+      "path": "crates/vigilode-bench/tests/isolated_n02.py",
+      "sha256": "8ac6de81c6f5ca18a7f8e3631fcc1bfeb54e13c3cffe5ab7b3e1405396340b26"
+    },
+    {
+      "path": "crates/vigilode-bench/protocols/n02_independent_reference_v1.json",
+      "sha256": "024de8e3251a8ac0dae34189268312947428a5c7b4f2213128ff56ecfb7ddfea"
+    },
+    {
+      "path": "crates/vigilode-bench/protocols/README.md",
+      "sha256": "4ef2a05b1fc90072f553b28058dda0e0b3354ab9c7b18c76aa26914a8dd563fd"
+    }
+  ],
+  "receipts": {
+    "reference_policy_tests.log": {
+      "path": "research/production_reaudit_20261021/evidence/n02/reference_policy_tests.log",
+      "sha256": "f78ac40e1e8119859f914b781af7ffc4b1469ff13ddef33a9610218ae760bc5c"
+    },
+    "source_probe.log": {
+      "path": "research/production_reaudit_20261021/evidence/n02/source_probe.log",
+      "sha256": "3f4b2c652a4253226b11e2d169a32b5ecadea5cca4f79361d3b30c8084d1ff48"
+    },
+    "build_script_compile.log": {
+      "path": "research/production_reaudit_20261021/evidence/n02/build_script_compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "isolated_harness_tests.log": {
+      "path": "research/production_reaudit_20261021/evidence/n02/isolated_harness_tests.log",
+      "sha256": "9af1d6b124b8007f2c58e77c8ec25e23102f7483c7d6e1085c653103b5877d9d"
+    },
+    "source_tests.log": {
+      "path": "research/production_reaudit_20261021/evidence/n02/source_tests.log",
+      "sha256": "93f8f5a91c12847ef902dda8e99a00983def29c90cab561b499e1fc61c7b5dfa"
+    },
+    "source_probe_compile.log": {
+      "path": "research/production_reaudit_20261021/evidence/n02/source_probe_compile.log",
+      "sha256": "94a90fac7086abd0c29069049366aafd8d534e94282d01aa4fc4658573a4fd16"
+    }
+  },
+  "review_constraints": [
+    "No Cargo invoked for this N02 implementation",
+    "No native solver/reference experiment claimed",
+    "No historical threshold adjustment or historical verdict change",
+    "No standalone proof of global solution error from inter-solver agreement"
+  ]
+}

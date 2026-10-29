@@ -1,0 +1,47 @@
+{
+  "schema": "vigilode.adapter-validation.v1",
+  "rust_tests_passed": 59,
+  "rust_tests_failed": 0,
+  "python_selection_tests_passed": 22,
+  "algebra_tests_passed": 5,
+  "independent_review": "reviews/INDEPENDENT_REVIEW.json",
+  "checks": [
+    {
+      "name": "native_final",
+      "exit_code": 0,
+      "log": "evidence/native_final.log",
+      "sha256": "ea2c124fa4621ee24756005c76fc08d26eee60515b996a2e1faa9ce818f03a24"
+    },
+    {
+      "name": "exponential_final",
+      "exit_code": 0,
+      "log": "evidence/exponential_final.log",
+      "sha256": "b512c677cd6c6fd0061e0b278b4100d4eb9a5997298f3a3b3b68cd1751918ef3"
+    },
+    {
+      "name": "selection_tests",
+      "exit_code": 0,
+      "log": "evidence/selection_tests.log",
+      "sha256": "5b04ea09c0319911715acdac442b8d8f4a06920fd3eeb2892aea92d3bfddf09c"
+    },
+    {
+      "name": "build_final",
+      "exit_code": 0,
+      "log": "evidence/build_final.log",
+      "sha256": "ec8ff64cfb003d173f96b93e812bbaaec2db94a96d52d0174df443502892d5b0"
+    },
+    {
+      "name": "format",
+      "exit_code": 0,
+      "log": "evidence/format.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "scope": "focused affected/adjacent tests; no full workspace qualification",
+  "toolchain": "Rust1.94.1 supplied archive; locked dependencies fetched; actual tests offline",
+  "final_build_input_manifest": "evidence/SOURCE_FINAL_BUILD_INPUTS.json",
+  "final_runtime_metadata": "evidence/RUN_METADATA_FINAL_COMPLETED.json",
+  "final_switch_measurement": "switching/results_r2/SUMMARY.json",
+  "excluded_measurement": "switching/results_r1/MEASUREMENT_LIMITATION.json",
+  "source_policy": "earlier child validations retain their historical source bytes; root final build manifest and final tests bind formatted final native sources"
+}

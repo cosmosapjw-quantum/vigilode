@@ -1,0 +1,391 @@
+{
+  "schema_version": "1.0",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "branch": "claude/jolly-wozniak-7wl15h-wu22-reaudit-r2",
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "source_tree": "182fa306067b84ee10ec1f1b1e5fbad9e769aae1",
+  "verdict": "REWORK",
+  "counts": {
+    "confirmed_total": 4,
+    "acknowledged_residuals": 1,
+    "new_counterexamples": 3,
+    "P1": 1,
+    "P2": 3,
+    "original_reproducer_closures": 7
+  },
+  "findings": [
+    {
+      "id": "R3-TIME-01",
+      "severity": "P1",
+      "status": "CONFIRMED_ACKNOWLEDGED_RESIDUAL",
+      "novelty": "Already explicitly admitted as limit 1 in docs/REAUDIT_R2_CLOSURE_20260930.md; independently reproduced across additional public consumers, not a newly discovered regression.",
+      "title": "Successful time integration can consume a different physical interval from its represented timestamps",
+      "failure_class": "NUMERICAL_IMPLEMENTATION",
+      "evidence_status": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "source_locations": [
+        "crates/rodas5p-integrators/src/output.rs:26-57",
+        "crates/rodas5p-integrators/src/integrate.rs:92-103",
+        "crates/rodas5p-integrators/src/dense_output_v2.rs:434-450",
+        "crates/rodas5p-integrators/src/bdf.rs:608-619",
+        "crates/rodas5p-integrators/src/radau.rs:651-655",
+        "crates/rodas5p-integrators/src/adaptive_exponential.rs:201-212"
+      ],
+      "input": {
+        "origin": 1000000000000.0,
+        "span_ulps": 8,
+        "span": 0.0009765625,
+        "proposed_step": 0.0001,
+        "ode": "y'=1/span",
+        "initial_y": 0.0,
+        "atol": 1e-10,
+        "rtol": 1e-09
+      },
+      "observed": {
+        "success": true,
+        "expected_final_y": 1.0,
+        "actual_final_y_approximately": 0.8192,
+        "relative_error_approximately": 0.1808,
+        "native_observations": 7,
+        "distinct_driver_types": 6,
+        "extra_negative_origin_checked": true
+      },
+      "mechanism": "Each represented time advances one ULP=0.0001220703125, while stage equations consume nominal h=0.0001. Eight nominal increments integrate only 0.8192 of the labelled duration. Embedded error cannot identify a shared clock mismatch on constant flow.",
+      "scope": "Native fixed RODAS, adaptive RODAS, fixed Radau, fixed BDF, adaptive fused exponential and fixed dense RODAS. Constant autonomous scalar fixtures; no claim that every ODE or every adaptive driver fails.",
+      "evidence": [
+        "native_raw.jsonl:case=documented_step_clock_mismatch",
+        "exact_oracle.json",
+        "probe/src/main.rs"
+      ],
+      "remediation": "TIME-01",
+      "candidate_status": "Standalone public sequential_step driver with h_eff=t_next-t passes three constant-flow origins; not installed in production, and does not resolve global cancellation, internal half steps, BDF history or adaptive max_step policy.",
+      "detail_file": "time/FINDINGS.json",
+      "evidence_base": "time/",
+      "new_counterexample": false,
+      "introduced_regression_demonstrated": false
+    },
+    {
+      "id": "R3-TIME-02",
+      "severity": "P2",
+      "status": "CONFIRMED",
+      "novelty": "Previously unlisted endpoint-admission counterexample on current source. The tolerant endpoint validation predates this update; not classified as an introduced regression.",
+      "title": "A nonzero integration span can accept a singleton output schedule and return y0 labelled as y(tf)",
+      "failure_class": "IMPLEMENTATION",
+      "evidence_status": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "source_locations": [
+        "crates/rodas5p-integrators/src/output.rs:173-186",
+        "crates/rodas5p-integrators/src/output.rs:193-203",
+        "crates/rodas5p-integrators/src/output.rs:361-378",
+        "crates/rodas5p-integrators/src/output.rs:408-417"
+      ],
+      "input": {
+        "origin": 1000000000000.0,
+        "span_ulps": 4,
+        "span": 0.00048828125,
+        "uniform_spacing": 1.0,
+        "ode": "y'=2048",
+        "initial_y": 0.0,
+        "physical_step": 0.000244140625
+      },
+      "observed": {
+        "constructed_schedule": "[tf]",
+        "success": true,
+        "actual_internal_steps": 2,
+        "returned_samples": 1,
+        "returned_y_at_tf": 0.0,
+        "expected_y_at_tf": 1.0,
+        "dense_and_clipped_both_reproduced": true
+      },
+      "mechanism": "The epoch-scaled tolerance accepts intervals=0 in uniform and admits the singleton as both endpoints. Collector initializes y0 at schedule[0] and next_index=1, so no integrated state is stored.",
+      "related_observation": "A two-point schedule shifted one ULP at both ends is admitted and preserves requested labels while returning values at t0/tf; velocity8192 yields absolute timestamp/value inconsistency 1. This alias behavior is source-documented but should be explicit in the public contract or rejected.",
+      "scope": "Public OutputSchedule::uniform and OutputSchedule::new with fixed dense/clipped RODAS consumers. Valid exact [t0,tf] control succeeds with error2.89e-15.",
+      "evidence": [
+        "native_raw.jsonl:case=single_point_uniform",
+        "native_raw.jsonl:case=single_point_explicit",
+        "native_raw.jsonl:case=endpoint_alias_labels",
+        "exact_oracle.json"
+      ],
+      "remediation": "TIME-02",
+      "candidate_status": "Standalone strict represented-endpoint admission rejects three invalid/aliased inputs and accepts the exact two-point control; production API compatibility choice remains open.",
+      "detail_file": "time/FINDINGS.json",
+      "evidence_base": "time/",
+      "new_counterexample": true,
+      "introduced_regression_demonstrated": false
+    },
+    {
+      "id": "R3-ARITH-01",
+      "severity": "P2",
+      "title": "Partial weight underflow is counted but omitted from original-target phi convergence",
+      "title_ko": "부분 가중치 소실이 실제 출력까지 전파되지 않은 채 원 φ 문제 수렴으로 보고됨",
+      "status": "CONFIRMED",
+      "evidence_status": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "failure_class": [
+        "NUMERICAL",
+        "IMPLEMENTATION"
+      ],
+      "regression_classification": "RESIDUAL_GAP; not evidence that a previously correct input regressed",
+      "locations": [
+        {
+          "path": "crates/rodas5p-core/src/binary_scaling.rs",
+          "lines": [
+            136,
+            155
+          ]
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/exponential.rs",
+          "lines": [
+            1356,
+            1360
+          ]
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/exponential.rs",
+          "lines": [
+            1551,
+            1566
+          ]
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/exponential.rs",
+          "lines": [
+            1912,
+            1946
+          ]
+        },
+        {
+          "path": "crates/rodas5p-core/src/matrix_functions.rs",
+          "lines": [
+            252,
+            253
+          ]
+        }
+      ],
+      "reproducer": {
+        "matrix": [
+          [
+            0,
+            1e+308
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "h": [
+          1e-08,
+          -1e-08
+        ],
+        "vectors": [
+          [
+            1e-300,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1e-310
+          ]
+        ],
+        "relative_tolerance": 1e-12,
+        "absolute_tolerance": 0,
+        "independent_oracle": "A^2=0; u=[b0+h^3*A12*b2/6,h^2*b2/2] with exact Fraction of represented input",
+        "expected_dominant_positive_component": "1.6666666666666616977991606826580784676079142000064443286281451060389016504784491938825777387553972761720932805e-27"
+      },
+      "observed": {
+        "fused_value": [
+          9.999999999999999e-301,
+          0
+        ],
+        "prefix_value": [
+          9.999999999999999e-301,
+          0
+        ],
+        "fused_and_prefix_converged": true,
+        "convergence_basis": "invariant-subspace",
+        "error_estimate": 0,
+        "phi_weight_underflows": 1,
+        "dense_value": [
+          0,
+          0
+        ],
+        "relative_dominant_component_error": 1
+      },
+      "impact": "The relative tolerance claim on the original finite-input action fails; floating-point Arnoldi convergence applies to the already rounded weighted problem.",
+      "evidence": [
+        "native.jsonl",
+        "EXACT_ORACLES.json",
+        "NATIVE_EXECUTION.json",
+        "REVIEW_KO.md"
+      ],
+      "scope_limits": [
+        "Extreme finite dynamic range and strongly nonnormal nilpotent operator; no claim about ordinary ODE trajectories or published campaign corruption.",
+        "The weighting-loss counter is present and visible; its omission from acceptance, not missing accounting, is the finding.",
+        "Dense loss of b0 also involves the known very-large-norm Pade limitation; the finding does not depend on assigning every dense error to weighting.",
+        "Original PHI-R1/R2/R2-POL-01 fixtures are closed, not reopened by this distinct counterexample."
+      ],
+      "minimal_remediation": "Propagate weighting quality into every action report/consumer and refuse original-target convergence after partial loss unless a propagated physical-output bound fits the tolerance.",
+      "acceptance_tests": [
+        "Positive and negative h nilpotent fixtures return accurate representable first component or typed failure/non-convergence with no original-target invariant-subspace certification.",
+        "A=0 partial-underflow control remains explicitly classified; a conservative fail-closed first patch is acceptable.",
+        "Same rule holds for fused, prefix/incremental, dense reference and final consumers.",
+        "Previously closed R2 range and amplitude fixtures remain within their original tolerances."
+      ],
+      "development_nodes": [
+        "ARITH-01",
+        "ARITH-02",
+        "ARITH-03"
+      ],
+      "detail_file": "arithmetic/FINDINGS.json",
+      "evidence_base": "arithmetic/",
+      "new_counterexample": true,
+      "introduced_regression_demonstrated": false
+    },
+    {
+      "id": "R3-STAT-01",
+      "severity": "P2",
+      "title_ko": "원자료 재검증이 ABBA·warmup·batch 프로토콜 위반을 승인함",
+      "status": "CONFIRMED",
+      "evidence_status": [
+        "implementation-verified"
+      ],
+      "failure_layer": [
+        "EVIDENCE_AUTHORITY",
+        "IMPLEMENTATION"
+      ],
+      "source_locations": [
+        {
+          "path": "crates/rodas5p-fair-ab/src/paired_timing.rs",
+          "lines": "288–323",
+          "symbol": "PairedTimingCase::validate"
+        },
+        {
+          "path": "crates/rodas5p-fair-ab/src/paired_timing.rs",
+          "lines": "798–814",
+          "symbol": "PairedTimingAssessment::verify_against_raw"
+        }
+      ],
+      "input": "Synthetic 1.3 ratio / 30 pairs / six labelled sessions with matching ratio-1 A/A; mutate raw case before assessment",
+      "variants": [
+        "empty_order",
+        "wrong_order",
+        "wrong_batch",
+        "negative_warmup",
+        "nan_warmup"
+      ],
+      "expected": "Malformed raw protocol must fail admission before a confirmatory assessment exists",
+      "observed": "All five variants produce gate_decision=Promote and verify_against_raw=Ok(Promote)",
+      "scope": "Public library receipt admission; no current CLI false promotion reproduced, no claim that measure_paired_case emits malformed order",
+      "evidence": [
+        "native_probe.jsonl",
+        "EXECUTION_RECEIPT.json",
+        "probe/src/main.rs"
+      ],
+      "remediation": "Recompute finite nonnegative warmup calibration and require batch equality; validate recorded seeded ABBA order and pair lengths before assessment/raw verification",
+      "candidate_status": "standalone candidate_receipt_check accepts valid fixture and rejects all five malformed fixtures; not applied to production",
+      "next_steps": [
+        "STAT-DEV-01",
+        "STAT-DEV-02"
+      ],
+      "detail_file": "statistics/RESULT.json",
+      "evidence_base": "statistics/",
+      "new_counterexample": true,
+      "introduced_regression_demonstrated": false
+    }
+  ],
+  "prior_closures": [
+    {
+      "id": "R2-OUT-01",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCERS",
+      "evidence": [
+        "native_raw.jsonl",
+        "exact_oracle.json"
+      ],
+      "scope": "8-ULP spans at +-1e12 with h=span/2; one-ULP span at t0=1; adjacent dense and clipped requests",
+      "general_claim": "HOLD; distinct residuals R3-TIME-01 and R3-TIME-02 remain",
+      "prior_id": "R2-OUT-01",
+      "evidence_base": "time/"
+    },
+    {
+      "id": "PHI-R1",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCERS",
+      "native_production_rows": 6,
+      "maximum_relative_error": 8.498353220547801e-16,
+      "all_within_1e-12": true,
+      "prior_id": "PHI-R1",
+      "evidence_base": "arithmetic/"
+    },
+    {
+      "id": "PHI-R2",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCERS",
+      "native_production_rows": 20,
+      "maximum_relative_error": 3.9270253872305477e-16,
+      "all_within_1e-12": true,
+      "prior_id": "PHI-R2",
+      "evidence_base": "arithmetic/"
+    },
+    {
+      "id": "R2-POL-01",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCER",
+      "evidence": "EXACT_ORACLES.json#/other_oracles",
+      "consumer_regression": "repository r2_output_budget_contracts; execution is owned by runtime lane",
+      "prior_id": "R2-POL-01",
+      "evidence_base": "arithmetic/"
+    },
+    {
+      "prior_id": "R2-STAT-01",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCERS",
+      "evidence_status": "implementation-verified",
+      "cases": [
+        "unlabelled actual producer -> 0 independent sessions/Inconclusive",
+        "same PID declared label77 -> 1 session/Inconclusive",
+        "candidate0..5/A-A100..105 -> Inconclusive",
+        "matched labels0..5 -> raw-verified Promote on synthetic constant ratios"
+      ],
+      "residual": "Declared IDs are not OS-bound; documented limitation, not new finding",
+      "evidence_base": "statistics/"
+    },
+    {
+      "prior_id": "R2-STAT-02",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCERS",
+      "evidence_status": "implementation-verified",
+      "cases": [
+        "16 legacy + 1 modern -> calls17 / unknown16 / vector None",
+        "reverse order identical",
+        "JSON roundtrip plus further modern merge remains Unknown",
+        "public IntegratorRunRecord::cost returns None"
+      ],
+      "consumer_source_review": "Private front and attainment now explicitly list NotEvaluated records; actual regression results to be joined from root runtime evidence",
+      "evidence_base": "statistics/"
+    },
+    {
+      "prior_id": "R2-STAT-03",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCERS",
+      "evidence_status": [
+        "implementation-verified",
+        "numerically checked"
+      ],
+      "cases": [
+        "B=1 preview yields Inconclusive and verified gate rejects",
+        "B=10000 original fixture agrees with exact 46656-draw percentile endpoints"
+      ],
+      "residual": "Reported MC bands do not establish population CI coverage",
+      "evidence_base": "statistics/"
+    }
+  ],
+  "production_modified": false
+}

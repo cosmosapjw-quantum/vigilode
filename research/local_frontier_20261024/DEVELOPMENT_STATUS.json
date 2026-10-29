@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "source": "SOURCE_IDENTITY.json",
+  "broad_production": "HOLD_UNCHANGED",
+  "default_general_ode_dispatch_changed": false,
+  "ncp_used": false,
+  "units": [
+    {
+      "id": "N1",
+      "target": "conditioned polynomial chart",
+      "status": "IMPLEMENTED_OPT_IN",
+      "evidence": "analysis/N1_N2.json",
+      "remaining": "Automatic atlas and whole-ODE advantage remain unproved."
+    },
+    {
+      "id": "N2",
+      "target": "immutable structural declaration",
+      "status": "IMPLEMENTED_CONDITIONAL_PROVIDER",
+      "evidence": "analysis/N1_N2.json",
+      "remaining": "Truthful full-domain bounds remain provider obligations."
+    },
+    {
+      "id": "N3",
+      "target": "local cost reference guard",
+      "status": "IMPLEMENTED_OPT_IN",
+      "evidence": "analysis/N3_REGIME_COST.json",
+      "remaining": "Heuristic validity is not a global wall-time bound; default remains None."
+    },
+    {
+      "id": "N4",
+      "target": "fixed-P root continuation",
+      "status": "IMPLEMENTED_OPT_IN",
+      "evidence": "analysis/N4_FIXED_P.json",
+      "remaining": "Coupled targets, automatic patch generation and full corrector comparison remain."
+    },
+    {
+      "id": "N5",
+      "target": "meaningful expensive RHS parallelism",
+      "status": "LIGHTWEIGHT_MEASURED",
+      "evidence": "analysis/N5_PARALLEL_CALLBACKS.json",
+      "remaining": "Host-specific multi-core crossover must be measured locally."
+    },
+    {
+      "id": "N6",
+      "target": "invariant module and shift reuse",
+      "status": "IMPLEMENTED_OPT_IN",
+      "evidence": "analysis/GEOMETRY_TRANSFER.json",
+      "remaining": "Dense original residual remains quadratic; no default speed promotion."
+    },
+    {
+      "id": "N7",
+      "target": "local benchmark and profiling",
+      "status": "PREPARED_LIGHTWEIGHT_SMOKE",
+      "evidence": "analysis/LOCAL_CAMPAIGN.json",
+      "remaining": "Full local campaign not run; 17 models lack embedded independent reference; diffsol adapter not implemented; Julia not executed here."
+    },
+    {
+      "id": "N8",
+      "target": "remaining 25-family discriminations",
+      "status": "PARTIAL_PREREQUISITES_ONLY",
+      "evidence": "analysis/N8_DISCRIMINATION_COVERAGE.json",
+      "remaining": "Every original experiment is retained; not all were executed."
+    }
+  ],
+  "follow_on_conditional_studies": [
+    {
+      "id": "C-CHART",
+      "status": "IMPLEMENTED_MEASURED_OPT_IN_EXPERIMENT",
+      "evidence": "analysis/CONDITIONAL_CHART.json"
+    },
+    {
+      "id": "C-CONTINUATION",
+      "status": "IMPLEMENTED_MEASURED_OPT_IN_EXPERIMENT",
+      "evidence": "analysis/CONDITIONAL_CONTINUATION.json"
+    },
+    {
+      "id": "C-SPARSE-CERT",
+      "status": "IMPLEMENTED_MEASURED_STANDALONE_PROTOTYPE",
+      "evidence": "analysis/CONDITIONAL_STRUCTURED_CERTIFICATION.json",
+      "production_integration": false
+    },
+    {
+      "id": "C-BUDGET",
+      "status": "EXACT_OFFLINE_OPTIMAL_WORK_PROTOTYPE",
+      "evidence": "analysis/CONDITIONAL_BUDGET.json",
+      "production_integration": false
+    },
+    {
+      "id": "C-LOCAL",
+      "status": "LOCAL_CAMPAIGN_PREPARED_AND_DEVELOPER_SMOKED",
+      "evidence": "evidence/conditional-native-final-summary.json",
+      "user_host_run": false
+    }
+  ]
+}

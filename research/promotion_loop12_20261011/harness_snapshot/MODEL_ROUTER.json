@@ -1,0 +1,46 @@
+{
+  "router_version": 1,
+  "purpose": "Select a harness package from an explicitly supplied model label or harness choice; never switch or verify the executing model.",
+  "normalization": "strip leading/trailing whitespace, then Unicode casefold; no substring or future-model inference",
+  "triggers": ["연구 루프", "수학·물리 연구루프", "코딩 연구루프"],
+  "families": {
+    "gpt56": {
+      "aliases": ["GPT-5.6", "5.6", "gpt56", "gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna", "gpt-5.6-wm", "gpt-5.6-sol-wm", "gpt-5.6-terra-wm", "gpt-5.6-luna-wm"],
+      "packages": {
+        "research": {
+          "filename": "physmath-research-harness-gpt56-v3.1.0.zip",
+          "library_file_id": "libfile_231b70af27d081919b063cc8fcdf3350",
+          "library_path": "/Research-Harnesses/physmath-research-harness-gpt56-v3.1.0.zip",
+          "sha256": "9adde688f8020e7feb2c1c0304b3204dbe70dd01e2d87e64a5c4eb357c019934",
+          "entrypoints": ["START_HERE.md", "PROJECT_INSTRUCTIONS.md", "prompts/00_integrated_work_run.md"]
+        },
+        "coding": {
+          "filename": "physmath-coding-harness-gpt56-v3.1.0.zip",
+          "library_file_id": "libfile_4707f1b346f881919f52bb834849c87c",
+          "library_path": "/Research-Harnesses/physmath-coding-harness-gpt56-v3.1.0.zip",
+          "sha256": "6e67e999a0c19f6ed9de7c339067cc11691d5cf5cb662a11756d8fc393c849b4",
+          "entrypoints": ["START_HERE.md", "AGENTS.md", "SCIENTIFIC_CONTRACT.md"]
+        }
+      }
+    },
+    "gpt6-astra": {
+      "aliases": ["GPT-6 Astra", "6 astra", "gpt6-astra", "gpt-6-astra", "gpt-6-astra-wm"],
+      "packages": {
+        "research": {
+          "filename": "physmath-research-harness-gpt6-astra-v4.0.0-20260908.zip",
+          "library_file_id": null,
+          "library_path": "/Research-Harnesses/physmath-research-harness-gpt6-astra-v4.0.0-20260908.zip",
+          "sha256": null,
+          "entrypoints": ["START_HERE.md", "PROJECT_INSTRUCTIONS.md", "prompts/00_integrated_work_run.md"]
+        },
+        "coding": {
+          "filename": "physmath-coding-harness-gpt6-astra-v4.0.0-20260908.zip",
+          "library_file_id": null,
+          "library_path": "/Research-Harnesses/physmath-coding-harness-gpt6-astra-v4.0.0-20260908.zip",
+          "sha256": null,
+          "entrypoints": ["START_HERE.md", "AGENTS.md", "SCIENTIFIC_CONTRACT.md"]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,419 @@
+{
+  "schema_version": 1,
+  "source_commit": "4cb795d2b4d3d1cc43ac1ede37d48e4f4daaac3b",
+  "source_identity_matches": true,
+  "check": {
+    "schema_version": 1,
+    "success": true,
+    "nonallocation_commands_success": true,
+    "executions": [
+      {
+        "name": "all_targets",
+        "command": [
+          "cargo",
+          "check",
+          "--locked",
+          "--offline",
+          "--workspace",
+          "--all-targets"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 57.4792860209709,
+        "stdout": "all_targets.stdout",
+        "stderr": "all_targets.stderr"
+      },
+      {
+        "name": "core_contracts",
+        "command": [
+          "cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "-p",
+          "rodas5p-core",
+          "--test",
+          "leja_enclosed_contract",
+          "--test",
+          "leja_total_contract",
+          "--test",
+          "leja_setup_work_contract"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 33.907438136055134,
+        "stdout": "core_contracts.stdout",
+        "stderr": "core_contracts.stderr"
+      },
+      {
+        "name": "leja_unit",
+        "command": [
+          "cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "-p",
+          "rodas5p-core",
+          "--lib",
+          "cloud_"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 6.833681710995734,
+        "stdout": "leja_unit.stdout",
+        "stderr": "leja_unit.stderr"
+      },
+      {
+        "name": "integrator_contracts",
+        "command": [
+          "cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "-p",
+          "rodas5p-integrators",
+          "--test",
+          "affine_transport_contract",
+          "--test",
+          "production_audit_packet_verified",
+          "--test",
+          "production_audit_packet_curve_output",
+          "--test",
+          "production_audit_pr101_cloud",
+          "--test",
+          "a05_dense_global_output",
+          "--test",
+          "collective_rodas5p_contracts",
+          "--",
+          "--nocapture"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 37.82554907898884,
+        "stdout": "integrator_contracts.stdout",
+        "stderr": "integrator_contracts.stderr"
+      },
+      {
+        "name": "allocation_probe",
+        "command": [
+          "cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "-p",
+          "rodas5p-integrators",
+          "--test",
+          "collective_rodas5p_allocation_contract",
+          "--",
+          "--nocapture"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 5.061711734975688,
+        "stdout": "allocation_probe.stdout",
+        "stderr": "allocation_probe.stderr"
+      },
+      {
+        "name": "leja_fraction",
+        "command": [
+          "/usr/bin/python3",
+          "research/cloud_completion_20261018/leja_fraction_oracle.py",
+          "/home/cosmosapjw/vigilode-cloud-completion-20261018/artifacts/generated/cloud_local_check/leja_runs.json",
+          "--output",
+          "/home/cosmosapjw/vigilode-cloud-completion-20261018/artifacts/generated/cloud_local_check/leja_fraction.json"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 0.5454358430579305,
+        "stdout": "leja_fraction.stdout",
+        "stderr": "leja_fraction.stderr"
+      },
+      {
+        "name": "pr101_fraction",
+        "command": [
+          "/usr/bin/python3",
+          "crates/rodas5p-integrators/tests/pr101_cloud_fraction_oracle.py",
+          "/home/cosmosapjw/vigilode-cloud-completion-20261018/artifacts/generated/cloud_local_check/integrator_contracts.stdout"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 0.06939712597522885,
+        "stdout": "pr101_fraction.stdout",
+        "stderr": "pr101_fraction.stderr"
+      }
+    ],
+    "scientific_scope": "See DECISION.json; successful process alone does not establish accuracy or speed.",
+    "return_to_review": [
+      "environment.json",
+      "executions.json",
+      "*.stdout",
+      "*.stderr",
+      "*.json"
+    ]
+  },
+  "smoke": {
+    "schema_version": 1,
+    "success": true,
+    "nonallocation_commands_success": true,
+    "executions": [
+      {
+        "name": "packet_run",
+        "command": [
+          "cargo",
+          "run",
+          "--locked",
+          "--offline",
+          "-p",
+          "rodas5p-integrators",
+          "--example",
+          "packet_verified_run",
+          "--",
+          "16",
+          "32"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 1.4450217039557174,
+        "stdout": "packet_run.stdout",
+        "stderr": "packet_run.stderr"
+      },
+      {
+        "name": "pr101_run",
+        "command": [
+          "cargo",
+          "run",
+          "--locked",
+          "--offline",
+          "-p",
+          "rodas5p-integrators",
+          "--example",
+          "pr101_verified_run"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 13.241484802099876,
+        "stdout": "pr101_run.stdout",
+        "stderr": "pr101_run.stderr"
+      }
+    ],
+    "scientific_scope": "See DECISION.json; successful process alone does not establish accuracy or speed.",
+    "return_to_review": [
+      "environment.json",
+      "executions.json",
+      "*.stdout",
+      "*.stderr",
+      "*.json"
+    ]
+  },
+  "bench": {
+    "schema_version": 1,
+    "success": true,
+    "nonallocation_commands_success": true,
+    "executions": [
+      {
+        "name": "comparison_build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--offline",
+          "--profile",
+          "measurement",
+          "-p",
+          "rodas5p-integrators",
+          "--example",
+          "collective_structured_compare"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 80.17869536799844,
+        "stdout": "comparison_build.stdout",
+        "stderr": "comparison_build.stderr"
+      },
+      {
+        "name": "structured_comparison",
+        "command": [
+          "cargo",
+          "run",
+          "--locked",
+          "--offline",
+          "--profile",
+          "measurement",
+          "-p",
+          "rodas5p-integrators",
+          "--example",
+          "collective_structured_compare",
+          "--",
+          "32",
+          "5"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 1.0504625940229744,
+        "stdout": "structured_comparison.stdout",
+        "stderr": "structured_comparison.stderr"
+      }
+    ],
+    "scientific_scope": "See DECISION.json; successful process alone does not establish accuracy or speed.",
+    "return_to_review": [
+      "environment.json",
+      "executions.json",
+      "*.stdout",
+      "*.stderr",
+      "*.json"
+    ]
+  },
+  "allocation_positive_control": {
+    "status": "PASS",
+    "evidence": "evidence/local_runs/check/allocation_probe.stdout",
+    "known_three_vec_clone_detected": true,
+    "warmed_step_scope": "10 post-construction step_into calls; test asserted zero additional allocator calls; test passed"
+  },
+  "bench_rows": 30,
+  "bench_groups": [
+    {
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "modes": 32,
+      "arms": {
+        "structured": {
+          "repeats": 5,
+          "median_elapsed_ns": 392591,
+          "min_elapsed_ns": 343448,
+          "max_elapsed_ns": 534770,
+          "max_grid_wrms_reference_error": 0.04432406647051313,
+          "max_abs_reference_error": 1.6521647452916177e-09,
+          "allocation_calls_per_run": 37,
+          "allocated_bytes_per_run": 19239,
+          "allocation_calibration_valid": true,
+          "all_empirical_accuracy_gates_pass": true,
+          "all_runs_successful": true,
+          "outputs_per_run": 11,
+          "reference": "independent_classical_rk4_10240_steps",
+          "reference_authority": "empirical_two_resolution",
+          "measurement_scope": "solver_and_adapter_setup_plus_integration_and_output",
+          "promotion": "DIAGNOSTIC_ONLY",
+          "empirical_accuracy_gate_upper_max": 0.04432409706752949
+        },
+        "dense_fast": {
+          "repeats": 5,
+          "median_elapsed_ns": 906713,
+          "min_elapsed_ns": 528889,
+          "max_elapsed_ns": 4386624,
+          "max_grid_wrms_reference_error": 0.044324163456446464,
+          "max_abs_reference_error": 1.6521663967483669e-09,
+          "allocation_calls_per_run": 70,
+          "allocated_bytes_per_run": 85649,
+          "allocation_calibration_valid": true,
+          "all_empirical_accuracy_gates_pass": true,
+          "all_runs_successful": true,
+          "outputs_per_run": 11,
+          "reference": "independent_classical_rk4_10240_steps",
+          "reference_authority": "empirical_two_resolution",
+          "measurement_scope": "solver_and_adapter_setup_plus_integration_and_output",
+          "promotion": "DIAGNOSTIC_ONLY",
+          "empirical_accuracy_gate_upper_max": 0.04432419405346282
+        }
+      },
+      "dense_fast_over_structured_median_ratio": 2.3095613501073635
+    },
+    {
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "modes": 32,
+      "arms": {
+        "structured": {
+          "repeats": 5,
+          "median_elapsed_ns": 808557,
+          "min_elapsed_ns": 647683,
+          "max_elapsed_ns": 905800,
+          "max_grid_wrms_reference_error": 0.40353108945194266,
+          "max_abs_reference_error": 1.4731766501130394e-10,
+          "allocation_calls_per_run": 37,
+          "allocated_bytes_per_run": 19239,
+          "allocation_calibration_valid": true,
+          "all_empirical_accuracy_gates_pass": true,
+          "all_runs_successful": true,
+          "outputs_per_run": 11,
+          "reference": "independent_classical_rk4_10240_steps",
+          "reference_authority": "empirical_two_resolution",
+          "measurement_scope": "solver_and_adapter_setup_plus_integration_and_output",
+          "promotion": "DIAGNOSTIC_ONLY",
+          "empirical_accuracy_gate_upper_max": 0.4035341491535782
+        },
+        "dense_fast": {
+          "repeats": 5,
+          "median_elapsed_ns": 1187002,
+          "min_elapsed_ns": 1097844,
+          "max_elapsed_ns": 4504036,
+          "max_grid_wrms_reference_error": 0.40353559365430286,
+          "max_abs_reference_error": 1.4732051689669845e-10,
+          "allocation_calls_per_run": 70,
+          "allocated_bytes_per_run": 85649,
+          "allocation_calibration_valid": true,
+          "all_empirical_accuracy_gates_pass": true,
+          "all_runs_successful": true,
+          "outputs_per_run": 11,
+          "reference": "independent_classical_rk4_10240_steps",
+          "reference_authority": "empirical_two_resolution",
+          "measurement_scope": "solver_and_adapter_setup_plus_integration_and_output",
+          "promotion": "DIAGNOSTIC_ONLY",
+          "empirical_accuracy_gate_upper_max": 0.4035386533559384
+        }
+      },
+      "dense_fast_over_structured_median_ratio": 1.4680498715613124
+    },
+    {
+      "rtol": 1e-10,
+      "atol": 1e-13,
+      "modes": 32,
+      "arms": {
+        "structured": {
+          "repeats": 5,
+          "median_elapsed_ns": 1756527,
+          "min_elapsed_ns": 1560096,
+          "max_elapsed_ns": 1906450,
+          "max_grid_wrms_reference_error": 0.434549070488822,
+          "max_abs_reference_error": 1.5367047911940546e-12,
+          "allocation_calls_per_run": 37,
+          "allocated_bytes_per_run": 19239,
+          "allocation_calibration_valid": true,
+          "all_empirical_accuracy_gates_pass": true,
+          "all_runs_successful": true,
+          "outputs_per_run": 11,
+          "reference": "independent_classical_rk4_10240_steps",
+          "reference_authority": "empirical_two_resolution",
+          "measurement_scope": "solver_and_adapter_setup_plus_integration_and_output",
+          "promotion": "DIAGNOSTIC_ONLY",
+          "empirical_accuracy_gate_upper_max": 0.43485504065237596
+        },
+        "dense_fast": {
+          "repeats": 5,
+          "median_elapsed_ns": 2895899,
+          "min_elapsed_ns": 2142196,
+          "max_elapsed_ns": 3212457,
+          "max_grid_wrms_reference_error": 0.4350283954029967,
+          "max_abs_reference_error": 1.5386025786767732e-12,
+          "allocation_calls_per_run": 70,
+          "allocated_bytes_per_run": 85649,
+          "allocation_calibration_valid": true,
+          "all_empirical_accuracy_gates_pass": true,
+          "all_runs_successful": true,
+          "outputs_per_run": 11,
+          "reference": "independent_classical_rk4_10240_steps",
+          "reference_authority": "empirical_two_resolution",
+          "measurement_scope": "solver_and_adapter_setup_plus_integration_and_output",
+          "promotion": "DIAGNOSTIC_ONLY",
+          "empirical_accuracy_gate_upper_max": 0.43533436556655064
+        }
+      },
+      "dense_fast_over_structured_median_ratio": 1.648650433497464
+    }
+  ],
+  "all_nonallocation_commands_success": true,
+  "all_requested_runs_success": true,
+  "historical_ledger_hash_mismatch": {
+    "status": "INHERITED_UNCHANGED",
+    "evidence": "evidence/publication_checks.json",
+    "rechecked": false,
+    "historical_files_modified": false
+  },
+  "scientific_decision": {
+    "scoped_local_validation": "PASS",
+    "measured_speed_authority": "DIAGNOSTIC_ONLY",
+    "overall_production": "HOLD",
+    "speed_promotion": "HOLD"
+  },
+  "source_code_changed": false,
+  "cargo_files_changed": false,
+  "raw_evidence": "evidence/local_runs/"
+}

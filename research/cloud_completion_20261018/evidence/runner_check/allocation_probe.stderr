@@ -1,0 +1,8 @@
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.46s
+     Running tests/collective_rodas5p_allocation_contract.rs (/tmp/vigilode-cloud-final-target/debug/deps/collective_rodas5p_allocation_contract-16edc2eb4c0bbce7)
+
+thread 'calibrated_complete_attempts_allocate_nothing_after_construction' (2265) panicked at crates/rodas5p-integrators/tests/collective_rodas5p_allocation_contract.rs:55:5:
+ALLOCATION_CALIBRATION_FAILED: library model clone has three Vec allocations, measured 0; allocation evidence unavailable in this runtime
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p rodas5p-integrators --test collective_rodas5p_allocation_contract`

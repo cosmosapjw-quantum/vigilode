@@ -1,0 +1,24 @@
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-core/src/damped_moments.rs:221:
+     let interval = compute_damped_moment(a, h, d, r)?;
+ 
+     work.width_checks = work.width_checks.saturating_add(1);
+-    let width_upper = sub_up(interval.hi, interval.lo)
+-        .map_err(DampedForcingMomentRefusal::WidthArithmetic)?;
++    let width_upper =
++        sub_up(interval.hi, interval.lo).map_err(DampedForcingMomentRefusal::WidthArithmetic)?;
+     if width_upper > max_width {
+         return Err(DampedForcingMomentRefusal::WidthExceeded {
+             width_upper,
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-core/tests/damped_forcing_moment_consumer.rs:1:
++use rodas5p_core::damped_moments::compute_damped_moment;
+ use rodas5p_core::damped_moments::{
+     DampedForcingMomentRefusal, DampedForcingMomentWork, compute_damped_forcing_moment,
+ };
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-core/tests/damped_forcing_moment_consumer.rs:4:
+ use rodas5p_core::directed::sub_up;
+-use rodas5p_core::damped_moments::compute_damped_moment;
+ 
+ #[test]
+ fn forcing_index_mapping_is_q_rd_to_i_dr() {
+
+EXIT_CODE=1

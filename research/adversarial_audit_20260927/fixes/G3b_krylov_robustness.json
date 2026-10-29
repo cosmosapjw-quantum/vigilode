@@ -1,0 +1,145 @@
+{
+ "group": "G3b_krylov_robustness",
+ "fixes": [
+  {
+   "finding_ids": [
+    "F-034"
+   ],
+   "summary": "Centralize tolerance validation in one helper in common.rs that rejects NaN, +/-Inf and negative rtol/atol with CoreError::InvalidInput, and a second helper that builds the stopping threshold and rejects a non-finite result (rtol*||b|| can overflow even when both tolerances are finite). GmresConfig::validate calls the first helper; LgmresConfig and GcrodrConfig gain a validate() (today lgmres.rs:58-62 and gcrodr.rs:401-407 check only iteration/dimension limits, no tolerance check at all) that is called before validate_system, and GcrodrConfig additionally requires rank_tol finite and in (0,1). The three `config.atol.max(config.rtol * right_norm)` sites are replaced by the threshold helper, and the ad hoc duplicate checks in gmres_givens.rs:304-318 collapse onto the same helpers so all five kernels fail closed identically before any operator work.",
+   "files": [
+    "crates/rodas5p-krylov/src/common.rs",
+    "crates/rodas5p-krylov/src/gmres.rs",
+    "crates/rodas5p-krylov/src/lgmres.rs",
+    "crates/rodas5p-krylov/src/gcrodr.rs",
+    "crates/rodas5p-krylov/src/gmres_givens.rs",
+    "crates/rodas5p-krylov/tests/krylov_contracts.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-krylov/src/gmres.rs:34-46",
+    "crates/rodas5p-krylov/src/gmres.rs:205-210",
+    "crates/rodas5p-krylov/src/gmres.rs:218-233",
+    "crates/rodas5p-krylov/src/gmres.rs:284-289",
+    "crates/rodas5p-krylov/src/lgmres.rs:58-62",
+    "crates/rodas5p-krylov/src/lgmres.rs:84-85",
+    "crates/rodas5p-krylov/src/gcrodr.rs:24-31",
+    "crates/rodas5p-krylov/src/gcrodr.rs:401-407",
+    "crates/rodas5p-krylov/src/gcrodr.rs:460-461",
+    "crates/rodas5p-krylov/src/gmres_givens.rs:303-318",
+    "crates/rodas5p-krylov/src/block_gmres.rs:32-48",
+    "crates/rodas5p-krylov/src/common.rs:26-47",
+    "crates/rodas5p-core/src/error.rs:4-17"
+   ],
+   "effort": "S",
+   "risk": "low",
+   "verification": "New table-driven test krylov_contracts.rs::scalar_kernels_reject_non_finite_or_negative_tolerances: for each of solve_gmres, solve_lgmres, solve_gcrodr, solve_gmres_givens and each of rtol/atol in {NaN, +Inf, -Inf, -1.0} on a 4x4 nonsingular diagonal system, assert Err(CoreError::InvalidInput(_)), assert WorkCounters is unchanged (linear_matvecs == 0, preconditioner_apps == 0, linear_solves == 0) and that LGMRES/GCRO-DR state equals its pre-call snapshot. Second test threshold_overflow_is_rejected: rtol=1e300 with ||b||=1e10 must return InvalidInput rather than Ok(converged=true, x=0). Regression guard: atol=0.0 with finite rtol (the E-05 configuration) must still converge; existing givens test candidate_rejects_non_finite_tolerances_before_operator_work (givens_gmres_contracts.rs:390) must stay green.",
+   "code_sketch": "// common.rs\npub fn validate_tolerances(kernel: &str, rtol: f64, atol: f64) -> CoreResult<()> {\n    // is_finite rejects NaN and +/-Inf; the sign test rejects negatives.\n    if !(rtol.is_finite() && rtol >= 0.0) || !(atol.is_finite() && atol >= 0.0) {\n        return Err(CoreError::InvalidInput(format!(\n            \"{kernel} tolerances must be finite and nonnegative (rtol={rtol:e}, atol={atol:e})\"\n        )));\n    }\n    Ok(())\n}\npub fn residual_threshold(kernel: &str, rtol: f64, atol: f64, right_norm: f64) -> CoreResult<f64> {\n    let threshold = atol.max(rtol * right_norm);\n    if !threshold.is_finite() {\n        return Err(CoreError::InvalidInput(format!(\n            \"{kernel} residual threshold is not finite (||b||={right_norm:e})\"\n        )));\n    }\n    Ok(threshold)\n}\n// gcrodr.rs / lgmres.rs: new Config::validate() holding the existing limit\n// checks plus validate_tolerances(..); GCRO-DR also requires 0 < rank_tol < 1."
+  },
+  {
+   "finding_ids": [
+    "F-034"
+   ],
+   "summary": "LinearSolverConfig::validate (solver_types.rs:54-57) has the same sign-only check, so the integrator-level gate at sequential.rs:301 passes NaN/Inf tolerances down to every kernel. Make the core check `is_finite() && >= 0.0` for rtol and atol (recycle_rank_tol is already NaN-safe through its negated range test at :64). Because sequential.rs:402-407 builds GmresConfig from derived linear_rtol/linear_atol rather than from the validated config fields, the kernel-side validation from the previous fix stays as the second line of defence; do not remove either layer.",
+   "files": [
+    "crates/rodas5p-core/src/solver_types.rs",
+    "crates/rodas5p-integrators/src/sequential.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-core/src/solver_types.rs:53-75",
+    "crates/rodas5p-integrators/src/sequential.rs:301",
+    "crates/rodas5p-integrators/src/sequential.rs:401-419"
+   ],
+   "effort": "XS",
+   "risk": "low",
+   "verification": "Unit test in rodas5p-core solver_types.rs tests: linear_solver_config_rejects_non_finite_tolerances iterates rtol/atol over {NaN, +Inf, -Inf, -0.5} and asserts validate() is Err with a message containing 'finite'; default config and rtol=0/atol=0 boundary stay Ok. Integrator-level test: a step with LinearMethod::Gmres and atol=f64::INFINITY returns CoreError::InvalidInput and leaves WorkCounters at zero.",
+   "code_sketch": "// solver_types.rs, replaces :55-57\nlet finite_nonnegative = |value: f64| value.is_finite() && value >= 0.0;\nif !finite_nonnegative(self.rtol) || !finite_nonnegative(self.atol) {\n    return Err(\"linear tolerances must be finite and nonnegative\".into());\n}"
+  },
+  {
+   "finding_ids": [
+    "F-037"
+   ],
+   "summary": "Replace the unconditional success return in the degenerate-seed branch of solve_seeded_gmres (block_gmres.rs:493-511) with the same certificate the rank-0 block path uses at :301-313. With x=0 the true residual is exactly b_i, so no operator application is needed: set residual_norms[i]=safe_l2(b_i), compare against atol.max(rtol*||b_i||), and return CoreError::LinearSolve naming the annihilated RHS when any row fails; only a block whose rows genuinely satisfy their thresholds (all-zero RHS, or ||b_i|| <= atol) returns Ok, and then with honest residual norms instead of fabricated zeros. Also guard a non-finite seed_norm with CoreError::NonFinite, since max_by with total_cmp orders NaN above every finite norm, so a NaN row is selected as the seed, and `NaN <= MIN_POSITIVE` is false, which would otherwise normalize the seed by NaN.",
+   "files": [
+    "crates/rodas5p-krylov/src/block_gmres.rs",
+    "crates/rodas5p-krylov/tests/block_gmres_contracts.rs",
+    "crates/rodas5p-core/src/operator.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-krylov/src/block_gmres.rs:208-236",
+    "crates/rodas5p-krylov/src/block_gmres.rs:296-313",
+    "crates/rodas5p-krylov/src/block_gmres.rs:468-511",
+    "crates/rodas5p-krylov/src/block_gmres.rs:556-596",
+    "crates/rodas5p-core/src/operator.rs:286-297",
+    "crates/rodas5p-krylov/tests/block_gmres_contracts.rs:138",
+    "crates/rodas5p-krylov/tests/block_gmres_contracts.rs:200"
+   ],
+   "effort": "S",
+   "risk": "low",
+   "verification": "Three new tests in block_gmres_contracts.rs. (1) seeded_gmres_rejects_preconditioner_that_annihilates_nonzero_rhs: a test-local ZeroingPreconditioner whose apply fills y with 0.0, two nonzero RHS rows, default tolerances; assert Err(CoreError::LinearSolve(_)) and that counters.linear_solves and counters.block_linear_solves are unchanged. (2) seeded_gmres_zero_rhs_block_is_certified_with_true_residuals: all-zero RHS rows return Ok with residual_norms all 0.0 and solutions all zero. (3) seeded_gmres_degenerate_seed_reports_true_norms_under_loose_atol: same ZeroingPreconditioner with atol larger than every ||b_i|| returns Ok with residual_norms[i] == safe_l2(b_i), not 0.0. Add one doc sentence on Preconditioner (operator.rs:286) stating that implementations are not assumed nonsingular and that kernels certify on the unpreconditioned residual.",
+   "code_sketch": "if !seed_norm.is_finite() {\n    return Err(CoreError::NonFinite(\"seeded GMRES preconditioned seed norm is NaN/Inf\".into()));\n}\nif seed_norm <= f64::MIN_POSITIVE {\n    // x = 0, so the true residual is b itself; certify it, never assume it.\n    let residual_norms: Vec<f64> = rhs_rows.iter().map(|rhs| safe_l2(rhs)).collect();\n    for (index, (rhs_norm, rhs)) in residual_norms.iter().zip(rhs_rows).enumerate() {\n        let threshold = config.atol.max(config.rtol * safe_l2(rhs));\n        if !(rhs_norm.is_finite() && *rhs_norm <= threshold) {\n            return Err(CoreError::LinearSolve(format!(\n                \"seeded GMRES preconditioner annihilated nonzero RHS {index} (||b||={rhs_norm:.3e})\"\n            )));\n        }\n    }\n    let relative_residuals: Vec<f64> = residual_norms\n        .iter()\n        .map(|norm| if *norm == 0.0 { 0.0 } else { 1.0 })\n        .collect();\n    counters.linear_solves += rhs_count as u64;\n    counters.block_linear_solves += 1;\n    // build the report from residual_norms / relative_residuals and their maxima\n}"
+  },
+  {
+   "finding_ids": [
+    "F-036"
+   ],
+   "summary": "Stop using the non-production kernel as calibration evidence. scientific_corpus_v2_spectral_contracts.rs:244-258 calls solve_gmres_givens as its matrix-free GMRES probe, while production dispatch at sequential.rs:401-419 only ever calls solve_gmres / solve_gmres_with_residual_scale. Switch the probe to solve_gmres with the identical GmresConfig, re-derive the pinned iteration counts from the production kernel, and if the Givens numbers are still wanted keep them as a second, explicitly labelled column rather than as the corpus authority.",
+   "files": [
+    "crates/rodas5p-integrators/tests/scientific_corpus_v2_spectral_contracts.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/tests/scientific_corpus_v2_spectral_contracts.rs:236-260",
+    "crates/rodas5p-integrators/src/sequential.rs:401-419",
+    "crates/rodas5p-krylov/src/lib.rs:26-30"
+   ],
+   "effort": "S",
+   "risk": "medium",
+   "verification": "After the switch, `grep -rn solve_gmres_givens crates/rodas5p-integrators` returns no hit in a test that produces corpus calibration values. The spectral contract test must pass with iteration counts regenerated from solve_gmres; any pinned dimension-sensitivity value that moves is recorded in the corpus changelog as a kernel-provenance correction. Risk is medium only because pinned expectations may shift and need re-baselining."
+  },
+  {
+   "finding_ids": [
+    "F-036"
+   ],
+   "summary": "Make the kernel's status and its divergence from gmres.rs an explicit, tested contract instead of an accident. Add module docs to gmres_givens.rs stating it is a research candidate with no production caller (the report already says method \"gmres-givens-candidate\" at :497) and listing the three deliberate differences: fail-closed on a rejected happy-breakdown candidate (:436-441) where gmres.rs breaks the cycle and restarts (:181-183, loop at :218), rejection of a rank-deficient triangular factor at 100*eps*max|R_ii| (:214-226) where gmres.rs solves a small least-squares problem each step (:177-180), and the heuristic projected trigger threshold*beta/||r_true|| (:368-374). Gate the public re-export in lib.rs:26-30 behind a non-default cargo feature (for example `research-kernels`) enabled by the krylov test targets, so no integrator, fair-ab or CLI crate can adopt it without an explicit opt-in.",
+   "files": [
+    "crates/rodas5p-krylov/src/gmres_givens.rs",
+    "crates/rodas5p-krylov/src/lib.rs",
+    "crates/rodas5p-krylov/Cargo.toml",
+    "crates/rodas5p-krylov/tests/givens_gmres_contracts.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-krylov/src/gmres_givens.rs:1-12",
+    "crates/rodas5p-krylov/src/gmres_givens.rs:210-226",
+    "crates/rodas5p-krylov/src/gmres_givens.rs:362-378",
+    "crates/rodas5p-krylov/src/gmres_givens.rs:425-445",
+    "crates/rodas5p-krylov/src/gmres_givens.rs:488-498",
+    "crates/rodas5p-krylov/src/gmres.rs:177-183",
+    "crates/rodas5p-krylov/src/lib.rs:26-30",
+    "crates/rodas5p-krylov/tests/givens_gmres_contracts.rs:126"
+   ],
+   "effort": "M",
+   "risk": "low",
+   "verification": "New differential test givens_gmres_contracts.rs::candidate_and_production_outcomes_are_pinned_on_nonnormal_jacobi: build the E-05 s=1 nonnormal operator (A=Q(D+N)Q^T, n=256, Jacobi preconditioner) at RHS scales 1e-14, 1, 1e14 with the E-05 budget, run both solve_gmres and solve_gmres_givens, and assert (a) whenever both return Ok, each solution independently satisfies the same recomputed true-residual threshold, and (b) the Ok/Err outcome pair per row equals a pinned table (E-05 observed gmres ok/fail/ok versus givens fail/ok/fail, from $RUN/exp/E-05/e05_raw.json), so any future change to either kernel's success semantics breaks the test visibly. Build check: `cargo build -p rodas5p-integrators -p rodas5p-fair-ab -p rodas5p-cli` without the feature must succeed, proving no production crate depends on the kernel."
+  },
+  {
+   "finding_ids": [
+    "F-036"
+   ],
+   "summary": "Remove the accounting asymmetry that makes cost comparisons between the two kernels unsound. gmres.rs charges its per-restart true-residual evaluation as ApplyCategory::Krylov (:228), so it is inside report.matvecs, whereas certify_candidate in gmres_givens.rs charges every in-cycle certification, including rejected ones, as ApplyCategory::Diagnostic (:281) and the report takes matvecs from delta.linear_matvecs (:495). Charge in-cycle certifications that gate termination as Krylov work (keeping only the final post-loop certificate at :478 as Diagnostic, matching gmres.rs:282), and surface projected_residual_checks / rejected_projected_residual_checks from GmresGivensStatistics next to the matvec count in any comparison output. Until this lands, no claim that projected-residual termination reduces production cost should cite this kernel.",
+   "files": [
+    "crates/rodas5p-krylov/src/gmres_givens.rs",
+    "crates/rodas5p-krylov/tests/givens_gmres_contracts.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-krylov/src/gmres_givens.rs:266-289",
+    "crates/rodas5p-krylov/src/gmres_givens.rs:425-445",
+    "crates/rodas5p-krylov/src/gmres_givens.rs:478",
+    "crates/rodas5p-krylov/src/gmres_givens.rs:488-498",
+    "crates/rodas5p-krylov/src/gmres.rs:228",
+    "crates/rodas5p-krylov/src/gmres.rs:282",
+    "crates/rodas5p-krylov/tests/givens_gmres_contracts.rs:169"
+   ],
+   "effort": "S",
+   "risk": "medium",
+   "verification": "Extend rejected_projected_triggers_back_off_diagnostics_but_stay_certified (givens_gmres_contracts.rs:169): with a counting operator, assert report.matvecs == total operator applications minus exactly one (the final certificate), i.e. every rejected in-cycle certification is included. Re-run experiment E-05 and confirm the gmres_givens matvec column rises by the number of rejected checks while reported/recomputed residual ratios remain within 1 +/- 2e-15. Risk is medium because pinned matvec counts in existing Givens contract tests will change."
+  }
+ ]
+}

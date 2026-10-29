@@ -1,0 +1,32 @@
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-adapters/crates/rodas5p-integrators)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.79s
+     Running tests/adaptive_fused_exponential_contracts.rs (target/debug/deps/adaptive_fused_exponential_contracts-7dab11d130140cff)
+
+running 3 tests
+test nonautonomous_time_augmentation_has_exact_rhs_and_jvp ... ok
+test incomplete_adaptive_run_preserves_attempted_work_and_partial_output ... ok
+test adaptive_fused_parallel_exponential_responds_to_tolerance ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/exponential_controller_repair.rs (target/debug/deps/exponential_controller_repair-ceb20775a471708a)
+
+running 2 tests
+test fused_sliver_output_landing_preserves_preclip_request ... ok
+test fused_pi_uses_previous_accepted_error_and_shared_step_policy ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+

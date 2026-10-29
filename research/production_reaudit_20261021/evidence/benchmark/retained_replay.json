@@ -1,0 +1,58 @@
+{
+  "schema": "vigilode.production-reaudit.benchmark-replay.v1",
+  "input": "research/bench_wave3_20261021/results_v2.json",
+  "input_sha256": "3e9d063714e9248cf3fffa42a2259d3e6acc4dc7cd278af977175b71527fe36b",
+  "audit_script_sha256": "f825c50988d86475e895d3eac25d33fb6bc9b47d20f79919dc8643a87e7cb7fb",
+  "status": "PASS_RETAINED_ACCOUNTING_AND_INTERPOLATION",
+  "solver_rerun": false,
+  "new_accuracy_certificate": false,
+  "rows": 132,
+  "status_counts": {
+    "success": 131,
+    "solver-failure": 1
+  },
+  "repetitions_per_row": 21,
+  "matched_records_recomputed": 750,
+  "dense_rows": 30,
+  "dense_error_own_above_one": 20,
+  "max_dense_error_own": 9.000451844925761,
+  "dense_matched": 130,
+  "dense_total": 375,
+  "per_problem": [
+    {
+      "problem": "robertson",
+      "max_observed_reference_disagreement": 1.1638231414217927e-10,
+      "matched_dense_levels": 28,
+      "levels_within_10x_observed_disagreement": 0,
+      "max_dense_own_error": 0.6498964026842553
+    },
+    {
+      "problem": "hires",
+      "max_observed_reference_disagreement": 2.1009619989709054e-09,
+      "matched_dense_levels": 27,
+      "levels_within_10x_observed_disagreement": 1,
+      "max_dense_own_error": 7.445590971811977
+    },
+    {
+      "problem": "van-der-pol-mu1000",
+      "max_observed_reference_disagreement": 1.4613831717139991e-09,
+      "matched_dense_levels": 19,
+      "levels_within_10x_observed_disagreement": 0,
+      "max_dense_own_error": 2.7479946222883527
+    },
+    {
+      "problem": "brusselator-1d-n100",
+      "max_observed_reference_disagreement": 5.362864824618835e-10,
+      "matched_dense_levels": 56,
+      "levels_within_10x_observed_disagreement": 0,
+      "max_dense_own_error": 9.000451844925761
+    }
+  ],
+  "historical_verdict": "INCONCLUSIVE_UNCHANGED",
+  "timing_authority": "diagnostic_only",
+  "limitations": [
+    "No retained per-repetition output states or statuses in historical wp.v1 rows; determinism is a producer assertion, callbacks are replay-checked.",
+    "Observed cross-code disagreement is not an outward exact-solution enclosure.",
+    "Only input accounting and interpolation are independently replayed; no new timing or solver execution."
+  ]
+}

@@ -1,0 +1,631 @@
+{
+ "id": "E-05",
+ "purpose": "Krylov stress: reported vs recomputed residual on nonnormal A=Q(D+N)Q^T (n=256, N-scale s in {0,1,10,100}, D log-spaced -1..-1e4), RHS scale 1e-14/1/1e14, false-breakdown probe, stale-image / previous_solution reuse across preconditioner swap, operator mutation, cross-operator and dimension change (child process).",
+ "commands": [
+  "RAYON_NUM_THREADS=1 cargo-target/measurement/e05_krylov_stress exp/E-05   # predecessor run (main rows + stale on s=10 matrix + children)",
+  "RAYON_NUM_THREADS=1 cargo-target/measurement/e05_krylov_stress --stale-only exp/E-05   # re-run of stale suite on convergent s=1 cond-1e2 matrix (+S4 cross-operator)",
+  "bin/cargo-wrapped.sh build --profile measurement --bin e05_krylov_stress"
+ ],
+ "inputs": [
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/harness/src/bin/e05_krylov_stress.rs",
+   "sha256": "d6bc0f0b0a8621cf40fb38e6bf4927ed435d1372ce503d9107538c6a1c605b2e"
+  }
+ ],
+ "outputs": [
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-05/e05_raw.json",
+   "sha256": "fa5d9163a45de3a7f889d1e6fa1ecfac3022a1114cd8a16651a9d9f7f6d45d01"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-05/e05_matrices.json",
+   "sha256": "45c98cb367995cbab1aaef846a6b74a80ef01b4a591cd467d9303bbe8fb7b21b"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-05/e05_stdout.txt",
+   "sha256": "01124d0787d2e96157acd965ff423e6ab5a6c43d3d26cac09627abee1ed4d097"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-05/e05_stderr.txt",
+   "sha256": "bd19f9956e6491deab539dbe8a1c2ef3e63a13400b16a50dc079b4d8fa651ba9"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-05/e05_stale_raw.json",
+   "sha256": "2cc6ab16f9195cabd9128aa9b97fb6cca930c2444f32411d7367bb696fc0b2bc"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-05/e05_stale_stdout.txt",
+   "sha256": "39e49c28229dbecba719bfc173e5210f0b43674c0166c136b48954295cb45ea9"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-05/e05_stale_stderr.txt",
+   "sha256": "b4dfa844eb51c9f979429d96803cfa9b4a6892525882ed97ce99f3af868aeb47"
+  }
+ ],
+ "env": {
+  "RAYON_NUM_THREADS": "1",
+  "profile": "measurement",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "tree_ref": "b3e8165c8dc3b5016702821d280daea1a3f1feb7",
+  "python": "numpy/scipy/mpmath 1.3 (E-06 reference)"
+ },
+ "summary_metrics": {
+  "main_rows": 96,
+  "main_rows_ok": 42,
+  "ratio_reported_over_recomputed_min": 0.9999999999999998,
+  "ratio_max": 1.0000000000000009,
+  "converged_true_but_true_residual_over_threshold": 0,
+  "reported_converged_false_rows": 0,
+  "false_breakdown_at_rhs_1e-14": "none: s0 rows converge with identical iteration counts at 1e-14/1/1e14 (e.g. gmres/none 2120/2280/2280; lgmres/none 1332 x3; gcrodr/jacobi 840 x3)",
+  "failures_by_matrix": {
+   "s1": [
+    "gmres_givens/jacobi@rhs1e-14",
+    "lgmres/jacobi@rhs1e-14",
+    "gmres/jacobi@rhs1e+00",
+    "lgmres/jacobi@rhs1e+00",
+    "gmres_givens/jacobi@rhs1e+14",
+    "lgmres/jacobi@rhs1e+14"
+   ],
+   "s10": [
+    "gmres/none@rhs1e-14",
+    "gmres/jacobi@rhs1e-14",
+    "gmres_givens/none@rhs1e-14",
+    "gmres_givens/jacobi@rhs1e-14",
+    "lgmres/none@rhs1e-14",
+    "lgmres/jacobi@rhs1e-14",
+    "gcrodr/none@rhs1e-14",
+    "gcrodr/jacobi@rhs1e-14",
+    "gmres/none@rhs1e+00",
+    "gmres/jacobi@rhs1e+00",
+    "gmres_givens/none@rhs1e+00",
+    "gmres_givens/jacobi@rhs1e+00",
+    "lgmres/none@rhs1e+00",
+    "lgmres/jacobi@rhs1e+00",
+    "gcrodr/none@rhs1e+00",
+    "gcrodr/jacobi@rhs1e+00",
+    "gmres/none@rhs1e+14",
+    "gmres/jacobi@rhs1e+14",
+    "gmres_givens/none@rhs1e+14",
+    "gmres_givens/jacobi@rhs1e+14",
+    "lgmres/none@rhs1e+14",
+    "lgmres/jacobi@rhs1e+14",
+    "gcrodr/none@rhs1e+14",
+    "gcrodr/jacobi@rhs1e+14"
+   ],
+   "s100": [
+    "gmres/none@rhs1e-14",
+    "gmres/jacobi@rhs1e-14",
+    "gmres_givens/none@rhs1e-14",
+    "gmres_givens/jacobi@rhs1e-14",
+    "lgmres/none@rhs1e-14",
+    "lgmres/jacobi@rhs1e-14",
+    "gcrodr/none@rhs1e-14",
+    "gcrodr/jacobi@rhs1e-14",
+    "gmres/none@rhs1e+00",
+    "gmres/jacobi@rhs1e+00",
+    "gmres_givens/none@rhs1e+00",
+    "gmres_givens/jacobi@rhs1e+00",
+    "lgmres/none@rhs1e+00",
+    "lgmres/jacobi@rhs1e+00",
+    "gcrodr/none@rhs1e+00",
+    "gcrodr/jacobi@rhs1e+00",
+    "gmres/none@rhs1e+14",
+    "gmres/jacobi@rhs1e+14",
+    "gmres_givens/none@rhs1e+14",
+    "gmres_givens/jacobi@rhs1e+14",
+    "lgmres/none@rhs1e+14",
+    "lgmres/jacobi@rhs1e+14",
+    "gcrodr/none@rhs1e+14",
+    "gcrodr/jacobi@rhs1e+14"
+   ]
+  },
+  "rhs_scale_dependent_success_near_budget": [
+   {
+    "matrix": "s0",
+    "solver": "gmres",
+    "pc": "none",
+    "iterations_by_rhs_scale": {
+     "1e-14": 2120,
+     "1e+00": 2280,
+     "1e+14": 2280
+    }
+   },
+   {
+    "matrix": "s0",
+    "solver": "gmres_givens",
+    "pc": "none",
+    "iterations_by_rhs_scale": {
+     "1e-14": 2015,
+     "1e+00": 2273,
+     "1e+14": 2186
+    }
+   },
+   {
+    "matrix": "s0",
+    "solver": "gcrodr",
+    "pc": "none",
+    "iterations_by_rhs_scale": {
+     "1e-14": 1512,
+     "1e+00": 1480,
+     "1e+14": 1512
+    }
+   },
+   {
+    "matrix": "s1",
+    "solver": "gmres",
+    "pc": "none",
+    "iterations_by_rhs_scale": {
+     "1e-14": 2520,
+     "1e+00": 2520,
+     "1e+14": 2440
+    }
+   },
+   {
+    "matrix": "s1",
+    "solver": "gmres",
+    "pc": "jacobi",
+    "iterations_by_rhs_scale": {
+     "1e-14": 3200,
+     "1e+00": null,
+     "1e+14": 3440
+    }
+   },
+   {
+    "matrix": "s1",
+    "solver": "gmres_givens",
+    "pc": "none",
+    "iterations_by_rhs_scale": {
+     "1e-14": 2521,
+     "1e+00": 2528,
+     "1e+14": 2536
+    }
+   },
+   {
+    "matrix": "s1",
+    "solver": "gmres_givens",
+    "pc": "jacobi",
+    "iterations_by_rhs_scale": {
+     "1e-14": null,
+     "1e+00": 3739,
+     "1e+14": null
+    }
+   },
+   {
+    "matrix": "s1",
+    "solver": "gcrodr",
+    "pc": "jacobi",
+    "iterations_by_rhs_scale": {
+     "1e-14": 1896,
+     "1e+00": 1800,
+     "1e+14": 1864
+    }
+   }
+  ],
+  "stale_suite_matrix": "s=1, cond 1e2, n=256, rtol 1e-10, atol 0 (predecessor stale rows on the s=10 matrix are uninformative: no solver converges there; kept in e05_raw.json)",
+  "stale_rows": [
+   {
+    "scenario": "S1-lgmres-pc-swap-same-op",
+    "step": "0:jacobi",
+    "ok": true,
+    "iterations": 1332,
+    "true_rel_residual": 6.288621303457299e-11,
+    "within_tol": true,
+    "linear_matvecs": 1116,
+    "refresh_matvecs": 36,
+    "same_operator_uses": 0,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S1-lgmres-pc-swap-same-op",
+    "step": "1:none",
+    "ok": false,
+    "iterations": null,
+    "true_rel_residual": null,
+    "within_tol": null,
+    "linear_matvecs": 3719,
+    "refresh_matvecs": 128,
+    "same_operator_uses": 0,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": "linear solve failed: LGMRES true residual 4.256e-1 exceeds 1.000e-10"
+   },
+   {
+    "scenario": "S1-lgmres-pc-swap-same-op",
+    "step": "2:jacobi_other",
+    "ok": true,
+    "iterations": 1292,
+    "true_rel_residual": 8.941077546148477e-11,
+    "within_tol": true,
+    "linear_matvecs": 1054,
+    "refresh_matvecs": 42,
+    "same_operator_uses": 0,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S1-lgmres-pc-swap-same-op",
+    "step": "3:opaque",
+    "ok": true,
+    "iterations": 1406,
+    "true_rel_residual": 7.541499288203388e-11,
+    "within_tol": true,
+    "linear_matvecs": 1147,
+    "refresh_matvecs": 45,
+    "same_operator_uses": 0,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S1-lgmres-pc-swap-same-op",
+    "step": "4:opaque_again",
+    "ok": false,
+    "iterations": null,
+    "true_rel_residual": null,
+    "within_tol": null,
+    "linear_matvecs": 3719,
+    "refresh_matvecs": 128,
+    "same_operator_uses": 0,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": "linear solve failed: LGMRES true residual 2.202e-8 exceeds 1.000e-10"
+   },
+   {
+    "scenario": "S1-lgmres-pc-swap-same-op",
+    "step": "5:jacobi",
+    "ok": false,
+    "iterations": null,
+    "true_rel_residual": null,
+    "within_tol": null,
+    "linear_matvecs": 3719,
+    "refresh_matvecs": 128,
+    "same_operator_uses": 0,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": "linear solve failed: LGMRES true residual 2.188e-8 exceeds 1.000e-10"
+   },
+   {
+    "scenario": "S1-gcrodr-pc-swap-same-op",
+    "step": "0:jacobi",
+    "ok": true,
+    "iterations": 520,
+    "true_rel_residual": 7.924331512135258e-11,
+    "within_tol": true,
+    "linear_matvecs": 535,
+    "refresh_matvecs": 0,
+    "same_operator_uses": 0,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S1-gcrodr-pc-swap-same-op",
+    "step": "1:none",
+    "ok": true,
+    "iterations": 0,
+    "true_rel_residual": 7.924331512135258e-11,
+    "within_tol": true,
+    "linear_matvecs": 1,
+    "refresh_matvecs": 8,
+    "same_operator_uses": 0,
+    "cross_refreshes": 1,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S1-gcrodr-pc-swap-same-op",
+    "step": "2:jacobi_other",
+    "ok": true,
+    "iterations": 0,
+    "true_rel_residual": 7.924331512135258e-11,
+    "within_tol": true,
+    "linear_matvecs": 1,
+    "refresh_matvecs": 8,
+    "same_operator_uses": 0,
+    "cross_refreshes": 1,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S1-gcrodr-pc-swap-same-op",
+    "step": "3:opaque",
+    "ok": true,
+    "iterations": 0,
+    "true_rel_residual": 7.924331512135258e-11,
+    "within_tol": true,
+    "linear_matvecs": 1,
+    "refresh_matvecs": 8,
+    "same_operator_uses": 0,
+    "cross_refreshes": 1,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S1-gcrodr-pc-swap-same-op",
+    "step": "4:opaque_again",
+    "ok": true,
+    "iterations": 0,
+    "true_rel_residual": 7.924331512135258e-11,
+    "within_tol": true,
+    "linear_matvecs": 1,
+    "refresh_matvecs": 8,
+    "same_operator_uses": 0,
+    "cross_refreshes": 1,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S1-gcrodr-pc-swap-same-op",
+    "step": "5:jacobi",
+    "ok": true,
+    "iterations": 0,
+    "true_rel_residual": 7.924331512135258e-11,
+    "within_tol": true,
+    "linear_matvecs": 1,
+    "refresh_matvecs": 8,
+    "same_operator_uses": 0,
+    "cross_refreshes": 1,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S2-lgmres-rhs-1e14-then-1e-14",
+    "step": "0:jacobi",
+    "ok": true,
+    "iterations": 1332,
+    "true_rel_residual": 6.288893999508864e-11,
+    "within_tol": true,
+    "linear_matvecs": 1116,
+    "refresh_matvecs": 36,
+    "same_operator_uses": 0,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S2-lgmres-rhs-1e14-then-1e-14",
+    "step": "1:jacobi",
+    "ok": false,
+    "iterations": null,
+    "true_rel_residual": null,
+    "within_tol": null,
+    "linear_matvecs": 3720,
+    "refresh_matvecs": 120,
+    "same_operator_uses": 0,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": "linear solve failed: LGMRES true residual 6.949e-20 exceeds 1.000e-24"
+   },
+   {
+    "scenario": "S2-lgmres-rhs-1e14-then-1e-14",
+    "step": "2:jacobi",
+    "ok": true,
+    "iterations": 3420,
+    "true_rel_residual": 5.731745600298631e-11,
+    "within_tol": true,
+    "linear_matvecs": 2791,
+    "refresh_matvecs": 90,
+    "same_operator_uses": 0,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S2-gcrodr-rhs-1e14-then-1e-14",
+    "step": "0:jacobi",
+    "ok": true,
+    "iterations": 520,
+    "true_rel_residual": 7.92298528644719e-11,
+    "within_tol": true,
+    "linear_matvecs": 535,
+    "refresh_matvecs": 0,
+    "same_operator_uses": 0,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S2-gcrodr-rhs-1e14-then-1e-14",
+    "step": "1:jacobi",
+    "ok": true,
+    "iterations": 2048,
+    "true_rel_residual": 2.122864501955512e-11,
+    "within_tol": true,
+    "linear_matvecs": 2112,
+    "refresh_matvecs": 0,
+    "same_operator_uses": 1,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S2-gcrodr-rhs-1e14-then-1e-14",
+    "step": "2:jacobi",
+    "ok": true,
+    "iterations": 512,
+    "true_rel_residual": 9.235767780070777e-11,
+    "within_tol": true,
+    "linear_matvecs": 528,
+    "refresh_matvecs": 0,
+    "same_operator_uses": 1,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S3-lgmres-before-mutation",
+    "step": "0:none",
+    "ok": true,
+    "iterations": 1028,
+    "true_rel_residual": 3.2237548469386924e-11,
+    "within_tol": true,
+    "linear_matvecs": 868,
+    "refresh_matvecs": 28,
+    "same_operator_uses": 0,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S3-gcrodr-before-mutation",
+    "step": "0:none",
+    "ok": true,
+    "iterations": 264,
+    "true_rel_residual": 1.0222656766290933e-11,
+    "within_tol": true,
+    "linear_matvecs": 271,
+    "refresh_matvecs": 0,
+    "same_operator_uses": 0,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S3-lgmres-mutated-same-token",
+    "step": "0:none",
+    "ok": true,
+    "iterations": 684,
+    "true_rel_residual": 4.045959171148753e-11,
+    "within_tol": true,
+    "linear_matvecs": 559,
+    "refresh_matvecs": 18,
+    "same_operator_uses": 0,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S3-gcrodr-mutated-same-token",
+    "step": "0:none",
+    "ok": false,
+    "iterations": null,
+    "true_rel_residual": null,
+    "within_tol": null,
+    "linear_matvecs": 4126,
+    "refresh_matvecs": 0,
+    "same_operator_uses": 1,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": "linear solve failed: GCRO-DR Arnoldi budget exhausted"
+   },
+   {
+    "scenario": "S4-gcrodr-op1-then-op2",
+    "step": "0:none",
+    "ok": true,
+    "iterations": 264,
+    "true_rel_residual": 1.0222656766290933e-11,
+    "within_tol": true,
+    "linear_matvecs": 271,
+    "refresh_matvecs": 0,
+    "same_operator_uses": 0,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S4-gcrodr-op1-then-op2",
+    "step": "0:none",
+    "ok": true,
+    "iterations": 352,
+    "true_rel_residual": 9.577740781553021e-11,
+    "within_tol": true,
+    "linear_matvecs": 363,
+    "refresh_matvecs": 8,
+    "same_operator_uses": 0,
+    "cross_refreshes": 1,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S4-gcrodr-op2-fresh-baseline",
+    "step": "0:none",
+    "ok": true,
+    "iterations": 264,
+    "true_rel_residual": 4.4913017928465484e-12,
+    "within_tol": true,
+    "linear_matvecs": 271,
+    "refresh_matvecs": 0,
+    "same_operator_uses": 0,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S4-lgmres-op1-then-op2",
+    "step": "0:none",
+    "ok": true,
+    "iterations": 1028,
+    "true_rel_residual": 3.2237548469386924e-11,
+    "within_tol": true,
+    "linear_matvecs": 868,
+    "refresh_matvecs": 28,
+    "same_operator_uses": 0,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S4-lgmres-op1-then-op2",
+    "step": "0:none",
+    "ok": true,
+    "iterations": 608,
+    "true_rel_residual": 7.822241969637608e-11,
+    "within_tol": true,
+    "linear_matvecs": 496,
+    "refresh_matvecs": 24,
+    "same_operator_uses": 0,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": null
+   },
+   {
+    "scenario": "S4-lgmres-op2-fresh-baseline",
+    "step": "0:none",
+    "ok": true,
+    "iterations": 534,
+    "true_rel_residual": 6.829495690389979e-11,
+    "within_tol": true,
+    "linear_matvecs": 465,
+    "refresh_matvecs": 15,
+    "same_operator_uses": 0,
+    "cross_refreshes": 0,
+    "prev_solution_len": 256,
+    "error": null
+   }
+  ],
+  "children_dimension_change": [
+   {
+    "exit_code": null,
+    "signal_or_abort": true,
+    "solver": "gcrodr",
+    "stderr_tail": "first solve ok=true prev_len=Some(32) basis=4\n\nthread 'main' (4131184) panicked at /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/tree/crates/rodas5p-krylov/src/gcrodr.rs:463:32:\ncopy_from_slice: source slice length (32) does not match destination slice length (16)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+    "stdout": ""
+   },
+   {
+    "exit_code": 0,
+    "signal_or_abort": false,
+    "solver": "lgmres",
+    "stderr_tail": "first solve ok=true prev_len=Some(32) dirs=4\n",
+    "stdout": "{\"outcome\":\"ok\",\"iterations\":144,\"residual\":1.4680874782355238e-11}\n"
+   }
+  ]
+ },
+ "pass_fail": "FAIL (stale-reuse criterion) / PASS (residual-reporting criteria)",
+ "hypothesis_verdicts": [
+  "Residual reporting: PASS - all 42 converged rows have reported/recomputed ratio in [1-2e-15, 1+2e-15]; 0 rows with converged=true and true residual above rtol*||b||; solvers fail closed (Err) when they do not converge.",
+  "False breakdown at ||b||=1e-14: NOT OBSERVED (atol=0; thresholds scale exactly with ||b||).",
+  "Stale reuse: OBSERVED for GCRO-DR - previous_solution is reused as x0 across an operator-identity change (gcrodr.rs:462 has no identity guard, unlike lgmres.rs:69-78): S4 op1->op2 takes 352 iterations vs 264 fresh (true residual still within tol), and a dimension change panics at gcrodr.rs:463 (copy_from_slice 32 vs 16) -> process abort under panic=abort (child exit_code None). LGMRES handled the same dimension change (144 it, converged).",
+  "LGMRES after preconditioner swap on the same operator: 3 of 6 steps exhaust max_outer and fail closed ('true residual 4.256e-1 / 2.2e-8 / 2.19e-8 exceeds 1e-10', 3719 matvecs each) although a fresh state converges in 1028 iterations on the identical (op, PC=none, b) system - retained augmentation directions from a differently-preconditioned solve stall convergence (lgmres.rs:92-187: images are refreshed but directions are kept).",
+  "GCRO-DR with an in-place-mutated operator under the same token (S3): recycled basis/images reused (same_operator_uses=1), Arnoldi budget exhausted after 4126 matvecs vs 271 fresh; fails closed. LGMRES converged (684 it).",
+  "Stale x0 across RHS scale 1e14 -> 1e-14 (S2): LGMRES fails closed (6.9e-20 > 1e-24), GCRO-DR converges with 4x iterations (2048 vs 520)."
+ ],
+ "notes": [
+  "s=10 and s=100 matrices are unsolvable by every solver within 4000 Arnoldi vectors (nonnormality too strong for cond 1e4); this bounds the informative range of the design.",
+  "Scale dependence near the budget: s1 gmres/jacobi converges at rhs 1e-14 (3200 it) and 1e14 (3440 it) but exhausts 4000 vectors at rhs 1e0; gmres_givens/jacobi is the converse - pure RHS rescaling changes success. Evidence of rounding-sensitive stagnation, not a wrong result.",
+  "GMRES-Givens reports preconditioner_apps = matvecs+1 while GMRES reports = matvecs (e.g. 2066 vs 2065): minor accounting difference.",
+  "e05_matrices.json holds the exact A matrices used (rows) for reproduction."
+ ]
+}

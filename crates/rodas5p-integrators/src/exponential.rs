@@ -4,8 +4,8 @@ use std::sync::{
 };
 
 use rodas5p_core::{
-    ClosureOperator, CoreError, CoreResult, DenseMatrix, LinearOperator, WorkCounters,
-    dense_phi_action, error_scale, safe_l2, wrms,
+    ClosureOperator, CoreError, CoreResult, DenseMatrix, LinearOperator, OperatorApplicationWork,
+    WorkCounters, apply_jvp_counted, dense_phi_action, error_scale, safe_l2, wrms,
 };
 use serde::{Deserialize, Serialize};
 
@@ -134,6 +134,101 @@ impl FusedPhiKrylovConfig {
     }
 }
 
+/// What a converged phi report rests on (re-audit RA-02).
+///
+/// `converged` alone does not say whether the returned value is bounded.
+/// Only an exactly invariant Krylov space or the full space removes the
+/// projection error, and even then only in exact arithmetic: rounding in
+/// the Arnoldi process and in the small exponential is not bounded here.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum PhiConvergenceBasis {
+    /// A residual or nested-difference estimate met the threshold. For a
+    /// nonnormal operator this is an estimate, not an error bound: a small
+    /// residual in one direction can be fed back with a large gain.
+    #[default]
+    ResidualEstimate,
+    /// The Arnoldi residual was exactly zero, so the Krylov space is
+    /// invariant and the projected action is exact in exact arithmetic.
+    InvariantSubspace,
+    /// The Krylov dimension reached the operator dimension.
+    FullSpace,
+}
+
+impl PhiConvergenceBasis {
+    pub fn is_residual_estimate(&self) -> bool {
+        *self == Self::ResidualEstimate
+    }
+
+    /// True when the projection error is zero under `bound_assumptions`.
+    pub fn error_bound_available(self) -> bool {
+        !self.is_residual_estimate()
+    }
+
+    pub fn bound_assumptions(self) -> &'static str {
+        match self {
+            Self::ResidualEstimate => {
+                "none: a-posteriori estimate; not a bound for nonnormal operators"
+            }
+            Self::InvariantSubspace | Self::FullSpace => {
+                "exact arithmetic; rounding in Arnoldi and in the projected exponential is not bounded"
+            }
+        }
+    }
+
+    /// The weakest basis of several substeps.
+    fn weakest(bases: impl IntoIterator<Item = Self>) -> Self {
+        let mut all_full = true;
+        for basis in bases {
+            match basis {
+                Self::ResidualEstimate => return Self::ResidualEstimate,
+                Self::InvariantSubspace => all_full = false,
+                Self::FullSpace => {}
+            }
+        }
+        if all_full {
+            Self::FullSpace
+        } else {
+            Self::InvariantSubspace
+        }
+    }
+}
+
+/// Whether a phi action solved the original weighted problem or only a
+/// rounded one (re-audit R3, R3-ARITH-01).
+///
+/// The weights `w_k = h^k b_k` are formed in binary64; an input whose weight
+/// falls below the smallest subnormal becomes 0 and the Krylov iteration then
+/// converges on a different problem. A nilpotent `A` with `A12 = 1e308` and
+/// `h = 1e-8` lost `b2 = 1e-310` that way and reported `converged` with a
+/// relative error of 1 in the dominant component. Without a bound on how far
+/// that loss moves the output, the action is not converged for the original
+/// target.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case", tag = "kind")]
+pub enum PhiTransformStatus {
+    /// Every nonzero input kept a nonzero weight.
+    #[default]
+    Exact,
+    /// `lost` nonzero inputs underflowed to zero weight; no bound on the
+    /// resulting output error is available (TRANSFORM_ERROR_UNBOUNDED).
+    TransformErrorUnbounded { lost: u64 },
+}
+
+impl PhiTransformStatus {
+    pub fn is_exact(&self) -> bool {
+        matches!(self, Self::Exact)
+    }
+
+    fn from_lost(lost: u64) -> Self {
+        if lost == 0 {
+            Self::Exact
+        } else {
+            Self::TransformErrorUnbounded { lost }
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct FusedPhiSubstepReport {
     pub substep_index: usize,
@@ -145,6 +240,11 @@ pub struct FusedPhiSubstepReport {
     pub error_estimate: f64,
     /// Nested-dimension difference retained only as an independent diagnostic.
     pub nested_difference_estimate: f64,
+    #[serde(
+        default,
+        skip_serializing_if = "PhiConvergenceBasis::is_residual_estimate"
+    )]
+    pub convergence_basis: PhiConvergenceBasis,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -161,6 +261,34 @@ pub struct FusedPhiActionReport {
     pub action_norm: f64,
     pub value: Vec<f64>,
     pub substep_reports: Vec<FusedPhiSubstepReport>,
+    /// The weakest basis over the substeps (re-audit RA-02).
+    #[serde(
+        default,
+        skip_serializing_if = "PhiConvergenceBasis::is_residual_estimate"
+    )]
+    pub convergence_basis: PhiConvergenceBasis,
+    /// Weighting quality; anything but `Exact` forces `converged = false`
+    /// (re-audit R3, R3-ARITH-01).
+    #[serde(default, skip_serializing_if = "PhiTransformStatus::is_exact")]
+    pub transform_status: PhiTransformStatus,
+}
+
+impl FusedPhiActionReport {
+    /// Mark a report computed on weights of which `lost` inputs underflowed:
+    /// the Krylov convergence then holds for the rounded problem only.
+    fn with_transform_loss(mut self, lost: u64) -> Self {
+        self.transform_status = PhiTransformStatus::from_lost(lost);
+        if lost > 0 {
+            self.converged = false;
+            self.convergence_basis = PhiConvergenceBasis::ResidualEstimate;
+            // The substeps converged on the rounded problem only.
+            for substep in &mut self.substep_reports {
+                substep.converged = false;
+                substep.convergence_basis = PhiConvergenceBasis::ResidualEstimate;
+            }
+        }
+        self
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -180,6 +308,11 @@ pub struct PhiActionReport {
     pub error_estimate: f64,
     pub action_norm: f64,
     pub value: Vec<f64>,
+    #[serde(
+        default,
+        skip_serializing_if = "PhiConvergenceBasis::is_residual_estimate"
+    )]
+    pub convergence_basis: PhiConvergenceBasis,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -701,6 +834,18 @@ impl LinearOperator for Pexprb54s4BudgetedOperator {
         self.inner.explicit()
     }
 
+    fn application_work(&self) -> OperatorApplicationWork {
+        self.inner.application_work()
+    }
+
+    fn row_batch_work(&self, vector_count: usize) -> OperatorApplicationWork {
+        self.inner.row_batch_work(vector_count)
+    }
+
+    fn exact_identity(&self) -> Option<rodas5p_core::ExactOperatorIdentity> {
+        self.inner.exact_identity()
+    }
+
     fn token(&self) -> u64 {
         self.inner.token()
     }
@@ -790,6 +935,19 @@ fn axpy(alpha: f64, x: &[f64], y: &mut [f64]) {
     }
 }
 
+/// Arnoldi stops early only on an exactly zero residual.
+///
+/// A relative test `h_{m+1,m} <= tol * max(1, |h_{i,m}|)` stopped on a residual
+/// that `A` can feed back with a large gain: for `A = [[-2, 2^46], [2^-46, -2]]`
+/// and `v = e1` the leak `2^-46` returns with gain `2^46`, and the first-term
+/// residual estimate (6e-15) hid a true error of 7e-2 (external audit VIG-A02;
+/// the former `64 sqrt(eps)` test hid 1e-7 on a diagonal matrix, audit F-011).
+/// A small nonzero residual is normalised and extends the basis like any
+/// other; convergence is then decided at the ordinary checkpoints.
+fn arnoldi_exact_breakdown(next_norm: f64) -> bool {
+    next_norm == 0.0
+}
+
 fn projected_action(
     basis: &[Vec<f64>],
     hessenberg: &[Vec<f64>],
@@ -854,6 +1012,7 @@ pub fn krylov_phi_action(
             error_estimate: 0.0,
             action_norm: 0.0,
             value: vec![0.0; n],
+            convergence_basis: PhiConvergenceBasis::InvariantSubspace,
         });
     }
 
@@ -866,13 +1025,10 @@ pub fn krylov_phi_action(
     let mut latest_error = f64::INFINITY;
     let mut latest_dimension = 0;
     let mut happy_breakdown = false;
-    let breakdown_tolerance = 64.0 * f64::EPSILON.sqrt();
 
     for column in 0..maximum {
         let mut work = vec![0.0; n];
-        operator.apply(&basis[column], &mut work)?;
-        counters.jvp_calls += 1;
-        counters.jvp_vectors += 1;
+        apply_jvp_counted(operator.as_ref(), &basis[column], &mut work, counters)?;
         counters.phi_krylov_vectors += 1;
 
         for (row, basis_vector) in basis.iter().take(column + 1).enumerate() {
@@ -893,21 +1049,20 @@ pub fn krylov_phi_action(
         }
         let next_norm = safe_l2(&work);
         hessenberg[column + 1][column] = next_norm;
-        let scale_norm = hessenberg
-            .iter()
-            .take(column + 1)
-            .map(|row| row[column].abs())
-            .fold(1.0, f64::max);
-        happy_breakdown = next_norm <= breakdown_tolerance * scale_norm;
+        happy_breakdown = arnoldi_exact_breakdown(next_norm);
         if !happy_breakdown && column + 1 < maximum {
             basis.push(work.iter().map(|value| value / next_norm).collect());
         }
 
         let dimension = column + 1;
-        let checkpoint = dimension >= config.minimum_dimension
-            && ((dimension - config.minimum_dimension) % config.dimension_increment == 0
-                || dimension == maximum
-                || happy_breakdown);
+        // A breakdown ends the basis whatever the minimum dimension, so it is
+        // always a checkpoint (as in the fused path). Before, a breakdown
+        // below the minimum left the loop without a projection: A = -I_8
+        // returned 0, dimension 0, unconverged (audit 2026-09-30, PHI-P3).
+        let checkpoint = happy_breakdown
+            || dimension == maximum
+            || (dimension >= config.minimum_dimension
+                && (dimension - config.minimum_dimension) % config.dimension_increment == 0);
         if checkpoint {
             let current = projected_action(
                 &basis,
@@ -927,7 +1082,42 @@ pub fn krylov_phi_action(
             let threshold =
                 config.absolute_tolerance + config.relative_tolerance * safe_l2(&current).max(beta);
             let full_space = dimension == n;
-            if happy_breakdown || full_space || latest_error <= threshold {
+            if happy_breakdown && !full_space {
+                // A breakdown ends the basis but is not itself a certificate:
+                // report the Arnoldi residual term
+                // |scale h_{m+1,m} beta e_m^T phi_{k+1}(scale H_m) e_1| and let
+                // it decide convergence (audit F-011).
+                let residual = breakdown_residual_estimate(
+                    &hessenberg,
+                    beta,
+                    dimension,
+                    scale,
+                    phi_index,
+                    counters,
+                )?;
+                latest_error = if latest_error.is_finite() {
+                    latest_error.max(residual)
+                } else {
+                    residual
+                };
+                let converged = next_norm == 0.0 || latest_error <= threshold;
+                return Ok(PhiActionReport {
+                    phi_index,
+                    scale,
+                    krylov_dimension: dimension,
+                    converged,
+                    happy_breakdown,
+                    error_estimate: latest_error,
+                    action_norm: safe_l2(&current),
+                    value: current,
+                    convergence_basis: if next_norm == 0.0 {
+                        PhiConvergenceBasis::InvariantSubspace
+                    } else {
+                        PhiConvergenceBasis::ResidualEstimate
+                    },
+                });
+            }
+            if full_space || latest_error <= threshold {
                 return Ok(PhiActionReport {
                     phi_index,
                     scale,
@@ -941,6 +1131,13 @@ pub fn krylov_phi_action(
                     },
                     action_norm: safe_l2(&current),
                     value: current,
+                    convergence_basis: if full_space {
+                        PhiConvergenceBasis::FullSpace
+                    } else if happy_breakdown {
+                        PhiConvergenceBasis::InvariantSubspace
+                    } else {
+                        PhiConvergenceBasis::ResidualEstimate
+                    },
                 });
             }
             previous = Some(current);
@@ -959,7 +1156,33 @@ pub fn krylov_phi_action(
         error_estimate: latest_error,
         action_norm: safe_l2(&latest),
         value: latest,
+        convergence_basis: PhiConvergenceBasis::ResidualEstimate,
     })
+}
+
+/// First Arnoldi error term of `phi_k(scale A) v` after `dimension` vectors:
+/// `|scale h_{m+1,m} beta e_m^T phi_{k+1}(scale H_m) e_1|`.
+fn breakdown_residual_estimate(
+    hessenberg: &[Vec<f64>],
+    beta: f64,
+    dimension: usize,
+    scale: f64,
+    phi_index: usize,
+    counters: &mut WorkCounters,
+) -> CoreResult<f64> {
+    let mut h = DenseMatrix::zeros(dimension, dimension);
+    for i in 0..dimension {
+        for j in 0..dimension {
+            h[(i, j)] = hessenberg[i][j];
+        }
+    }
+    let mut unit = vec![0.0; dimension];
+    unit[0] = 1.0;
+    let reduced = dense_phi_action(&h, scale, phi_index + 1, &unit)?;
+    counters.phi_projected_exponentials += 1;
+    counters.phi_dense_oracle_calls += 1;
+    let h_next = hessenberg[dimension][dimension - 1].abs();
+    Ok(scale.abs() * h_next * beta * reduced[dimension - 1].abs())
 }
 
 fn projected_exponential_action_with_residual_estimate(
@@ -1026,10 +1249,14 @@ fn fused_orthogonalize(
     }
 }
 
+/// `physical` is the number of leading entries that are the physical state;
+/// the rest is augmentation bookkeeping and never sets the tolerance scale
+/// (audit F-043).
 fn krylov_exponential_once(
     operator: Arc<dyn LinearOperator>,
     scale: f64,
     vector: &[f64],
+    physical: usize,
     config: FusedPhiKrylovConfig,
     counters: &mut WorkCounters,
 ) -> CoreResult<(Vec<f64>, FusedPhiSubstepReport)> {
@@ -1051,6 +1278,7 @@ fn krylov_exponential_once(
                 happy_breakdown: true,
                 error_estimate: 0.0,
                 nested_difference_estimate: 0.0,
+                convergence_basis: PhiConvergenceBasis::InvariantSubspace,
             },
         ));
     }
@@ -1065,13 +1293,10 @@ fn krylov_exponential_once(
     let mut latest_nested_difference = f64::INFINITY;
     let mut latest_dimension = 0;
     let mut latest_breakdown = false;
-    let breakdown_tolerance = 64.0 * f64::EPSILON.sqrt();
 
     for column in 0..maximum {
         let mut work = vec![0.0; dimension];
-        operator.apply(&basis[column], &mut work)?;
-        counters.jvp_calls += 1;
-        counters.jvp_vectors += 1;
+        apply_jvp_counted(operator.as_ref(), &basis[column], &mut work, counters)?;
         counters.phi_krylov_vectors += 1;
         fused_orthogonalize(
             &basis,
@@ -1083,18 +1308,13 @@ fn krylov_exponential_once(
         );
         let next_norm = safe_l2(&work);
         hessenberg[column + 1][column] = next_norm;
-        let column_scale = hessenberg
-            .iter()
-            .take(column + 1)
-            .map(|row| row[column].abs())
-            .fold(1.0, f64::max);
-        let happy_breakdown = next_norm <= breakdown_tolerance * column_scale;
+        let happy_breakdown = arnoldi_exact_breakdown(next_norm);
         if !happy_breakdown && column + 1 < maximum {
             basis.push(work.iter().map(|value| value / next_norm).collect());
         }
 
         let krylov_dimension = column + 1;
-        // A true invariant-subspace breakdown is a valid checkpoint even before the requested
+        // An exact invariant-subspace breakdown is a valid checkpoint even before the requested
         // minimum dimension; otherwise zero or affine combinations can burn the entire budget.
         let checkpoint = happy_breakdown
             || krylov_dimension == maximum
@@ -1123,24 +1343,37 @@ fn krylov_exponential_once(
             latest_dimension = krylov_dimension;
             latest_breakdown = happy_breakdown;
             latest = current.clone();
-            let threshold =
-                config.absolute_tolerance + config.relative_tolerance * safe_l2(&current).max(beta);
+            let threshold = config.absolute_tolerance
+                + config.relative_tolerance
+                    * safe_l2(&current[..physical]).max(safe_l2(&vector[..physical]));
             let full_space_exact = krylov_dimension == dimension
                 && matches!(config.orthogonalization, FusedOrthogonalization::FullMgs);
             if happy_breakdown || full_space_exact || residual_error_estimate <= threshold {
+                // A breakdown is reported with its residual estimate and is
+                // converged only when that estimate meets the threshold; the
+                // caller then halves the substep (audit F-011).
+                let converged =
+                    full_space_exact || next_norm == 0.0 || residual_error_estimate <= threshold;
                 return Ok((
                     current,
                     FusedPhiSubstepReport {
                         substep_index: 0,
                         krylov_dimension,
-                        converged: true,
+                        converged,
                         happy_breakdown,
-                        error_estimate: if happy_breakdown || full_space_exact {
+                        error_estimate: if full_space_exact {
                             0.0
                         } else {
                             residual_error_estimate
                         },
                         nested_difference_estimate,
+                        convergence_basis: if full_space_exact {
+                            PhiConvergenceBasis::FullSpace
+                        } else if next_norm == 0.0 {
+                            PhiConvergenceBasis::InvariantSubspace
+                        } else {
+                            PhiConvergenceBasis::ResidualEstimate
+                        },
                     },
                 ));
             }
@@ -1159,30 +1392,92 @@ fn krylov_exponential_once(
             happy_breakdown: latest_breakdown,
             error_estimate: latest_residual_error,
             nested_difference_estimate: latest_nested_difference,
+            convergence_basis: PhiConvergenceBasis::ResidualEstimate,
         },
     ))
 }
 
+/// The scaled convention `b0 + tau phi1(tau A) b1 + ... + tau^p phi_p(tau A) b_p`
+/// in the weighted form `w0 = b0`, `w_k = tau^k b_k` used by
+/// [`augmented_fused_operator`].
+/// `w_k = tau^k b_k`, formed on binary exponents so a representable weight
+/// is not lost to an intermediate `tau.powi(k)` (re-audit R2, PHI-R1).
+/// Inputs whose weight underflows are charged to
+/// `counters.phi_weight_underflows`, so a converged report does not hide
+/// them.
+fn weighted_phi_vectors(
+    scale: f64,
+    vectors: &[Vec<f64>],
+    counters: &mut WorkCounters,
+) -> CoreResult<(Vec<Vec<f64>>, u64)> {
+    let (weighted, lost) = rodas5p_core::weight_phi_vectors(scale, vectors)?;
+    let lost = u64::try_from(lost).unwrap_or(u64::MAX);
+    counters.phi_weight_underflows = counters.phi_weight_underflows.saturating_add(lost);
+    Ok((weighted, lost))
+}
+
+/// The time-normalized augmented operator for
+/// `e^{tau A} w0 + phi1(tau A) w1 + ... + phi_p(tau A) w_p`.
+///
+/// With `M = [[A, [b_p .. b_1]], [0, J_p]]` and `D = diag(I, tau^(p-1), ..,
+/// tau, 1)`, `D^-1 (tau M) D = [[tau A, [tau^p b_p .. tau b_1]], [0, J_p]]`,
+/// `D^-1 q = q` for the start `q = [b0; e_p]`, and the physical projection
+/// is unchanged, so the physical part of `exp(tau M) q` equals that of
+/// `exp(M_hat) q` exactly for every tau != 0 (audit 2026-09-30, PHI-P1/P2).
+/// The operator returned here is `M_hat` and is exponentiated with scale
+/// one; its upper-right block holds `w_k = tau^k b_k` directly, so no
+/// `tau^-k` factor is ever formed. The earlier form kept `b_k ~ v_k/tau^k`
+/// next to `tau A`: `||tau M||` grew like `tau^-p` as tau -> 0, the Arnoldi
+/// residual estimate accepted a dimension-1 projection with a relative
+/// error of 3e-3 on the scalar A = -1 at tau = 1e-4, and the dense Pade
+/// path returned 0 at tau = 1e-14. At tau = 0 the operator is
+/// `[[0, W], [0, J_p]]` and the output is `w0 + sum_k w_k / k!`, the limit.
+///
+/// The B block is divided by sigma, the power of two at or above
+/// `max_k ||w_k||`, and the chain's start entry is sigma (audit F-042,
+/// F-043): the augmented system is then homogeneous in the scale of the
+/// inputs.
 fn augmented_fused_operator(
     operator: Arc<dyn LinearOperator>,
-    vectors: &[Vec<f64>],
+    scale: f64,
+    weighted: &[Vec<f64>],
 ) -> CoreResult<(Arc<dyn LinearOperator>, Vec<f64>, usize)> {
-    if vectors.is_empty() {
+    if weighted.is_empty() {
         return Err(CoreError::InvalidInput(
             "fused phi action requires at least b0".into(),
         ));
     }
     let n = operator.dimension();
-    if vectors.iter().any(|vector| vector.len() != n) {
+    if weighted.iter().any(|vector| vector.len() != n) {
         return Err(CoreError::Dimension(
             "fused phi action vector shape mismatch".into(),
         ));
     }
-    let p = vectors.len() - 1;
+    let p = weighted.len() - 1;
+    let tau = scale;
     if p == 0 {
-        return Ok((operator, vectors[0].clone(), n));
+        let scaled = Arc::new(ClosureOperator::new(n, move |input, output| {
+            operator.apply(input, output)?;
+            output.iter_mut().for_each(|value| *value *= tau);
+            Ok(())
+        })) as Arc<dyn LinearOperator>;
+        return Ok((scaled, weighted[0].clone(), n));
     }
-    let owned = vectors.to_vec();
+    let b_max = weighted
+        .iter()
+        .skip(1)
+        .map(|vector| safe_l2(vector))
+        .fold(0.0_f64, f64::max);
+    let sigma = if b_max > 0.0 && b_max.is_finite() {
+        let exponent = (b_max.log2().ceil() as i64).clamp(-1022, 1023);
+        f64::from_bits(((exponent + 1023) as u64) << 52)
+    } else {
+        1.0
+    };
+    let owned = weighted
+        .iter()
+        .map(|vector| vector.iter().map(|value| value / sigma).collect::<Vec<_>>())
+        .collect::<Vec<_>>();
     let augmented_dimension = n + p;
     let augmented = Arc::new(ClosureOperator::new(
         augmented_dimension,
@@ -1193,6 +1488,7 @@ fn augmented_fused_operator(
                 ));
             }
             operator.apply(&input[..n], &mut output[..n])?;
+            output[..n].iter_mut().for_each(|value| *value *= tau);
             for column in 0..p {
                 let coefficient = input[n + column];
                 if coefficient != 0.0 {
@@ -1206,8 +1502,8 @@ fn augmented_fused_operator(
         },
     )) as Arc<dyn LinearOperator>;
     let mut start = vec![0.0; augmented_dimension];
-    start[..n].copy_from_slice(&vectors[0]);
-    start[augmented_dimension - 1] = 1.0;
+    start[..n].copy_from_slice(&weighted[0]);
+    start[augmented_dimension - 1] = sigma;
     Ok((augmented, start, n))
 }
 
@@ -1242,6 +1538,7 @@ pub fn fused_phi_action(
     }
     if vectors.iter().all(|vector| safe_l2(vector) == 0.0) {
         return Ok(FusedPhiActionReport {
+            transform_status: PhiTransformStatus::Exact,
             scale,
             highest_phi_index: vectors.len() - 1,
             substeps: 0,
@@ -1252,13 +1549,35 @@ pub fn fused_phi_action(
             action_norm: 0.0,
             value: vec![0.0; n],
             substep_reports: Vec::new(),
+            convergence_basis: PhiConvergenceBasis::InvariantSubspace,
         });
     }
-    let (augmented, initial, physical_dimension) = augmented_fused_operator(operator, vectors)?;
+    let (weighted, lost) = weighted_phi_vectors(scale, vectors, counters)?;
+    Ok(
+        fused_phi_action_weighted(operator, scale, &weighted, config, counters)?
+            .with_transform_loss(lost),
+    )
+}
+
+/// [`fused_phi_action`] on the weighted vectors `w0 = b0`, `w_k = tau^k b_k`:
+/// `e^{tau A} w0 + sum_k phi_k(tau A) w_k`. `vectors` must be finite and
+/// not all zero; the caller has counted the phi action.
+fn fused_phi_action_weighted(
+    operator: Arc<dyn LinearOperator>,
+    scale: f64,
+    weighted: &[Vec<f64>],
+    config: FusedPhiKrylovConfig,
+    counters: &mut WorkCounters,
+) -> CoreResult<FusedPhiActionReport> {
+    let (augmented, initial, physical_dimension) =
+        augmented_fused_operator(operator, scale, weighted)?;
     let config = config.validate(augmented.dimension())?;
+    let highest_phi_index = weighted.len() - 1;
     let mut substeps = 1usize;
     loop {
-        let delta = scale / substeps as f64;
+        // The normalized operator already carries tau: exp(M_hat) is taken
+        // as exp(M_hat / m)^m.
+        let delta = 1.0 / substeps as f64;
         let mut state = initial.clone();
         let mut reports = Vec::with_capacity(substeps);
         let mut total_error = 0.0;
@@ -1266,8 +1585,14 @@ pub fn fused_phi_action(
         let mut maximum_dimension = 0;
         let mut completed = true;
         for index in 0..substeps {
-            let (next, mut report) =
-                krylov_exponential_once(augmented.clone(), delta, &state, config, counters)?;
+            let (next, mut report) = krylov_exponential_once(
+                augmented.clone(),
+                delta,
+                &state,
+                physical_dimension,
+                config,
+                counters,
+            )?;
             report.substep_index = index;
             maximum_dimension = maximum_dimension.max(report.krylov_dimension);
             if report.error_estimate.is_finite() {
@@ -1286,8 +1611,9 @@ pub fn fused_phi_action(
         if completed {
             let value = state[..physical_dimension].to_vec();
             return Ok(FusedPhiActionReport {
+                transform_status: PhiTransformStatus::Exact,
                 scale,
-                highest_phi_index: vectors.len() - 1,
+                highest_phi_index,
                 substeps,
                 converged: true,
                 maximum_krylov_dimension: maximum_dimension,
@@ -1295,14 +1621,18 @@ pub fn fused_phi_action(
                 nested_difference_estimate: total_nested_difference,
                 action_norm: safe_l2(&value),
                 value,
+                convergence_basis: PhiConvergenceBasis::weakest(
+                    reports.iter().map(|report| report.convergence_basis),
+                ),
                 substep_reports: reports,
             });
         }
         if substeps >= config.maximum_substeps {
             let value = state[..physical_dimension].to_vec();
             return Ok(FusedPhiActionReport {
+                transform_status: PhiTransformStatus::Exact,
                 scale,
-                highest_phi_index: vectors.len() - 1,
+                highest_phi_index,
                 substeps,
                 converged: false,
                 maximum_krylov_dimension: maximum_dimension,
@@ -1311,6 +1641,7 @@ pub fn fused_phi_action(
                 action_norm: safe_l2(&value),
                 value,
                 substep_reports: reports,
+                convergence_basis: PhiConvergenceBasis::ResidualEstimate,
             });
         }
         counters.phi_restarts += 1;
@@ -1319,6 +1650,10 @@ pub fn fused_phi_action(
 }
 
 /// Fused unscaled combination `sum coefficient*phi_k(scale*A)vector`.
+///
+/// The terms enter the normalized augmentation as `w_k = coefficient *
+/// vector` directly; no `scale^-k` is formed, so small and zero scales are
+/// valid (at scale 0 the value is `sum coefficient * vector / k!`).
 pub fn fused_phi_linear_combination(
     operator: Arc<dyn LinearOperator>,
     scale: f64,
@@ -1326,33 +1661,59 @@ pub fn fused_phi_linear_combination(
     config: FusedPhiKrylovConfig,
     counters: &mut WorkCounters,
 ) -> CoreResult<FusedPhiActionReport> {
-    if scale == 0.0 {
+    if !scale.is_finite() {
         return Err(CoreError::InvalidInput(
-            "fused unscaled phi combination requires nonzero scale".into(),
+            "fused unscaled phi combination requires a finite scale".into(),
         ));
     }
     let n = operator.dimension();
     let highest = terms.iter().map(|term| term.phi_index).max().unwrap_or(0);
-    let mut vectors = vec![vec![0.0; n]; highest + 1];
+    let mut weighted = vec![vec![0.0; n]; highest + 1];
+    let mut lost = 0_u64;
     for term in terms {
         if term.vector.len() != n || !term.coefficient.is_finite() {
             return Err(CoreError::Dimension(
                 "fused phi combination term shape mismatch".into(),
             ));
         }
-        let divisor = scale.powi(term.phi_index as i32);
-        if divisor == 0.0 || !divisor.is_finite() {
-            return Err(CoreError::NonFinite(
-                "fused phi combination scale power is invalid".into(),
-            ));
-        }
-        axpy(
-            term.coefficient / divisor,
-            term.vector,
-            &mut vectors[term.phi_index],
-        );
+        axpy(term.coefficient, term.vector, &mut weighted[term.phi_index]);
+        // Products of a nonzero coefficient and a nonzero entry that fall
+        // below the smallest normal number lose that input wholly or in
+        // part (re-audit R3, R3-ARITH-01).
+        lost += term
+            .vector
+            .iter()
+            .filter(|&&value| value != 0.0 && term.coefficient != 0.0)
+            .filter(|&&value| (term.coefficient * value).abs() < f64::MIN_POSITIVE)
+            .count() as u64;
     }
-    fused_phi_action(operator, scale, &vectors, config, counters)
+    counters.phi_weight_underflows = counters.phi_weight_underflows.saturating_add(lost);
+    if !weighted.iter().flatten().all(|value| value.is_finite()) {
+        return Err(CoreError::InvalidInput(
+            "invalid fused phi-action input".into(),
+        ));
+    }
+    counters.phi_actions += 1;
+    if weighted.iter().all(|vector| safe_l2(vector) == 0.0) {
+        return Ok(FusedPhiActionReport {
+            transform_status: PhiTransformStatus::Exact,
+            scale,
+            highest_phi_index: highest,
+            substeps: 0,
+            converged: true,
+            maximum_krylov_dimension: 0,
+            error_estimate: 0.0,
+            nested_difference_estimate: 0.0,
+            action_norm: 0.0,
+            value: vec![0.0; n],
+            substep_reports: Vec::new(),
+            convergence_basis: PhiConvergenceBasis::InvariantSubspace,
+        });
+    }
+    Ok(
+        fused_phi_action_weighted(operator, scale, &weighted, config, counters)?
+            .with_transform_loss(lost),
+    )
 }
 
 /// Advisory cost prediction from an actually computed fused-phi Arnoldi prefix.
@@ -1413,6 +1774,7 @@ pub struct FusedPhiPrefixSession {
     physical_dimension: usize,
     config: FusedPhiKrylovConfig,
     beta: f64,
+    physical_start_norm: f64,
     basis: Vec<Vec<f64>>,
     hessenberg: Vec<Vec<f64>>,
     current_dimension: usize,
@@ -1423,6 +1785,9 @@ pub struct FusedPhiPrefixSession {
     previous_projected: Option<Vec<f64>>,
     converged: bool,
     happy_breakdown: bool,
+    convergence_basis: PhiConvergenceBasis,
+    /// Inputs whose weight underflowed (re-audit R3, R3-ARITH-01).
+    transform_lost: u64,
 }
 
 impl FusedPhiPrefixSession {
@@ -1467,6 +1832,7 @@ impl FusedPhiPrefixSession {
                 physical_dimension: n,
                 config,
                 beta: 0.0,
+                physical_start_norm: 0.0,
                 basis: Vec::new(),
                 hessenberg: Vec::new(),
                 current_dimension: 0,
@@ -1477,10 +1843,14 @@ impl FusedPhiPrefixSession {
                 previous_projected: None,
                 converged: true,
                 happy_breakdown: true,
+                convergence_basis: PhiConvergenceBasis::InvariantSubspace,
+                transform_lost: 0,
             });
         }
         let highest_phi_index = vectors.len() - 1;
-        let (augmented, initial, physical_dimension) = augmented_fused_operator(operator, vectors)?;
+        let (weighted, transform_lost) = weighted_phi_vectors(scale, vectors, counters)?;
+        let (augmented, initial, physical_dimension) =
+            augmented_fused_operator(operator, scale, &weighted)?;
         let config = config.validate(augmented.dimension())?;
         let beta = safe_l2(&initial);
         if !(beta > f64::MIN_POSITIVE && beta.is_finite()) {
@@ -1496,6 +1866,7 @@ impl FusedPhiPrefixSession {
             physical_dimension,
             config,
             beta,
+            physical_start_norm: safe_l2(&initial[..physical_dimension]),
             basis: vec![initial.iter().map(|value| value / beta).collect()],
             hessenberg: vec![vec![0.0; maximum]; maximum + 1],
             current_dimension: 0,
@@ -1506,6 +1877,8 @@ impl FusedPhiPrefixSession {
             previous_projected: None,
             converged: false,
             happy_breakdown: false,
+            convergence_basis: PhiConvergenceBasis::ResidualEstimate,
+            transform_lost,
         };
         for _ in 0..prefix_dimension.min(maximum) {
             if session.converged || session.happy_breakdown {
@@ -1529,9 +1902,12 @@ impl FusedPhiPrefixSession {
         }
         let augmented_dimension = self.operator.dimension();
         let mut work = vec![0.0; augmented_dimension];
-        self.operator.apply(&self.basis[column], &mut work)?;
-        counters.jvp_calls += 1;
-        counters.jvp_vectors += 1;
+        apply_jvp_counted(
+            self.operator.as_ref(),
+            &self.basis[column],
+            &mut work,
+            counters,
+        )?;
         counters.phi_krylov_vectors += 1;
         fused_orthogonalize(
             &self.basis,
@@ -1543,14 +1919,7 @@ impl FusedPhiPrefixSession {
         );
         let next_norm = safe_l2(&work);
         self.hessenberg[column + 1][column] = next_norm;
-        let column_scale = self
-            .hessenberg
-            .iter()
-            .take(column + 1)
-            .map(|row| row[column].abs())
-            .fold(1.0, f64::max);
-        let breakdown_tolerance = 64.0 * f64::EPSILON.sqrt();
-        self.happy_breakdown = next_norm <= breakdown_tolerance * column_scale;
+        self.happy_breakdown = arnoldi_exact_breakdown(next_norm);
         if !self.happy_breakdown && column + 1 < maximum {
             self.basis
                 .push(work.iter().map(|value| value / next_norm).collect());
@@ -1561,7 +1930,8 @@ impl FusedPhiPrefixSession {
             &self.hessenberg,
             self.beta,
             self.current_dimension,
-            self.scale,
+            // The normalized operator already carries the scale.
+            1.0,
             counters,
         )?;
         let nested = self
@@ -1581,15 +1951,30 @@ impl FusedPhiPrefixSession {
         self.previous_projected = Some(current);
         self.residual_history.push(residual_error);
         let threshold = self.config.absolute_tolerance
-            + self.config.relative_tolerance * safe_l2(&self.latest_value_augmented).max(self.beta);
+            + self.config.relative_tolerance * self.physical_magnitude();
         let full_space = self.current_dimension == augmented_dimension;
-        self.converged = self.happy_breakdown || full_space || residual_error <= threshold;
+        self.converged = full_space || next_norm == 0.0 || residual_error <= threshold;
+        self.convergence_basis = if full_space {
+            PhiConvergenceBasis::FullSpace
+        } else if next_norm == 0.0 {
+            PhiConvergenceBasis::InvariantSubspace
+        } else {
+            PhiConvergenceBasis::ResidualEstimate
+        };
         Ok(())
+    }
+
+    /// Tolerance scale: the physical part of the current value or of the
+    /// start vector, never the augmentation tail (audit F-043).
+    fn physical_magnitude(&self) -> f64 {
+        let physical = self.physical_dimension;
+        safe_l2(&self.latest_value_augmented[..physical.min(self.latest_value_augmented.len())])
+            .max(self.physical_start_norm)
     }
 
     pub fn prediction(&self) -> FusedPhiPrefixPrediction {
         let target = self.config.absolute_tolerance
-            + self.config.relative_tolerance * safe_l2(&self.latest_value_augmented).max(self.beta);
+            + self.config.relative_tolerance * self.physical_magnitude();
         let (predicted, contraction) = predict_krylov_dimension(
             &self.residual_history,
             target,
@@ -1614,16 +1999,13 @@ impl FusedPhiPrefixSession {
         }
         let physical = self.latest_value_augmented[..self.physical_dimension].to_vec();
         Ok(FusedPhiActionReport {
+            transform_status: PhiTransformStatus::from_lost(self.transform_lost),
             scale: self.scale,
             highest_phi_index: self.highest_phi_index,
             substeps: usize::from(self.current_dimension > 0),
-            converged: self.converged,
+            converged: self.converged && self.transform_lost == 0,
             maximum_krylov_dimension: self.current_dimension,
-            error_estimate: if self.converged && self.happy_breakdown {
-                0.0
-            } else {
-                self.latest_residual_error
-            },
+            error_estimate: self.latest_residual_error,
             nested_difference_estimate: self.latest_nested_difference,
             action_norm: safe_l2(&physical),
             value: physical,
@@ -1633,11 +2015,21 @@ impl FusedPhiPrefixSession {
                 vec![FusedPhiSubstepReport {
                     substep_index: 0,
                     krylov_dimension: self.current_dimension,
-                    converged: self.converged,
+                    converged: self.converged && self.transform_lost == 0,
                     happy_breakdown: self.happy_breakdown,
                     error_estimate: self.latest_residual_error,
                     nested_difference_estimate: self.latest_nested_difference,
+                    convergence_basis: if self.transform_lost == 0 {
+                        self.convergence_basis
+                    } else {
+                        PhiConvergenceBasis::ResidualEstimate
+                    },
                 }]
+            },
+            convergence_basis: if self.converged && self.transform_lost == 0 {
+                self.convergence_basis
+            } else {
+                PhiConvergenceBasis::ResidualEstimate
             },
         })
     }
@@ -1723,9 +2115,7 @@ fn nonlinear_remainder(
     let f_stage = problem.eval_rhs(t, stage, counters)?;
     let increment: Vec<f64> = stage.iter().zip(y).map(|(a, b)| a - b).collect();
     let mut linear = vec![0.0; increment.len()];
-    operator.apply(&increment, &mut linear)?;
-    counters.jvp_calls += 1;
-    counters.jvp_vectors += 1;
+    apply_jvp_counted(operator, &increment, &mut linear, counters)?;
     Ok(f_stage
         .iter()
         .zip(f0)
@@ -2378,6 +2768,32 @@ fn pexprb54s4_level1_prefix_with_telemetry_config(
     telemetry_mode: EarlyFlowDefectTelemetryMode,
     tolerance_scale: Option<EarlyFlowDefectToleranceScale>,
 ) -> CoreResult<Pexprb54s4Level1Prefix> {
+    let mut work = WorkCounters::default();
+    pexprb54s4_level1_prefix_charged(
+        problem,
+        t,
+        y,
+        h,
+        config,
+        telemetry_mode,
+        tolerance_scale,
+        &mut work,
+    )
+}
+
+/// Level-1 prefix that charges its work to a caller-owned ledger, so the
+/// work survives when the prefix fails (audit F-039).
+#[allow(clippy::too_many_arguments)]
+fn pexprb54s4_level1_prefix_charged(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: FusedPhiKrylovConfig,
+    telemetry_mode: EarlyFlowDefectTelemetryMode,
+    tolerance_scale: Option<EarlyFlowDefectToleranceScale>,
+    work: &mut WorkCounters,
+) -> CoreResult<Pexprb54s4Level1Prefix> {
     validate_problem(problem, y)?;
     if let EarlyFlowDefectTelemetryMode::ReadOnly {
         norm_component_count,
@@ -2391,8 +2807,7 @@ fn pexprb54s4_level1_prefix_with_telemetry_config(
     }
 
     let tableau = pexprb54s4_tableau();
-    let mut work = WorkCounters::default();
-    let f0 = problem.eval_rhs(t, y, &mut work)?;
+    let f0 = problem.eval_rhs(t, y, work)?;
     let operator = problem.linearize_matrix_free(t, y)?;
 
     // Dependency level 1: U2 and D2 only.  No U3/U4 or endpoint work is allowed here.
@@ -2405,10 +2820,10 @@ fn pexprb54s4_level1_prefix_with_telemetry_config(
             vector: &f0,
         }],
         config,
-        &mut work,
+        work,
     )?)?;
     let u2 = add_scaled_state(y, h, &u2_action.value);
-    let d2 = nonlinear_remainder(problem, operator.as_ref(), t, y, &f0, &u2, &mut work)?;
+    let d2 = nonlinear_remainder(problem, operator.as_ref(), t, y, &f0, &u2, work)?;
     let early_flow_defect =
         early_flow_defect_telemetry(telemetry_mode, tableau.c2, h, y, &u2, &d2, tolerance_scale)?;
 
@@ -2418,7 +2833,7 @@ fn pexprb54s4_level1_prefix_with_telemetry_config(
         h,
         logical_critical_depth: 1,
         fused_phi_reports: vec![u2_action.clone()],
-        work,
+        work: *work,
         early_flow_defect,
     };
 
@@ -2764,6 +3179,17 @@ pub fn pexprb54s4_level2_prefix_resume_level1(
     prefix: Pexprb54s4Level1Prefix,
     execution: &ParallelExecution,
 ) -> CoreResult<Pexprb54s4Level2Prefix> {
+    let mut ledger = WorkCounters::default();
+    pexprb54s4_level2_prefix_resume_level1_charged(prefix, execution, &mut ledger)
+}
+
+/// Level-2 prefix that leaves the cumulative work, including that of a failed
+/// stage, in `ledger` (audit F-039).
+fn pexprb54s4_level2_prefix_resume_level1_charged(
+    prefix: Pexprb54s4Level1Prefix,
+    execution: &ParallelExecution,
+    ledger: &mut WorkCounters,
+) -> CoreResult<Pexprb54s4Level2Prefix> {
     let Pexprb54s4Level1Prefix {
         problem,
         t,
@@ -2782,40 +3208,54 @@ pub fn pexprb54s4_level2_prefix_resume_level1(
 
     // Dependency level 2: U3 and U4 are independent once D2 is known.
     let stage_ids = [3usize, 4usize];
-    let stages = execution.map_ordered(&stage_ids, |id| {
+    *ledger = level1_report.work;
+    // Each stage result is carried as data so that both stage counters survive
+    // a failed stage; the first failure in stage order is then returned.
+    let outcomes = execution.map_ordered(&stage_ids, |id| {
         let mut local = WorkCounters::default();
-        let (c, a) = if *id == 3 {
-            (tableau.c3, tableau.a32_phi3)
-        } else {
-            (tableau.c4, tableau.a42_phi3)
-        };
-        let action = require_fused(fused_phi_linear_combination(
-            operator.clone(),
-            c * h,
-            &[
-                FusedPhiTerm {
-                    coefficient: c,
-                    phi_index: 1,
-                    vector: &f0,
-                },
-                FusedPhiTerm {
-                    coefficient: a,
-                    phi_index: 3,
-                    vector: &d2,
-                },
-            ],
-            config,
-            &mut local,
-        )?)?;
-        let stage = add_scaled_state(&y, h, &action.value);
-        let remainder =
-            nonlinear_remainder(&problem, operator.as_ref(), t, &y, &f0, &stage, &mut local)?;
-        Ok((action, stage, remainder, local))
+        // Annotated: with research features on, `CoreError: From<_>` has
+        // several impls and `?` inside the closure cannot infer the error type.
+        let result: CoreResult<(FusedPhiActionReport, Vec<f64>, Vec<f64>)> = (|| {
+            let (c, a) = if *id == 3 {
+                (tableau.c3, tableau.a32_phi3)
+            } else {
+                (tableau.c4, tableau.a42_phi3)
+            };
+            let action = require_fused(fused_phi_linear_combination(
+                operator.clone(),
+                c * h,
+                &[
+                    FusedPhiTerm {
+                        coefficient: c,
+                        phi_index: 1,
+                        vector: &f0,
+                    },
+                    FusedPhiTerm {
+                        coefficient: a,
+                        phi_index: 3,
+                        vector: &d2,
+                    },
+                ],
+                config,
+                &mut local,
+            )?)?;
+            let stage = add_scaled_state(&y, h, &action.value);
+            let remainder =
+                nonlinear_remainder(&problem, operator.as_ref(), t, &y, &f0, &stage, &mut local)?;
+            Ok((action, stage, remainder))
+        })();
+        Ok((result, local))
     })?;
 
     let mut level2_incremental_work = WorkCounters::default();
-    for (_, _, _, local) in &stages {
+    for (_, local) in &outcomes {
         level2_incremental_work.accumulate(*local);
+    }
+    ledger.accumulate(level2_incremental_work);
+    let mut stages = Vec::with_capacity(outcomes.len());
+    for (result, local) in outcomes {
+        let (action, stage, remainder) = result?;
+        stages.push((action, stage, remainder, local));
     }
     let mut cumulative_work = level1_report.work;
     cumulative_work.accumulate(level2_incremental_work);
@@ -3244,6 +3684,66 @@ fn pexprb54s4_fused_step_with_telemetry_config(
         tolerance_scale,
     )?;
     pexprb54s4_fused_step_resume_level1(prefix, execution)
+}
+
+/// One `pexprb54s4` fused step whose work is charged to `ledger` whether the
+/// step succeeds or fails (audit F-039).
+///
+/// On success the report equals the one from
+/// `pexprb54s4_fused_step_with_telemetry_config` and `ledger` equals
+/// `report.work`. On failure `ledger` holds every counter charged before and
+/// during the failing level, including a failed endpoint action.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn pexprb54s4_fused_step_charged(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    config: FusedPhiKrylovConfig,
+    execution: &ParallelExecution,
+    telemetry_mode: EarlyFlowDefectTelemetryMode,
+    tolerance_scale: Option<(f64, f64)>,
+    ledger: &mut WorkCounters,
+) -> CoreResult<FusedExponentialStepReport> {
+    *ledger = WorkCounters::default();
+    let tolerance_scale =
+        tolerance_scale.map(|(atol, rtol)| EarlyFlowDefectToleranceScale { atol, rtol });
+    let prefix = pexprb54s4_level1_prefix_charged(
+        problem,
+        t,
+        y,
+        h,
+        config,
+        telemetry_mode,
+        tolerance_scale,
+        ledger,
+    )?;
+    let level2 = pexprb54s4_level2_prefix_resume_level1_charged(prefix, execution, ledger)?;
+    match pexprb54s4_fused_step_resume_level2_accounted_impl(level2, execution, None)? {
+        Pexprb54s4Level2ContinuationOutcome::Complete {
+            report,
+            ledger: continuation,
+        } => {
+            *ledger = continuation.cumulative_work;
+            Ok(*report)
+        }
+        Pexprb54s4Level2ContinuationOutcome::Failed {
+            error,
+            ledger: continuation,
+        } => {
+            *ledger = continuation.cumulative_work;
+            Err(error)
+        }
+        Pexprb54s4Level2ContinuationOutcome::BudgetExhausted {
+            ledger: continuation,
+            ..
+        } => {
+            *ledger = continuation.cumulative_work;
+            Err(CoreError::LinearSolve(
+                "unbounded pexprb54s4 continuation reported budget exhaustion".into(),
+            ))
+        }
+    }
 }
 
 #[cfg(test)]

@@ -1,0 +1,131 @@
+{
+  "nodes": [
+    "F2",
+    "F3"
+  ],
+  "status": "IMPLEMENTED_SCOPED_VALIDATION_PASS_INDEPENDENT_REVIEW_PENDING",
+  "scope": "n=4,8,16 sparse cyclic closure, one globally regular contraction chart, [0,1], all state components 1e-8 whole-path budget",
+  "dependency_F1": {
+    "branch_contract_received": true,
+    "branch_token": "cyclic-small-real-zero",
+    "single_chart": true,
+    "transition_increment": 0,
+    "domain": "X=[-1/8,1/8]^n;Q=[-1/4,1/4]^n",
+    "same_branch_argument": "unique contraction root q(x) on every entire validated slab; no coordinate replacement"
+  },
+  "claims": [
+    {
+      "id": "F2-C1",
+      "claim": "finite rational O(n) action circuit for sparse coupled cycle; exact tangency and domain constants",
+      "kind": "constructive proof plus exact identities",
+      "evidence": [
+        "derivation.md",
+        "generate.py",
+        "circuits.hpp",
+        "reference.py"
+      ]
+    },
+    {
+      "id": "F2-C2",
+      "claim": "measured source/object/offline compile growth and actual matched-budget Newton/Krawczyk campaign",
+      "kind": "measured finite-family result",
+      "evidence": [
+        "results.json",
+        "measurements.md"
+      ]
+    },
+    {
+      "id": "F3-C1",
+      "claim": "native outward polynomial whole-slab residual and radius accumulation",
+      "kind": "interval enclosure argument plus executable checks",
+      "evidence": [
+        "native.cpp",
+        "reference.py",
+        "tests.py",
+        "tests.log",
+        "results.json"
+      ]
+    },
+    {
+      "id": "F3-C2",
+      "claim": "all three methods pass all-component whole-path 1e-8 at N64 for each dimension",
+      "kind": "certified under floating environment assumptions",
+      "evidence": [
+        "results.json"
+      ]
+    }
+  ],
+  "assumptions": [
+    "IEEE binary64 RN, FTZ/DAZ disabled, no fast-math/FMA contraction; checked at runtime on this x86 environment",
+    "Unchanged source and supported g++ arithmetic semantics",
+    "Initial x=q=0; model/constant/dimension/domain exactly as documented",
+    "Krawczyk means Newton candidate plus post-Newton inclusion; not an independent candidate solver"
+  ],
+  "counts": {
+    "distinct_configurations": 36,
+    "timed_integrations": 252,
+    "distinct_slabs": 2160,
+    "timed_slabs": 15120,
+    "fraction_reference_slabs": 27
+  },
+  "verification": {
+    "unit_tests": 8,
+    "unit_status": "PASS",
+    "exact_cyclic_identities": 15,
+    "interval_primitive_cases": 204,
+    "interval_primitive_assertions": 816,
+    "fraction_reference_slabs": 27,
+    "fraction_bound_assertions": 135,
+    "krawczyk_negative_controls": 6
+  },
+  "failure_registry": {
+    "budget_failure_configurations": 18,
+    "expected_rejected_native_configurations": 3,
+    "krawczyk_negative_controls_rejected": 6,
+    "unexpected_runtime_failures": 0,
+    "detail_file": "results.json"
+  },
+  "environment": {
+    "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+    "machine": "x86_64",
+    "python": "3.12.14",
+    "compiler": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0",
+    "flags": [
+      "-std=c++17",
+      "-O2",
+      "-fno-fast-math",
+      "-ffp-contract=off",
+      "-frounding-math"
+    ],
+    "rounding_assumptions": "IEEE binary64 RN; no FTZ/DAZ, no fast-math, FMA disabled; finite bounded input domain",
+    "cpu_model": "AMD EPYC 9V74 80-Core Processor"
+  },
+  "commands": [
+    "bash REPLAY.sh"
+  ],
+  "evidence": [
+    "derivation.md",
+    "measurements.md",
+    "native.cpp",
+    "generate.py",
+    "circuits.hpp",
+    "reference.py",
+    "interval_probe.cpp",
+    "closure_probe.cpp",
+    "run.py",
+    "tests.py",
+    "results.json",
+    "campaign_summary.json",
+    "tests.log",
+    "source_hashes.json",
+    "REPLAY.sh",
+    "summarize.py"
+  ],
+  "remaining_obligations": [
+    "Independent review before parent acceptance",
+    "No actual chart transition tested for this cyclic family; one globally regular contraction chart suffices only on this domain",
+    "No generic sparse compiler, stiffness or near-singular benchmark",
+    "No universal runtime advantage; certificate dominates and compiled/Newton total ranking may reverse",
+    "Representative Fraction validation is not exhaustive floating-point formal verification"
+  ]
+}

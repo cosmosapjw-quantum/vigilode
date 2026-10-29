@@ -1,0 +1,145 @@
+{
+  "schema": "vigilode.frontier.theorems.v1",
+  "theorems": [
+    {
+      "id": "T-QUOTIENT",
+      "statement": "(I-B)p(B)=I-q(B)/q(1), p(z)=(q(z)-q(1))/(q(1)(z-1)). If delta=||q(B)||/|q(1)|<1 and P>=||p(B)||, then ||x-x_exact||<=P||b-(I-B)x||/(1-delta).",
+      "assumptions": [
+        "finite dimensional same linear B",
+        "declared polynomial degree d>=1",
+        "q(1)!=0",
+        "full-space operator norm bounds; not merely probe residuals"
+      ],
+      "cost": "d-1 B actions to form candidate plus1 original-residual action; O(dN) when B action O(N)",
+      "proof": "synthetic division; (I-B)p(B) identity; inverse Neumann bound for I-q(B)/q(1)",
+      "code": "crates/rodas5p-integrators/src/polynomial_resolvent.rs",
+      "limitations": [
+        "floating implementation is not outward-rounded certification",
+        "setup/witness construction cost not included in action count"
+      ],
+      "proof_document": "analysis/SYNTHESIS_KO.md",
+      "validation_status": "proof_reviewed_with_scoped_regressions",
+      "global_production_implication": "none_without_remaining_obligations"
+    },
+    {
+      "id": "T-AFFINE",
+      "statement": "For constant A=-kappa I+omega R with R^2=-I, y(t+h)=exp(hA)y(t)+h phi1(hA)b for constant b; entire phi1 removes singularity at A=0.",
+      "assumptions": [
+        "declared constant damped-rotation blocks",
+        "constant forcing vectors",
+        "finite represented inputs"
+      ],
+      "cost": "O(N) per action with fixed block representation",
+      "proof": "variation of constants and entire-function identity",
+      "code": "crates/rodas5p-integrators/src/quotient_flow.rs",
+      "limitations": [
+        "general nonlinear/time-dependent forcing excluded",
+        "roundoff and phase argument reduction are implementation concerns"
+      ],
+      "proof_document": "analysis/SYNTHESIS_KO.md",
+      "validation_status": "proof_reviewed_with_scoped_regressions",
+      "global_production_implication": "none_without_remaining_obligations"
+    },
+    {
+      "id": "T-HARMONIC",
+      "statement": "For c cos(nu t)+d sin(nu t), forcing action is sum over sigma=+-1 of exp(i sigma nu(t+h))*h*phi1(h(A-i sigma nu I))*c_sigma, c_sigma=(c-i sigma d)/2.",
+      "assumptions": [
+        "constant A,c,d,nu",
+        "fixed number of harmonic modes",
+        "For O(N) code cost: same declared fixed2x2 damped-rotation block representation as T-AFFINE",
+        "Implementation requires finite represented phase and shifted frequencies"
+      ],
+      "cost": "O(N) per requested endpoint",
+      "proof": "complex harmonic decomposition and variation of constants; phi1(0)=1 covers resonance",
+      "code": "crates/rodas5p-integrators/src/quotient_flow.rs",
+      "limitations": [
+        "endpoint action, not a general nonlinear harmonic solver wrapper"
+      ],
+      "proof_document": "analysis/SYNTHESIS_KO.md",
+      "validation_status": "proof_reviewed_with_scoped_regressions",
+      "global_production_implication": "none_without_remaining_obligations"
+    },
+    {
+      "id": "T-RKL2",
+      "statement": "For fixed weighted-self-adjoint nonpositive Q, s>=2 and h Lambda<=(s*s+s-2)/2, RKL2 is W-contractive and global error<=5*T*h_max^2*||Q^3 y0||_W/18.",
+      "assumptions": [
+        "Lambda>=rho(-Q)",
+        "positive cell weights and symmetric nonnegative conductances",
+        "all time steps satisfy stable interval",
+        "fixed Q so propagators commute"
+      ],
+      "cost": "O(E*T/h + E*T*sqrt(Lambda/h)) at fixed accuracy step h; accuracy-independent grid scaling additionally requires uniformly bounded ||Q^3y0||_W",
+      "proof": "Legendre derivative bound, Taylor remainder<=5x^3/18, spectral calculus and telescoping contraction",
+      "code": "research/production_frontier_20261023/src/pde_kernels.rs",
+      "limitations": [
+        "not positivity preserving",
+        "not a theorem for general nonlinear/nonnormal PDE",
+        "floating evaluation error excluded"
+      ],
+      "proof_document": "analysis/SYNTHESIS_KO.md",
+      "validation_status": "proof_reviewed_with_scoped_regressions",
+      "global_production_implication": "none_without_remaining_obligations"
+    },
+    {
+      "id": "T-POISSON",
+      "statement": "For stochastic P=I+Q/q, q>0, normalized nonnegative truncated Poisson weights preserve positivity/mass and propagator error is at most2*tau in a Markov contraction norm. Q=0 uses identity.",
+      "assumptions": [
+        "q>=max_i(-Q_ii)",
+        "fixed Markov generator with invariant weights",
+        "tau is true omitted probability mass",
+        "exact arithmetic statement"
+      ],
+      "cost": "implemented splitting uses h*q<=32 per chunk; total cost may grow with polar q",
+      "proof": "bound omitted tail by tau and normalization perturbation by tau, then telescope contractions",
+      "code": "research/production_frontier_20261023/src/pde_kernels.rs",
+      "limitations": [
+        "no unconditional improvement over Euler or RKL2",
+        "roundoff separately budgeted"
+      ],
+      "proof_document": "analysis/SYNTHESIS_KO.md",
+      "validation_status": "proof_reviewed_with_scoped_regressions",
+      "global_production_implication": "none_without_remaining_obligations"
+    },
+    {
+      "id": "T-PILOT",
+      "statement": "Pilot attempts<=min(global attempt budget,pilot_limit*pilot_attempt_budget). For stationary equal-accuracy per-interval ratio r=implicit/explicit<1, one replay pays back after K>r/(1-r) future intervals.",
+      "assumptions": [
+        "native attempt cap enforced",
+        "pilot candidate state not committed",
+        "comparable achieved accuracy and stationary costs for payoff inequality"
+      ],
+      "cost": "finite work cap, not callback wall-time bound",
+      "proof": "budget counting; r+Kr<K",
+      "code": "crates/vigilode/src/switching.rs",
+      "limitations": [
+        "nonstationary stiffness can violate payoff assumptions",
+        "no universal no-regret theorem"
+      ],
+      "proof_document": "analysis/SWITCHING.md",
+      "validation_status": "proof_reviewed_with_scoped_regressions",
+      "global_production_implication": "none_without_remaining_obligations"
+    },
+    {
+      "id": "T-REMAP-ERROR",
+      "statement": "Continuous one-sided growth plus residual/spatial defects and remap jumps yields Gamma-weighted error accumulation; positive conservative remap is contractive in weighted L1.",
+      "assumptions": [
+        "one-sided growth bound on relevant error segments",
+        "positive old/new cell volumes",
+        "R>=0 and new_weights^T R=old_weights^T",
+        "remap consistency and numerical perturbations separately bounded",
+        "no double counting of approximate flow defect"
+      ],
+      "cost": "permits explicit cumulative error budget; not a wall-time theorem",
+      "proof": "Dini differential inequality, integrating factor, remap Lipschitz recursion; |Rz|<=R|z|",
+      "code": "research/production_frontier_20261023/src/validate_campaign_contract.py",
+      "limitations": [
+        "budget checks are exact small examples, not physical PDE bound certification",
+        "preserving mass alone does not preserve solution accuracy"
+      ],
+      "proof_document": "analysis/PRODUCTION_VALIDATION.md",
+      "validation_status": "proof_reviewed_with_scoped_regressions",
+      "global_production_implication": "none_without_remaining_obligations"
+    }
+  ],
+  "distinction": "Conditional analytic bounds are not measured timing guarantees or floating-point interval certificates."
+}

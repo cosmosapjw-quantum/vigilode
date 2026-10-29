@@ -1,0 +1,686 @@
+{
+  "schema": "vigilode.production-hardening-campaign.v1",
+  "source_commit": "5913fe062706c820e768b9e150e5cd1c274f7bf9",
+  "source_tree": "7a70caf85569dbe6c77ecb9a53fe666cd40ae618",
+  "binary": "/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/measurement/examples/production_hardening_bench",
+  "binary_sha256": "fb0677fefce6bd674a649744e1f9bec1f809b128e630efaf185df10fe33950ec",
+  "profile": "measurement",
+  "compiler_options": "opt-level=3,lto=false,codegen-units=16",
+  "ncp_used": false,
+  "host": "b0ab32d68884",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "logical_cpus": 9,
+  "affinity": [
+    0
+  ],
+  "cgroup_cpu_max": "1600000 200000",
+  "budget_seconds": 840.0,
+  "per_run_timeout": 60.0,
+  "warmups_per_configuration": 1,
+  "timed_repeats": 3,
+  "seed": 20261023,
+  "order": "shuffle problem/tolerance groups each round, then shuffle observation modes within group",
+  "timing_scope": "problem/state/options/workspace construction and solve; schedule construction/reference/JSON excluded",
+  "error_metric": "max abs(error)/max(1,abs(initial),abs(exact)); all saved components and times",
+  "accuracy_caps": [
+    0.0001,
+    1e-06,
+    1e-08
+  ],
+  "configurations": [
+    {
+      "id": 0,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "landing",
+      "observations": 501,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 1,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "dense",
+      "observations": 501,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 2,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 3,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "landing",
+      "observations": 501,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 4,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "dense",
+      "observations": 501,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 5,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 6,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "landing",
+      "observations": 501,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 7,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "dense",
+      "observations": 501,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 8,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 9,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "landing",
+      "observations": 501,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 10,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "dense",
+      "observations": 501,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 11,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 12,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "landing",
+      "observations": 501,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 13,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "dense",
+      "observations": 501,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 14,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 15,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "landing",
+      "observations": 501,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 16,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "dense",
+      "observations": 501,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 17,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 18,
+      "case": "driven",
+      "dimension": 1,
+      "mode": "landing",
+      "observations": 501,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 19,
+      "case": "driven",
+      "dimension": 1,
+      "mode": "dense",
+      "observations": 501,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 20,
+      "case": "driven",
+      "dimension": 1,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 21,
+      "case": "driven",
+      "dimension": 1,
+      "mode": "landing",
+      "observations": 501,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 22,
+      "case": "driven",
+      "dimension": 1,
+      "mode": "dense",
+      "observations": 501,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 23,
+      "case": "driven",
+      "dimension": 1,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 24,
+      "case": "driven",
+      "dimension": 1,
+      "mode": "landing",
+      "observations": 501,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 25,
+      "case": "driven",
+      "dimension": 1,
+      "mode": "dense",
+      "observations": 501,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 26,
+      "case": "driven",
+      "dimension": 1,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 27,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "landing",
+      "observations": 501,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 28,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "dense",
+      "observations": 501,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 29,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 30,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "landing",
+      "observations": 501,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 31,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "dense",
+      "observations": 501,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 32,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 33,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "landing",
+      "observations": 501,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 34,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "dense",
+      "observations": 501,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 35,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 36,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "landing",
+      "observations": 501,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 37,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "dense",
+      "observations": 501,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 38,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 39,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "landing",
+      "observations": 501,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 40,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "dense",
+      "observations": 501,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 41,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 42,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "landing",
+      "observations": 501,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 43,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "dense",
+      "observations": 501,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 44,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 45,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "landing",
+      "observations": 501,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 46,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "dense",
+      "observations": 501,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 47,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 48,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "landing",
+      "observations": 501,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 49,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "dense",
+      "observations": 501,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 50,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 51,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "landing",
+      "observations": 501,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 52,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "dense",
+      "observations": 501,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 53,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 54,
+      "case": "large-vector",
+      "dimension": 4096,
+      "mode": "landing",
+      "observations": 51,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 55,
+      "case": "large-vector",
+      "dimension": 4096,
+      "mode": "dense",
+      "observations": 51,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 56,
+      "case": "large-vector",
+      "dimension": 4096,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 57,
+      "case": "large-vector",
+      "dimension": 4096,
+      "mode": "landing",
+      "observations": 51,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 58,
+      "case": "large-vector",
+      "dimension": 4096,
+      "mode": "dense",
+      "observations": 51,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 59,
+      "case": "large-vector",
+      "dimension": 4096,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 60,
+      "case": "large-vector",
+      "dimension": 4096,
+      "mode": "landing",
+      "observations": 51,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 61,
+      "case": "large-vector",
+      "dimension": 4096,
+      "mode": "dense",
+      "observations": 51,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 62,
+      "case": "large-vector",
+      "dimension": 4096,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 63,
+      "case": "large-vector",
+      "dimension": 16384,
+      "mode": "landing",
+      "observations": 51,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 64,
+      "case": "large-vector",
+      "dimension": 16384,
+      "mode": "dense",
+      "observations": 51,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 65,
+      "case": "large-vector",
+      "dimension": 16384,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07
+    },
+    {
+      "id": 66,
+      "case": "large-vector",
+      "dimension": 16384,
+      "mode": "landing",
+      "observations": 51,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 67,
+      "case": "large-vector",
+      "dimension": 16384,
+      "mode": "dense",
+      "observations": 51,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 68,
+      "case": "large-vector",
+      "dimension": 16384,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 1e-06,
+      "atol": 1e-09
+    },
+    {
+      "id": 69,
+      "case": "large-vector",
+      "dimension": 16384,
+      "mode": "landing",
+      "observations": 51,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 70,
+      "case": "large-vector",
+      "dimension": 16384,
+      "mode": "dense",
+      "observations": 51,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    },
+    {
+      "id": 71,
+      "case": "large-vector",
+      "dimension": 16384,
+      "mode": "dense",
+      "observations": 5,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11
+    }
+  ],
+  "holdout_cases": [
+    "logistic",
+    "rapid"
+  ],
+  "external_comparators": "published cohort reused separately"
+}

@@ -1,0 +1,414 @@
+{
+ "id": "E-09",
+ "purpose": "(a) Mass-matrix fixed-step convergence (Direct vs GMRES) on M=diag(1,1e-3) linear stiff problem with exact solution, manufactured_mass_nonlinear_problem(1e3,1,1,0), constant_affine_mass_problem(); (b) analytic vs finite-difference partial_t on Prothero-Robinson (lambda -1e2/-1e4, mu 0/1) over h=2^-k, k=2..10, T=[0,1].",
+ "commands": [
+  "bin/cargo-wrapped.sh build --profile measurement --bin e09_mass_ft",
+  "RAYON_NUM_THREADS=1 cargo-target/measurement/e09_mass_ft exp/E-09/e09_out.json"
+ ],
+ "inputs": [
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/harness/src/bin/e09_mass_ft.rs",
+   "sha256": "76ab30efd56c1dbbaf836597bc13cf04e5094f5fe1f66fd49ea4ee55d8a9dc58"
+  }
+ ],
+ "outputs": [
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-09/e09_out.json",
+   "sha256": "d69aaec500e9c64a4eddaca059f468e4d70dd6abe88533cdca4a223421cdf00f"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-09/e09_stdout.txt",
+   "sha256": "11c4819621549f984bea18ddc960303920f2478c5eb5740d457e362126788632"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-09/e09_stderr.txt",
+   "sha256": "133f61fed1d5302d234a1103b34f234f69a8709c2b18d3c8b9fa98bb17b355fb"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-09/build.log",
+   "sha256": "529159232bb97a903b8c3ea7f62e0d09b4c9c5421eaf40d3d07ed8f680a45a14"
+  }
+ ],
+ "env": {
+  "RAYON_NUM_THREADS": "1",
+  "profile": "measurement",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "tree_ref": "b3e8165c8dc3b5016702821d280daea1a3f1feb7",
+  "python": "numpy/scipy/mpmath 1.3 (E-06 reference)"
+ },
+ "summary_metrics": {
+  "mass": [
+   {
+    "problem": "diagmass_eps1e-3",
+    "arm": "direct",
+    "slopes_prefloor": [
+     3.22,
+     3.6,
+     4.78,
+     2.79
+    ],
+    "max_consecutive_slope_ge_4p5": 1,
+    "err_k6": 2.492376675415168e-12,
+    "err_k2": 5.3926180113942714e-08,
+    "min_err": 1.4802973661668755e-15,
+    "all_ok": true,
+    "order_rule": "FAIL",
+    "tol_rule": "PASS"
+   },
+   {
+    "problem": "diagmass_eps1e-3",
+    "arm": "gmres",
+    "slopes_prefloor": [
+     3.22,
+     3.6,
+     4.78,
+     2.79
+    ],
+    "max_consecutive_slope_ge_4p5": 1,
+    "err_k6": 2.492376675415168e-12,
+    "err_k2": 5.3926180113942714e-08,
+    "min_err": 1.4802973661668755e-15,
+    "all_ok": true,
+    "order_rule": "FAIL",
+    "tol_rule": "PASS"
+   },
+   {
+    "problem": "manufactured_mass_nonlinear_s1e3",
+    "arm": "direct",
+    "slopes_prefloor": [
+     3.88,
+     4.58,
+     5.04,
+     4.13
+    ],
+    "max_consecutive_slope_ge_4p5": 2,
+    "err_k6": 2.9401621645746913e-12,
+    "err_k2": 5.950459371715004e-07,
+    "min_err": 3.275034435616476e-16,
+    "all_ok": true,
+    "order_rule": "PASS",
+    "tol_rule": "PASS"
+   },
+   {
+    "problem": "manufactured_mass_nonlinear_s1e3",
+    "arm": "gmres",
+    "slopes_prefloor": [
+     3.88,
+     4.58,
+     5.04,
+     4.13
+    ],
+    "max_consecutive_slope_ge_4p5": 2,
+    "err_k6": 2.9401621645746913e-12,
+    "err_k2": 5.950459385906819e-07,
+    "min_err": 4.3667125808219683e-16,
+    "all_ok": true,
+    "order_rule": "PASS",
+    "tol_rule": "PASS"
+   },
+   {
+    "problem": "constant_affine_mass",
+    "arm": "direct",
+    "slopes_prefloor": [
+     5.18,
+     5.64,
+     5.83
+    ],
+    "max_consecutive_slope_ge_4p5": 3,
+    "err_k6": 3.344546861683284e-14,
+    "err_k2": 2.1069601105483393e-07,
+    "min_err": 3.3306690738754696e-15,
+    "all_ok": true,
+    "order_rule": "PASS",
+    "tol_rule": "PASS"
+   },
+   {
+    "problem": "constant_affine_mass",
+    "arm": "gmres",
+    "slopes_prefloor": [
+     5.18,
+     5.64,
+     5.83
+    ],
+    "max_consecutive_slope_ge_4p5": 3,
+    "err_k6": 3.351485755587191e-14,
+    "err_k2": 2.106960118875012e-07,
+    "min_err": 3.191891195797325e-15,
+    "all_ok": true,
+    "order_rule": "PASS",
+    "tol_rule": "PASS"
+   }
+  ],
+  "direct_vs_gmres_agreement": [
+   {
+    "problem": "manufactured_mass_nonlinear_s1e3",
+    "max_abs_diff_err_grid": 1.4191815743888332e-15,
+    "gmres_linear_matvecs_k4": 496
+   },
+   {
+    "problem": "diagmass_eps1e-3",
+    "max_abs_diff_err_grid": 7.401486830834374e-16,
+    "gmres_linear_matvecs_k4": 496
+   },
+   {
+    "problem": "constant_affine_mass",
+    "max_abs_diff_err_grid": 8.326672684688674e-16,
+    "gmres_linear_matvecs_k4": 496
+   }
+  ],
+  "ft": [
+   {
+    "lambda": -100.0,
+    "mu": 0.0,
+    "analytic": {
+     "slopes_prefloor": [
+      0.36,
+      2.84,
+      4.03,
+      4.69
+     ],
+     "max_consecutive_slope_ge_4p5": 1,
+     "err_k6": 7.641342108649159e-12,
+     "err_k2": 2.959875858054501e-08,
+     "min_err": 2.638767217573437e-16,
+     "all_ok": true,
+     "order_rule": "FAIL",
+     "tol_rule": "PASS"
+    },
+    "fd_floor_min_err": 1.4513219696653904e-15,
+    "ratio_fd_over_analytic_by_k": [
+     [
+      2,
+      1.0
+     ],
+     [
+      3,
+      1.0
+     ],
+     [
+      4,
+      1.0
+     ],
+     [
+      5,
+      0.99
+     ],
+     [
+      6,
+      1.0
+     ],
+     [
+      7,
+      1.78
+     ],
+     [
+      8,
+      6.9
+     ],
+     [
+      9,
+      23.67
+     ],
+     [
+      10,
+      5.5
+     ]
+    ],
+    "fd_dominates_from_k": 8,
+    "fd_dominates_from_h": 0.0009765625
+   },
+   {
+    "lambda": -100.0,
+    "mu": 1.0,
+    "analytic": {
+     "slopes_prefloor": [
+      2.01,
+      2.65,
+      3.96,
+      4.66
+     ],
+     "max_consecutive_slope_ge_4p5": 1,
+     "err_k6": 7.258325047018375e-12,
+     "err_k2": 7.183045213940881e-08,
+     "min_err": 2.638767217573437e-16,
+     "all_ok": true,
+     "order_rule": "FAIL",
+     "tol_rule": "PASS"
+    },
+    "fd_floor_min_err": 1.4513219696653904e-15,
+    "ratio_fd_over_analytic_by_k": [
+     [
+      2,
+      1.0
+     ],
+     [
+      3,
+      1.0
+     ],
+     [
+      4,
+      1.0
+     ],
+     [
+      5,
+      0.99
+     ],
+     [
+      6,
+      1.0
+     ],
+     [
+      7,
+      1.82
+     ],
+     [
+      8,
+      7.16
+     ],
+     [
+      9,
+      23.67
+     ],
+     [
+      10,
+      5.5
+     ]
+    ],
+    "fd_dominates_from_k": 8,
+    "fd_dominates_from_h": 0.0009765625
+   },
+   {
+    "lambda": -10000.0,
+    "mu": 0.0,
+    "analytic": {
+     "slopes_prefloor": [
+      2.95,
+      3.03,
+      3.11,
+      3.25
+     ],
+     "max_consecutive_slope_ge_4p5": 0,
+     "err_k6": 1.745016760981314e-12,
+     "err_k2": 9.110349096206727e-09,
+     "min_err": 6.596918043933593e-16,
+     "all_ok": true,
+     "order_rule": "FAIL",
+     "tol_rule": "PASS"
+    },
+    "fd_floor_min_err": 8.81348250669528e-14,
+    "ratio_fd_over_analytic_by_k": [
+     [
+      2,
+      1.0
+     ],
+     [
+      3,
+      1.0
+     ],
+     [
+      4,
+      1.0
+     ],
+     [
+      5,
+      1.0
+     ],
+     [
+      6,
+      1.01
+     ],
+     [
+      7,
+      1.0
+     ],
+     [
+      8,
+      10.44
+     ],
+     [
+      9,
+      243.2
+     ],
+     [
+      10,
+      239.4
+     ]
+    ],
+    "fd_dominates_from_k": 8,
+    "fd_dominates_from_h": 0.0009765625
+   },
+   {
+    "lambda": -10000.0,
+    "mu": 1.0,
+    "analytic": {
+     "slopes_prefloor": [
+      2.95,
+      3.03,
+      3.11,
+      3.25
+     ],
+     "max_consecutive_slope_ge_4p5": 0,
+     "err_k6": 1.745016760981314e-12,
+     "err_k2": 9.110214914893714e-09,
+     "min_err": 5.277534435146874e-16,
+     "all_ok": true,
+     "order_rule": "FAIL",
+     "tol_rule": "PASS"
+    },
+    "fd_floor_min_err": 8.81348250669528e-14,
+    "ratio_fd_over_analytic_by_k": [
+     [
+      2,
+      1.0
+     ],
+     [
+      3,
+      1.0
+     ],
+     [
+      4,
+      1.0
+     ],
+     [
+      5,
+      1.0
+     ],
+     [
+      6,
+      1.01
+     ],
+     [
+      7,
+      1.0
+     ],
+     [
+      8,
+      10.6
+     ],
+     [
+      9,
+      242.6
+     ],
+     [
+      10,
+      299.0
+     ]
+    ],
+    "fd_dominates_from_k": 8,
+    "fd_dominates_from_h": 0.0009765625
+   }
+  ]
+ },
+ "pass_fail": "FAIL (pre-registered order rule on the stiff cases; tolerance rule PASS; all runs ok)",
+ "hypothesis_verdicts": [
+  "Mass matrix W = M - h*gamma*J: functional on both Direct and matrix-free GMRES paths (GMRES arm uses 1984 Krylov matvecs at k=4; errors agree with Direct to <=1e-15 abs on all three problems, all 9 ladder points).",
+  "Order: constant_affine_mass (nonstiff) shows clean order 5 (slopes 5.2, 5.6, 5.8, 5.9 -> PASS); manufactured_mass_nonlinear (stiffness 1e3) reaches 4.58, 5.04 then degrades (PASS by rule, marginal). diagmass_eps1e-3 (M^-1 J eigenvalue ~ -1e3): slopes 3.2, 3.6, 4.8, 2.8, 2.4, 3.7, 3.8 - never two consecutive >= 4.5 -> FAIL by the pre-registered rule; errors are small (5.4e-8 at h=1/4, 2.5e-12 at h=1/64) so the tolerance rule passes. Interpretation: stiff order reduction (observed order ~3-4 while h*|lambda| >= 1), not a wrong solution.",
+  "Prothero-Robinson analytic f_t: lambda=-1e2 reaches order 5 (4.7, 5.0, 5.1 -> PASS); lambda=-1e4 shows order ~3 throughout the ladder (2.95, 3.03, 3.11, 3.25, 3.52, 4.17; FAIL by rule) for both mu=0 and mu=1 - classic Prothero-Robinson order reduction of the W-method in the regime h*|lambda| in [10, 2500]; errors remain small (9.1e-9 at h=1/4).",
+  "FD f_t (partial_t=None path, eps=sqrt(EPS)*max(|t|,1), problem.rs:171-181): identical to analytic for h >= 1/64; FD error dominates (ratio > 2) from h = 1/256 for both lambda: at lambda=-1e2 ratios 6.9x, 24x, 5.5x (k=8..10), at lambda=-1e4 ratios 10x, 243x, 239x with a floor of ~1.6e-13 relative (vs 1.5e-15 at lambda=-1e2): the FD floor scales with |lambda| (rounding of f(t+eps)-f(t-eps) with |f| ~ |lambda|)."
+ ],
+ "notes": [
+  "constant_affine_mass_problem has no exact solution in the tree; its reference is a Direct fixed-step run at h=2^-13 (same code path, so this row only certifies self-consistency and order, not absolute correctness).",
+  "The pre-registered order rule (>= 2 consecutive slopes >= 4.5) was written before running and is applied as written; the stiff failures are attributable to order reduction, which the verification phase should weigh against any documented 'order 5 on stiff problems' claim (E-04 covers the Krylov-inexact order question).",
+  "atol=rtol=1e-12 in integrate_fixed only feed the (unused) embedded error estimate in fixed-step mode."
+ ]
+}

@@ -1,0 +1,738 @@
+{
+  "scope": "dense analytic research references and recurrence checks; no AD/Krylov performance benchmark",
+  "environment": {
+    "python": "3.11.15",
+    "mpmath": "1.3.0",
+    "sympy": "1.14.0",
+    "numpy": "2.4.6",
+    "mp_dps": 100
+  },
+  "passed": 89,
+  "total": 89,
+  "elapsed_seconds": 1.0910804880004434,
+  "checks": [
+    {
+      "name": "semilinear_no_go_is_actual_error_N16",
+      "passed": true
+    },
+    {
+      "name": "semilinear_slow_component_reference_N16",
+      "passed": true
+    },
+    {
+      "name": "semilinear_no_go_is_actual_error_N32",
+      "passed": true
+    },
+    {
+      "name": "semilinear_slow_component_reference_N32",
+      "passed": true
+    },
+    {
+      "name": "semilinear_no_go_is_actual_error_N64",
+      "passed": true
+    },
+    {
+      "name": "semilinear_slow_component_reference_N64",
+      "passed": true
+    },
+    {
+      "name": "semilinear_no_go_is_actual_error_N128",
+      "passed": true
+    },
+    {
+      "name": "semilinear_slow_component_reference_N128",
+      "passed": true
+    },
+    {
+      "name": "semilinear_no_go_is_actual_error_N256",
+      "passed": true
+    },
+    {
+      "name": "semilinear_slow_component_reference_N256",
+      "passed": true
+    },
+    {
+      "name": "semilinear_no_go_approaches_four_thirds",
+      "passed": true
+    },
+    {
+      "name": "semilinear_no_go_asymptotic_refinement",
+      "passed": true
+    },
+    {
+      "name": "no_go_100_vs_140_digit_agreement",
+      "passed": true
+    },
+    {
+      "name": "fixed_kappa_classical_order5",
+      "passed": true
+    },
+    {
+      "name": "exact_exponential_core_does_not_remove_no_go",
+      "passed": true
+    },
+    {
+      "name": "chart_preserves_w_zero_N8",
+      "passed": true
+    },
+    {
+      "name": "chart_regular_compact_domain_N8",
+      "passed": true
+    },
+    {
+      "name": "chart_physical_error_reconstruction_N8",
+      "passed": true
+    },
+    {
+      "name": "chart_preserves_w_zero_N16",
+      "passed": true
+    },
+    {
+      "name": "chart_regular_compact_domain_N16",
+      "passed": true
+    },
+    {
+      "name": "chart_physical_error_reconstruction_N16",
+      "passed": true
+    },
+    {
+      "name": "chart_preserves_w_zero_N32",
+      "passed": true
+    },
+    {
+      "name": "chart_regular_compact_domain_N32",
+      "passed": true
+    },
+    {
+      "name": "chart_physical_error_reconstruction_N32",
+      "passed": true
+    },
+    {
+      "name": "chart_preserves_w_zero_N64",
+      "passed": true
+    },
+    {
+      "name": "chart_regular_compact_domain_N64",
+      "passed": true
+    },
+    {
+      "name": "chart_physical_error_reconstruction_N64",
+      "passed": true
+    },
+    {
+      "name": "chart_repair_uniform_slow_order5",
+      "passed": true
+    },
+    {
+      "name": "chart_retains_nonzero_fast_initial_layer",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m1_kappa1_N8",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m1_kappa1_N8",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m1_kappa1_N16",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m1_kappa1_N16",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m1_kappa1_N32",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m1_kappa1_N32",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m1_kappa1_N64",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m1_kappa1_N64",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m1_kappa1000_N8",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m1_kappa1000_N8",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m1_kappa1000_N16",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m1_kappa1000_N16",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m1_kappa1000_N32",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m1_kappa1000_N32",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m1_kappa1000_N64",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m1_kappa1000_N64",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m1_kappa_hminus2_N8",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m1_kappa_hminus2_N8",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m1_kappa_hminus2_N16",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m1_kappa_hminus2_N16",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m1_kappa_hminus2_N32",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m1_kappa_hminus2_N32",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m1_kappa_hminus2_N64",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m1_kappa_hminus2_N64",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_uniform_refinement_m1",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m2_kappa1_N8",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m2_kappa1_N8",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m2_kappa1_N16",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m2_kappa1_N16",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m2_kappa1_N32",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m2_kappa1_N32",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m2_kappa1_N64",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m2_kappa1_N64",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m2_kappa1000_N8",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m2_kappa1000_N8",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m2_kappa1000_N16",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m2_kappa1000_N16",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m2_kappa1000_N32",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m2_kappa1000_N32",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m2_kappa1000_N64",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m2_kappa1000_N64",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m2_kappa_hminus2_N8",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m2_kappa_hminus2_N8",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m2_kappa_hminus2_N16",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m2_kappa_hminus2_N16",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m2_kappa_hminus2_N32",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m2_kappa_hminus2_N32",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_bound_m2_kappa_hminus2_N64",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_contractivity_m2_kappa_hminus2_N64",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_uniform_refinement_m2",
+      "passed": true
+    },
+    {
+      "name": "matrix_PR_full_VoC_step_matches_recurrence",
+      "passed": true
+    },
+    {
+      "name": "embedded_quintic_effectivity_z-10",
+      "passed": true
+    },
+    {
+      "name": "quintic_defect_certificate_z-10",
+      "passed": true
+    },
+    {
+      "name": "embedded_quintic_effectivity_z-100",
+      "passed": true
+    },
+    {
+      "name": "quintic_defect_certificate_z-100",
+      "passed": true
+    },
+    {
+      "name": "embedded_quintic_effectivity_z-10000",
+      "passed": true
+    },
+    {
+      "name": "quintic_defect_certificate_z-10000",
+      "passed": true
+    },
+    {
+      "name": "embedded_quintic_effectivity_z-1000000",
+      "passed": true
+    },
+    {
+      "name": "quintic_defect_certificate_z-1000000",
+      "passed": true
+    },
+    {
+      "name": "embedded_effectivity_below_one_in_100000",
+      "passed": true
+    }
+  ],
+  "semilinear_two_step_no_go": [
+    {
+      "N": 16,
+      "h": "0.0625",
+      "kappa": "16777216.0",
+      "t_final": "0.125",
+      "y_error": "0.000401110044915531001777829038205497037543",
+      "y_error_over_h3": "1.642946743974014983281987740489715865776",
+      "first_manifold_defect_over_h11": "-4.332019670057132349498026612821954519812"
+    },
+    {
+      "N": 32,
+      "h": "0.03125",
+      "kappa": "1073741824.0",
+      "t_final": "0.0625",
+      "y_error": "0.00004510274294893511830424611391609230912981",
+      "y_error_over_h3": "1.477926680950705956593536660802512785566",
+      "first_manifold_defect_over_h11": "-4.160999554520126885122598896544741410912"
+    },
+    {
+      "N": 64,
+      "h": "0.015625",
+      "kappa": "68719476736.0",
+      "t_final": "0.03125",
+      "y_error": "0.00000535307003965321716891869955627926533195",
+      "y_error_over_h3": "1.403275192474852961529023576481271731179",
+      "first_manifold_defect_over_h11": "-4.07929634466936592172932659975356837969"
+    },
+    {
+      "N": 128,
+      "h": "0.0078125",
+      "kappa": "4398046511104.0",
+      "t_final": "0.015625",
+      "y_error": "0.0000006521885650254103101813207597636614268992",
+      "y_error_over_h3": "1.367738553520169282817377193979882088745",
+      "first_manifold_defect_over_h11": "-4.039353357103790295506035394919581081434"
+    },
+    {
+      "N": 256,
+      "h": "0.00390625",
+      "kappa": "281474976710656.0",
+      "t_final": "0.0078125",
+      "y_error": "0.00000008048995015646710056439967080762213036675",
+      "y_error_over_h3": "1.350397279604282343062655187468370927543",
+      "first_manifold_defect_over_h11": "-4.019603718879550952921231011125211409794"
+    }
+  ],
+  "fixed_problem_classical": {
+    "data": [
+      {
+        "N": 8,
+        "h": "0.03125",
+        "error": "0.00000002803487367508876629600400134078720212425"
+      },
+      {
+        "N": 16,
+        "h": "0.015625",
+        "error": "0.0000000009162691808584415924794669419554907071733"
+      },
+      {
+        "N": 32,
+        "h": "0.0078125",
+        "error": "0.00000000002926455838676704364796475221719002367641"
+      },
+      {
+        "N": 64,
+        "h": "0.00390625",
+        "error": "9.243991457767848651086022774582359776933e-13"
+      }
+    ],
+    "rates": [
+      "4.935307264385789217457738468529286519547",
+      "4.968545081303531996581652196267010472778",
+      "4.984494771160744703022499011736255229399"
+    ]
+  },
+  "exponential_core_control": {
+    "h": "0.0078125",
+    "y_error_over_h3": "1.367737139224405075191829979165177505825"
+  },
+  "chart_repair": {
+    "data": [
+      {
+        "N": 8,
+        "h": "0.03125",
+        "kappa": "1073741824.0",
+        "x_error": "0.00000001607887266525661094392054850992150103744",
+        "y_error": "3.993231199261497985408818139809827275635e-17"
+      },
+      {
+        "N": 16,
+        "h": "0.015625",
+        "kappa": "68719476736.0",
+        "x_error": "0.0000000005335800372378804093489853319645121946163",
+        "y_error": "2.070563058101552842405871644739476737557e-20"
+      },
+      {
+        "N": 32,
+        "h": "0.0078125",
+        "kappa": "4398046511104.0",
+        "x_error": "0.00000000001718013734865922778902218213030016292469",
+        "y_error": "1.041682926282406931888401458304041647655e-23"
+      },
+      {
+        "N": 64,
+        "h": "0.00390625",
+        "kappa": "281474976710656.0",
+        "x_error": "5.44937083869363736358943928739721702451e-13",
+        "y_error": "5.162681151861196607905222431158120002712e-27"
+      }
+    ],
+    "slow_rates": [
+      "4.913317756286182124965593729664281356875",
+      "4.956891216733078180051313013895910037963",
+      "4.978508088057411521418225054418436256497"
+    ],
+    "nonzero_fast_mode_after_one_step": "0.002912621359223300970873786407766990291262"
+  },
+  "matrix_PR": [
+    {
+      "matrix": 1,
+      "lane": "kappa1",
+      "data": [
+        {
+          "N": 8,
+          "kappa": "1.0",
+          "error": "0.00003196253151684589348033562089164838022956",
+          "bound": "0.001252788967556423611111111111111111111111"
+        },
+        {
+          "N": 16,
+          "kappa": "1.0",
+          "error": "0.0000009957945662504979840240477387322032021206",
+          "bound": "0.00003914965523613823784722222222222222222222"
+        },
+        {
+          "N": 32,
+          "kappa": "1.0",
+          "error": "0.00000003106519332566488454870249126346012339029",
+          "bound": "0.000001223426726129319932725694444444444444444"
+        },
+        {
+          "N": 64,
+          "kappa": "1.0",
+          "error": "0.0000000009699097387332650107053605744446668172449",
+          "bound": "0.00000003823208519154124789767795138888888888889"
+        }
+      ],
+      "rates": [
+        "5.004389724745113854656475604805014833435",
+        "5.002477205440393658214123737367005678645",
+        "5.001304728132237038287347011279909458263"
+      ]
+    },
+    {
+      "matrix": 1,
+      "lane": "kappa1000",
+      "data": [
+        {
+          "N": 8,
+          "kappa": "1000.0",
+          "error": "0.0001628684100004587944299890898714453433386",
+          "bound": "0.001252788967556423611111111111111111111111"
+        },
+        {
+          "N": 16,
+          "kappa": "1000.0",
+          "error": "0.00000523956217886025448439247994682542268137",
+          "bound": "0.00003914965523613823784722222222222222222222"
+        },
+        {
+          "N": 32,
+          "kappa": "1000.0",
+          "error": "0.0000001583471791161177613734779962964601684698",
+          "bound": "0.000001223426726129319932725694444444444444444"
+        },
+        {
+          "N": 64,
+          "kappa": "1000.0",
+          "error": "0.000000004424336094333976261418465385091127614276",
+          "bound": "0.00000003823208519154124789767795138888888888889"
+        }
+      ],
+      "rates": [
+        "4.958116730977183044709394189606660250828",
+        "5.048283192542852546463174772392333752466",
+        "5.161486372457792969004371191345349807447"
+      ]
+    },
+    {
+      "matrix": 1,
+      "lane": "kappa_hminus2",
+      "data": [
+        {
+          "N": 8,
+          "kappa": "64.0",
+          "error": "0.0001065579402922581502202541404530513326127",
+          "bound": "0.001252788967556423611111111111111111111111"
+        },
+        {
+          "N": 16,
+          "kappa": "256.0",
+          "error": "0.000004369206960019302289071117181828952351026",
+          "bound": "0.00003914965523613823784722222222222222222222"
+        },
+        {
+          "N": 32,
+          "kappa": "1024.0",
+          "error": "0.0000001588184071403258923259802814414384548083",
+          "bound": "0.000001223426726129319932725694444444444444444"
+        },
+        {
+          "N": 64,
+          "kappa": "4096.0",
+          "error": "0.000000005336992986494271486704462468805748338524",
+          "bound": "0.00000003823208519154124789767795138888888888889"
+        }
+      ],
+      "rates": [
+        "4.608122846256749330317511985133670342425",
+        "4.781921408360136842042173981771862908149",
+        "4.895207205653347397230073135648681805021"
+      ]
+    },
+    {
+      "matrix": 2,
+      "lane": "kappa1",
+      "data": [
+        {
+          "N": 8,
+          "kappa": "1.0",
+          "error": "0.00003466535173124393001773143010381867406935",
+          "bound": "0.001252788967556423611111111111111111111111"
+        },
+        {
+          "N": 16,
+          "kappa": "1.0",
+          "error": "0.00000106506533300159800588674811971835866554",
+          "bound": "0.00003914965523613823784722222222222222222222"
+        },
+        {
+          "N": 32,
+          "kappa": "1.0",
+          "error": "0.00000003300800274472808451401334516149573085477",
+          "bound": "0.000001223426726129319932725694444444444444444"
+        },
+        {
+          "N": 64,
+          "kappa": "1.0",
+          "error": "0.000000001027029163000937361624858715242559839919",
+          "bound": "0.00000003823208519154124789767795138888888888889"
+        }
+      ],
+      "rates": [
+        "5.024480563117490123223571711340037336543",
+        "5.011982274117630918947733709246590880109",
+        "5.006266792912592747070206379122720599788"
+      ]
+    },
+    {
+      "matrix": 2,
+      "lane": "kappa1000",
+      "data": [
+        {
+          "N": 8,
+          "kappa": "1000.0",
+          "error": "0.0001667610121232383708358430719399727148347",
+          "bound": "0.001252788967556423611111111111111111111111"
+        },
+        {
+          "N": 16,
+          "kappa": "1000.0",
+          "error": "0.000005503001854775726406050012470173510836771",
+          "bound": "0.00003914965523613823784722222222222222222222"
+        },
+        {
+          "N": 32,
+          "kappa": "1000.0",
+          "error": "0.000000176521537703656594048293445514965052016",
+          "bound": "0.000001223426726129319932725694444444444444444"
+        },
+        {
+          "N": 64,
+          "kappa": "1000.0",
+          "error": "0.000000005593233479923863161122496827110426119196",
+          "bound": "0.00000003823208519154124789767795138888888888889"
+        }
+      ],
+      "rates": [
+        "4.921419408289853771966887429078461205632",
+        "4.962302689813831187806524209619248899233",
+        "4.980017855366302750629447369058176986732"
+      ]
+    },
+    {
+      "matrix": 2,
+      "lane": "kappa_hminus2",
+      "data": [
+        {
+          "N": 8,
+          "kappa": "64.0",
+          "error": "0.0001672659557613707316015381666434865341835",
+          "bound": "0.001252788967556423611111111111111111111111"
+        },
+        {
+          "N": 16,
+          "kappa": "256.0",
+          "error": "0.000005503829663792695598611097727986742361902",
+          "bound": "0.00003914965523613823784722222222222222222222"
+        },
+        {
+          "N": 32,
+          "kappa": "1024.0",
+          "error": "0.0000001765219069080176293481682836461750059621",
+          "bound": "0.000001223426726129319932725694444444444444444"
+        },
+        {
+          "N": 64,
+          "kappa": "4096.0",
+          "error": "0.000000005589611601580220757147653975421979209531",
+          "bound": "0.00000003823208519154124789767795138888888888889"
+        }
+      ],
+      "rates": [
+        "4.925564206905900707715047691734624025674",
+        "4.962516678655682022405692380497135961539",
+        "4.980955387457435236518536573475780649654"
+      ]
+    }
+  ],
+  "embedded_estimator_counterexample": [
+    {
+      "z": "-10.0",
+      "true_local_error": "0.000006508620689655172413793103448275862068966",
+      "embedded_estimate": "0.000003491379310344827586206896551724137931034",
+      "effectivity": "0.5364238410596026490066225165562913907285",
+      "certified_defect": "0.000006508620689655172413793103448275862068966"
+    },
+    {
+      "z": "-100.0",
+      "true_local_error": "0.000009519411883034946875628623155276777060512",
+      "embedded_estimate": "0.0000004805881169650531243713768447232229394876",
+      "effectivity": "0.05048506387474786283738353664393430025934",
+      "certified_defect": "0.000009519411883034946875628623155276777060512"
+    },
+    {
+      "z": "-10000.0",
+      "true_local_error": "0.000009995001999400119988003593884929549197988",
+      "embedded_estimate": "0.000000004998000599880011996406115070450802011674",
+      "effectivity": "0.0005000499850005014493650945320267907607487",
+      "certified_defect": "0.000009995001999400119988003593884929549197988"
+    },
+    {
+      "z": "-1000000.0",
+      "true_local_error": "0.000009999950000199999400001199998800003599939",
+      "embedded_estimate": "0.00000000004999980000059999880000119999640006119951",
+      "effectivity": "0.000005000004999985000005000144999365000945003",
+      "certified_defect": "0.000009999950000199999400001199998800003599939"
+    }
+  ],
+  "not_claimed": [
+    "general nonlinear stiff convergence",
+    "uniform accuracy throughout arbitrary unresolved initial layers",
+    "production AD",
+    "Krylov iteration or speedup",
+    "RODAS5P/BDF/Radau wall-clock ranking"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "status": "FAIL_REPRODUCED",
+  "source_sha256": "612c3e7ab627a9ab73c74146293d06d202a1a67baffd86fbb3551a0921a3f952",
+  "case": "Li[1e308,-1e308,1e-300];neutral_scale1e-300;charged_scales1e308",
+  "actual": 0.24618298195866548,
+  "expected": 0.30151134457776363,
+  "return_status": 0,
+  "cause": "normalizing bymaxerror beforecompensation underflows thirdterm",
+  "repair": "guarded extended-exponent longdouble accumulation andratio, divide sqrt33 beforecast"
+}

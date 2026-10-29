@@ -1,0 +1,105 @@
+\section{RHS-only scalar closure and certified inverse candidates}
+The sealed consumer solves $y'=-ky-gy^3$, with $k>0$, $g\geq0$ and
+$y(0)=Y\geq0$.  Its PR91 dyadic plan, finite-step truncation coefficient
+$C=(k+3gY^2)^2(kY+gY^3)/8$, and outward physical certificate are unchanged.
+Candidate generation is now selectable: the original generic homotopy,
+a stack-valued scalar specialization, a positive-sum cubic inverse, and a
+rational inverse predictor.  The generic public entry point is retained.
+
+\paragraph{Exact inverse representation.}
+For the midpoint equation $am+bm^3=y$, put
+\begin{align}
+ a&=1+hk/2,& b&=hg/2,& \beta&=by^2/a^3,\\
+ z&=\tfrac32\sqrt{3\beta},&
+ u&=(z+\sqrt{1+z^2})^{1/3},&
+ s&=\frac{3}{u^2+1+u^{-2}}.
+\end{align}
+Then $m=(y/a)s$ is the unique real solution.  Indeed, the polynomial is
+strictly increasing.  For $\beta>0$, $u^3-u^{-3}=2z$ and
+\begin{equation}
+ (u-u^{-1})(u^2+1+u^{-2})=2z
+\end{equation}
+give $s=(u-u^{-1})/\sqrt{3\beta}$.  The identity
+$(u-u^{-1})^3+3(u-u^{-1})=u^3-u^{-3}$ proves $s+\beta s^3=1$.
+At $\beta=0$, the positive-sum formula directly gives $s=1$.
+The existing contraction domain gives $0\leq\beta<1/3$ and $0\leq z<3/2$.
+No subtraction of nearly equal cube roots is required.
+
+\paragraph{Rational alternative and its defect.}
+The inverse series starts $1-\beta+3\beta^2$.  Matching a $[1/1]$
+rational expression uniquely determines
+\begin{equation}
+ r(\beta)=\frac{1+2\beta}{1+3\beta},\qquad
+ r+\beta r^3-1=\frac{\beta^3(3+8\beta)}{(1+3\beta)^3}.
+\end{equation}
+The right-hand side is nonnegative for every $\beta\geq0$.  Since the
+residual derivative is $1+3\beta s^2\geq1$, its unique positive root $s_*$
+satisfies
+\begin{equation}
+ 0\leq r-s_*\leq\frac{\beta^3(3+8\beta)}{(1+3\beta)^3}.
+\end{equation}
+These coefficients follow from algebra; none was fitted to timing data.
+Wolfram symbolic evaluation and 151 exact rational cells for each identity
+provide independent checks of the displayed formulas.
+
+\paragraph{Original-target certificate.}
+Both inverse candidates form the increment as $\widehat K=-h\phi(\widehat m)$,
+avoiding the subtraction $2(\widehat m-y)$.  Their floating-point accuracy is
+not assumed.  Acceptance evaluates the original
+$F(K)=K+h\phi(y+K/2)$ in outward intervals.  For every real $K$,
+$F'(K)\geq D=1+hk/2$, hence
+\begin{equation}
+ |\widehat K-K_*|\leq |F(\widehat K)|/D.
+\end{equation}
+Adding the enclosed represented-update displacement preserves the previous
+nonexpansive physical-error induction.  A missed budget invokes charged scalar
+Picard and, if needed, the existing monotone bisection.  A rounding-floor
+refusal preserves the accepted prefix.  Predictor counts are reported
+separately from ordinary and interval polynomial evaluations.
+
+\paragraph{Representation and measured costs.}
+The scalar specialization preserves operation order, seed, actual residual
+screen, and all charged callback evaluations.  Forty combinations of model,
+mode and seed policy preserve every returned state and error-bound bit.
+Twenty-three distinct native contracts pass.  The final 24 accuracy arms,
+containing 5,404 returned observations, satisfy the unchanged native outward
+bound under an independent Decimal80 exact-ODE oracle.
+
+For $k=1$, $g=1/2$, $Y=T=1$, Table~\ref{tab:production-cubic-work} compares
+warm Picard against the rational predictor.  Scalar Picard has the same
+work and output bits as generic Picard. The final outward bound in the
+tight rational case is $4.46606\,10^{-6}$.
+\begin{table}[ht]
+\caption{Identical physical accuracy plans.  Each rational step also performs
+one separately counted rational inverse calculation.}
+\label{tab:production-cubic-work}
+\begin{ruledtabular}
+\begin{tabular}{rrrrr}
+$\epsilon$ & $N$ & Picard RHS+interval & Rational RHS+interval & \shortstack{Rational\\max. error}\\
+\hline
+$10^{-3}$&64&198&128&$1.43850\,10^{-5}$\\
+$10^{-4}$&128&462&256&$3.59356\,10^{-6}$\\
+$10^{-5}$&512&1659&1024&$2.24475\,10^{-7}$
+\end{tabular}
+\end{ruledtabular}
+\end{table}
+Same-binary Callgrind differences between 20 and 40 complete trajectories
+give instruction slopes 3,182,149.3 (generic), 2,028,310 (scalar),
+2,061,615 (algebraic), and 1,940,807 (rational).  Scalar and rational reduce
+this measure by 36.26\% and 39.01\%, respectively.  Rational is 4.31\% below
+the strong scalar implementation.  These are guest instructions with process
+startup subtracted, not hardware cycles.
+
+Five paired ABBA/BAAB wall-time blocks include full output allocation and
+all interval verification.  Generic/scalar median ratios are 1.728 for the
+baseline cubic and 1.474 for the nonlinear-dominated fixture.  Corresponding
+generic/rational medians are 1.514 and 1.670.  Scalar/rational medians are
+0.970 and 1.097, with observed ranges crossing unity; local hardware selection
+between these strong alternatives remains warranted.  The expensive cubic
+inverse was the diagnosed adverse alternative.  Exactly one corrective loop
+introduced the rational predictor, and all initial negative measurements remain.
+
+The original physical certificate is retained in every comparison.  Its
+\texttt{Interval::mul} instruction count is unchanged and accounts for 55.06\%
+of the rational profile.  Improving the finite-step truncation estimate and
+vector-valued homotopy workspace are separate subsequent research tasks.

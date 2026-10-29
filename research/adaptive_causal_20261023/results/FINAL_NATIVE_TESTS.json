@@ -1,0 +1,38 @@
+{
+  "source_commit": "548526add83a38a996875b3bd2f3cd3357465ed6",
+  "runs": [
+    {
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "vigilode",
+        "--locked",
+        "--offline",
+        "--tests"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 20.05322027206421,
+      "log": "research/adaptive_causal_20261023/results/final_native_regression_0.log",
+      "sha256": "9ae6090e20b2c059dd48f288c265197a6562938944490eb04643cb8387278506"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "rodas5p-integrators",
+        "--locked",
+        "--offline",
+        "--test",
+        "quadratic_branch_contracts",
+        "--test",
+        "quotient_flow_contracts"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.2775285243988037,
+      "log": "research/adaptive_causal_20261023/results/final_native_regression_1.log",
+      "sha256": "23f6da7da946b1caa26712e76c8095f0458f06ba3ba6fa2a16ffe7dccf1827da"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "schema": "vigilode.synchronized-execution-plan.v1",
+  "baseline": "bc5ddbe42b24b1a6364bf653c3e2d6d938ca4087",
+  "baseline_rust_probe_source": "c41caffa68d9f4eb9d1976422f7f74ec7e764cca",
+  "baseline_ownership_probe_source": "d37e3b2d2c418ca425a0ceed5e930caffd5bb771",
+  "profile": "measurement",
+  "toolchain": "1.94.1",
+  "threads": 1,
+  "build_jobs": 2,
+  "scientific_campaign_wall_cap_seconds": 900,
+  "compile_preparation_separate": true,
+  "entrypoint": "python3 research/synchronized_production_20261029/code/run_lane.py --source-sha ACTUAL_PUBLISHED_SHA --remote-ref origin/research/synchronized-production-20261029 --baseline-dir BASELINE_BIN_DIR --candidate-dir CANDIDATE_BIN_DIR --output NEW_OUTPUT_DIR --phase all",
+  "phase_split": "Every later phase passes all previous RUN.json files via --prior-run; their recorded wall times consume the same900s cap. Review any failed phase before separately admitting independent later work.",
+  "commands_defined_in": "code/run_lane.py",
+  "paired_block_count": 7,
+  "timed_solves_per_child": 16,
+  "orders": "alternating ABBA/BAAB",
+  "warmup_solves_per_arm_per_case": 16,
+  "cases": [
+    "dense-fd",
+    "banded-fd",
+    "time-jvp",
+    "autonomous-jvp"
+  ],
+  "ownership_cases": 11,
+  "ownership_repeats": 3,
+  "acceptance": "exact returned bits/full Stats/status/callback parity, unchanged physical tolerances; known expected failure cases remain failures; endpoint cap1e-5 is inherited analytic binary64 diagnostic",
+  "timing_claim": "diagnostic_only",
+  "production_configuration": "existing selective-jvp ProductionConfig; one dispatcher; manufactured rates1and1000 are invocation checks",
+  "full_production": "HOLD",
+  "baseline_registration": "old solver plus source-identical probe; no candidate code in baseline"
+}

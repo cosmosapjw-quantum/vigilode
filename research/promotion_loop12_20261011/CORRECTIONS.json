@@ -1,0 +1,138 @@
+{
+  "schema": "vigilode-loop12-corrections-v1",
+  "original_input_unchanged": true,
+  "records": [
+    {
+      "source_group": "input",
+      "record": {
+        "id": "IR12-COST-OUTPUT",
+        "severity": "medium",
+        "classification": "MATHEMATICAL_COST_STATEMENT",
+        "affected_claims": [
+          "D"
+        ],
+        "status": "NEEDS_CORRECTION",
+        "original": "O(nL+L^3+R_out*nL) for unrestricted R_out",
+        "correction": "O(nL+L^3+R_out*(nL+L^2)), or explicitly restrict growth such as R_out=O(L) or n=Omega(L).",
+        "does_not_invalidate": [
+          "Contraction",
+          "All-mode accuracy",
+          "Exact n-fold kernel-product count"
+        ]
+      }
+    },
+    {
+      "source_group": "input",
+      "record": {
+        "id": "IR12-BETA-WEIGHTS",
+        "severity": "medium",
+        "classification": "IMPLEMENTATION_COST_BINDING",
+        "affected_claims": [
+          "C",
+          "D"
+        ],
+        "status": "QUALIFICATION_REQUIRED",
+        "observation": "conv and reconstruction_coefficients call math.factorial per pair; coefficient-product counters omit that work.",
+        "correction": "For stated total arithmetic upper bound, pretabulate beta weights by O(pD) recurrence/setup once; otherwise explicitly scope count to supplied-weight coefficient operations.",
+        "does_not_invalidate": [
+          "Exact same-map identity",
+          "n-fold counted coefficient products",
+          "Exact coefficient arithmetic certificate"
+        ]
+      }
+    },
+    {
+      "source_group": "input",
+      "record": {
+        "id": "IR12-FIXED-PRECISION",
+        "severity": "low",
+        "classification": "IMPLEMENTATION_SCOPE",
+        "affected_claims": [
+          "D",
+          "G"
+        ],
+        "status": "SCOPE_CLARIFIED",
+        "observation": "sufficient_parameters defaults bits=112 and caps level below 256.",
+        "correction": "Keep arbitrary-epsilon theorem existential with b scaling; finite default implementation does not guarantee every epsilon."
+      }
+    },
+    {
+      "source_group": "input",
+      "record": {
+        "id": "IR12-RESOLVENT-PREMISES",
+        "severity": "info",
+        "classification": "SOURCE_BINDING",
+        "affected_claims": [
+          "F"
+        ],
+        "status": "RESOLVED_FROM_ORIGINAL_INPUT",
+        "observation": "Loop11 section 5 explicitly supplies fixed positive Hermitian H, H-dissipativity, h>=0, real gamma0>0.",
+        "correction": "Spell out inherited premises; combine inverse action error and subtraction roundoff in epsilon_k."
+      }
+    },
+    {
+      "source_group": "cost_correction",
+      "record": {
+        "id": "IR12-PADDED-SCHEDULE",
+        "classification": "COST_SCHEDULE_PRECISION",
+        "status": "RESOLVED",
+        "initial_issue": "Maximum forcing degree did not guarantee identical actual length on each sweep.",
+        "accepted_correction": "Final LC3 explicitly zero-pads each sweep and provides actual-length sum alternative."
+      }
+    },
+    {
+      "source_group": "extension",
+      "record": {
+        "id": "ER-F1",
+        "severity": "material mathematical scope error",
+        "claim": "R5",
+        "original_issue": "Unprojected shared reconstruction was claimed identical to arbitrary projected full profile.",
+        "counterexample": "D=0, constant forcing, Pi=degree-0 truncation: projected profile remains initial constant; unprojected output has a linear-in-time forcing term.",
+        "resolution": "Same-map endpoint applies Pi to free profile and shared integrals; unprojected original-target reconstruction is a distinct output.",
+        "status": "RESOLVED_IN_REVIEWED_BYTES"
+      }
+    },
+    {
+      "source_group": "extension",
+      "record": {
+        "id": "ER-F2",
+        "severity": "cost accounting ambiguity",
+        "claim": "R5",
+        "original_issue": "Common integration-weight preparation could be conflated with application cost.",
+        "resolution": "Preparation alone may cancel; actual applications counted. Comparator lower bound skips multiplication by one; additions also counted.",
+        "status": "RESOLVED_IN_REVIEWED_BYTES"
+      }
+    },
+    {
+      "source_group": "extension",
+      "record": {
+        "id": "ER-F3",
+        "severity": "material complexity omission",
+        "claim": "DW-F",
+        "original_issue": "Multi-output upper bound charged per-mode output but omitted repeated shared ordinary scalar coefficient setup.",
+        "resolution": "Adds R_out*(p+1)*(Q+1)*(D+1)^2 plus total evaluator cost over all outputs; strict gate includes these costs.",
+        "status": "RESOLVED_IN_REVIEWED_BYTES"
+      }
+    },
+    {
+      "source_group": "extension",
+      "record": {
+        "id": "ER-F4",
+        "severity": "boundary-case complexity error",
+        "claim": "DW-F",
+        "original_issue": "n*p loses mandatory O(n) work at admitted p=0.",
+        "resolution": "Input/reconstruction and per-output terms now n*(p+1).",
+        "status": "RESOLVED_IN_REVIEWED_BYTES"
+      }
+    },
+    {
+      "source_group": "source_binding",
+      "record": {
+        "id": "SB1",
+        "issue": "Loop12 shifted-inverse difference identity already exists in current shared_shift_jet.rs",
+        "resolution": "Adopt mathematical identity, no new native speed credit; LP11 already-present disposition",
+        "status": "RESOLVED"
+      }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+error[E0432]: unresolved imports `packet_curve::PacketComplexInterval`, `packet_curve::RepresentedPacketCurve`
+  --> crates/rodas5p-integrators/src/packet_window.rs:28:24
+   |
+28 | pub use packet_curve::{PacketComplexInterval, RepresentedPacketCurve};
+   |                        ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^ no `RepresentedPacketCurve` in `packet_window::packet_curve`
+   |                        |
+   |                        no `PacketComplexInterval` in `packet_window::packet_curve`
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `rodas5p-integrators` (lib) due to 1 previous error

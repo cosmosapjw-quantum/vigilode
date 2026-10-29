@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "source": "evidence/runs/algebraic-benchmark-corrected.stdout",
+  "row_count": 24,
+  "accepted_rows": 19,
+  "legacy_refusals_preserved": 5,
+  "kernel_summary": [
+    {
+      "dimension": 2,
+      "median_seconds": {
+        "legacy_single_quotient": 1.8580065025545753e-07,
+        "refined_with_setup": 3.822886085626912e-07,
+        "refined_workspace_reused": 2.7542329936656565e-07,
+        "dense_lu_with_setup": 5.532791147994467e-07,
+        "dense_lu_factor_reused": 3.118796195228442e-07,
+        "specialized_direct_2x2": 1.8946708345173815e-07
+      },
+      "cold_lu_over_cold_refined": 1.4472811964751886,
+      "reused_lu_over_reused_refined": 1.132364691876551,
+      "best_baseline": "specialized_direct_2x2",
+      "best_baseline_over_reused_refined": 0.6879123294488355,
+      "refined_result": {
+        "absolute_error": 1.8318679906315083e-14,
+        "accepted": true,
+        "corrections": 4,
+        "polynomial_operator_actions": 5,
+        "residual": 1.8616219676914625e-12
+      },
+      "legacy_refused_residual": 0.19616336633663423
+    },
+    {
+      "dimension": 32,
+      "median_seconds": {
+        "legacy_single_quotient": 6.509840546697038e-07,
+        "refined_with_setup": 2.83642776203966e-06,
+        "refined_workspace_reused": 2.6753810160427807e-06,
+        "dense_lu_with_setup": 6.70866889632107e-06,
+        "dense_lu_factor_reused": 2.2063792723263503e-06
+      },
+      "cold_lu_over_cold_refined": 2.3651823558153664,
+      "reused_lu_over_reused_refined": 0.8246972147503154,
+      "best_baseline": "dense_lu_factor_reused",
+      "best_baseline_over_reused_refined": 0.8246972147503154,
+      "refined_result": {
+        "absolute_error": 2.4980018054066022e-15,
+        "accepted": true,
+        "corrections": 3,
+        "polynomial_operator_actions": 4,
+        "residual": 2.5579538487363607e-13
+      },
+      "legacy_refused_residual": 0.03460563864700816
+    },
+    {
+      "dimension": 128,
+      "median_seconds": {
+        "legacy_single_quotient": 9.892246305418718e-06,
+        "refined_with_setup": 4.9744707317073174e-05,
+        "refined_workspace_reused": 4.945965853658536e-05,
+        "dense_lu_with_setup": 0.00016562807692307692,
+        "dense_lu_factor_reused": 2.4778444444444442e-05
+      },
+      "cold_lu_over_cold_refined": 3.3295617937273647,
+      "reused_lu_over_reused_refined": 0.5009829258347144,
+      "best_baseline": "dense_lu_factor_reused",
+      "best_baseline_over_reused_refined": 0.5009829258347144,
+      "refined_result": {
+        "absolute_error": 9.992007221626409e-16,
+        "accepted": true,
+        "corrections": 3,
+        "polynomial_operator_actions": 4,
+        "residual": 1.0302869668521453e-13
+      },
+      "legacy_refused_residual": 0.01758033720068397
+    },
+    {
+      "dimension": 256,
+      "median_seconds": {
+        "legacy_single_quotient": 4.816830952380953e-05,
+        "refined_with_setup": 0.00018951554545454548,
+        "refined_workspace_reused": 0.000189064,
+        "dense_lu_with_setup": 0.0009942913333333334,
+        "dense_lu_factor_reused": 0.00011446077777777777
+      },
+      "cold_lu_over_cold_refined": 5.246489573974342,
+      "reused_lu_over_reused_refined": 0.6054075750950882,
+      "best_baseline": "dense_lu_factor_reused",
+      "best_baseline_over_reused_refined": 0.6054075750950882,
+      "refined_result": {
+        "absolute_error": 2.3203661214665772e-14,
+        "accepted": true,
+        "corrections": 2,
+        "polynomial_operator_actions": 3,
+        "residual": 2.3518964553659316e-12
+      },
+      "legacy_refused_residual": 0.004743047279887946
+    }
+  ],
+  "trajectory_summary": {
+    "same_method_error": 6.076805725285794e-13,
+    "continuous_error_refined": 2.6088027593740293e-07,
+    "continuous_error_direct": 2.608807213588804e-07,
+    "refined_steps": 50,
+    "refined_polynomial_operator_actions": 150,
+    "refined_max_residual": 9.918466048475238e-11,
+    "reused_lu_over_refined_median": 0.7292729653544221,
+    "timing_scope": "11 serial samples per method; illustrative only, not pooled with 21 cyclic kernel groups"
+  },
+  "decision": "Specialized opt-in kernel revived for approximate relations. Fresh-factorization crossover exists in this probe; reused LU/direct blocks remain stronger controls. No general automatic routing or RODAS trajectory speed promotion.",
+  "limitations": [
+    "One process on one host; grouped timings are not independent-process confidence intervals.",
+    "JSON construction and validation diagnostics included as stated in raw rows.",
+    "Counter covers polynomial solver only; LU arithmetic and extra diagnostic actions are included in elapsed time but not that counter.",
+    "Manufactured dense near-scalar family uses an explicitly known full-space relation bound; arbitrary nonlinear RHS is outside this contract.",
+    "Fixed-step implicit Euler trajectory is an integration client, not adaptive Rosenbrock validation."
+  ]
+}

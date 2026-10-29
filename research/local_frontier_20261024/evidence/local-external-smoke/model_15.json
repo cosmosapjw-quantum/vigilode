@@ -1,0 +1,102 @@
+{
+  "case_id": 15,
+  "exact_final": [
+    0.9179109441852074,
+    -0.8447042331769844
+  ],
+  "initial_state": [
+    1.0,
+    -0.8
+  ],
+  "jvp_direction": [
+    0.29552020666133955,
+    0.963558185417193
+  ],
+  "jvp_initial": [
+    0.963558185417193,
+    -0.5863770146965881
+  ],
+  "kind": "model_contract",
+  "model_contract": {
+    "autonomous": false,
+    "case": 15,
+    "dense_dimension_limit": 256,
+    "dimension": 2,
+    "dimension_smoke": 2,
+    "dimension_standard": 2,
+    "grid": [
+      0,
+      0
+    ],
+    "id": 15,
+    "initial_state": [
+      1.0,
+      -0.8
+    ],
+    "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+    "name": "Exponential chirp",
+    "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+    "parallel_layers": [
+      "serial",
+      "data",
+      "ensemble"
+    ],
+    "parameters": {
+      "beta": 1.2,
+      "gamma": 0.8,
+      "omega0": 1.0
+    },
+    "reference_kind": "analytic-semidiscrete-endpoint",
+    "size": "smoke",
+    "supported_methods": [
+      "dopri5",
+      "rodas5p-mf",
+      "rodas5p-dense",
+      "switching"
+    ],
+    "t_span": [
+      0.0,
+      0.1
+    ],
+    "units": "dimensionless; normalized variables, not SI physical claims",
+    "variant": "specified analytically solvable nonautonomous second-order system"
+  },
+  "model_id": "vigilode.local-bottleneck.case15.v1",
+  "parameters": {
+    "beta": 1.2,
+    "gamma": 0.8,
+    "omega0": 1.0
+  },
+  "rhs_initial": [
+    -0.8,
+    -0.3599999999999999
+  ],
+  "rhs_probes": [
+    {
+      "rhs": [
+        -0.799,
+        -0.38750494275454145
+      ],
+      "state": [
+        1.0005,
+        -0.799
+      ],
+      "t": 0.011000000000000001
+    },
+    {
+      "rhs": [
+        -0.798,
+        -0.5531559741718752
+      ],
+      "state": [
+        1.001,
+        -0.798
+      ],
+      "t": 0.073
+    }
+  ],
+  "schema_version": 1,
+  "size": "smoke",
+  "t_end": 0.1,
+  "t_start": 0.0
+}

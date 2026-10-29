@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "kind": "exact_arithmetic_theory_checks_not_solver_benchmarks",
+  "status": "PASS",
+  "geometric_minimal_count_cases": 144,
+  "restart_count_examples": [
+    {
+      "windows": 1,
+      "cold_restarts": 7,
+      "no_interior_barriers": 7
+    },
+    {
+      "windows": 4,
+      "cold_restarts": 28,
+      "no_interior_barriers": 8
+    },
+    {
+      "windows": 16,
+      "cold_restarts": 112,
+      "no_interior_barriers": 9
+    },
+    {
+      "windows": 64,
+      "cold_restarts": 448,
+      "no_interior_barriers": 10
+    }
+  ],
+  "noncommuting_reuse_fixture": {
+    "eta_inf_exact": "11/160",
+    "bounds": [
+      {
+        "degree": 0,
+        "error_inf_exact": "29/912",
+        "bound_exact": "143/3576"
+      },
+      {
+        "degree": 1,
+        "error_inf_exact": "241/218880",
+        "bound_exact": "1573/572160"
+      },
+      {
+        "degree": 2,
+        "error_inf_exact": "5863/105062400",
+        "bound_exact": "17303/91545600"
+      },
+      {
+        "degree": 3,
+        "error_inf_exact": "110449/50429952000",
+        "bound_exact": "190333/14647296000"
+      },
+      {
+        "degree": 4,
+        "error_inf_exact": "2461687/24206376960000",
+        "bound_exact": "2093663/2343567360000"
+      },
+      {
+        "degree": 5,
+        "error_inf_exact": "49041121/11619060940800000",
+        "bound_exact": "23030293/374970777600000"
+      },
+      {
+        "degree": 6,
+        "error_inf_exact": "1052253703/5577149251584000000",
+        "bound_exact": "253333223/59995324416000000"
+      }
+    ]
+  },
+  "pi_clipping_rational_fixture": {
+    "kappa": "1/1024",
+    "ratio": "1/8"
+  },
+  "post_work_overshoot_cases": 60,
+  "limitations": [
+    "These exact checks instantiate algebraic proofs, not floating-point solver performance.",
+    "No-interior-barriers counts do not describe the current exact-landing RODAS path.",
+    "Cost ceilings count declared work units, not callback wall time."
+  ]
+}

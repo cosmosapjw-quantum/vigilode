@@ -1,0 +1,568 @@
+{
+  "summary": "Adversarially verify NCP follow-up campaign claims against raw data (numerics, pairing/timing, identity/coverage)",
+  "agentCount": 3,
+  "logs": [],
+  "result": [
+    {
+      "lens": "numerical correctness (independent reference, re-evaluation of accuracy metrics, bitwise identity, counters, VODE failure attribution, bordered probe storage/residuals). Scratch scripts: /tmp/claude-1000/-home-cosmosapjw-vigilode/6904f479-db09-4cd1-85a6-1a72f0e1dd30/scratchpad/numchk/ref.py, /tmp/claude-1000/-home-cosmosapjw-vigilode/6904f479-db09-4cd1-85a6-1a72f0e1dd30/scratchpad/numchk/evalall.py, /tmp/claude-1000/-home-cosmosapjw-vigilode/6904f479-db09-4cd1-85a6-1a72f0e1dd30/scratchpad/numchk/vode_repro.py, /tmp/claude-1000/-home-cosmosapjw-vigilode/6904f479-db09-4cd1-85a6-1a72f0e1dd30/scratchpad/numchk/bordered_repro.py. No repository file was edited.",
+      "checks": [
+        {
+          "claim": "results/REFERENCE.json is a correct reference solution for periodic_heat n=128 (y_i' = D(y_{i-1}-2y_i+y_{i+1}), D=0.01*128^2) at the 41 requested float64 output times",
+          "method": "Two methods that do not use a DFT or eigendecomposition, both run on requests/HEAT_BASELINE_REQUEST.json: (a) Taylor-series propagation of exp(A h) in mpmath at dps=60 on the sparse stencil, with 16 substeps per output interval and term cutoff 1e-70; (b) scipy.linalg.expm of the dense 128x128 circulant matrix in float64",
+          "result": "CONFIRMED",
+          "evidence": "The mp-Taylor reference matches REFERENCE.json bitwise at 5247 of 5248 entries. The one difference is at (t index 0, component 0): REFERENCE has -2.451571663336267e-42 where the exact value is y0[0]=0.0, so max abs diff = 2.45e-42 (scaled 2.5e-33). REFERENCE output_times equal the request. The float64 scipy expm differs from both by 6.43e-14 (scaled 3.2e-6), which is the error of expm itself."
+        },
+        {
+          "claim": "Smoke runs BASE and STEN: max_scaled_error 1.212903651056658e-07, endpoint 1.1313986350064285e-07, max_abs 3.219646771412954e-15",
+          "method": "Re-evaluated raw/smoke/BASE.stdout.json and STEN.stdout.json against my reference: |y-ref|/(1e-9+1e-6|ref|) over all 41 times (including t=0) and all 128 components",
+          "result": "CONFIRMED",
+          "evidence": "Both arms give (1.212903651056658e-07, 1.1313986350064285e-07, 3.219646771412954e-15), with argmax at time index 26, component 64. Component 64 is the near-zero one (|ref| about 1e-16, so atol dominates). On components with |ref|>1e-3 the max scaled error is 6.72e-09 and the max relative error is 6.9e-15."
+        },
+        {
+          "claim": "heat_paired A/A0 max_scaled_error_max = 1.212903651056658e-07 for both arms; endpoint 1.1313986350064285e-07; max_abs_error_max 3.219646771412954e-15",
+          "method": "Random sample of 25 raw/A files per arm (seed 20261021), plus a full bitwise comparison of every A0 and A output, re-evaluated with my reference",
+          "result": "CONFIRMED",
+          "evidence": "All sampled files give the same three numbers, with argmax always (26,64). All 1046 PAIRS rows record the same max_scaled_error and the same argmax."
+        },
+        {
+          "claim": "All A0 and A outputs have times exactly equal to the request and states bitwise identical across all runs and across arms (one digest)",
+          "method": "Compared the bits of times against output_times (struct.pack) and of states (uint64 view) for all 22 A0 and 1024 A runs. Also checked the 45 B-phase STEN runs and both smoke runs. Read the Jacobian code in component_benchmark_support/mod.rs",
+          "result": "CONFIRMED",
+          "evidence": "0 time mismatches and 0 state-bit mismatches across 1046 runs (512+512 A, 11+11 A0), and 0 mismatches across the 47 B-STEN and smoke files. The t=0 state equals y0 bitwise. Identity is expected from the code: the BASE columns rhs(e_j) give exactly d, -2d, d and +0.0, and the STEN fill gives the same values (center = -2.0*d - 0.0, left = d + 0.0). STEN really took the stencil path: analytic_stencil_jacobian_builds=42 and extra_rhs_calls=0, from per-invocation counter deltas."
+        },
+        {
+          "claim": "VigilODE counters: accepted_steps 42, rhs_calls 336, extra derivative RHS 5376 (BASE) vs 0 (STEN), derivative-inclusive totals 5712 vs 336",
+          "method": "Collected the distinct counter and derivative_work sets over all 1046 raw outputs, and read the adapter's before/after counter delta in component_benchmark_native.rs (around lines 712-727)",
+          "result": "CONFIRMED",
+          "evidence": "Each arm has 1 distinct counter set, and BASE equals STEN on solver counters: accepted 42, rejected 0, rhs 336 (= 8 x 42), jacobian_builds 42, LU 42, linear_solves 336. BASE extra_rhs_calls = 5376 = 42 x 128, and the delta is taken per timed invocation, not cumulative with the warmup solve. 336+5376 = 5712; STEN 336+0 = 336."
+        },
+        {
+          "claim": "VODE and Julia counters as reported in comparators[*].counters",
+          "method": "Collected the distinct per-rep counters over all X files. Checked them for internal consistency using DVODE IWORK semantics, and reproduced the VODE runs locally",
+          "result": "CONFIRMED",
+          "evidence": "One distinct counter set per arm. MF20: NST 1060, NFE 2115, NCFN 349, NETF 1. MF21: NST 23, NFE 40, NJE 1, NLU 12, NNI 37, NETF 3. MF22: NST 28, NFE 307, NJE 2, NLU 13, NNI 48. Julia: naccept 5, nf 687, njacs 5, nw 5, nsolve 40. Consistency: MF21 NFE 40 = NNI 37 + 3. MF22 NFE 307 = 48 + 2*128 + 3. MF20 NNI = 0 is correct DVODE behavior, since NNI is only incremented in the chord branch. The iwork indices 10/11/12/18/19/20/21 map correctly to NST/NFE/NJE/NLU/NNI/NCFN/NETF. Julia nf 687 = 5*8 + 5*128 + 5 + 2."
+        },
+        {
+          "claim": "Comparator accuracy: VODE_MF20 0.9897677472981857 (endpoint 0.8833166182390381, 63/63 pass); MF21 4.7181983673434855 (2.1883953511024754, 0 pass); MF22 14.649145494986675 (1.3670598896416462, 0 pass); JULIA 0.0013017284779529583 (5.899736973445921e-06, 70/70); DIFFSOL 0.005486546909306088 (= endpoint, 63/63)",
+          "method": "Re-evaluated every measured rep in every raw/B_<ARM>/*-X.json (plus the Julia preflight) against my reference",
+          "result": "CONFIRMED",
+          "evidence": "All values reproduce to every printed digit. Each arm's reps are identical. Argmax locations: MF20 (1,96), MF21 (14,32), MF22 (8,64), Julia (37,96), Diffsol (40,32)."
+        },
+        {
+          "claim": "VODE MF21/MF22 application failures are solver behavior, not an evaluation artifact",
+          "method": "Inspected the raw times and t0 states and harness/vode_worker.py. Re-ran DVODE locally (scipy 1.17.0) with scalar and vector atol and with tighter rtol. Plotted the per-time error profile. Ran a second BDF and Radau implementation (scipy solve_ivp)",
+          "result": "CONFIRMED",
+          "evidence": "Raw times equal the request exactly, and r.t == target on every call. The t0 state is y0 exactly, so error at t=0 is 0. All 128 atol values are 1e-9, so scalar and vector atol give identical metrics. The analytic J is the correct symmetric circulant. Local MF20 reproduces bitwise. Local MF21 gives metric 4.7181983673434855, identical, with states differing by at most 6.6e-15. Tightening rtol converges to the reference (MF21: 0.408 at 1e-7, 0.053 at 1e-8, 7.6e-4 at 1e-10), which rules out a time-grid misalignment. The MF21 error builds from t=0.15 to a peak of 4.72 at t=0.35. A different BDF implementation (solve_ivp BDF) also fails at 1.70, while Radau passes at 0.12."
+        },
+        {
+          "claim": "MF22 failure magnitude 14.65",
+          "method": "Restricted the scaled error to components with |ref|>1e-3, and reproduced locally",
+          "result": "OVERSTATED",
+          "evidence": "The 14.65 comes from component 64, where |ref| is about 1e-16 (atol floor). On significant components the raw max is 5.97, so the run still fails. The FD-Jacobian path depends on platform: locally I get 14.649094806545333 with NST 30 versus raw 14.649145494986675 with NST 28, and 4.61 versus 5.97 on significant components. The fail verdict holds either way."
+        },
+        {
+          "claim": "Internal tolerances equal the application budget for all arms",
+          "method": "Read APPLICATION_BUDGET.json, the requests, vode_worker.py, julia_solver_v3.jl and the diffsol-adapter source",
+          "result": "CONFIRMED",
+          "evidence": "rtol is 1e-6 and all 128 atol values are 1e-9. VODE's scalar atol of 1e-9 is therefore equivalent. Julia uses the abstol vector; diffsol uses .atol(vector). The native solver accepts uniform atol only. All solvers use the same D value: 0.01*16384 is exact in float64."
+        },
+        {
+          "claim": "DIFFSOL output (no times) corresponds to the requested grid",
+          "method": "Diffsol does not report times, so I tested alignment by comparing each state against the reference shifted by one time index in both directions, and inspected the t0 state",
+          "result": "CONFIRMED",
+          "evidence": "The unshifted maximum is 0.0055. Shifting by +1 or -1 index gives 9906 and 9809. The t0 state differs from y0 by 1.1e-16, so it is diffsol's own output, not injected. Alignment is supported by inference only, because the solver supplies no times."
+        },
+        {
+          "claim": "Bordered storage formula n(l+u+1)+2nm+m^2+n with l=u=1, m=2 matches crates/rodas5p-core/src/bordered.rs and the reported slots",
+          "method": "Read bordered.rs new() and allocated_f64_slots(), and checked all 27 BORDERED rows",
+          "result": "CONFIRMED",
+          "evidence": "The code allocates band_lu = max_phase*(l+u+1), inverse_border = lower_border = max_phase*max_matter, schur = max_matter^2, column = max_phase. That gives 8n+4, i.e. 132, 516, 2052, 12804 and 32772 for n = 16, 64, 256, 1600, 4096, and every row matches. The usize pivots (m entries) are excluded, as the code comments say."
+        },
+        {
+          "claim": "Bordered residual/error values and 1e-11 thresholds",
+          "method": "Re-implemented bordered_probe.rs plus refactor/apply in pure-Python float64 with the same operation order, and compared against numpy dense solve and cond(M)",
+          "result": "CONFIRMED",
+          "evidence": "The replication reproduces the reported max_solution_error and residual_inf bitwise for all 5 sizes. The 1e-11 threshold is enforced both in the probe (error exit) and in the harness. 27/27 rows are success with exit 0. At n=1600: 5.88e-14 / 1.108e-13, against 3.3e-16 for dense LU at cond(M)=8.2."
+        },
+        {
+          "claim": "Copied NCP outputs are byte-identical to OUTPUT_SHA256SUMS",
+          "method": "Ran sha256sum -c on the 2466 entries after mapping /root paths to the local copy",
+          "result": "CONFIRMED",
+          "evidence": "Exit code 0, no mismatches."
+        },
+        {
+          "claim": "Phase A design: cores 16-31, 2 warmup + 30 blocks, BS for even and SB for odd block index",
+          "method": "Counted PAIRS_A rows per core and arm, and checked the order and warmup flags",
+          "result": "CONFIRMED",
+          "evidence": "32 rows for each of the 32 (core, arm) pairs. 0 order or warmup violations. Sign-test arithmetic: 2^-479 = 6.4e-145, which matches. Timing is diagnostic_only."
+        }
+      ],
+      "problems": [
+        {
+          "severity": "MINOR",
+          "description": "The headline max_scaled_error values come from atol-floor components with no context. VODE_MF22's 14.649 occurs at component 64, where |ref| is about 1e-16; on components with |ref|>1e-3 it is 5.97, still a failure. VigilODE's 1.21e-7 is also at component 64; on significant components it is 6.7e-9. Neither ANALYSIS_SUMMARY nor CAMPAIGN_REPORT gives the argmax (time, component), even though common.evaluate computes it. Ratios between solvers taken from these maxima are therefore driven by near-zero components.",
+          "fix": "Add argmax_time_index_component to the summaries, plus a second metric restricted to |ref| > some threshold (or a WRMS figure), and describe MF22 as about 6x over budget on significant components."
+        },
+        {
+          "severity": "MINOR",
+          "description": "VODE_MF20's application_pass 63/63 has only 1% headroom (0.98977). The maximum is at the first output, t=0.025, during DVODE startup. MF21 and MF22 show the same 0.989 at t=0.025, so all three VODE arms sit at the threshold from startup error alone. The pass is fragile and should not be presented as a robust pass.",
+          "fix": "Report the margin (0.990 vs 1.0) and its location next to the pass count, and avoid reading MF20 as meeting the budget comfortably."
+        },
+        {
+          "severity": "MINOR",
+          "description": "The accuracy and work comparison across solvers is not like-for-like. VigilODE takes 42 accepted steps for 40 output intervals (h about 0.025, h*lambda about 0.01), which strongly suggests stepping limited by the output grid; this is an inference, since internal_steps and output_clipped_steps are not in the raw JSON. The result is near machine-precision error (relative 6.9e-15), with 42 LU and 336 RHS calls that scale with output density. Julia takes 5 steps with interpolation (max error at interior t=0.925; endpoint 5.9e-6) and VODE MF21 takes 23 steps with Nordsieck interpolation. Any statement that VigilODE is much more accurate, or that its work counters compare favorably, depends on the dense output grid.",
+          "fix": "State this in the report. Optionally emit internal_steps/output_clipped_steps, or add an endpoint-only output run, to separate output-forced steps from steps chosen for accuracy."
+        },
+        {
+          "severity": "MINOR",
+          "description": "Some of the 'full trajectory incl. t=0' evidence is built by the harness, not output by the solver. vode_worker.py inserts y0 as the t=0 state, so VODE's t=0 error is 0 by construction, and this is not flagged. Diffsol supplies no times, and the harness substitutes the requested grid. The shift test supports alignment (an index shift of +1/-1 gives scaled error of about 9.8e3), but the timestamps cannot be verified from the solver output.",
+          "fix": "Flag t0_injected_by_harness=true for the VODE arms. Keep times_supplied_by_solver=false for diffsol and record the shift-test result as the evidence for alignment."
+        },
+        {
+          "severity": "MINOR",
+          "description": "The bordered probe barely tests floating-point rounding. Four of the five sizes (16, 64, 256, 4096) are powers of two, which makes C=B/n exactly representable, and those runs show errors of about 1e-16. The one non-power-of-two size, n=1600, has a forward error of 5.9e-14, about 180 times dense LU's 3.3e-16 at cond(M)=8.2. The error is in the matter components and comes from O(n) recursive dot products accumulated into an O(1) value (y[n+i] = x[n+i] - sum c*y over n terms, and the same pattern in the Schur assembly). My replication also gives n=1000: 1.5e-14 and n=1601: 3.6e-14. This error grows roughly like n*eps, while the 1e-11 threshold is absolute and not scaled by n or by norm(M)*norm(x). The reported values are accurate, and the 1e-11 checks pass with at least 90x margin.",
+          "fix": "Add non-power-of-two sizes and a threshold scaled by n*eps*norm(M)*norm(x). Consider pairwise or compensated accumulation in the lower-border and Schur dot products. Do not read the n=1600 case as being at the 1e-15 level."
+        },
+        {
+          "severity": "MINOR",
+          "description": "storage_matches_formula is circular. allocated_f64_slots() sums Vec len() values that new() sets from the same formula, so a match proves the lengths are as designed. It does not measure capacity (try_reserve_exact may reserve more), heap bytes, or the usize pivots, and it is not evidence of zero allocation.",
+          "fix": "Describe it as 'Vec lengths match design formula'. If allocation or storage evidence is needed, use a counting allocator or capacity() measurements."
+        },
+        {
+          "severity": "MINOR",
+          "description": "No allocation evidence in this campaign, which falls outside the numerics lens. Every heat run used measurement_mode 'timing', and allocations.solve is null in every raw A/A0/B/smoke output. The project's hard gate (hot_loop_allocations == 0) is therefore not supported by this data for the stencil path.",
+          "fix": "Either run the adapter in allocation mode for BASE and STEN, or state explicitly that VG-1 is not covered by this campaign."
+        },
+        {
+          "severity": "MINOR",
+          "description": "Cosmetic: the REFERENCE state at (t=0, component 0) is -2.45e-42 rather than the exact y0 value 0.0. This is residue from the DFT reconstruction. Its effect on the metric is negligible (scaled 2.5e-33).",
+          "fix": "Set the t=0 reference row to y0 exactly."
+        }
+      ]
+    },
+    {
+      "lens": "paired design, timing scopes, statistics, host load",
+      "checks": [
+        {
+          "claim": "Every Phase A/A0 confirmation block has exactly one BASE and one STEN row on the same core, adjacent in monotonic time with no other run of that core in between, BS order for even and SB for odd block_index, and warmups (b00, b01) excluded",
+          "method": "Rebuilt the blocks from all 17 PAIRS_*.jsonl files: sorted each core's rows by monotonic_start_ns, checked that consecutive runs do not overlap, that the two rows of a block are adjacent, the arm set and order, position, the warmup flag (k<2), and affinity==[core]",
+          "result": "CONFIRMED",
+          "evidence": "0 issues. A has 16 cores x 32 blocks (480 confirmation blocks, A-c16-b02..A-c31-b31). A0 has core 8 x 11 blocks (9 confirmation blocks). A0 ended 74 ms before the first A run started (monotonic), so the phases did not overlap. All 1137 PAIRS/COMP rows have a stdout_sha256 that matches the local raw file, and their timing fields equal the raw values."
+        },
+        {
+          "claim": "heat_paired ratio_STEN_over_BASE medians and quartiles (warmed_elapsed, cold_process_wall, child_cpu) for A and A0",
+          "method": "Independent recomputation from the raw rows (per-block STEN/BASE, statistics.quantiles n=4)",
+          "result": "CONFIRMED",
+          "evidence": "A elapsed median 0.58569 (q1 0.58192, q3 0.58984), wall 0.62018 (0.61399-0.62652), cpu 0.61557 (0.61076-0.62004). A0 elapsed 0.58742 (0.58297-0.59139), wall 0.62211, cpu 0.61823. All match ANALYSIS_SUMMARY exactly. The ratio of medians, 0.58570, agrees."
+        },
+        {
+          "claim": "STEN faster in 480/480 (A) and 9/9 (A0) blocks; two-sided sign-test p 6.4e-145 and 0.0039",
+          "method": "Counted ratio<1 per block for elapsed, process wall and child CPU; recomputed the exact binomial p",
+          "result": "CONFIRMED",
+          "evidence": "480/480 and 9/9 for all three metrics, including child_cpu, which the summary does not report. The largest A ratio is 0.744 (core 25 b05, a STEN outlier of 10.69 ms) and the smallest is 0.413 (core 30 b04, a BASE outlier of 20.5 ms). No block comes near 1. Exact p = 2^-479 = 6.4e-145."
+        },
+        {
+          "claim": "No first/second-position or order bias affects the STEN-vs-BASE result",
+          "method": "Split the confirmation runs by position and by order; computed per-core and per-block-index medians",
+          "result": "CONFIRMED",
+          "evidence": "BASE first 14.535 ms vs second 14.516 ms (+0.13%). STEN first 8.5085 vs second 8.5091 ms. Order BS median ratio 0.58565 vs SB 0.58570. Per-core medians range 0.5717 (core 29) to 0.5873, and per-block-index medians 0.581-0.592 with no trend. Warmup-block ratios (median 0.583) agree with the confirmation blocks."
+        },
+        {
+          "claim": "sign_test_p / wilcoxon_p values as inferential support",
+          "method": "Inspected the design and the scipy method",
+          "result": "OVERSTATED",
+          "evidence": "The 480 blocks are 16 concurrent streams on one KVM host inside a 2.34 s window (all A rows started 10:41:43-45Z), so they are not independent replications. The Wilcoxon value 2.33e-80 is a normal approximation; the exact value for an all-negative sample equals the sign-test value. Timing is diagnostic_only. The hard evidence is deterministic: identical times/states digest 15d75d22..., identical solver counters, and 5712 vs 336 RHS-equivalents (5376 extra JVP-column RHS calls vs 42 stencil builds)."
+        },
+        {
+          "claim": "COMP_* blocks pair one STEN process and one X process on the same core, adjacent, alternating STEN-first (even) / X-first (odd), with warmups excluded; ratio_X_over_STEN numbers",
+          "method": "Same rebuild applied to the 5 COMP files; recomputed the inprocess (X median-of-7 / STEN elapsed), process_wall and child-cpu ratios",
+          "result": "CONFIRMED",
+          "evidence": "0 structural issues. Medians: DIFFSOL inproc 0.494 / wall 2.410; JULIA 1.042 / 812.3; MF20 8.416 / 50.42; MF21 0.613 / 21.02; MF22 1.627 / 25.17. All equal the summary. The JULIA preflight row is unpaired, warmup-only, and has no affinity field."
+        },
+        {
+          "claim": "ratio_X_over_STEN.process_wall is a like-for-like cross-solver comparison",
+          "method": "Read run_comparators.py, vode_worker.py, julia_solver_v3.jl, diffsol main.rs and component_benchmark_native.rs",
+          "result": "REFUTED",
+          "evidence": "An X process does interpreter/runtime startup (and package load plus JIT for Julia), 9 solves (2 warm + 7 measured) and serializes 7 trajectories. The STEN process does 2 solves and serializes 1 trajectory. For DIFFSOL this inverts the per-solve ordering: wall 2.41x, in-process 0.49x. Julia's 812x is almost entirely package load plus JIT (warmup_seconds[0] = 6.0-6.5 s, wall 16.1-17.4 s, versus about 6-9 ms per solve)."
+        },
+        {
+          "claim": "ratio_X_over_STEN.inprocess compares equal timing scopes",
+          "method": "Code reading of each timer",
+          "result": "REFUTED",
+          "evidence": "STEN elapsed_ns is the whole second invoke(): case.problem() construction, integration, and building the serde_json output Value. Julia times only the solve() call (ODEProblem is built before the timer; GC is included). DIFFSOL times only solve_dense (the builder is outside the timer, setup about 2 us; the conversion of states to Vec<Vec> happens after the timer). VODE times ode() construction plus integrate plus tolist, including 2115 Python RHS callbacks. STEN carries the broadest scope, which biases the ratios against STEN. The STEN timed solve is the 2nd solve in its process; X's measured solves are the 3rd to 9th."
+        },
+        {
+          "claim": "timing_scope_note: 'X in-process = solver-specific timer (see meta.timing_scope)'",
+          "method": "Inspected comparators.*.meta",
+          "result": "REFUTED",
+          "evidence": "DIFFSOL_BDF meta has no timing_scope key (it has algorithm, diffsol_version, jacobian, linear_solver, solver_counters, status)."
+        },
+        {
+          "claim": "JULIA_RODAS5P inprocess ratio ~1.04 (rough parity with STEN)",
+          "method": "Per-rep timing pattern and statistic sensitivity",
+          "result": "OVERSTATED",
+          "evidence": "Every Julia process shows the same rep pattern: about 6.0, 9.1, 9.1, 9.1, 49 (GC), 6.1 and 5.9 ms. The median of 7 lands in the 9 ms mode. Using min the ratio is 0.671, the median gives 1.042, and the mean gives 1.554. Accuracy is also not matched: Julia takes 5 steps for scaled error 1.3e-3, while STEN takes 42 steps for 1.2e-7."
+        },
+        {
+          "claim": "Comparator speed ratios are meaningful for all arms",
+          "method": "Cross-checked against the budget-pass counts",
+          "result": "OVERSTATED",
+          "evidence": "VODE_MF21 (inproc ratio 0.613, which reads as faster than STEN) and VODE_MF22 (1.627) have reps_application_pass 0/63, with max scaled errors 4.72 and 14.65. VODE_MF20 passes only marginally (0.990)."
+        },
+        {
+          "claim": "Defensible cross-solver timing statements",
+          "method": "Synthesis of scopes, accuracy and pass status",
+          "result": "CONFIRMED",
+          "evidence": "Only these hold, all diagnostic_only and for this host. (a) STEN vs BASE is fully like-for-like: elapsed ratio 0.586, IQR 0.582-0.590, 480/480 blocks. (b) The archived scipy MF20 configuration (BDF without Newton, Python RHS) took about 8.4x (IQR 8.0-9.1) STEN's in-process time; both meet the budget and both scopes include construction and output. (c) diffsol BDF solve_dense was faster per solve than STEN's broader-scope timing (0.49x is a lower bound on the true ratio; the magnitude is unquantified; both pass, at 5.5e-3 vs 1.2e-7). Nothing holds for Julia beyond 'same order of magnitude', nothing for MF21/MF22 (they fail the budget), and no process_wall ratio is a solver comparison."
+        },
+        {
+          "claim": "thread_policy: every solver process single-threaded and taskset-pinned to one core",
+          "method": "Row affinity fields, child cpu/wall, telemetry per-CPU busy, logged launch commands",
+          "result": "OVERSTATED",
+          "evidence": "Pinning is supported for A/A0/B rows: affinity==[core] (this is the parent worker's mask, which children inherit), cpu/wall <= 0.9999 for every row (Julia 0.9998), and telemetry shows high busy only on the designated CPUs. It is not evidenced for the 27 Phase C BORDERED rows or the Julia preflight row (no affinity field), and only phaseB.sh's taskset is logged; the A0/A/C/telemetry launch commands are not. 'Single-threaded' is not measured: no thread count is recorded, and the Julia runtime has extra threads regardless of JULIA_NUM_THREADS."
+        },
+        {
+          "claim": "reserved_untouched 0-5,7; telemetry on 6; A0 on 8",
+          "method": "Affinity fields and TELEMETRY busy_per_cpu",
+          "result": "UNVERIFIABLE",
+          "evidence": "No campaign row with an affinity field is on CPUs 0-7 except A0 on 8, which is outside that range. The CPUs were not idle: CPU0 peaked at 0.307 (10:45:34Z), CPU5 ran 0.24-0.29 early, and CPU7 exceeded 5% in 13 samples. busy_reserved_cpus_0_7_max mixes in telemetry CPU 6. Telemetry pinning to 6 is not logged (CPU6 busy was mostly 0.0)."
+        },
+        {
+          "claim": "Load comparable within each comparison phase / quiet host",
+          "method": "TELEMETRY.jsonl per-phase per-CPU analysis, host/ps_end.txt, df/free",
+          "result": "REFUTED",
+          "evidence": "A non-campaign process, 'python3 /root/NCP_BACKUP_CLEANUP_20261021T072600Z/verify_secondary_backup.py' (91.9% CPU, elapsed 72 s at 10:47:51Z, so started about 10:46:39Z), ran CPU 63 at >=0.5 busy for 64 samples from 10:46:40 to 10:47:49Z. That overlaps Julia blocks b06 (tail), b07 and b08 (3 of 7 confirmation blocks; X wall 17.13/17.37 s vs a typical 16.1-16.3 s; STEN b08 9.26 ms, the highest in B) and all of Phase C. CPUs 36/49/60 also spiked (0.40-0.70) during B/C. On /, used space grew 46.68 to 54.23 GB and buff/cache grew 7.7 GB, against about 0.7 GB of identifiable campaign writes. Early in B, 5 comparators ran concurrently; Julia then ran alone. Per-row loadavg is uninformative: phase A has only 2 distinct values (0.163, 1.672) across 1024 rows, and telemetry has only 3 samples in A and 2 in A0."
+        },
+        {
+          "claim": "Host line: '/ 53-55 GB free', 'cgroup cpu/mem max', '/dev/shm 22.9 GB free (not used)'",
+          "method": "host/df_*.txt, HOST_START.txt, run_comparators.py",
+          "result": "REFUTED",
+          "evidence": "df_end shows 46.91 GB available (54.46 GB at start). HOST_START shows 'cat: /sys/fs/cgroup/cpu.max: No such file or directory' and the same for memory.max. The Julia arm's JULIA_DEPOT_PATH includes /dev/shm/vigilode_ncp_intensive_120m_v1_20261021T062109Z/julia-depot, so /dev/shm was used for reads. lscpu shows a KVM guest (NAVERCloud), so '1 thread/core, 1 NUMA' is the guest-visible topology, not physical cores."
+        },
+        {
+          "claim": "No multi-thread scaling claim",
+          "method": "Searched CAMPAIGN_REPORT for scaling/thread wording",
+          "result": "CONFIRMED",
+          "evidence": "thread_policy states 'parallelism = independent jobs only, no multi-thread scaling claim'. Misread risk remains: arms.cores lists [16..31] and ncp.cores.A is '16-31' with no per-block note that these are 16 independent single-core workers; the host line also cites '64 vCPU'."
+        }
+      ],
+      "problems": [
+        {
+          "severity": "MAJOR",
+          "description": "comparators.*.ratio_X_over_STEN.process_wall is presented next to the in-process ratio, but the scopes differ. An X process does runtime startup (Python import; Julia package load plus about 6 s of JIT), 9 solves and 7 serialized trajectories. A STEN process does 2 solves and 1 trajectory. The resulting numbers mislead: DIFFSOL reads as 2.41x slower while being about 0.49x per solve, and Julia's 812x is JIT and package load.",
+          "fix": "Remove process_wall ratios from cross-solver results, or rename them 'harness invocation cost (not solver speed)' and state the solve counts (X: 2 warm + 7 measured; STEN: 1 warm + 1 timed). Never cite the Julia process_wall."
+        },
+        {
+          "severity": "MAJOR",
+          "description": "ratio_X_over_STEN.inprocess compares unequal timer scopes. STEN covers problem construction, integration and JSON output for the 2nd solve. Julia times only solve() (ODEProblem outside the timer). DIFFSOL times only solve_dense (builder and output conversion outside). VODE times construction, integration and tolist with Python callbacks. The generic note says 'see meta.timing_scope', but DIFFSOL meta has no timing_scope.",
+          "fix": "Add a per-arm scope table (what is inside and outside each timer, which solve index is measured) and a DIFFSOL timing_scope. Report the ratios as scope-biased against STEN and limit statements to direction where defensible: MF20 is about 8x slower; diffsol is faster per solve, magnitude unquantified."
+        },
+        {
+          "severity": "MAJOR",
+          "description": "The JULIA in-process 'parity' (median ratio 1.04) depends on the statistic chosen. Every Julia process follows the same rep pattern (about 6, 9, 9, 9, 49 (GC), 6, 6 ms), so the median of 7 lands in the 9 ms mode. min gives 0.67, mean gives 1.55, and accuracy is not matched (Julia 1.3e-3 with 5 steps; STEN 1.2e-7 with 42 steps).",
+          "fix": "Report Julia per-rep min, median and mean plus the GC rep explicitly. Make no parity claim; at most say 'same order of magnitude, diagnostic_only'."
+        },
+        {
+          "severity": "MAJOR",
+          "description": "Speed ratios are reported for VODE_MF21 (0.61, which reads as faster than STEN) and VODE_MF22 (1.63) even though 0/63 reps of each meet the application budget (max scaled errors 4.72 and 14.65). Speed comparisons against arms that fail accuracy are unsupported.",
+          "fix": "Mark the MF21/MF22 ratios 'not comparable: fails application budget', or suppress them. Note that MF20 passes only marginally (0.990)."
+        },
+        {
+          "severity": "MAJOR",
+          "description": "Concurrent non-campaign host load is not disclosed. verify_secondary_backup.py (91.9% CPU, started about 10:46:39Z) held CPU 63 at about 100% from 10:46:40 through the end, overlapping Julia confirmation blocks b06 (tail), b07 and b08 and all of Phase C. Other CPUs (36, 49, 60) spiked during B/C. Disk use on / grew about 7.5 GB and buff/cache about 7.7 GB, mostly unexplained by campaign writes, and telemetry has no I/O metric. The summary statistics (busy_total median 0.019) hide this. Julia b07/b08 X wall is elevated (17.1-17.4 s vs 16.1-16.3 s).",
+          "fix": "Disclose the external job and its overlap window in the report. Flag Julia b06-b08 and Phase C timings as host-contaminated, or rerun them. Add per-CPU outside-campaign busy and an I/O metric to telemetry."
+        },
+        {
+          "severity": "MINOR",
+          "description": "The thread_policy 'every solver process single-threaded and taskset-pinned' is only partly evidenced. Phase C BORDERED rows and the Julia preflight row have no affinity field, the launch commands for A0/A/C/telemetry are not logged, row affinity is the parent worker's mask, and no per-process thread count is recorded (the Julia runtime has extra threads).",
+          "fix": "Reword to 'single-core pinned (worker affinity inherited; child cpu/wall <= 1.0)'. Record affinity in run_bordered.py and in the preflight row, log every taskset launch line, and record Threads.nthreads() and /proc/<pid>/status Threads for each solver."
+        },
+        {
+          "severity": "MINOR",
+          "description": "The host description contains contradicted or unsupported items. '/ 53-55 GB free' conflicts with df_end (46.91 GB available). 'cgroup cpu/mem max' rests on reads that failed ('No such file or directory'). '/dev/shm ... (not used)' is false because the Julia depot is read from /dev/shm. '1 thread/core, 1 NUMA' is the KVM guest view, so vCPU pinning is not physical-core isolation.",
+          "fix": "Correct the free-space figures to start/end values, state that cgroup limits are unknown, say that /dev/shm was used read-only for the Julia depot, and note that the host is a KVM guest with unknown host SMT or overcommit."
+        },
+        {
+          "severity": "MINOR",
+          "description": "Load-comparability evidence is weak. Per-row loadavg_at_start has only 2 distinct values across 1024 phase A rows, because the 1-minute average is stale for a 2.34 s phase. Telemetry has 3 samples in A and 2 in A0. Phase B arms ran under different background load: 5 comparators concurrently at first, then Julia alone, then Julia plus the external job. A0 (alone) vs A (16 concurrent) absolute times differ by +1.2% (BASE) and +0.5% (STEN).",
+          "fix": "Do not cite loadavg1_range as load evidence. Use per-CPU busy and, if possible, higher-rate sampling. Avoid cross-arm comparisons of Phase B ratios."
+        },
+        {
+          "severity": "MINOR",
+          "description": "The p-values (sign 6.4e-145, Wilcoxon 2.3e-80, which is a normal approximation) are presented as if from independent replications. The 480 blocks are 16 concurrent streams within 2.34 s on one host, and timing is diagnostic_only.",
+          "fix": "Present the blocks as descriptive (480/480 and the IQR), drop the precise p-values or label them 'within-host, non-independent, diagnostic_only', and lead with the deterministic counter evidence: identical digest and counters, 5712 vs 336 RHS-equivalents."
+        },
+        {
+          "severity": "MINOR",
+          "description": "'cold_process_wall_ns' is a misleading label. Each process performs 1 in-process warm solve, 1 timed solve and JSON output, so it is not a cold single-solve time. Also, arms.cores [16..31] and ncp.cores.A '16-31' carry no per-section note that these are 16 independent 1-thread workers, so they could be misread as a 16-thread run.",
+          "fix": "Rename it to 'process_wall_ns (startup + 1 warm + 1 timed solve)' and add 'independent single-core workers, no threading' next to each multi-core listing."
+        }
+      ]
+    },
+    {
+      "lens": "identity chain, governance, coverage",
+      "checks": [
+        {
+          "claim": "Worktree /home/cosmosapjw/vigilode-ncpf-5fd6e45 is at EXPECTED_COMMIT 5fd6e459 / tree 1df97f74 and is clean",
+          "method": "git rev-parse HEAD and HEAD^{tree}; git status --porcelain --ignored --untracked-files=all",
+          "result": "CONFIRMED",
+          "evidence": "HEAD=5fd6e459a3f67cee90e002821b9b4b740c47475b, tree=1df97f74d0e32e8192ba10b21337b588997f0784, no tracked or untracked changes. One ignored path exists: research/ncp_followup_20261021/.mypy_cache/ (141 files, written 10:26:16Z, which is after the worktree was created at 10:25:54Z and before SOURCE_BEFORE at 10:27:26Z). No recorded command explains it."
+        },
+        {
+          "claim": "MANIFEST_VERIFY.json: 102 files, 0 mismatched, git_blob_equal, 8721 tracked files",
+          "method": "Recomputed sha256 of all 102 ARTIFACT_MANIFEST.json entries in the worktree; git ls-files | wc -l; git diff --name-only base..commit",
+          "result": "CONFIRMED",
+          "evidence": "All 102 hashes match. 8721 tracked files. 104 files changed vs base 7a63876 = 102 manifest entries + LEDGER.jsonl + ARTIFACT_MANIFEST.json, which matches diff_vs_base_extra."
+        },
+        {
+          "claim": "ncp/copy/SOURCE_TREE_VERIFIED.txt equals the commit tree",
+          "method": "cat file, compare with git tree",
+          "result": "CONFIRMED",
+          "evidence": "File contains 1df97f74d0e32e8192ba10b21337b588997f0784, written 10:32:47Z, before build b1 at 10:33:00Z. No NCP-side tree re-check after the build is archived."
+        },
+        {
+          "claim": "identity.ncp_source.tar_commit_id == 5fd6e459 and tar_sha256 == 2bdc7682...",
+          "method": "Looked for the source tar locally and for any NCP log of git get-tar-commit-id / write-tree; tried git archive with common prefixes",
+          "result": "UNVERIFIABLE",
+          "evidence": "src-5fd6e45.tar.gz is not kept locally or in ncp/copy; only its .sha256 file is. No archived command log for get-tar-commit-id or write-tree. Local git archive with prefixes ''/src/, vigilode/ and others does not reproduce 2bdc7682. A locally generated archive does carry commit id 5fd6e459. The tree equality (previous check) is the only archived evidence."
+        },
+        {
+          "claim": "Binary sha256 in BINARY_REQUEST_HARNESS_SHA256.txt matches OUTPUT_SHA256SUMS bin/* and the actual files",
+          "method": "sha256sum bin/*; grep sums files",
+          "result": "CONFIRMED",
+          "evidence": "component_benchmark_native 47f0ecbe..., bordered_probe d4e80f17..., the same for the target/measurement paths and bin/ copies. It differs from the archived old component_benchmark_native 9f827972..., so no old-binary reuse."
+        },
+        {
+          "claim": "diffsol-adapter-v2 is the archived binary",
+          "method": "sha256 + cmp against worktree external_audits/.../harness/bin/diffsol-adapter-v2 and DIFFSOL_SHA256SUMS.txt",
+          "result": "CONFIRMED",
+          "evidence": "8042284844ef... in all three. cmp reports the copy is byte-identical to the archived binary."
+        },
+        {
+          "claim": "Julia env equals JULIA_ENV_SHA256.txt",
+          "method": "sha256sum ncp/copy/harness/julia-env/* vs worktree JULIA_ENV_SHA256.txt and the worktree julia-env files",
+          "result": "CONFIRMED",
+          "evidence": "Project.toml 984c9c52..., Manifest.toml 66296b7c.... Project.pinned.toml equals Project.toml. julia_solver_v3.jl = archived julia_solver_v2.jl + julia_solver_v2_to_v3.diff (I regenerated the diff and it is byte-identical). Neither the Julia binary (/root/VIGILODE_COMPONENT_20261018T134235Z/env/julia-1.12.7) nor the reused depot contents are hashed anywhere."
+        },
+        {
+          "claim": "sha256sum -c OUTPUT_SHA256SUMS.txt passes inside ncp/copy",
+          "method": "sha256sum -c from inside ncp/copy; listed files compared with on-disk files",
+          "result": "CONFIRMED",
+          "evidence": "2466/2466 OK, exit 0. 9 top-level metadata files are not covered (BINARY_REQUEST_HARNESS_SHA256.txt, CAMPAIGN_*_UTC/UPTIME, EXPECTED_COMMIT, SOURCE_TREE_VERIFIED.txt, src tar .sha256, the sums file itself). The results tarball sha (7e8aaa25...) is not recorded on the NCP side, so the transfer check depends only on the sums file inside the tar."
+        },
+        {
+          "claim": "Raw outputs match row stdout_sha256",
+          "method": "Mapped every row stdout_path (/root/... -> ncp/copy) and re-hashed",
+          "result": "CONFIRMED",
+          "evidence": "1166 rows, 0 bad, 0 missing, 0 orphan raw JSON. All raw stderr logs are empty, including Julia: no 'Precompiling' output."
+        },
+        {
+          "claim": "Harness files did not change between phases",
+          "method": "Diffed harness_sha256_phaseA/B/C.txt against each other and against current files; checked UTC mtimes",
+          "result": "CONFIRMED",
+          "evidence": "Every file in more than one snapshot has the same hash in all of them, and the current files match. However, none of the 9 harness files is in commit 5fd6e45. The only freeze before any measurement (BINARY_REQUEST_HARNESS_SHA256.txt, 10:40:13Z) covers common.py and smoke.py only. run_comparators.py, vode_worker.py and julia_solver_v3.jl are dated 10:44:14Z, after the Phase A rows (10:41:43-46Z). analyze.py and run_bordered.py are dated 10:47:29Z, after the Phase B rows."
+        },
+        {
+          "claim": "Campaign requests equal the worktree HEAT_*_REQUEST.json byte-for-byte",
+          "method": "cmp, and git hash-object vs ls-tree",
+          "result": "CONFIRMED",
+          "evidence": "Both HEAT requests are byte-identical and tracked at research/ncp_followup_20261021/accuracy/. diffsol-heat-BDF.json and julia-heat-Rodas5P.json are byte-identical to the archived diffsol-request-F-heat-n128.json and julia-request-F-heat-n128-Rodas5P.json."
+        },
+        {
+          "claim": "Main checkout /home/cosmosapjw/vigilode is untouched",
+          "method": "git status --short; HEAD; find files newer than 07:00Z outside target/.git; .git/HEAD and index mtimes",
+          "result": "CONFIRMED",
+          "evidence": "0 status lines; HEAD still da91553f; no working-tree files modified today; .git/HEAD dated 10-19 and .git/index dated 10-20. The only change is .git/FETCH_HEAD at 10:25:48Z (the expected fetch); origin/research/ncp-followup-fvm-20261021 = 5fd6e459."
+        },
+        {
+          "claim": "Cargo.toml/Cargo.lock unchanged; offline locked build",
+          "method": "git diff --quiet HEAD -- Cargo.lock Cargo.toml; logs/b1.cmd, b2.cmd, build_env.txt; rust-toolchain.toml",
+          "result": "CONFIRMED",
+          "evidence": "No diff. Builds ran with --locked --offline -j 4 and exit 0. rustc 1.94.1 matches the rust-toolchain.toml pin. The claim 'NCP default is 1.99.0' has no archived evidence."
+        },
+        {
+          "claim": "No holdout profiles or artifacts used",
+          "method": "grep for holdout-512 / enforced-budget-holdout-320 / stage-growth-holdout-384 / holdout-v2 over logs, harness, requests, local, report, manifest; grep -i holdout over raw",
+          "result": "CONFIRMED",
+          "evidence": "No matches. The only 'holdout' strings are source file names hashed in local SOURCE_BEFORE/AFTER.json (e.g. laguerre_adjoint_holdout.rs); they were not executed."
+        },
+        {
+          "claim": "Local run_followup_checks.py output is fresh, not reused from evidence/final_03",
+          "method": "File-by-file cmp vs evidence/final_03; EXECUTION.json paths and elapsed times; mtimes; target-dir creation time",
+          "result": "CONFIRMED",
+          "evidence": "Ran 10:27:26-10:29:57Z with a new CARGO_TARGET_DIR (created 10:27:26Z) and an output dir outside the checkout. EXECUTION.json, the stdout/stderr logs and ROTATION.json differ (new paths, elapsed times; for example, core took 102.7 s vs 0.62 s). SOURCE_BEFORE/AFTER are identical to final_03, so source_snapshot_equals_committed_final_03=true is correct. Test counts check out: core 1+3=4, krylov 1, adapter 6, remap 8, physics 12, rotation 3, all exit 0."
+        },
+        {
+          "claim": "Handoff items 1-5 executed",
+          "method": "Compared CODEX_HANDOFF_KO.md items against logs/rows",
+          "result": "CONFIRMED",
+          "evidence": "(1) Both builds ran, exit 0. (2) Both adapter requests ran in --measurement-mode timing; status, times/states and reference accuracy were checked (smoke + 1046 A rows, all OK/pass). (3) Alternating BS/SB blocks with an independent mpmath Fourier reference, derivative_extra_rhs_calls, warmed elapsed_ns and cold wall stored separately. (4) bordered_probe default/1600/4096, 27 rows, all success, labelled manufactured. (5) VODE MF20/21/22, diffsol and Julia only. Phase A paired ratios recompute exactly from raw (median warmed 0.58569, cold 0.62018, 480/480)."
+        },
+        {
+          "claim": "NEXT_STEPS P02 acceptance met",
+          "method": "Compared P02 acceptance list with what was executed",
+          "result": "REFUTED",
+          "evidence": "Only heat n128 was run. n32/512/1600/4096 heat were NOT_RUN; bordered_probe --n 1600/4096 is a manufactured linear solve, not heat. Banded and true matrix-free arms were NOT_RUN. The P01 dependency is still pending. Phase B ratios compare different timing scopes, and diffsol has no meta.timing_scope at all. The report contains no coverage or NOT_RUN section."
+        },
+        {
+          "claim": "Julia depot .ji mtime deviation is reported",
+          "method": "Searched CAMPAIGN_REPORT.json and the campaign dir for deviation/.ji/mtime/depot records",
+          "result": "REFUTED",
+          "evidence": "The report keys are only schema, date_kst, identity, local_validation, ncp, summary; there is no deviations section. The depot path appears only in the run_comparators.py source (OLD_DEPOT=/dev/shm/vigilode_ncp_intensive_120m_v1_20261021T062109Z/julia-depot as the second JULIA_DEPOT_PATH entry). No before/after stat or sha256 of the 3 files is archived, so 'metadata only, sizes unchanged' cannot be checked locally. The julia-depot-overlay is not archived either."
+        },
+        {
+          "claim": "Other users' processes preserved (ps_start vs ps_end)",
+          "method": "Diffed non-kernel PIDs; line counts; telemetry per-CPU",
+          "result": "OVERSTATED",
+          "evidence": "Both snapshots are cut at 40 lines (sorted by %CPU), so they are not full lists. All persistent codex/htop/sshd-session/agent PIDs appear in both. sshd listener PID 1221350 is missing at the end, most likely pushed out by the cut. A new external process, PID 1383164 verify_secondary_backup.py at about 92% CPU, ran on cpu63 from about 10:46:39Z through Phase B (Julia) and Phase C; it did not overlap campaign cores 40-44/48 but is not mentioned in the report."
+        },
+        {
+          "claim": "Local campaign did not overwrite repo evidence / failure receipts",
+          "method": "git -C worktree status --ignored; output dir location",
+          "result": "CONFIRMED",
+          "evidence": "evidence/ and final_01..03 are unchanged and tracked. Outputs went to /home/cosmosapjw/vigilode-campaign/.../local/followup_checks. The only extra path in the worktree is the ignored .mypy_cache."
+        },
+        {
+          "claim": "Host description in report (disk, cgroup, topology)",
+          "method": "Compared with host/df_*.txt, HOST_START.txt, lscpu.json",
+          "result": "REFUTED",
+          "evidence": "df shows 54.46 GB available at start and 46.91 GB at end, not '53-55 GB free'. HOST_START.txt shows cpu.max and memory.max do not exist, but the report says 'cgroup cpu/mem max'. '1 thread/core, 1 NUMA' is the KVM guest view (Xeon Gold 5220 has 18C/36T per socket), so physical HT sharing among the concurrent cores 16-31 is unknown."
+        },
+        {
+          "claim": "Timing governance labels (diagnostic_only / statistical authority)",
+          "method": "Checked the report and ANALYSIS_SUMMARY against docs/TIMING_DESIGN_CONTRACT.md and REAUDIT_R3_CLOSURE",
+          "result": "OVERSTATED",
+          "evidence": "Sign-test p=6.4e-145 and Wilcoxon p=2.3e-80 are reported for a single-case corpus (heat n128), and the 480 blocks are treated as independent units. Governance says single-case paired timing decisions are not authoritative (STATISTICAL_AUTHORITY_HOLD) and wall_time_speedup stays HOLD until the registry reports Admissible. The report never says STATISTICAL_AUTHORITY_HOLD. bordered_probe factor_ns/apply_ns_per_call carry no timing_authority label."
+        },
+        {
+          "claim": "ANALYSIS_SUMMARY.json is the hash-verified NCP output",
+          "method": "mtime vs OUTPUT_SHA256SUMS; sha256 check; ncp/analyze_local.stderr",
+          "result": "CONFIRMED",
+          "evidence": "Content sha 9da7d42e... matches, and the report summary equals ANALYSIS_SUMMARY. However, the file in the verified copy was rewritten locally at 19:49:05.97 KST (analyze_local), after the sums file (19:47:59). The bytes are identical, but the copy was not kept read-only."
+        }
+      ],
+      "problems": [
+        {
+          "severity": "MAJOR",
+          "description": "The deviation is not disclosed and has no supporting evidence. CAMPAIGN_REPORT.json has no deviations section. The Julia arm loaded package images from a depot belonging to a prior campaign (/dev/shm/vigilode_ncp_intensive_120m_v1_20261021T062109Z/julia-depot, second JULIA_DEPOT_PATH entry behind a campaign overlay), and Julia touches the mtime of cache files it loads. This changed the mtime of 3 .ji files in another run's directory. ncp/copy holds no before/after stat or sha256 of those files, so 'metadata only, sizes unchanged' is unverifiable locally, and the overlay depot is not archived. The deviation itself is minor: content is presumably unchanged, no committed manifest hashes the depot, and the committed external_audits archive is unchanged. It still breaks the letter of 'preserve other runs' (다른 실행을 보존한다), and leaving it out of the report is a governance failure.",
+          "fix": "Add deviations[] to CAMPAIGN_REPORT.json with: the 3 absolute paths; old and new mtime, size and sha256 (or an explicit statement that the pre-change sha256 was not captured); root cause (Julia LRU touch on load, with OLD_DEPOT on JULIA_DEPOT_PATH); impact (no content change; no committed hash affected; external_audits git-clean); severity MINOR; remediation (restore mtimes with touch -d if originals are known; next time use a private cp -a of the depot or a read-only bind). Also record the Julia binary path and sha256 and the depot provenance in identity, and archive or list the julia-depot-overlay contents."
+        },
+        {
+          "severity": "MAJOR",
+          "description": "The report is missing the coverage and verdict items the handoff requires, so P02 coverage is overstated by omission. The handoff '반환' section requires coverage, NOT_RUN reporting of unready arms, and promote/prune/hold/optimization_possible/specialized verdicts; none are present. P02 acceptance is only partly met: only heat n128 was run (n32/512/1600/4096 heat NOT_RUN; bordered n1600/4096 is a manufactured linear solve), banded and true matrix-free arms NOT_RUN, and the P01 dependency is pending. Phase B 'inprocess' ratios compare X solver-specific timers against the STEN adapter scope (warmed_solver_setup_integration_output_certificate), and DIFFSOL has no meta.timing_scope although the note points to it. That breaks P02 'paired same-scope timings'. The report also lists ratio_X_over_STEN for VODE_MF21/MF22, which fail the application budget (4.72 and 14.65), against the handoff limit 'timing inference only at equal accuracy'.",
+          "fix": "Add a coverage table: handoff items 1-5 EXECUTED; P02 PARTIAL with the n-grid and banded/matrix-free arms NOT_RUN and P01 pending; P02 status stays pending. Mark the Phase B cross-solver ratios as scope-mismatched and drop or suppress ratios for arms with application_pass=0. Add per-arm verdicts (STEN: specialized/optimization_possible under HOLD; broad_production HOLD)."
+        },
+        {
+          "severity": "MAJOR",
+          "description": "Statistical authority is overstated. The report gives sign-test p=6.4e-145 and Wilcoxon p=2.3e-80 for STEN vs BASE on a single case, treating 480 blocks on 16 concurrently loaded vCPUs of one KVM host as independent units. Project governance (REAUDIT_R3_CLOSURE: single-case paired timing decisions are not authoritative, STATISTICAL_AUTHORITY_HOLD; TIMING_DESIGN_CONTRACT: wall_time_speedup null/HOLD until timing_authority_registry reports Admissible) requires a HOLD label, which is absent. bordered_probe factor_ns/apply_ns_per_call carry no timing_authority label.",
+          "fix": "Add timing_authority='diagnostic_only' and STATISTICAL_AUTHORITY_HOLD at report level and on every timing block, including bordered_probe. Remove the p-values or mark them non-authoritative. Run 'rodas5p timing-authority --campaign' if applicable and report wall_time_speedup=null/HOLD; keep the deterministic counters (derivative_extra_rhs_calls 5376 vs 0) as the hard evidence."
+        },
+        {
+          "severity": "MINOR",
+          "description": "Harness provenance is not frozen in advance. None of the 9 campaign harness files is in commit 5fd6e45, and PREREGISTRATION.md says no NCP campaign is run from that host. The only freeze before any measurement (BINARY_REQUEST_HARNESS_SHA256.txt, 10:40:13Z) covers only common.py and smoke.py. run_comparators.py, vode_worker.py and julia_solver_v3.jl first appear at 10:44:14Z, after the Phase A rows. analyze.py and run_bordered.py appear at 10:47:29Z, after the Phase B rows. No file changed after use, and the evaluator (common.py) was frozen before any data, but the B/C/analysis code was written or uploaded after earlier results existed.",
+          "fix": "Disclose in the report that the harness was authored at campaign time, give the per-phase freeze times (phase snapshots), and state that evaluate() in common.py was frozen before all data. For the ledger, commit the harness and its sha256 as inputs before any future NCP run (AGENTS.md 2.7 step 2)."
+        },
+        {
+          "severity": "MINOR",
+          "description": "Several identity-chain links are unverifiable or missing. The source tar (sha 2bdc7682...) is not kept, and no NCP-side log of get-tar-commit-id or write-tree is archived, so tar_commit_id and tar_sha256 rest only on the report. There is no NCP-side source tree re-check after the build. The NCP-side sha256 of the results tarball (local sha 7e8aaa25...) is not recorded, so transfer integrity relies on the sums file inside the same tar. 9 top-level metadata files (EXPECTED_COMMIT, SOURCE_TREE_VERIFIED.txt, BINARY_REQUEST_HARNESS_SHA256.txt, the CAMPAIGN_* time files, the tar .sha256) are outside OUTPUT_SHA256SUMS. The Julia binary, python3, scipy and numpy are identified only by self-reported versions. The julia-env hashes and the v2->v3 diff hash are missing from report.identity. The 'NCP default 1.99.0' claim is unsupported.",
+          "fix": "Archive NCP-side command logs (sha256sum of the tar, git get-tar-commit-id, git write-tree before and after the build). Record the NCP-side sha256 of the results tarball and of OUTPUT_SHA256SUMS.txt. Extend the sums to the top-level metadata files. Add Julia/python binary hashes and the julia-env hashes to identity."
+        },
+        {
+          "severity": "MINOR",
+          "description": "The host description and the evidence that other runs were preserved are inaccurate or partial. The report says '/ 53-55 GB free', but df shows 54.46 GB at start and 46.91 GB at end (7.5 GB residual footprint, not reported). It says 'cgroup cpu/mem max', but cpu.max and memory.max do not exist. The ps snapshots are cut at 40 lines, so sshd listener PID 1221350 is missing at the end and preservation of other runs is only partly evidenced. An external job, verify_secondary_backup.py (PID 1383164, about 92% CPU from about 10:46:39Z on cpu63), overlapped Phase B and C and is not mentioned, although telemetry shows no overlap with campaign cores.",
+          "fix": "Correct the disk and cgroup wording. Capture full ps -e lists (no head) at start and end. Report the external concurrent job and its CPU, citing telemetry for no core overlap. Report the residual NCP footprint (campaign dir, target, julia-depot-overlay)."
+        },
+        {
+          "severity": "MINOR",
+          "description": "Command and exit-code records are incomplete. The taskset launch commands for A0, A and C are not archived (only logs/phaseB.sh). PHASES.log has exit codes for A0 and C but not for A or B (phaseB.sh waits without checking per-PID status). Bordered rows and the Julia preflight row have no affinity field. The handoff asks for exact commands and exit codes.",
+          "fix": "Archive the per-phase launcher scripts and worker exit codes; record sched_getaffinity in run_bordered rows and in the Julia preflight row."
+        },
+        {
+          "severity": "MINOR",
+          "description": "The local process left artifacts in places that were supposed to stay untouched. ncp/copy/results/ANALYSIS_SUMMARY.json in the hash-verified copy was rewritten by the local re-analysis at 19:49:05 KST, after the sums file; the bytes are identical, so the hash still passes. An unrecorded tool created research/ncp_followup_20261021/.mypy_cache/ (141 ignored files) in the worktree at 10:26:16Z, yet the report calls the worktree '(detached, clean)'. The local_validation.summary.ncp_execution='NOT_RUN' field from the local script sits in a report where NCP did run, which is ambiguous.",
+          "fix": "Write re-analysis output to a separate path and record it as a reproduction check (sha equal). Remove the .mypy_cache or disclose it as an ignored, non-source artifact. Annotate ncp_execution as a field of the local script."
+        },
+        {
+          "severity": "MINOR",
+          "description": "The DIFFSOL comparator evidence is weaker than the summary implies. The solver supplies no times; the harness substitutes the requested grid (times_supplied_by_solver=false), and solver counters are null. x_application_pass_all_reps=9 therefore partly depends on this inferred times alignment, which the summary does not say.",
+          "fix": "Report DIFFSOL application_pass as 'states-only, times inferred from the request grid', with counters NOT_AVAILABLE, and add the diffsol timing scope (elapsed_seconds excludes setup_seconds) to meta."
+        }
+      ]
+    }
+  ],
+  "workflowProgress": [
+    {
+      "type": "workflow_phase",
+      "index": 1,
+      "title": "Verify"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 1,
+      "label": "verify:numerics",
+      "phaseIndex": 1,
+      "phaseTitle": "Verify",
+      "agentId": "abc88bd9dfc4003d8",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1792579901856,
+      "queuedAt": 1792579901787,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "numerical correctness (independent reference, re-evaluation…",
+      "promptPreview": "Context (read-only verification; DO NOT edit any repository file, DO NOT ssh anywhere, DO NOT use web search/fetch; local files only).\nCampaign: VigilODE NCP follow-up, branch research/ncp-followup-fvm-20261021 pinned at EXPECTED_COMMIT 5fd6e459a3f67cee90e002821b9b4b740c47475b (tree 1df97f74d0e32e8192ba10b21337b588997f0784).\nLocal detached worktree of that commit: /home/cosmosapjw/vigilode-ncpf-5f…",
+      "promptFramed": true,
+      "lastProgressAt": 1792580692885,
+      "tokens": 184804,
+      "toolCalls": 43,
+      "durationMs": 791025,
+      "resultPreview": "{\"lens\":\"numerical correctness (independent reference, re-evaluation of accuracy metrics, bitwise identity, counters, VODE failure attribution, bordered probe storage/residuals). Scratch scripts: /tmp/claude-1000/-home-cosmosapjw-vigilode/6904f479-db09-4cd1-85a6-1a72f0e1dd30/scratchpad/numchk/ref.py, /tmp/claude-1000/-home-cosmosapjw-vigilode/6904f479-db09-4cd1-85a6-1a72f0e1dd30/scratchpad/numchk/…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 2,
+      "label": "verify:pairing_timing",
+      "phaseIndex": 1,
+      "phaseTitle": "Verify",
+      "agentId": "a76c6b1e81369cc2e",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1792579901856,
+      "queuedAt": 1792579901788,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "paired design, timing scopes, statistics, host load",
+      "promptPreview": "Context (read-only verification; DO NOT edit any repository file, DO NOT ssh anywhere, DO NOT use web search/fetch; local files only).\nCampaign: VigilODE NCP follow-up, branch research/ncp-followup-fvm-20261021 pinned at EXPECTED_COMMIT 5fd6e459a3f67cee90e002821b9b4b740c47475b (tree 1df97f74d0e32e8192ba10b21337b588997f0784).\nLocal detached worktree of that commit: /home/cosmosapjw/vigilode-ncpf-5f…",
+      "promptFramed": true,
+      "lastProgressAt": 1792580603632,
+      "tokens": 216703,
+      "toolCalls": 31,
+      "durationMs": 696743,
+      "resultPreview": "{\"lens\":\"paired design, timing scopes, statistics, host load\",\"checks\":[{\"claim\":\"Every Phase A/A0 confirmation block has exactly one BASE and one STEN row on the same core, adjacent in monotonic time with no other run of that core in between, BS order for even and SB for odd block_index, and warmups (b00, b01) excluded\",\"method\":\"Rebuilt the blocks from all 17 PAIRS_*.jsonl files: sorted each cor…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 3,
+      "label": "verify:identity_coverage",
+      "phaseIndex": 1,
+      "phaseTitle": "Verify",
+      "agentId": "a1bcbcf29ec036dd7",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1792579901857,
+      "queuedAt": 1792579901788,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "identity chain, governance, coverage",
+      "promptPreview": "Context (read-only verification; DO NOT edit any repository file, DO NOT ssh anywhere, DO NOT use web search/fetch; local files only).\nCampaign: VigilODE NCP follow-up, branch research/ncp-followup-fvm-20261021 pinned at EXPECTED_COMMIT 5fd6e459a3f67cee90e002821b9b4b740c47475b (tree 1df97f74d0e32e8192ba10b21337b588997f0784).\nLocal detached worktree of that commit: /home/cosmosapjw/vigilode-ncpf-5f…",
+      "promptFramed": true,
+      "lastProgressAt": 1792580718292,
+      "tokens": 225800,
+      "toolCalls": 58,
+      "durationMs": 811303,
+      "resultPreview": "{\"lens\":\"identity chain, governance, coverage\",\"checks\":[{\"claim\":\"Worktree /home/cosmosapjw/vigilode-ncpf-5fd6e45 is at EXPECTED_COMMIT 5fd6e459 / tree 1df97f74 and is clean\",\"method\":\"git rev-parse HEAD and HEAD^{tree}; git status --porcelain --ignored --untracked-files=all\",\"result\":\"CONFIRMED\",\"evidence\":\"HEAD=5fd6e459a3f67cee90e002821b9b4b740c47475b, tree=1df97f74d0e32e8192ba10b21337b588997f0…"
+    }
+  ],
+  "totalTokens": 627307,
+  "totalToolCalls": 132
+}

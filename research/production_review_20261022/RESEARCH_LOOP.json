@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "skill": "physmath-research-loop",
+  "version": "1.3.0",
+  "execution": "native parallel agents; one bounded audit and implementation cycle",
+  "purpose": "latest code and evidence audit, constructive mathematical improvement, targeted code repair, external manuscript and publication",
+  "theory_track": [
+    {
+      "step": "problem and evidence reuse",
+      "artifact": "BRANCH_INTEGRATION.md"
+    },
+    {
+      "step": "operator and error model",
+      "artifact": "THEORY.md"
+    },
+    {
+      "step": "constructive theorem and proof",
+      "artifact": "THEORY.md",
+      "result": "original-dimension augmented inverse; conditional linear complexity; reuse contraction; conservative remap stability"
+    },
+    {
+      "step": "primary literature and symbolic check",
+      "artifact": "REFERENCES_NOTES.md"
+    },
+    {
+      "step": "limitations and implementable next steps",
+      "artifact": "NEXT_STEPS.json"
+    }
+  ],
+  "coding_track": [
+    {
+      "step": "source and architecture audit",
+      "artifact": "CODE_AUDIT.md"
+    },
+    {
+      "step": "construct reusable linear algebra",
+      "artifact": "LOW_RANK_IMPLEMENTATION.md"
+    },
+    {
+      "step": "repair observed failure contracts",
+      "artifact": "CODE_AUDIT.json"
+    },
+    {
+      "step": "regression and allocation verification",
+      "artifact": "VALIDATION.json"
+    },
+    {
+      "step": "complementary review and scoped handoff",
+      "artifacts": [
+        "CODE_AUDIT.json",
+        "CODEX_HANDOFF_KO.md"
+      ]
+    }
+  ],
+  "reused_without_rerun": [
+    "historical NCP intensive campaign",
+    "NCP follow-up FVM campaign",
+    "latest BASS/rei attempt2 and attempt3 aggregates",
+    "unchanged earlier published solver proofs/tests"
+  ],
+  "new_checks": [
+    "targeted 19 Rust tests",
+    "metric 3 Python tests",
+    "one existing C99 verifier replay",
+    "branch import hashes and ancestry",
+    "aggregate arithmetic",
+    "PDF layout"
+  ],
+  "stop_reason": "selected audit, constructive implementation, bounded verification and report complete; further runtime qualification requires missing raw trajectory recovery and explicitly scoped application benchmarks",
+  "honesty_limits": [
+    "no new NCP campaign",
+    "no universal speedup",
+    "no full-state production certificate",
+    "exploratory tests without prospectively committed preregistration"
+  ]
+}

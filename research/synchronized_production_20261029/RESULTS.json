@@ -1,0 +1,552 @@
+{
+  "schema": "vigilode.synchronized-analysis.v1",
+  "production": "HOLD",
+  "timing_authority": "diagnostic_only",
+  "cases": {
+    "dense-fd": {
+      "ratios": [
+        1.0215615962984383,
+        0.9960131854425587,
+        0.9432683977876007,
+        0.9654923704555187,
+        0.9389349165857733,
+        1.0368164466724923,
+        0.9641788378221448
+      ],
+      "median": 0.9654923704555187,
+      "minimum": 0.9389349165857733,
+      "maximum": 1.0368164466724923,
+      "baseline_allocations": [
+        324,
+        68,
+        68
+      ],
+      "candidate_allocations": [
+        315,
+        59,
+        59
+      ],
+      "endpoint_error": 6.944889108240204e-12
+    },
+    "banded-fd": {
+      "ratios": [
+        0.9511978336930036,
+        0.9133960568625965,
+        0.9714624389942547,
+        0.9641515744474729,
+        0.9741848981074335,
+        0.9801250231238824,
+        0.8900926844952679
+      ],
+      "median": 0.9641515744474729,
+      "minimum": 0.8900926844952679,
+      "maximum": 0.9801250231238824,
+      "baseline_allocations": [
+        318,
+        62,
+        62
+      ],
+      "candidate_allocations": [
+        314,
+        58,
+        58
+      ],
+      "endpoint_error": 7.354006292814574e-12
+    },
+    "time-jvp": {
+      "ratios": [
+        1.0265057297889455,
+        1.118594261461413,
+        0.9889137753084276,
+        0.9822436256346055,
+        1.012794279329609,
+        1.0148618184190137,
+        1.050069832509648
+      ],
+      "median": 1.0148618184190137,
+      "minimum": 0.9822436256346055,
+      "maximum": 1.118594261461413,
+      "baseline_allocations": [
+        386,
+        129,
+        129
+      ],
+      "candidate_allocations": [
+        358,
+        101,
+        101
+      ],
+      "endpoint_error": 4.4617096683907675e-09
+    },
+    "autonomous-jvp": {
+      "ratios": [
+        1.0104865171557613,
+        1.0266812132898626,
+        0.9779192804685096,
+        1.0352120098777329,
+        1.0165731253026096,
+        1.0001219154155823,
+        0.9980909225969395
+      ],
+      "median": 1.0104865171557613,
+      "minimum": 0.9779192804685096,
+      "maximum": 1.0352120098777329,
+      "baseline_allocations": [
+        389,
+        133,
+        133
+      ],
+      "candidate_allocations": [
+        361,
+        105,
+        105
+      ],
+      "endpoint_error": 2.0572032966015286e-10
+    }
+  },
+  "checks": [
+    {
+      "label": "proof-oracles",
+      "exit_code": 0,
+      "rust_counts": [],
+      "python_tests": 25
+    },
+    {
+      "label": "libraries",
+      "exit_code": 0,
+      "rust_counts": [
+        [
+          17,
+          0,
+          0
+        ],
+        [
+          37,
+          0,
+          0
+        ],
+        [
+          45,
+          0,
+          1
+        ]
+      ],
+      "python_tests": null
+    },
+    {
+      "label": "facade-contracts",
+      "exit_code": 0,
+      "rust_counts": [
+        [
+          10,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          15,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          9,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          20,
+          0,
+          0
+        ],
+        [
+          14,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          9,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          0
+        ],
+        [
+          9,
+          0,
+          0
+        ],
+        [
+          24,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          9,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          14,
+          0,
+          0
+        ],
+        [
+          9,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ]
+      ],
+      "python_tests": null
+    },
+    {
+      "label": "krylov-contracts",
+      "exit_code": 101,
+      "rust_counts": [
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          9,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          1,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ]
+      ],
+      "python_tests": null
+    },
+    {
+      "label": "time-fd-contract",
+      "exit_code": 0,
+      "rust_counts": [
+        [
+          2,
+          0,
+          0
+        ]
+      ],
+      "python_tests": null
+    },
+    {
+      "label": "focused-clippy",
+      "exit_code": 0,
+      "rust_counts": [],
+      "python_tests": null
+    },
+    {
+      "label": "time-fd-clippy",
+      "exit_code": 0,
+      "rust_counts": [],
+      "python_tests": null
+    }
+  ],
+  "phases": [
+    {
+      "label": "checks",
+      "source": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+      "wall_seconds": 299.09396159100015,
+      "execution": "completed"
+    },
+    {
+      "label": "bench",
+      "source": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+      "wall_seconds": 1.5182665900001666,
+      "execution": "completed"
+    },
+    {
+      "label": "deployment",
+      "source": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+      "wall_seconds": 0.029032170999926166,
+      "execution": "completed"
+    }
+  ],
+  "ownership_pairs": 33,
+  "ownership_all_parity": true,
+  "current_phase_subtotal_wall_seconds": 300.64126035200024,
+  "aggregate_campaign_wall_seconds": 491.53919015300016,
+  "campaign_prior_runs": [
+    "/workspace/scratch/f9615df1ce94/lane-checks01/RUN.json",
+    "/workspace/scratch/f9615df1ce94/lane-checks02/RUN.json",
+    "/workspace/scratch/f9615df1ce94/lane-charge03/RUN.json",
+    "/workspace/scratch/f9615df1ce94/lane-bench02/RUN.json"
+  ],
+  "native_source": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+  "baseline_solver_source": "bc5ddbe42b24b1a6364bf653c3e2d6d938ca4087",
+  "unique_native_test_result": {
+    "passed": 496,
+    "failed_initial_parallel": 1,
+    "ignored": 1,
+    "failed_target_serial_control_passed": 3,
+    "note": "496=99+280+115+2; serial target repeats2already-passedtests and supplies1previousfailedtest; no498unique claim"
+  },
+  "correction_episodes_used": 3,
+  "correction_episodes_maximum": 3,
+  "global_physical_qualification": "HOLD",
+  "new_physical_core_dag_progress": 0,
+  "ordinary_parity_pairs": 24,
+  "timed_samples": 1792,
+  "source_scope": "Current native execution at ef84; siblingPR102 reviewed after execution and not integrated. No same-source claim for prior PR99/100/102 results.",
+  "profiling_scope": "allocation and WorkCounters only; perf/Callgrind/heaptrack unavailable here; old functionprofiles retainoriginalsource"
+}

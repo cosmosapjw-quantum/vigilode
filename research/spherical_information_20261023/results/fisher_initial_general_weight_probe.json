@@ -1,0 +1,778 @@
+{
+  "schema": "spherical-information.fisher-verification.v1",
+  "status": "PASS_SCOPED",
+  "scope": "Finite positive quadrature entropy moment-inversion Hessian; does not measure VigilODE trajectory performance.",
+  "command": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3 src/fisher_demo.py",
+  "environment": {
+    "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+    "numpy": "2.3.5",
+    "scipy": "1.17.0",
+    "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+    "openblas_threads": "1",
+    "omp_threads": "1"
+  },
+  "definitions": {
+    "relative_residual": "||H*x-b||_2/||b||_2 in natural eta,b coordinates",
+    "tolerance": 1e-09,
+    "samples": "one warmup then seven timing repetitions per method",
+    "timing": "each solve; PCG includes rebuilding all radial 2x2 inverse blocks and all applications; common assembled H, quadrature, and spectral audit excluded",
+    "complexity": "one inverse-block application O((L+1)^2), setup O(n_rad*(L+1)); dense H matvec used only in this small diagnostic"
+  },
+  "elapsed_seconds": 0.3521964690007735,
+  "cases": [
+    {
+      "L": 1,
+      "z": 0.0,
+      "anisotropy": 0.6,
+      "statistics": "MB",
+      "narrow": false,
+      "points": 300,
+      "dimension": 8,
+      "reference_whitening_max_abs": 1.7763568394002505e-15,
+      "raw_condition": 81.4975315163587,
+      "whitened_condition": 1.5487240129884177,
+      "weight_ratio_lower": 0.7264787532647093,
+      "weight_ratio_upper": 1.5191628615716135,
+      "condition_upper": 2.09113185312671,
+      "whitened_eigen_min": 0.8304736775724092,
+      "whitened_eigen_max": 1.2861745266111908,
+      "eigen_enclosure_pass": true,
+      "natural_displacement_delta": 0.4181594341742217,
+      "be_margin_gamma": null,
+      "theoretical_ratio_lower": 0.6582572713536938,
+      "theoretical_ratio_upper": 1.5191628615716142,
+      "susceptibility_enclosure_pass": true,
+      "shared_hessian_assembly_seconds": 0.00017344100342597812,
+      "initial_preconditioner_setup_seconds": 0.00037148800038266927,
+      "runs": {
+        "plain_cg": {
+          "iterations": 8,
+          "relative_physical_residual": 1.1907753240843635e-11,
+          "converged": true,
+          "seconds": [
+            8.388700371142477e-05,
+            8.059499668888748e-05,
+            7.802399341017008e-05,
+            7.8242999734357e-05,
+            0.0004945510008838028,
+            0.00035791700065601617,
+            0.00040785000601317734
+          ],
+          "median_seconds": 8.388700371142477e-05
+        },
+        "fisher_pcg": {
+          "iterations": 8,
+          "relative_physical_residual": 1.5825978905966148e-16,
+          "converged": true,
+          "seconds": [
+            0.00021423300495371222,
+            0.0002781749935820699,
+            0.00033815599454101175,
+            0.0004472620057640597,
+            0.000152395004988648,
+            0.0003753869968932122,
+            0.00018494600953999907
+          ],
+          "median_seconds": 0.0002781749935820699
+        }
+      },
+      "median_solve_speed_ratio": 0.3015619866876194
+    },
+    {
+      "L": 3,
+      "z": 0.0,
+      "anisotropy": 0.6,
+      "statistics": "MB",
+      "narrow": false,
+      "points": 900,
+      "dimension": 32,
+      "reference_whitening_max_abs": 5.10702591327572e-15,
+      "raw_condition": 100.54023574743253,
+      "whitened_condition": 1.9475402512923548,
+      "weight_ratio_lower": 0.7052513640157346,
+      "weight_ratio_upper": 1.5787764061958907,
+      "condition_upper": 2.238600996396892,
+      "whitened_eigen_min": 0.7592589344425803,
+      "whitened_eigen_max": 1.4786873359802684,
+      "eigen_enclosure_pass": true,
+      "natural_displacement_delta": 0.4566501205575012,
+      "be_margin_gamma": null,
+      "theoretical_ratio_lower": 0.6334019156072458,
+      "theoretical_ratio_upper": 1.5787764061958902,
+      "susceptibility_enclosure_pass": true,
+      "shared_hessian_assembly_seconds": 0.0005952700012130663,
+      "initial_preconditioner_setup_seconds": 0.00016460999904666096,
+      "runs": {
+        "plain_cg": {
+          "iterations": 25,
+          "relative_physical_residual": 9.488633633769587e-10,
+          "converged": true,
+          "seconds": [
+            0.0006883169990032911,
+            0.001080172005458735,
+            0.0004439570038812235,
+            0.0003097890003118664,
+            0.0002542080037528649,
+            0.0002547129988670349,
+            0.00047701199946459383
+          ],
+          "median_seconds": 0.0004439570038812235
+        },
+        "fisher_pcg": {
+          "iterations": 11,
+          "relative_physical_residual": 6.593753549645444e-10,
+          "converged": true,
+          "seconds": [
+            0.001693707992671989,
+            0.0007224150031106547,
+            0.00036028900649398565,
+            0.0007057659968268126,
+            0.00031180400401353836,
+            0.0004787189973285422,
+            0.001142635999713093
+          ],
+          "median_seconds": 0.0007057659968268126
+        }
+      },
+      "median_solve_speed_ratio": 0.6290427788775517
+    },
+    {
+      "L": 5,
+      "z": 0.0,
+      "anisotropy": 0.6,
+      "statistics": "MB",
+      "narrow": false,
+      "points": 1820,
+      "dimension": 72,
+      "reference_whitening_max_abs": 3.1086244689504383e-15,
+      "raw_condition": 107.5043445655378,
+      "whitened_condition": 2.096630871190216,
+      "weight_ratio_lower": 0.7060440654291152,
+      "weight_ratio_upper": 1.5981069124990124,
+      "condition_upper": 2.2634662491323745,
+      "whitened_eigen_min": 0.7337756498440784,
+      "whitened_eigen_max": 1.538456679990757,
+      "eigen_enclosure_pass": true,
+      "natural_displacement_delta": 0.4688197490479236,
+      "be_margin_gamma": null,
+      "theoretical_ratio_lower": 0.6257403632878776,
+      "theoretical_ratio_upper": 1.5981069124990117,
+      "susceptibility_enclosure_pass": true,
+      "shared_hessian_assembly_seconds": 0.00718999799573794,
+      "initial_preconditioner_setup_seconds": 0.00019787800556514412,
+      "runs": {
+        "plain_cg": {
+          "iterations": 40,
+          "relative_physical_residual": 2.442219938327717e-10,
+          "converged": true,
+          "seconds": [
+            0.0013909289991715923,
+            0.0009669209975982085,
+            0.0015089759981492534,
+            0.0010135330085176975,
+            0.0012582829949678853,
+            0.0006191330030560493,
+            0.0018369559984421358
+          ],
+          "median_seconds": 0.0012582829949678853
+        },
+        "fisher_pcg": {
+          "iterations": 12,
+          "relative_physical_residual": 6.062067786964422e-10,
+          "converged": true,
+          "seconds": [
+            0.00346392099163495,
+            0.00048520199197810143,
+            0.0019141530065098777,
+            0.0004901639913441613,
+            0.0004532449966063723,
+            0.0005454079946503043,
+            0.0018272140005137771
+          ],
+          "median_seconds": 0.0005454079946503043
+        }
+      },
+      "median_solve_speed_ratio": 2.307049048253593
+    },
+    {
+      "L": 1,
+      "z": 2.0,
+      "anisotropy": 0.6,
+      "statistics": "MB",
+      "narrow": false,
+      "points": 300,
+      "dimension": 8,
+      "reference_whitening_max_abs": 1.7763568394002505e-15,
+      "raw_condition": 343.08937508184374,
+      "whitened_condition": 1.5342555377585447,
+      "weight_ratio_lower": 0.7264787532647092,
+      "weight_ratio_upper": 1.5191628615716135,
+      "condition_upper": 2.09113185312671,
+      "whitened_eigen_min": 0.834034116544866,
+      "whitened_eigen_max": 1.2796214619885162,
+      "eigen_enclosure_pass": true,
+      "natural_displacement_delta": 0.4181594341742217,
+      "be_margin_gamma": null,
+      "theoretical_ratio_lower": 0.6582572713536938,
+      "theoretical_ratio_upper": 1.5191628615716142,
+      "susceptibility_enclosure_pass": true,
+      "shared_hessian_assembly_seconds": 1.8266000552102923e-05,
+      "initial_preconditioner_setup_seconds": 0.0003490350063657388,
+      "runs": {
+        "plain_cg": {
+          "iterations": 9,
+          "relative_physical_residual": 2.0563768142825756e-11,
+          "converged": true,
+          "seconds": [
+            0.0009293109906138852,
+            0.00022270198678597808,
+            0.0003073999978369102,
+            8.930399781093001e-05,
+            8.671700197737664e-05,
+            0.00010441700578667223,
+            8.754599548410624e-05
+          ],
+          "median_seconds": 0.00010441700578667223
+        },
+        "fisher_pcg": {
+          "iterations": 8,
+          "relative_physical_residual": 2.3878767993336073e-16,
+          "converged": true,
+          "seconds": [
+            0.0013804580084979534,
+            0.00023276900174096227,
+            0.0003322870034025982,
+            0.00015009900380391628,
+            0.000575315993046388,
+            0.0006045439949957654,
+            0.00015175199951045215
+          ],
+          "median_seconds": 0.0003322870034025982
+        }
+      },
+      "median_solve_speed_ratio": 0.3142374053677953
+    },
+    {
+      "L": 3,
+      "z": 2.0,
+      "anisotropy": 0.6,
+      "statistics": "MB",
+      "narrow": false,
+      "points": 900,
+      "dimension": 32,
+      "reference_whitening_max_abs": 4.218847493575595e-15,
+      "raw_condition": 749.2142032796312,
+      "whitened_condition": 1.9338391269683628,
+      "weight_ratio_lower": 0.7052513640157346,
+      "weight_ratio_upper": 1.5787764061958907,
+      "condition_upper": 2.238600996396892,
+      "whitened_eigen_min": 0.7609962678084972,
+      "whitened_eigen_max": 1.4716443581649665,
+      "eigen_enclosure_pass": true,
+      "natural_displacement_delta": 0.4566501205575012,
+      "be_margin_gamma": null,
+      "theoretical_ratio_lower": 0.6334019156072458,
+      "theoretical_ratio_upper": 1.5787764061958902,
+      "susceptibility_enclosure_pass": true,
+      "shared_hessian_assembly_seconds": 0.00015960300515871495,
+      "initial_preconditioner_setup_seconds": 0.00029969400202389807,
+      "runs": {
+        "plain_cg": {
+          "iterations": 33,
+          "relative_physical_residual": 6.082753253731957e-10,
+          "converged": true,
+          "seconds": [
+            0.0010130090086022392,
+            0.0005352079897420481,
+            0.0013791210076306015,
+            0.0004220240080030635,
+            0.00048172099923249334,
+            0.000482461997307837,
+            0.0006162640056572855
+          ],
+          "median_seconds": 0.0005352079897420481
+        },
+        "fisher_pcg": {
+          "iterations": 11,
+          "relative_physical_residual": 8.513103324262648e-10,
+          "converged": true,
+          "seconds": [
+            0.0004381379985716194,
+            0.000643004008452408,
+            0.0006906979979248717,
+            0.0005590840009972453,
+            0.00024104100884869695,
+            0.0005021720135118812,
+            0.0008450800087302923
+          ],
+          "median_seconds": 0.0005590840009972453
+        }
+      },
+      "median_solve_speed_ratio": 0.9572944115506627
+    },
+    {
+      "L": 5,
+      "z": 2.0,
+      "anisotropy": 0.6,
+      "statistics": "MB",
+      "narrow": false,
+      "points": 1820,
+      "dimension": 72,
+      "reference_whitening_max_abs": 2.886579864025407e-15,
+      "raw_condition": 1312.1488196177022,
+      "whitened_condition": 2.086987317243063,
+      "weight_ratio_lower": 0.7060440654291152,
+      "weight_ratio_upper": 1.5981069124990124,
+      "condition_upper": 2.2634662491323745,
+      "whitened_eigen_min": 0.7351176017306547,
+      "whitened_eigen_max": 1.5341811114940134,
+      "eigen_enclosure_pass": true,
+      "natural_displacement_delta": 0.4688197490479236,
+      "be_margin_gamma": null,
+      "theoretical_ratio_lower": 0.6257403632878776,
+      "theoretical_ratio_upper": 1.5981069124990117,
+      "susceptibility_enclosure_pass": true,
+      "shared_hessian_assembly_seconds": 0.00420008398941718,
+      "initial_preconditioner_setup_seconds": 0.0022311639913823456,
+      "runs": {
+        "plain_cg": {
+          "iterations": 60,
+          "relative_physical_residual": 6.228870072535516e-10,
+          "converged": true,
+          "seconds": [
+            0.000952030997723341,
+            0.001943040988408029,
+            0.0013192740007070825,
+            0.0018821080011548474,
+            0.0010236980015179142,
+            0.00107601800118573,
+            0.0016134500037878752
+          ],
+          "median_seconds": 0.0013192740007070825
+        },
+        "fisher_pcg": {
+          "iterations": 12,
+          "relative_physical_residual": 6.585407074544081e-10,
+          "converged": true,
+          "seconds": [
+            0.00038147400482557714,
+            0.0009255010081687942,
+            0.0007080969953676686,
+            0.0007953919994179159,
+            0.00101890999940224,
+            0.0008254319982370362,
+            0.0007663120049983263
+          ],
+          "median_seconds": 0.0007953919994179159
+        }
+      },
+      "median_solve_speed_ratio": 1.6586463048063773
+    },
+    {
+      "L": 1,
+      "z": 8.0,
+      "anisotropy": 0.6,
+      "statistics": "MB",
+      "narrow": false,
+      "points": 300,
+      "dimension": 8,
+      "reference_whitening_max_abs": 2.1094237467877974e-15,
+      "raw_condition": 17313.663308368883,
+      "whitened_condition": 1.520348001508799,
+      "weight_ratio_lower": 0.7264787532647092,
+      "weight_ratio_upper": 1.5191628615716135,
+      "condition_upper": 2.09113185312671,
+      "whitened_eigen_min": 0.8378245316889714,
+      "whitened_eigen_max": 1.273784852368373,
+      "eigen_enclosure_pass": true,
+      "natural_displacement_delta": 0.4181594341742217,
+      "be_margin_gamma": null,
+      "theoretical_ratio_lower": 0.6582572713536938,
+      "theoretical_ratio_upper": 1.5191628615716142,
+      "susceptibility_enclosure_pass": true,
+      "shared_hessian_assembly_seconds": 1.5735000488348305e-05,
+      "initial_preconditioner_setup_seconds": 6.986400694586337e-05,
+      "runs": {
+        "plain_cg": {
+          "iterations": 12,
+          "relative_physical_residual": 4.32144361315233e-14,
+          "converged": true,
+          "seconds": [
+            0.0007349500083364546,
+            0.00014776800526306033,
+            0.0003262000100221485,
+            0.000692396002705209,
+            0.0009652000007918105,
+            0.0012850369967054576,
+            0.0002077670069411397
+          ],
+          "median_seconds": 0.000692396002705209
+        },
+        "fisher_pcg": {
+          "iterations": 8,
+          "relative_physical_residual": 2.593331978880064e-16,
+          "converged": true,
+          "seconds": [
+            0.0001761699968483299,
+            0.0039367230056086555,
+            0.0002658760058693588,
+            0.006013386999256909,
+            0.005666627999744378,
+            0.0001939939975272864,
+            0.0026887020067078993
+          ],
+          "median_seconds": 0.0026887020067078993
+        }
+      },
+      "median_solve_speed_ratio": 0.25752054373366295
+    },
+    {
+      "L": 3,
+      "z": 8.0,
+      "anisotropy": 0.6,
+      "statistics": "MB",
+      "narrow": false,
+      "points": 900,
+      "dimension": 32,
+      "reference_whitening_max_abs": 5.329070518200751e-15,
+      "raw_condition": 97127.40628059594,
+      "whitened_condition": 1.926388006162285,
+      "weight_ratio_lower": 0.7052513640157346,
+      "weight_ratio_upper": 1.5787764061958907,
+      "condition_upper": 2.238600996396892,
+      "whitened_eigen_min": 0.7613389600555607,
+      "whitened_eigen_max": 1.466634241275099,
+      "eigen_enclosure_pass": true,
+      "natural_displacement_delta": 0.4566501205575012,
+      "be_margin_gamma": null,
+      "theoretical_ratio_lower": 0.6334019156072458,
+      "theoretical_ratio_upper": 1.5787764061958902,
+      "susceptibility_enclosure_pass": true,
+      "shared_hessian_assembly_seconds": 0.00011078399256803095,
+      "initial_preconditioner_setup_seconds": 0.0020558799878926948,
+      "runs": {
+        "plain_cg": {
+          "iterations": 51,
+          "relative_physical_residual": 4.151847956586078e-10,
+          "converged": true,
+          "seconds": [
+            0.001156703001470305,
+            0.0011238829902140424,
+            0.0008733599970582873,
+            0.0017342169885523617,
+            0.0015342199912993237,
+            0.0007950129947857931,
+            0.0012259050126885995
+          ],
+          "median_seconds": 0.001156703001470305
+        },
+        "fisher_pcg": {
+          "iterations": 11,
+          "relative_physical_residual": 5.090287438609254e-10,
+          "converged": true,
+          "seconds": [
+            0.0005348189879441634,
+            0.0003543939965311438,
+            0.00023194799723569304,
+            0.0006513550033560023,
+            0.0011587010085349903,
+            0.0002579540014266968,
+            0.00023026000417303294
+          ],
+          "median_seconds": 0.0003543939965311438
+        }
+      },
+      "median_solve_speed_ratio": 3.2638899439388647
+    },
+    {
+      "L": 5,
+      "z": 8.0,
+      "anisotropy": 0.6,
+      "statistics": "MB",
+      "narrow": false,
+      "points": 1820,
+      "dimension": 72,
+      "reference_whitening_max_abs": 2.7755575615628914e-15,
+      "raw_condition": 383472.1499990124,
+      "whitened_condition": 2.083775457084332,
+      "weight_ratio_lower": 0.7060440654291152,
+      "weight_ratio_upper": 1.5981069124990124,
+      "condition_upper": 2.2634662491323745,
+      "whitened_eigen_min": 0.7354164255737738,
+      "whitened_eigen_max": 1.532442698347316,
+      "eigen_enclosure_pass": true,
+      "natural_displacement_delta": 0.4688197490479236,
+      "be_margin_gamma": null,
+      "theoretical_ratio_lower": 0.6257403632878776,
+      "theoretical_ratio_upper": 1.5981069124990117,
+      "susceptibility_enclosure_pass": true,
+      "shared_hessian_assembly_seconds": 0.00234907100093551,
+      "initial_preconditioner_setup_seconds": 0.0002882389962906018,
+      "runs": {
+        "plain_cg": {
+          "iterations": 144,
+          "relative_physical_residual": 6.164493239299493e-10,
+          "converged": true,
+          "seconds": [
+            0.0037203529936959967,
+            0.0041437089967075735,
+            0.004656037999666296,
+            0.003497880999930203,
+            0.00372508900181856,
+            0.003854214010061696,
+            0.004373289993964136
+          ],
+          "median_seconds": 0.003854214010061696
+        },
+        "fisher_pcg": {
+          "iterations": 12,
+          "relative_physical_residual": 4.85273468012475e-10,
+          "converged": true,
+          "seconds": [
+            0.0010847079975064844,
+            0.000731858002836816,
+            0.0005820859951199964,
+            0.0006023150053806603,
+            0.0011121589923277497,
+            0.0007612099871039391,
+            0.0012997099984204397
+          ],
+          "median_seconds": 0.0007612099871039391
+        }
+      },
+      "median_solve_speed_ratio": 5.063273046016177
+    },
+    {
+      "L": 3,
+      "z": 2.0,
+      "anisotropy": 0.6,
+      "statistics": "FD",
+      "narrow": false,
+      "points": 900,
+      "dimension": 32,
+      "reference_whitening_max_abs": 5.88418203051333e-15,
+      "raw_condition": 762.1310706213068,
+      "whitened_condition": 1.92032156353791,
+      "weight_ratio_lower": 0.7052523429487082,
+      "weight_ratio_upper": 1.5787721030375679,
+      "condition_upper": 2.238591787496393,
+      "whitened_eigen_min": 0.7628212030511915,
+      "whitened_eigen_max": 1.4648620053431336,
+      "eigen_enclosure_pass": true,
+      "natural_displacement_delta": 0.4566501205575012,
+      "be_margin_gamma": null,
+      "theoretical_ratio_lower": 0.6334019156072458,
+      "theoretical_ratio_upper": 1.5787764061958902,
+      "susceptibility_enclosure_pass": true,
+      "shared_hessian_assembly_seconds": 0.0002921249979408458,
+      "initial_preconditioner_setup_seconds": 0.00027099400176666677,
+      "runs": {
+        "plain_cg": {
+          "iterations": 33,
+          "relative_physical_residual": 2.6156351851359355e-10,
+          "converged": true,
+          "seconds": [
+            0.0006850669888081029,
+            0.0017538909887662157,
+            0.0006110570102464408,
+            0.0007976519991643727,
+            0.0005543490115087479,
+            0.00047883600927889347,
+            0.0015500369918299839
+          ],
+          "median_seconds": 0.0006850669888081029
+        },
+        "fisher_pcg": {
+          "iterations": 11,
+          "relative_physical_residual": 4.325148519581892e-10,
+          "converged": true,
+          "seconds": [
+            0.00036524099414236844,
+            0.0005214720004005358,
+            0.0026464749971637502,
+            0.0011546890018507838,
+            0.0008787730039330199,
+            0.0007567440043203533,
+            0.00036312200245447457
+          ],
+          "median_seconds": 0.0007567440043203533
+        }
+      },
+      "median_solve_speed_ratio": 0.9052823476591335
+    },
+    {
+      "L": 3,
+      "z": 2.0,
+      "anisotropy": 0.6,
+      "statistics": "BE",
+      "narrow": false,
+      "points": 900,
+      "dimension": 32,
+      "reference_whitening_max_abs": 5.773159728050814e-15,
+      "raw_condition": 746.9620434554441,
+      "whitened_condition": 2.006386064506638,
+      "weight_ratio_lower": 0.6302816290700981,
+      "weight_ratio_upper": 2.130492781956817,
+      "condition_upper": 3.380223512305274,
+      "whitened_eigen_min": 0.7562094952865409,
+      "whitened_eigen_max": 1.5172481931905137,
+      "eigen_enclosure_pass": true,
+      "natural_displacement_delta": 0.4566501205575012,
+      "be_margin_gamma": 0.8029707217032338,
+      "theoretical_ratio_lower": 0.30183714776742065,
+      "theoretical_ratio_upper": 3.3130448236628105,
+      "susceptibility_enclosure_pass": true,
+      "shared_hessian_assembly_seconds": 0.00042966200271621346,
+      "initial_preconditioner_setup_seconds": 0.00022010899556335062,
+      "runs": {
+        "plain_cg": {
+          "iterations": 33,
+          "relative_physical_residual": 7.873725209557949e-10,
+          "converged": true,
+          "seconds": [
+            0.0007568110013380647,
+            0.0014559159899363294,
+            0.0014346700045280159,
+            0.0007338540017371997,
+            0.0003447820054134354,
+            0.0009692809981061146,
+            0.0003633880114648491
+          ],
+          "median_seconds": 0.0007568110013380647
+        },
+        "fisher_pcg": {
+          "iterations": 12,
+          "relative_physical_residual": 2.50072829642387e-10,
+          "converged": true,
+          "seconds": [
+            0.0009949639934347942,
+            0.001325577002717182,
+            0.0009051180095411837,
+            0.00026575000083539635,
+            0.00041840499034151435,
+            0.0004428309912327677,
+            0.0005081509880255908
+          ],
+          "median_seconds": 0.0005081509880255908
+        }
+      },
+      "median_solve_speed_ratio": 1.489342772467366
+    },
+    {
+      "L": 3,
+      "z": 2.0,
+      "anisotropy": 0.6,
+      "statistics": "MB",
+      "narrow": true,
+      "points": 900,
+      "dimension": 32,
+      "reference_whitening_max_abs": 3.2352463427370286e-13,
+      "raw_condition": 47035034.09146367,
+      "whitened_condition": 1.8119180775159631,
+      "weight_ratio_lower": 0.737783118193824,
+      "weight_ratio_upper": 1.4883655646375618,
+      "condition_upper": 2.0173483615093386,
+      "whitened_eigen_min": 0.7818637224516828,
+      "whitened_eigen_max": 1.4166730128641276,
+      "eigen_enclosure_pass": true,
+      "natural_displacement_delta": 0.39767858139735157,
+      "be_margin_gamma": null,
+      "theoretical_ratio_lower": 0.671877947030785,
+      "theoretical_ratio_upper": 1.4883655646375618,
+      "susceptibility_enclosure_pass": true,
+      "shared_hessian_assembly_seconds": 0.00043094200373161584,
+      "initial_preconditioner_setup_seconds": 0.0001266590115847066,
+      "runs": {
+        "plain_cg": {
+          "iterations": 26,
+          "relative_physical_residual": 7.3540851544225e-10,
+          "converged": true,
+          "seconds": [
+            0.0005024889978813007,
+            0.00030896099633537233,
+            0.0009041610028361902,
+            0.0003616470057750121,
+            0.0033504199964227155,
+            0.0009443439921597019,
+            0.000594952012761496
+          ],
+          "median_seconds": 0.000594952012761496
+        },
+        "fisher_pcg": {
+          "iterations": 10,
+          "relative_physical_residual": 7.498358273972453e-10,
+          "converged": true,
+          "seconds": [
+            0.002195618988480419,
+            0.0037470210081664845,
+            0.0013337900018086657,
+            0.00025190199085045606,
+            0.0005227349902270362,
+            0.000528251999639906,
+            0.0010623580019455403
+          ],
+          "median_seconds": 0.0010623580019455403
+        }
+      },
+      "median_solve_speed_ratio": 0.5600296808344604
+    },
+    {
+      "L": 3,
+      "z": 2.0,
+      "anisotropy": 0.0,
+      "statistics": "MB",
+      "narrow": false,
+      "points": 900,
+      "dimension": 32,
+      "reference_whitening_max_abs": 4.218847493575595e-15,
+      "raw_condition": 579.170678147894,
+      "whitened_condition": 1.0000000000000093,
+      "weight_ratio_lower": 1.0,
+      "weight_ratio_upper": 1.0,
+      "condition_upper": 1.0,
+      "whitened_eigen_min": 0.9999999999999951,
+      "whitened_eigen_max": 1.0000000000000044,
+      "eigen_enclosure_pass": true,
+      "natural_displacement_delta": 0.0,
+      "be_margin_gamma": null,
+      "theoretical_ratio_lower": 1.0,
+      "theoretical_ratio_upper": 1.0,
+      "susceptibility_enclosure_pass": true,
+      "shared_hessian_assembly_seconds": 0.0001099740038625896,
+      "initial_preconditioner_setup_seconds": 0.00014890699821989983,
+      "runs": {
+        "plain_cg": {
+          "iterations": 11,
+          "relative_physical_residual": 1.780103889496322e-10,
+          "converged": true,
+          "seconds": [
+            0.0006882550078444183,
+            0.00012119300663471222,
+            0.00032768100209068507,
+            0.00011932299821637571,
+            0.00013818099978379905,
+            0.00015739499940536916,
+            0.0006288539880188182
+          ],
+          "median_seconds": 0.00015739499940536916
+        },
+        "fisher_pcg": {
+          "iterations": 1,
+          "relative_physical_residual": 3.4211440744931855e-15,
+          "converged": true,
+          "seconds": [
+            0.00012811899068765342,
+            0.00011489499593153596,
+            0.0001340649905614555,
+            0.0001334469998255372,
+            0.00014503799320664257,
+            0.0009089550003409386,
+            0.00012505600170698017
+          ],
+          "median_seconds": 0.0001334469998255372
+        }
+      },
+      "median_solve_speed_ratio": 1.1794570099825439
+    }
+  ]
+}

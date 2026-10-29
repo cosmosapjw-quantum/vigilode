@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "final_native_checks": [
+    {
+      "id": "causal-round3-tests",
+      "receipt": "evidence/runs/causal-round3-tests.receipt.json",
+      "passed": 81,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "id": "algebraic-round2-tests",
+      "receipt": "evidence/runs/algebraic-round2-tests.receipt.json",
+      "passed": 26,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "id": "facade-regression-tests",
+      "receipt": "evidence/runs/facade-regression-tests.receipt.json",
+      "passed": 154,
+      "failed": 0,
+      "exit_code": 0
+    }
+  ],
+  "unique_native_tests": 261,
+  "exact_rational_checks": {
+    "count": 6,
+    "result": "pass",
+    "evidence": "analysis/THEORY_EXACT_CHECKS.json"
+  },
+  "final_benchmarks": {
+    "primary_timed_trajectories": 275,
+    "root_variant_timed_trajectories": 240,
+    "all_final_timed_trajectories_pass": 515,
+    "primary_groups": 55,
+    "root_groups": 48,
+    "sampled_absolute_error_cap": 1e-05,
+    "continuous_error_certificate": false,
+    "algebraic_rows": 24,
+    "algebraic_accepted": 19,
+    "intentional_legacy_residual_refusals": 5,
+    "algebraic_evidence": "analysis/ALGEBRAIC_BENCHMARK.json"
+  },
+  "superseded_measurements": {
+    "primary_timed_rows": 205,
+    "root_timed_rows": 240,
+    "reason": "Priced exploration revision followed observed loss; old sources and outputs retained.",
+    "algebraic_original": "Operator-work receipt omitted legacy callback charges; corrected raw run retained separately."
+  },
+  "failed_executions": [
+    {
+      "receipt": "evidence/runs/benchmark-final-build.receipt.json",
+      "exit_code": 101,
+      "classification": "implementation-benchmark-syntax",
+      "retained": true
+    },
+    {
+      "receipt": "evidence/runs/causal-final-tests.receipt.json",
+      "exit_code": 101,
+      "classification": "environment-build-cache",
+      "retained": true
+    },
+    {
+      "receipt": "evidence/runs/causal-round2-tests.receipt.json",
+      "exit_code": 101,
+      "classification": "environment-build-cache",
+      "retained": true
+    }
+  ],
+  "independent_review": [
+    "analysis/INDEPENDENT_INTEGRATION_REVIEW.json",
+    "analysis/THEORY_REASSESSMENT.json",
+    "analysis/DOCUMENT_REVIEW.json"
+  ],
+  "not_run": [
+    "whole Cargo workspace test suite",
+    "new external VODE/DVODE,diffsol,Julia campaign",
+    "whole-trajectory interval certificate"
+  ],
+  "environment": "evidence/ENVIRONMENT.json",
+  "ncp_used": false,
+  "publication_quality_checks": {
+    "authored_source_and_documents_diff_check": "PASS",
+    "raw_streams_and_generated_svg_logs": "Preserved byte-for-byte, including generated trailing whitespace.",
+    "package_identity_check": "PACKAGE_CHECK.json"
+  }
+}

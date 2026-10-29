@@ -1,0 +1,73 @@
+{
+  "schema": "vigilode.adapter-integration.validation.v1",
+  "final_native_tests": {
+    "suites": 32,
+    "passed": 263,
+    "failed": 0,
+    "ignored": 0,
+    "receipt": "validation/facade_r3/RECEIPT.json"
+  },
+  "commands": {
+    "integration_r1": {
+      "exit_code": 101,
+      "wall_seconds": 128.09215444200163,
+      "source_unchanged_during_command": false
+    },
+    "facade_r2": {
+      "exit_code": 0,
+      "wall_seconds": 21.623673310001323,
+      "source_unchanged_during_command": true
+    },
+    "facade_r3": {
+      "exit_code": 0,
+      "wall_seconds": 17.012894874998892,
+      "source_unchanged_during_command": true
+    },
+    "measurement_build_r1": {
+      "exit_code": 0,
+      "wall_seconds": 16.579066459999012,
+      "source_unchanged_during_command": true
+    },
+    "measurement_build_r2": {
+      "exit_code": 0,
+      "wall_seconds": 8.25442516700059,
+      "source_unchanged_during_command": true
+    },
+    "availability_r1": {
+      "exit_code": 0,
+      "wall_seconds": 0.004072130999702495,
+      "source_unchanged_during_command": true
+    },
+    "pairs_r1": {
+      "exit_code": 0,
+      "wall_seconds": 29.6066585999979,
+      "source_unchanged_during_command": true
+    },
+    "pairs_r2": {
+      "exit_code": 0,
+      "wall_seconds": 102.85588677800115,
+      "source_unchanged_during_command": true
+    }
+  },
+  "initial_failure": "Old joint strict rotation improvement assertion invalidated by newer native backoff (3vs3). Only example changed during initial compile; failure preserved. Final test sources were frozen.",
+  "benchmark": {
+    "r1_pairs": 25,
+    "r2_pairs": 26,
+    "r2_failed_commands": 0,
+    "r2_time_and_accuracy_qualified_pairs": 11,
+    "scope": "Five paired blocks per comparison, sampled native outputs checked; default gyro report-only failure retained"
+  },
+  "independent_reviews": [
+    "review/REVISION2_SOURCE_REVIEW.json",
+    "review/THEORY_REVIEW.json",
+    "review/REVISION2_THEORY_REVIEW.json"
+  ],
+  "scope_exclusions": [
+    "No fresh full-workspace regression outside modified facade",
+    "No fresh external VODE/DVODE/Diffsol/Julia campaign",
+    "No fresh parallel wall-time campaign",
+    "No full-trajectory global-error proof",
+    "No NCP"
+  ],
+  "source_hash_identity": "Final test/build/timing manifests agree with publication sources."
+}

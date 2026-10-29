@@ -1,0 +1,37 @@
+{
+  "schema": "vigilode-review-failure-registry-v1",
+  "items": [
+    {
+      "id": "ENV-01",
+      "kind": "environment",
+      "observed": "cargo/rustc absent from PATH; direct GitHub DNS access unavailable",
+      "impact": "no native Rust build or direct clone",
+      "resolution": "connector source reads/writes; isolated Python probes only"
+    },
+    {
+      "id": "TEST-01",
+      "kind": "test-design",
+      "observed": "initial synthetic p=0.49+0.49D^2 was hit by D=1.024; it did not expose the intended six-point schedule miss",
+      "resolution": "replace with independently derived p=0.29+0.8D^2; preserve real source inputs unchanged; corrected test observed failing before implementation"
+    },
+    {
+      "id": "IMPL-RED-01",
+      "kind": "expected-development-failure",
+      "observed": "zero-path stub and schedule-only baseline failed four behavioral tests",
+      "evidence": "results/TDD_RED.txt",
+      "resolution": "exact action and certified polynomial feasibility implemented; same four tests pass"
+    },
+    {
+      "id": "PROPOSAL-01",
+      "kind": "algorithm-design",
+      "observed": "midpoint of a very wide feasible interval is a valid but unnecessarily loose radius",
+      "resolution": "exact isolation retained as oracle; test un-tuned D=2B proposal with mandatory exact recheck; native outward recheck still required"
+    },
+    {
+      "id": "SCOPE-01",
+      "kind": "prevented-overclaim",
+      "observed": "R4 parallel certificate closure is not current native q2 admission; current native q2 calls serial certificate",
+      "resolution": "report and plan distinguish research path, bound validity, budget admission, and ODE error"
+    }
+  ]
+}

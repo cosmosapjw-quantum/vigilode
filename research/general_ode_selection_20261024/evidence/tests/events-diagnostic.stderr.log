@@ -1,0 +1,109 @@
+       Fresh version_check v0.9.5
+       Fresh autocfg v1.5.1
+       Fresh unicode-ident v1.0.24
+       Fresh proc-macro2 v1.0.107
+       Fresh quote v1.0.47
+       Fresh bytemuck v1.25.2
+       Fresh num-traits v0.2.19
+       Fresh nano-gemm-codegen v0.2.1
+       Fresh num-complex v0.4.6
+       Fresh bitflags v2.13.1
+       Fresh raw-cpuid v11.6.0
+       Fresh cfg-if v1.0.4
+       Fresh libm v0.2.16
+       Fresh paste v1.0.15
+       Fresh pulp-wasm-simd-flag v0.1.1
+       Fresh reborrow v0.5.5
+       Fresh pulp v0.22.3
+       Fresh dyn-stack-macros v0.1.3
+       Fresh dyn-stack v0.13.2
+       Fresh once_cell v1.21.4
+       Fresh seq-macro v0.3.6
+       Fresh gemm-common v0.19.0
+       Fresh nano-gemm-core v0.2.1
+       Fresh syn v1.0.109
+       Fresh typenum v1.20.1
+       Fresh generic-array v0.14.7
+       Fresh interpol v0.2.1
+       Fresh syn v2.0.119
+       Fresh syn v3.0.3
+       Fresh defer v0.2.1
+       Fresh equator-macro v0.2.1
+       Fresh libc v0.2.189
+       Fresh num_cpus v1.17.0
+       Fresh nano-gemm-f64 v0.2.1
+       Fresh nano-gemm-c64 v0.2.1
+       Fresh nano-gemm-c32 v0.2.1
+       Fresh nano-gemm-f32 v0.2.1
+       Fresh equator v0.2.2
+       Fresh crossbeam-utils v0.8.22
+       Fresh serde_core v1.0.229
+       Fresh block-buffer v0.10.4
+       Fresh crypto-common v0.1.7
+       Fresh gemm-c32 v0.19.0
+       Fresh gemm-f64 v0.19.0
+       Fresh gemm-c64 v0.19.0
+       Fresh gemm-f32 v0.19.0
+       Fresh qd v0.8.0
+       Fresh generativity v1.2.1
+       Fresh equator-macro v0.6.0
+       Fresh equator v0.6.0
+       Fresh faer-traits v0.24.0
+       Fresh gemm v0.19.0
+       Fresh digest v0.10.7
+       Fresh private-gemm-x86 v0.1.20
+       Fresh crossbeam-epoch v0.9.20
+       Fresh nano-gemm v0.2.2
+       Fresh zmij v1.0.23
+       Fresh thiserror-impl v2.0.19
+       Fresh serde_derive v1.0.229
+       Fresh memchr v2.8.3
+       Fresh itoa v1.0.18
+       Fresh cpufeatures v0.2.17
+       Fresh sha2 v0.10.9
+       Fresh serde_json v1.0.151
+       Fresh serde v1.0.229
+       Fresh thiserror v2.0.19
+       Fresh faer v0.24.4
+       Fresh crossbeam-deque v0.8.7
+       Fresh hex v0.4.3
+       Fresh rodas5p-core v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-production-1024/crates/rodas5p-core)
+       Fresh rayon-core v1.13.0
+       Fresh either v1.17.0
+       Fresh rayon v1.12.0
+       Fresh rodas5p-krylov v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-production-1024/crates/rodas5p-krylov)
+       Fresh rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-production-1024/crates/rodas5p-integrators)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+       Dirty vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-production-1024/crates/vigilode): the dependency `vigilode` was rebuilt (1792785967.768732426s, 4m 29s after last build at 1792785698.261260277s)
+   Compiling vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-production-1024/crates/vigilode)
+     Running `rustc --crate-name events_contracts --edition=2024 crates/vigilode/tests/events_contracts.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no --test --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=babc52d5d72ab0ba -C extra-filename=-7f1b207d9e38b18a --out-dir /workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps -C incremental=/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/incremental -C strip=debuginfo -L dependency=/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps --extern rodas5p_core=/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/librodas5p_core-b34d98e4f05c9814.rlib --extern rodas5p_integrators=/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/librodas5p_integrators-b200a6ab70243810.rlib --extern serde=/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/libserde-fb87a1056391947a.rlib --extern serde_json=/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/libserde_json-f814e1179b2b2fec.rlib --extern thiserror=/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/libthiserror-78c44f8d8330e9bb.rlib --extern vigilode=/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/libvigilode-bedecbbc9fcd7eef.rlib`
+error[E0463]: can't find crate for `vigilode`
+ --> crates/vigilode/tests/events_contracts.rs:5:5
+  |
+5 | use vigilode::{
+  |     ^^^^^^^^ can't find crate
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/events_contracts.rs:251:20
+    |
+251 |     .event(|t, _y| (3.0 * t).sin(), Direction::Either);
+    |                    ^^^^^^^^^ cannot infer type
+
+Some errors have detailed explanations: E0282, E0463.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `vigilode` (test "events_contracts") due to 2 previous errors
+
+Caused by:
+  process didn't exit successfully: `rustc --crate-name events_contracts --edition=2024 crates/vigilode/tests/events_contracts.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no --test --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=babc52d5d72ab0ba -C extra-filename=-7f1b207d9e38b18a --out-dir /workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps -C incremental=/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/incremental -C strip=debuginfo -L dependency=/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps --extern rodas5p_core=/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/librodas5p_core-b34d98e4f05c9814.rlib --extern rodas5p_integrators=/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/librodas5p_integrators-b200a6ab70243810.rlib --extern serde=/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/libserde-fb87a1056391947a.rlib --extern serde_json=/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/libserde_json-f814e1179b2b2fec.rlib --extern thiserror=/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/libthiserror-78c44f8d8330e9bb.rlib --extern vigilode=/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/libvigilode-bedecbbc9fcd7eef.rlib` (exit status: 1)

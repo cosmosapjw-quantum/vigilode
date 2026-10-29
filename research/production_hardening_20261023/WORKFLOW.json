@@ -1,0 +1,127 @@
+{
+  "schema": "vigilode.physmath-workflow.v1",
+  "source_commit": "5913fe062706c820e768b9e150e5cd1c274f7bf9",
+  "skill_version": "1.0.0 / approvalv0.2",
+  "ncp_used": false,
+  "theory_loop": [
+    [
+      "R1",
+      "Question and scope",
+      "PREREGISTRATION.md"
+    ],
+    [
+      "R2",
+      "Published evidence and branch survey reused",
+      "BRANCH_SURVEY.json"
+    ],
+    [
+      "R3",
+      "Primary literature viaSciSpace/Exa/Wolfram andSciPy",
+      "AFFINE_SOURCES.json"
+    ],
+    [
+      "R4",
+      "Affine norm and densemap definitions",
+      "THEORY_NORM_KO.md"
+    ],
+    [
+      "R5",
+      "Constructive order/global/work proofs",
+      "DENSE_THEORY_REVIEW_KO.md"
+    ],
+    [
+      "R6",
+      "Exact symbolic checks and counterexamples",
+      "AFFINE_SYMBOLIC_CHECK.json"
+    ],
+    [
+      "R7",
+      "Independent adversarial math review",
+      "evidence/DENSE_CODE_REVIEW.json"
+    ],
+    [
+      "R8",
+      "Equation-to-code contracts",
+      "DENSE_OUTPUT_DESIGN_KO.md"
+    ],
+    [
+      "R9",
+      "Scope and remaining obligations",
+      "NEXT_STEPS.json"
+    ],
+    [
+      "R10",
+      "Source-pinned local evidence and publishedreport",
+      "REPORT_KO.md"
+    ]
+  ],
+  "coding_loop": [
+    [
+      "C1",
+      "Auditactualcode+externalresults",
+      "CORE_AUDIT_KO.md"
+    ],
+    [
+      "C2",
+      "SpecifynewAPIandpreservelegacy",
+      "crates/vigilode/EXPLICIT.md"
+    ],
+    [
+      "C3",
+      "Preregistervalidationandholdouts",
+      "PREREGISTRATION.md"
+    ],
+    [
+      "C4",
+      "Parallelimplementation",
+      "crates/rodas5p-integrators/src/dopri5_dense.rs"
+    ],
+    [
+      "C5",
+      "Fixsubnormalandretryreproduction",
+      "evidence/IEEE_SUBNORMAL_REPRO.json"
+    ],
+    [
+      "C6",
+      "Independentimplementationreview",
+      "CORE_AUDIT.json"
+    ],
+    [
+      "C7",
+      "Compile/testfrozencode",
+      "evidence/validation_v1/SUMMARY.json"
+    ],
+    [
+      "C8",
+      "Pairedwork/precisionmeasurement",
+      "evidence/local_bench/SUMMARY.json"
+    ],
+    [
+      "C9",
+      "Limitproductionclaimandprioritize",
+      "DECISIONS.json"
+    ],
+    [
+      "C10",
+      "Publishsource/review/handoff",
+      "HANDOFF_KO.md"
+    ]
+  ],
+  "policy_override": {
+    "prior_rule": "docs/RESEARCH_LEDGER.md deferredformalalgebrauntilholdout",
+    "reason": "User explicitly requested constructive theoryandcodingloop",
+    "replacement": "Exact newinterpolant/norm algebra before numericalholdout; claimsremain scoped to actualtests",
+    "impact": "No oldproof rerun, no blanketproductionpromotion"
+  },
+  "failure_classes": [
+    "theory",
+    "numerical",
+    "code",
+    "environment",
+    "authorization",
+    "input_dependency"
+  ],
+  "strong_no_go_claims": [],
+  "completed": true,
+  "completion_scope": "Auditedlatestresults;newnativecode+proofs+67Rust/7Pythontests+72config288runpairedcampaign;reportandhandoffcompleted.BroadproductionremainsHOLD."
+}

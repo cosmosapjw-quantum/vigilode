@@ -1,0 +1,113 @@
+{
+ "id": "E-10",
+ "purpose": "Mutation adequacy: does the default test suite detect a corrupted RODAS5P tableau coefficient?",
+ "command": "git worktree add --detach <clone> b3e8165; mutate fixtures/rodas5p_coefficients_snapshot.json A[3][1] by (1+rel); cargo test --workspace --offline --locked --no-fail-fast (dev profile, separate target dir); restore fixture",
+ "cwd": "/mutation/wt",
+ "env": {
+  "profile": "dev",
+  "CARGO_TARGET_DIR": "cargo-target-mut (deleted after run)"
+ },
+ "target_ref": "b3e8165c8dc3b5016702821d280daea1a3f1feb7",
+ "inputs": [
+  {
+   "path": "fixture_original.json",
+   "sha256": "211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6"
+  }
+ ],
+ "outputs": [
+  {
+   "path": "failed_A1.txt",
+   "sha256": "26d60cbe80bf1fe06d1e69dcb32ef635dc526a69a1db40fba4d7871ba5ebe7fc"
+  },
+  {
+   "path": "failed_A2.txt",
+   "sha256": "3aee22929beceadf44e15652a27733c117a5fb6c86b088dc84c8ef6a94ebcdd8"
+  },
+  {
+   "path": "fixture_original.json",
+   "sha256": "211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6"
+  },
+  {
+   "path": "mutant_A1.json",
+   "sha256": "163eca601f5b58a01ba4e41acbb1c5b9e7e72ea809aec8bdc22ec297bc1af0b7"
+  },
+  {
+   "path": "mutant_A2.json",
+   "sha256": "c8f8ff44cd402f6462de23e11376a46098b91f2e5413d44773f3a9f53262e063"
+  },
+  {
+   "path": "tests_A1.log",
+   "sha256": "3d976ccf77fa8b3ee2ff59c6180cbfd71763125d71f42c0b992b52f048a2861a"
+  },
+  {
+   "path": "tests_A2.log",
+   "sha256": "9b0a92365db396f78314da22507594bfe01cb539826e001a4f96c2b6a0c5b309"
+  },
+  {
+   "path": "timeline.log",
+   "sha256": "14e9c463c2f2a1002330fbb6b301d7ff48b6dcc468d95b9dd0579ac9a13189e4"
+  },
+  {
+   "path": "worktree_add.log",
+   "sha256": "9ca2adf357363dacf8b8ebe818f239adb65557f0bceee6818933e98f27f96ffc"
+  }
+ ],
+ "wall_seconds": 837,
+ "summary_metrics": {
+  "mutant_A1": {
+   "relative_perturbation": "1e-8",
+   "tests_failed": 10,
+   "tests_passed": 428,
+   "detected": true,
+   "failing_tests": [
+    "actual_transactional_path_retains_fifth_order_on_the_mild_pr_problem",
+    "analytic_dense_extensions_recover_their_expected_interior_orders",
+    "coefficient_snapshot_is_bit_identical_to_the_authoritative_sciml_literals",
+    "fixed_step_sequential_rodas5p_is_fifth_order",
+    "forced_fixed_step_refinement_retains_order_five_before_roundoff",
+    "historical_external_digest_is_preserved_while_v2_trace_has_its_own_baseline",
+    "homotopy_experiment_screen_emits_deterministic_safety_and_control_rows",
+    "order_policy_screen_keeps_the_protected_sequential_fifth_order_gate",
+    "scalar_linear_step_matches_exact_solution",
+    "unified_scientific_gates_distinguish_protected_fifth_order_from_low_order_fast_path"
+   ]
+  },
+  "mutant_A2": {
+   "relative_perturbation": "1e-4",
+   "tests_failed": 21,
+   "tests_passed": 417,
+   "detected": true,
+   "failing_tests": [
+    "actual_transactional_path_retains_fifth_order_on_the_mild_pr_problem",
+    "adaptive_homotopy_accepts_an_affine_fast_path_on_the_requested_grid",
+    "adaptive_homotopy_fallback_is_transactional_across_rejections",
+    "adaptive_solver_rejects_overflowing_trial_and_recovers",
+    "adaptive_transactional_lane_reaches_the_scalar_endpoint_without_explicit_jacobian",
+    "affine_scalar_path_is_accepted_without_explicit_jacobian_or_newton",
+    "all_two_by_six_cells_have_explicit_complete_or_reasoned_audit_states",
+    "analytic_dense_extensions_recover_their_expected_interior_orders",
+    "coefficient_snapshot_is_bit_identical_to_the_authoritative_sciml_literals",
+    "fixed_step_sequential_rodas5p_is_fifth_order",
+    "forced_fixed_step_refinement_retains_order_five_before_roundoff",
+    "frozen_full_e_shadow_command_emits_the_dedicated_v36_schema",
+    "generic_protected_adaptive_path_uses_inner_forcing",
+    "historical_external_digest_is_preserved_while_v2_trace_has_its_own_baseline",
+    "homotopy_experiment_screen_emits_deterministic_safety_and_control_rows",
+    "nonlinear_reference_certification_exposes_first_correction_underestimate",
+    "order_policy_screen_keeps_the_protected_sequential_fifth_order_gate",
+    "retained_level2_shadow_is_complete_charged_safe_and_rjf_identical",
+    "scalar_linear_step_matches_exact_solution",
+    "unified_scientific_gates_distinguish_protected_fifth_order_from_low_order_fast_path",
+    "unrecommended_hires_event_has_arm_bound_independent_audit_evidence"
+   ]
+  },
+  "baseline_failed": 0,
+  "mutant_B_controller_exponent": "NOT_RUN (budget)"
+ },
+ "pass_fail": "PASS",
+ "hypothesis_verdicts": [
+  "Test suite detects a 1e-8 relative corruption of one tableau entry (10 tests incl. coefficient_snapshot_is_bit_identical_to_the_authoritative_sciml_literals, fixed_step_sequential_rodas5p_is_fifth_order, scalar_linear_step_matches_exact_solution) and a 1e-4 corruption (21 tests).",
+  "Note: detection at 1e-8 is dominated by the fixture bit-identity test and the tight scalar_linear_step test; order-slope tests alone would not catch 1e-8 (they fail at 1e-8 here because forced refinement reaches round-off relative to the perturbation)."
+ ],
+ "notes": "Mutant B (controller exponent) not run to conserve session budget; the A1/A2 detection result is sufficient for the test-adequacy claim about tableau integrity. Both mutant runs were in dev profile in an isolated worktree; the fixture was restored from a saved copy and the worktree was verified clean before removal."
+}

@@ -1,0 +1,507 @@
+{
+  "schema": "vigilode-default-path-audit-v1",
+  "baseline_commit": "2fc61b944fe431d40ba455c373579bce00b0c39a",
+  "date": "2026-10-18",
+  "scope": "Existing sequential matrix-free RODAS5P and dense-output API; packet/Leja/sparse excluded",
+  "verdict": {
+    "generic_global_accuracy_production": "HOLD",
+    "ordinary_problem_specific_use": "SUPPORTED_WITH_INDEPENDENT_CLIENT_VALIDATION",
+    "readme_scope": "research-platform-correctly-scoped"
+  },
+  "reuse": {
+    "historical_campaigns_rerun": 0,
+    "prior_findings_reused": [
+      "DenseErrorControl::Off interior accuracy scope (F-002/RA-07)",
+      "matrix-free callback identity and model epoch contract",
+      "RecomputeFinal remains default, SP01 v2 opt-in"
+    ]
+  },
+  "source_bindings": [
+    {
+      "path": "README.md",
+      "baseline_sha256": "7a65f5b7cdedcaac45cab91eff96a1d5431a8cb319dff0a2275a818f86514f96",
+      "working_sha256": "3d6f4a64aded2fb9f8e11dde4f36bdd58554d07d6658e2391832bf6fb597fd55"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/dense_output_v2.rs",
+      "baseline_sha256": "5c52cd8bc17b3b82bd55f4fad96624514f2da510e751f2cf2cfa627d933ee4d2",
+      "working_sha256": "5c52cd8bc17b3b82bd55f4fad96624514f2da510e751f2cf2cfa627d933ee4d2"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/sequential.rs",
+      "baseline_sha256": "091425f4ddf607373a376019a6290dd77ad8ef0d77ef0e4e2b3a2175e873f377",
+      "working_sha256": "091425f4ddf607373a376019a6290dd77ad8ef0d77ef0e4e2b3a2175e873f377"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/adaptive.rs",
+      "baseline_sha256": "3a04609dc5a7141d6bdfe6ebccec441d1d2c8a9960305ea58873914e10703c40",
+      "working_sha256": "3a04609dc5a7141d6bdfe6ebccec441d1d2c8a9960305ea58873914e10703c40"
+    },
+    {
+      "path": "crates/rodas5p-core/src/solver_types.rs",
+      "baseline_sha256": "c52a2811689a2bfe733e6149a156f5ca6e4c3cef1b64f5e480d9a3cfbfb38fb8",
+      "working_sha256": "c52a2811689a2bfe733e6149a156f5ca6e4c3cef1b64f5e480d9a3cfbfb38fb8"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/output.rs",
+      "baseline_sha256": "7d4204bd45482aa8bc9769f888ce0fc51e170b9727984856fe5f367828da9195",
+      "working_sha256": "7d4204bd45482aa8bc9769f888ce0fc51e170b9727984856fe5f367828da9195"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/problem.rs",
+      "baseline_sha256": "7b43b922ef1b934a4de7120bf6bd10c3f892c8bc6149c1732600171238cd32f1",
+      "working_sha256": "dd2baf2de74ca3d20c4bce50713a4595a06391ee36faf08a936eb57ba67dcf38"
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/solve_stiff.rs",
+      "baseline_sha256": "b54b8539d38ed9504d1df3a93c34dac70733b727003b36e7dffb3de183c81e7e",
+      "working_sha256": "b54b8539d38ed9504d1df3a93c34dac70733b727003b36e7dffb3de183c81e7e"
+    }
+  ],
+  "execution_provenance": "Diagnostics linked against working-tree builds during parallel repairs; scoped default algorithm files matched baseline. Concurrent Leja/sparse/packet edits are outside this path. Initial build attempt hit a transient in-progress Leja type annotation compile error, author corrected it; final cargo example and standalone probes exit 0.",
+  "diagnostics": {
+    "public_example": {
+      "success": true,
+      "complete_output": true,
+      "max_abs_error_on_returned_samples": 2.4423468802936554e-09,
+      "demo_accuracy_pass": true,
+      "internal_steps": 93,
+      "output_clipped_steps": 0,
+      "counters": {
+        "accepted_steps": 93,
+        "block_linear_iterations": 0,
+        "block_linear_solves": 0,
+        "block_matvecs": 0,
+        "block_preconditioner_apps": 0,
+        "diagnostic_matvecs": 784,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "fallback_steps": 0,
+        "fast_accepts": 0,
+        "fast_attempts": 0,
+        "forced_stage_solves": 784,
+        "ft_calls": 95,
+        "harmonic_ritz_solves": 0,
+        "jacobian_builds": 0,
+        "jvp_calls": 4025,
+        "jvp_vectors": 4025,
+        "linear_iterations": 1201,
+        "linear_matvec_vectors": 3339,
+        "linear_matvecs": 2555,
+        "linear_solve_failures": 0,
+        "linear_solves": 784,
+        "local_error_failures": 2,
+        "mass_matvecs": 0,
+        "nonfinite_step_failures": 0,
+        "nonlinear_failures": 0,
+        "nonlinear_iterations": 0,
+        "nonlinear_jacobian_evaluations": 0,
+        "nonlinear_residual_evaluations": 0,
+        "nonlinear_solve_failures": 0,
+        "nonlinear_solves": 0,
+        "orthogonalization_inner_products": 3474,
+        "orthogonalization_vector_updates": 4139,
+        "phi_actions": 0,
+        "phi_dense_oracle_calls": 0,
+        "phi_krylov_vectors": 0,
+        "phi_projected_exponentials": 0,
+        "phi_restarts": 0,
+        "preconditioner_apps": 1866,
+        "preconditioner_vectors": 1866,
+        "recycle_cross_operator_refreshes": 0,
+        "recycle_dropped_vectors": 0,
+        "recycle_projection_calls": 0,
+        "recycle_refresh_matvecs": 0,
+        "recycle_same_operator_uses": 0,
+        "recycle_updates": 0,
+        "recycle_vectors_selected": 0,
+        "rejected_steps": 2,
+        "rhs_batch_calls": 0,
+        "rhs_calls": 781,
+        "rhs_evaluations": 781
+      }
+    },
+    "public_api_probe": [
+      {
+        "accepted": 6,
+        "atol": 1e-11,
+        "attempts": 6,
+        "case": "stiff_nonlinear_PR",
+        "jacobian_builds": 0,
+        "jvp_vectors": 249,
+        "kind": "Ok",
+        "last_returned_abs_error": 5.23257881468453e-10,
+        "last_time": 1.0,
+        "ledger_consistent": true,
+        "max_abs_error": 1.3083175084860343e-05,
+        "max_scaled_error": 1801.6160215324019,
+        "message": "success",
+        "nonfinite_failures": 0,
+        "rejected": 0,
+        "rhs_evaluations": 55,
+        "rtol": 1e-08,
+        "sample_count": 101,
+        "success": true
+      },
+      {
+        "case": "adaptive_nan_rtol",
+        "error": "invalid numerical input: adaptive rtol must be finite and nonnegative",
+        "kind": "Err"
+      },
+      {
+        "case": "nan_initial",
+        "error": "invalid numerical input: initial state for output collection must be finite and nonempty",
+        "kind": "Err"
+      },
+      {
+        "accepted": 0,
+        "atol": 1e-11,
+        "attempts": 0,
+        "case": "linear_inf_rtol",
+        "jacobian_builds": 0,
+        "jvp_vectors": 0,
+        "kind": "Ok",
+        "last_returned_abs_error": null,
+        "last_time": 0.0,
+        "ledger_consistent": true,
+        "max_abs_error": null,
+        "max_scaled_error": null,
+        "message": "post-start dense integration error: invalid numerical input: linear tolerances must be finite and nonnegative",
+        "nonfinite_failures": 0,
+        "rejected": 0,
+        "rhs_evaluations": 0,
+        "rtol": 1e-08,
+        "sample_count": 1,
+        "success": false
+      },
+      {
+        "accepted": 0,
+        "atol": 1e-11,
+        "attempts": 0,
+        "case": "linear_inf_rtol_zero_span",
+        "jacobian_builds": 0,
+        "jvp_vectors": 0,
+        "kind": "Ok",
+        "last_returned_abs_error": null,
+        "last_time": 0.0,
+        "ledger_consistent": true,
+        "max_abs_error": null,
+        "max_scaled_error": null,
+        "message": "success",
+        "nonfinite_failures": 0,
+        "rejected": 0,
+        "rhs_evaluations": 0,
+        "rtol": 1e-08,
+        "sample_count": 1,
+        "success": true
+      },
+      {
+        "accepted": 0,
+        "atol": 1e-11,
+        "attempts": 2,
+        "case": "nonfinite_rhs",
+        "jacobian_builds": 0,
+        "jvp_vectors": 0,
+        "kind": "Ok",
+        "last_returned_abs_error": null,
+        "last_time": 0.0,
+        "ledger_consistent": true,
+        "max_abs_error": null,
+        "max_scaled_error": null,
+        "message": "maximum step count or minimum step reached",
+        "nonfinite_failures": 2,
+        "rejected": 2,
+        "rhs_evaluations": 0,
+        "rtol": 1e-08,
+        "sample_count": 1,
+        "success": false
+      },
+      {
+        "accepted": 1,
+        "atol": 1e-11,
+        "attempts": 1,
+        "case": "budget_one",
+        "jacobian_builds": 0,
+        "jvp_vectors": 59,
+        "kind": "Ok",
+        "last_returned_abs_error": 0.0,
+        "last_time": 0.0,
+        "ledger_consistent": true,
+        "max_abs_error": 0.0,
+        "max_scaled_error": 0.0,
+        "message": "maximum step count or minimum step reached",
+        "nonfinite_failures": 0,
+        "rejected": 0,
+        "rhs_evaluations": 15,
+        "rtol": 1e-08,
+        "sample_count": 1,
+        "success": false
+      }
+    ],
+    "dense_control_comparison": [
+      {
+        "accepted": 6,
+        "attempts": 6,
+        "counters": {
+          "accepted_steps": 6,
+          "block_linear_iterations": 0,
+          "block_linear_solves": 0,
+          "block_matvecs": 0,
+          "block_preconditioner_apps": 0,
+          "diagnostic_matvecs": 48,
+          "direct_factorizations": 0,
+          "direct_solve_calls": 0,
+          "fallback_steps": 0,
+          "fast_accepts": 0,
+          "fast_attempts": 0,
+          "forced_stage_solves": 0,
+          "ft_calls": 6,
+          "harmonic_ritz_solves": 0,
+          "jacobian_builds": 6,
+          "jacobian_matvecs": 224,
+          "jvp_calls": 0,
+          "jvp_vectors": 0,
+          "linear_iterations": 46,
+          "linear_matvec_vectors": 182,
+          "linear_matvecs": 134,
+          "linear_solve_failures": 0,
+          "linear_solves": 48,
+          "local_error_failures": 0,
+          "mass_matvecs": 0,
+          "nonfinite_step_failures": 0,
+          "nonlinear_failures": 0,
+          "nonlinear_iterations": 0,
+          "nonlinear_jacobian_evaluations": 0,
+          "nonlinear_residual_evaluations": 0,
+          "nonlinear_solve_failures": 0,
+          "nonlinear_solves": 0,
+          "orthogonalization_inner_products": 92,
+          "orthogonalization_vector_updates": 138,
+          "phi_actions": 0,
+          "phi_dense_oracle_calls": 0,
+          "phi_krylov_vectors": 0,
+          "phi_projected_exponentials": 0,
+          "phi_restarts": 0,
+          "preconditioner_apps": 92,
+          "preconditioner_vectors": 92,
+          "recycle_cross_operator_refreshes": 0,
+          "recycle_dropped_vectors": 0,
+          "recycle_projection_calls": 0,
+          "recycle_refresh_matvecs": 0,
+          "recycle_same_operator_uses": 0,
+          "recycle_updates": 0,
+          "recycle_vectors_selected": 0,
+          "rejected_steps": 0,
+          "rhs_batch_calls": 0,
+          "rhs_calls": 48,
+          "rhs_evaluations": 48
+        },
+        "dense_estimate_count": 0,
+        "dense_estimate_unavailable": 0,
+        "exact_callback_supplied": false,
+        "last_time": 1.0,
+        "max_abs_error": 1.3083175084860343e-05,
+        "max_accepted_dense_estimate": null,
+        "max_scaled_error": 1801.6160215324019,
+        "mode": "off",
+        "rejected": 0,
+        "samples": 101,
+        "success": true
+      },
+      {
+        "accepted": 17,
+        "attempts": 41,
+        "counters": {
+          "accepted_steps": 17,
+          "block_linear_iterations": 0,
+          "block_linear_solves": 0,
+          "block_matvecs": 0,
+          "block_preconditioner_apps": 0,
+          "diagnostic_matvecs": 328,
+          "direct_factorizations": 38,
+          "direct_solve_calls": 0,
+          "fallback_steps": 0,
+          "fast_accepts": 0,
+          "fast_attempts": 0,
+          "forced_stage_solves": 0,
+          "ft_calls": 41,
+          "harmonic_ritz_solves": 0,
+          "jacobian_builds": 79,
+          "jacobian_matvecs": 1554,
+          "jvp_calls": 0,
+          "jvp_vectors": 0,
+          "linear_iterations": 326,
+          "linear_matvec_vectors": 1267,
+          "linear_matvecs": 939,
+          "linear_solve_failures": 0,
+          "linear_solves": 328,
+          "local_error_failures": 24,
+          "mass_matvecs": 0,
+          "nonfinite_step_failures": 0,
+          "nonlinear_failures": 0,
+          "nonlinear_iterations": 0,
+          "nonlinear_jacobian_evaluations": 0,
+          "nonlinear_residual_evaluations": 0,
+          "nonlinear_solve_failures": 0,
+          "nonlinear_solves": 0,
+          "orthogonalization_inner_products": 652,
+          "orthogonalization_vector_updates": 978,
+          "phi_actions": 0,
+          "phi_dense_oracle_calls": 0,
+          "phi_krylov_vectors": 0,
+          "phi_projected_exponentials": 0,
+          "phi_restarts": 0,
+          "preconditioner_apps": 652,
+          "preconditioner_vectors": 652,
+          "recycle_cross_operator_refreshes": 0,
+          "recycle_dropped_vectors": 0,
+          "recycle_projection_calls": 0,
+          "recycle_refresh_matvecs": 0,
+          "recycle_same_operator_uses": 0,
+          "recycle_updates": 0,
+          "recycle_vectors_selected": 0,
+          "rejected_steps": 24,
+          "rhs_batch_calls": 0,
+          "rhs_calls": 366,
+          "rhs_evaluations": 366
+        },
+        "dense_estimate_count": 38,
+        "dense_estimate_unavailable": 0,
+        "exact_callback_supplied": false,
+        "last_time": 1.0,
+        "max_abs_error": 7.102842647377372e-09,
+        "max_accepted_dense_estimate": 0.9216895307918039,
+        "max_scaled_error": 1.4985737320954928,
+        "mode": "enforce",
+        "rejected": 24,
+        "samples": 101,
+        "success": true
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "DP-01",
+      "severity": "high-for-global-output-promotion",
+      "state": "CONFIRMED_DOCUMENTED_SCOPE_LIMITATION",
+      "claim": "Successful default dense solve does not imply all requested outputs meet requested error weights",
+      "baseline_anchors": [
+        "crates/rodas5p-integrators/src/dense_output_v2.rs:124",
+        "crates/rodas5p-integrators/src/dense_output_v2.rs:1131",
+        "crates/rodas5p-integrators/src/dense_output_v2.rs:1214"
+      ],
+      "observed": {
+        "PR_endpoint_abs": 5.23257881468453e-10,
+        "PR_max_sample_abs": 1.3083175084860343e-05,
+        "PR_max_sample_normalized": 1801.6160215324019
+      },
+      "regression_from_prior_audit": false,
+      "minimal_next_action": "Add an explicit requested-output accuracy policy; validated continuous-defect plus stability transport for certification, or independent client validation for ordinary use."
+    },
+    {
+      "id": "DP-02",
+      "severity": "medium-evidence-accounting",
+      "state": "CONFIRMED",
+      "claim": "Failed nonfinite RHS calls are not included in rhs_calls/rhs_evaluations",
+      "baseline_anchors": [
+        "crates/rodas5p-integrators/src/problem.rs:500",
+        "crates/rodas5p-integrators/src/problem.rs:515",
+        "crates/rodas5p-integrators/src/problem.rs:534"
+      ],
+      "observed": {
+        "attempts": 2,
+        "nonfinite_step_failures": 2,
+        "rhs_evaluations": 0
+      },
+      "new_regression": false,
+      "minimal_next_action": "Increment attempted-call counters before callback execution/finite validation, or expose attempted and completed counters separately; update failure receipts with explicit schema version."
+    },
+    {
+      "id": "DP-03",
+      "severity": "low-input-contract",
+      "state": "CONFIRMED",
+      "claim": "Zero-length matrix-free dense solve does not validate linear tolerances",
+      "baseline_anchors": [
+        "crates/rodas5p-integrators/src/dense_output_v2.rs:1011",
+        "crates/rodas5p-integrators/src/sequential.rs:1080"
+      ],
+      "observed": "linear rtol=+Inf returns success=true for span[0,0]; nonzero span returns success=false with zero RHS work",
+      "minimal_next_action": "Run strict matrix-free linear configuration validation before zero-length return and before constructing adaptive execution state."
+    },
+    {
+      "id": "DP-04",
+      "severity": "scope-and-cost",
+      "state": "CONFIRMED_PARTIAL_REMEDY",
+      "claim": "Existing Enforce midpoint diagnostic improves PR but does not bound all output errors",
+      "observed": {
+        "max_sample_normalized": 1.4985737320954928,
+        "max_accepted_midpoint_estimate": 0.9216895307918039,
+        "extra_filter_factorizations": 38,
+        "all_jacobian_builds": 79
+      },
+      "minimal_next_action": "Keep estimator semantics explicit; compute a continuous residual enclosure and verified flow bound before treating it as certificate."
+    }
+  ],
+  "next_development": [
+    {
+      "id": "DP-N1",
+      "order": 1,
+      "task": "Separate successful completion from requested-output accuracy status in public result and examples",
+      "acceptance": "Existing default behavior remains reproducible; unknown output accuracy cannot serialize as certified."
+    },
+    {
+      "id": "DP-N2",
+      "order": 2,
+      "task": "Count failed callback work and validate linear configurations at public entry",
+      "acceptance": "Two failing RHS calls report two attempted calls and zero completed calls; invalid tolerance rejected also on zero span."
+    },
+    {
+      "id": "DP-N3",
+      "order": 3,
+      "task": "Add certified continuous-defect path for declared contractive clients",
+      "acceptance": "Verified tube and one-sided Lipschitz/logarithmic norm bound; residual enclosure valid on full accepted interval; inherited error carried between windows."
+    },
+    {
+      "id": "DP-N4",
+      "order": 4,
+      "task": "Evaluate only declared accepted clients against same-output same-achieved-error strong baselines",
+      "acceptance": "Charge residual, interpolation, failed attempts, setup and cache work; output accuracy gate precedes speed decision."
+    }
+  ],
+  "artifact_sha256": {
+    "dense_control_probe.jsonl": "a7ce0d8d77eade1488be4a046007abb36d187d4330b7ec78c6227b69aa03151d",
+    "solve_stiff.json": "9a85daa1901e3857a1d26076b27e58ecb6c4ff1078b32b257a05f7a8a1b284ea",
+    "probe.rs": "855d06cf30a79d09536320af07a4b3974d2f90c79e0b24638e9e2638e7b0eb32",
+    "dense_control_probe.rs": "a391589ac7fb23060e95f5cb5ca06efe45f701677f300fcb5bc22fc8353d04b6",
+    "probe.jsonl": "3fe8ffd271dddc4159ef68f1b70df4aa19486af92d912bcde0a64108969a720a",
+    "solve_stiff.stderr": "e01ade620c88641cba66b6f67070b6d9813f7f6ffefd3e49b83fde3359a0430d"
+  },
+  "commands": [
+    {
+      "command": "PATH=/workspace/scratch/0dc1e721cf82/runtime/rust/bin:$PATH CARGO_HOME=/workspace/scratch/0dc1e721cf82/runtime/cargo-home cargo run --offline --locked -p rodas5p-integrators --no-default-features --example solve_stiff",
+      "exit_code": 0,
+      "stdout": "default_path_evidence/solve_stiff.json",
+      "stderr": "default_path_evidence/solve_stiff.stderr"
+    },
+    {
+      "command": "rustc --edition=2024 default_path_evidence/probe.rs --extern rodas5p_integrators=target/debug/deps/librodas5p_integrators-be89680a3d93deed.rlib --extern rodas5p_core=target/debug/deps/librodas5p_core-79f25c17b5376e87.rlib --extern serde_json=target/debug/deps/libserde_json-31de49837e97daf9.rlib -L dependency=target/debug/deps -o default_path_evidence/probe",
+      "exit_code": 0
+    },
+    {
+      "command": "default_path_evidence/probe",
+      "exit_code": 0,
+      "stdout": "default_path_evidence/probe.jsonl"
+    },
+    {
+      "command": "rustc --edition=2024 default_path_evidence/dense_control_probe.rs --extern rodas5p_integrators=target/debug/deps/librodas5p_integrators-be89680a3d93deed.rlib --extern rodas5p_core=target/debug/deps/librodas5p_core-79f25c17b5376e87.rlib --extern serde_json=target/debug/deps/libserde_json-31de49837e97daf9.rlib -L dependency=target/debug/deps -o default_path_evidence/dense_control_probe",
+      "exit_code": 0
+    },
+    {
+      "command": "default_path_evidence/dense_control_probe",
+      "exit_code": 0,
+      "stdout": "default_path_evidence/dense_control_probe.jsonl"
+    }
+  ],
+  "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "command_note": "Actual probe paths were absolute under /workspace/scratch/0dc1e721cf82; displayed commands abbreviate scratch prefix. rlib suffixes identify this Cargo build only; regenerate with cargo before portable rerun."
+}

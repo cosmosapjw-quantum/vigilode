@@ -1,0 +1,30 @@
+{
+  "scope": "exact new scalar weight prototype; not native solver validation",
+  "checks": [
+    {
+      "id": "104_exact_beta_weights",
+      "status": "PASS",
+      "comparisons": 104
+    },
+    {
+      "id": "causal_not_pointwise_product",
+      "status": "PASS"
+    },
+    {
+      "id": "new_cached_weight_linear_commutation",
+      "status": "PASS"
+    },
+    {
+      "id": "shared_endpoint_weights",
+      "status": "PASS"
+    },
+    {
+      "id": "invalid_degree_and_shape_rejected",
+      "status": "PASS",
+      "cases": 7
+    }
+  ],
+  "passed": 5,
+  "historical_campaign_rerun": false,
+  "cost": "O((p+1)*(d+1)) exact scalar operations to compile, no factorial calls in implementation"
+}

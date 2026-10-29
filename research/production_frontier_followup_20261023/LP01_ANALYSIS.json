@@ -1,0 +1,699 @@
+{
+  "schema": "vigilode.lp01-post-campaign-analysis.v1",
+  "source_commit": "49696c982446dfe5d274f5361819b218122b7449",
+  "source_tree": "39a3a7484cfa5257c93116b438de47e04efe1a4e",
+  "binary_sha256": "eb438eef4e1f97486f9015879db5f060f88903b630e6f5c3e1da7b4867171b6f",
+  "row_count": 90,
+  "child_process_attempts": 81,
+  "status_counts": {
+    "FAILED_ACCURACY": 3,
+    "NOT_RUN_FAILED_WARMUP": 15,
+    "PASS_SAMPLED": 72
+  },
+  "cohorts": [
+    {
+      "case": "damped_100_f10000",
+      "method": "direct-carrier",
+      "tolerance_index": "none",
+      "status_counts": {
+        "PASS_SAMPLED": 6
+      },
+      "completed_attempts": 6,
+      "timed_valid_n": 5,
+      "solver_seconds": {
+        "min": 0.000149191,
+        "median": 0.000169319,
+        "max": 0.000236827
+      },
+      "process_seconds": {
+        "min": 0.18223825609311461,
+        "median": 0.1978416428901255,
+        "max": 0.21938681812025607
+      },
+      "worst_observed_error": {
+        "state": 5.3672595079277826e-14,
+        "phase": 4.440892098500626e-16,
+        "amplitude": 2.220446049250313e-16
+      },
+      "worst_reference_uncertainty_80_vs_100": {
+        "state": 1.6352170077554285e-81,
+        "phase": 0.0,
+        "amplitude": 5.603988987448279e-82
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6640102796802076e-08,
+        "amplitude": 7.105427357601002e-15
+      },
+      "total_work_all_completed_attempts": {
+        "rhs_calls": 0,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 0,
+        "rejected_steps": 0
+      },
+      "peak_sampled_rss_bytes": 3776512,
+      "all_masked_count": 0
+    },
+    {
+      "case": "damped_100_f10000",
+      "method": "full-rhs-dopri5",
+      "tolerance_index": "0",
+      "status_counts": {
+        "FAILED_ACCURACY": 1,
+        "NOT_RUN_FAILED_WARMUP": 5
+      },
+      "completed_attempts": 1,
+      "timed_valid_n": 0,
+      "solver_seconds": null,
+      "process_seconds": null,
+      "worst_observed_error": {
+        "state": 1.4034207484223545e-05,
+        "phase": 3.86601288937527e-06,
+        "amplitude": 1.4435584534067125e-05
+      },
+      "worst_reference_uncertainty_80_vs_100": {
+        "state": 1.6352170077554285e-81,
+        "phase": 0.0,
+        "amplitude": 5.603988987448279e-82
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6640102796802076e-08,
+        "amplitude": 7.105427357601002e-15
+      },
+      "total_work_all_completed_attempts": {
+        "rhs_calls": 24577,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 4096,
+        "rejected_steps": 0
+      },
+      "peak_sampled_rss_bytes": 3784704,
+      "all_masked_count": 0
+    },
+    {
+      "case": "damped_100_f10000",
+      "method": "full-rhs-dopri5",
+      "tolerance_index": "1",
+      "status_counts": {
+        "PASS_SAMPLED": 6
+      },
+      "completed_attempts": 6,
+      "timed_valid_n": 5,
+      "solver_seconds": {
+        "min": 0.002481446,
+        "median": 0.002771554,
+        "max": 0.005464478
+      },
+      "process_seconds": {
+        "min": 0.17307930393144488,
+        "median": 0.18429859797470272,
+        "max": 0.19296815805137157
+      },
+      "worst_observed_error": {
+        "state": 5.337005592316781e-07,
+        "phase": 8.329925549332984e-08,
+        "amplitude": 5.621719824100424e-07
+      },
+      "worst_reference_uncertainty_80_vs_100": {
+        "state": 1.6352170077554285e-81,
+        "phase": 0.0,
+        "amplitude": 5.603988987448279e-82
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6640102796802076e-08,
+        "amplitude": 7.105427357601002e-15
+      },
+      "total_work_all_completed_attempts": {
+        "rhs_calls": 364758,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 56160,
+        "rejected_steps": 4632
+      },
+      "peak_sampled_rss_bytes": 3837952,
+      "all_masked_count": 0
+    },
+    {
+      "case": "damped_100_f10000",
+      "method": "lawson",
+      "tolerance_index": "0",
+      "status_counts": {
+        "PASS_SAMPLED": 6
+      },
+      "completed_attempts": 6,
+      "timed_valid_n": 5,
+      "solver_seconds": {
+        "min": 0.002543554,
+        "median": 0.005623298,
+        "max": 0.007065105
+      },
+      "process_seconds": {
+        "min": 0.19328064611181617,
+        "median": 0.2068887329660356,
+        "max": 0.2201122739352286
+      },
+      "worst_observed_error": {
+        "state": 7.453301832421662e-14,
+        "phase": 1.1368683772161603e-13,
+        "amplitude": 4.440892098500626e-14
+      },
+      "worst_reference_uncertainty_80_vs_100": {
+        "state": 1.6352170077554285e-81,
+        "phase": 0.0,
+        "amplitude": 5.603988987448279e-82
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6640102796802076e-08,
+        "amplitude": 7.105427357601002e-15
+      },
+      "total_work_all_completed_attempts": {
+        "rhs_calls": 147462,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 24576,
+        "rejected_steps": 0
+      },
+      "peak_sampled_rss_bytes": 3784704,
+      "all_masked_count": 0
+    },
+    {
+      "case": "damped_100_f10000",
+      "method": "lawson",
+      "tolerance_index": "1",
+      "status_counts": {
+        "PASS_SAMPLED": 6
+      },
+      "completed_attempts": 6,
+      "timed_valid_n": 5,
+      "solver_seconds": {
+        "min": 0.002577938,
+        "median": 0.002651817,
+        "max": 0.005625141
+      },
+      "process_seconds": {
+        "min": 0.20793937402777374,
+        "median": 0.2401835429482162,
+        "max": 1.1421436339151114
+      },
+      "worst_observed_error": {
+        "state": 7.453301832421662e-14,
+        "phase": 1.1368683772161603e-13,
+        "amplitude": 4.440892098500626e-14
+      },
+      "worst_reference_uncertainty_80_vs_100": {
+        "state": 1.6352170077554285e-81,
+        "phase": 0.0,
+        "amplitude": 5.603988987448279e-82
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6640102796802076e-08,
+        "amplitude": 7.105427357601002e-15
+      },
+      "total_work_all_completed_attempts": {
+        "rhs_calls": 147462,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 24576,
+        "rejected_steps": 0
+      },
+      "peak_sampled_rss_bytes": 3796992,
+      "all_masked_count": 0
+    },
+    {
+      "case": "normal_1000_f1",
+      "method": "direct-carrier",
+      "tolerance_index": "none",
+      "status_counts": {
+        "PASS_SAMPLED": 6
+      },
+      "completed_attempts": 6,
+      "timed_valid_n": 5,
+      "solver_seconds": {
+        "min": 0.000150473,
+        "median": 0.000151906,
+        "max": 0.0001593
+      },
+      "process_seconds": {
+        "min": 0.18027800205163658,
+        "median": 0.18618079693987966,
+        "max": 0.19431451591663063
+      },
+      "worst_observed_error": {
+        "state": 1.1102230246251565e-16,
+        "phase": 0.0,
+        "amplitude": 1.1102230246251565e-16
+      },
+      "worst_reference_uncertainty_80_vs_100": {
+        "state": 7.270718253442626e-82,
+        "phase": 0.0,
+        "amplitude": 0.0
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6587703112210707e-07,
+        "amplitude": 7.105427357601002e-15
+      },
+      "total_work_all_completed_attempts": {
+        "rhs_calls": 0,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 0,
+        "rejected_steps": 0
+      },
+      "peak_sampled_rss_bytes": 3817472,
+      "all_masked_count": 0
+    },
+    {
+      "case": "normal_1000_f1",
+      "method": "full-rhs-dopri5",
+      "tolerance_index": "0",
+      "status_counts": {
+        "FAILED_ACCURACY": 1,
+        "NOT_RUN_FAILED_WARMUP": 5
+      },
+      "completed_attempts": 1,
+      "timed_valid_n": 0,
+      "solver_seconds": null,
+      "process_seconds": null,
+      "worst_observed_error": {
+        "state": 0.000792326870872422,
+        "phase": 0.00029509313390008174,
+        "amplitude": 0.0007353679003917479
+      },
+      "worst_reference_uncertainty_80_vs_100": {
+        "state": 7.270718253442626e-82,
+        "phase": 0.0,
+        "amplitude": 0.0
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6587703112210707e-07,
+        "amplitude": 7.105427357601002e-15
+      },
+      "total_work_all_completed_attempts": {
+        "rhs_calls": 232297,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 32768,
+        "rejected_steps": 5948
+      },
+      "peak_sampled_rss_bytes": 3821568,
+      "all_masked_count": 0
+    },
+    {
+      "case": "normal_1000_f1",
+      "method": "full-rhs-dopri5",
+      "tolerance_index": "1",
+      "status_counts": {
+        "PASS_SAMPLED": 6
+      },
+      "completed_attempts": 6,
+      "timed_valid_n": 5,
+      "solver_seconds": {
+        "min": 0.034314881,
+        "median": 0.036603906,
+        "max": 0.044041043
+      },
+      "process_seconds": {
+        "min": 0.1936122530605644,
+        "median": 0.21578852809034288,
+        "max": 1.068231982178986
+      },
+      "worst_observed_error": {
+        "state": 7.949383288554214e-06,
+        "phase": 1.201407030748669e-06,
+        "amplitude": 7.858073992617065e-06
+      },
+      "worst_reference_uncertainty_80_vs_100": {
+        "state": 7.270718253442626e-82,
+        "phase": 0.0,
+        "amplitude": 0.0
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6587703112210707e-07,
+        "amplitude": 7.105427357601002e-15
+      },
+      "total_work_all_completed_attempts": {
+        "rhs_calls": 3060978,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 477888,
+        "rejected_steps": 32274
+      },
+      "peak_sampled_rss_bytes": 3780608,
+      "all_masked_count": 0
+    },
+    {
+      "case": "normal_1000_f1",
+      "method": "lawson",
+      "tolerance_index": "0",
+      "status_counts": {
+        "PASS_SAMPLED": 6
+      },
+      "completed_attempts": 6,
+      "timed_valid_n": 5,
+      "solver_seconds": {
+        "min": 0.002635707,
+        "median": 0.006643381,
+        "max": 0.007066468
+      },
+      "process_seconds": {
+        "min": 0.18150782911106944,
+        "median": 0.18825825210660696,
+        "max": 0.21359032485634089
+      },
+      "worst_observed_error": {
+        "state": 9.154248438798812e-14,
+        "phase": 0.0,
+        "amplitude": 9.059419880941277e-14
+      },
+      "worst_reference_uncertainty_80_vs_100": {
+        "state": 7.270718253442626e-82,
+        "phase": 0.0,
+        "amplitude": 0.0
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6587703112210707e-07,
+        "amplitude": 7.105427357601002e-15
+      },
+      "total_work_all_completed_attempts": {
+        "rhs_calls": 147462,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 24576,
+        "rejected_steps": 0
+      },
+      "peak_sampled_rss_bytes": 3817472,
+      "all_masked_count": 0
+    },
+    {
+      "case": "normal_1000_f1",
+      "method": "lawson",
+      "tolerance_index": "1",
+      "status_counts": {
+        "PASS_SAMPLED": 6
+      },
+      "completed_attempts": 6,
+      "timed_valid_n": 5,
+      "solver_seconds": {
+        "min": 0.002640867,
+        "median": 0.006639153,
+        "max": 0.006828179
+      },
+      "process_seconds": {
+        "min": 0.17338580288924277,
+        "median": 0.19750671298243105,
+        "max": 0.2151501439511776
+      },
+      "worst_observed_error": {
+        "state": 9.154248438798812e-14,
+        "phase": 0.0,
+        "amplitude": 9.059419880941277e-14
+      },
+      "worst_reference_uncertainty_80_vs_100": {
+        "state": 7.270718253442626e-82,
+        "phase": 0.0,
+        "amplitude": 0.0
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6587703112210707e-07,
+        "amplitude": 7.105427357601002e-15
+      },
+      "total_work_all_completed_attempts": {
+        "rhs_calls": 147462,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 24576,
+        "rejected_steps": 0
+      },
+      "peak_sampled_rss_bytes": 3813376,
+      "all_masked_count": 0
+    },
+    {
+      "case": "normal_100_f100",
+      "method": "direct-carrier",
+      "tolerance_index": "none",
+      "status_counts": {
+        "PASS_SAMPLED": 6
+      },
+      "completed_attempts": 6,
+      "timed_valid_n": 5,
+      "solver_seconds": {
+        "min": 0.000150584,
+        "median": 0.000154862,
+        "max": 0.000181041
+      },
+      "process_seconds": {
+        "min": 0.17882595397531986,
+        "median": 0.19138377998024225,
+        "max": 0.20303886686451733
+      },
+      "worst_observed_error": {
+        "state": 5.694589202076443e-14,
+        "phase": 1.1102230246251565e-16,
+        "amplitude": 1.1102230246251565e-16
+      },
+      "worst_reference_uncertainty_80_vs_100": {
+        "state": 7.303805950261631e-82,
+        "phase": 0.0,
+        "amplitude": 0.0
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6640102796802076e-08,
+        "amplitude": 7.105427357601002e-15
+      },
+      "total_work_all_completed_attempts": {
+        "rhs_calls": 0,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 0,
+        "rejected_steps": 0
+      },
+      "peak_sampled_rss_bytes": 3772416,
+      "all_masked_count": 0
+    },
+    {
+      "case": "normal_100_f100",
+      "method": "full-rhs-dopri5",
+      "tolerance_index": "0",
+      "status_counts": {
+        "FAILED_ACCURACY": 1,
+        "NOT_RUN_FAILED_WARMUP": 5
+      },
+      "completed_attempts": 1,
+      "timed_valid_n": 0,
+      "solver_seconds": null,
+      "process_seconds": null,
+      "worst_observed_error": {
+        "state": 1.4943904278886801e-05,
+        "phase": 3.874595449815388e-06,
+        "amplitude": 1.4432879202108673e-05
+      },
+      "worst_reference_uncertainty_80_vs_100": {
+        "state": 7.303805950261631e-82,
+        "phase": 0.0,
+        "amplitude": 0.0
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6640102796802076e-08,
+        "amplitude": 7.105427357601002e-15
+      },
+      "total_work_all_completed_attempts": {
+        "rhs_calls": 24577,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 4096,
+        "rejected_steps": 0
+      },
+      "peak_sampled_rss_bytes": 3719168,
+      "all_masked_count": 0
+    },
+    {
+      "case": "normal_100_f100",
+      "method": "full-rhs-dopri5",
+      "tolerance_index": "1",
+      "status_counts": {
+        "PASS_SAMPLED": 6
+      },
+      "completed_attempts": 6,
+      "timed_valid_n": 5,
+      "solver_seconds": {
+        "min": 0.002496856,
+        "median": 0.005553487,
+        "max": 0.006924019
+      },
+      "process_seconds": {
+        "min": 0.1898157950490713,
+        "median": 0.19772462989203632,
+        "max": 1.107843881007284
+      },
+      "worst_observed_error": {
+        "state": 5.678409665011627e-07,
+        "phase": 8.356198577530449e-08,
+        "amplitude": 5.616589388024451e-07
+      },
+      "worst_reference_uncertainty_80_vs_100": {
+        "state": 7.303805950261631e-82,
+        "phase": 0.0,
+        "amplitude": 0.0
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6640102796802076e-08,
+        "amplitude": 7.105427357601002e-15
+      },
+      "total_work_all_completed_attempts": {
+        "rhs_calls": 365262,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 56160,
+        "rejected_steps": 4716
+      },
+      "peak_sampled_rss_bytes": 3825664,
+      "all_masked_count": 0
+    },
+    {
+      "case": "normal_100_f100",
+      "method": "lawson",
+      "tolerance_index": "0",
+      "status_counts": {
+        "PASS_SAMPLED": 6
+      },
+      "completed_attempts": 6,
+      "timed_valid_n": 5,
+      "solver_seconds": {
+        "min": 0.002441932,
+        "median": 0.006588707,
+        "max": 0.00751312
+      },
+      "process_seconds": {
+        "min": 0.198510711081326,
+        "median": 0.21311384299769998,
+        "max": 0.23239034204743803
+      },
+      "worst_observed_error": {
+        "state": 1.965729736200076e-14,
+        "phase": 1.1368683772161603e-13,
+        "amplitude": 1.7985612998927536e-14
+      },
+      "worst_reference_uncertainty_80_vs_100": {
+        "state": 7.303805950261631e-82,
+        "phase": 0.0,
+        "amplitude": 0.0
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6640102796802076e-08,
+        "amplitude": 7.105427357601002e-15
+      },
+      "total_work_all_completed_attempts": {
+        "rhs_calls": 147462,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 24576,
+        "rejected_steps": 0
+      },
+      "peak_sampled_rss_bytes": 3837952,
+      "all_masked_count": 0
+    },
+    {
+      "case": "normal_100_f100",
+      "method": "lawson",
+      "tolerance_index": "1",
+      "status_counts": {
+        "PASS_SAMPLED": 6
+      },
+      "completed_attempts": 6,
+      "timed_valid_n": 5,
+      "solver_seconds": {
+        "min": 0.002456319,
+        "median": 0.002526431,
+        "max": 0.007326077
+      },
+      "process_seconds": {
+        "min": 0.1984658178407699,
+        "median": 0.22093169786967337,
+        "max": 0.2458391801919788
+      },
+      "worst_observed_error": {
+        "state": 1.965729736200076e-14,
+        "phase": 1.1368683772161603e-13,
+        "amplitude": 1.7985612998927536e-14
+      },
+      "worst_reference_uncertainty_80_vs_100": {
+        "state": 7.303805950261631e-82,
+        "phase": 0.0,
+        "amplitude": 0.0
+      },
+      "worst_scoring_allowance": {
+        "state": 7.105427357601002e-15,
+        "phase": 3.6640102796802076e-08,
+        "amplitude": 7.105427357601002e-15
+      },
+      "total_work_all_completed_attempts": {
+        "rhs_calls": 147462,
+        "jvp_calls": 0,
+        "direct_factorizations": 0,
+        "direct_solve_calls": 0,
+        "accepted_steps": 24576,
+        "rejected_steps": 0
+      },
+      "peak_sampled_rss_bytes": 3829760,
+      "all_masked_count": 0
+    }
+  ],
+  "eligible_same_cap_comparisons": [
+    {
+      "case": "damped_100_f10000",
+      "cohort": "same host, same sampled error cap, tolerance index1 both eligible",
+      "median_lawson_over_dopri_solver_seconds": 0.9567978830648799,
+      "median_lawson_over_dopri_process_seconds": 1.3032304400990853,
+      "source": "individual raw rows; diagnostic timing only"
+    },
+    {
+      "case": "normal_1000_f1",
+      "cohort": "same host, same sampled error cap, tolerance index1 both eligible",
+      "median_lawson_over_dopri_solver_seconds": 0.1813782660243964,
+      "median_lawson_over_dopri_process_seconds": 0.9152790221533098,
+      "source": "individual raw rows; diagnostic timing only"
+    },
+    {
+      "case": "normal_100_f100",
+      "cohort": "same host, same sampled error cap, tolerance index1 both eligible",
+      "median_lawson_over_dopri_solver_seconds": 0.45492696750708156,
+      "median_lawson_over_dopri_process_seconds": 1.1173706482106394,
+      "source": "individual raw rows; diagnostic timing only"
+    }
+  ],
+  "claim_limits": [
+    "4097 sampled points only; no between-sample phase guarantee",
+    "three homogeneous linear2D cases; no nonlinear/noncommuting qualification",
+    "timing diagnostic_only",
+    "failed warmups retained and timed rows NOT_RUN, no speed ratio for failed cohort"
+  ],
+  "claim_limit_update": "This first grouped-by-arm pilot is an accuracy pilot only. Time ratios are descriptive and are not pooled with later cyclic timing; use LP01_CYCLIC_ANALYSIS.json for separate supplemental diagnostic."
+}

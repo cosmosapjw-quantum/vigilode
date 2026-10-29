@@ -4,14 +4,19 @@ use rand::{Rng, SeedableRng};
 use rand_pcg::Pcg64Mcg;
 use rodas5p_core::{CoreError, LinearSolverConfig, WorkCounters, safe_l2, sha256_hex};
 use rodas5p_integrators::{
-    BdfConfig, BdfOrder, IntegrationMethod, NewtonConfig, OdeProblem, OutputSchedule,
-    ParallelExecution, RadauConfig, RadauIiaStages, integrate_bdf_fixed_observed,
-    integrate_fixed_observed, integrate_radau_fixed_observed, manufactured_mass_nonlinear_problem,
+    BdfConfig, BdfOrder, ComparativeReading, ComparatorFidelity, IntegrationMethod, OdeProblem,
+    OutputSamplingPlan, OutputSchedule, ParallelExecution, RadauConfig, RadauIiaStages,
+    integrate_bdf_fixed_dense_observed, integrate_bdf_fixed_observed,
+    integrate_fixed_dense_observed, integrate_fixed_observed, integrate_radau_fixed_dense_observed,
+    integrate_radau_fixed_observed, manufactured_mass_nonlinear_problem,
     manufactured_vector_problem, prothero_robinson_problem, scalar_linear_problem,
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{FairError, FairResult};
+use crate::{
+    FairError, FairResult, NumericalReferenceProvenance, ReferenceDominance,
+    classify_reference_dominance, validate_numerical_reference_error_scale,
+};
 
 const TIMING_SEED: u64 = 20_260_808;
 const SMOKE_WARMUPS: usize = 1;
@@ -56,8 +61,15 @@ impl CommonOutputGrid {
         }
         let span = end - start;
         let intervals = (span / spacing).round() as usize;
-        let tolerance = 128.0 * f64::EPSILON * end.abs().max(start.abs()).max(1.0);
-        if (start + intervals as f64 * spacing - end).abs() > tolerance {
+        // Same admission as OutputSchedule::uniform (re-audit R3,
+        // R3-TIME-02): a nonzero span needs at least one interval, and the
+        // rounding slack never exceeds 2^-10 of the spacing, so a short span
+        // at a large epoch cannot collapse to the one-point grid [end].
+        let tolerance =
+            (128.0 * f64::EPSILON * end.abs().max(start.abs()).max(1.0)).min(spacing / 1024.0);
+        if (span > 0.0 && intervals == 0)
+            || (start + intervals as f64 * spacing - end).abs() > tolerance
+        {
             return Err(FairError::Invalid(
                 "uniform output spacing must divide the interval".into(),
             ));
@@ -109,7 +121,7 @@ impl ExternalErrorScale {
         })
     }
 
-    fn weights(&self, reference: &[f64]) -> FairResult<Vec<f64>> {
+    pub(crate) fn weights(&self, reference: &[f64]) -> FairResult<Vec<f64>> {
         if reference.len() != self.absolute.len() {
             return Err(FairError::Invalid(
                 "external error scale/reference dimension mismatch".into(),
@@ -173,6 +185,106 @@ impl GlobalErrorMetrics {
     }
 }
 
+/// Immutable WRMS authority for one tight reference trajectory.
+///
+/// Candidate error and clipped/dense policy discrepancy must all use this
+/// same reference-derived weight table.  In particular, neither candidate is
+/// allowed to become the scale anchor for the policy gap.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ReferenceWrmsBasis {
+    pub output_grid: CommonOutputGrid,
+    pub reference_states: Vec<Vec<f64>>,
+    pub error_scale: ExternalErrorScale,
+}
+
+impl ReferenceWrmsBasis {
+    pub fn new(
+        output_grid: CommonOutputGrid,
+        reference_states: Vec<Vec<f64>>,
+        error_scale: ExternalErrorScale,
+    ) -> FairResult<Self> {
+        let basis = Self {
+            output_grid,
+            reference_states,
+            error_scale,
+        };
+        basis.validate()?;
+        Ok(basis)
+    }
+
+    pub fn validate(&self) -> FairResult<()> {
+        if self.reference_states.len() != self.output_grid.times.len()
+            || self.reference_states.iter().any(|state| {
+                state.len() != self.error_scale.absolute.len()
+                    || !state.iter().all(|value| value.is_finite())
+            })
+        {
+            return Err(FairError::Invalid(
+                "reference WRMS basis trajectory/grid/scale shape mismatch".into(),
+            ));
+        }
+        for state in &self.reference_states {
+            self.error_scale.weights(state)?;
+        }
+        Ok(())
+    }
+
+    pub fn metrics(
+        &self,
+        candidate_times: &[f64],
+        candidate_states: &[Vec<f64>],
+    ) -> FairResult<GlobalErrorMetrics> {
+        self.validate()?;
+        compute_metrics_against_states(
+            &self.output_grid,
+            candidate_times,
+            candidate_states,
+            &self.reference_states,
+            self,
+        )
+    }
+
+    pub fn discrepancy_wrms(
+        &self,
+        left_times: &[f64],
+        left_states: &[Vec<f64>],
+        right_times: &[f64],
+        right_states: &[Vec<f64>],
+    ) -> FairResult<f64> {
+        self.validate()?;
+        validate_trajectory_on_grid(&self.output_grid, left_times, left_states, "left")?;
+        validate_trajectory_on_grid(&self.output_grid, right_times, right_states, "right")?;
+        let dimension = self.error_scale.absolute.len();
+        if left_states.iter().any(|state| state.len() != dimension)
+            || right_states.iter().any(|state| state.len() != dimension)
+        {
+            return Err(FairError::Invalid(
+                "policy trajectories/reference basis dimension mismatch".into(),
+            ));
+        }
+        let mut maximum = 0.0_f64;
+        for (grid_index, &time) in self.output_grid.times.iter().enumerate() {
+            let left_index = matching_index(left_times, time).ok_or_else(|| {
+                FairError::Invalid(format!("missing left output time {time:.17e}"))
+            })?;
+            let right_index = matching_index(right_times, time).ok_or_else(|| {
+                FairError::Invalid(format!("missing right output time {time:.17e}"))
+            })?;
+            let weights = self
+                .error_scale
+                .weights(&self.reference_states[grid_index])?;
+            let normalized = left_states[left_index]
+                .iter()
+                .zip(&right_states[right_index])
+                .zip(weights)
+                .map(|((left, right), weight)| (left - right) / weight)
+                .collect::<Vec<_>>();
+            maximum = maximum.max(safe_l2(&normalized) / (dimension as f64).sqrt());
+        }
+        Ok(maximum)
+    }
+}
+
 fn matching_index(candidate_times: &[f64], target: f64) -> Option<usize> {
     candidate_times.iter().position(|candidate| {
         let tolerance = 64.0 * f64::EPSILON * candidate.abs().max(target.abs()).max(1.0);
@@ -187,20 +299,29 @@ pub fn compute_global_error_metrics(
     reference_states: &[Vec<f64>],
     scale: &ExternalErrorScale,
 ) -> FairResult<GlobalErrorMetrics> {
+    ReferenceWrmsBasis::new(grid.clone(), reference_states.to_vec(), scale.clone())?
+        .metrics(candidate_times, candidate_states)
+}
+
+fn compute_metrics_against_states(
+    grid: &CommonOutputGrid,
+    candidate_times: &[f64],
+    candidate_states: &[Vec<f64>],
+    target_states: &[Vec<f64>],
+    basis: &ReferenceWrmsBasis,
+) -> FairResult<GlobalErrorMetrics> {
     if candidate_times.len() != candidate_states.len() {
         return Err(FairError::Invalid(
             "candidate time/state length mismatch".into(),
         ));
     }
-    if reference_states.len() != grid.times.len() {
+    if target_states.len() != grid.times.len() {
         return Err(FairError::Invalid(
             "reference trajectory/output-grid length mismatch".into(),
         ));
     }
-    let dimension = scale.absolute.len();
-    if reference_states
-        .iter()
-        .any(|state| state.len() != dimension)
+    let dimension = basis.error_scale.absolute.len();
+    if target_states.iter().any(|state| state.len() != dimension)
         || candidate_states
             .iter()
             .any(|state| state.len() != dimension)
@@ -216,10 +337,10 @@ pub fn compute_global_error_metrics(
         let candidate_index = matching_index(candidate_times, time)
             .ok_or_else(|| FairError::Invalid(format!("missing common output time {time:.17e}")))?;
         let candidate = &candidate_states[candidate_index];
-        let reference = &reference_states[grid_index];
+        let target = &target_states[grid_index];
         let difference = candidate
             .iter()
-            .zip(reference)
+            .zip(target)
             .map(|(observed, exact)| observed - exact)
             .collect::<Vec<_>>();
         if !difference.iter().all(|value| value.is_finite()) {
@@ -227,7 +348,9 @@ pub fn compute_global_error_metrics(
                 "candidate/reference difference contains NaN/Inf".into(),
             ));
         }
-        let weights = scale.weights(reference)?;
+        let weights = basis
+            .error_scale
+            .weights(&basis.reference_states[grid_index])?;
         let normalized = difference
             .iter()
             .zip(weights)
@@ -253,9 +376,35 @@ pub fn compute_global_error_metrics(
         endpoint_wrms,
         max_grid_wrms,
         rms_grid_wrms,
-        reference_uncertainty_wrms: scale.reference_uncertainty_wrms,
-        conservative_max_wrms: max_grid_wrms + scale.reference_uncertainty_wrms,
+        reference_uncertainty_wrms: basis.error_scale.reference_uncertainty_wrms,
+        conservative_max_wrms: max_grid_wrms + basis.error_scale.reference_uncertainty_wrms,
     })
+}
+
+fn validate_trajectory_on_grid(
+    grid: &CommonOutputGrid,
+    times: &[f64],
+    states: &[Vec<f64>],
+    label: &str,
+) -> FairResult<()> {
+    if times.len() != states.len()
+        || !times.iter().all(|time| time.is_finite())
+        || states
+            .iter()
+            .any(|state| state.is_empty() || !state.iter().all(|value| value.is_finite()))
+    {
+        return Err(FairError::Invalid(format!(
+            "{label} trajectory must have matching finite times and states"
+        )));
+    }
+    for &time in &grid.times {
+        if matching_index(times, time).is_none() {
+            return Err(FairError::Invalid(format!(
+                "missing {label} output time {time:.17e}"
+            )));
+        }
+    }
+    Ok(())
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -378,10 +527,19 @@ pub enum ParetoCostMetric {
     WallSeconds,
     RhsEvaluations,
     JvpVectors,
+    /// Shifted-operator applications as solver-level calls; a block apply
+    /// over s stages is one. Not comparable across batching lanes.
+    OperatorApplications,
+    /// Shifted-operator work in state-vector units, the cross-lane metric
+    /// (audit 2026-09-30, B-02). Unknown for legacy ledgers without vector
+    /// counters.
+    OperatorStateVectors,
     JacobianBuilds,
     DirectFactorizations,
     NonlinearIterations,
     LinearIterations,
+    /// Accepted state-advancing substeps. A retained step-doubling pair
+    /// contributes two; its discarded coarse probe contributes zero.
     AcceptedSteps,
     InternalSteps,
     OutputClippedSteps,
@@ -392,6 +550,8 @@ pub enum ParetoCostMetric {
 #[serde(rename_all = "kebab-case")]
 pub enum IntegratorRunStatus {
     Success,
+    ReferenceDominated,
+    OutputPolicyDominated,
     SolverFailure,
     MissingOutput,
     NonFinite,
@@ -403,6 +563,195 @@ pub type GlobalRunStatus = IntegratorRunStatus;
 impl IntegratorRunStatus {
     pub fn is_success(&self) -> bool {
         matches!(self, Self::Success)
+    }
+}
+
+/// Result of comparing a clipped-output run against the corresponding dense
+/// sampling run.  It is deliberately separate from reference uncertainty:
+/// callers must resolve reference dominance first.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum OutputPolicyDominance {
+    Admissible,
+    Dominated,
+}
+
+/// Raw paired evidence used to audit output-policy sensitivity.  Neither row
+/// is discarded if the policy comparison invalidates the candidate.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct OutputPolicyRunEvidence {
+    pub output_times: Vec<f64>,
+    pub states: Vec<Vec<f64>>,
+    pub errors: GlobalErrorMetrics,
+    pub work: IntegratorWorkReport,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct DualOutputPolicyEvidence {
+    pub reference_wrms_basis: ReferenceWrmsBasis,
+    pub clipped: OutputPolicyRunEvidence,
+    pub dense: OutputPolicyRunEvidence,
+    /// Direct max-grid WRMS discrepancy between the clipped and dense
+    /// trajectories under `output_grid` and `error_scale`; this is not an
+    /// uncertainty and must never be inferred from their two scalar errors.
+    pub output_policy_discrepancy_wrms: f64,
+}
+
+impl DualOutputPolicyEvidence {
+    pub fn new(
+        reference_wrms_basis: ReferenceWrmsBasis,
+        mut clipped: OutputPolicyRunEvidence,
+        mut dense: OutputPolicyRunEvidence,
+    ) -> FairResult<Self> {
+        reference_wrms_basis.validate()?;
+        clipped.errors = reference_wrms_basis.metrics(&clipped.output_times, &clipped.states)?;
+        dense.errors = reference_wrms_basis.metrics(&dense.output_times, &dense.states)?;
+        let output_policy_discrepancy_wrms = reference_wrms_basis.discrepancy_wrms(
+            &clipped.output_times,
+            &clipped.states,
+            &dense.output_times,
+            &dense.states,
+        )?;
+        let evidence = Self {
+            reference_wrms_basis,
+            clipped,
+            dense,
+            output_policy_discrepancy_wrms,
+        };
+        evidence.validate()?;
+        Ok(evidence)
+    }
+
+    pub fn validate(&self) -> FairResult<()> {
+        if !(self.output_policy_discrepancy_wrms.is_finite()
+            && self.output_policy_discrepancy_wrms >= 0.0
+            && self.dense.errors.max_grid_wrms.is_finite()
+            && self.dense.errors.max_grid_wrms >= 0.0)
+        {
+            return Err(FairError::Invalid(
+                "output-policy discrepancy and dense WRMS must be finite and nonnegative".into(),
+            ));
+        }
+        self.reference_wrms_basis.validate()?;
+        validate_output_policy_trajectory(
+            &self.reference_wrms_basis.output_grid,
+            &self.clipped,
+            "clipped",
+        )?;
+        validate_output_policy_trajectory(
+            &self.reference_wrms_basis.output_grid,
+            &self.dense,
+            "dense",
+        )?;
+        let clipped_errors = self
+            .reference_wrms_basis
+            .metrics(&self.clipped.output_times, &self.clipped.states)?;
+        let dense_errors = self
+            .reference_wrms_basis
+            .metrics(&self.dense.output_times, &self.dense.states)?;
+        if clipped_errors != self.clipped.errors || dense_errors != self.dense.errors {
+            return Err(FairError::Invalid(
+                "output-policy errors do not match the reference WRMS basis".into(),
+            ));
+        }
+        let recomputed = self.reference_wrms_basis.discrepancy_wrms(
+            &self.clipped.output_times,
+            &self.clipped.states,
+            &self.dense.output_times,
+            &self.dense.states,
+        )?;
+        if recomputed.to_bits() != self.output_policy_discrepancy_wrms.to_bits() {
+            return Err(FairError::Invalid(
+                "output-policy discrepancy does not match paired trajectories".into(),
+            ));
+        }
+        Ok(())
+    }
+
+    pub fn classify(&self) -> FairResult<OutputPolicyDominance> {
+        self.validate()?;
+        classify_output_policy_dominance(
+            self.output_policy_discrepancy_wrms,
+            self.dense.errors.max_grid_wrms,
+        )
+    }
+}
+
+fn validate_output_policy_trajectory(
+    output_grid: &CommonOutputGrid,
+    evidence: &OutputPolicyRunEvidence,
+    label: &str,
+) -> FairResult<()> {
+    if evidence.output_times.len() != output_grid.times.len()
+        || evidence.states.len() != output_grid.times.len()
+        || evidence
+            .output_times
+            .iter()
+            .zip(&output_grid.times)
+            .any(|(actual, expected)| actual.to_bits() != expected.to_bits())
+    {
+        return Err(FairError::Invalid(format!(
+            "{label} output times must exactly match the paired output grid"
+        )));
+    }
+    let dimension = evidence.states.first().map_or(0, Vec::len);
+    if dimension == 0
+        || evidence
+            .states
+            .iter()
+            .any(|state| state.len() != dimension || !state.iter().all(|value| value.is_finite()))
+    {
+        return Err(FairError::Invalid(format!(
+            "{label} output states must be finite and have a common nonzero dimension"
+        )));
+    }
+    Ok(())
+}
+
+/// Classify output-policy sensitivity from a nonnegative absolute max-grid
+/// WRMS discrepancy and the dense run's measured max-grid WRMS error.  Equality at
+/// ten percent remains admissible; only a strict excess is dominated.
+pub fn classify_output_policy_dominance(
+    output_policy_discrepancy_wrms: f64,
+    dense_max_grid_wrms: f64,
+) -> FairResult<OutputPolicyDominance> {
+    if !(output_policy_discrepancy_wrms.is_finite()
+        && output_policy_discrepancy_wrms >= 0.0
+        && dense_max_grid_wrms.is_finite()
+        && dense_max_grid_wrms >= 0.0)
+    {
+        return Err(FairError::Invalid(
+            "output-policy dominance inputs must be finite and nonnegative".into(),
+        ));
+    }
+    Ok(
+        if output_policy_discrepancy_wrms > 0.1 * dense_max_grid_wrms {
+            OutputPolicyDominance::Dominated
+        } else {
+            OutputPolicyDominance::Admissible
+        },
+    )
+}
+
+/// Apply output-policy invalidation after the reference decision.  A
+/// reference-dominated row is preserved as such, so uncertainty provenance
+/// always has priority over a policy comparison.
+pub fn apply_output_policy_dominance(
+    status: IntegratorRunStatus,
+    evidence: &DualOutputPolicyEvidence,
+) -> FairResult<(IntegratorRunStatus, String)> {
+    if status == IntegratorRunStatus::ReferenceDominated {
+        return Ok((status, "reference-dominated".into()));
+    }
+    if status != IntegratorRunStatus::Success {
+        return Ok((status, "run was not successful".into()));
+    }
+    match evidence.classify()? {
+        OutputPolicyDominance::Admissible => Ok((IntegratorRunStatus::Success, "success".into())),
+        OutputPolicyDominance::Dominated => Ok((
+            IntegratorRunStatus::OutputPolicyDominated,
+            "output-policy-dominated: clipped/dense max-grid WRMS gap exceeds 10% of dense measured error".into(),
+        )),
     }
 }
 
@@ -486,6 +835,7 @@ fn quantile_sorted(values: &[f64], probability: f64) -> f64 {
 #[serde(rename_all = "kebab-case")]
 pub enum ReferenceSourceKind {
     AnalyticExact,
+    HighAccuracyNumerical,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -495,6 +845,8 @@ pub struct ReferenceSolutionProvenance {
     pub output_grid_id: String,
     pub state_checksum: String,
     pub reference_uncertainty_wrms: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub numerical: Option<NumericalReferenceProvenance>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -504,10 +856,67 @@ pub struct ReferenceTrajectory {
     pub provenance: ReferenceSolutionProvenance,
 }
 
+/// Classifies a completed scientific row after its raw error has been measured.
+///
+/// A numerical reference with incomplete or internally inconsistent provenance is failed closed
+/// as `ReferenceDominated`; successful computation, its error values, and its work remain in the
+/// row so the invalidation is auditable rather than silently discarded.
+pub(crate) fn completed_reference_status(
+    provenance: &ReferenceSolutionProvenance,
+    errors: &GlobalErrorMetrics,
+    scale: &ExternalErrorScale,
+) -> (IntegratorRunStatus, String) {
+    let claims_numerical = matches!(
+        provenance.source_kind,
+        ReferenceSourceKind::HighAccuracyNumerical
+    ) || provenance.numerical.is_some();
+    if !claims_numerical {
+        return (IntegratorRunStatus::Success, "success".into());
+    }
+    let Some(numerical) = &provenance.numerical else {
+        return (
+            IntegratorRunStatus::ReferenceDominated,
+            "reference-dominated: numerical provenance is missing".into(),
+        );
+    };
+    if !matches!(
+        provenance.source_kind,
+        ReferenceSourceKind::HighAccuracyNumerical
+    ) || provenance.reference_uncertainty_wrms.to_bits()
+        != numerical.convergence.reference_uncertainty_wrms.to_bits()
+        || errors.reference_uncertainty_wrms.to_bits()
+            != numerical.convergence.reference_uncertainty_wrms.to_bits()
+        || validate_numerical_reference_error_scale(provenance, scale).is_err()
+    {
+        return (
+            IntegratorRunStatus::ReferenceDominated,
+            "reference-dominated: numerical provenance is internally inconsistent".into(),
+        );
+    }
+    match classify_reference_dominance(
+        numerical.convergence.reference_uncertainty_wrms,
+        errors.max_grid_wrms,
+    ) {
+        Ok(ReferenceDominance::Admissible) => (IntegratorRunStatus::Success, "success".into()),
+        Ok(ReferenceDominance::Dominated) => (
+            IntegratorRunStatus::ReferenceDominated,
+            "reference-dominated: reference uncertainty exceeds 10% of measured max-grid WRMS"
+                .into(),
+        ),
+        Err(error) => (
+            IntegratorRunStatus::ReferenceDominated,
+            format!("reference-dominated: {error}"),
+        ),
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct IntegratorRunRecord {
     pub record_id: String,
     pub candidate_id: String,
+    /// Audit F-052/F-056 label.  Excluded from the scientific checksum, which
+    /// projects the pre-label record fields.
+    pub comparator_fidelity: ComparatorFidelity,
     pub problem_id: String,
     pub step_size: f64,
     pub status: IntegratorRunStatus,
@@ -522,7 +931,7 @@ pub struct IntegratorRunRecord {
 pub type GlobalErrorRunRow = IntegratorRunRecord;
 
 impl IntegratorRunRecord {
-    fn cost(&self, metric: ParetoCostMetric) -> Option<f64> {
+    pub fn cost(&self, metric: ParetoCostMetric) -> Option<f64> {
         if !self.status.is_success() {
             return None;
         }
@@ -535,6 +944,10 @@ impl IntegratorRunRecord {
                 .flatten(),
             ParetoCostMetric::RhsEvaluations => Some(counters.rhs_evaluations as f64),
             ParetoCostMetric::JvpVectors => Some(counters.jvp_vectors as f64),
+            ParetoCostMetric::OperatorApplications => Some(counters.operator_applications() as f64),
+            ParetoCostMetric::OperatorStateVectors => counters
+                .operator_state_vectors()
+                .map(|vectors| vectors as f64),
             ParetoCostMetric::JacobianBuilds => Some(counters.jacobian_builds as f64),
             ParetoCostMetric::DirectFactorizations => Some(counters.direct_factorizations as f64),
             ParetoCostMetric::NonlinearIterations => Some(counters.nonlinear_iterations as f64),
@@ -553,6 +966,14 @@ pub struct GlobalErrorParetoFront {
     pub error_metric: GlobalErrorMetric,
     pub cost_metric: ParetoCostMetric,
     pub record_ids: Vec<String>,
+    /// Forbidden when any run competing on this problem is not a production
+    /// arm; such a front carries no relative-performance information.
+    pub comparative_reading: ComparativeReading,
+    /// Successful runs with errors whose cost in this metric is unknown
+    /// (e.g. merged legacy work without vector units): not evaluated, not
+    /// failures and not free (re-audit R2, R2-STAT-02).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub not_evaluated_record_ids: Vec<String>,
 }
 
 pub type ParetoFront = GlobalErrorParetoFront;
@@ -591,6 +1012,14 @@ pub struct TargetAttainment {
     pub record_id: Option<String>,
     pub achieved_error: Option<f64>,
     pub cost: Option<f64>,
+    /// Label of the selected record, if any.
+    pub comparator_fidelity: Option<ComparatorFidelity>,
+    pub comparative_reading: ComparativeReading,
+    /// Runs that reach the target but whose cost in this metric is unknown;
+    /// when nonempty the selected record is the cheapest known one only
+    /// (re-audit R2, R2-STAT-02).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub not_evaluated_record_ids: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -620,13 +1049,23 @@ pub struct OutputPolicyMetadata {
 }
 
 impl OutputPolicyMetadata {
-    fn requested_step_clipping() -> Self {
+    fn paired_clipped_and_dense() -> Self {
         Self {
             save_internal_steps: false,
-            dense_output_used: false,
-            landing: "step-clipping".into(),
+            dense_output_used: true,
+            landing: "paired-step-clipping-and-dense-sampling".into(),
         }
     }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct OutputPolicyPairRecord {
+    pub record_id: String,
+    /// Classification is retained as audit evidence and does not alter the
+    /// clipped legacy row or its Pareto admission in this report.
+    pub classification: Option<OutputPolicyDominance>,
+    pub message: String,
+    pub evidence: Option<DualOutputPolicyEvidence>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -637,6 +1076,7 @@ pub struct GlobalErrorParetoReport {
     pub timing_authoritative: bool,
     pub timing_protocol: TimingProtocol,
     pub output_policy: OutputPolicyMetadata,
+    pub output_policy_pairs: Vec<OutputPolicyPairRecord>,
     pub references: Vec<ReferenceSolutionProvenance>,
     pub runs: Vec<IntegratorRunRecord>,
     pub fronts: Vec<GlobalErrorParetoFront>,
@@ -671,6 +1111,42 @@ impl FixedAnchorCandidate {
             Self::Bdf2 => "bdf2-fixed",
             Self::RadauIia1 => "radau-iia1-fixed",
             Self::RadauIia3 => "radau-iia3-fixed",
+        }
+    }
+
+    fn bdf_config(self) -> Option<BdfConfig> {
+        let order = match self {
+            Self::Bdf1 => BdfOrder::One,
+            Self::Bdf2 => BdfOrder::Two,
+            _ => return None,
+        };
+        Some(BdfConfig {
+            order,
+            ..BdfConfig::default()
+        })
+    }
+
+    fn radau_config(self) -> Option<RadauConfig> {
+        let stages = match self {
+            Self::RadauIia1 => RadauIiaStages::One,
+            Self::RadauIia3 => RadauIiaStages::Three,
+            _ => return None,
+        };
+        Some(RadauConfig {
+            stages,
+            ..RadauConfig::default()
+        })
+    }
+
+    /// Audit F-052/F-056 label derived from the exact configuration this arm
+    /// executes with.
+    pub fn comparator_fidelity(self) -> ComparatorFidelity {
+        if let Some(config) = self.bdf_config() {
+            config.comparator_fidelity()
+        } else if let Some(config) = self.radau_config() {
+            config.comparator_fidelity()
+        } else {
+            ComparatorFidelity::Production
         }
     }
 }
@@ -729,6 +1205,7 @@ fn analytic_reference_problem(
         output_grid_id: output_grid.grid_id.clone(),
         state_checksum: state_checksum.clone(),
         reference_uncertainty_wrms: 0.0,
+        numerical: None,
     };
     Ok(ReferenceProblem {
         problem,
@@ -805,39 +1282,27 @@ fn execute_candidate(spec: &FixedRunSpec) -> Result<Trajectory, CoreError> {
                 &output,
             )?
         }
-        FixedAnchorCandidate::Bdf1 | FixedAnchorCandidate::Bdf2 => {
-            let order = if matches!(spec.candidate, FixedAnchorCandidate::Bdf1) {
-                BdfOrder::One
-            } else {
-                BdfOrder::Two
-            };
-            integrate_bdf_fixed_observed(
-                problem,
-                t_span,
-                y0,
-                h,
-                &BdfConfig {
-                    order,
-                    newton: NewtonConfig::default(),
-                },
-                &output,
-            )?
-        }
+        FixedAnchorCandidate::Bdf1 | FixedAnchorCandidate::Bdf2 => integrate_bdf_fixed_observed(
+            problem,
+            t_span,
+            y0,
+            h,
+            &spec
+                .candidate
+                .bdf_config()
+                .expect("BDF arm has a BDF configuration"),
+            &output,
+        )?,
         FixedAnchorCandidate::RadauIia1 | FixedAnchorCandidate::RadauIia3 => {
-            let stages = if matches!(spec.candidate, FixedAnchorCandidate::RadauIia1) {
-                RadauIiaStages::One
-            } else {
-                RadauIiaStages::Three
-            };
             integrate_radau_fixed_observed(
                 problem,
                 t_span,
                 y0,
                 h,
-                &RadauConfig {
-                    stages,
-                    ..RadauConfig::default()
-                },
+                &spec
+                    .candidate
+                    .radau_config()
+                    .expect("Radau arm has a Radau configuration"),
                 &output,
             )?
         }
@@ -849,6 +1314,177 @@ fn execute_candidate(spec: &FixedRunSpec) -> Result<Trajectory, CoreError> {
         internal_steps: result.internal_steps as u64,
         output_clipped_steps: result.output_clipped_steps as u64,
     })
+}
+
+fn execute_candidate_dense(spec: &FixedRunSpec) -> Result<Trajectory, CoreError> {
+    let problem = &spec.reference.problem;
+    let t_span = spec.reference.t_span;
+    let y0 = &spec.reference.y0;
+    let h = spec.step_size;
+    let output = OutputSchedule::new(spec.reference.reference.output_grid.times.clone())?;
+    let sampling = OutputSamplingPlan::dense(output);
+    let result = match spec.candidate {
+        FixedAnchorCandidate::SequentialRodas5p => {
+            let config = LinearSolverConfig::default();
+            integrate_fixed_dense_observed(
+                problem,
+                t_span,
+                y0,
+                h,
+                IntegrationMethod::Sequential,
+                Some(&config),
+                None,
+                1.0e-12,
+                1.0e-10,
+                &sampling,
+            )
+        }
+        FixedAnchorCandidate::Bdf1 | FixedAnchorCandidate::Bdf2 => {
+            integrate_bdf_fixed_dense_observed(
+                problem,
+                t_span,
+                y0,
+                h,
+                &spec
+                    .candidate
+                    .bdf_config()
+                    .expect("BDF arm has a BDF configuration"),
+                &sampling,
+            )
+        }
+        FixedAnchorCandidate::RadauIia1 | FixedAnchorCandidate::RadauIia3 => {
+            integrate_radau_fixed_dense_observed(
+                problem,
+                t_span,
+                y0,
+                h,
+                &spec
+                    .candidate
+                    .radau_config()
+                    .expect("Radau arm has a Radau configuration"),
+                &sampling,
+            )
+        }
+    }
+    .map_err(|error| CoreError::InvalidInput(error.to_string()))?;
+    Ok(Trajectory {
+        times: result.t,
+        states: result.y,
+        counters: result.counters,
+        internal_steps: result.internal_steps as u64,
+        output_clipped_steps: result.output_clipped_steps as u64,
+    })
+}
+
+fn trajectory_work(trajectory: &Trajectory) -> IntegratorWorkReport {
+    IntegratorWorkReport {
+        counters: trajectory.counters,
+        internal_steps: trajectory.internal_steps,
+        output_clipped_steps: trajectory.output_clipped_steps,
+        stored_state_bytes: stored_state_bytes(trajectory),
+    }
+}
+
+fn run_output_policy_pair(spec: &FixedRunSpec) -> OutputPolicyPairRecord {
+    let record_id = record_id(spec);
+    let clipped = match execute_candidate(spec) {
+        Ok(trajectory) => trajectory,
+        Err(error) => {
+            return OutputPolicyPairRecord {
+                record_id,
+                classification: None,
+                message: format!("clipped run failed: {error}"),
+                evidence: None,
+            };
+        }
+    };
+    let dense = match execute_candidate_dense(spec) {
+        Ok(trajectory) => trajectory,
+        Err(error) => {
+            return OutputPolicyPairRecord {
+                record_id,
+                classification: None,
+                message: format!("dense run failed: {error}"),
+                evidence: None,
+            };
+        }
+    };
+    let basis = match ReferenceWrmsBasis::new(
+        spec.reference.reference.output_grid.clone(),
+        spec.reference.reference.states.clone(),
+        spec.reference.scale.clone(),
+    ) {
+        Ok(basis) => basis,
+        Err(error) => {
+            return OutputPolicyPairRecord {
+                record_id,
+                classification: None,
+                message: format!("reference WRMS basis failed: {error}"),
+                evidence: None,
+            };
+        }
+    };
+    let clipped_errors = match basis.metrics(&clipped.times, &clipped.states) {
+        Ok(errors) => errors,
+        Err(error) => {
+            return OutputPolicyPairRecord {
+                record_id,
+                classification: None,
+                message: format!("clipped error measurement failed: {error}"),
+                evidence: None,
+            };
+        }
+    };
+    let dense_errors = match basis.metrics(&dense.times, &dense.states) {
+        Ok(errors) => errors,
+        Err(error) => {
+            return OutputPolicyPairRecord {
+                record_id,
+                classification: None,
+                message: format!("dense error measurement failed: {error}"),
+                evidence: None,
+            };
+        }
+    };
+    let evidence = match DualOutputPolicyEvidence::new(
+        basis,
+        OutputPolicyRunEvidence {
+            output_times: clipped.times.clone(),
+            states: clipped.states.clone(),
+            errors: clipped_errors,
+            work: trajectory_work(&clipped),
+        },
+        OutputPolicyRunEvidence {
+            output_times: dense.times.clone(),
+            states: dense.states.clone(),
+            errors: dense_errors,
+            work: trajectory_work(&dense),
+        },
+    ) {
+        Ok(evidence) => evidence,
+        Err(error) => {
+            return OutputPolicyPairRecord {
+                record_id,
+                classification: None,
+                message: format!("paired output-policy evidence failed: {error}"),
+                evidence: None,
+            };
+        }
+    };
+    match evidence.classify() {
+        Ok(classification) => OutputPolicyPairRecord {
+            record_id,
+            classification: Some(classification),
+            message: "paired evidence only; legacy clipped Pareto claim unchanged".into(),
+            evidence: Some(evidence),
+        },
+        Err(error) => OutputPolicyPairRecord {
+            record_id,
+            classification: None,
+            message: format!("output-policy classification failed: {error}"),
+            evidence: Some(evidence),
+        },
+    }
 }
 
 fn stored_state_bytes(trajectory: &Trajectory) -> u64 {
@@ -875,27 +1511,36 @@ fn run_scientific_spec(spec: &FixedRunSpec) -> IntegratorRunRecord {
             &spec.reference.reference.states,
             &spec.reference.scale,
         ) {
-            Ok(errors) => IntegratorRunRecord {
-                record_id: id,
-                candidate_id: spec.candidate.id().into(),
-                problem_id: spec.reference.problem.name.clone(),
-                step_size: spec.step_size,
-                status: IntegratorRunStatus::Success,
-                message: "success".into(),
-                errors: Some(errors),
-                work: IntegratorWorkReport {
-                    counters: trajectory.counters,
-                    internal_steps: trajectory.internal_steps,
-                    output_clipped_steps: trajectory.output_clipped_steps,
-                    stored_state_bytes: stored_state_bytes(&trajectory),
-                },
-                timing: IntegratorTimingReport::unavailable(false),
-                reference_checksum: spec.reference.reference.provenance.state_checksum.clone(),
-                output_grid_id: spec.reference.reference.output_grid.grid_id.clone(),
-            },
+            Ok(errors) => {
+                let (status, message) = completed_reference_status(
+                    &spec.reference.reference.provenance,
+                    &errors,
+                    &spec.reference.scale,
+                );
+                IntegratorRunRecord {
+                    record_id: id,
+                    candidate_id: spec.candidate.id().into(),
+                    comparator_fidelity: spec.candidate.comparator_fidelity(),
+                    problem_id: spec.reference.problem.name.clone(),
+                    step_size: spec.step_size,
+                    status,
+                    message,
+                    errors: Some(errors),
+                    work: IntegratorWorkReport {
+                        counters: trajectory.counters,
+                        internal_steps: trajectory.internal_steps,
+                        output_clipped_steps: trajectory.output_clipped_steps,
+                        stored_state_bytes: stored_state_bytes(&trajectory),
+                    },
+                    timing: IntegratorTimingReport::unavailable(false),
+                    reference_checksum: spec.reference.reference.provenance.state_checksum.clone(),
+                    output_grid_id: spec.reference.reference.output_grid.grid_id.clone(),
+                }
+            }
             Err(error) => IntegratorRunRecord {
                 record_id: id,
                 candidate_id: spec.candidate.id().into(),
+                comparator_fidelity: spec.candidate.comparator_fidelity(),
                 problem_id: spec.reference.problem.name.clone(),
                 step_size: spec.step_size,
                 status: if error.to_string().contains("missing common output time") {
@@ -919,6 +1564,7 @@ fn run_scientific_spec(spec: &FixedRunSpec) -> IntegratorRunRecord {
         Err(error) => IntegratorRunRecord {
             record_id: id,
             candidate_id: spec.candidate.id().into(),
+            comparator_fidelity: spec.candidate.comparator_fidelity(),
             problem_id: spec.reference.problem.name.clone(),
             step_size: spec.step_size,
             status: IntegratorRunStatus::SolverFailure,
@@ -949,11 +1595,13 @@ fn error_metrics() -> [GlobalErrorMetric; 7] {
     ]
 }
 
-fn cost_metrics() -> [ParetoCostMetric; 11] {
+fn cost_metrics() -> [ParetoCostMetric; 13] {
     [
         ParetoCostMetric::WallSeconds,
         ParetoCostMetric::RhsEvaluations,
         ParetoCostMetric::JvpVectors,
+        ParetoCostMetric::OperatorApplications,
+        ParetoCostMetric::OperatorStateVectors,
         ParetoCostMetric::JacobianBuilds,
         ParetoCostMetric::DirectFactorizations,
         ParetoCostMetric::NonlinearIterations,
@@ -972,6 +1620,9 @@ fn build_fronts(runs: &[IntegratorRunRecord]) -> Vec<GlobalErrorParetoFront> {
     }
     let mut fronts = Vec::new();
     for (problem_id, problem_runs) in by_problem {
+        let comparative_reading = ComparativeReading::for_participants(
+            problem_runs.iter().map(|run| run.comparator_fidelity),
+        );
         for error_metric in error_metrics() {
             for cost_metric in cost_metrics() {
                 let observations = problem_runs
@@ -989,7 +1640,19 @@ fn build_fronts(runs: &[IntegratorRunRecord]) -> Vec<GlobalErrorParetoFront> {
                         }
                     })
                     .collect::<Vec<_>>();
+                let not_evaluated_record_ids = problem_runs
+                    .iter()
+                    .filter(|run| {
+                        // Wall time has its own authority rule (timing.authoritative).
+                        cost_metric != ParetoCostMetric::WallSeconds
+                            && run.status.is_success()
+                            && run.errors.is_some()
+                            && run.cost(cost_metric).is_none()
+                    })
+                    .map(|run| run.record_id.clone())
+                    .collect();
                 fronts.push(GlobalErrorParetoFront {
+                    not_evaluated_record_ids,
                     problem_id: problem_id.to_owned(),
                     error_metric,
                     cost_metric,
@@ -997,6 +1660,7 @@ fn build_fronts(runs: &[IntegratorRunRecord]) -> Vec<GlobalErrorParetoFront> {
                         .into_iter()
                         .map(str::to_owned)
                         .collect(),
+                    comparative_reading,
                 });
             }
         }
@@ -1027,6 +1691,9 @@ fn build_attainments(
     }
     let mut out = Vec::new();
     for (problem_id, problem_runs) in by_problem {
+        let comparative_reading = ComparativeReading::for_participants(
+            problem_runs.iter().map(|run| run.comparator_fidelity),
+        );
         for target in targets {
             for cost_metric in cost_metrics() {
                 let best = problem_runs
@@ -1035,7 +1702,12 @@ fn build_attainments(
                         let errors = run.errors.as_ref()?;
                         let error = errors.value(target.metric);
                         let cost = run.cost(cost_metric)?;
-                        (error <= target.threshold).then_some((run.record_id.as_str(), error, cost))
+                        (error <= target.threshold).then_some((
+                            run.record_id.as_str(),
+                            error,
+                            cost,
+                            run.comparator_fidelity,
+                        ))
                     })
                     .min_by(|left, right| {
                         left.2
@@ -1043,13 +1715,28 @@ fn build_attainments(
                             .then_with(|| left.1.total_cmp(&right.1))
                             .then_with(|| left.0.cmp(right.0))
                     });
+                let not_evaluated_record_ids = problem_runs
+                    .iter()
+                    .filter(|run| {
+                        cost_metric != ParetoCostMetric::WallSeconds
+                            && run.status.is_success()
+                            && run.cost(cost_metric).is_none()
+                            && run.errors.as_ref().is_some_and(|errors| {
+                                errors.value(target.metric) <= target.threshold
+                            })
+                    })
+                    .map(|run| run.record_id.clone())
+                    .collect();
                 out.push(TargetAttainment {
+                    not_evaluated_record_ids,
                     problem_id: problem_id.to_owned(),
                     target_id: target.target_id.clone(),
                     cost_metric,
                     record_id: best.map(|item| item.0.to_owned()),
                     achieved_error: best.map(|item| item.1),
                     cost: best.map(|item| item.2),
+                    comparator_fidelity: best.map(|item| item.3),
+                    comparative_reading,
                 });
             }
         }
@@ -1070,11 +1757,34 @@ struct ScientificRun<'a> {
     output_grid_id: &'a str,
 }
 
+/// Pre-label front projection: the scientific checksum predates the
+/// comparator-fidelity labels and must stay byte-identical.
+#[derive(Serialize)]
+struct ScientificFront<'a> {
+    problem_id: &'a str,
+    error_metric: GlobalErrorMetric,
+    cost_metric: ParetoCostMetric,
+    record_ids: &'a [String],
+}
+
+/// Pre-label attainment projection; see [`ScientificFront`].
+#[derive(Serialize)]
+struct ScientificAttainment<'a> {
+    problem_id: &'a str,
+    target_id: &'a str,
+    cost_metric: ParetoCostMetric,
+    record_id: &'a Option<String>,
+    achieved_error: Option<f64>,
+    cost: Option<f64>,
+}
+
+#[allow(clippy::too_many_arguments)]
 fn scientific_checksum(
     profile: GlobalErrorParetoProfile,
     output_policy: &OutputPolicyMetadata,
     references: &[ReferenceSolutionProvenance],
     runs: &[IntegratorRunRecord],
+    output_policy_pairs: &[OutputPolicyPairRecord],
     fronts: &[GlobalErrorParetoFront],
     targets: &[GlobalErrorTarget],
     attainments: &[TargetAttainment],
@@ -1096,20 +1806,83 @@ fn scientific_checksum(
     let scientific_fronts = fronts
         .iter()
         .filter(|front| front.cost_metric != ParetoCostMetric::WallSeconds)
+        .map(|front| ScientificFront {
+            problem_id: &front.problem_id,
+            error_metric: front.error_metric,
+            cost_metric: front.cost_metric,
+            record_ids: &front.record_ids,
+        })
         .collect::<Vec<_>>();
     let scientific_attainments = attainments
         .iter()
         .filter(|row| row.cost_metric != ParetoCostMetric::WallSeconds)
+        .map(|row| ScientificAttainment {
+            problem_id: &row.problem_id,
+            target_id: &row.target_id,
+            cost_metric: row.cost_metric,
+            record_id: &row.record_id,
+            achieved_error: row.achieved_error,
+            cost: row.cost,
+        })
         .collect::<Vec<_>>();
     Ok(sha256_hex(&serde_json::to_vec(&(
         profile,
         output_policy,
         references,
         scientific_runs,
+        output_policy_pairs,
         scientific_fronts,
         targets,
         scientific_attainments,
     ))?))
+}
+
+/// Writer-side refusal (audit F-052/F-056 Tier B): every run must carry the
+/// label of its configured arm, and no front or attainment may admit a
+/// comparative reading over a problem that includes a non-production arm.
+fn validate_comparator_fidelity(
+    runs: &[IntegratorRunRecord],
+    fronts: &[GlobalErrorParetoFront],
+    attainments: &[TargetAttainment],
+) -> FairResult<()> {
+    let mut problem_readings = BTreeMap::<&str, Vec<ComparatorFidelity>>::new();
+    for run in runs {
+        let expected = FixedAnchorCandidate::ALL
+            .into_iter()
+            .find(|candidate| candidate.id() == run.candidate_id)
+            .map(FixedAnchorCandidate::comparator_fidelity);
+        if expected != Some(run.comparator_fidelity) {
+            return Err(FairError::Invalid(format!(
+                "run {} carries comparator fidelity {:?} inconsistent with its arm",
+                run.record_id, run.comparator_fidelity
+            )));
+        }
+        problem_readings
+            .entry(&run.problem_id)
+            .or_default()
+            .push(run.comparator_fidelity);
+    }
+    let reading = |problem_id: &str| {
+        ComparativeReading::for_participants(
+            problem_readings
+                .get(problem_id)
+                .into_iter()
+                .flatten()
+                .copied(),
+        )
+    };
+    if fronts
+        .iter()
+        .any(|front| front.comparative_reading != reading(&front.problem_id))
+        || attainments
+            .iter()
+            .any(|row| row.comparative_reading != reading(&row.problem_id))
+    {
+        return Err(FairError::Invalid(
+            "a front or attainment admits a comparative reading against a reference-implementation-only comparator".into(),
+        ));
+    }
+    Ok(())
 }
 
 fn shuffled_indices(length: usize, rng: &mut Pcg64Mcg) -> Vec<usize> {
@@ -1135,11 +1908,17 @@ fn authoritative_timing(
 
     for spec in specs {
         let id = record_id(spec);
-        let mut calibration_seconds = None;
+        // Calibrate from the fastest warmup (audit F-053): a slow cold first
+        // sample must not shrink the batch below the timer-resolution floor.
+        let mut calibration_seconds: Option<f64> = None;
         for _ in 0..protocol.warmups.max(1) {
             let started = Instant::now();
             match execute_candidate(spec) {
-                Ok(_) => calibration_seconds = Some(started.elapsed().as_secs_f64()),
+                Ok(_) => {
+                    let seconds = started.elapsed().as_secs_f64();
+                    calibration_seconds =
+                        Some(calibration_seconds.map_or(seconds, |fastest| fastest.min(seconds)));
+                }
                 Err(error) => {
                     failures.insert(id.clone(), error.to_string());
                     break;
@@ -1218,7 +1997,7 @@ pub fn run_global_error_pareto_screen(
 ) -> FairResult<GlobalErrorParetoReport> {
     let execution = ParallelExecution::rayon(threads)?;
     let protocol = profile.timing_protocol();
-    let output_policy = OutputPolicyMetadata::requested_step_clipping();
+    let output_policy = OutputPolicyMetadata::paired_clipped_and_dense();
     let corpus = fixed_anchor_corpus(profile)?;
     let references = corpus
         .iter()
@@ -1262,14 +2041,20 @@ pub fn run_global_error_pareto_screen(
     };
 
     runs.sort_by(|left, right| left.record_id.cmp(&right.record_id));
+    let mut output_policy_pairs = execution.map_ordered(&specs, |spec| {
+        Ok::<_, CoreError>(run_output_policy_pair(spec))
+    })?;
+    output_policy_pairs.sort_by(|left, right| left.record_id.cmp(&right.record_id));
     let fronts = build_fronts(&runs);
     let targets = default_targets()?;
     let attainments = build_attainments(&runs, &targets);
+    validate_comparator_fidelity(&runs, &fronts, &attainments)?;
     let scientific_checksum = scientific_checksum(
         profile,
         &output_policy,
         &references,
         &runs,
+        &output_policy_pairs,
         &fronts,
         &targets,
         &attainments,
@@ -1286,6 +2071,7 @@ pub fn run_global_error_pareto_screen(
         timing_authoritative: threads == 1,
         timing_protocol: protocol,
         output_policy,
+        output_policy_pairs,
         references,
         runs,
         fronts,
@@ -1293,4 +2079,91 @@ pub fn run_global_error_pareto_screen(
         attainments,
         scientific_checksum,
     })
+}
+
+#[cfg(test)]
+mod r2_not_evaluated_tests {
+    use super::*;
+
+    fn run(id: &str, counters: WorkCounters) -> IntegratorRunRecord {
+        let metrics = GlobalErrorMetrics {
+            endpoint_l2: 1.0e-7,
+            max_grid_l2: 1.0e-7,
+            rms_grid_l2: 1.0e-7,
+            endpoint_wrms: 1.0e-7,
+            max_grid_wrms: 1.0e-7,
+            rms_grid_wrms: 1.0e-7,
+            reference_uncertainty_wrms: 0.0,
+            conservative_max_wrms: 1.0e-7,
+        };
+        IntegratorRunRecord {
+            record_id: id.into(),
+            candidate_id: id.into(),
+            comparator_fidelity: ComparatorFidelity::Production,
+            problem_id: "problem".into(),
+            step_size: 0.1,
+            status: IntegratorRunStatus::Success,
+            message: "ok".into(),
+            errors: Some(metrics),
+            work: IntegratorWorkReport {
+                counters,
+                internal_steps: 1,
+                output_clipped_steps: 0,
+                stored_state_bytes: 0,
+            },
+            timing: IntegratorTimingReport {
+                authoritative: false,
+                batch_iterations: 0,
+                wall_samples_seconds: Vec::new(),
+                wall_median_seconds: None,
+                wall_q25_seconds: None,
+                wall_q75_seconds: None,
+            },
+            reference_checksum: "reference".into(),
+            output_grid_id: "grid".into(),
+        }
+    }
+
+    #[test]
+    fn unknown_vector_cost_is_listed_as_not_evaluated() {
+        // Re-audit R2, R2-STAT-02: a run with unknown vector cost dropped
+        // out of the front and the attainment silently.
+        let known = WorkCounters {
+            linear_matvecs: 30,
+            linear_matvec_vectors: 30,
+            ..WorkCounters::default()
+        };
+        let mut unknown = WorkCounters {
+            linear_matvecs: 1,
+            linear_matvec_vectors: 1,
+            ..WorkCounters::default()
+        };
+        unknown.accumulate(WorkCounters {
+            linear_matvecs: 16,
+            ..WorkCounters::default()
+        });
+        let runs = [run("known", known), run("unknown", unknown)];
+        let front = build_fronts(&runs)
+            .into_iter()
+            .find(|front| front.cost_metric == ParetoCostMetric::OperatorStateVectors)
+            .unwrap();
+        assert_eq!(front.record_ids, vec!["known".to_string()]);
+        assert_eq!(front.not_evaluated_record_ids, vec!["unknown".to_string()]);
+        let calls = build_fronts(&runs)
+            .into_iter()
+            .find(|front| front.cost_metric == ParetoCostMetric::OperatorApplications)
+            .unwrap();
+        assert!(calls.not_evaluated_record_ids.is_empty());
+        let target =
+            GlobalErrorTarget::new("t".to_string(), GlobalErrorMetric::MaxGridL2, 1.0e-6).unwrap();
+        let attainment = build_attainments(&runs, &[target])
+            .into_iter()
+            .find(|row| row.cost_metric == ParetoCostMetric::OperatorStateVectors)
+            .unwrap();
+        assert_eq!(attainment.record_id.as_deref(), Some("known"));
+        assert_eq!(
+            attainment.not_evaluated_record_ids,
+            vec!["unknown".to_string()]
+        );
+    }
 }

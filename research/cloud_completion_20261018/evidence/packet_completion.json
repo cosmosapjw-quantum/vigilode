@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "unit": "A01-A02-weighted-packet-trajectory",
+  "base_commit": "c513f478f952068b91e3da368fb2cb156d942b28",
+  "status": "scoped_promote",
+  "claim_scope": "Undamped zero-carrier native collective model; successful requested-time immutable outputs enclose exact flow conditional on existing directed primitive contracts; exact binary64 mesh durations; no old diagnostic authority change.",
+  "source_hashes": {
+    "crates/rodas5p-integrators/src/packet_curve.rs": "c39e3f96bcb3d97d10cd7af95bab769fa21aace7c1a7bc677102385e065aecfa",
+    "crates/rodas5p-integrators/src/packet_curve_output.rs": "eb88188f19deb971c717c089d2b9f1527d7bc3753657e8c1b2e94c6f515afd76",
+    "crates/rodas5p-integrators/src/packet_verified_trajectory.rs": "34017bb00d3a9a9fae34917c364225f3904b5cf8d2e5f9d531a714ab1746d0e0",
+    "crates/rodas5p-integrators/tests/production_audit_packet_verified.rs": "eeff827121e51a1aea9a9f389ce6a9dedc723f6aa3008c05e60e7b5721ee2b96",
+    "crates/rodas5p-integrators/tests/packet_unequal_frequency_oracle.py": "cb33f0e15f8cd274b53d85e09ab35637789c4ac4e6bbfe0cd65851600678b734",
+    "research/cloud_completion_20261018/PACKET.md": "3a3dbbacbb5ce7ff837667f7fa326bfc09a26377c4fbb2cdb64b294cb40fae63",
+    "crates/rodas5p-integrators/examples/packet_verified_run.rs": "1e8af3bd73241387ddc668a15513c672c18e84fe7865defdcd46007a27fa621e"
+  },
+  "execution": {
+    "command": "source ../runtime/env.sh; cargo test -p rodas5p-integrators --test production_audit_packet_curve_output --test production_audit_packet_verified --locked --offline -- --nocapture",
+    "exit_code": 0,
+    "log": "packet_tests.log",
+    "original_local_tests": 5,
+    "new_trajectory_tests": 3,
+    "reference_cases": 6,
+    "rational_containments": 120,
+    "maximum_reference_coordinate_remainder": 3.3000315220941086e-17,
+    "allocation_assertion_authority": "Not admitted by this unit: SR02 known-library-allocation positive control fails in this runtime. Measurement remains unresolved and safely withheld; mathematical/rational-containment results are independent."
+  },
+  "theorems": [
+    {
+      "id": "PACKET-WEIGHTED-CARRY",
+      "basis": "derived",
+      "statement": "Weighted incoming ball and same-curve continuous residual produce center-inclusive global multiwindow enclosures by induction."
+    },
+    {
+      "id": "PACKET-NO-BOX-INFLATION",
+      "basis": "derived_and_implementation_verified",
+      "statement": "Direct weighted-ball carry removes avoidable N^(K/2) factor caused by repeated component-box conversion."
+    },
+    {
+      "id": "PACKET-ORACLE-TAIL",
+      "basis": "derived_and_rationally_checked",
+      "statement": "Independent analytic Picard ball and Cauchy tail certify unequal-frequency degree-28 Taylor references."
+    }
+  ],
+  "remaining": [
+    "Adaptive budget-preserving mesh/order controller",
+    "Damped/carrier frame extension",
+    "Matched-accuracy timing and complete allocation instrumentation"
+  ],
+  "environment_failure": {
+    "class": "environment",
+    "initial_issue": "Rust standard library metadata was truncated by interrupted extraction",
+    "resolution": "Runtime agent restored full metadata; actual compilation and tests completed."
+  },
+  "independent_review": {
+    "reviewer": "/root/independent_review",
+    "decision": "PROMOTE_SCOPED",
+    "method": "Independent algebra/code/analytic-tail review with inspection of execution evidence",
+    "conditions": "Reused directed primitive/frozen-curve contracts; exact-duration requested mesh; zero carrier and damping; no generic or adaptive authority",
+    "closed_finding": "Clarified exact difference requirements; not every binary64/dyadic mesh has exact adjacent differences."
+  },
+  "runner_execution": {
+    "command": "cargo run -p rodas5p-integrators --example packet_verified_run --locked --offline -- 16 32",
+    "exit_code": 0,
+    "log": "packet_run_16_32.log",
+    "output": "packet_run_16_32.json",
+    "modes": 16,
+    "windows": 32,
+    "maximum_mean_radius": 1.1268822212542885e-15,
+    "maximum_mode_radius": 3.891194857018851e-15,
+    "mean_and_mode_tolerance": 1e-08
+  }
+}

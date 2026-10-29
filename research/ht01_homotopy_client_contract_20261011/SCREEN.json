@@ -1,0 +1,540 @@
+{
+  "schema": "vigilode-ht01-screen-v1",
+  "inputs_sha256": {
+    "crates/rodas5p-integrators/src/fourier_path_candidate.rs": "130d9593f34d93637cd1af7de0b73375a5ac9540ece9910a68c052a2c56efeb3",
+    "crates/rodas5p-integrators/src/fourier_path_certificate.rs": "bfa329099f5503c9472f8d63120db740e54531dff0188dbb55e21b94aa31edb2",
+    "crates/rodas5p-integrators/src/transactional_q1_q2.rs": "72a9bf2405a181fefae2aa5e7483224ccd419046ede636a40416694b9d0fd7ad",
+    "crates/rodas5p-integrators/src/audit2_bateman_real_client_research.rs": "86350491df33d9074024f869372a99489a25e93fb9cbefab2a170251e9c60603",
+    "crates/rodas5p-integrators/src/chart_transport.rs": "645bd6438f29e3ae4fcf318b046f1d87bb43a0925db4d12979b17b25dc21a765",
+    "crates/rodas5p-cli/src/stiff_benchmark.rs": "1ddd94ede2f67d53b9b8f0c98716ccf9e9c874d67bfa2c6ce979a0e508ec5098",
+    "crates/rodas5p-integrators/src/scientific_corpus_v2.rs": "619d329afc667ff8a09fececf0982222abf306ee3a4a39610560860defafb5bd",
+    "crates/rodas5p-integrators/src/problems.rs": "26279ee48dd78dd80266467ff7e6ef413f82aafa8be60c9177e799a5b96aa6bd",
+    "research/pp07_fourier_shared_action_20261004/RESULTS.json": "b4b745c0f1cc96d2074f2a6ed27b823dbeab2fbfe205d36fed7453b10a8ac3cc",
+    "research/spd01_fast_driver_overhead_20261005/PROFILE_SMALL.json": "9afacda763f9af25ad932566f0a0786e986e78ec2c6d762b428de1c845474314",
+    "research/spd01_fast_driver_overhead_20261005/PROFILE_DENSE.json": "0a3b4b41244a7db68a4244017ca6001f41dd4dfe8a1dfc1edfba3f950e4377ad",
+    "research/spd01_fast_driver_overhead_20261005/PROFILE_DENSE_B50.json": "e0a8721cada091500a0fa939fbb9da8a805c2eb5be4d520776dbf799779cfadf",
+    "research/spd03_banded_arm_instructions_20261005/PROFILE.json": "9359e287c3818bb0e10fe17ce53d1618390b191d720307c6d3aadf6ba9dd7bf8",
+    "research/spd03_banded_arm_instructions_20261005/PROFILE_N1000.json": "62333e5e92a21daef7210006fc14686af9ce58112f184e27d582c389afdd5a43",
+    "research/spd06_small_static_stages_20261007/PROFILE.json": "b9ba35ea51fd9e25673b3f8a4f844823d6c60792cdb88d4402432491dc917ec0",
+    "research/spd09_colext_threshold_20261007/PROFILE.json": "9b79ace0bd4392fa0dc1a0ace24b4019cffb5ea4b6387ad224444d3d17fcffdf",
+    "research/sp03_declared_structure_routing_20261010/PROFILE.json": "bc03ba2da61a251bcf3cf4b72d3686d5e954e4df4a85d97c6f8a3f19b0d47a75",
+    "research/r3_matched_accuracy_hom06_20261001/CAMPAIGN.json": "8d665866f10f5c2bc0d945f704e6bc2cd600f8e04b3e4e7f9a1a8abd1aba0980",
+    "research/r3_matched_accuracy_hom06_20261001/VERIFY.json": "cdaf676814fe216237137b60455cd4754bc8578c63ffe31fc4874a50143eff45",
+    "research/LEDGER.jsonl": "35e04120b07b5f208666f1f225ace206e7bf4ba5ca7fe1b125776bb9f14a3c77",
+    "docs/HOMOTOPY_EXPENSIVE_CLIENT_CONTRACT.md": "709bfe471b39cf97e0d36092c862116c5fea44b2f19ce01f64b619990bfcec85"
+  },
+  "criteria": {
+    "s1": "Declared expensive RHS/JVP (ExpensiveClientDeclaration + min measured f >= 0.348 on cheapest arm)",
+    "s2": "Shifted solves present (W solves per attempt > 0, >=2 independent tasks)",
+    "s3": "Strong sequential comparator (applicable native arms defined, committed Ir and ledger)",
+    "s4": "Work/span accounting and endpoint certificate (Available + GeneratedFromModel, HT02 obligations tracked)"
+  },
+  "thresholds": {
+    "f_min": 0.348,
+    "derivation": "f >= (1 - 1/1.15) / (1 - 5/8) = 0.3478... ~ 0.348 (Amdahl bound r=5, P=8)"
+  },
+  "candidates": [
+    {
+      "id": "K1",
+      "client": "Fourier path client (PP05/PP06)",
+      "source_files": [
+        "crates/rodas5p-integrators/src/fourier_path_candidate.rs",
+        "crates/rodas5p-integrators/src/fourier_path_certificate.rs"
+      ],
+      "applicable_native_arms": [],
+      "s1_declared_expensive": {
+        "has_declaration": false,
+        "measured_f_min": null,
+        "measured_f_max": null,
+        "f_min_threshold": 0.348,
+        "sample_count": 0,
+        "pass_s1_a": false,
+        "pass_s1_b": false,
+        "pass_s1": false,
+        "reason": "decl=False; unmeasured_f"
+      },
+      "s2_shifted_solves": {
+        "present": false,
+        "q1_solves": 0,
+        "independent_tasks_per_round": 0,
+        "notes": "q1_solves = 0; PP07 ABSTAIN preserved",
+        "pass_s2": false,
+        "reason": "Fourier client makes no shifted solve (q1_solves = 0, PP07 ABSTAIN preserved)"
+      },
+      "s3_strong_comparator": {
+        "applicable_arms": [],
+        "cheapest_arm": null,
+        "ledger_row": "L-0074",
+        "pass_s3": false,
+        "reason": "no_applicable_arm: client makes no solver call (L-0074)"
+      },
+      "s4_accounting_certificate": {
+        "capability": "unverified",
+        "model_binding": "SampledAgreement",
+        "pass_s4_a": false,
+        "s4_b_status": "PASS_WITH_HT02_OBLIGATIONS",
+        "missing_ledger_fields_ht02_obligation": [
+          "max_task_per_round",
+          "barriers",
+          "rejected_candidate_work",
+          "fallback_work",
+          "peak_bytes"
+        ],
+        "no_speedup_claim_permitted": true,
+        "pass_s4": false,
+        "reason": "No GeneratedFromModel certificate source available (SampledAgreement is never a proof)"
+      },
+      "candidate_status": "FAILS_CRITERIA",
+      "failing_criteria": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ]
+    },
+    {
+      "id": "K2",
+      "client": "R4 / HOM-06 / R-NEXT-06 quadratic family, n in {1, 2, 4, 8, 16}",
+      "source_files": [
+        "crates/rodas5p-integrators/src/transactional_q1_q2.rs"
+      ],
+      "applicable_native_arms": [
+        "small",
+        "dense_v2",
+        "matrix_free_u_form"
+      ],
+      "s1_declared_expensive": {
+        "has_declaration": false,
+        "measured_f_min": null,
+        "measured_f_max": null,
+        "f_min_threshold": 0.348,
+        "sample_count": 0,
+        "pass_s1_a": false,
+        "pass_s1_b": false,
+        "pass_s1": false,
+        "reason": "decl=False; unmeasured_f"
+      },
+      "s2_shifted_solves": {
+        "present": true,
+        "q1_solves": 1,
+        "independent_tasks_per_round": 6,
+        "notes": "shifted solves present (W = I - h gamma J solves > 0; 6 stage tasks/round)",
+        "pass_s2": true,
+        "reason": "sequential step attempts require W = I - h gamma J solves with 6 tasks"
+      },
+      "s3_strong_comparator": {
+        "applicable_arms": [
+          "small",
+          "dense_v2",
+          "matrix_free_u_form"
+        ],
+        "cheapest_arm": "dense_v2",
+        "ledger_row": "L-0008",
+        "pass_s3": true,
+        "reason": "cheapest arm 'dense_v2' verified in L-0008"
+      },
+      "s4_accounting_certificate": {
+        "capability": {
+          "n_le_2_or_diagonal": "Available",
+          "n_gt_2_dense": "DimensionCutoff"
+        },
+        "model_binding": "GeneratedFromModel",
+        "pass_s4_a": true,
+        "s4_b_status": "PASS_WITH_HT02_OBLIGATIONS",
+        "missing_ledger_fields_ht02_obligation": [
+          "max_task_per_round",
+          "barriers",
+          "rejected_candidate_work",
+          "fallback_work",
+          "peak_bytes"
+        ],
+        "no_speedup_claim_permitted": true,
+        "pass_s4": true,
+        "reason": "QuadraticModel provides GeneratedFromModel binding; small witness Available for n <= 2 or diagonal"
+      },
+      "candidate_status": "FAILS_CRITERIA",
+      "failing_criteria": [
+        "S1"
+      ]
+    },
+    {
+      "id": "K3",
+      "client": "Bateman two-timescale real client (feature audit2-bateman-authority)",
+      "source_files": [
+        "crates/rodas5p-integrators/src/audit2_bateman_real_client_research.rs"
+      ],
+      "applicable_native_arms": [
+        "small",
+        "dense_v2"
+      ],
+      "s1_declared_expensive": {
+        "has_declaration": false,
+        "measured_f_min": null,
+        "measured_f_max": null,
+        "f_min_threshold": 0.348,
+        "sample_count": 0,
+        "pass_s1_a": false,
+        "pass_s1_b": false,
+        "pass_s1": false,
+        "reason": "decl=False; unmeasured_f"
+      },
+      "s2_shifted_solves": {
+        "present": true,
+        "q1_solves": 1,
+        "independent_tasks_per_round": 8,
+        "notes": "shifted solves present (W = I - h gamma J solves > 0; 8 stage tasks/round)",
+        "pass_s2": true,
+        "reason": "sequential step attempts require W = I - h gamma J solves with 8 tasks"
+      },
+      "s3_strong_comparator": {
+        "applicable_arms": [
+          "small",
+          "dense_v2"
+        ],
+        "cheapest_arm": "small",
+        "ledger_row": "L-0032",
+        "pass_s3": true,
+        "reason": "cheapest arm 'small' verified in L-0032"
+      },
+      "s4_accounting_certificate": {
+        "capability": "unverified",
+        "model_binding": "SampledAgreement",
+        "pass_s4_a": false,
+        "s4_b_status": "PASS_WITH_HT02_OBLIGATIONS",
+        "missing_ledger_fields_ht02_obligation": [
+          "max_task_per_round",
+          "barriers",
+          "rejected_candidate_work",
+          "fallback_work",
+          "peak_bytes"
+        ],
+        "no_speedup_claim_permitted": true,
+        "pass_s4": false,
+        "reason": "No GeneratedFromModel certificate source available (SampledAgreement is never a proof)"
+      },
+      "candidate_status": "FAILS_CRITERIA",
+      "failing_criteria": [
+        "S1",
+        "S4"
+      ]
+    },
+    {
+      "id": "K4",
+      "client": "Darboux chart client y = x^2 (w + 1/kappa) (L-0043, L-0048)",
+      "source_files": [
+        "crates/rodas5p-integrators/src/chart_transport.rs"
+      ],
+      "applicable_native_arms": [
+        "small",
+        "dense_v2"
+      ],
+      "s1_declared_expensive": {
+        "has_declaration": false,
+        "measured_f_min": null,
+        "measured_f_max": null,
+        "f_min_threshold": 0.348,
+        "sample_count": 0,
+        "pass_s1_a": false,
+        "pass_s1_b": false,
+        "pass_s1": false,
+        "reason": "decl=False; unmeasured_f"
+      },
+      "s2_shifted_solves": {
+        "present": false,
+        "q1_solves": 0,
+        "independent_tasks_per_round": 0,
+        "notes": "scalar chart transport; no linear solve (q1_solves = 0)",
+        "pass_s2": false,
+        "reason": "Darboux chart client is a scalar transformation without linear stage solves"
+      },
+      "s3_strong_comparator": {
+        "applicable_arms": [
+          "small",
+          "dense_v2"
+        ],
+        "cheapest_arm": "small",
+        "ledger_row": "L-0043",
+        "pass_s3": false,
+        "reason": "no_applicable_arm: scalar chart client makes no linear solver call (L-0043, L-0048)"
+      },
+      "s4_accounting_certificate": {
+        "capability": "unverified",
+        "model_binding": "SampledAgreement",
+        "pass_s4_a": false,
+        "s4_b_status": "PASS_WITH_HT02_OBLIGATIONS",
+        "missing_ledger_fields_ht02_obligation": [
+          "max_task_per_round",
+          "barriers",
+          "rejected_candidate_work",
+          "fallback_work",
+          "peak_bytes"
+        ],
+        "no_speedup_claim_permitted": true,
+        "pass_s4": false,
+        "reason": "No GeneratedFromModel certificate source available (SampledAgreement is never a proof)"
+      },
+      "candidate_status": "FAILS_CRITERIA",
+      "failing_criteria": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ]
+    },
+    {
+      "id": "K5",
+      "client": "robertson, hires, van-der-pol-mu1000",
+      "source_files": [
+        "crates/rodas5p-cli/src/stiff_benchmark.rs"
+      ],
+      "applicable_native_arms": [
+        "small",
+        "dense_v2",
+        "matrix_free_u_form"
+      ],
+      "s1_declared_expensive": {
+        "has_declaration": false,
+        "measured_f_min": 0.024941,
+        "measured_f_max": 0.04342,
+        "f_min_threshold": 0.348,
+        "sample_count": 6,
+        "pass_s1_a": false,
+        "pass_s1_b": false,
+        "pass_s1": false,
+        "reason": "decl=False; measured_f_min=0.024941 < 0.348 (max=0.04342, samples=6)"
+      },
+      "s2_shifted_solves": {
+        "present": true,
+        "q1_solves": 1,
+        "independent_tasks_per_round": 8,
+        "notes": "shifted solves present (W = I - h gamma J solves > 0; 8 stage tasks/round)",
+        "pass_s2": true,
+        "reason": "sequential step attempts require W = I - h gamma J solves with 8 tasks"
+      },
+      "s3_strong_comparator": {
+        "applicable_arms": [
+          "small",
+          "dense_v2",
+          "matrix_free_u_form"
+        ],
+        "cheapest_arm": "small",
+        "ledger_row": "L-0085",
+        "pass_s3": true,
+        "reason": "cheapest arm 'small' verified in L-0085"
+      },
+      "s4_accounting_certificate": {
+        "capability": "unverified",
+        "model_binding": "SampledAgreement",
+        "pass_s4_a": false,
+        "s4_b_status": "PASS_WITH_HT02_OBLIGATIONS",
+        "missing_ledger_fields_ht02_obligation": [
+          "max_task_per_round",
+          "barriers",
+          "rejected_candidate_work",
+          "fallback_work",
+          "peak_bytes"
+        ],
+        "no_speedup_claim_permitted": true,
+        "pass_s4": false,
+        "reason": "No GeneratedFromModel certificate source available (SampledAgreement is never a proof)"
+      },
+      "candidate_status": "FAILS_CRITERIA",
+      "failing_criteria": [
+        "S1",
+        "S4"
+      ]
+    },
+    {
+      "id": "K6",
+      "client": "brusselator-1d-N, N in {30, 40, 50, 160, 200, 500}",
+      "source_files": [
+        "crates/rodas5p-cli/src/stiff_benchmark.rs"
+      ],
+      "applicable_native_arms": [
+        "dense_v2",
+        "colext64",
+        "banded",
+        "matrix_free_u_form"
+      ],
+      "s1_declared_expensive": {
+        "has_declaration": false,
+        "measured_f_min": null,
+        "measured_f_max": null,
+        "f_min_threshold": 0.348,
+        "sample_count": 0,
+        "pass_s1_a": false,
+        "pass_s1_b": false,
+        "pass_s1": false,
+        "reason": "decl=False; unmeasured_f"
+      },
+      "s2_shifted_solves": {
+        "present": true,
+        "q1_solves": 1,
+        "independent_tasks_per_round": 8,
+        "notes": "shifted solves present (W = I - h gamma J solves > 0; 8 stage tasks/round)",
+        "pass_s2": true,
+        "reason": "sequential step attempts require W = I - h gamma J solves with 8 tasks"
+      },
+      "s3_strong_comparator": {
+        "applicable_arms": [
+          "dense_v2",
+          "colext64",
+          "banded",
+          "matrix_free_u_form"
+        ],
+        "cheapest_arm": "banded",
+        "ledger_row": "L-0083",
+        "pass_s3": true,
+        "reason": "cheapest arm 'banded' verified in L-0083"
+      },
+      "s4_accounting_certificate": {
+        "capability": "unverified",
+        "model_binding": "SampledAgreement",
+        "pass_s4_a": false,
+        "s4_b_status": "PASS_WITH_HT02_OBLIGATIONS",
+        "missing_ledger_fields_ht02_obligation": [
+          "max_task_per_round",
+          "barriers",
+          "rejected_candidate_work",
+          "fallback_work",
+          "peak_bytes"
+        ],
+        "no_speedup_claim_permitted": true,
+        "pass_s4": false,
+        "reason": "No GeneratedFromModel certificate source available (SampledAgreement is never a proof)"
+      },
+      "candidate_status": "FAILS_CRITERIA",
+      "failing_criteria": [
+        "S1",
+        "S4"
+      ]
+    },
+    {
+      "id": "K7",
+      "client": "scientific corpus v2 calibration: 6 families x n in {96, 384, 1536}",
+      "source_files": [
+        "crates/rodas5p-integrators/src/scientific_corpus_v2.rs"
+      ],
+      "applicable_native_arms": [
+        "dense_v2",
+        "colext64",
+        "banded",
+        "matrix_free_u_form"
+      ],
+      "s1_declared_expensive": {
+        "has_declaration": false,
+        "measured_f_min": null,
+        "measured_f_max": null,
+        "f_min_threshold": 0.348,
+        "sample_count": 0,
+        "pass_s1_a": false,
+        "pass_s1_b": false,
+        "pass_s1": false,
+        "reason": "decl=False; unmeasured_f"
+      },
+      "s2_shifted_solves": {
+        "present": true,
+        "q1_solves": 1,
+        "independent_tasks_per_round": 8,
+        "notes": "shifted solves present (W = I - h gamma J solves > 0; 8 stage tasks/round)",
+        "pass_s2": true,
+        "reason": "sequential step attempts require W = I - h gamma J solves with 8 tasks"
+      },
+      "s3_strong_comparator": {
+        "applicable_arms": [
+          "dense_v2",
+          "colext64",
+          "banded",
+          "matrix_free_u_form"
+        ],
+        "cheapest_arm": "colext64",
+        "ledger_row": "L-0086",
+        "pass_s3": true,
+        "reason": "cheapest arm 'colext64' verified in L-0086"
+      },
+      "s4_accounting_certificate": {
+        "capability": "unverified",
+        "model_binding": "SampledAgreement",
+        "pass_s4_a": false,
+        "s4_b_status": "PASS_WITH_HT02_OBLIGATIONS",
+        "missing_ledger_fields_ht02_obligation": [
+          "max_task_per_round",
+          "barriers",
+          "rejected_candidate_work",
+          "fallback_work",
+          "peak_bytes"
+        ],
+        "no_speedup_claim_permitted": true,
+        "pass_s4": false,
+        "reason": "No GeneratedFromModel certificate source available (SampledAgreement is never a proof)"
+      },
+      "candidate_status": "FAILS_CRITERIA",
+      "failing_criteria": [
+        "S1",
+        "S4"
+      ]
+    },
+    {
+      "id": "K8",
+      "client": "problems.rs fixtures (scalar linear, Prothero-Robinson, manufactured, mass, complex Dahlquist, semilinear)",
+      "source_files": [
+        "crates/rodas5p-integrators/src/problems.rs"
+      ],
+      "applicable_native_arms": [
+        "small",
+        "dense_v2"
+      ],
+      "s1_declared_expensive": {
+        "has_declaration": false,
+        "measured_f_min": null,
+        "measured_f_max": null,
+        "f_min_threshold": 0.348,
+        "sample_count": 0,
+        "pass_s1_a": false,
+        "pass_s1_b": false,
+        "pass_s1": false,
+        "reason": "decl=False; unmeasured_f"
+      },
+      "s2_shifted_solves": {
+        "present": true,
+        "q1_solves": 1,
+        "independent_tasks_per_round": 8,
+        "notes": "shifted solves present (W = I - h gamma J solves > 0; 8 stage tasks/round)",
+        "pass_s2": true,
+        "reason": "sequential step attempts require W = I - h gamma J solves with 8 tasks"
+      },
+      "s3_strong_comparator": {
+        "applicable_arms": [
+          "small",
+          "dense_v2"
+        ],
+        "cheapest_arm": "small",
+        "ledger_row": "L-0041",
+        "pass_s3": true,
+        "reason": "cheapest arm 'small' verified in L-0041"
+      },
+      "s4_accounting_certificate": {
+        "capability": "unverified",
+        "model_binding": "SampledAgreement",
+        "pass_s4_a": false,
+        "s4_b_status": "PASS_WITH_HT02_OBLIGATIONS",
+        "missing_ledger_fields_ht02_obligation": [
+          "max_task_per_round",
+          "barriers",
+          "rejected_candidate_work",
+          "fallback_work",
+          "peak_bytes"
+        ],
+        "no_speedup_claim_permitted": true,
+        "pass_s4": false,
+        "reason": "No GeneratedFromModel certificate source available (SampledAgreement is never a proof)"
+      },
+      "candidate_status": "FAILS_CRITERIA",
+      "failing_criteria": [
+        "S1",
+        "S4"
+      ]
+    }
+  ],
+  "preliminary_decision": "ABSTAIN"
+}

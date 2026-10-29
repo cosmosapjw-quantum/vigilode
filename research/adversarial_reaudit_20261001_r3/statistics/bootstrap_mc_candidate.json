@@ -1,0 +1,66 @@
+{
+  "status": "NUMERICALLY_CHECKED",
+  "reference": "all 6^6 draws, equal five pairs/session, one case",
+  "exact_outcomes": 46656,
+  "exact_endpoints": [
+    0.848528137423857,
+    1.449137674618944
+  ],
+  "sampled_endpoints": [
+    0.848528137423857,
+    1.449137674618944
+  ],
+  "original": {
+    "b": 10000,
+    "count_below": 7151,
+    "empirical_cdf": 0.7151,
+    "lower": 0.6988237636928126,
+    "upper": 0.7313762363071873,
+    "epsilon": 0.016276236307187292,
+    "conditional_mc_confidence": 0.99,
+    "decision": "inconclusive"
+  },
+  "boundary": {
+    "scale": 1.3200555868303236,
+    "exact_cdf_below_required": 0.03485082304526749,
+    "naive_lower": 1.1201043083890911,
+    "naive_decision": "inconclusive",
+    "mc_gate": {
+      "b": 10000,
+      "count_below": 355,
+      "empirical_cdf": 0.0355,
+      "lower": 0.019223763692812704,
+      "upper": 0.05177623630718729,
+      "epsilon": 0.016276236307187292,
+      "conditional_mc_confidence": 0.99,
+      "decision": "inconclusive"
+    },
+    "holdout": false
+  },
+  "good": {
+    "b": 10000,
+    "count_below": 0,
+    "empirical_cdf": 0.0,
+    "lower": 0.0,
+    "upper": 0.016276236307187292,
+    "epsilon": 0.016276236307187292,
+    "conditional_mc_confidence": 0.99,
+    "decision": "promote"
+  },
+  "bad": {
+    "b": 10000,
+    "count_below": 10000,
+    "empirical_cdf": 1.0,
+    "lower": 0.9837237636928127,
+    "upper": 1.0,
+    "epsilon": 0.016276236307187292,
+    "conditional_mc_confidence": 0.99,
+    "decision": "block"
+  },
+  "limits": [
+    "Conditional empirical bootstrap Monte Carlo error only; no population confidence guarantee",
+    "Independent identical bootstrap replicates and fixed B/threshold; optional stopping excluded",
+    "SplitMix multiply-shift is only approximately uniform; see documented negligible PRNG bias",
+    "No production edits, no observed performance, no independent reviewer decision here"
+  ]
+}

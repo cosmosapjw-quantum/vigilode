@@ -1,0 +1,950 @@
+{
+  "schema": "vigilode.frontier.production-validation.v1",
+  "status": "PLANNED_NOT_RUN",
+  "purpose": "scope-qualified production evidence on small local hardware; no fresh external comparison claimed",
+  "ncp": false,
+  "resources": {
+    "threads": [
+      1,
+      2
+    ],
+    "single_thread_required": true,
+    "max_build_jobs": 2,
+    "solver_peak_rss_bytes": 1073741824,
+    "campaign_wall_seconds": 5400,
+    "per_process_wall_seconds": 90,
+    "process_creation_cap": 500,
+    "concurrent_timed_solves": 1,
+    "cloud_resources_allowed": false
+  },
+  "execution_phases": [
+    {
+      "name": "contract_smoke",
+      "wall_seconds": 600
+    },
+    {
+      "name": "accuracy_and_scaling",
+      "wall_seconds": 1800
+    },
+    {
+      "name": "external_matched_error",
+      "wall_seconds": 2400
+    },
+    {
+      "name": "replay_and_summary",
+      "wall_seconds": 600
+    }
+  ],
+  "comparators": [
+    "VODE/DVODE",
+    "diffsol",
+    "Julia"
+  ],
+  "comparator_contract": {
+    "version_and_build_pinned": true,
+    "julia_jit_and_steady_solve_separate": true,
+    "same_model_and_output_contract": true,
+    "missing_dependency_status": "NOT_RUN",
+    "unsupported_feature_status": "UNSUPPORTED",
+    "no_unapproved_substitution": true,
+    "setup_included": true
+  },
+  "source_identity": [
+    "commit",
+    "tree",
+    "Cargo.lock_sha256",
+    "relevant_source_sha256",
+    "binary_sha256",
+    "compiler_version",
+    "build_flags",
+    "dependency_versions",
+    "cpu_affinity",
+    "thread_env"
+  ],
+  "tolerances": [
+    0.0001,
+    1e-06,
+    1e-08,
+    1e-10
+  ],
+  "warmups": 1,
+  "timed_repeats": 5,
+  "deterministic_order_rotation": true,
+  "families": [
+    {
+      "id": "B01",
+      "family": "nonstiff",
+      "reference_design": "analytic decay/logistic/nonautonomous manufactured",
+      "parameters": {
+        "dimensions": [
+          1,
+          3,
+          16,
+          96
+        ],
+        "horizons": [
+          1,
+          100
+        ]
+      },
+      "metrics": [
+        "state_error",
+        "callback_work"
+      ],
+      "required_capability": "identity_mass",
+      "status": "PLANNED_NOT_RUN",
+      "execute_cartesian_product": false
+    },
+    {
+      "id": "B02",
+      "family": "stiff",
+      "reference_design": "Robertson plus nonlinear Riccati",
+      "parameters": {
+        "stiffness": [
+          100.0,
+          10000.0,
+          1000000.0
+        ],
+        "dimensions": [
+          3,
+          96
+        ]
+      },
+      "metrics": [
+        "state_error",
+        "positivity",
+        "conservation",
+        "rejections"
+      ],
+      "required_capability": "autonomous_identity_mass",
+      "status": "PLANNED_NOT_RUN",
+      "execute_cartesian_product": false
+    },
+    {
+      "id": "B03",
+      "family": "stiff_order_reduction",
+      "reference_design": "Prothero-Robinson exact sine solution",
+      "parameters": {
+        "lambda": [
+          -100.0,
+          -10000.0,
+          -1000000.0
+        ],
+        "horizons": [
+          1,
+          100
+        ]
+      },
+      "metrics": [
+        "state_error",
+        "interior_error",
+        "rejections"
+      ],
+      "required_capability": "nonautonomous_identity_mass",
+      "status": "PLANNED_NOT_RUN",
+      "execute_cartesian_product": false
+    },
+    {
+      "id": "B04",
+      "family": "affine_forcing",
+      "reference_design": "declared damped rotation with constant forcing; variable forcing is negative control",
+      "parameters": {
+        "damping": [
+          0,
+          1,
+          1000.0,
+          1000000.0
+        ],
+        "frequency": [
+          0,
+          1,
+          1000.0
+        ]
+      },
+      "metrics": [
+        "state_error",
+        "phase_error",
+        "underflow_contract"
+      ],
+      "required_capability": "declared_affine_or_general_rhs",
+      "status": "PLANNED_NOT_RUN",
+      "execute_cartesian_product": false
+    },
+    {
+      "id": "B05",
+      "family": "long_time_phase",
+      "reference_design": "analytic normal rotation and damped rotation",
+      "parameters": {
+        "frequency": [
+          1,
+          100.0,
+          10000.0
+        ],
+        "cycles": [
+          100,
+          1000
+        ],
+        "observation_count": 4097
+      },
+      "metrics": [
+        "state_error",
+        "phase_error",
+        "amplitude_error"
+      ],
+      "required_capability": "identity_mass",
+      "status": "PLANNED_NOT_RUN",
+      "execute_cartesian_product": false
+    },
+    {
+      "id": "B06",
+      "family": "nonlinear_rotation",
+      "reference_design": "rotation-equivariant radial logistic amplitude with exact polar solution",
+      "parameters": {
+        "frequency": [
+          100.0,
+          10000.0
+        ],
+        "cycles": [
+          10,
+          100
+        ]
+      },
+      "metrics": [
+        "state_error",
+        "phase_error",
+        "amplitude_error"
+      ],
+      "required_capability": "autonomous_identity_mass",
+      "status": "PLANNED_NOT_RUN",
+      "execute_cartesian_product": false
+    },
+    {
+      "id": "B07",
+      "family": "noncommuting",
+      "reference_design": "two-dimensional linear residual not commuting with carrier",
+      "parameters": {
+        "carrier_frequency": [
+          10,
+          1000
+        ],
+        "residual_strength": [
+          0.1,
+          10
+        ]
+      },
+      "metrics": [
+        "state_error",
+        "phase_error"
+      ],
+      "required_capability": "declared_split_or_general_rhs",
+      "status": "PLANNED_NOT_RUN",
+      "execute_cartesian_product": false
+    },
+    {
+      "id": "B08",
+      "family": "nonnormal",
+      "reference_design": "A=[[-1,K],[0,-20]] exact exponential transient",
+      "parameters": {
+        "K": [
+          1,
+          50,
+          10000.0
+        ],
+        "horizons": [
+          0.1,
+          1,
+          10
+        ]
+      },
+      "metrics": [
+        "state_error",
+        "transient_peak_error",
+        "residual_bound"
+      ],
+      "required_capability": "identity_mass",
+      "status": "PLANNED_NOT_RUN",
+      "execute_cartesian_product": false
+    },
+    {
+      "id": "B09",
+      "family": "switching",
+      "reference_design": "smooth nonstiff-stiff-nonstiff rate with analytic integral",
+      "parameters": {
+        "plateau_stiffness": [
+          100.0,
+          10000.0
+        ],
+        "dimensions": [
+          1,
+          96
+        ]
+      },
+      "metrics": [
+        "state_error",
+        "pilot_overhead",
+        "worst_regret",
+        "provider_work"
+      ],
+      "required_capability": "nonautonomous_identity_mass",
+      "status": "PLANNED_NOT_RUN",
+      "execute_cartesian_product": false
+    },
+    {
+      "id": "B10",
+      "family": "failure_contract",
+      "reference_design": "fatal/recoverable/NaN/partial-write/epoch-change injection at deterministic trial boundary",
+      "parameters": {
+        "injection_phase": [
+          "first_trial",
+          "after_accept",
+          "after_reject"
+        ]
+      },
+      "metrics": [
+        "accepted_prefix",
+        "all_attempted_work",
+        "typed_reason"
+      ],
+      "required_capability": "supported_route_only",
+      "status": "PLANNED_NOT_RUN",
+      "execute_cartesian_product": false
+    },
+    {
+      "id": "B11",
+      "family": "events",
+      "reference_design": "simple transversal roots, multiple crossings and tangent negative controls",
+      "parameters": {
+        "crossing_count": [
+          1,
+          2,
+          8
+        ],
+        "terminal_domain_trap": true
+      },
+      "metrics": [
+        "event_time_error",
+        "event_state_error",
+        "post_terminal_callbacks",
+        "missed_root_policy"
+      ],
+      "required_capability": "event_capable_dense_only",
+      "status": "PLANNED_NOT_RUN",
+      "execute_cartesian_product": false
+    },
+    {
+      "id": "B12",
+      "family": "dense_output",
+      "reference_design": "off-grid Prothero and oscillatory analytic observations",
+      "parameters": {
+        "output_counts": [
+          17,
+          257,
+          4097
+        ],
+        "step_probes": [
+          "quarter",
+          "midpoint",
+          "three_quarter"
+        ]
+      },
+      "metrics": [
+        "interior_error",
+        "observation_density_work",
+        "phase_error"
+      ],
+      "required_capability": "dense_capable_only",
+      "status": "PLANNED_NOT_RUN",
+      "execute_cartesian_product": false
+    },
+    {
+      "id": "B13",
+      "family": "restart",
+      "reference_design": "piecewise analytic model restart at accepted endpoints with dimension changes separate",
+      "parameters": {
+        "restart_counts": [
+          0,
+          4,
+          16
+        ],
+        "coefficient_changes": true
+      },
+      "metrics": [
+        "state_error",
+        "cache_invalidation",
+        "accepted_prefix",
+        "restart_cost"
+      ],
+      "required_capability": "new_session_current_api",
+      "status": "PLANNED_NOT_RUN",
+      "execute_cartesian_product": false
+    },
+    {
+      "id": "B14",
+      "family": "pde_fixed_grid",
+      "reference_design": "periodic 2D/3D Fourier diffusion and sphere finite-volume spherical harmonics",
+      "parameters": {
+        "grid_2d": [
+          [
+            16,
+            16
+          ],
+          [
+            32,
+            32
+          ],
+          [
+            64,
+            64
+          ]
+        ],
+        "grid_3d": [
+          [
+            8,
+            8,
+            8
+          ],
+          [
+            12,
+            12,
+            12
+          ],
+          [
+            16,
+            16,
+            16
+          ]
+        ],
+        "sphere_mu_phi": [
+          [
+            8,
+            16
+          ],
+          [
+            16,
+            32
+          ],
+          [
+            32,
+            64
+          ]
+        ]
+      },
+      "metrics": [
+        "temporal_error",
+        "spatial_error",
+        "mass",
+        "positivity",
+        "edge_actions",
+        "peak_rss"
+      ],
+      "required_capability": "conservative_semidiscretization",
+      "status": "PLANNED_NOT_RUN",
+      "execute_cartesian_product": false
+    },
+    {
+      "id": "B15",
+      "family": "pde_nonlinear",
+      "reference_design": "manufactured reaction-diffusion and transport-collision forcing",
+      "parameters": {
+        "dimensions": [
+          256,
+          1024,
+          4096
+        ],
+        "stiffness": [
+          100.0,
+          10000.0
+        ]
+      },
+      "metrics": [
+        "temporal_error",
+        "spatial_error",
+        "physical_norm",
+        "source_budget"
+      ],
+      "required_capability": "declared_client_support",
+      "status": "PLANNED_NOT_RUN",
+      "execute_cartesian_product": false
+    },
+    {
+      "id": "B16",
+      "family": "amr",
+      "reference_design": "prescribed conservative refine/coarsen schedule against analytic projection",
+      "parameters": {
+        "remap_counts": [
+          0,
+          4,
+          16,
+          64
+        ],
+        "time_refinement": [
+          1,
+          2,
+          4
+        ],
+        "space_refinement": [
+          1,
+          2,
+          4
+        ]
+      },
+      "metrics": [
+        "remap_consistency_defect",
+        "accumulated_remap_error",
+        "mass",
+        "positivity",
+        "cache_invalidation"
+      ],
+      "required_capability": "between_accepted_steps_only",
+      "status": "PLANNED_NOT_RUN",
+      "execute_cartesian_product": false
+    },
+    {
+      "id": "B17",
+      "family": "mass_capability",
+      "reference_design": "constant nonsingular mass and consistent index-1 DAE",
+      "parameters": {
+        "dimensions": [
+          2,
+          16
+        ]
+      },
+      "metrics": [
+        "state_error",
+        "constraint_residual",
+        "typed_refusal"
+      ],
+      "required_capability": "supported_dense_route_only",
+      "status": "PLANNED_NOT_RUN",
+      "execute_cartesian_product": false
+    },
+    {
+      "id": "B18",
+      "family": "clock_extremes",
+      "reference_design": "tiny positive spans, large time offsets, output clipping after rejection",
+      "parameters": {
+        "time_scales": [
+          1e-200,
+          1,
+          10000000000.0
+        ]
+      },
+      "metrics": [
+        "progress",
+        "accepted_prefix",
+        "finite_output",
+        "attempt_budget"
+      ],
+      "required_capability": "supported_route_only",
+      "status": "PLANNED_NOT_RUN",
+      "execute_cartesian_product": false
+    }
+  ],
+  "global_error_budget_fractions": {
+    "initial": 0.05,
+    "time_defect": 0.35,
+    "approximate_flow_root": 0.15,
+    "spatial_defect": 0.25,
+    "remap": 0.15,
+    "roundoff": 0.05
+  },
+  "acceptance": {
+    "contract_violation_count_max": 0,
+    "required_case_success_fraction": 1.0,
+    "normalized_actual_state_error_max": 1.0,
+    "long_time_phase_error_radians_max": 0.001,
+    "long_time_relative_amplitude_error_max": 1e-05,
+    "mass_drift_relative_max": 1e-11,
+    "mass_drift_absolute_floor": 1e-13,
+    "negative_density_allowance_scaled_roundoff": 1e-13,
+    "minimum_refinement_levels": 3,
+    "reference_uncertainty_fraction_of_error_cap_max": 0.1,
+    "observed_order_tolerance_below_formal_order": 0.5,
+    "phase_error_applicability": "exclude zero-amplitude states; record mask threshold; never unwrap undersampled phase",
+    "event_root_localization": "state-induced time error plus root bracket tolerance, simple transversal root only",
+    "output_error": "same physical observation times; dense interior probes scored separately",
+    "convergence_scope": "smooth asymptotic regime only; limiter switches, AMR, stiffness order reduction reported separately"
+  },
+  "performance_decisions": {
+    "accuracy_eligible_only": true,
+    "separate_hardware_build_cohorts": true,
+    "speedup_material_threshold": 1.2,
+    "default_replacement_worst_loss_threshold": 2.0,
+    "thresholds_are_engineering_policy_not_theorems": true,
+    "required_reporting": [
+      "median",
+      "min",
+      "max",
+      "paired_log_ratio_bootstrap_interval_when_repeats_sufficient",
+      "worst_losses",
+      "timeouts",
+      "unmatched_error_caps",
+      "pilot_and_failed_work",
+      "peak_rss"
+    ],
+    "pruning_rule": "remove locally dominated option only within a registered problem/error/output/hardware cohort; keep negative controls and specialized alternatives"
+  },
+  "record_contract": {
+    "status_enum": [
+      "PASS",
+      "FAIL",
+      "TIMEOUT",
+      "NOT_RUN",
+      "UNSUPPORTED"
+    ],
+    "required_fields": [
+      "run_id",
+      "case_id",
+      "method",
+      "source_commit",
+      "source_tree",
+      "binary_sha256",
+      "host_cohort",
+      "threads",
+      "rtol",
+      "atol",
+      "output_contract",
+      "status",
+      "elapsed_seconds",
+      "accepted_time",
+      "work",
+      "observed_times",
+      "observed_states",
+      "reference_id",
+      "reference_uncertainty",
+      "actual_error",
+      "failure_reason"
+    ],
+    "preserve_all_attempts": true,
+    "nonfinite_json": "null plus explicit failure reason; never silently dropped",
+    "raw_failure_immutable": true
+  },
+  "old_blocker_mapping": [
+    {
+      "old_id": "N01",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "not_started",
+      "workstream": "provenance",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N02",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "not_started",
+      "workstream": "physical_norm",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N03",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "not_started",
+      "workstream": "structured_pde",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N04",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "not_started",
+      "workstream": "dense_output",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N05",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "not_started",
+      "workstream": "remap",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N06",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "not_started",
+      "workstream": "positivity",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N07",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "not_started",
+      "workstream": "external_comparison",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N08",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "not_started",
+      "workstream": "structured_pde",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N09",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "not_started",
+      "workstream": "polynomial",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N10",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "not_started",
+      "workstream": "parameter_homotopy",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N11",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "not_started",
+      "workstream": "events",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N12",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "not_started",
+      "workstream": "provenance",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N13",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "implemented_scoped",
+      "workstream": "causal_trajectory",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N14",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "not_started",
+      "workstream": "global_budget",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N15",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "not_started",
+      "workstream": "switching",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N16",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "not_started",
+      "workstream": "workspace",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N17",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "not_started",
+      "workstream": "polynomial",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N18",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "not_started",
+      "workstream": "capabilities",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N19",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "implemented_scoped",
+      "workstream": "explicit",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N20",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "implemented_scoped",
+      "workstream": "failure_contract",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N21",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "implemented_scoped",
+      "workstream": "ensemble",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N22",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "default_campaign_complete_extended_obligations_open",
+      "workstream": "external_comparison",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N23",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "implemented_scoped",
+      "workstream": "physical_norm",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N24",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "implemented_scoped",
+      "workstream": "dense_output",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N25",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "not_started",
+      "workstream": "switching",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N26",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "partially_implemented",
+      "workstream": "workspace",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N27",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "theory_complete_implementation_not_started",
+      "workstream": "causal_parallel",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N28",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "scoped_theory_complete_higher_order_implementation_not_started",
+      "workstream": "stabilized_explicit",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N29",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "implemented_scoped",
+      "workstream": "clock",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "N30",
+      "source": "research/production_hardening_20261023/NEXT_STEPS.json",
+      "inherited_status": "implemented_scoped",
+      "workstream": "broad_regression",
+      "new_evidence_closes_item": false,
+      "action": "reuse unchanged implementation/evidence; execute only unmet acceptance obligations; do not infer closure from this plan"
+    },
+    {
+      "old_id": "SW01",
+      "source": "research/adaptive_causal_20261023/NEXT_STEPS.json",
+      "inherited_status": "done",
+      "workstream": "explicit",
+      "new_evidence_closes_item": false,
+      "action": "use new frontier results where available; preserve scope limits and remaining obligations"
+    },
+    {
+      "old_id": "SW02",
+      "source": "research/adaptive_causal_20261023/NEXT_STEPS.json",
+      "inherited_status": "planned",
+      "workstream": "switching",
+      "new_evidence_closes_item": false,
+      "action": "use new frontier results where available; preserve scope limits and remaining obligations"
+    },
+    {
+      "old_id": "SW03",
+      "source": "research/adaptive_causal_20261023/NEXT_STEPS.json",
+      "inherited_status": "planned",
+      "workstream": "switching",
+      "new_evidence_closes_item": false,
+      "action": "use new frontier results where available; preserve scope limits and remaining obligations"
+    },
+    {
+      "old_id": "QF01",
+      "source": "research/adaptive_causal_20261023/NEXT_STEPS.json",
+      "inherited_status": "planned",
+      "workstream": "affine_forcing",
+      "new_evidence_closes_item": false,
+      "action": "use new frontier results where available; preserve scope limits and remaining obligations"
+    },
+    {
+      "old_id": "CF01",
+      "source": "research/adaptive_causal_20261023/NEXT_STEPS.json",
+      "inherited_status": "planned",
+      "workstream": "causal_trajectory",
+      "new_evidence_closes_item": false,
+      "action": "use new frontier results where available; preserve scope limits and remaining obligations"
+    },
+    {
+      "old_id": "CP01",
+      "source": "research/adaptive_causal_20261023/NEXT_STEPS.json",
+      "inherited_status": "planned",
+      "workstream": "causal_parallel",
+      "new_evidence_closes_item": false,
+      "action": "use new frontier results where available; preserve scope limits and remaining obligations"
+    },
+    {
+      "old_id": "QA01",
+      "source": "research/adaptive_causal_20261023/NEXT_STEPS.json",
+      "inherited_status": "planned",
+      "workstream": "polynomial",
+      "new_evidence_closes_item": false,
+      "action": "use new frontier results where available; preserve scope limits and remaining obligations"
+    },
+    {
+      "old_id": "DV01",
+      "source": "research/adaptive_causal_20261023/NEXT_STEPS.json",
+      "inherited_status": "planned",
+      "workstream": "provider_selection",
+      "new_evidence_closes_item": false,
+      "action": "use new frontier results where available; preserve scope limits and remaining obligations"
+    },
+    {
+      "old_id": "SG01",
+      "source": "research/adaptive_causal_20261023/NEXT_STEPS.json",
+      "inherited_status": "planned",
+      "workstream": "structured_pde",
+      "new_evidence_closes_item": false,
+      "action": "use new frontier results where available; preserve scope limits and remaining obligations"
+    },
+    {
+      "old_id": "PB01",
+      "source": "research/adaptive_causal_20261023/NEXT_STEPS.json",
+      "inherited_status": "planned",
+      "workstream": "broad_regression",
+      "new_evidence_closes_item": false,
+      "action": "use new frontier results where available; preserve scope limits and remaining obligations"
+    }
+  ],
+  "inherited_source_sha256": {
+    "research/production_hardening_20261023/NEXT_STEPS.json": "0b4779b2a13996ba53bd16a808d105a93a946e9a00798c52e4b2b4740d1a495e",
+    "research/adaptive_causal_20261023/NEXT_STEPS.json": "28e4e6ecee962ce262918c24fde38e6d1e30186e098b99a46d99d41d19f1c169"
+  },
+  "evidence_reuse_policy": "Do not rerun unchanged published numerical/proof cohorts; cite immutable paths/identities; new contract or changed source requires targeted affected validation.",
+  "production_scope_policy": "Promotion is restricted to passed capability/problem/error/output ranges. Benchmarks do not prove universal correctness or optimality."
+}

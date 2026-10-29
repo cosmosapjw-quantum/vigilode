@@ -1,0 +1,54 @@
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:1207:
+     let expected_mean_len = cand
+         .degree
+         .checked_add(1)
+-        .ok_or(PacketError::OutwardRefusal("candidate degree overflows length"))?;
++        .ok_or(PacketError::OutwardRefusal(
++            "candidate degree overflows length",
++        ))?;
+     if cand.mean.len() != expected_mean_len {
+-        return Err(PacketError::OutwardRefusal("candidate mean/degree shape mismatch"));
++        return Err(PacketError::OutwardRefusal(
++            "candidate mean/degree shape mismatch",
++        ));
+     }
+     let n = packet.model.num_modes();
+     if request.initial_radii.len() != n {
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:1821:
+         assert_eq!(work.output_copy_items, 10);
+         assert_eq!(work.output_restriction_multiplies, 10);
+         assert_eq!(work.reconstruction_terms, 4);
+-        let refusal: Result<(), PacketError> = Err(PacketError::OutwardRefusal("test refusal after precharge"));
++        let refusal: Result<(), PacketError> =
++            Err(PacketError::OutwardRefusal("test refusal after precharge"));
+         assert!(refusal.is_err());
+         assert_eq!(work.output_copy_items, 10);
+         assert_eq!(work.output_restriction_multiplies, 10);
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:255:
+ 
+ #[test]
+ fn outward_refuses_overflowing_candidate_degree_before_allocation() {
+-    let model=one_mode(0.0,0.0,0.0); let mut work=PacketWorkCounters::new(); let packet=compile_packet(&model,0.01,4,&mut work).unwrap(); let table=CausalWeights::compile(4,12); let mut cand=generate_candidate(&packet,4,1,&table,&mut work).unwrap();
+-    cand.degree=usize::MAX;
+-    assert!(matches!(reconstruct_outward_at_times(&cand,&packet,OutwardPacketRequest{times:&[0.01],initial_radii:&[0.0]},&mut work),Err(PacketError::OutwardRefusal(_))));
++    let model = one_mode(0.0, 0.0, 0.0);
++    let mut work = PacketWorkCounters::new();
++    let packet = compile_packet(&model, 0.01, 4, &mut work).unwrap();
++    let table = CausalWeights::compile(4, 12);
++    let mut cand = generate_candidate(&packet, 4, 1, &table, &mut work).unwrap();
++    cand.degree = usize::MAX;
++    assert!(matches!(
++        reconstruct_outward_at_times(
++            &cand,
++            &packet,
++            OutwardPacketRequest {
++                times: &[0.01],
++                initial_radii: &[0.0]
++            },
++            &mut work
++        ),
++        Err(PacketError::OutwardRefusal(_))
++    ));
+ }
+ 
+ #[test]

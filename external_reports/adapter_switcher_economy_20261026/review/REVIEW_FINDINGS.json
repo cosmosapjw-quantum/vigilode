@@ -1,0 +1,291 @@
+{
+ "schema": "vigilode.adapter-economy-review-raw.v1",
+ "note": "Structured outputs of the independent review agents (3 lenses + completed verifiers); verifiers not listed did not run (session limit). Dispositions: ANALYSIS_KO.md section 6.",
+ "results": [
+  {
+   "agent": null,
+   "result": {
+    "findings": [
+     {
+      "title": "A ceiling hit during routed band verification aborts the whole switching solve instead of discarding the pilot",
+      "severity": "BLOCKER",
+      "file": "crates/vigilode/src/solve.rs",
+      "line": 208,
+      "claim": "On the DenseDeclaredBand route (user dense Jacobian + Problem::band, explicitly allowed by switching::validate at switching.rs:1407-1416) a bounded entry pilot whose entry ceiling is below 2n never becomes a discarded pilot: the Guard's FatalCallback raised during routing's band verification is wrapped as StructureError::BandVerificationFailed, the facade maps it to Err(SolveError::StructureRefused) rather than Ok(Status::Failed(WorkCeilingReached)), and the adapter ends the entire solve with success=false and accounting_complete=false; the verification's charged Jacobian work is in no segment (lost accounting).",
+      "evidence": "solve.rs:205-212 maps RoutingError::Structure to SolveError::StructureRefused (an Err, no partial). solve.rs:779 charges n units per dense Jacobian call via call_charged, and the declared-band fill at solve.rs:803-813 calls that dense provider. routing.rs:479 runs verify_declared_band(problem, t_span.0, y0)? before any integration step; routing.rs:321-322 calls the band fill (n units) and routing.rs:336 calls problem.dense_jacobian again (BandReference::DenseJacobian since the problem has no JVP), i.e. 2n charged units, with every callback error wrapped by `failed(...)`; its local `charged` counters are dropped on Err. switching.rs:1198-1206 turns the facade Err into Err(String); switching.rs:828-836 handles a pilot Err by setting accounting_complete=false, committing the explicit record and `break 'windows`. The drivers' attempt loops handle FatalCallback as a partial (rodas5p_fast.rs:2392-2395, matrix_free_fast.rs:2199-2205) but the verification runs outside them.",
+      "scenario": "Problem::new(64, rhs).jacobian(Jacobian::dense(..)).band(1,1), SwitchingConfig::evidence_driven(ProvidedOnly) with max_dense_dimension 64. An explicit batch shows pressure at 24 attempts (~145 RHS) so entry_ceiling = floor(0.8*145) = 116. The pilot's band verification charges 64 + 64 = 128 > 116: the second Jacobian call is answered FatalCallback, verify_declared_band returns BandVerificationFailed, solve_observed_bounded returns Err(StructureRefused), run() returns Err, drive_windows stops the whole solve at that checkpoint with success=false, accounting_complete=false and the two Jacobian builds uncounted. With the default explicit_attempt_budget=32 (ceiling at most ~154) every pilot aborts for n >= 78. Before this commit the same pilot ran to its attempt budget and was discarded benignly.",
+      "fix": "Never let a ceiling stop surface as Err: in solve_observed_bounded, when guard.ceiling_hit() is set after a RoutingError or driver Err, return Ok(Solution) with Status::Failed(WorkCeilingReached), t=[t0], y=[y0] and the verification work counted (make verify_declared_band return its partial `charged` on error, or arm the ceiling only after routing via a Guard::arm_ceiling() so verification work is counted in work_units but not bounded; work_units >= charged still holds). Add a contract test on the dense-declared-band route with a ceiling below 2n."
+     },
+     {
+      "title": "Coalesced implicit landings are not deduplicated; equal window endpoints make the facade refuse the run and the adapter abort",
+      "severity": "MAJOR",
+      "file": "crates/vigilode/src/switching.rs",
+      "line": 638,
+      "claim": "window_target is monotone but not injective when (t1 - t0)/window_count is below the clock resolution at t0; the coalesced batch passes equal interior landings to solve_observed_bounded, OutputSchedule::new refuses a non-strictly-increasing schedule before any callback, and drive_windows aborts the whole solve with accounting_complete=false. The pre-change per-window runs tolerated this (duplicate targets were skipped), as do both explicit schedules, which deduplicate; only the new coalesced implicit path lost that protection.",
+      "evidence": "switching.rs:638-645 builds landings from window..window+windows-1 filtered only by `> start`; solve.rs:156-168 filters `> t0 && < t1` (no dedup) and calls OutputSchedule::new; output.rs:475-479 returns InvalidInput('output schedule must be strictly increasing'); switching.rs:662-666 turns the Err into accounting_complete=false and `break 'windows`. Legacy protection: switching.rs:536-538 (`if target <= result.final_time { continue }`), switching.rs:417 and :944 (`if t > last { push }`). window_count is validated up to 1_000_000 (switching.rs:1363).",
+      "scenario": "t0 = 1e6, t1 = 1e6 + 1e-6, window_count = 100_000: spacing 1e-11 is below ulp(1e6) = 1.16e-10 so consecutive window targets round to the same f64. With implicit_pilot_attempt_budget: 0 and pressure_steps: 1 the first explicit window shows pressure and enters RODAS; after the residence batch the next batch coalesces probe_interval = 4 windows whose three interior landings are equal, so the facade returns InvalidInput and the solve ends with success=false, accounting_complete=false. The same request succeeded before this commit (the codebase audits such spans: R3-TIME-02).",
+      "fix": "Build landings with strict monotonicity (filter(|t| *t > last_pushed)) in drive_windows, and/or in solve_observed_bounded keep only times strictly greater than the previous one (and < t1). Add a test with a sub-ulp window spacing on the coalesced implicit path."
+     },
+     {
+      "title": "Return-hysteresis baseline silently changed from the last window's rate to the coalesced batch mean",
+      "severity": "MINOR",
+      "file": "crates/vigilode/src/switching.rs",
+      "line": 878,
+      "claim": "return_cost_ratio is unchanged but is now applied to the mean work rate of up to probe_interval windows instead of the last window's rate, so the coalescing itself changes which return decisions the registered fraction makes. The preregistration states that no entry/return threshold is relaxed and the doc comment says 'neither bound changes a decision' (true for the bounds), but this baseline change is not named in the change list.",
+      "evidence": "switching.rs:878 computes rate = record.work_units / (batch_target - start) over `windows` windows and :890 stores it as implicit_rate; the return ceiling at :625-627 and the economical test at :686-688 compare the probe against return_cost_ratio * implicit_rate. The pre-change code (diff hunk at switching.rs old :521) used record.work_units / (target - start) per window.",
+      "scenario": "Implicit per-window work 40, 30, 20, 10 units over one 4-window batch (decaying transient): legacy baseline is 10/window, new baseline is 25/window. A recheck costing 15 units/window is discarded by the legacy rule (15 > 0.8*10) and returned by the new rule (15 <= 0.8*25): an effectively looser return in decaying regimes and a tighter one in growing regimes, with the same registered fraction.",
+      "fix": "Register the baseline definition explicitly (batch mean) in PREREGISTRATION.md and the SwitchingConfig docs, or keep the per-window baseline by deriving the last window's share of the batch from the landed rows."
+     },
+     {
+      "title": "Recoverable-error callbacks are made and counted but not charged against the work ceiling",
+      "severity": "NOTE",
+      "file": "crates/vigilode/src/fd.rs",
+      "line": 133,
+      "claim": "charged_units grows only on Ok(()), so a callback that returns CallbackError::Recoverable enters user code, is counted in WorkCounters and recoverable_errors, but does not advance the ceiling; the economy bound is weaker than 'stops as soon as its charged callback work exceeds'. Decisions stay preserved because work_units >= charged.",
+      "evidence": "fd.rs:133-153: the Ok arm performs fetch_add and the ceiling test; the Err(Recoverable) arm only increments recoverable_errors. The core counts the call before entering user code (rodas5p-integrators/src/problem.rs:594, :681, :804, :826), so work_units already include it.",
+      "scenario": "A pilot on a problem whose RHS returns Recoverable outside a domain (the stiff trial step leaves it on every attempt): each attempt performs uncharged RHS work until the pilot's attempt budget or minimum step, so the pilot's discarded work is bounded only by implicit_pilot_attempt_budget, not by entry_cost_ratio * W_explicit.",
+      "fix": "Charge before entering user code (fetch_add, then call, keep the charge on Err); the bound becomes tight and still never stops a pilot that could pass."
+     },
+     {
+      "title": "Legacy probes now land on target as an interior observation; final-step clipped telemetry differs from the pre-change terminal landing",
+      "severity": "NOTE",
+      "file": "crates/vigilode/src/switching.rs",
+      "line": 1098,
+      "claim": "With carry_explicit_step = false a recheck no longer runs Dopri5::solve(start, target) but a scoped session over (start, solve_end) with times [start, target, solve_end]. The step sequence and RHS work are identical (end_step_capped equals land_capped to tf), but the final step toward target is now reported clipped = true where the legacy terminal step was clipped = false, so output_clipped_steps in the probe's driver record differs by one and the post-landing controller proposal differs; no decision input depends on either.",
+      "evidence": "switching.rs:1098 (`if carry_explicit_step || probe`) and :1116-1121 (times and span); rodas5p-integrators/src/output.rs:143-145 (end_step_capped = land_capped(..tf).step) and :110-117 (shortened = natural - target > residue); adaptive_output.rs:244-260 (adaptive_end_step shortens the request to tf before limit_step, so the legacy terminal landing saw requested_h == to_target and reported shortened = false).",
+      "scenario": "A probe whose last proposal overshoots target by more than the rounding residue: legacy record shows output_clipped_steps = 0 for that batch, the new record shows 1; attempts and rhs_calls are equal.",
+      "fix": "None required; note it in the record docs if output_clipped_steps is compared across versions."
+     },
+     {
+      "title": "Additive public record changes (new FailureReason kind, SwitchingSegment::windows, decision type) without a schema note",
+      "severity": "NOTE",
+      "file": "crates/vigilode/src/solution.rs",
+      "line": 109,
+      "claim": "FailureReason gained the serialized kind 'work-ceiling-reached' under STATS_SCHEMA 'vigilode.stats.v4', whose doc enumerates per-version changes (the previous typed reason, EventInterpolationFailed, was recorded in the v4 note), and SwitchingSegment gained `windows` and changed `decision` to &'static str under the unchanged 'vigilode.switching.v1' schema; no schema note or bump accompanies them. The compile_fail doctest in lib.rs:140-158 still holds because the enum is #[non_exhaustive].",
+      "evidence": "solution.rs:30-37 (STATS_SCHEMA doc with per-version notes) and :109 (new variant, serde tag 'kind'); switching.rs:211 (windows), :236 (decision: &'static str), :360 (schema string unchanged).",
+      "scenario": "A consumer validating serialized status.kind or segment fields against the v4 / switching.v1 notes meets an undocumented kind and field.",
+      "fix": "Add a v4/v1 doc note (or bump the schema strings) per the facade's own convention."
+     }
+    ]
+   }
+  },
+  {
+   "agent": null,
+   "result": {
+    "findings": [
+     {
+      "title": "Entry-pilot work ceiling can fire inside the router's band verification and abort the whole adapter solve with lost accounting",
+      "severity": "BLOCKER",
+      "file": "crates/vigilode/src/switching.rs",
+      "line": 787,
+      "claim": "On the Jacobian::Dense + declared-band route, a pilot whose entry ceiling is below the band verification's 2n charged units does not become a discarded pilot: the ceiling trips inside verify_declared_band, the router returns StructureRefused, run() returns Err, and drive_windows stops the entire solve with accounting_complete = false, losing the verification's callback units. This contradicts 'every call made stays counted' and 'neither bound changes a decision' (PREREGISTRATION change 1) and AGENTS.md 2.5.",
+      "evidence": "switching.rs:776-787 passes Some(entry_ceiling) to run(); solve.rs:170-175 creates Guard::with_ceiling before build(), so the router's pre-step callbacks are charged. solve.rs:799-821 maps Dense+band to Plan::Routed{declaration: Some}; routing.rs:250-253 routes any declared band to RoutedDriver::Banded; routing.rs:474-479 runs verify_declared_band unconditionally, which calls the facade band fill (solve.rs:803-813 -> dense -> call_charged n units) and problem.dense_jacobian (another n units). fd.rs:135-144 returns CoreError::FatalCallback once charged > ceiling; routing.rs:323/335-337 map it to StructureError::BandVerificationFailed; solve.rs:207-210 -> SolveError::StructureRefused; switching.rs:1207-1215 -> Err(String); switching.rs:828-836 sets accounting_complete=false, decision 'implicit pilot failed without a work record; stop' and break 'windows. No switching test uses a declared band.",
+      "scenario": "evidence_driven(ProvidedOnly), n=12 problem with a dense Jacobian and .band(1,1). An explicit batch completes its window in 3 attempts with 1 rejection (0.33 >= rejection_fraction 0.3 -> pressure) with work_units ~20, so entry_ceiling = floor(0.8*20) = 16 < 2n = 24. Band fill charges 12, dense Jacobian takes the total to 24 > 16 -> FatalCallback -> the solve returns Ok with success=false, accounting_complete=false, message 'band verification failed: dense Jacobian: Jacobian callback ... exceeds the work ceiling 16', and the 24 charged units appear in no counter. At 4fe67602 the same request ran the pilot, discarded it and continued on the explicit route.",
+      "fix": "In solve_observed_bounded, when the router/driver returns Err and guard.ceiling_hit().is_some(), return Ok(Solution) with Status::Failed(WorkCeilingReached), zero attempts and the verification's charged work (tally per-callback units in the Guard); or exempt the pre-step verification by arming the ceiling only once the driver loop starts (e.g. ceiling.max(2n+1) for the declared-band plan: the pass test is separate, so a larger ceiling never changes a decision). Add a declared-band pilot contract test."
+     },
+     {
+      "title": "Recheck trend re-arm cannot advance a recheck: the coalesced implicit batch always ends exactly at the scheduled recheck",
+      "severity": "MAJOR",
+      "file": "crates/vigilode/src/switching.rs",
+      "line": 886,
+      "claim": "PREREGISTRATION change 4 and the probe_backoff_factor doc claim a falling implicit rate 're-arms the recheck at once'. With change 5 the implicit batch spans exactly the windows up to the next scheduled recheck, the rate is observed only at its end, and since_probe >= recheck_interval holds at the next window with or without the re-arm; the re-arm's only live effect is resetting probe_discards for the following interval. The timing claim is not supported, and the test bound cannot detect it.",
+      "evidence": "switching.rs:589-604: until_recheck = recheck_interval(probe_discards) - since_probe (or residence - implicit_windows), capped only by window_count, so windows == until_recheck. switching.rs:888: since_probe += windows -> since_probe >= recheck_interval(probe_discards). switching.rs:539-541: probe is true at the next window either way. switching.rs:881-886: the re-arm sets since_probe = probe_interval.max(windows), i.e. the same next window. tests/switching_economy_contracts.rs:352-358 bounds the return by 2*probe_interval*probe_backoff_factor = 16 windows, exactly the maximum backed-off interval (4*2^2).",
+      "scenario": "Persistently stiff tenure with two discarded rechecks (probe_discards = 2): the next implicit batch spans 8 windows (window 9..16). If the problem becomes smooth at window 10, the rate fall is only observable after window 16, so the recheck happens there regardless of rearm_rate_ratio; 'at once' would have been a recheck at window 11. The same holds after the first discard (4 windows) and at the base interval.",
+      "fix": "Coalesce at most probe_interval windows per native run and evaluate the re-arm between chunks (recheck now, or continue the backed-off wait), or perform the rate check inside the native run via the drivers' accept-control stop (DriverStopReason::ClientStop). Otherwise amend the registered claim to 'resets the back-off after the scheduled recheck' and tighten the test bound to one base interval after the transition."
+     },
+     {
+      "title": "Sub-resolution window endpoints in a coalesced implicit batch abort the solve where the legacy adapter skipped them",
+      "severity": "MINOR",
+      "file": "crates/vigilode/src/switching.rs",
+      "line": 639,
+      "claim": "landings for a coalesced implicit batch are not deduplicated; two consecutive window targets that round to the same f64 produce a non-increasing schedule, OutputSchedule::new fails, run() returns Err and the solve stops with accounting_complete = false. The single-window path skipped such windows and the explicit session dedupes its schedule, so this is a regression limited to the coalesced implicit path.",
+      "evidence": "switching.rs:638-645 filters landings only by t > start; solve.rs:156-168 filters by the span and never dedupes; output.rs:475-479 rejects pair[1] <= pair[0]; switching.rs:662-666 handles the Err by setting accounting_complete=false and breaking. Compare switching.rs:414-420 (explicit session dedupe) and switching.rs:536-538 (skip of covered windows). tests/switching_contracts.rs:384-398 covers tiny windows only under Forbidden.",
+      "scenario": "t_span = (2^50, 2^50 + 1.0) (ulp 0.25), window_count = 16, ProvidedOnly with implicit_pilot_attempt_budget = 0 on a stiff problem: targets of windows 3 and 4 both round to t0 + 0.25; the first coalesced batch that includes both as landings fails with 'output schedule must be strictly increasing' and the solve returns success = false although every window is representable progress-wise.",
+      "fix": "Dedupe landings against the running last value (keep t only if t > last, as the explicit session does) and let solve_observed_bounded drop duplicates; add the tiny-window contract for the implicit route."
+     },
+     {
+      "title": "carry_explicit_step == false recheck now runs a scoped session over (start, t1) instead of Dopri5::solve((start, target))",
+      "severity": "NOTE",
+      "file": "crates/vigilode/src/switching.rs",
+      "line": 1116,
+      "claim": "Probes always use with_session with times [start, target, t1]; target becomes an interior landing (limit_step/land_capped) instead of the span end (adaptive_end_step, below_min_step against t1), so the probe's attempt sequence is not guaranteed identical to the legacy probe in rounding-residue cases, and the probe's public driver record now describes a (start, t1) session. No pinned contract is broken: initial_step = h0.min(target - start), proposed_next_step is None when carry is false (switching.rs:1165), and success/budget flags are equivalent (a landing on target with AttemptBudget is still a success). Not disclosed in the preregistration beyond 'scoped native session one attempt at a time'.",
+      "evidence": "switching.rs:1116-1125 and 1165; adaptive_output.rs:238-270 (span-end landing via adaptive_end_step then limit_step toward the next due time); output.rs comments on limit_landed_step describe the rounding cases where span-end and interior landings differ.",
+      "scenario": "A probe whose last step ends within the rounding residue of target: legacy treated target as tf (end-step rule), the session treats it as an interior due time; the attempt count can differ by one, changing the probe's rate by a few RHS calls near the hysteresis boundary. No threshold is relaxed; G2 compared counts only on the measured cells.",
+      "fix": "Disclose the path change in the preregistration (results section) and, if bit-equivalence of the legacy probe matters, keep Dopri5::solve((start, target)) when no ceiling applies or add a probe-path regression contract."
+     },
+     {
+      "title": "Global budget exhaustion at an interior landing of a coalesced batch is reported as an implicit driver failure",
+      "severity": "NOTE",
+      "file": "crates/vigilode/src/switching.rs",
+      "line": 869,
+      "claim": "With local.max_steps = remaining, a coalesced run that spends the global budget exactly at an interior window endpoint stops with MaxStepsReached (t < tf), so the segment is success = false, evidence stays Uncompared, windows reports the requested count, and the message is 'implicit driver stopped; preserve partial accepted state' instead of the legacy 'implicit window completed' followed by 'total attempt budget exhausted'. Final time and state are identical; only the public message and segment flags differ.",
+      "evidence": "switching.rs:616-622 (implicit batch quota = remaining), switching.rs:869-876 (non-success implicit branch), switching.rs:403-407 and 569-571 (legacy budget message path), rodas5p_fast.rs:264-285 (after_loop reports AttemptBudget only when t < tf).",
+      "scenario": "max_steps such that the last permitted attempt lands exactly on window 3 inside a 4-window coalesced batch: the record is a failed batch with windows = 4 and the solve message names the implicit driver, not the budget.",
+      "fix": "If the legacy message is pinned anywhere, classify an implicit partial whose last accepted time is a landed window endpoint and whose stop reason is the attempt budget as a completed prefix and emit 'total attempt budget exhausted'."
+     }
+    ]
+   }
+  },
+  {
+   "agent": null,
+   "result": {
+    "findings": [
+     {
+      "title": "Gate evaluator edited after the run; the EXEC_SHA comparator reports G3=False (FAIL) and compare.py is not hash-pinned",
+      "severity": "MAJOR",
+      "file": "research/adapter_switcher_economy_20261026/tools/compare.py",
+      "line": 44,
+      "claim": "PREREGISTRATION.md:122-123 'PASS only if G1-G5 all hold ... No threshold, cap or bound in this file is changed after the run'; Results :161 'suite:c10:switching is the registered report-only cell'; ledger L-0170 verdict PASS at EXEC_SHA 636cdc7a.",
+      "evidence": "git diff 636cdc7a..HEAD -- tools/compare.py replaces `validated = a[\"error\"] is not None` with `attainable = error is not None and any direct candidate of the cell passes the cap`. evidence/AFTER_636cdc7a.json: suite:c10:switching error 3.085e-2, cap 1e-4, accuracy_pass False, so the 636cdc7a comparator yields G3_success_accuracy_all=False. evidence/GATES.json carries keys accuracy_gated_cells/accuracy_report_only_cells that only the HEAD comparator emits. research/LEDGER.jsonl:167 inputs_sha256 pins run_campaign.sh and analyze.py but no compare.py (sha a34fd639... at 636cdc7a vs 9e73aee1... at HEAD). The Results section never says the comparator was changed after the run (only the HEAD commit message does). The implemented exemption is data-dependent (any switching cell whose direct candidates all miss the cap), broader than the registered cell-named rule.",
+      "scenario": "A reviewer re-running tools/compare.py at the ledger's execution commit on the committed BASELINE/AFTER JSONs obtains G3=False and the registered verdict FAIL; the recorded PASS exists only under a comparator edited after the results were seen and outside the hashed inputs, contrary to AGENTS.md step 3 (scripts at EXEC_SHA). In a future run any cell whose direct candidates miss the cap is exempted automatically rather than by registration.",
+      "fix": "Pin the report-only cell by name in compare.py, include compare.py in inputs_sha256, and state in Results that the EXEC_SHA comparator reported G3=False and why; or supersede L-0170 with a row whose EXEC_SHA contains the corrected comparator."
+     },
+     {
+      "title": "Recheck 'trend re-arm' cannot advance a recheck under coalesced tenure; test 5's upper bound exceeds the span; a late stiff-to-smooth transition is hidden for the rest of the solve",
+      "severity": "MAJOR",
+      "file": "crates/vigilode/tests/switching_economy_contracts.rs",
+      "line": 353,
+      "claim": "PREREGISTRATION.md:68-70 'An implicit rate falling to 1/rearm_rate_ratio ... re-arms it'; switching.rs:79-80 're-arms the recheck at once'; test comment 'Capped back-off: the return happens within two grown intervals'.",
+      "evidence": "switching.rs:590-605 sizes every implicit batch to exactly recheck_interval(probe_discards) - since_probe windows, so when it completes a probe is due at the next window whether or not the re-arm at :882-886 fires; the re-arm only resets probe_discards. Test limit = 1.5 + (2*probe_interval(4)*probe_backoff_factor(2)) * (4/16) = 5.5 > t1 = 4.0, so `returned.start_time <= limit` is always true. With ts = 1.5 the return at the window-9 probe (t = 2.0) is the legacy schedule (first discard keeps the interval), so neither back-off nor re-arm is exercised.",
+      "scenario": "Same test with ts = 2.75 (window 12 of 16): probes at windows 5 and 9 are discarded (stiff), the interval becomes 8, the implicit batch covers windows 9-16 to t1 and no probe runs after the transition; `returned` is None and the test panics, whereas the legacy schedule probes at window 13 and returns at t = 3.0. For this family RODAS work is forcing-limited (exact solution cos 2t for any lambda), so the rate-drop re-arm cannot fire either.",
+      "fix": "Either make the re-arm able to cut a coalesced batch (evaluate the trend at each window landing) or drop the re-arm claim for rechecks and register the delay bound (up to 4x probe_interval windows); set the test limit to ts + probe_interval*probe_backoff_factor*window (below t1) and add a case with ts beyond the second discarded probe."
+     },
+     {
+      "title": "Committed analysis JSONs are not the pinned analyze.py output (per-segment rows stripped by an undocumented step)",
+      "severity": "MINOR",
+      "file": "research/adapter_switcher_economy_20261026/tools/analyze.py",
+      "line": 117,
+      "claim": "PREREGISTRATION.md:100-104 'tools/analyze.py RAW OUT.json BIN COMMIT buckets every segment ...; the node keeps the three analysis JSONs'; ledger outputs_sha256 hashes AFTER/BEFORE2 as analyze.py outputs.",
+      "evidence": "analyze.py:117 writes `\"segments\": rows` per switch cell, but BASELINE_4fe67602.json, evidence/AFTER_636cdc7a.json and evidence/BEFORE2_4fe67602.json have no per-cell segments key (only totals.segments counts; 9 occurrences). No strip script exists and the ledger command does not mention one.",
+      "scenario": "Re-running the pinned analyze.py on the retained raw cannot reproduce the hashed JSONs; the `reconciled` flag and bucket sums gated by G3/G2 cannot be re-derived from committed data.",
+      "fix": "Add a documented --drop-segments mode (or a committed strip script) and hash its output, or keep the rows in the committed JSONs."
+     },
+     {
+      "title": "compare.py silently drops switching cells from G2 and G3 and gates fewer counters than the registered 'all counters'",
+      "severity": "MINOR",
+      "file": "research/adapter_switcher_economy_20261026/tools/compare.py",
+      "line": 38,
+      "claim": "PREREGISTRATION.md:108-114: G1 'all counters'; G2/G3 'On every switching cell'.",
+      "evidence": "Lines 38-39 `continue` before ok2/ok3 when either run has no completed direct candidate; SW/DI are A-keys that also exist in B (lines 9-10) with no check against the 19 registered cells; line 20 iterates b['stats'], the 8 summary fields of analyze.py:46-50, not the full counters object.",
+      "scenario": "If an after-run direct cell fails to complete or a cell file is missing, the matching switching cell leaves both the work and accuracy gates while G1-G3 still print True; a regression in a non-summarized counter (e.g. lu_factorizations, jacobian_matvecs) is invisible to G1.",
+      "fix": "Assert the registered cell set is present in both files, make a missing candidate a gate failure, and compare the complete counters object for direct cells."
+     },
+     {
+      "title": "'Discarded pilot' bucket and results column include passed pilots",
+      "severity": "MINOR",
+      "file": "research/adapter_switcher_economy_20261026/tools/analyze.py",
+      "line": 59,
+      "claim": "Results table column 'discarded pilots b->a (attempts)' (PREREGISTRATION.md:149) and ledger claim 'discarded pilot attempts'.",
+      "evidence": "A passing pilot is pushed with committed=false (switching.rs:807-812; the explicit candidate is the committed record), so analyze.py buckets it as implicit_pilot_discarded. bench:stiff-forced:evidence `0:Rpilot![8] 1:D[32] 2:R[12]` is the passing pilot (PREREGISTRATION.md:37 '1 pilot (passes)') yet lines 154-156 report 'discarded pilots 1(8)->1(8)'; suite:c5 '2(23)->2(6)' includes the 1-attempt passing pilot.",
+      "scenario": "Readers count 8 attempts of a successful entry decision as waste; G2 gates passed-pilot attempts under 'discarded', so a future longer passing pilot would fail G2 for a non-waste reason.",
+      "fix": "Split the bucket by evidence (implicit-cheaper-on-prefix vs incomplete/not-cheaper) and relabel the column."
+     },
+     {
+      "title": "Test 3 can pass without the entry re-arm; no measured cell contains a late transition",
+      "severity": "MINOR",
+      "file": "crates/vigilode/tests/switching_economy_contracts.rs",
+      "line": 289,
+      "claim": "'The late stiff transition re-arms the pilot at once: entry within a few explicit batches of the transition, not after the grown cooldown' (G4 'immediate re-arm at a late stiff transition').",
+      "evidence": "The assertion `entry - ts < 6e-4` also holds when the grown cooldown (pilots at batches 1, 6, 15, 32 ... for cooldown 4, factor 2) expires in the stiff phase; nothing asserts that the passing pilot ran before batches_since_entry_pilot reached cooldown*2^(discards-1). All nine campaign cells have switches <= 1 with transitions at t ~ 0, so the campaign cannot detect a broken re-arm.",
+      "scenario": "A regression that never sets explicit_rate_at_discard (re-arm dead) still passes whenever the smooth phase ends just before an eligible batch (e.g. between batches 31 and 32).",
+      "fix": "Count committed explicit batches between the last smooth-phase discard and the passing pilot and assert it is below the grown cooldown; add a control with rearm_rate_ratio = f64::MAX expecting a later entry; add a late-transition cell to run_campaign.sh."
+     },
+     {
+      "title": "Test 4 does not show that the return work ceiling engaged",
+      "severity": "MINOR",
+      "file": "crates/vigilode/tests/switching_economy_contracts.rs",
+      "line": 324,
+      "claim": "'discarded probes ... are work bounded' (return ceiling exactness, G4 'recheck bound and back-off').",
+      "evidence": "`probe.rhs_calls <= cap.floor() + 7` also holds when the probe is ended by probe_attempt_budget (16 attempts ~ 97 RHS) whenever cap >= 90; unlike test 1 (ceiling_stops > 0) nothing asserts decision.contains(\"ceiling\") or attempts < c.probe_attempt_budget.",
+      "scenario": "If return_ceiling were silently None (implicit_rate unset) every probe would still be discarded by the budget and the test passes vacuously.",
+      "fix": "Assert at least one probe has the ceiling decision, attempts < probe_attempt_budget and rhs_calls > cap.floor()."
+     },
+     {
+      "title": "No verdict-identity control for the decision-preserving ceilings; campaign conflates ceiling and back-off; 'legacy reachable' overstated",
+      "severity": "MINOR",
+      "file": "research/adapter_switcher_economy_20261026/PREREGISTRATION.md",
+      "line": 52,
+      "claim": "'every threshold unchanged; new controls default to the bounded behaviour, legacy reachable'; items 1-2 'decision-preserving'.",
+      "evidence": "Verified by reading: Guard stops only on strict `charged > ceiling` (fd.rs:133-146), core counters charge before user code (problem.rs:594), work_units = rhs+jvp+ft+n*jac+solves (switching.rs:1270) dominates charged units, DOPRI work_units = rhs_calls so the RHS-only probe bound equals the work bound. But no test or cell compares verdict sequences with and without ceilings; the before/after pilot counts change through back-off (rotation 6->3), so identical verdicts cannot be read off. pilot_backoff_factor=1 does not restore legacy since `(pilot_eligible || rearm)` (switching.rs:762) still fires early, and coalescing/mean-step seeding have no legacy switch.",
+      "scenario": "A future change that charges a callback category in the Guard but not in work_units flips pilot verdicts and nothing in the suite or campaign detects it.",
+      "fix": "Add a cfg(test) no-ceiling hook and a test asserting identical per-checkpoint pilot/probe verdicts; qualify 'legacy reachable' to the three new controls."
+     },
+     {
+      "title": "Predictions post-date the disclosed development run and the back-off policy was tuned on a gated cell",
+      "severity": "NOTE",
+      "file": "research/adapter_switcher_economy_20261026/PREREGISTRATION.md",
+      "line": 129,
+      "claim": "'Predictions. Rotation evidence: at most 950 attempts ...' presented as registered predictions.",
+      "evidence": "The disclosed dev run gave 892/66/1209, exactly the after values; the back-off was changed after seeing case5's delayed entry; predictions carry slack above already-observed numbers.",
+      "scenario": "Prediction success provides no evidence beyond the dev run; G2 on case5 is not an independent confirmation of the policy choice.",
+      "fix": "State in Results that predictions were sanity bounds informed by the dev run."
+     },
+     {
+      "title": "Return rule as registered omits the completion-within-budget condition; return is structurally impossible when a window needs more than 16 explicit attempts",
+      "severity": "NOTE",
+      "file": "crates/vigilode/src/switching.rs",
+      "line": 687,
+      "claim": "PREREGISTRATION.md:61-63 'An explicit recheck can return only if its work rate is at most return_cost_ratio times the last implicit rate'.",
+      "evidence": "economical = record.success && rate <= ratio*old, with local.max_steps = probe_attempt_budget (line 617). bench:rotation:pressure-only: direct DOPRI needs ~875/8 ~ 110 attempts per window, the single probe is 16 attempts before and after, the return ceiling (~0.8*3e4*0.125 ~ 3000 RHS) never binds, and the adapter stays on RODAS-MF (19749 JVP, 29x diagnostic ratio).",
+      "scenario": "On any non-stiff problem whose window needs > probe_attempt_budget explicit attempts the adapter can never return, independent of work rates.",
+      "fix": "State the condition in the preregistration; consider scaling the probe budget to the window's expected explicit attempts."
+     },
+     {
+      "title": "Floating-point asymmetry between the return ceiling and the rate pass test",
+      "severity": "NOTE",
+      "file": "crates/vigilode/src/switching.rs",
+      "line": 625,
+      "claim": "'Neither bound changes a decision' (switching.rs:344; PREREGISTRATION.md:61).",
+      "evidence": "Ceiling = floor(fl(fl(r*old)*T)) (line 627) while the pass test is fl(W/T) <= fl(r*old) (line 688); for W = C+1 with q*T within an ulp below C+1, fl(W/T) can equal q so the probe would pass but is stopped. The entry side shares one product (exactly equivalent).",
+      "scenario": "A probe whose RHS count lands exactly one past the ceiling at a rounding boundary is discarded although the rate test would accept it (measure ~ulp, but the claim is 'never').",
+      "fix": "Test `W as f64 <= r*old*T` with the same product used for the ceiling."
+     },
+     {
+      "title": "Accuracy degradation on the implicit cells is not discussed",
+      "severity": "NOTE",
+      "file": "research/adapter_switcher_economy_20261026/PREREGISTRATION.md",
+      "line": 157,
+      "claim": "'every validated cap kept'.",
+      "evidence": "Errors rose stiff-forced 1.57e-10 -> 7.33e-10 and suite:c5 9.86e-10 -> 1.25e-8 (12.7x), a direct consequence of mean-step seeding and fewer h0 restarts; within cap, but the Results text does not mention it.",
+      "scenario": "A reader takes 'decision-preserving' for trajectory-preserving; the loss of the incidental accuracy from h0 restarts is unreported.",
+      "fix": "One sentence in Results attributing the error change."
+     },
+     {
+      "title": "Allocation bound of 12 per batch is undocumented and not shown to fail on the baseline",
+      "severity": "NOTE",
+      "file": "crates/vigilode/tests/switching_economy_contracts.rs",
+      "line": 442,
+      "claim": "G5 'The allocation bound (at most 12 allocations per committed explicit batch plus 48) holds'.",
+      "evidence": "The test allows 12*64+48 = 816 allocations; the per-batch allocations are not enumerated and the baseline's per-batch count is not recorded anywhere in the node.",
+      "scenario": "If the baseline already allocated <= 12 per batch the test is not a discriminating contract for item 6.",
+      "fix": "Enumerate the expected allocations, assert a tight count, and record the baseline count in the node."
+     }
+    ]
+   }
+  },
+  {
+   "agent": null,
+   "result": {
+    "refuted": false,
+    "severity": "MINOR",
+    "reasoning": "Confirmed from research/adapter_switcher_economy_20261026/tools/compare.py. (1) Lines 38-39 `continue` before ok2/ok3 (line 40/45) and before `g2 &= ok2; g3 &= ok3` (47) and the per-cell gates[k] entry (48): a switching cell whose B or A comparison has best_direct None silently leaves both G2 and G3, which stay True. Registered G2 (PREREGISTRATION.md:110-112) and the success/reconcile/determinism parts of G3 (:113-114) do not depend on a direct candidate, so the coupling is a comparator defect vs. the registration. (2) Lines 9-10 build SW/DI as A-keys present in B with no check against the registered cell set (18 cells = 10 bench + 8 suite, not 19 as the finding states; both committed JSONs hold 18 runs). (3) Line 20 iterates b[\"stats\"], which for direct cells is analyze.py:46-50 direct_summary = 8 fields (verified in evidence/AFTER_636cdc7a.json: attempts, accepted_steps, rejected_steps, rhs_calls, jvp_vectors, jacobian_builds, linear_solves, ft_calls), while WorkCounters (crates/rodas5p-core/src/work.rs) has ~60 fields (direct_factorizations, jacobian_matvecs, rhs_evaluations, linear_iterations, fast_attempts, fallback_steps, local_error_failures, ...), so G1 as coded is narrower than the registered \"all counters\" (:108). Qualifications: the finding's `lu_factorizations` is actually `direct_factorizations`; a missing raw cell file makes analyze.py raise FileNotFoundError (fixed BENCH/SUITE lists, open() at lines 27/36) rather than yielding a partial JSON, so that sub-path only matters for a hand-edited or differently produced JSON; best_direct is None only when every direct cell of the same kind/case has success False, and a before-True/after-False flip is caught by G1 line 20, so \"G1-G3 still print True\" holds only when direct cells fail identically in both campaigns. In the recorded run all 18 cells are present, all 9 direct cells succeeded, every switching cell has best_direct and a per-cell GATES.json entry, and G1 additionally verified bitwise final-state equality on all 9 direct cells, so the defect is latent and the committed verdicts are not wrong; only a counter regression that leaves the final state unchanged would be invisible. MINOR is the right severity: a real but untriggered gate-coverage gap in a research-node comparator, with no effect on the recorded evidence."
+   }
+  },
+  {
+   "agent": null,
+   "result": {
+    "refuted": false,
+    "severity": "MINOR",
+    "reasoning": "Confirmed from the code and the committed evidence (read-only; no builds run).\n\nCode path (crates/vigilode/src/switching.rs): `run()` constructs every batch record with `committed: false` (line 1280). `commit()` (lines 1306-1312) is the only place that sets `committed = true`, and it is invoked only on the explicit `record` (lines 690, 704, 723, 822, 832, 859, 870, 903), never on `pilot.record`. A passing pilot (`enter == true`) receives evidence `ImplicitCheaperOnPrefix` and decision \"same-checkpoint implicit pilot passed entry work ratio\" (lines 800-808) and is pushed at line 819 still `committed=false`; the explicit candidate is then committed at line 903. The adapter's own counter `pilot_discards` is incremented only when `!enter` (lines 815-818), so the code's notion of \"discarded pilot\" excludes passing pilots. By contrast a passing explicit probe IS committed (lines ~685-690), so `explicit_probe_discarded` holds only failed probes; the pilot bucket is asymmetric.\n\nAnalysis script: research/adapter_switcher_economy_20261026/tools/analyze.py line 59 buckets any non-dopri5 segment with `committed == false` as `implicit_pilot_discarded`, tags it `Rpilot!` (line 113), and PREREGISTRATION.md line 165 defines `!` as \"discarded\". tools/compare.py gates G2 on `implicit_pilot_discarded[\"attempts\"]`, i.e. on all pilot attempts, whereas the registered G2 text (PREREGISTRATION.md line 110) says \"discarded pilot attempts\".\n\nEvidence: in both BASELINE_4fe67602.json and evidence/AFTER_636cdc7a.json, bench:stiff-forced:evidence has decision sequence `0:Rpilot![8] 1:D[32] 2:R[12] ...` with switches=1 and `implicit_pilot_discarded = 1(8)`. A pilot segment only exists when `implicit_pilot_attempt_budget > 0` (lines 759-760), in which case `enter` can become true only via a passing pilot (lines 791-793, 840-846); the replay precedes the explicit candidate it evaluates (segments doc, lines 280-283). So the single pilot at index 0 necessarily passed (the author's own diagnosis table, line 37, says \"1 pilot (passes)\"), yet the results table line 154 reports it under \"discarded pilots b\u2192a (attempts)\" as \"1(8)\u21921(8)\". Same for suite:c5:switching: `2:Rpilot![1] 3:D[32] 4:R[9]` \u2014 the 1-attempt pilot passed, yet it is included in \"2(23)\u21922(6)\" (line 157). The per-segment rows are not in the repo (stripped per PREREGISTRATION line 103), but the bucket counts, decision sequences and switch counts in the committed JSONs are sufficient to confirm.\n\nImpact bounds the severity: no gate verdict in the recorded run changes (stiff-forced 8 \u2264 8; c5 6 \u2264 23), the ledger's headline number (rotation 169\u219215) is numerically accurate because rotation never switched, and no WorkCounters are wrong. The defect is a mislabeled results column and `!` legend for two cells, plus a latent mismatch between the registered G2 wording and its implementation (a future longer-but-economical passing pilot would fail G2 for a non-waste reason). The proposed fix (split by `evidence`/`success`, which analyze.py already records per row, and relabel) is feasible. MINOR as reported."
+   }
+  },
+  {
+   "agent": null,
+   "result": {
+    "refuted": false,
+    "severity": "MINOR",
+    "reasoning": "Confirmed from the code and the registration text (read-only; git and file reads only).\n\nCode: In the base commit (4fe67602, old drive_windows) every implicit batch covered exactly one window (`run(..., target, ...)` with `target` the window endpoint) and set `implicit_rate = Some(record.work_units / (target - start))`, so the recheck at the next window was compared against the immediately preceding window's rate. In HEAD, crates/vigilode/src/switching.rs:594-611 sets `batch_target` to the endpoint of window `last = window + until_recheck - 1` (until_recheck = `implicit_residence - implicit_windows` during residence, else `recheck_interval(probe_discards) - since_probe`, clamped to >= 1), line 878 computes `rate = record.work_units / (batch_target - start)` over all `windows` windows, and line 890 stores it as `implicit_rate`. That value is the only baseline consumed by the return ceiling at :625-627 (`return_cost_ratio * rate * (target - start)`) and by the economical test at :686-688 (`rate <= config.return_cost_ratio * old`). Windows are equal in time (`window_target` is linear in the index), so the batch rate is the arithmetic mean of the per-window rates.\n\nScenario reachability: `implicit_residence == 0` is rejected by validate (:1366), but with defaults (residence 2, interval 4, backoff 2) the batch after a discarded recheck spans `recheck_interval(1) = 4` windows, and after further discards up to 4*2^2 = 16 windows, so a 4-window batch (and larger) is reachable at the same probe time as the legacy schedule. With per-window work 40,30,20,10 the legacy baseline is 10 and the new baseline is 100/4 = 25; a probe at 15 work units per window-span yields 15 > 0.8*10 (discarded, legacy) versus 15 <= 0.8*25 (ceiling floor(20*dt) not hit, economical -> return, new). The finding's \"up to probe_interval windows\" actually understates the span after back-off, which strengthens rather than weakens the claim.\n\nRegistration/docs: PREREGISTRATION.md change item 2 says the recheck returns only at \"`return_cost_ratio` times the last implicit rate\" and item 5 describes coalescing (landings, mean-step seeding, `SwitchingSegment::windows`) without stating that the return baseline becomes a multi-window batch mean; the Question section asks whether costs can be removed \"without changing any entry or return decision that the registered thresholds would make\", and ANALYSIS_KO.md line 7 repeats that no threshold/hysteresis changed (its only \"\ud3c9\uade0\" mention is the mean accepted step seed). The unchanged docs for `return_cost_ratio` (\"fraction of the last implicit rate\") and the variant `SwitchingEvidence::ExplicitCheaperThanPreviousWindow` (\"beat the previous implicit work rate\") now describe a per-batch mean, not a per-window rate. The new test at tests/switching_economy_contracts.rs:321-322 silently encodes the batch-rate definition (previous committed Rodas5p segment's work over its full span) rather than naming it as a change.\n\nSeverity: MINOR is appropriate. The registered fraction is unchanged, the ceiling remains decision-preserving relative to whatever baseline it is handed, accounting/atomicity/allocation are untouched, and the direction is data-dependent (looser in decaying regimes, tighter in growing ones) rather than a uniform tolerance widening. It is nonetheless an unregistered change to which return decisions the adapter makes, contradicting the registration's decision-preservation framing and the stale doc comments; the suggested fix (register the batch-mean baseline explicitly, or derive the last window's share from the landed rows) is accurate."
+   }
+  }
+ ]
+}

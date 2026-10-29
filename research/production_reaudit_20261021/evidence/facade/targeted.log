@@ -1,0 +1,466 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+warning: method `scalar_span_and_power` is never used
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:328:19
+    |
+326 | impl Rodas5pQuarticSegment {
+    | -------------------------- method in this implementation
+327 |     /// Exact represented time span for sealed model verifiers.
+328 |     pub(crate) fn scalar_span_and_power(
+    |                   ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: fields `prepared_centers`, `prepared_radii`, `prepared_times`, `prepared_count`, `radii`, and `prepared_valid` are never read
+   --> crates/rodas5p-integrators/src/output.rs:706:5
+    |
+698 | pub(crate) struct OutputCollector {
+    |                   --------------- fields in this struct
+...
+706 |     prepared_centers: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^^^
+707 |     prepared_radii: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^
+708 |     prepared_times: Vec<f64>,
+    |     ^^^^^^^^^^^^^^
+709 |     prepared_count: usize,
+    |     ^^^^^^^^^^^^^^
+710 |     radii: Vec<Vec<f64>>,
+    |     ^^^^^
+711 |     prepared_valid: bool,
+    |     ^^^^^^^^^^^^^^
+
+warning: struct `DenseOutputPreparationWork` is never constructed
+   --> crates/rodas5p-integrators/src/output.rs:716:19
+    |
+716 | pub(crate) struct DenseOutputPreparationWork {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `with_verified_radii`, `prepare_dense_interval_with_radii`, `prepare_dense_interval_inner`, `commit_prepared_dense_interval`, `prepared_dense_radii`, and `committed_output_radii` are never used
+    --> crates/rodas5p-integrators/src/output.rs:766:19
+     |
+ 722 | impl OutputCollector {
+     | -------------------- methods in this implementation
+...
+ 766 |     pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
+     |                   ^^^^^^^^^^^^^^^^^^^
+...
+1035 |     pub(crate) fn prepare_dense_interval_with_radii<C, R>(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1070 |     fn prepare_dense_interval_inner<C, R>(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1162 |     pub(crate) fn commit_prepared_dense_interval(&mut self) {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+...
+1180 |     pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+   Compiling vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/vigilode)
+warning: `rodas5p-integrators` (lib) generated 5 warnings
+error[E0463]: can't find crate for `vigilode`
+ --> crates/vigilode/tests/p0_api_contracts.rs:7:5
+  |
+7 | use vigilode::{
+  |     ^^^^^^^^ can't find crate
+
+error[E0463]: can't find crate for `vigilode`
+ --> crates/vigilode/tests/events_contracts.rs:5:5
+  |
+5 | use vigilode::{
+  |     ^^^^^^^^ can't find crate
+
+error[E0463]: can't find crate for `vigilode`
+  --> crates/vigilode/tests/facade_contracts.rs:20:5
+   |
+20 | use vigilode::{
+   |     ^^^^^^^^ can't find crate
+
+error[E0282]: type annotations needed
+  --> crates/vigilode/tests/p0_api_contracts.rs:45:45
+   |
+45 |         .jacobian(Jacobian::jvp(|_t, _y, v, out| {
+   |                                             ^^^
+46 |             out.copy_from_slice(v);
+   |             --- type must be known at this point
+   |
+help: consider giving this closure parameter an explicit type
+   |
+45 |         .jacobian(Jacobian::jvp(|_t, _y, v, out: /* Type */| {
+   |                                                ++++++++++++
+
+error[E0463]: can't find crate for `vigilode`
+  --> crates/vigilode/tests/p0_contracts.rs:27:5
+   |
+27 | use vigilode::{
+   |     ^^^^^^^^ can't find crate
+
+Some errors have detailed explanations: E0282, E0463.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `vigilode` (test "p0_api_contracts") due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/events_contracts.rs:251:20
+    |
+251 |     .event(|t, _y| (3.0 * t).sin(), Direction::Either);
+    |                    ^^^^^^^^^ cannot infer type
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/p0_contracts.rs:134:27
+    |
+134 |     Problem::new(1, move |t, y, dy| {
+    |                           ^
+135 |         dy[0] = lambda * (y[0] - t.sin()) + t.cos();
+    |                                  - type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+134 |     Problem::new(1, move |t: /* Type */, y, dy| {
+    |                            ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/p0_contracts.rs:142:28
+    |
+142 |     .time_derivative(move |t, _y, out| {
+    |                            ^
+143 |         out[0] = -lambda * t.cos() - t.sin();
+    |                            - type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+142 |     .time_derivative(move |t: /* Type */, _y, out| {
+    |                             ++++++++++++
+
+error: could not compile `vigilode` (test "events_contracts") due to 2 previous errors
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/p0_contracts.rs:372:40
+    |
+372 |     .jacobian(Jacobian::dense(|_t, _y, jac| {
+    |                                        ^^^
+373 |         jac.copy_from_slice(&[-1.0, 0.0, 0.0, -50.0]);
+    |         --- type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+372 |     .jacobian(Jacobian::dense(|_t, _y, jac: /* Type */| {
+    |                                           ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/p0_contracts.rs:456:45
+    |
+456 |     .jacobian(Jacobian::dense(move |_t, _y, jac| {
+    |                                             ^^^
+457 |         jac.copy_from_slice(&[-inv[0], -50.0 * inv[1], -inv[2], -50.0 * inv[3]]);
+    |         --- type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+456 |     .jacobian(Jacobian::dense(move |_t, _y, jac: /* Type */| {
+    |                                                ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/p0_contracts.rs:463:19
+    |
+463 |     for (x, r) in a.iter().zip(b) {
+    |                   ^ cannot infer type
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/p0_contracts.rs:466:13
+    |
+466 |             (x - r).abs() <= 10.0 * (1.0e-12 + 1.0e-8 * r.abs()),
+    |             ^^^^^^^ cannot infer type
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/facade_contracts.rs:657:46
+    |
+657 |         &robertson(Jacobian::jvp(|_t, _y, v, out| {
+    |                                              ^^^
+658 |             out.copy_from_slice(v);
+    |             --- type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+657 |         &robertson(Jacobian::jvp(|_t, _y, v, out: /* Type */| {
+    |                                                 ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/p0_contracts.rs:466:57
+    |
+466 |             (x - r).abs() <= 10.0 * (1.0e-12 + 1.0e-8 * r.abs()),
+    |                                                         ^ cannot infer type
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/facade_contracts.rs:719:51
+    |
+719 |         &problem.clone().time_derivative(|_t, _y, out| {
+    |                                                   ^^^
+720 |             out.fill(0.0);
+    |             --- type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+719 |         &problem.clone().time_derivative(|_t, _y, out: /* Type */| {
+    |                                                      ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/facade_contracts.rs:746:36
+    |
+746 |     let problem = Problem::new(1, |t, y, dy| {
+    |                                    ^
+747 |         dy[0] = -50.0 * (y[0] - t.cos());
+    |                                 - type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+746 |     let problem = Problem::new(1, |t: /* Type */, y, dy| {
+    |                                     ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/facade_contracts.rs:754:23
+    |
+754 |     .time_derivative(|t, _y, out| {
+    |                       ^
+755 |         out[0] = -50.0 * t.sin();
+    |                          - type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+754 |     .time_derivative(|t: /* Type */, _y, out| {
+    |                        ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/p0_contracts.rs:521:32
+    |
+521 |                 &robertson_dae(jacobian.clone()),
+    |                                ^^^^^^^^ cannot infer type
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/p0_contracts.rs:532:22
+    |
+532 |                     (state.iter().sum::<f64>() - 1.0).abs() <= 1.0e-12,
+    |                      ^^^^^ cannot infer type
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/p0_contracts.rs:539:31
+    |
+539 |                 .map(|(a, b)| (a - b).abs() / (atol + rtol * b.abs()))
+    |                               ^^^^^^^ cannot infer type
+
+error[E0282]: type annotations needed for `(_, _)`
+   --> crates/vigilode/tests/p0_contracts.rs:539:23
+    |
+539 |                 .map(|(a, b)| (a - b).abs() / (atol + rtol * b.abs()))
+    |                       ^^^^^^                                 - type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type, where the placeholders `_` are specified
+    |
+539 |                 .map(|(a, b): (_, _)| (a - b).abs() / (atol + rtol * b.abs()))
+    |                             ++++++++
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/p0_contracts.rs:574:39
+    |
+574 |     let jvp = Problem::new(2, |_t, y, dy| {
+    |                                       ^^
+575 |         dy.copy_from_slice(y);
+    |         -- type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+574 |     let jvp = Problem::new(2, |_t, y, dy: /* Type */| {
+    |                                         ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/p0_contracts.rs:578:41
+    |
+578 |     .jacobian(Jacobian::jvp(|_t, _y, v, out| {
+    |                                         ^^^
+579 |         out.copy_from_slice(v);
+    |         --- type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+578 |     .jacobian(Jacobian::jvp(|_t, _y, v, out: /* Type */| {
+    |                                            ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/p0_contracts.rs:615:48
+    |
+615 |             .jacobian(Jacobian::dense(|_t, _y, jac| {
+    |                                                ^^^
+616 |                 jac.copy_from_slice(&[-1.0, 0.0, 0.0, -50.0]);
+    |                 --- type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+615 |             .jacobian(Jacobian::dense(|_t, _y, jac: /* Type */| {
+    |                                                   ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/facade_contracts.rs:913:17
+    |
+913 |         assert!(sol.is_success());
+    |                 ^^^ cannot infer type
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/facade_contracts.rs:993:44
+    |
+993 |         .jacobian(Jacobian::dense(|_t, _y, jac| {
+    |                                            ^^^
+994 |             jac.copy_from_slice(&[-1.0, 0.0, 0.0, 0.0]);
+    |             --- type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+993 |         .jacobian(Jacobian::dense(|_t, _y, jac: /* Type */| {
+    |                                               ++++++++++++
+
+error[E0277]: the size for values of type `[f64]` cannot be known at compilation time
+   --> crates/vigilode/tests/p0_contracts.rs:758:39
+    |
+758 |     assert_eq!(sol.at(partial.t).map(|y| bits(&y)), Some(bits(&partial.y)));
+    |                                       ^ doesn't have a size known at compile-time
+    |
+    = help: the trait `Sized` is not implemented for `[f64]`
+    = note: all function arguments must have a statically known size
+
+error[E0282]: type annotations needed
+    --> crates/vigilode/tests/facade_contracts.rs:1236:46
+     |
+1236 |         &robertson(Jacobian::jvp(|_t, _y, v, out| {
+     |                                              ^^^
+1237 |             out.copy_from_slice(v);
+     |             --- type must be known at this point
+     |
+help: consider giving this closure parameter an explicit type
+     |
+1236 |         &robertson(Jacobian::jvp(|_t, _y, v, out: /* Type */| {
+     |                                                 ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/p0_contracts.rs:803:34
+    |
+803 |         band(t, y, out).map_err(|e| CoreError::NonFinite(e.to_string()))
+    |                                  ^                       - type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+803 |         band(t, y, out).map_err(|e: /* Type */| CoreError::NonFinite(e.to_string()))
+    |                                   ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/p0_contracts.rs:811:37
+    |
+811 |             rhs(t, y, out).map_err(|e| CoreError::NonFinite(e.to_string()))
+    |                                     ^                       - type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+811 |             rhs(t, y, out).map_err(|e: /* Type */| CoreError::NonFinite(e.to_string()))
+    |                                      ++++++++++++
+
+error: could not compile `vigilode` (test "facade_contracts") due to 8 previous errors
+error[E0282]: type annotations needed
+    --> crates/vigilode/tests/p0_contracts.rs:1083:40
+     |
+1083 |     .jacobian(Jacobian::dense(|_t, _y, jac| {
+     |                                        ^^^
+1084 |         jac.fill(0.0);
+     |         --- type must be known at this point
+     |
+help: consider giving this closure parameter an explicit type
+     |
+1083 |     .jacobian(Jacobian::dense(|_t, _y, jac: /* Type */| {
+     |                                           ++++++++++++
+
+error[E0282]: type annotations needed
+    --> crates/vigilode/tests/p0_contracts.rs:1216:17
+     |
+1216 |         assert!((x - r).abs() <= 1.0e-9 * (1.0 + r.abs()), "{x} {r}");
+     |                 ^^^^^^^ cannot infer type
+
+error[E0282]: type annotations needed
+    --> crates/vigilode/tests/p0_contracts.rs:1216:50
+     |
+1216 |         assert!((x - r).abs() <= 1.0e-9 * (1.0 + r.abs()), "{x} {r}");
+     |                                                  ^ cannot infer type
+
+error[E0282]: type annotations needed
+    --> crates/vigilode/tests/p0_contracts.rs:1257:17
+     |
+1257 |         assert!((x - r).abs() <= 1.0e-6 * (1.0 + r.abs()), "{x} {r}");
+     |                 ^^^^^^^ cannot infer type
+
+error[E0282]: type annotations needed
+    --> crates/vigilode/tests/p0_contracts.rs:1257:50
+     |
+1257 |         assert!((x - r).abs() <= 1.0e-6 * (1.0 + r.abs()), "{x} {r}");
+     |                                                  ^ cannot infer type
+
+error[E0282]: type annotations needed
+    --> crates/vigilode/tests/p0_contracts.rs:1290:45
+     |
+1290 |         .jacobian(Jacobian::jvp(|_t, _y, v, out| {
+     |                                             ^^^
+1291 |             out.copy_from_slice(v);
+     |             --- type must be known at this point
+     |
+help: consider giving this closure parameter an explicit type
+     |
+1290 |         .jacobian(Jacobian::jvp(|_t, _y, v, out: /* Type */| {
+     |                                                ++++++++++++
+
+error[E0282]: type annotations needed
+    --> crates/vigilode/tests/p0_contracts.rs:1377:21
+     |
+1377 |             let n = y0.len();
+     |                     ^^ cannot infer type
+
+error[E0282]: type annotations needed
+    --> crates/vigilode/tests/p0_contracts.rs:1526:21
+     |
+1526 |             assert!((te - exact).abs() <= 1e-6, "{name}: {te}");
+     |                     ^^^^^^^^^^^^ cannot infer type
+
+error[E0282]: type annotations needed
+    --> crates/vigilode/tests/p0_contracts.rs:1583:46
+     |
+1583 |         let injected = Problem::new(1, move |t, y, dy| {
+     |                                              ^
+1584 |             if t.to_bits() == midpoint.to_bits() && !callback_fired.swap(true, Ordering::SeqCst) {
+     |                - type must be known at this point
+     |
+help: consider giving this closure parameter an explicit type
+     |
+1583 |         let injected = Problem::new(1, move |t: /* Type */, y, dy| {
+     |                                               ++++++++++++
+
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+    --> crates/vigilode/tests/p0_contracts.rs:1584:40
+     |
+1584 |             if t.to_bits() == midpoint.to_bits() && !callback_fired.swap(true, Ordering::SeqCst) {
+     |                                        ^^^^^^^
+     |
+help: you must specify a type for this binding, like `f32`
+     |
+1580 |         let midpoint: f32 = 0.5 * clean.t[1];
+     |                     +++++
+
+Some errors have detailed explanations: E0277, E0282, E0463, E0689.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `vigilode` (test "p0_contracts") due to 28 previous errors

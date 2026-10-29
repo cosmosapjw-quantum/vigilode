@@ -1,0 +1,16 @@
+58c58
+<     for (key, candidates) in (("nfev",(:nf,:nf_evals)),("njev",(:njacs,:njac)),("nlu",(:nsolve,:nsolve_linear)),("accepted_steps",(:naccept,:naccepted)),("rejected_steps",(:nreject,:nrejected)))
+---
+>     for (key, candidates) in (("nf",(:nf,)),("njacs",(:njacs,)),("nw_factorizations",(:nw,)),("nsolve_linear_solves",(:nsolve,)),("nnonliniter",(:nnonliniter,)),("naccept",(:naccept,)),("nreject",(:nreject,)))
+65c65
+<     return (elapsed=elapsed,states=states,retcode=string(sol.retcode),counters=counters,solver_stats=string(destats))
+---
+>     return (elapsed=elapsed,times=Float64.(sol.t),states=states,retcode=string(sol.retcode),counters=counters,solver_stats=string(destats))
+77c77
+<         push!(rows,Dict("repetition"=>i,"elapsed_seconds"=>r.elapsed,"retcode"=>r.retcode,"states"=>r.states,"counters"=>r.counters,"solver_stats"=>r.solver_stats))
+---
+>         push!(rows,Dict("repetition"=>i,"elapsed_seconds"=>r.elapsed,"retcode"=>r.retcode,"times"=>r.times,"states"=>r.states,"counters"=>r.counters,"solver_stats"=>r.solver_stats))
+79c79
+<     JSON3.write(stdout,Dict("status"=>"OK","julia_version"=>string(VERSION),"algorithm"=>name,"warmup_seconds"=>[x.elapsed for x in warm],"measurements"=>rows))
+---
+>     JSON3.write(stdout,Dict("status"=>"OK","adapter"=>"julia_solver_v3 (v2 + sol.t + separately named stats)","timing_scope"=>"in-process solve() call; ODEProblem built before timer","julia_version"=>string(VERSION),"algorithm"=>name,"warmup_seconds"=>[x.elapsed for x in warm],"measurements"=>rows))

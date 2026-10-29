@@ -1,0 +1,1439 @@
+{
+ "id": "E-03",
+ "purpose": "H1a: does the 0.1 output-policy rule fail for two admissible policies on the SAME dense code path (VigilODE) and for an established solver (scipy Radau)? H1b: is the dense-arm global error dominated by dense-output interpolation (grid points) rather than by the error at accepted step endpoints?",
+ "commands": [
+  "RAYON_NUM_THREADS=1 /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/cargo-target/measurement/e0203_v2rows --manifest /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/refdir/reference_manifest.json --out /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/out/e0203_rows.json  (policies clipped_base, dense_base, dense_h0x0.7, dense_maxstep_grid, clipped_h0x0.7, dense_base_union_accepted)",
+  "python3 /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-03/analyze_e03a.py",
+  "OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python3 /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-03/e03bc_scipy.py <six families>",
+  "python3 /home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-03/aggregate_e03.py"
+ ],
+ "inputs": [
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/out/e0203_rows.json",
+   "sha256": "62b75e30418b8a128a3ecac14892efc03cba8ad21be3fc467c53b7c6c5837c81"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/refdir/reference_manifest.json",
+   "sha256": "e272f32f3e235f506cfa59060846a54e20195ea4d991800c0706645c3fb78da2"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/refdir/artifacts/hires-ramped-n96-v2.json",
+   "sha256": "7516932105c537c4aaca9efaa50a1fcd205967038666cec187fe80cd35325364"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/refdir/artifacts/nonautonomous-stiff-forcing-n96-v2.json",
+   "sha256": "9dd6d70a16ff8040bc89b3a87332da3980c0d9c23be9c08258f6edb6e9f3e695"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/refdir/artifacts/robertson-ramped-n96-v2.json",
+   "sha256": "581bc33bae4783c50279cc08de77011970ec81d2088005261e253dc0dd4bda80"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/refdir/artifacts/rotating-nonnormal-n96-v2.json",
+   "sha256": "c9fcbcde4f98f053b8d52be803dd2773fc6404ef54342c6b74bc9dc1d09e9e2e"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/refdir/artifacts/semilinear-advection-diffusion-ramped-n96-grid8x12-v2.1.json",
+   "sha256": "dddd16fb39064953dd059270b6d78ec866622bae5fb75b8a8761e85a3a7cf038"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-02/refdir/artifacts/van-der-pol-ramped-n96-v2.json",
+   "sha256": "79abbf7c4211bd98e971ef4249a39e4fff863f250272944808e5e525f826365a"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-03/families.py",
+   "sha256": "19f0365f83dcd4c6cc21cb0aa1d3f3a6f690ac040aaa6b9ae5a7dd420242194f"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/tree/tools/reference_v2/generate_references_v2.py",
+   "sha256": "0ac0dbe76fb0ec9b598725db3cf90c8f527c291782875616c3920cf3842535fa"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/tree/tools/reference_v2/generate_references.py",
+   "sha256": "6a6f22dbdcc3c7d201962ab6940a3c348f0543326f36ea7167ec946e3c813acf"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/harness/src/bin/e0203_v2rows.rs",
+   "sha256": "d9caeaaee062b5501079762d299110c31ce662e829724032eb913ae9b8275234"
+  }
+ ],
+ "outputs": [
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-03/e03a_rows.json",
+   "sha256": "8f6e219428d1f99dada1800b89816e9339ebb6477d4f77c25b8313acaf04b03b"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-03/scipy/hires-ramped.json",
+   "sha256": "9d4d2d2fd840a8bd518b6b25fe6641c339d54b957e6cb2ee18da9aacd049f655"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-03/scipy/nonautonomous-stiff-forcing.json",
+   "sha256": "e51dd746817062be19dabef52f0d9c9ebf790bba4c4dddff3aa8b19b92443398"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-03/scipy/robertson-ramped.json",
+   "sha256": "475cfd0873d3ee060466620d3f12eb1b649da436e34faf771934fcdc962fa5fd"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-03/scipy/rotating-nonnormal.json",
+   "sha256": "37c5ab890a7b4c4f07f16b5dc7ba3a8b79b534f22a98132e61b4e5203b11e07d"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-03/scipy/semilinear-advection-diffusion-ramped.json",
+   "sha256": "045b47d28c330f24709f14a1ce1fdda257d4b7e55bdaa06037fec1d1d201e5ea"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-03/scipy/van-der-pol-ramped.json",
+   "sha256": "787219c5e670fdc68c031d72cf062bd669bf6e010859eb9880ac2f460f2d20b7"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-03/scipy/run_stdout.txt",
+   "sha256": "b22c1cf87c97ee71241ddb2c2ac2d6735696170e4a019640ee294f3312412085"
+  }
+ ],
+ "env": {
+  "RAYON_NUM_THREADS": "1",
+  "profile": "measurement",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "python": "3.12.3",
+  "scipy": "1.17.0",
+  "numpy": "2.4.2",
+  "OMP_NUM_THREADS": "1"
+ },
+ "summary_metrics": {
+  "scipy_run_complete": true,
+  "families_with_scipy": [
+   "hires-ramped",
+   "nonautonomous-stiff-forcing",
+   "robertson-ramped",
+   "rotating-nonnormal",
+   "semilinear-advection-diffusion-ramped",
+   "van-der-pol-ramped"
+  ],
+  "E03a_vigilode_same_code_path": {
+   "h0_pair_refadmissible": {
+    "pairs": 18,
+    "both_correct": 18,
+    "violations_among_both_correct": 16,
+    "fraction_violating": 0.8888888888888888,
+    "median_ratio": 0.5865501165165563,
+    "min_ratio": 0.0020299918436599562,
+    "max_ratio": 2.1760496624047625
+   },
+   "maxstep_pair_refadmissible": {
+    "pairs": 18,
+    "both_correct": 18,
+    "violations_among_both_correct": 17,
+    "fraction_violating": 0.9444444444444444,
+    "median_ratio": 0.9091637360189471,
+    "min_ratio": 0.0,
+    "max_ratio": 1.0310423566557412
+   },
+   "h0_pair_casetol_correct": {
+    "pairs": 18,
+    "both_correct": 6,
+    "violations_among_both_correct": 6,
+    "fraction_violating": 1.0,
+    "median_ratio": 0.5865501165165563,
+    "min_ratio": 0.0020299918436599562,
+    "max_ratio": 2.1760496624047625
+   },
+   "maxstep_pair_casetol_correct": {
+    "pairs": 18,
+    "both_correct": 6,
+    "violations_among_both_correct": 6,
+    "fraction_violating": 1.0,
+    "median_ratio": 0.9091637360189471,
+    "min_ratio": 0.0,
+    "max_ratio": 1.0310423566557412
+   },
+   "clipped_h0_pair": {
+    "pairs": 18,
+    "both_correct": 18,
+    "violations_among_both_correct": 2,
+    "fraction_violating": 0.1111111111111111,
+    "median_ratio": 0.001891836648114994,
+    "min_ratio": 2.4794084397292567e-05,
+    "max_ratio": 0.3130631392824511
+   },
+   "campaign_pair": {
+    "pairs": 18,
+    "both_correct": 18,
+    "violations_among_both_correct": 18,
+    "fraction_violating": 1.0,
+    "median_ratio": 0.9192821951727397,
+    "min_ratio": 0.12454170289388179,
+    "max_ratio": 1.0161987821164618
+   },
+   "arms_reference_admissible": 108,
+   "arms_total": 108
+  },
+  "E03b_scipy_radau_control": {
+   "A_vs_B_first_step": {
+    "pairs": 18,
+    "both_reference_admissible": 18,
+    "violations_among_both_correct": 17,
+    "fraction_violating": 0.9444444444444444,
+    "median_ratio": 1.292563669100538,
+    "min_ratio": 0.054606777882821804,
+    "max_ratio": 15.402615638767806,
+    "bitwise_identical": 0
+   },
+   "A_vs_C_teval": {
+    "pairs": 18,
+    "both_reference_admissible": 18,
+    "violations_among_both_correct": 0,
+    "fraction_violating": 0.0,
+    "median_ratio": 0.0,
+    "min_ratio": 0.0,
+    "max_ratio": 0.0,
+    "bitwise_identical": 18
+   },
+   "A_vs_D_maxstep_grid": {
+    "pairs": 18,
+    "both_reference_admissible": 17,
+    "violations_among_both_correct": 15,
+    "fraction_violating": 0.8823529411764706,
+    "median_ratio": 0.9973900968676905,
+    "min_ratio": 0.0,
+    "max_ratio": 1.422626729214005,
+    "bitwise_identical": 2
+   }
+  },
+  "E03b_tight_rerun_vs_artifact": [
+   {
+    "family": "hires-ramped",
+    "nfev": 12611,
+    "steps": 1797,
+    "max_grid_wrms_vs_artifact": 0.0,
+    "bitwise_equal_grid_points": 101,
+    "L1_vs_L2": 0.001798048684340616,
+    "artifact_d1": 0.0017980486843406156
+   },
+   {
+    "family": "nonautonomous-stiff-forcing",
+    "nfev": 88974,
+    "steps": 12661,
+    "max_grid_wrms_vs_artifact": 0.0,
+    "bitwise_equal_grid_points": 101,
+    "L1_vs_L2": 0.0016801800188215013,
+    "artifact_d1": 0.001680180018821501
+   },
+   {
+    "family": "robertson-ramped",
+    "nfev": 5580,
+    "steps": 787,
+    "max_grid_wrms_vs_artifact": 0.0,
+    "bitwise_equal_grid_points": 101,
+    "L1_vs_L2": 0.001579293888329195,
+    "artifact_d1": 0.0015792938883291954
+   },
+   {
+    "family": "rotating-nonnormal",
+    "nfev": 11986,
+    "steps": 1697,
+    "max_grid_wrms_vs_artifact": 0.0,
+    "bitwise_equal_grid_points": 101,
+    "L1_vs_L2": 0.0010875177788864294,
+    "artifact_d1": 0.0010875177788864292
+   },
+   {
+    "family": "semilinear-advection-diffusion-ramped",
+    "nfev": 2272,
+    "steps": 323,
+    "max_grid_wrms_vs_artifact": 0.0,
+    "bitwise_equal_grid_points": 101,
+    "L1_vs_L2": 0.0014511239872585088,
+    "artifact_d1": 0.0014511239872585086
+   },
+   {
+    "family": "van-der-pol-ramped",
+    "nfev": 20386,
+    "steps": 2900,
+    "max_grid_wrms_vs_artifact": 0.0,
+    "bitwise_equal_grid_points": 101,
+    "L1_vs_L2": 0.003857592913226361,
+    "artifact_d1": 0.0038575929132263604
+   }
+  ],
+  "E03c_vigilode_dense_base_attribution": {
+   "rows": 18,
+   "rows_ratio_gt5": 0,
+   "median_ratio_grid_interior_max_over_accepted_max": 1.0808472108909033,
+   "min_ratio": 0.7019416096660669,
+   "max_ratio": 2.4345488856312927,
+   "max_ref_interp_uncertainty": 0.004011819811051226
+  },
+  "E03c_scipy_A_attribution": {
+   "rows": 18,
+   "rows_ratio_gt5": 3,
+   "median_ratio_grid_interior_max_over_accepted_max": 2.1929445238143224,
+   "min_ratio": 0.3252606936106206,
+   "max_ratio": 31.147061311019996,
+   "max_ref_interp_uncertainty": 0.00371230371093991
+  },
+  "E03c_endpoint_tf_vs_max_grid_dense_base": {
+   "median_max_over_tf": 41.79612433593027,
+   "rows_gt5": 18,
+   "rows": 18
+  }
+ },
+ "e03b_pairs": {
+  "A_vs_B_first_step": [
+   {
+    "case_id": "hires-ramped-n96-rtol-1e-4-v2.1",
+    "left": "A_h0_dense",
+    "right": "B_h0x0.7_dense",
+    "gap_wrms_tight": 1981.7329717561202,
+    "denominator_max_grid_wrms": 1141.278569652461,
+    "ratio": 1.7364147758943653,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "hires-ramped-n96-rtol-1e-6-v2.1",
+    "left": "A_h0_dense",
+    "right": "B_h0x0.7_dense",
+    "gap_wrms_tight": 23.7599096082907,
+    "denominator_max_grid_wrms": 19.017673831629494,
+    "ratio": 1.2493594021354018,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "hires-ramped-n96-rtol-1e-8-v2.1",
+    "left": "A_h0_dense",
+    "right": "B_h0x0.7_dense",
+    "gap_wrms_tight": 0.2754675512428582,
+    "denominator_max_grid_wrms": 0.17690203912240454,
+    "ratio": 1.5571756697064008,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "nonautonomous-stiff-forcing-n96-rtol-1e-4-v2.1",
+    "left": "A_h0_dense",
+    "right": "B_h0x0.7_dense",
+    "gap_wrms_tight": 14772.357494869497,
+    "denominator_max_grid_wrms": 8482.486753218067,
+    "ratio": 1.7415125923144168,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "nonautonomous-stiff-forcing-n96-rtol-1e-6-v2.1",
+    "left": "A_h0_dense",
+    "right": "B_h0x0.7_dense",
+    "gap_wrms_tight": 40.744663232668515,
+    "denominator_max_grid_wrms": 36.65123548271848,
+    "ratio": 1.1116859417162115,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "nonautonomous-stiff-forcing-n96-rtol-1e-8-v2.1",
+    "left": "A_h0_dense",
+    "right": "B_h0x0.7_dense",
+    "gap_wrms_tight": 0.20575810695336097,
+    "denominator_max_grid_wrms": 0.26076250009191976,
+    "ratio": 0.7890632544205185,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "robertson-ramped-n96-rtol-1e-4-v2.1",
+    "left": "A_h0_dense",
+    "right": "B_h0x0.7_dense",
+    "gap_wrms_tight": 2214.7644924276196,
+    "denominator_max_grid_wrms": 1658.0458570902013,
+    "ratio": 1.335767936065674,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "robertson-ramped-n96-rtol-1e-6-v2.1",
+    "left": "A_h0_dense",
+    "right": "B_h0x0.7_dense",
+    "gap_wrms_tight": 113.33721352797076,
+    "denominator_max_grid_wrms": 82.47321279930455,
+    "ratio": 1.3742306099287365,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "robertson-ramped-n96-rtol-1e-8-v2.1",
+    "left": "A_h0_dense",
+    "right": "B_h0x0.7_dense",
+    "gap_wrms_tight": 0.38263568709820905,
+    "denominator_max_grid_wrms": 0.4072291902730858,
+    "ratio": 0.9396077104433882,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "rotating-nonnormal-n96-rtol-1e-4-v2.1",
+    "left": "A_h0_dense",
+    "right": "B_h0x0.7_dense",
+    "gap_wrms_tight": 160.5929563534369,
+    "denominator_max_grid_wrms": 2940.89786249696,
+    "ratio": 0.054606777882821804,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "rotating-nonnormal-n96-rtol-1e-6-v2.1",
+    "left": "A_h0_dense",
+    "right": "B_h0x0.7_dense",
+    "gap_wrms_tight": 43.310846361540364,
+    "denominator_max_grid_wrms": 28.34592487793475,
+    "ratio": 1.5279390793579193,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "rotating-nonnormal-n96-rtol-1e-8-v2.1",
+    "left": "A_h0_dense",
+    "right": "B_h0x0.7_dense",
+    "gap_wrms_tight": 0.33176654985777104,
+    "denominator_max_grid_wrms": 0.1407527675147203,
+    "ratio": 2.357087222622987,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "semilinear-advection-diffusion-ramped-n96-grid8x12-rtol-1e-4-v2.1",
+    "left": "A_h0_dense",
+    "right": "B_h0x0.7_dense",
+    "gap_wrms_tight": 37139.62645822779,
+    "denominator_max_grid_wrms": 2411.254512171864,
+    "ratio": 15.402615638767806,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "semilinear-advection-diffusion-ramped-n96-grid8x12-rtol-1e-6-v2.1",
+    "left": "A_h0_dense",
+    "right": "B_h0x0.7_dense",
+    "gap_wrms_tight": 90.4486789570436,
+    "denominator_max_grid_wrms": 156.8813217351282,
+    "ratio": 0.5765420507468271,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "semilinear-advection-diffusion-ramped-n96-grid8x12-rtol-1e-8-v2.1",
+    "left": "A_h0_dense",
+    "right": "B_h0x0.7_dense",
+    "gap_wrms_tight": 0.1791281432803951,
+    "denominator_max_grid_wrms": 0.4733424821301066,
+    "ratio": 0.37843242481489026,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "van-der-pol-ramped-n96-rtol-1e-4-v2.1",
+    "left": "A_h0_dense",
+    "right": "B_h0x0.7_dense",
+    "gap_wrms_tight": 4000.1063935763605,
+    "denominator_max_grid_wrms": 2906.8914215195327,
+    "ratio": 1.376076988622219,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "van-der-pol-ramped-n96-rtol-1e-6-v2.1",
+    "left": "A_h0_dense",
+    "right": "B_h0x0.7_dense",
+    "gap_wrms_tight": 37.41904895860948,
+    "denominator_max_grid_wrms": 41.46805737850749,
+    "ratio": 0.9023583771253154,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "van-der-pol-ramped-n96-rtol-1e-8-v2.1",
+    "left": "A_h0_dense",
+    "right": "B_h0x0.7_dense",
+    "gap_wrms_tight": 0.6753902314179331,
+    "denominator_max_grid_wrms": 0.5658421871265161,
+    "ratio": 1.1936017617345367,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   }
+  ],
+  "A_vs_C_teval": [
+   {
+    "case_id": "hires-ramped-n96-rtol-1e-4-v2.1",
+    "left": "A_h0_dense",
+    "right": "C_h0_teval",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 1141.278569652461,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   },
+   {
+    "case_id": "hires-ramped-n96-rtol-1e-6-v2.1",
+    "left": "A_h0_dense",
+    "right": "C_h0_teval",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 19.017673831629494,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   },
+   {
+    "case_id": "hires-ramped-n96-rtol-1e-8-v2.1",
+    "left": "A_h0_dense",
+    "right": "C_h0_teval",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 0.17690203912240454,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   },
+   {
+    "case_id": "nonautonomous-stiff-forcing-n96-rtol-1e-4-v2.1",
+    "left": "A_h0_dense",
+    "right": "C_h0_teval",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 8482.486753218067,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   },
+   {
+    "case_id": "nonautonomous-stiff-forcing-n96-rtol-1e-6-v2.1",
+    "left": "A_h0_dense",
+    "right": "C_h0_teval",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 36.65123548271848,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   },
+   {
+    "case_id": "nonautonomous-stiff-forcing-n96-rtol-1e-8-v2.1",
+    "left": "A_h0_dense",
+    "right": "C_h0_teval",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 0.26076250009191976,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   },
+   {
+    "case_id": "robertson-ramped-n96-rtol-1e-4-v2.1",
+    "left": "A_h0_dense",
+    "right": "C_h0_teval",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 1658.0458570902013,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   },
+   {
+    "case_id": "robertson-ramped-n96-rtol-1e-6-v2.1",
+    "left": "A_h0_dense",
+    "right": "C_h0_teval",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 82.47321279930455,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   },
+   {
+    "case_id": "robertson-ramped-n96-rtol-1e-8-v2.1",
+    "left": "A_h0_dense",
+    "right": "C_h0_teval",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 0.4072291902730858,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   },
+   {
+    "case_id": "rotating-nonnormal-n96-rtol-1e-4-v2.1",
+    "left": "A_h0_dense",
+    "right": "C_h0_teval",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 2940.89786249696,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   },
+   {
+    "case_id": "rotating-nonnormal-n96-rtol-1e-6-v2.1",
+    "left": "A_h0_dense",
+    "right": "C_h0_teval",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 28.34592487793475,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   },
+   {
+    "case_id": "rotating-nonnormal-n96-rtol-1e-8-v2.1",
+    "left": "A_h0_dense",
+    "right": "C_h0_teval",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 0.1407527675147203,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   },
+   {
+    "case_id": "semilinear-advection-diffusion-ramped-n96-grid8x12-rtol-1e-4-v2.1",
+    "left": "A_h0_dense",
+    "right": "C_h0_teval",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 2411.254512171864,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   },
+   {
+    "case_id": "semilinear-advection-diffusion-ramped-n96-grid8x12-rtol-1e-6-v2.1",
+    "left": "A_h0_dense",
+    "right": "C_h0_teval",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 156.8813217351282,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   },
+   {
+    "case_id": "semilinear-advection-diffusion-ramped-n96-grid8x12-rtol-1e-8-v2.1",
+    "left": "A_h0_dense",
+    "right": "C_h0_teval",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 0.4733424821301066,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   },
+   {
+    "case_id": "van-der-pol-ramped-n96-rtol-1e-4-v2.1",
+    "left": "A_h0_dense",
+    "right": "C_h0_teval",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 2906.8914215195327,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   },
+   {
+    "case_id": "van-der-pol-ramped-n96-rtol-1e-6-v2.1",
+    "left": "A_h0_dense",
+    "right": "C_h0_teval",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 41.46805737850749,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   },
+   {
+    "case_id": "van-der-pol-ramped-n96-rtol-1e-8-v2.1",
+    "left": "A_h0_dense",
+    "right": "C_h0_teval",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 0.5658421871265161,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   }
+  ],
+  "A_vs_D_maxstep_grid": [
+   {
+    "case_id": "hires-ramped-n96-rtol-1e-4-v2.1",
+    "left": "A_h0_dense",
+    "right": "D_h0_maxstep_grid_dense",
+    "gap_wrms_tight": 1141.2694292410827,
+    "denominator_max_grid_wrms": 1141.278569652461,
+    "ratio": 0.9999919910777075,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "hires-ramped-n96-rtol-1e-6-v2.1",
+    "left": "A_h0_dense",
+    "right": "D_h0_maxstep_grid_dense",
+    "gap_wrms_tight": 16.32272135808457,
+    "denominator_max_grid_wrms": 19.017673831629494,
+    "ratio": 0.8582922129486321,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "hires-ramped-n96-rtol-1e-8-v2.1",
+    "left": "A_h0_dense",
+    "right": "D_h0_maxstep_grid_dense",
+    "gap_wrms_tight": 0.08398923750238631,
+    "denominator_max_grid_wrms": 0.17690203912240454,
+    "ratio": 0.47477823273857966,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "nonautonomous-stiff-forcing-n96-rtol-1e-4-v2.1",
+    "left": "A_h0_dense",
+    "right": "D_h0_maxstep_grid_dense",
+    "gap_wrms_tight": 8196.154718139831,
+    "denominator_max_grid_wrms": 8482.486753218067,
+    "ratio": 0.966244328649307,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "nonautonomous-stiff-forcing-n96-rtol-1e-6-v2.1",
+    "left": "A_h0_dense",
+    "right": "D_h0_maxstep_grid_dense",
+    "gap_wrms_tight": 36.36990427776806,
+    "denominator_max_grid_wrms": 36.65123548271848,
+    "ratio": 0.9923241003681016,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "nonautonomous-stiff-forcing-n96-rtol-1e-8-v2.1",
+    "left": "A_h0_dense",
+    "right": "D_h0_maxstep_grid_dense",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 0.26076250009191976,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   },
+   {
+    "case_id": "robertson-ramped-n96-rtol-1e-4-v2.1",
+    "left": "A_h0_dense",
+    "right": "D_h0_maxstep_grid_dense",
+    "gap_wrms_tight": 1659.6921814889297,
+    "denominator_max_grid_wrms": 1658.0458570902013,
+    "ratio": 1.000992930558397,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "robertson-ramped-n96-rtol-1e-6-v2.1",
+    "left": "A_h0_dense",
+    "right": "D_h0_maxstep_grid_dense",
+    "gap_wrms_tight": 82.45636967303845,
+    "denominator_max_grid_wrms": 82.47321279930455,
+    "ratio": 0.9997957745831112,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "robertson-ramped-n96-rtol-1e-8-v2.1",
+    "left": "A_h0_dense",
+    "right": "D_h0_maxstep_grid_dense",
+    "gap_wrms_tight": 0.41907910204237786,
+    "denominator_max_grid_wrms": 0.4072291902730858,
+    "ratio": 1.0290988761423159,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "rotating-nonnormal-n96-rtol-1e-4-v2.1",
+    "left": "A_h0_dense",
+    "right": "D_h0_maxstep_grid_dense",
+    "gap_wrms_tight": 2932.275846031328,
+    "denominator_max_grid_wrms": 2940.89786249696,
+    "ratio": 0.9970682366852716,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "rotating-nonnormal-n96-rtol-1e-6-v2.1",
+    "left": "A_h0_dense",
+    "right": "D_h0_maxstep_grid_dense",
+    "gap_wrms_tight": 25.026713645901843,
+    "denominator_max_grid_wrms": 28.34592487793475,
+    "ratio": 0.8829034068803071,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "rotating-nonnormal-n96-rtol-1e-8-v2.1",
+    "left": "A_h0_dense",
+    "right": "D_h0_maxstep_grid_dense",
+    "gap_wrms_tight": 0.0,
+    "denominator_max_grid_wrms": 0.1407527675147203,
+    "ratio": 0.0,
+    "violates_0p1_rule": false,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": true
+   },
+   {
+    "case_id": "semilinear-advection-diffusion-ramped-n96-grid8x12-rtol-1e-4-v2.1",
+    "left": "A_h0_dense",
+    "right": "D_h0_maxstep_grid_dense",
+    "gap_wrms_tight": 2411.3275320202165,
+    "denominator_max_grid_wrms": 2411.254512171864,
+    "ratio": 1.0000302829286514,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "semilinear-advection-diffusion-ramped-n96-grid8x12-rtol-1e-6-v2.1",
+    "left": "A_h0_dense",
+    "right": "D_h0_maxstep_grid_dense",
+    "gap_wrms_tight": 156.88231342287952,
+    "denominator_max_grid_wrms": 156.8813217351282,
+    "ratio": 1.0000063212608126,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "semilinear-advection-diffusion-ramped-n96-grid8x12-rtol-1e-8-v2.1",
+    "left": "A_h0_dense",
+    "right": "D_h0_maxstep_grid_dense",
+    "gap_wrms_tight": 0.45084621068381253,
+    "denominator_max_grid_wrms": 0.4733424821301066,
+    "ratio": 0.9524735845701875,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": false,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "van-der-pol-ramped-n96-rtol-1e-4-v2.1",
+    "left": "A_h0_dense",
+    "right": "D_h0_maxstep_grid_dense",
+    "gap_wrms_tight": 2900.2403290964276,
+    "denominator_max_grid_wrms": 2906.8914215195327,
+    "ratio": 0.9977119570501094,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "van-der-pol-ramped-n96-rtol-1e-6-v2.1",
+    "left": "A_h0_dense",
+    "right": "D_h0_maxstep_grid_dense",
+    "gap_wrms_tight": 58.99356683524479,
+    "denominator_max_grid_wrms": 41.46805737850749,
+    "ratio": 1.422626729214005,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   },
+   {
+    "case_id": "van-der-pol-ramped-n96-rtol-1e-8-v2.1",
+    "left": "A_h0_dense",
+    "right": "D_h0_maxstep_grid_dense",
+    "gap_wrms_tight": 0.5654110339095855,
+    "denominator_max_grid_wrms": 0.5658421871265161,
+    "ratio": 0.9992380327470454,
+    "violates_0p1_rule": true,
+    "both_reference_admissible": true,
+    "bitwise_identical_grid_states": false
+   }
+  ]
+ },
+ "e03c_vigilode_rows": [
+  {
+   "case_id": "hires-ramped-n96-rtol-1e-4-v2.1",
+   "accepted_endpoint_count_interior": 11,
+   "accepted_max_wrms_tight": 2734.7293130185576,
+   "accepted_median_wrms_tight": 612.398233456925,
+   "endpoint_tf_wrms_tight": 213.5564648915265,
+   "ref_interp_uncertainty_max": 0.0011815133269462875,
+   "ref_interp_uncertainty_median": 0.00035094839369637396,
+   "grid_interior_count": 100,
+   "grid_interior_max_wrms_tight": 3923.2285484542876,
+   "grid_interior_median_wrms_tight": 721.7492320513891,
+   "grid_coincident_count": 1,
+   "grid_coincident_max_wrms_tight": 213.5564648915265,
+   "ratio_grid_interior_max_over_accepted_max": 1.4345948353198732,
+   "ratio_grid_interior_max_over_accepted_all_max": 1.4345948353198732,
+   "union_same_step_sequence": true
+  },
+  {
+   "case_id": "hires-ramped-n96-rtol-1e-6-v2.1",
+   "accepted_endpoint_count_interior": 27,
+   "accepted_max_wrms_tight": 74.88190765335294,
+   "accepted_median_wrms_tight": 10.686705313768295,
+   "endpoint_tf_wrms_tight": 3.296767444371869,
+   "ref_interp_uncertainty_max": 0.0019120261403366354,
+   "ref_interp_uncertainty_median": 0.0005194135802150539,
+   "grid_interior_count": 100,
+   "grid_interior_max_wrms_tight": 91.77919831222675,
+   "grid_interior_median_wrms_tight": 9.539483092594939,
+   "grid_coincident_count": 1,
+   "grid_coincident_max_wrms_tight": 3.296767444371869,
+   "ratio_grid_interior_max_over_accepted_max": 1.2256525132492029,
+   "ratio_grid_interior_max_over_accepted_all_max": 1.2256525132492029,
+   "union_same_step_sequence": true
+  },
+  {
+   "case_id": "hires-ramped-n96-rtol-1e-8-v2.1",
+   "accepted_endpoint_count_interior": 73,
+   "accepted_max_wrms_tight": 0.3424011749601485,
+   "accepted_median_wrms_tight": 0.09574917268937014,
+   "endpoint_tf_wrms_tight": 0.044414560387916864,
+   "ref_interp_uncertainty_max": 0.0012957097602264167,
+   "ref_interp_uncertainty_median": 0.00043963756347645266,
+   "grid_interior_count": 100,
+   "grid_interior_max_wrms_tight": 0.4094536822508206,
+   "grid_interior_median_wrms_tight": 0.07778787243681153,
+   "grid_coincident_count": 1,
+   "grid_coincident_max_wrms_tight": 0.044414560387916864,
+   "ratio_grid_interior_max_over_accepted_max": 1.1958302488257415,
+   "ratio_grid_interior_max_over_accepted_all_max": 1.1958302488257415,
+   "union_same_step_sequence": true
+  },
+  {
+   "case_id": "nonautonomous-stiff-forcing-n96-rtol-1e-4-v2.1",
+   "accepted_endpoint_count_interior": 77,
+   "accepted_max_wrms_tight": 40878.07754752733,
+   "accepted_median_wrms_tight": 1621.8188071874724,
+   "endpoint_tf_wrms_tight": 723.6830798781574,
+   "ref_interp_uncertainty_max": 0.0027106492399940874,
+   "ref_interp_uncertainty_median": 0.0005587188248690109,
+   "grid_interior_count": 100,
+   "grid_interior_max_wrms_tight": 42189.212459911774,
+   "grid_interior_median_wrms_tight": 955.958124647064,
+   "grid_coincident_count": 1,
+   "grid_coincident_max_wrms_tight": 723.6830798781574,
+   "ratio_grid_interior_max_over_accepted_max": 1.032074280177683,
+   "ratio_grid_interior_max_over_accepted_all_max": 1.032074280177683,
+   "union_same_step_sequence": true
+  },
+  {
+   "case_id": "nonautonomous-stiff-forcing-n96-rtol-1e-6-v2.1",
+   "accepted_endpoint_count_interior": 229,
+   "accepted_max_wrms_tight": 223.0687354630449,
+   "accepted_median_wrms_tight": 11.491363823203509,
+   "endpoint_tf_wrms_tight": 4.805310516681601,
+   "ref_interp_uncertainty_max": 0.0021861682230275583,
+   "ref_interp_uncertainty_median": 0.0005173755438560096,
+   "grid_interior_count": 100,
+   "grid_interior_max_wrms_tight": 233.3183721711091,
+   "grid_interior_median_wrms_tight": 8.631381656361446,
+   "grid_coincident_count": 1,
+   "grid_coincident_max_wrms_tight": 4.805310516681601,
+   "ratio_grid_interior_max_over_accepted_max": 1.0459483337581488,
+   "ratio_grid_interior_max_over_accepted_all_max": 1.0459483337581488,
+   "union_same_step_sequence": true
+  },
+  {
+   "case_id": "nonautonomous-stiff-forcing-n96-rtol-1e-8-v2.1",
+   "accepted_endpoint_count_interior": 614,
+   "accepted_max_wrms_tight": 2.176217657542536,
+   "accepted_median_wrms_tight": 0.09233756878979624,
+   "endpoint_tf_wrms_tight": 0.06510948545147359,
+   "ref_interp_uncertainty_max": 0.0024348456358716654,
+   "ref_interp_uncertainty_median": 0.0005244482013234278,
+   "grid_interior_count": 100,
+   "grid_interior_max_wrms_tight": 2.2813043844141885,
+   "grid_interior_median_wrms_tight": 0.07612400148708053,
+   "grid_coincident_count": 1,
+   "grid_coincident_max_wrms_tight": 0.06510948545147359,
+   "ratio_grid_interior_max_over_accepted_max": 1.0482887024224958,
+   "ratio_grid_interior_max_over_accepted_all_max": 1.0482887024224958,
+   "union_same_step_sequence": true
+  },
+  {
+   "case_id": "robertson-ramped-n96-rtol-1e-4-v2.1",
+   "accepted_endpoint_count_interior": 11,
+   "accepted_max_wrms_tight": 2011.8186511135257,
+   "accepted_median_wrms_tight": 246.04580420929145,
+   "endpoint_tf_wrms_tight": 234.27300926219303,
+   "ref_interp_uncertainty_max": 0.0009447902314218527,
+   "ref_interp_uncertainty_median": 0.00010809375660811276,
+   "grid_interior_count": 100,
+   "grid_interior_max_wrms_tight": 2721.509491845309,
+   "grid_interior_median_wrms_tight": 160.84834270943904,
+   "grid_coincident_count": 1,
+   "grid_coincident_max_wrms_tight": 234.27300926219303,
+   "ratio_grid_interior_max_over_accepted_max": 1.3527608417085581,
+   "ratio_grid_interior_max_over_accepted_all_max": 1.3527608417085581,
+   "union_same_step_sequence": true
+  },
+  {
+   "case_id": "robertson-ramped-n96-rtol-1e-6-v2.1",
+   "accepted_endpoint_count_interior": 21,
+   "accepted_max_wrms_tight": 162.73521470692032,
+   "accepted_median_wrms_tight": 5.2239401146693325,
+   "endpoint_tf_wrms_tight": 3.275077763663654,
+   "ref_interp_uncertainty_max": 0.0013335518373541655,
+   "ref_interp_uncertainty_median": 0.00042527200340075584,
+   "grid_interior_count": 100,
+   "grid_interior_max_wrms_tight": 369.7495657987199,
+   "grid_interior_median_wrms_tight": 4.6646692001335435,
+   "grid_coincident_count": 1,
+   "grid_coincident_max_wrms_tight": 3.275077763663654,
+   "ratio_grid_interior_max_over_accepted_max": 2.272093145080026,
+   "ratio_grid_interior_max_over_accepted_all_max": 2.272093145080026,
+   "union_same_step_sequence": true
+  },
+  {
+   "case_id": "robertson-ramped-n96-rtol-1e-8-v2.1",
+   "accepted_endpoint_count_interior": 65,
+   "accepted_max_wrms_tight": 2.2545834865874674,
+   "accepted_median_wrms_tight": 0.08951491457033017,
+   "endpoint_tf_wrms_tight": 0.006237841211243534,
+   "ref_interp_uncertainty_max": 0.0013310780364635681,
+   "ref_interp_uncertainty_median": 0.00047729123381878196,
+   "grid_interior_count": 100,
+   "grid_interior_max_wrms_tight": 2.2782596168631515,
+   "grid_interior_median_wrms_tight": 0.047025154469809594,
+   "grid_coincident_count": 1,
+   "grid_coincident_max_wrms_tight": 0.006237841211243534,
+   "ratio_grid_interior_max_over_accepted_max": 1.0105013322489647,
+   "ratio_grid_interior_max_over_accepted_all_max": 1.0105013322489647,
+   "union_same_step_sequence": true
+  },
+  {
+   "case_id": "rotating-nonnormal-n96-rtol-1e-4-v2.1",
+   "accepted_endpoint_count_interior": 46,
+   "accepted_max_wrms_tight": 12475.084707849921,
+   "accepted_median_wrms_tight": 3641.008945653268,
+   "endpoint_tf_wrms_tight": 2031.659197003315,
+   "ref_interp_uncertainty_max": 0.0010404343158308407,
+   "ref_interp_uncertainty_median": 0.0005717565578412608,
+   "grid_interior_count": 100,
+   "grid_interior_max_wrms_tight": 13889.830663211978,
+   "grid_interior_median_wrms_tight": 2497.3585499770256,
+   "grid_coincident_count": 1,
+   "grid_coincident_max_wrms_tight": 2031.659197003315,
+   "ratio_grid_interior_max_over_accepted_max": 1.1134057193593108,
+   "ratio_grid_interior_max_over_accepted_all_max": 1.1134057193593108,
+   "union_same_step_sequence": true
+  },
+  {
+   "case_id": "rotating-nonnormal-n96-rtol-1e-6-v2.1",
+   "accepted_endpoint_count_interior": 139,
+   "accepted_max_wrms_tight": 520.1024917298606,
+   "accepted_median_wrms_tight": 7.792779328601365,
+   "endpoint_tf_wrms_tight": 3.401458962045587,
+   "ref_interp_uncertainty_max": 0.0011203179108773978,
+   "ref_interp_uncertainty_median": 0.0005550106104835415,
+   "grid_interior_count": 100,
+   "grid_interior_max_wrms_tight": 365.08158023619063,
+   "grid_interior_median_wrms_tight": 19.604458645662696,
+   "grid_coincident_count": 1,
+   "grid_coincident_max_wrms_tight": 3.401458962045587,
+   "ratio_grid_interior_max_over_accepted_max": 0.7019416096660669,
+   "ratio_grid_interior_max_over_accepted_all_max": 0.7019416096660669,
+   "union_same_step_sequence": true
+  },
+  {
+   "case_id": "rotating-nonnormal-n96-rtol-1e-8-v2.1",
+   "accepted_endpoint_count_interior": 420,
+   "accepted_max_wrms_tight": 2.290702320498677,
+   "accepted_median_wrms_tight": 0.07970628467558925,
+   "endpoint_tf_wrms_tight": 0.060238419587421634,
+   "ref_interp_uncertainty_max": 0.0012083776498727481,
+   "ref_interp_uncertainty_median": 0.0005525846201830545,
+   "grid_interior_count": 100,
+   "grid_interior_max_wrms_tight": 1.6178232451219818,
+   "grid_interior_median_wrms_tight": 0.1316761589873832,
+   "grid_coincident_count": 1,
+   "grid_coincident_max_wrms_tight": 0.060238419587421634,
+   "ratio_grid_interior_max_over_accepted_max": 0.7062564308966117,
+   "ratio_grid_interior_max_over_accepted_all_max": 0.7062564308966117,
+   "union_same_step_sequence": true
+  },
+  {
+   "case_id": "semilinear-advection-diffusion-ramped-n96-grid8x12-rtol-1e-4-v2.1",
+   "accepted_endpoint_count_interior": 13,
+   "accepted_max_wrms_tight": 167333.47374161627,
+   "accepted_median_wrms_tight": 10086.731850322363,
+   "endpoint_tf_wrms_tight": 12443.764831710458,
+   "ref_interp_uncertainty_max": 0.0011750261642797188,
+   "ref_interp_uncertainty_median": 0.0007380917159967566,
+   "grid_interior_count": 100,
+   "grid_interior_max_wrms_tight": 170190.8236641023,
+   "grid_interior_median_wrms_tight": 4984.192707964486,
+   "grid_coincident_count": 1,
+   "grid_coincident_max_wrms_tight": 12443.764831710458,
+   "ratio_grid_interior_max_over_accepted_max": 1.0170757820213434,
+   "ratio_grid_interior_max_over_accepted_all_max": 1.0170757820213434,
+   "union_same_step_sequence": true
+  },
+  {
+   "case_id": "semilinear-advection-diffusion-ramped-n96-grid8x12-rtol-1e-6-v2.1",
+   "accepted_endpoint_count_interior": 25,
+   "accepted_max_wrms_tight": 5307.361163594429,
+   "accepted_median_wrms_tight": 326.11692866624884,
+   "endpoint_tf_wrms_tight": 255.00124704064544,
+   "ref_interp_uncertainty_max": 0.001439604114153711,
+   "ref_interp_uncertainty_median": 0.0005270240153878165,
+   "grid_interior_count": 100,
+   "grid_interior_max_wrms_tight": 5318.906887849224,
+   "grid_interior_median_wrms_tight": 159.03711531699327,
+   "grid_coincident_count": 1,
+   "grid_coincident_max_wrms_tight": 255.00124704064544,
+   "ratio_grid_interior_max_over_accepted_max": 1.0021754171044535,
+   "ratio_grid_interior_max_over_accepted_all_max": 1.0021754171044535,
+   "union_same_step_sequence": true
+  },
+  {
+   "case_id": "semilinear-advection-diffusion-ramped-n96-grid8x12-rtol-1e-8-v2.1",
+   "accepted_endpoint_count_interior": 58,
+   "accepted_max_wrms_tight": 207.34798212052286,
+   "accepted_median_wrms_tight": 9.558211684625995,
+   "endpoint_tf_wrms_tight": 3.8275298654879792,
+   "ref_interp_uncertainty_max": 0.0014276355940476073,
+   "ref_interp_uncertainty_median": 0.0006507640828570013,
+   "grid_interior_count": 100,
+   "grid_interior_max_wrms_tight": 207.48222053177787,
+   "grid_interior_median_wrms_tight": 4.5494013749698405,
+   "grid_coincident_count": 1,
+   "grid_coincident_max_wrms_tight": 3.8275298654879792,
+   "ratio_grid_interior_max_over_accepted_max": 1.0006474064029087,
+   "ratio_grid_interior_max_over_accepted_all_max": 1.0006474064029087,
+   "union_same_step_sequence": true
+  },
+  {
+   "case_id": "van-der-pol-ramped-n96-rtol-1e-4-v2.1",
+   "accepted_endpoint_count_interior": 27,
+   "accepted_max_wrms_tight": 4876.784226096279,
+   "accepted_median_wrms_tight": 898.973698003974,
+   "endpoint_tf_wrms_tight": 6.193576064208509,
+   "ref_interp_uncertainty_max": 0.0011808366311959455,
+   "ref_interp_uncertainty_median": 0.00047240991400761636,
+   "grid_interior_count": 100,
+   "grid_interior_max_wrms_tight": 7967.339428847542,
+   "grid_interior_median_wrms_tight": 586.4662261755383,
+   "grid_coincident_count": 1,
+   "grid_coincident_max_wrms_tight": 6.193576064208509,
+   "ratio_grid_interior_max_over_accepted_max": 1.633728100212701,
+   "ratio_grid_interior_max_over_accepted_all_max": 1.633728100212701,
+   "union_same_step_sequence": true
+  },
+  {
+   "case_id": "van-der-pol-ramped-n96-rtol-1e-6-v2.1",
+   "accepted_endpoint_count_interior": 85,
+   "accepted_max_wrms_tight": 162.09558890647327,
+   "accepted_median_wrms_tight": 6.8098193985897835,
+   "endpoint_tf_wrms_tight": 0.051079417871979615,
+   "ref_interp_uncertainty_max": 0.002171666191967576,
+   "ref_interp_uncertainty_median": 0.0005444483947552916,
+   "grid_interior_count": 100,
+   "grid_interior_max_wrms_tight": 255.11615519324104,
+   "grid_interior_median_wrms_tight": 6.205373834578678,
+   "grid_coincident_count": 1,
+   "grid_coincident_max_wrms_tight": 0.051079417871979615,
+   "ratio_grid_interior_max_over_accepted_max": 1.5738624160860988,
+   "ratio_grid_interior_max_over_accepted_all_max": 1.5738624160860988,
+   "union_same_step_sequence": true
+  },
+  {
+   "case_id": "van-der-pol-ramped-n96-rtol-1e-8-v2.1",
+   "accepted_endpoint_count_interior": 252,
+   "accepted_max_wrms_tight": 0.20961326996310908,
+   "accepted_median_wrms_tight": 0.06946925543023519,
+   "endpoint_tf_wrms_tight": 0.0012919848592311256,
+   "ref_interp_uncertainty_max": 0.004011819811051226,
+   "ref_interp_uncertainty_median": 0.0006411196435659064,
+   "grid_interior_count": 100,
+   "grid_interior_max_wrms_tight": 0.5103137528022186,
+   "grid_interior_median_wrms_tight": 0.08517414030105071,
+   "grid_coincident_count": 1,
+   "grid_coincident_max_wrms_tight": 0.0012919848592311256,
+   "ratio_grid_interior_max_over_accepted_max": 2.4345488856312927,
+   "ratio_grid_interior_max_over_accepted_all_max": 2.4345488856312927,
+   "union_same_step_sequence": true
+  }
+ ],
+ "e03c_scipy_rows": [
+  {
+   "case_id": "hires-ramped-n96-rtol-1e-4-v2.1",
+   "count": 23,
+   "max_wrms_tight": 272.9184179622208,
+   "median_wrms_tight": 21.890555749160292,
+   "ref_interp_uncertainty_max": 0.0013548184530111631,
+   "grid_interior_count": 98,
+   "grid_interior_max_wrms_tight": 1141.278569652461,
+   "grid_interior_median_wrms_tight": 210.97542361139267,
+   "ratio_grid_interior_max_over_accepted_max": 4.18175723783671,
+   "endpoint_tf_wrms_tight": 6.1771093067275755,
+   "max_grid_wrms_tight": 1141.278569652461
+  },
+  {
+   "case_id": "hires-ramped-n96-rtol-1e-6-v2.1",
+   "count": 62,
+   "max_wrms_tight": 1.2451307710869615,
+   "median_wrms_tight": 0.1552759486951517,
+   "ref_interp_uncertainty_max": 0.002011935022978135,
+   "grid_interior_count": 99,
+   "grid_interior_max_wrms_tight": 19.017673831629494,
+   "grid_interior_median_wrms_tight": 3.274772494202024,
+   "ratio_grid_interior_max_over_accepted_max": 15.273635728259805,
+   "endpoint_tf_wrms_tight": 0.6849845646429948,
+   "max_grid_wrms_tight": 19.017673831629494
+  },
+  {
+   "case_id": "hires-ramped-n96-rtol-1e-8-v2.1",
+   "count": 185,
+   "max_wrms_tight": 0.0056795739847153946,
+   "median_wrms_tight": 0.0005404270661082744,
+   "ref_interp_uncertainty_max": 0.0016610959040603216,
+   "grid_interior_count": 99,
+   "grid_interior_max_wrms_tight": 0.17690203912240454,
+   "grid_interior_median_wrms_tight": 0.044957063146475025,
+   "ratio_grid_interior_max_over_accepted_max": 31.147061311019996,
+   "endpoint_tf_wrms_tight": 0.0036023812487681853,
+   "max_grid_wrms_tight": 0.17690203912240454
+  },
+  {
+   "case_id": "nonautonomous-stiff-forcing-n96-rtol-1e-4-v2.1",
+   "count": 98,
+   "max_wrms_tight": 26079.040350853793,
+   "median_wrms_tight": 380.34451883429955,
+   "ref_interp_uncertainty_max": 0.002158782544017595,
+   "grid_interior_count": 98,
+   "grid_interior_max_wrms_tight": 8482.486753218067,
+   "grid_interior_median_wrms_tight": 1158.1853170935747,
+   "ratio_grid_interior_max_over_accepted_max": 0.3252606936106206,
+   "endpoint_tf_wrms_tight": 4788.351132221904,
+   "max_grid_wrms_tight": 8482.486753218067
+  },
+  {
+   "case_id": "nonautonomous-stiff-forcing-n96-rtol-1e-6-v2.1",
+   "count": 364,
+   "max_wrms_tight": 56.90629387535835,
+   "median_wrms_tight": 1.3090356452899246,
+   "ref_interp_uncertainty_max": 0.0025896079680889778,
+   "grid_interior_count": 99,
+   "grid_interior_max_wrms_tight": 36.65123548271848,
+   "grid_interior_median_wrms_tight": 6.978698116025999,
+   "ratio_grid_interior_max_over_accepted_max": 0.6440629495745329,
+   "endpoint_tf_wrms_tight": 2.2529290698697215,
+   "max_grid_wrms_tight": 36.65123548271848
+  },
+  {
+   "case_id": "nonautonomous-stiff-forcing-n96-rtol-1e-8-v2.1",
+   "count": 1253,
+   "max_wrms_tight": 0.040370753553974806,
+   "median_wrms_tight": 0.003568595661687268,
+   "ref_interp_uncertainty_max": 0.0026434751274052887,
+   "grid_interior_count": 99,
+   "grid_interior_max_wrms_tight": 0.26076250009191976,
+   "grid_interior_median_wrms_tight": 0.04903616510070239,
+   "ratio_grid_interior_max_over_accepted_max": 6.459193280682414,
+   "endpoint_tf_wrms_tight": 0.0068311958053182305,
+   "max_grid_wrms_tight": 0.26076250009191976
+  },
+  {
+   "case_id": "robertson-ramped-n96-rtol-1e-4-v2.1",
+   "count": 15,
+   "max_wrms_tight": 542.0112129254857,
+   "median_wrms_tight": 27.16907839292779,
+   "ref_interp_uncertainty_max": 0.0013311064071097173,
+   "grid_interior_count": 98,
+   "grid_interior_max_wrms_tight": 1658.0458570902013,
+   "grid_interior_median_wrms_tight": 46.341787157305745,
+   "ratio_grid_interior_max_over_accepted_max": 3.0590619115441533,
+   "endpoint_tf_wrms_tight": 26.987959804012203,
+   "max_grid_wrms_tight": 1658.0458570902013
+  },
+  {
+   "case_id": "robertson-ramped-n96-rtol-1e-6-v2.1",
+   "count": 28,
+   "max_wrms_tight": 46.40658650459524,
+   "median_wrms_tight": 1.1249613713512483,
+   "ref_interp_uncertainty_max": 0.0015266208401737097,
+   "grid_interior_count": 98,
+   "grid_interior_max_wrms_tight": 82.47321279930455,
+   "grid_interior_median_wrms_tight": 2.4902191329911076,
+   "ratio_grid_interior_max_over_accepted_max": 1.7771876582893669,
+   "endpoint_tf_wrms_tight": 0.4272504852850356,
+   "max_grid_wrms_tight": 82.47321279930455
+  },
+  {
+   "case_id": "robertson-ramped-n96-rtol-1e-8-v2.1",
+   "count": 84,
+   "max_wrms_tight": 0.27987298969664304,
+   "median_wrms_tight": 0.003929040713077983,
+   "ref_interp_uncertainty_max": 0.0015468771084575918,
+   "grid_interior_count": 99,
+   "grid_interior_max_wrms_tight": 0.4072291902730858,
+   "grid_interior_median_wrms_tight": 0.056881264466046265,
+   "ratio_grid_interior_max_over_accepted_max": 1.4550499879051757,
+   "endpoint_tf_wrms_tight": 0.0015538567034664489,
+   "max_grid_wrms_tight": 0.4072291902730858
+  },
+  {
+   "case_id": "rotating-nonnormal-n96-rtol-1e-4-v2.1",
+   "count": 40,
+   "max_wrms_tight": 804.0247266516149,
+   "median_wrms_tight": 35.21769660213802,
+   "ref_interp_uncertainty_max": 0.0010952345612216354,
+   "grid_interior_count": 98,
+   "grid_interior_max_wrms_tight": 2940.89786249696,
+   "grid_interior_median_wrms_tight": 45.146865699248096,
+   "ratio_grid_interior_max_over_accepted_max": 3.6577206707863543,
+   "endpoint_tf_wrms_tight": 8.291050436498628,
+   "max_grid_wrms_tight": 2940.89786249696
+  },
+  {
+   "case_id": "rotating-nonnormal-n96-rtol-1e-6-v2.1",
+   "count": 72,
+   "max_wrms_tight": 11.538497662251393,
+   "median_wrms_tight": 0.5804879015725242,
+   "ref_interp_uncertainty_max": 0.0010385776079829528,
+   "grid_interior_count": 98,
+   "grid_interior_max_wrms_tight": 28.34592487793475,
+   "grid_interior_median_wrms_tight": 4.181897148997956,
+   "ratio_grid_interior_max_over_accepted_max": 2.456639131684314,
+   "endpoint_tf_wrms_tight": 2.2641512778039146,
+   "max_grid_wrms_tight": 28.34592487793475
+  },
+  {
+   "case_id": "rotating-nonnormal-n96-rtol-1e-8-v2.1",
+   "count": 175,
+   "max_wrms_tight": 0.11302321516362891,
+   "median_wrms_tight": 0.02223636434863057,
+   "ref_interp_uncertainty_max": 0.0010276088323228987,
+   "grid_interior_count": 98,
+   "grid_interior_max_wrms_tight": 0.1407527675147203,
+   "grid_interior_median_wrms_tight": 0.0659324460825721,
+   "ratio_grid_interior_max_over_accepted_max": 1.2453438641870702,
+   "endpoint_tf_wrms_tight": 0.010784221248865416,
+   "max_grid_wrms_tight": 0.1407527675147203
+  },
+  {
+   "case_id": "semilinear-advection-diffusion-ramped-n96-grid8x12-rtol-1e-4-v2.1",
+   "count": 11,
+   "max_wrms_tight": 2149.393697969298,
+   "median_wrms_tight": 151.95352962161127,
+   "ref_interp_uncertainty_max": 0.0013834411309239555,
+   "grid_interior_count": 97,
+   "grid_interior_max_wrms_tight": 2411.254512171864,
+   "grid_interior_median_wrms_tight": 121.51672645879157,
+   "ratio_grid_interior_max_over_accepted_max": 1.1218300837347603,
+   "endpoint_tf_wrms_tight": 246.57920330010185,
+   "max_grid_wrms_tight": 2411.254512171864
+  },
+  {
+   "case_id": "semilinear-advection-diffusion-ramped-n96-grid8x12-rtol-1e-6-v2.1",
+   "count": 18,
+   "max_wrms_tight": 148.10539782366118,
+   "median_wrms_tight": 7.182454633748707,
+   "ref_interp_uncertainty_max": 0.0012683390059729596,
+   "grid_interior_count": 94,
+   "grid_interior_max_wrms_tight": 156.8813217351282,
+   "grid_interior_median_wrms_tight": 9.419182745909868,
+   "ratio_grid_interior_max_over_accepted_max": 1.059254585183424,
+   "endpoint_tf_wrms_tight": 10.003352024016813,
+   "max_grid_wrms_tight": 156.8813217351282
+  },
+  {
+   "case_id": "semilinear-advection-diffusion-ramped-n96-grid8x12-rtol-1e-8-v2.1",
+   "count": 37,
+   "max_wrms_tight": 0.4709485795831912,
+   "median_wrms_tight": 0.011637622833013473,
+   "ref_interp_uncertainty_max": 0.0014410520347169816,
+   "grid_interior_count": 98,
+   "grid_interior_max_wrms_tight": 0.4733424821301066,
+   "grid_interior_median_wrms_tight": 0.05847735555911871,
+   "ratio_grid_interior_max_over_accepted_max": 1.0050831505830935,
+   "endpoint_tf_wrms_tight": 0.01319787937481411,
+   "max_grid_wrms_tight": 0.4733424821301066
+  },
+  {
+   "case_id": "van-der-pol-ramped-n96-rtol-1e-4-v2.1",
+   "count": 35,
+   "max_wrms_tight": 871.8544771229459,
+   "median_wrms_tight": 73.2782871343049,
+   "ref_interp_uncertainty_max": 0.00371230371093991,
+   "grid_interior_count": 96,
+   "grid_interior_max_wrms_tight": 2906.8914215195327,
+   "grid_interior_median_wrms_tight": 313.6653522026178,
+   "ratio_grid_interior_max_over_accepted_max": 3.334147495705998,
+   "endpoint_tf_wrms_tight": 0.48141900544082267,
+   "max_grid_wrms_tight": 2906.8914215195327
+  },
+  {
+   "case_id": "van-der-pol-ramped-n96-rtol-1e-6-v2.1",
+   "count": 92,
+   "max_wrms_tight": 20.827995747796905,
+   "median_wrms_tight": 0.5413423791271268,
+   "ref_interp_uncertainty_max": 0.003019880024821987,
+   "grid_interior_count": 99,
+   "grid_interior_max_wrms_tight": 41.46805737850749,
+   "grid_interior_median_wrms_tight": 6.516156810564692,
+   "ratio_grid_interior_max_over_accepted_max": 1.9909768506119365,
+   "endpoint_tf_wrms_tight": 0.08224923700035218,
+   "max_grid_wrms_tight": 41.46805737850749
+  },
+  {
+   "case_id": "van-der-pol-ramped-n96-rtol-1e-8-v2.1",
+   "count": 284,
+   "max_wrms_tight": 0.23626844768312333,
+   "median_wrms_tight": 0.00306596383933588,
+   "ref_interp_uncertainty_max": 0.0027004220588259307,
+   "grid_interior_count": 99,
+   "grid_interior_max_wrms_tight": 0.5658421871265161,
+   "grid_interior_median_wrms_tight": 0.08005365434825999,
+   "ratio_grid_interior_max_over_accepted_max": 2.3949121970167084,
+   "endpoint_tf_wrms_tight": 0.005638965903306456,
+   "max_grid_wrms_tight": 0.5658421871265161
+  }
+ ],
+ "pass_fail": "EVIDENCE_ONLY",
+ "hypothesis_verdicts": {
+  "H1a": "SUPPORTED",
+  "H1b": "REFUTED"
+ },
+ "notes": [
+  "Policies: initial_step h0=span/100 (campaign value; =1e-3 for robertson, 1e-2 otherwise) vs 0.7*h0; max_step=span (campaign) vs max_step=grid spacing. Pair gap = max-over-grid WRMS between the two arms in the tight reference basis (abs 1e-10, rel 1e-8, anchored on reference), identical to the campaign discrepancy_wrms (cross-checked against the Rust pair values to 1e-9 rel).",
+  "\"both-correct\" = each arm reference-admissible under the campaign rule (reference_uncertainty_wrms <= 0.1*max_grid_wrms). A stricter reading (max grid error <= 1 in case-tolerance weights) is also tallied (h0_pair_casetol_correct).",
+  "scipy arms: A first_step=h0 dense_output; B first_step=0.7h0 dense_output; C first_step=h0 t_eval=grid (scipy evaluates t_eval from the same dense interpolant, so C==A bitwise is expected); D first_step=h0 max_step=grid spacing dense_output. Radau with analytic sparse Jacobian, atol=0.01*rtol.",
+  "E-03c reference at accepted-step times: scipy Radau rtol 1e-12/atol 1e-14 dense interpolant (L2, whose t_eval grid states are bitwise identical to the committed artifact in every family checked); interpolant uncertainty bounded by L1(1e-10/1e-12) vs L2 disagreement at the same times (ref_interp_uncertainty_max). VigilODE accepted-step states are exact: they come from a union-schedule dense run (grid + accepted times) that reproduced the identical accepted step sequence; the dense collector returns y_new at theta==1.",
+  "Grid-interior = grid points not coinciding with an accepted step endpoint (these are the interpolated outputs); accepted set includes t_f."
+ ]
+}

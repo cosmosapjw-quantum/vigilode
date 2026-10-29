@@ -1,0 +1,82 @@
+{
+  "schema": "vigilode.general-ode-decisions.v1",
+  "scope": "Forward fixed-dimension identity-mass ODE endpoint surface; selected method-specific observation services",
+  "base_commit": "057fecf0698fa262d881f101625e6b0bb93791cf",
+  "source_identity": "SOURCE_IDENTITY.json",
+  "overall": "HOLD_BROAD_PRODUCTION_EVIDENCE",
+  "selected_scope": "PASS_SCOPED_CONTRACTS_AND_ANALYTIC_CORPUS",
+  "meaning": "The advertised finite scope is implemented and tested; unrestricted robustness and comparative performance are not established. This is not a claim that optional events/DAE/global certificates are prerequisites for endpoint use.",
+  "default_api": "GeneralOde",
+  "default_policy": {
+    "regime": "unknown",
+    "derivatives": "forbidden",
+    "max_dense_dimension": 64,
+    "allow_matrix_free": false
+  },
+  "automatic_method_set": [
+    "dopri5",
+    "rodas5p"
+  ],
+  "automatic_online_switching": false,
+  "new_changes": [
+    {
+      "id": "checked-vector-callbacks",
+      "decision": "promote-scoped",
+      "status": "implemented-tested",
+      "cost": "O(n) poison/write checks; no successful-path extra allocation",
+      "evidence": "VALIDATION.json"
+    },
+    {
+      "id": "finite-rodas-error-scale",
+      "decision": "promote-scoped",
+      "status": "implemented-tested",
+      "limits": "Contract inconsistency fixed; no inaccurate acceptance counterexample claimed"
+    },
+    {
+      "id": "declared-method-selection",
+      "decision": "promote-scoped",
+      "status": "implemented-tested",
+      "limits": "Not stiffness detection; dimension64 is resource ceiling, not optimal crossover"
+    },
+    {
+      "id": "persistent-dopri-session",
+      "decision": "promote-scoped",
+      "status": "implemented-tested-measured",
+      "observed_restart_over_persistent_ratio_range": [
+        1.5843539080428537,
+        3.082892880845031
+      ],
+      "limits": "Same-output bounded microbenchmark. One-shot remains faster; no universal speed claim."
+    },
+    {
+      "id": "schedule-membership-binary-search",
+      "decision": "promote-scoped",
+      "status": "implemented-tested",
+      "guarantee": "For C active-session target checks in sorted schedule size M, O(C*M) becomes O(C*log(M)); not whole-solver complexity."
+    }
+  ],
+  "candidate_family_decisions": "analysis/PORTFOLIO.json",
+  "tree_search": "SEARCH_TREE.json",
+  "validation": {
+    "unique_tests_passed": 201,
+    "core_endpoint_rows_passed": 24,
+    "session_mode_rows_passed": 24,
+    "prior_published_campaigns": "reused not rerun",
+    "new_external_comparisons": "NOT_RUN"
+  },
+  "remaining_evidence_limits": [
+    "Current new corpus is8small analytic/manufactured systems and endpoint-only",
+    "Long-time nonlinear/noncommuting oscillatory work-precision not demonstrated here",
+    "New source not compared against VODE/DVODE,diffsol,Julia",
+    "Matrix-free route does not supply a generic preconditioner or bounded iteration guarantee"
+  ],
+  "not_broad_blockers": [
+    "No global error certificate for arbitrary RHS",
+    "No BASS/rei/PDE application completion",
+    "Explicitly refused events/mass/dense-output on GeneralOde",
+    "No optional continuous event or implicit session in selected endpoint-only surface"
+  ],
+  "ncp_used": false,
+  "next_steps": "NEXT_STEPS.json",
+  "external_design": "../../docs/general_ode_design_20261024/DESIGN_KO.md"
+}

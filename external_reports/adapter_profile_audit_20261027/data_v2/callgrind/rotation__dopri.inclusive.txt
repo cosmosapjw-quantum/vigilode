@@ -1,0 +1,80 @@
+--------------------------------------------------------------------------------
+Profile data file '~/vigilode-integration-followup-20261027/profile_r2/prof/callgrind/rotation__dopri.out' (creator: callgrind-3.22.0)
+--------------------------------------------------------------------------------
+I1 cache: 
+D1 cache: 
+LL cache: 
+Timerange: Basic block 0 - 2187143
+Trigger: Program termination
+Profiled target:  ~/vigilode-integration-followup-20261027/profile_r2/prof_bin repeat-arm rotation dopri 3 (PID 3730040, part 1)
+Events recorded:  Ir
+Events shown:     Ir
+Event sort order: Ir
+Thresholds:       99
+Include dirs:     
+User annotated:   
+Auto-annotation:  on
+
+--------------------------------------------------------------------------------
+Ir                  
+--------------------------------------------------------------------------------
+13,159,059 (100.0%)  PROGRAM TOTALS
+
+--------------------------------------------------------------------------------
+Ir                   file:function
+--------------------------------------------------------------------------------
+13,159,059 (100.0%)  ???:0x000000000001f540 [/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2]
+12,723,600 (96.69%)  ???:(below main) [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+12,723,588 (96.69%)  ./csu/../csu/libc-start.c:__libc_start_main@@GLIBC_2.34 [/usr/lib/x86_64-linux-gnu/libc.so.6]
+12,723,405 (96.69%)  ./csu/../sysdeps/nptl/libc_start_call_main.h:(below main) [/usr/lib/x86_64-linux-gnu/libc.so.6]
+12,721,352 (96.67%)  ???:main [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+12,721,337 (96.67%)  /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/rt.rs:std::rt::lang_start_internal [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+12,608,553 (95.82%)  /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/function.rs:std::rt::lang_start_internal
+12,608,552 (95.82%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/rt.rs:std::rt::lang_start::{{closure}} [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+12,608,545 (95.82%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/sys/backtrace.rs:std::sys::backtrace::__rust_begin_short_backtrace [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+12,608,541 (95.82%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ops/function.rs:std::sys::backtrace::__rust_begin_short_backtrace
+12,608,540 (95.82%)  ~/vigilode-integ-dda8d2f/crates/vigilode/examples/adapter_checkpoint_trace.rs:adapter_checkpoint_trace::main
+12,606,776 (95.80%)  crates/vigilode/examples/adapter_checkpoint_trace.rs:adapter_checkpoint_trace::main [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+12,601,082 (95.76%)  crates/vigilode/examples/adapter_checkpoint_trace.rs:adapter_checkpoint_trace::main::{{closure}} [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+12,598,351 (95.74%)  ~/vigilode-integ-dda8d2f/crates/vigilode/src/explicit.rs:vigilode::explicit::Dopri5::solve
+12,597,677 (95.73%)  crates/vigilode/src/explicit.rs:vigilode::explicit::Dopri5::solve [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+12,597,554 (95.73%)  crates/vigilode/src/explicit.rs:vigilode::explicit::Dopri5::solve_impl [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+12,594,271 (95.71%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/dopri5.rs:rodas5p_integrators::dopri5::integrate_dopri5_impl
+ 9,085,070 (69.04%)  crates/rodas5p-integrators/src/dopri5.rs:rodas5p_integrators::dopri5::integrate_dopri5_impl [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 2,902,254 (22.06%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/dopri5_dense.rs:rodas5p_integrators::dopri5_dense::Dopri5OutputSession::trial
+ 2,902,254 (22.06%)  crates/rodas5p-integrators/src/dopri5_dense.rs:rodas5p_integrators::dopri5_dense::Dopri5OutputSession::trial [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 2,873,379 (21.84%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/adaptive_output.rs:rodas5p_integrators::adaptive_output::AdaptiveOutputSession::trial
+ 2,813,277 (21.38%)  crates/rodas5p-integrators/src/adaptive_output.rs:rodas5p_integrators::adaptive_output::AdaptiveOutputSession::trial [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 2,693,763 (20.47%)  crates/rodas5p-integrators/src/dopri5.rs:rodas5p_integrators::dopri5::evaluate_rhs [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 2,283,753 (17.35%)  crates/rodas5p-integrators/src/output.rs:rodas5p_integrators::output::land_capped [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 1,821,756 (13.84%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/output.rs:rodas5p_integrators::output::OutputCollector::limit_step
+ 1,764,006 (13.41%)  crates/rodas5p-integrators/src/output.rs:rodas5p_integrators::output::OutputCollector::limit_step [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 1,296,750 ( 9.85%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/adapters/zip.rs:rodas5p_integrators::dopri5::integrate_dopri5_impl
+   929,427 ( 7.06%)  crates/vigilode/src/explicit.rs:rodas5p_integrators::dopri5::evaluate_rhs
+   929,250 ( 7.06%)  crates/rodas5p-integrators/src/output.rs:rodas5p_integrators::output::step_to [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+   877,566 ( 6.67%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/output.rs:rodas5p_integrators::output::adaptive_end_step
+   838,191 ( 6.37%)  crates/rodas5p-integrators/src/output.rs:rodas5p_integrators::output::adaptive_end_step [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+   809,436 ( 6.15%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/adaptive.rs:rodas5p_integrators::adaptive::adaptive_next_step_after_attempt_prevalidated
+   774,531 ( 5.89%)  crates/rodas5p-integrators/src/adaptive.rs:rodas5p_integrators::adaptive::adaptive_next_step_after_attempt_prevalidated [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+   771,897 ( 5.87%)  ~/vigilode-integ-dda8d2f/crates/vigilode/examples/adapter_checkpoint_trace.rs:adapter_checkpoint_trace::model::{{closure}}
+   771,897 ( 5.87%)  crates/vigilode/examples/adapter_checkpoint_trace.rs:adapter_checkpoint_trace::model::{{closure}} [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+   701,157 ( 5.33%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:rodas5p_integrators::dopri5::integrate_dopri5_impl
+   681,921 ( 5.18%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ptr/mod.rs:rodas5p_integrators::dopri5::integrate_dopri5_impl
+   576,567 ( 4.38%)  crates/rodas5p-integrators/src/adaptive.rs:rodas5p_integrators::adaptive::AdaptiveControllerState::propose_factor_prevalidated [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+   519,849 ( 3.95%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:rodas5p_integrators::dopri5::evaluate_rhs
+   456,705 ( 3.47%)  crates/rodas5p-integrators/src/dopri5.rs:rodas5p_integrators::dopri5::error_norm [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+   434,469 ( 3.30%)  ./elf/./elf/rtld.c:_dl_start [/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2]
+   433,796 ( 3.30%)  ./elf/../sysdeps/unix/sysv/linux/dl-sysdep.c:_dl_sysdep_start [/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2]
+   362,686 ( 2.76%)  ./elf/./elf/rtld.c:dl_main [/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2]
+   351,348 ( 2.67%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/num/f64.rs:rodas5p_integrators::adaptive::AdaptiveControllerState::propose_factor_prevalidated
+   346,470 ( 2.63%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/dopri5_dense.rs:rodas5p_integrators::dopri5_dense::Dopri5OutputSession::accept
+   340,860 ( 2.59%)  ./math/./w_pow_template.c:pow@@GLIBC_2.29 [/usr/lib/x86_64-linux-gnu/libm.so.6]
+   339,414 ( 2.58%)  crates/rodas5p-integrators/src/dopri5_dense.rs:rodas5p_integrators::dopri5_dense::Dopri5OutputSession::accept [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+   298,514 ( 2.27%)  ./elf/./elf/dl-reloc.c:_dl_relocate_object [/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2]
+   288,750 ( 2.19%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/range.rs:rodas5p_integrators::dopri5::integrate_dopri5_impl
+   283,176 ( 2.15%)  ???:0x00000000048a1370 [???]
+   277,932 ( 2.11%)  ./math/../sysdeps/ieee754/dbl-64/e_pow.c:__ieee754_pow_fma [/usr/lib/x86_64-linux-gnu/libm.so.6]
+   275,625 ( 2.09%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/f64.rs:rodas5p_integrators::output::land_capped
+   258,662 ( 1.97%)  ./string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:__memcpy_avx_unaligned_erms [/usr/lib/x86_64-linux-gnu/libc.so.6]
+   254,742 ( 1.94%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/adaptive_output.rs:rodas5p_integrators::adaptive_output::AdaptiveOutputSession::accept
+   220,542 ( 1.68%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:rodas5p_integrators::dopri5::evaluate_rhs
