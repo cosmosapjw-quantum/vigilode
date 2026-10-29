@@ -7,6 +7,7 @@ mod gcrodr;
 mod gmres;
 mod gmres_givens;
 mod gmres_into;
+mod gmres_into_triggered;
 mod gmres_staged;
 mod kernels;
 mod lgmres;
@@ -35,6 +36,7 @@ pub use gmres_givens::{
     solve_gmres_givens_with_residual_scale, solve_gmres_givens_with_workspace,
     solve_gmres_givens_with_workspace_and_residual_scale,
 };
+pub use gmres_into_triggered::solve_gmres_into_right_flexible_triggered_monitored;
 pub use gmres_into::{
     CapacityGrowth, GmresCapacity, GmresColumnMonitor, GmresIntoOptions, GmresIntoReport,
     GmresMonitorDecision, GmresMonitoredProgress, GmresMonitoredReport, solve_gmres_into,
