@@ -1,0 +1,56 @@
+{
+  "schema": "vigilode.bass21.source-stored-endpoints.v1",
+  "n": 127,
+  "source_commit": "cc602e209e7deeb511ab2a1f3b2268d55206c43c",
+  "source_git_blob": "a49aa5276b4256d6bf0ad443b6b830effe2ab738",
+  "original_csv_rows": 127,
+  "status": "model_generated_from_saved_original_states",
+  "no_new_IVP": true,
+  "quantity_units": {
+    "xe": "dimensionless",
+    "tau": "dimensionless",
+    "H": "s^-1",
+    "Li6_fraction": "dimensionless"
+  },
+  "ranges": {
+    "xe": {
+      "min": 0.8774564518435803,
+      "max": 0.8774564518451821
+    },
+    "tau": {
+      "min": 0.06921558662643071,
+      "max": 0.06934076792140255
+    },
+    "Li6_fraction": {
+      "min": 2.574054790233596e-14,
+      "max": 2.5740547944937877e-14
+    },
+    "H": {
+      "min": 6.6221889216100006e-18,
+      "max": 6.62290939728614e-18
+    },
+    "he4": {
+      "min": 0.9996268641205341,
+      "max": 0.9996268641466031
+    },
+    "bary": {
+      "min": 0.9999999999999981,
+      "max": 1.0000000000000013
+    },
+    "lieq": {
+      "min": 0,
+      "max": 2.220446049250313e-16
+    }
+  },
+  "state_checks": {
+    "n_positive_127": true,
+    "mass": "abs(baryon-1)<1e-12",
+    "electron": "abs(xe-ne/nb)<2e-12",
+    "isotope_fraction": "max_samecharge_fraction_delta<1e-12"
+  },
+  "notes": [
+    "same z=2 stored original BASS simulation, not new IVP or observational inference",
+    "Li6 electron fraction does not bound integrated optical depth effects without common history",
+    "H reconstructed from stored Thomson coefficient, not a new cosmology solve"
+  ]
+}
