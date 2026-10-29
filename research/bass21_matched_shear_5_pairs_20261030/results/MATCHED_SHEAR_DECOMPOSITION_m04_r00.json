@@ -1,0 +1,127 @@
+{
+  "schema": "vigilode.bass21.matched_shear_opacity_source.v1",
+  "owner": {
+    "repo": "cosmosapjw-quantum/bass",
+    "commit": "cc602e209e7deeb511ab2a1f3b2268d55206c43c",
+    "AtomicNetwork_sha256": "baecce07aded483fa60006cc576feff67d068c0d70394f7095abacc6d47eaa80",
+    "pairs": {
+      "s00_m04_r00": {
+        "sha256": "18ad2934761f19ca35b5c478ced50fad97527592378e26d033008b9672230106",
+        "blob": "86b7a9140537f98cafaa5ed7e2e9ffda38c6ff24"
+      },
+      "s04_m04_r00": {
+        "sha256": "f8736f261228b2216212860ad86f86a1fa36105020fde05cb417341a00aa0b59",
+        "blob": "d44106dc699878a76078826074c85d93e5e09b4a"
+      }
+    }
+  },
+  "definition": {
+    "baseline": "s00_m04_r00, Sigma_F=0",
+    "perturbed": "s04_m04_r00, Sigma_F=0.6",
+    "matched_initial_Pm": 0.0009999999999999998,
+    "matched_initial_Pr": -0.0011999999999999997,
+    "clock": "same x=ln(a/a_start), same z, proper H",
+    "model": "prescribed BASS T/UV test-fluid finite21, not real observed tau",
+    "paired_contrast": "B-A",
+    "decomposition": "K*mean(1/H)*mean(nb)*delta(xe) + K*mean(1/H)*mean(xe)*delta(nb) + K*mean(ne)*delta(1/H)",
+    "c_sigma_T_m3_s": 1.994356946945426e-20
+  },
+  "sources": {
+    "source_T_identical": true,
+    "source_UV_identical": true,
+    "source_initial_Pm_Pr_matched": true,
+    "source_initial_shear_A": 0.0,
+    "source_initial_shear_B": 0.5999999999999996,
+    "sample_count_each": 193,
+    "AtomicNetwork_evaluate_calls": 386,
+    "new_ivps": 0,
+    "n_b_max_abs_diff": 0.0,
+    "max_source_native_gamma_mismatch": 0.0,
+    "max_saved_ne_mismatch": 0,
+    "max_saved_photo_energy_mismatch": 0,
+    "max_baryon_defect": 6.661338147750939e-16,
+    "LiI_photo_rate_max_abs_diff": 0.0,
+    "max_electron_fraction_abs_diff": 0.0005173681858576806
+  },
+  "check": {
+    "max_pointwise_exact_decomposition_residual": 3.75811578037788e-17,
+    "max_derivative_electron_split_residual": 4.961309141293668e-16,
+    "max_integral_decomposition_residual": 2.642742795433417e-18,
+    "max_simpson_vs_stored_delta_tau": 5.226924200021126e-10
+  },
+  "saved": {
+    "tau_A_end": 0.06934076372394755,
+    "tau_B_end": 0.0692158757173499,
+    "delta_tau_stored_end": -0.00012488800659765653,
+    "xe_A_end": 0.877456451845168,
+    "xe_B_end": 0.8774564518435993,
+    "delta_xe_end": -1.5686341114928837e-12
+  },
+  "contributions_simpson": {
+    "chemistry": -9.857837649032315e-06,
+    "density": 0.0,
+    "geometry": -0.00011503020529669222,
+    "total": -0.00012488804294572223
+  },
+  "contributions_trapezoid": {
+    "chemistry": -9.857837945974573e-06,
+    "density": 0.0,
+    "geometry": -0.00011503020071732698,
+    "total": -0.00012488803866329983
+  },
+  "electron_fraction_source": {
+    "kinetic_dxend": 7.911288305871283e-09,
+    "clock_dxend": -7.892015778021582e-09,
+    "pointwise_difference_end": 1.927252785529146e-11,
+    "integral_kinetic_simpson": 0.003574673253112283,
+    "integral_clock_simpson": -0.0035746770484440847
+  },
+  "quartile_integrals": [
+    {
+      "index_lo": 0,
+      "index_hi": 64,
+      "z_hi": 20.0,
+      "z_lo": 9.977917130068914,
+      "chemistry": -5.592690202758037e-06,
+      "density": 0.0,
+      "geometry": -7.544479246437118e-06,
+      "total": -1.313716944919523e-05
+    },
+    {
+      "index_lo": 64,
+      "index_hi": 128,
+      "z_hi": 9.977917130068914,
+      "z_lo": 4.738793548317168,
+      "chemistry": -4.2651463115828374e-06,
+      "density": 0.0,
+      "geometry": -0.00010033441956732315,
+      "total": -0.0001045995658789047
+    },
+    {
+      "index_lo": 128,
+      "index_hi": 192,
+      "z_hi": 4.738793548317168,
+      "z_lo": 2.0000000000000004,
+      "chemistry": -1.1346914398612786e-12,
+      "density": 0.0,
+      "geometry": -7.151306482931956e-06,
+      "total": -7.151307617622306e-06
+    }
+  ],
+  "claimed_scope": {
+    "exact_instantaneous_split": "DERIVED_AND_NUMERICALLY_CHECKED",
+    "integrated_matched_193_source": "NUMERICALLY_CHECKED_POSTPROCESS",
+    "physical_causal_attribution": "NOT_ESTABLISHED",
+    "independent_R6_C9": "NOT_RUN",
+    "native_RODAS": "NOT_RUN",
+    "production": "HOLD",
+    "REI_cross_owner_physical": "NOT_ADMITTED"
+  },
+  "DAG": {
+    "VigilODE": "7/23 unchanged",
+    "REI_central": "28/88 unchanged",
+    "REI_working": "33/88 unchanged",
+    "successor": "0/12 admitted",
+    "new_auxiliary": "1/1 scoped conditional evidence"
+  }
+}
