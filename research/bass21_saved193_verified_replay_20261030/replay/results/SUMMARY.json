@@ -1,0 +1,105 @@
+{
+  "schema": "vigilode.bass21.saved193.original-source-replay.v1",
+  "run_kind": "POSTPROCESS_FROZEN_SAVED_HISTORY_NO_IVP",
+  "source": {
+    "repo": "cosmosapjw-quantum/bass",
+    "commit": "cc602e209e7deeb511ab2a1f3b2268d55206c43c",
+    "trajectory_git_blob": "57a5375c5183f83d3eb3dd094cac31a212c39de3",
+    "trajectory_bytes": 254301,
+    "trajectory_sha256": "37d1bab173e81449cf474b21a678077edd0150cf0b2cb386d014764580678086",
+    "original_RESULT_json_git_blob": "4ee306f3af3ef5391d6309794cccfa1459067441",
+    "parent_PR118_sha256": "ba3f07a4f881ae8b02fd7b9690242ee29cfd1ae9f2b885b2601487010408508b",
+    "original_BASS_network_sha256": "baecce07aded483fa60006cc576feff67d068c0d70394f7095abacc6d47eaa80",
+    "original_BASS_model_sha256": "9cc399e9e33ece544109f442f50b00c463cde96e406965e796240eaabd49c614",
+    "coefficient_status": "129/129 binary64 projected; raw original coefficient JSON byte identity NOT_VERIFIED"
+  },
+  "clock": {
+    "x": "ln(a/a_start)",
+    "a_start": 0.047619047619047616,
+    "x_start": 0.0,
+    "x_end": 1.9459101490553132,
+    "z_start": 20.0,
+    "z_end": 2.0000000000000004,
+    "proper_time": "elapsed_s; dt/dx=1/H",
+    "H": "BASS stored geometry mean expansion H s^-1; no FLRW substitution",
+    "tau": "cumulative from initial x=0; NOT past light cone from today",
+    "original_method": "BASS original solve_ivp BDF, t_eval=193, rtol=2e-8, geometry_atol=2e-11, atomic_atol=2e-10, tau_atol=2e-11, max_step=0.025",
+    "source_xz_max_abs": 0.0
+  },
+  "counts": {
+    "source_epochs": 193,
+    "AtomicNetwork_evaluate_calls": 193,
+    "native_F_21": 193,
+    "native_J_21x21": 193,
+    "new_IVPs": 0
+  },
+  "source_invariants": {
+    "max_abs_Y_raw62_scales": 0.0,
+    "min_Y": 0.0,
+    "max_baryon_defect": 9.992007221626409e-16,
+    "max_ne_diff_m3": 0.0,
+    "max_xe_diff": 2.220446049250313e-16,
+    "max_H_negative": 0,
+    "max_A_F_per_s": 4.5465577956507304e-32,
+    "max_A_J_per_s": 2.1245448211130318e-24,
+    "max_F_defect_per_s": 9.860761315262648e-32,
+    "max_J_defect_per_s": 0.0,
+    "max_photo_event_charge_m3_s": 5.048709793414476e-29,
+    "max_e_source_decomposition_m3_s": 7.573064690121713e-29,
+    "max_direct_native_energetic_diagnostic_diff": {
+      "photo_absorbed_W_m3": 0.0,
+      "primary_photoelectron_W_m3": 0.0,
+      "unresolved_core_W_m3": 0.0,
+      "uv_energy_J_m3": 0.0,
+      "li1s_events_m3_s": 0.0
+    },
+    "array_layout_note": "np.load Y is Fortran-strided. Native evaluate on row-wise C-contiguous copies reproduces original ne exactly; direct Fortran-strided reductions can differ by ~8.5e-14 m^-3 due binary64 accumulation order."
+  },
+  "tau": {
+    "thomson_csigma_m3_per_s": 1.994356946945426e-20,
+    "native_gamma_max_abs_diff": 0.0,
+    "native_gamma_max_rel_diff": 0.0,
+    "stored_final": 0.06934076449489847,
+    "trap_final": 0.06934051590351172,
+    "simpson_final": 0.06934076446308475,
+    "trap_endpoint_signed_error": -2.485913867533718e-07,
+    "simpson_endpoint_signed_error": -3.181371832639002e-11,
+    "simpson_endpoint_relative_error": 4.58802532076649e-10,
+    "trap_max_abs_error_all_epochs": 5.88043022451204e-06,
+    "simpson_max_abs_error_all_epochs": 6.788747238667403e-08,
+    "simpson_max_err_at_index": 67,
+    "simpson_max_err_at_redshift": 9.649158503658121,
+    "min_stored_delta_tau": 3.8000307185197325e-07,
+    "note": "Postprocess composite Simpson and trapezoid on 193 fixed x epochs do not replay original adaptive BDF quadrature; discrepancy is combined sampling, interpolation and IVP errors, not uniquely attributable to one cause."
+  },
+  "proper_time": {
+    "stored_elapsed_final_s": 9.75955460329061e+16,
+    "simpson_final_s": 9.759554657122602e+16,
+    "trap_final_s": 9.759723277996883e+16,
+    "simpson_end_rel_err": 5.515824664974934e-09
+  },
+  "chemistry": {
+    "xe_start": 0.00015099503200860547,
+    "xe_end": 0.8774564518451784,
+    "xe_simpson_final": 0.8774564422592093,
+    "xe_simpson_endpoint_error": -9.585969129588534e-09,
+    "peak_electron_fraction": 0.8774564518451784,
+    "first_xe_half_index": 70,
+    "net_source_start_m3_s": -1.0809151085404077e-18,
+    "net_source_end_m3_s": 3.3326075098379702e-21,
+    "proper_photo_event_exposure_per_baryon": 4.986531593057093,
+    "proper_RR_event_exposure_per_baryon": 4.109226145829888,
+    "proper_DR_event_exposure_per_baryon": 2.5741774676656985e-18,
+    "power_exposure_definition": "integral of local photo absorbed W/m3 against proper time; not comoving conserved heating",
+    "photo_power_integrated_dt_J_per_m3_of_epoch_local_volume": 3.756811899627224e-15
+  },
+  "model_limits": {
+    "prescribed_temperature_and_UV": true,
+    "full_photon_transfer": false,
+    "photo_absorbed_power_is_thermal_heating": false,
+    "REI17_P19_as_same_owner": false,
+    "independent_R6_C9": "NOT_RUN",
+    "native_RODAS_transaction": "NOT_RUN",
+    "production": "HOLD"
+  }
+}
