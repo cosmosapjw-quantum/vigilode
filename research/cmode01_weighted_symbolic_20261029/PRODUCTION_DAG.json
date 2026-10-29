@@ -1,0 +1,245 @@
+{
+  "version": "2026-10-29-CMODE01-proposal-v1",
+  "type": "additive_successor_not_official_vigilode_23_node",
+  "source": {
+    "vigilode_pr106_sha": "c6cba2b62629e819dd163325c7c9fb9bb5e3080c",
+    "cmode01_prereg": "0a8737e94319829c574fb5d954440b5de5931054"
+  },
+  "original_dag": {
+    "completed_scoped": 7,
+    "total": 23,
+    "edges": 34,
+    "new_admissions": 0
+  },
+  "central_rei": {
+    "completed": 28,
+    "total": 88,
+    "new_admissions": 0
+  },
+  "cmode01_stages": {
+    "completed_scoped": 8,
+    "total": 10,
+    "native_independent_admission": "0/1"
+  },
+  "production_successor": {
+    "admitted": 0,
+    "total": 12
+  },
+  "default_order": [
+    "R_THEORY",
+    "MATH_PROOF_AND_KILL_TEST",
+    "C_IMPLEMENT",
+    "PHYS_MATH_AUDIT",
+    "PHYS_MATH_CODE_AUDIT",
+    "V_REFERENCE_AND_PLOTS",
+    "B_BENCHMARK_PROFILE_MAX3",
+    "P_BACKUP_AND_PUBLICATION"
+  ],
+  "stop_rule": "stop on P0, unsupported input, expired source guard, failure to match equations/tolerances/output; record negative outcomes",
+  "nodes": [
+    {
+      "id": "N00",
+      "goal": "Source / claim-path audit",
+      "dependencies": [],
+      "status": "partial",
+      "gate": {
+        "theory_first": true,
+        "physical_source_identity": true,
+        "original_residual": true,
+        "same_clock_tolerance_requested_output": true,
+        "matched_achieved_error_before_production_performance": true,
+        "benchmark_loops_max": 3,
+        "independent_native_review_before_admission": true
+      }
+    },
+    {
+      "id": "N01",
+      "goal": "Native point-J original residual certificate",
+      "dependencies": [
+        "N00"
+      ],
+      "status": "open",
+      "gate": {
+        "theory_first": true,
+        "physical_source_identity": true,
+        "original_residual": true,
+        "same_clock_tolerance_requested_output": true,
+        "matched_achieved_error_before_production_performance": true,
+        "benchmark_loops_max": 3,
+        "independent_native_review_before_admission": true
+      }
+    },
+    {
+      "id": "N02",
+      "goal": "Native left/right original-residual GMRES prefix",
+      "dependencies": [
+        "N01"
+      ],
+      "status": "open",
+      "gate": {
+        "theory_first": true,
+        "physical_source_identity": true,
+        "original_residual": true,
+        "same_clock_tolerance_requested_output": true,
+        "matched_achieved_error_before_production_performance": true,
+        "benchmark_loops_max": 3,
+        "independent_native_review_before_admission": true
+      }
+    },
+    {
+      "id": "N03",
+      "goal": "Native weighted norm and opaque certificate",
+      "dependencies": [
+        "N01"
+      ],
+      "status": "open",
+      "gate": {
+        "theory_first": true,
+        "physical_source_identity": true,
+        "original_residual": true,
+        "same_clock_tolerance_requested_output": true,
+        "matched_achieved_error_before_production_performance": true,
+        "benchmark_loops_max": 3,
+        "independent_native_review_before_admission": true
+      }
+    },
+    {
+      "id": "N04",
+      "goal": "Symbolic cell with whole-slab certified inclusion",
+      "dependencies": [
+        "N03"
+      ],
+      "status": "open",
+      "gate": {
+        "theory_first": true,
+        "physical_source_identity": true,
+        "original_residual": true,
+        "same_clock_tolerance_requested_output": true,
+        "matched_achieved_error_before_production_performance": true,
+        "benchmark_loops_max": 3,
+        "independent_native_review_before_admission": true
+      }
+    },
+    {
+      "id": "N05",
+      "goal": "Transactional adaptive trajectory integration",
+      "dependencies": [
+        "N02",
+        "N04"
+      ],
+      "status": "open",
+      "gate": {
+        "theory_first": true,
+        "physical_source_identity": true,
+        "original_residual": true,
+        "same_clock_tolerance_requested_output": true,
+        "matched_achieved_error_before_production_performance": true,
+        "benchmark_loops_max": 3,
+        "independent_native_review_before_admission": true
+      }
+    },
+    {
+      "id": "N06",
+      "goal": "Fast-slow feedback and nonnormal stiff-order audit",
+      "dependencies": [
+        "N05"
+      ],
+      "status": "open",
+      "gate": {
+        "theory_first": true,
+        "physical_source_identity": true,
+        "original_residual": true,
+        "same_clock_tolerance_requested_output": true,
+        "matched_achieved_error_before_production_performance": true,
+        "benchmark_loops_max": 3,
+        "independent_native_review_before_admission": true
+      }
+    },
+    {
+      "id": "N07",
+      "goal": "Dense output and event guard certified",
+      "dependencies": [
+        "N05"
+      ],
+      "status": "open",
+      "gate": {
+        "theory_first": true,
+        "physical_source_identity": true,
+        "original_residual": true,
+        "same_clock_tolerance_requested_output": true,
+        "matched_achieved_error_before_production_performance": true,
+        "benchmark_loops_max": 3,
+        "independent_native_review_before_admission": true
+      }
+    },
+    {
+      "id": "N08",
+      "goal": "8 suites / 10 interactions, Q-API and Q-GIVENS",
+      "dependencies": [
+        "N06",
+        "N07"
+      ],
+      "status": "open",
+      "gate": {
+        "theory_first": true,
+        "physical_source_identity": true,
+        "original_residual": true,
+        "same_clock_tolerance_requested_output": true,
+        "matched_achieved_error_before_production_performance": true,
+        "benchmark_loops_max": 3,
+        "independent_native_review_before_admission": true
+      }
+    },
+    {
+      "id": "N09",
+      "goal": "Full physical BASS/REI source and rate comparison",
+      "dependencies": [
+        "N08"
+      ],
+      "status": "open",
+      "gate": {
+        "theory_first": true,
+        "physical_source_identity": true,
+        "original_residual": true,
+        "same_clock_tolerance_requested_output": true,
+        "matched_achieved_error_before_production_performance": true,
+        "benchmark_loops_max": 3,
+        "independent_native_review_before_admission": true
+      }
+    },
+    {
+      "id": "N10",
+      "goal": "Matched achieved-error fair production profiling",
+      "dependencies": [
+        "N09"
+      ],
+      "status": "open",
+      "gate": {
+        "theory_first": true,
+        "physical_source_identity": true,
+        "original_residual": true,
+        "same_clock_tolerance_requested_output": true,
+        "matched_achieved_error_before_production_performance": true,
+        "benchmark_loops_max": 3,
+        "independent_native_review_before_admission": true
+      }
+    },
+    {
+      "id": "N11",
+      "goal": "Independent authority and release admission",
+      "dependencies": [
+        "N10"
+      ],
+      "status": "open",
+      "gate": {
+        "theory_first": true,
+        "physical_source_identity": true,
+        "original_residual": true,
+        "same_clock_tolerance_requested_output": true,
+        "matched_achieved_error_before_production_performance": true,
+        "benchmark_loops_max": 3,
+        "independent_native_review_before_admission": true
+      }
+    }
+  ]
+}
