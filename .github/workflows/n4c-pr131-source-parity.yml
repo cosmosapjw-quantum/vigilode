@@ -12,6 +12,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # First CI checkout was shallow; exact parent must exist.
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: '1.99.1'
@@ -41,24 +43,24 @@ jobs:
           done < <(git diff --name-only "$BASE" HEAD)
           echo PR131_SOURCE_AND_TEST_BYTES_LOCKED
       - name: Fetch Cargo.lock dependencies
-        run: cargo fetch --locked
+        run: cargo +1.99.1 fetch --locked
       - name: Native original 8-stage rank-2 source and adaptive transaction
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p n4c-source-parity-evidence
-          cargo test --locked --offline -p rodas5p-integrators --test n4c_native_rank2_source_owned -- --nocapture 2>&1 | tee n4c-source-parity-evidence/TEST_NATIVE.log
+          cargo +1.99.1 test --locked --offline -p rodas5p-integrators --test n4c_native_rank2_source_owned -- --nocapture 2>&1 | tee n4c-source-parity-evidence/TEST_NATIVE.log
       - name: Original PR131 frozen source native regression
         shell: bash
         run: |
           set -euo pipefail
-          cargo test --locked --offline -p rodas5p-integrators --test n01_frozen_source_bundle_contract -- --nocapture 2>&1 | tee n4c-source-parity-evidence/TEST_PR131_SOURCE.log
+          cargo +1.99.1 test --locked --offline -p rodas5p-integrators --test n01_frozen_source_bundle_contract -- --nocapture 2>&1 | tee n4c-source-parity-evidence/TEST_PR131_SOURCE.log
       - name: Exact source-scoped formatting
         run: |
-          rustfmt --check --edition 2024 crates/rodas5p-integrators/tests/n4c_native_rank2_source_owned.rs
-          rustfmt --check --edition 2024 crates/rodas5p-integrators/tests/n4c_original_tableau.rs
+          rustfmt +1.99.1 --check --edition 2024 crates/rodas5p-integrators/tests/n4c_native_rank2_source_owned.rs
+          rustfmt +1.99.1 --check --edition 2024 crates/rodas5p-integrators/tests/n4c_original_tableau.rs
       - name: Strict lint without weakening inherited baseline
-        run: cargo clippy --locked --offline -p rodas5p-integrators --test n4c_native_rank2_source_owned -- -D warnings
+        run: cargo +1.99.1 clippy --locked --offline -p rodas5p-integrators --test n4c_native_rank2_source_owned -- -D warnings
       - name: Preserve checkout source identity and logs
         if: always()
         shell: bash
@@ -68,8 +70,8 @@ jobs:
           git rev-parse HEAD^{tree} > n4c-source-parity-evidence/CHECKOUT_TREE.txt
           git rev-parse HEAD:crates/rodas5p-integrators/src/sequential.rs > n4c-source-parity-evidence/SEQUENTIAL_BLOB.txt
           git rev-parse HEAD:crates/rodas5p-integrators/src/problem.rs > n4c-source-parity-evidence/PROBLEM_BLOB.txt
-          rustc --version > n4c-source-parity-evidence/RUST_VERSION.txt || true
-          cargo --version > n4c-source-parity-evidence/CARGO_VERSION.txt || true
+          rustc +1.99.1 --version > n4c-source-parity-evidence/RUST_VERSION.txt || true
+          cargo +1.99.1 --version > n4c-source-parity-evidence/CARGO_VERSION.txt || true
           sha256sum crates/rodas5p-integrators/tests/n4c_*.rs > n4c-source-parity-evidence/TEST_FILE_SHA256.txt
       - uses: actions/upload-artifact@v4
         if: always()

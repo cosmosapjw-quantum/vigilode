@@ -9,3 +9,7 @@ Research-only sibling to [N4B #146](https://github.com/cosmosapjw-quantum/vigilo
 **Scientific limit:** Real original all-eight residuals and refusal are test-only, not a rigorous stage forward-error bound, global physical two-window error, matched achieved-error cost comparison, production authorization, default solver, or independent C9 reviewer. Do not amend N4B receipts; no merging, tolerance changes, C10 promotion, or DAG advancement.
 
 Statuses before fresh CI: N4C=PR131_SOURCE_MATCHED_NOT_RUN; official VigilODE 7/23; REI 28/88; successor 0/12; RVJ 3/8 + N4 PARTIAL; C9 distinct author 0/1; production HOLD.
+
+## FAIL classification, initial run 41101087887 (immutable)
+
+The first CI attempt at commit `d4f749bb948883559001d1c4a36277bf020b51c1` **FAILED** before any Rust scientific test: `fatal: Not a valid commit name b289d8e8165bf7d5b1d3255c9a02e89bc4a20b9e`. Root cause was `actions/checkout@v4` default `fetch-depth: 1`, making the parent-in-commit-graph test impossible locally. The same runner log also confirmed `rust-toolchain.toml` overrides the default to Rust 1.94.1, despite installing 1.99.1, so this workflow is corrected to use explicit `cargo +1.99.1`/`rustfmt +1.99.1` and `fetch-depth: 0`. This is **CI/provenance setup failure**, not source-matched native success, and no code/tolerance/physics criterion was relaxed. The former run remains failed and is never relabeled PASS.
