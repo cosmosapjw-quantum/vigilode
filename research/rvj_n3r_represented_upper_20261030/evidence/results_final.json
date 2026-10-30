@@ -1,0 +1,126 @@
+{
+  "schema": "n3r_represented_upper_v1",
+  "upward_recurrence_oracle": {
+    "old_undershoot": 674,
+    "new_undershoot": 0,
+    "rows": 716,
+    "oracle": "exact Fraction of represented f64 source coefficients, states and h; ideal recurrence only"
+  },
+  "mode_outputs_exact_string_equal": 716,
+  "rust_tests": 25,
+  "rust_clippy": "PASS",
+  "rustfmt": "PASS",
+  "bench": {
+    "6": {
+      "old_run_medians_ns": [
+        0,
+        0,
+        0
+      ],
+      "upper_run_medians_ns": [
+        0,
+        0,
+        0
+      ],
+      "old_median_of_medians_ns": 0,
+      "upper_median_of_medians_ns": 0,
+      "upper_over_old_ratio": null,
+      "comparison": "candidate_only_not_rodas"
+    },
+    "8": {
+      "old_run_medians_ns": [
+        0,
+        0,
+        0
+      ],
+      "upper_run_medians_ns": [
+        0,
+        0,
+        0
+      ],
+      "old_median_of_medians_ns": 0,
+      "upper_median_of_medians_ns": 0,
+      "upper_over_old_ratio": null,
+      "comparison": "candidate_only_not_rodas"
+    },
+    "12": {
+      "old_run_medians_ns": [
+        96685,
+        96895,
+        96935
+      ],
+      "upper_run_medians_ns": [
+        98197,
+        98127,
+        99639
+      ],
+      "old_median_of_medians_ns": 96895,
+      "upper_median_of_medians_ns": 98197,
+      "upper_over_old_ratio": 1.01344,
+      "comparison": "candidate_only_not_rodas"
+    },
+    "24": {
+      "old_run_medians_ns": [
+        193781,
+        194021,
+        193961
+      ],
+      "upper_run_medians_ns": [
+        199760,
+        201983,
+        202063
+      ],
+      "old_median_of_medians_ns": 193961,
+      "upper_median_of_medians_ns": 201983,
+      "upper_over_old_ratio": 1.04136,
+      "comparison": "candidate_only_not_rodas"
+    },
+    "65": {
+      "old_run_medians_ns": [
+        552729,
+        564767,
+        544817
+      ],
+      "upper_run_medians_ns": [
+        574362,
+        581482,
+        566560
+      ],
+      "old_median_of_medians_ns": 552729,
+      "upper_median_of_medians_ns": 574362,
+      "upper_over_old_ratio": 1.03914,
+      "comparison": "candidate_only_not_rodas"
+    },
+    "257": {
+      "old_run_medians_ns": [
+        2383745,
+        2348962,
+        2321090
+      ],
+      "upper_run_medians_ns": [
+        2714151,
+        2845327,
+        2805297
+      ],
+      "old_median_of_medians_ns": 2348962,
+      "upper_median_of_medians_ns": 2805297,
+      "upper_over_old_ratio": 1.19427,
+      "comparison": "candidate_only_not_rodas"
+    }
+  },
+  "scientific_status": "SCOPED_ALGEBRAIC_ENCLOSURE_REPRESENTED_SOURCE_ONLY",
+  "numerical_picard_roundoff": "NOT_CERTIFIED",
+  "current_rodas8_allstages": "NOT_RUN",
+  "official_progress": {
+    "VigilODE": "7/23",
+    "REI": "28/88",
+    "successor": "0/12",
+    "C9_distinct": "0/1_NOT_RUN",
+    "RVJ_N1_N2_N3": "3/8_SCOPED"
+  },
+  "RUST_VERSION": "1.99.1",
+  "baseline_pr137_head": "0380ff94c86031d898df478b67c6fcc66e49e3b9",
+  "old_zip_sha": "34397ba242db4a0da1f4b2e69e79535e73902655cced21810f2722105b116784",
+  "patched_sha": "b11f6c5b439e30dfb355ecfbce26e1bbb3c4ed5c792870479fd041a0df0015f2",
+  "patch_sha": "1f407d44c664fed9b9e5cf2bb2f4f6b215d14d16aeeaf2ef773426fcbf5d2003"
+}
