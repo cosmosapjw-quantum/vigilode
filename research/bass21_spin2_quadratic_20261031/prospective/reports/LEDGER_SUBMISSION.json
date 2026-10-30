@@ -1,0 +1,20 @@
+{
+  "claim": "Only subsequent angular-shape alignment was preregistered at commit 553ab8: original 50x193x4 yields 38400 valid eta and alignment values each, 200 null first-epoch entries, 21/21 tests and 7/7 byte-exact replay. Earlier 231600 quadratic-work samples remain explicitly POST-HOC. No owner IVPs, no full native E_l, no distinct-author R6/C9, VigilODE 7/23 and production HOLD.",
+  "command": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python code/compute_alignment.py --source source/PR151_ORIGINAL_SOURCE_FULL.zip --out results; OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 bash VERIFY.sh (new prospective alignment after prereg commit)",
+  "commit": "553ab8afd7f2d699ef0b2b172375860bdbbfefa1",
+  "date": "2026-10-31",
+  "id": "L-0202",
+  "inputs_sha256": {
+    "research/bass21_spin2_quadratic_20261031/PREREGISTRATION.md": "88f0072fd5f9e0eeece33d8e1c58e18e8e3d0a047247c7ce05461291d95f74c3",
+    "research/bass21_spin2_quadratic_20261031/results/SCIENCE_SUMMARY.json": "596b356097880477a3e934792ab5bd396c36be4904887fbdcb1cb783a0b005ed"
+  },
+  "outputs_sha256": {
+    "research/bass21_spin2_quadratic_20261031/prospective/results/ANGULAR_ALIGNMENT_193_MEAN.csv": "f7da2ab9c50d42306f12541d6c54b7f0c883f4e6d6484cc9f97e9b366e039264",
+    "research/bass21_spin2_quadratic_20261031/prospective/results/ANGULAR_ALIGNMENT_25_MATCHED.csv": "3ef1531d7da036a0b229b785b84b359c34a9bffc5c9432a1b778f7db0969435f",
+    "research/bass21_spin2_quadratic_20261031/prospective/results/ANGULAR_ALIGNMENT_50_ENDPOINT.csv": "e68b72d35273141000df6eb78271912da451af17fffe06f2502db2830e8f7220",
+    "research/bass21_spin2_quadratic_20261031/prospective/results/ANGULAR_ALIGNMENT_SUMMARY.json": "7800c59f6b83af6d9ff6ce7b4c95f40f865e27c53d66994bdeef4a12f0565028"
+  },
+  "profile": "PREREGISTERED_NEW_ALIGNMENT_ONLY_original_LRS_50x193_x4_no_IVP_Gauss64_vs_96",
+  "supersedes": null,
+  "verdict": "PASS"
+}
