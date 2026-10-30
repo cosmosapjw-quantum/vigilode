@@ -8,10 +8,7 @@ const Y0: [f64; 3] = [0.75, 0.125, 0.125];
 
 fn make(rates: [f64; 3]) -> N01FrozenSourceProblem {
     N01FrozenSourceProblem::new(
-        N01MassActionOwner::new(
-            rates, Y0, [1.0; 3], 0.0, [1.0; 3], [1.0; 3], 0.0,
-        )
-        .unwrap(),
+        N01MassActionOwner::new(rates, Y0, [1.0; 3], 0.0, [1.0; 3], [1.0; 3], 0.0).unwrap(),
     )
     .unwrap()
 }
@@ -27,7 +24,8 @@ fn frozen_native_rhs_stage_probes_keep_model_generation_and_owner() {
     let mut at_start = [f64::NAN; 3];
     let mut at_half = [f64::NAN; 3];
     step.probe_rhs(0.0, Y0, &mut at_start, &mut work).unwrap();
-    step.probe_rhs(0.00005, Y0, &mut at_half, &mut work).unwrap();
+    step.probe_rhs(0.00005, Y0, &mut at_half, &mut work)
+        .unwrap();
     assert_eq!(at_start, [-7.0 / 32.0, -93.0 / 32.0, 25.0 / 8.0]);
     assert_eq!(at_start, at_half);
     assert_eq!(bundle.model_epoch(), 0);
@@ -82,12 +80,16 @@ fn actual_original_rodas8_reference_uses_privately_bound_callbacks() {
     });
     let max_r = residual.iter().map(|x| x.abs()).fold(0.0_f64, f64::max);
     let mass_defect = (result.y_new.iter().sum::<f64>() - 1.0).abs();
-    assert!(max_r < 1.0e-9, "original 8-stage first raw-U residual {max_r:?}");
+    assert!(
+        max_r < 1.0e-9,
+        "original 8-stage first raw-U residual {max_r:?}"
+    );
     assert!(mass_defect < 1.0e-9);
     assert!(result.y_new.iter().all(|x| x.is_finite() && *x >= 0.0));
     println!(
         "C9_TRUSTED_SOURCE_RODAS8 max_original_u0_residual={max_r:.17e} mass_defect={mass_defect:.17e} ref_linear_solves={} epoch={}",
-        work.linear_solves, bundle.model_epoch()
+        work.linear_solves,
+        bundle.model_epoch()
     );
 }
 
