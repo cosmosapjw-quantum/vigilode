@@ -39,6 +39,11 @@ jobs:
             esac
           done < <(git diff --name-only "$B" HEAD)
           echo VIGILODE_FASTFIRST_SOURCE_AND_SCOPE_LOCKED
+      - name: Strict scoped rustfmt
+        run: |
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/src/rhs_homotopy.rs
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/tests/rhs_fast_first_contracts.rs
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/examples/rhs_fast_first_bench.rs
       - name: Fetch Cargo.lock dependencies
         run: cargo +1.94.1 fetch --locked
       - name: New and original native physics/algorithm contracts
@@ -58,11 +63,6 @@ jobs:
           cargo +1.94.1 run --locked --offline --profile measurement \
             -p vigilode-coupled --example rhs_fast_first_bench \
             2>&1 | tee fast-first-evidence/BENCH.log
-      - name: Strict scoped rustfmt
-        run: |
-          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/src/rhs_homotopy.rs
-          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/tests/rhs_fast_first_contracts.rs
-          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/examples/rhs_fast_first_bench.rs
       - name: Strict scoped Clippy (do not relax inherited findings)
         run: cargo +1.94.1 clippy --locked --offline -p vigilode-coupled --test rhs_fast_first_contracts -- -D warnings
       - name: Source and execution identity
