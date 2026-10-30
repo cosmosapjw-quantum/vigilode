@@ -40,6 +40,27 @@ jobs:
           rustfmt --check --edition 2024 --config skip_children=true crates/rodas5p-integrators/src/lib.rs
           rustfmt --check --edition 2024 crates/rodas5p-integrators/src/n01_frozen_source_bundle.rs
           rustfmt --check --edition 2024 crates/rodas5p-integrators/tests/n01_frozen_source_bundle_contract.rs
+      - name: Preserve exact changed source files and test receipts
+        if: always()
+        run: |
+          mkdir -p c9-source-evidence
+          cp crates/rodas5p-core/src/n01_mass_action_owner.rs c9-source-evidence/core_owner.rs
+          cp crates/rodas5p-integrators/src/n01_frozen_source_bundle.rs c9-source-evidence/frozen_bundle.rs
+          cp crates/rodas5p-integrators/src/lib.rs c9-source-evidence/integrators_lib.rs
+          cp crates/rodas5p-integrators/tests/n01_frozen_source_bundle_contract.rs c9-source-evidence/native_contract.rs
+          cp research/n01_c9_frozen_step_20261030/PREREGISTRATION.md c9-source-evidence/PREREGISTRATION.md
+          cp research/n01_c9_frozen_step_20261030/NATIVE_RED.json c9-source-evidence/NATIVE_RED.json
+          git rev-parse HEAD > c9-source-evidence/SOURCE_HEAD.txt
+          sha256sum c9-source-evidence/*.rs c9-source-evidence/*.md c9-source-evidence/*.json > c9-source-evidence/FILE_SHA256.txt
+          git hash-object c9-source-evidence/core_owner.rs > c9-source-evidence/OWNER_GIT_BLOB.txt
+          git hash-object c9-source-evidence/frozen_bundle.rs > c9-source-evidence/BUNDLE_GIT_BLOB.txt
+          git hash-object c9-source-evidence/native_contract.rs > c9-source-evidence/TEST_GIT_BLOB.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: n01-c9-frozen-source-byte-evidence
+          path: c9-source-evidence/
+          retention-days: 90
       - name: Print checkout identity
         if: always()
         run: git rev-parse HEAD
