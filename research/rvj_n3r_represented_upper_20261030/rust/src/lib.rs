@@ -262,6 +262,27 @@ impl Attempt {
         self.work
     }
 }
+/// Compare the exact-real sum of *represented binary64* nonnegative clocks
+/// with a represented source horizon. A nearest-rounded sum can equal the
+/// horizon although its exact dyadic sum is greater. Knuth's TwoSum keeps the
+/// residual of that represented addition without a blanket time tolerance.
+/// Assumes IEEE-754 round-to-nearest and finite inputs, as in the N3R test host.
+fn represented_clock_exceeds_horizon(t: f64, h: f64, horizon: f64) -> bool {
+    if !(t.is_finite() && h.is_finite() && horizon.is_finite()) {
+        return true;
+    }
+    let rounded = t + h;
+    if !rounded.is_finite() || rounded > horizon {
+        return true;
+    }
+    if rounded < horizon {
+        return false;
+    }
+    let shifted = rounded - t;
+    let exact_residual = (t - (rounded - shifted)) + (h - shifted);
+    exact_residual > 0.0
+}
+
 #[derive(Debug)]
 pub struct Session {
     source: Arc<Source>,
@@ -324,7 +345,11 @@ impl Session {
         if self.source.n <= 8 {
             return Err("protected-small-n-baseline".into());
         }
-        if !h.is_finite() || h <= 0. || p > 10 || self.time + h > self.source.horizon + 1e-13 {
+        if !h.is_finite()
+            || h <= 0.
+            || p > 10
+            || represented_clock_exceeds_horizon(self.time, h, self.source.horizon)
+        {
             return Err("invalid proposal width/order".into());
         }
         if self.ideal_error.iter().any(|b| !b.is_finite() || *b < 0.) {
