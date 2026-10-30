@@ -3,7 +3,8 @@
 //! Direct n=3 Jacobian is an independent original-RODAS5P benchmark ONLY.
 use rodas5p_core::directed::{Interval, add_up, div_up, mul_up, sub_down};
 use rodas5p_core::{
-    CoreError, CoreResult, DenseMatrix, LinearSolverConfig, N01MassActionOwner, WorkCounters,
+    CoreError, CoreResult, DenseMatrix, LinearSolverConfig, N01MassActionOwner,
+    N01MassActionTrial, WorkCounters,
     rodas5p_coefficients,
 };
 use rodas5p_integrators::{OdeProblem, sequential_step};
@@ -519,5 +520,190 @@ fn c9_forged_source_parameters_make_false_physical_authority() {
     assert!(actual_first_stage_residual > 1.0e-6);
     println!(
         "C9_WRONG_SOURCE_VULNERABILITY fake_residual={fake_residual:.17e} fake_bound={bound:?} true_residual={actual_first_stage_residual:.17e}"
+    );
+}
+
+
+/// Research-only positive counterpart to C9's wrong-source negative control.
+///
+/// The old C8 function remains available for reproducibility, but this wrapper
+/// obtains rates and initial state from the actual source owner's opaque
+/// trial, not a freely supplied `case.k`. It is NOT a general OdeProblem
+/// source authority or a production solver.
+fn source_authenticated_raw_u_bound(
+    source: &N01MassActionOwner,
+    trial: &N01MassActionTrial,
+    time: f64,
+    caller_y: [f64; 3],
+    h: f64,
+    stage_k: &[Vec<f64>],
+    y_out: &[f64],
+) -> Result<(f64, Option<f64>, String), String> {
+    source
+        .check_raw_u_stage_trial(trial, time, caller_y)
+        .map_err(|e| e.to_string())?;
+    if !h.is_finite()
+        || h <= 0.0
+        || stage_k.len() != 8
+        || stage_k.iter().any(|x| x.len() != 3 || x.iter().any(|v| !v.is_finite()))
+        || y_out.len() != 3
+        || y_out.iter().any(|x| !x.is_finite())
+    {
+        return Err("C9_F01_SOURCE_BOUND_STAGE_BAD_INPUT".into());
+    }
+    let (rates, original_carrier, _, _) =
+        source.value_only_stage_inputs(trial).map_err(|e| e.to_string())?;
+    let result = certified_raw_stage_bound(
+        Case {
+            id: "c9-f01-owner-authenticated-only",
+            k: rates,
+            t_end: h,
+        },
+        original_carrier,
+        h,
+        stage_k,
+        y_out,
+    )?;
+    source
+        .check_raw_u_stage_trial(trial, time, caller_y)
+        .map_err(|e| e.to_string())?;
+    Ok(result)
+}
+
+#[test]
+fn c9_f01_opaque_trial_prevents_forged_source_and_stale_clock() {
+    let y = Y0;
+    let h = 0.0001;
+    let true_rates = [0.5, 10.0, 200.0];
+    let stages = vec![vec![0.0; 3]; 8];
+
+    // The old free-input C8 research checker can be fooled into verifying a
+    // DIFFERENT equation. Keep this negative evidence for traceability.
+    let (fake_r, fake_e, fake_status) = certified_raw_stage_bound(
+        Case {
+            id: "fake-zero-source",
+            k: [0.0; 3],
+            t_end: h,
+        },
+        y,
+        h,
+        &stages,
+        &y,
+    )
+    .unwrap();
+    assert_eq!(fake_r, 0.0);
+    assert_eq!(fake_e, Some(0.0));
+    assert_eq!(fake_status, "PROVED_CONDITIONAL_TUBE");
+
+    // The repaired test-only wrapper takes the actual physical source
+    // rates from the SAME owner/trial that owns the state and clock.
+    let source = owner(
+        Case {
+            id: "actual-positive-source",
+            k: true_rates,
+            t_end: h,
+        },
+        y,
+    )
+    .unwrap();
+    let trial = source.freeze();
+    let (actual_r, actual_e, status) =
+        source_authenticated_raw_u_bound(&source, &trial, 0.0, y, h, &stages, &y).unwrap();
+    assert!(actual_r > 1.0e-6);
+    assert_eq!(status, "PROVED_CONDITIONAL_TUBE");
+    assert!(actual_e.is_some_and(|e| e > 0.0));
+    assert_eq!(source.model_epoch(), 0);
+    println!(
+        "C9_F01_SOURCE_BOUND_REPAIR fake_r={fake_r:.17e} actual_r={actual_r:.17e} bound={actual_e:?}"
+    );
+
+    // A claimed different clock or state cannot be silently interpreted
+    // as the owner's frozen physical step.
+    assert!(
+        source_authenticated_raw_u_bound(&source, &trial, 0.000001, y, h, &stages, &y)
+            .is_err()
+    );
+    let mut wrong_y = y;
+    wrong_y[1] += 0.000001;
+    assert!(
+        source_authenticated_raw_u_bound(&source, &trial, 0.0, wrong_y, h, &stages, &y)
+            .is_err()
+    );
+    assert!(
+        source_authenticated_raw_u_bound(&source, &trial, -0.0, y, h, &stages, &y)
+            .is_err()
+    );
+
+    // Trial from a distinct owner is not transferable, even when rates and
+    // represented state bits match.
+    let other_source = owner(
+        Case {
+            id: "other-owner",
+            k: true_rates,
+            t_end: h,
+        },
+        y,
+    )
+    .unwrap();
+    assert!(
+        source_authenticated_raw_u_bound(
+            &source,
+            &other_source.freeze(),
+            0.0,
+            y,
+            h,
+            &stages,
+            &y,
+        )
+        .is_err()
+    );
+
+    // A true owner change invalidates the original trial.
+    let mut moving = owner(
+        Case {
+            id: "moving-source",
+            k: true_rates,
+            t_end: h,
+        },
+        y,
+    )
+    .unwrap();
+    let old_trial = moving.freeze();
+    moving.advance(0.001, y).unwrap();
+    assert!(
+        source_authenticated_raw_u_bound(&moving, &old_trial, 0.001, y, h, &stages, &y)
+            .is_err()
+    );
+    assert_eq!(moving.model_epoch(), 1);
+    // No added original solver mutation or borrowed source-clock advancement.
+}
+
+#[test]
+fn c9_f01_source_guard_preflight_refuses_nonfinite_and_bad_shape() {
+    let y = Y0;
+    let source = owner(
+        Case {
+            id: "preflight",
+            k: [0.5, 10.0, 200.0],
+            t_end: 0.0001,
+        },
+        y,
+    )
+    .unwrap();
+    let trial = source.freeze();
+    let original = vec![vec![0.0; 3]; 8];
+    assert!(
+        source_authenticated_raw_u_bound(&source, &trial, 0.0, y, f64::NAN, &original, &y)
+            .is_err()
+    );
+    let mut broken = original.clone();
+    broken[3][0] = f64::INFINITY;
+    assert!(
+        source_authenticated_raw_u_bound(&source, &trial, 0.0, y, 0.0001, &broken, &y)
+            .is_err()
+    );
+    assert!(
+        source_authenticated_raw_u_bound(&source, &trial, 0.0, y, 0.0001, &original[..7], &y)
+            .is_err()
     );
 }
