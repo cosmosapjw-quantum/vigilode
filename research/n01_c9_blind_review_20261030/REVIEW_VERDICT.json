@@ -1,0 +1,19 @@
+{
+  "schema": "vigilode.c9.blind_style.hostile_review.v1",
+  "date_KST": "2026-10-30",
+  "review_identity": {"actor": "same ChatGPT assistant", "mode": "blind-style source-first adversarial review", "actual_independent_third_party": false, "native_subagent": "NOT_RUN", "formal_distinct_author_C9": "0/1 NOT_RUN"},
+  "review_subject": {"repo": "cosmosapjw-quantum/vigilode", "pr": 128, "frozen_head": "b06cd9b7bf9ad9b103d43e89ca83ea31a71505a3", "source_trial_core_blob": "ffe079e4fec4a8569f0661e122a97b2ac8ae4680", "F01_native_test_blob": "bb4637b39b213e47941b319f63f042e7adb86359"},
+  "review_branch": "review/c9-blind-pr128-source-attestation-20261030",
+  "native_verification": {"workflow_run": 40996310062, "job_id": 123870145596, "tested_source_head": "87e77f0fcc68af009d90e85071b8c070afd6b262", "adversarial_plus_existing_C8_C9_F01": "8/8 PASS", "C6_C7": "9/9 PASS", "PR91": "29/29 PASS", "all_selected_native": "46/46 PASS", "strict_clippy": "PASS", "rustfmt": "PASS", "original_red_run": 40995979375, "original_red_reason": "test-only formatting; native 46/46 and strict clippy already PASS"},
+  "independent_exact_check": {"runtime": "PYTHON_PASS", "cases": 1024, "result": "1024/1024 PASS", "fixed_tau": "1/64", "fake_residual": "0", "actual_original_raw_U0": ["7/2048", "93/2048", "-25/512"], "actual_linf": "25/512"},
+  "findings": [
+    {"id": "H1", "severity_for_general_physical_admission": "MAJOR", "claim": "caller may provide an unrelated source owner and that owner's valid opaque trial; no attested identity with actual OdeProblem callbacks", "native_witness": "fake bound=Some(0.0), true OdeProblem first stage residual l_infty=6.62304884982156818e-5", "impact": "source authority not established; scoped equation-specific bound can remain mathematically true", "origin": "PR128 already discloses generic callback limitation; this review supplies new native falsifier"},
+    {"id": "H2", "severity_for_native_adapter_integration": "MAJOR", "claim": "native n01_mass_action_owned_problem callback calls advance(t,state), changing model_epoch on transient stage probe", "native_witness": "real RHS eval time0 then h/2, same y, epoch0->1, frozen trial rejected", "impact": "pre-step owner trial cannot directly span ordinary native stage evaluations without snapshot/epoch redesign"},
+    {"id": "H3", "severity_for_global_claims": "MODERATE", "claim": "stage algebraic bound is not final physical acceptance or global IVP error", "review_type": "source-derived scope analysis, no new failing native test"},
+    {"id": "H4", "severity": "BACKLOG", "claim": "legacy test-only interval unwrap can panic on invalid input", "runtime_reproduced": false}
+  ],
+  "positive_evidence_retained": ["PR128 owner/trial clock/state internal matching", "native source-matched small original RODAS8 case", "conditional Neumann and strictly lower algebraic stage bound", "C6/C7/C8 scoped numerical evidence"],
+  "verdict": "REQUEST_CHANGES_FOR_ANY_GENERAL_PHYSICAL_OR_PRODUCTION_ADMISSION; RETAIN_SCOPED_RESEARCH_TESTS",
+  "official_dag": {"vigilode": "7/23", "rei_central": "28/88", "successor_admitted": "0/12", "C9_distinct_author": "0/1 NOT_RUN", "C10": "NOT_STARTED", "production": "HOLD"},
+  "prohibitions": ["do not merge to main", "do not claim distinct-author independent C9", "do not reclassify test-only source bound as production certified", "do not relax tolerances", "do not make JVP primary"]
+}
