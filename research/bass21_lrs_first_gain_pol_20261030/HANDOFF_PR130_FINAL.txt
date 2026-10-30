@@ -1,0 +1,78 @@
+# VigilODE × BASS21 | PR130 FINAL HANDOFF (2026-10-30 KST)
+
+$physmath-research-loop $scispace $exa $wolfram
+
+```makefile
+PROJECT=cosmosapjw-quantum/vigilode
+CURRENT_PR=130
+CURRENT_PR_URL=https://github.com/cosmosapjw-quantum/vigilode/pull/130
+PR_STATE=OPEN_DRAFT_UNMERGED_HOLD
+BRANCH=research/bass21-lrs-single-scatter-polarization-20261030
+CURRENT_SCIENCE_AND_BYTE_IDENTITY_HEAD=845697de0168cdcca1cec01138c2f3c95154d410
+CURRENT_SCIENCE_TREE=2dd569be9a82ac977b0b518354a5077632b60128
+PARENT_PR=127
+IMMUTABLE_PARENT_HEAD=9f7a5a6be49673265011263b5fc8304de9b9f132
+ORIGINAL_SOURCE_OWNER=cosmosapjw-quantum/bass@cc602e209e7deeb511ab2a1f3b2268d55206c43c
+ATOMIC_SOURCE_SHA256=baecce07aded483fa60006cc576feff67d068c0d70394f7095abacc6d47eaa80
+ORIGINAL_BASS21_ZIP_SHA256=6aa610316a117d97744e6f35738e226bff9c4cd1a39d03e22b2d334252616dd8
+CURRENT_UNIT=BASS21_SOURCE_OWNED_LRS_SINGLE_SCATTER_POLARIZATION_20261030
+SOURCE_CASES=50
+SAVED_EPOCHS=193
+DIRECTIONS=17
+Q_PHYSICAL_MODEL_ROWS=164050
+PAIRED_DELTA_Q_ROWS=82025
+SHAPLEY_ENDPOINT_ROWS=425
+NEW_IVPS=0
+ARCHIVE_FILENAME=VIGILODE_BASS21_LRS_FIRST_GAIN_POL_FULL_SOURCE_20261030.zip
+ARCHIVE_BYTES=28120080
+ARCHIVE_SHA256=d6aaaf75aa82f083eddd577f9d0f44d54fe5fdfdd2978fe4882a6d986edc3e2d
+GOOGLE_DRIVE_FILE_ID=1kjVBvy57ouhgAuF2P36yoWmuP9dDb5Bq
+GOOGLE_DRIVE_REMOTE_SHA256_READBACK=PASS
+GIT_SOURCE_MIRROR=37/37_EXACT_BLOB_SHA1_PASS
+LOCAL_CLEAN_VERIFY=EXIT_0
+FOCUSED_TESTS=13/13_PASS
+FULL_PAYLOAD_SHA=45/45_PASS
+NATIVE_SUBAGENT=NOT_RUN
+VIGILODE_DAG=7/23
+REI_CENTRAL_DAG=28/88
+REI_WORKING_DAG=33/88
+BASS_CE1_SEPARATE_SOURCE_DAG=9/15
+SUCCESSOR_ADMITTED=0/12
+NEW_AUXILIARY_DATA=1/1_SCOPED_HOLD
+OFFICIAL_DAG_DELTA=0
+NEW_UNIT_R_C_SCOPED=18/20
+R6_DISTINCT_AUTHOR=NOT_RUN
+C9_DISTINCT_AUTHOR=NOT_RUN
+C8=PARTIAL_NO_BDF_GLOBAL_CERTIFICATE
+RESEARCH_LEDGER_CI=FAIL_MISSING_PREREG_AND_LEDGER_ROW
+NO_MORE_IVPS=true
+NO_MAIN_MERGE=true
+NO_FORCE_PUSH=true
+NO_PRODUCTION_PROMOTION=true
+NO_TOLERANCE_WEAKENING=true
+AUTO_NEXT_NODE=false
+```
+
+## Scientific result and exact scope
+
+- Original BASS21 50 same-source full62 histories; each 193 states shares LRS shape b, normal-frame photon L<=8 energy Legendre moments J_l, proper electron density n_e, H, and original scalar forward tau in the *same* event. No CE1 six-cell sky state was silently substituted.
+- Frozen proper-time Hubble clock x=ln(a/a_ref), metric (-,+,+,+), LRS scale factors a_perp=a exp(-b), a_parallel=a exp(2b).
+- First-gain, cold comoving electron kernel: Q_gain(mu,x) = -(3/4) J2(x) [1-mu^2]. Source-derived attenuation-only line-of-sight transfer (no feedback/rescattering).
+- Final z=2 matched shear 25 pairs: mean equatorial delta-Q = +0.010318432952964909; algebraic 3-block Shapley contributions J2 95.4631206468%, b geometry 4.6171636712%, (g,tau) -0.0802843180%. This is NOT causal attribution and NOT observed CMB polarization.
+- All physical model arrays are in archive results/LRS_50x193x17_POLARIZATION.npz. GitHub has the runnable source/tests/summary CSV and retrospective stage notes, but not the full binary arrays and all original NPZ.
+
+## Restoration and remote verification
+
+1. Download the exact new 28,120,080-byte complete ZIP from https://drive.google.com/file/d/1kjVBvy57ouhgAuF2P36yoWmuP9dDb5Bq/view. Verify SHA256 d6aaaf75aa82f083eddd577f9d0f44d54fe5fdfdd2978fe4882a6d986edc3e2d.
+2. Extract to empty directory. Run `bash VERIFY.sh` (not Git-text-only checkout). Last fresh run exit code 0, source original SHA 50/50, 13/13 tests, recomputation exact numeric/text, 45/45 file manifest SHA and ZIP CRC PASS. Stored-grid quadrature check is NOT global BDF convergence.
+3. Full original owner data ZIP is nested under `source/`, raw original bytes SHA256 6aa610316a117d97744e6f35738e226bff9c4cd1a39d03e22b2d334252616dd8. Preserve it.
+4. Library path `/BASS/VIGILODE_BASS21_LRS_POL_SOURCE_20261030/` contains the source-full ZIP and 20 separately uploaded retrospective stage JSONs. These do not evidence 20 pre-execution checkpoints.
+5. GitHub Draft PR130 source files are authenticated by remote Git blob SHA1 against original ZIP, **37/37 exact**, at verified head 845697de0168cdcca1cec01138c2f3c95154d410 (prior commit 57b3 had CSV parsing and newline byte drift, corrected without changing scientific data).
+
+## Historical process failure preserved
+
+GitHub Action `Research ledger and authority references` run 41005384330, job 123898994530, step 5 `Check research nodes and the append-only ledger` FAIL. Exact observed errors: new `research/bass21_lrs_first_gain_pol_20261030/` lacks a true pre-execution `PREREGISTRATION.md`, and `research/LEDGER.jsonl` lacks an append-only row whose `outputs_sha256` covers the new node. The unit was executed before prospective registration; do not backdate, overwrite, forge pre-registration, or claim CI PASS. Parent PR127 CI remains failed; original node is science-data scoped/HOLD.
+
+## Next scientific decision (NO automatic successor)
+
+If explicitly authorized for a *new* prospective research node, build/source-qualify the full polarized Thomson gain including E2 re-scattering feedback and Q/U sky screen transport against the same original BASS photon+electron event authority. Produce frequency-resolved/temperature conversion only after independent spectral assumptions; do not equate finite-z model forward opacity with observed CMB tau or E/B. Independent-author R6/C9 and global source BDF time-error certification remain pending; original REI17/Puchwein19/Grackle sources remain separate. No parent/main merges, no force pushes, no replacement chemistry, no new IVPs or budget reset.
