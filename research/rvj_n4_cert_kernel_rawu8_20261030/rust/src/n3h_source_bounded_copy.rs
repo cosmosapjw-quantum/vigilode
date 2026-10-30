@@ -1179,3 +1179,300 @@ mod n4a_adversarial_contract_tests {
         }
     }
 }
+
+/// Source-owned inheritance witness for exactly one certified initial window.
+/// This is an opaque RESEARCH receipt, not a production physical-acceptance token.
+/// A caller cannot construct a valid instance with arbitrary old error metadata.
+#[derive(Clone, Debug)]
+pub struct N4BFirstReceipt {
+    source_token: u64,
+    accepted_epoch: u64,
+    accepted_clock_bits: u64,
+    accepted_state_bits: Vec<(u64, u64)>,
+    physical_l1_upper: Vec<f64>,
+}
+impl N4BFirstReceipt {
+    pub fn physical_l1_upper(&self) -> &[f64] {
+        &self.physical_l1_upper
+    }
+}
+
+impl Session {
+    /// First-window experimental transaction. Unlike original N3H's ideal-only
+    /// selector, tests the ACTUAL float gap before accepting a research carrier.
+    /// Exact initial physical data must be the frozen toy source initial state.
+    pub fn n4b_commit_first_with_float_enclosure(
+        &mut self,
+        a: Attempt,
+        tol: f64,
+    ) -> Result<N4BFirstReceipt, String> {
+        if !tol.is_finite() || tol <= 0. {
+            self.abort_pending();
+            return Err("N4B invalid physical trial tolerance".into());
+        }
+        if self.y.len() != self.source.n
+            || self
+                .y
+                .iter()
+                .zip(self.source.initial())
+                .any(|(x, y)| x.re.to_bits() != y.re.to_bits() || x.im.to_bits() != y.im.to_bits())
+        {
+            self.abort_pending();
+            return Err("N4B origin must match original source initial state".into());
+        }
+        let cert = match self.n4a_certify_first_pending(&a) {
+            Ok(v) => v,
+            Err(e) => {
+                self.abort_pending();
+                return Err(e);
+            }
+        };
+        let upper: Vec<f64> = cert
+            .iter()
+            .map(|v| v.initial_epoch_physical_l1_upper)
+            .collect();
+        if upper.iter().any(|x| !x.is_finite() || *x > tol) {
+            self.abort_pending();
+            return Err("N4B first floating-physical bound exceeds budget".into());
+        }
+        // Still only the original RESEARCH transaction, with an augmented gate.
+        if self.decide(a, tol)? != "RESEARCH_ACCEPTED_IDEAL_BOUND_ONLY_NOT_PRODUCTION"
+            || self.epoch != 1
+            || self.time.to_bits() != 0.25_f64.to_bits()
+        {
+            return Err("N4B first research transaction refused".into());
+        }
+        // Repair the inherited research session ledger as well: the original
+        // N3H `ideal_error` field must never silently drop the measured float gap
+        // after this N4B certified commit. All later proposals inherit B1+g1.
+        self.ideal_error = upper.clone();
+        Ok(N4BFirstReceipt {
+            source_token: self.source.token,
+            accepted_epoch: self.epoch,
+            accepted_clock_bits: self.time.to_bits(),
+            accepted_state_bits: self
+                .y
+                .iter()
+                .map(|x| (x.re.to_bits(), x.im.to_bits()))
+                .collect(),
+            physical_l1_upper: upper,
+        })
+    }
+
+    /// Second-window certificate composed from the FIRST physical error (ideal
+    /// local defect PLUS actual first float gap), not N3H's ideal-only ledger.
+    /// No mutation; source/token/epoch/accepted full carrier/trial must all match.
+    pub fn n4b_certify_second_pending(
+        &self,
+        a: &Attempt,
+        first: &N4BFirstReceipt,
+    ) -> Result<Vec<crate::n4a_carrier::CertifiedComponent>, String> {
+        if self.epoch != 1
+            || self.time.to_bits() != 0.25_f64.to_bits()
+            || first.source_token != self.source.token
+            || first.accepted_epoch != self.epoch
+            || first.accepted_clock_bits != self.time.to_bits()
+            || first.accepted_state_bits.len() != self.y.len()
+            || first.physical_l1_upper.len() != self.y.len()
+            || self
+                .y
+                .iter()
+                .zip(&first.accepted_state_bits)
+                .any(|(x, b)| x.re.to_bits() != b.0 || x.im.to_bits() != b.1)
+            || first
+                .physical_l1_upper
+                .iter()
+                .any(|x| !x.is_finite() || *x < 0.)
+            || a.source_token != self.source.token
+            || a.epoch != self.epoch
+            || a.clock_bits != self.time.to_bits()
+            || self.active_trial != Some(a.trial_id)
+            || a.h != 0.25
+            || a.p != 2
+            || self.source.energy_upper(&self.y) > 1.
+            || represented_clock_exceeds_horizon(self.time, a.h, self.source.horizon)
+        {
+            return Err("N4B second source/epoch/clock/carrier/trial inheritance refusal".into());
+        }
+        // Local first-Picard truncation + exact semigroup propagation of true
+        // inherited physical deviation (not the optimistic original N3H ideal_error).
+        let (ideal_with_inheritance, _q) =
+            theoretical_window_bound(&self.source, &self.y, &first.physical_l1_upper, a.h, a.p)?;
+        if ideal_with_inheritance
+            .iter()
+            .zip(&a.next_error_ideal)
+            .any(|(x, old)| *x < *old)
+        {
+            return Err("N4B represented inheritance monotonicity violation".into());
+        }
+        let s = &self.source;
+        let v = crate::n4a_carrier::FrozenView {
+            n: s.n,
+            weights: &s.weights,
+            phi: &s.phi,
+            xi: &s.xi,
+            kappa: &s.kappa,
+            omega: s.omega,
+            chi: &s.chi,
+            y: &self.y,
+        };
+        let exact = crate::n4a_carrier::ideal_first_picard(&v, a.h, a.p)?;
+        crate::n4a_carrier::compare_float(&exact, &a.next, &ideal_with_inheritance)
+    }
+
+    /// Research-only two-window commit: never promote force_accept, C9 or
+    /// production. The certificate is recomputed while the trial is still pending.
+    pub fn n4b_commit_second_with_float_enclosure(
+        &mut self,
+        a: Attempt,
+        first: &N4BFirstReceipt,
+        tol: f64,
+    ) -> Result<Vec<crate::n4a_carrier::CertifiedComponent>, String> {
+        if !tol.is_finite() || tol <= 0. {
+            self.abort_pending();
+            return Err("N4B invalid second tolerance".into());
+        }
+        let cert = match self.n4b_certify_second_pending(&a, first) {
+            Ok(v) => v,
+            Err(e) => {
+                self.abort_pending();
+                return Err(e);
+            }
+        };
+        if cert.iter().any(|x| {
+            !x.initial_epoch_physical_l1_upper.is_finite()
+                || x.initial_epoch_physical_l1_upper > tol
+        }) {
+            self.abort_pending();
+            return Err("N4B second physical interval budget exceeded, rejected".into());
+        }
+        if self.decide(a, tol)? != "RESEARCH_ACCEPTED_IDEAL_BOUND_ONLY_NOT_PRODUCTION"
+            || self.epoch != 2
+            || self.time.to_bits() != 0.5_f64.to_bits()
+        {
+            return Err("N4B second research commit rejected".into());
+        }
+        // The accepted source-owned carrier retains its actual certified float
+        // envelope; the old ideal-only ledger is not a valid handoff state.
+        self.ideal_error = cert
+            .iter()
+            .map(|r| r.initial_epoch_physical_l1_upper)
+            .collect();
+        Ok(cert)
+    }
+}
+
+#[cfg(test)]
+mod n4b_two_window_tests {
+    use super::*;
+    #[test]
+    fn inherited_source_owned_two_window_full_l1_is_covered() {
+        for n in [12, 24, 65, 257] {
+            let mut s = Session::new(Source::toy(n).unwrap()).unwrap();
+            let first = s.propose(0.25, 2).unwrap();
+            let receipt = s
+                .n4b_commit_first_with_float_enclosure(first, 1e-8)
+                .unwrap();
+            assert_eq!(s.ideal_bounds(), receipt.physical_l1_upper());
+            let b = s.propose(0.25, 2).unwrap();
+            let certified = s.n4b_certify_second_pending(&b, &receipt).unwrap();
+            assert_eq!(certified.len(), n);
+            assert!(certified.iter().all(|x| x.float_gap_l1_upper.is_finite()
+                && x.float_gap_l1_upper >= 0.
+                && x.initial_epoch_physical_l1_upper >= x.float_gap_l1_upper
+                && x.initial_epoch_physical_l1_upper < 1e-8));
+            let committed = s
+                .n4b_commit_second_with_float_enclosure(b, &receipt, 1e-8)
+                .unwrap();
+            assert_eq!(committed.len(), n);
+            for (record, bound) in committed.iter().zip(s.ideal_bounds()) {
+                assert_eq!(
+                    record.initial_epoch_physical_l1_upper.to_bits(),
+                    bound.to_bits()
+                );
+            }
+            assert_eq!(s.epoch(), 2);
+            assert_eq!(s.time().to_bits(), 0.5_f64.to_bits());
+            assert_eq!(s.work().attempted, 2);
+            assert_eq!(s.work().accepted, 2);
+            assert_eq!(s.work().rejected, 0);
+            assert!(s.is_balanced());
+        }
+    }
+    #[test]
+    fn cross_source_first_receipt_rejected() {
+        let mut a = Session::new(Source::toy(12).unwrap()).unwrap();
+        let mut b = Session::new(Source::toy(12).unwrap()).unwrap();
+        let ar = a.propose(0.25, 2).unwrap();
+        let receipt = a.n4b_commit_first_with_float_enclosure(ar, 1e-8).unwrap();
+        let br = b.propose(0.25, 2).unwrap();
+        b.decide(br, 1.).unwrap();
+        let trial = b.propose(0.25, 2).unwrap();
+        assert!(b.n4b_certify_second_pending(&trial, &receipt).is_err());
+        b.abort_pending();
+        assert!(a.is_balanced() && b.is_balanced());
+    }
+    #[test]
+    fn first_and_second_physical_gate_rejects_too_strict_budget_without_state_change() {
+        let mut s = Session::new(Source::toy(12).unwrap()).unwrap();
+        let old = s.state().to_vec();
+        let a = s.propose(0.25, 2).unwrap();
+        assert!(s.n4b_commit_first_with_float_enclosure(a, 1e-25).is_err());
+        assert_eq!(s.epoch(), 0);
+        assert_eq!(s.state(), old);
+        assert_eq!(s.work().rejected, 1);
+        let a = s.propose(0.25, 2).unwrap();
+        let r = s.n4b_commit_first_with_float_enclosure(a, 1e-8).unwrap();
+        let y = s.state().to_vec();
+        let b = s.propose(0.25, 2).unwrap();
+        assert!(
+            s.n4b_commit_second_with_float_enclosure(b, &r, 1e-25)
+                .is_err()
+        );
+        assert_eq!(s.epoch(), 1);
+        assert_eq!(s.state(), y);
+        assert_eq!(s.work().rejected, 2);
+        assert!(s.is_balanced());
+    }
+    #[test]
+    fn involution_sign_preserves_both_frozen_windows() {
+        let mut a = Session::new(Source::toy_sign(12, 1.).unwrap()).unwrap();
+        let mut b = Session::new(Source::toy_sign(12, -1.).unwrap()).unwrap();
+        let x = a.propose(0.25, 2).unwrap();
+        let y = b.propose(0.25, 2).unwrap();
+        let ra = a.n4b_commit_first_with_float_enclosure(x, 1e-8).unwrap();
+        let rb = b.n4b_commit_first_with_float_enclosure(y, 1e-8).unwrap();
+        for (u, v) in a.state().iter().zip(b.state()) {
+            assert_eq!(u.re.to_bits(), v.re.to_bits());
+            assert_eq!(u.im.to_bits(), v.im.to_bits());
+        }
+        let x = a.propose(0.25, 2).unwrap();
+        let y = b.propose(0.25, 2).unwrap();
+        let cx = a.n4b_certify_second_pending(&x, &ra).unwrap();
+        let cy = b.n4b_certify_second_pending(&y, &rb).unwrap();
+        for (u, v) in cx.iter().zip(&cy) {
+            assert!(
+                u.exact_first_picard.re.lo <= v.exact_first_picard.re.hi
+                    && v.exact_first_picard.re.lo <= u.exact_first_picard.re.hi
+            );
+            assert!(
+                u.exact_first_picard.im.lo <= v.exact_first_picard.im.hi
+                    && v.exact_first_picard.im.lo <= u.exact_first_picard.im.hi
+            );
+        }
+        a.abort_pending();
+        b.abort_pending();
+        assert!(a.is_balanced() && b.is_balanced());
+    }
+    #[test]
+    fn origin_is_exact_source_owned_not_caller_substituted() {
+        let src = Source::toy(12).unwrap();
+        let mut y = src.initial();
+        y[0].re = y[0].re.next_up();
+        let mut s = Session::from_initial(src, y).unwrap();
+        let a = s.propose(0.25, 2).unwrap();
+        assert!(s.n4b_commit_first_with_float_enclosure(a, 1e-8).is_err());
+        assert_eq!(s.work().rejected, 1);
+        assert_eq!(s.epoch(), 0);
+    }
+}
