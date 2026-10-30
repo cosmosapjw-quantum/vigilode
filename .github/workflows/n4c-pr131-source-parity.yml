@@ -1,0 +1,81 @@
+name: N4C PR131 exact-source native parity (research HOLD)
+on:
+  push:
+    branches:
+      - research/n4c-pr131-source-matched-native-20261031
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-parity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # First CI checkout was shallow; exact parent must exist.
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.99.1'
+          components: clippy,rustfmt
+      - name: Exact PR131 native code and mutation scope lock
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=b289d8e8165bf7d5b1d3255c9a02e89bc4a20b9e
+          git merge-base --is-ancestor "$BASE" HEAD
+          test "$(git rev-parse HEAD:crates/rodas5p-integrators/src/sequential.rs)" = 4153e286a2ac756252978d5d77cf1abe0e6a4e0c
+          test "$(git rev-parse HEAD:crates/rodas5p-integrators/src/problem.rs)" = cbb0bf22480541ee4c92eca32bbe41574e0eee7e
+          test "$(git rev-parse HEAD:crates/rodas5p-integrators/src/n01_frozen_source_bundle.rs)" = 193347263a84f4d49e46cd2be534f515cde784e1
+          test "$(git rev-parse HEAD:crates/rodas5p-core/src/coefficients.rs)" = c309a3b9d902f8a3865fbedaaf7fad45e5448ea5
+          test "$(git rev-parse HEAD:fixtures/rodas5p_coefficients_snapshot.json)" = bc55da4d43549ffbcee3cb25e31be05658507742
+          test "$(git rev-parse HEAD:Cargo.lock)" = 9bc1afe66b0ff77dc08f76ef9d0532fae81b0df5
+          test "$(git rev-parse HEAD:crates/rodas5p-integrators/tests/n4c_native_rank2_source_owned.rs)" = f0903a58a551013e4c6ea51453919cb411b61602
+          test "$(git rev-parse HEAD:crates/rodas5p-integrators/tests/n4c_original_tableau.rs)" = 97ac7f3e261d6bd8d6d7169b17e4f96d8c56c229
+          while IFS= read -r path; do
+            case "$path" in
+              .github/workflows/n4c-pr131-source-parity.yml|\
+              crates/rodas5p-integrators/tests/n4c_native_rank2_source_owned.rs|\
+              crates/rodas5p-integrators/tests/n4c_original_tableau.rs|\
+              research/n4c_pr131_native_parity_20261031/PREREGISTRATION.md) ;;
+              *) echo "UNAUTHORIZED_DIFF: $path" >&2; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$BASE" HEAD)
+          echo PR131_SOURCE_AND_TEST_BYTES_LOCKED
+      - name: Fetch Cargo.lock dependencies
+        run: cargo +1.99.1 fetch --locked
+      - name: Native original 8-stage rank-2 source and adaptive transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p n4c-source-parity-evidence
+          cargo +1.99.1 test --locked --offline -p rodas5p-integrators --test n4c_native_rank2_source_owned -- --nocapture 2>&1 | tee n4c-source-parity-evidence/TEST_NATIVE.log
+      - name: Original PR131 frozen source native regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo +1.99.1 test --locked --offline -p rodas5p-integrators --test n01_frozen_source_bundle_contract -- --nocapture 2>&1 | tee n4c-source-parity-evidence/TEST_PR131_SOURCE.log
+      - name: Exact source-scoped formatting
+        run: |
+          rustfmt +1.99.1 --check --edition 2024 crates/rodas5p-integrators/tests/n4c_native_rank2_source_owned.rs
+          rustfmt +1.99.1 --check --edition 2024 crates/rodas5p-integrators/tests/n4c_original_tableau.rs
+      - name: Strict lint without weakening inherited baseline
+        run: cargo +1.99.1 clippy --locked --offline -p rodas5p-integrators --test n4c_native_rank2_source_owned -- -D warnings
+      - name: Preserve checkout source identity and logs
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p n4c-source-parity-evidence
+          git rev-parse HEAD > n4c-source-parity-evidence/CHECKOUT_HEAD.txt
+          git rev-parse HEAD^{tree} > n4c-source-parity-evidence/CHECKOUT_TREE.txt
+          git rev-parse HEAD:crates/rodas5p-integrators/src/sequential.rs > n4c-source-parity-evidence/SEQUENTIAL_BLOB.txt
+          git rev-parse HEAD:crates/rodas5p-integrators/src/problem.rs > n4c-source-parity-evidence/PROBLEM_BLOB.txt
+          rustc +1.99.1 --version > n4c-source-parity-evidence/RUST_VERSION.txt || true
+          cargo +1.99.1 --version > n4c-source-parity-evidence/CARGO_VERSION.txt || true
+          sha256sum crates/rodas5p-integrators/tests/n4c_*.rs > n4c-source-parity-evidence/TEST_FILE_SHA256.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: n4c-pr131-exact-native-source-parity
+          path: n4c-source-parity-evidence/
+          retention-days: 90
