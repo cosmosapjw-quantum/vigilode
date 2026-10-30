@@ -1,0 +1,66 @@
+name: C9 trusted frozen N01 source bundle native proof-of-concept
+on:
+  push:
+    branches:
+      - research/n01-c9-trusted-frozen-probe-bundle-20261030
+    paths:
+      - crates/rodas5p-core/src/n01_mass_action_owner.rs
+      - crates/rodas5p-integrators/src/n01_frozen_source_bundle.rs
+      - crates/rodas5p-integrators/src/lib.rs
+      - crates/rodas5p-integrators/tests/n01_frozen_source_bundle_contract.rs
+      - .github/workflows/n01-c9-frozen-step-native.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frozen-source-native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          components: clippy,rustfmt
+      - name: Fetch locked dependencies
+        run: cargo fetch --locked
+      - name: Newly implemented trusted owner callback and epoch-stable RODAS8 test
+        run: cargo test --locked --offline -p rodas5p-integrators --test n01_frozen_source_bundle_contract -- --nocapture
+      - name: Original C8 C9 F01 and two hostile tests
+        run: cargo test --locked --offline -p vigilode-coupled --test n01_df_c8_work_precision
+      - name: Native C6 C7 and original RHS-only PR91 causal regression
+        run: cargo test --locked --offline -p vigilode-coupled --test n01_df_value_stage_contract --test n01_df_c7_original_raw_u_contract --test rhs_homotopy_contracts --test causal_contracts --test causal_reuse_contracts
+      - name: Strict Clippy affected core and integrators plus new tests
+        run: cargo clippy --locked --offline -p rodas5p-core -p rodas5p-integrators --test n01_frozen_source_bundle_contract -- -D warnings
+      - name: Source-specific rustfmt
+        run: |
+          rustfmt --check --edition 2024 crates/rodas5p-core/src/n01_mass_action_owner.rs
+          rustfmt --check --edition 2024 --config skip_children=true crates/rodas5p-integrators/src/lib.rs
+          rustfmt --check --edition 2024 crates/rodas5p-integrators/src/n01_frozen_source_bundle.rs
+          rustfmt --check --edition 2024 crates/rodas5p-integrators/tests/n01_frozen_source_bundle_contract.rs
+      - name: Preserve exact changed source files and test receipts
+        if: always()
+        run: |
+          mkdir -p c9-source-evidence
+          cp crates/rodas5p-core/src/n01_mass_action_owner.rs c9-source-evidence/core_owner.rs
+          cp crates/rodas5p-integrators/src/n01_frozen_source_bundle.rs c9-source-evidence/frozen_bundle.rs
+          cp crates/rodas5p-integrators/src/lib.rs c9-source-evidence/integrators_lib.rs
+          cp crates/rodas5p-integrators/tests/n01_frozen_source_bundle_contract.rs c9-source-evidence/native_contract.rs
+          cp research/n01_c9_frozen_step_20261030/PREREGISTRATION.md c9-source-evidence/PREREGISTRATION.md
+          cp research/n01_c9_frozen_step_20261030/NATIVE_RED.json c9-source-evidence/NATIVE_RED.json
+          git rev-parse HEAD > c9-source-evidence/SOURCE_HEAD.txt
+          sha256sum c9-source-evidence/*.rs c9-source-evidence/*.md c9-source-evidence/*.json > c9-source-evidence/FILE_SHA256.txt
+          git hash-object c9-source-evidence/core_owner.rs > c9-source-evidence/OWNER_GIT_BLOB.txt
+          git hash-object c9-source-evidence/frozen_bundle.rs > c9-source-evidence/BUNDLE_GIT_BLOB.txt
+          git hash-object c9-source-evidence/native_contract.rs > c9-source-evidence/TEST_GIT_BLOB.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: n01-c9-frozen-source-byte-evidence
+          path: c9-source-evidence/
+          retention-days: 90
+      - name: Print checkout identity
+        if: always()
+        run: git rev-parse HEAD
