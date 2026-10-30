@@ -1,0 +1,105 @@
+{
+  "schema": "vigilode.n01.c9.adversarial_scoped.v1",
+  "date": "2026-10-30 KST",
+  "parent": {
+    "repo": "cosmosapjw-quantum/vigilode",
+    "pr": 125,
+    "head": "8afb3cef7f237b0c7ac26ec7b647694df23a7789",
+    "native_source_blob": "e6a33b66ba80055cae9439cf683a1715ca77c5a2",
+    "native_ci_run": 40952770745
+  },
+  "baseline": {
+    "zip_sha256": "d82bc629ea70beb4f5ac6bd86ce6fab0a0910612cd161f1530f5a45b81538261",
+    "bytes": 482799,
+    "payloads_verified": "27/27 PASS",
+    "native_tests_inherited": "40/40 PASS"
+  },
+  "test_evidence": {
+    "exact_positive_j": 512,
+    "exact_Neumann": 504,
+    "causal_transfer": 128,
+    "mpmath_digits": [
+      40,
+      75
+    ],
+    "reference_cross": [
+      {
+        "case": "mild",
+        "mp_internal_cross_max": "1.17763633249e-35",
+        "source_reference_max_difference": {
+          "Radau": "7.0007547057817e-17",
+          "BDF": "2.4584797510504e-13"
+        },
+        "Rodas_BE_achieved_accuracy_overlap_in_tested_grids": false
+      },
+      {
+        "case": "moderate",
+        "mp_internal_cross_max": "3.88403108185e-34",
+        "source_reference_max_difference": {
+          "Radau": "2.2857515755083e-16",
+          "BDF": "1.7253325524039e-12"
+        },
+        "Rodas_BE_achieved_accuracy_overlap_in_tested_grids": false
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "F01_SOURCE_BINDING",
+      "status": "BLOCK_NOW_FOR_GENERAL_SOURCE_ADMISSION",
+      "observed": "C8 test-only verifier independent case.k, no owner trial",
+      "true_first_stage_max_residual_exact": "25/512",
+      "fake_first_stage_max_residual": "0",
+      "C8_scoped_result": "PRESERVED"
+    },
+    {
+      "id": "F02_ALGEBRAIC_VS_GLOBAL",
+      "status": "BLOCK_NOW_FOR_GLOBAL_ERROR_PROMOTION",
+      "example": "moderate n8",
+      "ivp_l1_against_mp75": 9.639530148951923e-10,
+      "max_single_step_algebraic_bound_l1": 3.305841880378621e-12,
+      "ratio": 291.5907807377617,
+      "C8_scoped_result": "PRESERVED"
+    },
+    {
+      "id": "F03_NO_MATCHED_ACHIEVED_ERROR",
+      "status": "FIX_SOON_BEFORE_PERFORMANCE_CLAIMS",
+      "achieved_error_overlap": false,
+      "C8_within_BE_map_call_claim": "PRESERVED"
+    },
+    {
+      "id": "F04_MPMATH_REFERENCE",
+      "status": "POSITIVE_NUMERICAL_DIAGNOSTIC",
+      "mild_Radau_gap": "7.0007547057817e-17",
+      "moderate_Radau_gap": "2.2857515755083e-16",
+      "verified_exact_IVP": false
+    },
+    {
+      "id": "F05_NEUMANN_CAUSAL",
+      "status": "POSITIVE_CONDITIONAL_MATH",
+      "Fraction_512_504_128": "PASS"
+    },
+    {
+      "id": "F06_PANIC_RISK",
+      "status": "BACKLOG_TEST_ONLY",
+      "runtime_valid_input_crash": "NOT_REPRODUCED"
+    }
+  ],
+  "review_mode": {
+    "native_subagent": "NOT_RUN",
+    "same_assistant_serial_adversarial_review": "1/1 scoped",
+    "independent_author_C9": "0/1"
+  },
+  "dag": {
+    "vigilode": "7/23",
+    "rei": "28/88",
+    "successor_admitted": "0/12",
+    "c6": "1/1 scoped",
+    "c7": "1/1 scoped",
+    "c8": "1/1 scoped",
+    "c9_technical": "1/1 scoped",
+    "c9_independent": "0/1",
+    "production": "HOLD"
+  },
+  "next_stage": "C9_INDEPENDENT_AUTHOR_REVIEW_BEFORE_C10"
+}

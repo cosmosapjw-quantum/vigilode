@@ -1,0 +1,22 @@
+{
+  "schema": "vigilode.n01.c9.native_red.v1",
+  "source_head": "2c500feeb3a23d7500a067bb6e161c03c26dd91b",
+  "workflow_run_id": 40972705531,
+  "job_id": 123793098061,
+  "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40972705531",
+  "steps": {
+    "exact_Fraction": "PASS 512 Jnorm + 504 Neumann + 128 causal",
+    "native_rust": "PASS 3/3 including forged-source negative",
+    "native_report": "C9_WRONG_SOURCE_VULNERABILITY fake_residual=0 fake_bound=Some(0.0) true_residual=3.31152442491078336e-3",
+    "clippy": "PASS",
+    "rustfmt": "FAIL three test-only style differences: extra blank line; multiline assert; iterator chain"
+  },
+  "repair": "Format only C9 appended Rust test; preserve original C8 source semantics, source values, assertions and test naming. Refresh source-prefix hash check in exact verifier and deterministic JSON.",
+  "dag": {
+    "original": "7/23",
+    "rei": "28/88",
+    "successor": "0/12",
+    "c9_independent_author": "0/1",
+    "production": "HOLD"
+  }
+}

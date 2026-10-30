@@ -1,0 +1,469 @@
+{
+  "schema": "vigilode.n01.c9.mpmath_cross_reference.v1",
+  "method": "mpmath arbitrary-precision Taylor odefun, dps 40 vs 75, independent numerical implementation",
+  "meaning": "numerically stable high-precision reference, NOT a rigorous verified IVP error enclosure",
+  "cases": [
+    {
+      "case": "mild",
+      "mp_dps": [
+        40,
+        75
+      ],
+      "mp_reference": [
+        "0.7151635811301922299924529421832407515721813143283888148595261117446415",
+        "0.158821569616914067982652093127971878295606009007760396291219012558929",
+        "0.1260148492528937020248949646887873701322126766638507888492548756964295"
+      ],
+      "mp_internal_cross_max": "1.17763633249e-35",
+      "source_reference_max_difference": {
+        "Radau": "7.0007547057817e-17",
+        "BDF": "2.4584797510504e-13"
+      },
+      "reference_Radau_BDF_cross_not_bound": 2.4580337765200966e-13,
+      "native_rows": [
+        {
+          "method": "RODAS5P-direct-oracle",
+          "n": 8,
+          "mp_achieved_l1": 2.0700015094115634e-14,
+          "native_reported_l1": 2.068e-14,
+          "map_attempted": null,
+          "rhs_calls": 64,
+          "linear_solves": 64,
+          "local_bound_not_global": 3.8792835714785925e-14,
+          "IVP_error_over_max_single_step_algebraic_bound": 0.5336040718009641
+        },
+        {
+          "method": "RODAS5P-direct-oracle",
+          "n": 16,
+          "mp_achieved_l1": 7.340497899293775e-16,
+          "native_reported_l1": 7.1e-16,
+          "map_attempted": null,
+          "rhs_calls": 128,
+          "linear_solves": 128,
+          "local_bound_not_global": 2.0414422132352086e-14,
+          "IVP_error_over_max_single_step_algebraic_bound": 0.0359574121261106
+        },
+        {
+          "method": "RODAS5P-direct-oracle",
+          "n": 32,
+          "mp_achieved_l1": 3.440346958137441e-16,
+          "native_reported_l1": 4.6e-16,
+          "map_attempted": null,
+          "rhs_calls": 256,
+          "linear_solves": 256,
+          "local_bound_not_global": 1.0530570473809805e-14,
+          "IVP_error_over_max_single_step_algebraic_bound": 0.032670091014478285
+        },
+        {
+          "method": "RODAS5P-direct-oracle",
+          "n": 64,
+          "mp_achieved_l1": 3.9403469581374405e-16,
+          "native_reported_l1": 5.1e-16,
+          "map_attempted": null,
+          "rhs_calls": 512,
+          "linear_solves": 512,
+          "local_bound_not_global": 5.7628628911620736e-15,
+          "IVP_error_over_max_single_step_algebraic_bound": 0.06837481704068227
+        },
+        {
+          "method": "RODAS5P-direct-oracle",
+          "n": 128,
+          "mp_achieved_l1": 7.5e-16,
+          "native_reported_l1": 6.3e-16,
+          "map_attempted": null,
+          "rhs_calls": 1024,
+          "linear_solves": 1024,
+          "local_bound_not_global": 3.4053751317152252e-15,
+          "IVP_error_over_max_single_step_algebraic_bound": 0.22024005314863468
+        },
+        {
+          "method": "BE-Picard-value-only",
+          "n": 8,
+          "mp_achieved_l1": 0.00032038586303406594,
+          "native_reported_l1": 0.00032038586303395,
+          "map_attempted": 48,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Homotopy-value-only",
+          "n": 8,
+          "mp_achieved_l1": 0.00032038585826908597,
+          "native_reported_l1": 0.00032038585826897,
+          "map_attempted": 48,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Picard-value-only",
+          "n": 16,
+          "mp_achieved_l1": 0.00016054616538093596,
+          "native_reported_l1": 0.00016054616538082,
+          "map_attempted": 80,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Homotopy-value-only",
+          "n": 16,
+          "mp_achieved_l1": 0.00016054613167046597,
+          "native_reported_l1": 0.00016054613167035,
+          "map_attempted": 80,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Picard-value-only",
+          "n": 32,
+          "mp_achieved_l1": 8.036170258795597e-05,
+          "native_reported_l1": 8.036170258784e-05,
+          "map_attempted": 160,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Homotopy-value-only",
+          "n": 32,
+          "mp_achieved_l1": 8.036155517263597e-05,
+          "native_reported_l1": 8.036155517252e-05,
+          "map_attempted": 128,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Picard-value-only",
+          "n": 64,
+          "mp_achieved_l1": 4.020312926670596e-05,
+          "native_reported_l1": 4.020312926659e-05,
+          "map_attempted": 256,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Homotopy-value-only",
+          "n": 64,
+          "mp_achieved_l1": 4.020303164928596e-05,
+          "native_reported_l1": 4.020303164917e-05,
+          "map_attempted": 256,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Picard-value-only",
+          "n": 128,
+          "mp_achieved_l1": 2.0107089883935966e-05,
+          "native_reported_l1": 2.010708988382e-05,
+          "map_attempted": 512,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Homotopy-value-only",
+          "n": 128,
+          "mp_achieved_l1": 2.0107077687525964e-05,
+          "native_reported_l1": 2.010707768741e-05,
+          "map_attempted": 512,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Picard-value-only",
+          "n": 256,
+          "mp_achieved_l1": 1.0054930626195965e-05,
+          "native_reported_l1": 1.005493062608e-05,
+          "map_attempted": 1024,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Homotopy-value-only",
+          "n": 256,
+          "mp_achieved_l1": 1.0054929104785965e-05,
+          "native_reported_l1": 1.005492910467e-05,
+          "map_attempted": 1024,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Picard-value-only",
+          "n": 512,
+          "mp_achieved_l1": 5.028736148055965e-06,
+          "native_reported_l1": 5.02873614794e-06,
+          "map_attempted": 1536,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Homotopy-value-only",
+          "n": 512,
+          "mp_achieved_l1": 5.028736148055965e-06,
+          "native_reported_l1": 5.02873614794e-06,
+          "map_attempted": 1536,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        }
+      ],
+      "Rodas_BE_achieved_accuracy_overlap_in_tested_grids": false,
+      "methodological_comment": "No achieved-accuracy overlap across arms in these grids: cost-per-accuracy cannot be compared at equal achieved errors. The within-BE Picard vs acceleration comparison is meaningful."
+    },
+    {
+      "case": "moderate",
+      "mp_dps": [
+        40,
+        75
+      ],
+      "mp_reference": [
+        "0.7455691300866650714248424491728736864767144169712709303690556792312225",
+        "0.086448276160033666022753676603262540721277373362252765578320934981381",
+        "0.1679825937533012625524038742238637728020082096664763040526233857873965"
+      ],
+      "mp_internal_cross_max": "3.88403108185e-34",
+      "source_reference_max_difference": {
+        "Radau": "2.2857515755083e-16",
+        "BDF": "1.7253325524039e-12"
+      },
+      "reference_Radau_BDF_cross_not_bound": 1.7252588246918776e-12,
+      "native_rows": [
+        {
+          "method": "RODAS5P-direct-oracle",
+          "n": 8,
+          "mp_achieved_l1": 9.639530148951923e-10,
+          "native_reported_l1": 9.6395339e-10,
+          "map_attempted": null,
+          "rhs_calls": 64,
+          "linear_solves": 64,
+          "local_bound_not_global": 3.305841880378621e-12,
+          "IVP_error_over_max_single_step_algebraic_bound": 291.5907807377617
+        },
+        {
+          "method": "RODAS5P-direct-oracle",
+          "n": 16,
+          "mp_achieved_l1": 3.253625489519225e-11,
+          "native_reported_l1": 3.253663e-11,
+          "map_attempted": null,
+          "rhs_calls": 128,
+          "linear_solves": 128,
+          "local_bound_not_global": 1.6728612222475184e-13,
+          "IVP_error_over_max_single_step_algebraic_bound": 194.49464463931577
+        },
+        {
+          "method": "RODAS5P-direct-oracle",
+          "n": 32,
+          "mp_achieved_l1": 1.0536848951922516e-12,
+          "native_reported_l1": 1.05406e-12,
+          "map_attempted": null,
+          "rhs_calls": 256,
+          "linear_solves": 256,
+          "local_bound_not_global": 4.121898895042279e-14,
+          "IVP_error_over_max_single_step_algebraic_bound": 25.563094147204787
+        },
+        {
+          "method": "RODAS5P-direct-oracle",
+          "n": 64,
+          "mp_achieved_l1": 3.384489519225155e-14,
+          "native_reported_l1": 3.422e-14,
+          "map_attempted": null,
+          "rhs_calls": 512,
+          "linear_solves": 512,
+          "local_bound_not_global": 1.3068499022577401e-14,
+          "IVP_error_over_max_single_step_algebraic_bound": 2.5898073783209865
+        },
+        {
+          "method": "RODAS5P-direct-oracle",
+          "n": 128,
+          "mp_achieved_l1": 1.6648951922515522e-15,
+          "native_reported_l1": 2.04e-15,
+          "map_attempted": null,
+          "rhs_calls": 1024,
+          "linear_solves": 1024,
+          "local_bound_not_global": 6.500353258272606e-15,
+          "IVP_error_over_max_single_step_algebraic_bound": 0.2561238022153244
+        },
+        {
+          "method": "BE-Picard-value-only",
+          "n": 8,
+          "mp_achieved_l1": 0.0024987968270473978,
+          "native_reported_l1": 0.00249879682704748,
+          "map_attempted": 208,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Homotopy-value-only",
+          "n": 8,
+          "mp_achieved_l1": 0.002498796780818088,
+          "native_reported_l1": 0.00249879678081817,
+          "map_attempted": 64,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Picard-value-only",
+          "n": 16,
+          "mp_achieved_l1": 0.001279783646416428,
+          "native_reported_l1": 0.00127978364641651,
+          "map_attempted": 272,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Homotopy-value-only",
+          "n": 16,
+          "mp_achieved_l1": 0.001279783622468828,
+          "native_reported_l1": 0.00127978362246891,
+          "map_attempted": 122,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Picard-value-only",
+          "n": 32,
+          "mp_achieved_l1": 0.0006478296146236879,
+          "native_reported_l1": 0.00064782961462377,
+          "map_attempted": 384,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Homotopy-value-only",
+          "n": 32,
+          "mp_achieved_l1": 0.000647829534517218,
+          "native_reported_l1": 0.0006478295345173,
+          "map_attempted": 192,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Picard-value-only",
+          "n": 64,
+          "mp_achieved_l1": 0.00032594455891933794,
+          "native_reported_l1": 0.00032594455891942,
+          "map_attempted": 576,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Homotopy-value-only",
+          "n": 64,
+          "mp_achieved_l1": 0.00032594443511752794,
+          "native_reported_l1": 0.00032594443511761,
+          "map_attempted": 384,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Picard-value-only",
+          "n": 128,
+          "mp_achieved_l1": 0.00016348572462363795,
+          "native_reported_l1": 0.00016348572462372,
+          "map_attempted": 896,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Homotopy-value-only",
+          "n": 128,
+          "mp_achieved_l1": 0.00016348572127752796,
+          "native_reported_l1": 0.00016348572127761,
+          "map_attempted": 674,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Picard-value-only",
+          "n": 256,
+          "mp_achieved_l1": 8.187195882894795e-05,
+          "native_reported_l1": 8.187195882903e-05,
+          "map_attempted": 1536,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Homotopy-value-only",
+          "n": 256,
+          "mp_achieved_l1": 8.187234127601795e-05,
+          "native_reported_l1": 8.18723412761e-05,
+          "map_attempted": 1129,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Picard-value-only",
+          "n": 512,
+          "mp_achieved_l1": 4.0968676818697954e-05,
+          "native_reported_l1": 4.096867681878e-05,
+          "map_attempted": 2560,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        },
+        {
+          "method": "BE-Homotopy-value-only",
+          "n": 512,
+          "mp_achieved_l1": 4.096831955083796e-05,
+          "native_reported_l1": 4.096831955092e-05,
+          "map_attempted": 2048,
+          "rhs_calls": null,
+          "linear_solves": null,
+          "local_bound_not_global": null,
+          "IVP_error_over_max_single_step_algebraic_bound": null
+        }
+      ],
+      "Rodas_BE_achieved_accuracy_overlap_in_tested_grids": false,
+      "methodological_comment": "No achieved-accuracy overlap across arms in these grids: cost-per-accuracy cannot be compared at equal achieved errors. The within-BE Picard vs acceleration comparison is meaningful."
+    }
+  ]
+}
