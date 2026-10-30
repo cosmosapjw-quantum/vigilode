@@ -1,0 +1,25 @@
+{
+  "schema": "vigilode.n01.c9.f01.owner_trial_red.v1",
+  "date": "2026-10-30 KST",
+  "base_PR": 126,
+  "base_head": "2688a59e0b8ab88120105a6949db68d61a378e71",
+  "workflow_run": 40989229211,
+  "job_id": 123847324576,
+  "tested_head": "b71b0b645ba4c4676316dc8760baa71cada1c180",
+  "native_test_result": "4 passed, 1 failed (exit101)",
+  "failure": {
+    "test": "c9_f01_opaque_trial_prevents_forged_source_and_stale_clock",
+    "expected": "PROVED_CONDITIONAL_TUBE",
+    "actual": "POSITIVE_TUBE_REFUSED",
+    "cause": "all-eight-zero stages are not a physically admissible approximate RODAS trajectory under true Robertson source even for small h; correct tube refusal is a success of physics gate, not an owner guard defect"
+  },
+  "repair": "Preserve wrong-source fake pass as negative; for true owner assert nonzero original residual and positive-tube refusal on all-zero stage; add separate actual native 8-stage sequential direct oracle (small reference only) as valid positive trial, bind owner trial and assert physical conditional residual admissible. No coefficient/tolerance change.",
+  "remaining": "full native rerun with strict Clippy and fmt",
+  "official_dag": {
+    "vigilode": "7/23",
+    "rei": "28/88",
+    "successor": "0/12 admitted",
+    "C9_independent": "0/1",
+    "production": "HOLD"
+  }
+}
