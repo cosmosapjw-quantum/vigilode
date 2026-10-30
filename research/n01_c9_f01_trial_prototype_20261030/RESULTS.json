@@ -1,0 +1,87 @@
+{
+  "schema": "vigilode.n01.c9.f01.trial_binding_proto.v1",
+  "date": "2026-10-30 KST",
+  "parent": {
+    "pr": 126,
+    "head": "2688a59e0b8ab88120105a6949db68d61a378e71",
+    "C9_baseline_zip_sha256": "9a0f4ca53fd02df7e31544073b110f012209a76ce56076c09077d45f9c572905",
+    "C8_original_test_blob": "e6a33b66ba80055cae9439cf683a1715ca77c5a2",
+    "C9_test_blob": "b6a0f06aba6d5d48d0de056ec9eadde1467904af"
+  },
+  "source": {
+    "core_owner_trial_guard_blob": "ffe079e4fec4a8569f0661e122a97b2ac8ae4680",
+    "C9_F01_test_blob": "bb4637b39b213e47941b319f63f042e7adb86359",
+    "workflow_blob": "aec11a715eb08a5c2daa2f90d83373f4c3025e91",
+    "new_code_changes": "read-only owner guard plus research-only test-wrapper and negative/positive tests; original callbacks/RODAS coefficients/default unchanged"
+  },
+  "native": {
+    "run": 40989982863,
+    "job": 123849770277,
+    "tested_head": "1b98ec58353e80e553d03df24d2afaf12aeaef39",
+    "conclusion": "success",
+    "rust": "1.94.1",
+    "os": "ubuntu-24.04",
+    "counts": {
+      "C8_C9_F01": 6,
+      "C6_C7": 9,
+      "PR91": 29,
+      "total": 44
+    },
+    "strict_clippy": "PASS",
+    "focused_rustfmt": "PASS",
+    "observations": {
+      "fake_zero_coeff_residual": 0,
+      "true_source_zero_stage_raw_residual": 0.00013246097699643136,
+      "true_zero_stage_admission": "POSITIVE_TUBE_REFUSED",
+      "true_native_rodas8_raw_residual": 5.739495250595139e-18,
+      "true_native_rodas8_algebraic_upper": 3.0599993684558566e-15,
+      "true_native_rodas8_admission": "PROVED_CONDITIONAL_TUBE",
+      "reference_linear_solves": 8
+    }
+  },
+  "preserved_red": [
+    {
+      "run": 40989229211,
+      "failure": "original test incorrectly assumed arbitrary zero stage candidate would be inside physical tube",
+      "native": "4/5 pass"
+    },
+    {
+      "run": 40989578203,
+      "failure": "test-only source rustfmt",
+      "native": "44/44 pass; strict Clippy PASS"
+    }
+  ],
+  "science": {
+    "exact_witness_tau": "1/64",
+    "fake_first_raw_u0": [
+      "0",
+      "0",
+      "0"
+    ],
+    "true_first_raw_u0": [
+      "7/2048",
+      "93/2048",
+      "-25/512"
+    ],
+    "true_raw_max": "25/512",
+    "wolfram": "exact symbolic PASS"
+  },
+  "limits": [
+    "Owner/trial bound only, no binding to arbitrary OdeProblem callbacks",
+    "n01_mass_action_owned_problem may mutate epoch on transient callbacks",
+    "No guarantee for time-dependent BASS physical33",
+    "No global IVP error or speedup claim",
+    "Different-author C9 NOT_RUN"
+  ],
+  "dag": {
+    "vigilode": "7/23",
+    "rei": "28/88",
+    "successor": "0/12 admitted",
+    "C9_same_assistant_technical": "1/1 scoped",
+    "C9_F01_repair_prototype": "1/1 native scoped",
+    "C9_distinct_author": "0/1 NOT_RUN",
+    "C10": "NOT_STARTED",
+    "production": "HOLD"
+  },
+  "native_subagent": "NOT_RUN"
+}
