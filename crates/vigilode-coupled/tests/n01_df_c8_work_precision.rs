@@ -610,8 +610,11 @@ fn c9_f01_opaque_trial_prevents_forged_source_and_stale_clock() {
     let (actual_r, actual_e, status) =
         source_authenticated_raw_u_bound(&source, &trial, 0.0, y, h, &stages, &y).unwrap();
     assert!(actual_r > 1.0e-6);
-    assert_eq!(status, "PROVED_CONDITIONAL_TUBE");
-    assert!(actual_e.is_some_and(|e| e > 0.0));
+    assert_eq!(status, "POSITIVE_TUBE_REFUSED");
+    assert!(
+        actual_e.is_none(),
+        "the actual original RODAS stage must not be certified from a fake zero-stage proposal"
+    );
     assert_eq!(source.model_epoch(), 0);
     println!(
         "C9_F01_SOURCE_BOUND_REPAIR fake_r={fake_r:.17e} actual_r={actual_r:.17e} bound={actual_e:?}"
@@ -705,5 +708,60 @@ fn c9_f01_source_guard_preflight_refuses_nonfinite_and_bad_shape() {
     assert!(
         source_authenticated_raw_u_bound(&source, &trial, 0.0, y, 0.0001, &original[..7], &y)
             .is_err()
+    );
+}
+
+
+#[test]
+fn c9_f01_true_source_owned_native_rodas8_stages_certify_within_tube() {
+    let y = Y0;
+    let h = 0.0001;
+    let source = Arc::new(
+        owner(
+            Case {
+                id: "authenticated-original-8-stage-source",
+                k: [0.5, 10.0, 200.0],
+                t_end: h,
+            },
+            y,
+        )
+        .unwrap(),
+    );
+    let trial = source.freeze();
+    let problem = ref_problem(Arc::clone(&source));
+    let mut work = WorkCounters::default();
+    let original_rodas = sequential_step(
+        &problem,
+        0.0,
+        &y,
+        h,
+        &LinearSolverConfig::default(),
+        None,
+        1.0e-10,
+        1.0e-7,
+        true,
+        &mut work,
+    )
+    .unwrap();
+    assert_eq!(original_rodas.stages.len(), 8);
+    assert!(work.linear_solves >= 8);
+    let (max_residual, upper, status) = source_authenticated_raw_u_bound(
+        source.as_ref(),
+        &trial,
+        0.0,
+        y,
+        h,
+        &original_rodas.stages,
+        &original_rodas.y_new,
+    )
+    .unwrap();
+    assert_eq!(status, "PROVED_CONDITIONAL_TUBE");
+    assert!(max_residual < 1.0e-9, "actual full-space residual unexpectedly large");
+    assert!(upper.is_some_and(|v| v.is_finite() && v >= 0.0));
+    assert_eq!(source.model_epoch(), 0);
+    println!(
+        "C9_F01_SOURCE_AUTHENTICATED_RODAS8 residual={max_residual:.17e} bound={upper:?} stages={} reference_linear_solves={}",
+        original_rodas.stages.len(),
+        work.linear_solves
     );
 }
