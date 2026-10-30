@@ -618,3 +618,35 @@ impl N01MassActionOwner {
         Ok((self.rates, self.current, self.w, self.p))
     }
 }
+
+
+/// Research-only read guard for an opaque source-owned original raw-U trial.
+/// This adds no derivative or numerical solver functionality. It also does
+/// not establish that an arbitrary OdeProblem callback uses this owner.
+impl N01MassActionOwner {
+    /// Check the SAME owner, generation, clock and represented step carrier
+    /// before or after an opt-in external original-stage verification.
+    ///
+    /// Temporary stage RHS evaluations must not call advance() just to change
+    /// the source generation; this method is read-only and fail-closed.
+    pub fn check_raw_u_stage_trial(
+        &self,
+        trial: &N01MassActionTrial,
+        time: f64,
+        carrier: [f64; 3],
+    ) -> CoreResult<()> {
+        self.live(trial)?;
+        if !time.is_finite()
+            || time.to_bits() != self.clock.to_bits()
+            || carrier
+                .iter()
+                .zip(&self.current)
+                .any(|(a, b)| a.to_bits() != b.to_bits())
+        {
+            return Err(CoreError::InvalidInput(
+                "N01_MASS_RAW_U_TRIAL_CLOCK_OR_CARRIER_MISMATCH".into(),
+            ));
+        }
+        Ok(())
+    }
+}
