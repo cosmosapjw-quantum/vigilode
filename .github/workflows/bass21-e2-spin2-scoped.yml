@@ -1,0 +1,38 @@
+name: BASS21 E2 spin2 scoped evidence (not global production CI)
+on:
+  pull_request:
+    paths:
+      - 'research/bass21_lrs_e2_spin2_20261030/**'
+      - '.github/workflows/bass21-e2-spin2-scoped.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-frozen-e2-scoped:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Check only source-free exact algebra and committed outputs
+        run: |
+          set -euo pipefail
+          PYTHONDONTWRITEBYTECODE=1 python3 research/bass21_lrs_e2_spin2_20261030/tests/test_git_scoped_ci.py -v
+      - name: Research-node preregistration and append-only ledger invariant
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${BASE_REF}" ]]; then
+            python3 tools/check-research-node.py --base "origin/${BASE_REF}"
+          else
+            python3 tools/check-research-node.py
+          fi
+      - name: Scope note
+        run: |
+          echo 'PASS of this scoped job is not PASS of full BASS owner source replay.'
+          echo 'Global Research ledger and authority references historical checker remains binding and may fail.'

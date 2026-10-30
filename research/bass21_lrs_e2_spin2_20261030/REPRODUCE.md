@@ -1,0 +1,5 @@
+# Reproduction of source-owned BASS21 E2/spin2 angular atlas
+
+From a **complete source ZIP extracted to an empty directory** (Python 3.13, NumPy 2.3.5, SciPy 1.17.0, Linux x86_64 checked; earlier versions unverified), run `bash VERIFY.sh` with OPENBLAS_NUM_THREADS=1, OMP_NUM_THREADS=1, MKL_NUM_THREADS=1. It validates the complete ZIP SHA manifest, exact original nested parent raw bytes, 9 physical unit tests, 8 Git mirror tests, 50-case source replay, data/CSV SHA readback and *all 50* original source NPZ SHA. The main research owner source does not become available from Git text mirror alone; in that case only scoped Git verifier may run.
+
+Restored inputs: `source/PARENT_PR133_COMPLETE.zip` SHA256 `ffd7623ba2e2bd99233a1244ac7945470f6eeed348a63a4fd02f5967ad449b14`. `code/e2_spin2_atlas.py` uses immutable `source_code` files from prior PR parent. It extracts BASS owner source with SHA256 `6aa610316a117d97744e6f35738e226bff9c4cd1a39d03e22b2d334252616dd8`. No original geometry/chemistry/Einstein IVPs are rerun. Every reported saved-grid derivative or integral defect is only a limited quadrature/derivative diagnostic, not a physical global convergence certificate.
