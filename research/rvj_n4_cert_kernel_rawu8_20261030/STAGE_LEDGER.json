@@ -1,0 +1,275 @@
+{
+  "date": "2026-10-30",
+  "project": "cosmosapjw-quantum/vigilode",
+  "research_unit": "RVJ_N4_SOURCE_MOMENTS_AND_RAWU8_SCOPED",
+  "root_source": {
+    "pr140_head": "713b3de68e953c69899d694508e25fea0f20cf73",
+    "n3h_original_sha256": "823f06f3e94f94dac75accb0d9f22e25469b56ec0422a8cce72ba13fc5eebecb",
+    "tableau_sha256": "211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6"
+  },
+  "scientific_status": {
+    "vigilode_official": "7/23",
+    "rei_central": "28/88",
+    "rvj_successor": "3/8 with N4 PARTIAL",
+    "successor_admitted": "0/12",
+    "C9_real_distinct_author": "0/1 NOT_RUN",
+    "C10_official": "NOT_STARTED",
+    "production": "HOLD",
+    "merge_ready": false,
+    "auto_next_node": false
+  },
+  "native_subagent": "NOT_RUN_HOST_DISPATCH_UNAVAILABLE",
+  "theory_stages": [
+    {
+      "stage": "R1",
+      "description": "기준 목표",
+      "deliverable": "N4 kernel exact source interval + original raw-U8 source-only reference",
+      "evidence_path": "THEORY_KO.md",
+      "status": "SCOPED_DONE",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    },
+    {
+      "stage": "R2",
+      "description": "근거 재사용",
+      "deliverable": "N3H source hash, original tableau fixture and literature",
+      "evidence_path": "THEORY_KO.md",
+      "status": "SCOPED_DONE",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    },
+    {
+      "stage": "R3",
+      "description": "전제·규약",
+      "deliverable": "represented binary64 parameters, exact real energy, no global error",
+      "evidence_path": "THEORY_KO.md",
+      "status": "SCOPED_DONE",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    },
+    {
+      "stage": "R4",
+      "description": "구성 탐색",
+      "deliverable": "damped real moments, phase Taylor and source-specific n12/24 model",
+      "evidence_path": "THEORY_KO.md",
+      "status": "SCOPED_DONE",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    },
+    {
+      "stage": "R5",
+      "description": "실제 유도",
+      "deliverable": "nonnegative moments, signed recurrence, phase remainder, raw-U8",
+      "evidence_path": "THEORY_KO.md",
+      "status": "DERIVED",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    },
+    {
+      "stage": "R6",
+      "description": "적대적 심사",
+      "deliverable": "same-author failure classifications, false-quadrature oracle",
+      "evidence_path": "ADVERSARIAL_REVIEW_KO.md",
+      "status": "SAME_AUTHOR_ONLY",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    },
+    {
+      "stage": "R7",
+      "description": "판별 계산",
+      "deliverable": "exact Fraction 240, mpmath recurrence 240, SciPy 4 cases",
+      "evidence_path": "evidence/EXACT_DYADIC_MOMENTS.csv",
+      "status": "NUMERICALLY_CHECKED_SCOPED",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    },
+    {
+      "stage": "R8",
+      "description": "과학 판정",
+      "deliverable": "kernel-scoped valid; full N4 still partial; production hold",
+      "evidence_path": "ADVERSARIAL_REVIEW_KO.md",
+      "status": "PARTIAL_VERDICT",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    },
+    {
+      "stage": "R9",
+      "description": "계산 연결",
+      "deliverable": "Rust interval and independent source specific RODAS8, transaction",
+      "evidence_path": "rust/src/lib.rs",
+      "status": "IMPLEMENTATION_SCOPED",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    },
+    {
+      "stage": "R10",
+      "description": "체크포인트",
+      "deliverable": "replay, backup, immutable package and next handoff",
+      "evidence_path": "HANDOFF_NEXT_THREAD_KO.md",
+      "status": "CHECKPOINT_PREPARED",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    }
+  ],
+  "coding_stages": [
+    {
+      "stage": "C1",
+      "description": "기준",
+      "deliverable": "N3H, Rust1.99.1, coefficient fixture and source identity",
+      "evidence_path": "REPRODUCE.md",
+      "status": "SCOPED_DONE",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    },
+    {
+      "stage": "C2",
+      "description": "대응",
+      "deliverable": "original N3H monomial_kernel / source rank2 & raw-U",
+      "evidence_path": "rust/src/n3h_source_bounded_copy.rs",
+      "status": "SCOPED_DONE",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    },
+    {
+      "stage": "C3",
+      "description": "설계",
+      "deliverable": "interval moment + exact source 8-stage raw-U + two outcomes",
+      "evidence_path": "rust/src/lib.rs",
+      "status": "SCOPED_DONE",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    },
+    {
+      "stage": "C4",
+      "description": "실행 배치",
+      "deliverable": "small standalone Rust, independent Python; native integrator timeout isolated",
+      "evidence_path": "REPRODUCE.md",
+      "status": "SCOPED_DONE",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    },
+    {
+      "stage": "C5",
+      "description": "구현",
+      "deliverable": "Rust interval kernel, original 8stage small direct reference, research transaction",
+      "evidence_path": "rust/src/bin/rodas8.rs",
+      "status": "IMPLEMENTED_SCOPED",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    },
+    {
+      "stage": "C6",
+      "description": "구현 검증",
+      "deliverable": "Rust 34/34; strict clippy & rustfmt",
+      "evidence_path": "evidence/RUST_TEST_N4_FINAL.log",
+      "status": "PASS_SCOPED",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    },
+    {
+      "stage": "C7",
+      "description": "과학 검증",
+      "deliverable": "240/240 Fraction + BDF, 8-stage residual and rejection",
+      "evidence_path": "evidence/SOURCE_MATCHED_ACCURACY.json",
+      "status": "PASS_SCOPED",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    },
+    {
+      "stage": "C8",
+      "description": "정확도/비용",
+      "deliverable": "kernel enclosure; 4 stiff reference cases; no matched-cost speed",
+      "evidence_path": "ADVERSARIAL_REVIEW_KO.md",
+      "status": "PARTIAL",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    },
+    {
+      "stage": "C9",
+      "description": "독립 심사",
+      "deliverable": "same-author hostile review only, separate author 0/1",
+      "evidence_path": "ADVERSARIAL_REVIEW_KO.md",
+      "status": "NOT_INDEPENDENT",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    },
+    {
+      "stage": "C10",
+      "description": "배포/인계",
+      "deliverable": "research handoff only, no production or merge",
+      "evidence_path": "HANDOFF_NEXT_THREAD_KO.md",
+      "status": "RESEARCH_HANDOFF_ONLY",
+      "baseline_official": "7/23",
+      "rvj_dag": "3/8 + N4 partial",
+      "checkpoint": "LOCAL_ARTIFACT",
+      "publish_target": "Draft PR and immutable backed-up full ZIP"
+    }
+  ],
+  "verification": {
+    "rust": "1.99.1",
+    "rust_unit": 29,
+    "rust_bin": 4,
+    "rust_fraction": 1,
+    "rust_total": 34,
+    "rust_clippy": "PASS",
+    "rust_fmt": "PASS",
+    "fraction_moments": "240/240_PASS",
+    "rust_intervals_vs_fraction": "240/240_PASS",
+    "native_n3h_values_in_interval": "240/240_PASS",
+    "native_n3h_values_outside_narrow_fraction": "115/240",
+    "raw_u_8_original_rank2_cases": "4/4_SCOPED_REFERENCE",
+    "transaction": "REJECT_h0.25_ACCEPT_h1e-8_CHARGED_16_8_PLUS_8",
+    "native_existing_pr131": "NOT_RUN_TIMEOUT_BUILD",
+    "matched_error_speed": "NOT_RUN",
+    "actual_trajectory_float_rounding": "NOT_RUN"
+  },
+  "backup": {
+    "local": "PREPARED",
+    "library": "PENDING",
+    "google_drive": "PENDING",
+    "dropbox": "NOT_RUN",
+    "source_full_zip_sha256": "TO_BE_FINALIZED_AFTER_ARCHIVE"
+  },
+  "publication": {
+    "github_draft": "PENDING",
+    "original_main_unchanged": true
+  }
+}
