@@ -1,0 +1,33 @@
+{
+  "basis": "Stokes Q meridional-azimuthal; no unqualified full observer E_l",
+  "causal_memory_fast": "exp(-tau) integral_0^x exp(tau(s)) S_U_shear(s) ds",
+  "causal_memory_slow": "exp(-3tau/10) integral_0^x exp(3tau(s)/10) S_V_shear(s) ds",
+  "coherency_relation": "Mparallel-Mperp=-(pi/2)V",
+  "collision_modes": {
+    "C_U": "-g U",
+    "C_V": "-(3/10)g V"
+  },
+  "eigenmodes": {
+    "BQ": "(4U-8V)/28",
+    "J2": "(3U+V)/28",
+    "U": "8 J2+BQ",
+    "V": "4 J2-3 BQ"
+  },
+  "eigenvalues": [
+    "1",
+    "3/10"
+  ],
+  "shear_BQ": "bprime*(10 BQ/7 + 32 c4/7)",
+  "shear_J2": "bprime*(-8 J0/5 - 10 J2/7 + 36 J4/35)",
+  "source_collision_matrix": [
+    [
+      "9/10",
+      "3/40"
+    ],
+    [
+      "4/5",
+      "2/5"
+    ]
+  ],
+  "time_coordinate": "x=ln(a/a_ref), tau(x) from original BASS owner, g=c sigma_T ne/H"
+}

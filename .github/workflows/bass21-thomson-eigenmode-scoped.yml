@@ -1,0 +1,34 @@
+name: BASS21 original-source Thomson eigenmode scoped (NOT global authority)
+on:
+  pull_request:
+    paths:
+      - 'research/bass21_thomson_eigenmode_20261030/**'
+      - '.github/workflows/bass21-thomson-eigenmode-scoped.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scoped-eigenmode-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Verify exact Git mirror SHA and real endpoint physics (source-free only)
+        run: |
+          set -euo pipefail
+          PYTHONDONTWRITEBYTECODE=1 python3 research/bass21_thomson_eigenmode_20261030/code/check_git_scoped.py
+      - name: Verify new research-node prereg and append-only ledger
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          python3 tools/check-research-node.py --base "origin/${BASE_REF}"
+      - name: Scientific scope statement
+        run: |
+          echo 'Scoped source-free Git PASS never certifies original raw 50x193 binary replay.'
+          echo 'Historical global authority CI remains separately binding, may FAIL.'
