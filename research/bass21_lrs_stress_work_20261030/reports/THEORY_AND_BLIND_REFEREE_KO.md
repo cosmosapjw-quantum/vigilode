@@ -71,3 +71,7 @@ In Wolfram Language exact symbolic integration, the three identities returned `s
 4. Kamionkowski, M. (2021), *Cosmological perturbations without the Boltzmann hierarchy*, Physical Review D 104, 063512, DOI https://doi.org/10.1103/PhysRevD.104.063512. Coupled moment integral method; not identical to this finite LRS model.
 
 All formulas here are either re-used from the pinned BASS code or directly derived; references do not independently validate this specific BASS numerical run.
+
+## Operator-level E2 crosswalk (mathematically checked, source-native convention still open)
+
+In the homogeneous `b'=0` limit, if `Q=A(1−μ²)` and `δJ2=j2`, the combined collision response is `d(j2,A)/dτ=[[-9/10,−2/25],[-3/4,−2/5]](j2,A)+[0,−3J2base/4]`. Define a **new** normalized polarization amplitude `E2_candidate=(4/(5√6))A=(3/(4√6))B_Q`. Wolfram exact similarity transforms the homogeneous collision matrix to `d(j2,E2_candidate)/dτ=[[-9/10,−√6/10],[-√6/10,−2/5]](j2,E2_candidate)−[0, (√6/10)J2base]`. The homogeneous collision eigenvalues are **−1 and −3/10**, matching the symmetric Thomson quadrupole block. This establishes a reversible **operator-level normalization crosswalk** and reconciles the coefficient `−√6/10 E2` in the original BASS unpolarized-code comment. It does **not** certify the full source-owner E2 variable, its sky spin harmonics, or its Liouville/feedback evolution, all still pending.

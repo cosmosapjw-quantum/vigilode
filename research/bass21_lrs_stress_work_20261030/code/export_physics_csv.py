@@ -9,7 +9,8 @@ def write(path,fields,rows):
 
 def export(folder):
  p=Path(folder)
- with np.load(p/'STRESS_50x193x6_SAME_OWNER.npz',allow_pickle=False) as a:
+ with np.load(p/'STRESS_50x193x6_SAME_OWNER.npz',allow_pickle=False) as f:
+  a={name:f[name] for name in f.files}  # decompress each array once, not per CSV cell
   names=a['cases'];x=a['x'];l=a['l_even'];J=a['deltaJ_even'];pair=a['pairs'];dJ=a['paired_deltaJ_even'];
   f0=p/'FULL50_EPOCH_MULTIPOLE_ROWS.csv';f1=p/'MATCHED25_EPOCH_MULTIPOLE_ROWS.csv';f2=p/'FULL50_EPOCH_STRESS.csv'
   write(f0,['case','epoch_index','x_log_a','ell','delta_Jell_a4_normalized'],((str(name),j,format(float(xj),'.17g'),int(ell),format(float(J[i,j,k]),'.17g')) for i,name in enumerate(names) for j,xj in enumerate(x) for k,ell in enumerate(l)))

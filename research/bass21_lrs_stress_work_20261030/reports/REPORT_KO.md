@@ -21,3 +21,7 @@ The collision operator itself conserves energy in the electron frame; the small 
 Official VigilODE DAG 7/23, REI central 28/88, REI working 33/88, BASS CE1 9/15, successor 0/12; official delta0; new auxiliary scoped physical stress node 1/1 complete only within model, production HOLD. Preserve PR132 parent's fixed HEAD and original sources. No original chemistry/Einstein IVPs, force push, merge, tolerance relaxation, production promotion or automatic next stage.
 
 A next separately authorized node should map `B_Q` to the *source-owner* normalized polarization E2 in `BASS lrs_boltzmann.py`/`CoupledSystem` and implement genuine self-consistent J_l/E_l expansion on a common event before upgrading Einstein stress feedback. It cannot import BASS KM2E or CE1 different-event data without an explicit map. No additional literature is needed for this scoped moment calculation; for full source-physics promotion require BASS frozen collision source, E2 convention and unit tests, available in owner Git; if the user has an authoritative unpublished full polarized hierarchy or electron collision table, provide exact source/edition and SHA-256.
+
+## Additional mathematical gain: candidate BASS E2 normalization
+
+An exact Wolfram similarity map identifies `E2_candidate=3 B_Q/(4√6)` for the local homogeneous Thomson 2×2 block, with symmetric cross-coupling coefficient `−√6/10` and eigenvalues `−1, −3/10`. This closes the algebraic collision-coefficient correspondence, **not** the full source-native E2 hierarchy/parallel-transport identity.
