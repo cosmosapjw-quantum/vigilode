@@ -48,5 +48,5 @@ def main():
         subprocess.run([sys.executable,'code/highrank_atlas.py','--owner',str(owner),'--parent',str(ROOT/'source/PARENT_PR143_FULL_SOURCE.zip'),'--out',str(tmpout),'--limit','50'],cwd=ROOT,env=env,check=True,stdout=subprocess.DEVNULL)
         for name in OUTPUTS:
             if sha(ROOT/'results'/name)!=sha(tmpout/name):raise AssertionError(('NUMERIC_FULL_SOURCE_REPLAY_DRIFT',name))
-        print(f'ORIGINAL_BASS_50/50_PASS; FULL_MANIFEST_{len(manifest["files_sha256"])}/{len(manifest["files_sha256"])}_PASS; UNIT_TESTS_10/10; GIT_SOURCE_FREE_PASS; SOURCE_REPLAY_6/6_BYTE_EXACT; NEW_IVPS=0; PASS')
+        print(f'ORIGINAL_BASS_50/50_PASS; FULL_MANIFEST_{len(manifest["files_sha256"])}/{len(manifest["files_sha256"])}_PASS; UNIT_TESTS_11/11; GIT_SOURCE_FREE_PASS; SOURCE_REPLAY_6/6_BYTE_EXACT; NEW_IVPS=0; PASS')
 if __name__=='__main__':main()

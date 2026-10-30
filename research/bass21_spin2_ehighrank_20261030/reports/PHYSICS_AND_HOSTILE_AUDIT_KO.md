@@ -24,7 +24,7 @@ A_E[l,m] = (k_l/k_m)*A_c[l,m]
 d E_l0^(+)/dx |_shear = b' * sum_m A_E[l,m] E_m0^(+)
 ```
 
-Polynomial integration from l=2..24 yields exact *tridiagonal within even l*, not closure at a finite l. Sample exact coefficients: A_c[2,2]=10/7, A_c[2,4]=10/7, A_c[4,2]=-36/35, A_c[4,6]=504/143, A_c[16,18]=3420/259; A_E[16,18]=360 sqrt(7315)/2849=10.807300237309965. There are no azimuthal m!=0 modes in the **fixed** LRS screen.
+Polynomial integration from l=2..24 yields exact *tridiagonal within even l*, not closure at a finite l. Sample exact coefficients: A_c[2,2]=10/7, A_c[2,4]=10/7, A_c[4,2]=-36/35, A_c[4,6]=504/143, A_c[16,18]=3420/259; A_E[16,18]=(360/7) sqrt(19/407)=360 sqrt(7733)/2849=11.111790805287253. There are no azimuthal m!=0 modes in the **fixed** LRS screen.
 
 Thomson collision (pure cold electron original source):
 

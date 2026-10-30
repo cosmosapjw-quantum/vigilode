@@ -33,6 +33,25 @@ class SourceOwnedEHighRank(unittest.TestCase):
         k=np.array([k_ell(l) for l in LL])
         self.assertTrue(np.allclose(self.A,k[:,None]*self.C/k[None,:],atol=0,rtol=0))
 
+    def test_l16_l18_E_normalization_exact_and_hostile_wrong_radicand(self):
+        # Regression: the OLD human-readable 360 sqrt(7315)/2849 was wrong;
+        # the numerical Galerkin source was already correct.  Check exact
+        # factorial normalisation, not merely a rounded tabulated number.
+        import sympy as sp
+        ell,nxt=16,18
+        ac=sp.Rational(3420,259)
+        def k_over_sqrt4pi(l):
+            return sp.sqrt(sp.factorial(l+2)/(sp.Integer(2*l+1)*sp.factorial(l-2)))
+        corrected=sp.Rational(360,7)*sp.sqrt(sp.Rational(19,407))
+        alternative=sp.Rational(360,2849)*sp.sqrt(7733)
+        wrong=sp.Rational(360,2849)*sp.sqrt(7315)
+        exact=sp.simplify(ac*k_over_sqrt4pi(ell)/k_over_sqrt4pi(nxt))
+        self.assertEqual(sp.simplify(exact-corrected),0)
+        self.assertEqual(sp.simplify(exact-alternative),0)
+        self.assertNotEqual(sp.simplify(exact-wrong),0)
+        self.assertAlmostEqual(float(self.A[7,8]),float(corrected),places=12)
+        self.assertGreater(abs(float(self.A[7,8])-float(wrong)),0.2)
+
     def test_manufactured_legendre_orthogonality_and_independent_projection(self):
         m,w=half_gl(96)
         for ell in (2,8,18,24):

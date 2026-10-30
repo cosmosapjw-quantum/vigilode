@@ -52,3 +52,6 @@ Use source-inclusive ZIP, preserve exact hash as recorded in external publicatio
 ## Scientific next action
 
 Obtain and prove actual owner-native full dynamically evolving spin-PSTF polarization hierarchy and observer-screen rotation. Current E_l0+ is explicit LRS +screen projection, not generic observer's E_l. Preserve nonlinear shear l±2 coupling and complete collision operator, source-owned b, g and clock; do not substitute independent BASS KM2G or REI chemistry IC. To actually evolve full J_l/E_l, explicitly lift NO_MORE_IVPS in a separate work unit; this task has not done so. Global authority reference CI is distinct from scoped source-locked test. Distinct-author R6/C9 remains not run.
+
+## Formula correction after original publication
+The first human-readable A_E[16,18] simplified radicand 7315 instead of 7733. Actual physical Python E matrix and output NPZ were correct. Correct exact A_E[16,18] = (360/7) sqrt(19/407) = 360 sqrt(7733)/2849 = 11.111790805287253. See reports/FORMULA_CORRECTION_KO.md and new exact positive/negative unit test. Preserve old PR145 science commit/ZIP; use new external corrected source-full archive/HEAD receipt for current formula. Official DAG 7/23, successor 0/12, no new IVPs.

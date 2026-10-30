@@ -10,6 +10,6 @@ bash VERIFY.sh
 python3 code/plot_science.py
 ```
 
-The verifier checks payload SHA, original archive byte identity, original 50 cases SHA, executes 10 theory/science tests plus source-free Git hash checks, re-evaluates the **original pre-existing Volterra `deltaI/Q` response** at all 50 x 193 epochs and compares the 6 new output files by exact bytes. It does NOT integrate a new Einstein/Boltzmann/chemistry IVP or certify original BDF time accuracy. Exact original dependency versions outside this recorded environment are not guaranteed byte-equivalent.
+The verifier checks payload SHA, original archive byte identity, original 50 cases SHA, executes 11 theory/science tests including exact corrected E[16,18] normalization plus source-free Git hash checks, re-evaluates the **original pre-existing Volterra `deltaI/Q` response** at all 50 x 193 epochs and compares the 6 new output files by exact bytes. It does NOT integrate a new Einstein/Boltzmann/chemistry IVP or certify original BDF time accuracy. Exact original dependency versions outside this recorded environment are not guaranteed byte-equivalent.
 
 `code/highrank_atlas.py` produces the 12 even E+ mode array, 11-mode local shear/Thomson RHS atlas, and four upper-neighbor truncation-boundary flux atlases. The nested original BASS owner commit is `cosmosapjw-quantum/bass@cc602e209e7deeb511ab2a1f3b2268d55206c43c`; never bind this SHA to vigilode repository. Owner physical signature is (-,+,+,+) after convention translation.
