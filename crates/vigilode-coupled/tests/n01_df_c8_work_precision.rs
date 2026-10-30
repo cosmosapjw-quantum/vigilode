@@ -3,9 +3,8 @@
 //! Direct n=3 Jacobian is an independent original-RODAS5P benchmark ONLY.
 use rodas5p_core::directed::{Interval, add_up, div_up, mul_up, sub_down};
 use rodas5p_core::{
-    CoreError, CoreResult, DenseMatrix, LinearSolverConfig, N01MassActionOwner,
-    N01MassActionTrial, WorkCounters,
-    rodas5p_coefficients,
+    CoreError, CoreResult, DenseMatrix, LinearSolverConfig, N01MassActionOwner, N01MassActionTrial,
+    WorkCounters, rodas5p_coefficients,
 };
 use rodas5p_integrators::{OdeProblem, sequential_step};
 use serde_json::json;
@@ -523,7 +522,6 @@ fn c9_forged_source_parameters_make_false_physical_authority() {
     );
 }
 
-
 /// Research-only positive counterpart to C9's wrong-source negative control.
 ///
 /// The old C8 function remains available for reproducibility, but this wrapper
@@ -545,14 +543,17 @@ fn source_authenticated_raw_u_bound(
     if !h.is_finite()
         || h <= 0.0
         || stage_k.len() != 8
-        || stage_k.iter().any(|x| x.len() != 3 || x.iter().any(|v| !v.is_finite()))
+        || stage_k
+            .iter()
+            .any(|x| x.len() != 3 || x.iter().any(|v| !v.is_finite()))
         || y_out.len() != 3
         || y_out.iter().any(|x| !x.is_finite())
     {
         return Err("C9_F01_SOURCE_BOUND_STAGE_BAD_INPUT".into());
     }
-    let (rates, original_carrier, _, _) =
-        source.value_only_stage_inputs(trial).map_err(|e| e.to_string())?;
+    let (rates, original_carrier, _, _) = source
+        .value_only_stage_inputs(trial)
+        .map_err(|e| e.to_string())?;
     let result = certified_raw_stage_bound(
         Case {
             id: "c9-f01-owner-authenticated-only",
@@ -623,19 +624,14 @@ fn c9_f01_opaque_trial_prevents_forged_source_and_stale_clock() {
     // A claimed different clock or state cannot be silently interpreted
     // as the owner's frozen physical step.
     assert!(
-        source_authenticated_raw_u_bound(&source, &trial, 0.000001, y, h, &stages, &y)
-            .is_err()
+        source_authenticated_raw_u_bound(&source, &trial, 0.000001, y, h, &stages, &y).is_err()
     );
     let mut wrong_y = y;
     wrong_y[1] += 0.000001;
     assert!(
-        source_authenticated_raw_u_bound(&source, &trial, 0.0, wrong_y, h, &stages, &y)
-            .is_err()
+        source_authenticated_raw_u_bound(&source, &trial, 0.0, wrong_y, h, &stages, &y).is_err()
     );
-    assert!(
-        source_authenticated_raw_u_bound(&source, &trial, -0.0, y, h, &stages, &y)
-            .is_err()
-    );
+    assert!(source_authenticated_raw_u_bound(&source, &trial, -0.0, y, h, &stages, &y).is_err());
 
     // Trial from a distinct owner is not transferable, even when rates and
     // represented state bits match.
@@ -649,16 +645,8 @@ fn c9_f01_opaque_trial_prevents_forged_source_and_stale_clock() {
     )
     .unwrap();
     assert!(
-        source_authenticated_raw_u_bound(
-            &source,
-            &other_source.freeze(),
-            0.0,
-            y,
-            h,
-            &stages,
-            &y,
-        )
-        .is_err()
+        source_authenticated_raw_u_bound(&source, &other_source.freeze(), 0.0, y, h, &stages, &y,)
+            .is_err()
     );
 
     // A true owner change invalidates the original trial.
@@ -674,8 +662,7 @@ fn c9_f01_opaque_trial_prevents_forged_source_and_stale_clock() {
     let old_trial = moving.freeze();
     moving.advance(0.001, y).unwrap();
     assert!(
-        source_authenticated_raw_u_bound(&moving, &old_trial, 0.001, y, h, &stages, &y)
-            .is_err()
+        source_authenticated_raw_u_bound(&moving, &old_trial, 0.001, y, h, &stages, &y).is_err()
     );
     assert_eq!(moving.model_epoch(), 1);
     // No added original solver mutation or borrowed source-clock advancement.
@@ -696,21 +683,18 @@ fn c9_f01_source_guard_preflight_refuses_nonfinite_and_bad_shape() {
     let trial = source.freeze();
     let original = vec![vec![0.0; 3]; 8];
     assert!(
-        source_authenticated_raw_u_bound(&source, &trial, 0.0, y, f64::NAN, &original, &y)
-            .is_err()
+        source_authenticated_raw_u_bound(&source, &trial, 0.0, y, f64::NAN, &original, &y).is_err()
     );
     let mut broken = original.clone();
     broken[3][0] = f64::INFINITY;
     assert!(
-        source_authenticated_raw_u_bound(&source, &trial, 0.0, y, 0.0001, &broken, &y)
-            .is_err()
+        source_authenticated_raw_u_bound(&source, &trial, 0.0, y, 0.0001, &broken, &y).is_err()
     );
     assert!(
         source_authenticated_raw_u_bound(&source, &trial, 0.0, y, 0.0001, &original[..7], &y)
             .is_err()
     );
 }
-
 
 #[test]
 fn c9_f01_true_source_owned_native_rodas8_stages_certify_within_tube() {
@@ -756,7 +740,10 @@ fn c9_f01_true_source_owned_native_rodas8_stages_certify_within_tube() {
     )
     .unwrap();
     assert_eq!(status, "PROVED_CONDITIONAL_TUBE");
-    assert!(max_residual < 1.0e-9, "actual full-space residual unexpectedly large");
+    assert!(
+        max_residual < 1.0e-9,
+        "actual full-space residual unexpectedly large"
+    );
     assert!(upper.is_some_and(|v| v.is_finite() && v >= 0.0));
     assert_eq!(source.model_epoch(), 0);
     println!(
