@@ -1,0 +1,34 @@
+name: BASS21 rank-nine source-owned coherency scoped (not global authority)
+on:
+  pull_request:
+    paths:
+      - 'research/bass21_rank9_stokes_e_20261030/**'
+      - '.github/workflows/bass21-rank9-scoped.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-owned-rank9-git-mirror:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Source-free Git mirror, exact rational and actual published CSV
+        run: |
+          set -euo pipefail
+          PYTHONDONTWRITEBYTECODE=1 python3 research/bass21_rank9_stokes_e_20261030/code/check_git_scoped.py
+      - name: Research-node ledger/prereg binding (not global authority references)
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          python3 tools/check-research-node.py --base "origin/${BASE_REF}"
+      - name: Explicit claim ceiling
+        run: |
+          echo 'Git source-free checker PASS is NOT full source-complete ZIP replay or original BDF convergence.'
+          echo 'Global authority CI may remain FAIL and must remain independently binding.'
