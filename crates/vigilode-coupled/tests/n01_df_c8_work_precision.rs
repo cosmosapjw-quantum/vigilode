@@ -753,7 +753,6 @@ fn c9_f01_true_source_owned_native_rodas8_stages_certify_within_tube() {
     );
 }
 
-
 /// BLIND-C9-01: opaque trials authenticate the caller-selected OWNER, not
 /// the ownership of a separate real OdeProblem.  This test does not alter
 /// PR128's guarded function or the real provider's source.
@@ -795,16 +794,9 @@ fn blind_c9_owner_substitution_still_certifies_a_different_problem() {
     .unwrap();
     let unrelated_trial = fake.freeze();
     let zero_stages = vec![vec![0.0_f64; 3]; 8];
-    let (wrong_residual, wrong_bound, wrong_status) = source_authenticated_raw_u_bound(
-        &fake,
-        &unrelated_trial,
-        0.0,
-        y,
-        h,
-        &zero_stages,
-        &y,
-    )
-    .unwrap();
+    let (wrong_residual, wrong_bound, wrong_status) =
+        source_authenticated_raw_u_bound(&fake, &unrelated_trial, 0.0, y, h, &zero_stages, &y)
+            .unwrap();
     assert_eq!(wrong_status, "PROVED_CONDITIONAL_TUBE");
     assert_eq!(wrong_residual, 0.0);
     assert_eq!(wrong_bound, Some(0.0));
@@ -865,10 +857,6 @@ fn blind_c9_actual_odeproblem_probes_invalidate_frozen_step_trial() {
     );
     let later = owner.freeze();
     assert!(owner.check_raw_u_stage_trial(&later, 0.0, y).is_err());
-    owner
-        .check_raw_u_stage_trial(&later, h * 0.5, y)
-        .unwrap();
-    println!(
-        "BLIND_C9_EPOCH_CHURN prior_epoch=0 later_epoch={current} callback_rhs={output:?}"
-    );
+    owner.check_raw_u_stage_trial(&later, h * 0.5, y).unwrap();
+    println!("BLIND_C9_EPOCH_CHURN prior_epoch=0 later_epoch={current} callback_rhs={output:?}");
 }
