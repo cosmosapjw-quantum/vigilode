@@ -1,0 +1,42 @@
+{
+  "schema": "vigilode.n01.c9.trusted_bundle_native_red.v1",
+  "date": "2026-10-30 KST",
+  "parent_pr": 129,
+  "parent_head": "1771fe51f1dfbc2395ca575a99a9f749918e08d3",
+  "first_run": 41005875127,
+  "job": 123900540331,
+  "tested_head": "3b63f25f6bf638b1eab33fd9a403eeb407ec455b",
+  "observed": {
+    "new_native": "3/3 PASS",
+    "prior_C8_C9_F01_hostile": "8/8 PASS",
+    "C6_C7": "3+6 PASS",
+    "PR91": "6+6+17 PASS",
+    "all_native": "49/49 PASS",
+    "strict_clippy": "PASS",
+    "focused_rustfmt": "FAIL on 4 source-only formatting differences",
+    "true_source_rhs": [
+      -0.21875,
+      -2.90625,
+      3.125
+    ],
+    "fake_source_rhs": [
+      0,
+      0,
+      0
+    ],
+    "epoch_after_two_stage_probes": 0,
+    "original_u0_residual": 1.3552527156068805e-20,
+    "mass_defect": 0,
+    "reference_direct_solves": 8
+  },
+  "repair": "Only apply rustfmt's four changes to crates/rodas5p-integrators/src/n01_frozen_source_bundle.rs; preserve physics and tests, rerun exact focused CI.",
+  "classification": "scientific implementation PASS, formatting RED; not a production or independent-review admission",
+  "dag": {
+    "vigilode": "7/23",
+    "rei": "28/88",
+    "successor": "0/12 admitted",
+    "c9_distinct_author": "0/1 NOT_RUN",
+    "c9_bundle": "0/1 until clean native CI",
+    "production": "HOLD"
+  }
+}
