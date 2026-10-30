@@ -1,0 +1,21 @@
+name: BASS21 source-owned high-spin E+ scoped (not global authority)
+on:
+  push:
+    branches: ['research/bass21-spin2-eharm-highrank-20261030']
+    paths: ['research/bass21_spin2_ehighrank_20261030/**', '.github/workflows/bass21-spin2-ehighrank-scoped.yml', 'research/LEDGER.jsonl']
+  pull_request:
+    paths: ['research/bass21_spin2_ehighrank_20261030/**', '.github/workflows/bass21-spin2-ehighrank-scoped.yml', 'research/LEDGER.jsonl']
+jobs:
+  source-frozen-highrank-git-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Verify published exact source-free CSV, operator and plot evidence only
+        run: python3 research/bass21_spin2_ehighrank_20261030/code/check_git_scoped.py
+      - name: Verify preregistered research node and append-only ledger only
+        run: python3 tools/check-research-node.py
+      - name: Do not confuse source-free CI with immutable original source replay
+        run: echo 'Original source owner 50/50 full NPZ SHA/50-case re-evaluation only in independently verified complete source ZIP; global authority CI separate.'
