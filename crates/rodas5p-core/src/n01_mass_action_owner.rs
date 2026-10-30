@@ -649,3 +649,25 @@ impl N01MassActionOwner {
         Ok(())
     }
 }
+
+/// Validate a temporary native stage probe without advancing owner
+/// clock/state or model epoch. The owner's certified reference box is
+/// authoritative; the floating state is not a caller-supplied new model.
+impl N01MassActionOwner {
+    pub fn check_read_only_stage_probe(&self, state: [f64; 3]) -> CoreResult<()> {
+        if !nonnegative3(&state) {
+            return Err(CoreError::InvalidInput(
+                "N01_MASS_READ_ONLY_PROBE_NONPHYSICAL".into(),
+            ));
+        }
+        for (i, value) in state.iter().enumerate() {
+            let distance_up = point(*value)?.sub(point(self.reference[i])?)?.mag();
+            if distance_up > self.radius[i] {
+                return Err(CoreError::InvalidInput(
+                    "N01_MASS_READ_ONLY_PROBE_OUTSIDE_SOURCE_BOX".into(),
+                ));
+            }
+        }
+        Ok(())
+    }
+}
