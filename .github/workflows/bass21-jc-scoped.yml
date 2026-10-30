@@ -1,0 +1,25 @@
+name: BASS21 source-owned J/c local generator scoped (not global authority)
+on:
+  pull_request:
+    paths:
+      - 'research/bass21_jc_generator_20261030/**'
+      - '.github/workflows/bass21-jc-scoped.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  frozen-source-jc-mirror:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Check only immutable Git text and committed CSV/JSON local-generator evidence
+        run: |
+          set -euo pipefail
+          python3 research/bass21_jc_generator_20261030/code/check_git_scoped.py
+      - name: Explain scientific boundary
+        run: |
+          echo 'This check does NOT restore original source binary, execute 50-case full replay, or override global authority CI.'
