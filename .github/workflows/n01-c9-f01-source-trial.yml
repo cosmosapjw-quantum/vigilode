@@ -1,0 +1,41 @@
+name: C9 F01 scoped owner-trial source binding validation
+on:
+  push:
+    branches:
+      - research/n01-c9-f01-source-trial-prototype-20261030
+    paths:
+      - crates/rodas5p-core/src/n01_mass_action_owner.rs
+      - crates/vigilode-coupled/tests/n01_df_c8_work_precision.rs
+      - .github/workflows/n01-c9-f01-source-trial.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  f01-owner-binding:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          components: clippy,rustfmt
+      - name: Fetch frozen dependencies
+        run: cargo fetch --locked
+      - name: Native old C8 and C9 and new F01 source trial tests
+        run: cargo test --locked --offline -p vigilode-coupled --test n01_df_c8_work_precision -- --nocapture
+      - name: Original C6 and C7 source-scoped tests
+        run: cargo test --locked --offline -p vigilode-coupled --test n01_df_value_stage_contract --test n01_df_c7_original_raw_u_contract
+      - name: Original PR91 RHS-only homotopy and causal regressions
+        run: cargo test --locked --offline -p vigilode-coupled --test rhs_homotopy_contracts --test causal_contracts --test causal_reuse_contracts
+      - name: Strict Clippy core + C9 test
+        run: cargo clippy --locked --offline -p rodas5p-core -p vigilode-coupled --test n01_df_c8_work_precision -- -D warnings
+      - name: Verify focused format
+        run: |
+          rustfmt --check --edition 2024 crates/rodas5p-core/src/n01_mass_action_owner.rs
+          rustfmt --check --edition 2024 crates/vigilode-coupled/tests/n01_df_c8_work_precision.rs
+      - name: Print exact tested HEAD
+        if: always()
+        run: git rev-parse HEAD
