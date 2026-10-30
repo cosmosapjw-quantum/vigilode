@@ -1,0 +1,21 @@
+{
+  "schema": "vigilode.c9.f01.native-format-red.v1",
+  "date": "2026-10-30 KST",
+  "run_id": 40989578203,
+  "job_id": 123848458023,
+  "tested_head": "8dc4c1fc66bf5ec5075d63e7558a7320d48602d7",
+  "actual_result": {
+    "native_c8_c9_f01": "PASS 6/6",
+    "native_c6_c7": "PASS 9/9",
+    "native_pr91": "PASS 29/29",
+    "strict_clippy": "PASS",
+    "rustfmt": "FAIL test-only import wrapping, extra blank lines and iterator/assert formatting"
+  },
+  "science_observed": {
+    "forged_zero_rates": "fake_residual=0",
+    "source_true_zero_trial": "raw_residual=1.32460976996431364e-4, POSITIVE_TUBE_REFUSED",
+    "source_true_native_rodas8": "raw_residual=5.73949525059513910e-18, algebraic_bound=3.0599993684558566e-15, 8 direct reference linear solves"
+  },
+  "repair": "Apply rustfmt-only text transformations to test file; no source rates, no stage values, no threshold, no default changes; rerun focused hosted CI.",
+  "formal_independent": "0/1 NOT_RUN"
+}
