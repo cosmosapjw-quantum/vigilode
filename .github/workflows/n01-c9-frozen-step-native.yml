@@ -1,0 +1,45 @@
+name: C9 trusted frozen N01 source bundle native proof-of-concept
+on:
+  push:
+    branches:
+      - research/n01-c9-trusted-frozen-probe-bundle-20261030
+    paths:
+      - crates/rodas5p-core/src/n01_mass_action_owner.rs
+      - crates/rodas5p-integrators/src/n01_frozen_source_bundle.rs
+      - crates/rodas5p-integrators/src/lib.rs
+      - crates/rodas5p-integrators/tests/n01_frozen_source_bundle_contract.rs
+      - .github/workflows/n01-c9-frozen-step-native.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frozen-source-native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          components: clippy,rustfmt
+      - name: Fetch locked dependencies
+        run: cargo fetch --locked
+      - name: Newly implemented trusted owner callback and epoch-stable RODAS8 test
+        run: cargo test --locked --offline -p rodas5p-integrators --test n01_frozen_source_bundle_contract -- --nocapture
+      - name: Original C8 C9 F01 and two hostile tests
+        run: cargo test --locked --offline -p vigilode-coupled --test n01_df_c8_work_precision
+      - name: Native C6 C7 and original RHS-only PR91 causal regression
+        run: cargo test --locked --offline -p vigilode-coupled --test n01_df_value_stage_contract --test n01_df_c7_original_raw_u_contract --test rhs_homotopy_contracts --test causal_contracts --test causal_reuse_contracts
+      - name: Strict Clippy affected core and integrators plus new tests
+        run: cargo clippy --locked --offline -p rodas5p-core -p rodas5p-integrators --test n01_frozen_source_bundle_contract -- -D warnings
+      - name: Source-specific rustfmt
+        run: |
+          rustfmt --check --edition 2024 crates/rodas5p-core/src/n01_mass_action_owner.rs
+          rustfmt --check --edition 2024 --config skip_children=true crates/rodas5p-integrators/src/lib.rs
+          rustfmt --check --edition 2024 crates/rodas5p-integrators/src/n01_frozen_source_bundle.rs
+          rustfmt --check --edition 2024 crates/rodas5p-integrators/tests/n01_frozen_source_bundle_contract.rs
+      - name: Print checkout identity
+        if: always()
+        run: git rev-parse HEAD
