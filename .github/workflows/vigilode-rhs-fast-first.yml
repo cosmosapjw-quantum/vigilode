@@ -1,0 +1,83 @@
+name: VigilODE native RHS-only fast-first opt-in research (HOLD)
+on:
+  push:
+    branches:
+      - research/vigilode-rhs-fast-first-contraction-20261031
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fast-first:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          components: clippy,rustfmt
+      - name: Lock original source, unchanged defaults, and bounded diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          B=b289d8e8165bf7d5b1d3255c9a02e89bc4a20b9e
+          git merge-base --is-ancestor "$B" HEAD
+          test "$(git rev-parse HEAD:Cargo.lock)" = 9bc1afe66b0ff77dc08f76ef9d0532fae81b0df5
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs)" = 0e4ddf702357b5209673b8fc243934f3c9aeeb4a
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/n01_derivative_free.rs)" = 7c2cd365bb830b778910e98fb29be4c36f4cfd8e
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/rhs_homotopy.rs)" = 550c564602abcea50c0175125265ed3d3c289f9e
+          while IFS= read -r path; do
+            case "$path" in
+              .github/workflows/vigilode-rhs-fast-first.yml|\
+              crates/vigilode-coupled/src/rhs_homotopy.rs|\
+              crates/vigilode-coupled/tests/rhs_fast_first_contracts.rs|\
+              crates/vigilode-coupled/examples/rhs_fast_first_bench.rs|\
+              research/vigilode_rhs_fastfirst_20261031/THEORY_AND_CONTRACT.md) ;;
+              *) echo "UNAUTHORIZED_DIFF: $path" >&2; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$B" HEAD)
+          echo VIGILODE_FASTFIRST_SOURCE_AND_SCOPE_LOCKED
+      - name: Fetch Cargo.lock dependencies
+        run: cargo +1.94.1 fetch --locked
+      - name: New and original native physics/algorithm contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p fast-first-evidence
+          cargo +1.94.1 test --locked --offline -p vigilode-coupled \
+            --test rhs_fast_first_contracts \
+            --test rhs_homotopy_contracts \
+            --test cubic_solver_production_contracts -- --nocapture \
+            2>&1 | tee fast-first-evidence/TEST.log
+      - name: Paired complete callback and wall benchmark
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo +1.94.1 run --locked --offline --profile measurement \
+            -p vigilode-coupled --example rhs_fast_first_bench \
+            2>&1 | tee fast-first-evidence/BENCH.log
+      - name: Strict scoped rustfmt
+        run: |
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/src/rhs_homotopy.rs
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/tests/rhs_fast_first_contracts.rs
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/examples/rhs_fast_first_bench.rs
+      - name: Strict scoped Clippy (do not relax inherited findings)
+        run: cargo +1.94.1 clippy --locked --offline -p vigilode-coupled --test rhs_fast_first_contracts -- -D warnings
+      - name: Source and execution identity
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p fast-first-evidence
+          git rev-parse HEAD > fast-first-evidence/HEAD.txt
+          git rev-parse HEAD^{tree} > fast-first-evidence/TREE.txt
+          rustc +1.94.1 --version > fast-first-evidence/RUST_VERSION.txt
+          git rev-parse HEAD:crates/vigilode-coupled/src/rhs_homotopy.rs > fast-first-evidence/SOURCE_BLOB.txt
+          sha256sum crates/vigilode-coupled/src/rhs_homotopy.rs crates/vigilode-coupled/tests/rhs_fast_first_contracts.rs crates/vigilode-coupled/examples/rhs_fast_first_bench.rs > fast-first-evidence/SOURCE_SHA256.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vigilode-fastfirst-native-evidence
+          path: fast-first-evidence/
+          retention-days: 90

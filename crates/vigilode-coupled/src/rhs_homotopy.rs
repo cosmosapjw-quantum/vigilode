@@ -956,3 +956,162 @@ fn cubic_integrate(
     }
     Ok(())
 }
+
+
+/// Opt-in RHS-only depth-one Anderson acceleration with a caller-proved
+/// contraction factor, evaluating a speculative candidate before the usual
+/// Picard residual when that can save a complete callback.
+///
+/// Preconditions beyond the checked numeric input: on a common invariant
+/// domain the unchanged exact G must be L2-contractive by base_q, and the
+/// homotopy stations must map that domain into itself. A caller-supplied
+/// number is not itself a contraction certificate. At station lambda,
+/// q_lambda=lambda*base_q. If the evaluated Anderson trial z has
+/// ||H_lambda(z)-z|| <= q_lambda*||H_lambda(x)-x||, it can replace
+/// Picard H_lambda(x) without evaluating H_lambda(H_lambda(x)).
+///
+/// This does NOT claim dominance over the uncomputed Picard residual.
+/// Each accepted exact-real residual instead satisfies the same geometric
+/// contraction envelope. If the trial misses that envelope, the original
+/// Picard candidate is evaluated and the smaller measured residual chosen.
+/// This is a numerical/operational test: outward callback and arithmetic
+/// rounding bounds are still needed for a rigorous physical-error claim.
+///
+/// This function does not alter solve_rhs_homotopy or any default route;
+/// it never requests a Jacobian/JVP/FD derivative. A trial is attempted
+/// only if enough budget remains to evaluate a fallback Picard candidate.
+pub fn solve_rhs_homotopy_contraction_fast_first<M: RhsOnlyMap + ?Sized>(
+    map: &M,
+    anchor: &[f64],
+    cfg: &RhsHomotopyConfig,
+    base_q: f64,
+) -> RhsHomotopyAttempt {
+    let mut out = RhsHomotopyAttempt::default();
+    if !valid(cfg, map.dimension(), anchor)
+        || cfg.acceleration != RhsAcceleration::ResidualDominance
+        || !base_q.is_finite()
+        || !(0.0..1.0).contains(&base_q)
+    {
+        out.failure = Some(failure(
+            RhsHomotopyFailureKind::Input,
+            "fast-first requires valid residual-dominance config and 0<=q<1",
+        ));
+        return out;
+    }
+    let epoch = map.model_epoch();
+    let result = run_contraction_fast_first(map, anchor, cfg, epoch, base_q, &mut out);
+    match result {
+        Ok(root) => out.root = Some(root),
+        Err(err) => out.failure = Some(err),
+    }
+    out
+}
+
+fn run_contraction_fast_first<M: RhsOnlyMap + ?Sized>(
+    map: &M,
+    anchor: &[f64],
+    cfg: &RhsHomotopyConfig,
+    epoch: Option<u64>,
+    base_q: f64,
+    out: &mut RhsHomotopyAttempt,
+) -> Result<Vec<f64>, RhsHomotopyFailure> {
+    let mut seed = anchor.to_vec();
+    for &lambda in &cfg.lambdas {
+        let q = lambda * base_q;
+        out.work.continuation_stations += 1;
+        let calls_before = out.work.map_attempted;
+        let mut previous: Option<Value> = None;
+        let mut current = evaluate(map, anchor, seed, lambda, epoch, cfg, &mut out.work)?;
+        let mut iteration = 0;
+        while current.norm > cfg.residual_l2_tolerance {
+            if iteration == cfg.max_iterations_per_lambda {
+                return Err(failure(
+                    RhsHomotopyFailureKind::IterationLimit,
+                    "fast-first station exhausted its update limit",
+                ));
+            }
+            let mut trial_value: Option<Value> = None;
+            // Leave at least one full callback charge for fallback Picard.
+            if cfg.max_map_evaluations - out.work.map_attempted >= 2
+                && let Some(old) = &previous
+            {
+                let scale = current
+                    .residual
+                    .iter()
+                    .chain(&old.residual)
+                    .fold(0.0_f64, |s, &v| s.max(v.abs()));
+                let mut numerator = 0.0;
+                let mut denominator = 0.0;
+                if scale > 0.0 {
+                    for (&r, &r_old) in current.residual.iter().zip(&old.residual) {
+                        let dr = r / scale - r_old / scale;
+                        numerator += (r / scale) * dr;
+                        denominator += dr * dr;
+                    }
+                }
+                out.work.residual_dot_passes += 1;
+                let gamma = numerator / denominator;
+                if gamma.is_finite() {
+                    let trial: Vec<_> = current
+                        .mapped
+                        .iter()
+                        .zip(&old.mapped)
+                        .map(|(g, g_old)| g - gamma * (g - g_old))
+                        .collect();
+                    if trial.iter().all(|v| v.is_finite()) && map.admits(&trial) {
+                        out.work.extrapolation_trials += 1;
+                        let candidate =
+                            evaluate(map, anchor, trial, lambda, epoch, cfg, &mut out.work)?;
+                        if candidate.norm <= q * current.norm {
+                            out.work.extrapolations_accepted += 1;
+                            previous = Some(current);
+                            current = candidate;
+                            iteration += 1;
+                            continue;
+                        }
+                        trial_value = Some(candidate);
+                    } else {
+                        out.work.domain_skipped_trials += 1;
+                    }
+                } else {
+                    out.work.coefficient_skips += 1;
+                }
+            } else {
+                out.work.policy_skips += 1;
+            }
+            let baseline = evaluate(
+                map,
+                anchor,
+                current.mapped.clone(),
+                lambda,
+                epoch,
+                cfg,
+                &mut out.work,
+            )?;
+            out.work.picard_updates += 1;
+            let selected = match trial_value {
+                Some(candidate) if candidate.norm <= baseline.norm => {
+                    out.work.extrapolations_accepted += 1;
+                    candidate
+                }
+                Some(_) => {
+                    out.work.extrapolations_rejected += 1;
+                    baseline
+                }
+                None => baseline,
+            };
+            previous = Some(current);
+            current = selected;
+            iteration += 1;
+        }
+        seed = current.state;
+        out.points.push(RhsHomotopyPoint {
+            lambda,
+            state: seed.clone(),
+            residual_l2: current.norm,
+            iterations: iteration,
+            map_evaluations: out.work.map_attempted - calls_before,
+        });
+    }
+    Ok(seed)
+}
