@@ -72,6 +72,7 @@ mod homotopy_experiments;
 mod homotopy_order_policy;
 mod homotopy_policy;
 mod integrate;
+pub mod n01_frozen_source_bundle;
 pub mod n01_mass_action_client;
 mod native_gates;
 mod nonlinear;
