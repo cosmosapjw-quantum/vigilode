@@ -1,0 +1,20 @@
+# C9 follow-on scoped constructive repair: trusted fixed-source callback bundle
+Date: 2026-10-30 KST. BEFORE executing new native tests.
+
+## Exact frozen source
+Parent [PR129](https://github.com/cosmosapjw-quantum/vigilode/pull/129) HEAD `1771fe51f1dfbc2395ca575a99a9f749918e08d3` (stacked PR128 `b06cd9b7bf9ad9b103d43e89ca83ea31a71505a3`). Its hostile native tests witnessed H1 source owner substitution (`fake_bound=Some(0.0)` with real OdeProblem rawU0>0) and H2 epoch churn from legacy `n01_mass_action_owned_problem::advance(t,y)` on temporary stage callbacks. Existing 46/46 native tests and Clippy/fmt PASS in run40996310062 at tested head `87e77f0fcc68af009d90e85071b8c070afd6b262`.
+
+## Objective: minimal independently falsifiable implementation, NOT more process
+Add an **opt-in, single-step original RODAS5P 8-stage direct-reference adapter** that encapsulates native `OdeProblem` and an immutable `Arc<N01MassActionOwner>` in one private typed bundle. Callback closures capture *exactly the same Arc* that issues frozen source trials. Stage probes evaluate RHS/Jacobian/JVP read-only and validate physical source box, without `advance(t,y)`. Thus source *model generation* stays unchanged on temporary t/state probing. Give only a typed frozen step handle with private bundle borrowing and methods to inspect its own opaque rates/source and run an original 8-stage reference step. Expose NO public owner/prob pair or caller-forgeable separate source owner as a step admission interface. Default/native existing factory `n01_mass_action_owned_problem` untouched. No mechanism for accepted-step mutation or full IVP admission is claimed by this one-step bundle.
+
+## Registered tests
+1. New native `n01_source_frozen_probe_contract`: create true physical k=(.5,10,200), y=(.75,.125,.125), h=.0001. Freeze step with t0=0. Two legitimate RHS probes at 0 and h/2 through the *encapsulated* OdeProblem yield exact same source rates and model epoch stays 0, source trial remains live. Old adapter H2 remains a valid counterexample but not modified.
+2. Run the bundled original 8-stage RODAS5P reference from its private `OdeProblem`. Verify 8 stages, 8 reference direct solves, finite nonnegative endpoint, mass conservation, and reconstruct original raw-U0 equation from original represented tableau and native stage K to compare residual. Direct Jacobian is a tiny **reference only**, not primary solver.
+3. Rejection tests: wrong initial t/y including -0 bit mismatch, NaN/Inf, negative state, out-of-box stage probe, malformed step h, cannot create arbitrary owner/prob pair through public bundle interface. Physical output remains unchanged on rejected RHS probes.
+4. Run original C8/C9/F01 + PR91/C6/C7 regressions and strict Rust1.94.1 Clippy/fmt in actual GitHub Actions. Preserve all old historical REDs. At most one diagnosed repair episode.
+
+## Scientific scope
+Primary method stays causal parallelized RHS-only derivative-free accelerated homotopy Newton-free RK/Rosenbrock. JVP optional secondary fallback; tiny dense n3 reference-only. This new bundle is original 8-stage direct **single step** and not an implemented 8-stage derivative-free production solver. Source parameters, clock, tableau, physical domain, represented floats and generation explicitly named. No full IVP, global truncation bound, N02 or BASS physical33 claim; no default routing, coefficients or tolerances change.
+
+## Immutable DAG at prereg
+VigilODE 7/23, REI 28/88, successor admitted 0/12. Existing C6/C7/C8 1/1 scoped; C9 same-assistant technical 1/1 scoped, blind-style review 1/1 scoped, trusted bundle new candidate 0/1; **formal distinct-author C9 0/1 NOT_RUN**, C10 NOT_STARTED, production HOLD. No native delegation tool is exposed in current session; `native_subagent=NOT_RUN` and actual independent-reviewer identity cannot be invented. The selected research unit is scoped C9 risk-repair only, no transition to C10. Publish immutable evidence by GitHub checkpoints, Google Drive backup and actual Dropbox ACK, and return copyable handoff.
