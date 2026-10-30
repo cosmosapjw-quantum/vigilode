@@ -408,3 +408,6 @@ mod tests {
 #[allow(dead_code)]
 #[path = "n3h_source_bounded_copy.rs"]
 pub mod n3h_source_bounded_copy;
+
+/// N4A opt-in source-locked experimental one-window carrier enclosure.
+pub mod n4a_carrier;

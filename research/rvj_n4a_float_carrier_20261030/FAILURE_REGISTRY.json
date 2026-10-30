@@ -1,0 +1,27 @@
+{
+  "N4A_INTERVAL_ZERO_TAIL": {
+    "class": "implementation",
+    "observed": "The directed multiplication of [0,t] endpoints generated -minimum_subnormal for a mathematically nonnegative absolute Taylor remainder; Z::pad refused the slightly negative lower bound.",
+    "initial_verdict": "RED 2 tests failed",
+    "repair": "For provably nonnegative absolute analytic tail only, clamp_nonnegative before padding; retain outward upper bound.",
+    "verified_after_repair": "GREEN; all 358 mode tests and exact 180/220 digit oracle PASS",
+    "status": "FIXED_SCOPED"
+  },
+  "N4A_BENCH_COMPILER_TYPO": {
+    "class": "implementation",
+    "observed": "First exploratory benchmark used invalid Rust parameter syntax fn median(x:mut Vec<f64>) and failed to compile.",
+    "repair": "Corrected to fn median(mut x: Vec<f64>), then compiled with Rust1.99.1 --release.",
+    "status": "FIXED_SCOPED"
+  },
+  "N4A_PRODUCTION_INLINE_COST": {
+    "class": "performance_negative_result",
+    "observed": "Production-style inline enclosure 163-192x more expensive than original one-Picard native candidate in same opt-in release runner.",
+    "status": "RETAIN_TRUE_NEGATIVE_OFFLINE_CERT_ONLY"
+  },
+  "N4A_SECOND_WINDOW": {
+    "class": "scientific_scope",
+    "observed": "Original N3H accepted state does not add N4A measured float gap to next-window inherited error.",
+    "status": "BLOCKED_FUTURE_NEW_UNIT"
+  },
+  "C9_DISTINCT_AUTHOR": {"class": "review", "status":"NOT_RUN"}
+}

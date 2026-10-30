@@ -1069,3 +1069,113 @@ pub fn n4_compare_original_monomial_kernel(a:f64,b:f64,theta:f64,h:f64,r:usize)-
     let values=monomial_kernel(C::new(-a,theta),b,h,r,&mut work);
     (values[r].re,values[r].im)
 }
+
+/// N4A read-only certificate for the *pending source-owned first window*.
+/// The candidate is not committed and this return value is NOT a production gate.
+/// A second window must inherit the new floating discrepancy, which the original
+/// ideal-only research controller does not do. Refuse to certify it here.
+impl Session {
+    pub fn n4a_certify_first_pending(
+        &self,
+        attempt: &Attempt,
+    ) -> Result<Vec<crate::n4a_carrier::CertifiedComponent>, String> {
+        if self.epoch != 0
+            || self.time.to_bits() != 0f64.to_bits()
+            || self.ideal_error.iter().any(|v| *v != 0.)
+            || attempt.source_token != self.source.token
+            || attempt.epoch != self.epoch
+            || attempt.clock_bits != self.time.to_bits()
+            || self.active_trial != Some(attempt.trial_id)
+            || attempt.h != 0.25
+            || attempt.p != 2
+            || self.source.energy_upper(&self.y) > 1.
+            || represented_clock_exceeds_horizon(self.time, attempt.h, self.source.horizon)
+        {
+            return Err("source/epoch/carrier/horizon certification refusal".into());
+        }
+        let s = &self.source;
+        let v = crate::n4a_carrier::FrozenView {
+            n: s.n,
+            weights: &s.weights,
+            phi: &s.phi,
+            xi: &s.xi,
+            kappa: &s.kappa,
+            omega: s.omega,
+            chi: &s.chi,
+            y: &self.y,
+        };
+        let exact = crate::n4a_carrier::ideal_first_picard(&v, attempt.h, attempt.p)?;
+        crate::n4a_carrier::compare_float(&exact, &attempt.next, &attempt.next_error_ideal)
+    }
+}
+
+#[cfg(test)]
+mod n4a_first_window_tests {
+    use super::*;
+    #[test]
+    fn n4a_actual_proposed_first_window_has_entire_mode_interval_enclosure() {
+        for n in [12,24,65,257] {
+            let mut session=Session::new(Source::toy(n).unwrap()).unwrap();
+            let candidate=session.propose(0.25,2).unwrap();
+            let result=session.n4a_certify_first_pending(&candidate).unwrap();
+            assert_eq!(result.len(),n);
+            let largest_gap=result.iter().map(|r| r.float_gap_l1_upper).fold(0f64,f64::max);
+            let largest_physical=result.iter().map(|r| r.initial_epoch_physical_l1_upper).fold(0f64,f64::max);
+            eprintln!("N4A n={n} max_float_gap_l1_upper={largest_gap:.17e} max_conditional_physical_l1_upper={largest_physical:.17e}");
+            assert!(largest_gap.is_finite() && largest_gap < 1e-6);
+            assert!(largest_physical >= largest_gap);
+            assert!(session.is_balanced());
+        }
+    }
+    #[test]
+    fn n4a_source_epoch_refusal_cannot_be_promoted_to_transactional_acceptance() {
+        let mut s=Session::new(Source::toy(12).unwrap()).unwrap();
+        let a=s.propose(0.25,2).unwrap();
+        assert_eq!(s.n4a_certify_first_pending(&a).unwrap().len(),12);
+        assert!(s.n4a_certify_first_pending(&a).unwrap().iter().all(|x|x.float_gap_l1_upper>=0.));
+        // State mutation after a research-only accept forbids reusing an epoch-zero certificate.
+        let _=s.decide(a,1.0).unwrap();
+        let b=s.propose(0.25,2).unwrap();
+        assert!(s.n4a_certify_first_pending(&b).is_err());
+        s.abort_pending();
+        assert!(s.is_balanced());
+    }
+}
+
+/// N4A diagnostic-only access to a source-locked proposal prior to decision.
+impl Attempt {
+    pub fn n4a_research_float_state(&self) -> &[C] { &self.next }
+}
+
+#[cfg(test)]
+mod n4a_adversarial_contract_tests {
+    use super::*;
+    #[test]
+    fn cross_source_pending_attempt_is_rejected_without_untrusted_output_access() {
+        let mut left=Session::new(Source::toy(12).unwrap()).unwrap();
+        let mut right=Session::new(Source::toy(12).unwrap()).unwrap();
+        let a=left.propose(0.25,2).unwrap();
+        let b=right.propose(0.25,2).unwrap();
+        assert!(right.n4a_certify_first_pending(&a).is_err());
+        assert!(left.n4a_certify_first_pending(&b).is_err());
+        left.abort_pending();right.abort_pending();
+        assert!(left.is_balanced() && right.is_balanced());
+    }
+    #[test]
+    fn exact_nonlinear_sign_involution_preserves_source_owned_first_window() {
+        let mut a=Session::new(Source::toy_sign(12,1.).unwrap()).unwrap();
+        let mut b=Session::new(Source::toy_sign(12,-1.).unwrap()).unwrap();
+        let x=a.propose(0.25,2).unwrap();
+        let y=b.propose(0.25,2).unwrap();
+        let bx=a.n4a_certify_first_pending(&x).unwrap();
+        let by=b.n4a_certify_first_pending(&y).unwrap();
+        for j in 0..12 {
+            let u=bx[j].exact_first_picard;
+            let v=by[j].exact_first_picard;
+            assert!(u.re.lo<=v.re.hi && v.re.lo<=u.re.hi);
+            assert!(u.im.lo<=v.im.hi && v.im.lo<=u.im.hi);
+            assert_eq!(x.n4a_research_float_state()[j].re.to_bits(),y.n4a_research_float_state()[j].re.to_bits());
+            assert_eq!(x.n4a_research_float_state()[j].im.to_bits(),y.n4a_research_float_state()[j].im.to_bits());
+        }
+    }
+}
