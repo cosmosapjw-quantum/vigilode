@@ -10,8 +10,8 @@
 //! The legacy n01_mass_action_owned_problem factory is intentionally unchanged.
 use crate::{OdeProblem, StepResult, sequential_step};
 use rodas5p_core::{
-    CoreError, CoreResult, DenseMatrix, LinearSolverConfig, N01MassActionOwner,
-    N01MassActionTrial, WorkCounters,
+    CoreError, CoreResult, DenseMatrix, LinearSolverConfig, N01MassActionOwner, N01MassActionTrial,
+    WorkCounters,
 };
 use std::sync::Arc;
 
@@ -61,9 +61,7 @@ impl N01FrozenSourceProblem {
         let jac_source = Arc::clone(&source);
         let jac = Arc::new(move |t: f64, y: &[f64]| -> CoreResult<DenseMatrix> {
             if !t.is_finite() {
-                return Err(CoreError::InvalidInput(
-                    "N01_FROZEN_JAC_BAD_CLOCK".into(),
-                ));
+                return Err(CoreError::InvalidInput("N01_FROZEN_JAC_BAD_CLOCK".into()));
             }
             let state = state3(y)?;
             jac_source.check_read_only_stage_probe(state)?;
@@ -113,11 +111,7 @@ impl N01FrozenSourceProblem {
         state: [f64; 3],
         h: f64,
     ) -> CoreResult<N01FrozenSourceStep<'_>> {
-        if !time.is_finite()
-            || !h.is_finite()
-            || h <= 0.0
-            || !(time + h).is_finite()
-        {
+        if !time.is_finite() || !h.is_finite() || h <= 0.0 || !(time + h).is_finite() {
             return Err(CoreError::InvalidInput(
                 "N01_FROZEN_STEP_BAD_TIME_OR_SIZE".into(),
             ));
@@ -167,7 +161,9 @@ impl N01FrozenSourceStep<'_> {
     ) -> CoreResult<()> {
         self.live()?;
         let mut temp = [0.0; 3];
-        self.bundle.problem.eval_rhs_into(time, &state, &mut temp, work)?;
+        self.bundle
+            .problem
+            .eval_rhs_into(time, &state, &mut temp, work)?;
         self.live()?;
         out.copy_from_slice(&temp);
         Ok(())
