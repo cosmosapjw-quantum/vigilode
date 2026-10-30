@@ -1,0 +1,136 @@
+{
+  "schema": "vigilode.n4a.final.closure.2026-10-31",
+  "date": "2026-10-31",
+  "project": "cosmosapjw-quantum/vigilode",
+  "project_official_dag": "7/23",
+  "rei_official_dag": "28/88",
+  "rvj_followon": "3/8 + N4_PARTIAL",
+  "successor_admitted": "0/12",
+  "unit": "N4A_FIRST_WINDOW_FLOAT_CARRIER_ENCLOSURE",
+  "parent_pr": 142,
+  "parent_head": "5f00ae95c437e0df8e6c2d7838a1c9ba5e30f075",
+  "branch": "research/rvj-n4a-first-window-floating-carrier-20261030",
+  "pre_receipt_branch_head": "2805d5997fbaaff784d140e4725a87a71d4af812",
+  "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+  "verification_fresh": {
+    "n4a_archive_manifest": "32/32_PASS",
+    "n3h_prefix": "PASS",
+    "original_tableau_identity": "PASS",
+    "cargo_test": "38/38_PASS",
+    "cargo_test_exit": 0,
+    "cargo_clippy_all_targets_strict": "PASS",
+    "rustfmt_selected_files": "PASS",
+    "carrier_native_rows": 358,
+    "carrier_output_byte_identical": true,
+    "carrier_csv_sha256": "765bc74ea95de9581b457ea02253a8bbda467d3520900ac6bc698f49785df255",
+    "independent_180_220_reference": "INHERITED_ARCHIVE_EVIDENCE_NOT_RERUN_IN_CLOSURE"
+  },
+  "previous_scoped_reference": [
+    {
+      "n": 12,
+      "rows": 12,
+      "independent_180vs220_max": 5.978921281753529e-183,
+      "included": 12,
+      "max_reference_vs_native_l1": 1.3160513796155858e-17,
+      "violating_bound_excess": 0.0,
+      "pass_all": true
+    },
+    {
+      "n": 24,
+      "rows": 24,
+      "independent_180vs220_max": 1.1288529319181395e-182,
+      "included": 24,
+      "max_reference_vs_native_l1": 8.592534494055847e-18,
+      "violating_bound_excess": 0.0,
+      "pass_all": true
+    },
+    {
+      "n": 65,
+      "rows": 65,
+      "independent_180vs220_max": 1.4407046177842258e-182,
+      "included": 65,
+      "max_reference_vs_native_l1": 1.2495283215840627e-17,
+      "violating_bound_excess": 0.0,
+      "pass_all": true
+    },
+    {
+      "n": 257,
+      "rows": 257,
+      "independent_180vs220_max": 1.5919358835001287e-182,
+      "included": 257,
+      "max_reference_vs_native_l1": 1.6307767837584552e-17,
+      "violating_bound_excess": 0.0,
+      "pass_all": true
+    }
+  ],
+  "science_limits": {
+    "certified": "first window T0=0,h=1/4,p=2,source epoch0 n12,24,65,257 actual represented float Picard carrier",
+    "not_certified": "second time window inherited floating error; real PR131 native 8-stage adaptivity; matched-speed default routing",
+    "independent_real_author_C9": "0/1_NOT_RUN",
+    "C10": "NOT_STARTED",
+    "production": "HOLD",
+    "merge_ready": false,
+    "auto_next": false
+  },
+  "cost_negative": "online certification 163-192 times candidate, archived paired benchmark; no universal speed claim",
+  "backup": {
+    "zip_sha256": "f50c56e1f5330c37e5ad872e6048ad35741fc1b5c735c51dbe4ca93b1619831f",
+    "zip_bytes": 87693,
+    "library": "/VIGILODE_RESEARCH/VIGILODE_RVJ_N4A_FLOAT_CARRIER_20261030_FULL.zip",
+    "gdrive_file_id": "1AgxiNplxiOHSWshxw4y69ExFJxzIdmD4",
+    "drive_raw_download_cmp": "PASS",
+    "library_raw_download_cmp": "PASS",
+    "dropbox_binary": "NOT_RUN"
+  },
+  "source_files": {
+    "rust/src/lib.rs": {
+      "bytes": 12524,
+      "sha256": "cbde47a84da243a62044157c2de978208a46eeafebe97218d506fe9332db975e"
+    },
+    "rust/src/n3h_source_bounded_copy.rs": {
+      "bytes": 42406,
+      "sha256": "2ac02017cfd56efe71aa22805312d270cd6ece93224f45c43f40b9cf8daf9e99"
+    },
+    "rust/src/n4a_carrier.rs": {
+      "bytes": 9220,
+      "sha256": "f895c62f1899dc3e4b371ad0a4e005454e5cfcecf1b2e99ec1de669ceea59335"
+    },
+    "rust/src/bin/n4a_carrier.rs": {
+      "bytes": 1448,
+      "sha256": "13e0082298f501294c3c9ff6aac5432ecd54330f9ca3afcfb7fdd341d7d810cd"
+    },
+    "rust/src/bin/n4a_bench.rs": {
+      "bytes": 1273,
+      "sha256": "c909bf4f0f46aaf75d6c9df1074d9f80f4c861907c200061fc1dc7e34268c2ea"
+    },
+    "exact_reference.py": {
+      "bytes": 4346,
+      "sha256": "d6657017984f163d45f456346840d7f53f77e5e95b2523204cab1a94fbe7945a"
+    },
+    "THEORY_AND_REVIEW_KO.md": {
+      "bytes": 8217,
+      "sha256": "02fd8312babb890f4aaf5678a77872483e5ea470b8ea310ca44e4337fbcea0dd"
+    },
+    "HANDOFF_NEXT_THREAD_KO.md": {
+      "bytes": 2617,
+      "sha256": "cee8b5299a0d42a6bf0e3fd2719f4ab18d03332c741de758898ccda9a995c08e"
+    },
+    "STAGE_LEDGER.json": {
+      "bytes": 10515,
+      "sha256": "daf749d980e5442498b4367f5e0155e3f881208baf8f276d209d4fd024340165"
+    },
+    "FAILURE_REGISTRY.json": {
+      "bytes": 1472,
+      "sha256": "7f6c62a70cde0b3d3096e92c3b4aadda5f87395a7d425f5d8a7890191d29c708"
+    },
+    "REPRODUCE.md": {
+      "bytes": 1383,
+      "sha256": "70444297a59283d7c461207fdeea0c36a97899ad292ff3c884188439d3d3b942"
+    }
+  },
+  "execution_logs": {
+    "cargo_test": "N4A_FINAL_VERIFY_20261031/cargo_test.log",
+    "clippy": "N4A_FINAL_VERIFY_20261031/clippy.log",
+    "rustfmt": "N4A_FINAL_VERIFY_20261031/rustfmt.log"
+  }
+}
