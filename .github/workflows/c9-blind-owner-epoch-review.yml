@@ -1,0 +1,38 @@
+name: Blind-style C9 hostile owner/epoch review (test-only)
+on:
+  push:
+    branches:
+      - review/c9-blind-pr128-source-attestation-20261030
+    paths:
+      - crates/vigilode-coupled/tests/n01_df_c8_work_precision.rs
+      - .github/workflows/c9-blind-owner-epoch-review.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  adversarial-review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          components: clippy,rustfmt
+      - name: Fetch dependencies
+        run: cargo fetch --locked
+      - name: Native C8/C9/F01 plus two newly preregistered adversarial tests
+        run: cargo test --locked --offline -p vigilode-coupled --test n01_df_c8_work_precision -- --nocapture
+      - name: Historical C6 and C7 exact source contracts
+        run: cargo test --locked --offline -p vigilode-coupled --test n01_df_value_stage_contract --test n01_df_c7_original_raw_u_contract
+      - name: Original PR91 derivative-free causal and homotopy regression
+        run: cargo test --locked --offline -p vigilode-coupled --test rhs_homotopy_contracts --test causal_contracts --test causal_reuse_contracts
+      - name: Strict lint
+        run: cargo clippy --locked --offline -p vigilode-coupled --test n01_df_c8_work_precision -- -D warnings
+      - name: Targeted formatting
+        run: rustfmt --check --edition 2024 crates/vigilode-coupled/tests/n01_df_c8_work_precision.rs
+      - name: Print immutable checkout
+        if: always()
+        run: git rev-parse HEAD

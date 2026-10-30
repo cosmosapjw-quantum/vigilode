@@ -1,0 +1,22 @@
+{
+  "schema": "vigilode.c9.blind_style.red.v1",
+  "date": "2026-10-30 KST",
+  "reviewer_kind": "same-assistant blind-style attack (NOT independent author)",
+  "parent_PR": 128,
+  "parent_head": "b06cd9b7bf9ad9b103d43e89ca83ea31a71505a3",
+  "workflow_run": 40995979375,
+  "job_id": 123869083743,
+  "tested_head": "62cd9f0e3135b373cf8e6fc4c60b973839914951",
+  "evidence": {
+    "native_C8_C9_F01_and_blind": "8/8 PASS",
+    "historical_C6_C7": "9/9 PASS",
+    "PR91_RHS_only_causal": "29/29 PASS",
+    "total_native": "46/46 PASS",
+    "strict_clippy": "PASS",
+    "rustfmt": "FAIL: appended test-only extra blank line, call wrapping, chained methods/println styles",
+    "wrong_owner_trial": "fake bound Some(0), actual OdeProblem original U0 norm = 6.62304884982156818e-5 at h=0.0001",
+    "ephemeral_epoch": "before=0 after=1 on valid native OdeProblem eval_rhs_into(t+0.00005,y), old trial stale"
+  },
+  "minimal_repair": "Format only appended blind test portion to rustfmt expected output. Do not modify primary solver/model/dag/old PR128 source semantics. Rerun exact workflow.",
+  "original_dag": "VigilODE 7/23; REI 28/88; successor 0/12 admitted; C9 other-author 0/1; production HOLD"
+}

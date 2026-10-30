@@ -752,3 +752,111 @@ fn c9_f01_true_source_owned_native_rodas8_stages_certify_within_tube() {
         work.linear_solves
     );
 }
+
+/// BLIND-C9-01: opaque trials authenticate the caller-selected OWNER, not
+/// the ownership of a separate real OdeProblem.  This test does not alter
+/// PR128's guarded function or the real provider's source.
+#[test]
+fn blind_c9_owner_substitution_still_certifies_a_different_problem() {
+    use rodas5p_integrators::n01_mass_action_client::n01_mass_action_owned_problem;
+
+    let y = Y0;
+    let h = 0.0001;
+    let actual = owner(
+        Case {
+            id: "actual-native-odeproblem",
+            k: [0.5, 10.0, 200.0],
+            t_end: h,
+        },
+        y,
+    )
+    .unwrap();
+    let (actual_problem, _actual_handle) = n01_mass_action_owned_problem(actual).unwrap();
+
+    let mut counters = WorkCounters::default();
+    let mut actual_rhs = [0.0; 3];
+    actual_problem
+        .eval_rhs_into(0.0, &y, &mut actual_rhs, &mut counters)
+        .unwrap();
+    assert!(actual_rhs.iter().any(|f| *f != 0.0));
+    assert_eq!(actual_rhs.iter().sum::<f64>(), 0.0);
+
+    // A fake source owner can create its OWN perfectly valid opaque trial.
+    // The PR128 wrapper has no parameter connecting it to actual_problem.
+    let fake = owner(
+        Case {
+            id: "unrelated-fake-zero-physical-owner",
+            k: [0.0; 3],
+            t_end: h,
+        },
+        y,
+    )
+    .unwrap();
+    let unrelated_trial = fake.freeze();
+    let zero_stages = vec![vec![0.0_f64; 3]; 8];
+    let (wrong_residual, wrong_bound, wrong_status) =
+        source_authenticated_raw_u_bound(&fake, &unrelated_trial, 0.0, y, h, &zero_stages, &y)
+            .unwrap();
+    assert_eq!(wrong_status, "PROVED_CONDITIONAL_TUBE");
+    assert_eq!(wrong_residual, 0.0);
+    assert_eq!(wrong_bound, Some(0.0));
+
+    // Same stage proposal does NOT satisfy the actual native OdeProblem.
+    let tau = h * rodas5p_coefficients().unwrap().gamma;
+    let actual_raw_u0 = actual_rhs
+        .iter()
+        .map(|v| (-tau * v).abs())
+        .fold(0.0_f64, f64::max);
+    assert!(actual_raw_u0 > 1.0e-6);
+    println!(
+        "BLIND_C9_OWNER_SUBSTITUTION native_source_rhs={actual_rhs:?} fake_bound={wrong_bound:?} actual_raw_u0={actual_raw_u0:.17e}"
+    );
+}
+
+/// BLIND-C9-02: real stage clock/state probes mutate the present owner's
+/// global epoch; a frozen start-of-step stamp does not remain live across
+/// ordinary stage evaluations, even though immutable reaction rates agree.
+#[test]
+fn blind_c9_actual_odeproblem_probes_invalidate_frozen_step_trial() {
+    use rodas5p_integrators::n01_mass_action_client::n01_mass_action_owned_problem;
+
+    let y = Y0;
+    let h = 0.0001;
+    let actual = owner(
+        Case {
+            id: "actual-epoch-source",
+            k: [0.5, 10.0, 200.0],
+            t_end: h,
+        },
+        y,
+    )
+    .unwrap();
+    let (problem, handle) = n01_mass_action_owned_problem(actual).unwrap();
+    let trial = handle.lock().unwrap().freeze();
+    let mut work = WorkCounters::default();
+    let mut output = [0.0; 3];
+    problem
+        .eval_rhs_into(0.0, &y, &mut output, &mut work)
+        .unwrap();
+    assert_eq!(problem.model_epoch(), Some(0));
+    handle
+        .lock()
+        .unwrap()
+        .check_raw_u_stage_trial(&trial, 0.0, y)
+        .unwrap();
+
+    problem
+        .eval_rhs_into(h * 0.5, &y, &mut output, &mut work)
+        .unwrap();
+    let current = problem.model_epoch().unwrap();
+    assert!(current > 0, "a temporary callback changed model generation");
+    let owner = handle.lock().unwrap();
+    assert!(
+        owner.check_raw_u_stage_trial(&trial, 0.0, y).is_err(),
+        "an original start-of-step trial no longer survives stage probing"
+    );
+    let later = owner.freeze();
+    assert!(owner.check_raw_u_stage_trial(&later, 0.0, y).is_err());
+    owner.check_raw_u_stage_trial(&later, h * 0.5, y).unwrap();
+    println!("BLIND_C9_EPOCH_CHURN prior_epoch=0 later_epoch={current} callback_rhs={output:?}");
+}
