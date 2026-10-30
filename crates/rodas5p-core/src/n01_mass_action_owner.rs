@@ -619,7 +619,6 @@ impl N01MassActionOwner {
     }
 }
 
-
 /// Research-only read guard for an opaque source-owned original raw-U trial.
 /// This adds no derivative or numerical solver functionality. It also does
 /// not establish that an arbitrary OdeProblem callback uses this owner.
