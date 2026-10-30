@@ -957,7 +957,6 @@ fn cubic_integrate(
     Ok(())
 }
 
-
 /// Opt-in RHS-only depth-one Anderson acceleration with a caller-proved
 /// contraction factor, evaluating a speculative candidate before the usual
 /// Picard residual when that can save a complete callback.

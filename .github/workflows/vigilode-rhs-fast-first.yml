@@ -27,7 +27,7 @@ jobs:
           test "$(git rev-parse HEAD:Cargo.lock)" = 9bc1afe66b0ff77dc08f76ef9d0532fae81b0df5
           test "$(git rev-parse HEAD:crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs)" = 0e4ddf702357b5209673b8fc243934f3c9aeeb4a
           test "$(git rev-parse HEAD:crates/vigilode-coupled/src/n01_derivative_free.rs)" = 7c2cd365bb830b778910e98fb29be4c36f4cfd8e
-          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/rhs_homotopy.rs)" = 550c564602abcea50c0175125265ed3d3c289f9e
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/rhs_homotopy.rs)" = 990103d9ab5d59b7c40f3ccd323f6ad52e504324
           while IFS= read -r path; do
             case "$path" in
               .github/workflows/vigilode-rhs-fast-first.yml|\
@@ -75,6 +75,10 @@ jobs:
           rustc +1.94.1 --version > fast-first-evidence/RUST_VERSION.txt
           git rev-parse HEAD:crates/vigilode-coupled/src/rhs_homotopy.rs > fast-first-evidence/SOURCE_BLOB.txt
           sha256sum crates/vigilode-coupled/src/rhs_homotopy.rs crates/vigilode-coupled/tests/rhs_fast_first_contracts.rs crates/vigilode-coupled/examples/rhs_fast_first_bench.rs > fast-first-evidence/SOURCE_SHA256.txt
+          cp crates/vigilode-coupled/src/rhs_homotopy.rs fast-first-evidence/RHS_HOMOTOPY_FULL_SOURCE.rs
+          cp crates/vigilode-coupled/tests/rhs_fast_first_contracts.rs fast-first-evidence/RHS_FAST_FIRST_TESTS.rs
+          cp crates/vigilode-coupled/examples/rhs_fast_first_bench.rs fast-first-evidence/RHS_FAST_FIRST_BENCH.rs
+          cp research/vigilode_rhs_fastfirst_20261031/THEORY_AND_CONTRACT.md fast-first-evidence/THEORY_AND_CONTRACT.md
       - uses: actions/upload-artifact@v4
         if: always()
         with:
