@@ -6,7 +6,7 @@
 //! Entire original BE stage residual and all returned physical errors use
 //! source-matched outward Interval arithmetic. This is research-scoped BE order 1.
 
-use rodas5p_core::directed::{Interval, add_down, add_up, div_up, mul_down, mul_up, sub_down};
+use rodas5p_core::directed::{Interval, add_up, div_up, mul_down, mul_up, sub_down};
 use serde::Serialize;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -294,6 +294,7 @@ impl Source {
             let before = out.work.map_attempted;
             let stage = Stage::new(self, &state, h, h_int, residual_target)?;
             let candidate = stage.solve(cfg, &mut out.work)?;
+            let source_q = stage.q;
             error = du(up(up(error, defects[i])?, candidate.original_rho)?, a_lower)?;
             let error_at_label = up(error, clocks[i])?;
             if error_at_label > cfg.physical_tolerance {
@@ -318,7 +319,7 @@ impl Source {
                 time: h * (i + 1) as f64,
                 state: state.clone(),
                 original_be_residual_upper: candidate.original_rho,
-                source_q_upper: stage.q,
+                source_q_upper: source_q,
                 physical_error_upper: error_at_label,
                 map_evaluations: out.work.map_attempted - before,
             });
