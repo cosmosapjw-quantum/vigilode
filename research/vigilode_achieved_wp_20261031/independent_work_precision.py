@@ -127,12 +127,19 @@ def abs_to_decimal(v):
 
 
 def achieved(z, ref):
+    """Exactly compare represented binary64 output with represented Decimal70 reference.
+
+    Decimal70 RK4 is a nonrigorous ODE approximation. Its finite decimal output
+    nonetheless has an EXACT rational interpretation. Use Fraction throughout
+    to avoid a false reverse-triangle FAIL from default Decimal precision=28.
+    """
     assert len(z['points']) == len(ref)
     errors=[]
     for i,p in enumerate(z['points']):
-        state=list(map(dec,p['state']))
-        err=max(abs(state[j]-ref[i][j]) for j in range(len(state)))
-        assert err <= dec(p['E']) + Decimal('1e-10'), ('BE_PHYSICAL_ENVELOPE_REFUTED',z['name'],i)
+        state=list(map(fr,p['state']))
+        ref_rational=[F(str(t)) for t in ref[i]]
+        err=max(abs(state[j]-ref_rational[j]) for j in range(len(state)))
+        assert err <= fr(p['E']) + F(1,10**10), ('BE_PHYSICAL_ENVELOPE_REFUTED',z['name'],i)
         errors.append(err)
     return max(errors), errors[-1]
 
@@ -183,7 +190,7 @@ def summarize_work(logpath,summary_path):
         refs[name]=fine64
         ref_gaps[name]=diff
 
-    rows=[]; index={}; all_good=0
+    rows=[]; index={}; achieved_rational={}; all_good=0
     for key,z in sorted(traces.items(),key=lambda x:(COHORTS.index(x[0][0]),x[0][1],x[0][2])):
         name,alpha_id,fast=key
         assert alpha_id in range(5)
@@ -196,7 +203,12 @@ def summarize_work(logpath,summary_path):
             assert z['eps_bits']==z['parent_eps_bits'], 'EXACT_PARENT_EPS_MUST_BE_PRESERVED'
         cert=exact_certificate(z)
         all_good+=1
-        epeak,eterm=achieved(z,refs[name])
+        peak_rational,term_rational=achieved(z,refs[name])
+        achieved_rational[key]=(peak_rational,term_rational)
+        with localcontext() as ctx:
+            ctx.prec=90
+            epeak=abs_to_decimal(peak_rational)
+            eterm=abs_to_decimal(term_rational)
         values=defaultdict(list)
         for block in range(5):
             samples=times[(name,alpha_id,block,fast)]
@@ -247,7 +259,12 @@ def summarize_work(logpath,summary_path):
                 if a is None or b is None: continue
                 delta=exact_interarm_delta(a['points'],b['points'])
                 ae=Decimal(index[(name,i,False)]['achieved_peak_str']);be=Decimal(index[(name,i,True)]['achieved_peak_str'])
-                assert abs(ae-be) <= abs_to_decimal(delta)+Decimal('1e-50'),('REVERSE_TRIANGLE_FAILED',name,i)
+                # Strong exact-rational self-audit, no arbitrary tolerance fudge.
+                # The (nonrigorous) Decimal70 reference values are treated here
+                # as *exact represented decimal rationals* when applying the
+                # mathematical reverse triangle inequality.
+                gap_exact=abs(achieved_rational[(name,i,False)][0]-achieved_rational[(name,i,True)][0])
+                assert gap_exact <= delta,('REVERSE_TRIANGLE_FAILED_EXACT_RATIONAL',name,i,gap_exact,delta)
                 checks+=1
                 gap=relgap(ae,be)
                 cost_a=index[(name,i,False)]['wall_ns_median_per_ivp']
