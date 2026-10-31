@@ -41,7 +41,7 @@ pub struct CertifiedConfig {
     pub root_error_target: f64,
     pub max_iterations_per_station: usize,
     pub max_map_evaluations: u64,
-    /// false: source-certified Picard; true: source-certified speculative fast-first.
+    /// false: certified baseline-first Anderson; true: certified speculative fast-first.
     pub fast_first: bool,
 }
 
@@ -315,14 +315,33 @@ impl FrozenDiagonalAffine {
                     return out;
                 }
                 let mut chosen: Option<Value> = None;
-                if cfg.fast_first
-                    && let Some(old) = &previous
-                {
-                    if cfg
-                        .max_map_evaluations
-                        .saturating_sub(out.work.map_attempted)
-                        < 2
-                    {
+                let mut baseline: Option<Value> = None;
+                // Both arms retain the SAME directed source/target. The
+                // conventional arm evaluates Picard first, then the Anderson
+                // candidate; fast-first evaluates the candidate first and
+                // skips Picard only on the proved contraction-envelope gate.
+                if !cfg.fast_first {
+                    out.work.picard_updates += 1;
+                    baseline = Some(match self.evaluate(
+                        anchor,
+                        current.mapped.clone(),
+                        lambda,
+                        denom_lower,
+                        cfg,
+                        &mut out.work,
+                    ) {
+                        Ok(v) => v,
+                        Err(e) => {
+                            out.failure = Some(e);
+                            return out;
+                        }
+                    });
+                }
+                let baseline_needs_more =
+                    baseline.as_ref().is_none_or(|v| v.root_upper > cfg.root_error_target);
+                if baseline_needs_more && let Some(old) = &previous {
+                    let reserved = if baseline.is_some() { 1 } else { 2 };
+                    if cfg.max_map_evaluations.saturating_sub(out.work.map_attempted) < reserved {
                         out.work.budget_skips += 1;
                     } else {
                         let scale = current
@@ -364,16 +383,29 @@ impl FrozenDiagonalAffine {
                                         return out;
                                     }
                                 };
-                                // Upper trial <= lower bound on q_upper * lower current.
-                                // The product is rounded DOWN so no unjustified admission.
-                                let threshold = match mul_down(q_upper, current.residual_lower) {
-                                    Ok(v) => v,
-                                    Err(e) => {
-                                        out.failure = Some(arithmetic(e));
-                                        return out;
+                                let certified = if cfg.fast_first {
+                                    // The ORIGINAL exact-real accelerated
+                                    // residual is bounded without a Picard
+                                    // callback. A downward threshold prevents
+                                    // admission from arithmetic rounding.
+                                    match mul_down(q_upper, current.residual_lower) {
+                                        Ok(bound) => candidate.residual_upper <= bound,
+                                        Err(e) => {
+                                            out.failure = Some(arithmetic(e));
+                                            return out;
+                                        }
                                     }
+                                } else {
+                                    // Conventional baseline-first Anderson:
+                                    // compare both ORIGINAL exact-real
+                                    // residuals, including all outward widths.
+                                    candidate.residual_upper
+                                        <= baseline
+                                            .as_ref()
+                                            .expect("baseline-first Picard evaluated")
+                                            .residual_lower
                                 };
-                                if candidate.residual_upper <= threshold {
+                                if certified {
                                     out.work.trials_admitted += 1;
                                     chosen = Some(candidate);
                                 } else {
@@ -388,28 +420,29 @@ impl FrozenDiagonalAffine {
                     }
                 }
                 if chosen.is_none() {
-                    out.work.picard_updates += 1;
-                    let baseline = match self.evaluate(
-                        anchor,
-                        current.mapped.clone(),
-                        lambda,
-                        denom_lower,
-                        cfg,
-                        &mut out.work,
-                    ) {
-                        Ok(v) => v,
-                        Err(e) => {
-                            out.failure = Some(e);
-                            return out;
+                    let baseline = match baseline {
+                        Some(v) => v,
+                        None => {
+                            out.work.picard_updates += 1;
+                            match self.evaluate(
+                                anchor,
+                                current.mapped.clone(),
+                                lambda,
+                                denom_lower,
+                                cfg,
+                                &mut out.work,
+                            ) {
+                                Ok(v) => v,
+                                Err(e) => {
+                                    out.failure = Some(e);
+                                    return out;
+                                }
+                            }
                         }
                     };
-                    // The represented baseline is fl(H(x)), not H(x).
-                    // Exact Banach contraction applies with an additive map
-                    // evaluation error: ||r(y)|| <= q||r(x)||+(1+q)||y-H(x)||.
-                    // All three bounds below are directed outward. We check
-                    // that the lower enclosed residual of y does not refute
-                    // the derived inexact contraction envelope. The final
-                    // exact-root bound is independently certified at every x.
+                    // A represented Picard image fl(H(x)) has an ADDITIVE
+                    // error envelope, never presumed exact contraction.
+                    // ||r(y)|| <= q||r(x)||+(1+q)||fl(H(x))-H(x)||.
                     let envelope = mul_up(q_upper, current.residual_upper).and_then(|base| {
                         add_up(1.0, q_upper)
                             .and_then(|factor| mul_up(factor, current.float_image_error_upper))
