@@ -178,7 +178,7 @@ impl Source {
             .map_err(arithmetic)?;
         let b = h_i.mul(g_i).map_err(arithmetic)?;
         let a_lo = a.lo;
-        if !(a_lo > 1.0) {
+        if a_lo <= 1.0 {
             return Err(Failure::new(FailureKind::Arithmetic, "a_lower not >1"));
         }
         let p0 = up(
@@ -286,7 +286,7 @@ impl Stage {
         let u = div_up(y, a.lo).map_err(arithmetic)?;
         let u2 = times(u, u)?;
         let q = div_up(times(times(3.0, b.hi)?, u2)?, a.lo).map_err(arithmetic)?;
-        if !(q < 1.0) {
+        if q >= 1.0 {
             return Err(Failure::new(
                 FailureKind::NoContraction,
                 "nonlinear source q>=1",
@@ -392,40 +392,39 @@ impl Stage {
                     baseline = Some(p);
                 }
             }
-            if chosen.is_none() {
-                if let Some(old) = previous {
-                    let rd = current.op_res - old.op_res;
-                    if rd != 0.0 && rd.is_finite() {
-                        let gamma = current.op_res / rd;
-                        let trial = current.mapped - gamma * (current.mapped - old.mapped);
-                        if trial.is_finite() && trial >= 0.0 && trial <= self.u {
-                            if cfg.order == SearchOrder::BaselineFirst
-                                || cfg
-                                    .max_source_evaluations
-                                    .saturating_sub(work.rhs_attempted)
-                                    >= 2
-                            {
-                                work.speculative_trials += 1;
-                                let candidate = self.evaluate(trial, cfg, work)?;
-                                let verified = match cfg.order {
-                                    SearchOrder::BaselineFirst => {
-                                        candidate.high
-                                            <= baseline.expect("baseline-first candidate").low
-                                    }
-                                    SearchOrder::FastFirst => {
-                                        candidate.high <= self.residual_limit
-                                            || candidate.high
-                                                <= mul_down(self.q, current.low)
-                                                    .map_err(arithmetic)?
-                                    }
-                                };
-                                if verified {
-                                    work.admitted_trials += 1;
-                                    chosen = Some(candidate);
-                                } else {
-                                    work.refused_trials += 1;
-                                }
+            if chosen.is_none()
+                && let Some(old) = previous
+            {
+                let rd = current.op_res - old.op_res;
+                if rd != 0.0 && rd.is_finite() {
+                    let gamma = current.op_res / rd;
+                    let trial = current.mapped - gamma * (current.mapped - old.mapped);
+                    if trial.is_finite()
+                        && trial >= 0.0
+                        && trial <= self.u
+                        && (cfg.order == SearchOrder::BaselineFirst
+                            || cfg
+                                .max_source_evaluations
+                                .saturating_sub(work.rhs_attempted)
+                                >= 2)
+                    {
+                        work.speculative_trials += 1;
+                        let candidate = self.evaluate(trial, cfg, work)?;
+                        let verified = match cfg.order {
+                            SearchOrder::BaselineFirst => {
+                                candidate.high <= baseline.expect("baseline-first candidate").low
                             }
+                            SearchOrder::FastFirst => {
+                                candidate.high <= self.residual_limit
+                                    || candidate.high
+                                        <= mul_down(self.q, current.low).map_err(arithmetic)?
+                            }
+                        };
+                        if verified {
+                            work.admitted_trials += 1;
+                            chosen = Some(candidate);
+                        } else {
+                            work.refused_trials += 1;
                         }
                     }
                 }
