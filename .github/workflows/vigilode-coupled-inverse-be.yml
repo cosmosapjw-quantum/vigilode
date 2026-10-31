@@ -1,0 +1,109 @@
+name: VigilODE source-owned coupled inverse-Picard BE research (HOLD)
+on:
+  push:
+    branches:
+      - research/vigilode-coupled-inverse-picard-20261031
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  coupled-inverse:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          components: rustfmt,clippy
+      - name: Protect source authority and exact bounded diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          B=93b2f238f693033ee2d83efc270124c5fef6af84
+          git merge-base --is-ancestor "$B" HEAD
+          test "$(git rev-parse HEAD:Cargo.lock)" = 9bc1afe66b0ff77dc08f76ef9d0532fae81b0df5
+          test "$(git rev-parse HEAD:crates/rodas5p-core/src/directed.rs)" = 89e2b3122b08db1849e4e56cc94f1f58c473b735
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/nonlinear_be.rs)" = 0361de1b2887e2c2dcab0784456fa22ef1bb59fd
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/certified_fastfirst.rs)" = f53f27dfb993ded7d07bda595bfbd0eda368b998
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/rhs_homotopy.rs)" = 990103d9ab5d59b7c40f3ccd323f6ad52e504324
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/coupled_inverse_be.rs)" = 9998ebb52dc6cc465ed6a9b539fcfb1669bbb9be
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/tests/coupled_inverse_be_contracts.rs)" = 190a0c73398eca1e614747a3ac41ccc95b0fabed
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/examples/coupled_inverse_be_bench.rs)" = e3a5957aa5893efe4600fe36b70257c1c907576c
+          while IFS= read -r p; do
+            case "$p" in
+              .github/workflows/vigilode-coupled-inverse-be.yml|\
+              crates/vigilode-coupled/src/lib.rs|\
+              crates/vigilode-coupled/src/coupled_inverse_be.rs|\
+              crates/vigilode-coupled/tests/coupled_inverse_be_contracts.rs|\
+              crates/vigilode-coupled/examples/coupled_inverse_be_bench.rs|\
+              research/vigilode_coupled_inverse_be_20261031/*) ;;
+              *) echo "UNAUTHORIZED_DIFF: $p" >&2; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$B" HEAD)
+          echo VIGILODE_COUPLED_SOURCE_SCOPE_LOCK_PASS
+      - name: Check focused Rust 1.94.1 formatting for all scoped files
+        shell: bash
+        run: |
+          failed=0
+          rustfmt +1.94.1 --check --edition 2024 --config skip_children=true crates/vigilode-coupled/src/lib.rs || failed=1
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/src/coupled_inverse_be.rs || failed=1
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/tests/coupled_inverse_be_contracts.rs || failed=1
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/examples/coupled_inverse_be_bench.rs || failed=1
+          exit "$failed"
+      - name: Fetch pinned dependencies
+        run: cargo +1.94.1 fetch --locked
+      - name: Native coupled nonlinear and inherited VigilODE regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p coupled-inverse-evidence
+          cargo +1.94.1 test --locked --offline -p vigilode-coupled \
+            --test coupled_inverse_be_contracts \
+            --test nonlinear_be_contracts \
+            --test certified_fastfirst_contracts \
+            --test rhs_fast_first_contracts \
+            --test rhs_homotopy_contracts \
+            --test cubic_solver_production_contracts -- --nocapture \
+            2>&1 | tee coupled-inverse-evidence/TEST.log
+      - name: Strict source-scoped Clippy without warning suppressions
+        run: |
+          cargo +1.94.1 clippy --locked --offline -p vigilode-coupled \
+            --test coupled_inverse_be_contracts --example coupled_inverse_be_bench -- -D warnings
+      - name: Matched physical-error full-IVP paired benchmarks and executed source traces
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo +1.94.1 run --locked --offline --profile measurement \
+            -p vigilode-coupled --example coupled_inverse_be_bench \
+            2>&1 | tee coupled-inverse-evidence/BENCH.log
+      - name: Independent exact-rational source and decimal numerical reference
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 research/vigilode_coupled_inverse_be_20261031/independent_fraction_oracle.py \
+            coupled-inverse-evidence/BENCH.log \
+            2>&1 | tee coupled-inverse-evidence/INDEPENDENT.log
+      - name: Save executed source, identity and raw logs even on failure
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p coupled-inverse-evidence
+          git rev-parse HEAD > coupled-inverse-evidence/HEAD.txt
+          git rev-parse HEAD^{tree} > coupled-inverse-evidence/TREE.txt
+          rustc +1.94.1 --version > coupled-inverse-evidence/RUST_VERSION.txt
+          git rev-parse HEAD:crates/vigilode-coupled/src/coupled_inverse_be.rs > coupled-inverse-evidence/COUPLED_BLOB.txt
+          cp crates/vigilode-coupled/src/coupled_inverse_be.rs coupled-inverse-evidence/COUPLED_SOURCE.rs
+          cp crates/vigilode-coupled/tests/coupled_inverse_be_contracts.rs coupled-inverse-evidence/COUPLED_TESTS.rs
+          cp crates/vigilode-coupled/examples/coupled_inverse_be_bench.rs coupled-inverse-evidence/COUPLED_BENCH.rs
+          cp research/vigilode_coupled_inverse_be_20261031/THEORY_R5.md coupled-inverse-evidence/THEORY_R5.md
+          cp research/vigilode_coupled_inverse_be_20261031/independent_fraction_oracle.py coupled-inverse-evidence/INDEPENDENT_ORACLE.py
+          sha256sum coupled-inverse-evidence/* > coupled-inverse-evidence/PAYLOAD_HASHES.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vigilode-coupled-inverse-be-native-evidence
+          path: coupled-inverse-evidence/
+          retention-days: 90
