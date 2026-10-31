@@ -28,9 +28,9 @@ jobs:
           test "$(git rev-parse HEAD:crates/rodas5p-core/src/directed.rs)" = 89e2b3122b08db1849e4e56cc94f1f58c473b735
           test "$(git rev-parse HEAD:crates/vigilode-coupled/src/certified_fastfirst.rs)" = f53f27dfb993ded7d07bda595bfbd0eda368b998
           test "$(git rev-parse HEAD:crates/vigilode-coupled/src/rhs_homotopy.rs)" = 990103d9ab5d59b7c40f3ccd323f6ad52e504324
-          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/nonlinear_be.rs)" = 74f1c5e84657544796a738a3ac499fc304e46606
-          test "$(git rev-parse HEAD:crates/vigilode-coupled/tests/nonlinear_be_contracts.rs)" = 347b3c92f7432a2761b6d9e874748f83f37476dd
-          test "$(git rev-parse HEAD:crates/vigilode-coupled/examples/nonlinear_be_bench.rs)" = f40a2687ffe4455b5c4bfd69ef4d50adf10e7747
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/nonlinear_be.rs)" = 4ac008d96138dff875912649b02fc9990da8cce6
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/tests/nonlinear_be_contracts.rs)" = cf5590c3e7d633087e2fb38f5490e75b8fc9524c
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/examples/nonlinear_be_bench.rs)" = 39f39efd2347352ba47550b88ebb5d097cf0c865
           while IFS= read -r p; do
             case "$p" in
               .github/workflows/vigilode-nonlinear-be.yml|\
