@@ -13,6 +13,7 @@ mod algebra;
 pub mod certified_fastfirst;
 pub mod cyclic_closure;
 mod fallback;
+pub mod nonlinear_be;
 pub mod n01_derivative_free;
 pub mod rhs_homotopy;
 mod solver;

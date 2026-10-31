@@ -1,0 +1,105 @@
+name: VigilODE nonlinear source-owned BE full-IVP research (HOLD)
+on:
+  push:
+    branches:
+      - research/vigilode-nonlinear-source-be-fastfirst-20261031
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  nonlinear-source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          components: rustfmt,clippy
+      - name: Source-lock, scope and original scientific input
+        shell: bash
+        run: |
+          set -euo pipefail
+          B=c89c639cb67e0528db733598fd654fa538ce8182
+          git merge-base --is-ancestor "$B" HEAD
+          test "$(git rev-parse HEAD:Cargo.lock)" = 9bc1afe66b0ff77dc08f76ef9d0532fae81b0df5
+          test "$(git rev-parse HEAD:crates/rodas5p-core/src/directed.rs)" = 89e2b3122b08db1849e4e56cc94f1f58c473b735
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/certified_fastfirst.rs)" = f53f27dfb993ded7d07bda595bfbd0eda368b998
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/rhs_homotopy.rs)" = 990103d9ab5d59b7c40f3ccd323f6ad52e504324
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/nonlinear_be.rs)" = 74f1c5e84657544796a738a3ac499fc304e46606
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/tests/nonlinear_be_contracts.rs)" = 347b3c92f7432a2761b6d9e874748f83f37476dd
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/examples/nonlinear_be_bench.rs)" = f40a2687ffe4455b5c4bfd69ef4d50adf10e7747
+          while IFS= read -r p; do
+            case "$p" in
+              .github/workflows/vigilode-nonlinear-be.yml|\
+              crates/vigilode-coupled/src/lib.rs|\
+              crates/vigilode-coupled/src/nonlinear_be.rs|\
+              crates/vigilode-coupled/tests/nonlinear_be_contracts.rs|\
+              crates/vigilode-coupled/examples/nonlinear_be_bench.rs|\
+              research/vigilode_nonlinear_be_20261031/*) ;;
+              *) echo "UNAUTHORIZED_CHANGED_PATH: $p" >&2; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$B" HEAD)
+          echo VIGILODE_NONLINEAR_SOURCE_AND_SCOPE_LOCKED
+      - name: Focused rustfmt
+        shell: bash
+        run: |
+          rustfmt +1.94.1 --check --edition 2024 --config skip_children=true crates/vigilode-coupled/src/lib.rs
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/src/nonlinear_be.rs
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/tests/nonlinear_be_contracts.rs
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/examples/nonlinear_be_bench.rs
+      - name: Lock Rust workspace dependencies
+        run: cargo +1.94.1 fetch --locked
+      - name: Native nonlinear IVP and inherited source regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p nonlinear-be-evidence
+          cargo +1.94.1 test --locked --offline -p vigilode-coupled \
+            --test nonlinear_be_contracts \
+            --test certified_fastfirst_contracts \
+            --test rhs_fast_first_contracts \
+            --test rhs_homotopy_contracts \
+            --test cubic_solver_production_contracts -- --nocapture \
+            2>&1 | tee nonlinear-be-evidence/TEST.log
+      - name: Strict scoped native Clippy without suppression
+        run: |
+          cargo +1.94.1 clippy --locked --offline -p vigilode-coupled \
+            --test nonlinear_be_contracts --example nonlinear_be_bench -- -D warnings
+      - name: Paired complete physical error certified nonlinear IVP benchmarks
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo +1.94.1 run --locked --offline --profile measurement \
+            -p vigilode-coupled --example nonlinear_be_bench \
+            2>&1 | tee nonlinear-be-evidence/BENCH.log
+      - name: Independent exact original-source Fraction replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 research/vigilode_nonlinear_be_20261031/independent_be_oracle.py \
+            nonlinear-be-evidence/BENCH.log | tee nonlinear-be-evidence/ORACLE.log
+      - name: Capture actual native source and checksums
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p nonlinear-be-evidence
+          git rev-parse HEAD > nonlinear-be-evidence/CHECKOUT_HEAD.txt
+          git rev-parse HEAD^{tree} > nonlinear-be-evidence/CHECKOUT_TREE.txt
+          rustc +1.94.1 --version > nonlinear-be-evidence/RUST_VERSION.txt
+          git rev-parse HEAD:crates/vigilode-coupled/src/nonlinear_be.rs > nonlinear-be-evidence/NATIVE_SOURCE_BLOB.txt
+          cp crates/vigilode-coupled/src/nonlinear_be.rs nonlinear-be-evidence/NONLINEAR_BE_SOURCE.rs
+          cp crates/vigilode-coupled/tests/nonlinear_be_contracts.rs nonlinear-be-evidence/NATIVE_TESTS.rs
+          cp crates/vigilode-coupled/examples/nonlinear_be_bench.rs nonlinear-be-evidence/NATIVE_BENCH.rs
+          cp research/vigilode_nonlinear_be_20261031/R5_THEORY.md nonlinear-be-evidence/R5_THEORY.md
+          cp research/vigilode_nonlinear_be_20261031/validated_cubic_be.py nonlinear-be-evidence/PYTHON_PROTOTYPE.py
+          cp research/vigilode_nonlinear_be_20261031/independent_be_oracle.py nonlinear-be-evidence/FRACTION_ORACLE.py
+          sha256sum nonlinear-be-evidence/* > nonlinear-be-evidence/PAYLOAD_SHA256.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vigilode-nonlinear-be-source-scoped
+          path: nonlinear-be-evidence/
+          retention-days: 90
