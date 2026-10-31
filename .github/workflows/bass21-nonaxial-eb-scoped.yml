@@ -1,0 +1,34 @@
+name: BASS21 nonaxial spin-2 E/B source-free (not source-full)
+
+on:
+  pull_request:
+    paths:
+      - 'research/bass21_nonaxial_boost_eb_20261031/**'
+      - '.github/workflows/bass21-nonaxial-eb-scoped.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scoped-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check exact Git-source-free records and physical CSV consistency
+        shell: bash
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          set -euo pipefail
+          python3 research/bass21_nonaxial_boost_eb_20261031/code/check_sourcefree.py
+          python3 - <<'PY'
+          from math import sqrt
+          from pathlib import Path
+          import json
+          d=json.loads(Path('research/bass21_nonaxial_boost_eb_20261031/results/SCIENCE_SUMMARY.json').read_text())
+          assert abs(d['first_order_B21_over_beta']['analytic_imag']-3/sqrt(6))<2e-15
+          assert d['max_weight1_control_B_physical']<1e-12
+          print('SOURCE_FREE_ANALYTIC_AND_DATA_CI_PASS; NOT source-inclusive replay or full authority')
+          PY

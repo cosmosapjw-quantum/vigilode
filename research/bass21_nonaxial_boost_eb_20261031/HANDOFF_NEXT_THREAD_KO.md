@@ -1,0 +1,44 @@
+# VigilODE BASS21 non-axial observer E/B | 2026-10-31 science handoff
+
+$physmath-research-loop $scispace $exa $wolfram
+
+```text
+PROJECT=cosmosapjw-quantum/vigilode
+READ_LIVE_HEAD_FIRST=true
+PARENT_PR=153
+PARENT_HEAD=fb9c9beecf572a96edbca5f9ee4bad765a25d968
+NEW_PR=PENDING_PUBLICATION
+PREREG_GIT_SHA=e1a359101b52de720e024b6e57b4615cee79acbd
+SCIENCE_UNIT=BASS21_ORIGINAL_Q24_NONAXIAL_OBSERVER_EB_L8
+ORIGINAL_PARENT_FULL_SHA256=e8faa022fb6e567a97f17f73cca4571f071ffa37de5ea8e9597b0c4d98b088bc
+ORIGINAL_E_NPZ_SHA256=b087a54bcd3bdbfaef5d91165634bf5c7590e6c43417112e4de0168327b3366b
+SOURCE_CASES=50
+SOURCE_EPOCHS=193
+FRAMES=rest,x001,x005,negx005,tilt45
+OUTPUT_HARMONICS=ALL_M_L2_TO_L8_77
+OBSERVER_COMPLEX_E_VALUES=3715250
+OBSERVER_COMPLEX_B_VALUES=3715250
+MAX_ABS_B_X005=0.0021494293264436044
+MAX_ABS_B_TILT45=0.0015189255354318796
+D1_WEIGHT1_B_NULL_SOURCE_MAX=1.3923021469132835e-15
+NEW_OWNER_IVPS=0
+TESTS=30_PASS_LOCAL
+PRODUCTION=HOLD
+VIGILODE_DAG=7/23
+REI_CENTRAL_DAG=28/88
+REI_WORKING_DAG=33/88
+BASS_CE1_DAG=9/15
+SUCCESSOR_ADMITTED=0/12
+OFFICIAL_DAG_DELTA=0
+R6_DISTINCT_AUTHOR=NOT_RUN
+C9_DISTINCT_AUTHOR=NOT_RUN
+NATIVE_SUBAGENT=NOT_RUN
+NEXT_CANDIDATE_ONLY=GENERIC_1PLUS3_SCREEN_PSTF_LIOUVILLE_THOMSON_OR_SOURCE_NATIVE_COUPLED_JE
+NO_MORE_IVPS=true
+NO_MAIN_MERGE=true
+NO_FORCE_PUSH=true
+NO_PRODUCTION_PROMOTION=true
+AUTO_NEXT_NODE=false
+```
+
+Reproduce: extract source-inclusive ZIP; run `PYTHONDONTWRITEBYTECODE=1 bash VERIFY.sh`. The original Q24 was reconstructed from nested immutable PR153/PR151/PR148/PR145 source; d4 boost and harmonic projection are local passive counterfactual observer transformation. Avoid source-free Git-only claims of owner NPZ replay. The d1 artificial control must give B=0, d4 nonaxis B≠0; incorrect spin phase previously failed and was fixed before accepted run. Do not extend boost l<=8 coefficients to full sky, time-evolved source or observational CMB claim.
