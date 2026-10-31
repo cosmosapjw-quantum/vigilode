@@ -1,0 +1,27 @@
+name: REI-IGM mission DAG structural check (no physics admission)
+
+on:
+  pull_request:
+    paths:
+      - 'governance/**'
+      - 'tools/check_mission_dag.py'
+      - 'tools/test_check_mission_dag.py'
+      - '.github/workflows/mission-dag.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mission-structure-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Positive and adversarial tests
+        run: python3 tools/test_check_mission_dag.py -v
+      - name: Mission overlay structural gate only
+        run: python3 tools/check_mission_dag.py

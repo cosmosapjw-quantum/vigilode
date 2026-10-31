@@ -158,3 +158,7 @@ The repository keeps `vendor/` untracked. `.cargo/config.offline.toml` is a docu
 ## License
 
 MIT
+
+## REI Bianchi IGM research alignment (noncanonical)
+
+The owner-coupled REI/Bianchi IGM science program is **not** the generic ODE solver DAG. Before adding a REI-related research chain, read [`governance/RESEARCH_POLICY_KO.md`](governance/RESEARCH_POLICY_KO.md), the [noncanonical mission dependency overlay](governance/mission_dag.json), and the [adversarial meta-audit](governance/ADVERSARIAL_AUDIT_20261101_KO.md). These documents do not replace canonical REI owner authority, source locks, research ledgers, or production gates. Source-free and source-frozen diagnostic rows are not coupled EoR or observed CMB results.
