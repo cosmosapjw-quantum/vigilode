@@ -89,7 +89,7 @@ fn source_contraction_with_mixed_signs_and_nonuniform_rates_is_still_admissible(
     let b = vec![0.7, 0.3, 0.01, -0.5, 0.125];
     let target: Vec<_> = a.iter().zip(&b).map(|(a, b)| *b / (1.0 - *a)).collect();
     let owned = FrozenDiagonalAffine::new(a, b).unwrap();
-    let result = owned.solve(&vec![0.0; 5], &cfg(true));
+    let result = owned.solve(&[0.0; 5], &cfg(true));
     assert!(result.failure.is_none(), "{:?}", result.failure);
     let root = result.root.unwrap();
     let error = root
