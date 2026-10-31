@@ -1,0 +1,99 @@
+name: VigilODE WP1 achieved-error work precision (HOLD)
+on:
+  push:
+    branches:
+      - research/vigilode-achieved-work-precision-20261031
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-locked-achieved-error:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          components: clippy,rustfmt
+      - name: Protect exact PR156 baseline and source lock
+        shell: bash
+        run: |
+          set -euo pipefail
+          B=bde853af2cd5fc1ac670a15cca6227b84ac20b8f
+          git merge-base --is-ancestor "$B" HEAD
+          test "$(git rev-parse HEAD:Cargo.lock)" = 9bc1afe66b0ff77dc08f76ef9d0532fae81b0df5
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/coupled_inverse_be.rs)" = d78c5c5f6f476f2a5b1ea88628ed25daa6cfc482
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/rhs_homotopy.rs)" = 990103d9ab5d59b7c40f3ccd323f6ad52e504324
+          test "$(git rev-parse HEAD:crates/rodas5p-core/src/directed.rs)" = 89e2b3122b08db1849e4e56cc94f1f58c473b735
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/examples/coupled_achieved_wp.rs)" = e24a9bec9c03b3f93414be1cf1227f797389a3a5
+          test "$(git rev-parse HEAD:research/vigilode_achieved_wp_20261031/independent_work_precision.py)" = a0e1fa72256e9a8687e968fe90bb7cf6f06b1697
+          while IFS= read -r p; do
+            case "$p" in
+              .github/workflows/vigilode-wp1-achieved.yml|\
+              crates/vigilode-coupled/examples/coupled_achieved_wp.rs|\
+              research/vigilode_achieved_wp_20261031/*) ;;
+              *) echo "UNAUTHORIZED_DIFF: $p" >&2; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$B" HEAD)
+          echo "VWP_PROTECTED_PARENT_SOURCE_AND_DIFF=PASS"
+      - name: Check exact changed Rust source formatting
+        shell: bash
+        run: |
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/examples/coupled_achieved_wp.rs
+      - name: Fetch pinned dependencies
+        run: cargo +1.94.1 fetch --locked
+      - name: Existing native contract regression (no solver edits)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p achieved-wp-evidence
+          cargo +1.94.1 test --locked --offline -p vigilode-coupled \
+            --test coupled_inverse_be_contracts \
+            --test nonlinear_be_contracts \
+            --test certified_fastfirst_contracts \
+            --test rhs_fast_first_contracts \
+            --test rhs_homotopy_contracts \
+            --test cubic_solver_production_contracts -- --nocapture \
+            2>&1 | tee achieved-wp-evidence/TEST.log
+      - name: Strict source-scoped Clippy without suppressions
+        run: |
+          cargo +1.94.1 clippy --locked --offline -p vigilode-coupled \
+            --example coupled_achieved_wp -- -D warnings
+      - name: Run complete 5-level achieved work precision sweep
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo +1.94.1 run --locked --offline --profile measurement \
+            -p vigilode-coupled --example coupled_achieved_wp \
+            2>&1 | tee achieved-wp-evidence/SWEEP.log
+      - name: Independent source Fraction, Decimal70, negative tamper and finite Pareto fronts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile research/vigilode_achieved_wp_20261031/independent_work_precision.py
+          python3 research/vigilode_achieved_wp_20261031/independent_work_precision.py \
+            achieved-wp-evidence/SWEEP.log achieved-wp-evidence/WP_SUMMARY.json \
+            2>&1 | tee achieved-wp-evidence/ORACLE.log
+      - name: Preserve executed source and raw identity receipts
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p achieved-wp-evidence
+          git rev-parse HEAD > achieved-wp-evidence/GITHUB_HEAD.txt
+          git rev-parse HEAD^{tree} > achieved-wp-evidence/GITHUB_TREE.txt
+          rustc +1.94.1 --version > achieved-wp-evidence/RUST_VERSION.txt
+          git rev-parse HEAD:crates/vigilode-coupled/src/coupled_inverse_be.rs > achieved-wp-evidence/IMMUTABLE_PARENT_SOURCE_BLOB.txt
+          git rev-parse HEAD:crates/vigilode-coupled/examples/coupled_achieved_wp.rs > achieved-wp-evidence/WORK_PRECISION_SOURCE_BLOB.txt
+          cp crates/vigilode-coupled/examples/coupled_achieved_wp.rs achieved-wp-evidence/WORK_PRECISION_EXAMPLE.rs
+          cp research/vigilode_achieved_wp_20261031/independent_work_precision.py achieved-wp-evidence/INDEPENDENT_WORK_PRECISION.py
+          cp research/vigilode_achieved_wp_20261031/R5_WORK_PRECISION_THEORY.md achieved-wp-evidence/R5_THEORY.md
+          sha256sum achieved-wp-evidence/* > achieved-wp-evidence/RAW_PAYLOAD_SHA256.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vigilode-wp1-matched-achieved-research
+          path: achieved-wp-evidence/
+          retention-days: 90
