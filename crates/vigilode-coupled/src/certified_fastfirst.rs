@@ -124,7 +124,7 @@ impl FrozenDiagonalAffine {
         }
         // Every abs() is exact for a finite binary64 input.
         let q = diagonal.iter().fold(0.0_f64, |m, &v| m.max(v.abs()));
-        if !(q < 1.0) {
+        if q >= 1.0 {
             return Err(fail(
                 CertifiedFailureKind::Input,
                 "represented source is not L2-contractive",
