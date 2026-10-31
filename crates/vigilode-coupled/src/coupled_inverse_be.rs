@@ -445,14 +445,14 @@ impl<'a> Stage<'a> {
             let mut d_float = self.prev[i];
             let mut d_int = ip(self.prev[i])?;
             let mut row_c = 0.0_f64;
-            for j in 0..n {
+            for (j, &xj) in x.iter().enumerate().take(n) {
                 let cij = self.src.c[i][j];
                 row_c += cij;
-                d_float += self.h * cij * x[j];
+                d_float += self.h * cij * xj;
                 d_int = d_int
                     .add(
                         self.h_int
-                            .mul(ip(cij)?.mul(ip(x[j])?).map_err(arithmetic)?)
+                            .mul(ip(cij)?.mul(ip(xj)?).map_err(arithmetic)?)
                             .map_err(arithmetic)?,
                     )
                     .map_err(arithmetic)?;
@@ -541,63 +541,63 @@ impl<'a> Stage<'a> {
                     baseline = Some(p)
                 };
             }
-            if chosen.is_none() {
-                if let Some(old) = &previous {
-                    let scale = current
-                        .op_r
-                        .iter()
-                        .chain(old.op_r.iter())
-                        .fold(0.0_f64, |acc, &v| acc.max(v.abs()));
-                    let (mut num, mut den) = (0.0_f64, 0.0_f64);
-                    if scale > 0.0 {
-                        for (&r, &r_old) in current.op_r.iter().zip(&old.op_r) {
-                            let ri = r / scale;
-                            let dr = ri - r_old / scale;
-                            num += ri * dr;
-                            den += dr * dr;
-                        }
+            if chosen.is_none()
+                && let Some(old) = &previous
+            {
+                let scale = current
+                    .op_r
+                    .iter()
+                    .chain(old.op_r.iter())
+                    .fold(0.0_f64, |acc, &v| acc.max(v.abs()));
+                let (mut num, mut den) = (0.0_f64, 0.0_f64);
+                if scale > 0.0 {
+                    for (&r, &r_old) in current.op_r.iter().zip(&old.op_r) {
+                        let ri = r / scale;
+                        let dr = ri - r_old / scale;
+                        num += ri * dr;
+                        den += dr * dr;
                     }
-                    let gamma = num / den;
-                    if gamma.is_finite() {
-                        let trial: Vec<_> = current
-                            .mapped
-                            .iter()
-                            .zip(&old.mapped)
-                            .map(|(&v, &w)| v - gamma * (v - w))
-                            .collect();
-                        if trial
-                            .iter()
-                            .all(|v| v.is_finite() && *v >= 0.0 && *v <= self.src.m0)
+                }
+                let gamma = num / den;
+                if gamma.is_finite() {
+                    let trial: Vec<_> = current
+                        .mapped
+                        .iter()
+                        .zip(&old.mapped)
+                        .map(|(&v, &w)| v - gamma * (v - w))
+                        .collect();
+                    if trial
+                        .iter()
+                        .all(|v| v.is_finite() && *v >= 0.0 && *v <= self.src.m0)
+                    {
+                        if cfg.order == Order::BaselineFirst
+                            || cfg.max_map_evaluations.saturating_sub(work.map_attempted) >= 2
                         {
-                            if cfg.order == Order::BaselineFirst
-                                || cfg.max_map_evaluations.saturating_sub(work.map_attempted) >= 2
-                            {
-                                work.speculative_trials += 1;
-                                let candidate = self.evaluate(trial, cfg, work)?;
-                                let better = match cfg.order {
-                                    Order::BaselineFirst => {
-                                        candidate.map_upper
-                                            <= baseline
-                                                .as_ref()
-                                                .expect("previously evaluated baseline")
-                                                .map_lower
-                                    }
-                                    Order::FastFirst => {
-                                        candidate.map_upper
-                                            <= mul_down(self.q, current.map_lower)
-                                                .map_err(arithmetic)?
-                                    }
-                                };
-                                if candidate.original_rho <= self.residual_target || better {
-                                    work.accepted_trials += 1;
-                                    chosen = Some(candidate);
-                                } else {
-                                    work.rejected_trials += 1;
+                            work.speculative_trials += 1;
+                            let candidate = self.evaluate(trial, cfg, work)?;
+                            let better = match cfg.order {
+                                Order::BaselineFirst => {
+                                    candidate.map_upper
+                                        <= baseline
+                                            .as_ref()
+                                            .expect("previously evaluated baseline")
+                                            .map_lower
                                 }
+                                Order::FastFirst => {
+                                    candidate.map_upper
+                                        <= mul_down(self.q, current.map_lower)
+                                            .map_err(arithmetic)?
+                                }
+                            };
+                            if candidate.original_rho <= self.residual_target || better {
+                                work.accepted_trials += 1;
+                                chosen = Some(candidate);
+                            } else {
+                                work.rejected_trials += 1;
                             }
-                        } else {
-                            work.domain_skips += 1;
                         }
+                    } else {
+                        work.domain_skips += 1;
                     }
                 }
             }
