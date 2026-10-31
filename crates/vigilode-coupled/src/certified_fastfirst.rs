@@ -322,26 +322,33 @@ impl FrozenDiagonalAffine {
                 // skips Picard only on the proved contraction-envelope gate.
                 if !cfg.fast_first {
                     out.work.picard_updates += 1;
-                    baseline = Some(match self.evaluate(
-                        anchor,
-                        current.mapped.clone(),
-                        lambda,
-                        denom_lower,
-                        cfg,
-                        &mut out.work,
-                    ) {
-                        Ok(v) => v,
-                        Err(e) => {
-                            out.failure = Some(e);
-                            return out;
-                        }
-                    });
+                    baseline = Some(
+                        match self.evaluate(
+                            anchor,
+                            current.mapped.clone(),
+                            lambda,
+                            denom_lower,
+                            cfg,
+                            &mut out.work,
+                        ) {
+                            Ok(v) => v,
+                            Err(e) => {
+                                out.failure = Some(e);
+                                return out;
+                            }
+                        },
+                    );
                 }
-                let baseline_needs_more =
-                    baseline.as_ref().is_none_or(|v| v.root_upper > cfg.root_error_target);
+                let baseline_needs_more = baseline
+                    .as_ref()
+                    .is_none_or(|v| v.root_upper > cfg.root_error_target);
                 if baseline_needs_more && let Some(old) = &previous {
                     let reserved = if baseline.is_some() { 1 } else { 2 };
-                    if cfg.max_map_evaluations.saturating_sub(out.work.map_attempted) < reserved {
+                    if cfg
+                        .max_map_evaluations
+                        .saturating_sub(out.work.map_attempted)
+                        < reserved
+                    {
                         out.work.budget_skips += 1;
                     } else {
                         let scale = current
