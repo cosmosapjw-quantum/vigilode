@@ -1,0 +1,107 @@
+name: VigilODE source-certified RHS fast-first research (HOLD)
+on:
+  push:
+    branches:
+      - research/vigilode-source-certified-fastfirst-20261031
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-certified:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          components: clippy,rustfmt
+      - name: Protect original algorithm, source and stage-scope identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          B=27eae39802a1c9bedebc60486e17e83430989829
+          git merge-base --is-ancestor "$B" HEAD
+          test "$(git rev-parse HEAD:Cargo.lock)" = 9bc1afe66b0ff77dc08f76ef9d0532fae81b0df5
+          test "$(git rev-parse HEAD:crates/rodas5p-core/src/directed.rs)" = 89e2b3122b08db1849e4e56cc94f1f58c473b735
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/rhs_homotopy.rs)" = 990103d9ab5d59b7c40f3ccd323f6ad52e504324
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/n01_derivative_free.rs)" = 7c2cd365bb830b778910e98fb29be4c36f4cfd8e
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/certified_fastfirst.rs)" = 6a839b14d712b0a4102f636765767c3baf190437
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/tests/certified_fastfirst_contracts.rs)" = 96fc8305e354128bcf135ddcfc81c585278667e6
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/examples/certified_fastfirst_bench.rs)" = ef5dfece713c3a4312e30642eb90608f1cd30eec
+          while IFS= read -r p; do
+            case "$p" in
+              .github/workflows/vigilode-certified-fastfirst.yml|\
+              crates/vigilode-coupled/src/lib.rs|\
+              crates/vigilode-coupled/src/certified_fastfirst.rs|\
+              crates/vigilode-coupled/tests/certified_fastfirst_contracts.rs|\
+              crates/vigilode-coupled/examples/certified_fastfirst_bench.rs|\
+              research/vigilode_certified_fastfirst_20261031/THEORY_PREREG.md|\
+              research/vigilode_certified_fastfirst_20261031/R5_FLOAT_PICARD_ADDENDUM.md|\
+              research/vigilode_certified_fastfirst_20261031/independent_fraction_oracle.py) ;;
+              *) echo "UNAUTHORIZED_DIFF: $p" >&2; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$B" HEAD)
+          echo SOURCE_CERTIFIED_IDENTITY_LOCKED
+      - name: Focused rustfmt on exact staged sources
+        run: |
+          rustfmt +1.94.1 --check --edition 2024 --config skip_children=true crates/vigilode-coupled/src/lib.rs
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/src/certified_fastfirst.rs
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/tests/certified_fastfirst_contracts.rs
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/examples/certified_fastfirst_bench.rs
+      - name: Fetch exact dependency lock
+        run: cargo +1.94.1 fetch --locked
+      - name: New source-owned source-certification and inherited native regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p certified-fastfirst-evidence
+          cargo +1.94.1 test --locked --offline -p vigilode-coupled \
+            --test certified_fastfirst_contracts \
+            --test rhs_fast_first_contracts \
+            --test rhs_homotopy_contracts \
+            --test cubic_solver_production_contracts -- --nocapture \
+            2>&1 | tee certified-fastfirst-evidence/TEST.log
+      - name: Paired full verification cost and matched certified-root-error wall time
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo +1.94.1 run --locked --offline --profile measurement \
+            -p vigilode-coupled --example certified_fastfirst_bench \
+            2>&1 | tee certified-fastfirst-evidence/BENCH.log
+      - name: Independent exact rational source/interval bound replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 research/vigilode_certified_fastfirst_20261031/independent_fraction_oracle.py \
+            certified-fastfirst-evidence/BENCH.log \
+            2>&1 | tee certified-fastfirst-evidence/FRACTION.log
+      - name: Strict scoped Clippy, no warning suppressions
+        run: |
+          cargo +1.94.1 clippy --locked --offline -p vigilode-coupled \
+            --test certified_fastfirst_contracts --example certified_fastfirst_bench -- -D warnings
+      - name: Persist exact executed source and failure-success receipts
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p certified-fastfirst-evidence
+          git rev-parse HEAD > certified-fastfirst-evidence/CHECKOUT_HEAD.txt
+          git rev-parse HEAD^{tree} > certified-fastfirst-evidence/CHECKOUT_TREE.txt
+          rustc +1.94.1 --version > certified-fastfirst-evidence/RUST_VERSION.txt
+          git rev-parse HEAD:crates/vigilode-coupled/src/certified_fastfirst.rs > certified-fastfirst-evidence/CERTIFIED_SOURCE_BLOB.txt
+          git rev-parse HEAD:crates/vigilode-coupled/src/rhs_homotopy.rs > certified-fastfirst-evidence/ORIGINAL_RHS_BLOB.txt
+          cp crates/vigilode-coupled/src/certified_fastfirst.rs certified-fastfirst-evidence/CERTIFIED_FASTFIRST_SOURCE.rs
+          cp crates/vigilode-coupled/tests/certified_fastfirst_contracts.rs certified-fastfirst-evidence/CERTIFIED_FASTFIRST_TESTS.rs
+          cp crates/vigilode-coupled/examples/certified_fastfirst_bench.rs certified-fastfirst-evidence/CERTIFIED_FASTFIRST_BENCH.rs
+          cp research/vigilode_certified_fastfirst_20261031/THEORY_PREREG.md certified-fastfirst-evidence/THEORY_PREREG.md
+          cp research/vigilode_certified_fastfirst_20261031/R5_FLOAT_PICARD_ADDENDUM.md certified-fastfirst-evidence/R5_FLOAT_PICARD_ADDENDUM.md
+          cp research/vigilode_certified_fastfirst_20261031/independent_fraction_oracle.py certified-fastfirst-evidence/INDEPENDENT_FRACTION_ORACLE.py
+          sha256sum certified-fastfirst-evidence/* > certified-fastfirst-evidence/SOURCE_HASHES.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vigilode-source-certified-fastfirst-research
+          path: certified-fastfirst-evidence/
+          retention-days: 90

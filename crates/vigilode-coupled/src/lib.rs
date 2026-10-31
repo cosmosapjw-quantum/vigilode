@@ -10,6 +10,7 @@
 #![forbid(unsafe_code)]
 mod adaptive;
 mod algebra;
+pub mod certified_fastfirst;
 pub mod cyclic_closure;
 mod fallback;
 pub mod n01_derivative_free;
