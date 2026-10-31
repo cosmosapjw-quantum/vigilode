@@ -1,0 +1,69 @@
+{
+  "schema": "vigilode.wp6.bernstein_defect_shape_rational_pilot.v1",
+  "date": "2026-11-01",
+  "research_only": true,
+  "original_source_blob": "d78c5c5f6f476f2a5b1ea88628ed25daa6cfc482",
+  "orig_sweep_sha256": "9dae90079893170edddcf5cf8af193e53b43ab5bcf0c436cb81ce7aa0f8790b0",
+  "reference": "frozen WP2 original dyadic micro32",
+  "micro": 32,
+  "panels_per_cohort": 96,
+  "panels_total": 384,
+  "depth": 1,
+  "uniformization_N": 5,
+  "exp_even_M": 8,
+  "rows": [
+    {
+      "cohort": "asymmetric_2",
+      "wp5_constant_upper": 1.1386995165351995e-13,
+      "wp6_shape_upper": 6.488679612260851e-14,
+      "vectorwise_le_panels": 96
+    },
+    {
+      "cohort": "asymmetric_2_refined",
+      "wp5_constant_upper": 8.108800300341478e-15,
+      "wp6_shape_upper": 4.3630423862350244e-15,
+      "vectorwise_le_panels": 96
+    },
+    {
+      "cohort": "coupled_3_cubic",
+      "wp5_constant_upper": 5.80026981687295e-14,
+      "wp6_shape_upper": 3.3141185247616634e-14,
+      "vectorwise_le_panels": 96
+    },
+    {
+      "cohort": "linear_exchange_control",
+      "wp5_constant_upper": 9.409878034684786e-16,
+      "wp6_shape_upper": 4.587141366439368e-16,
+      "vectorwise_le_panels": 96
+    }
+  ],
+  "ablation": [
+    {
+      "cohort": "asymmetric_2",
+      "subdivide_constant_upper": 1.1311062605085834e-13,
+      "shape_upper": 6.488679612260851e-14,
+      "shape_le_split_panels": 96
+    },
+    {
+      "cohort": "linear_exchange_control",
+      "subdivide_constant_upper": 7.818160336532192e-16,
+      "shape_upper": 4.587141366439368e-16,
+      "shape_le_split_panels": 96
+    }
+  ],
+  "same_author_tests_pass": 8,
+  "search": {
+    "real_openevolve_database": true,
+    "openevolve_waves": 8,
+    "mcts_waves": 8,
+    "unique_candidates": 19,
+    "external_llm_calls": 0,
+    "scope": "24-panel exploratory ranking, not full claim"
+  },
+  "github_native_new_ivps": 0,
+  "hol_wp6_full_comparison": "NOT_RUN",
+  "same_runner_speedup": "NOT_RUN",
+  "official_vigilode_dag": "7/23",
+  "successor_admitted": "0/12",
+  "production": "HOLD"
+}

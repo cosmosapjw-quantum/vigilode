@@ -32,7 +32,7 @@ permissions:
 jobs:
   research-process:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,10 +62,76 @@ jobs:
           else
             python3 tools/check-research-node.py
           fi
+      - name: Read-only authenticated origin for scipy/scipy
+        uses: actions/checkout@v4
+        with:
+          repository: scipy/scipy
+          path: _authority_deps/scipy
+          fetch-depth: 0
+          filter: blob:none
+          submodules: false
+          lfs: false
+          persist-credentials: false
+      - name: Read-only authenticated origin for numpy/numpy
+        uses: actions/checkout@v4
+        with:
+          repository: numpy/numpy
+          path: _authority_deps/numpy
+          fetch-depth: 0
+          filter: blob:none
+          submodules: false
+          lfs: false
+          persist-credentials: false
+      - name: Read-only authenticated origin for SciML/OrdinaryDiffEq.jl
+        uses: actions/checkout@v4
+        with:
+          repository: SciML/OrdinaryDiffEq.jl
+          path: _authority_deps/ordinarydiffeq
+          fetch-depth: 0
+          filter: blob:none
+          submodules: false
+          lfs: false
+          persist-credentials: false
+      - name: Read-only authenticated origin for SciML/SciMLSensitivity.jl
+        uses: actions/checkout@v4
+        with:
+          repository: SciML/SciMLSensitivity.jl
+          path: _authority_deps/scimlsensitivity
+          fetch-depth: 0
+          filter: blob:none
+          submodules: false
+          lfs: false
+          persist-credentials: false
+      - name: Read-only authenticated origin for cosmosapjw-quantum/bass
+        uses: actions/checkout@v4
+        with:
+          repository: cosmosapjw-quantum/bass
+          path: _authority_deps/bass
+          fetch-depth: 0
+          filter: blob:none
+          submodules: false
+          lfs: false
+          persist-credentials: false
+      - name: Read-only authenticated origin for cosmosapjw-quantum/rei_bianchi
+        uses: actions/checkout@v4
+        with:
+          repository: cosmosapjw-quantum/rei_bianchi
+          path: _authority_deps/rei_bianchi
+          fetch-depth: 0
+          filter: blob:none
+          submodules: false
+          lfs: false
+          persist-credentials: false
       - name: Check authority commit references are published
         shell: bash
         env:
           PYTHONDONTWRITEBYTECODE: '1'
         run: |
           set -euo pipefail
-          python3 tools/check-authority-refs.py
+          python3 tools/check-authority-refs.py \
+            --repository scipy/scipy="$GITHUB_WORKSPACE/_authority_deps/scipy" \
+            --repository numpy/numpy="$GITHUB_WORKSPACE/_authority_deps/numpy" \
+            --repository SciML/OrdinaryDiffEq.jl="$GITHUB_WORKSPACE/_authority_deps/ordinarydiffeq" \
+            --repository SciML/SciMLSensitivity.jl="$GITHUB_WORKSPACE/_authority_deps/scimlsensitivity" \
+            --repository cosmosapjw-quantum/bass="$GITHUB_WORKSPACE/_authority_deps/bass" \
+            --repository cosmosapjw-quantum/rei_bianchi="$GITHUB_WORKSPACE/_authority_deps/rei_bianchi"
