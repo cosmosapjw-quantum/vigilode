@@ -10,6 +10,7 @@
 - `rei_bianchi/main/docs/roadmap/D0_PR_ROADMAP.md`는 원래 end-to-end FLRW, Bianchi geometry/tilt, Thomson, observables와 all-type verification을 PR3~10의 상위 의존성으로 둔다.
 - 2026-11-01 REST 열린 PR 수: VigilODE 136 (Draft 134), rei_bianchi 302 (Draft 296). 이는 실제 open PR의 총량이지만 독립적인 과학 실험 수는 아니다. 저장소에서 열린 계층형 PR이 많이 중첩된 점에 주의한다.
 - VigilODE PR165 global CI `41210052312`: `Check research nodes and the append-only ledger` FAILED; 다음 `Check authority ...` SKIPPED. PR162 global CI `41205681693` FAILED. 2026-10-27 정책 기록 `research/PRODUCTION_SOLVER_CLOSURE_POLICY_20261027.json`에는 다른 시기의 local authority scan missing 689/795 distinct objects가 기록돼 있으나, 그것이 현 PR165 CI 실패의 직접 원인이라는 증거는 없다. 두 failure를 혼동하지 않는다.
+- **PR165 CI의 구체적 재현 가능 원인:** 해당 PR이 새 `research/bass21_owner_fullpolar_20261031/`를 추가했으나 파일 목록에는 `PREREGISTRATION.md`와 새 `research/LEDGER.jsonl` 행이 없다. 현재 `tools/check-research-node.py`는 새 `research/<node>/`에 대해 두 요소를 요구하므로 이 상태는 자체 계약상 불합격이다. 실제 job 로그를 확보하지 못했으므로 이것이 *유일한* CI 실패 사유인지까지는 입증되지 않았다. PR166의 `exploratory/` 비정규 구분은 별도의 소급 등록 우회가 아니라 과학 권위의 범위를 낮춘 분류이며, canonical 승인으로 해석하면 안 된다.
 - 원본 solver DAG: `research/all_dag_completion_20261018/ORIGINAL_DAG.json`는 A01–A12, original scope immutable. 반복 보고된 VigilODE 7/23 및 REI 28/88/33/88은 다른 연구계층의 count다. 7/23 및 28/88은 PR166이 보고한 수치이며 본 감사가 전 노드 재계산한 값이 아니다.
 
 ## Critical findings: finding → evidence → impact → confidence → response
