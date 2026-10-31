@@ -1,0 +1,22 @@
+name: BASS21 Thomson screen source-free evidence (not full-source CI)
+on:
+  pull_request:
+    paths:
+      - 'research/bass21_thomson_screen_collision_20261031/**'
+      - '.github/workflows/bass21-thomson-sourcefree-20261031.yml'
+  push:
+    branches: [research/bass21-thomson-screen-collision-20261031]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scoped-original-source-witness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Check real source-owned numerical witness without original private NPZ
+        run: python3 research/bass21_thomson_screen_collision_20261031/code/scoped_sourcefree_check.py
