@@ -11,6 +11,7 @@
 mod adaptive;
 mod algebra;
 pub mod certified_fastfirst;
+pub mod coupled_inverse_be;
 pub mod cyclic_closure;
 mod fallback;
 pub mod n01_derivative_free;

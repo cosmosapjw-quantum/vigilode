@@ -1,0 +1,241 @@
+{
+  "status": "EXPLORATORY_RETROSPECTIVE_NUMERICAL_ONLY",
+  "method": "source-owned algebraic scalar cubic inverse map; source-bound q; SciPy Radau rtol=1e-13 as approximate independent truth, not rigorous",
+  "physics": "genuine coupled positive dissipative nonlinear reaction with asymmetric c and initial values",
+  "cases": [
+    {
+      "name": "asymmetric_2",
+      "parameters": {
+        "k": [
+          4,
+          7
+        ],
+        "g": [
+          20,
+          40
+        ],
+        "c": [
+          [
+            0,
+            12
+          ],
+          [
+            8,
+            0
+          ]
+        ],
+        "y0": [
+          0.2,
+          0.12
+        ],
+        "steps": 64,
+        "horizon": 0.1,
+        "physical_target": 0.0089
+      },
+      "baseline_first": {
+        "q": 0.018292682926829274,
+        "calls": 346,
+        "trials": 77,
+        "accepts": 64,
+        "trunc": 0.008883353389351326,
+        "limit": 1.0404131655421474e-07,
+        "phys": 0.008884738991394206,
+        "err": 0.0004126800334620234,
+        "maxY": 0.19707556633422993,
+        "n": 64
+      },
+      "fast_first": {
+        "q": 0.018292682926829274,
+        "calls": 270,
+        "trials": 142,
+        "accepts": 142,
+        "trunc": 0.008883353389351326,
+        "limit": 1.0404131655421474e-07,
+        "phys": 0.00888483599515872,
+        "err": 0.00041268674791780646,
+        "maxY": 0.1970755663059616,
+        "n": 64
+      },
+      "calls_ratio": 1.2814814814814814,
+      "achieved_final_error_relative_gap": 1.6270102727840664e-05
+    },
+    {
+      "name": "asymmetric_2_refined",
+      "parameters": {
+        "k": [
+          4,
+          7
+        ],
+        "g": [
+          20,
+          40
+        ],
+        "c": [
+          [
+            0,
+            12
+          ],
+          [
+            8,
+            0
+          ]
+        ],
+        "y0": [
+          0.2,
+          0.12
+        ],
+        "steps": 128,
+        "horizon": 0.1,
+        "physical_target": 0.00445
+      },
+      "baseline_first": {
+        "q": 0.00925925925925926,
+        "calls": 635,
+        "trials": 128,
+        "accepts": 128,
+        "trunc": 0.0044376981387563375,
+        "limit": 3.844331638644524e-08,
+        "phys": 0.0044384969290266205,
+        "err": 0.00020676996498165956,
+        "maxY": 0.19851923396966964,
+        "n": 128
+      },
+      "fast_first": {
+        "q": 0.00925925925925926,
+        "calls": 507,
+        "trials": 251,
+        "accepts": 251,
+        "trunc": 0.0044376981387563375,
+        "limit": 3.844331638644524e-08,
+        "phys": 0.0044385616445796,
+        "err": 0.00020677148322811867,
+        "maxY": 0.19851923402415542,
+        "n": 128
+      },
+      "calls_ratio": 1.252465483234714,
+      "achieved_final_error_relative_gap": 7.342629822092239e-06
+    },
+    {
+      "name": "coupled_3_cubic",
+      "parameters": {
+        "k": [
+          6,
+          8,
+          10
+        ],
+        "g": [
+          60,
+          100,
+          30
+        ],
+        "c": [
+          [
+            0,
+            30,
+            4
+          ],
+          [
+            15,
+            0,
+            10
+          ],
+          [
+            10,
+            8,
+            0
+          ]
+        ],
+        "y0": [
+          0.04,
+          0.06,
+          0.02
+        ],
+        "steps": 128,
+        "horizon": 0.1,
+        "physical_target": 0.00712
+      },
+      "baseline_first": {
+        "q": 0.02575757575757576,
+        "calls": 688,
+        "trials": 152,
+        "accepts": 128,
+        "trunc": 0.007101841993610045,
+        "limit": 8.511565495291139e-08,
+        "phys": 0.007103961664535915,
+        "err": 6.457562222064728e-05,
+        "maxY": 0.05908957343388785,
+        "n": 128
+      },
+      "fast_first": {
+        "q": 0.02575757575757576,
+        "calls": 546,
+        "trials": 290,
+        "accepts": 290,
+        "trunc": 0.007101841993610045,
+        "limit": 8.511565495291139e-08,
+        "phys": 0.007104204796538049,
+        "err": 6.456265813479731e-05,
+        "maxY": 0.05908957337193867,
+        "n": 128
+      },
+      "calls_ratio": 1.26007326007326,
+      "achieved_final_error_relative_gap": 0.0002007582026182182
+    },
+    {
+      "name": "linear_exchange_control",
+      "parameters": {
+        "k": [
+          4,
+          4
+        ],
+        "g": [
+          0,
+          0
+        ],
+        "c": [
+          [
+            0,
+            6
+          ],
+          [
+            6,
+            0
+          ]
+        ],
+        "y0": [
+          0.1,
+          0.05
+        ],
+        "steps": 128,
+        "horizon": 0.1,
+        "physical_target": 0.006
+      },
+      "baseline_first": {
+        "q": 0.004651162790697675,
+        "calls": 384,
+        "trials": 0,
+        "accepts": 0,
+        "trunc": 0.0006707382556977284,
+        "limit": 1.66539429509446e-05,
+        "phys": 0.000837303797869529,
+        "err": 8.108994255029423e-05,
+        "maxY": 0.09945770812632851,
+        "n": 128
+      },
+      "fast_first": {
+        "q": 0.004651162790697675,
+        "calls": 384,
+        "trials": 128,
+        "accepts": 128,
+        "trunc": 0.0006707382556977284,
+        "limit": 1.66539429509446e-05,
+        "phys": 0.0007341791535400139,
+        "err": 8.174579235654955e-05,
+        "maxY": 0.09945771612645969,
+        "n": 128
+      },
+      "calls_ratio": 1.0,
+      "achieved_final_error_relative_gap": 0.0080230405424993
+    }
+  ]
+}
