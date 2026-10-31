@@ -1,0 +1,136 @@
+name: VigilODE WP2 source-frozen exact-rational continuous-defect proof (HOLD)
+on:
+  push:
+    branches:
+      - research/vigilode-wp2-rigorous-reference-20261031
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  rigorous-reference:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          components: rustfmt,clippy
+      - name: Protect frozen WP1 and original coupled nonlinear RHS plus exact scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          B=72bd52d6936b923bd110222f36df79172b9ced49
+          git merge-base --is-ancestor "$B" HEAD
+          test "$(git rev-parse HEAD:Cargo.lock)" = 9bc1afe66b0ff77dc08f76ef9d0532fae81b0df5
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/coupled_inverse_be.rs)" = d78c5c5f6f476f2a5b1ea88628ed25daa6cfc482
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/rhs_homotopy.rs)" = 990103d9ab5d59b7c40f3ccd323f6ad52e504324
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/examples/coupled_achieved_wp.rs)" = 1bfc17ec2ed4b902cc06073807388f6e332e31d6
+          test "$(git rev-parse HEAD:research/vigilode_wp2_achieved_reference_20261031/defect_certifier.py)" = 98cb7cafe36fecb8850d55e9c81638c299484ab7
+          test "$(git rev-parse HEAD:research/vigilode_wp2_achieved_reference_20261031/tests/test_defect_certificate.py)" = ddd90ec85828b4106a599c7752968aa8d18ebe0d
+          test "$(git rev-parse HEAD:research/vigilode_wp2_achieved_reference_20261031/verify_wp2.py)" = 9781e7b564d61e427641e6c67739ed851aca35fc
+          while IFS= read -r p; do
+            case "$p" in
+              .github/workflows/vigilode-wp2-reference-defect.yml|\
+              research/vigilode_wp2_achieved_reference_20261031/R5_THEORY.md|\
+              research/vigilode_wp2_achieved_reference_20261031/defect_certifier.py|\
+              research/vigilode_wp2_achieved_reference_20261031/tests/test_defect_certificate.py|\
+              research/vigilode_wp2_achieved_reference_20261031/verify_wp2.py|\
+              research/vigilode_wp2_achieved_reference_20261031/R6_SAME_AUTHOR_ADVERSARIAL.md) ;;
+              *) echo "WP2_UNAUTHORIZED_CHANGED_PATH: $p" >&2; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$B" HEAD)
+          echo WP2_FROZEN_SOURCE_AND_SCOPE=PASS
+      - uses: actions/download-artifact@v4
+        with:
+          name: vigilode-wp1-matched-achieved-research
+          run-id: 41181475675
+          repository: cosmosapjw-quantum/vigilode
+          github-token: ${{ github.token }}
+          path: wp1-immutable
+      - name: Verify actual earlier native run and immutable source summaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(cat wp1-immutable/GITHUB_HEAD.txt)" = 72bd52d6936b923bd110222f36df79172b9ced49
+          test "$(cat wp1-immutable/IMMUTABLE_PARENT_SOURCE_BLOB.txt)" = d78c5c5f6f476f2a5b1ea88628ed25daa6cfc482
+          echo '9dae90079893170edddcf5cf8af193e53b43ab5bcf0c436cb81ce7aa0f8790b0  wp1-immutable/SWEEP.log' | sha256sum -c -
+          echo '56746487ac5c5c8702b53ef0ffd47694c040ab4e0adcfea1ec25aa3b8e9ba909  wp1-immutable/WP_SUMMARY.json' | sha256sum -c -
+          echo WP2_PREVIOUS_40_NATIVE_RUST_OUTPUTS=IDENTITY_VERIFIED
+      - name: Rust 1.94.1 inherited source native science/regression contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p wp2-evidence
+          cargo +1.94.1 fetch --locked
+          cargo +1.94.1 test --locked --offline -p vigilode-coupled \
+            --test coupled_inverse_be_contracts \
+            --test nonlinear_be_contracts \
+            --test certified_fastfirst_contracts \
+            --test rhs_fast_first_contracts \
+            --test rhs_homotopy_contracts \
+            --test cubic_solver_production_contracts -- --nocapture \
+            2>&1 | tee wp2-evidence/NATIVE_REGRESSION.log
+      - name: Source-scoped Python 3 polynomial and adversarial unit tests
+        shell: bash
+        env:
+          WP1_SWEEP_LOG: wp1-immutable/SWEEP.log
+          WP1_SUMMARY: wp1-immutable/WP_SUMMARY.json
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s research/vigilode_wp2_achieved_reference_20261031/tests -v \
+            2>&1 | tee wp2-evidence/UNIT_TESTS.log
+      - name: All 4 cohorts × micro32 and micro64 exact binary-rational defect certificates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 research/vigilode_wp2_achieved_reference_20261031/defect_certifier.py \
+            --log wp1-immutable/SWEEP.log \
+            --wp1-summary wp1-immutable/WP_SUMMARY.json \
+            --out wp2-evidence \
+            --micro 32 64 \
+            2>&1 | tee wp2-evidence/CERTIFIER.log
+          python3 research/vigilode_wp2_achieved_reference_20261031/verify_wp2.py \
+            --log wp1-immutable/SWEEP.log \
+            --wp1-summary wp1-immutable/WP_SUMMARY.json \
+            --refdir wp2-evidence \
+            --certificate wp2-evidence/CERTIFICATE.json \
+            2>&1 | tee wp2-evidence/VERIFY.log
+      - name: Full exact reference-bit readback and independent posterior recomputation
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p wp2-clean
+          python3 research/vigilode_wp2_achieved_reference_20261031/defect_certifier.py \
+            --log wp1-immutable/SWEEP.log \
+            --wp1-summary wp1-immutable/WP_SUMMARY.json \
+            --out wp2-clean \
+            --micro 32 64 \
+            --readback-dir wp2-evidence \
+            2>&1 | tee wp2-evidence/REFERENCE_READBACK.log
+          cmp -s wp2-evidence/CERTIFICATE.json wp2-clean/CERTIFICATE.json
+          echo WP2_CERTIFICATE_REPLAY_BYTE_EXACT=PASS
+      - name: Preserve actual GitHub checkout, source and raw evidence
+        shell: bash
+        if: always()
+        run: |
+          mkdir -p wp2-evidence
+          git rev-parse HEAD > wp2-evidence/GITHUB_HEAD.txt
+          git rev-parse HEAD^{tree} > wp2-evidence/GITHUB_TREE.txt
+          git rev-parse HEAD:crates/vigilode-coupled/src/coupled_inverse_be.rs > wp2-evidence/IMMUTABLE_COUPLED_SOURCE_BLOB.txt
+          git rev-parse HEAD:research/vigilode_wp2_achieved_reference_20261031/defect_certifier.py > wp2-evidence/CERTIFIER_SOURCE_BLOB.txt
+          rustc +1.94.1 --version > wp2-evidence/RUST_VERSION.txt
+          cp research/vigilode_wp2_achieved_reference_20261031/R5_THEORY.md wp2-evidence/R5_THEORY.md
+          cp research/vigilode_wp2_achieved_reference_20261031/defect_certifier.py wp2-evidence/DEFECT_CERTIFIER.py
+          cp research/vigilode_wp2_achieved_reference_20261031/verify_wp2.py wp2-evidence/VERIFY_WP2.py
+          cp research/vigilode_wp2_achieved_reference_20261031/tests/test_defect_certificate.py wp2-evidence/TEST_DEFECT_CERTIFICATE.py
+          (cd wp2-evidence && sha256sum * > PAYLOAD_SHA256.txt) || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vigilode-wp2-rigorous-reference-defect
+          path: wp2-evidence/
+          retention-days: 90
