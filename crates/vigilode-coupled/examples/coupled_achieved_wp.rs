@@ -92,7 +92,11 @@ fn timed(source: &Source, cfg: Config, repetitions: u64) -> (u128, u64, u64, u64
     let start = Instant::now();
     for _ in 0..repetitions {
         let run = black_box(source.run(black_box(cfg)));
-        assert!(run.completed, "timed source must complete: {:?}", run.failure);
+        assert!(
+            run.completed,
+            "timed source must complete: {:?}",
+            run.failure
+        );
         map += run.work.map_attempted;
         original += run.work.original_interval_components;
         inverse += run.work.inverse_interval_components;
@@ -110,8 +114,14 @@ fn main() {
     for (name, source, steps, horizon, original_eps) in cases() {
         let original_cfg = config(steps, horizon, original_eps, false);
         let legacy = source.run(original_cfg);
-        assert!(legacy.completed, "parent alpha=1 must complete: {:?}", legacy.failure);
-        let trunc = legacy.truncation_majorant.expect("source truncation majorant");
+        assert!(
+            legacy.completed,
+            "parent alpha=1 must complete: {:?}",
+            legacy.failure
+        );
+        let trunc = legacy
+            .truncation_majorant
+            .expect("source truncation majorant");
         assert!(trunc > 0.0 && trunc < original_eps);
         let slack = original_eps - trunc;
         println!(
