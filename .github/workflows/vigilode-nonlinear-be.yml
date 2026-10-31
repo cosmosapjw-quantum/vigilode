@@ -43,13 +43,15 @@ jobs:
             esac
           done < <(git diff --name-only "$B" HEAD)
           echo VIGILODE_NONLINEAR_SOURCE_AND_SCOPE_LOCKED
-      - name: Focused rustfmt
+      - name: Focused rustfmt aggregate all changed files
         shell: bash
         run: |
-          rustfmt +1.94.1 --check --edition 2024 --config skip_children=true crates/vigilode-coupled/src/lib.rs
-          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/src/nonlinear_be.rs
-          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/tests/nonlinear_be_contracts.rs
-          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/examples/nonlinear_be_bench.rs
+          failed=0
+          rustfmt +1.94.1 --check --edition 2024 --config skip_children=true crates/vigilode-coupled/src/lib.rs || failed=1
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/src/nonlinear_be.rs || failed=1
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/tests/nonlinear_be_contracts.rs || failed=1
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/examples/nonlinear_be_bench.rs || failed=1
+          exit "$failed"
       - name: Lock Rust workspace dependencies
         run: cargo +1.94.1 fetch --locked
       - name: Native nonlinear IVP and inherited source regression
