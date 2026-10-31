@@ -10,12 +10,11 @@ import json
 import struct
 import sys
 from fractions import Fraction as Q
-import mpmath as mp
-mp.mp.dps=80
+from decimal import Decimal, localcontext
 
 def readbits(bits):
     return Q.from_float(struct.unpack('>d',struct.pack('>Q',int(bits)))[0])
-def dec(q):return mp.mpf(q.numerator)/mp.mpf(q.denominator)
+def dec(q):return Decimal(q.numerator)/Decimal(q.denominator)
 
 def inspect(row):
     k,g,Y=(readbits(x) for x in row['source_bits'])
@@ -43,11 +42,13 @@ def inspect(row):
         cert=E+delta
         assert cert<=bound,('whole-IVP error enclosure',i,float(cert),float(bound))
         assert bound<=eps,('physical budget',i,float(bound),float(eps))
-        tt=dec(lab)
-        exp1=mp.exp(-dec(k)*tt)
-        exact=dec(Y)*exp1/mp.sqrt(1+(dec(g)/dec(k))*dec(Y)**2*(1-exp1**2))
-        actual=abs(dec(y)-exact)
-        assert actual <= dec(bound)+mp.mpf('1e-60'),('analytic root outside bound',i)
+        with localcontext() as ctx:
+            ctx.prec = 80
+            tt=dec(lab)
+            exp1=(-dec(k)*tt).exp()
+            exact=dec(Y)*exp1/(Decimal(1)+(dec(g)/dec(k))*dec(Y)**2*(Decimal(1)-exp1**2)).sqrt()
+            actual=abs(dec(y)-exact)
+            assert actual <= dec(bound)+Decimal("1e-60"),("analytic root outside bound",i)
         out.append(float(actual))
         M/=a
     assert row['total_rhs']==row['interval'] and row['total_rhs']>=n
