@@ -29,7 +29,7 @@ jobs:
           test "$(git rev-parse HEAD:crates/vigilode-coupled/src/rhs_homotopy.rs)" = 990103d9ab5d59b7c40f3ccd323f6ad52e504324
           test "$(git rev-parse HEAD:crates/vigilode-coupled/src/n01_derivative_free.rs)" = 7c2cd365bb830b778910e98fb29be4c36f4cfd8e
           test "$(git rev-parse HEAD:crates/vigilode-coupled/src/certified_fastfirst.rs)" = f5ed8667980885f5079353d790bb1ea58615b981
-          test "$(git rev-parse HEAD:crates/vigilode-coupled/tests/certified_fastfirst_contracts.rs)" = 96fc8305e354128bcf135ddcfc81c585278667e6
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/tests/certified_fastfirst_contracts.rs)" = 6d49c6531953cef766759ae4147d4b8fa2419978
           test "$(git rev-parse HEAD:crates/vigilode-coupled/examples/certified_fastfirst_bench.rs)" = ef5dfece713c3a4312e30642eb90608f1cd30eec
           while IFS= read -r p; do
             case "$p" in
@@ -46,11 +46,14 @@ jobs:
           done < <(git diff --name-only "$B" HEAD)
           echo SOURCE_CERTIFIED_IDENTITY_LOCKED
       - name: Focused rustfmt on exact staged sources
+        shell: bash
         run: |
-          rustfmt +1.94.1 --check --edition 2024 --config skip_children=true crates/vigilode-coupled/src/lib.rs
-          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/src/certified_fastfirst.rs
-          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/tests/certified_fastfirst_contracts.rs
-          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/examples/certified_fastfirst_bench.rs
+          failed=0
+          rustfmt +1.94.1 --check --edition 2024 --config skip_children=true crates/vigilode-coupled/src/lib.rs || failed=1
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/src/certified_fastfirst.rs || failed=1
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/tests/certified_fastfirst_contracts.rs || failed=1
+          rustfmt +1.94.1 --check --edition 2024 crates/vigilode-coupled/examples/certified_fastfirst_bench.rs || failed=1
+          exit "$failed"
       - name: Fetch exact dependency lock
         run: cargo +1.94.1 fetch --locked
       - name: New source-owned source-certification and inherited native regression
