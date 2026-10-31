@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "document_kind": "noncanonical_mission_alignment_overlay",
+  "as_of_utc": "2026-10-31T19:57:00Z",
+  "mission": "REI Bianchi IGM: source-authentic coupled thermochemistry, photon transport and Bianchi-background evolution, followed by controlled FLRW/Bianchi comparison and uncertainty-qualified physical observables",
+  "canonical_authority": {
+    "rei_main_state": "cosmosapjw-quantum/rei_bianchi@main:PROJECT_STATE.json, docs/science/current_00_READ_FIRST.md; main snapshot generated 2026-08-11; not an assertion about newer research-PR canonical admission",
+    "rei_d0_roadmap": "cosmosapjw-quantum/rei_bianchi@main:docs/roadmap/D0_PR_ROADMAP.md",
+    "vigilode_original_solver_dag": "research/all_dag_completion_20261018/ORIGINAL_DAG.json; A01-A12; immutable and not this overlay",
+    "vigilode_research_ledger": "research/LEDGER.jsonl; existing append-only admission authority; unmodified",
+    "physics_owners": {
+      "rei_bianchi": "coupled reionization, H/He thermochemistry, physical EoR, canonical local interval",
+      "bass": "Bianchi background and source-frozen photon/Thomson histories",
+      "rec_bianchi": "primordial recombination provider, separately source-locked",
+      "vigilode": "optional mathematical/numerical methods and exploratory photon-collision diagnostics; not a cosmology source owner"
+    }
+  },
+  "reported_not_recomputed_counters": {
+    "basis": "VigilODE PR166 description 2026-10-31; distinct from main and original solver A01-A12",
+    "vigilode_scope": "7/23",
+    "rei_central": "28/88",
+    "rei_working": "33/88",
+    "bass_ce1": "9/15",
+    "new_owner_ivps": 0
+  },
+  "canonical_dag_delta_from_this_change": 0,
+  "admitted_mission_nodes": [],
+  "nodes": [
+    {
+      "id": "M0",
+      "name": "Owner/source, normalization and clock contract",
+      "owner": "rei_bianchi",
+      "supporting_owners": ["bass", "rec_bianchi"],
+      "depends_on": [],
+      "state": "partial",
+      "blocker": "Cross-owner normalization, thermal and photon histories have not been promoted as a single canonical physical source contract",
+      "observable_relevance": "physically interpretable source and error normalization",
+      "next_decisive_evidence": "owner-signed source/clock/rate map with a measurable coupled RHS/J and matched source identities"
+    },
+    {
+      "id": "M1",
+      "name": "Complete first canonical FLRW thermochemistry interval",
+      "owner": "rei_bianchi",
+      "supporting_owners": [],
+      "depends_on": ["M0"],
+      "state": "blocked",
+      "blocker": "Published main certifies one four-site, three-lane microstep only; full first interval and production node chemistry not authorized",
+      "observable_relevance": "trusted physical evolution baseline for any Bianchi comparison",
+      "next_decisive_evidence": "whole first canonical interval with all lanes, no tolerance relaxation, global H/He/photon/energy ledgers and accepted/rejected step receipts"
+    },
+    {
+      "id": "M2",
+      "name": "Source-consistent Bianchi geometry and proper time mapping",
+      "owner": "bass",
+      "supporting_owners": ["rei_bianchi"],
+      "depends_on": ["M0"],
+      "state": "blocked",
+      "blocker": "Source-frozen Bianchi photon/geodesic calculations are not a promoted coupled geometry/thermochemistry adapter",
+      "observable_relevance": "real Bianchi anisotropy rather than prescribed-frame-only effects",
+      "next_decisive_evidence": "same-owner Bianchi background, shear, tetrad/clock and transport-law inputs with FLRW and zero-shear limits"
+    },
+    {
+      "id": "M3",
+      "name": "Coupled Bianchi photon, H/He chemistry and temperature history",
+      "owner": "rei_bianchi",
+      "supporting_owners": ["bass", "vigilode"],
+      "depends_on": ["M1", "M2"],
+      "state": "blocked",
+      "blocker": "No admitted native coupled Bianchi ionization/thermal/photon evolution with source-owned closure",
+      "observable_relevance": "physical change in x_HII, x_HeII, x_HeIII, T and optical depth",
+      "next_decisive_evidence": "matched coupled physical forward solve or bounded validated inclusion, conservation and closure diagnostics, native error budget"
+    },
+    {
+      "id": "M4",
+      "name": "Matched FLRW versus Bianchi physics and observable comparison",
+      "owner": "rei_bianchi",
+      "supporting_owners": ["bass"],
+      "depends_on": ["M3"],
+      "state": "blocked",
+      "blocker": "No canonical paired same-source FLRW/Bianchi evolved observable experiment",
+      "observable_relevance": "Delta ionization, Delta temperature, Delta tau and physically sourced polarization where applicable",
+      "next_decisive_evidence": "paired initial data, clocks, kernels, solver tolerances, matching observables and uncertainty-aware Delta quantities, including null controls"
+    },
+    {
+      "id": "M5",
+      "name": "Independent source/physics referee and canonical admission",
+      "owner": "rei_bianchi",
+      "supporting_owners": ["vigilode", "bass"],
+      "depends_on": ["M4"],
+      "state": "blocked",
+      "blocker": "Global authority/owner admission and independent review are not established for the coupled result",
+      "observable_relevance": "reproducible, appropriately delimited scientific result",
+      "next_decisive_evidence": "independent source-replay, physical falsification tests and explicit canonical owner admission; global CI must not be suppressed"
+    }
+  ],
+  "work_stream_policy": {
+    "critical_path_next": "M1",
+    "parallel_foundation_allowed": "M0 or M2 only when owner can provide a falsifiable physical delta; no automatic new science chain",
+    "vigilode_generic_solver": "separate non-mission stream; no REI DAG progress credit",
+    "vigilode_bass21_source_frozen": "valuable exploratory controls; no independent IVP, coupled EoR, or observed CMB B claim",
+    "pr165_vs_pr166": "PR165 uses original full Volterra I/Q local collision; PR166 uses PR130 first-gain Q for sky spin-2. They are not the same source model; any comparison must use identical frames and field ownership",
+    "if_two_scoped_loops_no_decisive_physics": "stop new descendant PRs in that stream and perform one problem-choice decision; no automatic gate expansion",
+    "production": "HOLD",
+    "no_merge": true,
+    "no_force_push": true,
+    "auto_next_node": false,
+    "no_more_ivps": true
+  }
+}
