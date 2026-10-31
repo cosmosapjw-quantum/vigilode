@@ -14,6 +14,7 @@ pub mod certified_fastfirst;
 pub mod cyclic_closure;
 mod fallback;
 pub mod n01_derivative_free;
+pub mod nonlinear_be;
 pub mod rhs_homotopy;
 mod solver;
 pub mod structural_mean_field;
