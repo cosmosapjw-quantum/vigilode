@@ -1,0 +1,38 @@
+name: BASS21 axial spin-2 observer boost source-free evidence
+on:
+  pull_request:
+    paths:
+      - 'research/bass21_axis_boost_spin2_20261031/**'
+      - 'research/LEDGER.jsonl'
+      - '.github/workflows/bass21-axisboost-scoped.yml'
+  push:
+    branches: [research/bass21-axis-boost-screen-20261031]
+    paths:
+      - 'research/bass21_axis_boost_spin2_20261031/**'
+      - 'research/LEDGER.jsonl'
+permissions:
+  contents: read
+jobs:
+  source-free-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Check published JSON identity and scoped physical claims, not private owner ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd research/bass21_axis_boost_spin2_20261031
+          printf '%s  %s\n' '2dfdd5b91a93dd522add28403001956d2883333a5c9d2376fac9b16b671c8f13' 'results/GIT_SCOPED_RESULT.json' | sha256sum -c -
+          python3 - <<'PY'
+          import json
+          s=json.load(open('results/GIT_SCOPED_RESULT.json'))
+          assert s['cases']==50 and s['epochs']==193
+          assert s['E_values']==50*193*5*31
+          assert s['new_ivps']==0 and s['official_vigilode_dag']=='7/23'
+          assert s['max_E3_beta_005']>0
+          print('SCOPED_SOURCE_FREE_EVIDENCE_PASS; full original ZIP not replayed here')
+          PY

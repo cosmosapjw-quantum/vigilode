@@ -1,0 +1,23 @@
+# Prospective research contract: BASS21 LRS aligned-observer Lorentz boost (2026-10-31)
+
+## Time and identity
+This document is published to a new isolated research branch at a new commit **before** the first 50-case boost-map computation. The original source and earlier PR151 result were generated previously; this registration applies ONLY to the following novel aligned-boost experiment, not retroactively. Immutable parent PR151 HEAD `81aeea38e8a7b856286e3738de1c3611fafa6467`, nested full source archive SHA256 `6b1da36684dac122b53d98d8576d657bbf9ea4df5d038fcd6b5dbd332cb41124` (64,237,014 bytes). Source PR145 original E-spin2 array `HIGH_E_HIERARCHY_50x193.npz` SHA256 `b087a54bcd3bdbfaef5d91165634bf5c7590e6c43417112e4de0168327b3366b`, 50 source cases ×193 saved epochs; owner BASS original source belongs to `cosmosapjw-quantum/bass`, not VigilODE. No source replacements.
+
+## Scientific goal
+Carry the frozen original Bolometric LRS transported-screen spin-2 Q sky to a **co-located observer boosted along the original symmetry axis**, in strict observer-specific domain without new IVPs. Source Q is reconstructed with exactly the 12 original **even** E_l coefficients l=2,4,...,24 (BASS/PR145 convention E_l=k_l c_l); this truncation is named `Q_24`. It is NOT the original full angular field and high-l source tails are unresolved. No arbitrary boost direction, no generic screen-Wigner rotation or generic non-Bianchi PSTF hierarchy, no dynamical owner E_l, no Einstein/electron/thermal recalculation. Keep g=(-,+,+,+) and c as physical, beta=v/c dimensionless.
+
+Define input photon propagation cosine mu. For observer velocity +beta c along +LRS axis, mu'=(mu-beta)/(1-beta mu), inverse mu=(mu'+beta)/(1+beta mu'), Doppler D=nu'/nu=gamma(1-beta mu)=1/[gamma(1+beta mu')]. Bolometric screen Q'(mu')=D^4 Q_24(mu), U'=0, with no spin rotation for axis-aligned boost. This is **bolometric brightness**, not thermodynamic temperature or phase-space number; E'_l is observer-specific angular harmonic, NOT time-evolved source E_l. Polarization convention inherited.
+
+## Prespecified experiment
+Velocities `beta in {-0.05,-0.001,0,+0.001,+0.05}` (controlled counterfactual frame speeds, NOT source-measured bulk velocities). For all 50 cases ×193 epochs, project all spin-2 **l=2..32 including odd** to obtain `E'_l0(+)` and `B'_l0=0` by axial symmetry. Run two angular quadratures GL96/GL128 for integration on full mu' ∈[-1,1]; compare independent basis `P_l^2=(1-mu²)*Legendre_l''` against scipy.special.lpmv and a direct original-mu measure transform. Write full NPZ, meaningful CSV matched pair 25, endpoint 50, 193-epoch summaries and actual science plots. Record delta relative beta=0 and even/odd parity, source sign families s00/s04 separately.
+
+Predeclared elementary theorems:
+1. `E_l'(beta=0)=E_l` for even l≤24, and all odd modes 0; any l>24 zero modulo angular roundoff.
+2. `E_odd(-beta)=-E_odd(+beta)`, `E_even(-beta)=E_even(+beta)` for even original Q, with fixed basis.
+3. First-order differential map `Q'(mu')=Q(mu')+beta[(1-mu'^2)Q_mu-4mu'Q]+O(beta²)`; pure `c2 P_2^2` gives `c3'=-6beta c2/5` and `E3'/E2=-6beta/sqrt(7)+O(beta³)` for the pure-mode control. General spin2 first-order adjacent-coupling formula must be separately derived and CAS checked.
+4. Exact bolometric angular-norm identity `integral_-1^1 Q'(mu')² dmu'=integral_-1^1 D(mu)^6 Q24(mu)² dmu` by aberration Jacobian dmu'=D^-2 dmu.
+5. Inverse passive screen boost recovers the entire input Q24 angular field pointwise; **do not** apply inverse to truncated l≤32 reconstructed output and claim exact recovery.
+
+Acceptance: all source SHA pins, 50x193 cases, zero/new-velocity parity and rank mixing, boost inverse within floating error; GL96/GL128 and direct angular norm agreement absolute <1e-10 for actual source amplitudes, no tolerance relaxation. Physics and numerical errors differentiated. A maximal absolute difference does not imply high-l signals above source angular-grid uncertainty; s00 weak shear reported as unresolved. No claim observed CMB E/B, B≠0, all-frame exact PSTF transport, full coupled IVP or original quantum kinematics.
+
+Constraints: no new source IVPs, no main merge, no force push, no production promotion, AUTO_NEXT_NODE=false, official VigilODE 7/23, REI central 28/88 working 33/88, BASS CE1 9/15, successor admitted 0/12, official delta0, independent-author R6/C9 not available. One primary verification plus one scoped self-hostile check. Preserve original source inclusive archive recursively and create-only Library+Google Drive copy with raw readback; publish source-free Git and append-only research ledger row L-0203 if available. Do NOT backdate source/dataset into this registration.

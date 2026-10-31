@@ -1,0 +1,2 @@
+# Exact source input
+Full source-inclusive ZIP is preserved as a sandbox artifact in the originating conversation, SHA256 e8faa022fb6e567a97f17f73cca4571f071ffa37de5ea8e9597b0c4d98b088bc, size 77035898. Binary owner source is not in Git. Attempted Library + Google Drive upload returned container_session_expired, not a provider ACK. Download the full archive from the originating chat and run `python code/source_full_replay.py path/to/FULL_SOURCE.zip`.
