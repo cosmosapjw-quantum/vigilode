@@ -117,12 +117,18 @@ impl FrozenDiagonalAffine {
             || diagonal.len() != shift.len()
             || diagonal.iter().chain(shift.iter()).any(|v| !v.is_finite())
         {
-            return Err(fail(CertifiedFailureKind::Input, "invalid source dimension or coefficients"));
+            return Err(fail(
+                CertifiedFailureKind::Input,
+                "invalid source dimension or coefficients",
+            ));
         }
         // Every abs() is exact for a finite binary64 input.
         let q = diagonal.iter().fold(0.0_f64, |m, &v| m.max(v.abs()));
         if !(q < 1.0) {
-            return Err(fail(CertifiedFailureKind::Input, "represented source is not L2-contractive"));
+            return Err(fail(
+                CertifiedFailureKind::Input,
+                "represented source is not L2-contractive",
+            ));
         }
         Ok(Self { diagonal, shift, q })
     }
@@ -155,10 +161,16 @@ impl FrozenDiagonalAffine {
         work: &mut CertifiedWork,
     ) -> Result<Value, CertifiedFailure> {
         if state.len() != self.dimension() || state.iter().any(|v| !v.is_finite()) {
-            return Err(fail(CertifiedFailureKind::Input, "candidate is not a finite represented vector"));
+            return Err(fail(
+                CertifiedFailureKind::Input,
+                "candidate is not a finite represented vector",
+            ));
         }
         if work.map_attempted >= cfg.max_map_evaluations {
-            return Err(fail(CertifiedFailureKind::Budget, "source evaluation cap reached before dispatch"));
+            return Err(fail(
+                CertifiedFailureKind::Budget,
+                "source evaluation cap reached before dispatch",
+            ));
         }
         work.map_attempted += 1;
         let mut mapped = Vec::with_capacity(self.dimension());
@@ -177,7 +189,10 @@ impl FrozenDiagonalAffine {
             let mapped_float = (1.0 - lambda) * c + lambda * g_float;
             let residual_float = mapped_float - x;
             if !mapped_float.is_finite() || !residual_float.is_finite() {
-                return Err(fail(CertifiedFailureKind::Arithmetic, "floating callback overflow/nonfinite"));
+                return Err(fail(
+                    CertifiedFailureKind::Arithmetic,
+                    "floating callback overflow/nonfinite",
+                ));
             }
             // Independent enclosure of the ORIGINAL exact-real map, not of g_float.
             let a_real = Interval::point(a).map_err(arithmetic)?;
@@ -186,7 +201,13 @@ impl FrozenDiagonalAffine {
             let c_real = Interval::point(c).map_err(arithmetic)?;
             let exact_mapped = one_minus_lambda
                 .mul(c_real)
-                .and_then(|z| a_real.mul(x_real)?.add(b_real)?.mul(lambda_interval)?.add(z))
+                .and_then(|z| {
+                    a_real
+                        .mul(x_real)?
+                        .add(b_real)?
+                        .mul(lambda_interval)?
+                        .add(z)
+                })
                 .map_err(arithmetic)?;
             let exact_residual = exact_mapped.sub(x_real).map_err(arithmetic)?;
             let float_image_error = exact_mapped
@@ -245,7 +266,10 @@ impl FrozenDiagonalAffine {
                 .any(|&l| !l.is_finite() || l <= 0.0 || l > 1.0)
             || cfg.lambdas.windows(2).any(|w| w[0] >= w[1])
         {
-            out.failure = Some(fail(CertifiedFailureKind::Input, "invalid source-owned solver contract"));
+            out.failure = Some(fail(
+                CertifiedFailureKind::Input,
+                "invalid source-owned solver contract",
+            ));
             return out;
         }
         let mut seed = anchor.to_vec();
@@ -255,14 +279,20 @@ impl FrozenDiagonalAffine {
             let q_upper = match mul_up(lambda, self.q) {
                 Ok(v) if v < 1.0 => v,
                 _ => {
-                    out.failure = Some(fail(CertifiedFailureKind::Arithmetic, "source contraction upper reached unity"));
+                    out.failure = Some(fail(
+                        CertifiedFailureKind::Arithmetic,
+                        "source contraction upper reached unity",
+                    ));
                     return out;
                 }
             };
             let denom_lower = match sub_down(1.0, q_upper) {
                 Ok(v) if v > 0.0 => v,
                 _ => {
-                    out.failure = Some(fail(CertifiedFailureKind::Arithmetic, "nonpositive inverse contraction denominator"));
+                    out.failure = Some(fail(
+                        CertifiedFailureKind::Arithmetic,
+                        "nonpositive inverse contraction denominator",
+                    ));
                     return out;
                 }
             };
@@ -278,12 +308,21 @@ impl FrozenDiagonalAffine {
             let mut iterations = 0;
             while current.root_upper > cfg.root_error_target {
                 if iterations >= cfg.max_iterations_per_station {
-                    out.failure = Some(fail(CertifiedFailureKind::IterationLimit, "station iteration cap"));
+                    out.failure = Some(fail(
+                        CertifiedFailureKind::IterationLimit,
+                        "station iteration cap",
+                    ));
                     return out;
                 }
                 let mut chosen: Option<Value> = None;
-                if cfg.fast_first && let Some(old) = &previous {
-                    if cfg.max_map_evaluations.saturating_sub(out.work.map_attempted) < 2 {
+                if cfg.fast_first
+                    && let Some(old) = &previous
+                {
+                    if cfg
+                        .max_map_evaluations
+                        .saturating_sub(out.work.map_attempted)
+                        < 2
+                    {
                         out.work.budget_skips += 1;
                     } else {
                         let scale = current
@@ -293,7 +332,9 @@ impl FrozenDiagonalAffine {
                             .fold(0.0_f64, |s, &v| s.max(v.abs()));
                         let (mut numerator, mut denominator) = (0.0_f64, 0.0_f64);
                         if scale > 0.0 {
-                            for (&r, &r_old) in current.float_residual.iter().zip(&old.float_residual) {
+                            for (&r, &r_old) in
+                                current.float_residual.iter().zip(&old.float_residual)
+                            {
                                 let d = (r / scale) - (r_old / scale);
                                 numerator += (r / scale) * d;
                                 denominator += d * d;
@@ -309,14 +350,20 @@ impl FrozenDiagonalAffine {
                                 .collect();
                             if trial.iter().all(|v| v.is_finite()) {
                                 out.work.speculative_trials += 1;
-                                let candidate =
-                                    match self.evaluate(anchor, trial, lambda, denom_lower, cfg, &mut out.work) {
-                                        Ok(v) => v,
-                                        Err(e) => {
-                                            out.failure = Some(e);
-                                            return out;
-                                        }
-                                    };
+                                let candidate = match self.evaluate(
+                                    anchor,
+                                    trial,
+                                    lambda,
+                                    denom_lower,
+                                    cfg,
+                                    &mut out.work,
+                                ) {
+                                    Ok(v) => v,
+                                    Err(e) => {
+                                        out.failure = Some(e);
+                                        return out;
+                                    }
+                                };
                                 // Upper trial <= lower bound on q_upper * lower current.
                                 // The product is rounded DOWN so no unjustified admission.
                                 let threshold = match mul_down(q_upper, current.residual_lower) {
@@ -363,12 +410,11 @@ impl FrozenDiagonalAffine {
                     // that the lower enclosed residual of y does not refute
                     // the derived inexact contraction envelope. The final
                     // exact-root bound is independently certified at every x.
-                    let envelope = mul_up(q_upper, current.residual_upper)
-                        .and_then(|base| {
-                            add_up(1.0, q_upper)
-                                .and_then(|factor| mul_up(factor, current.float_image_error_upper))
-                                .and_then(|roundoff| add_up(base, roundoff))
-                        });
+                    let envelope = mul_up(q_upper, current.residual_upper).and_then(|base| {
+                        add_up(1.0, q_upper)
+                            .and_then(|factor| mul_up(factor, current.float_image_error_upper))
+                            .and_then(|roundoff| add_up(base, roundoff))
+                    });
                     match envelope {
                         Ok(v) if baseline.residual_lower <= v => {
                             out.work.rounded_picard_admissions += 1;
