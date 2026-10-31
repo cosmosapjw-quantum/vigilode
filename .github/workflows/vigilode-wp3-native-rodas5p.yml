@@ -1,0 +1,102 @@
+name: VigilODE WP3 original RODAS5P frozen cubic physical work precision (HOLD)
+on:
+  push:
+    branches:
+      - research/vigilode-wp3-certified-crossintegrator-20261031
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  original-native-rodas5p:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+      - name: Pin previous WP2 frozen source and prohibit solver/default mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          B=cf690ad5ec723052e9eb6f71335f7cb3b43607a6
+          git merge-base --is-ancestor "$B" HEAD
+          test "$(git rev-parse HEAD:Cargo.lock)" = 9bc1afe66b0ff77dc08f76ef9d0532fae81b0df5
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/coupled_inverse_be.rs)" = d78c5c5f6f476f2a5b1ea88628ed25daa6cfc482
+          test "$(git rev-parse HEAD:research/vigilode_wp2_achieved_reference_20261031/defect_certifier.py)" = 98cb7cafe36fecb8850d55e9c81638c299484ab7
+          while IFS= read -r p; do
+            case "$p" in
+              .github/workflows/vigilode-wp3-native-rodas5p.yml|\
+              crates/rodas5p-integrators/examples/vigilode_wp3_cubic_rodas5p.rs|\
+              research/vigilode_wp3_certified_crossintegrator_20261031/*|\
+              research/LEDGER.jsonl) ;;
+              *) echo "WP3_UNAUTHORIZED_CHANGED_PATH=$p" >&2; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$B" HEAD)
+          echo WP3_FROZEN_SOURCE_AND_LOCK=PASS
+      - uses: actions/download-artifact@v4
+        with:
+          name: vigilode-wp1-matched-achieved-research
+          run-id: 41181475675
+          repository: cosmosapjw-quantum/vigilode
+          github-token: ${{ github.token }}
+          path: wp1-frozen
+      - uses: actions/download-artifact@v4
+        with:
+          name: vigilode-wp2-rigorous-reference-defect
+          run-id: 41186122032
+          repository: cosmosapjw-quantum/vigilode
+          github-token: ${{ github.token }}
+          path: wp2-frozen
+      - name: Verify immutable input logs
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '9dae90079893170edddcf5cf8af193e53b43ab5bcf0c436cb81ce7aa0f8790b0  wp1-frozen/SWEEP.log' | sha256sum -c -
+          echo '56746487ac5c5c8702b53ef0ffd47694c040ab4e0adcfea1ec25aa3b8e9ba909  wp1-frozen/WP_SUMMARY.json' | sha256sum -c -
+          test -s wp2-frozen/CERTIFICATE.json
+          test -s wp2-frozen/DEFECT_CERTIFIER.py
+      - name: Test Rust original cubic source and JVP
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo +1.94.1 fetch --locked
+          cargo +1.94.1 test --locked --offline -p rodas5p-integrators --example vigilode_wp3_cubic_rodas5p -- --nocapture
+      - name: Run original native eight-stage RODAS5P full IVPs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p wp3-evidence
+          cargo +1.94.1 run --locked --offline --release -p rodas5p-integrators \
+            --example vigilode_wp3_cubic_rodas5p > wp3-evidence/NATIVE_RODAS5P.jsonl \
+            2> wp3-evidence/NATIVE_BUILD.log
+      - name: Independent exact binary-rational same-source achieved error audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp wp2-frozen/DEFECT_CERTIFIER.py wp1-frozen/DEFECT_CERTIFIER.py
+          python3 research/vigilode_wp3_certified_crossintegrator_20261031/verify_native_cubic_rodas5p.py \
+            --log wp1-frozen/SWEEP.log --summary wp1-frozen/WP_SUMMARY.json \
+            --certificate wp2-frozen/CERTIFICATE.json --reference-dir wp2-frozen \
+            --native wp3-evidence/NATIVE_RODAS5P.jsonl \
+            --out wp3-evidence/RODAS5P_WORK_PRECISION.json \
+            2>&1 | tee wp3-evidence/VERIFY.log
+      - name: Preserve native source identity and raw outputs including failures
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p wp3-evidence
+          git rev-parse HEAD > wp3-evidence/GITHUB_HEAD.txt
+          git rev-parse HEAD^{tree} > wp3-evidence/GITHUB_TREE.txt
+          git rev-parse HEAD:crates/vigilode-coupled/src/coupled_inverse_be.rs > wp3-evidence/ORIGINAL_COUPLED_SOURCE_BLOB.txt
+          cp crates/rodas5p-integrators/examples/vigilode_wp3_cubic_rodas5p.rs wp3-evidence/NATIVE_SOURCE.rs
+          (cd wp3-evidence && sha256sum * > CONTENT_SHA256.txt) || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vigilode-wp3-original-cubic-rodas5p
+          path: wp3-evidence/
+          retention-days: 90
