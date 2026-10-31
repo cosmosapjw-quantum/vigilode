@@ -30,7 +30,7 @@ jobs:
           test "$(git rev-parse HEAD:crates/vigilode-coupled/src/certified_fastfirst.rs)" = f53f27dfb993ded7d07bda595bfbd0eda368b998
           test "$(git rev-parse HEAD:crates/vigilode-coupled/src/rhs_homotopy.rs)" = 990103d9ab5d59b7c40f3ccd323f6ad52e504324
           test "$(git rev-parse HEAD:crates/vigilode-coupled/src/coupled_inverse_be.rs)" = 3655360db597f5a5a3e777a7b980b20fc77538f6
-          test "$(git rev-parse HEAD:crates/vigilode-coupled/tests/coupled_inverse_be_contracts.rs)" = 443e7839b45135874ffacc82d1be2c592d670746
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/tests/coupled_inverse_be_contracts.rs)" = a8633ca5c5373b6811a3fe0c556b18428a1fa566
           test "$(git rev-parse HEAD:crates/vigilode-coupled/examples/coupled_inverse_be_bench.rs)" = a41cddca0300e02674b2fd00705ecfc76427dab2
           while IFS= read -r p; do
             case "$p" in
