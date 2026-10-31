@@ -29,9 +29,9 @@ jobs:
           test "$(git rev-parse HEAD:crates/vigilode-coupled/src/nonlinear_be.rs)" = 0361de1b2887e2c2dcab0784456fa22ef1bb59fd
           test "$(git rev-parse HEAD:crates/vigilode-coupled/src/certified_fastfirst.rs)" = f53f27dfb993ded7d07bda595bfbd0eda368b998
           test "$(git rev-parse HEAD:crates/vigilode-coupled/src/rhs_homotopy.rs)" = 990103d9ab5d59b7c40f3ccd323f6ad52e504324
-          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/coupled_inverse_be.rs)" = 9998ebb52dc6cc465ed6a9b539fcfb1669bbb9be
-          test "$(git rev-parse HEAD:crates/vigilode-coupled/tests/coupled_inverse_be_contracts.rs)" = 190a0c73398eca1e614747a3ac41ccc95b0fabed
-          test "$(git rev-parse HEAD:crates/vigilode-coupled/examples/coupled_inverse_be_bench.rs)" = e3a5957aa5893efe4600fe36b70257c1c907576c
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/src/coupled_inverse_be.rs)" = 3655360db597f5a5a3e777a7b980b20fc77538f6
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/tests/coupled_inverse_be_contracts.rs)" = 443e7839b45135874ffacc82d1be2c592d670746
+          test "$(git rev-parse HEAD:crates/vigilode-coupled/examples/coupled_inverse_be_bench.rs)" = a41cddca0300e02674b2fd00705ecfc76427dab2
           while IFS= read -r p; do
             case "$p" in
               .github/workflows/vigilode-coupled-inverse-be.yml|\

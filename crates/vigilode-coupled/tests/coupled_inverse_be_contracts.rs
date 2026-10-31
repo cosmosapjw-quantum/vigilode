@@ -53,8 +53,8 @@ fn coupled_linear_two_mode_exact_eigenmodes_independent_oracle() {
     let r=s.run(Config{steps:128,horizon:t,physical_tolerance:0.006,..cfg(Order::FastFirst)});
     assert!(r.completed,"{:?}",r.failure);
     for p in &r.points {
-        let m=.075*(-k*p.time).exp();
-        let d=.025*(-(k+2.0*c)*p.time).exp();
+        let m=0.075*(-k*p.time).exp();
+        let d=0.025*(-(k+2.0*c)*p.time).exp();
         let exact=[m+d,m-d];
         for (v,t) in p.state.iter().zip(exact) {
             assert!((v-t).abs()<=p.physical_error_upper+2e-14);
