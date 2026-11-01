@@ -221,7 +221,28 @@ def json_value_citations(
             return out
         named_repo = value.get("repository", value.get("repo", value.get("source_repository")))
         if isinstance(named_repo, str):
-            repository = canonical_repository(named_repo) or "<invalid-repository>"
+            # Only the historical 2026-10-29 PR survey supplies the verified
+            # short GitHub repository names. Resolve these with exact file/key
+            # and validated PR/HEAD fields. Actual object reachability still
+            # MUST pass the original strict Git origin checks below.
+            survey_aliases = {
+                "vigilode": "cosmosapjw-quantum/vigilode",
+                "bass": "cosmosapjw-quantum/bass",
+                "rei_bianchi": "cosmosapjw-quantum/rei_bianchi",
+                "BASS_HE": "cosmosapjw-quantum/BASS_HE",
+                "bass_cr": "cosmosapjw-quantum/bass_cr",
+                "rec_bianchi": "cosmosapjw-quantum/rec_bianchi",
+                "WU088_HH": "cosmosapjw-quantum/WU088_HH",
+                "htt_base": "cosmosapjw-quantum/htt_base",
+            }
+            if (path == "research/prefix02_preconditioned_20261029/SOURCE_SURVEY.json"
+                    and "latest_prs" in key_path and named_repo in survey_aliases
+                    and isinstance(value.get("pr"), int)
+                    and isinstance(value.get("head"), str)
+                    and SHA_RE.fullmatch(value["head"])):
+                repository = survey_aliases[named_repo]
+            else:
+                repository = canonical_repository(named_repo) or "<invalid-repository>"
         for key, sub in value.items():
             child_repository = dependency_revision_repository(str(key), repository)
             out.extend(json_value_citations(path, sub, key_path + [str(key)], text, line_offset,
