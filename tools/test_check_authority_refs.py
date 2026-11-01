@@ -562,5 +562,45 @@ class AuthorityRefsTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 1, proc.stdout)
         self.assertIn("invalid-repository", proc.stdout)
 
+    def test_exact_historical_worktree_origin_binds_without_false_pass(self):
+        self.write("research/bassrei_p02_fixed_grid_20261021/results.json", json.dumps({
+            "inputs": {"repo": "/home/cosmosapjw/vigilode-bassrei",
+                       "git_head": "d66badadbdc368a6c87d2c5c988633ada8b1b250"}
+        }))
+        self.commit_all()
+        proc = self.check("--list")
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("repository=cosmosapjw-quantum/vigilode", proc.stdout)
+        self.assertIn("repository-unavailable", proc.stdout)
+
+    def test_unqualified_local_path_outside_exact_record_keeps_failing(self):
+        self.write("research/other/RECEIPT.json", json.dumps({
+            "inputs": {"repo": "/home/cosmosapjw/vigilode-bassrei",
+                       "git_head": "d66badadbdc368a6c87d2c5c988633ada8b1b250"}
+        }))
+        self.commit_all()
+        proc = self.check("--list")
+        self.assertEqual(proc.returncode, 1, proc.stdout)
+        self.assertIn("invalid-repository", proc.stdout)
+
+    def test_exact_compiler_version_record_is_not_local_git_authority(self):
+        self.write("research/production_audit_20261018/evidence/continuation_a07/manifest.json", json.dumps({
+            "rustc_vv": "rustc 1.94.1 (e408947bf 2026-03-25)\\ncommit-hash: e408947bfd200af42db322daf0fadfe7e26d3bd1\\n"
+        }))
+        self.commit_all()
+        proc = self.check("--list")
+        self.assertEqual(proc.returncode, 0, proc.stdout)
+        self.assertNotIn("e408947bfd200af42db322daf0fadfe7e26d3bd1",proc.stdout)
+
+    def test_exact_compiler_exemption_does_not_hide_other_commit(self):
+        self.write("research/production_audit_20261018/evidence/continuation_a07/manifest.json", json.dumps({
+            "rustc_vv": "rustc 1.94.1\\ncommit-hash: e408947bfd200af42db322daf0fadfe7e26d3bd1\\n",
+            "source_commit": ABSENT,
+        }))
+        self.commit_all()
+        proc = self.check("--list")
+        self.assertEqual(proc.returncode, 1, proc.stdout)
+        self.assertIn(ABSENT, proc.stdout)
+
 if __name__ == "__main__":
     unittest.main()
