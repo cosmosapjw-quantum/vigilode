@@ -1,0 +1,11 @@
+# REI IGM native VigilODE solver route comparison, source-scoped preregistration
+
+Frozen base: VigilODE PR175 `d99c3f06d46e233a7848e5b4562b4a59e2b5d900`; physical owner `rei_bianchi` PR342 source fixture and original PR332 (46,080 spatial cells, four photon groups, three shared neutral moments). Unchanged original 26event kernel SHA256 `579df3cc99987dcce9205166752570bdaf4c7cb3640c525be6da260d94b8e644`; PR348 original-owner common-parent result not an input to this reduced IVP experiment.
+
+Objective: use the existing RODAS5P family, no new integrator, to compare the **identical 15-state PR175 photon-only five-clock source** (original 46k-cell input collapsed to 3 original shared photon absorber moments) using identical two frozen/time-dependent forcing histories and initial data, same output samples and RODAS controller. This is solver cost feasibility, **not full original 26event thermal/OTS MPRK22/SDIRK2** and not original tick161 admission.
+
+Declared solver arms: `RJF_SEQ` sequential protected baseline; `RODAS_MF_FAST`; `RODAS_MF_GMRES_INTO`; `RODAS_MF_LS_WORKSPACE`. Each arm runs frozen and timeforced models, uses the exact existing PR175 Source, `h` and analytical JVP, `rtol=2e-11`, `atol=2e-14`, initial step 0.01, max step 0.1, 20,000 maximum attempts. All observed states must pass unchanged predeclared PR175 Radau budget `5e-10`, source and total conserved photon/nuclei/binding invariants; error and status preserved even if a solver fails. Native WorkCounters are the primary deterministic cost outcome, elapsed seconds `diagnostic_only` only. Reject any claims about additional hot-loop zero allocations unless separately instrumented. Results cannot promote VigilODE generic DAG node or REI canonical DAG without source-appropriate gates.
+
+Negative controls: invalid source fixture / source knot count, deliberately unrecognized route must error; no acceptance gate or tolerance changes; original failed `logT 2.1245050576368385e-4 >2e-4` held unchanged.
+
+Checkpoint policy: first commit and publish pure prereg + executable without results; then execute, save result hash, same-author adversarial review, post-receipt commit in same isolated draft branch. Never merge, force-push, mutate owner kernel or original VigilODE PR175 files.
