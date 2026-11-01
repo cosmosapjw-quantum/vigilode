@@ -195,16 +195,12 @@ def synthetic(name,n):
 
 def run_case(name,k,g,c,y,h,gamma,a,C,b,B,orig,mod):
     tau=float(h*gamma)
-    setup_start=time.perf_counter_ns()
     P=create_provider(k,g,c,y,tau,B)
-    setup_ns=time.perf_counter_ns()-setup_start
     n=len(y);U=np.zeros((8,n),float)
-    solve_begin=time.perf_counter_ns()
     for stage in range(8):
         r=mod.rhs_float(stage,U,np.asarray(y),k,g,c,a,C,tau,gamma)
         exact=P["solver"]([rr(x) for x in r])
         U[stage]=[float(v) for v in exact]
-    elapsed=time.perf_counter_ns()-solve_begin
     W_float=np.array([[float(t) for t in row] for row in P["W"]])
     protected,protected_end=mod.protected_sequential(y,k,g,c,a,C,b,tau,gamma,W_float)
     output=np.asarray(y)+b@U
@@ -230,7 +226,7 @@ def run_case(name,k,g,c,y,h,gamma,a,C,b,B,orig,mod):
         "full_first_step_endpoint_linf_vs_protected":difference,
         "full_first_step_endpoint_linf_vs_90digit":error,
         "exact_rational_first_step_endpoint_bound":bound["endpoint_bound_upper"],
-        "setup_ns_python_only":setup_ns,"8stage_solve_ns_python_only":elapsed,
+        "cost_proxy_not_wall_time":"A_path_edges_and_core_size_only",
         "native_wall_time":"NOT_RUN","newton_calls":0,"jvp_callbacks":0,
         "full_IVP_global_error":"NOT_RUN"
     }
