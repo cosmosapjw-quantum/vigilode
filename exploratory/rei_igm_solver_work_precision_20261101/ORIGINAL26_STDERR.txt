@@ -1,0 +1,122 @@
+
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.4.2 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+Traceback (most recent call last):  File "/home/cosmosapjw/vigilode-rei-igm-vperf-scoped-20261101/exploratory/rei_igm_solver_work_precision_20261101/original26_photon_lowrank_check.py", line 211, in <module>
+    if __name__=='__main__':main()
+  File "/home/cosmosapjw/vigilode-rei-igm-vperf-scoped-20261101/exploratory/rei_igm_solver_work_precision_20261101/original26_photon_lowrank_check.py", line 206, in main
+    result=compute(args.owner_root,args.lane,args.epsilon)
+  File "/home/cosmosapjw/vigilode-rei-igm-vperf-scoped-20261101/exploratory/rei_igm_solver_work_precision_20261101/original26_photon_lowrank_check.py", line 101, in compute
+    kernel=worker._kernel()
+  File "/home/cosmosapjw/vigilode-rei-owner-f05-readonly-20261101/stages/Bianchi_Reionization_Stage_P0_5_B2C2B0C_R2C_R1B_R2B_R2A_R2_R1A_R1_R1_R1_R1_R1_R1_UNCERTAINTY_QUALIFIED_FIRST_CANONICAL_INTERVAL_ADAPTIVE_HISTORY/analysis/attempt_worker.py", line 60, in _kernel
+    def _kernel():return _load('adaptive_history_sealed_interval_map',KERNEL_PATH)
+  File "/home/cosmosapjw/vigilode-rei-owner-f05-readonly-20261101/stages/Bianchi_Reionization_Stage_P0_5_B2C2B0C_R2C_R1B_R2B_R2A_R2_R1A_R1_R1_R1_R1_R1_R1_UNCERTAINTY_QUALIFIED_FIRST_CANONICAL_INTERVAL_ADAPTIVE_HISTORY/analysis/attempt_worker.py", line 16, in _load
+    module=importlib.util.module_from_spec(spec);sys.modules[name]=module;spec.loader.exec_module(module);return module
+  File "/home/cosmosapjw/vigilode-rei-owner-f05-readonly-20261101/stages/Bianchi_Reionization_Stage_P0_5_B2C2B0C_R2C_R1B_R2B_R2A_R2_R1A_R1_R1_R1_R1_R1_CROSS_SITE_STATE_FEEDBACK_REMAINDER_AND_TABLE_EVENT_LOCK/analysis/interval_discrete_map.py", line 27, in <module>
+    rim=_load('crosssite_reduced_interval_rhs',VALID/'analysis/reduced_interval_rhs.py')
+  File "/home/cosmosapjw/vigilode-rei-owner-f05-readonly-20261101/stages/Bianchi_Reionization_Stage_P0_5_B2C2B0C_R2C_R1B_R2B_R2A_R2_R1A_R1_R1_R1_R1_R1_CROSS_SITE_STATE_FEEDBACK_REMAINDER_AND_TABLE_EVENT_LOCK/analysis/interval_discrete_map.py", line 22, in _load
+    m=importlib.util.module_from_spec(s);sys.modules[name]=m;s.loader.exec_module(m);return m
+  File "/home/cosmosapjw/vigilode-rei-owner-f05-readonly-20261101/stages/Bianchi_Reionization_Stage_P0_5_B2C2B0C_R2C_R1B_R2B_R2A_R2_R1A_R1_VALIDATED_CONTINUOUS_BRANCH_DIFFERENTIAL_INCLUSION_ENCLOSURE_LOCK/analysis/reduced_interval_rhs.py", line 33, in <module>
+    import pandas as pd
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/pandas/__init__.py", line 46, in <module>
+    from pandas.core.api import (
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/pandas/core/api.py", line 27, in <module>
+    from pandas.core.arrays import Categorical
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/pandas/core/arrays/__init__.py", line 1, in <module>
+    from pandas.core.arrays.arrow import ArrowExtensionArray
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/pandas/core/arrays/arrow/__init__.py", line 5, in <module>
+    from pandas.core.arrays.arrow.array import ArrowExtensionArray
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/pandas/core/arrays/arrow/array.py", line 65, in <module>
+    from pandas.core import (
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/pandas/core/ops/__init__.py", line 9, in <module>
+    from pandas.core.ops.array_ops import (
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/pandas/core/ops/array_ops.py", line 55, in <module>
+    from pandas.core.computation import expressions
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/pandas/core/computation/expressions.py", line 22, in <module>
+    from pandas.core.computation.check import NUMEXPR_INSTALLED
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/pandas/core/computation/check.py", line 5, in <module>
+    ne = import_optional_dependency("numexpr", errors="warn")
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/pandas/compat/_optional.py", line 158, in import_optional_dependency
+    module = importlib.import_module(name)
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "/usr/lib/python3/dist-packages/numexpr/__init__.py", line 24, in <module>
+    from numexpr.interpreter import MAX_THREADS, use_vml, __BLOCK_SIZE1__
+Traceback (most recent call last):
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/numpy/core/_multiarray_umath.py", line 46, in __getattr__
+    raise ImportError(msg)
+ImportError:
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.4.2 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+
+
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.4.2 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+Traceback (most recent call last):  File "/home/cosmosapjw/vigilode-rei-igm-vperf-scoped-20261101/exploratory/rei_igm_solver_work_precision_20261101/original26_photon_lowrank_check.py", line 211, in <module>
+    if __name__=='__main__':main()
+  File "/home/cosmosapjw/vigilode-rei-igm-vperf-scoped-20261101/exploratory/rei_igm_solver_work_precision_20261101/original26_photon_lowrank_check.py", line 206, in main
+    result=compute(args.owner_root,args.lane,args.epsilon)
+  File "/home/cosmosapjw/vigilode-rei-igm-vperf-scoped-20261101/exploratory/rei_igm_solver_work_precision_20261101/original26_photon_lowrank_check.py", line 101, in compute
+    kernel=worker._kernel()
+  File "/home/cosmosapjw/vigilode-rei-owner-f05-readonly-20261101/stages/Bianchi_Reionization_Stage_P0_5_B2C2B0C_R2C_R1B_R2B_R2A_R2_R1A_R1_R1_R1_R1_R1_R1_UNCERTAINTY_QUALIFIED_FIRST_CANONICAL_INTERVAL_ADAPTIVE_HISTORY/analysis/attempt_worker.py", line 60, in _kernel
+    def _kernel():return _load('adaptive_history_sealed_interval_map',KERNEL_PATH)
+  File "/home/cosmosapjw/vigilode-rei-owner-f05-readonly-20261101/stages/Bianchi_Reionization_Stage_P0_5_B2C2B0C_R2C_R1B_R2B_R2A_R2_R1A_R1_R1_R1_R1_R1_R1_UNCERTAINTY_QUALIFIED_FIRST_CANONICAL_INTERVAL_ADAPTIVE_HISTORY/analysis/attempt_worker.py", line 16, in _load
+    module=importlib.util.module_from_spec(spec);sys.modules[name]=module;spec.loader.exec_module(module);return module
+  File "/home/cosmosapjw/vigilode-rei-owner-f05-readonly-20261101/stages/Bianchi_Reionization_Stage_P0_5_B2C2B0C_R2C_R1B_R2B_R2A_R2_R1A_R1_R1_R1_R1_R1_CROSS_SITE_STATE_FEEDBACK_REMAINDER_AND_TABLE_EVENT_LOCK/analysis/interval_discrete_map.py", line 27, in <module>
+    rim=_load('crosssite_reduced_interval_rhs',VALID/'analysis/reduced_interval_rhs.py')
+  File "/home/cosmosapjw/vigilode-rei-owner-f05-readonly-20261101/stages/Bianchi_Reionization_Stage_P0_5_B2C2B0C_R2C_R1B_R2B_R2A_R2_R1A_R1_R1_R1_R1_R1_CROSS_SITE_STATE_FEEDBACK_REMAINDER_AND_TABLE_EVENT_LOCK/analysis/interval_discrete_map.py", line 22, in _load
+    m=importlib.util.module_from_spec(s);sys.modules[name]=m;s.loader.exec_module(m);return m
+  File "/home/cosmosapjw/vigilode-rei-owner-f05-readonly-20261101/stages/Bianchi_Reionization_Stage_P0_5_B2C2B0C_R2C_R1B_R2B_R2A_R2_R1A_R1_VALIDATED_CONTINUOUS_BRANCH_DIFFERENTIAL_INCLUSION_ENCLOSURE_LOCK/analysis/reduced_interval_rhs.py", line 33, in <module>
+    import pandas as pd
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/pandas/__init__.py", line 46, in <module>
+    from pandas.core.api import (
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/pandas/core/api.py", line 27, in <module>
+    from pandas.core.arrays import Categorical
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/pandas/core/arrays/__init__.py", line 1, in <module>
+    from pandas.core.arrays.arrow import ArrowExtensionArray
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/pandas/core/arrays/arrow/__init__.py", line 5, in <module>
+    from pandas.core.arrays.arrow.array import ArrowExtensionArray
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/pandas/core/arrays/arrow/array.py", line 79, in <module>
+    from pandas.core.arrays.masked import BaseMaskedArray
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/pandas/core/arrays/masked.py", line 56, in <module>
+    from pandas.core import (
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/pandas/core/nanops.py", line 54, in <module>
+    bn = import_optional_dependency("bottleneck", errors="warn")
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/pandas/compat/_optional.py", line 158, in import_optional_dependency
+    module = importlib.import_module(name)
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "/usr/lib/python3/dist-packages/bottleneck/__init__.py", line 7, in <module>
+    from .move import (move_argmax, move_argmin, move_max, move_mean, move_median,
+Traceback (most recent call last):
+  File "/home/cosmosapjw/.local/lib/python3.12/site-packages/numpy/core/_multiarray_umath.py", line 46, in __getattr__
+    raise ImportError(msg)
+ImportError:
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.4.2 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.

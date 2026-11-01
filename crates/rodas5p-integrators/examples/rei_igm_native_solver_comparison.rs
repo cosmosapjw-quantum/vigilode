@@ -178,6 +178,7 @@ fn run()->Result<(serde_json::Value,bool),Box<dyn std::error::Error>>{
     Ok((serde_json::json!({"schema":"VIGILODE_REI_SAME_SOURCE_FOUR_ROUTE_WORK_PRECISION_V1",
         "original_source":"PR332/PR342 original 46,080-cell global photon moments; PR175 15-state five-clock photo-only reduced client",
         "owner26event_computation":"NOT_RUN","original_tick161":"HOLD",
+        "original_26event_saved_tick":"160/131072","canonical_REI_delta":0,"vigilode_dag_delta":0,
         "source_pr332_artifact_sha256":"83d94b5383ac7c1f36d89486e83bf8b4a56dd1993a25af3ae1f8fed06a695ba9",
         "source_pr342_artifact_sha256":"88f7e5bb1c6c44c0ca0c7f2ef2c81ac70098cc7ed773096868b1e7b4db25c035",
         "time_interpolation":"source-conditional five-site model, not continuous owner source",
@@ -200,6 +201,14 @@ fn main()->ExitCode {
     #[test]fn source_knot_provenance(){let a=Source::new();for k in 0..5 {let (j,w)=a.forcing(a.times[k],false);for g in 0..4 {assert!((j[g]-a.j[k][g]).abs()<1e-13*a.j[k][g].abs().max(1.));for s in 0..4 {assert!((w[g][s]-a.w[k][g][s]).abs()<3e-14);}}}}
     #[test]fn common_photon_and_nuclear_conservation(){let a=Source::new();let mut y=[0.;DIM];y[0..3].fill(1.);let mut d=[0.;DIM];a.rhs(0.42,&y,&mut d,false);let mut v=y;for i in 0..DIM {v[i]+=0.01*d[i];}let x=a.invariant(&v);assert!(x.iter().all(|z|z.abs()<2e-14),"{:?}",x);}
     #[test]fn analytic_15_state_jvp(){let a=Source::new();let mut y=[0.;DIM];y[0..3].copy_from_slice(&[0.9998,0.9995,1.000001]);let v:[f64;DIM]=std::array::from_fn(|i|(i as f64)/20.-0.3);let eps=1e-5;let yp:[f64;DIM]=std::array::from_fn(|i|y[i]+eps*v[i]);let ym:[f64;DIM]=std::array::from_fn(|i|y[i]-eps*v[i]);let mut dp=[0.;DIM];let mut dm=[0.;DIM];let mut jv=[0.;DIM];a.rhs(0.37,&yp,&mut dp,false);a.rhs(0.37,&ym,&mut dm,false);a.jvp(0.37,&y,&v,&mut jv,false);for i in 0..DIM {assert!(((dp[i]-dm[i])/(2.*eps)-jv[i]).abs()<2e-9,"{i}");}}
+    #[test]fn unsupported_solver_arm_rejected() {
+        let src=Arc::new(Source::new());
+        let data:serde_json::Value=serde_json::from_str(REFERENCE).unwrap();
+        let samples:Vec<f64>=data["samples_u"].as_array().unwrap().iter()
+            .map(|x|x.as_f64().unwrap()).collect();
+        let err=run_case(src,true,&samples,&data["frozen_states"],"UNSUPPORTED_SOLVER");
+        assert!(err.is_err(),"undeclared solver unexpectedly accepted");
+    }
     #[test]fn reference_owner_frozen_baseline_only(){
         let source=Arc::new(Source::new());
         let data:serde_json::Value=serde_json::from_str(REFERENCE).unwrap();
