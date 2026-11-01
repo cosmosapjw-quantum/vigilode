@@ -602,5 +602,16 @@ class AuthorityRefsTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 1, proc.stdout)
         self.assertIn(ABSENT, proc.stdout)
 
+    def test_compiler_vv_exception_does_not_hide_injected_second_authority(self):
+        self.write("research/production_audit_20261018/evidence/continuation_a07/manifest.json", json.dumps({
+            "rustc_vv": ("rustc 1.94.1\\n"
+                         "commit-hash: e408947bfd200af42db322daf0fadfe7e26d3bd1\\n"
+                         "source commit: " + ABSENT + "\\n")
+        }))
+        self.commit_all()
+        proc = self.check("--list")
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn(ABSENT, proc.stdout)
+
 if __name__ == "__main__":
     unittest.main()
