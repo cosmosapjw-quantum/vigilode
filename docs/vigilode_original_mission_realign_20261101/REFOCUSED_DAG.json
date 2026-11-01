@@ -1,0 +1,488 @@
+{
+  "core_milestones": [
+    {
+      "artifact": "same source/IC/BC/output grid, independent high-accuracy reference, confidence intervals and full JVP/RHS/alloc/failed costs",
+      "id": "M1",
+      "linked_nodes": [
+        "L-HARDWARE",
+        "PR-N01"
+      ],
+      "status": "READY_FOR_SCOPED_EXECUTION",
+      "stop": "No error-certified, source-matched common-runner measurement: no speedup claim",
+      "title": "Same-runner achieved-error work precision"
+    },
+    {
+      "artifact": "full original U-stage residual, causal q1/q2/Pexprb prefix, exact attempted-work, stage critical depth and order>=4.8 where appropriate",
+      "id": "M2",
+      "linked_nodes": [
+        "PR-N04",
+        "PR-N05"
+      ],
+      "status": "READY_FOR_SCOPED_EXECUTION",
+      "stop": "Any failure in raw original target or endpoint error: reject candidate/fallback without retuning tolerances",
+      "title": "Original eight-stage causal depth demonstrator"
+    },
+    {
+      "artifact": "frozen regime map, search overhead, adverse reentrant examples, honest transaction and epoch invalidation",
+      "id": "M3",
+      "linked_nodes": [
+        "PR-N06",
+        "R-ADAPT"
+      ],
+      "status": "BLOCKED_ON_M1_M2",
+      "stop": "No matched error or measured benefit: keep shadow and protected routing",
+      "title": "Scientific polyalgorithm decision"
+    },
+    {
+      "artifact": "strict code/CI/authority and original physical/accuracy/work budgets with distinct-author review",
+      "id": "M4",
+      "linked_nodes": [
+        "L-RELEASE",
+        "R-QUALIFY"
+      ],
+      "status": "BLOCKED_ON_EXISTING_Q_AND_RELEASE",
+      "stop": "Any unsatisfied release/authority gate: HOLD",
+      "title": "Scoped production promotion"
+    }
+  ],
+  "generic_holdout_cases": [
+    "stiff_nonlinear_robertson",
+    "oscillatory_prothero_robinson",
+    "nonnormal_linear_or_nonlinear",
+    "changing_stiffness_reentrant"
+  ],
+  "historical_progress": {
+    "authority_pending": 1,
+    "closed_scoped": 7,
+    "pending_local": 15,
+    "scope": "23 node LOCAL_DEVELOPMENT_PLAN; not all scientific achievement",
+    "total": 23
+  },
+  "historical_successor_claim": "0/12_UNCHANGED",
+  "maturity_dimensions": [
+    "scientific_derivation",
+    "runnable_source",
+    "source_bound_ivp",
+    "matched_error_validation",
+    "independent_review",
+    "production_gate"
+  ],
+  "no_auto_next_node": true,
+  "no_default_change": true,
+  "no_merge": true,
+  "no_retroactive_gate_change": true,
+  "no_tolerance_relaxation": true,
+  "nodes": [
+    {
+      "historical_release_dependencies": [],
+      "historical_status": "complete_scoped",
+      "id": "S-PRS",
+      "lane": "PRESERVE_CLOSED_SCOPED_NO_REPLAY",
+      "may_promote_production": false,
+      "next_executable_product": "Reuse existing closed evidence without new research gate.",
+      "priority": "CLOSED",
+      "research_start_dependencies": [],
+      "research_start_entitlement": "completed_historical",
+      "title": "Inspect PRs after PR91"
+    },
+    {
+      "historical_release_dependencies": [
+        "S-PRS"
+      ],
+      "historical_status": "complete_scoped",
+      "id": "R-STRUCT",
+      "lane": "PRESERVE_CLOSED_SCOPED_NO_REPLAY",
+      "may_promote_production": false,
+      "next_executable_product": "Reuse existing closed evidence without new research gate.",
+      "priority": "CLOSED",
+      "research_start_dependencies": [
+        "S-PRS"
+      ],
+      "research_start_entitlement": "completed_historical",
+      "title": "Charged structural attempts and full residual enclosure"
+    },
+    {
+      "historical_release_dependencies": [
+        "S-PRS"
+      ],
+      "historical_status": "complete_scoped",
+      "id": "R-HOMO",
+      "lane": "PRESERVE_CLOSED_SCOPED_NO_REPLAY",
+      "may_promote_production": false,
+      "next_executable_product": "Reuse existing closed evidence without new research gate.",
+      "priority": "CLOSED",
+      "research_start_dependencies": [
+        "S-PRS"
+      ],
+      "research_start_entitlement": "completed_historical",
+      "title": "Scalar homotopy and rational cubic inverse"
+    },
+    {
+      "historical_release_dependencies": [
+        "S-PRS"
+      ],
+      "historical_status": "complete_scoped",
+      "id": "R-ADAPT",
+      "lane": "PRESERVE_CLOSED_SCOPED_NO_REPLAY",
+      "may_promote_production": false,
+      "next_executable_product": "Reuse existing closed evidence without new research gate.",
+      "priority": "CLOSED",
+      "research_start_dependencies": [
+        "S-PRS"
+      ],
+      "research_start_entitlement": "completed_historical",
+      "title": "Exact return evidence and causal proposal reuse"
+    },
+    {
+      "historical_release_dependencies": [
+        "R-STRUCT",
+        "R-HOMO",
+        "R-ADAPT"
+      ],
+      "historical_status": "complete_scoped",
+      "id": "I-PROD",
+      "lane": "PRESERVE_CLOSED_SCOPED_NO_REPLAY",
+      "may_promote_production": false,
+      "next_executable_product": "Reuse existing closed evidence without new research gate.",
+      "priority": "CLOSED",
+      "research_start_dependencies": [
+        "R-STRUCT",
+        "R-HOMO",
+        "R-ADAPT"
+      ],
+      "research_start_entitlement": "completed_historical",
+      "title": "Explicit production configuration and callback permissions"
+    },
+    {
+      "historical_release_dependencies": [
+        "I-PROD"
+      ],
+      "historical_status": "complete_scoped",
+      "id": "V-CLOUD",
+      "lane": "PRESERVE_CLOSED_SCOPED_NO_REPLAY",
+      "may_promote_production": false,
+      "next_executable_product": "Reuse existing closed evidence without new research gate.",
+      "priority": "CLOSED",
+      "research_start_dependencies": [
+        "I-PROD"
+      ],
+      "research_start_entitlement": "completed_historical",
+      "title": "Native contracts, small paired benchmarks and profiles"
+    },
+    {
+      "historical_release_dependencies": [
+        "V-CLOUD"
+      ],
+      "historical_status": "complete_scoped",
+      "id": "P-PUSH",
+      "lane": "PRESERVE_CLOSED_SCOPED_NO_REPLAY",
+      "may_promote_production": false,
+      "next_executable_product": "Reuse existing closed evidence without new research gate.",
+      "priority": "CLOSED",
+      "research_start_dependencies": [
+        "V-CLOUD"
+      ],
+      "research_start_entitlement": "completed_historical",
+      "title": "Publish implementation, evidence and local handoff"
+    },
+    {
+      "historical_release_dependencies": [
+        "P-PUSH",
+        "Q-GIVENS",
+        "Q-FAIR-AB",
+        "Q-LINT",
+        "Q-NEGATIVE"
+      ],
+      "historical_status": "pending_local",
+      "id": "L-RELEASE",
+      "lane": "strict_release_qualification",
+      "may_promote_production": false,
+      "next_executable_product": "Run original strict release/test/toolchain contracts after Q blockers; do not mark PASS based on scoped native compile.",
+      "priority": "P3",
+      "research_start_dependencies": [
+        "P-PUSH",
+        "Q-GIVENS",
+        "Q-FAIR-AB",
+        "Q-LINT",
+        "Q-NEGATIVE"
+      ],
+      "research_start_entitlement": "scoped_only",
+      "title": "Pinned native release verification on the deployment machine"
+    },
+    {
+      "historical_release_dependencies": [
+        "L-RELEASE"
+      ],
+      "historical_status": "pending_local",
+      "id": "L-HARDWARE",
+      "lane": "scoped_matched_error_research",
+      "may_promote_production": false,
+      "next_executable_product": "One executable same-machine matched-achieved-global-error runner: protected R-JF, fused pexprb54s4 and RHS-only DOPRI5 on 4 frozen generic IVPs; report complete callbacks/work/time and regimes.",
+      "priority": "P0",
+      "research_start_dependencies": [
+        "P-PUSH"
+      ],
+      "research_start_entitlement": "scoped_only",
+      "title": "Matched-accuracy measurements on target hardware"
+    },
+    {
+      "historical_release_dependencies": [
+        "L-HARDWARE"
+      ],
+      "historical_status": "pending_local",
+      "id": "PR-N01",
+      "lane": "operator_cost_and_fused_phi",
+      "may_promote_production": false,
+      "next_executable_product": "Reuse fused phi-Chebyshev/Laguerre/Leja/Krylov code, select one source-independent operator-space cost comparison and build actual same-IVP work-precision table.",
+      "priority": "P1",
+      "research_start_dependencies": [
+        "R-STRUCT",
+        "R-HOMO"
+      ],
+      "research_start_entitlement": "scoped_only",
+      "title": "Fused polynomial actions, resolvent alternatives and small-Krylov cost"
+    },
+    {
+      "historical_release_dependencies": [
+        "L-RELEASE"
+      ],
+      "historical_status": "pending_local",
+      "id": "PR-N02",
+      "lane": "finite_step_nonlin_bounds",
+      "may_promote_production": false,
+      "next_executable_product": "Extend finite-step cubic proof to stated class, test original physical cap with exact arithmetic; no solver speed claim without actual native run.",
+      "priority": "P2",
+      "research_start_dependencies": [
+        "R-HOMO"
+      ],
+      "research_start_entitlement": "scoped_only",
+      "title": "Tighter finite-step cubic accuracy planning"
+    },
+    {
+      "historical_release_dependencies": [
+        "L-RELEASE"
+      ],
+      "historical_status": "pending_local",
+      "id": "PR-N03",
+      "lane": "physical_error_structural_adaptive",
+      "may_promote_production": false,
+      "next_executable_product": "Reconnect full-state residual source ownership to adaptive result, retain negative nonlinear source and all rejected attempts.",
+      "priority": "P2",
+      "research_start_dependencies": [
+        "R-STRUCT"
+      ],
+      "research_start_entitlement": "scoped_only",
+      "title": "Adaptive structural consumer with physical-error accounting"
+    },
+    {
+      "historical_release_dependencies": [
+        "L-RELEASE"
+      ],
+      "historical_status": "pending_local",
+      "id": "PR-N04",
+      "lane": "owned_original_stage_session",
+      "may_promote_production": false,
+      "next_executable_product": "Use existing native owned sessions; implement/test exact original U-stage clock/epoch/retained controller transfer and bounded failure on full generic IVP.",
+      "priority": "P0",
+      "research_start_dependencies": [
+        "R-HOMO",
+        "R-ADAPT"
+      ],
+      "research_start_entitlement": "scoped_only",
+      "title": "Owned session continuation and generic homotopy workspace"
+    },
+    {
+      "historical_release_dependencies": [
+        "L-HARDWARE",
+        "PR-N04"
+      ],
+      "historical_status": "pending_local",
+      "id": "PR-N05",
+      "lane": "causal_depth_and_parallel_span",
+      "may_promote_production": false,
+      "next_executable_product": "Measure genuine 8-stage serial critical path vs q1/q2 and causal prefix on same original stage target, then full IVP at original tolerances; certify residual and charged failures.",
+      "priority": "P0",
+      "research_start_dependencies": [
+        "R-STRUCT",
+        "R-ADAPT"
+      ],
+      "research_start_entitlement": "scoped_only",
+      "title": "Generic causal closure and parallel work/span selection"
+    },
+    {
+      "historical_release_dependencies": [
+        "L-HARDWARE",
+        "PR-N01"
+      ],
+      "historical_status": "pending_local",
+      "id": "PR-N06",
+      "lane": "reentrant_regime_switch_cost",
+      "may_promote_production": false,
+      "next_executable_product": "Use real changed-regime and reentrant native IVPs to test residence policy against RHS-only and guarded opt-in, including actual rejected work.",
+      "priority": "P1",
+      "research_start_dependencies": [
+        "R-ADAPT"
+      ],
+      "research_start_entitlement": "scoped_only",
+      "title": "Temporal residence and exploration-loss theory"
+    },
+    {
+      "historical_release_dependencies": [
+        "L-RELEASE",
+        "L-HARDWARE",
+        "Q-LEDGER",
+        "Q-BENCH",
+        "Q-API"
+      ],
+      "historical_status": "pending_local",
+      "id": "R-QUALIFY",
+      "lane": "final_scoped_production_decision",
+      "may_promote_production": false,
+      "next_executable_product": "After full authority, fixed tolerance and matched-error receipt, evaluate scoped release; no automatic merge or default switch.",
+      "priority": "P3",
+      "research_start_dependencies": [
+        "L-RELEASE",
+        "L-HARDWARE",
+        "Q-LEDGER",
+        "Q-BENCH",
+        "Q-API"
+      ],
+      "research_start_entitlement": "scoped_only",
+      "title": "Scoped release qualification for the actual client"
+    },
+    {
+      "historical_release_dependencies": [
+        "P-PUSH"
+      ],
+      "historical_status": "registration_repaired_full_authority_pending",
+      "id": "Q-LEDGER",
+      "lane": "global_historical_authority_debt",
+      "may_promote_production": false,
+      "next_executable_product": "Recover exact original historical Git objects and preserve missing post-import CI receipts; global authority strict gate only for final release, not experimental math.",
+      "priority": "P2",
+      "research_start_dependencies": [
+        "P-PUSH"
+      ],
+      "research_start_entitlement": "scoped_only",
+      "title": "Research registration and published-reference qualification"
+    },
+    {
+      "historical_release_dependencies": [
+        "P-PUSH"
+      ],
+      "historical_status": "pending_local",
+      "id": "Q-GIVENS",
+      "lane": "portable_true_residual_repair",
+      "may_promote_production": false,
+      "next_executable_product": "Preserve failing historical true residual fixture and repair portable Givens acceptance independently.",
+      "priority": "P1",
+      "research_start_dependencies": [
+        "P-PUSH"
+      ],
+      "research_start_entitlement": "scoped_only",
+      "title": "Portable Givens residual fixture"
+    },
+    {
+      "historical_release_dependencies": [
+        "P-PUSH"
+      ],
+      "historical_status": "pending_local",
+      "id": "Q-FAIR-AB",
+      "lane": "complete_attempted_work",
+      "may_promote_production": false,
+      "next_executable_product": "Prove and test total attempted + rejected + diagnostic work with original counters.",
+      "priority": "P1",
+      "research_start_dependencies": [
+        "P-PUSH"
+      ],
+      "research_start_entitlement": "scoped_only",
+      "title": "Attempted, admitted and refused work"
+    },
+    {
+      "historical_release_dependencies": [
+        "P-PUSH"
+      ],
+      "historical_status": "pending_local",
+      "id": "Q-BENCH",
+      "lane": "external_comparator_qualification",
+      "may_promote_production": false,
+      "next_executable_product": "Build version-locked external comparator in one verified local toolchain, no benchmark claims until source identities match.",
+      "priority": "P2",
+      "research_start_dependencies": [
+        "P-PUSH"
+      ],
+      "research_start_entitlement": "scoped_only",
+      "title": "Qualified external comparator build"
+    },
+    {
+      "historical_release_dependencies": [
+        "P-PUSH"
+      ],
+      "historical_status": "pending_local",
+      "id": "Q-LINT",
+      "lane": "lint_before_promotion",
+      "may_promote_production": false,
+      "next_executable_product": "Repair confirmed source-touched lints in isolated branch; never mass suppress.",
+      "priority": "P2",
+      "research_start_dependencies": [
+        "P-PUSH"
+      ],
+      "research_start_entitlement": "scoped_only",
+      "title": "Broader integrator Clippy"
+    },
+    {
+      "historical_release_dependencies": [
+        "P-PUSH"
+      ],
+      "historical_status": "pending_local",
+      "id": "Q-API",
+      "lane": "public_api_compatibility",
+      "may_promote_production": false,
+      "next_executable_product": "Exercise original public API compatibility against exact base before any ABI migration.",
+      "priority": "P2",
+      "research_start_dependencies": [
+        "P-PUSH"
+      ],
+      "research_start_entitlement": "scoped_only",
+      "title": "Public SwitchingConfig compatibility"
+    },
+    {
+      "historical_release_dependencies": [
+        "P-PUSH"
+      ],
+      "historical_status": "pending_local",
+      "id": "Q-NEGATIVE",
+      "lane": "negative_control_unchanged",
+      "may_promote_production": false,
+      "next_executable_product": "Run original ignored tests and preserve 15/7 > 1.3 negative performance and source/epoch counterexamples.",
+      "priority": "P1",
+      "research_start_dependencies": [
+        "P-PUSH"
+      ],
+      "research_start_entitlement": "scoped_only",
+      "title": "Retained negative evidence and ignored suite"
+    }
+  ],
+  "official_progress_claim": "7/23_UNCHANGED",
+  "original_23_nodes_unchanged": true,
+  "original_g0": {
+    "comparison": "full generic IVPs on same input/reference/grid/hardware including all refused work",
+    "critical_depth_max": 8,
+    "critical_depth_p95_target": 6,
+    "explicit_jacobian_builds_fast_lane": 0,
+    "fallback_fraction_max": 0.1,
+    "global_order_min": 4.8,
+    "newton_iterations_fast_lane": 0,
+    "preferred_fast_lane": "causal parallel derivative/matrix/Newton-free; selective JVP/AD alternative",
+    "protected_baseline": "RJF_SEQ",
+    "relative_accepted_steps_max": 1.2,
+    "same_error_median_speedup_min": 1.15
+  },
+  "permission_rule": "research_start_dependencies permit only isolated exploratory science, never production; historical_release_dependencies remain strictly necessary for production qualification",
+  "production": "HOLD",
+  "schema": "vigilode.original_g0_science_first_reconciled_dag.v1",
+  "source_plan": "research/polyalgorithm_alternatives_20261028/LOCAL_DEVELOPMENT_PLAN.json",
+  "source_plan_sha256": "8a05bdf42d999f724662d64b5fc9a36bc5bb0caa3a9f5022b7333dcc914bc3f1",
+  "source_scope": "VigilODE standalone generic stiff and oscillatory ODE numerical algorithm",
+  "type": "NONCANONICAL_EXECUTION_OVERLAY_WITH_LOCKED_HISTORICAL_NODES"
+}
