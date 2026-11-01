@@ -495,6 +495,46 @@ fn study(src: &Snapshot, mode: &str) -> Result<serde_json::Value, String> {
       "vigilode_official_dag":"7/23","rei_central_dag":"28/88"
     }))
 }
+/// Source-owned original 46k photon fields exported as a read-only
+/// Rust-to-Rust physics-stage interface. Never a full 26-event time map.
+#[derive(Clone, Debug)]
+pub(crate) struct NativeOriginalPhotoStage {
+    pub n: usize,
+    pub neutral: Vec<f64>,
+    pub photo: Vec<f64>,
+    pub primary_heat_erg_per_s: Vec<f64>,
+    pub source_heii_trace_log10: f64,
+    pub source_budget_relative: f64,
+}
+
+/// Constructs all photon source terms entirely with native Rust arithmetic
+/// from the previously locked real original 26-event F05 input.
+pub(crate) fn source_locked_photo_stage(data: &[u8]) -> Result<NativeOriginalPhotoStage, String> {
+    let src = fixture(data, Some(SOURCE_RAW_SHA))?;
+    if src.n != ORIGINAL_N {
+        return Err("NOT_ORIGINAL_46080_PHOTON_SOURCE".into());
+    }
+    let c = coeff(&src)?;
+    let (photo, heat) = source_fields(&src, &c);
+    let (included, heat_included, budget) = check_source(&src, &c, &photo, &heat);
+    if included.iter().any(|x| *x != ORIGINAL_N) || heat_included != ORIGINAL_N {
+        return Err(format!(
+            "ORIGINAL_NATIVE_PHOTON_SOURCE_INTERVAL_EXCLUSION:{included:?}/{heat_included}"
+        ));
+    }
+    if !(budget.is_finite() && budget < 1e-12 && c.heii_log10.is_finite()) {
+        return Err("ORIGINAL_PHOTON_BUDGET_OR_EXTENDED_TRACE_FAILURE".into());
+    }
+    Ok(NativeOriginalPhotoStage {
+        n: src.n,
+        neutral: src.populations,
+        photo,
+        primary_heat_erg_per_s: heat,
+        source_heii_trace_log10: c.heii_log10,
+        source_budget_relative: budget,
+    })
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let raw_sha = SOURCE_RAW_SHA;
     let mut b = Vec::new();
