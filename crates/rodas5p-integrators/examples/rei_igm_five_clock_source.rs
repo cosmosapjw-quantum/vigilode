@@ -153,7 +153,12 @@ fn run()->Result<(serde_json::Value,bool),Box<dyn std::error::Error>>{
     });
     Ok((payload,maxerr<=budget))
 }
+#[path = "rei_igm_five_clock_source/nonauton_study.rs"]
+mod nonauton_study;
 fn main()->ExitCode {
+    if std::env::args().any(|a|a=="--nonauton-study") {
+        return nonauton_study::cli();
+    }
     match run(){
         Ok((p,pass))=>{
             let mut out=std::io::stdout().lock();
