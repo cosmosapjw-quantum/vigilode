@@ -137,8 +137,8 @@ fn main()->ExitCode {
     #[test]fn source_jvp_matches_symmetric_difference(){
         let x=FrozenPhoto::original();let y=[0.9999,1.0001,0.99999,0.,0.,0.];
         let v=[0.2,-0.7,0.1,0.,0.,0.];let mut direct=[0.;6];x.jvp(&y,&v,&mut direct);
-        let eps=1e-5;let yp=std::array::from_fn(|i| y[i]+eps*v[i]);
-        let ym=std::array::from_fn(|i| y[i]-eps*v[i]);
+        let eps=1e-5;let yp: [f64;6]=std::array::from_fn(|i| y[i]+eps*v[i]);
+        let ym: [f64;6]=std::array::from_fn(|i| y[i]-eps*v[i]);
         let mut rp=[0.;6];let mut rm=[0.;6];x.rhs(&yp,&mut rp);x.rhs(&ym,&mut rm);
         for i in 0..6 {assert!(((rp[i]-rm[i])/(2.*eps)-direct[i]).abs()<2e-10,"{i}");}
     }
