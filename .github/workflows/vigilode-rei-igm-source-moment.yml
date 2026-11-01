@@ -1,0 +1,50 @@
+name: vigilode-original-rei-igm-moment-client
+on:
+  push:
+    branches: [research/vigilode-rei-igm-source-moment-native-20261101]
+  pull_request:
+    paths:
+      - 'exploratory/rei_igm_original_moment_client_20261101/**'
+      - 'crates/rodas5p-integrators/examples/rei_igm_source_moments.rs'
+      - '.github/workflows/vigilode-rei-igm-source-moment.yml'
+permissions:
+  contents: read
+jobs:
+  actual-original-source-scoped-physics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CARGO_BUILD_JOBS: '2'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install independent SciPy observer for frozen source moment physics
+        run: python -m pip install numpy==2.3.5 scipy==1.17.0
+      - name: Verify original source group inputs and independent dynamical response
+        run: |
+          cd exploratory/rei_igm_original_moment_client_20261101
+          python ci_reference.py
+          python -m unittest discover -s tests -v
+          python -O -m unittest discover -s tests -v
+      - name: Execute existing native matrix-free VigilODE RODAS5P on original REI physical source
+        run: |
+          mkdir -p science
+          cargo run --locked --release -p rodas5p-integrators --no-default-features --example rei_igm_source_moments > science/VIGILODE_REI_NATIVE_PHYSICAL.json
+      - name: Independently compare native physical states to Radau and DOP853
+        run: |
+          cd exploratory/rei_igm_original_moment_client_20261101
+          python verify_native.py "$GITHUB_WORKSPACE/science/VIGILODE_REI_NATIVE_PHYSICAL.json"
+      - name: Execute native Rust analytic source JVP invariants
+        run: cargo test --locked --release -p rodas5p-integrators --no-default-features --example rei_igm_source_moments -- --nocapture
+      - name: Preserve real source-conditional solver science and verification
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vigilode-original-rei-igm-3moment-native-science
+          path: science/
+          if-no-files-found: warn
