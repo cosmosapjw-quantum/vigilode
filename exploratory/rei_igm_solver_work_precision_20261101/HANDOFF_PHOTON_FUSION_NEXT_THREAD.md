@@ -137,3 +137,81 @@ NEXT_SCIENCE_ACTION: do an **owner-controlled versioned opt-in** of this exact t
 BACKUP_LOCATION=/home/cosmosapjw/archives/vigilode_rei_igm_photon_fusion_20261101/
 AUTHORITATIVE_GITHUB_PR=https://github.com/cosmosapjw-quantum/vigilode/pull/183
 ```
+
+
+---
+
+## FINAL SUPERSEDING HANDOFF: 3 original F05 shape lanes, 12 ABBA arms (2026-11-01)
+
+```text
+$physmath-research-loop $scispace $exa $wolfram $remote-desktop-commander
+PROJECT=cosmosapjw-quantum/vigilode
+CURRENT_PR=183
+BRANCH=research/vigilode-rei-igm-photon-fusion-20261101
+READ_LIVE_HEAD_FIRST=true
+TRACK=VIGILODE_METHOD_OPTIMIZATION_FOR_ORIGINAL_REI_IGM_F05
+FROZEN_REI_OWNER_HEAD=fcc90939b6b7cc842fae65d5a0ffbb69a3ec3120
+FROZEN_SOURCE_SHA256=a861278201313c55e08ba6323b5c1d2ad97bf5765f429807b4eba0a1c2465d0b
+FROZEN_STATE_SHA256=cc031a04f5b7b13ccb9ffddf95ec0ced4a9274a9ab999a9e7e3508a5161edb01
+FROZEN_KERNEL_SHA256=579df3cc99987dcce9205166752570bdaf4c7cb3640c525be6da260d94b8e644
+PUBLISHED_PREREGISTRATION_HEAD=92a13a6cfe1f8017d29fa674f5aa01d2c47f974b
+ORIGINAL_ACCEPTED_TICK=160/131072
+ORIGINAL_26EVENT_CELLS=46080
+ORIGINAL_PHOTON_GROUPS=4
+ORIGINAL_SHAPE_LANES=3
+ORIGINAL_ABBA_ARMS=12
+ORIGINAL_FULL_HALF1_HALF2_MAPS=36
+ALL_ORIGINAL_14_LEDGERS=12/12_PASS
+ALL_ORIGINAL_TABLE_EVENTS=ZERO
+ALL_ABBA_STATES_BYTE_IDENTICAL=true
+ORIGINAL_ABBA_STATE_SIGNATURE=fe260af02b4ad84ae4c90ed0066e42713ad056a7582d33b0708e5eb6d4b6c6cc
+ORIGINAL_THERMAL_RHS_CALLS_PER_ARM=90
+SHADOW_THERMAL_RHS_CALLS_PER_ARM=72
+PRIMARY_DIAGNOSTIC_SPEEDUP=1.060808683576092
+RECOMB_DIAGNOSTIC_SPEEDUP=1.130623347567855
+SHIELD_DIAGNOSTIC_SPEEDUP=1.0808032625250452
+MEDIAN_LANE_SPEEDUP_DESCRIPTIVE_ONLY=1.0808032625250452
+HISTORICAL_V1_LOGT_UPPER=2.1245050576368385e-4
+HISTORICAL_2eMinus4_GATE=FAIL_RETAINED
+ORIGINAL_TICK161=NOT_ACCEPTED
+OWNER_PR356=V2_VERSIONED_SOURCE_SCOPED_ONLY
+VIGILODE_DAG=7/23
+VIGILODE_SUCCESSOR_DAG=0/12
+REI_CENTRAL_DAG=28/88
+REI_WORKING_DAG=33/88
+REI_FAST_DAG=4/7
+CANONICAL_DELTA=0
+PYTHON_NORMAL_TESTS=20/20_PASS
+PYTHON_OPTIMIZED_TESTS=20/20_PASS
+NATIVE_REUSED_NONAUTON_RUST_TESTS=6/6_PASS
+NATIVE_FOUR_ROUTE_RUST_TESTS=5/5_PASS
+DISTINCT_AUTHOR_REVIEW=NOT_RUN
+PRODUCTION=HOLD
+NO_MERGE=true
+NO_FORCE_PUSH=true
+NO_DEFAULT_CHANGE=true
+NO_TOLERANCE_RELAXATION=true
+AUTO_NEXT_NODE=false
+```
+
+PRIMARY_RESEARCH_ARTIFACT:
+`exploratory/rei_igm_solver_work_precision_20261101/THREE_LANE_ORIGINAL26_SCIENCE_AND_REVIEW_KO.md`
+RAW_REAL_PHYSICAL_TRIALS:
+`exploratory/rei_igm_solver_work_precision_20261101/ORIGINAL26_ROOT_ABBA_{PRIMARY,RECOMB,SHIELD}_3LANE.json`
+CROSS_LANE_EVIDENCE:
+`exploratory/rei_igm_solver_work_precision_20261101/ORIGINAL26_THREE_LANE_AUDIT.json`
+SOURCE_SCRIPTS:
+`original26_root_duplicate_eval_shadow.py`, `analyze_original26_three_lane.py`
+PREREGISTERED_BEFORE_EXPERIMENT:
+`PREREGISTRATION_3LANE_THERMAL_ROOT_20261101.md`
+
+```bash
+cd /home/cosmosapjw/worktrees/vigilode-rei-igm-photon-fusion-20261101
+python3 -m unittest discover -s exploratory/rei_igm_solver_work_precision_20261101/tests -v
+python3 -O -m unittest discover -s exploratory/rei_igm_solver_work_precision_20261101/tests -v
+cargo test --offline --locked -p rodas5p-integrators --example rei_igm_five_clock_source
+cargo test --offline --locked -p rodas5p-integrators --example rei_igm_native_solver_comparison
+# DO NOT treat new source-owner V2 shadow as official tick161.
+```
+
+DECISION: Scoped source-native original 26-event thermal-root optimization is implementation-verified on all three original shape lanes and all 12 ABBA arms. Production and official REI acceptance stay HOLD. **No new standalone photon atlases.** The smallest next physical research unit belongs to original REI source owner: versioned opt-in same-root optimization tested with pinned runtime and extreme bracket-expansion negative case, 0–64 predecessor identity, all 14 ledgers/events, then a separately authorized source-owner release decision. Keep VigilODE's default and original source owner unchanged. Do not repeat already completed three-lane work without a new source/version or observed defect. See GitHub PR #183 and read live HEAD/CI first.

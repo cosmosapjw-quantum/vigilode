@@ -20,7 +20,11 @@ import numpy as np
 import original26_photon_lowrank_check as lock
 
 REFERENCE_FAIL=2.1245050576368385e-4
-LANE="LOCAL_NEUTRAL_HAZARD_PRIMARY"
+LANES=(
+    "LOCAL_NEUTRAL_HAZARD_PRIMARY",
+    "RECOMBINATION_WEIGHTED_AUDITOR",
+    "SCRIPT_SELF_SHIELDING_AUDITOR",
+)
 
 
 def make_shadow_root(m):
@@ -78,7 +82,9 @@ def result_signature(steps):
     return sha.hexdigest()
 
 
-def run(owner:Path,out:Path):
+def run(owner:Path,out:Path,lane:str="LOCAL_NEUTRAL_HAZARD_PRIMARY"):
+    if lane not in LANES:
+        raise ValueError("UNRECOGNIZED_ORIGINAL_SOURCE_LANE")
     out.parent.mkdir(parents=True,exist_ok=True)
     state={"schema":"VIGILODE_ORIGINAL26_THERMAL_ROOT_BRACKET_DEDUP_SHADOW_V1",
            "source_owner":"cosmosapjw-quantum/rei_bianchi",
@@ -86,6 +92,7 @@ def run(owner:Path,out:Path):
            "kernel_sha256":lock.KERNEL_SHA,"archive_sha256":lock.SOURCE_SHA,
            "parent_sha256":lock.STATE_SHA,"accepted_tick":"160/131072",
            "original_nodes":lock.N,"original_groups":4,
+           "original_shape_lane":lane,"declared_original_lanes":list(LANES),
            "changed_source_on_disk":False,"published_26_event_owner":False,
            "full_allX_certification":False,"production":"HOLD",
            "status":"RUNNING","canonical_delta":0}
@@ -100,10 +107,10 @@ def run(owner:Path,out:Path):
     m=worker._kernel()
     if f05.sha(worker.KERNEL_PATH)!=lock.KERNEL_SHA:
         raise ArithmeticError("ORIGINAL_KERNEL_DRIFT")
-    decoded,source=edge.source_state(owner/edge.REL_STAGE,LANE,worker.state_io)
+    decoded,source=edge.source_state(owner/edge.REL_STAGE,lane,worker.state_io)
     if source["archive_sha256"]!=lock.SOURCE_SHA or source["accepted_array_sha256"]!=lock.STATE_SHA:
         raise ArithmeticError("ORIGINAL_PARENT_DRIFT")
-    base,_,_,nh,nhe=worker._context(m,LANE)
+    base,_,_,nh,nhe=worker._context(m,lane)
     model=m.rim.ReducedIntervalModel.from_repo(owner)
     duration=float(base.forcing.duration_seconds(0))
     start=duration*160/131072;stop=duration*161/131072;mid=(start+stop)/2
@@ -197,6 +204,7 @@ if __name__=="__main__":
     a=argparse.ArgumentParser()
     a.add_argument("--owner",type=Path,required=True)
     a.add_argument("--out",type=Path,required=True)
+    a.add_argument("--lane",choices=LANES,default="LOCAL_NEUTRAL_HAZARD_PRIMARY")
     args=a.parse_args()
-    x=run(args.owner.resolve(),args.out.resolve())
+    x=run(args.owner.resolve(),args.out.resolve(),args.lane)
     raise SystemExit(0 if x["status"]=="SCOPED_SHADOW_PASS" else 2)
