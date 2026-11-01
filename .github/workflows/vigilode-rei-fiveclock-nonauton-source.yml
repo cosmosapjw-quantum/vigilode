@@ -1,0 +1,87 @@
+name: vigilode-rei-fiveclock-nonauton-original-source
+on:
+  push:
+    branches:
+      - research/vigilode-rei-fiveclock-nonauton-ft-dopri-20261101
+  pull_request:
+    paths:
+      - 'crates/rodas5p-integrators/examples/rei_igm_five_clock_source.rs'
+      - 'crates/rodas5p-integrators/examples/rei_igm_five_clock_source/**'
+      - 'exploratory/rei_igm_nonauton_method_20261101/**'
+      - '.github/workflows/vigilode-rei-fiveclock-nonauton-source.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  source-locked-nonautonomous-physics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CARGO_BUILD_JOBS: '2'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      CARGO_INCREMENTAL: '0'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Auditor compares the new example to exact immutable PR180 source.
+          # One shallow checkout commit cannot resolve that parent identity.
+          fetch-depth: 32
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Freeze original REI owner source and independent reference bytes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          files={
+          'exploratory/rei_igm_timeforced_photoionization_20261101/five_clock_pr342_original_source.json':'9a10ccaab0dbdb9b508021f115d668973920fb6699dc54e4c3be61f17ee10eb6',
+          'exploratory/rei_igm_timeforced_photoionization_20261101/reference_trajectory_15state.json':'5a609e29d8c17ffece1a16c8c396a4619183761f9facb5452f59b706f70aea20'
+          }
+          for path,digest in files.items():
+              actual=hashlib.sha256(Path(path).read_bytes()).hexdigest()
+              if actual!=digest:
+                  raise SystemExit(f"FROZEN_REI_SOURCE_OR_REFERENCE_CHANGED:{path}:{actual}")
+          print("FROZEN_ORIGINAL_REI_15STATE_SOURCE_AND_REFERENCE_BYTE_IDENTICAL")
+          PY
+      - name: Check new scoped Rust module formatting without altering frozen original client
+        run: rustfmt --edition 2024 --check crates/rodas5p-integrators/examples/rei_igm_five_clock_source/nonauton_study.rs
+      - name: Original source five-clock Rust and derivative tests
+        run: |
+          set -euo pipefail
+          OUT=exploratory/rei_igm_nonauton_method_20261101
+          cargo test --locked --release -p rodas5p-integrators --no-default-features --example rei_igm_five_clock_source -- --nocapture 2>&1 | tee "$OUT/LOCAL_TESTS.log"
+      - name: Execute real original REI source eight method trials and independent negative control
+        run: |
+          cargo run --locked --release -q -p rodas5p-integrators --no-default-features --example rei_igm_five_clock_source -- --nonauton-study > exploratory/rei_igm_nonauton_method_20261101/REAL_SOURCE_NONAUTON_METHODS.json
+      - name: Replay unchanged original REI source client
+        run: |
+          cargo run --locked --release -q -p rodas5p-integrators --no-default-features --example rei_igm_five_clock_source > exploratory/rei_igm_nonauton_method_20261101/BASELINE_DEFAULT_REPLAY.json
+      - name: Verify every source-native physical state and actual method work, not only printed extrema
+        run: |
+          python exploratory/rei_igm_nonauton_method_20261101/audit_source_independent.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=Path('exploratory/rei_igm_nonauton_method_20261101')
+          j=json.loads((d/'INDEPENDENT_AUDIT.json').read_text())
+          assert j['preregistered_source_routes']=='8/8_SOURCE_SCOPED_PASS'
+          assert j['native_tests']=='6/6_PASS'
+          assert j['canonical_delta']==0
+          PY
+      - name: Preserve actual source-native state rows, work and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vigilode-rei-fiveclock-nonauton-scoped-source
+          path: |
+            exploratory/rei_igm_nonauton_method_20261101/PREREGISTRATION.md
+            exploratory/rei_igm_nonauton_method_20261101/REAL_SOURCE_NONAUTON_METHODS.json
+            exploratory/rei_igm_nonauton_method_20261101/BASELINE_DEFAULT_REPLAY.json
+            exploratory/rei_igm_nonauton_method_20261101/INDEPENDENT_AUDIT.json
+            exploratory/rei_igm_nonauton_method_20261101/LOCAL_TESTS.log
+          if-no-files-found: warn
