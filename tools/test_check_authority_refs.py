@@ -543,5 +543,24 @@ class AuthorityRefsTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stdout)
 
 
+    def test_historical_survey_short_repo_maps_to_real_origin_without_false_pass(self):
+        self.write("research/prefix02_preconditioned_20261029/SOURCE_SURVEY.json", json.dumps({
+            "latest_prs": [{"repo": "bass_cr", "pr": 121, "head": ABSENT}]
+        }))
+        self.commit_all()
+        proc = self.check("--list")
+        self.assertEqual(proc.returncode, 1, proc.stdout)
+        self.assertIn("repository=cosmosapjw-quantum/bass_cr", proc.stdout)
+        self.assertIn("repository-unavailable", proc.stdout)
+
+    def test_unrelated_short_repo_stays_invalid(self):
+        self.write("research/other/RECEIPT.json", json.dumps({
+            "source": {"repo": "bass_cr", "source_commit": ABSENT}
+        }))
+        self.commit_all()
+        proc = self.check("--list")
+        self.assertEqual(proc.returncode, 1, proc.stdout)
+        self.assertIn("invalid-repository", proc.stdout)
+
 if __name__ == "__main__":
     unittest.main()
