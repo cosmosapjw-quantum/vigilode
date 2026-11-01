@@ -4,7 +4,7 @@
 ## 0. Sources and trust
 - 원 VigilODE PR #176 HEAD 3f293e1ac52fb9edf70aaba52201932c050feb3f: verified 28-entry inventory, frozen 23-node original, research-only execution overlay.
 - 원 VigilODE PR #177 HEAD 7af490762873387c992edfbbbd66d0f8e6198607: original first U-stage and source-conditional algebraic homotopy, not a generic 8-stage solver.
-- REI source PR #342 HEAD cd136dc3c7d8b9bf2523a0182b726013f0bcfb04; original 26-event kernel/tick160 immutable source archive SHA256 a861278201313c55e08ba6323b5c1d2ad97bf5765f429807b4eba0a1c2465d0b.
+- REI source PR #342 HEAD https://github.com/cosmosapjw-quantum/rei_bianchi/commit/cd136dc3c7d8b9bf2523a0182b726013f0bcfb04; original 26-event kernel/tick160 immutable source archive SHA256 a861278201313c55e08ba6323b5c1d2ad97bf5765f429807b4eba0a1c2465d0b.
 - REI PR #348/#350/#351: three competing correlated-population increment enclosures. They are alternative diagnostics, not three independent central science nodes. PR #350/#351 original-source science CI PASS, canonical tick161 still not admitted.
 - VigilODE application PR #173 and PR #175 HEAD d99c3f06d46e233a7848e5b4562b4a59e2b5d900: original 46,080-source-cell, four-group, three-moment, photoionization-only 6/15-state client; five-clock linear interpolation is an additional model assumption.
 - VigilODE application PR #169: BASS21 original 50x193 history, 3,400 directional Thomson tau rays, no newly integrated IVP.
