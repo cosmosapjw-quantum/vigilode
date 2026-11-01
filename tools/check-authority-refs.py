@@ -221,6 +221,30 @@ def json_value_citations(
             return out
         named_repo = value.get("repository", value.get("repo", value.get("source_repository")))
         if isinstance(named_repo, str):
+            # Exact historical worktree provenance recovered only for immutable
+            # document path, nested owner key, local path and original commit.
+            # Verified source commits exist in cosmosapjw-quantum/vigilode.
+            # Original strict object-kind and branch-reachability checks remain.
+            worktree_owners = {
+                ("research/bassrei_p02_fixed_grid_20261021/results.json",
+                 ("inputs",), "/home/cosmosapjw/vigilode-bassrei", "d66badadbdc368a6c87d2c5c988633ada8b1b250"),
+                ("research/bassrei_p02b_fixed_grid_20261022/results.json",
+                 ("inputs",), "/home/cosmosapjw/vigilode-bassrei", "c4d9eb9f76ac1fbcbb4a12fb920d05e4c2317fa9"),
+                ("research/local_frontier_native_diffsol_20261024/audit_packet_20261025/SHARED_EXECUTION_LOCK_REVIEW_20261025_RUNNER_REWORK1.json",
+                 ("source",), "/tmp/vigilode-native-diffsol.qrGY78PY/checkout", "572f265ca8a4c86eb02ab5690d7446f9e398e4d9"),
+                ("research/local_frontier_native_diffsol_20261024/audit_packet_20261025/evidence/references/case01/CASE1_RAW_DESCRIPTOR_ROBERTSON_V2_CROSSWALK.json",
+                 ("source_lock",), "/tmp/vigilode-native-diffsol.qrGY78PY/checkout", "3b69006ed81b1596e8e6705d51f46e95e09c28cd"),
+                ("research/local_frontier_native_diffsol_20261024/stop_audit_20261025/evidence/publication_supplement/JULIA_INDEPENDENT_REVIEW.json",
+                 ("source_at_execution",), "/tmp/vigilode-native-diffsol.qrGY78PY/checkout", "2a4bf90d1445b67542bdac5030b4c5d10da20445"),
+                ("research/production_audit_20261018/evidence/continuation_a07/manifest.json",
+                 (), "/home/cosmosapjw/vigilode", "c3036c63da02ca9b04cd39ccf580cd67d00ccb0c"),
+                ("research/production_frontier_20261023/evidence/runtime_recovery/RECOVERY_INVENTORY.json",
+                 (), "/workspace/scratch/0dc1e721cf82/vigilode-production-tree-1023", "9b210c76dffb8909902f733e80d6cfa32405006e"),
+            }
+            owner_commit = value.get("git_head", value.get("head",
+                           value.get("commit", value.get("source_commit"))))
+            if (path, tuple(key_path), named_repo, owner_commit) in worktree_owners:
+                named_repo = "cosmosapjw-quantum/vigilode"
             # Only the historical 2026-10-29 PR survey supplies the verified
             # short GitHub repository names. Resolve these with exact file/key
             # and validated PR/HEAD fields. Actual object reachability still
@@ -257,6 +281,12 @@ def json_value_citations(
         if key_path and key_path[-1] in {"body", "content"} and github_capture and (
             "pulls" in key_path or "structuredContent" in key_path
         ):
+            return out
+        # A compiler -vV commit-hash is toolchain metadata, not an
+        # authority declaration of a VigilODE repository commit.
+        if (path == "research/production_audit_20261018/evidence/continuation_a07/manifest.json"
+                and key_path == ["rustc_vv"]
+                and "commit-hash: e408947bfd200af42db322daf0fadfe7e26d3bd1" in value):
             return out
         key_words: set[str] = set()
         for key in key_path:
