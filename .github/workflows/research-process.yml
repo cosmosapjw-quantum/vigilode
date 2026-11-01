@@ -122,6 +122,56 @@ jobs:
           submodules: false
           lfs: false
           persist-credentials: false
+      - name: Read-only authenticated origin for cosmosapjw-quantum/BASS_HE
+        uses: actions/checkout@v4
+        with:
+          repository: cosmosapjw-quantum/BASS_HE
+          path: _authority_deps/BASS_HE
+          fetch-depth: 0
+          filter: blob:none
+          submodules: false
+          lfs: false
+          persist-credentials: false
+      - name: Read-only authenticated origin for cosmosapjw-quantum/bass_cr
+        uses: actions/checkout@v4
+        with:
+          repository: cosmosapjw-quantum/bass_cr
+          path: _authority_deps/bass_cr
+          fetch-depth: 0
+          filter: blob:none
+          submodules: false
+          lfs: false
+          persist-credentials: false
+      - name: Read-only authenticated origin for cosmosapjw-quantum/rec_bianchi
+        uses: actions/checkout@v4
+        with:
+          repository: cosmosapjw-quantum/rec_bianchi
+          path: _authority_deps/rec_bianchi
+          fetch-depth: 0
+          filter: blob:none
+          submodules: false
+          lfs: false
+          persist-credentials: false
+      - name: Read-only authenticated origin for cosmosapjw-quantum/WU088_HH
+        uses: actions/checkout@v4
+        with:
+          repository: cosmosapjw-quantum/WU088_HH
+          path: _authority_deps/WU088_HH
+          fetch-depth: 0
+          filter: blob:none
+          submodules: false
+          lfs: false
+          persist-credentials: false
+      - name: Read-only authenticated origin for cosmosapjw-quantum/htt_base
+        uses: actions/checkout@v4
+        with:
+          repository: cosmosapjw-quantum/htt_base
+          path: _authority_deps/htt_base
+          fetch-depth: 0
+          filter: blob:none
+          submodules: false
+          lfs: false
+          persist-credentials: false
       - name: Check authority commit references are published
         shell: bash
         env:
@@ -134,4 +184,9 @@ jobs:
             --repository SciML/OrdinaryDiffEq.jl="$GITHUB_WORKSPACE/_authority_deps/ordinarydiffeq" \
             --repository SciML/SciMLSensitivity.jl="$GITHUB_WORKSPACE/_authority_deps/scimlsensitivity" \
             --repository cosmosapjw-quantum/bass="$GITHUB_WORKSPACE/_authority_deps/bass" \
-            --repository cosmosapjw-quantum/rei_bianchi="$GITHUB_WORKSPACE/_authority_deps/rei_bianchi"
+            --repository cosmosapjw-quantum/rei_bianchi="$GITHUB_WORKSPACE/_authority_deps/rei_bianchi" \
+            --repository cosmosapjw-quantum/BASS_HE="$GITHUB_WORKSPACE/_authority_deps/BASS_HE" \
+            --repository cosmosapjw-quantum/bass_cr="$GITHUB_WORKSPACE/_authority_deps/bass_cr" \
+            --repository cosmosapjw-quantum/rec_bianchi="$GITHUB_WORKSPACE/_authority_deps/rec_bianchi" \
+            --repository cosmosapjw-quantum/WU088_HH="$GITHUB_WORKSPACE/_authority_deps/WU088_HH" \
+            --repository cosmosapjw-quantum/htt_base="$GITHUB_WORKSPACE/_authority_deps/htt_base"
