@@ -11,7 +11,7 @@
 #![allow(dead_code)]
 #![recursion_limit = "256"]
 #[path = "rei_original46k_native_rank3.rs"]
-mod photon;
+pub(crate) mod photon;
 
 use serde_json::json;
 use sha2::{Digest, Sha256};
@@ -29,20 +29,23 @@ const BINDING_EV: [f64; 3] = [13.598, 24.587, 54.416];
 const DERIVED_COLUMNS: usize = 10;
 
 #[derive(Clone)]
-struct OriginalAcceptedParent {
-    n: usize,
-    kb: f64,
-    poplo: Vec<f64>,
-    pophi: Vec<f64>,
-    logtlo: Vec<f64>,
-    logthi: Vec<f64>,
+pub(crate) struct OriginalAcceptedParent {
+    pub(crate) n: usize,
+    pub(crate) kb: f64,
+    pub(crate) poplo: Vec<f64>,
+    pub(crate) pophi: Vec<f64>,
+    pub(crate) logtlo: Vec<f64>,
+    pub(crate) logthi: Vec<f64>,
 }
 fn sha(data: &[u8]) -> String {
     let mut h = Sha256::new();
     h.update(data);
     format!("{:x}", h.finalize())
 }
-fn read_parent(data: &[u8], expected: Option<&str>) -> Result<OriginalAcceptedParent, String> {
+pub(crate) fn read_parent(
+    data: &[u8],
+    expected: Option<&str>,
+) -> Result<OriginalAcceptedParent, String> {
     if let Some(x) = expected {
         if sha(data) != x {
             return Err("ACCEPTED_REI_F05_PARENT_RAW_SHA_MISMATCH".into());
