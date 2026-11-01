@@ -449,7 +449,7 @@ fn singular_trial_operator_retries_a_smaller_physical_step() {
     assert_eq!(r.attempts[1].t, 0.0);
     assert!(r.attempts[1].h < r.attempts[0].h);
     assert!(r.terminal_failure.is_none());
-    assert!((r.last_y[0] / (rate*h0).exp() - 1.0).abs() < 1e-6);
+    assert!((r.last_y[0] / (rate * h0).exp() - 1.0).abs() < 1e-6);
 }
 
 #[test]
