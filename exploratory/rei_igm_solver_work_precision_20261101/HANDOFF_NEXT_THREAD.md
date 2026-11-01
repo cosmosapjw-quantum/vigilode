@@ -1,6 +1,10 @@
 # VigilODE / REI Bianchi IGM scoped optimization handoff, 2026-11-01
 
 PROJECT=cosmosapjw-quantum/vigilode
+CURRENT_PR=178
+CURRENT_BRANCH=research/vigilode-rei-igm-vperf-scoped-20261101
+SCIENCE_RESULT_COMMIT=f6449ae2856d516abce59abb2fe6a5236318721f
+PR_URL=https://github.com/cosmosapjw-quantum/vigilode/pull/178
 CENTRAL_OWNER=cosmosapjw-quantum/rei_bianchi
 TRACK=REI_IGM_VIGILODE_SOURCE_OPTIMIZATION
 SOURCE_VIGILODE_PR=175

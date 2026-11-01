@@ -15,3 +15,5 @@ Python source: `python3 original26_photon_lowrank_check.py --owner-root /PATH/TO
 **광학/열역학의 원본 전체 진화와 original tick161은 NOT_RUN/HOLD.** 이 서브시스템 모델을 원래 26-event solver로 포장하지 않는다.
 
 추가 확인: 46,080개 He II photo-rate는 확장정밀도에서 양수이나 float64에서는 모두 underflow zero. 본 작업은 original full 26-event IVP가 아니며 true original acceleration은 미검증. ADVERSARIAL_REVIEW_KO.md 참조. Rust example 5 tests, Python 5 tests normal and optimized PASS.
+
+Scientific publication: Draft PR #178 (VigilODE), base original PR #175, original REI source PR #348, all with immutable identifiers in HANDOFF_NEXT_THREAD.md.
