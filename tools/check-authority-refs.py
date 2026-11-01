@@ -286,7 +286,11 @@ def json_value_citations(
         # authority declaration of a VigilODE repository commit.
         if (path == "research/production_audit_20261018/evidence/continuation_a07/manifest.json"
                 and key_path == ["rustc_vv"]
-                and "commit-hash: e408947bfd200af42db322daf0fadfe7e26d3bd1" in value):
+                and value.startswith("rustc 1.94.1")
+                and SHA_RE.findall(value) == ["e408947bfd200af42db322daf0fadfe7e26d3bd1"]
+                and re.search(r"(?m)^commit-hash: e408947bfd200af42db322daf0fadfe7e26d3bd1$", value)):
+            # Exact compiler metadata only. Any other authority-like Git SHA
+            # appended to the text is NOT exempted and remains checked.
             return out
         key_words: set[str] = set()
         for key in key_path:
