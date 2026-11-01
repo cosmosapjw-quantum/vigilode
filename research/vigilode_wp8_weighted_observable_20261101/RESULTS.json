@@ -1,0 +1,126 @@
+{
+  "schema": "vigilode.wp8.weighted_source_observable.source_conditional.1",
+  "date": "2026-11-01",
+  "source_head": "f5904e1e799ca50199361f270fab8515fa6f273e",
+  "original_coupled_source_blob": "d78c5c5f6f476f2a5b1ea88628ed25daa6cfc482",
+  "wp1_sweep_sha256": "9dae90079893170edddcf5cf8af193e53b43ab5bcf0c436cb81ce7aa0f8790b0",
+  "wp1_summary_sha256": "56746487ac5c5c8702b53ef0ffd47694c040ab4e0adcfea1ec25aa3b8e9ba909",
+  "reference_panels_computed": 43008,
+  "reference_resolutions": [
+    32,
+    64
+  ],
+  "stationary_weight_pi_exact": {
+    "asymmetric_2": [
+      "2/5",
+      "3/5"
+    ],
+    "asymmetric_2_refined": [
+      "2/5",
+      "3/5"
+    ],
+    "coupled_3_cubic": [
+      "185/671",
+      "286/671",
+      "200/671"
+    ],
+    "linear_exchange_control": [
+      "1/2",
+      "1/2"
+    ]
+  },
+  "rows": [
+    {
+      "cohort": "asymmetric_2",
+      "micro": 32,
+      "reference_sha256": "08b0a94db27168573d46fc0a4a03d73ab00a355cc12804ca92fa5732c0bafffc",
+      "weighted_observable_delta_upper": 3.287853700386777e-13,
+      "prior_WP2_inf_upper": 7.800960574115064e-13
+    },
+    {
+      "cohort": "asymmetric_2",
+      "micro": 64,
+      "reference_sha256": "fcc2842b8591a21919ca400c67b703685f57dfc577f74a11b428a799b85917c9",
+      "weighted_observable_delta_upper": 4.292793831043445e-14,
+      "prior_WP2_inf_upper": 1.1574011196449745e-13
+    },
+    {
+      "cohort": "asymmetric_2_refined",
+      "micro": 32,
+      "reference_sha256": "fcc2842b8591a21919ca400c67b703685f57dfc577f74a11b428a799b85917c9",
+      "weighted_observable_delta_upper": 4.292793831043445e-14,
+      "prior_WP2_inf_upper": 1.1574011196449745e-13
+    },
+    {
+      "cohort": "asymmetric_2_refined",
+      "micro": 64,
+      "reference_sha256": "0592408540aaf6b825906494ca9d1812af37bbce4049ab31437439fafc400c37",
+      "weighted_observable_delta_upper": 2.88402726599774e-14,
+      "prior_WP2_inf_upper": 7.329050183564211e-14
+    },
+    {
+      "cohort": "coupled_3_cubic",
+      "micro": 32,
+      "reference_sha256": "b21c0bb5c480785c98e05b31a92d63e8e35c861ee03fa2ce91a17e336eea1459",
+      "weighted_observable_delta_upper": 1.5259851174034043e-13,
+      "prior_WP2_inf_upper": 4.359278253655372e-13
+    },
+    {
+      "cohort": "coupled_3_cubic",
+      "micro": 64,
+      "reference_sha256": "e78542edd6a68ba7b4e57b9892477586909259c09672d76ad2d2e6505090be3c",
+      "weighted_observable_delta_upper": 1.9952645511594564e-14,
+      "prior_WP2_inf_upper": 6.127742382797077e-14
+    },
+    {
+      "cohort": "linear_exchange_control",
+      "micro": 32,
+      "reference_sha256": "098675f3f66ddfd97132198bc72bf415c1e9777f5c1827296c13c581a2178fc5",
+      "weighted_observable_delta_upper": 9.886650950617678e-15,
+      "prior_WP2_inf_upper": 2.5516224831332586e-14
+    },
+    {
+      "cohort": "linear_exchange_control",
+      "micro": 64,
+      "reference_sha256": "5dd2546305c4b9a399b876a3a4062f68270d838cd4482f12cab31c14e590b63c",
+      "weighted_observable_delta_upper": 1.583040942854346e-14,
+      "prior_WP2_inf_upper": 3.798661504660503e-14
+    }
+  ],
+  "original_solver_traces": {
+    "BE_baseline": 20,
+    "BE_fast_first": 20,
+    "RODAS5P_native": 16
+  },
+  "two_reference_intersection": {
+    "completed": 56,
+    "nonempty": 56,
+    "strict_beyond_best_single_ref": 0
+  },
+  "scientific_output_sha256": {
+    "RESULTS_WP8_V2.json": "fbc9b596ee336499da03f5eb524e60416658266b2a49b1d385ff6c0507760626",
+    "INTERSECTION_56.json": "f4e11f3fb1c4763d3e4883c953d8827b07c5750e67703881e350e05ddb45398b",
+    "wp8_weighted_certifier.py": "4091b2e805b64b71447053e03a12e9900a20f67f0e8ea6f32ab3f8ee3e113cb3",
+    "intersect_two_resolutions.py": "5eb147a5ef40e9d0a250bb0854d87e2cfe4238435ef307a006bc815917858f29"
+  },
+  "adversarial_python_tests": 12,
+  "openevolve_uct": {
+    "database_actual": true,
+    "epochs": {
+      "OpenEvolve": 8,
+      "UCT": 8
+    },
+    "candidates": 16,
+    "valid": 11,
+    "pruned": 5,
+    "external_llm_calls": 0
+  },
+  "clock_correction": "exact dyadic time displacement, weighted physical W rate bounded, outward final endpoints",
+  "hol_wp8": "NOT_RUN",
+  "new_original_ivp_runs": 0,
+  "science_scope": "rigorous source conditional weighted-observable error bounds; no generic stronger infinity-norm or solver-speed claim",
+  "official_vigilode_dag": "7/23",
+  "successor_admitted": "0/12",
+  "production": "HOLD",
+  "no_merge": true
+}
