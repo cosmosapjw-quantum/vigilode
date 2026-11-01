@@ -41,3 +41,49 @@ Python unittest: normal 11/11; -O 11/11. Reused exact PR180 Rust *test literal r
 This unit produces a source-scoped exact algebraic simplification, a measured repeat-JVP optimization, an explicit negative source-RHS performance result, and conserved original interval/source properties. It does **not** increase canonical scientific DAG progress. An additional source-only optimization atlas would be process drift. Positive next step: adapt existing VigilODE fixed-Jacobian matrix-free GMRES or low_rank_bordered preconditioner to **one original full 26-event shadow step**, with frozen inputs and tested fallback, then compare original full/half1/half2 states, 14 ledgers, and unchanged 2e-4/2e-3 gates. Only source-exact/physical-data progress can justify DAG promotion.
 
 Official counts unchanged: VigilODE 7/23, successor 0/12; REI central 28/88, working 33/88, physical fast 4/7; accepted tick160/131072; canonical delta 0. NO_MERGE; NO_FORCE_PUSH; NO_TOLERANCE_RELAXATION; PRODUCTION HOLD.
+
+
+## 2026-11-01 successor loop: original full 26-event performance profiling and owner-exact shadow (R5, R6, R7, C2, C5-C9)
+
+### New live sources and interpretation
+
+GitHub VigilODE PR181 `ac09919690ba148cb5e12be37d3926a18ae1aab9` fixes the original 15-state five-clock nonautonomous time derivative, without changing original full 26-event physics. Its opt-in module and PR180 test-literal repair are now additive in this same isolation branch. Existing generic G0 PR182 `8fd2ac31d65df5e70e3bbb266d51b397562edfb5` measured original protected vs transactional full-IVPs at matched achieved error; transactional is slower in its source scope and must not replace protected default. REI PR354 owner V2 gate remains independently shadow-only. REI PR355 photon-moment/Volterra theory is a separate evolving draft and is NOT imported as proven full-X source physics.
+
+### R5 direct mathematical improvement
+
+The ORIGINAL 26-event thermal implicit root uses
+`F(x)=ctx.ecoef*exp(x)-U0-dt*(constant+weight*thermal_rhs(ctx,x))`
+with interval signs at `lo` and `hi`. In the original exact algorithm, a bracket-expansion loop computes both `F(lo)` and `F(hi)`, and immediately after the loop computes both **again**, even on a branch where the loop has already broken because no expansion is needed. On that branch `lo,hi` are unchanged and interval arithmetic is deterministic; reusing the last two results is algebraically and bitwise equivalent. When all 20 expansion attempts are exhausted, the endpoints may have changed on the last iteration; the candidate **does** recompute then via Python `for...else`. Sign-bracket, interval Newton, strictly positive derivative check, max iterations, all outward arithmetic, and original source methods remain unchanged. This is a narrowly specified shadow candidate; the REI owner module on disk is untouched.
+
+The original `thermal_rhs` is evaluated at 46,080 real H/He source cells with source-original state tick 160. This optimization does **not** replace the original MPRK22(1), Alexander SDIRK2, 26-event table structure, temperatures, OTS, 14 ledgers, or admission policy. The original source/archive/state/kernel SHAs are checked before every run.
+
+### R7/C8 original-owner measured science
+
+Read-only complete `run_step` profile for real full/half1/half2 maps took 5.261658 / 5.147795 / 5.065139 s on the connected Linux host, all source-native PASS. The full-map `thermal_root` cumulative cProfile cost was 3.673 s of 5.262 s; `_up` and `_down` cumulative self times were 1.239 and 1.196 s respectively. These are nested, not additive, timing attributions. The full native run retained 14/14 ledger zero inclusion and exactly reproduced historical independent-output logT 2.1245050576368385e-4 > frozen 2e-4 FAIL. `ORIGINAL26_OWNER_MAP_PROFILE.json` records actual hot paths, not generic solver theory.
+
+Source-exact four-arm ABBA baseline/shadow comparison, each arm **actual full+half1+half2 46k original owner**:
+- A0 original: 15.565384 s, 90 `thermal_rhs` evaluations.
+- B1 shadow: 14.506656 s, 72 evaluations.
+- B2 shadow: 14.722374 s, 72 evaluations.
+- A3 original: 15.274416 s, 90 evaluations.
+
+All 4 original source state signatures, concatenating BOTH directed interval endpoints of all five population species plus logT at each of 3 map outputs, are byte-exact identical SHA256 `fe260af02b4ad84ae4c90ed0066e42713ad056a7582d33b0708e5eb6d4b6c6cc`. All 4 have original 14/14 ledgers, 0 table events, historical crossbox failure still > 2e-4, and no accepted history mutation. Median original / median shadow wall ratio 1.0551085595375107 (~5.5% source-host diagnostic speedup). Actual thermal_rhs work reduced 90 -> 72 (20% on original full/half1/half2). `ORIGINAL26_ROOT_ABBA.json` preserves all measurements. No general CPU/HPC speedup or source-owner production certification is inferred.
+
+### Native VigilODE method integration and negative controls
+
+The existing protected native RODAS5P five-clock test-literal repair PR180 and EXACT additive PR181 nonauton opt-in `rei_igm_five_clock_source/nonauton_study.rs` were reused, with no generic solver-core mutation. Rust offline locked original source native example 6/6 PASS, and opt-in original-source nonautonomous 8/8 source-scoped routes PASS plus one posthoc invalid legacy control. The corrected source-only 15-state model does not turn into the original complete 26-event H/He/OTS/thermal IVP. Native replay saved as `NATIVE_PR181_NONAUTON_REPLAY.json`.
+
+### Same-author blind-referee review, one finite pass
+
+1. **BLOCK production:** Original source-owner accepted 160/131072 tick remains unchanged; independent-output logT 2.124505e-4 exceeds 2e-4. Existing V2 correlated-discrete shadow acceptance is a different, not yet official science predicate. No automatic tick161 acceptance.
+2. **BLOCK broad 26-event optimization claim:** This is an opt-in shadow replacement of one interval thermal-root call site, not a production worker source edit. One real initial condition, one source-first tick and one Linux host were checked. Pathological 20-expansion states and all broader tables still require independent owner validation.
+3. **BLOCK full JVP-admission:** Prior group fusion slower for RHS; stage-cached photon JVP only helps repeated frozen linearizations. Float64 He II underflow remains numerically material. Rank <=3 is photon partial only, not full-X.
+4. **HOLD general time-forcing promotion:** PR181 corrects five-clock *reduced* 15-state forcing and keeps explicit segment boundaries. Do not silently transport to full 26-event owner or claim original full source `f_t` is known.
+5. **OBSERVED runtime risk:** Optional NumPy-1-compiled `numexpr`/`bottleneck` imports show ABI warnings under NumPy 2.4.2 in this environment. The original source-native processes nevertheless exited 0 and produced exact matching evidence; full clean pinned-environment replay is a separate unrun validation.
+6. **Independence:** Same-author experimental construction and hostile review, no native distinct-author subagent; Mathematica algebra checks and physical byte comparison have separate but limited independence. No fake independent referee certification.
+
+### Drift watchdog / official counters
+
+The original cProfile decisively moved this effort from small per-JVP Python optimizations to the original full 26-event runtime thermal bottleneck. The 5.5% real-map shadow saving and exactly preserved physics count as scoped optimization research progress, **not** canonical REI DAG node completion. Stop new photon atlases, process-only gates or alternate surrogate benchmarks. Next real scientific action is owner-controlled, versioned, opt-in thermal bracket optimization with full original 3-lane intervals/event/ledger parity, clean pinned host replay and original science-policy decision. This branch remains independent research, no merge/default/force-push/tolerance changes.
+
+DAG at every stage: VigilODE OFFICIAL 7/23; VigilODE SUCCESSOR 0/12; REI CENTRAL 28/88; REI WORKING 33/88; REI FAST 4/7; original accepted 160/131072; CANONICAL_DELTA=0. GitHub Draft PR #183 is the cumulative publication lane. Full original 26-event owner used ONLY as read-only source. PRODUCTION=HOLD.
