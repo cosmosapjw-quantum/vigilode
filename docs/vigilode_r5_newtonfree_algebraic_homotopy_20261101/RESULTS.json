@@ -1,0 +1,550 @@
+{
+  "cohorts_with_resolution_control": 4,
+  "cross_model_risk": "Scalar implicit/BE root is NOT the original RODAS U-stage",
+  "data_contract": "Binary64 input values preserved; exact Fraction source residual; no outward interval arithmetic on native callbacks",
+  "external_referee": "NOT_RUN",
+  "frozen_rodas_tableau_sha256": "211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6",
+  "frozen_source_blobs": {
+    "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs": "d68239d53977e36f98b186b627aa0c4c5c7de7cb",
+    "crates/vigilode-coupled/examples/coupled_achieved_wp.rs": "1bfc17ec2ed4b902cc06073807388f6e332e31d6",
+    "crates/vigilode-coupled/src/coupled_inverse_be.rs": "d78c5c5f6f476f2a5b1ea88628ed25daa6cfc482",
+    "crates/vigilode-coupled/src/rhs_homotopy.rs": "990103d9ab5d59b7c40f3ccd323f6ad52e504324"
+  },
+  "full_native_8stage_and_same_error": "NOT_RUN",
+  "jacobian_callbacks_runtime": 0,
+  "negative_control": {
+    "polynomial": "2*z-z^3",
+    "reason": "g<0 violates monotonicity / M-matrix",
+    "roots_exact": [
+      "-sqrt(2)",
+      "0",
+      "+sqrt(2)"
+    ],
+    "source_admissible": false
+  },
+  "newton_iterations_runtime": 0,
+  "no_production_write": true,
+  "nonlinear_station_cases": 20,
+  "original_dag": "7/23",
+  "preregistration_commit": "87e618b4848cbaa41942d8d92efdf9c9cbdd83c7",
+  "production": "HOLD",
+  "records": [
+    {
+      "baseline_value_only_picard": {
+        "counters": {
+          "coupling_products": 36,
+          "jacobi_sweeps": 18,
+          "rejected": 0,
+          "scalar_cubic_evals": 1980,
+          "stations": 1
+        },
+        "path": [
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 1.5013689254516877e-17,
+            "lambda": 1.0,
+            "q_infinity": 0.15,
+            "residual_gate": true,
+            "residual_inf_upper": 1.5952044832924182e-17,
+            "state": [
+              0.17578120991509372,
+              0.11426051533296147
+            ],
+            "sweeps": 18
+          }
+        ]
+      },
+      "homotopy_cubic_eval_over_baseline": 3.1666666666666665,
+      "newton_free_homotopy": {
+        "counters": {
+          "coupling_products": 114,
+          "jacobi_sweeps": 57,
+          "rejected": 0,
+          "scalar_cubic_evals": 6270,
+          "stations": 5
+        },
+        "path": [
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 9.020472141672527e-18,
+            "lambda": 0.0,
+            "q_infinity": 0.0,
+            "residual_gate": true,
+            "residual_inf_upper": 1.1134645299877026e-17,
+            "state": [
+              0.15899517179363398,
+              0.09675654769386735
+            ],
+            "sweeps": 2
+          },
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 2.0782381214866833e-17,
+            "lambda": 0.25,
+            "q_infinity": 0.0375,
+            "residual_gate": true,
+            "residual_inf_upper": 2.500380239913666e-17,
+            "state": [
+              0.16270378473594882,
+              0.10081545596210331
+            ],
+            "sweeps": 11
+          },
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 2.338002820746031e-17,
+            "lambda": 0.5,
+            "q_infinity": 0.075,
+            "residual_gate": true,
+            "residual_inf_upper": 2.7033157614875984e-17,
+            "state": [
+              0.16672165823847346,
+              0.10506948908903341
+            ],
+            "sweeps": 13
+          },
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 3.504829034897516e-17,
+            "lambda": 0.75,
+            "q_infinity": 0.1125,
+            "residual_gate": true,
+            "residual_inf_upper": 3.8881697105894317e-17,
+            "state": [
+              0.17107189469783307,
+              0.10954244280422346
+            ],
+            "sweeps": 15
+          },
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 1.5013689254516877e-17,
+            "lambda": 1.0,
+            "q_infinity": 0.15,
+            "residual_gate": true,
+            "residual_inf_upper": 1.5952044832924182e-17,
+            "state": [
+              0.17578120991509372,
+              0.11426051533296147
+            ],
+            "sweeps": 16
+          }
+        ]
+      },
+      "original_fixture_steps": 64,
+      "physical_family": "asymmetric_2",
+      "rodas_original_first_U_stage": {
+        "Jacobi_component_operations": 14,
+        "first_stage_U": [
+          -0.0006323186581637633,
+          -9.029470710730594e-05
+        ],
+        "gamma": 0.21193756319429014,
+        "h_gamma": 0.00033115244249107837,
+        "iterations": 7,
+        "max_original_raw_U_residual_exact_upper": 3.664218868993216e-20,
+        "max_stage_error_bound_exact_upper": 3.659371629580744e-20,
+        "not_full_8stage_trajectory": true,
+        "reference_rhs_source": "tau*f(y0) autonomous first raw-U stage",
+        "requires_callback_JVP": false,
+        "runtime_derivative_analytical_source": true,
+        "stage_system_rank": 2
+      },
+      "source": "asymmetric_2",
+      "source_equivalence_control": false,
+      "strong_fallback_if_no_gain": "protected_original_RODAS5P",
+      "tau_stage_only": 0.015625
+    },
+    {
+      "baseline_value_only_picard": {
+        "counters": {
+          "coupling_products": 28,
+          "jacobi_sweeps": 14,
+          "rejected": 0,
+          "scalar_cubic_evals": 1540,
+          "stations": 1
+        },
+        "path": [
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 3.323849401301985e-17,
+            "lambda": 1.0,
+            "q_infinity": 0.08333333333333333,
+            "residual_gate": true,
+            "residual_inf_upper": 3.427719695092672e-17,
+            "state": [
+              0.18665805783512868,
+              0.11740235473478036
+            ],
+            "sweeps": 14
+          }
+        ]
+      },
+      "homotopy_cubic_eval_over_baseline": 3.357142857142857,
+      "newton_free_homotopy": {
+        "counters": {
+          "coupling_products": 94,
+          "jacobi_sweeps": 47,
+          "rejected": 0,
+          "scalar_cubic_evals": 5170,
+          "stations": 5
+        },
+        "path": [
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 1.1729021145598847e-17,
+            "lambda": 0.0,
+            "q_infinity": 0.0,
+            "residual_gate": true,
+            "residual_inf_upper": 1.3103515811098711e-17,
+            "state": [
+              0.1770075085094151,
+              0.10706925226646025
+            ],
+            "sweeps": 2
+          },
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 2.2659829640119166e-17,
+            "lambda": 0.25,
+            "q_infinity": 0.020833333333333332,
+            "residual_gate": true,
+            "residual_inf_upper": 2.4961218587943767e-17,
+            "state": [
+              0.17926005815998064,
+              0.10955194438268268
+            ],
+            "sweeps": 9
+          },
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 2.6518688801850166e-17,
+            "lambda": 0.5,
+            "q_infinity": 0.041666666666666664,
+            "residual_gate": true,
+            "residual_inf_upper": 2.8590461364494714e-17,
+            "state": [
+              0.1816165388901877,
+              0.11209874313574883
+            ],
+            "sweeps": 11
+          },
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 3.056965656702502e-18,
+            "lambda": 0.75,
+            "q_infinity": 0.0625,
+            "residual_gate": true,
+            "residual_inf_upper": 3.22414346605342e-18,
+            "state": [
+              0.184081050917266,
+              0.11471401424586478
+            ],
+            "sweeps": 12
+          },
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 2.8198251338538526e-17,
+            "lambda": 1.0,
+            "q_infinity": 0.08333333333333333,
+            "residual_gate": true,
+            "residual_inf_upper": 2.907944669286786e-17,
+            "state": [
+              0.18665805783512873,
+              0.11740235473478036
+            ],
+            "sweeps": 13
+          }
+        ]
+      },
+      "original_fixture_steps": 128,
+      "physical_family": "asymmetric_2",
+      "rodas_original_first_U_stage": {
+        "Jacobi_component_operations": 12,
+        "first_stage_U": [
+          -0.0003170296058084484,
+          -4.4855574043613205e-05
+        ],
+        "gamma": 0.21193756319429014,
+        "h_gamma": 0.00016557622124553918,
+        "iterations": 6,
+        "max_original_raw_U_residual_exact_upper": 1.0788136663348993e-20,
+        "max_stage_error_bound_exact_upper": 1.0780996356796913e-20,
+        "not_full_8stage_trajectory": true,
+        "reference_rhs_source": "tau*f(y0) autonomous first raw-U stage",
+        "requires_callback_JVP": false,
+        "runtime_derivative_analytical_source": true,
+        "stage_system_rank": 2
+      },
+      "source": "asymmetric_2_refined",
+      "source_equivalence_control": true,
+      "strong_fallback_if_no_gain": "protected_original_RODAS5P",
+      "tau_stage_only": 0.0078125
+    },
+    {
+      "baseline_value_only_picard": {
+        "counters": {
+          "coupling_products": 120,
+          "jacobi_sweeps": 20,
+          "rejected": 0,
+          "scalar_cubic_evals": 3300,
+          "stations": 1
+        },
+        "path": [
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 6.718584108544659e-18,
+            "lambda": 1.0,
+            "q_infinity": 0.20238095238095238,
+            "residual_gate": true,
+            "residual_inf_upper": 7.03351773863269e-18,
+            "state": [
+              0.040383847827514585,
+              0.052721181620118684,
+              0.021700649707119345
+            ],
+            "sweeps": 20
+          }
+        ]
+      },
+      "homotopy_cubic_eval_over_baseline": 3.05,
+      "newton_free_homotopy": {
+        "counters": {
+          "coupling_products": 366,
+          "jacobi_sweeps": 61,
+          "rejected": 0,
+          "scalar_cubic_evals": 10065,
+          "stations": 5
+        },
+        "path": [
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 2.982644742805907e-18,
+            "lambda": 0.0,
+            "q_infinity": 0.0,
+            "residual_gate": true,
+            "residual_inf_upper": 3.635098280294699e-18,
+            "state": [
+              0.030466091155097727,
+              0.047634728937524656,
+              0.01640940669132844
+            ],
+            "sweeps": 2
+          },
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 3.434837763763549e-18,
+            "lambda": 0.25,
+            "q_infinity": 0.050595238095238096,
+            "residual_gate": true,
+            "residual_inf_upper": 4.065452509454513e-18,
+            "state": [
+              0.03274073412355859,
+              0.048665507489208046,
+              0.017557823525669737
+            ],
+            "sweeps": 11
+          },
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 9.019736508056696e-18,
+            "lambda": 0.5,
+            "q_infinity": 0.10119047619047619,
+            "residual_gate": true,
+            "residual_inf_upper": 1.0358603645971361e-17,
+            "state": [
+              0.035135196288751044,
+              0.049845932863038664,
+              0.01881320482308122
+            ],
+            "sweeps": 14
+          },
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 6.829175763989926e-18,
+            "lambda": 0.75,
+            "q_infinity": 0.15178571428571427,
+            "residual_gate": true,
+            "residual_inf_upper": 7.589455097090369e-18,
+            "state": [
+              0.03767361089242528,
+              0.05119148514890219,
+              0.02018880853275582
+            ],
+            "sweeps": 16
+          },
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 1.1947628275905372e-17,
+            "lambda": 1.0,
+            "q_infinity": 0.20238095238095238,
+            "residual_gate": true,
+            "residual_inf_upper": 1.2507673351338437e-17,
+            "state": [
+              0.040383847827514585,
+              0.052721181620118684,
+              0.021700649707119338
+            ],
+            "sweeps": 18
+          }
+        ]
+      },
+      "original_fixture_steps": 128,
+      "physical_family": "coupled_3_cubic",
+      "rodas_original_first_U_stage": {
+        "Jacobi_component_operations": 21,
+        "first_stage_U": [
+          4.448182934906737e-05,
+          -0.00019764369059711506,
+          5.2512733977492386e-05
+        ],
+        "gamma": 0.21193756319429014,
+        "h_gamma": 0.00016557622124553918,
+        "iterations": 7,
+        "max_original_raw_U_residual_exact_upper": 1.6702539250497754e-20,
+        "max_stage_error_bound_exact_upper": 1.668596245882709e-20,
+        "not_full_8stage_trajectory": true,
+        "reference_rhs_source": "tau*f(y0) autonomous first raw-U stage",
+        "requires_callback_JVP": false,
+        "runtime_derivative_analytical_source": true,
+        "stage_system_rank": 3
+      },
+      "source": "coupled_3_cubic",
+      "source_equivalence_control": false,
+      "strong_fallback_if_no_gain": "protected_original_RODAS5P",
+      "tau_stage_only": 0.0078125
+    },
+    {
+      "baseline_value_only_picard": {
+        "counters": {
+          "coupling_products": 24,
+          "jacobi_sweeps": 12,
+          "rejected": 0,
+          "scalar_cubic_evals": 0,
+          "stations": 1
+        },
+        "path": [
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 4.52079451315168e-18,
+            "lambda": 1.0,
+            "q_infinity": 0.043478260869565216,
+            "residual_gate": true,
+            "residual_inf_upper": 4.662069341687669e-18,
+            "state": [
+              0.09494949494949495,
+              0.050505050505050504
+            ],
+            "sweeps": 12
+          }
+        ]
+      },
+      "homotopy_cubic_eval_over_baseline": 0.0,
+      "newton_free_homotopy": {
+        "counters": {
+          "coupling_products": 80,
+          "jacobi_sweeps": 40,
+          "rejected": 0,
+          "scalar_cubic_evals": 0,
+          "stations": 5
+        },
+        "path": [
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 4.022547190670857e-18,
+            "lambda": 0.0,
+            "q_infinity": 0.0,
+            "residual_gate": true,
+            "residual_inf_upper": 4.336808689942018e-18,
+            "state": [
+              0.0927536231884058,
+              0.0463768115942029
+            ],
+            "sweeps": 2
+          },
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 8.667263081437234e-18,
+            "lambda": 0.25,
+            "q_infinity": 0.010869565217391304,
+            "residual_gate": true,
+            "residual_inf_upper": 9.242823520438925e-18,
+            "state": [
+              0.09326873843002877,
+              0.047390602229311914
+            ],
+            "sweeps": 8
+          },
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 8.223874256482641e-19,
+            "lambda": 0.5,
+            "q_infinity": 0.021739130434782608,
+            "residual_gate": true,
+            "residual_inf_upper": 8.673617379884035e-19,
+            "state": [
+              0.09380614657210402,
+              0.048416075650118205
+            ],
+            "sweeps": 9
+          },
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 5.1976733362600965e-18,
+            "lambda": 0.75,
+            "q_infinity": 0.03260869565217391,
+            "residual_gate": true,
+            "residual_inf_upper": 5.421010862427522e-18,
+            "state": [
+              0.09436625271042776,
+              0.049453972008673366
+            ],
+            "sweeps": 10
+          },
+          {
+            "converged_by_step": true,
+            "error_bound_inf_upper": 4.52079451315168e-18,
+            "lambda": 1.0,
+            "q_infinity": 0.043478260869565216,
+            "residual_gate": true,
+            "residual_inf_upper": 4.662069341687669e-18,
+            "state": [
+              0.09494949494949495,
+              0.050505050505050504
+            ],
+            "sweeps": 11
+          }
+        ]
+      },
+      "original_fixture_steps": 128,
+      "physical_family": "linear_exchange_control",
+      "rodas_original_first_U_stage": {
+        "Jacobi_component_operations": 12,
+        "first_stage_U": [
+          -0.00011569548256153418,
+          1.641550342937083e-05
+        ],
+        "gamma": 0.21193756319429014,
+        "h_gamma": 0.00016557622124553918,
+        "iterations": 6,
+        "max_original_raw_U_residual_exact_upper": 3.2417450612924582e-21,
+        "max_stage_error_bound_exact_upper": 3.2395994587455457e-21,
+        "not_full_8stage_trajectory": true,
+        "reference_rhs_source": "tau*f(y0) autonomous first raw-U stage",
+        "requires_callback_JVP": false,
+        "runtime_derivative_analytical_source": true,
+        "stage_system_rank": 2
+      },
+      "source": "linear_exchange_control",
+      "source_equivalence_control": false,
+      "strong_fallback_if_no_gain": "protected_original_RODAS5P",
+      "tau_stage_only": 0.0078125
+    }
+  ],
+  "reference_tolerances_changed": false,
+  "rodas_first_stage_cases": 4,
+  "schema": "vigilode.r5.monotone_newton_free_algebraic_homotopy.v1",
+  "scientific_verdict": "DERIVED_NUMERICALLY_CHECKED_SCOPED_STAGE_ONLY",
+  "source_families_distinct": 3,
+  "successor_admitted": "0/12"
+}
