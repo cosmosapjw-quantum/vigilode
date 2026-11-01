@@ -1,0 +1,110 @@
+{
+  "PRODUCTION": "HOLD",
+  "REI_CENTRAL_DAG": "28/88",
+  "REI_WORKING_DAG": "33/88",
+  "VIGILODE_DAG": "7/23",
+  "VIGILODE_SUCCESSOR": "0/12",
+  "canonical_delta": 0,
+  "conservation_max_residual": {
+    "frozen": 2.043592088046842e-16,
+    "timevarying": 3.1537148252945327e-16
+  },
+  "differences": {
+    "HI_ionization_fraction": 8.015108576842067e-10,
+    "HeI_ionization_fraction": 2.404863264082735e-08,
+    "ionization_binding_eV_per_original_neutral_HI": 4.655704192036824e-08,
+    "photoelectrons_particles": 1.5306813549756941e+54,
+    "spatial_photoelectron_change_quantiles_particles": {
+      "0": 4.1232510853256216e-162,
+      "100": 4.09372821347017e+51,
+      "25": 5182402092380160.0,
+      "5": 2.8632056968553407e-122,
+      "50": 1.0996597752867275e+38,
+      "75": 8.476376044723693e+45,
+      "95": 1.2496771677299887e+50
+    }
+  },
+  "forcing_clock_sites": 5,
+  "independent_reference_max_discrepancy": {
+    "forced_Radau_vs_DOP853": 4.440892098500626e-16,
+    "frozen_Radau_vs_DOP853": 2.220446049250313e-16
+  },
+  "interpolation_approximation": true,
+  "no_original_REI_26_event_IVP": true,
+  "original_F05_gate": "2.1245050576368385e-4 > 2e-4; HOLD",
+  "original_HI_rate_particles_per_s": 6.104263473411793e+47,
+  "original_HeI_rate_particles_per_s": 5.074367728430737e+48,
+  "owner_method": "cosmosapjw-quantum/vigilode",
+  "owner_science": "cosmosapjw-quantum/rei_bianchi",
+  "proper_tick_s": 4871848749.16828,
+  "radiative_photons_and_species": [
+    {
+      "absorbed_photoelectrons_particles": 2.769058898542865e+58,
+      "absorbed_photons_by_species_particles": [
+        2.9748147635763883e+57,
+        2.471577422185226e+58,
+        0.0
+      ],
+      "case": "timevarying",
+      "emitted_photons_per_original_neutral_HI": 0.0035827995774575395,
+      "escaped_photons_per_original_neutral_HI": 0.0035420644753705846,
+      "final_neutral_ratios": [
+        0.9999956238062273,
+        0.9993970799116093,
+        1.0000000568085883
+      ],
+      "ionization_binding_eV_per_original_neutral_HI": 0.0009534800075501105
+    },
+    {
+      "absorbed_photoelectrons_particles": 2.768905830407367e+58,
+      "absorbed_photons_by_species_particles": [
+        2.974269918634079e+57,
+        2.4714788385439594e+58,
+        0.0
+      ],
+      "case": "frozen",
+      "emitted_photons_per_original_neutral_HI": 0.003582784969696821,
+      "escaped_photons_per_original_neutral_HI": 0.003542052119366276,
+      "final_neutral_ratios": [
+        0.9999956246077382,
+        0.999397103960242,
+        1.0000000568063225
+      ],
+      "ionization_binding_eV_per_original_neutral_HI": 0.0009534334505081902
+    }
+  ],
+  "runtime_python": {
+    "DOP853_nfev_forced": 137,
+    "DOP853_nfev_frozen": 137,
+    "Radau_nfev_forced": 79,
+    "Radau_nfev_frozen": 79
+  },
+  "schema": "VIGILODE_REI_ORIGINAL_TIME_DEPENDENT_FOUR_GROUP_PHOTON_SOURCE_20261101_V1",
+  "scope": "source-frozen 3-moment photoionization-only; 5 original forcing clock sites; linear inter-knot source interpolant",
+  "source_cell_count": 46080,
+  "source_pr320_SHA256": "48ad5c6f0922ad946a10a89ce17fefd2c7241ac956b6bac194892a42810312a7",
+  "source_pr332_SHA256": "83d94b5383ac7c1f36d89486e83bf8b4a56dd1993a25af3ae1f8fed06a695ba9",
+  "source_pr342_SHA256": "88f7e5bb1c6c44c0ca0c7f2ef2c81ac70098cc7ed773096868b1e7b4db25c035",
+  "spatial_new_rows": 46080,
+  "spatial_physical_electron_delta_per_H_bounds_timevarying_quantiles": {
+    "lower": {
+      "0": 2.2413463071673934e-10,
+      "100": 4.160923491903658e-07,
+      "25": 6.245120423864007e-10,
+      "5": 2.8214154115981367e-10,
+      "50": 2.2840025869304818e-09,
+      "75": 2.2712379936244846e-08,
+      "95": 1.450037672129083e-07
+    },
+    "upper": {
+      "0": 2.241677178658472e-10,
+      "100": 4.2055008942933093e-07,
+      "25": 6.248989759883262e-10,
+      "5": 2.821805535536459e-10,
+      "50": 2.2918520334986343e-09,
+      "75": 2.2953502171571e-08,
+      "95": 1.4606437755028466e-07
+    }
+  },
+  "time_history_rows": 11
+}

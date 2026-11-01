@@ -1,0 +1,50 @@
+name: vigilode-rei-igm-timeforced-native-physics
+on:
+  push:
+    branches: [research/vigilode-rei-igm-five-clock-rodas5p-20261101]
+  pull_request:
+    paths:
+      - 'exploratory/rei_igm_timeforced_photoionization_20261101/**'
+      - 'crates/rodas5p-integrators/examples/rei_igm_five_clock_source.rs'
+      - '.github/workflows/vigilode-rei-igm-timeforced-physics.yml'
+permissions:
+  contents: read
+jobs:
+  original-source-scoped-physical-ivp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CARGO_BUILD_JOBS: '2'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install independent numerical physics reference
+        run: python -m pip install numpy==2.3.5 scipy==1.17.0
+      - name: Validate pinned REI source consumer, physical ledger and local Jacobian
+        run: |
+          cd exploratory/rei_igm_timeforced_photoionization_20261101
+          python -m unittest discover -s tests -p test_ci_core.py -v
+          python -O -m unittest discover -s tests -p test_ci_core.py -v
+          python ci_reference.py
+      - name: Execute original VigilODE RODAS5P on five-source-time REI model
+        run: |
+          mkdir -p science
+          cargo run --locked --release -p rodas5p-integrators --no-default-features --example rei_igm_five_clock_source > science/NATIVE_TIMEFORCED_PHYSICAL.json
+      - name: Compare actual native chemistry and photons with Radau/DOP853
+        run: |
+          cd exploratory/rei_igm_timeforced_photoionization_20261101
+          python verify_native.py "$GITHUB_WORKSPACE/science/NATIVE_TIMEFORCED_PHYSICAL.json"
+      - name: Rust source JVP, photon and nuclei invariants
+        run: cargo test --locked --release -p rodas5p-integrators --no-default-features --example rei_igm_five_clock_source -- --nocapture
+      - name: Retain source-frozen model data and native evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vigilode-rei-igm-five-clock-15state-native-science
+          path: science/
+          if-no-files-found: warn
