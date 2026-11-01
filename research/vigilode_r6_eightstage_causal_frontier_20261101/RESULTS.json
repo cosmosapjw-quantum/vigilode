@@ -1,0 +1,2785 @@
+{
+  "all_inputs_original": true,
+  "base_head": "7af490762873387c992edfbbbd66d0f8e6198607",
+  "causal_frontier_full_depth_W_work": 36,
+  "distinct_models": 3,
+  "exact_arithmetic_finite_sweep_depth": 8,
+  "existing_tolerances_changed": false,
+  "frontier_protocol_id": "UNACCELERATED_SIMULTANEOUS_CAUSAL_FRONTIER_V1",
+  "frozen_source_git_blobs": {
+    "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs": "d68239d53977e36f98b186b627aa0c4c5c7de7cb",
+    "crates/vigilode-coupled/examples/coupled_achieved_wp.rs": "1bfc17ec2ed4b902cc06073807388f6e332e31d6",
+    "crates/vigilode-coupled/src/coupled_inverse_be.rs": "d78c5c5f6f476f2a5b1ea88628ed25daa6cfc482"
+  },
+  "full_IVP_matched_achieved_global_error": "NOT_RUN",
+  "full_native_Rust_8_stage_parity": "NOT_RUN",
+  "full_real_performance_claim": "NOT_ADMITTED",
+  "global_contraction_needed_for_causal_finite_sweeps": false,
+  "independent_author_C9": "NOT_RUN",
+  "native_transactional_q1_q2_implemented_comparator_executed": false,
+  "nonnormal_negative_control": {
+    "8_sweeps_exact_arithmetic_double_representable": true,
+    "at_three_sweeps_genuine_error": 1006.8359375,
+    "global_contraction": false,
+    "history": [
+      {
+        "max_true_error": 1015.5859375,
+        "sweep": 1
+      },
+      {
+        "max_true_error": 1013.0859375,
+        "sweep": 2
+      },
+      {
+        "max_true_error": 1006.8359375,
+        "sweep": 3
+      },
+      {
+        "max_true_error": 991.2109375,
+        "sweep": 4
+      },
+      {
+        "max_true_error": 952.1484375,
+        "sweep": 5
+      },
+      {
+        "max_true_error": 854.4921875,
+        "sweep": 6
+      },
+      {
+        "max_true_error": 610.3515625,
+        "sweep": 7
+      },
+      {
+        "max_true_error": 0.0,
+        "sweep": 8
+      }
+    ],
+    "strictly_lower_block_norm_inf": 2.5
+  },
+  "official_dag": "7/23",
+  "original_raw_U_stage_count": 8,
+  "original_solver_changed": false,
+  "production": "HOLD",
+  "protected_fallback_required_if_error_gate_fails": true,
+  "protected_serial_full_depth_W_work": 8,
+  "q2_causal_depth": 3,
+  "q2_cumulative_W_solve_work": 21,
+  "records": [
+    {
+      "case": "asymmetric_2",
+      "frontier_q0_to_q7": [
+        {
+          "actual_high_precision_endpoint_linf_error": 0.011637388449670216,
+          "actual_high_precision_stage_linf_error": 0.006294936922967086,
+          "all_original_stages_residual_max": 0.029186197060512845,
+          "cumulative_original_W_solves": 8,
+          "last_sweep_original_W_solves": 8,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q0",
+          "rigorous_source_scoped_endpoint_bound_inf": 13.905368845073165,
+          "rigorous_source_scoped_stage_bound_inf": 11.112090664324102,
+          "serial_stage_depth": 1,
+          "stage_certificates": [
+            {
+              "error_bound_up": 3.66184358988442e-20,
+              "exact_residual_upper": 3.669604411956807e-20,
+              "local_lipschitz_up": 30.400000000000002,
+              "stage": 1,
+              "tube_inf_up": 0.2
+            },
+            {
+              "error_bound_up": 0.0019033898163690445,
+              "exact_residual_upper": 0.0019074238143639453,
+              "local_lipschitz_up": 30.35468896313036,
+              "stage": 2,
+              "tube_inf_up": 0.19810304402550874
+            },
+            {
+              "error_bound_up": 0.003957355655501017,
+              "exact_residual_upper": 0.002803367447778975,
+              "local_lipschitz_up": 30.37083225809227,
+              "stage": 3,
+              "tube_inf_up": 0.19878096228815398
+            },
+            {
+              "error_bound_up": 0.09017474302761765,
+              "exact_residual_upper": 0.029186197060512845,
+              "local_lipschitz_up": 31.904755004881316,
+              "stage": 4,
+              "tube_inf_up": 0.2551063505312152
+            },
+            {
+              "error_bound_up": 0.17685997823824517,
+              "exact_residual_upper": 0.02705016385259998,
+              "local_lipschitz_up": 30.521254866837683,
+              "stage": 5,
+              "tube_inf_up": 0.2049900349951058
+            },
+            {
+              "error_bound_up": 0.18290552093074905,
+              "exact_residual_upper": 0.010011604752187172,
+              "local_lipschitz_up": 32.81479173443867,
+              "stage": 6,
+              "tube_inf_up": 0.28327818290032697
+            },
+            {
+              "error_bound_up": 2.5376674958010192,
+              "exact_residual_upper": 0.01247726207348617,
+              "local_lipschitz_up": 49.008571068370074,
+              "stage": 7,
+              "tube_inf_up": 0.4655513851729122
+            },
+            {
+              "error_bound_up": 11.112090664324102,
+              "exact_residual_upper": 0.014729709572451536,
+              "local_lipschitz_up": 1104.8631277039065,
+              "stage": 8,
+              "tube_inf_up": 3.0025865623157677
+            }
+          ],
+          "sweep": 1
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.04844397142557397,
+          "actual_high_precision_stage_linf_error": 0.024281278579733105,
+          "all_original_stages_residual_max": 0.061839092172648547,
+          "cumulative_original_W_solves": 15,
+          "last_sweep_original_W_solves": 7,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q1",
+          "rigorous_source_scoped_endpoint_bound_inf": 8.840470631341713,
+          "rigorous_source_scoped_stage_bound_inf": 7.027344224359894,
+          "serial_stage_depth": 2,
+          "stage_certificates": [
+            {
+              "error_bound_up": 3.66184358988442e-20,
+              "exact_residual_upper": 3.669604411956807e-20,
+              "local_lipschitz_up": 30.400000000000002,
+              "stage": 1,
+              "tube_inf_up": 0.2
+            },
+            {
+              "error_bound_up": 3.811643205159748e-19,
+              "exact_residual_upper": 2.7101257441036526e-19,
+              "local_lipschitz_up": 30.35468896313036,
+              "stage": 2,
+              "tube_inf_up": 0.19810304402550874
+            },
+            {
+              "error_bound_up": 0.0011520438865891959,
+              "exact_residual_upper": 0.0011544855003293615,
+              "local_lipschitz_up": 30.370761749108173,
+              "stage": 3,
+              "tube_inf_up": 0.1987780063751257
+            },
+            {
+              "error_bound_up": 0.05942238256836898,
+              "exact_residual_upper": 0.041924666162900616,
+              "local_lipschitz_up": 30.332076016765843,
+              "stage": 4,
+              "tube_inf_up": 0.19714952095494437
+            },
+            {
+              "error_bound_up": 0.14712131550707658,
+              "exact_residual_upper": 0.061839092172648547,
+              "local_lipschitz_up": 30.46461680945382,
+              "stage": 5,
+              "tube_inf_up": 0.20267448488704815
+            },
+            {
+              "error_bound_up": 0.10615053888981342,
+              "exact_residual_upper": 0.003582852279440379,
+              "local_lipschitz_up": 30.804539842492172,
+              "stage": 6,
+              "tube_inf_up": 0.21619974724361463
+            },
+            {
+              "error_bound_up": 1.6782819003137377,
+              "exact_residual_upper": 0.0021298095254694,
+              "local_lipschitz_up": 34.66341948355218,
+              "stage": 7,
+              "tube_inf_up": 0.31176138690180166
+            },
+            {
+              "error_bound_up": 7.027344224359894,
+              "exact_residual_upper": 0.022261524034629415,
+              "local_lipschitz_up": 492.02454676679037,
+              "stage": 8,
+              "tube_inf_up": 1.977002248284825
+            }
+          ],
+          "sweep": 2
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.020161008435382127,
+          "actual_high_precision_stage_linf_error": 0.04089336247476129,
+          "all_original_stages_residual_max": 0.07892442803048523,
+          "cumulative_original_W_solves": 21,
+          "last_sweep_original_W_solves": 6,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q2",
+          "rigorous_source_scoped_endpoint_bound_inf": 4.56727448279794,
+          "rigorous_source_scoped_stage_bound_inf": 3.606895819094904,
+          "serial_stage_depth": 3,
+          "stage_certificates": [
+            {
+              "error_bound_up": 3.66184358988442e-20,
+              "exact_residual_upper": 3.669604411956807e-20,
+              "local_lipschitz_up": 30.400000000000002,
+              "stage": 1,
+              "tube_inf_up": 0.2
+            },
+            {
+              "error_bound_up": 3.811643205159748e-19,
+              "exact_residual_upper": 2.7101257441036526e-19,
+              "local_lipschitz_up": 30.35468896313036,
+              "stage": 2,
+              "tube_inf_up": 0.19810304402550874
+            },
+            {
+              "error_bound_up": 5.492552394924719e-19,
+              "exact_residual_upper": 1.7711290831110198e-19,
+              "local_lipschitz_up": 30.370761749108173,
+              "stage": 3,
+              "tube_inf_up": 0.1987780063751257
+            },
+            {
+              "error_bound_up": 0.01747237664147145,
+              "exact_residual_upper": 0.017509407170757503,
+              "local_lipschitz_up": 30.331120377020348,
+              "stage": 4,
+              "tube_inf_up": 0.1971091227814493
+            },
+            {
+              "error_bound_up": 0.08502264337424734,
+              "exact_residual_upper": 0.06311698990960506,
+              "local_lipschitz_up": 30.36947160715345,
+              "stage": 5,
+              "tube_inf_up": 0.1987239126339794
+            },
+            {
+              "error_bound_up": 0.06161422173566599,
+              "exact_residual_upper": 0.029106361305104654,
+              "local_lipschitz_up": 30.420575857250206,
+              "stage": 6,
+              "tube_inf_up": 0.20085549769466127
+            },
+            {
+              "error_bound_up": 0.8930049256648459,
+              "exact_residual_upper": 0.05631880933695054,
+              "local_lipschitz_up": 31.699687534682536,
+              "stage": 7,
+              "tube_inf_up": 0.24831725455830805
+            },
+            {
+              "error_bound_up": 3.606895819094904,
+              "exact_residual_upper": 0.07892442803048523,
+              "local_lipschitz_up": 176.33615527709875,
+              "stage": 8,
+              "tube_inf_up": 1.1303987322957432
+            }
+          ],
+          "sweep": 3
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.14457513968764218,
+          "actual_high_precision_stage_linf_error": 0.085350688012497,
+          "all_original_stages_residual_max": 0.16250722726239425,
+          "cumulative_original_W_solves": 26,
+          "last_sweep_original_W_solves": 5,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q3",
+          "rigorous_source_scoped_endpoint_bound_inf": 1.2070124761029881,
+          "rigorous_source_scoped_stage_bound_inf": 0.9695240239857283,
+          "serial_stage_depth": 4,
+          "stage_certificates": [
+            {
+              "error_bound_up": 3.66184358988442e-20,
+              "exact_residual_upper": 3.669604411956807e-20,
+              "local_lipschitz_up": 30.400000000000002,
+              "stage": 1,
+              "tube_inf_up": 0.2
+            },
+            {
+              "error_bound_up": 3.811643205159748e-19,
+              "exact_residual_upper": 2.7101257441036526e-19,
+              "local_lipschitz_up": 30.35468896313036,
+              "stage": 2,
+              "tube_inf_up": 0.19810304402550874
+            },
+            {
+              "error_bound_up": 5.492552394924719e-19,
+              "exact_residual_upper": 1.7711290831110198e-19,
+              "local_lipschitz_up": 30.370761749108173,
+              "stage": 3,
+              "tube_inf_up": 0.1987780063751257
+            },
+            {
+              "error_bound_up": 1.2712995275071575e-17,
+              "exact_residual_upper": 3.069626247482771e-18,
+              "local_lipschitz_up": 30.331120377020348,
+              "stage": 4,
+              "tube_inf_up": 0.1971091227814493
+            },
+            {
+              "error_bound_up": 0.021951838893797794,
+              "exact_residual_upper": 0.021998363086225624,
+              "local_lipschitz_up": 30.36940508256314,
+              "stage": 5,
+              "tube_inf_up": 0.19872112295723793
+            },
+            {
+              "error_bound_up": 0.01486161894642371,
+              "exact_residual_upper": 0.011810887278555143,
+              "local_lipschitz_up": 30.32959220428329,
+              "stage": 6,
+              "tube_inf_up": 0.1970445044604259
+            },
+            {
+              "error_bound_up": 0.22196392776402094,
+              "exact_residual_upper": 0.044956175469657585,
+              "local_lipschitz_up": 31.083590489390584,
+              "stage": 7,
+              "tube_inf_up": 0.22670062819316666
+            },
+            {
+              "error_bound_up": 0.9695240239857283,
+              "exact_residual_upper": 0.16250722726239425,
+              "local_lipschitz_up": 52.25487452361774,
+              "stage": 8,
+              "tube_inf_up": 0.4937515782558551
+            }
+          ],
+          "sweep": 4
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.07283549299678366,
+          "actual_high_precision_stage_linf_error": 0.07626550458273015,
+          "all_original_stages_residual_max": 0.04054715347183846,
+          "cumulative_original_W_solves": 30,
+          "last_sweep_original_W_solves": 4,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q4",
+          "rigorous_source_scoped_endpoint_bound_inf": 0.18983304645956756,
+          "rigorous_source_scoped_stage_bound_inf": 0.15002337719773162,
+          "serial_stage_depth": 5,
+          "stage_certificates": [
+            {
+              "error_bound_up": 3.66184358988442e-20,
+              "exact_residual_upper": 3.669604411956807e-20,
+              "local_lipschitz_up": 30.400000000000002,
+              "stage": 1,
+              "tube_inf_up": 0.2
+            },
+            {
+              "error_bound_up": 3.811643205159748e-19,
+              "exact_residual_upper": 2.7101257441036526e-19,
+              "local_lipschitz_up": 30.35468896313036,
+              "stage": 2,
+              "tube_inf_up": 0.19810304402550874
+            },
+            {
+              "error_bound_up": 5.492552394924719e-19,
+              "exact_residual_upper": 1.7711290831110198e-19,
+              "local_lipschitz_up": 30.370761749108173,
+              "stage": 3,
+              "tube_inf_up": 0.1987780063751257
+            },
+            {
+              "error_bound_up": 1.2712995275071575e-17,
+              "exact_residual_upper": 3.069626247482771e-18,
+              "local_lipschitz_up": 30.331120377020348,
+              "stage": 4,
+              "tube_inf_up": 0.1971091227814493
+            },
+            {
+              "error_bound_up": 2.4699411023580306e-17,
+              "exact_residual_upper": 2.3607936664086875e-18,
+              "local_lipschitz_up": 30.36940508256314,
+              "stage": 5,
+              "tube_inf_up": 0.19872112295723793
+            },
+            {
+              "error_bound_up": 0.0030623352994170036,
+              "exact_residual_upper": 0.0030688255382274017,
+              "local_lipschitz_up": 30.329539364289907,
+              "stage": 6,
+              "tube_inf_up": 0.1970422697582892
+            },
+            {
+              "error_bound_up": 0.0367473339624189,
+              "exact_residual_upper": 0.018564563505119397,
+              "local_lipschitz_up": 30.476269637836953,
+              "stage": 7,
+              "tube_inf_up": 0.20315304730822004
+            },
+            {
+              "error_bound_up": 0.15002337719773162,
+              "exact_residual_upper": 0.04054715347183846,
+              "local_lipschitz_up": 31.464021281864255,
+              "stage": 8,
+              "tube_inf_up": 0.2402783553112325
+            }
+          ],
+          "sweep": 5
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.05402949982873931,
+          "actual_high_precision_stage_linf_error": 0.035943636028093924,
+          "all_original_stages_residual_max": 0.07260787874947087,
+          "cumulative_original_W_solves": 33,
+          "last_sweep_original_W_solves": 3,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q5",
+          "rigorous_source_scoped_endpoint_bound_inf": 0.1271987382174857,
+          "rigorous_source_scoped_stage_bound_inf": 0.10905200384252395,
+          "serial_stage_depth": 6,
+          "stage_certificates": [
+            {
+              "error_bound_up": 3.66184358988442e-20,
+              "exact_residual_upper": 3.669604411956807e-20,
+              "local_lipschitz_up": 30.400000000000002,
+              "stage": 1,
+              "tube_inf_up": 0.2
+            },
+            {
+              "error_bound_up": 3.811643205159748e-19,
+              "exact_residual_upper": 2.7101257441036526e-19,
+              "local_lipschitz_up": 30.35468896313036,
+              "stage": 2,
+              "tube_inf_up": 0.19810304402550874
+            },
+            {
+              "error_bound_up": 5.492552394924719e-19,
+              "exact_residual_upper": 1.7711290831110198e-19,
+              "local_lipschitz_up": 30.370761749108173,
+              "stage": 3,
+              "tube_inf_up": 0.1987780063751257
+            },
+            {
+              "error_bound_up": 1.2712995275071575e-17,
+              "exact_residual_upper": 3.069626247482771e-18,
+              "local_lipschitz_up": 30.331120377020348,
+              "stage": 4,
+              "tube_inf_up": 0.1971091227814493
+            },
+            {
+              "error_bound_up": 2.4699411023580306e-17,
+              "exact_residual_upper": 2.3607936664086875e-18,
+              "local_lipschitz_up": 30.36940508256314,
+              "stage": 5,
+              "tube_inf_up": 0.19872112295723793
+            },
+            {
+              "error_bound_up": 2.4754803585492546e-17,
+              "exact_residual_upper": 2.3697047451663797e-19,
+              "local_lipschitz_up": 30.329539364289907,
+              "stage": 6,
+              "tube_inf_up": 0.1970422697582892
+            },
+            {
+              "error_bound_up": 0.018146734374961702,
+              "exact_residual_upper": 0.018185194121594986,
+              "local_lipschitz_up": 30.329454371771043,
+              "stage": 7,
+              "tube_inf_up": 0.19703867521255147
+            },
+            {
+              "error_bound_up": 0.10905200384252395,
+              "exact_residual_upper": 0.07260787874947087,
+              "local_lipschitz_up": 30.33089383924567,
+              "stage": 8,
+              "tube_inf_up": 0.19709954503776647
+            }
+          ],
+          "sweep": 6
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.036269229184627216,
+          "actual_high_precision_stage_linf_error": 0.03626922918462717,
+          "all_original_stages_residual_max": 0.03646823476660945,
+          "cumulative_original_W_solves": 35,
+          "last_sweep_original_W_solves": 2,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q6",
+          "rigorous_source_scoped_endpoint_bound_inf": 0.036391108338379496,
+          "rigorous_source_scoped_stage_bound_inf": 0.0363911083383791,
+          "serial_stage_depth": 7,
+          "stage_certificates": [
+            {
+              "error_bound_up": 3.66184358988442e-20,
+              "exact_residual_upper": 3.669604411956807e-20,
+              "local_lipschitz_up": 30.400000000000002,
+              "stage": 1,
+              "tube_inf_up": 0.2
+            },
+            {
+              "error_bound_up": 3.811643205159748e-19,
+              "exact_residual_upper": 2.7101257441036526e-19,
+              "local_lipschitz_up": 30.35468896313036,
+              "stage": 2,
+              "tube_inf_up": 0.19810304402550874
+            },
+            {
+              "error_bound_up": 5.492552394924719e-19,
+              "exact_residual_upper": 1.7711290831110198e-19,
+              "local_lipschitz_up": 30.370761749108173,
+              "stage": 3,
+              "tube_inf_up": 0.1987780063751257
+            },
+            {
+              "error_bound_up": 1.2712995275071575e-17,
+              "exact_residual_upper": 3.069626247482771e-18,
+              "local_lipschitz_up": 30.331120377020348,
+              "stage": 4,
+              "tube_inf_up": 0.1971091227814493
+            },
+            {
+              "error_bound_up": 2.4699411023580306e-17,
+              "exact_residual_upper": 2.3607936664086875e-18,
+              "local_lipschitz_up": 30.36940508256314,
+              "stage": 5,
+              "tube_inf_up": 0.19872112295723793
+            },
+            {
+              "error_bound_up": 2.4754803585492546e-17,
+              "exact_residual_upper": 2.3697047451663797e-19,
+              "local_lipschitz_up": 30.329539364289907,
+              "stage": 6,
+              "tube_inf_up": 0.1970422697582892
+            },
+            {
+              "error_bound_up": 3.539539658354888e-16,
+              "exact_residual_upper": 5.087309163219848e-18,
+              "local_lipschitz_up": 30.329454371771043,
+              "stage": 7,
+              "tube_inf_up": 0.19703867521255147
+            },
+            {
+              "error_bound_up": 0.0363911083383791,
+              "exact_residual_upper": 0.03646823476660945,
+              "local_lipschitz_up": 30.329454354058818,
+              "stage": 8,
+              "tube_inf_up": 0.19703867446345052
+            }
+          ],
+          "sweep": 7
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 2.7755575615628914e-17,
+          "actual_high_precision_stage_linf_error": 2.4859179332922182e-17,
+          "all_original_stages_residual_max": 5.087309163219848e-18,
+          "cumulative_original_W_solves": 36,
+          "last_sweep_original_W_solves": 1,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q7",
+          "rigorous_source_scoped_endpoint_bound_inf": 1.796711604463364e-15,
+          "rigorous_source_scoped_stage_bound_inf": 1.407296736486774e-15,
+          "serial_stage_depth": 8,
+          "stage_certificates": [
+            {
+              "error_bound_up": 3.66184358988442e-20,
+              "exact_residual_upper": 3.669604411956807e-20,
+              "local_lipschitz_up": 30.400000000000002,
+              "stage": 1,
+              "tube_inf_up": 0.2
+            },
+            {
+              "error_bound_up": 3.811643205159748e-19,
+              "exact_residual_upper": 2.7101257441036526e-19,
+              "local_lipschitz_up": 30.35468896313036,
+              "stage": 2,
+              "tube_inf_up": 0.19810304402550874
+            },
+            {
+              "error_bound_up": 5.492552394924719e-19,
+              "exact_residual_upper": 1.7711290831110198e-19,
+              "local_lipschitz_up": 30.370761749108173,
+              "stage": 3,
+              "tube_inf_up": 0.1987780063751257
+            },
+            {
+              "error_bound_up": 1.2712995275071575e-17,
+              "exact_residual_upper": 3.069626247482771e-18,
+              "local_lipschitz_up": 30.331120377020348,
+              "stage": 4,
+              "tube_inf_up": 0.1971091227814493
+            },
+            {
+              "error_bound_up": 2.4699411023580306e-17,
+              "exact_residual_upper": 2.3607936664086875e-18,
+              "local_lipschitz_up": 30.36940508256314,
+              "stage": 5,
+              "tube_inf_up": 0.19872112295723793
+            },
+            {
+              "error_bound_up": 2.4754803585492546e-17,
+              "exact_residual_upper": 2.3697047451663797e-19,
+              "local_lipschitz_up": 30.329539364289907,
+              "stage": 6,
+              "tube_inf_up": 0.1970422697582892
+            },
+            {
+              "error_bound_up": 3.539539658354888e-16,
+              "exact_residual_upper": 5.087309163219848e-18,
+              "local_lipschitz_up": 30.329454371771043,
+              "stage": 7,
+              "tube_inf_up": 0.19703867521255147
+            },
+            {
+              "error_bound_up": 1.407296736486774e-15,
+              "exact_residual_upper": 4.047994953747813e-18,
+              "local_lipschitz_up": 30.329454354058818,
+              "stage": 8,
+              "tube_inf_up": 0.19703867446345052
+            }
+          ],
+          "sweep": 8
+        }
+      ],
+      "h": 0.0015625,
+      "h_gamma": 0.00033115244249107837,
+      "independent_physical_model": true,
+      "initial_state": [
+        0.2,
+        0.12
+      ],
+      "protected_sequential": {
+        "endpoint": [
+          0.19703867445887221,
+          0.11956651937721403
+        ],
+        "original_W_stage_solves": 8,
+        "reference_endpoint": [
+          0.1970386744588722,
+          0.11956651937721403
+        ],
+        "serial_stage_depth": 8,
+        "source_scoped_exact_rational_residual_certificate": {
+          "certificate": "EXACT_BINARY64_AS_RATIONAL_SOURCE_SCOPED",
+          "endpoint_bound_upper": 1.796711604463364e-15,
+          "max_error_upper": 1.407296736486774e-15,
+          "max_residual_upper": 5.087309163219848e-18,
+          "no_native_callback_rounding_certificate": true,
+          "stage_bound": [
+            {
+              "error_bound_up": 3.66184358988442e-20,
+              "exact_residual_upper": 3.669604411956807e-20,
+              "local_lipschitz_up": 30.400000000000002,
+              "stage": 1,
+              "tube_inf_up": 0.2
+            },
+            {
+              "error_bound_up": 3.811643205159748e-19,
+              "exact_residual_upper": 2.7101257441036526e-19,
+              "local_lipschitz_up": 30.35468896313036,
+              "stage": 2,
+              "tube_inf_up": 0.19810304402550874
+            },
+            {
+              "error_bound_up": 5.492552394924719e-19,
+              "exact_residual_upper": 1.7711290831110198e-19,
+              "local_lipschitz_up": 30.370761749108173,
+              "stage": 3,
+              "tube_inf_up": 0.1987780063751257
+            },
+            {
+              "error_bound_up": 1.2712995275071575e-17,
+              "exact_residual_upper": 3.069626247482771e-18,
+              "local_lipschitz_up": 30.331120377020348,
+              "stage": 4,
+              "tube_inf_up": 0.1971091227814493
+            },
+            {
+              "error_bound_up": 2.4699411023580306e-17,
+              "exact_residual_upper": 2.3607936664086875e-18,
+              "local_lipschitz_up": 30.36940508256314,
+              "stage": 5,
+              "tube_inf_up": 0.19872112295723793
+            },
+            {
+              "error_bound_up": 2.4754803585492546e-17,
+              "exact_residual_upper": 2.3697047451663797e-19,
+              "local_lipschitz_up": 30.329539364289907,
+              "stage": 6,
+              "tube_inf_up": 0.1970422697582892
+            },
+            {
+              "error_bound_up": 3.539539658354888e-16,
+              "exact_residual_upper": 5.087309163219848e-18,
+              "local_lipschitz_up": 30.329454371771043,
+              "stage": 7,
+              "tube_inf_up": 0.19703867521255147
+            },
+            {
+              "error_bound_up": 1.407296736486774e-15,
+              "exact_residual_upper": 4.047994953747813e-18,
+              "local_lipschitz_up": 30.329454354058818,
+              "stage": 8,
+              "tube_inf_up": 0.19703867446345052
+            }
+          ]
+        },
+        "stage_linf_reference_error": 2.4859179332922182e-17
+      },
+      "source_family": "asymmetric_2",
+      "source_owned_newton_free_first_W_Jacobi": {
+        "component_arithmetic_work_proxy": 24,
+        "contraction_ratio_bound": 0.003949762596918319,
+        "exact_original_W_residual_inf": 7.589415207398531e-19,
+        "iterations": 6,
+        "no_jacobian_callback": true,
+        "no_newton": true
+      },
+      "steps_original": 64
+    },
+    {
+      "case": "asymmetric_2_refined",
+      "frontier_q0_to_q7": [
+        {
+          "actual_high_precision_endpoint_linf_error": 0.0058402407756326935,
+          "actual_high_precision_stage_linf_error": 0.003159110667775806,
+          "all_original_stages_residual_max": 0.014620163158420855,
+          "cumulative_original_W_solves": 8,
+          "last_sweep_original_W_solves": 8,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q0",
+          "rigorous_source_scoped_endpoint_bound_inf": 6.522386454926115,
+          "rigorous_source_scoped_stage_bound_inf": 5.126228721265969,
+          "serial_stage_depth": 1,
+          "stage_certificates": [
+            {
+              "error_bound_up": 3.988877503196937e-21,
+              "exact_residual_upper": 3.9931044680864775e-21,
+              "local_lipschitz_up": 30.400000000000002,
+              "stage": 1,
+              "tube_inf_up": 0.2
+            },
+            {
+              "error_bound_up": 0.0009527076672129019,
+              "exact_residual_upper": 0.00095371723992003,
+              "local_lipschitz_up": 30.37722814257811,
+              "stage": 2,
+              "tube_inf_up": 0.19904891118257467
+            },
+            {
+              "error_bound_up": 0.001980166546216885,
+              "exact_residual_upper": 0.0014026539534839992,
+              "local_lipschitz_up": 30.385336068530943,
+              "stage": 3,
+              "tube_inf_up": 0.1993880666995454
+            },
+            {
+              "error_bound_up": 0.04506144175247613,
+              "exact_residual_upper": 0.014620163158420855,
+              "local_lipschitz_up": 31.107669136124013,
+              "stage": 4,
+              "tube_inf_up": 0.22758401877563117
+            },
+            {
+              "error_bound_up": 0.08852697899398881,
+              "exact_residual_upper": 0.013564813317596897,
+              "local_lipschitz_up": 30.460190520836214,
+              "stage": 5,
+              "tube_inf_up": 0.20249240812255206
+            },
+            {
+              "error_bound_up": 0.091342001081515,
+              "exact_residual_upper": 0.005004778954132073,
+              "local_lipschitz_up": 31.504313792203707,
+              "stage": 6,
+              "tube_inf_up": 0.2416717399077968
+            },
+            {
+              "error_bound_up": 1.2684450540350944,
+              "exact_residual_upper": 0.006241896193681318,
+              "local_lipschitz_up": 36.282452211847776,
+              "stage": 7,
+              "tube_inf_up": 0.3326967113835034
+            },
+            {
+              "error_bound_up": 5.126228721265969,
+              "exact_residual_upper": 0.007372113812750391,
+              "local_lipschitz_up": 330.51678017481044,
+              "stage": 8,
+              "tube_inf_up": 1.6008247358127894
+            }
+          ],
+          "sweep": 1
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.024300058894356324,
+          "actual_high_precision_stage_linf_error": 0.012199180206938401,
+          "all_original_stages_residual_max": 0.031049117584992975,
+          "cumulative_original_W_solves": 15,
+          "last_sweep_original_W_solves": 7,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q1",
+          "rigorous_source_scoped_endpoint_bound_inf": 4.315008489169854,
+          "rigorous_source_scoped_stage_bound_inf": 3.40541024785008,
+          "serial_stage_depth": 2,
+          "stage_certificates": [
+            {
+              "error_bound_up": 3.988877503196937e-21,
+              "exact_residual_upper": 3.9931044680864775e-21,
+              "local_lipschitz_up": 30.400000000000002,
+              "stage": 1,
+              "tube_inf_up": 0.2
+            },
+            {
+              "error_bound_up": 9.121163972844348e-20,
+              "exact_residual_upper": 7.928147395239756e-20,
+              "local_lipschitz_up": 30.37722814257811,
+              "stage": 2,
+              "tube_inf_up": 0.19904891118257467
+            },
+            {
+              "error_bound_up": 0.0005770242755544077,
+              "exact_residual_upper": 0.0005776357411487324,
+              "local_lipschitz_up": 30.385318292626593,
+              "stage": 3,
+              "tube_inf_up": 0.19938732376234414
+            },
+            {
+              "error_bound_up": 0.0297671295275002,
+              "exact_residual_upper": 0.021001499666669983,
+              "local_lipschitz_up": 30.36544084618604,
+              "stage": 4,
+              "tube_inf_up": 0.19855481385023285
+            },
+            {
+              "error_bound_up": 0.07383945441090504,
+              "exact_residual_upper": 0.031049117584992975,
+              "local_lipschitz_up": 30.432276411086395,
+              "stage": 5,
+              "tube_inf_up": 0.201340359055936
+            },
+            {
+              "error_bound_up": 0.05322650798909632,
+              "exact_residual_upper": 0.0018447745403916002,
+              "local_lipschitz_up": 30.59847367601852,
+              "stage": 6,
+              "tube_inf_up": 0.20810548911623802
+            },
+            {
+              "error_bound_up": 0.8419944564063244,
+              "exact_residual_upper": 0.0009969686515785476,
+              "local_lipschitz_up": 31.932897063074947,
+              "stage": 7,
+              "tube_inf_up": 0.2560239918144048
+            },
+            {
+              "error_bound_up": 3.40541024785008,
+              "exact_residual_upper": 0.011071652103385185,
+              "local_lipschitz_up": 165.95857515176786,
+              "stage": 8,
+              "tube_inf_up": 1.0914767334203994
+            }
+          ],
+          "sweep": 2
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.010297715119508583,
+          "actual_high_precision_stage_linf_error": 0.0205952814696651,
+          "all_original_stages_residual_max": 0.03977906966296118,
+          "cumulative_original_W_solves": 21,
+          "last_sweep_original_W_solves": 6,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q2",
+          "rigorous_source_scoped_endpoint_bound_inf": 2.2751229650907905,
+          "rigorous_source_scoped_stage_bound_inf": 1.792403530484131,
+          "serial_stage_depth": 3,
+          "stage_certificates": [
+            {
+              "error_bound_up": 3.988877503196937e-21,
+              "exact_residual_upper": 3.9931044680864775e-21,
+              "local_lipschitz_up": 30.400000000000002,
+              "stage": 1,
+              "tube_inf_up": 0.2
+            },
+            {
+              "error_bound_up": 9.121163972844348e-20,
+              "exact_residual_upper": 7.928147395239756e-20,
+              "local_lipschitz_up": 30.37722814257811,
+              "stage": 2,
+              "tube_inf_up": 0.19904891118257467
+            },
+            {
+              "error_bound_up": 1.286173445426909e-19,
+              "exact_residual_upper": 5.80106495772104e-20,
+              "local_lipschitz_up": 30.385318292626593,
+              "stage": 3,
+              "tube_inf_up": 0.19938732376234414
+            },
+            {
+              "error_bound_up": 0.008759324927652593,
+              "exact_residual_upper": 0.008768607077554558,
+              "local_lipschitz_up": 30.365198672661922,
+              "stage": 4,
+              "tube_inf_up": 0.1985446495821499
+            },
+            {
+              "error_bound_up": 0.04272502456648256,
+              "exact_residual_upper": 0.03170020833146239,
+              "local_lipschitz_up": 30.384649325786015,
+              "stage": 5,
+              "tube_inf_up": 0.19935936253350856
+            },
+            {
+              "error_bound_up": 0.030956903288412427,
+              "exact_residual_upper": 0.014627632661135589,
+              "local_lipschitz_up": 30.410223292978113,
+              "stage": 6,
+              "tube_inf_up": 0.20042551787709534
+            },
+            {
+              "error_bound_up": 0.44887209295771363,
+              "exact_residual_upper": 0.028313417823150954,
+              "local_lipschitz_up": 31.016871446413017,
+              "stage": 7,
+              "tube_inf_up": 0.22423467790141266
+            },
+            {
+              "error_bound_up": 1.792403530484131,
+              "exact_residual_upper": 0.03977906966296118,
+              "local_lipschitz_up": 76.47623585346749,
+              "stage": 8,
+              "tube_inf_up": 0.6675592099423808
+            }
+          ],
+          "sweep": 3
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.07283764241458673,
+          "actual_high_precision_stage_linf_error": 0.04304190806438147,
+          "all_original_stages_residual_max": 0.0815204973940531,
+          "cumulative_original_W_solves": 26,
+          "last_sweep_original_W_solves": 5,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q3",
+          "rigorous_source_scoped_endpoint_bound_inf": 0.6052146688977253,
+          "rigorous_source_scoped_stage_bound_inf": 0.48597643761326736,
+          "serial_stage_depth": 4,
+          "stage_certificates": [
+            {
+              "error_bound_up": 3.988877503196937e-21,
+              "exact_residual_upper": 3.9931044680864775e-21,
+              "local_lipschitz_up": 30.400000000000002,
+              "stage": 1,
+              "tube_inf_up": 0.2
+            },
+            {
+              "error_bound_up": 9.121163972844348e-20,
+              "exact_residual_upper": 7.928147395239756e-20,
+              "local_lipschitz_up": 30.37722814257811,
+              "stage": 2,
+              "tube_inf_up": 0.19904891118257467
+            },
+            {
+              "error_bound_up": 1.286173445426909e-19,
+              "exact_residual_upper": 5.80106495772104e-20,
+              "local_lipschitz_up": 30.385318292626593,
+              "stage": 3,
+              "tube_inf_up": 0.19938732376234414
+            },
+            {
+              "error_bound_up": 3.256596838812699e-18,
+              "exact_residual_upper": 1.1462221581537488e-18,
+              "local_lipschitz_up": 30.365198672661922,
+              "stage": 4,
+              "tube_inf_up": 0.1985446495821499
+            },
+            {
+              "error_bound_up": 0.011036364671254325,
+              "exact_residual_upper": 0.011048059772429064,
+              "local_lipschitz_up": 30.384632511020882,
+              "stage": 5,
+              "tube_inf_up": 0.19935865966564223
+            },
+            {
+              "error_bound_up": 0.007456566282123599,
+              "exact_residual_upper": 0.005916538123624082,
+              "local_lipschitz_up": 30.364401938267136,
+              "stage": 6,
+              "tube_inf_up": 0.1985112061600526
+            },
+            {
+              "error_bound_up": 0.11144838696364458,
+              "exact_residual_upper": 0.022469683723806894,
+              "local_lipschitz_up": 30.732562891820418,
+              "stage": 7,
+              "tube_inf_up": 0.21340739177374718
+            },
+            {
+              "error_bound_up": 0.48597643761326736,
+              "exact_residual_upper": 0.0815204973940531,
+              "local_lipschitz_up": 37.494394592797114,
+              "stage": 8,
+              "tube_inf_up": 0.34754369740601343
+            }
+          ],
+          "sweep": 4
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.03643350928986816,
+          "actual_high_precision_stage_linf_error": 0.03825401999411018,
+          "all_original_stages_residual_max": 0.01994522809053665,
+          "cumulative_original_W_solves": 30,
+          "last_sweep_original_W_solves": 4,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q4",
+          "rigorous_source_scoped_endpoint_bound_inf": 0.09547437001514254,
+          "rigorous_source_scoped_stage_bound_inf": 0.07530427219121896,
+          "serial_stage_depth": 5,
+          "stage_certificates": [
+            {
+              "error_bound_up": 3.988877503196937e-21,
+              "exact_residual_upper": 3.9931044680864775e-21,
+              "local_lipschitz_up": 30.400000000000002,
+              "stage": 1,
+              "tube_inf_up": 0.2
+            },
+            {
+              "error_bound_up": 9.121163972844348e-20,
+              "exact_residual_upper": 7.928147395239756e-20,
+              "local_lipschitz_up": 30.37722814257811,
+              "stage": 2,
+              "tube_inf_up": 0.19904891118257467
+            },
+            {
+              "error_bound_up": 1.286173445426909e-19,
+              "exact_residual_upper": 5.80106495772104e-20,
+              "local_lipschitz_up": 30.385318292626593,
+              "stage": 3,
+              "tube_inf_up": 0.19938732376234414
+            },
+            {
+              "error_bound_up": 3.256596838812699e-18,
+              "exact_residual_upper": 1.1462221581537488e-18,
+              "local_lipschitz_up": 30.365198672661922,
+              "stage": 4,
+              "tube_inf_up": 0.1985446495821499
+            },
+            {
+              "error_bound_up": 5.890991760275056e-18,
+              "exact_residual_upper": 4.625826674074984e-19,
+              "local_lipschitz_up": 30.384632511020882,
+              "stage": 5,
+              "tube_inf_up": 0.19935865966564223
+            },
+            {
+              "error_bound_up": 0.0015429118670899386,
+              "exact_residual_upper": 0.0015445468719966055,
+              "local_lipschitz_up": 30.364388466282765,
+              "stage": 6,
+              "tube_inf_up": 0.19851064061668344
+            },
+            {
+              "error_bound_up": 0.018627185956833638,
+              "exact_residual_upper": 0.009454363901960996,
+              "local_lipschitz_up": 30.438382820194157,
+              "stage": 7,
+              "tube_inf_up": 0.20159294052595841
+            },
+            {
+              "error_bound_up": 0.07530427219121896,
+              "exact_residual_upper": 0.01994522809053665,
+              "local_lipschitz_up": 30.917224004332137,
+              "stage": 8,
+              "tube_inf_up": 0.22050034029951582
+            }
+          ],
+          "sweep": 5
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.027512355974190494,
+          "actual_high_precision_stage_linf_error": 0.01836411449058131,
+          "all_original_stages_residual_max": 0.03683663451559981,
+          "cumulative_original_W_solves": 33,
+          "last_sweep_original_W_solves": 3,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q5",
+          "rigorous_source_scoped_endpoint_bound_inf": 0.06441616410117675,
+          "rigorous_source_scoped_stage_bound_inf": 0.05525241117718104,
+          "serial_stage_depth": 6,
+          "stage_certificates": [
+            {
+              "error_bound_up": 3.988877503196937e-21,
+              "exact_residual_upper": 3.9931044680864775e-21,
+              "local_lipschitz_up": 30.400000000000002,
+              "stage": 1,
+              "tube_inf_up": 0.2
+            },
+            {
+              "error_bound_up": 9.121163972844348e-20,
+              "exact_residual_upper": 7.928147395239756e-20,
+              "local_lipschitz_up": 30.37722814257811,
+              "stage": 2,
+              "tube_inf_up": 0.19904891118257467
+            },
+            {
+              "error_bound_up": 1.286173445426909e-19,
+              "exact_residual_upper": 5.80106495772104e-20,
+              "local_lipschitz_up": 30.385318292626593,
+              "stage": 3,
+              "tube_inf_up": 0.19938732376234414
+            },
+            {
+              "error_bound_up": 3.256596838812699e-18,
+              "exact_residual_upper": 1.1462221581537488e-18,
+              "local_lipschitz_up": 30.365198672661922,
+              "stage": 4,
+              "tube_inf_up": 0.1985446495821499
+            },
+            {
+              "error_bound_up": 5.890991760275056e-18,
+              "exact_residual_upper": 4.625826674074984e-19,
+              "local_lipschitz_up": 30.384632511020882,
+              "stage": 5,
+              "tube_inf_up": 0.19935865966564223
+            },
+            {
+              "error_bound_up": 6.1964498363009774e-18,
+              "exact_residual_upper": 1.390267604743207e-19,
+              "local_lipschitz_up": 30.364388466282765,
+              "stage": 6,
+              "tube_inf_up": 0.19851064061668344
+            },
+            {
+              "error_bound_up": 0.009163752923995686,
+              "exact_residual_upper": 0.009173463641317731,
+              "local_lipschitz_up": 30.364366817620414,
+              "stage": 7,
+              "tube_inf_up": 0.1985097318193919
+            },
+            {
+              "error_bound_up": 0.05525241117718104,
+              "exact_residual_upper": 0.03683663451559981,
+              "local_lipschitz_up": 30.364736331536754,
+              "stage": 8,
+              "tube_inf_up": 0.19852524321173673
+            }
+          ],
+          "sweep": 6
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.018371440063165267,
+          "actual_high_precision_stage_linf_error": 0.01837144006316529,
+          "all_original_stages_residual_max": 0.018422066821035466,
+          "cumulative_original_W_solves": 35,
+          "last_sweep_original_W_solves": 2,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q6",
+          "rigorous_source_scoped_endpoint_bound_inf": 0.018402565846226057,
+          "rigorous_source_scoped_stage_bound_inf": 0.01840256584622596,
+          "serial_stage_depth": 7,
+          "stage_certificates": [
+            {
+              "error_bound_up": 3.988877503196937e-21,
+              "exact_residual_upper": 3.9931044680864775e-21,
+              "local_lipschitz_up": 30.400000000000002,
+              "stage": 1,
+              "tube_inf_up": 0.2
+            },
+            {
+              "error_bound_up": 9.121163972844348e-20,
+              "exact_residual_upper": 7.928147395239756e-20,
+              "local_lipschitz_up": 30.37722814257811,
+              "stage": 2,
+              "tube_inf_up": 0.19904891118257467
+            },
+            {
+              "error_bound_up": 1.286173445426909e-19,
+              "exact_residual_upper": 5.80106495772104e-20,
+              "local_lipschitz_up": 30.385318292626593,
+              "stage": 3,
+              "tube_inf_up": 0.19938732376234414
+            },
+            {
+              "error_bound_up": 3.256596838812699e-18,
+              "exact_residual_upper": 1.1462221581537488e-18,
+              "local_lipschitz_up": 30.365198672661922,
+              "stage": 4,
+              "tube_inf_up": 0.1985446495821499
+            },
+            {
+              "error_bound_up": 5.890991760275056e-18,
+              "exact_residual_upper": 4.625826674074984e-19,
+              "local_lipschitz_up": 30.384632511020882,
+              "stage": 5,
+              "tube_inf_up": 0.19935865966564223
+            },
+            {
+              "error_bound_up": 6.1964498363009774e-18,
+              "exact_residual_upper": 1.390267604743207e-19,
+              "local_lipschitz_up": 30.364388466282765,
+              "stage": 6,
+              "tube_inf_up": 0.19851064061668344
+            },
+            {
+              "error_bound_up": 8.808777465884051e-17,
+              "exact_residual_upper": 1.5354663481282164e-18,
+              "local_lipschitz_up": 30.364366817620414,
+              "stage": 7,
+              "tube_inf_up": 0.1985097318193919
+            },
+            {
+              "error_bound_up": 0.01840256584622596,
+              "exact_residual_upper": 0.018422066821035466,
+              "local_lipschitz_up": 30.364366816476007,
+              "stage": 8,
+              "tube_inf_up": 0.1985097317713503
+            }
+          ],
+          "sweep": 7
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.0,
+          "actual_high_precision_stage_linf_error": 4.888864720373435e-18,
+          "all_original_stages_residual_max": 1.5354663481282164e-18,
+          "cumulative_original_W_solves": 36,
+          "last_sweep_original_W_solves": 1,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q7",
+          "rigorous_source_scoped_endpoint_bound_inf": 4.464387903655832e-16,
+          "rigorous_source_scoped_stage_bound_inf": 3.496226271808964e-16,
+          "serial_stage_depth": 8,
+          "stage_certificates": [
+            {
+              "error_bound_up": 3.988877503196937e-21,
+              "exact_residual_upper": 3.9931044680864775e-21,
+              "local_lipschitz_up": 30.400000000000002,
+              "stage": 1,
+              "tube_inf_up": 0.2
+            },
+            {
+              "error_bound_up": 9.121163972844348e-20,
+              "exact_residual_upper": 7.928147395239756e-20,
+              "local_lipschitz_up": 30.37722814257811,
+              "stage": 2,
+              "tube_inf_up": 0.19904891118257467
+            },
+            {
+              "error_bound_up": 1.286173445426909e-19,
+              "exact_residual_upper": 5.80106495772104e-20,
+              "local_lipschitz_up": 30.385318292626593,
+              "stage": 3,
+              "tube_inf_up": 0.19938732376234414
+            },
+            {
+              "error_bound_up": 3.256596838812699e-18,
+              "exact_residual_upper": 1.1462221581537488e-18,
+              "local_lipschitz_up": 30.365198672661922,
+              "stage": 4,
+              "tube_inf_up": 0.1985446495821499
+            },
+            {
+              "error_bound_up": 5.890991760275056e-18,
+              "exact_residual_upper": 4.625826674074984e-19,
+              "local_lipschitz_up": 30.384632511020882,
+              "stage": 5,
+              "tube_inf_up": 0.19935865966564223
+            },
+            {
+              "error_bound_up": 6.1964498363009774e-18,
+              "exact_residual_upper": 1.390267604743207e-19,
+              "local_lipschitz_up": 30.364388466282765,
+              "stage": 6,
+              "tube_inf_up": 0.19851064061668344
+            },
+            {
+              "error_bound_up": 8.808777465884051e-17,
+              "exact_residual_upper": 1.5354663481282164e-18,
+              "local_lipschitz_up": 30.364366817620414,
+              "stage": 7,
+              "tube_inf_up": 0.1985097318193919
+            },
+            {
+              "error_bound_up": 3.496226271808964e-16,
+              "exact_residual_upper": 1.1924760262161734e-18,
+              "local_lipschitz_up": 30.364366816476007,
+              "stage": 8,
+              "tube_inf_up": 0.1985097317713503
+            }
+          ],
+          "sweep": 8
+        }
+      ],
+      "h": 0.00078125,
+      "h_gamma": 0.00016557622124553918,
+      "independent_physical_model": false,
+      "initial_state": [
+        0.2,
+        0.12
+      ],
+      "protected_sequential": {
+        "endpoint": [
+          0.19850973177120323,
+          0.11978647081278633
+        ],
+        "original_W_stage_solves": 8,
+        "reference_endpoint": [
+          0.19850973177120323,
+          0.11978647081278633
+        ],
+        "serial_stage_depth": 8,
+        "source_scoped_exact_rational_residual_certificate": {
+          "certificate": "EXACT_BINARY64_AS_RATIONAL_SOURCE_SCOPED",
+          "endpoint_bound_upper": 4.464387903655832e-16,
+          "max_error_upper": 3.496226271808964e-16,
+          "max_residual_upper": 1.5354663481282164e-18,
+          "no_native_callback_rounding_certificate": true,
+          "stage_bound": [
+            {
+              "error_bound_up": 3.988877503196937e-21,
+              "exact_residual_upper": 3.9931044680864775e-21,
+              "local_lipschitz_up": 30.400000000000002,
+              "stage": 1,
+              "tube_inf_up": 0.2
+            },
+            {
+              "error_bound_up": 9.121163972844348e-20,
+              "exact_residual_upper": 7.928147395239756e-20,
+              "local_lipschitz_up": 30.37722814257811,
+              "stage": 2,
+              "tube_inf_up": 0.19904891118257467
+            },
+            {
+              "error_bound_up": 1.286173445426909e-19,
+              "exact_residual_upper": 5.80106495772104e-20,
+              "local_lipschitz_up": 30.385318292626593,
+              "stage": 3,
+              "tube_inf_up": 0.19938732376234414
+            },
+            {
+              "error_bound_up": 3.256596838812699e-18,
+              "exact_residual_upper": 1.1462221581537488e-18,
+              "local_lipschitz_up": 30.365198672661922,
+              "stage": 4,
+              "tube_inf_up": 0.1985446495821499
+            },
+            {
+              "error_bound_up": 5.890991760275056e-18,
+              "exact_residual_upper": 4.625826674074984e-19,
+              "local_lipschitz_up": 30.384632511020882,
+              "stage": 5,
+              "tube_inf_up": 0.19935865966564223
+            },
+            {
+              "error_bound_up": 6.1964498363009774e-18,
+              "exact_residual_upper": 1.390267604743207e-19,
+              "local_lipschitz_up": 30.364388466282765,
+              "stage": 6,
+              "tube_inf_up": 0.19851064061668344
+            },
+            {
+              "error_bound_up": 8.808777465884051e-17,
+              "exact_residual_upper": 1.5354663481282164e-18,
+              "local_lipschitz_up": 30.364366817620414,
+              "stage": 7,
+              "tube_inf_up": 0.1985097318193919
+            },
+            {
+              "error_bound_up": 3.496226271808964e-16,
+              "exact_residual_upper": 1.1924760262161734e-18,
+              "local_lipschitz_up": 30.364366816476007,
+              "stage": 8,
+              "tube_inf_up": 0.1985097317713503
+            }
+          ]
+        },
+        "stage_linf_reference_error": 4.888864720373435e-18
+      },
+      "source_family": "asymmetric_2",
+      "source_owned_newton_free_first_W_Jacobi": {
+        "component_arithmetic_work_proxy": 24,
+        "contraction_ratio_bound": 0.0019808797019519125,
+        "exact_original_W_residual_inf": 0.0,
+        "iterations": 6,
+        "no_jacobian_callback": true,
+        "no_newton": true
+      },
+      "steps_original": 128
+    },
+    {
+      "case": "coupled_3_cubic",
+      "frontier_q0_to_q7": [
+        {
+          "actual_high_precision_endpoint_linf_error": 0.00363608774777225,
+          "actual_high_precision_stage_linf_error": 0.001966856860847808,
+          "all_original_stages_residual_max": 0.009125907276063614,
+          "cumulative_original_W_solves": 8,
+          "last_sweep_original_W_solves": 8,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q0",
+          "rigorous_source_scoped_endpoint_bound_inf": 4.098504377913266,
+          "rigorous_source_scoped_stage_bound_inf": 3.2207586324544253,
+          "serial_stage_depth": 1,
+          "stage_certificates": [
+            {
+              "error_bound_up": 1.8660188001191072e-20,
+              "exact_residual_upper": 1.867961593051697e-20,
+              "local_lipschitz_up": 74.64800000000001,
+              "stage": 1,
+              "tube_inf_up": 0.06
+            },
+            {
+              "error_bound_up": 0.000596247339086416,
+              "exact_residual_upper": 0.0005968681179962419,
+              "local_lipschitz_up": 74.63525597095537,
+              "stage": 2,
+              "tube_inf_up": 0.059407068928208656
+            },
+            {
+              "error_bound_up": 0.0012404396240974426,
+              "exact_residual_upper": 0.000876981632786147,
+              "local_lipschitz_up": 74.63980863469708,
+              "stage": 3,
+              "tube_inf_up": 0.059619564028796236
+            },
+            {
+              "error_bound_up": 0.028299922915228252,
+              "exact_residual_upper": 0.009125907276063614,
+              "local_lipschitz_up": 75.074550086537,
+              "stage": 4,
+              "tube_inf_up": 0.0772639806312314
+            },
+            {
+              "error_bound_up": 0.05552063882872418,
+              "exact_residual_upper": 0.00845442833458173,
+              "local_lipschitz_up": 74.68229298582864,
+              "stage": 5,
+              "tube_inf_up": 0.06156717134916022
+            },
+            {
+              "error_bound_up": 0.05747745733339874,
+              "exact_residual_upper": 0.003132904862583423,
+              "local_lipschitz_up": 75.33444691572316,
+              "stage": 6,
+              "tube_inf_up": 0.08610222979830295
+            },
+            {
+              "error_bound_up": 0.7974708642913727,
+              "exact_residual_upper": 0.0039033868558659888,
+              "local_lipschitz_up": 77.70051386864243,
+              "stage": 7,
+              "tube_inf_up": 0.14338204344110458
+            },
+            {
+              "error_bound_up": 3.2207586324544253,
+              "exact_residual_upper": 0.00460722510864988,
+              "local_lipschitz_up": 323.4496977309098,
+              "stage": 8,
+              "tube_inf_up": 0.9406552640418803
+            }
+          ],
+          "sweep": 1
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.015138951506440977,
+          "actual_high_precision_stage_linf_error": 0.007583159853666047,
+          "all_original_stages_residual_max": 0.019317754715505526,
+          "cumulative_original_W_solves": 15,
+          "last_sweep_original_W_solves": 7,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q1",
+          "rigorous_source_scoped_endpoint_bound_inf": 2.698867150556947,
+          "rigorous_source_scoped_stage_bound_inf": 2.129932401703585,
+          "serial_stage_depth": 2,
+          "stage_certificates": [
+            {
+              "error_bound_up": 1.8660188001191072e-20,
+              "exact_residual_upper": 1.867961593051697e-20,
+              "local_lipschitz_up": 74.64800000000001,
+              "stage": 1,
+              "tube_inf_up": 0.06
+            },
+            {
+              "error_bound_up": 1.3547351843095972e-19,
+              "exact_residual_upper": 7.894220383252539e-20,
+              "local_lipschitz_up": 74.63525597095537,
+              "stage": 2,
+              "tube_inf_up": 0.059407068928208656
+            },
+            {
+              "error_bound_up": 0.0003607897540911896,
+              "exact_residual_upper": 0.0003611653879188628,
+              "local_lipschitz_up": 74.63977599567593,
+              "stage": 3,
+              "tube_inf_up": 0.059618043301407395
+            },
+            {
+              "error_bound_up": 0.018617830329424632,
+              "exact_residual_upper": 0.01310930850462984,
+              "local_lipschitz_up": 74.62910359240739,
+              "stage": 4,
+              "tube_inf_up": 0.059118693810154714
+            },
+            {
+              "error_bound_up": 0.0460883897295796,
+              "exact_residual_upper": 0.019317754715505526,
+              "local_lipschitz_up": 74.66622935278832,
+              "stage": 5,
+              "tube_inf_up": 0.06083809811423488
+            },
+            {
+              "error_bound_up": 0.033296108881427026,
+              "exact_residual_upper": 0.00110745952702786,
+              "local_lipschitz_up": 74.76248137792116,
+              "stage": 6,
+              "tube_inf_up": 0.0650846191900784
+            },
+            {
+              "error_bound_up": 0.5266505095118184,
+              "exact_residual_upper": 0.0006841340005868741,
+              "local_lipschitz_up": 75.62692405973365,
+              "stage": 7,
+              "tube_inf_up": 0.0950708525181103
+            },
+            {
+              "error_bound_up": 2.129932401703585,
+              "exact_residual_upper": 0.00698213962739352,
+              "local_lipschitz_up": 172.44600257694566,
+              "stage": 8,
+              "tube_inf_up": 0.6176460760471855
+            }
+          ],
+          "sweep": 2
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.0062517615875097785,
+          "actual_high_precision_stage_linf_error": 0.012758761126394602,
+          "all_original_stages_residual_max": 0.024616725612901146,
+          "cumulative_original_W_solves": 21,
+          "last_sweep_original_W_solves": 6,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q2",
+          "rigorous_source_scoped_endpoint_bound_inf": 1.4188105897582732,
+          "rigorous_source_scoped_stage_bound_inf": 1.1179150719229656,
+          "serial_stage_depth": 3,
+          "stage_certificates": [
+            {
+              "error_bound_up": 1.8660188001191072e-20,
+              "exact_residual_upper": 1.867961593051697e-20,
+              "local_lipschitz_up": 74.64800000000001,
+              "stage": 1,
+              "tube_inf_up": 0.06
+            },
+            {
+              "error_bound_up": 1.3547351843095972e-19,
+              "exact_residual_upper": 7.894220383252539e-20,
+              "local_lipschitz_up": 74.63525597095537,
+              "stage": 2,
+              "tube_inf_up": 0.059407068928208656
+            },
+            {
+              "error_bound_up": 1.8773896810207931e-19,
+              "exact_residual_upper": 3.3323129206969785e-20,
+              "local_lipschitz_up": 74.63977599567593,
+              "stage": 3,
+              "tube_inf_up": 0.059618043301407395
+            },
+            {
+              "error_bound_up": 0.005470160085748008,
+              "exact_residual_upper": 0.005475855306157385,
+              "local_lipschitz_up": 74.62866136329882,
+              "stage": 4,
+              "tube_inf_up": 0.05909791137965745
+            },
+            {
+              "error_bound_up": 0.026602470784370905,
+              "exact_residual_upper": 0.01971505173357355,
+              "local_lipschitz_up": 74.63942603155259,
+              "stage": 5,
+              "tube_inf_up": 0.05960173522607222
+            },
+            {
+              "error_bound_up": 0.019289257928629143,
+              "exact_residual_upper": 0.009089187717356485,
+              "local_lipschitz_up": 74.6538739918242,
+              "stage": 6,
+              "tube_inf_up": 0.060271330563645115
+            },
+            {
+              "error_bound_up": 0.279803583081392,
+              "exact_residual_upper": 0.017584724560409094,
+              "local_lipschitz_up": 75.01656512503611,
+              "stage": 7,
+              "tube_inf_up": 0.07515040936667187
+            },
+            {
+              "error_bound_up": 1.1179150719229656,
+              "exact_residual_upper": 0.024616725612901146,
+              "local_lipschitz_up": 96.24676181681441,
+              "stage": 8,
+              "tube_inf_up": 0.3515581334637623
+            }
+          ],
+          "sweep": 3
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.04510433446017533,
+          "actual_high_precision_stage_linf_error": 0.026616609153000678,
+          "all_original_stages_residual_max": 0.05078413428730632,
+          "cumulative_original_W_solves": 26,
+          "last_sweep_original_W_solves": 5,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q3",
+          "rigorous_source_scoped_endpoint_bound_inf": 0.37788246794153274,
+          "rigorous_source_scoped_stage_bound_inf": 0.3034803439327228,
+          "serial_stage_depth": 4,
+          "stage_certificates": [
+            {
+              "error_bound_up": 1.8660188001191072e-20,
+              "exact_residual_upper": 1.867961593051697e-20,
+              "local_lipschitz_up": 74.64800000000001,
+              "stage": 1,
+              "tube_inf_up": 0.06
+            },
+            {
+              "error_bound_up": 1.3547351843095972e-19,
+              "exact_residual_upper": 7.894220383252539e-20,
+              "local_lipschitz_up": 74.63525597095537,
+              "stage": 2,
+              "tube_inf_up": 0.059407068928208656
+            },
+            {
+              "error_bound_up": 1.8773896810207931e-19,
+              "exact_residual_upper": 3.3323129206969785e-20,
+              "local_lipschitz_up": 74.63977599567593,
+              "stage": 3,
+              "tube_inf_up": 0.059618043301407395
+            },
+            {
+              "error_bound_up": 3.721743205927827e-18,
+              "exact_residual_upper": 2.209873516369963e-19,
+              "local_lipschitz_up": 74.62866136329882,
+              "stage": 4,
+              "tube_inf_up": 0.05909791137965745
+            },
+            {
+              "error_bound_up": 0.0068646665298733684,
+              "exact_residual_upper": 0.006871813631294833,
+              "local_lipschitz_up": 74.63939524042141,
+              "stage": 5,
+              "tube_inf_up": 0.0596003001680267
+            },
+            {
+              "error_bound_up": 0.00465291688845715,
+              "exact_residual_upper": 0.0036934229080411596,
+              "local_lipschitz_up": 74.62824397335186,
+              "stage": 6,
+              "tube_inf_up": 0.05907828955207807
+            },
+            {
+              "error_bound_up": 0.06954190673970351,
+              "exact_residual_upper": 0.014071440736184443,
+              "local_lipschitz_up": 74.84092123734423,
+              "stage": 7,
+              "tube_inf_up": 0.0683504546576861
+            },
+            {
+              "error_bound_up": 0.3034803439327228,
+              "exact_residual_upper": 0.05078413428730632,
+              "local_lipschitz_up": 78.15683983971279,
+              "stage": 8,
+              "tube_inf_up": 0.15196563646124417
+            }
+          ],
+          "sweep": 4
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.02278698183115297,
+          "actual_high_precision_stage_linf_error": 0.023833205942406666,
+          "all_original_stages_residual_max": 0.01276990521234303,
+          "cumulative_original_W_solves": 30,
+          "last_sweep_original_W_solves": 4,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q4",
+          "rigorous_source_scoped_endpoint_bound_inf": 0.05942768520576977,
+          "rigorous_source_scoped_stage_bound_inf": 0.04700953407244118,
+          "serial_stage_depth": 5,
+          "stage_certificates": [
+            {
+              "error_bound_up": 1.8660188001191072e-20,
+              "exact_residual_upper": 1.867961593051697e-20,
+              "local_lipschitz_up": 74.64800000000001,
+              "stage": 1,
+              "tube_inf_up": 0.06
+            },
+            {
+              "error_bound_up": 1.3547351843095972e-19,
+              "exact_residual_upper": 7.894220383252539e-20,
+              "local_lipschitz_up": 74.63525597095537,
+              "stage": 2,
+              "tube_inf_up": 0.059407068928208656
+            },
+            {
+              "error_bound_up": 1.8773896810207931e-19,
+              "exact_residual_upper": 3.3323129206969785e-20,
+              "local_lipschitz_up": 74.63977599567593,
+              "stage": 3,
+              "tube_inf_up": 0.059618043301407395
+            },
+            {
+              "error_bound_up": 3.721743205927827e-18,
+              "exact_residual_upper": 2.209873516369963e-19,
+              "local_lipschitz_up": 74.62866136329882,
+              "stage": 4,
+              "tube_inf_up": 0.05909791137965745
+            },
+            {
+              "error_bound_up": 7.398268532084116e-18,
+              "exact_residual_upper": 3.2393165738059976e-19,
+              "local_lipschitz_up": 74.63939524042141,
+              "stage": 5,
+              "tube_inf_up": 0.0596003001680267
+            },
+            {
+              "error_bound_up": 0.0009568125050576341,
+              "exact_residual_upper": 0.0009578086839667141,
+              "local_lipschitz_up": 74.62821953138675,
+              "stage": 6,
+              "tube_inf_up": 0.05907714031420395
+            },
+            {
+              "error_bound_up": 0.011461338628270954,
+              "exact_residual_upper": 0.005765642177093886,
+              "local_lipschitz_up": 74.66943125794629,
+              "stage": 7,
+              "tube_inf_up": 0.06098411714656528
+            },
+            {
+              "error_bound_up": 0.04700953407244118,
+              "exact_residual_upper": 0.01276990521234303,
+              "local_lipschitz_up": 74.94717352871804,
+              "stage": 8,
+              "tube_inf_up": 0.07254016238984186
+            }
+          ],
+          "sweep": 5
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.016781859024034708,
+          "actual_high_precision_stage_linf_error": 0.011148479266753785,
+          "all_original_stages_residual_max": 0.02258730651875365,
+          "cumulative_original_W_solves": 33,
+          "last_sweep_original_W_solves": 3,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q5",
+          "rigorous_source_scoped_endpoint_bound_inf": 0.03967817882897195,
+          "rigorous_source_scoped_stage_bound_inf": 0.03401350903449765,
+          "serial_stage_depth": 6,
+          "stage_certificates": [
+            {
+              "error_bound_up": 1.8660188001191072e-20,
+              "exact_residual_upper": 1.867961593051697e-20,
+              "local_lipschitz_up": 74.64800000000001,
+              "stage": 1,
+              "tube_inf_up": 0.06
+            },
+            {
+              "error_bound_up": 1.3547351843095972e-19,
+              "exact_residual_upper": 7.894220383252539e-20,
+              "local_lipschitz_up": 74.63525597095537,
+              "stage": 2,
+              "tube_inf_up": 0.059407068928208656
+            },
+            {
+              "error_bound_up": 1.8773896810207931e-19,
+              "exact_residual_upper": 3.3323129206969785e-20,
+              "local_lipschitz_up": 74.63977599567593,
+              "stage": 3,
+              "tube_inf_up": 0.059618043301407395
+            },
+            {
+              "error_bound_up": 3.721743205927827e-18,
+              "exact_residual_upper": 2.209873516369963e-19,
+              "local_lipschitz_up": 74.62866136329882,
+              "stage": 4,
+              "tube_inf_up": 0.05909791137965745
+            },
+            {
+              "error_bound_up": 7.398268532084116e-18,
+              "exact_residual_upper": 3.2393165738059976e-19,
+              "local_lipschitz_up": 74.63939524042141,
+              "stage": 5,
+              "tube_inf_up": 0.0596003001680267
+            },
+            {
+              "error_bound_up": 7.641366507402554e-18,
+              "exact_residual_upper": 9.197514422596901e-20,
+              "local_lipschitz_up": 74.62821953138675,
+              "stage": 6,
+              "tube_inf_up": 0.05907714031420395
+            },
+            {
+              "error_bound_up": 0.005664669794474279,
+              "exact_residual_upper": 0.0056705675273595315,
+              "local_lipschitz_up": 74.62819075427305,
+              "stage": 7,
+              "tube_inf_up": 0.05907578721312364
+            },
+            {
+              "error_bound_up": 0.03401350903449765,
+              "exact_residual_upper": 0.02258730651875365,
+              "local_lipschitz_up": 74.62885638314945,
+              "stage": 8,
+              "tube_inf_up": 0.059107077182452936
+            }
+          ],
+          "sweep": 6
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.011291295089141791,
+          "actual_high_precision_stage_linf_error": 0.0112912950891418,
+          "all_original_stages_residual_max": 0.011365761188581184,
+          "cumulative_original_W_solves": 35,
+          "last_sweep_original_W_solves": 2,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q6",
+          "rigorous_source_scoped_endpoint_bound_inf": 0.011353940110143705,
+          "rigorous_source_scoped_stage_bound_inf": 0.011353940110143585,
+          "serial_stage_depth": 7,
+          "stage_certificates": [
+            {
+              "error_bound_up": 1.8660188001191072e-20,
+              "exact_residual_upper": 1.867961593051697e-20,
+              "local_lipschitz_up": 74.64800000000001,
+              "stage": 1,
+              "tube_inf_up": 0.06
+            },
+            {
+              "error_bound_up": 1.3547351843095972e-19,
+              "exact_residual_upper": 7.894220383252539e-20,
+              "local_lipschitz_up": 74.63525597095537,
+              "stage": 2,
+              "tube_inf_up": 0.059407068928208656
+            },
+            {
+              "error_bound_up": 1.8773896810207931e-19,
+              "exact_residual_upper": 3.3323129206969785e-20,
+              "local_lipschitz_up": 74.63977599567593,
+              "stage": 3,
+              "tube_inf_up": 0.059618043301407395
+            },
+            {
+              "error_bound_up": 3.721743205927827e-18,
+              "exact_residual_upper": 2.209873516369963e-19,
+              "local_lipschitz_up": 74.62866136329882,
+              "stage": 4,
+              "tube_inf_up": 0.05909791137965745
+            },
+            {
+              "error_bound_up": 7.398268532084116e-18,
+              "exact_residual_upper": 3.2393165738059976e-19,
+              "local_lipschitz_up": 74.63939524042141,
+              "stage": 5,
+              "tube_inf_up": 0.0596003001680267
+            },
+            {
+              "error_bound_up": 7.641366507402554e-18,
+              "exact_residual_upper": 9.197514422596901e-20,
+              "local_lipschitz_up": 74.62821953138675,
+              "stage": 6,
+              "tube_inf_up": 0.05907714031420395
+            },
+            {
+              "error_bound_up": 1.067575584276007e-16,
+              "exact_residual_upper": 9.460571324904766e-19,
+              "local_lipschitz_up": 74.62819075427305,
+              "stage": 7,
+              "tube_inf_up": 0.05907578721312364
+            },
+            {
+              "error_bound_up": 0.011353940110143585,
+              "exact_residual_upper": 0.011365761188581184,
+              "local_lipschitz_up": 74.62819075282977,
+              "stage": 8,
+              "tube_inf_up": 0.059075787145259684
+            }
+          ],
+          "sweep": 7
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.0,
+          "actual_high_precision_stage_linf_error": 1.5839516113655416e-18,
+          "all_original_stages_residual_max": 2.84490906263043e-18,
+          "cumulative_original_W_solves": 36,
+          "last_sweep_original_W_solves": 1,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q7",
+          "rigorous_source_scoped_endpoint_bound_inf": 5.453821610049847e-16,
+          "rigorous_source_scoped_stage_bound_inf": 4.274098961331918e-16,
+          "serial_stage_depth": 8,
+          "stage_certificates": [
+            {
+              "error_bound_up": 1.8660188001191072e-20,
+              "exact_residual_upper": 1.867961593051697e-20,
+              "local_lipschitz_up": 74.64800000000001,
+              "stage": 1,
+              "tube_inf_up": 0.06
+            },
+            {
+              "error_bound_up": 1.3547351843095972e-19,
+              "exact_residual_upper": 7.894220383252539e-20,
+              "local_lipschitz_up": 74.63525597095537,
+              "stage": 2,
+              "tube_inf_up": 0.059407068928208656
+            },
+            {
+              "error_bound_up": 1.8773896810207931e-19,
+              "exact_residual_upper": 3.3323129206969785e-20,
+              "local_lipschitz_up": 74.63977599567593,
+              "stage": 3,
+              "tube_inf_up": 0.059618043301407395
+            },
+            {
+              "error_bound_up": 3.721743205927827e-18,
+              "exact_residual_upper": 2.209873516369963e-19,
+              "local_lipschitz_up": 74.62866136329882,
+              "stage": 4,
+              "tube_inf_up": 0.05909791137965745
+            },
+            {
+              "error_bound_up": 7.398268532084116e-18,
+              "exact_residual_upper": 3.2393165738059976e-19,
+              "local_lipschitz_up": 74.63939524042141,
+              "stage": 5,
+              "tube_inf_up": 0.0596003001680267
+            },
+            {
+              "error_bound_up": 7.641366507402554e-18,
+              "exact_residual_upper": 9.197514422596901e-20,
+              "local_lipschitz_up": 74.62821953138675,
+              "stage": 6,
+              "tube_inf_up": 0.05907714031420395
+            },
+            {
+              "error_bound_up": 1.067575584276007e-16,
+              "exact_residual_upper": 9.460571324904766e-19,
+              "local_lipschitz_up": 74.62819075427305,
+              "stage": 7,
+              "tube_inf_up": 0.05907578721312364
+            },
+            {
+              "error_bound_up": 4.274098961331918e-16,
+              "exact_residual_upper": 2.84490906263043e-18,
+              "local_lipschitz_up": 74.62819075282977,
+              "stage": 8,
+              "tube_inf_up": 0.059075787145259684
+            }
+          ],
+          "sweep": 8
+        }
+      ],
+      "h": 0.00078125,
+      "h_gamma": 0.00016557622124553918,
+      "independent_physical_model": true,
+      "initial_state": [
+        0.04,
+        0.06,
+        0.02
+      ],
+      "protected_sequential": {
+        "endpoint": [
+          0.04020199780946091,
+          0.059075787144669954,
+          0.020245015304442275
+        ],
+        "original_W_stage_solves": 8,
+        "reference_endpoint": [
+          0.04020199780946091,
+          0.059075787144669954,
+          0.020245015304442275
+        ],
+        "serial_stage_depth": 8,
+        "source_scoped_exact_rational_residual_certificate": {
+          "certificate": "EXACT_BINARY64_AS_RATIONAL_SOURCE_SCOPED",
+          "endpoint_bound_upper": 5.453821610049847e-16,
+          "max_error_upper": 4.274098961331918e-16,
+          "max_residual_upper": 2.84490906263043e-18,
+          "no_native_callback_rounding_certificate": true,
+          "stage_bound": [
+            {
+              "error_bound_up": 1.8660188001191072e-20,
+              "exact_residual_upper": 1.867961593051697e-20,
+              "local_lipschitz_up": 74.64800000000001,
+              "stage": 1,
+              "tube_inf_up": 0.06
+            },
+            {
+              "error_bound_up": 1.3547351843095972e-19,
+              "exact_residual_upper": 7.894220383252539e-20,
+              "local_lipschitz_up": 74.63525597095537,
+              "stage": 2,
+              "tube_inf_up": 0.059407068928208656
+            },
+            {
+              "error_bound_up": 1.8773896810207931e-19,
+              "exact_residual_upper": 3.3323129206969785e-20,
+              "local_lipschitz_up": 74.63977599567593,
+              "stage": 3,
+              "tube_inf_up": 0.059618043301407395
+            },
+            {
+              "error_bound_up": 3.721743205927827e-18,
+              "exact_residual_upper": 2.209873516369963e-19,
+              "local_lipschitz_up": 74.62866136329882,
+              "stage": 4,
+              "tube_inf_up": 0.05909791137965745
+            },
+            {
+              "error_bound_up": 7.398268532084116e-18,
+              "exact_residual_upper": 3.2393165738059976e-19,
+              "local_lipschitz_up": 74.63939524042141,
+              "stage": 5,
+              "tube_inf_up": 0.0596003001680267
+            },
+            {
+              "error_bound_up": 7.641366507402554e-18,
+              "exact_residual_upper": 9.197514422596901e-20,
+              "local_lipschitz_up": 74.62821953138675,
+              "stage": 6,
+              "tube_inf_up": 0.05907714031420395
+            },
+            {
+              "error_bound_up": 1.067575584276007e-16,
+              "exact_residual_upper": 9.460571324904766e-19,
+              "local_lipschitz_up": 74.62819075427305,
+              "stage": 7,
+              "tube_inf_up": 0.05907578721312364
+            },
+            {
+              "error_bound_up": 4.274098961331918e-16,
+              "exact_residual_upper": 2.84490906263043e-18,
+              "local_lipschitz_up": 74.62819075282977,
+              "stage": 8,
+              "tube_inf_up": 0.059075787145259684
+            }
+          ]
+        },
+        "stage_linf_reference_error": 1.5839516113655416e-18
+      },
+      "source_family": "coupled_3_cubic",
+      "source_owned_newton_free_first_W_Jacobi": {
+        "component_arithmetic_work_proxy": 54,
+        "contraction_ratio_bound": 0.00559228685977265,
+        "exact_original_W_residual_inf": 5.692061405548898e-19,
+        "iterations": 6,
+        "no_jacobian_callback": true,
+        "no_newton": true
+      },
+      "steps_original": 128
+    },
+    {
+      "case": "linear_exchange_control",
+      "frontier_q0_to_q7": [
+        {
+          "actual_high_precision_endpoint_linf_error": 0.0021320252773377735,
+          "actual_high_precision_stage_linf_error": 0.0011532538248821898,
+          "all_original_stages_residual_max": 0.00533374477135816,
+          "cumulative_original_W_solves": 8,
+          "last_sweep_original_W_solves": 8,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q0",
+          "rigorous_source_scoped_endpoint_bound_inf": 2.3511613847750272,
+          "rigorous_source_scoped_stage_bound_inf": 1.8423692214189986,
+          "serial_stage_depth": 1,
+          "stage_certificates": [
+            {
+              "error_bound_up": 6.631094984295854e-21,
+              "exact_residual_upper": 6.635486790896733e-21,
+              "local_lipschitz_up": 16.0,
+              "stage": 1,
+              "tube_inf_up": 0.1
+            },
+            {
+              "error_bound_up": 0.00034747992696257174,
+              "exact_residual_upper": 0.0003477100646156323,
+              "local_lipschitz_up": 16.0,
+              "stage": 2,
+              "tube_inf_up": 0.09965291355231541
+            },
+            {
+              "error_bound_up": 0.0007220520017045701,
+              "exact_residual_upper": 0.0005115088261150192,
+              "local_lipschitz_up": 16.0,
+              "stage": 3,
+              "tube_inf_up": 0.09977659312862154
+            },
+            {
+              "error_bound_up": 0.016419603722107455,
+              "exact_residual_upper": 0.00533374477135816,
+              "local_lipschitz_up": 16.0,
+              "stage": 4,
+              "tube_inf_up": 0.11005987995951778
+            },
+            {
+              "error_bound_up": 0.03228005707413788,
+              "exact_residual_upper": 0.004950607698766308,
+              "local_lipschitz_up": 16.0,
+              "stage": 5,
+              "tube_inf_up": 0.10090805987762141
+            },
+            {
+              "error_bound_up": 0.0332720548720198,
+              "exact_residual_upper": 0.0018245288115521553,
+              "local_lipschitz_up": 16.0,
+              "stage": 6,
+              "tube_inf_up": 0.11519488393276356
+            },
+            {
+              "error_bound_up": 0.4622597721183799,
+              "exact_residual_upper": 0.002276111773047989,
+              "local_lipschitz_up": 16.0,
+              "stage": 7,
+              "tube_inf_up": 0.14835124332222183
+            },
+            {
+              "error_bound_up": 1.8423692214189986,
+              "exact_residual_upper": 0.002688683076607488,
+              "local_lipschitz_up": 16.0,
+              "stage": 8,
+              "tube_inf_up": 0.6104953199580402
+            }
+          ],
+          "sweep": 1
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.008869433413179029,
+          "actual_high_precision_stage_linf_error": 0.0044551546940935815,
+          "all_original_stages_residual_max": 0.011336660056300938,
+          "cumulative_original_W_solves": 15,
+          "last_sweep_original_W_solves": 7,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q1",
+          "rigorous_source_scoped_endpoint_bound_inf": 1.5670143611546223,
+          "rigorous_source_scoped_stage_bound_inf": 1.23504177228198,
+          "serial_stage_depth": 2,
+          "stage_certificates": [
+            {
+              "error_bound_up": 6.631094984295854e-21,
+              "exact_residual_upper": 6.635486790896733e-21,
+              "local_lipschitz_up": 16.0,
+              "stage": 1,
+              "tube_inf_up": 0.1
+            },
+            {
+              "error_bound_up": 3.99232155516246e-20,
+              "exact_residual_upper": 2.000367026021052e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 2,
+              "tube_inf_up": 0.09965291355231541
+            },
+            {
+              "error_bound_up": 0.00021050737452220353,
+              "exact_residual_upper": 0.0002106467945846743,
+              "local_lipschitz_up": 16.0,
+              "stage": 3,
+              "tube_inf_up": 0.09977641274889791
+            },
+            {
+              "error_bound_up": 0.01085879552486428,
+              "exact_residual_upper": 0.007661829238056913,
+              "local_lipschitz_up": 16.0,
+              "stage": 4,
+              "tube_inf_up": 0.09947059548315505
+            },
+            {
+              "error_bound_up": 0.026955601785340663,
+              "exact_residual_upper": 0.011336660056300938,
+              "local_lipschitz_up": 16.0,
+              "stage": 5,
+              "tube_inf_up": 0.1004890288726358
+            },
+            {
+              "error_bound_up": 0.01942098336509617,
+              "exact_residual_upper": 0.0006794418077429556,
+              "local_lipschitz_up": 16.0,
+              "stage": 6,
+              "tube_inf_up": 0.10295569804924112
+            },
+            {
+              "error_bound_up": 0.307306144637945,
+              "exact_residual_upper": 0.0003547320501616815,
+              "local_lipschitz_up": 16.0,
+              "stage": 7,
+              "tube_inf_up": 0.12043972951623394
+            },
+            {
+              "error_bound_up": 1.23504177228198,
+              "exact_residual_upper": 0.004028926816846899,
+              "local_lipschitz_up": 16.0,
+              "stage": 8,
+              "tube_inf_up": 0.42535814866121563
+            }
+          ],
+          "sweep": 2
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.0037824509898181785,
+          "actual_high_precision_stage_linf_error": 0.007527864366277946,
+          "all_original_stages_residual_max": 0.0145435552796295,
+          "cumulative_original_W_solves": 21,
+          "last_sweep_original_W_solves": 6,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q2",
+          "rigorous_source_scoped_endpoint_bound_inf": 0.8294438046168927,
+          "rigorous_source_scoped_stage_bound_inf": 0.6531293011913459,
+          "serial_stage_depth": 3,
+          "stage_certificates": [
+            {
+              "error_bound_up": 6.631094984295854e-21,
+              "exact_residual_upper": 6.635486790896733e-21,
+              "local_lipschitz_up": 16.0,
+              "stage": 1,
+              "tube_inf_up": 0.1
+            },
+            {
+              "error_bound_up": 3.99232155516246e-20,
+              "exact_residual_upper": 2.000367026021052e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 2,
+              "tube_inf_up": 0.09965291355231541
+            },
+            {
+              "error_bound_up": 1.1184604645875428e-19,
+              "exact_residual_upper": 6.236625647390643e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 3,
+              "tube_inf_up": 0.09977641274889791
+            },
+            {
+              "error_bound_up": 0.0031965560443765074,
+              "exact_residual_upper": 0.0031986731390598153,
+              "local_lipschitz_up": 16.0,
+              "stage": 4,
+              "tube_inf_up": 0.09946812667535068
+            },
+            {
+              "error_bound_up": 0.015604738097278473,
+              "exact_residual_upper": 0.01157560445866772,
+              "local_lipschitz_up": 16.0,
+              "stage": 5,
+              "tube_inf_up": 0.09976610437099169
+            },
+            {
+              "error_bound_up": 0.011305430630216433,
+              "exact_residual_upper": 0.005342568730466316,
+              "local_lipschitz_up": 16.0,
+              "stage": 6,
+              "tube_inf_up": 0.10015487547399383
+            },
+            {
+              "error_bound_up": 0.16395386683325602,
+              "exact_residual_upper": 0.010342392646976745,
+              "local_lipschitz_up": 16.0,
+              "stage": 7,
+              "tube_inf_up": 0.10884512409205359
+            },
+            {
+              "error_bound_up": 0.6531293011913459,
+              "exact_residual_upper": 0.0145435552796295,
+              "local_lipschitz_up": 16.0,
+              "stage": 8,
+              "tube_inf_up": 0.2707653524668759
+            }
+          ],
+          "sweep": 3
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.026626295527429886,
+          "actual_high_precision_stage_linf_error": 0.015739647954839377,
+          "all_original_stages_residual_max": 0.029755207367914233,
+          "cumulative_original_W_solves": 26,
+          "last_sweep_original_W_solves": 5,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q3",
+          "rigorous_source_scoped_endpoint_bound_inf": 0.22088944810168243,
+          "rigorous_source_scoped_stage_bound_inf": 0.1773540188404732,
+          "serial_stage_depth": 4,
+          "stage_certificates": [
+            {
+              "error_bound_up": 6.631094984295854e-21,
+              "exact_residual_upper": 6.635486790896733e-21,
+              "local_lipschitz_up": 16.0,
+              "stage": 1,
+              "tube_inf_up": 0.1
+            },
+            {
+              "error_bound_up": 3.99232155516246e-20,
+              "exact_residual_upper": 2.000367026021052e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 2,
+              "tube_inf_up": 0.09965291355231541
+            },
+            {
+              "error_bound_up": 1.1184604645875428e-19,
+              "exact_residual_upper": 6.236625647390643e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 3,
+              "tube_inf_up": 0.09977641274889791
+            },
+            {
+              "error_bound_up": 2.012248254959056e-18,
+              "exact_residual_upper": 9.206291432920096e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 4,
+              "tube_inf_up": 0.09946812667535068
+            },
+            {
+              "error_bound_up": 0.0040315564630453845,
+              "exact_residual_upper": 0.004034226582584937,
+              "local_lipschitz_up": 16.0,
+              "stage": 5,
+              "tube_inf_up": 0.09976593355896692
+            },
+            {
+              "error_bound_up": 0.002721851897691649,
+              "exact_residual_upper": 0.0021584892653804424,
+              "local_lipschitz_up": 16.0,
+              "stage": 6,
+              "tube_inf_up": 0.09945578987874192
+            },
+            {
+              "error_bound_up": 0.04069183172798505,
+              "exact_residual_upper": 0.008190873016193144,
+              "local_lipschitz_up": 16.0,
+              "stage": 7,
+              "tube_inf_up": 0.10489545615191616
+            },
+            {
+              "error_bound_up": 0.1773540188404732,
+              "exact_residual_upper": 0.029755207367914233,
+              "local_lipschitz_up": 16.0,
+              "stage": 8,
+              "tube_inf_up": 0.15387751267591335
+            }
+          ],
+          "sweep": 4
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.013284772433438993,
+          "actual_high_precision_stage_linf_error": 0.013962227415418443,
+          "all_original_stages_residual_max": 0.007228992028491552,
+          "cumulative_original_W_solves": 30,
+          "last_sweep_original_W_solves": 4,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q4",
+          "rigorous_source_scoped_endpoint_bound_inf": 0.03487619734784172,
+          "rigorous_source_scoped_stage_bound_inf": 0.027488279710459782,
+          "serial_stage_depth": 5,
+          "stage_certificates": [
+            {
+              "error_bound_up": 6.631094984295854e-21,
+              "exact_residual_upper": 6.635486790896733e-21,
+              "local_lipschitz_up": 16.0,
+              "stage": 1,
+              "tube_inf_up": 0.1
+            },
+            {
+              "error_bound_up": 3.99232155516246e-20,
+              "exact_residual_upper": 2.000367026021052e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 2,
+              "tube_inf_up": 0.09965291355231541
+            },
+            {
+              "error_bound_up": 1.1184604645875428e-19,
+              "exact_residual_upper": 6.236625647390643e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 3,
+              "tube_inf_up": 0.09977641274889791
+            },
+            {
+              "error_bound_up": 2.012248254959056e-18,
+              "exact_residual_upper": 9.206291432920096e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 4,
+              "tube_inf_up": 0.09946812667535068
+            },
+            {
+              "error_bound_up": 4.272562778966865e-18,
+              "exact_residual_upper": 4.787800550814129e-19,
+              "local_lipschitz_up": 16.0,
+              "stage": 5,
+              "tube_inf_up": 0.09976593355896692
+            },
+            {
+              "error_bound_up": 0.000564048785396304,
+              "exact_residual_upper": 0.0005644223576622361,
+              "local_lipschitz_up": 16.0,
+              "stage": 6,
+              "tube_inf_up": 0.09945565220383179
+            },
+            {
+              "error_bound_up": 0.006823868851985629,
+              "exact_residual_upper": 0.0034691735412874874,
+              "local_lipschitz_up": 16.0,
+              "stage": 7,
+              "tube_inf_up": 0.10058289598967692
+            },
+            {
+              "error_bound_up": 0.027488279710459782,
+              "exact_residual_upper": 0.007228992028491552,
+              "local_lipschitz_up": 16.0,
+              "stage": 8,
+              "tube_inf_up": 0.107520808461475
+            }
+          ],
+          "sweep": 5
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.010095173784736802,
+          "actual_high_precision_stage_linf_error": 0.006746243485815736,
+          "all_original_stages_residual_max": 0.0134990059853912,
+          "cumulative_original_W_solves": 33,
+          "last_sweep_original_W_solves": 3,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q5",
+          "rigorous_source_scoped_endpoint_bound_inf": 0.023589495203167835,
+          "rigorous_source_scoped_stage_bound_inf": 0.020236778735407652,
+          "serial_stage_depth": 6,
+          "stage_certificates": [
+            {
+              "error_bound_up": 6.631094984295854e-21,
+              "exact_residual_upper": 6.635486790896733e-21,
+              "local_lipschitz_up": 16.0,
+              "stage": 1,
+              "tube_inf_up": 0.1
+            },
+            {
+              "error_bound_up": 3.99232155516246e-20,
+              "exact_residual_upper": 2.000367026021052e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 2,
+              "tube_inf_up": 0.09965291355231541
+            },
+            {
+              "error_bound_up": 1.1184604645875428e-19,
+              "exact_residual_upper": 6.236625647390643e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 3,
+              "tube_inf_up": 0.09977641274889791
+            },
+            {
+              "error_bound_up": 2.012248254959056e-18,
+              "exact_residual_upper": 9.206291432920096e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 4,
+              "tube_inf_up": 0.09946812667535068
+            },
+            {
+              "error_bound_up": 4.272562778966865e-18,
+              "exact_residual_upper": 4.787800550814129e-19,
+              "local_lipschitz_up": 16.0,
+              "stage": 5,
+              "tube_inf_up": 0.09976593355896692
+            },
+            {
+              "error_bound_up": 4.3288844582775296e-18,
+              "exact_residual_upper": 1.6154837733938752e-19,
+              "local_lipschitz_up": 16.0,
+              "stage": 6,
+              "tube_inf_up": 0.09945565220383179
+            },
+            {
+              "error_bound_up": 0.0033527164677601747,
+              "exact_residual_upper": 0.0033549369882546727,
+              "local_lipschitz_up": 16.0,
+              "stage": 7,
+              "tube_inf_up": 0.09945543584212099
+            },
+            {
+              "error_bound_up": 0.020236778735407652,
+              "exact_residual_upper": 0.0134990059853912,
+              "local_lipschitz_up": 16.0,
+              "stage": 8,
+              "tube_inf_up": 0.09945922201095274
+            }
+          ],
+          "sweep": 6
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.006728621026382137,
+          "actual_high_precision_stage_linf_error": 0.006728621026382136,
+          "all_original_stages_residual_max": 0.006740686310966524,
+          "cumulative_original_W_solves": 35,
+          "last_sweep_original_W_solves": 2,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q6",
+          "rigorous_source_scoped_endpoint_bound_inf": 0.006736224876324901,
+          "rigorous_source_scoped_stage_bound_inf": 0.006736224876324835,
+          "serial_stage_depth": 7,
+          "stage_certificates": [
+            {
+              "error_bound_up": 6.631094984295854e-21,
+              "exact_residual_upper": 6.635486790896733e-21,
+              "local_lipschitz_up": 16.0,
+              "stage": 1,
+              "tube_inf_up": 0.1
+            },
+            {
+              "error_bound_up": 3.99232155516246e-20,
+              "exact_residual_upper": 2.000367026021052e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 2,
+              "tube_inf_up": 0.09965291355231541
+            },
+            {
+              "error_bound_up": 1.1184604645875428e-19,
+              "exact_residual_upper": 6.236625647390643e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 3,
+              "tube_inf_up": 0.09977641274889791
+            },
+            {
+              "error_bound_up": 2.012248254959056e-18,
+              "exact_residual_upper": 9.206291432920096e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 4,
+              "tube_inf_up": 0.09946812667535068
+            },
+            {
+              "error_bound_up": 4.272562778966865e-18,
+              "exact_residual_upper": 4.787800550814129e-19,
+              "local_lipschitz_up": 16.0,
+              "stage": 5,
+              "tube_inf_up": 0.09976593355896692
+            },
+            {
+              "error_bound_up": 4.3288844582775296e-18,
+              "exact_residual_upper": 1.6154837733938752e-19,
+              "local_lipschitz_up": 16.0,
+              "stage": 6,
+              "tube_inf_up": 0.09945565220383179
+            },
+            {
+              "error_bound_up": 5.996102315972744e-17,
+              "exact_residual_upper": 3.855597488531623e-19,
+              "local_lipschitz_up": 16.0,
+              "stage": 7,
+              "tube_inf_up": 0.09945543584212099
+            },
+            {
+              "error_bound_up": 0.006736224876324835,
+              "exact_residual_upper": 0.006740686310966524,
+              "local_lipschitz_up": 16.0,
+              "stage": 8,
+              "tube_inf_up": 0.09945543584211368
+            }
+          ],
+          "sweep": 7
+        },
+        {
+          "actual_high_precision_endpoint_linf_error": 0.0,
+          "actual_high_precision_stage_linf_error": 2.9364103342276056e-18,
+          "all_original_stages_residual_max": 1.1486046886563855e-18,
+          "cumulative_original_W_solves": 36,
+          "last_sweep_original_W_solves": 1,
+          "native_full_step_admission": "NOT_ADMITTED_NO_ORIGINAL_EMBEDDED_ERROR_ALLOWANCE",
+          "original_target_error_certificate": "SOURCE_EXACT_REPRESENTED_COEFFICIENTS_ONLY",
+          "q_name": "frontier_q7",
+          "rigorous_source_scoped_endpoint_bound_inf": 3.057092508496706e-16,
+          "rigorous_source_scoped_stage_bound_inf": 2.394701831239394e-16,
+          "serial_stage_depth": 8,
+          "stage_certificates": [
+            {
+              "error_bound_up": 6.631094984295854e-21,
+              "exact_residual_upper": 6.635486790896733e-21,
+              "local_lipschitz_up": 16.0,
+              "stage": 1,
+              "tube_inf_up": 0.1
+            },
+            {
+              "error_bound_up": 3.99232155516246e-20,
+              "exact_residual_upper": 2.000367026021052e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 2,
+              "tube_inf_up": 0.09965291355231541
+            },
+            {
+              "error_bound_up": 1.1184604645875428e-19,
+              "exact_residual_upper": 6.236625647390643e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 3,
+              "tube_inf_up": 0.09977641274889791
+            },
+            {
+              "error_bound_up": 2.012248254959056e-18,
+              "exact_residual_upper": 9.206291432920096e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 4,
+              "tube_inf_up": 0.09946812667535068
+            },
+            {
+              "error_bound_up": 4.272562778966865e-18,
+              "exact_residual_upper": 4.787800550814129e-19,
+              "local_lipschitz_up": 16.0,
+              "stage": 5,
+              "tube_inf_up": 0.09976593355896692
+            },
+            {
+              "error_bound_up": 4.3288844582775296e-18,
+              "exact_residual_upper": 1.6154837733938752e-19,
+              "local_lipschitz_up": 16.0,
+              "stage": 6,
+              "tube_inf_up": 0.09945565220383179
+            },
+            {
+              "error_bound_up": 5.996102315972744e-17,
+              "exact_residual_upper": 3.855597488531623e-19,
+              "local_lipschitz_up": 16.0,
+              "stage": 7,
+              "tube_inf_up": 0.09945543584212099
+            },
+            {
+              "error_bound_up": 2.394701831239394e-16,
+              "exact_residual_upper": 1.1486046886563855e-18,
+              "local_lipschitz_up": 16.0,
+              "stage": 8,
+              "tube_inf_up": 0.09945543584211368
+            }
+          ],
+          "sweep": 8
+        }
+      ],
+      "h": 0.00078125,
+      "h_gamma": 0.00016557622124553918,
+      "independent_physical_model": true,
+      "initial_state": [
+        0.1,
+        0.05
+      ],
+      "protected_sequential": {
+        "endpoint": [
+          0.09945543584211265,
+          0.05007654581741858
+        ],
+        "original_W_stage_solves": 8,
+        "reference_endpoint": [
+          0.09945543584211265,
+          0.05007654581741858
+        ],
+        "serial_stage_depth": 8,
+        "source_scoped_exact_rational_residual_certificate": {
+          "certificate": "EXACT_BINARY64_AS_RATIONAL_SOURCE_SCOPED",
+          "endpoint_bound_upper": 3.057092508496706e-16,
+          "max_error_upper": 2.394701831239394e-16,
+          "max_residual_upper": 1.1486046886563855e-18,
+          "no_native_callback_rounding_certificate": true,
+          "stage_bound": [
+            {
+              "error_bound_up": 6.631094984295854e-21,
+              "exact_residual_upper": 6.635486790896733e-21,
+              "local_lipschitz_up": 16.0,
+              "stage": 1,
+              "tube_inf_up": 0.1
+            },
+            {
+              "error_bound_up": 3.99232155516246e-20,
+              "exact_residual_upper": 2.000367026021052e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 2,
+              "tube_inf_up": 0.09965291355231541
+            },
+            {
+              "error_bound_up": 1.1184604645875428e-19,
+              "exact_residual_upper": 6.236625647390643e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 3,
+              "tube_inf_up": 0.09977641274889791
+            },
+            {
+              "error_bound_up": 2.012248254959056e-18,
+              "exact_residual_upper": 9.206291432920096e-20,
+              "local_lipschitz_up": 16.0,
+              "stage": 4,
+              "tube_inf_up": 0.09946812667535068
+            },
+            {
+              "error_bound_up": 4.272562778966865e-18,
+              "exact_residual_upper": 4.787800550814129e-19,
+              "local_lipschitz_up": 16.0,
+              "stage": 5,
+              "tube_inf_up": 0.09976593355896692
+            },
+            {
+              "error_bound_up": 4.3288844582775296e-18,
+              "exact_residual_upper": 1.6154837733938752e-19,
+              "local_lipschitz_up": 16.0,
+              "stage": 6,
+              "tube_inf_up": 0.09945565220383179
+            },
+            {
+              "error_bound_up": 5.996102315972744e-17,
+              "exact_residual_upper": 3.855597488531623e-19,
+              "local_lipschitz_up": 16.0,
+              "stage": 7,
+              "tube_inf_up": 0.09945543584212099
+            },
+            {
+              "error_bound_up": 2.394701831239394e-16,
+              "exact_residual_upper": 1.1486046886563855e-18,
+              "local_lipschitz_up": 16.0,
+              "stage": 8,
+              "tube_inf_up": 0.09945543584211368
+            }
+          ]
+        },
+        "stage_linf_reference_error": 2.9364103342276056e-18
+      },
+      "source_family": "linear_exchange_control",
+      "source_owned_newton_free_first_W_Jacobi": {
+        "component_arithmetic_work_proxy": 20,
+        "contraction_ratio_bound": 0.0009918151174799698,
+        "exact_original_W_residual_inf": 1.1180834903756764e-19,
+        "iterations": 5,
+        "no_jacobian_callback": true,
+        "no_newton": true
+      },
+      "steps_original": 128
+    }
+  ],
+  "runtime_jvp_callbacks": 0,
+  "runtime_newton_iterations": 0,
+  "schema": "vigilode.r6.original_eight_stage_causal_frontier.v1",
+  "scientific_status": "DERIVED_AND_NUMERICALLY_CHECKED_SOURCE_SCOPED_ONLY",
+  "source_sha256_tableau": "211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6",
+  "successor_admitted": "0/12",
+  "sweep_depth_rows": 32,
+  "tested_original_fixture_rows": 4
+}
