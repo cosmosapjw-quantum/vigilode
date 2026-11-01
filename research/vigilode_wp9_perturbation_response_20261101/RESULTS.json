@@ -1,0 +1,167 @@
+{
+  "schema": "vigilode.wp9.new_actual_parameter_perturbation_ivps.v1",
+  "parent_source_head": "4f4ebf9fd6ecf52289ab82e2cc670a7ab72782ff",
+  "pre_run_registration_commit": "75920e0c3685cb7c86a04620c64b5d3bd1b1baa9",
+  "original_rhs_source_blob": "d78c5c5f6f476f2a5b1ea88628ed25daa6cfc482",
+  "original_sweep_sha256": "9dae90079893170edddcf5cf8af193e53b43ab5bcf0c436cb81ce7aa0f8790b0",
+  "original_summary_sha256": "56746487ac5c5c8702b53ef0ffd47694c040ab4e0adcfea1ec25aa3b8e9ba909",
+  "physical_ivps": {
+    "distinct_source_parameter_hypotheses": 16,
+    "nonzero_parameter_cases": 96,
+    "solver_integrations": 192,
+    "baseline_source_solver_integrations": 8,
+    "first_variational_integrations": 32,
+    "second_variational_integrations": 32,
+    "methods": [
+      "Radau",
+      "DOP853"
+    ],
+    "scipy": "1.17.0",
+    "rtol": 2e-12,
+    "atol": 2e-14,
+    "horizon": 0.1,
+    "sample_times": 129,
+    "theta_steps": [
+      "1/50",
+      "1/100",
+      "1/200"
+    ],
+    "actual_perturbed_model": true,
+    "original_native_rodas5p_not_rerun": true
+  },
+  "source_raw_sha256": {
+    "WP9_PHYSICAL_PERTURBATION_RESULTS": "0fbae5b94fbe98388c5ad321a867fdf01db9767e6bed51cfba9c37a96c7758cb",
+    "WP9_SECOND_VARIATION": "75a68816c9a6399f2d653d8657979f4b7bc2e083b83ff5cc855030af33976a9f",
+    "WP9_SECOND_ORDER_RESPONSE": "2f04a98dfd259dcd294a31dbf8e2688e34b018b855d7eec1a8299c82fbe9e4b6",
+    "SEARCH_AND_PHYSICAL_EVAL": "6302545f7af346cf57dc9e3d47da1cbb443b4c8216572a2d571f0a45968c0aab"
+  },
+  "physical_records": [
+    [
+      "coupled_3_cubic",
+      "CUBIC_ALL_REL",
+      -0.00015909190831234682,
+      0.000004419214469942673
+    ],
+    [
+      "asymmetric_2",
+      "FORCING_CONST",
+      0.060005060036829365,
+      -0.002084472083936397
+    ],
+    [
+      "asymmetric_2",
+      "CUBIC_ALL_REL",
+      -0.0032011181296765054,
+      0.00036791249515728846
+    ],
+    [
+      "linear_exchange_control",
+      "FORCING_CONST",
+      0.024725996547327052,
+      0
+    ],
+    [
+      "asymmetric_2",
+      "DECAY_ALL_REL",
+      -0.04464683067868421,
+      0.023894734106949478
+    ],
+    [
+      "coupled_3_cubic",
+      "DECAY_ALL_REL",
+      -0.014955924657854438,
+      0.011726232706269036
+    ],
+    [
+      "asymmetric_2",
+      "EXCHANGE_ALL_REL",
+      -0.0011800964602848053,
+      0.0010772890014258277
+    ],
+    [
+      "linear_exchange_control",
+      "DECAY_ALL_REL",
+      -0.02010960138106919,
+      0.008043840552427677
+    ],
+    [
+      "asymmetric_2",
+      "EXCHANGE_C01_REL",
+      -0.016962840866381435,
+      0.021137019990932336
+    ],
+    [
+      "coupled_3_cubic",
+      "FORCING_CONST",
+      0.022675617719187382,
+      -0.00020013733327155586
+    ],
+    [
+      "coupled_3_cubic",
+      "EXCHANGE_ALL_REL",
+      -0.00021455526339654606,
+      0.0002175698398805933
+    ],
+    [
+      "linear_exchange_control",
+      "EXCHANGE_C01_REL",
+      -0.008379000575445543,
+      0.008379000575445526
+    ],
+    [
+      "coupled_3_cubic",
+      "EXCHANGE_C01_REL",
+      0.00005570618578456361,
+      -0.00015426351478879934
+    ],
+    [
+      "linear_exchange_control",
+      "CUBIC_ALL_REL",
+      0,
+      0
+    ],
+    [
+      "linear_exchange_control",
+      "EXCHANGE_ALL_REL",
+      0,
+      0
+    ],
+    [
+      "asymmetric_2_refined",
+      "EXCHANGE_C01_REL",
+      -0.016962840866381435,
+      0.021137019990932336
+    ]
+  ],
+  "record_fields": [
+    "cohort",
+    "perturbation_axis",
+    "dW_dtheta_at_t0p1",
+    "d2W_dtheta2_at_t0p1"
+  ],
+  "scientific_verdict": {
+    "same_author_adversarial_tests": "23/23 PASS",
+    "independent_cross_solver_max_absolute_state_difference": 3.451960939315768e-13,
+    "independent_second_variational_method_difference_below": 4.4e-14,
+    "qualified_nonlinear_cases": 13,
+    "second_variation_better_than_linear_on_qualified": 13,
+    "source_equivalent_resolution_control": "PASS",
+    "cubic_linear_null_control": "PASS",
+    "exchange_uniform_linear_null_control": "PASS",
+    "rigorous_interval": "NOT_RUN",
+    "hol_full": "NOT_RUN",
+    "native_independent_C9": "NOT_RUN",
+    "novelty": "UNRESOLVED"
+  },
+  "search": {
+    "real_open_evolve_program_database": true,
+    "open_evolve_waves": 8,
+    "uct_waves": 8,
+    "actual_numerical_ivp_evaluation_after_each_candidate": true,
+    "external_llm_calls": 0
+  },
+  "official_vigilode_dag": "7/23",
+  "successor_admitted": "0/12",
+  "production": "HOLD",
+  "no_merge": true
+}
