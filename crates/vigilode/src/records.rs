@@ -767,6 +767,80 @@ impl From<&rodas5p_core::WorkCounters> for WorkRecord {
     }
 }
 
+impl From<&WorkRecord> for rodas5p_core::WorkCounters {
+    fn from(r: &WorkRecord) -> Self {
+        Self {
+            rhs_calls: r.rhs_calls,
+            rhs_batch_calls: r.rhs_batch_calls,
+            rhs_evaluations: r.rhs_evaluations,
+            ft_calls: r.ft_calls,
+            jacobian_builds: r.jacobian_builds,
+            jvp_calls: r.jvp_calls,
+            jvp_vectors: r.jvp_vectors,
+            mass_matvecs: r.mass_matvecs,
+            nonlinear_solves: r.nonlinear_solves,
+            nonlinear_iterations: r.nonlinear_iterations,
+            nonlinear_residual_evaluations: r.nonlinear_residual_evaluations,
+            nonlinear_jacobian_evaluations: r.nonlinear_jacobian_evaluations,
+            nonlinear_failures: r.nonlinear_failures,
+            linear_solves: r.linear_solves,
+            linear_iterations: r.linear_iterations,
+            linear_matvecs: r.linear_matvecs,
+            preconditioner_apps: r.preconditioner_apps,
+            direct_factorizations: r.direct_factorizations,
+            direct_solve_calls: r.direct_solve_calls,
+            recycle_projection_calls: r.recycle_projection_calls,
+            recycle_same_operator_uses: r.recycle_same_operator_uses,
+            recycle_cross_operator_refreshes: r.recycle_cross_operator_refreshes,
+            recycle_refresh_matvecs: r.recycle_refresh_matvecs,
+            recycle_updates: r.recycle_updates,
+            recycle_vectors_selected: r.recycle_vectors_selected,
+            recycle_dropped_vectors: r.recycle_dropped_vectors,
+            harmonic_ritz_solves: r.harmonic_ritz_solves,
+            orthogonalization_inner_products: r.orthogonalization_inner_products,
+            orthogonalization_vector_updates: r.orthogonalization_vector_updates,
+            diagnostic_matvecs: r.diagnostic_matvecs,
+            phi_actions: r.phi_actions,
+            phi_krylov_vectors: r.phi_krylov_vectors,
+            phi_projected_exponentials: r.phi_projected_exponentials,
+            phi_restarts: r.phi_restarts,
+            phi_dense_oracle_calls: r.phi_dense_oracle_calls,
+            block_linear_solves: r.block_linear_solves,
+            block_linear_iterations: r.block_linear_iterations,
+            block_matvecs: r.block_matvecs,
+            block_preconditioner_apps: r.block_preconditioner_apps,
+            fast_attempts: r.fast_attempts,
+            fast_accepts: r.fast_accepts,
+            fallback_steps: r.fallback_steps,
+            accepted_steps: r.accepted_steps,
+            rejected_steps: r.rejected_steps,
+            local_error_failures: r.local_error_failures,
+            linear_solve_failures: r.linear_solve_failures,
+            nonlinear_solve_failures: r.nonlinear_solve_failures,
+            nonfinite_step_failures: r.nonfinite_step_failures,
+            forced_stage_solves: r.forced_stage_solves,
+            jacobian_matvecs: r.jacobian_matvecs,
+            linear_matvec_vectors: r.linear_matvec_vectors,
+            preconditioner_vectors: r.preconditioner_vectors,
+            merged_unknown_vector_calls: r.merged_unknown_vector_calls,
+            phi_weight_underflows: r.phi_weight_underflows,
+            poly_block_products: r.poly_block_products,
+            poly_vector_products: r.poly_vector_products,
+            poly_coefficient_setups: r.poly_coefficient_setups,
+            poly_coefficient_reuses: r.poly_coefficient_reuses,
+            poly_block_allocations: r.poly_block_allocations,
+            poly_fallbacks: r.poly_fallbacks,
+            recycle_update_refreshes: r.recycle_update_refreshes,
+        }
+    }
+}
+
+impl From<WorkRecord> for rodas5p_core::WorkCounters {
+    fn from(r: WorkRecord) -> Self {
+        (&r).into()
+    }
+}
+
 impl PartialEq<rodas5p_core::WorkCounters> for WorkRecord {
     fn eq(&self, source: &rodas5p_core::WorkCounters) -> bool {
         self == &Self::from(source)

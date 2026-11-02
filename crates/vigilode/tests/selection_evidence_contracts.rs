@@ -81,3 +81,43 @@ fn equality_at_rounded_boundary_is_conservative() {
         CostComparison::PreferCandidate
     );
 }
+
+#[test]
+fn work_model_unit_and_evidence_kind_admission_rules() {
+    let mut old = evidence(10.0, 10.0);
+    let mut new = evidence(5.0, 5.0);
+    old.unit = CostUnit::WorkModel(1);
+    new.unit = CostUnit::WorkModel(2);
+    assert_eq!(
+        compare_qualified_costs(&old, &new, 0.0, 1, 0.1),
+        CostComparison::Incomparable(CostIncomparability::UnitMismatch)
+    );
+    new.unit = CostUnit::WorkModel(1);
+    assert_eq!(
+        compare_qualified_costs(&old, &new, 0.0, 1, 0.1),
+        CostComparison::PreferCandidate
+    );
+
+    // ObservedLowerBound on candidate is invalid policy
+    new.kind = CostEvidenceKind::ObservedLowerBound;
+    assert_eq!(
+        compare_qualified_costs(&old, &new, 0.0, 1, 0.1),
+        CostComparison::Incomparable(CostIncomparability::InvalidPolicy)
+    );
+
+    // ObservedLowerBound on incumbent is allowed
+    old.kind = CostEvidenceKind::ObservedLowerBound;
+    new.kind = CostEvidenceKind::ObservedWork;
+    assert_eq!(
+        compare_qualified_costs(&old, &new, 0.0, 1, 0.1),
+        CostComparison::PreferCandidate
+    );
+
+    // RateExtrapolated on candidate with admissible == true is invalid policy
+    new.kind = CostEvidenceKind::RateExtrapolated;
+    new.admissible = true;
+    assert_eq!(
+        compare_qualified_costs(&old, &new, 0.0, 1, 0.1),
+        CostComparison::Incomparable(CostIncomparability::InvalidPolicy)
+    );
+}

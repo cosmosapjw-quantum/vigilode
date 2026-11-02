@@ -175,6 +175,7 @@ mod oscillatory_chart;
 mod problem;
 mod production;
 mod records;
+pub mod registry;
 mod selection;
 pub mod selection_evidence;
 mod session;
@@ -196,6 +197,7 @@ pub use problem::{
 };
 pub use production::{PRODUCTION_CONFIG_SCHEMA, ProductionConfig, ProductionSolver};
 pub use records::*;
+pub use registry::*;
 pub use selection::*;
 pub use session::{ExplicitSession, SessionAdvance, SessionCheckpoint, SessionEpochs};
 pub use solution::{

@@ -3,6 +3,10 @@
 //! This adapter uses observed work, not a stiffness estimate. Its default is
 //! RHS-only. Derivative fallbacks require a separate explicit authorization.
 
+use crate::registry::{
+    BatchOutcome, BatchRequest, BatchStop, Dopri5WindowDriver, Rodas5pWindowDriver, RouteId,
+    WindowDriver, compute_provider_epoch, compute_tolerance_epoch, compute_window_epoch,
+};
 use crate::selection_evidence::{
     CostComparison, CostEvidence, CostEvidenceKind, CostInterval, CostUnit, SelectionIdentity,
     compare_qualified_costs,
@@ -11,7 +15,7 @@ use rodas5p_integrators::{AdaptiveStepConfig, Dopri5StopReason};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    Atol, Dopri5, ExplicitStats, Jacobian, Options, Problem, Rodas5p, SessionEpochs, Stats, Status,
+    Atol, Dopri5, ExplicitStats, Jacobian, Options, Problem, Rodas5p, SessionEpochs, Stats,
 };
 
 /// Authorization for derivative work after the explicit path shows pressure.
@@ -223,6 +227,10 @@ pub struct SwitchingConfig {
     /// Callbacks must be replay
     /// safe as for every competitive switching solve.
     pub entry_probe_adaptation: Option<EntryProbeAdaptation>,
+    /// Opt-in audit mode that evaluates callbacks twice on the first pilot
+    /// checkpoint and compares bitwise identity (Section 10.4).
+    #[serde(default)]
+    pub audit_replay_safety: bool,
 }
 
 impl Default for SwitchingConfig {
@@ -255,6 +263,7 @@ impl Default for SwitchingConfig {
             rearm_rate_ratio: 2.0,
             return_sentinel_interval: 0,
             entry_probe_adaptation: None,
+            audit_replay_safety: false,
         }
     }
 }
@@ -617,13 +626,19 @@ impl SwitchingSolver {
                 }
                 .max(AdaptiveStepConfig::default().min_step);
                 let initial = current.result.final_state.clone();
+                let session_epochs = SessionEpochs {
+                    model: 0,
+                    provider: compute_provider_epoch(RouteId::Dopri5Rhs, problem),
+                    norm: 0,
+                    tolerance: compute_tolerance_epoch(opts),
+                };
                 let outcome = Dopri5::with_session_driver(
                     problem,
                     (start, t1),
                     &initial,
                     &session_opts,
                     &times,
-                    SessionEpochs::default(),
+                    session_epochs,
                     |active| {
                         let state = progress.take().unwrap();
                         progress = Some(drive_windows(
@@ -1017,8 +1032,10 @@ fn qualified_work_preferred(
     incumbent_admissible: bool,
     ratio: f64,
     window_epoch: u64,
+    tolerance_epoch: u64,
 ) -> bool {
     let identity = SelectionIdentity {
+        tolerance_epoch,
         window_epoch,
         ..Default::default()
     };
@@ -1067,6 +1084,14 @@ fn drive_windows(
         mut implicit_seed,
         mut tenure_rechecks,
     } = progress;
+    let tolerance_epoch = compute_tolerance_epoch(opts);
+    let session_epochs = SessionEpochs {
+        model: 0,
+        provider: compute_provider_epoch(RouteId::Dopri5Rhs, problem),
+        norm: 0,
+        tolerance: tolerance_epoch,
+    };
+    let mut replay_safety_audited = false;
     let fallback = config.fallback != DerivativeFallback::Forbidden;
     let return_ratio = if config.strict_return_work_improvement {
         1.0
@@ -1264,7 +1289,8 @@ fn drive_windows(
                                 &e.record,
                                 true,
                                 return_ratio,
-                                result.stats.segments.len() as u64,
+                                compute_window_epoch(result.stats.segments.len(), start, target),
+                                tolerance_epoch,
                             )
                         }
                 });
@@ -1403,37 +1429,41 @@ fn drive_windows(
             } else {
                 None
             };
-            let batch_result =
-                if selected == SwitchingMethod::Dopri5 && !probe && config.carry_explicit_step {
-                    match session.as_deref_mut() {
-                        Some(active) => run_persistent_explicit(active, start, target, t1, &local),
-                        None => Err("explicit tenure has no active native session".into()),
+            let batch_result = if selected == SwitchingMethod::Dopri5
+                && !probe
+                && config.carry_explicit_step
+            {
+                match session.as_deref_mut() {
+                    Some(active) => {
+                        run_persistent_explicit(active, start, target, t1, &local, session_epochs)
                     }
-                } else {
-                    // Interior window endpoints of a coalesced batch, strictly
-                    // increasing: endpoints below the clock resolution collapse
-                    // onto their neighbour instead of refusing the native run.
-                    let mut landings: Vec<f64> = Vec::new();
-                    for w in window..window + windows.saturating_sub(1) {
-                        let t = window_target((t0, t1), w, config.window_count);
-                        if t > start && landings.last().is_none_or(|last| t > *last) {
-                            landings.push(t);
-                        }
+                    None => Err("explicit tenure has no active native session".into()),
+                }
+            } else {
+                // Interior window endpoints of a coalesced batch, strictly
+                // increasing: endpoints below the clock resolution collapse
+                // onto their neighbour instead of refusing the native run.
+                let mut landings: Vec<f64> = Vec::new();
+                for w in window..window + windows.saturating_sub(1) {
+                    let t = window_target((t0, t1), w, config.window_count);
+                    if t > start && landings.last().is_none_or(|last| t > *last) {
+                        landings.push(t);
                     }
-                    run(
-                        problem,
-                        start,
-                        batch_target,
-                        &result.final_state,
-                        &local,
-                        selected,
-                        probe,
-                        config.carry_explicit_step,
-                        t1,
-                        &landings,
-                        return_ceiling,
-                    )
-                };
+                }
+                run(
+                    problem,
+                    start,
+                    batch_target,
+                    &result.final_state,
+                    &local,
+                    selected,
+                    probe,
+                    config.carry_explicit_step,
+                    t1,
+                    &landings,
+                    return_ceiling,
+                )
+            };
             let batch = match batch_result {
                 Ok(batch) => batch,
                 Err(message) => {
@@ -1566,7 +1596,12 @@ fn drive_windows(
                                         &record,
                                         true,
                                         return_ratio,
-                                        result.stats.segments.len() as u64,
+                                        compute_window_epoch(
+                                            result.stats.segments.len(),
+                                            start,
+                                            target,
+                                        ),
+                                        tolerance_epoch,
                                     )
                                 } else {
                                     prefix_preferred
@@ -1739,6 +1774,41 @@ fn drive_windows(
                             {
                                 implicit_pilots += 1;
                                 batches_since_entry_pilot = 0;
+                                if config.audit_replay_safety && !replay_safety_audited {
+                                    replay_safety_audited = true;
+                                    let mut rhs1 = vec![0.0; problem.dimension];
+                                    let mut rhs2 = vec![0.0; problem.dimension];
+                                    let rhs_ok1 =
+                                        (problem.rhs)(start, &result.final_state, &mut rhs1);
+                                    let rhs_ok2 =
+                                        (problem.rhs)(start, &result.final_state, &mut rhs2);
+                                    let mut replay_ok = rhs_ok1.is_ok()
+                                        && rhs_ok2.is_ok()
+                                        && rhs1
+                                            .iter()
+                                            .zip(&rhs2)
+                                            .all(|(a, b)| a.to_bits() == b.to_bits());
+                                    if replay_ok && let Jacobian::Jvp(jvp) = &problem.jacobian {
+                                        let v = vec![1.0; problem.dimension];
+                                        let mut jvp1 = vec![0.0; problem.dimension];
+                                        let mut jvp2 = vec![0.0; problem.dimension];
+                                        let jvp_ok1 =
+                                            (jvp)(start, &result.final_state, &v, &mut jvp1);
+                                        let jvp_ok2 =
+                                            (jvp)(start, &result.final_state, &v, &mut jvp2);
+                                        replay_ok = jvp_ok1.is_ok()
+                                            && jvp_ok2.is_ok()
+                                            && jvp1
+                                                .iter()
+                                                .zip(&jvp2)
+                                                .all(|(a, b)| a.to_bits() == b.to_bits());
+                                    }
+                                    if !replay_ok {
+                                        record.decision = "callback replay mismatch: RHS or JVP non-deterministic";
+                                        result.stats.segments.push(record);
+                                        continue 'windows;
+                                    }
+                                }
                                 local.h0 = entry_pilot_checkpoint_seed(
                                     &record,
                                     opts.h0,
@@ -1792,7 +1862,12 @@ fn drive_windows(
                                                 &pilot.record,
                                                 record.accepted_steps > 0,
                                                 config.entry_cost_ratio,
-                                                result.stats.segments.len() as u64,
+                                                compute_window_epoch(
+                                                    result.stats.segments.len(),
+                                                    start,
+                                                    target,
+                                                ),
+                                                tolerance_epoch,
                                             )
                                         } else {
                                             pilot.record.success
@@ -2052,17 +2127,37 @@ struct Batch {
     ceiling_stop: bool,
 }
 
+impl From<BatchOutcome> for Batch {
+    fn from(outcome: BatchOutcome) -> Self {
+        let (fatal, budget_stop, ceiling_stop) = match outcome.stop {
+            BatchStop::Completed => (false, false, false),
+            BatchStop::Budget => (false, true, false),
+            BatchStop::Ceiling | BatchStop::ProgressBound => (false, false, true),
+            BatchStop::Fatal(_) => (true, false, false),
+        };
+        Self {
+            record: outcome.record,
+            state: outcome.state,
+            landings: outcome.landed,
+            fatal,
+            budget_stop,
+            ceiling_stop,
+        }
+    }
+}
+
 fn run_persistent_explicit(
     session: &mut crate::session::ExplicitSession<'_>,
     start: f64,
     target: f64,
     solve_end: f64,
     opts: &Options,
+    epochs: SessionEpochs,
 ) -> Result<Batch, String> {
     let initial_step = session.checkpoint().proposed_h;
     let before = session.snapshot();
     let outcome = session
-        .advance_to(target, opts.max_steps, SessionEpochs::default())
+        .advance_to(target, opts.max_steps, epochs)
         .map_err(|error| error.to_string())?;
     let after = session.snapshot();
     let driver = session.stats_between(before, after);
@@ -2139,217 +2234,38 @@ fn run(
     landings: &[f64],
     ceiling: Option<u64>,
 ) -> Result<Batch, String> {
-    let (
-        reached,
-        state,
-        landed,
-        success,
-        attempts,
-        accepted,
-        rejected,
-        rhs,
-        jac,
-        jvp,
-        ft,
-        solves,
-        fatal,
-        budget,
-        ceiling_stop,
-        driver,
-        proposed_next_step,
-    ) = match method {
-        SwitchingMethod::Dopri5 => {
-            // Probes always use a scoped native session: it can be advanced one
-            // attempt at a time, so their RHS work can be bounded exactly.
-            let (next, r, ceiling_stop) = if carry_explicit_step || probe {
-                let epochs = SessionEpochs::default();
-                // The batch target is an intermediate checkpoint, not the
-                // native terminal time. At tf the native driver intentionally
-                // skips the controller's next proposal, since none is needed.
-                let times = if target < solve_end {
-                    vec![start, target, solve_end]
-                } else {
-                    vec![start, target]
-                };
-                let (outcome, r) = Dopri5::with_session(
-                    problem,
-                    (start, solve_end),
-                    y,
-                    opts,
-                    &times,
-                    epochs,
-                    |session| {
-                        let mut stopped = false;
-                        match ceiling {
-                            None => {
-                                session.advance_to(target, opts.max_steps, epochs)?;
-                            }
-                            Some(cap) => {
-                                let base = session.checkpoint().counters.rhs_calls;
-                                loop {
-                                    let step = session.advance_to(target, 1, epochs)?;
-                                    if step != crate::SessionAdvance::Yield {
-                                        break;
-                                    }
-                                    if session.checkpoint().counters.rhs_calls - base > cap {
-                                        stopped = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        Ok::<(f64, bool), crate::ExplicitSolveError>((
-                            session.checkpoint().proposed_h,
-                            stopped,
-                        ))
-                    },
-                )
-                .map_err(|e| e.to_string())?;
-                let (next, stopped) = outcome.map_err(|e| e.to_string())?;
-                // No proposal was newly computed after the final accepted
-                // step of the full solve. Do not expose its stale snapshot.
-                // Without step carry no proposal is published at all.
-                (
-                    (carry_explicit_step && r.final_time < solve_end).then_some(next),
-                    r,
-                    stopped,
-                )
-            } else {
-                (
-                    None,
-                    Dopri5::solve(problem, (start, target), y, opts).map_err(|e| e.to_string())?,
-                    false,
-                )
-            };
-            let c = r.stats.counters;
-            // A deliberate pause at this batch's endpoint is a successful
-            // batch even though the native full-span solve is unfinished.
-            let success = if carry_explicit_step || probe {
-                r.final_time == target
-                    && matches!(r.stop_reason, None | Some(Dopri5StopReason::AttemptBudget))
-                    && r.callback_failure.is_none()
-            } else {
-                r.success
-            };
-            (
-                r.final_time,
-                r.final_state,
-                Vec::new(),
-                success,
-                r.stats.attempts,
-                r.stats.accepted_steps,
-                r.stats.rejected_steps,
-                c.rhs_calls,
-                c.jacobian_builds,
-                c.jvp_vectors,
-                c.ft_calls,
-                c.linear_solves,
-                r.callback_failure.is_some(),
-                r.final_time < target && r.stop_reason == Some(Dopri5StopReason::AttemptBudget),
-                ceiling_stop,
-                SwitchingDriverStats::Dopri5(Box::new(r.stats)),
-                next.filter(|h| h.is_finite() && *h > 0.0),
-            )
-        }
-        SwitchingMethod::Rodas5p => {
-            let r = Rodas5p::solve_observed_bounded(
-                problem,
-                (start, target),
-                y,
-                opts,
-                landings,
-                ceiling,
-            )
-            .map_err(|e| e.to_string())?;
-            let c = r.stats.counters;
-            let success = r.status == Status::Success;
-            let fatal = matches!(
-                r.status,
-                Status::Failed(crate::FailureReason::CallbackFailed { .. })
-            );
-            let budget = matches!(
-                r.status,
-                Status::Failed(crate::FailureReason::MaxStepsReached { .. })
-            );
-            let ceiling_stop = matches!(
-                r.status,
-                Status::Failed(crate::FailureReason::WorkCeilingReached { .. })
-            );
-            let reached = *r.t.last().unwrap_or(&start);
-            let crate::Solution {
-                t: times,
-                y: states,
-                stats,
-                ..
-            } = r;
-            // The last row is the batch's accepted state; rows strictly
-            // between the start and that state are landed window endpoints.
-            let rows = times.len();
-            let mut landed = Vec::new();
-            let mut state = None;
-            for (index, (t, row)) in times.into_iter().zip(states).enumerate() {
-                if index + 1 == rows {
-                    state = Some(row);
-                } else if t > start && t < reached {
-                    landed.push((t, row));
-                }
-            }
-            (
-                reached,
-                state.unwrap_or_else(|| y.to_vec()),
-                landed,
-                success,
-                stats.attempts,
-                stats.accepted_steps,
-                stats.rejected_steps,
-                c.rhs_calls,
-                c.jacobian_builds,
-                c.jvp_vectors,
-                c.ft_calls,
-                c.linear_solves,
-                fatal,
-                budget,
-                ceiling_stop,
-                SwitchingDriverStats::Rodas5p(Box::new(stats)),
-                None,
-            )
-        }
+    let route = match method {
+        SwitchingMethod::Dopri5 => RouteId::Dopri5Rhs,
+        SwitchingMethod::Rodas5p => Rodas5pWindowDriver::for_problem(problem).route(),
     };
-    let work_units =
-        rhs as f64 + jvp as f64 + ft as f64 + jac as f64 * y.len() as f64 + solves as f64;
-    Ok(Batch {
-        record: SwitchingSegment {
-            method,
-            start_time: start,
-            target_time: target,
-            reached_time: reached,
-            windows: 1,
-            is_probe: probe,
-            committed: false,
-            success,
-            attempts,
-            accepted_steps: accepted,
-            rejected_steps: rejected,
-            rhs_calls: rhs,
-            jacobian_builds: jac,
-            jvp_vectors: jvp,
-            ft_calls: ft,
-            linear_solves: solves,
-            work_units,
-            decision: "",
-            evidence: SwitchingEvidence::Uncompared,
-            initial_step: opts.h0,
-            proposed_next_step,
-            comparator_work_ratio: None,
-            entry_probe_reason: None,
-            driver,
-        },
-        state,
-        landings: landed,
-        fatal,
-        budget_stop: budget,
-        ceiling_stop,
-    })
+    let identity = SelectionIdentity {
+        model_epoch: 0,
+        provider_epoch: compute_provider_epoch(route, problem),
+        chart_epoch: 0,
+        mesh_epoch: 0,
+        physical_norm_epoch: 0,
+        tolerance_epoch: compute_tolerance_epoch(opts),
+        window_epoch: compute_window_epoch(0, start, target),
+        environment_epoch: 0,
+    };
+    let req = BatchRequest {
+        start_time: start,
+        target_time: target,
+        solve_end,
+        state: y,
+        proposed_h: Some(opts.h0),
+        options: opts,
+        landings,
+        ceiling,
+        carry_explicit_step,
+        is_probe: probe,
+        identity,
+    };
+    let outcome = match method {
+        SwitchingMethod::Dopri5 => Dopri5WindowDriver.run(problem, &req)?,
+        SwitchingMethod::Rodas5p => Rodas5pWindowDriver::for_problem(problem).run(problem, &req)?,
+    };
+    Ok(outcome.into())
 }
 
 fn commit(
@@ -3155,11 +3071,14 @@ mod comparator_dominance_arithmetic_contract {
 
         match crate::selection_evidence::CostUnit::Work {
             crate::selection_evidence::CostUnit::Work => {}
+            crate::selection_evidence::CostUnit::WorkModel(_) => {}
             crate::selection_evidence::CostUnit::Seconds => {}
         }
 
         match crate::selection_evidence::CostEvidenceKind::ObservedWork {
             crate::selection_evidence::CostEvidenceKind::ObservedWork => {}
+            crate::selection_evidence::CostEvidenceKind::ObservedLowerBound => {}
+            crate::selection_evidence::CostEvidenceKind::RateExtrapolated => {}
             crate::selection_evidence::CostEvidenceKind::EmpiricalTiming => {}
             crate::selection_evidence::CostEvidenceKind::DeclaredBound => {}
         }
