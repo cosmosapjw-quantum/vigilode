@@ -365,6 +365,94 @@ fn point_event(
     })
 }
 
+// Opt-in exported point operator for the source-clock research shadow.
+// This does not change the existing source-only example or default solver.
+pub(crate) struct TimeMapEvent {
+    pub(crate) flux: [f64; 25],
+    pub(crate) extra: [f64; EXTRA],
+    pub(crate) net: [f64; 5],
+    pub(crate) heat_erg_s: f64,
+    pub(crate) thermal_rhs_erg_s: f64,
+    pub(crate) electron_rate_s: f64,
+    pub(crate) ots_residual_erg_s: f64,
+    pub(crate) photon_identity: f64,
+}
+pub(crate) fn time_map_event(
+    pop: [f64; 5],
+    temp: f64,
+    volume: f64,
+    hubble: f64,
+    v: f64,
+    f: f64,
+    photon: [f64; 3],
+    photoheat: f64,
+) -> Result<TimeMapEvent, String> {
+    let p = point_event(pop, temp, volume, hubble, v, f, photon, photoheat)?;
+    Ok(TimeMapEvent {
+        flux: p.flux,
+        extra: p.extra,
+        net: p.net,
+        heat_erg_s: p.extra[4],
+        thermal_rhs_erg_s: p.extra[6],
+        electron_rate_s: p.ne_rate,
+        ots_residual_erg_s: p.source_energy_residual,
+        photon_identity: p.photon_identity_residual,
+    })
+}
+pub(crate) fn thermal_rhs_fixed_heat(
+    pop: [f64; 5],
+    temp: f64,
+    volume: f64,
+    hubble: f64,
+    total_heat: f64,
+) -> Result<f64, String> {
+    if !(pop.iter().all(|v| v.is_finite() && *v > 0.0)
+        && temp.is_finite()
+        && temp > 0.0
+        && temp <= 1e5
+        && volume.is_finite()
+        && volume > 0.0
+        && hubble.is_finite()
+        && hubble >= 0.0
+        && total_heat.is_finite()
+        && total_heat >= 0.0)
+    {
+        return Err("TIME_MAP_ROOT_CONTEXT_OUT_OF_DOMAIN".into());
+    }
+    let ne = (pop[1] + pop[3] + 2.0 * pop[4]) / volume;
+    let np = pop.iter().sum::<f64>() + pop[1] + pop[3] + 2.0 * pop[4];
+    let rhs = total_heat - cool_rate(temp, pop, ne) - 3.0 * hubble * KB * np * temp;
+    if !rhs.is_finite() {
+        return Err("TIME_MAP_NONFINITE_ROOT_RHS".into());
+    }
+    Ok(rhs)
+}
+
+pub(crate) struct TimeMapOracle {
+    pub(crate) volume: Vec<f64>,
+    pub(crate) v: Vec<f64>,
+    pub(crate) flux_lo: Vec<f64>,
+    pub(crate) flux_hi: Vec<f64>,
+    pub(crate) extra_lo: Vec<f64>,
+    pub(crate) extra_hi: Vec<f64>,
+}
+pub(crate) fn time_map_oracle(data: &[u8]) -> Result<TimeMapOracle, String> {
+    let x = oracle(data, Some(E1_SHA))?;
+    if x.n != N {
+        return Err("NOT_ORIGINAL_46080_ORACLE".into());
+    }
+    Ok(TimeMapOracle {
+        volume: (0..N)
+            .map(|i| 0.5 * x.volume_lo[i] + 0.5 * x.volume_hi[i])
+            .collect(),
+        v: (0..N).map(|i| 0.5 * x.v_lo[i] + 0.5 * x.v_hi[i]).collect(),
+        flux_lo: x.flux_lo,
+        flux_hi: x.flux_hi,
+        extra_lo: x.extras_lo,
+        extra_hi: x.extras_hi,
+    })
+}
+
 #[derive(Default)]
 struct Sum {
     sum: f64,
