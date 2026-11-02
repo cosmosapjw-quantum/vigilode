@@ -34,6 +34,33 @@ pub enum DerivativeFallback {
     AllowFiniteDifference,
 }
 
+/// Policy governing exploratory implicit entry trials.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum EntryPolicy {
+    /// Legacy pressure-only entry policy.
+    PressureOnly,
+    /// Bounded evidence-driven entry screening.
+    Evidence,
+    /// Adaptive deterioration-triggered entry screening.
+    AdaptiveEvidence,
+}
+
+/// Proposal seeding method for implicit entry pilots.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum EntrySeed {
+    /// Legacy seeding from Options::h0.
+    #[default]
+    Legacy,
+    /// Proposal seeded from explicit checkpoint.
+    ExplicitCheckpoint,
+    /// Proposal seeded from observed entry step mean.
+    ObservedEntryStep,
+    /// Proposal seeded from pilot growth step.
+    PilotGrowthStep,
+    /// Proposal seeded from calibrated margin.
+    CalibratedMargin,
+}
+
 /// Reuse a losing entry comparison only while its observed regime remains
 /// similar. These controls schedule probes; they do not certify stiffness.
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -245,6 +272,12 @@ pub struct SwitchingConfig {
     /// Whether to screen unreachable entry pilots with the B8 progress bound.
     #[serde(default)]
     pub progress_bound: bool,
+    /// Policy governing exploratory implicit entry trials.
+    #[serde(default)]
+    pub entry_policy: Option<EntryPolicy>,
+    /// Proposal seeding method for implicit entry pilots.
+    #[serde(default)]
+    pub entry_seed: EntrySeed,
 }
 
 impl Default for SwitchingConfig {
@@ -281,6 +314,8 @@ impl Default for SwitchingConfig {
             work_model: WorkModelVersion::V1,
             rhs_cost: RhsCost::Cheap,
             progress_bound: false,
+            entry_policy: None,
+            entry_seed: EntrySeed::Legacy,
         }
     }
 }
@@ -339,6 +374,27 @@ impl SwitchingConfig {
             reuse_entry_pilot_step: true,
             retry_unresolved_entry_once: true,
             ..Self::evidence_driven(fallback)
+        }
+    }
+
+    /// Route registry opt-in v2 factory setting (§8.3, §8.4, §8.6).
+    pub fn route_registry(fallback: DerivativeFallback) -> Self {
+        Self {
+            fallback,
+            entry_policy: Some(EntryPolicy::AdaptiveEvidence),
+            entry_seed: EntrySeed::ExplicitCheckpoint,
+            work_model: WorkModelVersion::V2,
+            progress_bound: true,
+            strict_entry_work_improvement: true,
+            strict_return_work_improvement: true,
+            carry_explicit_step: true,
+            reuse_entry_pilot_step: true,
+            seed_entry_pilot_from_explicit_checkpoint: true,
+            entry_probe_adaptation: Some(EntryProbeAdaptation {
+                loss_margin_backoff: true,
+                ..EntryProbeAdaptation::default()
+            }),
+            ..Self::adaptive_evidence(fallback)
         }
     }
 }
@@ -614,6 +670,7 @@ impl SwitchingSolver {
             implicit_rate_at_discard: None,
             implicit_seed: None,
             tenure_rechecks: 0,
+            first_explicit_batch_in_tenure: true,
         });
         while progress.as_ref().unwrap().next_window <= config.window_count {
             let current = progress.as_mut().unwrap();
@@ -718,6 +775,8 @@ struct DriveState {
     implicit_seed: Option<f64>,
     /// Due explicit rechecks in the current implicit tenure.
     tenure_rechecks: usize,
+    /// Whether the current batch is the first explicit batch of an explicit tenure.
+    first_explicit_batch_in_tenure: bool,
 }
 
 #[derive(Default)]
@@ -1184,6 +1243,7 @@ fn drive_windows(
         mut implicit_rate_at_discard,
         mut implicit_seed,
         mut tenure_rechecks,
+        mut first_explicit_batch_in_tenure,
     } = progress;
     let tolerance_epoch = compute_tolerance_epoch(opts);
     let session_epochs = SessionEpochs {
@@ -1238,6 +1298,7 @@ fn drive_windows(
                     implicit_rate_at_discard,
                     implicit_seed,
                     tenure_rechecks,
+                    first_explicit_batch_in_tenure,
                 };
             }
             let remaining = opts.max_steps - result.stats.attempts;
@@ -1421,6 +1482,7 @@ fn drive_windows(
                     );
                     result.stats.segments.push(explicit.record);
                     method = SwitchingMethod::Dopri5;
+                    first_explicit_batch_in_tenure = true;
                     entry_memory = EntryProbeMemory::default();
                     batches_since_entry_pilot = usize::MAX;
                     result.stats.switches += 1;
@@ -1523,9 +1585,35 @@ fn drive_windows(
             // Each driver clips a valid initial proposal to its endpoint. Do
             // not turn a representable short tail into an invalid (< min_h)
             // input by clipping the configuration before native validation.
+            let is_dense_route = matches!(problem.jacobian, Jacobian::Dense(_))
+                || (matches!(problem.jacobian, Jacobian::FiniteDifference)
+                    && problem.band.is_none());
+            let route_registry_active = config.progress_bound
+                || config.entry_policy.is_some()
+                || config.entry_seed != EntrySeed::Legacy;
+
+            let explicit_budget = if fallback {
+                let mut budget = config.explicit_attempt_budget;
+                if is_dense_route
+                    && route_registry_active
+                    && first_explicit_batch_in_tenure
+                    && !probe
+                {
+                    let c_min = 16.0 + if problem.is_autonomous() { 0.0 } else { 1.0 };
+                    let c_r = problem.dimension as f64 + c_min;
+                    let c_d = 6.0;
+                    let rho = config.entry_cost_ratio.max(1e-12);
+                    let k_d0_min = ((3.0 * c_r) / (rho * c_d)).ceil() as usize;
+                    budget = budget.max(k_d0_min);
+                }
+                budget
+            } else {
+                remaining
+            };
+
             local.max_steps = remaining.min(match selected {
                 SwitchingMethod::Dopri5 if probe => config.probe_attempt_budget,
-                SwitchingMethod::Dopri5 if fallback => config.explicit_attempt_budget,
+                SwitchingMethod::Dopri5 if fallback => explicit_budget,
                 // With no fallback/probes, a single driver can use the
                 // entire remaining budget instead of needless batch restarts.
                 _ => remaining,
@@ -1594,6 +1682,9 @@ fn drive_windows(
             } = batch;
             record.windows = windows;
             charge(&mut result.stats, &record);
+            if selected == SwitchingMethod::Dopri5 && !probe {
+                first_explicit_batch_in_tenure = false;
+            }
             if record.attempts == 0 && record.reached_time < batch_target && !fatal {
                 record.decision = "driver stopped without progress or attempted step";
                 result.message = record.decision.into();
@@ -1787,6 +1878,7 @@ fn drive_windows(
                     explicit_step = record.proposed_next_step;
                     commit(&mut result, &mut record, state, landings);
                     method = SwitchingMethod::Dopri5;
+                    first_explicit_batch_in_tenure = true;
                     entry_memory = EntryProbeMemory::default();
                     batches_since_entry_pilot = usize::MAX;
                     result.stats.switches += 1;
@@ -2179,6 +2271,7 @@ fn drive_windows(
         implicit_rate_at_discard,
         implicit_seed,
         tenure_rechecks,
+        first_explicit_batch_in_tenure,
     }
 }
 
@@ -2738,6 +2831,7 @@ mod adaptive_return_productive_contract {
             implicit_rate_at_discard: None,
             implicit_seed: None,
             tenure_rechecks: 0,
+            first_explicit_batch_in_tenure: true,
         };
         let r = drive_windows(&p, (0.0, 1e-15), &opts, &config, state, None).result;
         assert_eq!(r.final_time, 1e-15, "{}", r.message);
@@ -2875,6 +2969,7 @@ mod adaptive_return_productive_contract {
             implicit_rate_at_discard: None,
             implicit_seed: None,
             tenure_rechecks: 0,
+            first_explicit_batch_in_tenure: true,
         };
         let after = drive_windows(&p, (0.0, 0.01), &opts, &config, state, None);
         let r = after.result;

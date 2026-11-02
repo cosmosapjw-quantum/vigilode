@@ -9,8 +9,8 @@
 use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::{
-    Atol, DerivativeFallback, InteriorError, Jacobian, Options, Problem, SwitchingConfig,
-    SwitchingError, SwitchingSolution, SwitchingSolver, Tier,
+    Atol, DerivativeFallback, EntryPolicy, InteriorError, Jacobian, Options, Problem,
+    SwitchingConfig, SwitchingError, SwitchingSolution, SwitchingSolver, Tier,
 };
 
 /// Configuration schema accepted by [`ProductionSolver`].
@@ -129,6 +129,13 @@ impl ProductionConfig {
         let refuse = |message: &str| SwitchingError(message.to_owned());
         if self.schema_version != PRODUCTION_CONFIG_SCHEMA {
             return Err(refuse("unsupported production configuration schema"));
+        }
+        if self.switching.entry_policy == Some(EntryPolicy::PressureOnly)
+            && self.switching.fallback != DerivativeFallback::Forbidden
+        {
+            return Err(refuse(
+                "production configuration refuses implicit pressure-only entry: campaign measured excessive overhead on rotation and nonstiff cells",
+            ));
         }
         match self.switching.fallback {
             DerivativeFallback::Forbidden => Ok(()),
