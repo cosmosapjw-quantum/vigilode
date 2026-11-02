@@ -1,0 +1,45 @@
+{
+  "schema": "vigilode.c5.real_openevolve_UCT_gp_expected_improvement.v1",
+  "date": "2026-11-02",
+  "native_result_sha256": "88b7126b3016806f37a27d4de588bf3e2efc7dac37a865791df2318afaf53bff",
+  "real_native_conditions": 36,
+  "source_families_independent": 3,
+  "median_new_over_existing_fast_direct_wall_ratio": 2.242032452000776,
+  "actual_vendor": "OpenEvolve 0.4.0 ProgramDatabase in original source package",
+  "original_user_tree_search_zip_sha256": "bf78183ea353979fe6bf009e725fa28a7228ed55ca4593f3659eb2add26f03f3",
+  "run_protocol": "8 bounded waves, assistant-authored candidates evaluated in real OE database + UCT tree, GP expected improvement chooses operator and temperature, no LLM endpoints",
+  "operator_waves": {
+    "OpenEvolve": 4,
+    "MCTS": 4
+  },
+  "wave_count": 8,
+  "candidates_evaluated": 27,
+  "arm_switches": 5,
+  "explicitly_refuted_candidates": 3,
+  "mandatory_nontrivial_math_and_dual_integrator_hybrid_per_wave": "8/8 PASS",
+  "status_counts": {
+    "CONDITIONAL": 9,
+    "EXPLORATORY": 7,
+    "NUMERICALLY_CHECKED": 8,
+    "REFUTED": 3
+  },
+  "actual_research_tool_test": "9/9 PASS",
+  "cross_process_seed_replay": "BYTE_IDENTICAL with PYTHONHASHSEED=0",
+  "search_result_sha256": "b107bd1956570bb66b017d4183c410c9328b65d658e19db55ead0ecc280f518f",
+  "source_harness_sha256": "5546d2ee6533b5f35140eb6e5b19d950f13a6aa305444759b790ca1fa33e85f1",
+  "execution_environment": "isolated ChatGPT Python 3.13 sandbox, real vendor source and offline wheels, no external API calls",
+  "concrete_false_claims": [
+    "C5 graph client is already faster than existing fast direct on original clipped-grid system: refuted by 12 actual native paired ratios all >1",
+    "Source owner name and single matching RHS point alone prove arbitrary callbacks same function: algebraic counterexample adding (y-y_n)^2",
+    "Different rtol on enforced exact output clipping yielded a useful adaptive accuracy curve: refuted by same achieved error in source case"
+  ],
+  "search_score_is_theorem_truth_probability": false,
+  "trained_neural_network": false,
+  "native_algorithmic_parallel_speedup": "NOT_ESTABLISHED",
+  "official_DAG": "7/23",
+  "successor_admitted": "0/12",
+  "production": "HOLD",
+  "distinct_author_independent_referee": "NOT_RUN",
+  "raw_search_trace_source": "sandbox C5 full archive, download link in conversation",
+  "native_c5_core_repo_code": "source_owned_graph_schur.rs, standalone opt-in client with prior original full-IVP native test"
+}

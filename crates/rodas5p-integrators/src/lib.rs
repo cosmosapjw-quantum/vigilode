@@ -101,6 +101,7 @@ mod sabr;
 mod scientific_corpus_v2;
 mod scientific_validity_v2_gate;
 mod sequential;
+pub mod source_owned_graph_schur;
 mod stage_batch;
 mod stage_chart_candidate;
 mod stage_target;
