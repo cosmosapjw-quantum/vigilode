@@ -77,3 +77,17 @@ In strict compliance with `docs/HOLDOUT_HYGIENE.md` and `AGENTS.md` §2.6:
 cargo test --locked --offline -p vigilode --test work_model_contracts
 python3 research/switcher_work_model_v2_20261103/eval_work_model.py
 ```
+
+---
+
+## 7. Execution Results (Node E1 PASS)
+
+- **Execution Commit (`EXEC_SHA`)**: `d164d11685ba4ec435a0e92f9f0eee85b0a14198` (reachable on branch `origin/research/switcher-v2-20261103`)
+- **Verdict**: `PASS`
+- **Pass Gate Status**:
+  - `max_relative_error_le_0_25`: `true` (observed: 0.0291 <= 0.25)
+  - `spearman_rho_ge_0_90`: `true` (observed: 1.000 >= 0.90)
+  - `transition_39_admission_pass`: `true` (W_v2 = 264.2 WU <= 300 WU warning threshold)
+  - `all_cases_within_25pct`: `true` (9/9 calibration cases within 2.91% error)
+  - `zero_hot_loop_allocations`: `true` (0 heap allocations verified via `work_model_contracts.rs`)
+
