@@ -561,3 +561,25 @@ fn new_policy_controls_are_validated_before_callbacks() {
         assert!(SwitchingSolver::solve(&p, (0.0, 1.0), &[1.0], &options(1e-3), &c).is_err());
     }
 }
+
+#[test]
+fn switching_selector_with_pilots_allocation_is_bounded() {
+    let p = stiff_forced();
+    let o = options(1e-4);
+    let c = SwitchingConfig::evidence_driven(DerivativeFallback::ProvidedOnly);
+    let (warm, _) = allocation_scope(|| SwitchingSolver::solve(&p, (0.0, 1.0), &[1.0], &o, &c));
+    let warm = warm.unwrap();
+    let (r, allocations) =
+        allocation_scope(|| SwitchingSolver::solve(&p, (0.0, 1.0), &[1.0], &o, &c));
+    let r = r.unwrap();
+    assert!(r.success);
+    assert_eq!(r.stats.attempts, warm.stats.attempts);
+    let batches = r.stats.segments.len();
+    assert!(batches >= 1, "{batches} batches");
+    let per_batch_allowance = 50;
+    let setup = 60;
+    assert!(
+        allocations <= per_batch_allowance * batches + setup,
+        "{allocations} allocations for {batches} batches"
+    );
+}

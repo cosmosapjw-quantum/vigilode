@@ -188,11 +188,12 @@ impl ExplicitSession<'_> {
         }
     }
 
-    /// The driver record of the work done since `before`, built once. The
-    /// fixed session configuration is cloned into it, as the public record
-    /// schema requires; the work fields are differences of cumulative counts.
-    pub(crate) fn stats_since(&self, before: SessionSnapshot) -> ExplicitStats {
-        let now = self.snapshot();
+    /// The driver record of the work done between `before` and `now`, built once.
+    pub(crate) fn stats_between(
+        &self,
+        before: SessionSnapshot,
+        now: SessionSnapshot,
+    ) -> ExplicitStats {
         let w = |a: u64, b: u64| a.saturating_sub(b);
         ExplicitStats {
             schema: EXPLICIT_STATS_SCHEMA,
@@ -226,9 +227,110 @@ impl ExplicitSession<'_> {
             output_clipped_steps: now.output_clipped_steps - before.output_clipped_steps,
         }
     }
+
+    /// The driver record of the work done since `before`, built once. The
+    /// fixed session configuration is cloned into it, as the public record
+    /// schema requires; the work fields are differences of cumulative counts.
+    #[allow(dead_code)]
+    pub(crate) fn stats_since(&self, before: SessionSnapshot) -> ExplicitStats {
+        self.stats_between(before, self.snapshot())
+    }
 }
 
 impl Dopri5 {
+    /// Run a driver without assembling a full `ExplicitSolution` (no-retain mode).
+    pub(crate) fn with_session_driver<R, F>(
+        problem: &Problem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        opts: &Options,
+        times: &[f64],
+        epochs: SessionEpochs,
+        driver: F,
+    ) -> Result<R, ExplicitSolveError>
+    where
+        F: for<'session> FnOnce(&mut ExplicitSession<'session>) -> R,
+    {
+        let config = validate(problem, t_span, y0, opts)?;
+        let schedule = OutputSchedule::new(times.to_vec()).map_err(driver_error)?;
+        let work = Cell::new(ExplicitCallbackWork::default());
+        let failure = RefCell::new(None);
+        let rhs = |t: f64, y: &[f64], out: &mut [f64]| {
+            let mut w = work.get();
+            w.attempted = w.attempted.saturating_add(1);
+            work.set(w);
+            match (problem.rhs)(t, y, out) {
+                Ok(()) => {
+                    if let Some(i) = out.iter().position(|v| !v.is_finite()) {
+                        let message = format!("RHS output component {i} is unwritten or nonfinite");
+                        let mut w = work.get();
+                        w.malformed_outputs = w.malformed_outputs.saturating_add(1);
+                        work.set(w);
+                        *failure.borrow_mut() = Some(ExplicitCallbackFailure {
+                            t,
+                            message: message.clone(),
+                            malformed_output: true,
+                        });
+                        Err(CoreError::InvalidInput(message))
+                    } else {
+                        let mut w = work.get();
+                        w.completed = w.completed.saturating_add(1);
+                        work.set(w);
+                        Ok(())
+                    }
+                }
+                Err(CallbackError::Recoverable(message)) => {
+                    let mut w = work.get();
+                    w.recoverable_errors = w.recoverable_errors.saturating_add(1);
+                    work.set(w);
+                    Err(CoreError::NonFinite(message))
+                }
+                Err(CallbackError::Fatal(message)) => {
+                    let mut w = work.get();
+                    w.fatal_errors = w.fatal_errors.saturating_add(1);
+                    work.set(w);
+                    *failure.borrow_mut() = Some(ExplicitCallbackFailure {
+                        t,
+                        message: message.clone(),
+                        malformed_output: false,
+                    });
+                    Err(CoreError::InvalidInput(message))
+                }
+            }
+        };
+        let native: Dopri5Session<'_, SessionRhs<'_>> = Dopri5Session::new(
+            &rhs as &SessionRhs<'_>,
+            t_span,
+            y0,
+            &config,
+            &schedule,
+            epochs.identity(y0.len()),
+        )
+        .map_err(driver_error)?;
+        let mut session = ExplicitSession {
+            native,
+            dimension: y0.len(),
+            work: &work,
+            failure: &failure,
+            options: opts.clone(),
+            error_control: ExplicitErrorControl {
+                mode: "state-wrms",
+                dimension: y0.len(),
+                atol: config
+                    .atol
+                    .clone()
+                    .unwrap_or_else(|| vec![config.adaptive.atol]),
+                rtol: config.adaptive.rtol,
+            },
+            adaptive: config.adaptive.clone(),
+        };
+        let value = driver(&mut session);
+        if let Some(err) = failure.into_inner() {
+            return Err(driver_error(CoreError::InvalidInput(err.message)));
+        }
+        Ok(value)
+    }
+
     /// Run a driver with a persistent, scoped explicit session.
     ///
     /// Unlike restarting `solve_observed` for each interval, repeated

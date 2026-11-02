@@ -1231,6 +1231,7 @@ pub struct Rodas5pMfFastWorkspace {
     lgmres: LgmresWorkspace,
     gcrodr: GcrodrWorkspace,
     jvp: Option<Arc<dyn LinearOperator>>,
+    jvp_operator: Option<Arc<crate::problem::JvpOperator>>,
     cached_callbacks: Option<MatrixFreeCallbackIdentity>,
     cached_t_bits: u64,
     cached_y: Vec<f64>,
@@ -1391,6 +1392,7 @@ impl Clone for Rodas5pMfFastWorkspace {
             lgmres: self.lgmres.clone(),
             gcrodr: self.gcrodr.clone(),
             jvp: self.jvp.clone(),
+            jvp_operator: None,
             cached_callbacks: self.cached_callbacks.clone(),
             cached_t_bits: self.cached_t_bits,
             cached_y: self.cached_y.clone(),
@@ -1488,6 +1490,7 @@ impl Rodas5pMfFastWorkspace {
             lgmres: LgmresWorkspace::default(),
             gcrodr: GcrodrWorkspace::default(),
             jvp: None,
+            jvp_operator: None,
             cached_callbacks: None,
             cached_t_bits: 0,
             cached_y: vec![0.0; n],
@@ -2735,7 +2738,7 @@ impl Rodas5pMfFastWorkspace {
                     counters,
                 )?;
             }
-            let jvp = problem.linearize_matrix_free(t, y)?;
+            let jvp = problem.linearize_matrix_free_into(t, y, &mut self.jvp_operator)?;
             self.cached_y.copy_from_slice(y);
             self.cached_t_bits = t.to_bits();
             self.cached_epoch = epoch;

@@ -77,7 +77,7 @@ pub use operator::{
     ExactOperatorIdentity, ExactPreconditionerIdentity, IdentityPreconditioner,
     JacobiPreconditioner, KrylovSystemIdentity, LinearOperator, OperatorApplicationWork,
     Preconditioner, PreconditionerSide, ShiftedOperator, apply_counted, apply_jvp_counted,
-    apply_preconditioner, apply_rows_counted, exact_krylov_system_identity,
+    apply_preconditioner, apply_rows_counted, exact_krylov_system_identity, next_operator_token,
 };
 pub use polynomial_action::{
     ActionPlan, BasisPlanBranch, EnclosureIdentity, LAGUERRE_COMPONENTS_UNSUPPORTED,

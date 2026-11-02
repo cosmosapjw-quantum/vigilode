@@ -5,7 +5,7 @@ use crate::rodas5p_fast::{BandedJacobian, BandedJacobianFn};
 
 use rodas5p_core::{
     ClosureOperator, CoreError, CoreResult, DenseMatrix, DenseOperator, LinearOperator,
-    OperatorApplicationWork, WorkCounters,
+    OperatorApplicationWork, WorkCounters, next_operator_token,
 };
 
 /// One user JVP callback evaluates one Jacobian-vector product.
@@ -14,6 +14,69 @@ fn jvp_callback_work() -> OperatorApplicationWork {
         jvp_calls: 1,
         jvp_vectors: 1,
         ..OperatorApplicationWork::default()
+    }
+}
+
+/// A concrete matrix-free Jacobian-vector product operator holding caller state and token.
+pub struct JvpOperator {
+    dimension: usize,
+    state: Vec<f64>,
+    t: f64,
+    jvp: JvpFn,
+    application_work: OperatorApplicationWork,
+    token: u64,
+}
+
+impl JvpOperator {
+    pub fn new(dimension: usize, t: f64, y: &[f64], jvp: JvpFn) -> Self {
+        Self {
+            dimension,
+            state: y.to_vec(),
+            t,
+            jvp,
+            application_work: jvp_callback_work(),
+            token: next_operator_token(),
+        }
+    }
+
+    pub fn update(&mut self, t: f64, y: &[f64], jvp: &JvpFn) {
+        self.t = t;
+        self.state.copy_from_slice(y);
+        if !Arc::ptr_eq(&self.jvp, jvp) {
+            self.jvp = jvp.clone();
+        }
+        self.token = next_operator_token();
+    }
+}
+
+impl LinearOperator for JvpOperator {
+    fn dimension(&self) -> usize {
+        self.dimension
+    }
+
+    fn apply(&self, v: &[f64], out: &mut [f64]) -> CoreResult<()> {
+        (self.jvp)(self.t, &self.state, v, out)
+    }
+
+    fn apply_with_work(
+        &self,
+        x: &[f64],
+        y: &mut [f64],
+        work: &mut OperatorApplicationWork,
+    ) -> CoreResult<()> {
+        if x.len() != self.dimension || y.len() != self.dimension {
+            return Err(CoreError::Dimension("JVP operator shape mismatch".into()));
+        }
+        work.accumulate(self.application_work);
+        (self.jvp)(self.t, &self.state, x, y)
+    }
+
+    fn application_work(&self) -> OperatorApplicationWork {
+        self.application_work
+    }
+
+    fn token(&self) -> u64 {
+        self.token
     }
 }
 
@@ -910,24 +973,34 @@ impl OdeProblem {
     /// Jacobian callback.  It is the load-bearing contract for the generic vectorized/JF fast
     /// path: callers either supplied a genuine JVP implementation or the request fails closed
     /// before a speculative timestep starts.
-    pub fn linearize_matrix_free(&self, t: f64, y: &[f64]) -> CoreResult<Arc<dyn LinearOperator>> {
+    pub fn linearize_matrix_free_into(
+        &self,
+        t: f64,
+        y: &[f64],
+        target: &mut Option<Arc<JvpOperator>>,
+    ) -> CoreResult<Arc<dyn LinearOperator>> {
         if y.len() != self.dimension {
             return Err(CoreError::Dimension(
                 "matrix-free linearization state shape mismatch".into(),
             ));
         }
-        let jvp = self.jvp.clone().ok_or_else(|| {
+        let jvp = self.jvp.as_ref().ok_or_else(|| {
             CoreError::InvalidInput(
                 "strict matrix-free integration requires a user-supplied JVP".into(),
             )
         })?;
-        let state = y.to_vec();
-        let n = self.dimension;
-        Ok(Arc::new(ClosureOperator::with_application_work(
-            n,
-            move |v, out| jvp(t, &state, v, out),
-            jvp_callback_work(),
-        )))
+        if let Some(op) = target.as_mut().and_then(Arc::get_mut) {
+            op.update(t, y, jvp);
+            return Ok(target.as_ref().unwrap().clone());
+        }
+        let op = Arc::new(JvpOperator::new(self.dimension, t, y, jvp.clone()));
+        *target = Some(op.clone());
+        Ok(op)
+    }
+
+    pub fn linearize_matrix_free(&self, t: f64, y: &[f64]) -> CoreResult<Arc<dyn LinearOperator>> {
+        let mut target = None;
+        self.linearize_matrix_free_into(t, y, &mut target)
     }
 
     pub fn supports_matrix_free_jvp(&self) -> bool {

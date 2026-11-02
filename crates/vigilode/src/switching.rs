@@ -617,7 +617,7 @@ impl SwitchingSolver {
                 }
                 .max(AdaptiveStepConfig::default().min_step);
                 let initial = current.result.final_state.clone();
-                let outcome = Dopri5::with_session(
+                let outcome = Dopri5::with_session_driver(
                     problem,
                     (start, t1),
                     &initial,
@@ -2064,8 +2064,8 @@ fn run_persistent_explicit(
     let outcome = session
         .advance_to(target, opts.max_steps, SessionEpochs::default())
         .map_err(|error| error.to_string())?;
-    let driver = session.stats_since(before);
     let after = session.snapshot();
+    let driver = session.stats_between(before, after);
     let checkpoint = session.checkpoint();
     let reached = checkpoint.t;
     let state = checkpoint.y.to_vec();

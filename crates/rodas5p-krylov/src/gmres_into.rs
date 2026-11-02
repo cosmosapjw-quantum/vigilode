@@ -215,7 +215,8 @@ pub fn solve_gmres_into_with_accounting(
         )));
     }
     let capacity_before = workspace.capacity_f64();
-    let before = *counters;
+    let matvecs_before = counters.linear_matvecs;
+    let pc_apps_before = counters.preconditioner_apps;
     let right_norm = selected_residual_norm(rhs, residual_scale)?;
     let threshold = residual_threshold("GMRES", config.rtol, config.atol, right_norm)?;
     workspace.common.prepare(n);
@@ -241,7 +242,11 @@ pub fn solve_gmres_into_with_accounting(
             )?;
             true
         };
-        let residual_norm = selected_residual_norm(&workspace.common.residual, residual_scale)?;
+        let residual_norm = if !operator_residual {
+            right_norm
+        } else {
+            selected_residual_norm(&workspace.common.residual, residual_scale)?
+        };
         if initial_residual_norm.is_none() {
             initial_residual_norm = Some(residual_norm);
         }
@@ -262,7 +267,11 @@ pub fn solve_gmres_into_with_accounting(
                 .common
                 .preconditioned
                 .copy_from_slice(&workspace.common.residual);
-            let beta = safe_l2(&workspace.common.preconditioned);
+            let beta = if residual_scale.is_none() {
+                residual_norm
+            } else {
+                safe_l2(&workspace.common.preconditioned)
+            };
             if !(beta > f64::MIN_POSITIVE && beta.is_finite()) {
                 return Err(CoreError::LinearSolve(
                     "GMRES right-preconditioned residual breakdown".into(),
@@ -332,14 +341,15 @@ pub fn solve_gmres_into_with_accounting(
         )));
     }
     counters.linear_solves += 1;
-    let delta = counters.delta(before);
+    let matvecs = counters.linear_matvecs - matvecs_before;
+    let pc_apps = counters.preconditioner_apps - pc_apps_before;
     output.copy_from_slice(&workspace.common.x);
     Ok(GmresIntoReport {
         residual_norm,
         relative_residual: residual_norm / right_norm.max(f64::MIN_POSITIVE),
         iterations: total as u64,
-        matvecs: delta.linear_matvecs,
-        preconditioner_apps: delta.preconditioner_apps,
+        matvecs,
+        preconditioner_apps: pc_apps,
         cycles,
         least_squares_solves: cycles,
         workspace_grew: workspace.capacity_f64() > capacity_before,
