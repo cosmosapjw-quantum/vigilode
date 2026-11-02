@@ -51,6 +51,9 @@ pub struct EntryProbeAdaptation {
     /// A rise in rejection fraction by this amount also renews evidence, after
     /// at least two rejected attempts. It never directly selects a method.
     pub rejection_fraction_increase: f64,
+    /// Whether to apply loss-margin logarithmic backoff on losing pilots.
+    #[serde(default)]
+    pub loss_margin_backoff: bool,
 }
 
 impl Default for EntryProbeAdaptation {
@@ -60,6 +63,7 @@ impl Default for EntryProbeAdaptation {
             work_rate_growth: 2.0,
             step_shrink_ratio: 0.5,
             rejection_fraction_increase: 0.2,
+            loss_margin_backoff: false,
         }
     }
 }
@@ -238,6 +242,9 @@ pub struct SwitchingConfig {
     /// Nominal or declared RHS cost tier.
     #[serde(default)]
     pub rhs_cost: RhsCost,
+    /// Whether to screen unreachable entry pilots with the B8 progress bound.
+    #[serde(default)]
+    pub progress_bound: bool,
 }
 
 impl Default for SwitchingConfig {
@@ -273,6 +280,7 @@ impl Default for SwitchingConfig {
             audit_replay_safety: false,
             work_model: WorkModelVersion::V1,
             rhs_cost: RhsCost::Cheap,
+            progress_bound: false,
         }
     }
 }
@@ -324,7 +332,10 @@ impl SwitchingConfig {
     /// Decisions still require an actual same-checkpoint competitive pilot.
     pub fn adaptive_evidence(fallback: DerivativeFallback) -> Self {
         Self {
-            entry_probe_adaptation: Some(EntryProbeAdaptation::default()),
+            entry_probe_adaptation: Some(EntryProbeAdaptation {
+                loss_margin_backoff: true,
+                ..EntryProbeAdaptation::default()
+            }),
             reuse_entry_pilot_step: true,
             retry_unresolved_entry_once: true,
             ..Self::evidence_driven(fallback)
@@ -814,20 +825,56 @@ impl EntryProbeMemory {
         }
     }
 
-    fn compared(&mut self, r: &SwitchingSegment, entered: bool) {
+    fn compared_with_pilot(
+        &mut self,
+        r: &SwitchingSegment,
+        pilot: Option<&SwitchingSegment>,
+        entered: bool,
+        adaptation: &EntryProbeAdaptation,
+        rho: f64,
+    ) {
         self.pending_renewal = false;
         self.pending_zero_progress_retry = false;
         if entered {
             *self = Self::default();
             return;
         }
-        self.negative_comparisons = self.negative_comparisons.saturating_add(1);
+        let inc = if adaptation.loss_margin_backoff
+            && let Some(pilot_rec) = pilot
+        {
+            let d_pilot = pilot_rec.reached_time - pilot_rec.start_time;
+            let l_explicit = r.reached_time - r.start_time;
+            if d_pilot > 0.0 && l_explicit > 0.0 && r.work_units > 0.0 {
+                let rate_pilot = pilot_rec.work_units / d_pilot;
+                let rate_explicit = r.work_units / l_explicit;
+                let q = rate_pilot / rate_explicit;
+                let prod = q * rho;
+                if prod > 1.0 && prod.is_finite() {
+                    (prod.log2().floor() as usize).max(1)
+                } else {
+                    1
+                }
+            } else {
+                1
+            }
+        } else {
+            1
+        };
+        self.negative_comparisons = self
+            .negative_comparisons
+            .saturating_add(inc)
+            .min(adaptation.max_backoff_batches);
         let dt = r.reached_time - r.start_time;
         self.anchor_rate = (dt > 0.0)
             .then_some(r.work_units / dt)
             .filter(|rate| rate.is_finite() && *rate > 0.0);
         self.anchor_h = r.proposed_next_step;
         self.anchor_rejection = r.rejected_steps as f64 / r.attempts.max(1) as f64;
+    }
+
+    #[allow(dead_code)]
+    fn compared(&mut self, r: &SwitchingSegment, entered: bool) {
+        self.compared_with_pilot(r, None, entered, &EntryProbeAdaptation::default(), 1.0);
     }
 
     fn retry_zero_progress_once(&mut self) {
@@ -1228,6 +1275,7 @@ fn drive_windows(
                     t1,
                     &[],
                     None,
+                    false,
                 ) {
                     Ok(batch) => batch,
                     Err(message) => {
@@ -1287,6 +1335,7 @@ fn drive_windows(
                                 return_ratio,
                             ))
                         },
+                        false,
                     ) {
                         Ok(batch) => Some(batch),
                         Err(message) => {
@@ -1523,6 +1572,7 @@ fn drive_windows(
                     t1,
                     &landings,
                     return_ceiling,
+                    false,
                 )
             };
             let batch = match batch_result {
@@ -1540,6 +1590,7 @@ fn drive_windows(
                 fatal,
                 budget_stop,
                 ceiling_stop,
+                ..
             } = batch;
             record.windows = windows;
             charge(&mut result.stats, &record);
@@ -1607,6 +1658,7 @@ fn drive_windows(
                             t1,
                             &[],
                             comparator_ceiling,
+                            false,
                         ) {
                             Ok(mut replay) => {
                                 charge(&mut result.stats, &replay.record);
@@ -1918,6 +1970,7 @@ fn drive_windows(
                                     t1,
                                     &[],
                                     entry_ceiling,
+                                    config.progress_bound,
                                 ) {
                                     Ok(mut pilot) => {
                                         charge(&mut result.stats, &pilot.record);
@@ -1958,8 +2011,15 @@ fn drive_windows(
                                                 None
                                             };
                                         pilot.record.entry_probe_reason = record.entry_probe_reason;
-                                        if config.entry_probe_adaptation.is_some() {
-                                            entry_memory.compared(&record, enter);
+                                        if let Some(ref adaptation) = config.entry_probe_adaptation
+                                        {
+                                            entry_memory.compared_with_pilot(
+                                                &record,
+                                                Some(&pilot.record),
+                                                enter,
+                                                adaptation,
+                                                config.entry_cost_ratio,
+                                            );
                                             if config.retry_unresolved_entry_once
                                                 && !enter
                                                 && !pilot.fatal
@@ -1982,6 +2042,8 @@ fn drive_windows(
                                             "same-checkpoint implicit pilot passed strict integer work comparison"
                                         } else if enter {
                                             "same-checkpoint implicit pilot passed entry work ratio"
+                                        } else if pilot.progress_bound_stop {
+                                            "same-checkpoint implicit pilot discarded: unreachable under step growth bound"
                                         } else if pilot.ceiling_stop {
                                             "same-checkpoint implicit pilot discarded: exceeded entry work ceiling"
                                         } else {
@@ -2202,15 +2264,17 @@ struct Batch {
     budget_stop: bool,
     /// The trial stopped because its charged work passed its ceiling.
     ceiling_stop: bool,
+    progress_bound_stop: bool,
 }
 
 impl From<BatchOutcome> for Batch {
     fn from(outcome: BatchOutcome) -> Self {
-        let (fatal, budget_stop, ceiling_stop) = match outcome.stop {
-            BatchStop::Completed => (false, false, false),
-            BatchStop::Budget => (false, true, false),
-            BatchStop::Ceiling | BatchStop::ProgressBound => (false, false, true),
-            BatchStop::Fatal(_) => (true, false, false),
+        let (fatal, budget_stop, ceiling_stop, progress_bound_stop) = match outcome.stop {
+            BatchStop::Completed => (false, false, false, false),
+            BatchStop::Budget => (false, true, false, false),
+            BatchStop::Ceiling => (false, false, true, false),
+            BatchStop::ProgressBound => (false, false, true, true),
+            BatchStop::Fatal(_) => (true, false, false, false),
         };
         Self {
             record: outcome.record,
@@ -2219,6 +2283,7 @@ impl From<BatchOutcome> for Batch {
             fatal,
             budget_stop,
             ceiling_stop,
+            progress_bound_stop,
         }
     }
 }
@@ -2294,6 +2359,7 @@ fn run_persistent_explicit(
         fatal,
         budget_stop,
         ceiling_stop: false,
+        progress_bound_stop: false,
     })
 }
 
@@ -2310,6 +2376,7 @@ fn run(
     solve_end: f64,
     landings: &[f64],
     ceiling: Option<u64>,
+    is_entry_pilot: bool,
 ) -> Result<Batch, String> {
     let route = match method {
         SwitchingMethod::Dopri5 => RouteId::Dopri5Rhs,
@@ -2336,6 +2403,7 @@ fn run(
         ceiling,
         carry_explicit_step,
         is_probe: probe,
+        is_entry_pilot,
         identity,
     };
     let outcome = match method {

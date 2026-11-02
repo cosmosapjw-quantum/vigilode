@@ -9,8 +9,10 @@ use std::{
 };
 
 use vigilode::{
-    Atol, DerivativeFallback, Jacobian, Options, Problem, Rodas5p, SwitchingConfig,
+    Atol, BatchRequest, BatchStop, DerivativeFallback, EntryProbeAdaptation, Jacobian, Options,
+    Problem, ProgressModel, Rodas5p, Rodas5pWindowDriver, RouteId, SwitchingConfig,
     SwitchingEvidence, SwitchingMethod, SwitchingSegment, SwitchingSolution, SwitchingSolver,
+    WindowDriver, selection_evidence::SelectionIdentity,
 };
 
 struct CountingAlloc;
@@ -582,4 +584,186 @@ fn switching_selector_with_pilots_allocation_is_bounded() {
         allocations <= per_batch_allowance * batches + setup,
         "{allocations} allocations for {batches} batches"
     );
+}
+
+#[test]
+fn b1_loss_margin_backoff_contracts() {
+    let default_adaptation = EntryProbeAdaptation::default();
+    assert!(
+        !default_adaptation.loss_margin_backoff,
+        "loss_margin_backoff must default to false"
+    );
+
+    let adaptive = SwitchingConfig::adaptive_evidence(DerivativeFallback::ProvidedOnly);
+    let adaptive_adaptation = adaptive
+        .entry_probe_adaptation
+        .expect("adaptive evidence config has adaptation");
+    assert!(
+        adaptive_adaptation.loss_margin_backoff,
+        "adaptive_evidence must enable loss_margin_backoff"
+    );
+
+    let p = rotation();
+    let o = options(1e-4);
+
+    let mut c_standard = SwitchingConfig::adaptive_evidence(DerivativeFallback::ProvidedOnly);
+    if let Some(ref mut a) = c_standard.entry_probe_adaptation {
+        a.loss_margin_backoff = false;
+    }
+    c_standard.implicit_pilot_attempt_budget = 32;
+
+    let mut c_backoff = SwitchingConfig::adaptive_evidence(DerivativeFallback::ProvidedOnly);
+    if let Some(ref mut a) = c_backoff.entry_probe_adaptation {
+        a.loss_margin_backoff = true;
+    }
+    c_backoff.implicit_pilot_attempt_budget = 32;
+
+    let r_std = SwitchingSolver::solve(&p, (0.0, 1.0), &[1.0, 0.0], &o, &c_standard).unwrap();
+    let r_bko = SwitchingSolver::solve(&p, (0.0, 1.0), &[1.0, 0.0], &o, &c_backoff).unwrap();
+    assert!(r_std.success);
+    assert!(r_bko.success);
+
+    let pilots_std = r_std.stats.segments.iter().filter(|s| s.is_probe).count();
+    let pilots_bko = r_bko.stats.segments.iter().filter(|s| s.is_probe).count();
+    assert!(
+        pilots_bko <= pilots_std,
+        "loss_margin_backoff pilots {pilots_bko} must not exceed standard {pilots_std}"
+    );
+}
+
+#[test]
+fn b8_progress_bound_contracts() {
+    let mut driver = Rodas5pWindowDriver::with_route(RouteId::Rodas5pDense);
+    assert_eq!(
+        driver.progress_model(2, true),
+        Some(ProgressModel {
+            max_step_growth: 5.0,
+            min_work_per_attempt: 16,
+        })
+    );
+    assert_eq!(
+        driver.progress_model(2, false),
+        Some(ProgressModel {
+            max_step_growth: 5.0,
+            min_work_per_attempt: 17,
+        })
+    );
+
+    let p = Problem::new(2, |_, _, out| {
+        out[0] = 0.0;
+        out[1] = 0.0;
+        Ok(())
+    })
+    .jacobian(Jacobian::dense(|_, _, out| {
+        out.fill(0.0);
+        Ok(())
+    }));
+
+    let opts = options(1e-4);
+    // Positive control: probe with tiny ceiling such that reach < target - start
+    let req_probe = BatchRequest {
+        start_time: 0.0,
+        target_time: 1.0,
+        solve_end: 1.0,
+        state: &[1.0, 0.0],
+        proposed_h: Some(1e-4),
+        options: &opts,
+        landings: &[],
+        ceiling: Some(16),
+        carry_explicit_step: false,
+        is_probe: true,
+        is_entry_pilot: true,
+        identity: SelectionIdentity::default(),
+    };
+    let outcome = driver.run(&p, &req_probe).expect("driver run succeeds");
+    assert_eq!(outcome.stop, BatchStop::ProgressBound);
+    assert_eq!(
+        outcome.record.decision,
+        "same-checkpoint implicit pilot discarded: unreachable under step growth bound"
+    );
+    assert_eq!(outcome.record.rhs_calls, 0);
+    assert_eq!(outcome.record.jacobian_builds, 0);
+
+    // Negative control: non-probe with same ceiling runs normally
+    let req_nonprobe = BatchRequest {
+        start_time: 0.0,
+        target_time: 1.0,
+        solve_end: 1.0,
+        state: &[1.0, 0.0],
+        proposed_h: Some(1e-4),
+        options: &opts,
+        landings: &[],
+        ceiling: Some(16),
+        carry_explicit_step: false,
+        is_probe: false,
+        is_entry_pilot: false,
+        identity: SelectionIdentity::default(),
+    };
+    let outcome_np = driver.run(&p, &req_nonprobe).expect("driver run succeeds");
+    assert_ne!(outcome_np.stop, BatchStop::ProgressBound);
+}
+
+#[test]
+fn e3_jvp_assembled_route_contracts() {
+    let mut driver = Rodas5pWindowDriver::with_route(RouteId::Rodas5pJvpAssembled);
+
+    let p = Problem::new(2, |_, y, out| {
+        out[0] = -y[1];
+        out[1] = y[0];
+        Ok(())
+    })
+    .jacobian(Jacobian::jvp(|_, _, v, out| {
+        out[0] = -v[1];
+        out[1] = v[0];
+        Ok(())
+    }));
+
+    let opts = options(1e-4);
+    let req = BatchRequest {
+        start_time: 0.0,
+        target_time: 0.1,
+        solve_end: 1.0,
+        state: &[1.0, 0.0],
+        proposed_h: None,
+        options: &opts,
+        landings: &[],
+        ceiling: None,
+        carry_explicit_step: false,
+        is_probe: false,
+        is_entry_pilot: false,
+        identity: SelectionIdentity::default(),
+    };
+
+    let outcome = driver
+        .run(&p, &req)
+        .expect("JvpAssembled driver run succeeds");
+    assert_eq!(outcome.stop, BatchStop::Completed);
+    assert!((outcome.state[0] - 0.1f64.cos()).abs() < 1e-4);
+    assert!((outcome.state[1] - 0.1f64.sin()).abs() < 1e-4);
+
+    // Negative control: dimension > 8 fails
+    let p_large = Problem::new(9, |_, _, out| {
+        out.fill(0.0);
+        Ok(())
+    })
+    .jacobian(Jacobian::jvp(|_, _, _, out| {
+        out.fill(0.0);
+        Ok(())
+    }));
+    let y_large = vec![0.0; 9];
+    let req_large = BatchRequest {
+        start_time: 0.0,
+        target_time: 0.1,
+        solve_end: 1.0,
+        state: &y_large,
+        proposed_h: None,
+        options: &opts,
+        landings: &[],
+        ceiling: None,
+        carry_explicit_step: false,
+        is_probe: false,
+        is_entry_pilot: false,
+        identity: SelectionIdentity::default(),
+    };
+    assert!(driver.run(&p_large, &req_large).is_err());
 }

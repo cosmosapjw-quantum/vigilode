@@ -215,6 +215,11 @@ impl Problem {
         self
     }
 
+    /// Whether the problem was declared autonomous.
+    pub fn is_autonomous(&self) -> bool {
+        self.autonomous
+    }
+
     /// Add an event `g(t, y) = 0`, located after the run on the continuous
     /// extension of the accepted steps. Events are numbered in declaration
     /// order ([`crate::EventRecord::index`]).

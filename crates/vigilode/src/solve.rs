@@ -24,9 +24,11 @@ use crate::{
     fd::{Guard, band_groups, banded_fd_fill, dense_fd_fill, dense_fd_jacobian, dense_from_band},
     options::{Atol, InteriorError, Options, Tier},
     problem::{Jacobian, Problem},
+    records::LuRecord,
     solution::{
-        Callback, DriverWork, Extension, FD_INCREMENT_RULE, FailureReason, JacobianRecord,
-        KrylovStartRecord, RouteRecord, STATS_SCHEMA, Solution, Stats, Status, StopRecord,
+        Callback, CallbackWork, DriverWork, Extension, FD_INCREMENT_RULE, FailureReason,
+        FiniteDifferenceWork, JacobianRecord, KrylovStartRecord, RouteRecord, STATS_SCHEMA,
+        Solution, Stats, Status, StopRecord,
     },
 };
 
@@ -56,6 +58,77 @@ const ENTRY_SEQUENTIAL_NO_SEGMENTS: &str = "integrate_adaptive_dense_observed_wi
 /// order 5(4), run through the protected drivers of `rodas5p-integrators`.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Rodas5p;
+
+impl Rodas5p {
+    pub(crate) fn empty_stats(problem: &Problem, opts: &Options, start: f64, y: &[f64]) -> Stats {
+        let adaptive = AdaptiveStepConfig {
+            rtol: opts.rtol,
+            atol: match &opts.atol {
+                Atol::Scalar(s) => *s,
+                Atol::Vector(v) => v.iter().copied().fold(0.0, f64::max),
+            },
+            initial_step: opts.h0,
+            max_attempts: opts.max_steps,
+            ..AdaptiveStepConfig::default()
+        };
+        let jacobian_record = match &problem.jacobian {
+            Jacobian::Dense(_) => JacobianRecord::Dense,
+            Jacobian::Banded { lower, upper, .. } => JacobianRecord::Banded {
+                lower: *lower,
+                upper: *upper,
+            },
+            Jacobian::Jvp(_) => JacobianRecord::Jvp,
+            Jacobian::FiniteDifference => match problem.band {
+                Some((lower, upper)) => JacobianRecord::FiniteDifferenceBanded {
+                    lower,
+                    upper,
+                    groups: (lower + upper + 1).min(problem.dimension),
+                    increment: FD_INCREMENT_RULE,
+                },
+                None => JacobianRecord::FiniteDifferenceDense {
+                    increment: FD_INCREMENT_RULE,
+                },
+            },
+        };
+        let lu = LuRecord::Faer;
+        Stats {
+            schema: STATS_SCHEMA,
+            options: opts.clone(),
+            matrix_free_linear: None,
+            adaptive: (&adaptive).into(),
+            t_span: (start, start),
+            y0: y.to_vec(),
+            dimension: problem.dimension,
+            autonomous: problem.autonomous,
+            time_derivative: problem.time_derivative.is_some(),
+            jacobian: jacobian_record,
+            tier_requested: opts.tier,
+            tier_executed: Tier::Protected,
+            route: RouteRecord {
+                entry_point: "progress_bound",
+                driver_id: "none",
+                routing: None,
+            },
+            attempts: 0,
+            accepted_steps: 0,
+            rejected_steps: 0,
+            internal_steps: 0,
+            output_clipped_steps: 0,
+            counters: (&WorkCounters::default()).into(),
+            driver_counters: (&WorkCounters::default()).into(),
+            driver_work: DriverWork::Dense {
+                jacobian_reuses: 0,
+                lu,
+            },
+            finite_difference: FiniteDifferenceWork::default(),
+            callbacks: CallbackWork::default(),
+            stop: None,
+            driver_message: "progress bound unreachable".into(),
+            terminal_event: None,
+            event_evaluations: 0,
+        }
+    }
+}
 
 /// The validated absolute tolerance: one value, or one per component.
 enum AtolSpec {

@@ -119,6 +119,8 @@ pub struct BatchRequest<'a> {
     pub carry_explicit_step: bool,
     /// Whether this batch is an exploratory probe.
     pub is_probe: bool,
+    /// Whether this batch is an entry pilot from a checkpoint.
+    pub is_entry_pilot: bool,
     /// Identity metadata of the window.
     pub identity: SelectionIdentity,
 }
@@ -326,13 +328,20 @@ impl WindowDriver for Rodas5pWindowDriver {
     fn requires(&self) -> RouteRequirements {
         RouteRequirements {
             needs_derivatives: true,
-            max_dense_dimension: None,
+            max_dense_dimension: if self.route == RouteId::Rodas5pJvpAssembled {
+                Some(8)
+            } else {
+                None
+            },
             replay_safety: true,
         }
     }
 
-    fn progress_model(&self, _n: usize, _autonomous: bool) -> Option<ProgressModel> {
-        None
+    fn progress_model(&self, _n: usize, autonomous: bool) -> Option<ProgressModel> {
+        Some(ProgressModel {
+            max_step_growth: 5.0,
+            min_work_per_attempt: 16 + if autonomous { 0 } else { 1 },
+        })
     }
 
     fn run(&mut self, problem: &Problem, req: &BatchRequest<'_>) -> Result<BatchOutcome, String> {
@@ -343,15 +352,109 @@ impl WindowDriver for Rodas5pWindowDriver {
         let ceiling = req.ceiling;
         let probe = req.is_probe;
 
-        let r = Rodas5p::solve_observed_bounded(
-            problem,
-            (start, target),
-            y,
-            opts,
-            req.landings,
-            ceiling,
-        )
-        .map_err(|e| e.to_string())?;
+        let has_band_verification = problem.band.is_some()
+            && matches!(problem.jacobian, crate::problem::Jacobian::Dense(_));
+
+        if req.is_entry_pilot
+            && !has_band_verification
+            && let Some(ceiling) = req.ceiling
+        {
+            let c_min = 16u64 + if problem.is_autonomous() { 0 } else { 1 };
+            let m = (ceiling / c_min) as usize;
+            let h0 = req.proposed_h.unwrap_or(req.options.h0);
+            let g = 5.0f64;
+            let reach = if m == 0 {
+                0.0
+            } else if m > 400 {
+                f64::INFINITY
+            } else {
+                h0 * (g.powi(m as i32) - 1.0) / (g - 1.0)
+            };
+            if reach < (req.target_time - req.start_time) * (1.0 - 1e-12) {
+                let record = SwitchingSegment {
+                    method: SwitchingMethod::Rodas5p,
+                    start_time: start,
+                    target_time: target,
+                    reached_time: start,
+                    windows: 1,
+                    is_probe: probe,
+                    committed: false,
+                    success: false,
+                    attempts: 0,
+                    accepted_steps: 0,
+                    rejected_steps: 0,
+                    rhs_calls: 0,
+                    jacobian_builds: 0,
+                    jvp_vectors: 0,
+                    ft_calls: 0,
+                    linear_solves: 0,
+                    work_units: 0.0,
+                    decision: "same-checkpoint implicit pilot discarded: unreachable under step growth bound",
+                    evidence: SwitchingEvidence::Uncompared,
+                    initial_step: req.options.h0,
+                    proposed_next_step: None,
+                    comparator_work_ratio: None,
+                    entry_probe_reason: None,
+                    driver: SwitchingDriverStats::Rodas5p(Box::new(Rodas5p::empty_stats(
+                        problem,
+                        req.options,
+                        start,
+                        y,
+                    ))),
+                };
+                return Ok(BatchOutcome {
+                    record,
+                    counters: WorkCounters::default(),
+                    state: req.state.to_vec(),
+                    landed: Vec::new(),
+                    stop: BatchStop::ProgressBound,
+                    proposed_next_step: None,
+                });
+            }
+        }
+
+        let r = if self.route == RouteId::Rodas5pJvpAssembled {
+            if problem.dimension > 8 {
+                return Err(format!(
+                    "JvpAssembled route supports dimension <= 8, got {}",
+                    problem.dimension
+                ));
+            }
+            let jvp = match &problem.jacobian {
+                crate::problem::Jacobian::Jvp(jvp) => jvp.clone(),
+                _ => return Err("JvpAssembled route requires JVP Jacobian".to_string()),
+            };
+            let dim = problem.dimension;
+            let dense_cb =
+                move |t: f64, y: &[f64], out: &mut [f64]| -> Result<(), crate::CallbackError> {
+                    let mut ej = [0.0; 8];
+                    let mut col = [0.0; 8];
+                    for j in 0..dim {
+                        ej.fill(0.0);
+                        ej[j] = 1.0;
+                        col.fill(0.0);
+                        (jvp)(t, y, &ej[..dim], &mut col[..dim])?;
+                        for i in 0..dim {
+                            out[i * dim + j] = col[i];
+                        }
+                    }
+                    Ok(())
+                };
+            let mut p = problem.clone();
+            p.jacobian = crate::problem::Jacobian::dense(dense_cb);
+            Rodas5p::solve_observed_bounded(&p, (start, target), y, opts, req.landings, ceiling)
+                .map_err(|e| e.to_string())?
+        } else {
+            Rodas5p::solve_observed_bounded(
+                problem,
+                (start, target),
+                y,
+                opts,
+                req.landings,
+                ceiling,
+            )
+            .map_err(|e| e.to_string())?
+        };
 
         let c = r.stats.counters;
         let success = r.status == crate::solution::Status::Success;

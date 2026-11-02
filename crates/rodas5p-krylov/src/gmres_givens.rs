@@ -30,13 +30,13 @@ use rodas5p_core::{
 };
 
 #[derive(Clone, Copy, Debug)]
-struct RealGivens {
-    cosine: f64,
-    sine: f64,
+pub(crate) struct RealGivens {
+    pub(crate) cosine: f64,
+    pub(crate) sine: f64,
 }
 
 impl RealGivens {
-    fn from_pair(a: f64, b: f64) -> CoreResult<(Self, f64)> {
+    pub(crate) fn from_pair(a: f64, b: f64) -> CoreResult<(Self, f64)> {
         if !a.is_finite() || !b.is_finite() {
             return Err(CoreError::NonFinite(
                 "GMRES Givens input contains NaN/Inf".into(),
@@ -70,7 +70,7 @@ impl RealGivens {
         ))
     }
 
-    fn apply(self, first: &mut f64, second: &mut f64) {
+    pub(crate) fn apply(self, first: &mut f64, second: &mut f64) {
         let a = *first;
         let b = *second;
         *first = self.cosine * a + self.sine * b;

@@ -58,4 +58,4 @@ pub use lgmres_into::{
 /// `least_squares` is exported as the bitwise reference of
 /// `LeastSquaresWorkspace` (research node `research/spd04_ls_workspace_20261007`).
 pub use small::{LeastSquaresWorkspace, least_squares};
-pub use workspace::{GcrodrWorkspace, GmresWorkspace, LgmresWorkspace};
+pub use workspace::{GcrodrWorkspace, GmresLeastSquaresSolver, GmresWorkspace, LgmresWorkspace};
