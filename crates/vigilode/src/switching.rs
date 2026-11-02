@@ -3111,4 +3111,71 @@ mod comparator_dominance_arithmetic_contract {
             ));
         }
     }
+
+    #[test]
+    fn public_enum_variants_exhaustive_baseline_v1() {
+        // Compile-time exhaustiveness lock for schema v1 public enums (plan §16 item 5).
+        // Prevents unreviewed variant changes or early #[non_exhaustive] additions before schema v2.
+        match DerivativeFallback::Forbidden {
+            DerivativeFallback::Forbidden => {}
+            DerivativeFallback::ProvidedOnly => {}
+            DerivativeFallback::AllowFiniteDifference => {}
+        }
+
+        match EntryProbeReason::InitialComparison {
+            EntryProbeReason::InitialComparison => {}
+            EntryProbeReason::StableEvidenceBackoff => {}
+            EntryProbeReason::BackoffExpired => {}
+            EntryProbeReason::SentinelExpired => {}
+            EntryProbeReason::WorkDeteriorated => {}
+            EntryProbeReason::WorkRegimeRelaxed => {}
+            EntryProbeReason::PendingRegimeComparison => {}
+            EntryProbeReason::UnresolvedEntryRetry => {}
+            EntryProbeReason::RejectionDeteriorated => {}
+        }
+
+        match SwitchingEvidence::Uncompared {
+            SwitchingEvidence::Uncompared => {}
+            SwitchingEvidence::ExplicitWorkPressure => {}
+            SwitchingEvidence::ImplicitCheaperOnPrefix => {}
+            SwitchingEvidence::ImplicitNotCheaperOnPrefix => {}
+            SwitchingEvidence::ImplicitPilotIncomplete => {}
+            SwitchingEvidence::ExplicitCheaperThanPreviousWindow => {}
+            SwitchingEvidence::ExplicitCheaperOnSameWindow => {}
+            SwitchingEvidence::ExplicitCheaperThanComparatorLowerBound => {}
+            SwitchingEvidence::ImplicitPreferredOnSameWindow => {}
+            SwitchingEvidence::ExplicitReturnNotSupported => {}
+            SwitchingEvidence::ImplicitWindowCompleted => {}
+        }
+
+        match SwitchingMethod::Dopri5 {
+            SwitchingMethod::Dopri5 => {}
+            SwitchingMethod::Rodas5p => {}
+        }
+
+        match crate::selection_evidence::CostUnit::Work {
+            crate::selection_evidence::CostUnit::Work => {}
+            crate::selection_evidence::CostUnit::Seconds => {}
+        }
+
+        match crate::selection_evidence::CostEvidenceKind::ObservedWork {
+            crate::selection_evidence::CostEvidenceKind::ObservedWork => {}
+            crate::selection_evidence::CostEvidenceKind::EmpiricalTiming => {}
+            crate::selection_evidence::CostEvidenceKind::DeclaredBound => {}
+        }
+
+        match crate::selection_evidence::CostIncomparability::IdentityMismatch {
+            crate::selection_evidence::CostIncomparability::IdentityMismatch => {}
+            crate::selection_evidence::CostIncomparability::UnitMismatch => {}
+            crate::selection_evidence::CostIncomparability::OutputNotQualified => {}
+            crate::selection_evidence::CostIncomparability::InvalidInterval => {}
+            crate::selection_evidence::CostIncomparability::InvalidPolicy => {}
+        }
+
+        match crate::selection_evidence::CostComparison::PreferCandidate {
+            crate::selection_evidence::CostComparison::PreferCandidate => {}
+            crate::selection_evidence::CostComparison::RetainIncumbent => {}
+            crate::selection_evidence::CostComparison::Incomparable(_) => {}
+        }
+    }
 }

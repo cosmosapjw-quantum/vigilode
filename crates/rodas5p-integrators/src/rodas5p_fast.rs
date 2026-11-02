@@ -768,6 +768,63 @@ fn client_of(client: &mut Mutex<Box<dyn StageLinearSystem>>) -> &mut dyn StageLi
         .as_mut()
 }
 
+struct CachedTransformedTables {
+    s: usize,
+    gamma: f64,
+    c: Vec<f64>,
+    gamma_rows: Vec<f64>,
+    a_nonzero: Vec<Vec<(usize, f64)>>,
+    c_nonzero: Vec<Vec<(usize, f64)>>,
+    b_nonzero: Vec<(usize, f64)>,
+}
+
+static TRANSFORMED_TABLES: std::sync::OnceLock<Result<CachedTransformedTables, String>> =
+    std::sync::OnceLock::new();
+
+fn get_transformed_tables() -> CoreResult<&'static CachedTransformedTables> {
+    let res = TRANSFORMED_TABLES.get_or_init(|| {
+        let coeffs = match rodas5p_coefficients() {
+            Ok(c) => c,
+            Err(e) => return Err(e.to_string()),
+        };
+        let s = coeffs.stages();
+        for i in 0..s {
+            for j in i..s {
+                if coeffs.a[(i, j)] != 0.0 || coeffs.c_matrix[(i, j)] != 0.0 {
+                    return Err(
+                        "RODAS5P transformed coefficients are not strictly lower triangular".into(),
+                    );
+                }
+            }
+        }
+        let nonzero_row = |m: &DenseMatrix, i: usize| {
+            (0..i)
+                .filter(|&j| m[(i, j)] != 0.0)
+                .map(|j| (j, m[(i, j)]))
+                .collect::<Vec<_>>()
+        };
+        Ok(CachedTransformedTables {
+            s,
+            gamma: coeffs.gamma,
+            c: coeffs.c.clone(),
+            gamma_rows: coeffs.gamma_rows.clone(),
+            a_nonzero: (0..s).map(|i| nonzero_row(&coeffs.a, i)).collect(),
+            c_nonzero: (0..s).map(|i| nonzero_row(&coeffs.c_matrix, i)).collect(),
+            b_nonzero: coeffs
+                .b_code
+                .iter()
+                .enumerate()
+                .filter(|(_, b)| **b != 0.0)
+                .map(|(j, b)| (j, *b))
+                .collect(),
+        })
+    });
+    match res {
+        Ok(tables) => Ok(tables),
+        Err(msg) => Err(CoreError::Coefficients(msg.clone())),
+    }
+}
+
 impl Workspace {
     /// The banded workspace: no `n x n` storage.
     fn new_banded(n: usize, band: &BandedJacobian, kernel: BandedKernel) -> CoreResult<Self> {
@@ -800,42 +857,20 @@ impl Workspace {
 
     /// `dense` is the order of the dense `W` and `J` buffers (0 for none).
     fn with_dense_size(n: usize, dense: usize) -> CoreResult<Self> {
-        let coeffs = rodas5p_coefficients()?;
-        let s = coeffs.stages();
-        for i in 0..s {
-            for j in i..s {
-                if coeffs.a[(i, j)] != 0.0 || coeffs.c_matrix[(i, j)] != 0.0 {
-                    return Err(CoreError::Coefficients(
-                        "RODAS5P transformed coefficients are not strictly lower triangular".into(),
-                    ));
-                }
-            }
-        }
-        let nonzero_row = |m: &DenseMatrix, i: usize| {
-            (0..i)
-                .filter(|&j| m[(i, j)] != 0.0)
-                .map(|j| (j, m[(i, j)]))
-                .collect::<Vec<_>>()
-        };
+        let tables = get_transformed_tables()?;
         Ok(Self {
             row_end: vec![0; n],
             l_start: vec![n; n],
             col_end: Vec::new(),
             lu_policy: FastLuPolicy::Legacy,
-            a_nonzero: (0..s).map(|i| nonzero_row(&coeffs.a, i)).collect(),
-            c_nonzero: (0..s).map(|i| nonzero_row(&coeffs.c_matrix, i)).collect(),
-            b_nonzero: coeffs
-                .b_code
-                .iter()
-                .enumerate()
-                .filter(|(_, b)| **b != 0.0)
-                .map(|(j, b)| (j, *b))
-                .collect(),
+            a_nonzero: tables.a_nonzero.clone(),
+            c_nonzero: tables.c_nonzero.clone(),
+            b_nonzero: tables.b_nonzero.clone(),
             n,
-            s,
-            gamma: coeffs.gamma,
-            c: coeffs.c.clone(),
-            gamma_rows: coeffs.gamma_rows.clone(),
+            s: tables.s,
+            gamma: tables.gamma,
+            c: tables.c.clone(),
+            gamma_rows: tables.gamma_rows.clone(),
             lu_kind: Rodas5pFastLu::InPlaceZeroSkipping,
             w: vec![0.0; dense * dense],
             pivots: vec![0; n],
@@ -846,7 +881,7 @@ impl Workspace {
             lu_chosen: false,
             f0: vec![0.0; n],
             ft: vec![0.0; n],
-            u: vec![0.0; s * n],
+            u: vec![0.0; tables.s * n],
             stage_state: vec![0.0; n],
             stage_rhs: vec![0.0; n],
             y_new: vec![0.0; n],
