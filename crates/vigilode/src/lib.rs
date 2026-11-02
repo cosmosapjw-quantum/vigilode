@@ -182,6 +182,7 @@ mod session;
 mod solution;
 mod solve;
 mod switching;
+pub mod work_model;
 
 pub use automatic::*;
 pub use capabilities::{Capabilities, FacadeRoute, OutputAccuracy};
@@ -207,6 +208,7 @@ pub use solution::{
 };
 pub use solve::Rodas5p;
 pub use switching::*;
+pub use work_model::*;
 
 pub use explicit::*;
 pub use explicit_ensemble::{Dopri5Ensemble, Dopri5EnsembleJob};

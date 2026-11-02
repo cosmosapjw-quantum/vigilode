@@ -15,7 +15,8 @@ use rodas5p_integrators::{AdaptiveStepConfig, Dopri5StopReason};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    Atol, Dopri5, ExplicitStats, Jacobian, Options, Problem, Rodas5p, SessionEpochs, Stats,
+    Atol, Dopri5, ExplicitStats, Jacobian, Options, Problem, RhsCost, Rodas5p, SessionEpochs,
+    Stats, WorkModelVersion, integer_work_v2,
 };
 
 /// Authorization for derivative work after the explicit path shows pressure.
@@ -231,6 +232,12 @@ pub struct SwitchingConfig {
     /// checkpoint and compares bitwise identity (Section 10.4).
     #[serde(default)]
     pub audit_replay_safety: bool,
+    /// Selected work model version.
+    #[serde(default)]
+    pub work_model: WorkModelVersion,
+    /// Nominal or declared RHS cost tier.
+    #[serde(default)]
+    pub rhs_cost: RhsCost,
 }
 
 impl Default for SwitchingConfig {
@@ -264,6 +271,8 @@ impl Default for SwitchingConfig {
             return_sentinel_interval: 0,
             entry_probe_adaptation: None,
             audit_replay_safety: false,
+            work_model: WorkModelVersion::V1,
+            rhs_cost: RhsCost::Cheap,
         }
     }
 }
@@ -872,9 +881,13 @@ fn return_work_ceiling(rate: f64, span: f64, ratio: f64) -> u64 {
     ((ratio * rate * span).floor() as u64).saturating_add(1)
 }
 
-// The existing work objective, before any floating conversion. Checked
-// arithmetic prevents overflow from becoming evidence for a cheaper method.
-fn integer_work(record: &SwitchingSegment, dimension: usize, callbacks_only: bool) -> Option<u128> {
+/// The existing count-based integer work objective (WorkModel v1). Checked
+/// arithmetic prevents overflow from becoming evidence for a cheaper method.
+pub fn integer_work(
+    record: &SwitchingSegment,
+    dimension: usize,
+    callbacks_only: bool,
+) -> Option<u128> {
     let mut cost = (record.jacobian_builds as u128).checked_mul(dimension as u128)?;
     for count in [
         record.rhs_calls,
@@ -911,17 +924,29 @@ fn work_enclosure(
 // For integer callback prefix cost L and incumbent total E, L >= E rules
 // out C_candidate < E. The guard charges the crossing callback and stops
 // on L > cap, hence cap = E - 1 (zero also admits no strict winner).
-fn strict_entry_callback_ceiling(incumbent: &SwitchingSegment, dimension: usize) -> Option<u64> {
-    let ceiling = integer_work(incumbent, dimension, false)?.saturating_sub(1);
+fn strict_entry_callback_ceiling(
+    incumbent: &SwitchingSegment,
+    dimension: usize,
+    work_model: WorkModelVersion,
+    rhs_cost: RhsCost,
+) -> Option<u64> {
+    let cost = match work_model {
+        WorkModelVersion::V1 => integer_work(incumbent, dimension, false)?,
+        WorkModelVersion::V2 => integer_work_v2(incumbent, dimension, rhs_cost)?,
+    };
+    let ceiling = cost.saturating_sub(1);
     // u64::MAX is the native unarmed sentinel; decline an unrepresentable
     // ceiling rather than truncate it. The global attempt cap still applies.
     (ceiling < u64::MAX as u128).then_some(ceiling as u64)
 }
 
-fn strict_entry_work_preferred(
+/// Strict entry preference: candidate replay is strictly cheaper than accepted prefix.
+pub fn strict_entry_work_preferred(
     incumbent: &SwitchingSegment,
     candidate: &SwitchingSegment,
     dimension: usize,
+    work_model: WorkModelVersion,
+    rhs_cost: RhsCost,
 ) -> bool {
     // The caller replays from the same physical checkpoint. An accepted
     // explicit prefix can be valid even if its larger batch hit a budget.
@@ -934,22 +959,34 @@ fn strict_entry_work_preferred(
     {
         return false;
     }
-    match (
-        integer_work(incumbent, dimension, false),
-        integer_work(candidate, dimension, false),
-    ) {
-        (Some(incumbent_cost), Some(candidate_cost)) => candidate_cost < incumbent_cost,
-        _ => false,
+    match work_model {
+        WorkModelVersion::V1 => match (
+            integer_work(incumbent, dimension, false),
+            integer_work(candidate, dimension, false),
+        ) {
+            (Some(incumbent_cost), Some(candidate_cost)) => candidate_cost < incumbent_cost,
+            _ => false,
+        },
+        WorkModelVersion::V2 => match (
+            integer_work_v2(incumbent, dimension, rhs_cost),
+            integer_work_v2(candidate, dimension, rhs_cost),
+        ) {
+            (Some(incumbent_cost), Some(candidate_cost)) => candidate_cost < incumbent_cost,
+            _ => false,
+        },
     }
 }
 
 // A completed explicit candidate E beats the same-window implicit completion
 // whenever E < I. For an incomplete deterministic replay, its already charged
 // work L is a lower bound on I, so E < L suffices without using its endpoint.
-fn strict_return_work_preferred(
+/// Strict return preference: candidate return is strictly cheaper than same-window implicit run.
+pub fn strict_return_work_preferred(
     incumbent: &SwitchingSegment,
     candidate: &SwitchingSegment,
     dimension: usize,
+    work_model: WorkModelVersion,
+    rhs_cost: RhsCost,
 ) -> bool {
     if !candidate.success
         || candidate.accepted_steps == 0
@@ -966,20 +1003,37 @@ fn strict_return_work_preferred(
     {
         return false;
     }
-    match (
-        integer_work(incumbent, dimension, false),
-        integer_work(candidate, dimension, false),
-    ) {
-        (Some(incumbent_cost), Some(candidate_cost)) => candidate_cost < incumbent_cost,
-        _ => false,
+    match work_model {
+        WorkModelVersion::V1 => match (
+            integer_work(incumbent, dimension, false),
+            integer_work(candidate, dimension, false),
+        ) {
+            (Some(incumbent_cost), Some(candidate_cost)) => candidate_cost < incumbent_cost,
+            _ => false,
+        },
+        WorkModelVersion::V2 => match (
+            integer_work_v2(incumbent, dimension, rhs_cost),
+            integer_work_v2(candidate, dimension, rhs_cost),
+        ) {
+            (Some(incumbent_cost), Some(candidate_cost)) => candidate_cost < incumbent_cost,
+            _ => false,
+        },
     }
 }
 
 // The callback guard stops after charging L > cap. Setting cap = E proves
 // E < L <= I at the crossing callback; the strict inequality fixes the exact
 // integer boundary without a ratio, rounding slack, or fitted safety factor.
-fn strict_return_comparator_ceiling(candidate: &SwitchingSegment, dimension: usize) -> Option<u64> {
-    let cost = integer_work(candidate, dimension, false)?;
+fn strict_return_comparator_ceiling(
+    candidate: &SwitchingSegment,
+    dimension: usize,
+    work_model: WorkModelVersion,
+    rhs_cost: RhsCost,
+) -> Option<u64> {
+    let cost = match work_model {
+        WorkModelVersion::V1 => integer_work(candidate, dimension, false)?,
+        WorkModelVersion::V2 => integer_work_v2(candidate, dimension, rhs_cost)?,
+    };
     (cost < u64::MAX as u128).then_some(cost as u64)
 }
 
@@ -1220,7 +1274,12 @@ fn drive_windows(
                         t1,
                         &[],
                         if config.strict_return_work_improvement {
-                            strict_entry_callback_ceiling(&implicit.record, problem.dimension)
+                            strict_entry_callback_ceiling(
+                                &implicit.record,
+                                problem.dimension,
+                                config.work_model,
+                                config.rhs_cost,
+                            )
                         } else {
                             Some(return_work_ceiling(
                                 implicit.record.work_units,
@@ -1282,6 +1341,8 @@ fn drive_windows(
                                 &implicit.record,
                                 &e.record,
                                 problem.dimension,
+                                config.work_model,
+                                config.rhs_cost,
                             )
                         } else {
                             qualified_work_preferred(
@@ -1516,7 +1577,12 @@ fn drive_windows(
                             remaining.min(config.implicit_pilot_attempt_budget)
                         };
                         let comparator_ceiling = if config.strict_return_work_improvement {
-                            strict_return_comparator_ceiling(&record, problem.dimension)
+                            strict_return_comparator_ceiling(
+                                &record,
+                                problem.dimension,
+                                config.work_model,
+                                config.rhs_cost,
+                            )
                         } else {
                             config
                                 .stop_dominated_return_comparator
@@ -1570,6 +1636,8 @@ fn drive_windows(
                                             &replay.record,
                                             &record,
                                             problem.dimension,
+                                            config.work_model,
+                                            config.rhs_cost,
                                         )
                                     } else {
                                         prefix_cost_dominates(
@@ -1589,6 +1657,8 @@ fn drive_windows(
                                         &replay.record,
                                         &record,
                                         problem.dimension,
+                                        config.work_model,
+                                        config.rhs_cost,
                                     )
                                 } else if replay.record.success {
                                     qualified_work_preferred(
@@ -1826,7 +1896,12 @@ fn drive_windows(
                                 // Charged callback work alone past this bound
                                 // means the replay cannot pass: stop it there.
                                 let entry_ceiling = if config.strict_entry_work_improvement {
-                                    strict_entry_callback_ceiling(&record, problem.dimension)
+                                    strict_entry_callback_ceiling(
+                                        &record,
+                                        problem.dimension,
+                                        config.work_model,
+                                        config.rhs_cost,
+                                    )
                                 } else {
                                     Some((config.entry_cost_ratio * record.work_units).floor()
                                         as u64)
@@ -1851,6 +1926,8 @@ fn drive_windows(
                                                 &record,
                                                 &pilot.record,
                                                 problem.dimension,
+                                                config.work_model,
+                                                config.rhs_cost,
                                             )
                                         } else if config.entry_probe_adaptation.is_some() {
                                             // Both records are freshly constructed from the
@@ -2888,11 +2965,29 @@ mod comparator_dominance_arithmetic_contract {
         for cost in [1, 192, 1 << 53, (1 << 53) + 1, u64::MAX - 1] {
             incumbent.rhs_calls = cost;
             candidate.rhs_calls = cost;
-            assert!(!strict_entry_work_preferred(&incumbent, &candidate, 1));
+            assert!(!strict_entry_work_preferred(
+                &incumbent,
+                &candidate,
+                1,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
+            ));
             candidate.rhs_calls = cost - 1;
-            assert!(strict_entry_work_preferred(&incumbent, &candidate, 1));
+            assert!(strict_entry_work_preferred(
+                &incumbent,
+                &candidate,
+                1,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
+            ));
             candidate.rhs_calls = cost + 1;
-            assert!(!strict_entry_work_preferred(&incumbent, &candidate, 1));
+            assert!(!strict_entry_work_preferred(
+                &incumbent,
+                &candidate,
+                1,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
+            ));
         }
     }
 
@@ -2907,9 +3002,21 @@ mod comparator_dominance_arithmetic_contract {
         assert_eq!(integer_work(&incumbent, 17, false), Some(263));
         assert_eq!(integer_work(&incumbent, 17, true), Some(244));
         candidate.rhs_calls = 262;
-        assert!(strict_entry_work_preferred(&incumbent, &candidate, 17));
+        assert!(strict_entry_work_preferred(
+            &incumbent,
+            &candidate,
+            17,
+            WorkModelVersion::V1,
+            RhsCost::Cheap
+        ));
         candidate.linear_solves = 1;
-        assert!(!strict_entry_work_preferred(&incumbent, &candidate, 17));
+        assert!(!strict_entry_work_preferred(
+            &incumbent,
+            &candidate,
+            17,
+            WorkModelVersion::V1,
+            RhsCost::Cheap
+        ));
         if usize::BITS == 64 {
             candidate.rhs_calls = u64::MAX;
             candidate.jvp_vectors = u64::MAX;
@@ -2920,9 +3027,19 @@ mod comparator_dominance_arithmetic_contract {
             assert!(!strict_entry_work_preferred(
                 &incumbent,
                 &candidate,
-                usize::MAX
+                usize::MAX,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
             ));
-            assert_eq!(strict_entry_callback_ceiling(&candidate, usize::MAX), None);
+            assert_eq!(
+                strict_entry_callback_ceiling(
+                    &candidate,
+                    usize::MAX,
+                    WorkModelVersion::V1,
+                    RhsCost::Cheap
+                ),
+                None
+            );
         }
     }
 
@@ -2931,7 +3048,13 @@ mod comparator_dominance_arithmetic_contract {
         let (mut incumbent, mut candidate) = replay_pair();
         incumbent.rhs_calls = 192;
         candidate.rhs_calls = 160;
-        assert!(strict_entry_work_preferred(&incumbent, &candidate, 1));
+        assert!(strict_entry_work_preferred(
+            &incumbent,
+            &candidate,
+            1,
+            WorkModelVersion::V1,
+            RhsCost::Cheap
+        ));
         for changed in 0..5 {
             let mut rejected = candidate.clone();
             match changed {
@@ -2941,10 +3064,22 @@ mod comparator_dominance_arithmetic_contract {
                 3 => rejected.reached_time = 0.375,
                 _ => rejected.start_time = f64::NAN,
             }
-            assert!(!strict_entry_work_preferred(&incumbent, &rejected, 1));
+            assert!(!strict_entry_work_preferred(
+                &incumbent,
+                &rejected,
+                1,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
+            ));
         }
         incumbent.accepted_steps = 0;
-        assert!(!strict_entry_work_preferred(&incumbent, &candidate, 1));
+        assert!(!strict_entry_work_preferred(
+            &incumbent,
+            &candidate,
+            1,
+            WorkModelVersion::V1,
+            RhsCost::Cheap
+        ));
     }
 
     #[test]
@@ -2958,10 +3093,16 @@ mod comparator_dominance_arithmetic_contract {
             (u64::MAX, u64::MAX - 1),
         ] {
             incumbent.rhs_calls = cost;
-            assert_eq!(strict_entry_callback_ceiling(&incumbent, 1), Some(cap));
+            assert_eq!(
+                strict_entry_callback_ceiling(&incumbent, 1, WorkModelVersion::V1, RhsCost::Cheap),
+                Some(cap)
+            );
         }
         incumbent.jvp_vectors = 1;
-        assert_eq!(strict_entry_callback_ceiling(&incumbent, 1), None);
+        assert_eq!(
+            strict_entry_callback_ceiling(&incumbent, 1, WorkModelVersion::V1, RhsCost::Cheap),
+            None
+        );
     }
 
     #[test]
@@ -2971,13 +3112,31 @@ mod comparator_dominance_arithmetic_contract {
         for cost in [1, 192, (1 << 53) + 1, u64::MAX - 1] {
             candidate.rhs_calls = cost;
             incumbent.rhs_calls = cost;
-            assert!(!strict_return_work_preferred(&incumbent, &candidate, 1));
+            assert!(!strict_return_work_preferred(
+                &incumbent,
+                &candidate,
+                1,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
+            ));
             incumbent.rhs_calls += 1;
-            assert!(strict_return_work_preferred(&incumbent, &candidate, 1));
+            assert!(strict_return_work_preferred(
+                &incumbent,
+                &candidate,
+                1,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
+            ));
             // An incomplete prefix supplies cost evidence even at zero progress.
             incumbent.reached_time = incumbent.start_time;
             incumbent.accepted_steps = 0;
-            assert!(strict_return_work_preferred(&incumbent, &candidate, 1));
+            assert!(strict_return_work_preferred(
+                &incumbent,
+                &candidate,
+                1,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
+            ));
         }
         for changed in 0..7 {
             let mut bad = incumbent.clone();
@@ -2990,10 +3149,22 @@ mod comparator_dominance_arithmetic_contract {
                 5 => bad.success = true,
                 _ => bad.start_time = f64::INFINITY,
             }
-            assert!(!strict_return_work_preferred(&bad, &candidate, 1));
+            assert!(!strict_return_work_preferred(
+                &bad,
+                &candidate,
+                1,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
+            ));
         }
         candidate.success = false;
-        assert!(!strict_return_work_preferred(&incumbent, &candidate, 1));
+        assert!(!strict_return_work_preferred(
+            &incumbent,
+            &candidate,
+            1,
+            WorkModelVersion::V1,
+            RhsCost::Cheap
+        ));
     }
 
     #[test]
@@ -3002,12 +3173,29 @@ mod comparator_dominance_arithmetic_contract {
         incumbent.target_time = candidate.target_time;
         for cost in [0, 1, 192, (1 << 53) + 1, u64::MAX - 1] {
             candidate.rhs_calls = cost;
-            assert_eq!(strict_return_comparator_ceiling(&candidate, 1), Some(cost));
+            assert_eq!(
+                strict_return_comparator_ceiling(
+                    &candidate,
+                    1,
+                    WorkModelVersion::V1,
+                    RhsCost::Cheap
+                ),
+                Some(cost)
+            );
             incumbent.rhs_calls = cost + 1;
-            assert!(strict_return_work_preferred(&incumbent, &candidate, 1));
+            assert!(strict_return_work_preferred(
+                &incumbent,
+                &candidate,
+                1,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
+            ));
         }
         candidate.rhs_calls = u64::MAX;
-        assert_eq!(strict_return_comparator_ceiling(&candidate, 1), None);
+        assert_eq!(
+            strict_return_comparator_ceiling(&candidate, 1, WorkModelVersion::V1, RhsCost::Cheap),
+            None
+        );
         if usize::BITS == 64 {
             for r in [&mut incumbent, &mut candidate] {
                 r.rhs_calls = u64::MAX;
@@ -3017,13 +3205,20 @@ mod comparator_dominance_arithmetic_contract {
                 r.linear_solves = u64::MAX;
             }
             assert_eq!(
-                strict_return_comparator_ceiling(&candidate, usize::MAX),
+                strict_return_comparator_ceiling(
+                    &candidate,
+                    usize::MAX,
+                    WorkModelVersion::V1,
+                    RhsCost::Cheap
+                ),
                 None
             );
             assert!(!strict_return_work_preferred(
                 &incumbent,
                 &candidate,
-                usize::MAX
+                usize::MAX,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
             ));
         }
     }
