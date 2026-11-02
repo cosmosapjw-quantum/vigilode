@@ -91,3 +91,15 @@ bash research/adapter_switcher_economy_20261026/tools/run_campaign.sh target/rel
 python3 research/adapter_switcher_economy_20261026/tools/analyze.py research/switcher_admission_20261103/raw research/switcher_admission_20261103/AFTER.json target/release $EXEC_SHA
 python3 research/adapter_switcher_economy_20261026/tools/compare.py research/adapter_switcher_economy_20261026/evidence/AFTER_596dcdfa.json research/switcher_admission_20261103/AFTER.json research/switcher_admission_20261103/COMPARISON.md research/switcher_admission_20261103/GATES.json
 ```
+
+
+---
+
+## 6. Execution Results (Node E0 Admission PASS)
+
+- **Execution Commit (`EXEC_SHA`)**: `a4b08c5970247ab4fc435bb6ef269518fc1d3c3d` (reachable on branch `origin/research/switcher-v2-20261103`)
+- **Direct Bit-Identity Gate (G1)**: **PASS** (`G1 == true`). All 9 direct paths (rotation dopri/rodas, stiff-forced dopri/rodas, case5 rodas5p-mf/dense, case10t dopri5/rodas5p-mf, case10 dopri5) are bit-identical in all work counters (`attempts`, `rhs_calls`, `jvp_vectors`, `linear_solves`) and final state (`float::to_bits()`) against baseline `AFTER_596dcdfa.json`.
+- **Deterministic Work Gate (G2)**: **PASS** (`G2 == true`). Deterministic work across all switching cells is $\le$ baseline.
+- **Accuracy & Determinism Gate (G3)**: **PASS** (`G3 == true`). All accuracy caps met on attainable cells, solver success, reconciled records, multi-run determinism confirmed across 5 timed runs.
+- **Switching Contracts Suite**: 12/12 contract test files in `crates/vigilode/tests` pass with 0 failures (81 tests).
+- **Verdict**: **PASS**. Confirmatory admission of post-audit adapter hardening commits (`68a28357`, `206298b4`, `78bb8775`, `5c27e3af`, `7fce5a4c`) and Phase 0/1 speed hardening (`B9a`, `C8`).
