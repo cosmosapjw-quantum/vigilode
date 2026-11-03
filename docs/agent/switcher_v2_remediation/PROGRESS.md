@@ -53,3 +53,11 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - red: f3_route_registry_defaults_to_work_model_v1 (failed on base)
 - mutation: caught 2, missed 1, waived 1
 - notes: route_registry defaults to WorkModel V1; updated admission contract assertion
+## F4 — Sound progress screen for RODAS5P: c_min = 7 callbacks (A-6) — 2026-11-03
+- result: done
+- commit: uncommitted
+- toolchain: pinned 1.94.1
+- commands: contracts: 0, lib-unit-tests: 0, vigilode-suite: 0, clippy: 0, fmt: 0
+- red: f4_progress_reach_upper_bound_boundary_table (does not compile on base)
+- mutation: caught 31, missed 0, waived 0
+- notes: implemented progress_reach_upper_bound with c_min = 7 callbacks; updated economy contracts

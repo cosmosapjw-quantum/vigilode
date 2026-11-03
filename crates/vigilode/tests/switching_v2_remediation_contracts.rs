@@ -122,6 +122,51 @@ fn f3_route_registry_defaults_to_work_model_v1() {
 
 // ---- T-F4 ------------------------------------------------------------------
 
+#[test]
+fn f4_progress_screen_preserves_entry_decisions() {
+    for (p, y0) in [(stiff_forced(), vec![1.0]), (rotation(), vec![1.0, 0.0])] {
+        let on = SwitchingConfig::route_registry(provided());
+        let mut off = on.clone();
+        off.progress_bound = false;
+        let a = solve(&p, &y0, &on);
+        let b = solve(&p, &y0, &off);
+        assert!(a.success && b.success);
+        assert_eq!(a.stats.switches, b.stats.switches);
+        let entry = |s: &SwitchingSolution| {
+            s.stats
+                .segments
+                .iter()
+                .find(|x| x.method == SwitchingMethod::Rodas5p && x.committed)
+                .map(|x| x.start_time.to_bits())
+        };
+        assert_eq!(entry(&a), entry(&b));
+    }
+}
+
+#[test]
+fn f4_progress_reach_upper_bound_boundary_table() {
+    use vigilode::progress_reach_upper_bound as reach;
+    assert_eq!(reach(1e-3, 5.0, 6, 7), 0.0);
+    assert_eq!(reach(1e-3, 5.0, 7, 7), 1e-3f64.next_up());
+    assert_eq!(reach(1e-3, 5.0, 14, 7), (1e-3f64 * 6.0).next_up());
+    assert_eq!(reach(1e-3, 1.0, 21, 7), (1e-3f64 * 3.0).next_up());
+    assert_eq!(reach(1e-3, 5.0, 7 * 401, 7), f64::INFINITY);
+    assert!(reach(1e-3, 5.0, 7 * 400, 7).is_finite());
+    assert_eq!(reach(1e-3, 5.0, 100, 0), f64::INFINITY);
+    assert_eq!(reach(0.0, 5.0, 100, 7), f64::INFINITY);
+    assert_eq!(reach(1e-3, 0.5, 100, 7), f64::INFINITY);
+    assert_eq!(reach(f64::NAN, 5.0, 100, 7), f64::INFINITY);
+
+    use vigilode::registry::WindowDriver;
+    let driver = vigilode::registry::Rodas5pWindowDriver::with_route(
+        vigilode::registry::RouteId::Rodas5pMatrixFree,
+    );
+    let pm = driver
+        .progress_model(2, false)
+        .expect("progress model present");
+    assert_eq!(pm.min_work_per_attempt, 7);
+}
+
 // ---- T-F5 ------------------------------------------------------------------
 
 // ---- T-F6 ------------------------------------------------------------------

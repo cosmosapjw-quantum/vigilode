@@ -89,6 +89,44 @@ pub struct RouteRequirements {
     pub replay_safety: bool,
 }
 
+/// Minimum guard-callback units charged by any accepted RODAS5P attempt:
+/// stages 2..=8 each evaluate the RHS once (stage 1 may reuse f(y_n)).
+pub const RODAS5P_MIN_CALLBACKS_PER_ACCEPTED_ATTEMPT: u64 = 7;
+
+/// Upper bound on the distance an adaptive run can cover before its guard
+/// stops it: at most `ceiling / min_callbacks` accepted attempts fit under the
+/// ceiling, the first trial step is at most `h0`, and each accepted step grows
+/// the proposal by at most `max_growth`. Returns `INFINITY` when no bound applies.
+pub fn progress_reach_upper_bound(
+    h0: f64,
+    max_growth: f64,
+    ceiling_callbacks: u64,
+    min_callbacks_per_accepted_attempt: u64,
+) -> f64 {
+    if !(h0.is_finite() && h0 > 0.0 && max_growth.is_finite() && max_growth >= 1.0)
+        || min_callbacks_per_accepted_attempt == 0
+    {
+        return f64::INFINITY;
+    }
+    let m = ceiling_callbacks / min_callbacks_per_accepted_attempt;
+    if m == 0 {
+        return 0.0;
+    }
+    if m > 400 {
+        return f64::INFINITY;
+    }
+    let reach = if max_growth == 1.0 {
+        h0 * m as f64
+    } else {
+        h0 * (max_growth.powi(m as i32) - 1.0) / (max_growth - 1.0)
+    };
+    if reach.is_finite() {
+        reach.next_up()
+    } else {
+        f64::INFINITY
+    }
+}
+
 /// Progress model for the progress-bound screen (Section 8.2).
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ProgressModel {
@@ -338,10 +376,10 @@ impl WindowDriver for Rodas5pWindowDriver {
         }
     }
 
-    fn progress_model(&self, _n: usize, autonomous: bool) -> Option<ProgressModel> {
+    fn progress_model(&self, _n: usize, _autonomous: bool) -> Option<ProgressModel> {
         Some(ProgressModel {
             max_step_growth: 5.0,
-            min_work_per_attempt: 16 + if autonomous { 0 } else { 1 },
+            min_work_per_attempt: RODAS5P_MIN_CALLBACKS_PER_ACCEPTED_ATTEMPT,
         })
     }
 
@@ -360,17 +398,13 @@ impl WindowDriver for Rodas5pWindowDriver {
             && !has_band_verification
             && let Some(ceiling) = req.ceiling
         {
-            let c_min = 16u64 + if problem.is_autonomous() { 0 } else { 1 };
-            let m = (ceiling / c_min) as usize;
             let h0 = req.proposed_h.unwrap_or(req.options.h0);
-            let g = 5.0f64;
-            let reach = if m == 0 {
-                0.0
-            } else if m > 400 {
-                f64::INFINITY
-            } else {
-                h0 * (g.powi(m as i32) - 1.0) / (g - 1.0)
-            };
+            let reach = progress_reach_upper_bound(
+                h0,
+                rodas5p_integrators::AdaptiveStepConfig::default().max_factor,
+                ceiling,
+                RODAS5P_MIN_CALLBACKS_PER_ACCEPTED_ATTEMPT,
+            );
             if reach < (req.target_time - req.start_time) * (1.0 - 1e-12) {
                 let record = SwitchingSegment {
                     method: SwitchingMethod::Rodas5p,

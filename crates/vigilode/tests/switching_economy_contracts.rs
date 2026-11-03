@@ -638,14 +638,14 @@ fn b8_progress_bound_contracts() {
         driver.progress_model(2, true),
         Some(ProgressModel {
             max_step_growth: 5.0,
-            min_work_per_attempt: 16,
+            min_work_per_attempt: 7,
         })
     );
     assert_eq!(
         driver.progress_model(2, false),
         Some(ProgressModel {
             max_step_growth: 5.0,
-            min_work_per_attempt: 17,
+            min_work_per_attempt: 7,
         })
     );
 
