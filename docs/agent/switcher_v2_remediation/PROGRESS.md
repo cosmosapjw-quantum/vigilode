@@ -117,3 +117,11 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - red: none
 - mutation: caught 30, missed 0, waived 0, unviable 1, unwaived 0
 - notes: implemented Curtis-Powell-Reid greedy column colouring, seed vectors, and Jacobian recovery
+## X8 — Margin-shifted comparison helpers (hysteresis band, pure) — 2026-11-03
+- result: done
+- commit: uncommitted
+- toolchain: pinned 1.94.1
+- commands: margin-unit: 0, clippy: 0, fmt: 0
+- red: none
+- mutation: caught 31, missed 0, waived 0, unviable 0, unwaived 0
+- notes: implemented MarginRatio, hysteresis band check band_is_open, and decision-preserving callback caps

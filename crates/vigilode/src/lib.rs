@@ -171,6 +171,7 @@ mod explicit;
 mod explicit_ensemble;
 mod fd;
 mod lawson;
+pub mod margin;
 mod options;
 mod oscillatory_chart;
 mod problem;
