@@ -1027,17 +1027,39 @@ fn work_enclosure(
 // For integer callback prefix cost L and incumbent total E, L >= E rules
 // out C_candidate < E. The guard charges the crossing callback and stops
 // on L > cap, hence cap = E - 1 (zero also admits no strict winner).
+// WorkModel v2 costs are instruction units: v2 = kappa * callbacks + overhead,
+// overhead >= 0. The pilot guard counts callbacks. A pilot whose charged
+// callbacks c exceed floor((E - 1) / kappa) has v2 >= kappa * c >= E, so it
+// cannot be strictly cheaper than the incumbent E: the cap is decision-preserving.
+pub(crate) fn v2_entry_callback_cap(incumbent_v2: u128, kappa: u64) -> Option<u128> {
+    if kappa == 0 {
+        return None;
+    }
+    Some(incumbent_v2.saturating_sub(1) / kappa as u128)
+}
+
+// An implicit comparator whose charged callbacks L exceed floor(E / kappa) has
+// v2 >= kappa * L > E, so the completed explicit candidate E is strictly cheaper.
+pub(crate) fn v2_return_callback_cap(candidate_v2: u128, kappa: u64) -> Option<u128> {
+    if kappa == 0 {
+        return None;
+    }
+    Some(candidate_v2 / kappa as u128)
+}
+
 fn strict_entry_callback_ceiling(
     incumbent: &SwitchingSegment,
     dimension: usize,
     work_model: WorkModelVersion,
     rhs_cost: RhsCost,
 ) -> Option<u64> {
-    let cost = match work_model {
-        WorkModelVersion::V1 => integer_work(incumbent, dimension, false)?,
-        WorkModelVersion::V2 => integer_work_v2(incumbent, dimension, rhs_cost)?,
+    let ceiling = match work_model {
+        WorkModelVersion::V1 => integer_work(incumbent, dimension, false)?.saturating_sub(1),
+        WorkModelVersion::V2 => v2_entry_callback_cap(
+            integer_work_v2(incumbent, dimension, rhs_cost)?,
+            rhs_cost.ir_cost(),
+        )?,
     };
-    let ceiling = cost.saturating_sub(1);
     // u64::MAX is the native unarmed sentinel; decline an unrepresentable
     // ceiling rather than truncate it. The global attempt cap still applies.
     (ceiling < u64::MAX as u128).then_some(ceiling as u64)
@@ -1135,7 +1157,10 @@ fn strict_return_comparator_ceiling(
 ) -> Option<u64> {
     let cost = match work_model {
         WorkModelVersion::V1 => integer_work(candidate, dimension, false)?,
-        WorkModelVersion::V2 => integer_work_v2(candidate, dimension, rhs_cost)?,
+        WorkModelVersion::V2 => v2_return_callback_cap(
+            integer_work_v2(candidate, dimension, rhs_cost)?,
+            rhs_cost.ir_cost(),
+        )?,
     };
     (cost < u64::MAX as u128).then_some(cost as u64)
 }
@@ -3240,6 +3265,60 @@ mod comparator_dominance_arithmetic_contract {
             WorkModelVersion::V1,
             RhsCost::Cheap
         ));
+    }
+
+    #[test]
+    fn v2_entry_callback_cap_matches_boundary_table() {
+        for (e, k, cap) in [
+            (0u128, 50u64, Some(0u128)),
+            (1, 50, Some(0)),
+            (50, 50, Some(0)),
+            (51, 50, Some(1)),
+            (100, 50, Some(1)),
+            (101, 50, Some(2)),
+            (7, 1, Some(6)),
+            (10, 0, None),
+        ] {
+            assert_eq!(super::v2_entry_callback_cap(e, k), cap, "e={e} kappa={k}");
+        }
+    }
+
+    #[test]
+    fn v2_return_callback_cap_matches_boundary_table() {
+        for (e, k, cap) in [
+            (0u128, 50u64, Some(0u128)),
+            (49, 50, Some(0)),
+            (50, 50, Some(1)),
+            (100, 50, Some(2)),
+            (7, 1, Some(7)),
+            (10, 0, None),
+        ] {
+            assert_eq!(super::v2_return_callback_cap(e, k), cap, "e={e} kappa={k}");
+        }
+    }
+
+    #[test]
+    fn v2_caps_are_decision_preserving() {
+        for kappa in [1u64, 7, 50, 500] {
+            for e in 0u128..400 {
+                let entry = super::v2_entry_callback_cap(e, kappa).expect("kappa > 0");
+                let ret = super::v2_return_callback_cap(e, kappa).expect("kappa > 0");
+                for overhead in [0u128, 1, 13, 1000] {
+                    for c in 0u128..60 {
+                        let pilot = kappa as u128 * c + overhead;
+                        if c > entry {
+                            assert!(pilot >= e, "entry cap {entry} would stop a winning pilot");
+                        }
+                        if c > ret {
+                            assert!(
+                                pilot > e,
+                                "return cap {ret} would stop before E < I is proved"
+                            );
+                        }
+                    }
+                }
+            }
+        }
     }
 
     #[test]

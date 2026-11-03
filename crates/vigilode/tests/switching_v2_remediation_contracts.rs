@@ -85,6 +85,24 @@ fn f1_adaptive_evidence_factory_has_no_loss_margin_backoff() {
 
 // ---- T-F2 ------------------------------------------------------------------
 
+#[test]
+fn f2_v2_entry_ceiling_stops_losing_rotation_pilots_like_v1() {
+    let mut v2 = SwitchingConfig::route_registry(provided());
+    v2.work_model = vigilode::WorkModelVersion::V2;
+    let mut v1 = v2.clone();
+    v1.work_model = vigilode::WorkModelVersion::V1;
+    let a = solve(&rotation(), &[1.0, 0.0], &v2);
+    let b = solve(&rotation(), &[1.0, 0.0], &v1);
+    assert!(a.success && b.success);
+    assert_eq!(a.stats.switches, b.stats.switches);
+    assert!(
+        discarded_rodas_jvp(&a) <= discarded_rodas_jvp(&b) + 50,
+        "V2 pilot JVPs {} vs V1 {}",
+        discarded_rodas_jvp(&a),
+        discarded_rodas_jvp(&b)
+    );
+}
+
 // ---- T-F3 ------------------------------------------------------------------
 
 // ---- T-F4 ------------------------------------------------------------------

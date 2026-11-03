@@ -37,3 +37,11 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - red: f1_adaptive_evidence_factory_has_no_loss_margin_backoff (failed on base)
 - mutation: caught 2, missed 0, waived 0
 - notes: restored EntryProbeAdaptation::default() in adaptive_evidence; route_registry retains backoff
+## F2 — Convert WorkModel V2 ceilings to callback units (A-5) — 2026-11-03
+- result: done
+- commit: uncommitted
+- toolchain: pinned 1.94.1
+- commands: contracts: 0, lib-unit-tests: 0, vigilode-suite: 0, clippy: 0, fmt: 0
+- red: f2_v2_entry_ceiling_stops_losing_rotation_pilots_like_v1 (failed on base)
+- mutation: caught 18, missed 0, waived 0
+- notes: armed V2 pilot ceilings in callback units; pilot decisions match V1 economics
