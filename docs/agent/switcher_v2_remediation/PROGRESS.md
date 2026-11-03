@@ -159,9 +159,17 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - notes: recorded preregistered node B7 (L-0210, verdict FAIL: plain min raises stiff-forced RHS calls from 400 to 1840; max(budget, k_d0_min) retained in route_registry)
 ## X11 — Re-run E1 WorkModel v2 calibration with measured callgrind Ir — 2026-11-04
 - result: done
-- commit: uncommitted
+- commit: 157586cf
 - toolchain: pinned 1.94.1
 - commands: research-node-check: 0
 - red: none
 - mutation: none
 - notes: recorded preregistered node E1R (L-0211, verdict FAIL under verbatim aafc2e0b gates and live valgrind --tool=callgrind Ir; WorkModelVersion::V1 retained in route_registry)
+## X9 — Hysteresis band in route_registry after a bias measurement (node H1) — 2026-11-04
+- result: done
+- commit: uncommitted
+- toolchain: pinned 1.94.1
+- commands: contracts: 0, lib-unit-tests: 0, vigilode-suite: 0, clippy: 0, fmt: 0, research-node-check: 0
+- red: none
+- mutation: none
+- notes: wired opt-in entry_margin and return_margin on SwitchingConfig with band_is_open validation and V1/V2 callback caps; recorded preregistered node H1 (L-0212, verdict FAIL due to transition-39 prefix bias |b| >= w/2; entry_margin and return_margin remain None by default)

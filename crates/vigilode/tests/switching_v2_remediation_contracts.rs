@@ -472,3 +472,58 @@ fn skeleton_helpers_reproduce_registered_counters() {
     assert!(sf.success);
     assert_eq!((sf.stats.attempts, sf.stats.rhs_calls), (66, 456));
 }
+
+// ---- T-X9 ------------------------------------------------------------------
+
+#[test]
+fn x9_hysteresis_band_validation_and_default_neutrality() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use vigilode::margin::MarginRatio;
+
+    static CALLS: AtomicUsize = AtomicUsize::new(0);
+    let counting = Problem::new(1, |_, y, o| {
+        CALLS.fetch_add(1, Ordering::SeqCst);
+        o[0] = -y[0];
+        Ok(())
+    })
+    .jacobian(Jacobian::jvp(|_, _, v, o| {
+        o[0] = -v[0];
+        Ok(())
+    }))
+    .autonomous();
+
+    let mut cfg = SwitchingConfig::route_registry(provided());
+    assert_eq!(cfg.entry_margin, None);
+    assert_eq!(cfg.return_margin, None);
+
+    // Closed band (1/1, 1/1) is refused before callbacks.
+    cfg.entry_margin = MarginRatio::new(1, 1);
+    cfg.return_margin = MarginRatio::new(1, 1);
+    CALLS.store(0, Ordering::SeqCst);
+    let err = SwitchingSolver::solve(&counting, (0.0, 1.0), &[1.0], &bench_options(), &cfg)
+        .expect_err("closed hysteresis band must be refused");
+    assert!(
+        err.0.contains("hysteresis band must be open"),
+        "got: {}",
+        err.0
+    );
+    assert_eq!(CALLS.load(Ordering::SeqCst), 0);
+
+    // Malformed ratio is refused before callbacks.
+    cfg.entry_margin = Some(MarginRatio { num: 0, den: 5 });
+    cfg.return_margin = None;
+    let err = SwitchingSolver::solve(&counting, (0.0, 1.0), &[1.0], &bench_options(), &cfg)
+        .expect_err("zero numerator must be refused");
+    assert!(err.0.contains("entry_margin"), "got: {}", err.0);
+    assert_eq!(CALLS.load(Ordering::SeqCst), 0);
+
+    // Open band (4/5, 4/5) preserves stiff-forced entry and rotation explicit residence.
+    cfg.entry_margin = MarginRatio::new(4, 5);
+    cfg.return_margin = MarginRatio::new(4, 5);
+    let sf = solve(&stiff_forced(), &[1.0], &cfg);
+    assert!(sf.success);
+    assert_eq!(sf.stats.switches, 1);
+    let rot = solve(&rotation(), &[1.0, 0.0], &cfg);
+    assert!(rot.success);
+    assert_eq!(rot.stats.switches, 0);
+}

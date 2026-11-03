@@ -278,6 +278,46 @@ pub struct SwitchingConfig {
     /// Proposal seeding method for implicit entry pilots.
     #[serde(default)]
     pub entry_seed: EntrySeed,
+    /// Optional hysteresis margin ratio `num / den` in `(0, 1]` for implicit entry pilots.
+    #[serde(default, with = "opt_margin_ratio_serde")]
+    pub entry_margin: Option<crate::margin::MarginRatio>,
+    /// Optional hysteresis margin ratio `num / den` in `(0, 1]` for explicit return comparators.
+    #[serde(default, with = "opt_margin_ratio_serde")]
+    pub return_margin: Option<crate::margin::MarginRatio>,
+}
+
+mod opt_margin_ratio_serde {
+    use crate::margin::MarginRatio;
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    #[derive(Serialize, Deserialize)]
+    struct RawMarginRatio {
+        num: u64,
+        den: u64,
+    }
+
+    pub fn serialize<S>(val: &Option<MarginRatio>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        val.map(|m| RawMarginRatio {
+            num: m.num,
+            den: m.den,
+        })
+        .serialize(serializer)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<MarginRatio>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        Ok(
+            Option::<RawMarginRatio>::deserialize(deserializer)?.map(|r| MarginRatio {
+                num: r.num,
+                den: r.den,
+            }),
+        )
+    }
 }
 
 impl Default for SwitchingConfig {
@@ -316,6 +356,8 @@ impl Default for SwitchingConfig {
             progress_bound: false,
             entry_policy: None,
             entry_seed: EntrySeed::Legacy,
+            entry_margin: None,
+            return_margin: None,
         }
     }
 }
@@ -1059,18 +1101,42 @@ pub(crate) fn v2_return_callback_cap(candidate_v2: u128, kappa: u64) -> Option<u
     Some(candidate_v2 / kappa as u128)
 }
 
+#[cfg(test)]
 fn strict_entry_callback_ceiling(
     incumbent: &SwitchingSegment,
     dimension: usize,
     work_model: WorkModelVersion,
     rhs_cost: RhsCost,
 ) -> Option<u64> {
-    let ceiling = match work_model {
-        WorkModelVersion::V1 => integer_work(incumbent, dimension, false)?.saturating_sub(1),
-        WorkModelVersion::V2 => v2_entry_callback_cap(
+    strict_entry_callback_ceiling_with_margin(incumbent, dimension, work_model, rhs_cost, None)
+}
+
+fn strict_entry_callback_ceiling_with_margin(
+    incumbent: &SwitchingSegment,
+    dimension: usize,
+    work_model: WorkModelVersion,
+    rhs_cost: RhsCost,
+    margin: Option<crate::margin::MarginRatio>,
+) -> Option<u64> {
+    let ceiling = match (work_model, margin) {
+        (WorkModelVersion::V1, None) => {
+            integer_work(incumbent, dimension, false)?.saturating_sub(1)
+        }
+        (WorkModelVersion::V1, Some(rho)) => {
+            crate::margin::margin_entry_cap(integer_work(incumbent, dimension, false)?, rho)?
+        }
+        (WorkModelVersion::V2, None) => v2_entry_callback_cap(
             integer_work_v2(incumbent, dimension, rhs_cost)?,
             rhs_cost.ir_cost(),
         )?,
+        (WorkModelVersion::V2, Some(rho)) => {
+            let kappa = rhs_cost.ir_cost();
+            if kappa == 0 {
+                return None;
+            }
+            let inc_v2 = integer_work_v2(incumbent, dimension, rhs_cost)?;
+            crate::margin::margin_entry_cap(inc_v2, rho)? / kappa as u128
+        }
     };
     // u64::MAX is the native unarmed sentinel; decline an unrepresentable
     // ceiling rather than truncate it. The global attempt cap still applies.
@@ -1085,6 +1151,21 @@ pub fn strict_entry_work_preferred(
     work_model: WorkModelVersion,
     rhs_cost: RhsCost,
 ) -> bool {
+    strict_entry_work_preferred_with_margin(
+        incumbent, candidate, dimension, work_model, rhs_cost, None,
+    )
+}
+
+/// Entry preference with optional hysteresis margin ratio `rho_e`: candidate wins iff
+/// `candidate < rho_e * incumbent` in exact integer work units.
+pub fn strict_entry_work_preferred_with_margin(
+    incumbent: &SwitchingSegment,
+    candidate: &SwitchingSegment,
+    dimension: usize,
+    work_model: WorkModelVersion,
+    rhs_cost: RhsCost,
+    margin: Option<crate::margin::MarginRatio>,
+) -> bool {
     // The caller replays from the same physical checkpoint. An accepted
     // explicit prefix can be valid even if its larger batch hit a budget.
     if incumbent.accepted_steps == 0
@@ -1096,21 +1177,22 @@ pub fn strict_entry_work_preferred(
     {
         return false;
     }
-    match work_model {
-        WorkModelVersion::V1 => match (
+    let costs = match work_model {
+        WorkModelVersion::V1 => (
             integer_work(incumbent, dimension, false),
             integer_work(candidate, dimension, false),
-        ) {
-            (Some(incumbent_cost), Some(candidate_cost)) => candidate_cost < incumbent_cost,
-            _ => false,
-        },
-        WorkModelVersion::V2 => match (
+        ),
+        WorkModelVersion::V2 => (
             integer_work_v2(incumbent, dimension, rhs_cost),
             integer_work_v2(candidate, dimension, rhs_cost),
-        ) {
-            (Some(incumbent_cost), Some(candidate_cost)) => candidate_cost < incumbent_cost,
-            _ => false,
-        },
+        ),
+    };
+    match (costs, margin) {
+        ((Some(incumbent_cost), Some(candidate_cost)), None) => candidate_cost < incumbent_cost,
+        ((Some(incumbent_cost), Some(candidate_cost)), Some(rho)) => {
+            crate::margin::margin_entry_wins(candidate_cost, incumbent_cost, rho).unwrap_or(false)
+        }
+        _ => false,
     }
 }
 
@@ -1124,6 +1206,21 @@ pub fn strict_return_work_preferred(
     dimension: usize,
     work_model: WorkModelVersion,
     rhs_cost: RhsCost,
+) -> bool {
+    strict_return_work_preferred_with_margin(
+        incumbent, candidate, dimension, work_model, rhs_cost, None,
+    )
+}
+
+/// Return preference with optional hysteresis margin ratio `rho_r`: candidate wins iff
+/// `candidate < rho_r * incumbent` in exact integer work units.
+pub fn strict_return_work_preferred_with_margin(
+    incumbent: &SwitchingSegment,
+    candidate: &SwitchingSegment,
+    dimension: usize,
+    work_model: WorkModelVersion,
+    rhs_cost: RhsCost,
+    margin: Option<crate::margin::MarginRatio>,
 ) -> bool {
     if !candidate.success
         || candidate.accepted_steps == 0
@@ -1140,39 +1237,62 @@ pub fn strict_return_work_preferred(
     {
         return false;
     }
-    match work_model {
-        WorkModelVersion::V1 => match (
+    let costs = match work_model {
+        WorkModelVersion::V1 => (
             integer_work(incumbent, dimension, false),
             integer_work(candidate, dimension, false),
-        ) {
-            (Some(incumbent_cost), Some(candidate_cost)) => candidate_cost < incumbent_cost,
-            _ => false,
-        },
-        WorkModelVersion::V2 => match (
+        ),
+        WorkModelVersion::V2 => (
             integer_work_v2(incumbent, dimension, rhs_cost),
             integer_work_v2(candidate, dimension, rhs_cost),
-        ) {
-            (Some(incumbent_cost), Some(candidate_cost)) => candidate_cost < incumbent_cost,
-            _ => false,
-        },
+        ),
+    };
+    match (costs, margin) {
+        ((Some(incumbent_cost), Some(candidate_cost)), None) => candidate_cost < incumbent_cost,
+        ((Some(incumbent_cost), Some(candidate_cost)), Some(rho)) => {
+            crate::margin::margin_return_wins(candidate_cost, incumbent_cost, rho).unwrap_or(false)
+        }
+        _ => false,
     }
 }
 
 // The callback guard stops after charging L > cap. Setting cap = E proves
 // E < L <= I at the crossing callback; the strict inequality fixes the exact
 // integer boundary without a ratio, rounding slack, or fitted safety factor.
+#[cfg(test)]
 fn strict_return_comparator_ceiling(
     candidate: &SwitchingSegment,
     dimension: usize,
     work_model: WorkModelVersion,
     rhs_cost: RhsCost,
 ) -> Option<u64> {
-    let cost = match work_model {
-        WorkModelVersion::V1 => integer_work(candidate, dimension, false)?,
-        WorkModelVersion::V2 => v2_return_callback_cap(
+    strict_return_comparator_ceiling_with_margin(candidate, dimension, work_model, rhs_cost, None)
+}
+
+fn strict_return_comparator_ceiling_with_margin(
+    candidate: &SwitchingSegment,
+    dimension: usize,
+    work_model: WorkModelVersion,
+    rhs_cost: RhsCost,
+    margin: Option<crate::margin::MarginRatio>,
+) -> Option<u64> {
+    let cost = match (work_model, margin) {
+        (WorkModelVersion::V1, None) => integer_work(candidate, dimension, false)?,
+        (WorkModelVersion::V1, Some(rho)) => {
+            crate::margin::margin_return_cap(integer_work(candidate, dimension, false)?, rho)?
+        }
+        (WorkModelVersion::V2, None) => v2_return_callback_cap(
             integer_work_v2(candidate, dimension, rhs_cost)?,
             rhs_cost.ir_cost(),
         )?,
+        (WorkModelVersion::V2, Some(rho)) => {
+            let kappa = rhs_cost.ir_cost();
+            if kappa == 0 {
+                return None;
+            }
+            let cand_v2 = integer_work_v2(candidate, dimension, rhs_cost)?;
+            crate::margin::margin_return_cap(cand_v2, rho)? / kappa as u128
+        }
     };
     (cost < u64::MAX as u128).then_some(cost as u64)
 }
@@ -1418,11 +1538,12 @@ fn drive_windows(
                         t1,
                         &[],
                         if config.strict_return_work_improvement {
-                            strict_entry_callback_ceiling(
+                            strict_entry_callback_ceiling_with_margin(
                                 &implicit.record,
                                 problem.dimension,
                                 config.work_model,
                                 config.rhs_cost,
+                                config.return_margin,
                             )
                         } else {
                             Some(return_work_ceiling(
@@ -1482,12 +1603,13 @@ fn drive_windows(
                 let explicit_wins = explicit.as_ref().is_some_and(|e| {
                     e.record.success
                         && if config.strict_return_work_improvement {
-                            strict_return_work_preferred(
+                            strict_return_work_preferred_with_margin(
                                 &implicit.record,
                                 &e.record,
                                 problem.dimension,
                                 config.work_model,
                                 config.rhs_cost,
+                                config.return_margin,
                             )
                         } else {
                             qualified_work_preferred(
@@ -1759,11 +1881,12 @@ fn drive_windows(
                             remaining.min(config.implicit_pilot_attempt_budget)
                         };
                         let comparator_ceiling = if config.strict_return_work_improvement {
-                            strict_return_comparator_ceiling(
+                            strict_return_comparator_ceiling_with_margin(
                                 &record,
                                 problem.dimension,
                                 config.work_model,
                                 config.rhs_cost,
+                                config.return_margin,
                             )
                         } else {
                             config
@@ -1815,12 +1938,13 @@ fn drive_windows(
                                 // predicate never labels its output admissible.
                                 let prefix_preferred = !replay.record.success
                                     && if config.strict_return_work_improvement {
-                                        strict_return_work_preferred(
+                                        strict_return_work_preferred_with_margin(
                                             &replay.record,
                                             &record,
                                             problem.dimension,
                                             config.work_model,
                                             config.rhs_cost,
+                                            config.return_margin,
                                         )
                                     } else {
                                         prefix_cost_dominates(
@@ -1836,12 +1960,13 @@ fn drive_windows(
                                     && replay.ceiling_stop
                                     && prefix_preferred;
                                 economical = if config.strict_return_work_improvement {
-                                    strict_return_work_preferred(
+                                    strict_return_work_preferred_with_margin(
                                         &replay.record,
                                         &record,
                                         problem.dimension,
                                         config.work_model,
                                         config.rhs_cost,
+                                        config.return_margin,
                                     )
                                 } else if replay.record.success {
                                     qualified_work_preferred(
@@ -2074,11 +2199,12 @@ fn drive_windows(
                                 // Charged callback work alone past this bound
                                 // means the replay cannot pass: stop it there.
                                 let entry_ceiling = if config.strict_entry_work_improvement {
-                                    strict_entry_callback_ceiling(
+                                    strict_entry_callback_ceiling_with_margin(
                                         &record,
                                         problem.dimension,
                                         config.work_model,
                                         config.rhs_cost,
+                                        config.entry_margin,
                                     )
                                 } else {
                                     Some((config.entry_cost_ratio * record.work_units).floor()
@@ -2101,12 +2227,13 @@ fn drive_windows(
                                     Ok(mut pilot) => {
                                         charge(&mut result.stats, &pilot.record);
                                         enter = if config.strict_entry_work_improvement {
-                                            strict_entry_work_preferred(
+                                            strict_entry_work_preferred_with_margin(
                                                 &record,
                                                 &pilot.record,
                                                 problem.dimension,
                                                 config.work_model,
                                                 config.rhs_cost,
+                                                config.entry_margin,
                                             )
                                         } else if config.entry_probe_adaptation.is_some() {
                                             // Both records are freshly constructed from the
@@ -2693,6 +2820,29 @@ fn validate(
             && (lower >= y.len() || upper >= y.len() || p.band.is_some_and(|b| b != (lower, upper)))
         {
             return Err(bad("band provider/declaration mismatch"));
+        }
+    }
+    if let Some(m) = c.entry_margin
+        && crate::margin::MarginRatio::new(m.num, m.den).is_none()
+    {
+        return Err(bad("entry_margin must satisfy 0 < num <= den"));
+    }
+    if let Some(m) = c.return_margin
+        && crate::margin::MarginRatio::new(m.num, m.den).is_none()
+    {
+        return Err(bad("return_margin must satisfy 0 < num <= den"));
+    }
+    if c.entry_margin.is_some() || c.return_margin.is_some() {
+        let eff_entry = c
+            .entry_margin
+            .unwrap_or(crate::margin::MarginRatio { num: 1, den: 1 });
+        let eff_ret = c
+            .return_margin
+            .unwrap_or(crate::margin::MarginRatio { num: 1, den: 1 });
+        if !crate::margin::band_is_open(eff_entry, eff_ret) {
+            return Err(bad(
+                "hysteresis band must be open: entry_margin * return_margin < 1",
+            ));
         }
     }
     Ok(())
