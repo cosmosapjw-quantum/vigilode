@@ -173,3 +173,9 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - red: none
 - mutation: none
 - notes: wired opt-in entry_margin and return_margin on SwitchingConfig with band_is_open validation and V1/V2 callback caps; recorded preregistered node H1 (L-0212, verdict FAIL due to transition-39 prefix bias |b| >= w/2; entry_margin and return_margin remain None by default)
+
+## X5 — Stiffness-gated entry pilots and node D1
+- status: done
+- files: crates/rodas5p-integrators/src/dopri5.rs, crates/rodas5p-integrators/src/lib.rs, crates/vigilode/src/switching.rs, crates/vigilode/tests/switching_v2_remediation_contracts.rs, research/d1_stiffness_gate_20261104/PREREGISTRATION.md, research/d1_stiffness_gate_20261104/eval_d1.py, research/LEDGER.jsonl
+- verification: `python3 tools/agent_gate.py finish X5`
+- notes: exposed batch-minimum secant h_lambda telemetry from Dopri5 and wired opt-in stiffness_gate_fraction on SwitchingConfig; recorded preregistered node D1 (L-0213, verdict PASS: 100% reduction in discarded pilot JVPs on non-stiff accuracy-limited oscillatory families while preserving identical stiff entry window; remains None by default)

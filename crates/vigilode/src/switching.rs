@@ -284,6 +284,9 @@ pub struct SwitchingConfig {
     /// Optional hysteresis margin ratio `num / den` in `(0, 1]` for explicit return comparators.
     #[serde(default, with = "opt_margin_ratio_serde")]
     pub return_margin: Option<crate::margin::MarginRatio>,
+    /// Optional fraction `(0, 1]` of DOPRI5 real-axis stability boundary for stiffness-gated entry pilots.
+    #[serde(default)]
+    pub stiffness_gate_fraction: Option<f64>,
 }
 
 mod opt_margin_ratio_serde {
@@ -358,6 +361,7 @@ impl Default for SwitchingConfig {
             entry_seed: EntrySeed::Legacy,
             entry_margin: None,
             return_margin: None,
+            stiffness_gate_fraction: None,
         }
     }
 }
@@ -2127,7 +2131,41 @@ fn drive_windows(
                     if rearm {
                         pilot_discards = 0;
                     }
-                    let adaptive_due = if let Some(a) = &config.entry_probe_adaptation {
+                    let batch_min_secant_h_lambda = (record.accepted_steps > 0)
+                        .then(rodas5p_integrators::NativeSessionTelemetry::last_batch_min_secant_h_lambda)
+                        .flatten();
+                    let adaptive_due = if let Some(fraction) = config.stiffness_gate_fraction {
+                        let flagged = batch_min_secant_h_lambda.is_some_and(|hl| {
+                            rodas5p_integrators::dopri5_stiffness::dopri5_stability_limited(
+                                hl, fraction,
+                            )
+                        });
+                        if flagged {
+                            if let Some(a) = &config.entry_probe_adaptation {
+                                let (reason, _) = entry_memory.schedule(
+                                    &record,
+                                    batches_since_entry_pilot,
+                                    config,
+                                    a,
+                                );
+                                record.entry_probe_reason = Some(reason);
+                            }
+                            true
+                        } else if let Some(a) = &config.entry_probe_adaptation {
+                            if batches_since_entry_pilot == usize::MAX {
+                                batches_since_entry_pilot = 1;
+                            }
+                            let due = batches_since_entry_pilot >= a.max_backoff_batches;
+                            record.entry_probe_reason = Some(if due {
+                                EntryProbeReason::SentinelExpired
+                            } else {
+                                EntryProbeReason::StableEvidenceBackoff
+                            });
+                            due
+                        } else {
+                            false
+                        }
+                    } else if let Some(a) = &config.entry_probe_adaptation {
                         let (reason, due) =
                             entry_memory.schedule(&record, batches_since_entry_pilot, config, a);
                         record.entry_probe_reason = Some(reason);
@@ -2844,6 +2882,11 @@ fn validate(
                 "hysteresis band must be open: entry_margin * return_margin < 1",
             ));
         }
+    }
+    if let Some(fraction) = c.stiffness_gate_fraction
+        && !(fraction.is_finite() && fraction > 0.0 && fraction <= 1.0)
+    {
+        return Err(bad("stiffness_gate_fraction must be in (0, 1]"));
     }
     Ok(())
 }

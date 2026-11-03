@@ -527,3 +527,61 @@ fn x9_hysteresis_band_validation_and_default_neutrality() {
     assert!(rot.success);
     assert_eq!(rot.stats.switches, 0);
 }
+
+// ---- T-X5 ------------------------------------------------------------------
+
+#[test]
+fn x5_stiffness_gate_flags_stiff_forced_and_backs_off_on_rotation() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    static CALLS: AtomicUsize = AtomicUsize::new(0);
+    let counting = Problem::new(1, |_, y, o| {
+        CALLS.fetch_add(1, Ordering::SeqCst);
+        o[0] = -y[0];
+        Ok(())
+    })
+    .jacobian(Jacobian::jvp(|_, _, v, o| {
+        o[0] = -v[0];
+        Ok(())
+    }))
+    .autonomous();
+
+    let mut cfg = SwitchingConfig::adaptive_evidence(provided());
+    assert_eq!(cfg.stiffness_gate_fraction, None);
+
+    // Out-of-range fraction is refused before any RHS callback.
+    for bad_frac in [0.0, -0.5, 1.01, f64::NAN, f64::INFINITY] {
+        cfg.stiffness_gate_fraction = Some(bad_frac);
+        CALLS.store(0, Ordering::SeqCst);
+        let err = SwitchingSolver::solve(&counting, (0.0, 1.0), &[1.0], &bench_options(), &cfg)
+            .expect_err("invalid stiffness_gate_fraction must be refused");
+        assert!(err.0.contains("stiffness_gate_fraction"), "got: {}", err.0);
+        assert_eq!(CALLS.load(Ordering::SeqCst), 0);
+    }
+
+    // With fraction = 0.8:
+    // - stiff-forced is flagged on the first batch and switches immediately (58 attempts, 394 RHS calls).
+    // - rotation is unflagged and uses maximal backoff, lowering discarded pilot JVPs by >= 90%.
+    let base_rot = solve(
+        &rotation(),
+        &[1.0, 0.0],
+        &SwitchingConfig::adaptive_evidence(provided()),
+    );
+    let base_discarded_jvp = discarded_rodas_jvp(&base_rot);
+    assert_eq!(base_discarded_jvp, 355);
+
+    cfg.stiffness_gate_fraction = Some(0.8);
+    let sf = solve(&stiff_forced(), &[1.0], &cfg);
+    assert!(sf.success);
+    assert_eq!(sf.stats.switches, 1);
+    assert_eq!((sf.stats.attempts, sf.stats.rhs_calls), (58, 394));
+
+    let gated_rot = solve(&rotation(), &[1.0, 0.0], &cfg);
+    assert!(gated_rot.success);
+    assert_eq!(gated_rot.stats.switches, 0);
+    let gated_discarded_jvp = discarded_rodas_jvp(&gated_rot);
+    assert!(
+        gated_discarded_jvp * 10 <= base_discarded_jvp,
+        "expected >= 90% reduction in discarded pilot JVPs on rotation: base={base_discarded_jvp}, gated={gated_discarded_jvp}"
+    );
+}

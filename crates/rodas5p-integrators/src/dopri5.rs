@@ -536,6 +536,7 @@ fn integrate_dopri5_impl<F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Siz
     let mut fsal_reuses = 0_u64;
     let mut stop_reason = None;
     let mut message = String::from("DOPRI5 reached the final time");
+    LAST_BATCH_MIN_SECANT_H_LAMBDA.with(|c| c.set(None));
     while t < t_span.1 {
         if attempts == adaptive.max_attempts {
             stop_reason = Some(Dopri5StopReason::AttemptBudget);
@@ -650,6 +651,14 @@ fn integrate_dopri5_impl<F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Siz
             state.copy_from_slice(&endpoint);
             accepted_steps += 1;
             counters.accepted_steps = counters.accepted_steps.saturating_add(1);
+            if let Some(hl) = crate::dopri5_stiffness::dopri5_secant_h_lambda(
+                trial.h,
+                &workspace.stages,
+                workspace.n,
+            ) {
+                LAST_BATCH_MIN_SECANT_H_LAMBDA
+                    .with(|c| c.set(Some(c.get().map_or(hl, |prev| prev.min(hl)))));
+            }
             if config.fsal {
                 workspace.accept_fsal();
             }
@@ -780,6 +789,11 @@ pub struct Dopri5Attempt {
     pub rhs_delta: u64,
 }
 
+std::thread_local! {
+    static LAST_BATCH_MIN_SECANT_H_LAMBDA: std::cell::Cell<Option<f64>> =
+        const { std::cell::Cell::new(None) };
+}
+
 /// Cumulative native DOPRI5 statistics available without consuming the session.
 /// Combine with [`NativeSessionCheckpoint`] for cumulative work and step counts.
 #[derive(Clone, Copy, Debug)]
@@ -788,6 +802,14 @@ pub struct NativeSessionTelemetry {
     pub fsal_reuses: u64,
     pub output_clipped_steps: usize,
     pub stop_reason: Option<Dopri5StopReason>,
+    pub min_secant_h_lambda: Option<f64>,
+}
+
+impl NativeSessionTelemetry {
+    /// Minimum `dopri5_secant_h_lambda` observed across accepted steps of the most recent DOPRI5 batch.
+    pub fn last_batch_min_secant_h_lambda() -> Option<f64> {
+        LAST_BATCH_MIN_SECANT_H_LAMBDA.with(|c| c.get())
+    }
 }
 
 /// Persistent endpoint/landing DOPRI5 session. The full observation schedule,
@@ -819,6 +841,7 @@ pub struct Dopri5Session<'a, F: ?Sized> {
     message: String,
     attempt_telemetry: bool,
     last_attempt: Option<Dopri5Attempt>,
+    min_secant_h_lambda: Option<f64>,
 }
 impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Session<'a, F> {
     pub fn new(
@@ -883,6 +906,7 @@ impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Sessio
             stop_reason: None,
             attempt_telemetry: false,
             last_attempt: None,
+            min_secant_h_lambda: None,
             message: String::from("DOPRI5 reached the final time"),
         })
     }
@@ -906,6 +930,7 @@ impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Sessio
             fsal_reuses: self.fsal_reuses,
             output_clipped_steps: self.output.output_clipped_steps(),
             stop_reason: self.stop_reason,
+            min_secant_h_lambda: self.min_secant_h_lambda,
         }
     }
 
@@ -953,6 +978,8 @@ impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Sessio
             ));
         }
         let call_start = self.attempts;
+        self.min_secant_h_lambda = None;
+        LAST_BATCH_MIN_SECANT_H_LAMBDA.with(|c| c.set(None));
         while self.t < target {
             if self.attempts == self.adaptive.max_attempts {
                 self.stop_reason = Some(Dopri5StopReason::AttemptBudget);
@@ -1095,6 +1122,16 @@ impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Sessio
                 self.state.copy_from_slice(&self.endpoint);
                 self.accepted_steps += 1;
                 self.counters.accepted_steps = self.counters.accepted_steps.saturating_add(1);
+                if let Some(hl) = crate::dopri5_stiffness::dopri5_secant_h_lambda(
+                    trial.h,
+                    &self.workspace.stages,
+                    self.workspace.n,
+                ) {
+                    self.min_secant_h_lambda =
+                        Some(self.min_secant_h_lambda.map_or(hl, |prev| prev.min(hl)));
+                    LAST_BATCH_MIN_SECANT_H_LAMBDA
+                        .with(|c| c.set(Some(c.get().map_or(hl, |prev| prev.min(hl)))));
+                }
                 if self.config.fsal {
                     self.workspace.accept_fsal();
                 }
