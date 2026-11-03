@@ -380,7 +380,7 @@ impl SwitchingConfig {
             fallback,
             entry_policy: Some(EntryPolicy::AdaptiveEvidence),
             entry_seed: EntrySeed::ExplicitCheckpoint,
-            work_model: WorkModelVersion::V2,
+            work_model: WorkModelVersion::V1,
             progress_bound: true,
             strict_entry_work_improvement: true,
             strict_return_work_improvement: true,

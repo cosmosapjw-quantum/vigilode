@@ -45,3 +45,11 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - red: f2_v2_entry_ceiling_stops_losing_rotation_pilots_like_v1 (failed on base)
 - mutation: caught 18, missed 0, waived 0
 - notes: armed V2 pilot ceilings in callback units; pilot decisions match V1 economics
+## F3 — route_registry uses WorkModel V1 until E1 is re-run (A-1) — 2026-11-03
+- result: done
+- commit: uncommitted
+- toolchain: pinned 1.94.1
+- commands: contracts: 0, lib-unit-tests: 0, vigilode-suite: 0, clippy: 0, fmt: 0
+- red: f3_route_registry_defaults_to_work_model_v1 (failed on base)
+- mutation: caught 2, missed 1, waived 1
+- notes: route_registry defaults to WorkModel V1; updated admission contract assertion

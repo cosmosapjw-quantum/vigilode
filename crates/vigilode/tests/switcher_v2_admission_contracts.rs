@@ -169,7 +169,7 @@ fn route_registry_factory_defaults_contract() {
     assert_eq!(cfg.fallback, DerivativeFallback::ProvidedOnly);
     assert_eq!(cfg.entry_policy, Some(EntryPolicy::AdaptiveEvidence));
     assert_eq!(cfg.entry_seed, EntrySeed::ExplicitCheckpoint);
-    assert_eq!(cfg.work_model, WorkModelVersion::V2);
+    assert_eq!(cfg.work_model, WorkModelVersion::V1);
     assert!(cfg.progress_bound);
     assert!(cfg.strict_entry_work_improvement);
     assert!(cfg.strict_return_work_improvement);

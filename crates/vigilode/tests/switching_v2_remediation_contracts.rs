@@ -105,6 +105,21 @@ fn f2_v2_entry_ceiling_stops_losing_rotation_pilots_like_v1() {
 
 // ---- T-F3 ------------------------------------------------------------------
 
+#[test]
+fn f3_route_registry_defaults_to_work_model_v1() {
+    let r = SwitchingConfig::route_registry(provided());
+    assert_eq!(r.work_model, vigilode::WorkModelVersion::V1);
+    assert_eq!(r.entry_seed, vigilode::EntrySeed::ExplicitCheckpoint);
+    let sf = solve(&stiff_forced(), &[1.0], &r);
+    assert!(sf.success);
+    assert_eq!(sf.stats.switches, 1);
+    assert!(
+        sf.stats.rhs_calls <= 420,
+        "stiff-forced RHS {}",
+        sf.stats.rhs_calls
+    );
+}
+
 // ---- T-F4 ------------------------------------------------------------------
 
 // ---- T-F5 ------------------------------------------------------------------
