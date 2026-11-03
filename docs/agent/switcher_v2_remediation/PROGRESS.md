@@ -109,3 +109,11 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - red: none
 - mutation: caught 77, missed 1 (waived: h==0.0 scales d*=0 so dd==0 returns None), waived 1, unviable 0, unwaived 0
 - notes: implemented dopri5_secant_h_lambda Rayleigh quotient estimator and stability gate
+## X6 — Column colouring for compressed Jacobian assembly (pure module) — 2026-11-03
+- result: done
+- commit: uncommitted
+- toolchain: pinned 1.94.1
+- commands: coloring-unit: 0, clippy: 0, fmt: 0
+- red: none
+- mutation: caught 30, missed 0, waived 0, unviable 1, unwaived 0
+- notes: implemented Curtis-Powell-Reid greedy column colouring, seed vectors, and Jacobian recovery

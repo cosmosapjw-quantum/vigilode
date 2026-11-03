@@ -163,6 +163,7 @@ mod automatic;
 mod capabilities;
 pub mod causal_budget;
 mod cofactor_chart;
+pub mod coloring;
 mod error;
 mod events;
 pub mod execution_policy;
