@@ -195,8 +195,9 @@ impl SharedBasis {
 
         let inv_hg = 1.0 / h_gamma;
 
-        // 3. Main basis extension loop.
-        loop {
+        // 3. Main basis extension loop (bounded to prevent infinite loops under mutation).
+        let max_iters = self.cfg.max_dim.min(self.n).saturating_add(1);
+        for _iter in 0..max_iters {
             // 3a. Form A = Q / h_gamma - Z (size n x k, column-major).
             for j in 0..self.k {
                 let q_col = &self.q[j * self.n..(j + 1) * self.n];
@@ -381,5 +382,11 @@ impl SharedBasis {
             new_jvps += 1;
             self.k += 1;
         }
+        Ok(SharedSolveStats {
+            new_jvps,
+            basis_dim: self.k,
+            weighted_residual: f64::NAN,
+            converged: false,
+        })
     }
 }

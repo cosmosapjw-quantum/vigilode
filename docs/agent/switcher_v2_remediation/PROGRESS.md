@@ -133,3 +133,11 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - red: none
 - mutation: caught 253, missed 23 (waived: subspace-invariant under Householder QR least-squares projection), waived 24, timeout 1, unviable 1, unwaived 0
 - notes: implemented SharedBasis for shifted stage linear systems with direction reuse and Householder QR projection
+## X2 — Opt-in shared basis in the matrix-free RODAS5P stage loop — 2026-11-04
+- result: done
+- commit: uncommitted
+- toolchain: pinned 1.94.1
+- commands: integrators-tests: 0, integrators-clippy: 0, integrators-fmt: 0, vigilode-suite: 0
+- red: none
+- mutation: caught 15, missed 0, waived 0, unviable 16, unwaived 0
+- notes: wired opt-in SharedBasis into Rodas5pMfFastWorkspace stage loop with bit-identical flag-off behavior, GMRES fallback on non-convergence, and >=50% JVP reduction on 1D heat equation

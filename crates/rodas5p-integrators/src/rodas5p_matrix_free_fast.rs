@@ -42,11 +42,12 @@ use rodas5p_core::LinearSolveReport;
 use rodas5p_core::Preconditioner;
 use rodas5p_core::scaled_error_component;
 use rodas5p_core::{
-    CoreError, CoreResult, IdentityPreconditioner, InitialGuess, KrylovSystemIdentity,
-    LinearMethod, LinearOperator, LinearSolverConfig, OperatorApplicationWork, PreconditionerKind,
-    ShiftedOperator, WorkCounters, exact_krylov_system_identity, rodas5p_coefficients, safe_l2,
-    sha256_f64_slice_bytes,
+    ApplyCategory, CoreError, CoreResult, IdentityPreconditioner, InitialGuess,
+    KrylovSystemIdentity, LinearMethod, LinearOperator, LinearSolverConfig,
+    OperatorApplicationWork, PreconditionerKind, ShiftedOperator, WorkCounters, apply_counted,
+    exact_krylov_system_identity, rodas5p_coefficients, safe_l2, sha256_f64_slice_bytes,
 };
+pub use rodas5p_krylov::shared_basis::{SharedBasis, SharedBasisConfig};
 use rodas5p_krylov::{
     GcrodrConfig, GcrodrSolveOptions, GcrodrState, GcrodrWorkspace, GmresCapacity, GmresConfig,
     GmresIntoOptions, GmresWorkspace, HeuristicGain, LgmresConfig, LgmresIntoWorkspace,
@@ -1239,6 +1240,10 @@ pub struct Rodas5pMfFastWorkspace {
     /// Research switch (R-NEXT-02): GMRES stage solves through
     /// `solve_gmres_into`, writing into the stage storage.
     gmres_into: bool,
+    /// Shared per-step Krylov basis (research task X2).
+    shared_basis: Option<SharedBasis>,
+    /// Scratch storage for unscaled stage RHS in shared basis solves.
+    shared_rhs: Vec<f64>,
     /// Explicit numerical proposal for J^2 approximately a J + b I.
     /// The original shifted-system residual remains the acceptance gate.
     directional_quadratic: Option<DirectionalQuadraticProposal>,
@@ -1398,6 +1403,8 @@ impl Clone for Rodas5pMfFastWorkspace {
             cached_y: self.cached_y.clone(),
             cached_epoch: self.cached_epoch,
             gmres_into: self.gmres_into,
+            shared_basis: self.shared_basis.clone(),
+            shared_rhs: self.shared_rhs.clone(),
             directional_quadratic: self.directional_quadratic,
             directional_quadratic_workspace: self.directional_quadratic_workspace.clone(),
             gcrodr_policy: self.gcrodr_policy,
@@ -1496,6 +1503,8 @@ impl Rodas5pMfFastWorkspace {
             cached_y: vec![0.0; n],
             cached_epoch: None,
             gmres_into: false,
+            shared_basis: None,
+            shared_rhs: Vec::new(),
             directional_quadratic: None,
             directional_quadratic_workspace: DirectionalQuadraticWorkspace::default(),
             gcrodr_policy: GcrodrRecyclePolicy::Legacy,
@@ -1955,6 +1964,33 @@ impl Rodas5pMfFastWorkspace {
     /// fewer allocations. Off by default.
     pub fn set_gmres_into(&mut self, on: bool) {
         self.gmres_into = on;
+    }
+
+    /// Route stage solves through the shared per-step Krylov basis (research task X2).
+    ///
+    /// When `Some(cfg)`, stage linear solves first attempt projection onto the shared
+    /// basis before falling through to GMRES if the residual budget is not met.
+    /// Bit-identical to the baseline when `None`.
+    pub fn set_shared_basis(&mut self, cfg: Option<SharedBasisConfig>) -> CoreResult<()> {
+        self.shared_basis = match cfg {
+            Some(config) => {
+                let basis = SharedBasis::new(self.n, config).map_err(CoreError::InvalidInput)?;
+                self.shared_rhs.resize(self.n, 0.0);
+                self.staged_weight.resize(self.n, 0.0);
+                Some(basis)
+            }
+            None => {
+                self.shared_rhs.clear();
+                self.shared_rhs.shrink_to_fit();
+                None
+            }
+        };
+        Ok(())
+    }
+
+    /// Accessor for the active shared Krylov basis, if configured.
+    pub fn shared_basis(&self) -> Option<&SharedBasis> {
+        self.shared_basis.as_ref()
     }
 
     /// Enable an explicit directional quadratic stage proposal before GMRES.
@@ -2746,7 +2782,7 @@ impl Rodas5pMfFastWorkspace {
             self.jvp = Some(jvp);
         }
         let jvp = self.jvp.clone().expect("linearized above");
-        let shifted = ShiftedOperator::new_counted_jvp(None, jvp, h, gamma)?;
+        let shifted = ShiftedOperator::new_counted_jvp(None, jvp.clone(), h, gamma)?;
         debug_assert!(shifted.explicit().is_none());
         let linear_atol = if self.config.atol == 0.0 {
             0.0
@@ -2802,6 +2838,12 @@ impl Rodas5pMfFastWorkspace {
         } else {
             None
         };
+        if let Some(basis) = self.shared_basis.as_mut() {
+            basis.reset();
+            for (w, &yi) in self.staged_weight.iter_mut().zip(y) {
+                *w = (atol + rtol * yi.abs()).recip();
+            }
+        }
         for i in 0..s {
             if i == 0 {
                 self.stage_rhs.copy_from_slice(&self.f0);
@@ -2840,6 +2882,27 @@ impl Rodas5pMfFastWorkspace {
             if staged {
                 self.staged_stage_solve(i, h, &shifted, linear_atol, atol, rtol, counters)?;
                 continue;
+            }
+            if let Some(basis) = self.shared_basis.as_mut() {
+                let inv_hg = 1.0 / hg;
+                for (b, &rhs) in self.shared_rhs.iter_mut().zip(&self.stage_rhs) {
+                    *b = rhs * inv_hg;
+                }
+                let stage = &mut self.u[i * n..(i + 1) * n];
+                let jvp_op = jvp.as_ref();
+                let mut jvp_fn = |v: &[f64], out: &mut [f64]| -> CoreResult<()> {
+                    apply_counted(jvp_op, v, out, counters, ApplyCategory::Krylov)
+                };
+                let stats = basis.solve_shifted(
+                    hg,
+                    &self.shared_rhs,
+                    &self.staged_weight,
+                    &mut jvp_fn,
+                    stage,
+                )?;
+                if stats.converged {
+                    continue;
+                }
             }
             // The step-indexed starts fall back to `Previous` until a step
             // was accepted (`step_h` is zero before).
