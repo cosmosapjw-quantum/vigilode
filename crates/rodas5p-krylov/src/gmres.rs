@@ -511,6 +511,50 @@ pub fn solve_gmres(
     )
 }
 
+/// Solve GMRES optionally with a secant preconditioner.
+///
+/// When `secant` is `None`, this is bitwise identical to unpreconditioned
+/// `solve_gmres` (G1 bit-identity).
+pub fn solve_gmres_with_secant(
+    op: &dyn LinearOperator,
+    secant: Option<&crate::SecantPreconditioner>,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GmresConfig,
+    counters: &mut WorkCounters,
+) -> CoreResult<LinearSolveReport> {
+    if let Some(pc) = secant {
+        let mut ws = GmresWorkspace::default();
+        let mut out = vec![0.0; rhs.len()];
+        let report = crate::solve_gmres_into(
+            op,
+            pc,
+            rhs,
+            x0,
+            config,
+            None,
+            &mut out,
+            &mut ws,
+            crate::GmresCapacity::unbounded(),
+            counters,
+        )?;
+        Ok(LinearSolveReport {
+            x: out,
+            converged: true,
+            info: 0,
+            residual_norm: report.residual_norm,
+            relative_residual: report.relative_residual,
+            iterations: report.iterations,
+            matvecs: report.matvecs,
+            preconditioner_apps: report.preconditioner_apps,
+            method: "gmres_secant".into(),
+        })
+    } else {
+        let identity = rodas5p_core::IdentityPreconditioner::new(rhs.len());
+        solve_gmres(op, &identity, rhs, x0, config, counters)
+    }
+}
+
 /// [`solve_gmres_with_residual_scale`] with an explicit
 /// [`ResidualAccounting`] and a fresh workspace.
 #[allow(clippy::too_many_arguments)]

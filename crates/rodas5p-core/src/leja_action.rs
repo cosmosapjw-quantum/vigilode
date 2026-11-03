@@ -98,6 +98,7 @@ use crate::{
         EnclosureEvidence, JOINT_PHI_TERMS, JointPhiInput, SpectralEnclosure,
         SymmetricNonpositiveOperator, TotalErrorStatus,
     },
+    safe_l2,
 };
 
 pub const LEJA_SCHEMA: &str = "vigilode-leja-phi-action-v1";
@@ -2711,6 +2712,504 @@ fn leja_phi_action_certified_with_cache_and_workspace_inner<'a>(
     Ok(workspace.report.as_ref().unwrap())
 }
 
+// =============================================================================
+// Complex Leja phi-actions for oscillatory spectra (Track 2 WP-10)
+// =============================================================================
+
+fn build_symmetric_leja_xi(cap: usize) -> Vec<f64> {
+    if cap == 0 {
+        return Vec::new();
+    }
+    let mut points = Vec::with_capacity(cap);
+    points.push(1.0);
+    if points.len() == cap {
+        return points;
+    }
+    points.push(-1.0);
+    if points.len() == cap {
+        return points;
+    }
+    points.push(0.0);
+    if points.len() == cap {
+        return points;
+    }
+
+    const GRID_SIZE: usize = 32768;
+    let grid: Vec<f64> = (1..GRID_SIZE)
+        .map(|i| (std::f64::consts::PI * i as f64 / (2.0 * GRID_SIZE as f64)).cos())
+        .collect();
+
+    let mut log_prod = vec![0.0_f64; grid.len()];
+    let mut taken = vec![false; grid.len()];
+
+    for (i, &g) in grid.iter().enumerate() {
+        let val = g * (1.0 - g * g);
+        log_prod[i] = if val > 0.0 {
+            val.ln()
+        } else {
+            f64::NEG_INFINITY
+        };
+    }
+
+    let pairs_needed = cap.saturating_sub(points.len()).div_ceil(2);
+    for _iter in 0..pairs_needed {
+        if points.len() >= cap {
+            break;
+        }
+        let mut best = f64::NEG_INFINITY;
+        let mut next_idx = 0;
+        for (i, &lp) in log_prod.iter().enumerate() {
+            if !taken[i] && lp > best {
+                best = lp;
+                next_idx = i;
+            }
+        }
+        taken[next_idx] = true;
+        let xi = grid[next_idx];
+        points.push(xi);
+        if points.len() < cap {
+            points.push(-xi);
+        }
+        let xi2 = xi * xi;
+        for (i, &g) in grid.iter().enumerate() {
+            if taken[i] {
+                continue;
+            }
+            let diff = (g * g - xi2).abs();
+            if diff > 0.0 {
+                log_prod[i] += diff.ln();
+            } else {
+                log_prod[i] = f64::NEG_INFINITY;
+            }
+        }
+    }
+    points
+}
+
+fn symmetric_leja_xi() -> &'static [f64] {
+    static XI: OnceLock<Vec<f64>> = OnceLock::new();
+    XI.get_or_init(|| build_symmetric_leja_xi(LEJA_DEGREE_CAP + 1))
+}
+
+/// Imaginary coordinate values `y_k \in [-\beta, \beta]` for discrete Leja points `z_k = i y_k`.
+pub fn complex_imaginary_leja_points(beta: f64, m: usize) -> Vec<f64> {
+    if m == 0 {
+        return Vec::new();
+    }
+    let b = if beta.is_finite() { beta.abs() } else { 0.0 };
+    if b == 0.0 {
+        return vec![0.0; m];
+    }
+    let xi = symmetric_leja_xi();
+    if m <= xi.len() {
+        xi[..m].iter().map(|&x| b * x).collect()
+    } else {
+        let full = build_symmetric_leja_xi(m);
+        full.iter().map(|&x| b * x).collect()
+    }
+}
+
+/// Configuration for complex Newton-Leja phi-actions on oscillatory spectra.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+pub struct ComplexLejaConfig {
+    pub beta: f64,
+    pub order: usize,
+    pub is_normal: bool,
+}
+
+impl ComplexLejaConfig {
+    pub fn new(beta: f64, order: usize, is_normal: bool) -> Self {
+        Self {
+            beta,
+            order,
+            is_normal,
+        }
+    }
+}
+
+const MAX_PRECOMPUTED_FACTORIAL: usize = 171;
+
+#[allow(clippy::needless_range_loop)]
+fn inverse_factorials() -> &'static [f64; MAX_PRECOMPUTED_FACTORIAL] {
+    static INV_FACT: OnceLock<[f64; MAX_PRECOMPUTED_FACTORIAL]> = OnceLock::new();
+    INV_FACT.get_or_init(|| {
+        let mut table = [0.0; MAX_PRECOMPUTED_FACTORIAL];
+        table[0] = 1.0;
+        let mut acc = 1.0_f64;
+        for (i, slot) in table
+            .iter_mut()
+            .enumerate()
+            .take(MAX_PRECOMPUTED_FACTORIAL)
+            .skip(1)
+        {
+            acc *= i as f64;
+            *slot = 1.0 / acc;
+        }
+        table
+    })
+}
+
+#[allow(clippy::needless_range_loop)]
+fn compute_divided_differences_into(
+    y_pts: &[f64],
+    k: usize,
+    out: &mut Vec<(f64, f64)>,
+    h_table: &mut Vec<f64>,
+) {
+    let m = y_pts.len();
+    out.clear();
+    if m == 0 {
+        return;
+    }
+    let inv_fact = inverse_factorials();
+    const MAX_TAYLOR_DEG: usize = 120;
+    let cols = MAX_TAYLOR_DEG + 1;
+    let required_h_len = m * cols;
+    if h_table.len() < required_h_len {
+        h_table.resize(required_h_len, 0.0);
+    }
+
+    let y0 = y_pts[0];
+    h_table[0] = 1.0;
+    let mut pow = 1.0_f64;
+    for slot in h_table[1..cols].iter_mut() {
+        pow *= y0;
+        *slot = pow;
+    }
+
+    for (j, &yj) in y_pts.iter().enumerate().take(m).skip(1) {
+        let curr_row = j * cols;
+        let prev_row = (j - 1) * cols;
+        h_table[curr_row] = 1.0;
+        for d in 1..cols {
+            h_table[curr_row + d] = h_table[prev_row + d] + yj * h_table[curr_row + d - 1];
+        }
+    }
+
+    for j in 0..m {
+        let row_start = j * cols;
+        let mut re = 0.0_f64;
+        let mut re_comp = 0.0_f64;
+        let mut im = 0.0_f64;
+        let mut im_comp = 0.0_f64;
+
+        for d in 0..cols {
+            let n = j + d + k;
+            let inv_f = if n < MAX_PRECOMPUTED_FACTORIAL {
+                inv_fact[n]
+            } else {
+                0.0
+            };
+            if inv_f == 0.0 {
+                continue;
+            }
+            let h_val = h_table[row_start + d];
+            let term = h_val * inv_f;
+
+            if d % 2 == 0 {
+                let sign = if (d / 2) % 2 == 0 { 1.0 } else { -1.0 };
+                let signed_term = sign * term;
+                let t = re + signed_term;
+                re_comp += if re.abs() >= signed_term.abs() {
+                    (re - t) + signed_term
+                } else {
+                    (signed_term - t) + re
+                };
+                re = t;
+            } else {
+                let sign = if ((d - 1) / 2) % 2 == 0 { 1.0 } else { -1.0 };
+                let signed_term = sign * term;
+                let t = im + signed_term;
+                im_comp += if im.abs() >= signed_term.abs() {
+                    (im - t) + signed_term
+                } else {
+                    (signed_term - t) + im
+                };
+                im = t;
+            }
+        }
+        out.push((re + re_comp, im + im_comp));
+    }
+}
+
+/// Newton divided differences for `\phi_k(i y)` on imaginary Leja points.
+/// Returns pairs of `(real, imag)`.
+pub fn complex_leja_divided_differences(beta: f64, k: usize, m: usize) -> Vec<(f64, f64)> {
+    if m == 0 {
+        return Vec::new();
+    }
+    let y_pts = complex_imaginary_leja_points(beta, m);
+    let mut out = Vec::with_capacity(m);
+    let mut h_table = Vec::with_capacity(m * 121);
+    compute_divided_differences_into(&y_pts, k, &mut out, &mut h_table);
+    out
+}
+
+/// Preallocated workspace for zero-allocation complex Leja phi actions.
+#[derive(Clone, Debug, Default)]
+pub struct ComplexLejaWorkspace {
+    pub dimension: usize,
+    pub max_order: usize,
+    pub r: Vec<f64>,
+    pub u: Vec<f64>,
+    pub w: Vec<f64>,
+    pub y_points: Vec<f64>,
+    pub coeffs: Vec<(f64, f64)>,
+    h_table: Vec<f64>,
+}
+
+impl ComplexLejaWorkspace {
+    pub fn new(dimension: usize, max_order: usize) -> Self {
+        let max_order = max_order.max(LEJA_DEGREE_CAP + 1);
+        Self {
+            dimension,
+            max_order,
+            r: vec![0.0; dimension],
+            u: vec![0.0; dimension],
+            w: vec![0.0; dimension],
+            y_points: Vec::with_capacity(max_order + 4),
+            coeffs: Vec::with_capacity(max_order + 4),
+            h_table: Vec::with_capacity((max_order + 4) * 121),
+        }
+    }
+
+    pub fn ensure_capacity(&mut self, dimension: usize, max_order: usize) {
+        if self.dimension < dimension {
+            self.dimension = dimension;
+            self.r.resize(dimension, 0.0);
+            self.u.resize(dimension, 0.0);
+            self.w.resize(dimension, 0.0);
+        }
+        if self.max_order < max_order {
+            self.max_order = max_order;
+            let extra = max_order + 4;
+            if self.y_points.capacity() < extra {
+                self.y_points.reserve(extra - self.y_points.capacity());
+            }
+            if self.coeffs.capacity() < extra {
+                self.coeffs.reserve(extra - self.coeffs.capacity());
+            }
+            let needed_h = extra * 121;
+            if self.h_table.capacity() < needed_h {
+                self.h_table.reserve(needed_h - self.h_table.capacity());
+            }
+        }
+    }
+}
+
+#[inline(always)]
+fn apply_op_scaled<Op: LinearOperator>(
+    op: &Op,
+    h: f64,
+    x: &[f64],
+    y: &mut [f64],
+    work: &mut WorkCounters,
+) -> CoreResult<()> {
+    op.apply(x, y)?;
+    work.poly_vector_products += 1;
+    work.poly_block_products += 1;
+    if h != 1.0 {
+        for val in y.iter_mut() {
+            *val *= h;
+        }
+    }
+    Ok(())
+}
+
+/// Real-operator action evaluating `phi_k(h A) v` for skewsymmetric / oscillatory operator `A`.
+/// Zero allocations in the hot loop when using a preallocated `workspace`.
+#[allow(clippy::too_many_arguments)]
+pub fn complex_leja_phi_action_into<Op: LinearOperator>(
+    op: &Op,
+    h: f64,
+    k: usize,
+    config: &ComplexLejaConfig,
+    v: &[f64],
+    out: &mut [f64],
+    workspace: &mut ComplexLejaWorkspace,
+    work: &mut WorkCounters,
+) -> CoreResult<TotalErrorStatus> {
+    let n = op.dimension();
+    if v.len() != n || out.len() != n {
+        return Err(CoreError::Dimension(format!(
+            "complex_leja_phi_action_into: vector length ({}, {}) does not match operator dimension {}",
+            v.len(),
+            out.len(),
+            n
+        )));
+    }
+    if !h.is_finite() || !config.beta.is_finite() || config.beta < 0.0 {
+        return Err(CoreError::InvalidInput(
+            "complex_leja_phi_action_into: h and beta must be finite with beta >= 0".into(),
+        ));
+    }
+    if v.iter().any(|x| !x.is_finite()) {
+        return Err(CoreError::NonFinite(
+            "complex_leja_phi_action_into: input vector contains NaN/Inf".into(),
+        ));
+    }
+
+    if n == 0 {
+        return Ok(TotalErrorStatus::Certified { bound: 0.0 });
+    }
+
+    if h == 0.0 {
+        let inv_fact = inverse_factorials();
+        let scale = if k < MAX_PRECOMPUTED_FACTORIAL {
+            inv_fact[k]
+        } else {
+            0.0
+        };
+        for (o, &vi) in out.iter_mut().zip(v) {
+            *o = vi * scale;
+        }
+        return Ok(TotalErrorStatus::Certified { bound: 0.0 });
+    }
+
+    let m = config.order;
+    if m == 0 {
+        out.fill(0.0);
+        return Ok(TotalErrorStatus::EstimateOnly {
+            reason: "COMPLEX_LEJA_ZERO_ORDER: degree zero requested".into(),
+            bounded_components: 0.0,
+        });
+    }
+
+    let effective_beta = config.beta * h.abs();
+    let points_to_compute = m + 2;
+    workspace.ensure_capacity(n, points_to_compute);
+
+    workspace.y_points.clear();
+    let xi = symmetric_leja_xi();
+    if points_to_compute <= xi.len() {
+        for &x in &xi[..points_to_compute] {
+            workspace.y_points.push(effective_beta * x);
+        }
+    } else {
+        let full = build_symmetric_leja_xi(points_to_compute);
+        for &x in &full {
+            workspace.y_points.push(effective_beta * x);
+        }
+    }
+
+    work.poly_coefficient_setups += 1;
+    compute_divided_differences_into(
+        &workspace.y_points,
+        k,
+        &mut workspace.coeffs,
+        &mut workspace.h_table,
+    );
+
+    out.fill(0.0);
+    workspace.r[..n].copy_from_slice(v);
+
+    let mut idx = 0;
+    for _iter in 0..m {
+        if idx >= m {
+            break;
+        }
+        if workspace.y_points[idx].abs() < 1e-15 {
+            let d_val = workspace.coeffs[idx].0;
+            for (o, &ri) in out.iter_mut().zip(&workspace.r[..n]) {
+                *o += d_val * ri;
+            }
+            if idx + 1 < m {
+                apply_op_scaled(op, h, &workspace.r[..n], &mut workspace.u[..n], work)?;
+                workspace.r[..n].copy_from_slice(&workspace.u[..n]);
+            }
+            idx += 1;
+        } else if idx + 1 < m
+            && (workspace.y_points[idx] + workspace.y_points[idx + 1]).abs() < 1e-14
+        {
+            let y_val = workspace.y_points[idx].abs();
+            let y2 = y_val * y_val;
+            let re_val = workspace.coeffs[idx].0;
+            let d_next = workspace.coeffs[idx + 1].0;
+
+            apply_op_scaled(op, h, &workspace.r[..n], &mut workspace.u[..n], work)?;
+            for (o, (&ri, &ui)) in out
+                .iter_mut()
+                .zip(workspace.r[..n].iter().zip(&workspace.u[..n]))
+            {
+                *o += re_val * ri + d_next * ui;
+            }
+            if idx + 2 < m {
+                apply_op_scaled(op, h, &workspace.u[..n], &mut workspace.w[..n], work)?;
+                for (ri, &wi) in workspace.r[..n].iter_mut().zip(&workspace.w[..n]) {
+                    *ri = wi + y2 * *ri;
+                }
+            }
+            idx += 2;
+        } else {
+            let d_val = workspace.coeffs[idx].0;
+            for (o, &ri) in out.iter_mut().zip(&workspace.r[..n]) {
+                *o += d_val * ri;
+            }
+            if idx + 1 < m {
+                apply_op_scaled(op, h, &workspace.r[..n], &mut workspace.u[..n], work)?;
+                workspace.r[..n].copy_from_slice(&workspace.u[..n]);
+            }
+            idx += 1;
+        }
+    }
+
+    if !out.iter().all(|x| x.is_finite()) {
+        return Err(CoreError::NonFinite(
+            "complex_leja_phi_action_into produced non-finite output".into(),
+        ));
+    }
+
+    if config.is_normal {
+        let v_norm = safe_l2(v);
+        if v_norm == 0.0 {
+            return Ok(TotalErrorStatus::Certified { bound: 0.0 });
+        }
+        let half_beta = effective_beta * 0.5;
+        let mut capacity_pow = 2.0_f64;
+        for _ in 0..m {
+            capacity_pow = mul_up(capacity_pow, half_beta)?;
+        }
+        let d_m_re = workspace.coeffs.get(m).map(|c| c.0).unwrap_or(0.0);
+        let d_m_im = workspace.coeffs.get(m).map(|c| c.1).unwrap_or(0.0);
+        let d_m_mag = sqrt_up(add_up(
+            mul_up(d_m_re.abs(), d_m_re.abs())?,
+            mul_up(d_m_im.abs(), d_m_im.abs())?,
+        )?)?;
+
+        let mut remainder = mul_up(d_m_mag, capacity_pow)?;
+        if let Some(c_next) = workspace.coeffs.get(m + 1) {
+            let d_next_mag = sqrt_up(add_up(
+                mul_up(c_next.0.abs(), c_next.0.abs())?,
+                mul_up(c_next.1.abs(), c_next.1.abs())?,
+            )?)?;
+            let cap_next = mul_up(capacity_pow, half_beta)?;
+            remainder = add_up(remainder, mul_up(d_next_mag, cap_next)?)?;
+        }
+        let truncation = mul_up(v_norm, remainder)?;
+        let roundoff = mul_up(v_norm, ((2 * m + 4) as f64) * f64::EPSILON)?;
+        let total_bound = add_up(truncation, roundoff)?;
+        Ok(TotalErrorStatus::Certified { bound: total_bound })
+    } else {
+        Ok(TotalErrorStatus::EstimateOnly {
+            reason: "COMPLEX_LEJA_NONNORMAL_NOT_ENCLOSED: operator is not normal or spectral enclosure is unverified".into(),
+            bounded_components: 0.0,
+        })
+    }
+}
+
+/// Evaluates `phi_k(A) v` directly without external `h` scaling (h = 1.0).
+pub fn complex_leja_phi_action_direct_into<Op: LinearOperator>(
+    op: &Op,
+    k: usize,
+    config: &ComplexLejaConfig,
+    v: &[f64],
+    out: &mut [f64],
+    workspace: &mut ComplexLejaWorkspace,
+    work: &mut WorkCounters,
+) -> CoreResult<TotalErrorStatus> {
+    complex_leja_phi_action_into(op, 1.0, k, config, v, out, workspace, work)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -3202,5 +3701,219 @@ mod production_audit_suffix {
         assert_eq!(workspace.report.as_ref().unwrap(), &committed);
         assert!(work.poly_block_products > 0);
         assert!(work.poly_vector_products > 0);
+    }
+
+    #[test]
+    fn test_complex_imaginary_leja_distribution() {
+        let beta = 5.0;
+        let m = 32;
+        let points = complex_imaginary_leja_points(beta, m);
+        assert_eq!(points.len(), m);
+        assert!((points[0] - beta).abs() < 1e-12);
+        assert!((points[1] + beta).abs() < 1e-12);
+        assert!(points[2].abs() < 1e-12);
+
+        for &p in &points {
+            assert!(p.abs() <= beta + 1e-12, "point {p} exceeds beta {beta}");
+        }
+
+        for i in 0..m {
+            for j in (i + 1)..m {
+                let diff = (points[i] - points[j]).abs();
+                assert!(
+                    diff > 0.01,
+                    "points {i} ({}) and {j} ({}) too close",
+                    points[i],
+                    points[j]
+                );
+            }
+        }
+
+        assert!(
+            complex_imaginary_leja_points(0.0, 10)
+                .iter()
+                .all(|&x| x == 0.0)
+        );
+        assert!(complex_imaginary_leja_points(beta, 0).is_empty());
+    }
+
+    #[test]
+    fn test_complex_leja_divided_differences_accuracy() {
+        let omega = 0.05;
+        let k = 1;
+        let m = 5;
+        let diffs = complex_leja_divided_differences(omega, k, m);
+        assert_eq!(diffs.len(), m);
+
+        let w = omega;
+        let exact_re = 1.0 - w * w / 6.0 + w.powi(4) / 120.0;
+        let exact_im = w / 2.0 - w.powi(3) / 24.0 + w.powi(5) / 720.0;
+        assert!(
+            (diffs[0].0 - exact_re).abs() < 1e-11,
+            "re mismatch: {} vs {}",
+            diffs[0].0,
+            exact_re
+        );
+        assert!(
+            (diffs[0].1 - exact_im).abs() < 1e-11,
+            "im mismatch: {} vs {}",
+            diffs[0].1,
+            exact_im
+        );
+
+        assert!(
+            diffs[1].1.abs() < 1e-15,
+            "d1 imag must be zero, got {}",
+            diffs[1].1
+        );
+        let exact_d1_re = 0.5 - w * w / 24.0 + w.powi(4) / 720.0;
+        assert!(
+            (diffs[1].0 - exact_d1_re).abs() < 1e-11,
+            "d1 re mismatch: {} vs {}",
+            diffs[1].0,
+            exact_d1_re
+        );
+
+        let diffs_0 = complex_leja_divided_differences(omega, 0, 3);
+        assert!((diffs_0[0].0 - w.cos()).abs() < 1e-12);
+        assert!((diffs_0[0].1 - w.sin()).abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_complex_leja_action_harmonic_oscillator() {
+        let omega = 1.5;
+        let t = 1.0;
+        let matrix = DenseMatrix::from_rows(&[&[0.0, -omega], &[omega, 0.0]]).unwrap();
+        let op = DenseOperator::new(matrix).unwrap();
+        let v = [1.0, 0.0];
+        let mut out = [0.0; 2];
+        let config = ComplexLejaConfig::new(omega, 25, true);
+        let mut workspace = ComplexLejaWorkspace::new(2, 30);
+        let mut work = WorkCounters::default();
+
+        let status = complex_leja_phi_action_into(
+            &op,
+            t,
+            0,
+            &config,
+            &v,
+            &mut out,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+
+        let exact_0 = (omega * t).cos();
+        let exact_1 = (omega * t).sin();
+        let err_0 = (out[0] - exact_0).abs();
+        let err_1 = (out[1] - exact_1).abs();
+        let total_err = (err_0 * err_0 + err_1 * err_1).sqrt();
+
+        assert!(
+            total_err < 1e-11,
+            "action error {total_err:e} exceeds 1e-11 target; out = {:?}",
+            out
+        );
+
+        match status {
+            TotalErrorStatus::Certified { bound } => {
+                assert!(
+                    bound >= total_err,
+                    "bound {bound:e} must enclose error {total_err:e}"
+                );
+            }
+            TotalErrorStatus::EstimateOnly { reason, .. } => {
+                panic!("expected Certified status for normal operator, got: {reason}");
+            }
+        }
+
+        assert!(work.poly_vector_products > 0);
+        assert!(work.poly_block_products > 0);
+        assert!(work.poly_coefficient_setups > 0);
+
+        let config_nonnormal = ComplexLejaConfig::new(omega, 25, false);
+        let status_nn = complex_leja_phi_action_into(
+            &op,
+            t,
+            0,
+            &config_nonnormal,
+            &v,
+            &mut out,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+        assert!(matches!(status_nn, TotalErrorStatus::EstimateOnly { .. }));
+
+        let scaled_matrix =
+            DenseMatrix::from_rows(&[&[0.0, -omega * t], &[omega * t, 0.0]]).unwrap();
+        let op_scaled = DenseOperator::new(scaled_matrix).unwrap();
+        let config_direct = ComplexLejaConfig::new(omega * t, 25, true);
+        let status_direct = complex_leja_phi_action_direct_into(
+            &op_scaled,
+            0,
+            &config_direct,
+            &v,
+            &mut out,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+        let direct_err = ((out[0] - exact_0).powi(2) + (out[1] - exact_1).powi(2)).sqrt();
+        assert!(direct_err < 1e-11);
+        assert!(matches!(status_direct, TotalErrorStatus::Certified { .. }));
+    }
+
+    #[test]
+    fn test_complex_leja_workspace_zero_allocation() {
+        let omega = 2.0;
+        let matrix = DenseMatrix::from_rows(&[&[0.0, -omega], &[omega, 0.0]]).unwrap();
+        let op = DenseOperator::new(matrix).unwrap();
+        let v = [0.8, -0.6];
+        let mut out = [0.0; 2];
+        let config = ComplexLejaConfig::new(omega, 20, true);
+        let mut workspace = ComplexLejaWorkspace::new(2, 25);
+        let mut work = WorkCounters::default();
+
+        complex_leja_phi_action_into(
+            &op,
+            0.5,
+            0,
+            &config,
+            &v,
+            &mut out,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+
+        let r_cap = workspace.r.capacity();
+        let u_cap = workspace.u.capacity();
+        let w_cap = workspace.w.capacity();
+        let y_cap = workspace.y_points.capacity();
+        let c_cap = workspace.coeffs.capacity();
+        let h_cap = workspace.h_table.capacity();
+
+        for step in 1..=50 {
+            let h = 0.01 * step as f64;
+            complex_leja_phi_action_into(
+                &op,
+                h,
+                0,
+                &config,
+                &v,
+                &mut out,
+                &mut workspace,
+                &mut work,
+            )
+            .unwrap();
+
+            assert_eq!(workspace.r.capacity(), r_cap);
+            assert_eq!(workspace.u.capacity(), u_cap);
+            assert_eq!(workspace.w.capacity(), w_cap);
+            assert_eq!(workspace.y_points.capacity(), y_cap);
+            assert_eq!(workspace.coeffs.capacity(), c_cap);
+            assert_eq!(workspace.h_table.capacity(), h_cap);
+        }
     }
 }

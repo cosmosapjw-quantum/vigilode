@@ -146,6 +146,53 @@ pub fn solve_gmres_into(
     )
 }
 
+/// Solve GMRES into caller storage optionally preconditioned by a secant preconditioner.
+///
+/// When `secant` is `None`, this is bitwise identical to unpreconditioned
+/// `solve_gmres_into` (G1 bit-identity).
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gmres_into_with_secant(
+    op: &dyn LinearOperator,
+    secant: Option<&crate::SecantPreconditioner>,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GmresConfig,
+    residual_scale: Option<&[f64]>,
+    output: &mut [f64],
+    workspace: &mut GmresWorkspace,
+    capacity: GmresCapacity,
+    counters: &mut WorkCounters,
+) -> CoreResult<GmresIntoReport> {
+    if let Some(pc) = secant {
+        solve_gmres_into(
+            op,
+            pc,
+            rhs,
+            x0,
+            config,
+            residual_scale,
+            output,
+            workspace,
+            capacity,
+            counters,
+        )
+    } else {
+        let identity = rodas5p_core::IdentityPreconditioner::new(rhs.len());
+        solve_gmres_into(
+            op,
+            &identity,
+            rhs,
+            x0,
+            config,
+            residual_scale,
+            output,
+            workspace,
+            capacity,
+            counters,
+        )
+    }
+}
+
 /// [`solve_gmres_into`] with [`GmresIntoOptions`] (and the default
 /// [`ResidualAccounting`]).
 #[allow(clippy::too_many_arguments)]

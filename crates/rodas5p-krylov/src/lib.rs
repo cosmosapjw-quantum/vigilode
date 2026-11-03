@@ -11,6 +11,7 @@ mod gmres_staged;
 mod kernels;
 mod lgmres;
 mod lgmres_into;
+pub mod secant_preconditioner;
 pub mod shared_basis;
 mod small;
 mod workspace;
@@ -28,8 +29,9 @@ pub use gcrodr::{
 };
 pub use gmres::{
     GmresConfig, GmresPrefixPrediction, GmresPrefixSession, solve_gmres, solve_gmres_incremental,
-    solve_gmres_with_accounting, solve_gmres_with_residual_scale, solve_gmres_with_workspace,
-    solve_gmres_with_workspace_and_accounting, solve_gmres_with_workspace_and_residual_scale,
+    solve_gmres_with_accounting, solve_gmres_with_residual_scale, solve_gmres_with_secant,
+    solve_gmres_with_workspace, solve_gmres_with_workspace_and_accounting,
+    solve_gmres_with_workspace_and_residual_scale,
 };
 pub use gmres_givens::{
     GmresGivensStatistics, GmresGivensWorkspace, solve_gmres_givens,
@@ -40,7 +42,7 @@ pub use gmres_into::{
     CapacityGrowth, GmresCapacity, GmresColumnMonitor, GmresIntoOptions, GmresIntoReport,
     GmresMonitorDecision, GmresMonitoredProgress, GmresMonitoredReport, solve_gmres_into,
     solve_gmres_into_right_monitored, solve_gmres_into_with_accounting,
-    solve_gmres_into_with_options,
+    solve_gmres_into_with_options, solve_gmres_into_with_secant,
 };
 pub use gmres_staged::{
     HeuristicGain, STAGED_EXHAUSTION_FLOOR, STAGED_GUARD_Q_ABORT, STAGED_STALL_CONTRACTION,
@@ -59,5 +61,9 @@ pub use lgmres_into::{
 };
 /// `least_squares` is exported as the bitwise reference of
 /// `LeastSquaresWorkspace` (research node `research/spd04_ls_workspace_20261007`).
+pub use secant_preconditioner::{
+    DEFAULT_SECANT_REGULARIZATION, MAX_SECANT_RANK, SECANT_CAPACITANCE_CONDITION_TOL,
+    SECANT_COLUMN_DROP_TOL, SecantPreconditioner,
+};
 pub use small::{LeastSquaresWorkspace, least_squares};
 pub use workspace::{GcrodrWorkspace, GmresLeastSquaresSolver, GmresWorkspace, LgmresWorkspace};

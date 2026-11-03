@@ -55,6 +55,10 @@ pub use quotient_flow::{
     integrate_lawson_dopri5_observed_with_norm,
 };
 pub mod conditioned_polynomial;
+pub use conditioned_polynomial::{
+    CertificateStatus, ChebyshevClusterGenerator, ChebyshevInterval, GeneratedChebyshevPolynomial,
+    SpectralSource, compute_skew_metric, gershgorin_intervals,
+};
 mod exponential;
 pub mod fixed_point_continuation;
 pub mod fourier_path_candidate;

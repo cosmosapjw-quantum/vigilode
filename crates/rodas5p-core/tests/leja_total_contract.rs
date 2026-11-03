@@ -879,3 +879,55 @@ fn cloud_scoped_enclosed_warm_call_is_allocation_free() {
     ));
     assert_eq!(allocations, 0);
 }
+
+#[test]
+fn test_vg1_complex_leja_zero_allocation() {
+    use rodas5p_core::DenseOperator;
+    use rodas5p_core::leja_action::{
+        ComplexLejaConfig, ComplexLejaWorkspace, complex_leja_phi_action_into,
+    };
+
+    let matrix = DenseMatrix::from_rows(&[&[0.0, -1.5], &[1.5, 0.0]]).unwrap();
+    let op = DenseOperator::new(matrix).unwrap();
+    let v = [1.0, 0.5];
+    let mut out = [0.0; 2];
+    let config = ComplexLejaConfig::new(1.5, 20, true);
+    let mut workspace = ComplexLejaWorkspace::new(2, 25);
+    let mut work = WorkCounters::default();
+
+    // Warmup call to ensure all static tables and workspace buffers are allocated
+    complex_leja_phi_action_into(
+        &op,
+        0.5,
+        0,
+        &config,
+        &v,
+        &mut out,
+        &mut workspace,
+        &mut work,
+    )
+    .unwrap();
+
+    // Hot-loop execution must perform exactly 0 allocations
+    let (status, allocations) = track_allocations(|| {
+        complex_leja_phi_action_into(
+            &op,
+            0.5,
+            0,
+            &config,
+            &v,
+            &mut out,
+            &mut workspace,
+            &mut work,
+        )
+    });
+
+    assert_eq!(
+        allocations, 0,
+        "VG-1 violation: hot-loop allocated {allocations} times"
+    );
+    assert!(matches!(
+        status.unwrap(),
+        TotalErrorStatus::Certified { .. }
+    ));
+}
