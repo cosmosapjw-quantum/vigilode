@@ -21,3 +21,11 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - notes: reproduced preregistered rerun verdict FAIL with transition39_n2_mf relative_error 0.5015; appended L-0207 INVALID
 
 
+## G2 — Re-scope ledger row L-0205 to default-path neutrality — 2026-11-03
+- result: done
+- commit: uncommitted
+- toolchain: pinned 1.94.1
+- commands: research-node-check: 0
+- red: none
+- mutation: none
+- notes: output hashes of L-0205 verified; appended row L-0208 PASS superseding L-0205 to narrow claim to default-path neutrality
