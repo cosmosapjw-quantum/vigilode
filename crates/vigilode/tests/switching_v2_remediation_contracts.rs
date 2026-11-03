@@ -185,6 +185,130 @@ fn f5_first_explicit_batch_keeps_configured_budget_on_small_dense_routes() {
 
 // ---- T-F6 ------------------------------------------------------------------
 
+#[test]
+fn f6_replay_mismatch_keeps_explicit_progress_and_disables_pilots() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    static CALLS: AtomicUsize = AtomicUsize::new(0);
+    CALLS.store(0, Ordering::SeqCst);
+    let p = Problem::new(1, |t, y, o| {
+        let k = CALLS.fetch_add(1, Ordering::SeqCst);
+        o[0] = -10000.0 * (y[0] - t.cos()) - t.sin();
+        if k % 2 == 1 {
+            o[0] = f64::from_bits(o[0].to_bits() ^ 1);
+        }
+        Ok(())
+    })
+    .jacobian(Jacobian::dense(|_, _, j| {
+        j[0] = -10000.0;
+        Ok(())
+    }))
+    .time_derivative(|t, _, o| {
+        o[0] = -10000.0 * t.sin() - t.cos();
+        Ok(())
+    });
+    let mut cfg = SwitchingConfig::route_registry(provided());
+    cfg.audit_replay_safety = true;
+    let sol = solve(&p, &[1.0], &cfg);
+    assert!(sol.success);
+    assert_eq!(sol.final_time, 1.0);
+    assert!(
+        !sol.stats
+            .segments
+            .iter()
+            .any(|s| s.method == SwitchingMethod::Rodas5p && s.is_probe),
+        "no RODAS pilot may run after a replay mismatch"
+    );
+    assert!(
+        sol.stats
+            .segments
+            .iter()
+            .any(|s| s.decision.contains("competitive trials disabled"))
+    );
+    let segment_rhs: u64 = sol.stats.segments.iter().map(|s| s.rhs_calls).sum();
+    assert_eq!(
+        sol.stats.rhs_calls,
+        segment_rhs + 2,
+        "the two audit RHS calls must be charged"
+    );
+    assert_eq!(CALLS.load(Ordering::SeqCst) as u64, sol.stats.rhs_calls);
+}
+
+#[test]
+fn f6_replay_audit_charges_deterministic_jvp_calls() {
+    let mut cfg = SwitchingConfig::route_registry(provided());
+    cfg.audit_replay_safety = true;
+    let sol = solve(&rotation(), &[1.0, 0.0], &cfg);
+    assert!(sol.success);
+    let segment_rhs: u64 = sol.stats.segments.iter().map(|s| s.rhs_calls).sum();
+    let segment_jvp: u64 = sol.stats.segments.iter().map(|s| s.jvp_vectors).sum();
+    assert_eq!(sol.stats.rhs_calls, segment_rhs + 2, "two audit RHS calls");
+    assert_eq!(
+        sol.stats.jvp_vectors,
+        segment_jvp + 2,
+        "two audit JVP calls"
+    );
+    assert!(
+        sol.stats
+            .segments
+            .iter()
+            .any(|s| s.method == SwitchingMethod::Rodas5p && s.is_probe),
+        "deterministic callbacks keep competitive pilots enabled"
+    );
+
+    let mut limit_cfg = cfg.clone();
+    limit_cfg.entry_probe_adaptation = None;
+    limit_cfg.implicit_pilot_limit = 1;
+    let limit_sol = solve(&rotation(), &[1.0, 0.0], &limit_cfg);
+    let pilot_count = limit_sol
+        .stats
+        .segments
+        .iter()
+        .filter(|s| s.is_probe)
+        .count();
+    assert_eq!(
+        pilot_count, 1,
+        "implicit_pilot_limit strictly caps pilot count"
+    );
+}
+
+#[test]
+fn f6_nondeterministic_jvp_disables_competitive_trials() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    static JVP_CALLS: AtomicUsize = AtomicUsize::new(0);
+    let p = Problem::new(2, |_, y, o| {
+        o[0] = -100.0 * y[1];
+        o[1] = 100.0 * y[0];
+        Ok(())
+    })
+    .jacobian(Jacobian::jvp(|_, _, v, o| {
+        let k = JVP_CALLS.fetch_add(1, Ordering::SeqCst);
+        o[0] = -100.0 * v[1];
+        o[1] = 100.0 * v[0];
+        if k % 2 == 1 {
+            o[0] = f64::from_bits(o[0].to_bits() ^ 1);
+        }
+        Ok(())
+    }))
+    .autonomous();
+    let mut cfg = SwitchingConfig::route_registry(provided());
+    cfg.audit_replay_safety = true;
+    let sol = solve(&p, &[1.0, 0.0], &cfg);
+    assert!(sol.success);
+    assert!(
+        !sol.stats
+            .segments
+            .iter()
+            .any(|s| s.method == SwitchingMethod::Rodas5p && s.is_probe),
+        "no RODAS pilot may run after a JVP replay mismatch"
+    );
+    assert!(
+        sol.stats
+            .segments
+            .iter()
+            .any(|s| s.decision.contains("competitive trials disabled"))
+    );
+}
+
 // ---- T-F7 ------------------------------------------------------------------
 
 // ---- T-F8 ------------------------------------------------------------------

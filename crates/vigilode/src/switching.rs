@@ -1275,6 +1275,7 @@ fn drive_windows(
         tolerance: tolerance_epoch,
     };
     let mut replay_safety_audited = false;
+    let mut competitive_trials_disabled = false;
     let fallback = config.fallback != DerivativeFallback::Forbidden;
     let return_ratio = if config.strict_return_work_improvement {
         1.0
@@ -2005,8 +2006,37 @@ fn drive_windows(
                         let mut enter = config.implicit_pilot_attempt_budget == 0;
                         let mut entry_seed = None;
                         if config.implicit_pilot_attempt_budget > 0 {
+                            if config.audit_replay_safety && !replay_safety_audited {
+                                // Plan section 10.4: evaluate the callbacks twice at the
+                                // accepted checkpoint, charge the work, and disable all
+                                // competitive trials for the rest of the solve on a mismatch.
+                                replay_safety_audited = true;
+                                let n = problem.dimension;
+                                let (mut a, mut b) = (vec![0.0; n], vec![0.0; n]);
+                                let ok_a = (problem.rhs)(start, &result.final_state, &mut a);
+                                let ok_b = (problem.rhs)(start, &result.final_state, &mut b);
+                                result.stats.rhs_calls += 2;
+                                let mut replay_ok = ok_a.is_ok()
+                                    && ok_b.is_ok()
+                                    && a.iter().zip(&b).all(|(x, z)| x.to_bits() == z.to_bits());
+                                if replay_ok && let Jacobian::Jvp(jvp) = &problem.jacobian {
+                                    let v = vec![1.0; n];
+                                    let ok_c = (jvp)(start, &result.final_state, &v, &mut a);
+                                    let ok_d = (jvp)(start, &result.final_state, &v, &mut b);
+                                    result.stats.jvp_vectors += 2;
+                                    replay_ok = ok_c.is_ok()
+                                        && ok_d.is_ok()
+                                        && a.iter()
+                                            .zip(&b)
+                                            .all(|(x, z)| x.to_bits() == z.to_bits());
+                                }
+                                if !replay_ok {
+                                    competitive_trials_disabled = true;
+                                }
+                            }
                             let remaining = opts.max_steps - result.stats.attempts;
                             if (pilot_eligible || rearm)
+                                && !competitive_trials_disabled
                                 && (config.entry_probe_adaptation.is_some()
                                     || implicit_pilots < config.implicit_pilot_limit)
                                 && adaptive_due
@@ -2015,41 +2045,6 @@ fn drive_windows(
                             {
                                 implicit_pilots += 1;
                                 batches_since_entry_pilot = 0;
-                                if config.audit_replay_safety && !replay_safety_audited {
-                                    replay_safety_audited = true;
-                                    let mut rhs1 = vec![0.0; problem.dimension];
-                                    let mut rhs2 = vec![0.0; problem.dimension];
-                                    let rhs_ok1 =
-                                        (problem.rhs)(start, &result.final_state, &mut rhs1);
-                                    let rhs_ok2 =
-                                        (problem.rhs)(start, &result.final_state, &mut rhs2);
-                                    let mut replay_ok = rhs_ok1.is_ok()
-                                        && rhs_ok2.is_ok()
-                                        && rhs1
-                                            .iter()
-                                            .zip(&rhs2)
-                                            .all(|(a, b)| a.to_bits() == b.to_bits());
-                                    if replay_ok && let Jacobian::Jvp(jvp) = &problem.jacobian {
-                                        let v = vec![1.0; problem.dimension];
-                                        let mut jvp1 = vec![0.0; problem.dimension];
-                                        let mut jvp2 = vec![0.0; problem.dimension];
-                                        let jvp_ok1 =
-                                            (jvp)(start, &result.final_state, &v, &mut jvp1);
-                                        let jvp_ok2 =
-                                            (jvp)(start, &result.final_state, &v, &mut jvp2);
-                                        replay_ok = jvp_ok1.is_ok()
-                                            && jvp_ok2.is_ok()
-                                            && jvp1
-                                                .iter()
-                                                .zip(&jvp2)
-                                                .all(|(a, b)| a.to_bits() == b.to_bits());
-                                    }
-                                    if !replay_ok {
-                                        record.decision = "callback replay mismatch: RHS or JVP non-deterministic";
-                                        result.stats.segments.push(record);
-                                        continue 'windows;
-                                    }
-                                }
                                 local.h0 = entry_pilot_checkpoint_seed(
                                     &record,
                                     opts.h0,
@@ -2230,7 +2225,11 @@ fn drive_windows(
                             implicit_seed = entry_seed;
                             tenure_rechecks = 0;
                         } else {
-                            record.decision = "implicit entry not supported by bounded pilot evidence; retain explicit route";
+                            record.decision = if competitive_trials_disabled {
+                                "callback replay mismatch: RHS or JVP non-deterministic; competitive trials disabled; retain explicit route"
+                            } else {
+                                "implicit entry not supported by bounded pilot evidence; retain explicit route"
+                            };
                         }
                     } else if !record.success && !budget_stop {
                         commit(&mut result, &mut record, state, landings);

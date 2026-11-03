@@ -69,3 +69,11 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - red: none
 - mutation: none
 - notes: documented B7 first-batch rule and pinned with contract test
+## F6 — Replay-safety audit: charge it, keep the batch, disable trials (A-9) — 2026-11-03
+- result: done
+- commit: uncommitted
+- toolchain: pinned 1.94.1
+- commands: contracts: 0, lib-unit-tests: 0, vigilode-suite: 0, clippy: 0, fmt: 0
+- red: f6_replay_mismatch_keeps_explicit_progress_and_disables_pilots (failed on base)
+- mutation: caught 17, missed 0, waived 0
+- notes: charged replay safety audit; preserves explicit batch and disables competitive trials on mismatch
