@@ -85,3 +85,11 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - red: f7_tolerance_epoch_is_fnv_stable (failed on base), f7_window_epoch_ignores_checkpoint_index_and_is_fnv_stable (failed on base)
 - mutation: caught 17, missed 0, waived 0
 - notes: stable FNV-1a digests implemented; window epoch now independent of checkpoint index
+## F8 — Refuse a declared entry_policy that the schedule does not implement (A-10) — 2026-11-03
+- result: done
+- commit: uncommitted
+- toolchain: pinned 1.94.1
+- commands: contracts: 0, lib-unit-tests: 0, vigilode-suite: 0, clippy: 0, fmt: 0
+- red: f8_declared_entry_policy_must_match_effective_schedule (does not compile on base)
+- mutation: caught 3, missed 0, waived 0
+- notes: validated declared entry_policy against effective schedule; pre-flight refusal before callbacks

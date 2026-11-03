@@ -374,6 +374,18 @@ impl SwitchingConfig {
         }
     }
 
+    /// Entry policy actually implied by the scheduling fields. A declared
+    /// `entry_policy` must equal this value (checked before any callback).
+    pub fn effective_entry_policy(&self) -> EntryPolicy {
+        if self.implicit_pilot_attempt_budget == 0 {
+            EntryPolicy::PressureOnly
+        } else if self.entry_probe_adaptation.is_some() {
+            EntryPolicy::AdaptiveEvidence
+        } else {
+            EntryPolicy::Evidence
+        }
+    }
+
     /// Route registry opt-in v2 factory setting (§8.3, §8.4, §8.6).
     pub fn route_registry(fallback: DerivativeFallback) -> Self {
         Self {
@@ -2586,6 +2598,13 @@ fn validate(
     }
     if p.mass.is_some() || !p.events.is_empty() || o.dense_output {
         return Err(bad("identity mass, no events and endpoint output required"));
+    }
+    if let Some(declared) = c.entry_policy
+        && declared != c.effective_entry_policy()
+    {
+        return Err(bad(
+            "declared entry_policy does not match the effective entry schedule",
+        ));
     }
     if c.window_count == 0
         || c.window_count > 1_000_000

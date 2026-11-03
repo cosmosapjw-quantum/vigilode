@@ -258,6 +258,7 @@ fn f6_replay_audit_charges_deterministic_jvp_calls() {
     let mut limit_cfg = cfg.clone();
     limit_cfg.entry_probe_adaptation = None;
     limit_cfg.implicit_pilot_limit = 1;
+    limit_cfg.entry_policy = Some(vigilode::EntryPolicy::Evidence);
     let limit_sol = solve(&rotation(), &[1.0, 0.0], &limit_cfg);
     let pilot_count = limit_sol
         .stats
@@ -347,6 +348,49 @@ fn f7_tolerance_epoch_is_fnv_stable() {
 }
 
 // ---- T-F8 ------------------------------------------------------------------
+
+#[test]
+fn f8_declared_entry_policy_must_match_effective_schedule() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use vigilode::EntryPolicy;
+    static CALLS: AtomicUsize = AtomicUsize::new(0);
+    let counting = Problem::new(1, |_, y, o| {
+        CALLS.fetch_add(1, Ordering::SeqCst);
+        o[0] = -y[0];
+        Ok(())
+    })
+    .jacobian(Jacobian::jvp(|_, _, v, o| {
+        o[0] = -v[0];
+        Ok(())
+    }))
+    .autonomous();
+    assert_eq!(
+        SwitchingConfig::route_registry(provided()).effective_entry_policy(),
+        EntryPolicy::AdaptiveEvidence
+    );
+    let mut c = SwitchingConfig::evidence_driven(provided());
+    assert_eq!(c.effective_entry_policy(), EntryPolicy::Evidence);
+    c.implicit_pilot_attempt_budget = 0;
+    assert_eq!(c.effective_entry_policy(), EntryPolicy::PressureOnly);
+    c.entry_policy = Some(EntryPolicy::Evidence);
+    CALLS.store(0, Ordering::SeqCst);
+    let err = SwitchingSolver::solve(&counting, (0.0, 1.0), &[1.0], &bench_options(), &c)
+        .expect_err("a declared policy that the schedule does not implement is refused");
+    assert!(
+        err.0.contains("declared entry_policy does not match"),
+        "{}",
+        err.0
+    );
+    assert_eq!(
+        CALLS.load(Ordering::SeqCst),
+        0,
+        "refusal happens before callbacks"
+    );
+    c.entry_policy = Some(EntryPolicy::PressureOnly);
+    assert!(SwitchingSolver::solve(&counting, (0.0, 1.0), &[1.0], &bench_options(), &c).is_ok());
+    c.entry_policy = None;
+    assert!(SwitchingSolver::solve(&counting, (0.0, 1.0), &[1.0], &bench_options(), &c).is_ok());
+}
 
 // ---- T-F9 ------------------------------------------------------------------
 
