@@ -11,6 +11,7 @@ mod gmres_staged;
 mod kernels;
 mod lgmres;
 mod lgmres_into;
+pub mod shared_basis;
 mod small;
 mod workspace;
 

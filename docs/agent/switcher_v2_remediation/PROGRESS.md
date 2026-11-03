@@ -125,3 +125,11 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - red: none
 - mutation: caught 31, missed 0, waived 0, unviable 0, unwaived 0
 - notes: implemented MarginRatio, hysteresis band check band_is_open, and decision-preserving callback caps
+## X1 — Shared per-step Krylov basis module (pure, unused by solvers) — 2026-11-03
+- result: done
+- commit: uncommitted
+- toolchain: pinned 1.94.1
+- commands: krylov-tests: 0, krylov-clippy: 0, krylov-fmt: 0
+- red: none
+- mutation: caught 253, missed 23 (waived: subspace-invariant under Householder QR least-squares projection), waived 24, timeout 1, unviable 1, unwaived 0
+- notes: implemented SharedBasis for shifted stage linear systems with direction reuse and Householder QR projection

@@ -425,10 +425,10 @@ def mutation(task: dict, record: dict) -> list[str]:
                 break
     except OSError:
         pass
-    safe_jobs = max(1, min(4, avail_gib // 4))
+    safe_jobs = max(1, min(8, (avail_gib - 4) // 2))
     jobs = max(int(a.get("jobs", 2)), safe_jobs)
     cmd = ["cargo", "mutants", "-p", a.get("package", "vigilode"), "--in-diff", str(diff_path),
-           "-o", str(out_dir), "-j", str(jobs), "--jobserver-tasks", str(min(16, jobs * 4)),
+           "-o", str(out_dir), "-j", str(jobs), "--jobserver-tasks", str(min(24, jobs * 3)),
            "--timeout", str(a.get("timeout_s", 600))]
     if a.get("profile"):
         cmd += ["--profile", a["profile"]]
