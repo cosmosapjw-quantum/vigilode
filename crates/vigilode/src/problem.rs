@@ -50,6 +50,14 @@ pub enum Jacobian {
     /// A Jacobian-vector product only; runs the matrix-free (GMRES) protected
     /// driver and never assembles a matrix.
     Jvp(JvpFn),
+    /// A sparse Jacobian assembled from compressed JVP probes via Curtis–Powell–Reid
+    /// column colouring (or routed to matrix-free GMRES when non-banded).
+    SparseJvp {
+        /// Declared structural sparsity pattern.
+        pattern: crate::coloring::SparsityPattern,
+        /// Jacobian-vector product callback.
+        jvp: JvpFn,
+    },
     /// Forward differences of the right-hand side (the default).
     ///
     /// Column `j` uses the increment `sqrt(eps) * max(|y_j|, 1)`, taken as
@@ -94,6 +102,17 @@ impl Jacobian {
     {
         Self::Jvp(Arc::new(f))
     }
+
+    /// [`Jacobian::SparseJvp`] from a sparsity pattern and JVP closure.
+    pub fn sparse_jvp<F>(pattern: crate::coloring::SparsityPattern, f: F) -> Self
+    where
+        F: Fn(f64, &[f64], &[f64], &mut [f64]) -> Result<(), CallbackError> + Send + Sync + 'static,
+    {
+        Self::SparseJvp {
+            pattern,
+            jvp: Arc::new(f),
+        }
+    }
 }
 
 impl fmt::Debug for Jacobian {
@@ -106,6 +125,11 @@ impl fmt::Debug for Jacobian {
                 .field("upper", upper)
                 .finish_non_exhaustive(),
             Self::Jvp(_) => f.write_str("Jvp(..)"),
+            Self::SparseJvp { pattern, .. } => f
+                .debug_struct("SparseJvp")
+                .field("n", &pattern.n())
+                .field("nnz", &pattern.nnz())
+                .finish_non_exhaustive(),
             Self::FiniteDifference => f.write_str("FiniteDifference"),
         }
     }

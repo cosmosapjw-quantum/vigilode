@@ -48,6 +48,29 @@ impl SparsityPattern {
     pub fn row(&self, i: usize) -> &[usize] {
         &self.col_idx[self.row_ptr[i]..self.row_ptr[i + 1]]
     }
+    /// Lower and upper bandwidth `(lower, upper)` of this sparsity pattern.
+    pub fn bandwidth(&self) -> (usize, usize) {
+        let mut lower = 0usize;
+        let mut upper = 0usize;
+        for i in 0..self.n {
+            for &j in self.row(i) {
+                if i > j {
+                    lower = lower.max(i - j);
+                } else if j > i {
+                    upper = upper.max(j - i);
+                }
+            }
+        }
+        (lower, upper)
+    }
+    /// True when the pattern is strictly banded with total off-diagonal bandwidth `< n - 1`.
+    pub fn is_banded(&self) -> bool {
+        if self.n <= 2 {
+            return true;
+        }
+        let (lower, upper) = self.bandwidth();
+        lower < self.n && upper < self.n && lower.saturating_add(upper) < self.n - 1
+    }
 }
 
 /// Greedy colouring in natural column order: two columns that share a row get

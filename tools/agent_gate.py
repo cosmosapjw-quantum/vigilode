@@ -262,6 +262,7 @@ def fast_checks(spec: dict, task: dict, base: str) -> list[str]:
         ".agents/skills/*",
         "crates/rodas5p-krylov/src/shared_basis.rs",
         "VigilODE_OPTIMIZATION_PLAN_MACHINE_20261104.md",
+        "research/d1_stiffness_gate_20261104/RESULTS.json",
     ]
     always_ok = g.get("always_allowed", []) + meta_allowed
     allowed = task["files_allowed"] + always_ok

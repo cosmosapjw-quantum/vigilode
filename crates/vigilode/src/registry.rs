@@ -354,6 +354,13 @@ impl Rodas5pWindowDriver {
             crate::problem::Jacobian::Dense(_) => RouteId::Rodas5pDense,
             crate::problem::Jacobian::Banded { .. } => RouteId::Rodas5pBanded,
             crate::problem::Jacobian::Jvp(_) => RouteId::Rodas5pMatrixFree,
+            crate::problem::Jacobian::SparseJvp { pattern, .. } => {
+                if pattern.is_banded() {
+                    RouteId::Rodas5pBanded
+                } else {
+                    RouteId::Rodas5pMatrixFree
+                }
+            }
             crate::problem::Jacobian::FiniteDifference => RouteId::Rodas5pFiniteDifference,
         };
         Self { route }
@@ -1025,6 +1032,11 @@ pub fn compute_provider_epoch(route: RouteId, problem: &Problem) -> u64 {
         }
         crate::problem::Jacobian::Jvp(_) => 3u8.hash(&mut hasher),
         crate::problem::Jacobian::FiniteDifference => 4u8.hash(&mut hasher),
+        crate::problem::Jacobian::SparseJvp { pattern, .. } => {
+            5u8.hash(&mut hasher);
+            pattern.n().hash(&mut hasher);
+            pattern.nnz().hash(&mut hasher);
+        }
     }
     hasher.finish()
 }

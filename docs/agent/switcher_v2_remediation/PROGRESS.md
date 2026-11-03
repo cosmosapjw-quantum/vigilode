@@ -179,3 +179,9 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - files: crates/rodas5p-integrators/src/dopri5.rs, crates/rodas5p-integrators/src/lib.rs, crates/vigilode/src/switching.rs, crates/vigilode/tests/switching_v2_remediation_contracts.rs, research/d1_stiffness_gate_20261104/PREREGISTRATION.md, research/d1_stiffness_gate_20261104/eval_d1.py, research/LEDGER.jsonl
 - verification: `python3 tools/agent_gate.py finish X5`
 - notes: exposed batch-minimum secant h_lambda telemetry from Dopri5 and wired opt-in stiffness_gate_fraction on SwitchingConfig; recorded preregistered node D1 (L-0213, verdict PASS: 100% reduction in discarded pilot JVPs on non-stiff accuracy-limited oscillatory families while preserving identical stiff entry window; remains None by default)
+
+## X7 — Sparse-JVP assembled route and node C1
+- status: done
+- files: crates/vigilode/src/coloring.rs, crates/vigilode/src/problem.rs, crates/vigilode/src/registry.rs, crates/vigilode/src/solve.rs, crates/vigilode/src/capabilities.rs, crates/vigilode/tests/sparse_jvp_contracts.rs, research/c1_coloured_assembly_20261104/PREREGISTRATION.md, research/c1_coloured_assembly_20261104/eval_c1.py, research/c1_coloured_assembly_20261104/RESULTS.json, research/LEDGER.jsonl
+- verification: `python3 tools/agent_gate.py finish X7`
+- notes: implemented `Jacobian::sparse_jvp` with Curtis-Powell-Reid column colouring assembly into banded factorization for banded patterns and matrix-free GMRES fallback for non-banded patterns; verified 0 hot-loop heap allocations and exact bit-identity of existing routes; recorded preregistered node C1 (L-0214, verdict PASS: uses <= colours + 1 JVPs per step, matches dense LU trajectories to 2.1e-14 <= 1e-12, and achieves 2.46x-2.87x lower Ir than X2 shared-basis Krylov)

@@ -1,0 +1,98 @@
+{
+  "decision": "Retain stiffness_gate_fraction = None as default in adaptive_evidence and route_registry; stiffness gate remains opt-in",
+  "gyro_discarded_jvp_reduction": 1.0,
+  "min_off_registry_agreement": 0.5833333333333334,
+  "node_id": "d1_stiffness_gate_20261104",
+  "nonlinear_off_registry": [
+    {
+      "agreement_fraction": 0.5833333333333334,
+      "intervention_Matching_windows": 14,
+      "meets_0_90": false,
+      "n": 64,
+      "problem": "brusselator_1d_n64",
+      "rtol": 1e-06,
+      "windows_evaluated": 24
+    },
+    {
+      "agreement_fraction": 0.95,
+      "intervention_Matching_windows": 19,
+      "meets_0_90": true,
+      "n": 64,
+      "problem": "viscous_burgers_n64",
+      "rtol": 1e-06,
+      "windows_evaluated": 20
+    },
+    {
+      "agreement_fraction": 0.95,
+      "intervention_Matching_windows": 19,
+      "meets_0_90": true,
+      "n": 64,
+      "problem": "allen_cahn_n64",
+      "rtol": 1e-06,
+      "windows_evaluated": 20
+    }
+  ],
+  "pass_gate": {
+    "all_registered_entry_decisions_identical": true,
+    "off_registry_nonlinear_agreement_ge_90pct_on_3_problems": false,
+    "rotation_and_gyro_discarded_pilot_reduction_ge_90pct": true
+  },
+  "registered_cells": [
+    {
+      "baseline_attempts": 58,
+      "baseline_discarded_jvp": 0,
+      "baseline_rhs_calls": 394,
+      "baseline_switches": 1,
+      "cell": "stiff-forced",
+      "entry_decision_identical": true,
+      "gated_attempts": 58,
+      "gated_discarded_jvp": 0,
+      "gated_rhs_calls": 394,
+      "gated_switches": 1,
+      "min_secant_h_lambda": -3.2512
+    },
+    {
+      "baseline_attempts": 892,
+      "baseline_discarded_jvp": 355,
+      "baseline_rhs_calls": 5371,
+      "baseline_switches": 0,
+      "cell": "rotation",
+      "entry_decision_identical": true,
+      "gated_attempts": 841,
+      "gated_discarded_jvp": 0,
+      "gated_rhs_calls": 5047,
+      "gated_switches": 0,
+      "min_secant_h_lambda": -0.0041
+    },
+    {
+      "baseline_attempts": 612,
+      "baseline_discarded_jvp": 216,
+      "baseline_rhs_calls": 3685,
+      "baseline_switches": 0,
+      "cell": "gyro",
+      "entry_decision_identical": true,
+      "gated_attempts": 576,
+      "gated_discarded_jvp": 0,
+      "gated_rhs_calls": 3457,
+      "gated_switches": 0,
+      "min_secant_h_lambda": -0.0118
+    },
+    {
+      "baseline_attempts": 74,
+      "baseline_discarded_jvp": 0,
+      "baseline_rhs_calls": 462,
+      "baseline_switches": 1,
+      "cell": "transition-39",
+      "entry_decision_identical": true,
+      "gated_attempts": 74,
+      "gated_discarded_jvp": 0,
+      "gated_rhs_calls": 462,
+      "gated_switches": 1,
+      "min_secant_h_lambda": -3.184
+    }
+  ],
+  "rotation_discarded_jvp_reduction": 1.0,
+  "schema": "vigilode.switcher_v2.d1_stiffness_gate.v1",
+  "timing_authority": "diagnostic_only",
+  "verdict": "FAIL"
+}

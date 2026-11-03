@@ -1,7 +1,7 @@
 //! [`Rodas5p::solve`]: validation, routing to a protected driver, and the
 //! run record.
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use std::fmt::Display;
 
@@ -78,6 +78,14 @@ impl Rodas5p {
                 upper: *upper,
             },
             Jacobian::Jvp(_) => JacobianRecord::Jvp,
+            Jacobian::SparseJvp { pattern, .. } => {
+                if pattern.is_banded() {
+                    let (lower, upper) = pattern.bandwidth();
+                    JacobianRecord::Banded { lower, upper }
+                } else {
+                    JacobianRecord::Jvp
+                }
+            }
             Jacobian::FiniteDifference => match problem.band {
                 Some((lower, upper)) => JacobianRecord::FiniteDifferenceBanded {
                     lower,
@@ -589,6 +597,12 @@ impl Rodas5p {
         let mut counters: WorkCounters = driver_counters;
         counters.rhs_calls += fd.rhs_calls;
         counters.rhs_evaluations += fd.rhs_calls;
+        if let Jacobian::SparseJvp { pattern, .. } = &problem.jacobian
+            && !run.matrix_free
+        {
+            let (_, num_colors) = crate::coloring::column_coloring(pattern);
+            counters.jvp_vectors += (num_colors as u64) * counters.jacobian_builds;
+        }
 
         let status = match (guard.fatal(), guard.ceiling_hit()) {
             (Some(fatal), _) => Status::Failed(FailureReason::CallbackFailed {
@@ -832,6 +846,14 @@ fn validate(
             ));
         }
     }
+    if let Jacobian::SparseJvp { pattern, .. } = &problem.jacobian
+        && pattern.n() != n
+    {
+        return invalid(format!(
+            "the sparsity pattern dimension {} differs from the problem dimension {n}",
+            pattern.n()
+        ));
+    }
     if let Some(reason) = crate::capabilities::final_unsupported(problem) {
         return unsupported(reason);
     }
@@ -978,6 +1000,62 @@ fn build(
                 Plan::Banded(BandedJacobian { lower, upper, fill }),
                 JacobianRecord::Banded { lower, upper },
             )
+        }
+        (Jacobian::SparseJvp { pattern, jvp: user }, _) => {
+            if pattern.is_banded() {
+                let (lower, upper) = pattern.bandwidth();
+                let width = lower + upper + 1;
+                let (colors, num_colors) = crate::coloring::column_coloring(pattern);
+                let mut seeds = vec![vec![0.0; n]; num_colors];
+                for (k, seed) in seeds.iter_mut().enumerate() {
+                    crate::coloring::seed_vector(&colors, k, seed);
+                }
+                let compressed_ws =
+                    Mutex::new((vec![vec![0.0; n]; num_colors], vec![0.0; pattern.nnz()]));
+                let pattern_arc = Arc::new(pattern.clone());
+                let colors_arc = Arc::new(colors);
+                let seeds_arc = Arc::new(seeds);
+                let fill: CoreRhs = {
+                    let (user, guard) = (user.clone(), guard.clone());
+                    Arc::new(move |t, y, out| {
+                        out.fill(0.0);
+                        let mut ws = compressed_ws.lock().expect("sparse JVP workspace mutex");
+                        let (ref mut compressed, ref mut values) = *ws;
+                        for (seed, comp_out) in seeds_arc.iter().zip(compressed.iter_mut()) {
+                            guard.vector_call(Callback::Jvp, t, y, comp_out, |buf| {
+                                user(t, y, seed, buf)
+                            })?;
+                        }
+                        crate::coloring::recover_values(
+                            &pattern_arc,
+                            &colors_arc,
+                            compressed,
+                            values,
+                        );
+                        let mut offset = 0usize;
+                        for i in 0..n {
+                            let r = pattern_arc.row(i);
+                            for &j in r {
+                                out[i * width + (j + lower - i)] = values[offset];
+                                offset += 1;
+                            }
+                        }
+                        finite(out, "sparse JVP assembled band Jacobian")
+                    })
+                };
+                jacobian = Some(band_as_dense(fill.clone(), n, lower, upper));
+                (
+                    Plan::Banded(BandedJacobian { lower, upper, fill }),
+                    JacobianRecord::Banded { lower, upper },
+                )
+            } else {
+                let (user, guard) = (user.clone(), guard.clone());
+                jvp = Some(Arc::new(move |t, y, v, out| {
+                    finite(v, "JVP direction")?;
+                    guard.vector_call(Callback::Jvp, t, y, out, |out| user(t, y, v, out))
+                }));
+                (Plan::Routed { declaration: None }, JacobianRecord::Jvp)
+            }
         }
     };
 
