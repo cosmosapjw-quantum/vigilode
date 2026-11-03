@@ -101,3 +101,11 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - red: none
 - mutation: none
 - notes: documented switcher route selection on Rodas5pWindowDriver::for_problem and pinned post-remediation reference counters
+## X4 — DOPRI5 secant stiffness estimate (pure function) — 2026-11-03
+- result: done
+- commit: uncommitted
+- toolchain: pinned 1.94.1
+- commands: integrators-lib: 0, integrators-clippy: 0, integrators-fmt: 0
+- red: none
+- mutation: caught 77, missed 1 (waived: h==0.0 scales d*=0 so dd==0 returns None), waived 1, unviable 0, unwaived 0
+- notes: implemented dopri5_secant_h_lambda Rayleigh quotient estimator and stability gate

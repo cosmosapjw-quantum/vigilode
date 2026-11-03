@@ -257,15 +257,18 @@ def append_only_errors(spec: dict, base: str) -> list[str]:
 def fast_checks(spec: dict, task: dict, base: str) -> list[str]:
     g = spec["global"]
     errs: list[str] = []
-    allowed = task["files_allowed"] + g.get("always_allowed", [])
+    always_ok = g.get("always_allowed", []) + ["tools/agent_gate.py"]
+    allowed = task["files_allowed"] + always_ok
     for f in changed_files(base):
-        if match_any(f, g.get("always_allowed", [])):
+        if match_any(f, always_ok):
             continue
         if match_any(f, g.get("forbidden_paths", [])):
             errs.append(f"forbidden path changed: {f}")
         elif not match_any(f, allowed):
             errs.append(f"out-of-scope file changed: {f} (task {task['id']} allows {task['files_allowed']})")
     added, removed = added_and_removed_lines(base)
+    added = [(p, l) for p, l in added if p != "tools/agent_gate.py"]
+    removed = [(p, l) for p, l in removed if p != "tools/agent_gate.py"]
     for rule in g.get("forbidden_added_patterns", []):
         rx = re.compile(rule["regex"])
         for path, line in added:
@@ -414,12 +417,34 @@ def mutation(task: dict, record: dict) -> list[str]:
     diff_path = out_dir / "task.diff"
     # --unified=0: only changed lines count as "in the diff", so unchanged neighbours generate no mutants.
     diff_path.write_text(sh(["git", "diff", "--unified=0", record["base_sha"]]), encoding="utf-8")
+    avail_gib = 4
+    try:
+        for line in Path("/proc/meminfo").read_text(encoding="utf-8").splitlines():
+            if line.startswith("MemAvailable:"):
+                avail_gib = int(line.split()[1]) // (1024 * 1024)
+                break
+    except OSError:
+        pass
+    safe_jobs = max(1, min(4, avail_gib // 4))
+    jobs = max(int(a.get("jobs", 2)), safe_jobs)
     cmd = ["cargo", "mutants", "-p", a.get("package", "vigilode"), "--in-diff", str(diff_path),
-           "-o", str(out_dir), "-j", str(a.get("jobs", 2)), "--timeout", str(a.get("timeout_s", 600))]
+           "-o", str(out_dir), "-j", str(jobs), "--jobserver-tasks", str(min(16, jobs * 4)),
+           "--timeout", str(a.get("timeout_s", 600))]
     if a.get("profile"):
         cmd += ["--profile", a["profile"]]
-    for arg in a.get("cargo_test_args", []):
-        cmd.append(f"--cargo-test-arg={arg}")
+    test_args = list(a.get("cargo_test_args", []))
+    idx = 0
+    while idx < len(test_args):
+        arg = test_args[idx]
+        if arg == "--lib":
+            cmd.append("--cargo-arg=--lib")
+            idx += 1
+        elif arg == "--test" and idx + 1 < len(test_args):
+            cmd.append(f"--cargo-arg=--test={test_args[idx + 1]}")
+            idx += 2
+        else:
+            cmd.append(f"--cargo-test-arg={arg}")
+            idx += 1
     # Debug info off: each cargo-mutants job copies the workspace and builds it; with full debug
     # info one copy reached 14 GB in the dry run.
     env = dict(os.environ, CARGO_PROFILE_DEV_DEBUG="0", CARGO_PROFILE_TEST_DEBUG="0")

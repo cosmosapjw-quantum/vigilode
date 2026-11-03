@@ -46,6 +46,7 @@ pub use directional_quadratic::{
 };
 mod dopri5;
 mod dopri5_dense;
+pub mod dopri5_stiffness;
 mod quotient_flow;
 pub use quotient_flow::{
     DampedRotationAffineWorkspace, DampedRotationBlock, DampedRotationFlow, LawsonDopri5Result,
@@ -101,6 +102,8 @@ mod sabr;
 mod scientific_corpus_v2;
 mod scientific_validity_v2_gate;
 mod sequential;
+#[expect(clippy::neg_cmp_op_on_partial_ord, clippy::needless_range_loop)]
+#[cfg_attr(test, expect(clippy::items_after_test_module))]
 pub mod source_owned_graph_schur;
 mod stage_batch;
 mod stage_chart_candidate;
