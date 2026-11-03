@@ -141,3 +141,11 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - red: none
 - mutation: caught 15, missed 0, waived 0, unviable 16, unwaived 0
 - notes: wired opt-in SharedBasis into Rodas5pMfFastWorkspace stage loop with bit-identical flag-off behavior, GMRES fallback on non-convergence, and >=50% JVP reduction on 1D heat equation
+## X3 — Preregistered node K1: shared basis vs per-stage GMRES — 2026-11-04
+- result: done
+- commit: uncommitted
+- toolchain: pinned 1.94.1
+- commands: research-node-check: 0
+- red: none
+- mutation: none
+- notes: recorded preregistered node K1 (L-0209, verdict FAIL against preconditioned per-stage GMRES due to per-stage Householder QR cost; SharedBasis retained strictly opt-in)

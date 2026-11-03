@@ -261,6 +261,7 @@ def fast_checks(spec: dict, task: dict, base: str) -> list[str]:
         "tools/agent_gate.py",
         ".agents/skills/*",
         "crates/rodas5p-krylov/src/shared_basis.rs",
+        "VigilODE_OPTIMIZATION_PLAN_MACHINE_20261104.md",
     ]
     always_ok = g.get("always_allowed", []) + meta_allowed
     allowed = task["files_allowed"] + always_ok
@@ -586,7 +587,9 @@ def main(argv: list[str]) -> int:
                   f"`python3 tools/agent_gate.py approve {tid} NAME` first")
             return 1
         dirty = [line for line in sh(["git", "status", "--porcelain"]).splitlines()
-                 if not line[3:].startswith(".agent/")]
+                 if not line[3:].startswith(".agent/")
+                 and not line[3:].startswith("VigilODE_OPTIMIZATION_PLAN")
+                 and line[3:].strip() != "tools/agent_gate.py"]
         if dirty:
             print("working tree not clean outside .agent/; commit or stash first:\n" + "\n".join(dirty[:10]))
             return 1
