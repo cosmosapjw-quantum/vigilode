@@ -17,6 +17,11 @@ mod fallback;
 pub mod n01_derivative_free;
 pub mod nonlinear_be;
 pub mod rhs_homotopy;
+pub use rhs_homotopy::{
+    DiagonalPreconditioner, IdentityPreconditioner, PreconditionedFixedPointMap,
+    PreconditionerAction, QContractionCertificate, QContractionEnclosure,
+    verify_q_contraction_condition,
+};
 mod solver;
 pub mod structural_mean_field;
 mod switching;

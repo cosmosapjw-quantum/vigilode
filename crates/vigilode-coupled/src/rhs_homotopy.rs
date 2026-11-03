@@ -30,6 +30,194 @@ pub trait RhsOnlyMap {
     }
 }
 
+/// An action that applies a preconditioner P to a residual vector `r`: `out = P * r`.
+pub trait PreconditionerAction {
+    fn apply(&self, r: &[f64], out: &mut [f64]) -> Result<(), String>;
+    fn is_identity(&self) -> bool {
+        false
+    }
+}
+
+// Blanket implementation for Fn(&[f64], &mut [f64]) -> Result<(), String>
+impl<F> PreconditionerAction for F
+where
+    F: Fn(&[f64], &mut [f64]) -> Result<(), String>,
+{
+    fn apply(&self, r: &[f64], out: &mut [f64]) -> Result<(), String> {
+        self(r, out)
+    }
+}
+
+/// Identity preconditioner P = I, leaving residuals unchanged: `out = r`.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+pub struct IdentityPreconditioner;
+
+impl PreconditionerAction for IdentityPreconditioner {
+    fn apply(&self, r: &[f64], out: &mut [f64]) -> Result<(), String> {
+        if r.len() != out.len() {
+            return Err("IdentityPreconditioner: dimension mismatch".into());
+        }
+        out.copy_from_slice(r);
+        Ok(())
+    }
+
+    fn is_identity(&self) -> bool {
+        true
+    }
+}
+
+/// Diagonal scaling preconditioner P = diag(d): `out[i] = d[i] * r[i]`.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct DiagonalPreconditioner {
+    pub diag: Vec<f64>,
+}
+
+impl DiagonalPreconditioner {
+    pub fn new(diag: Vec<f64>) -> Self {
+        Self { diag }
+    }
+}
+
+impl PreconditionerAction for DiagonalPreconditioner {
+    fn apply(&self, r: &[f64], out: &mut [f64]) -> Result<(), String> {
+        if r.len() != self.diag.len() || out.len() != self.diag.len() {
+            return Err("DiagonalPreconditioner: dimension mismatch".into());
+        }
+        for (i, (out_val, &r_val)) in out.iter_mut().zip(r).enumerate() {
+            *out_val = self.diag[i] * r_val;
+        }
+        Ok(())
+    }
+}
+
+/// Preconditioned fixed-point map T(x) = x - P * F(x) = x - P * (x - G(x))
+/// for implicit nonlinear systems F(x) = x - G(x) = 0.
+///
+/// When P = I, T(x) = G(x) (standard Picard map).
+/// When a preconditioner P is provided, T(x) = x - P(x - G(x)).
+#[derive(Clone, Debug)]
+pub struct PreconditionedFixedPointMap<M, P> {
+    pub base_map: M,
+    pub preconditioner: P,
+}
+
+impl<M, P> PreconditionedFixedPointMap<M, P> {
+    pub fn new(base_map: M, preconditioner: P) -> Self {
+        Self {
+            base_map,
+            preconditioner,
+        }
+    }
+}
+
+impl<M: RhsOnlyMap, P: PreconditionerAction> RhsOnlyMap for PreconditionedFixedPointMap<M, P> {
+    fn dimension(&self) -> usize {
+        self.base_map.dimension()
+    }
+
+    fn admits(&self, x: &[f64]) -> bool {
+        self.base_map.admits(x)
+    }
+
+    fn model_epoch(&self) -> Option<u64> {
+        self.base_map.model_epoch()
+    }
+
+    fn evaluate(&self, x: &[f64], out: &mut [f64]) -> Result<(), String> {
+        let dim = self.dimension();
+        if x.len() != dim || out.len() != dim {
+            return Err("PreconditionedFixedPointMap: dimension mismatch".into());
+        }
+        if self.preconditioner.is_identity() {
+            return self.base_map.evaluate(x, out);
+        }
+
+        const STACK_SCRATCH_LIMIT: usize = 64;
+        if dim <= STACK_SCRATCH_LIMIT {
+            let mut g = [0.0_f64; STACK_SCRATCH_LIMIT];
+            let g_slice = &mut g[..dim];
+            self.base_map.evaluate(x, g_slice)?;
+            for (gi, &xi) in g_slice.iter_mut().zip(x) {
+                *gi = xi - *gi;
+            }
+            self.preconditioner.apply(g_slice, out)?;
+            for (oi, &xi) in out.iter_mut().zip(x) {
+                *oi = xi - *oi;
+            }
+        } else {
+            let mut g = vec![0.0_f64; dim];
+            self.base_map.evaluate(x, &mut g)?;
+            for (gi, &xi) in g.iter_mut().zip(x) {
+                *gi = xi - *gi;
+            }
+            self.preconditioner.apply(&g, out)?;
+            for (oi, &xi) in out.iter_mut().zip(x) {
+                *oi = xi - *oi;
+            }
+        }
+        Ok(())
+    }
+}
+
+/// Contraction condition certificate (C15):
+///
+/// If sup ||I - P \partial F|| <= q < 1 on a ball B(x_c, r) and
+/// ||P F(x_c)|| <= (1 - q) r, then T is a q-contraction with a unique root in the ball.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+pub struct QContractionCertificate {
+    pub q: f64,
+    pub radius: f64,
+    pub initial_residual_norm: f64,
+    pub is_certified: bool,
+}
+
+pub type QContractionEnclosure = QContractionCertificate;
+
+impl QContractionCertificate {
+    /// Verifies the C15 contraction condition on a ball B(x_c, radius):
+    /// 1. 0.0 <= q < 1.0
+    /// 2. radius > 0.0
+    /// 3. initial_residual_norm >= 0.0
+    /// 4. initial_residual_norm <= (1.0 - q) * radius
+    pub fn verify(q: f64, radius: f64, initial_residual_norm: f64) -> Self {
+        let valid_inputs = q.is_finite()
+            && radius.is_finite()
+            && initial_residual_norm.is_finite()
+            && (0.0..1.0).contains(&q)
+            && radius > 0.0
+            && initial_residual_norm >= 0.0;
+
+        let is_certified = if valid_inputs {
+            let max_allowed = (1.0 - q) * radius;
+            initial_residual_norm <= max_allowed
+        } else {
+            false
+        };
+
+        Self {
+            q,
+            radius,
+            initial_residual_norm,
+            is_certified,
+        }
+    }
+
+    /// Root error upper bound ||x^* - x_c|| <= ||P F(x_c)|| / (1 - q) <= radius.
+    pub fn root_error_bound(&self) -> Option<f64> {
+        if self.is_certified && self.q < 1.0 {
+            Some(self.initial_residual_norm / (1.0 - self.q))
+        } else {
+            None
+        }
+    }
+}
+
+/// Helper function to verify C15 q-contraction condition:
+/// Returns true iff 0 <= q < 1, radius > 0, p_res_norm >= 0, and p_res_norm <= (1 - q) * radius.
+pub fn verify_q_contraction_condition(q: f64, radius: f64, p_res_norm: f64) -> bool {
+    QContractionCertificate::verify(q, radius, p_res_norm).is_certified
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub enum RhsAcceleration {
     Picard,
@@ -1155,5 +1343,257 @@ mod tests {
         assert!(attempt.is_success());
         let root = attempt.root.expect("root found");
         assert!(root[0].abs() < 1e-11);
+    }
+
+    #[test]
+    fn wp14_identity_preconditioner_matches_base_map_bit_for_bit() {
+        struct TestMap;
+        impl RhsOnlyMap for TestMap {
+            fn dimension(&self) -> usize {
+                2
+            }
+            fn evaluate(&self, x: &[f64], out: &mut [f64]) -> Result<(), String> {
+                out[0] = (x[0] * 0.3).sin() + 0.125;
+                out[1] = (x[1] * 0.2).cos() * 0.25;
+                Ok(())
+            }
+        }
+
+        let base_map = TestMap;
+        let prec_map = PreconditionedFixedPointMap::new(TestMap, IdentityPreconditioner);
+
+        assert_eq!(prec_map.dimension(), 2);
+        assert!(prec_map.admits(&[1.0, 2.0]));
+        assert!(!prec_map.admits(&[1.0]));
+
+        // Direct evaluate check across various points:
+        for x in [[0.5, -0.25], [1.7, 3.2], [0.0, 0.0], [-10.5, 8.25]] {
+            let mut out_base = [0.0_f64; 2];
+            let mut out_prec = [0.0_f64; 2];
+            base_map.evaluate(&x, &mut out_base).unwrap();
+            prec_map.evaluate(&x, &mut out_prec).unwrap();
+            assert_eq!(out_base[0].to_bits(), out_prec[0].to_bits());
+            assert_eq!(out_base[1].to_bits(), out_prec[1].to_bits());
+        }
+
+        // Solve check with homotopy:
+        let anchor = vec![0.1, 0.2];
+        let cfg = RhsHomotopyConfig {
+            lambdas: vec![1.0],
+            residual_l2_tolerance: 1e-12,
+            max_iterations_per_lambda: 100,
+            acceleration: RhsAcceleration::Picard,
+            ..Default::default()
+        };
+        let attempt_base = solve_rhs_homotopy(&base_map, &anchor, &cfg);
+        let attempt_prec = solve_rhs_homotopy(&prec_map, &anchor, &cfg);
+        assert!(attempt_base.is_success());
+        assert!(attempt_prec.is_success());
+        let root_base = attempt_base.root.unwrap();
+        let root_prec = attempt_prec.root.unwrap();
+        assert_eq!(root_base[0].to_bits(), root_prec[0].to_bits());
+        assert_eq!(root_base[1].to_bits(), root_prec[1].to_bits());
+        assert_eq!(
+            attempt_base.points[0].iterations,
+            attempt_prec.points[0].iterations
+        );
+
+        // Closure-based identity check on dyadic fractions:
+        struct DyadicMap;
+        impl RhsOnlyMap for DyadicMap {
+            fn dimension(&self) -> usize {
+                2
+            }
+            fn evaluate(&self, x: &[f64], out: &mut [f64]) -> Result<(), String> {
+                out[0] = 0.5 * x[0] + 0.25;
+                out[1] = 0.25 * x[1] + 0.125;
+                Ok(())
+            }
+        }
+        let dyadic_base = DyadicMap;
+        let closure_id = |r: &[f64], out: &mut [f64]| {
+            out.copy_from_slice(r);
+            Ok(())
+        };
+        let prec_closure = PreconditionedFixedPointMap::new(DyadicMap, closure_id);
+        let x_test = [0.5, 0.25];
+        let mut out_base_dyadic = [0.0_f64; 2];
+        let mut out_closure_dyadic = [0.0_f64; 2];
+        dyadic_base.evaluate(&x_test, &mut out_base_dyadic).unwrap();
+        prec_closure
+            .evaluate(&x_test, &mut out_closure_dyadic)
+            .unwrap();
+        assert_eq!(
+            out_base_dyadic[0].to_bits(),
+            out_closure_dyadic[0].to_bits()
+        );
+        assert_eq!(
+            out_base_dyadic[1].to_bits(),
+            out_closure_dyadic[1].to_bits()
+        );
+    }
+
+    #[test]
+    fn wp14_diagonal_preconditioning_stiff_linear_contraction_accelerates_convergence() {
+        // G(x) = A x + b, where A = diag(0.1, 0.95), b = [0.9, 0.05]^T.
+        // F(x) = x - G(x) = (I - A) x - b = 0.
+        // Exact root is x^* = [1.0, 1.0]^T.
+        // The un-preconditioned contraction factor is q = 0.95 (stiff / slow).
+        struct StiffLinear {
+            a0: f64,
+            a1: f64,
+            b0: f64,
+            b1: f64,
+        }
+        impl RhsOnlyMap for StiffLinear {
+            fn dimension(&self) -> usize {
+                2
+            }
+            fn evaluate(&self, x: &[f64], out: &mut [f64]) -> Result<(), String> {
+                out[0] = self.a0 * x[0] + self.b0;
+                out[1] = self.a1 * x[1] + self.b1;
+                Ok(())
+            }
+        }
+
+        let base_map = StiffLinear {
+            a0: 0.1,
+            a1: 0.95,
+            b0: 0.9,
+            b1: 0.05,
+        };
+
+        // P = (I - A)^{-1} = diag(1 / 0.9, 1 / 0.05) = diag(10/9, 20.0).
+        // With P, I - P(I - A) = 0, so preconditioned map contracts with q = 0.
+        // Even with an approximate preconditioner P = diag(1.0, 18.0),
+        // I - P(I - A) = diag(0.1, 0.1), so q_prec = 0.1 << 0.95.
+        let prec = DiagonalPreconditioner::new(vec![1.0, 18.0]);
+        let prec_map = PreconditionedFixedPointMap::new(
+            StiffLinear {
+                a0: 0.1,
+                a1: 0.95,
+                b0: 0.9,
+                b1: 0.05,
+            },
+            prec,
+        );
+
+        let anchor = vec![0.0, 0.0];
+        let cfg = RhsHomotopyConfig {
+            lambdas: vec![1.0],
+            residual_l2_tolerance: 1e-11,
+            max_iterations_per_lambda: 1000,
+            acceleration: RhsAcceleration::Picard,
+            ..Default::default()
+        };
+
+        let attempt_base = solve_rhs_homotopy(&base_map, &anchor, &cfg);
+        let attempt_prec = solve_rhs_homotopy(&prec_map, &anchor, &cfg);
+
+        assert!(attempt_base.is_success());
+        assert!(attempt_prec.is_success());
+
+        let root_base = attempt_base.root.unwrap();
+        let root_prec = attempt_prec.root.unwrap();
+        assert!((root_base[0] - 1.0).abs() < 1e-9);
+        assert!((root_base[1] - 1.0).abs() < 1e-9);
+        assert!((root_prec[0] - 1.0).abs() < 1e-9);
+        assert!((root_prec[1] - 1.0).abs() < 1e-9);
+
+        // Preconditioning reduces iterations dramatically:
+        // Base Picard requires > 300 iterations (q = 0.95), preconditioned requires <= 12 iterations (q = 0.1).
+        assert!(
+            attempt_prec.points[0].iterations < attempt_base.points[0].iterations / 10,
+            "prec iterations {} should be < 10% of base iterations {}",
+            attempt_prec.points[0].iterations,
+            attempt_base.points[0].iterations
+        );
+        assert!(
+            attempt_prec.work.picard_updates < attempt_base.work.picard_updates / 10,
+            "prec picard updates {} should be < 10% of base updates {}",
+            attempt_prec.work.picard_updates,
+            attempt_base.work.picard_updates
+        );
+    }
+
+    #[test]
+    fn wp14_q_contraction_certificate_verification() {
+        // Valid certified cases: ||P F(x_c)|| <= (1 - q) * r
+        // q = 0.5, r = 2.0, (1 - q) * r = 1.0
+        let cert1 = QContractionCertificate::verify(0.5, 2.0, 0.8);
+        assert!(cert1.is_certified);
+        assert_eq!(cert1.q, 0.5);
+        assert_eq!(cert1.radius, 2.0);
+        assert_eq!(cert1.initial_residual_norm, 0.8);
+        assert!((cert1.root_error_bound().unwrap() - 1.6).abs() < 1e-14);
+        assert!(verify_q_contraction_condition(0.5, 2.0, 0.8));
+
+        // Exact boundary: ||P F(x_c)|| == (1 - q) * r
+        let cert_boundary = QContractionCertificate::verify(0.5, 2.0, 1.0);
+        assert!(cert_boundary.is_certified);
+        assert!((cert_boundary.root_error_bound().unwrap() - 2.0).abs() < 1e-14);
+        assert!(verify_q_contraction_condition(0.5, 2.0, 1.0));
+
+        // Violated case: ||P F(x_c)|| > (1 - q) * r
+        let cert_violated = QContractionCertificate::verify(0.5, 2.0, 1.0001);
+        assert!(!cert_violated.is_certified);
+        assert!(cert_violated.root_error_bound().is_none());
+        assert!(!verify_q_contraction_condition(0.5, 2.0, 1.0001));
+
+        // Invalid q: q >= 1.0 or q < 0.0
+        assert!(!QContractionCertificate::verify(1.0, 2.0, 0.1).is_certified);
+        assert!(!QContractionCertificate::verify(1.5, 2.0, 0.1).is_certified);
+        assert!(!QContractionCertificate::verify(-0.1, 2.0, 0.1).is_certified);
+
+        // Invalid radius: <= 0.0
+        assert!(!QContractionCertificate::verify(0.5, 0.0, 0.0).is_certified);
+        assert!(!QContractionCertificate::verify(0.5, -1.0, 0.1).is_certified);
+
+        // Invalid residual norm: < 0.0
+        assert!(!QContractionCertificate::verify(0.5, 1.0, -0.01).is_certified);
+
+        // Non-finite values
+        assert!(!QContractionCertificate::verify(f64::NAN, 1.0, 0.1).is_certified);
+        assert!(!QContractionCertificate::verify(0.5, f64::INFINITY, 0.1).is_certified);
+        assert!(!QContractionCertificate::verify(0.5, 1.0, f64::NAN).is_certified);
+    }
+
+    #[test]
+    fn wp14_preconditioned_map_delegation_and_errors() {
+        struct MockMap;
+        impl RhsOnlyMap for MockMap {
+            fn dimension(&self) -> usize {
+                3
+            }
+            fn admits(&self, x: &[f64]) -> bool {
+                x.len() == 3 && x[0] >= 0.0
+            }
+            fn model_epoch(&self) -> Option<u64> {
+                Some(42)
+            }
+            fn evaluate(&self, x: &[f64], out: &mut [f64]) -> Result<(), String> {
+                out.copy_from_slice(x);
+                Ok(())
+            }
+        }
+
+        let map = PreconditionedFixedPointMap::new(MockMap, IdentityPreconditioner);
+        assert_eq!(map.dimension(), 3);
+        assert!(map.admits(&[1.0, 0.0, 0.0]));
+        assert!(!map.admits(&[-1.0, 0.0, 0.0]));
+        assert_eq!(map.model_epoch(), Some(42));
+
+        // Dimension mismatch in evaluate:
+        let mut out = [0.0; 2];
+        assert!(map.evaluate(&[1.0, 2.0, 3.0], &mut out).is_err());
+        let mut out = [0.0; 3];
+        assert!(map.evaluate(&[1.0, 2.0], &mut out).is_err());
+
+        // Error propagation from preconditioner:
+        let failing_prec = |_r: &[f64], _out: &mut [f64]| Err("custom prec error".to_string());
+        let fail_map = PreconditionedFixedPointMap::new(MockMap, failing_prec);
+        let mut out3 = [0.0; 3];
+        let err = fail_map.evaluate(&[1.0, 2.0, 3.0], &mut out3).unwrap_err();
+        assert!(err.contains("custom prec error"));
     }
 }

@@ -700,6 +700,7 @@ impl Rodas5p {
             stats,
             status,
             events: Vec::new(),
+            splices: Vec::new(),
             extension: run.segments,
         };
         // Event callbacks are user code too: a fatal callback ends the run.

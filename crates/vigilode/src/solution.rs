@@ -13,6 +13,7 @@ use serde::Serialize;
 use crate::{
     error::SolveError,
     events::EventRecord,
+    hermite_splice::CubicHermiteSplice,
     options::{Options, Tier},
 };
 
@@ -490,6 +491,9 @@ pub struct Solution {
     /// seen: an even number of crossings in a half interval, and a tangent
     /// touch, are missed.
     pub events: Vec<EventRecord>,
+    /// Splice corrections applied to dense output at route switches (WP-11).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub splices: Vec<CubicHermiteSplice>,
     /// The accepted steps' continuous extension, under dense output.
     #[serde(skip)]
     pub(crate) extension: Option<Extension>,
@@ -576,7 +580,7 @@ impl Solution {
     /// the stored state when `t` is one of [`Solution::t`]. Otherwise, and
     /// outside the integrated span, `None`.
     pub fn at(&self, t: f64) -> Option<Vec<f64>> {
-        if let Some(segments) = &self.extension {
+        let mut state = if let Some(segments) = &self.extension {
             let first = self.t.first().copied()?;
             // Beyond the last output (a terminal event truncates inside a
             // step) the kept segment must not be extrapolated.
@@ -584,14 +588,86 @@ impl Solution {
                 return None;
             }
             if t == first {
-                return self.y.first().cloned();
+                self.y.first().cloned()?
+            } else {
+                segments.evaluate(t)?
             }
-            return segments.evaluate(t);
+        } else {
+            self.t
+                .iter()
+                .position(|&time| time == t)
+                .map(|index| self.y[index].clone())?
+        };
+
+        if !self.splices.is_empty() {
+            for splice in &self.splices {
+                splice.apply_correction(&mut state, t);
+            }
         }
-        self.t
-            .iter()
-            .position(|&time| time == t)
-            .map(|index| self.y[index].clone())
+
+        Some(state)
+    }
+
+    /// Evaluate the state at `t` into `out` in place (zero allocation, VG-1).
+    ///
+    /// Evaluates the dense output continuous extension into `out` and applies
+    /// any cubic Hermite splices that contain `t`. Returns `None` if `t` is outside
+    /// the valid domain, or if the buffer length does not match the state dimension.
+    pub fn at_into(&self, t: f64, out: &mut [f64]) -> Option<()> {
+        if let Some(segments) = &self.extension {
+            let first = self.t.first().copied()?;
+            if t > *self.t.last()? {
+                return None;
+            }
+            if t == first {
+                let y0 = self.y.first()?;
+                if out.len() != y0.len() {
+                    return None;
+                }
+                out.copy_from_slice(y0);
+            } else {
+                match segments {
+                    Extension::Sequential(segs) => {
+                        let index = segs.partition_point(|s| s.t_new < t);
+                        let seg = segs.get(index)?;
+                        let val = seg.evaluate(t).ok()?;
+                        if out.len() != val.len() {
+                            return None;
+                        }
+                        out.copy_from_slice(&val);
+                    }
+                    Extension::Fast(segs) => {
+                        segs.evaluate_into(t, out).ok()?;
+                    }
+                }
+            }
+        } else {
+            let index = self.t.iter().position(|&time| time == t)?;
+            let row = &self.y[index];
+            if out.len() != row.len() {
+                return None;
+            }
+            out.copy_from_slice(row);
+        }
+
+        if !self.splices.is_empty() {
+            for splice in &self.splices {
+                splice.apply_correction(out, t);
+            }
+        }
+
+        Some(())
+    }
+
+    /// Add a cubic Hermite splice correction window to the solution.
+    pub fn add_splice(&mut self, splice: CubicHermiteSplice) {
+        self.splices.push(splice);
+    }
+
+    /// Builder helper to attach a cubic Hermite splice correction window.
+    pub fn with_splice(mut self, splice: CubicHermiteSplice) -> Self {
+        self.add_splice(splice);
+        self
     }
 
     /// Drop everything after `t`: the outputs with a time above `t` and the
@@ -604,6 +680,7 @@ impl Solution {
         if let Some(extension) = &mut self.extension {
             extension.truncate_after(t);
         }
+        self.splices.retain(|s| s.t_start < t);
     }
 
     /// `Ok(self)` for a successful run, otherwise
@@ -736,5 +813,21 @@ mod tests {
         assert!(sol.extension.as_ref().unwrap().is_empty());
         assert_eq!(sol.at(0.0), full.at(0.0));
         assert!(sol.at(1e-3).is_none());
+    }
+
+    #[test]
+    fn truncate_after_with_splices() {
+        let sol = solve();
+        let t1 = sol.t[1];
+        let t2 = sol.t[2];
+        let splice1 = CubicHermiteSplice::new(t1, t2, vec![0.1], vec![0.0]).unwrap();
+        let splice2 = CubicHermiteSplice::new(t2, sol.t[3], vec![0.1], vec![0.0]).unwrap();
+        let mut spliced = sol.with_splice(splice1).with_splice(splice2);
+        assert_eq!(spliced.splices.len(), 2);
+
+        spliced.truncate_after(t2);
+        // splice starting at t1 < t2 is kept; splice starting at t2 is dropped.
+        assert_eq!(spliced.splices.len(), 1);
+        assert_eq!(spliced.splices[0].t_start, t1);
     }
 }
