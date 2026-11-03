@@ -49,6 +49,7 @@ pub use gmres_staged::{
     StagedGuardAbort, StagedSolveTelemetry, TargetAttainment, VerifiedBound, solve_staged_gmres,
     solve_staged_gmres_observed, staged_guard_test,
 };
+pub use kernels::two_pass_cgs_into;
 pub use lgmres::{
     LgmresConfig, LgmresState, solve_lgmres, solve_lgmres_with_residual_scale,
     solve_lgmres_with_workspace, solve_lgmres_with_workspace_and_residual_scale,

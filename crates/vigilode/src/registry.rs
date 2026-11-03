@@ -1041,17 +1041,18 @@ pub fn compute_provider_epoch(route: RouteId, problem: &Problem) -> u64 {
     hasher.finish()
 }
 
-/// Compute the 64-bit window epoch digest from the window endpoints.
+/// Compute the 64-bit window epoch digest from the window endpoints using fixed-layout SHA-256.
 ///
-/// `_checkpoint_index` is ignored: a window is identified by its endpoints, so
-/// the identity built for a batch and the comparisons in the drive loop agree
-/// for the same window. The parameter is kept so the public signature does not
-/// change.
-pub fn compute_window_epoch(_checkpoint_index: usize, start: f64, target: f64) -> u64 {
-    let mut hasher = Fnv1a64::default();
-    start.to_bits().hash(&mut hasher);
-    target.to_bits().hash(&mut hasher);
-    hasher.finish()
+/// Layout: `(checkpoint_index as u64).to_le_bytes() ++ start.to_bits().to_le_bytes() ++ target.to_bits().to_le_bytes()` (24 bytes).
+/// Digest: First 8 bytes of SHA-256 in little-endian order.
+/// Note: -0.0 and +0.0 have distinct bit representations and yield distinct epochs.
+pub fn compute_window_epoch(checkpoint_index: usize, start: f64, target: f64) -> u64 {
+    let mut bytes = [0u8; 24];
+    bytes[0..8].copy_from_slice(&(checkpoint_index as u64).to_le_bytes());
+    bytes[8..16].copy_from_slice(&start.to_bits().to_le_bytes());
+    bytes[16..24].copy_from_slice(&target.to_bits().to_le_bytes());
+    let digest = rodas5p_core::sha256_bytes(&bytes);
+    u64::from_le_bytes(digest[0..8].try_into().expect("slice has 8 bytes"))
 }
 
 /// Formal state machine states (Section 5.3).
@@ -1122,7 +1123,7 @@ pub fn next_solver_state(
 
         (EntryTrial, PilotWonStrict) => Ok(ImplicitTenure),
         (EntryTrial, PilotLostOrCeiling) => Ok(ExplicitTenure),
-        (EntryTrial, FatalStop) => Ok(Stopped),
+        (EntryTrial, FatalStop | BudgetStop) => Ok(Stopped),
 
         (ImplicitTenure, ImplicitBatchDone) => Ok(ImplicitTenure),
         (ImplicitTenure, RecheckDue) => Ok(ReturnTrial),
@@ -1131,11 +1132,56 @@ pub fn next_solver_state(
 
         (ReturnTrial, ReturnWonStrict) => Ok(ExplicitTenure),
         (ReturnTrial, ReturnLost) => Ok(ImplicitTenure),
+        (ReturnTrial, FatalStop | BudgetStop) => Ok(Stopped),
 
         (ReturnSentinel, SentinelWon) => Ok(ExplicitTenure),
         (ReturnSentinel, SentinelLost) => Ok(ImplicitTenure),
+        (ReturnSentinel, FatalStop | BudgetStop) => Ok(Stopped),
 
         (Stopped, _) => Err("cannot transition out of Stopped state"),
         _ => Err("illegal state transition"),
+    }
+}
+
+#[cfg(test)]
+mod wp01_state_machine_tests {
+    use super::*;
+
+    #[test]
+    fn wp01_next_solver_state_is_total_on_reachable_budget_and_fatal_stops() {
+        use SolverState::*;
+        use TransitionCause::*;
+
+        // Verify all reachable non-Stopped states handle FatalStop and BudgetStop safely
+        for state in [
+            ExplicitTenure,
+            EntryTrial,
+            ImplicitTenure,
+            ReturnTrial,
+            ReturnSentinel,
+        ] {
+            assert_eq!(
+                next_solver_state(state, FatalStop),
+                Ok(Stopped),
+                "FatalStop on {state:?}"
+            );
+            assert_eq!(
+                next_solver_state(state, BudgetStop),
+                Ok(Stopped),
+                "BudgetStop on {state:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn wp02_golden_window_epochs_match_sha256_spec() {
+        assert_eq!(compute_window_epoch(0, 0.0, 1.0), 0x5718834c1304ae04);
+        assert_eq!(compute_window_epoch(3, 0.25, 0.5), 0x27a1328542cc99d0);
+        assert_eq!(compute_window_epoch(17, -1.5, 2e-300), 0x8b1b1407ca5e33aa);
+
+        // -0.0 and +0.0 give different epochs (bit layout distinctness)
+        let pos_zero_epoch = compute_window_epoch(0, 0.0, 1.0);
+        let neg_zero_epoch = compute_window_epoch(0, -0.0, 1.0);
+        assert_ne!(pos_zero_epoch, neg_zero_epoch);
     }
 }

@@ -10,7 +10,8 @@
 //! changes. An extrapolation replaces a fully evaluated Picard candidate only
 //! when its original-map residual is smaller. For an exact contraction of
 //! factor q on a common invariant domain, the selected residual decreases by
-//! at least q per update, and the root error is at most residual / (1-q).
+//! at least q per update (residual = fixed-point residual of the map iterated
+//! at the current lambda), and the root error is at most residual / (1-q).
 //! The binary64 residual returned here is an operational measurement: callers
 //! supplying a rigorous error bound must also bound evaluation and rounding.
 
@@ -124,6 +125,13 @@ pub struct RhsHomotopyAttempt {
     pub points: Vec<RhsHomotopyPoint>,
     pub work: RhsHomotopyWork,
     pub failure: Option<RhsHomotopyFailure>,
+}
+
+impl RhsHomotopyAttempt {
+    /// Whether the attempt converged to a root passing the requested tolerance.
+    pub fn is_success(&self) -> bool {
+        self.root.is_some() && self.failure.is_none()
+    }
 }
 
 fn failure(kind: RhsHomotopyFailureKind, message: &str) -> RhsHomotopyFailure {
@@ -1113,4 +1121,39 @@ fn run_contraction_fast_first<M: RhsOnlyMap + ?Sized>(
         });
     }
     Ok(seed)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn wp01c_contraction_residual_decreases_by_factor_l() {
+        struct LinearContraction {
+            factor: f64,
+        }
+        impl RhsOnlyMap for LinearContraction {
+            fn dimension(&self) -> usize {
+                1
+            }
+            fn evaluate(&self, x: &[f64], out: &mut [f64]) -> Result<(), String> {
+                out[0] = self.factor * x[0];
+                Ok(())
+            }
+        }
+
+        let map = LinearContraction { factor: 0.5 };
+        let anchor = vec![1.0];
+        let cfg = RhsHomotopyConfig {
+            lambdas: vec![1.0],
+            residual_l2_tolerance: 1e-12,
+            max_iterations_per_lambda: 50,
+            acceleration: RhsAcceleration::Picard,
+            ..Default::default()
+        };
+        let attempt = solve_rhs_homotopy(&map, &anchor, &cfg);
+        assert!(attempt.is_success());
+        let root = attempt.root.expect("root found");
+        assert!(root[0].abs() < 1e-11);
+    }
 }

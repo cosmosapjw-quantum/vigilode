@@ -135,6 +135,9 @@ pub enum ControllerRecord {
     PredictiveCapped,
     /// The `PredictiveCapped2` policy or outcome.
     PredictiveCapped2,
+    /// Ringing-resistant digital-filter step-size controller H211b.
+    #[serde(rename = "h211b")]
+    H211b,
 }
 
 impl From<&rodas5p_integrators::ControllerKind> for ControllerRecord {
@@ -145,6 +148,7 @@ impl From<&rodas5p_integrators::ControllerKind> for ControllerRecord {
             rodas5p_integrators::ControllerKind::Predictive => Self::Predictive,
             rodas5p_integrators::ControllerKind::PredictiveCapped => Self::PredictiveCapped,
             rodas5p_integrators::ControllerKind::PredictiveCapped2 => Self::PredictiveCapped2,
+            rodas5p_integrators::ControllerKind::H211b => Self::H211b,
         }
     }
 }

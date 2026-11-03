@@ -4,6 +4,10 @@ pub fn sha256_hex(bytes: &[u8]) -> String {
     hex::encode(Sha256::digest(bytes))
 }
 
+pub fn sha256_bytes(bytes: &[u8]) -> [u8; 32] {
+    Sha256::digest(bytes).into()
+}
+
 pub fn sha256_f64_slice_bytes(values: &[f64]) -> [u8; 32] {
     let mut hasher = Sha256::new();
     for v in values {

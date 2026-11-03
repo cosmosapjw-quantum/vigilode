@@ -77,6 +77,53 @@ pub fn two_pass_mgs_into(
     Ok(())
 }
 
+/// Two-pass Classical Gram–Schmidt orthogonalization (CGS2).
+///
+/// Computes `h1 = V^T w`, `w = w - V h1`, followed by `h2 = V^T w`, `w = w - V h2`.
+/// Delivers level-2 BLAS gemv structure while matching MGS2 numerical orthogonality
+/// and preserving identical WorkCounters (WP-08).
+#[allow(dead_code)]
+pub fn two_pass_cgs_into(
+    w: &mut [f64],
+    basis: &[Vec<f64>],
+    coefficients: &mut [f64],
+    counters: &mut WorkCounters,
+) -> CoreResult<()> {
+    if coefficients.len() < basis.len() {
+        return Err(CoreError::Dimension(
+            "CGS coefficient scratch mismatch".into(),
+        ));
+    }
+    if basis.is_empty() {
+        return Ok(());
+    }
+    let n = w.len();
+    if basis.iter().any(|vector| vector.len() != n) {
+        return Err(CoreError::Dimension("CGS basis shape mismatch".into()));
+    }
+
+    let j = basis.len();
+    coefficients[..j].fill(0.0);
+
+    // Pass 1: Project w onto basis
+    for k in 0..j {
+        let alpha = dot(&basis[k], w, counters)?;
+        coefficients[k] += alpha;
+    }
+    for k in 0..j {
+        axpy(-coefficients[k], &basis[k], w, counters)?;
+    }
+
+    // Pass 2: Re-orthogonalize w against basis
+    for k in 0..j {
+        let alpha = dot(&basis[k], w, counters)?;
+        coefficients[k] += alpha;
+        axpy(-alpha, &basis[k], w, counters)?;
+    }
+
+    Ok(())
+}
+
 pub fn two_pass_mgs(
     w: &mut [f64],
     basis: &[Vec<f64>],
@@ -111,4 +158,45 @@ pub fn normalize(v: &mut [f64]) -> CoreResult<f64> {
         scale(1.0 / n, v);
     }
     Ok(n)
+}
+
+#[cfg(test)]
+mod cgs2_tests {
+    use super::*;
+
+    #[test]
+    fn test_two_pass_cgs_into_orthogonality_and_counter_parity() {
+        let mut counters_mgs = WorkCounters::default();
+        let mut counters_cgs = WorkCounters::default();
+
+        let v1 = vec![1.0, 0.0, 0.0, 0.0];
+        let v2 = vec![0.0, 1.0, 0.0, 0.0];
+        let basis = vec![v1, v2];
+
+        let mut w_mgs = vec![1.0, 2.0, 3.0, 4.0];
+        let mut w_cgs = w_mgs.clone();
+        let mut coeff_mgs = [0.0; 2];
+        let mut coeff_cgs = [0.0; 2];
+
+        two_pass_mgs_into(&mut w_mgs, &basis, &mut coeff_mgs, &mut counters_mgs).unwrap();
+        two_pass_cgs_into(&mut w_cgs, &basis, &mut coeff_cgs, &mut counters_cgs).unwrap();
+
+        // Check work counter parity
+        assert_eq!(
+            counters_mgs.orthogonalization_inner_products,
+            counters_cgs.orthogonalization_inner_products
+        );
+        assert_eq!(
+            counters_mgs.orthogonalization_vector_updates,
+            counters_cgs.orthogonalization_vector_updates
+        );
+        assert_eq!(counters_cgs.orthogonalization_inner_products, 4); // 2 passes * 2 vectors
+        assert_eq!(counters_cgs.orthogonalization_vector_updates, 4);
+
+        // Check numerical orthogonality: V^T w < 1e-15
+        for v in &basis {
+            let mut c = WorkCounters::default();
+            assert!(dot(v, &w_cgs, &mut c).unwrap().abs() < 1e-15);
+        }
+    }
 }

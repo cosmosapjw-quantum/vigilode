@@ -51,7 +51,7 @@ pub use directed::{
     scale_pow2_nearest_counted, scale_pow2_up,
 };
 pub use error::{CoreError, CoreResult};
-pub use hash::{sha256_f64_slice_bytes, sha256_hex};
+pub use hash::{sha256_bytes, sha256_f64_slice_bytes, sha256_hex};
 pub use leja_action::{
     CertifiedLejaCoeffCache, CertifiedLejaReport, CertifiedLejaWorkspace, LEJA_CERTIFIED_SCHEMA,
     LEJA_DEGREE_CAP, LEJA_RANGE_LIMIT, LEJA_SCHEMA, LEJA_TOTAL_NOT_CERTIFIED, LejaReport,

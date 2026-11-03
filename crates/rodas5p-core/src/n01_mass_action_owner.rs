@@ -396,6 +396,7 @@ impl N01MassActionOwner {
 }
 
 #[cfg(test)]
+#[allow(clippy::items_after_test_module)]
 mod tests {
     use super::*;
     fn owner() -> N01MassActionOwner {
