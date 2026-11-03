@@ -343,6 +343,12 @@ pub struct Rodas5pWindowDriver {
 
 impl Rodas5pWindowDriver {
     /// Create a Rodas5p driver for the given problem's Jacobian configuration.
+    ///
+    /// This is the only route selection the switcher performs: it yields
+    /// `Rodas5pDense`, `Rodas5pBanded`, `Rodas5pMatrixFree` or
+    /// `Rodas5pFiniteDifference`. `Rodas5pJvpAssembled` (via [`Self::with_route`])
+    /// and `PexprbWindowDriver` are stand-alone drivers until a preregistered
+    /// admission wires them in.
     pub fn for_problem(problem: &Problem) -> Self {
         let route = match &problem.jacobian {
             crate::problem::Jacobian::Dense(_) => RouteId::Rodas5pDense,

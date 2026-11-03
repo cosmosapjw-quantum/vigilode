@@ -395,6 +395,64 @@ fn f8_declared_entry_policy_must_match_effective_schedule() {
 // ---- T-F9 ------------------------------------------------------------------
 
 #[test]
+fn f9_switcher_route_selection_is_limited_to_legacy_routes() {
+    use vigilode::{Rodas5pWindowDriver, RouteId, WindowDriver};
+    assert_eq!(
+        Rodas5pWindowDriver::for_problem(&stiff_forced()).route(),
+        RouteId::Rodas5pDense
+    );
+    assert_eq!(
+        Rodas5pWindowDriver::for_problem(&rotation()).route(),
+        RouteId::Rodas5pMatrixFree
+    );
+}
+
+#[test]
+fn f9_reference_counters_after_remediation() {
+    let cases = [
+        (
+            "evidence_driven",
+            SwitchingConfig::evidence_driven(provided()),
+            (892, 5371, 355),
+            (66, 456),
+        ),
+        (
+            "adaptive_evidence",
+            SwitchingConfig::adaptive_evidence(provided()),
+            (892, 5371, 355),
+            (58, 394),
+        ),
+        (
+            "route_registry",
+            SwitchingConfig::route_registry(provided()),
+            (883, 5307, 149),
+            (59, 400),
+        ),
+    ];
+    for (name, cfg, rot_expected, sf_expected) in cases {
+        let rot = solve(&rotation(), &[1.0, 0.0], &cfg);
+        assert!(rot.success, "{name}");
+        assert_eq!(
+            (
+                rot.stats.attempts,
+                rot.stats.rhs_calls,
+                discarded_rodas_jvp(&rot)
+            ),
+            rot_expected,
+            "{name} rotation"
+        );
+        let sf = solve(&stiff_forced(), &[1.0], &cfg);
+        assert!(sf.success, "{name}");
+        assert_eq!(
+            (sf.stats.attempts, sf.stats.rhs_calls),
+            sf_expected,
+            "{name} stiff-forced"
+        );
+        assert_eq!(sf.stats.switches, 1, "{name} stiff-forced switches");
+    }
+}
+
+#[test]
 fn skeleton_helpers_reproduce_registered_counters() {
     // Guards the helpers themselves: the evidence-driven factory must give the
     // registered L-0171 counters on both models (COMPARISON.md, "after" column).

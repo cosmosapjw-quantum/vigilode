@@ -93,3 +93,11 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - red: f8_declared_entry_policy_must_match_effective_schedule (does not compile on base)
 - mutation: caught 3, missed 0, waived 0
 - notes: validated declared entry_policy against effective schedule; pre-flight refusal before callbacks
+## F9 — Document the switcher route set and pin the post-remediation counters (A-8) — 2026-11-03
+- result: done
+- commit: uncommitted
+- toolchain: pinned 1.94.1
+- commands: contracts: 0, lib-unit-tests: 0, vigilode-suite: 0, clippy: 0, fmt: 0
+- red: none
+- mutation: none
+- notes: documented switcher route selection on Rodas5pWindowDriver::for_problem and pinned post-remediation reference counters
