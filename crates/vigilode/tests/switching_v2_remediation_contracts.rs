@@ -169,6 +169,20 @@ fn f4_progress_reach_upper_bound_boundary_table() {
 
 // ---- T-F5 ------------------------------------------------------------------
 
+#[test]
+fn f5_first_explicit_batch_keeps_configured_budget_on_small_dense_routes() {
+    let cfg = SwitchingConfig::route_registry(provided());
+    assert_eq!(cfg.explicit_attempt_budget, 32);
+    let sf = solve(&stiff_forced(), &[1.0], &cfg);
+    let first = sf
+        .stats
+        .segments
+        .iter()
+        .find(|s| s.method == SwitchingMethod::Dopri5 && !s.is_probe)
+        .expect("an explicit batch");
+    assert_eq!(first.attempts, 32);
+}
+
 // ---- T-F6 ------------------------------------------------------------------
 
 // ---- T-F7 ------------------------------------------------------------------

@@ -61,3 +61,11 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - red: f4_progress_reach_upper_bound_boundary_table (does not compile on base)
 - mutation: caught 31, missed 0, waived 0
 - notes: implemented progress_reach_upper_bound with c_min = 7 callbacks; updated economy contracts
+## F5 — Keep the B7 first-batch rule; document why and pin it (A-7) — 2026-11-03
+- result: done
+- commit: uncommitted
+- toolchain: pinned 1.94.1
+- commands: contracts: 0, lib-unit-tests: 0, vigilode-suite: 0, clippy: 0, fmt: 0
+- red: none
+- mutation: none
+- notes: documented B7 first-batch rule and pinned with contract test

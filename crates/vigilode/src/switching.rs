@@ -1626,6 +1626,11 @@ fn drive_windows(
                     let c_d = 6.0;
                     let rho = config.entry_cost_ratio.max(1e-12);
                     let k_d0_min = ((3.0 * c_r) / (rho * c_d)).ceil() as usize;
+                    // B7 keeps `max`: for n <= 35 it leaves the configured first
+                    // batch unchanged, for larger dense n it lengthens it. The
+                    // shortening `min` variant raised stiff-forced RHS calls from
+                    // 400 to 1840 in the design dry run (DESIGN.md, task F5); a
+                    // change needs the preregistered node of task X10.
                     budget = budget.max(k_d0_min);
                 }
                 budget
