@@ -1,0 +1,2355 @@
+{
+  "schema": "vigilode.agent-tasks.v1",
+  "base_commit": "4339facc62258b5fb9a2469f16a3af8b93763e24",
+  "design_doc": "docs/agent/switcher_v2_remediation/DESIGN.md",
+  "generated": "2026-11-03",
+  "notes": "Generated from one source together with DESIGN.md. Agents may not edit this file.",
+  "global": {
+    "forbidden_paths": [
+      "Cargo.lock",
+      "Cargo.toml",
+      "crates/*/Cargo.toml",
+      "rust-toolchain.toml",
+      ".cargo/*",
+      ".github/*",
+      "CLAUDE.md",
+      ".claude/*",
+      "tools/agent_gate.py",
+      "docs/agent/switcher_v2_remediation/DESIGN.md",
+      "docs/agent/switcher_v2_remediation/TASKS.json",
+      "docs/agent/switcher_v2_remediation/TASKS.schema.json",
+      "docs/agent/switcher_v2_remediation/build/*",
+      "docs/agent/switcher_v2_remediation/reference/*",
+      "crates/vigilode/tests/golden/*",
+      "fixtures/*"
+    ],
+    "always_allowed": [
+      ".agent/*",
+      "docs/agent/switcher_v2_remediation/PROGRESS.md"
+    ],
+    "append_only": [
+      "research/LEDGER.jsonl",
+      "docs/agent/switcher_v2_remediation/PROGRESS.md"
+    ],
+    "forbidden_added_patterns": [
+      {
+        "regex": "\\bunsafe\\b",
+        "paths": [
+          "crates/*.rs"
+        ],
+        "reason": "INV-12 no unsafe code"
+      },
+      {
+        "regex": "#!?\\[allow\\(",
+        "paths": [
+          "crates/*.rs"
+        ],
+        "reason": "INV-12 no lint suppression"
+      },
+      {
+        "regex": "#\\[ignore",
+        "paths": [
+          "crates/*.rs"
+        ],
+        "reason": "INV-11 no ignored tests"
+      },
+      {
+        "regex": "\\b(todo|unimplemented|dbg)!\\(",
+        "paths": [
+          "crates/*.rs"
+        ],
+        "reason": "no placeholders or debug output"
+      },
+      {
+        "regex": "\\b(e?println)!\\(",
+        "paths": [
+          "crates/*/src/*.rs"
+        ],
+        "reason": "no printing in library code"
+      },
+      {
+        "regex": "\\.unwrap\\(\\)",
+        "paths": [
+          "crates/*/src/*.rs"
+        ],
+        "reason": "code under src (unit tests included) uses expect(\"reason\") instead of unwrap()"
+      },
+      {
+        "regex": "(Instant::now|SystemTime|thread_rng|rand::)",
+        "paths": [
+          "crates/*/src/*.rs"
+        ],
+        "reason": "INV-05 determinism"
+      },
+      {
+        "regex": "collections::hash_map::DefaultHasher",
+        "paths": [
+          "crates/vigilode/src/*.rs"
+        ],
+        "reason": "INV-05 epochs use Fnv1a64"
+      },
+      {
+        "regex": "assert!\\(\\s*true\\s*\\)",
+        "paths": [
+          "crates/*.rs"
+        ],
+        "reason": "vacuous assertion"
+      }
+    ],
+    "forbidden_removed_patterns": [
+      {
+        "regex": "^\\s*#\\[test\\]",
+        "paths": [
+          "crates/*.rs"
+        ],
+        "reason": "INV-11 removing a test"
+      },
+      {
+        "regex": "\\bassert(_eq|_ne)?!",
+        "paths": [
+          "crates/*/tests/*.rs",
+          "crates/*/src/*.rs"
+        ],
+        "reason": "INV-11 removing or rewriting an assertion"
+      },
+      {
+        "regex": ".",
+        "paths": [
+          "research/*/PREREGISTRATION.md"
+        ],
+        "reason": "INV-13 preregistrations are append-only"
+      }
+    ],
+    "invariants": [
+      {
+        "id": "INV-01",
+        "text": "Default-path neutrality: `SwitchingConfig::evidence_driven`, `SwitchingConfig::default()` and the direct Rodas5p/Dopri5 solves keep bit-identical states and identical counters on the registered cells, unless the task kind is default_behaviour. Evidence: `skeleton_helpers_reproduce_registered_counters` stays green."
+      },
+      {
+        "id": "INV-02",
+        "text": "research/LEDGER.jsonl is append-only: one JSON object per line with the ten fields of docs/RESEARCH_LEDGER.md. Existing rows use mixed key orders and separators; new rows are written by the row script of DESIGN.md 13.2."
+      },
+      {
+        "id": "INV-03",
+        "text": "Units: a guard ceiling is in callback units (RHS 1, JVP 1 per vector, dense Jacobian n). WorkModel V2 values are instruction units (Ir). Convert V2 to a callback ceiling only through `v2_entry_callback_cap` / `v2_return_callback_cap`."
+      },
+      {
+        "id": "INV-04",
+        "text": "Decision preservation: an early stop armed by a ceiling never changes a strict entry/return decision compared with the same comparison run without the ceiling."
+      },
+      {
+        "id": "INV-05",
+        "text": "Determinism: no wall clock, randomness, thread timing or HashMap iteration order in any decision path; epoch digests use the FNV-1a hasher after F7."
+      },
+      {
+        "id": "INV-06",
+        "text": "Accounting completeness: every user-callback evaluation made by the library is added to `stats.rhs_calls` / `stats.jvp_vectors` (or the matching counter)."
+      },
+      {
+        "id": "INV-07",
+        "text": "Scope: only files listed in the task's files_allowed (plus always_allowed) change."
+      },
+      {
+        "id": "INV-08",
+        "text": "Public API is additive: no public item is removed, renamed or changes signature unless the task says so."
+      },
+      {
+        "id": "INV-09",
+        "text": "Opt-in: new behaviour is reachable only through the named factory or a config field whose default keeps the old behaviour (task kinds opt_in_behaviour, experiment)."
+      },
+      {
+        "id": "INV-10",
+        "text": "Tests first: every behavioural test of the task fails on the task's base commit (`agent_gate.py red`) and passes after the change."
+      },
+      {
+        "id": "INV-11",
+        "text": "No weakening: existing assertions, tolerances and test functions are not deleted or relaxed, except the exact lines listed in the task's removals_allowed."
+      },
+      {
+        "id": "INV-12",
+        "text": "No new dependencies, toolchain or lockfile changes; no unsafe code; no lint suppression attributes."
+      },
+      {
+        "id": "INV-13",
+        "text": "Research claims: a verdict comes only from the preregistered gate; PREREGISTRATION.md is never edited above its results section; a ledger row whose commit is not reachable from a remote is not written."
+      },
+      {
+        "id": "INV-14",
+        "text": "Exactness: anchors are matched as exact text with the stated occurrence count; never edit by line number or by approximate match."
+      },
+      {
+        "id": "INV-15",
+        "text": "Traceability: every finished task has one commit with the task's commit_message, a PROGRESS.md entry and a passing gate record in .agent/STATE.json."
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "id": "G0",
+      "title": "Verify the environment and the baseline at the design commit",
+      "phase": 0,
+      "tier": "S",
+      "kind": "governance",
+      "depends_on": [],
+      "files_allowed": [],
+      "anchors": [
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "text": "// ---- T-F1 ----",
+          "count": 1,
+          "at": "head"
+        },
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "text": "fn skeleton_helpers_reproduce_registered_counters()",
+          "count": 1,
+          "at": "head"
+        }
+      ],
+      "design_section": "t-g0",
+      "invariants": [
+        "INV-01",
+        "INV-15"
+      ],
+      "tests_required": [
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "name": "skeleton_helpers_reproduce_registered_counters"
+        }
+      ],
+      "commands": [
+        {
+          "name": "gate-validate",
+          "cmd": "python3 tools/agent_gate.py validate",
+          "timeout_s": 120
+        },
+        {
+          "name": "contracts",
+          "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+          "timeout_s": 1800
+        },
+        {
+          "name": "vigilode-suite",
+          "cmd": "cargo test --locked -p vigilode --release --no-fail-fast",
+          "timeout_s": 3600
+        },
+        {
+          "name": "clippy",
+          "cmd": "cargo clippy --locked -p vigilode --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "fmt",
+          "cmd": "cargo fmt -p vigilode -- --check",
+          "timeout_s": 300
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "test_name_present",
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "text": "skeleton_helpers_reproduce_registered_counters"
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md",
+        "the pinned toolchain is unavailable and RUSTUP_TOOLCHAIN=stable also fails to build"
+      ],
+      "commit_message": "chore(agent): G0 baseline verified at the design commit",
+      "removals_allowed": [],
+      "red": {
+        "tests": [],
+        "allow_compile_red": false,
+        "new_symbols": []
+      },
+      "spec_only": false,
+      "mutation_waivers": {}
+    },
+    {
+      "id": "G1",
+      "title": "Supersede ledger row L-0206 with INVALID and keep the as-preregistered rerun",
+      "phase": 0,
+      "tier": "H",
+      "kind": "governance",
+      "depends_on": [
+        "G0"
+      ],
+      "files_allowed": [
+        "tools/agent_reproduce_e1_prereg.py",
+        "research/switcher_work_model_v2_20261103/RESULTS_AS_PREREGISTERED.json",
+        "research/switcher_work_model_v2_20261103/INVALIDATION.md",
+        "research/LEDGER.jsonl"
+      ],
+      "anchors": [
+        {
+          "file": "research/LEDGER.jsonl",
+          "text": "\"L-0206\"",
+          "count": 1
+        },
+        {
+          "file": "research/switcher_work_model_v2_20261103/eval_work_model.py",
+          "text": "out_path = os.path.join(root, 'research', 'switcher_work_model_v2_20261103', 'RESULTS.json')",
+          "count": 1
+        }
+      ],
+      "design_section": "t-g1",
+      "invariants": [
+        "INV-02",
+        "INV-13"
+      ],
+      "tests_required": [],
+      "commands": [
+        {
+          "name": "reproduce",
+          "cmd": "python3 -I tools/agent_reproduce_e1_prereg.py",
+          "timeout_s": 600
+        },
+        {
+          "name": "research-node-check",
+          "cmd": "python3 tools/check-research-node.py",
+          "timeout_s": 600
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "grep_present",
+          "file": "research/LEDGER.jsonl",
+          "text": "\"supersedes\": \"L-0206\""
+        },
+        {
+          "kind": "grep_present",
+          "file": "research/switcher_work_model_v2_20261103/RESULTS_AS_PREREGISTERED.json",
+          "text": "\"verdict\": \"FAIL\""
+        }
+      ],
+      "ledger_required": true,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md",
+        "the rerun verdict is not FAIL",
+        "tools/check-research-node.py reports a stall or schema error"
+      ],
+      "commit_message": "docs(research): G1 supersede L-0206 with INVALID (post-run gate change)",
+      "removals_allowed": [],
+      "red": {
+        "tests": [],
+        "allow_compile_red": false,
+        "new_symbols": []
+      },
+      "spec_only": false,
+      "mutation_waivers": {}
+    },
+    {
+      "id": "G2",
+      "title": "Re-scope ledger row L-0205 to default-path neutrality",
+      "phase": 0,
+      "tier": "H",
+      "kind": "governance",
+      "depends_on": [
+        "G1"
+      ],
+      "files_allowed": [
+        "research/LEDGER.jsonl"
+      ],
+      "anchors": [
+        {
+          "file": "research/LEDGER.jsonl",
+          "text": "\"L-0205\"",
+          "count": 1
+        }
+      ],
+      "design_section": "t-g2",
+      "invariants": [
+        "INV-02",
+        "INV-13"
+      ],
+      "tests_required": [],
+      "commands": [
+        {
+          "name": "research-node-check",
+          "cmd": "python3 tools/check-research-node.py",
+          "timeout_s": 600
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "grep_present",
+          "file": "research/LEDGER.jsonl",
+          "text": "\"supersedes\": \"L-0205\""
+        }
+      ],
+      "ledger_required": true,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md"
+      ],
+      "commit_message": "docs(research): G2 re-scope L-0205 to default-path neutrality",
+      "removals_allowed": [],
+      "red": {
+        "tests": [],
+        "allow_compile_red": false,
+        "new_symbols": []
+      },
+      "spec_only": false,
+      "mutation_waivers": {}
+    },
+    {
+      "id": "F1",
+      "title": "Restore adaptive_evidence without loss-margin backoff (A-4)",
+      "phase": 1,
+      "tier": "S",
+      "kind": "default_behaviour",
+      "depends_on": [
+        "G0"
+      ],
+      "files_allowed": [
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+        "crates/vigilode/tests/switching_economy_contracts.rs"
+      ],
+      "design_section": "t-f1",
+      "invariants": [
+        "INV-01",
+        "INV-07",
+        "INV-10",
+        "INV-11"
+      ],
+      "tests_required": [
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "name": "f1_adaptive_evidence_factory_has_no_loss_margin_backoff"
+        }
+      ],
+      "commands": [
+        {
+          "name": "contracts",
+          "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+          "timeout_s": 1800
+        },
+        {
+          "name": "lib-unit-tests",
+          "cmd": "cargo test --locked -p vigilode --release --lib",
+          "timeout_s": 1800
+        },
+        {
+          "name": "vigilode-suite",
+          "cmd": "cargo test --locked -p vigilode --release --no-fail-fast",
+          "timeout_s": 3600
+        },
+        {
+          "name": "clippy",
+          "cmd": "cargo clippy --locked -p vigilode --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "fmt",
+          "cmd": "cargo fmt -p vigilode -- --check",
+          "timeout_s": 300
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "mutation",
+          "package": "vigilode",
+          "cargo_test_args": [
+            "--test",
+            "switching_v2_remediation_contracts",
+            "--lib"
+          ],
+          "max_missed": 0,
+          "jobs": 1,
+          "timeout_s": 600
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md"
+      ],
+      "commit_message": "fix(vigilode): F1 keep loss-margin backoff out of adaptive_evidence (audit A-4)",
+      "removals_allowed": [],
+      "red": {
+        "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+        "copy": [
+          "crates/vigilode/tests/switching_v2_remediation_contracts.rs"
+        ],
+        "tests": [
+          "f1_adaptive_evidence_factory_has_no_loss_margin_backoff"
+        ],
+        "allow_compile_red": false,
+        "new_symbols": [],
+        "timeout_s": 3600
+      },
+      "spec_only": false,
+      "anchors": [
+        {
+          "file": "crates/vigilode/src/switching.rs",
+          "text": "    pub fn adaptive_evidence(fallback: DerivativeFallback) -> Self {\n        Self {\n            entry_probe_adaptation: Some(EntryProbeAdaptation {\n                loss_margin_backoff: true,\n                ..EntryProbeAdaptation::default()\n            }),",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/tests/switching_economy_contracts.rs",
+          "text": "    assert!(\n        adaptive_adaptation.loss_margin_backoff,\n        \"adaptive_evidence must enable loss_margin_backoff\"\n    );",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "text": "// ---- T-F1 ",
+          "count": 1,
+          "at": "head"
+        }
+      ],
+      "mutation_waivers": {}
+    },
+    {
+      "id": "F2",
+      "title": "Convert WorkModel V2 ceilings to callback units (A-5)",
+      "phase": 1,
+      "tier": "M",
+      "kind": "opt_in_behaviour",
+      "depends_on": [
+        "F1"
+      ],
+      "files_allowed": [
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/tests/switching_v2_remediation_contracts.rs"
+      ],
+      "design_section": "t-f2",
+      "invariants": [
+        "INV-03",
+        "INV-04",
+        "INV-07",
+        "INV-10"
+      ],
+      "tests_required": [
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "name": "f2_v2_entry_ceiling_stops_losing_rotation_pilots_like_v1"
+        },
+        {
+          "file": "crates/vigilode/src/switching.rs",
+          "name": "v2_entry_callback_cap_matches_boundary_table"
+        },
+        {
+          "file": "crates/vigilode/src/switching.rs",
+          "name": "v2_return_callback_cap_matches_boundary_table"
+        },
+        {
+          "file": "crates/vigilode/src/switching.rs",
+          "name": "v2_caps_are_decision_preserving"
+        }
+      ],
+      "commands": [
+        {
+          "name": "contracts",
+          "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+          "timeout_s": 1800
+        },
+        {
+          "name": "lib-unit-tests",
+          "cmd": "cargo test --locked -p vigilode --release --lib",
+          "timeout_s": 1800
+        },
+        {
+          "name": "vigilode-suite",
+          "cmd": "cargo test --locked -p vigilode --release --no-fail-fast",
+          "timeout_s": 3600
+        },
+        {
+          "name": "clippy",
+          "cmd": "cargo clippy --locked -p vigilode --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "fmt",
+          "cmd": "cargo fmt -p vigilode -- --check",
+          "timeout_s": 300
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "mutation",
+          "package": "vigilode",
+          "cargo_test_args": [
+            "--test",
+            "switching_v2_remediation_contracts",
+            "--lib"
+          ],
+          "max_missed": 0,
+          "jobs": 1,
+          "timeout_s": 600
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md"
+      ],
+      "commit_message": "fix(vigilode): F2 arm V2 pilot ceilings in callback units (audit A-5)",
+      "removals_allowed": [],
+      "red": {
+        "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+        "copy": [
+          "crates/vigilode/tests/switching_v2_remediation_contracts.rs"
+        ],
+        "tests": [
+          "f2_v2_entry_ceiling_stops_losing_rotation_pilots_like_v1"
+        ],
+        "allow_compile_red": false,
+        "new_symbols": [],
+        "timeout_s": 3600
+      },
+      "spec_only": false,
+      "anchors": [
+        {
+          "file": "crates/vigilode/src/switching.rs",
+          "text": "    let cost = match work_model {\n        WorkModelVersion::V1 => integer_work(incumbent, dimension, false)?,\n        WorkModelVersion::V2 => integer_work_v2(incumbent, dimension, rhs_cost)?,\n    };\n    let ceiling = cost.saturating_sub(1);",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/src/switching.rs",
+          "text": "        WorkModelVersion::V2 => integer_work_v2(candidate, dimension, rhs_cost)?,\n    };\n    (cost < u64::MAX as u128).then_some(cost as u64)",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/src/switching.rs",
+          "text": "fn strict_entry_callback_ceiling(",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/src/switching.rs",
+          "text": "    fn strict_entry_callback_ceiling_is_exact_and_never_truncates_large_costs() {",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "text": "// ---- T-F2 ",
+          "count": 1,
+          "at": "head"
+        }
+      ],
+      "mutation_waivers": {}
+    },
+    {
+      "id": "F3",
+      "title": "route_registry uses WorkModel V1 until E1 is re-run (A-1)",
+      "phase": 1,
+      "tier": "S",
+      "kind": "opt_in_behaviour",
+      "depends_on": [
+        "F2"
+      ],
+      "files_allowed": [
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+        "crates/vigilode/tests/switcher_v2_admission_contracts.rs"
+      ],
+      "design_section": "t-f3",
+      "invariants": [
+        "INV-07",
+        "INV-09",
+        "INV-10",
+        "INV-11"
+      ],
+      "tests_required": [
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "name": "f3_route_registry_defaults_to_work_model_v1"
+        }
+      ],
+      "commands": [
+        {
+          "name": "contracts",
+          "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+          "timeout_s": 1800
+        },
+        {
+          "name": "lib-unit-tests",
+          "cmd": "cargo test --locked -p vigilode --release --lib",
+          "timeout_s": 1800
+        },
+        {
+          "name": "vigilode-suite",
+          "cmd": "cargo test --locked -p vigilode --release --no-fail-fast",
+          "timeout_s": 3600
+        },
+        {
+          "name": "clippy",
+          "cmd": "cargo clippy --locked -p vigilode --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "fmt",
+          "cmd": "cargo fmt -p vigilode -- --check",
+          "timeout_s": 300
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "mutation",
+          "package": "vigilode",
+          "cargo_test_args": [
+            "--test",
+            "switching_v2_remediation_contracts",
+            "--lib"
+          ],
+          "max_missed": 0,
+          "jobs": 1,
+          "timeout_s": 600
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md"
+      ],
+      "commit_message": "fix(vigilode): F3 route_registry falls back to WorkModel V1 (audit A-1)",
+      "removals_allowed": [
+        {
+          "file": "crates/vigilode/tests/switcher_v2_admission_contracts.rs",
+          "line": "assert_eq!(cfg.work_model, WorkModelVersion::V2);"
+        }
+      ],
+      "red": {
+        "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+        "copy": [
+          "crates/vigilode/tests/switching_v2_remediation_contracts.rs"
+        ],
+        "tests": [
+          "f3_route_registry_defaults_to_work_model_v1"
+        ],
+        "allow_compile_red": false,
+        "new_symbols": [],
+        "timeout_s": 3600
+      },
+      "spec_only": false,
+      "anchors": [
+        {
+          "file": "crates/vigilode/src/switching.rs",
+          "text": "            work_model: WorkModelVersion::V2,\n            progress_bound: true,",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/tests/switcher_v2_admission_contracts.rs",
+          "text": "    assert_eq!(cfg.work_model, WorkModelVersion::V2);\n",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "text": "// ---- T-F3 ",
+          "count": 1,
+          "at": "head"
+        }
+      ],
+      "mutation_waivers": {
+        "delete field work_model from struct Self expression in SwitchingConfig::route_registry": "equivalent: the struct-update base (adaptive_evidence, then Default) also sets WorkModelVersion::V1; f3_route_registry_defaults_to_work_model_v1 pins the value"
+      }
+    },
+    {
+      "id": "F4",
+      "title": "Sound progress screen for RODAS5P: c_min = 7 callbacks (A-6)",
+      "phase": 1,
+      "tier": "M",
+      "kind": "opt_in_behaviour",
+      "depends_on": [
+        "F3"
+      ],
+      "files_allowed": [
+        "crates/vigilode/src/registry.rs",
+        "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+        "crates/vigilode/tests/switching_economy_contracts.rs"
+      ],
+      "design_section": "t-f4",
+      "invariants": [
+        "INV-03",
+        "INV-04",
+        "INV-07",
+        "INV-10"
+      ],
+      "tests_required": [
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "name": "f4_progress_screen_preserves_entry_decisions"
+        },
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "name": "f4_progress_reach_upper_bound_boundary_table"
+        }
+      ],
+      "commands": [
+        {
+          "name": "contracts",
+          "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+          "timeout_s": 1800
+        },
+        {
+          "name": "lib-unit-tests",
+          "cmd": "cargo test --locked -p vigilode --release --lib",
+          "timeout_s": 1800
+        },
+        {
+          "name": "vigilode-suite",
+          "cmd": "cargo test --locked -p vigilode --release --no-fail-fast",
+          "timeout_s": 3600
+        },
+        {
+          "name": "clippy",
+          "cmd": "cargo clippy --locked -p vigilode --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "fmt",
+          "cmd": "cargo fmt -p vigilode -- --check",
+          "timeout_s": 300
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "mutation",
+          "package": "vigilode",
+          "cargo_test_args": [
+            "--test",
+            "switching_v2_remediation_contracts",
+            "--lib"
+          ],
+          "max_missed": 0,
+          "jobs": 1,
+          "timeout_s": 600
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md",
+        "a pexprb test fails (pexprb is out of scope for F4)"
+      ],
+      "commit_message": "fix(vigilode): F4 sound RODAS5P progress screen (audit A-6)",
+      "removals_allowed": [],
+      "red": {
+        "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+        "copy": [
+          "crates/vigilode/tests/switching_v2_remediation_contracts.rs"
+        ],
+        "tests": [
+          "f4_progress_reach_upper_bound_boundary_table"
+        ],
+        "allow_compile_red": true,
+        "new_symbols": [
+          "progress_reach_upper_bound"
+        ],
+        "timeout_s": 3600
+      },
+      "spec_only": false,
+      "anchors": [
+        {
+          "file": "crates/vigilode/src/registry.rs",
+          "text": "/// Progress model for the progress-bound screen (Section 8.2).",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/src/registry.rs",
+          "text": "            let c_min = 16u64 + if problem.is_autonomous() { 0 } else { 1 };\n            let m = (ceiling / c_min) as usize;\n            let h0 = req.proposed_h.unwrap_or(req.options.h0);\n            let g = 5.0f64;\n            let reach = if m == 0 {\n                0.0\n            } else if m > 400 {\n                f64::INFINITY\n            } else {\n                h0 * (g.powi(m as i32) - 1.0) / (g - 1.0)\n            };",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/src/registry.rs",
+          "text": "            min_work_per_attempt: 16 + if autonomous { 0 } else { 1 },",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/src/registry.rs",
+          "text": "    fn progress_model(&self, _n: usize, autonomous: bool) -> Option<ProgressModel> {",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/tests/switching_economy_contracts.rs",
+          "text": "            min_work_per_attempt: 16,\n",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/tests/switching_economy_contracts.rs",
+          "text": "            min_work_per_attempt: 17,\n",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "text": "// ---- T-F4 ",
+          "count": 1,
+          "at": "head"
+        }
+      ],
+      "mutation_waivers": {}
+    },
+    {
+      "id": "F5",
+      "title": "Keep the B7 first-batch rule; document why and pin it (A-7)",
+      "phase": 1,
+      "tier": "S",
+      "kind": "bitwise_safe",
+      "depends_on": [
+        "F4"
+      ],
+      "files_allowed": [
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/tests/switching_v2_remediation_contracts.rs"
+      ],
+      "design_section": "t-f5",
+      "invariants": [
+        "INV-01",
+        "INV-07"
+      ],
+      "tests_required": [
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "name": "f5_first_explicit_batch_keeps_configured_budget_on_small_dense_routes"
+        }
+      ],
+      "commands": [
+        {
+          "name": "contracts",
+          "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+          "timeout_s": 1800
+        },
+        {
+          "name": "lib-unit-tests",
+          "cmd": "cargo test --locked -p vigilode --release --lib",
+          "timeout_s": 1800
+        },
+        {
+          "name": "vigilode-suite",
+          "cmd": "cargo test --locked -p vigilode --release --no-fail-fast",
+          "timeout_s": 3600
+        },
+        {
+          "name": "clippy",
+          "cmd": "cargo clippy --locked -p vigilode --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "fmt",
+          "cmd": "cargo fmt -p vigilode -- --check",
+          "timeout_s": 300
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "grep_present",
+          "file": "crates/vigilode/src/switching.rs",
+          "text": "budget = budget.max(k_d0_min);"
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md"
+      ],
+      "commit_message": "docs(vigilode): F5 document the B7 first-batch rule and pin it (audit A-7)",
+      "removals_allowed": [],
+      "red": {
+        "tests": [],
+        "allow_compile_red": false,
+        "new_symbols": []
+      },
+      "spec_only": false,
+      "anchors": [
+        {
+          "file": "crates/vigilode/src/switching.rs",
+          "text": "                    budget = budget.max(k_d0_min);",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "text": "// ---- T-F5 ",
+          "count": 1,
+          "at": "head"
+        }
+      ],
+      "mutation_waivers": {}
+    },
+    {
+      "id": "F6",
+      "title": "Replay-safety audit: charge it, keep the batch, disable trials (A-9)",
+      "phase": 1,
+      "tier": "L",
+      "kind": "opt_in_behaviour",
+      "depends_on": [
+        "F5"
+      ],
+      "files_allowed": [
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/tests/switching_v2_remediation_contracts.rs"
+      ],
+      "design_section": "t-f6",
+      "invariants": [
+        "INV-06",
+        "INV-07",
+        "INV-09",
+        "INV-10"
+      ],
+      "tests_required": [
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "name": "f6_replay_mismatch_keeps_explicit_progress_and_disables_pilots"
+        },
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "name": "f6_replay_audit_charges_deterministic_jvp_calls"
+        },
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "name": "f6_nondeterministic_jvp_disables_competitive_trials"
+        }
+      ],
+      "commands": [
+        {
+          "name": "contracts",
+          "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+          "timeout_s": 1800
+        },
+        {
+          "name": "lib-unit-tests",
+          "cmd": "cargo test --locked -p vigilode --release --lib",
+          "timeout_s": 1800
+        },
+        {
+          "name": "vigilode-suite",
+          "cmd": "cargo test --locked -p vigilode --release --no-fail-fast",
+          "timeout_s": 3600
+        },
+        {
+          "name": "clippy",
+          "cmd": "cargo clippy --locked -p vigilode --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "fmt",
+          "cmd": "cargo fmt -p vigilode -- --check",
+          "timeout_s": 300
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "mutation",
+          "package": "vigilode",
+          "cargo_test_args": [
+            "--test",
+            "switching_v2_remediation_contracts",
+            "--lib"
+          ],
+          "max_missed": 0,
+          "jobs": 1,
+          "timeout_s": 600
+        },
+        {
+          "kind": "grep_absent",
+          "file": "crates/vigilode/src/switching.rs",
+          "text": "record.decision = \"callback replay mismatch: RHS or JVP non-deterministic\";"
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md"
+      ],
+      "commit_message": "fix(vigilode): F6 charged replay audit disables competitive trials (audit A-9)",
+      "removals_allowed": [],
+      "red": {
+        "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+        "copy": [
+          "crates/vigilode/tests/switching_v2_remediation_contracts.rs"
+        ],
+        "tests": [
+          "f6_replay_mismatch_keeps_explicit_progress_and_disables_pilots",
+          "f6_replay_audit_charges_deterministic_jvp_calls",
+          "f6_nondeterministic_jvp_disables_competitive_trials"
+        ],
+        "allow_compile_red": false,
+        "new_symbols": [],
+        "timeout_s": 3600
+      },
+      "spec_only": false,
+      "anchors": [
+        {
+          "file": "crates/vigilode/src/switching.rs",
+          "text": "    let mut replay_safety_audited = false;\n",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/src/switching.rs",
+          "text": "                        if config.implicit_pilot_attempt_budget > 0 {\n                            let remaining = opts.max_steps - result.stats.attempts;\n                            if (pilot_eligible || rearm)",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/src/switching.rs",
+          "text": "                                if config.audit_replay_safety && !replay_safety_audited {\n                                    replay_safety_audited = true;\n                                    let mut rhs1 = vec![0.0; problem.dimension];\n                                    let mut rhs2 = vec![0.0; problem.dimension];\n                                    let rhs_ok1 =\n                                        (problem.rhs)(start, &result.final_state, &mut rhs1);\n                                    let rhs_ok2 =\n                                        (problem.rhs)(start, &result.final_state, &mut rhs2);\n                                    let mut replay_ok = rhs_ok1.is_ok()\n                                        && rhs_ok2.is_ok()\n                                        && rhs1\n                                            .iter()\n                                            .zip(&rhs2)\n                                            .all(|(a, b)| a.to_bits() == b.to_bits());\n                                    if replay_ok && let Jacobian::Jvp(jvp) = &problem.jacobian {\n                                        let v = vec![1.0; problem.dimension];\n                                        let mut jvp1 = vec![0.0; problem.dimension];\n                                        let mut jvp2 = vec![0.0; problem.dimension];\n                                        let jvp_ok1 =\n                                            (jvp)(start, &result.final_state, &v, &mut jvp1);\n                                        let jvp_ok2 =\n                                            (jvp)(start, &result.final_state, &v, &mut jvp2);\n                                        replay_ok = jvp_ok1.is_ok()\n                                            && jvp_ok2.is_ok()\n                                            && jvp1\n                                                .iter()\n                                                .zip(&jvp2)\n                                                .all(|(a, b)| a.to_bits() == b.to_bits());\n                                    }\n                                    if !replay_ok {\n                                        record.decision = \"callback replay mismatch: RHS or JVP non-deterministic\";\n                                        result.stats.segments.push(record);\n                                        continue 'windows;\n                                    }\n                                }\n",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/src/switching.rs",
+          "text": "                            record.decision = \"implicit entry not supported by bounded pilot evidence; retain explicit route\";",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "text": "// ---- T-F6 ",
+          "count": 1,
+          "at": "head"
+        }
+      ],
+      "mutation_waivers": {}
+    },
+    {
+      "id": "F7",
+      "title": "Stable FNV-1a epochs; window epoch from endpoints only (A-11)",
+      "phase": 1,
+      "tier": "M",
+      "kind": "bitwise_safe",
+      "depends_on": [
+        "F6"
+      ],
+      "files_allowed": [
+        "crates/vigilode/src/registry.rs",
+        "crates/vigilode/tests/switching_v2_remediation_contracts.rs"
+      ],
+      "design_section": "t-f7",
+      "invariants": [
+        "INV-05",
+        "INV-07",
+        "INV-08",
+        "INV-10"
+      ],
+      "tests_required": [
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "name": "f7_window_epoch_ignores_checkpoint_index_and_is_fnv_stable"
+        },
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "name": "f7_tolerance_epoch_is_fnv_stable"
+        },
+        {
+          "file": "crates/vigilode/src/registry.rs",
+          "name": "fnv1a64_matches_reference_vectors"
+        },
+        {
+          "file": "crates/vigilode/src/registry.rs",
+          "name": "fnv1a64_feeds_integers_little_endian"
+        }
+      ],
+      "commands": [
+        {
+          "name": "contracts",
+          "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+          "timeout_s": 1800
+        },
+        {
+          "name": "lib-unit-tests",
+          "cmd": "cargo test --locked -p vigilode --release --lib",
+          "timeout_s": 1800
+        },
+        {
+          "name": "vigilode-suite",
+          "cmd": "cargo test --locked -p vigilode --release --no-fail-fast",
+          "timeout_s": 3600
+        },
+        {
+          "name": "clippy",
+          "cmd": "cargo clippy --locked -p vigilode --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "fmt",
+          "cmd": "cargo fmt -p vigilode -- --check",
+          "timeout_s": 300
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "mutation",
+          "package": "vigilode",
+          "cargo_test_args": [
+            "--test",
+            "switching_v2_remediation_contracts",
+            "--lib"
+          ],
+          "max_missed": 0,
+          "jobs": 1,
+          "timeout_s": 600
+        },
+        {
+          "kind": "grep_absent",
+          "file": "crates/vigilode/src/registry.rs",
+          "text": "DefaultHasher"
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md"
+      ],
+      "commit_message": "fix(vigilode): F7 FNV-1a epoch digests and index-free window epoch (audit A-11)",
+      "removals_allowed": [],
+      "red": {
+        "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+        "copy": [
+          "crates/vigilode/tests/switching_v2_remediation_contracts.rs"
+        ],
+        "tests": [
+          "f7_window_epoch_ignores_checkpoint_index_and_is_fnv_stable",
+          "f7_tolerance_epoch_is_fnv_stable"
+        ],
+        "allow_compile_red": false,
+        "new_symbols": [],
+        "timeout_s": 3600
+      },
+      "spec_only": false,
+      "anchors": [
+        {
+          "file": "crates/vigilode/src/registry.rs",
+          "text": "let mut hasher = std::collections::hash_map::DefaultHasher::new();",
+          "count": 3,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/src/registry.rs",
+          "text": "    std::mem::discriminant(&opts.interior_error).hash(&mut hasher);\n",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/src/registry.rs",
+          "text": "/// Compute the 64-bit tolerance epoch digest from `Options`.",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "text": "// ---- T-F7 ",
+          "count": 1,
+          "at": "head"
+        }
+      ],
+      "mutation_waivers": {}
+    },
+    {
+      "id": "F8",
+      "title": "Refuse a declared entry_policy that the schedule does not implement (A-10)",
+      "phase": 1,
+      "tier": "S",
+      "kind": "opt_in_behaviour",
+      "depends_on": [
+        "F7"
+      ],
+      "files_allowed": [
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/tests/switching_v2_remediation_contracts.rs"
+      ],
+      "design_section": "t-f8",
+      "invariants": [
+        "INV-07",
+        "INV-08",
+        "INV-09",
+        "INV-10"
+      ],
+      "tests_required": [
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "name": "f8_declared_entry_policy_must_match_effective_schedule"
+        }
+      ],
+      "commands": [
+        {
+          "name": "contracts",
+          "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+          "timeout_s": 1800
+        },
+        {
+          "name": "lib-unit-tests",
+          "cmd": "cargo test --locked -p vigilode --release --lib",
+          "timeout_s": 1800
+        },
+        {
+          "name": "vigilode-suite",
+          "cmd": "cargo test --locked -p vigilode --release --no-fail-fast",
+          "timeout_s": 3600
+        },
+        {
+          "name": "clippy",
+          "cmd": "cargo clippy --locked -p vigilode --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "fmt",
+          "cmd": "cargo fmt -p vigilode -- --check",
+          "timeout_s": 300
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "mutation",
+          "package": "vigilode",
+          "cargo_test_args": [
+            "--test",
+            "switching_v2_remediation_contracts",
+            "--lib"
+          ],
+          "max_missed": 0,
+          "jobs": 1,
+          "timeout_s": 600
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md"
+      ],
+      "commit_message": "fix(vigilode): F8 validate declared entry policy against the schedule (audit A-10)",
+      "removals_allowed": [],
+      "red": {
+        "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+        "copy": [
+          "crates/vigilode/tests/switching_v2_remediation_contracts.rs"
+        ],
+        "tests": [
+          "f8_declared_entry_policy_must_match_effective_schedule"
+        ],
+        "allow_compile_red": true,
+        "new_symbols": [
+          "effective_entry_policy"
+        ],
+        "timeout_s": 3600
+      },
+      "spec_only": false,
+      "anchors": [
+        {
+          "file": "crates/vigilode/src/switching.rs",
+          "text": "    /// Route registry opt-in v2 factory setting (§8.3, §8.4, §8.6).",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/src/switching.rs",
+          "text": "    if c.window_count == 0\n        || c.window_count > 1_000_000",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "text": "// ---- T-F8 ",
+          "count": 1,
+          "at": "head"
+        }
+      ],
+      "mutation_waivers": {}
+    },
+    {
+      "id": "F9",
+      "title": "Document the switcher route set and pin the post-remediation counters (A-8)",
+      "phase": 1,
+      "tier": "S",
+      "kind": "docs",
+      "depends_on": [
+        "F8"
+      ],
+      "files_allowed": [
+        "crates/vigilode/src/registry.rs",
+        "crates/vigilode/tests/switching_v2_remediation_contracts.rs"
+      ],
+      "design_section": "t-f9",
+      "invariants": [
+        "INV-01",
+        "INV-07",
+        "INV-15"
+      ],
+      "tests_required": [
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "name": "f9_switcher_route_selection_is_limited_to_legacy_routes"
+        },
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "name": "f9_reference_counters_after_remediation"
+        }
+      ],
+      "commands": [
+        {
+          "name": "contracts",
+          "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+          "timeout_s": 1800
+        },
+        {
+          "name": "lib-unit-tests",
+          "cmd": "cargo test --locked -p vigilode --release --lib",
+          "timeout_s": 1800
+        },
+        {
+          "name": "vigilode-suite",
+          "cmd": "cargo test --locked -p vigilode --release --no-fail-fast",
+          "timeout_s": 3600
+        },
+        {
+          "name": "clippy",
+          "cmd": "cargo clippy --locked -p vigilode --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "fmt",
+          "cmd": "cargo fmt -p vigilode -- --check",
+          "timeout_s": 300
+        }
+      ],
+      "acceptance": [],
+      "ledger_required": false,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md"
+      ],
+      "commit_message": "docs(vigilode): F9 document switcher routes and pin remediation counters (audit A-8)",
+      "removals_allowed": [],
+      "red": {
+        "tests": [],
+        "allow_compile_red": false,
+        "new_symbols": []
+      },
+      "spec_only": false,
+      "anchors": [
+        {
+          "file": "crates/vigilode/src/registry.rs",
+          "text": "    /// Create a Rodas5p driver for the given problem's Jacobian configuration.\n    pub fn for_problem(problem: &Problem) -> Self {",
+          "count": 1,
+          "at": "base"
+        },
+        {
+          "file": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+          "text": "// ---- T-F9 ",
+          "count": 1,
+          "at": "head"
+        }
+      ],
+      "mutation_waivers": {}
+    },
+    {
+      "id": "X1",
+      "title": "Shared per-step Krylov basis module (pure, unused by solvers)",
+      "phase": 2,
+      "tier": "M",
+      "kind": "opt_in_behaviour",
+      "depends_on": [
+        "F9"
+      ],
+      "spec_only": true,
+      "files_allowed": [
+        "crates/rodas5p-krylov/src/shared_basis.rs",
+        "crates/rodas5p-krylov/src/lib.rs",
+        "crates/rodas5p-krylov/tests/shared_basis_contracts.rs"
+      ],
+      "anchors": [
+        {
+          "file": "crates/rodas5p-krylov/src/lib.rs",
+          "text": "mod gmres_into;\n",
+          "count": 1
+        }
+      ],
+      "design_section": "t-x1",
+      "invariants": [
+        "INV-07",
+        "INV-08",
+        "INV-10",
+        "INV-12"
+      ],
+      "tests_required": [
+        {
+          "file": "crates/rodas5p-krylov/tests/shared_basis_contracts.rs",
+          "name": "shared_basis_meets_budget_on_shifted_diagonal"
+        },
+        {
+          "file": "crates/rodas5p-krylov/tests/shared_basis_contracts.rs",
+          "name": "shared_basis_reuses_directions_across_stages"
+        },
+        {
+          "file": "crates/rodas5p-krylov/tests/shared_basis_contracts.rs",
+          "name": "shared_basis_refuses_invalid_input"
+        }
+      ],
+      "commands": [
+        {
+          "name": "krylov-tests",
+          "cmd": "cargo test --locked -p rodas5p-krylov --release",
+          "timeout_s": 3600
+        },
+        {
+          "name": "krylov-clippy",
+          "cmd": "cargo clippy --locked -p rodas5p-krylov --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "krylov-fmt",
+          "cmd": "cargo fmt -p rodas5p-krylov -- --check",
+          "timeout_s": 300
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "mutation",
+          "package": "rodas5p-krylov",
+          "cargo_test_args": [
+            "--test",
+            "shared_basis_contracts",
+            "--lib"
+          ],
+          "max_missed": 0,
+          "jobs": 1,
+          "timeout_s": 600
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md",
+        "the module layout of crates/rodas5p-krylov/src/lib.rs differs from the anchor `mod gmres_into;`"
+      ],
+      "commit_message": "feat(rodas5p-krylov): X1 shared per-step Krylov basis (unused, opt-in)",
+      "removals_allowed": [],
+      "red": {
+        "tests": [],
+        "allow_compile_red": false,
+        "new_symbols": []
+      },
+      "mutation_waivers": {}
+    },
+    {
+      "id": "X2",
+      "title": "Opt-in shared basis in the matrix-free RODAS5P stage loop",
+      "phase": 2,
+      "tier": "L",
+      "kind": "opt_in_behaviour",
+      "depends_on": [
+        "X1"
+      ],
+      "spec_only": true,
+      "files_allowed": [
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+        "crates/rodas5p-integrators/tests/shared_basis_mf_contracts.rs"
+      ],
+      "anchors": [
+        {
+          "file": "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+          "text": "if self.gmres_into && self.config.method == LinearMethod::Gmres",
+          "count": 1
+        }
+      ],
+      "design_section": "t-x2",
+      "invariants": [
+        "INV-01",
+        "INV-06",
+        "INV-07",
+        "INV-09",
+        "INV-10"
+      ],
+      "tests_required": [
+        {
+          "file": "crates/rodas5p-integrators/tests/shared_basis_mf_contracts.rs",
+          "name": "shared_basis_off_is_bit_identical"
+        },
+        {
+          "file": "crates/rodas5p-integrators/tests/shared_basis_mf_contracts.rs",
+          "name": "shared_basis_on_heat_uses_fewer_jvps_at_matched_steps"
+        }
+      ],
+      "commands": [
+        {
+          "name": "integrators-tests",
+          "cmd": "cargo test --locked -p rodas5p-integrators --release",
+          "timeout_s": 3600
+        },
+        {
+          "name": "integrators-clippy",
+          "cmd": "cargo clippy --locked -p rodas5p-integrators --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "integrators-fmt",
+          "cmd": "cargo fmt -p rodas5p-integrators -- --check",
+          "timeout_s": 300
+        },
+        {
+          "name": "vigilode-suite",
+          "cmd": "cargo test --locked -p vigilode --release --no-fail-fast",
+          "timeout_s": 3600
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "mutation",
+          "package": "rodas5p-integrators",
+          "cargo_test_args": [
+            "--test",
+            "shared_basis_mf_contracts"
+          ],
+          "max_missed": 0,
+          "jobs": 1,
+          "timeout_s": 600
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md",
+        "the stage loop no longer matches the description in DESIGN.md X2",
+        "flag-off output is not bit-identical"
+      ],
+      "commit_message": "feat(rodas5p-integrators): X2 opt-in shared Krylov basis in MF RODAS5P",
+      "removals_allowed": [],
+      "red": {
+        "tests": [],
+        "allow_compile_red": false,
+        "new_symbols": []
+      },
+      "mutation_waivers": {}
+    },
+    {
+      "id": "X3",
+      "title": "Preregistered node K1: shared basis vs per-stage GMRES",
+      "phase": 3,
+      "tier": "H",
+      "kind": "experiment",
+      "depends_on": [
+        "X2"
+      ],
+      "spec_only": true,
+      "files_allowed": [
+        "research/k1_shared_krylov_basis_*/*",
+        "research/LEDGER.jsonl",
+        "examples/k1_shared_basis_bench.rs"
+      ],
+      "design_section": "t-x3",
+      "invariants": [
+        "INV-02",
+        "INV-13"
+      ],
+      "tests_required": [],
+      "commands": [
+        {
+          "name": "research-node-check",
+          "cmd": "python3 tools/check-research-node.py",
+          "timeout_s": 600
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "grep_present",
+          "file": "research/LEDGER.jsonl",
+          "text": "K1_SHARED_KRYLOV_BASIS"
+        }
+      ],
+      "ledger_required": true,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md",
+        "the preregistration is not committed and pushed before the first run"
+      ],
+      "commit_message": "docs(research): X3 K1 shared Krylov basis node (preregistered)",
+      "removals_allowed": [],
+      "red": {
+        "tests": [],
+        "allow_compile_red": false,
+        "new_symbols": []
+      },
+      "anchors": [],
+      "mutation_waivers": {}
+    },
+    {
+      "id": "X4",
+      "title": "DOPRI5 secant stiffness estimate (pure function)",
+      "phase": 2,
+      "tier": "S",
+      "kind": "opt_in_behaviour",
+      "depends_on": [
+        "F9"
+      ],
+      "files_allowed": [
+        "crates/rodas5p-integrators/src/dopri5_stiffness.rs",
+        "crates/rodas5p-integrators/src/lib.rs"
+      ],
+      "anchors": [
+        {
+          "file": "crates/rodas5p-integrators/src/lib.rs",
+          "text": "mod dopri5_dense;\n",
+          "count": 1,
+          "at": "base"
+        }
+      ],
+      "design_section": "t-x4",
+      "invariants": [
+        "INV-07",
+        "INV-08",
+        "INV-12"
+      ],
+      "tests_required": [
+        {
+          "file": "crates/rodas5p-integrators/src/dopri5_stiffness.rs",
+          "name": "weights_equal_tableau_difference_and_sum_to_zero"
+        },
+        {
+          "file": "crates/rodas5p-integrators/src/dopri5_stiffness.rs",
+          "name": "scalar_linear_mode_is_recovered"
+        },
+        {
+          "file": "crates/rodas5p-integrators/src/dopri5_stiffness.rs",
+          "name": "gate_flags_stiff_forced_regime_and_not_rotation"
+        },
+        {
+          "file": "crates/rodas5p-integrators/src/dopri5_stiffness.rs",
+          "name": "degenerate_inputs_return_none"
+        }
+      ],
+      "commands": [
+        {
+          "name": "integrators-lib",
+          "cmd": "cargo test --locked -p rodas5p-integrators --release --lib dopri5_stiffness",
+          "timeout_s": 1800
+        },
+        {
+          "name": "integrators-clippy",
+          "cmd": "cargo clippy --locked -p rodas5p-integrators --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "integrators-fmt",
+          "cmd": "cargo fmt -p rodas5p-integrators -- --check",
+          "timeout_s": 300
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "mutation",
+          "package": "rodas5p-integrators",
+          "cargo_test_args": [
+            "--lib",
+            "dopri5_stiffness"
+          ],
+          "max_missed": 0,
+          "jobs": 1,
+          "timeout_s": 600
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md"
+      ],
+      "commit_message": "feat(rodas5p-integrators): X4 DOPRI5 secant stiffness estimate",
+      "removals_allowed": [],
+      "red": {
+        "tests": [],
+        "allow_compile_red": false,
+        "new_symbols": []
+      },
+      "spec_only": false,
+      "mutation_waivers": {}
+    },
+    {
+      "id": "X5",
+      "title": "Stiffness-gated entry pilots (opt-in) and preregistered node D1",
+      "phase": 3,
+      "tier": "H",
+      "kind": "experiment",
+      "depends_on": [
+        "X4"
+      ],
+      "spec_only": true,
+      "files_allowed": [
+        "crates/vigilode/src/switching.rs",
+        "crates/rodas5p-integrators/src/dopri5.rs",
+        "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+        "research/d1_stiffness_gate_*/*",
+        "research/LEDGER.jsonl"
+      ],
+      "design_section": "t-x5",
+      "invariants": [
+        "INV-01",
+        "INV-04",
+        "INV-09",
+        "INV-13"
+      ],
+      "tests_required": [],
+      "commands": [
+        {
+          "name": "contracts",
+          "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+          "timeout_s": 1800
+        },
+        {
+          "name": "lib-unit-tests",
+          "cmd": "cargo test --locked -p vigilode --release --lib",
+          "timeout_s": 1800
+        },
+        {
+          "name": "vigilode-suite",
+          "cmd": "cargo test --locked -p vigilode --release --no-fail-fast",
+          "timeout_s": 3600
+        },
+        {
+          "name": "clippy",
+          "cmd": "cargo clippy --locked -p vigilode --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "fmt",
+          "cmd": "cargo fmt -p vigilode -- --check",
+          "timeout_s": 300
+        },
+        {
+          "name": "research-node-check",
+          "cmd": "python3 tools/check-research-node.py",
+          "timeout_s": 600
+        }
+      ],
+      "acceptance": [],
+      "ledger_required": true,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md"
+      ],
+      "commit_message": "feat(vigilode): X5 opt-in stiffness-gated entry pilots (node D1)",
+      "removals_allowed": [],
+      "red": {
+        "tests": [],
+        "allow_compile_red": false,
+        "new_symbols": []
+      },
+      "anchors": [],
+      "mutation_waivers": {}
+    },
+    {
+      "id": "X6",
+      "title": "Column colouring for compressed Jacobian assembly (pure module)",
+      "phase": 2,
+      "tier": "S",
+      "kind": "opt_in_behaviour",
+      "depends_on": [
+        "F9"
+      ],
+      "files_allowed": [
+        "crates/vigilode/src/coloring.rs",
+        "crates/vigilode/src/lib.rs"
+      ],
+      "anchors": [
+        {
+          "file": "crates/vigilode/src/lib.rs",
+          "text": "mod cofactor_chart;\n",
+          "count": 1,
+          "at": "base"
+        }
+      ],
+      "design_section": "t-x6",
+      "invariants": [
+        "INV-07",
+        "INV-08",
+        "INV-12"
+      ],
+      "tests_required": [
+        {
+          "file": "crates/vigilode/src/coloring.rs",
+          "name": "tridiagonal_needs_three_colours"
+        },
+        {
+          "file": "crates/vigilode/src/coloring.rs",
+          "name": "dense_row_forces_n_colours"
+        },
+        {
+          "file": "crates/vigilode/src/coloring.rs",
+          "name": "five_point_colouring_is_valid_and_bounded"
+        },
+        {
+          "file": "crates/vigilode/src/coloring.rs",
+          "name": "recovery_reproduces_dense_jacobian"
+        },
+        {
+          "file": "crates/vigilode/src/coloring.rs",
+          "name": "malformed_patterns_are_refused"
+        }
+      ],
+      "commands": [
+        {
+          "name": "coloring-unit",
+          "cmd": "cargo test --locked -p vigilode --release --lib coloring",
+          "timeout_s": 1800
+        },
+        {
+          "name": "clippy",
+          "cmd": "cargo clippy --locked -p vigilode --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "fmt",
+          "cmd": "cargo fmt -p vigilode -- --check",
+          "timeout_s": 300
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "mutation",
+          "package": "vigilode",
+          "cargo_test_args": [
+            "--lib",
+            "coloring"
+          ],
+          "max_missed": 0,
+          "jobs": 1,
+          "timeout_s": 600
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md"
+      ],
+      "commit_message": "feat(vigilode): X6 column colouring for compressed JVP assembly",
+      "removals_allowed": [],
+      "red": {
+        "tests": [],
+        "allow_compile_red": false,
+        "new_symbols": []
+      },
+      "spec_only": false,
+      "mutation_waivers": {}
+    },
+    {
+      "id": "X7",
+      "title": "Sparse-JVP assembled route and preregistered node C1",
+      "phase": 3,
+      "tier": "H",
+      "kind": "experiment",
+      "depends_on": [
+        "X6"
+      ],
+      "spec_only": true,
+      "files_allowed": [
+        "crates/vigilode/src/*.rs",
+        "crates/vigilode/tests/sparse_jvp_contracts.rs",
+        "research/c1_coloured_assembly_*/*",
+        "research/LEDGER.jsonl"
+      ],
+      "design_section": "t-x7",
+      "invariants": [
+        "INV-01",
+        "INV-06",
+        "INV-08",
+        "INV-09",
+        "INV-13"
+      ],
+      "tests_required": [],
+      "commands": [
+        {
+          "name": "contracts",
+          "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+          "timeout_s": 1800
+        },
+        {
+          "name": "lib-unit-tests",
+          "cmd": "cargo test --locked -p vigilode --release --lib",
+          "timeout_s": 1800
+        },
+        {
+          "name": "vigilode-suite",
+          "cmd": "cargo test --locked -p vigilode --release --no-fail-fast",
+          "timeout_s": 3600
+        },
+        {
+          "name": "clippy",
+          "cmd": "cargo clippy --locked -p vigilode --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "fmt",
+          "cmd": "cargo fmt -p vigilode -- --check",
+          "timeout_s": 300
+        },
+        {
+          "name": "research-node-check",
+          "cmd": "python3 tools/check-research-node.py",
+          "timeout_s": 600
+        }
+      ],
+      "acceptance": [],
+      "ledger_required": true,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md"
+      ],
+      "commit_message": "feat(vigilode): X7 sparse-JVP assembled route (node C1)",
+      "removals_allowed": [],
+      "red": {
+        "tests": [],
+        "allow_compile_red": false,
+        "new_symbols": []
+      },
+      "anchors": [],
+      "mutation_waivers": {}
+    },
+    {
+      "id": "X8",
+      "title": "Margin-shifted comparison helpers (hysteresis band, pure)",
+      "phase": 2,
+      "tier": "S",
+      "kind": "opt_in_behaviour",
+      "depends_on": [
+        "F9"
+      ],
+      "files_allowed": [
+        "crates/vigilode/src/margin.rs",
+        "crates/vigilode/src/lib.rs"
+      ],
+      "anchors": [
+        {
+          "file": "crates/vigilode/src/lib.rs",
+          "text": "mod lawson;\n",
+          "count": 1,
+          "at": "base"
+        }
+      ],
+      "design_section": "t-x8",
+      "invariants": [
+        "INV-04",
+        "INV-07",
+        "INV-08"
+      ],
+      "tests_required": [
+        {
+          "file": "crates/vigilode/src/margin.rs",
+          "name": "ratio_validation"
+        },
+        {
+          "file": "crates/vigilode/src/margin.rs",
+          "name": "boundary_table"
+        },
+        {
+          "file": "crates/vigilode/src/margin.rs",
+          "name": "caps_are_decision_preserving"
+        },
+        {
+          "file": "crates/vigilode/src/margin.rs",
+          "name": "unit_ratio_reduces_to_existing_strict_rules"
+        }
+      ],
+      "commands": [
+        {
+          "name": "margin-unit",
+          "cmd": "cargo test --locked -p vigilode --release --lib margin",
+          "timeout_s": 1800
+        },
+        {
+          "name": "clippy",
+          "cmd": "cargo clippy --locked -p vigilode --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "fmt",
+          "cmd": "cargo fmt -p vigilode -- --check",
+          "timeout_s": 300
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "mutation",
+          "package": "vigilode",
+          "cargo_test_args": [
+            "--lib",
+            "margin"
+          ],
+          "max_missed": 0,
+          "jobs": 1,
+          "timeout_s": 600
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md"
+      ],
+      "commit_message": "feat(vigilode): X8 margin-shifted comparison helpers",
+      "removals_allowed": [],
+      "red": {
+        "tests": [],
+        "allow_compile_red": false,
+        "new_symbols": []
+      },
+      "spec_only": false,
+      "mutation_waivers": {}
+    },
+    {
+      "id": "X9",
+      "title": "Hysteresis band in route_registry after a bias measurement (node H1)",
+      "phase": 3,
+      "tier": "H",
+      "kind": "experiment",
+      "depends_on": [
+        "X8"
+      ],
+      "spec_only": true,
+      "files_allowed": [
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+        "research/h1_hysteresis_band_*/*",
+        "research/LEDGER.jsonl"
+      ],
+      "design_section": "t-x9",
+      "invariants": [
+        "INV-01",
+        "INV-04",
+        "INV-09",
+        "INV-13"
+      ],
+      "tests_required": [],
+      "commands": [
+        {
+          "name": "contracts",
+          "cmd": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+          "timeout_s": 1800
+        },
+        {
+          "name": "lib-unit-tests",
+          "cmd": "cargo test --locked -p vigilode --release --lib",
+          "timeout_s": 1800
+        },
+        {
+          "name": "vigilode-suite",
+          "cmd": "cargo test --locked -p vigilode --release --no-fail-fast",
+          "timeout_s": 3600
+        },
+        {
+          "name": "clippy",
+          "cmd": "cargo clippy --locked -p vigilode --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "fmt",
+          "cmd": "cargo fmt -p vigilode -- --check",
+          "timeout_s": 300
+        },
+        {
+          "name": "research-node-check",
+          "cmd": "python3 tools/check-research-node.py",
+          "timeout_s": 600
+        }
+      ],
+      "acceptance": [],
+      "ledger_required": true,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md"
+      ],
+      "commit_message": "feat(vigilode): X9 hysteresis band (node H1)",
+      "removals_allowed": [],
+      "red": {
+        "tests": [],
+        "allow_compile_red": false,
+        "new_symbols": []
+      },
+      "anchors": [],
+      "mutation_waivers": {}
+    },
+    {
+      "id": "X10",
+      "title": "B7 first-batch length: preregistered comparison of max and min",
+      "phase": 3,
+      "tier": "H",
+      "kind": "experiment",
+      "depends_on": [
+        "F9"
+      ],
+      "spec_only": true,
+      "files_allowed": [
+        "research/b7_first_batch_*/*",
+        "research/LEDGER.jsonl",
+        "examples/b7_first_batch_bench.rs"
+      ],
+      "design_section": "t-x10",
+      "invariants": [
+        "INV-02",
+        "INV-13"
+      ],
+      "tests_required": [],
+      "commands": [
+        {
+          "name": "research-node-check",
+          "cmd": "python3 tools/check-research-node.py",
+          "timeout_s": 600
+        }
+      ],
+      "acceptance": [],
+      "ledger_required": true,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md"
+      ],
+      "commit_message": "docs(research): X10 B7 first-batch node (preregistered)",
+      "removals_allowed": [],
+      "red": {
+        "tests": [],
+        "allow_compile_red": false,
+        "new_symbols": []
+      },
+      "anchors": [],
+      "mutation_waivers": {}
+    },
+    {
+      "id": "X11",
+      "title": "Re-run E1 WorkModel v2 calibration with measured callgrind Ir",
+      "phase": 3,
+      "tier": "H",
+      "kind": "experiment",
+      "depends_on": [
+        "G1"
+      ],
+      "spec_only": true,
+      "files_allowed": [
+        "research/e1r_work_model_v2_*/*",
+        "research/LEDGER.jsonl",
+        "crates/vigilode/data/work_model_v2.toml"
+      ],
+      "design_section": "t-x11",
+      "invariants": [
+        "INV-02",
+        "INV-13"
+      ],
+      "tests_required": [],
+      "commands": [
+        {
+          "name": "research-node-check",
+          "cmd": "python3 tools/check-research-node.py",
+          "timeout_s": 600
+        }
+      ],
+      "acceptance": [],
+      "ledger_required": true,
+      "escalate_if": [
+        "an anchor is missing or its occurrence count differs from the task card",
+        "a red test passes on the task's base commit",
+        "a test outside the task's tests fails after the change",
+        "a file outside files_allowed must change",
+        "the same compiler or test error survives three fix attempts",
+        "a counter or digest differs from the value written in DESIGN.md"
+      ],
+      "commit_message": "docs(research): X11 E1 re-run with measured callgrind data",
+      "removals_allowed": [],
+      "red": {
+        "tests": [],
+        "allow_compile_red": false,
+        "new_symbols": []
+      },
+      "anchors": [],
+      "mutation_waivers": {}
+    }
+  ]
+}

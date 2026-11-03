@@ -1,0 +1,308 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vigilode.agent-tasks.v1",
+  "title": "VigilODE agent task file",
+  "type": "object",
+  "required": [
+    "schema",
+    "base_commit",
+    "design_doc",
+    "global",
+    "tasks"
+  ],
+  "properties": {
+    "schema": {
+      "const": "vigilode.agent-tasks.v1"
+    },
+    "base_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "design_doc": {
+      "type": "string"
+    },
+    "global": {
+      "type": "object",
+      "required": [
+        "forbidden_paths",
+        "always_allowed",
+        "append_only",
+        "forbidden_added_patterns",
+        "forbidden_removed_patterns",
+        "invariants"
+      ],
+      "properties": {
+        "forbidden_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "always_allowed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "append_only": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "forbidden_added_patterns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/pattern"
+          }
+        },
+        "forbidden_removed_patterns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/pattern"
+          }
+        },
+        "invariants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "text"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^INV-[0-9]{2}$"
+              },
+              "text": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/task"
+      }
+    }
+  },
+  "$defs": {
+    "pattern": {
+      "type": "object",
+      "required": [
+        "regex",
+        "paths",
+        "reason"
+      ],
+      "properties": {
+        "regex": {
+          "type": "string"
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "command": {
+      "type": "object",
+      "required": [
+        "name",
+        "cmd",
+        "timeout_s"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "cmd": {
+          "type": "string"
+        },
+        "timeout_s": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "anchor": {
+      "type": "object",
+      "required": [
+        "file",
+        "text",
+        "count"
+      ],
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "at": {
+          "enum": [
+            "base",
+            "head",
+            "task_start"
+          ]
+        }
+      }
+    },
+    "task": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "phase",
+        "tier",
+        "kind",
+        "depends_on",
+        "files_allowed",
+        "anchors",
+        "design_section",
+        "invariants",
+        "tests_required",
+        "red",
+        "commands",
+        "acceptance",
+        "ledger_required",
+        "escalate_if",
+        "commit_message",
+        "removals_allowed",
+        "spec_only",
+        "mutation_waivers"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[GFX][0-9]{1,2}$"
+        },
+        "tier": {
+          "enum": [
+            "S",
+            "M",
+            "L",
+            "H"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "governance",
+            "bitwise_safe",
+            "opt_in_behaviour",
+            "default_behaviour",
+            "experiment",
+            "docs"
+          ]
+        },
+        "depends_on": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "files_allowed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "anchors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/anchor"
+          }
+        },
+        "design_section": {
+          "type": "string",
+          "pattern": "^t-[a-z0-9]+$"
+        },
+        "invariants": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^INV-[0-9]{2}$"
+          }
+        },
+        "tests_required": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "file",
+              "name"
+            ]
+          }
+        },
+        "red": {
+          "type": "object",
+          "required": [
+            "tests",
+            "allow_compile_red",
+            "new_symbols"
+          ]
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/command"
+          }
+        },
+        "acceptance": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "grep_present",
+                  "grep_absent",
+                  "test_name_present",
+                  "mutation"
+                ]
+              }
+            }
+          }
+        },
+        "ledger_required": {
+          "type": "boolean"
+        },
+        "spec_only": {
+          "type": "boolean"
+        },
+        "mutation_waivers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "removals_allowed": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "file",
+              "line"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
