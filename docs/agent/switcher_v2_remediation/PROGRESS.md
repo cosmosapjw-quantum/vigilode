@@ -77,3 +77,11 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - red: f6_replay_mismatch_keeps_explicit_progress_and_disables_pilots (failed on base)
 - mutation: caught 17, missed 0, waived 0
 - notes: charged replay safety audit; preserves explicit batch and disables competitive trials on mismatch
+## F7 — Stable FNV-1a epochs; window epoch from endpoints only (A-11) — 2026-11-03
+- result: done
+- commit: uncommitted
+- toolchain: pinned 1.94.1
+- commands: contracts: 0, lib-unit-tests: 0, vigilode-suite: 0, clippy: 0, fmt: 0
+- red: f7_tolerance_epoch_is_fnv_stable (failed on base), f7_window_epoch_ignores_checkpoint_index_and_is_fnv_stable (failed on base)
+- mutation: caught 17, missed 0, waived 0
+- notes: stable FNV-1a digests implemented; window epoch now independent of checkpoint index

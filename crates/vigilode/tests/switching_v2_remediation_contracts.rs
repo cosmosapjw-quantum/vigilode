@@ -311,6 +311,41 @@ fn f6_nondeterministic_jvp_disables_competitive_trials() {
 
 // ---- T-F7 ------------------------------------------------------------------
 
+#[test]
+fn f7_window_epoch_ignores_checkpoint_index_and_is_fnv_stable() {
+    use vigilode::compute_window_epoch;
+    assert_eq!(compute_window_epoch(0, 0.0, 1.0), 0x85c9_d0b9_5f02_e858);
+    assert_eq!(compute_window_epoch(7, 0.0, 1.0), 0x85c9_d0b9_5f02_e858);
+    assert_eq!(compute_window_epoch(3, 0.25, 0.5), 0x6a67_54f5_60b8_db95);
+}
+
+#[test]
+fn f7_tolerance_epoch_is_fnv_stable() {
+    use vigilode::{InteriorError, compute_tolerance_epoch};
+    let o = Options {
+        rtol: 1e-6,
+        atol: Atol::Scalar(1e-9),
+        interior_error: InteriorError::WFilteredEnforce,
+        ..Default::default()
+    };
+    assert_eq!(compute_tolerance_epoch(&o), 0xd700_4aac_7795_c1b0);
+    let off = Options {
+        interior_error: InteriorError::Off,
+        ..o.clone()
+    };
+    assert_eq!(compute_tolerance_epoch(&off), 0xd700_4cac_7795_c516);
+    let vector = Options {
+        atol: Atol::Vector(vec![1e-9, 1e-8]),
+        ..o.clone()
+    };
+    assert_eq!(compute_tolerance_epoch(&vector), 0xa1d2_d72c_3b87_d01d);
+
+    use vigilode::registry::{RouteId, compute_provider_epoch};
+    let ep = compute_provider_epoch(RouteId::Dopri5Rhs, &rotation());
+    assert_ne!(ep, 0);
+    assert_ne!(ep, 1);
+}
+
 // ---- T-F8 ------------------------------------------------------------------
 
 // ---- T-F9 ------------------------------------------------------------------

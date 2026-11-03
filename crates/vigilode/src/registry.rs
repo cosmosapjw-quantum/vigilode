@@ -894,9 +894,95 @@ impl WindowDriver for PexprbWindowDriver {
     }
 }
 
+/// FNV-1a 64-bit hasher for epoch digests.
+///
+/// Standard default hasher output is not specified across Rust releases, so digests
+/// built with it are not reproducible across toolchains. FNV-1a is fixed by
+/// specification; integers are fed as little-endian bytes and `usize`/`isize`
+/// as 64-bit values, so the digest is also platform independent.
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct Fnv1a64(u64);
+
+impl Default for Fnv1a64 {
+    fn default() -> Self {
+        Self(0xcbf2_9ce4_8422_2325)
+    }
+}
+
+impl Hasher for Fnv1a64 {
+    fn finish(&self) -> u64 {
+        self.0
+    }
+    fn write(&mut self, bytes: &[u8]) {
+        for &b in bytes {
+            self.0 ^= u64::from(b);
+            self.0 = self.0.wrapping_mul(0x0000_0100_0000_01b3);
+        }
+    }
+    fn write_u8(&mut self, i: u8) {
+        self.write(&[i]);
+    }
+    fn write_u16(&mut self, i: u16) {
+        self.write(&i.to_le_bytes());
+    }
+    fn write_u32(&mut self, i: u32) {
+        self.write(&i.to_le_bytes());
+    }
+    fn write_u64(&mut self, i: u64) {
+        self.write(&i.to_le_bytes());
+    }
+    fn write_usize(&mut self, i: usize) {
+        self.write(&(i as u64).to_le_bytes());
+    }
+    fn write_isize(&mut self, i: isize) {
+        self.write(&(i as i64).to_le_bytes());
+    }
+}
+
+#[cfg(test)]
+mod fnv_tests {
+    use super::Fnv1a64;
+    use std::hash::Hasher;
+
+    fn digest(bytes: &[u8]) -> u64 {
+        let mut h = Fnv1a64::default();
+        h.write(bytes);
+        h.finish()
+    }
+
+    #[test]
+    fn fnv1a64_matches_reference_vectors() {
+        assert_eq!(digest(b""), 0xcbf2_9ce4_8422_2325);
+        assert_eq!(digest(b"a"), 0xaf63_dc4c_8601_ec8c);
+        assert_eq!(digest(b"foobar"), 0x8594_4171_f739_67e8);
+    }
+
+    #[test]
+    fn fnv1a64_feeds_integers_little_endian() {
+        let mut a = Fnv1a64::default();
+        a.write_u64(0x0102_0304_0506_0708);
+        let mut b = Fnv1a64::default();
+        b.write_usize(0x0102_0304_0506_0708);
+        assert_eq!(a.finish(), digest(&[8, 7, 6, 5, 4, 3, 2, 1]));
+        assert_eq!(b.finish(), a.finish());
+
+        let mut c = Fnv1a64::default();
+        c.write_u16(0x0102);
+        assert_eq!(c.finish(), digest(&[2, 1]));
+
+        let mut d = Fnv1a64::default();
+        d.write_u32(0x0102_0304);
+        assert_eq!(d.finish(), digest(&[4, 3, 2, 1]));
+
+        let mut e = Fnv1a64::default();
+        e.write_isize(0x0102_0304_0506_0708);
+        assert_eq!(e.finish(), a.finish());
+    }
+}
+
 /// Compute the 64-bit tolerance epoch digest from `Options`.
 pub fn compute_tolerance_epoch(opts: &Options) -> u64 {
-    let mut hasher = std::collections::hash_map::DefaultHasher::new();
+    let mut hasher = Fnv1a64::default();
     opts.rtol.to_bits().hash(&mut hasher);
     match &opts.atol {
         crate::options::Atol::Scalar(a) => {
@@ -911,13 +997,18 @@ pub fn compute_tolerance_epoch(opts: &Options) -> u64 {
             }
         }
     }
-    std::mem::discriminant(&opts.interior_error).hash(&mut hasher);
+    let interior: u8 = match opts.interior_error {
+        crate::options::InteriorError::WFilteredEnforce => 0,
+        crate::options::InteriorError::Enforce => 1,
+        crate::options::InteriorError::Off => 2,
+    };
+    interior.hash(&mut hasher);
     hasher.finish()
 }
 
 /// Compute the 64-bit provider epoch digest from `RouteId` and `Problem`.
 pub fn compute_provider_epoch(route: RouteId, problem: &Problem) -> u64 {
-    let mut hasher = std::collections::hash_map::DefaultHasher::new();
+    let mut hasher = Fnv1a64::default();
     (route as usize).hash(&mut hasher);
     match &problem.jacobian {
         crate::problem::Jacobian::Dense(_) => 1u8.hash(&mut hasher),
@@ -932,10 +1023,14 @@ pub fn compute_provider_epoch(route: RouteId, problem: &Problem) -> u64 {
     hasher.finish()
 }
 
-/// Compute the 64-bit window epoch digest from checkpoint index and window endpoints.
-pub fn compute_window_epoch(checkpoint_index: usize, start: f64, target: f64) -> u64 {
-    let mut hasher = std::collections::hash_map::DefaultHasher::new();
-    checkpoint_index.hash(&mut hasher);
+/// Compute the 64-bit window epoch digest from the window endpoints.
+///
+/// `_checkpoint_index` is ignored: a window is identified by its endpoints, so
+/// the identity built for a batch and the comparisons in the drive loop agree
+/// for the same window. The parameter is kept so the public signature does not
+/// change.
+pub fn compute_window_epoch(_checkpoint_index: usize, start: f64, target: f64) -> u64 {
+    let mut hasher = Fnv1a64::default();
     start.to_bits().hash(&mut hasher);
     target.to_bits().hash(&mut hasher);
     hasher.finish()
