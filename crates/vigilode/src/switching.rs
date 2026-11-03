@@ -367,10 +367,7 @@ impl SwitchingConfig {
     /// Decisions still require an actual same-checkpoint competitive pilot.
     pub fn adaptive_evidence(fallback: DerivativeFallback) -> Self {
         Self {
-            entry_probe_adaptation: Some(EntryProbeAdaptation {
-                loss_margin_backoff: true,
-                ..EntryProbeAdaptation::default()
-            }),
+            entry_probe_adaptation: Some(EntryProbeAdaptation::default()),
             reuse_entry_pilot_step: true,
             retry_unresolved_entry_once: true,
             ..Self::evidence_driven(fallback)

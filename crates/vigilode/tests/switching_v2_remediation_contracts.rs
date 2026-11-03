@@ -68,6 +68,21 @@ fn provided() -> DerivativeFallback {
 
 // ---- T-F1 ------------------------------------------------------------------
 
+#[test]
+fn f1_adaptive_evidence_factory_has_no_loss_margin_backoff() {
+    let a = SwitchingConfig::adaptive_evidence(provided());
+    let adaptation = a
+        .entry_probe_adaptation
+        .expect("adaptive_evidence sets an adaptation");
+    assert!(!adaptation.loss_margin_backoff);
+    let r = SwitchingConfig::route_registry(provided());
+    assert!(
+        r.entry_probe_adaptation
+            .expect("route_registry sets an adaptation")
+            .loss_margin_backoff
+    );
+}
+
 // ---- T-F2 ------------------------------------------------------------------
 
 // ---- T-F3 ------------------------------------------------------------------

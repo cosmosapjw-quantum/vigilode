@@ -29,3 +29,11 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - red: none
 - mutation: none
 - notes: output hashes of L-0205 verified; appended row L-0208 PASS superseding L-0205 to narrow claim to default-path neutrality
+## F1 — Restore adaptive_evidence without loss-margin backoff (A-4) — 2026-11-03
+- result: done
+- commit: uncommitted
+- toolchain: pinned 1.94.1
+- commands: contracts: 0, lib-unit-tests: 0, vigilode-suite: 0, clippy: 0, fmt: 0
+- red: f1_adaptive_evidence_factory_has_no_loss_margin_backoff (failed on base)
+- mutation: caught 2, missed 0, waived 0
+- notes: restored EntryProbeAdaptation::default() in adaptive_evidence; route_registry retains backoff

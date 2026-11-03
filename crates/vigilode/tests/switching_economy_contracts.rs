@@ -599,8 +599,8 @@ fn b1_loss_margin_backoff_contracts() {
         .entry_probe_adaptation
         .expect("adaptive evidence config has adaptation");
     assert!(
-        adaptive_adaptation.loss_margin_backoff,
-        "adaptive_evidence must enable loss_margin_backoff"
+        !adaptive_adaptation.loss_margin_backoff,
+        "adaptive_evidence keeps loss_margin_backoff off until a node admits it (DESIGN.md F1)"
     );
 
     let p = rotation();
