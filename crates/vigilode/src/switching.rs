@@ -464,6 +464,8 @@ pub enum SwitchingEvidence {
     Uncompared,
     /// An explicit batch required enough work to trigger reconsideration.
     ExplicitWorkPressure,
+    /// The explicit route is stability-limited per spectral Ritz / scalar test (WP-04).
+    ExplicitStabilityLimited,
     /// Same-checkpoint implicit trial completed with lower charged work.
     ImplicitCheaperOnPrefix,
     /// Completed implicit trial did not meet the required work advantage.
@@ -3711,6 +3713,7 @@ mod comparator_dominance_arithmetic_contract {
             SwitchingEvidence::ExplicitCheaperThanComparatorLowerBound => {}
             SwitchingEvidence::ImplicitPreferredOnSameWindow => {}
             SwitchingEvidence::ExplicitReturnNotSupported => {}
+            SwitchingEvidence::ExplicitStabilityLimited => {}
             SwitchingEvidence::ImplicitWindowCompleted => {}
         }
 

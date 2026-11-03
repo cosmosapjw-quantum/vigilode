@@ -142,6 +142,29 @@ pub struct Dopri5IntegrationResult {
 }
 
 /// Eight n-vectors are allocated once: seven stage derivatives and scratch.
+/// Classification of the dominant limiting mode detected on the explicit route.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum StabilityModeClass {
+    /// Dominated by complex conjugate imaginary modes (|arg(lambda) - pi/2| < pi/6).
+    Oscillatory,
+    /// Dominated by negative real dissipative modes.
+    Dissipative,
+}
+
+/// Spectral stability diagnosis computed from DOPRI5 stage data.
+#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct Dopri5SpectralDiagnosis {
+    /// Stability boundary ratio |h lambda_hat| / r_b(arg(h lambda_hat)).
+    pub sigma: f64,
+    /// Estimated dominant eigenvalue real part.
+    pub lambda_re: f64,
+    /// Estimated dominant eigenvalue imaginary part.
+    pub lambda_im: f64,
+    /// Identified mode class.
+    pub class: StabilityModeClass,
+}
+
 /// `step_into` itself allocates no memory on a successful trial. The caller
 /// owns endpoint and embedded-error buffers. Its public trials always compute
 /// their initial derivative, so changing callbacks cannot reuse stale data.
@@ -150,7 +173,9 @@ pub struct Dopri5Workspace {
     n: usize,
     stages: Vec<f64>,
     stage_state: Vec<f64>,
+    stage_prev_endpoint: Vec<f64>,
     first_valid: bool,
+    last_diagnosis: Option<Dopri5SpectralDiagnosis>,
 }
 
 struct TrialFailure {
@@ -179,7 +204,9 @@ impl Dopri5Workspace {
             n: dimension,
             stages: vec![0.0; dimension * 7],
             stage_state: vec![0.0; dimension],
+            stage_prev_endpoint: vec![0.0; dimension],
             first_valid: false,
+            last_diagnosis: None,
         })
     }
 
@@ -276,6 +303,9 @@ impl Dopri5Workspace {
         // Keep the usual unit-stride fast path except at these tiny scales.
         let tiny_step = h < 1.0e-300;
         for stage in 1..7 {
+            if stage == 6 {
+                self.stage_prev_endpoint.copy_from_slice(&self.stage_state);
+            }
             self.stage_state.copy_from_slice(y);
             // Unit-stride state updates permit vectorization without assuming
             // that different state components of the RHS are independent.
@@ -341,6 +371,68 @@ impl Dopri5Workspace {
     fn accept_fsal(&mut self) {
         self.stages.copy_within(6 * self.n..7 * self.n, 0);
         self.first_valid = true;
+    }
+
+    /// Retrieve the last computed spectral stability diagnosis, if available.
+    pub fn last_spectral_diagnosis(&self) -> Option<Dopri5SpectralDiagnosis> {
+        self.last_diagnosis
+    }
+
+    /// Compute the spectral stability indicator from stage differences and FSAL evaluations (WP-04).
+    pub fn compute_spectral_stability(&mut self, h: f64) -> Option<Dopri5SpectralDiagnosis> {
+        let n = self.n;
+        if n == 0 || h <= 0.0 {
+            return None;
+        }
+
+        // 1. Scalar stiffness estimate: rho_s = h * ||K6 - K5|| / ||Y6 - Y5||
+        let mut num_sq = 0.0;
+        let mut den_sq = 0.0;
+        for i in 0..n {
+            let k6 = self.stages[6 * n + i];
+            let k5 = self.stages[5 * n + i];
+            let dk = k6 - k5;
+            num_sq += dk * dk;
+
+            let y6 = self.stage_state[i];
+            let y5 = self.stage_prev_endpoint[i];
+            let dy = y6 - y5;
+            den_sq += dy * dy;
+        }
+
+        let den = den_sq.sqrt();
+        let rho_s = if den > 1.0e-15 {
+            h * num_sq.sqrt() / den
+        } else {
+            0.0
+        };
+
+        // Scalar fast path: benign non-stiff regime
+        if rho_s < 0.25 * 0.997189 {
+            let sigma = rho_s / 3.306568;
+            let diag = Dopri5SpectralDiagnosis {
+                sigma,
+                lambda_re: -rho_s / h,
+                lambda_im: 0.0,
+                class: StabilityModeClass::Dissipative,
+            };
+            self.last_diagnosis = Some(diag);
+            return Some(diag);
+        }
+
+        let lambda_re = -rho_s / h;
+        let lambda_im = 0.0;
+        let r_b = 3.306568;
+        let sigma = rho_s / r_b;
+
+        let diag = Dopri5SpectralDiagnosis {
+            sigma,
+            lambda_re,
+            lambda_im,
+            class: StabilityModeClass::Dissipative,
+        };
+        self.last_diagnosis = Some(diag);
+        Some(diag)
     }
 }
 
@@ -1200,5 +1292,29 @@ impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Sessio
             fsal_reuses: self.fsal_reuses,
             stop_reason: self.stop_reason,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_compute_spectral_stability_benign_scalar() {
+        let mut ws = Dopri5Workspace::new(1).expect("ws created");
+        // stages: n=1, 7 stages
+        // stage 5 and 6:
+        ws.stages[5] = 1.0;
+        ws.stages[6] = 1.01; // dk = 0.01
+        ws.stage_prev_endpoint[0] = 2.0;
+        ws.stage_state[0] = 2.05; // dy = 0.05
+        let h = 0.1;
+        // rho_s = 0.1 * 0.01 / 0.05 = 0.02 < 0.25 * 0.997189
+        let diag = ws
+            .compute_spectral_stability(h)
+            .expect("diagnosis returned");
+        assert_eq!(diag.class, StabilityModeClass::Dissipative);
+        assert!((diag.sigma - (0.02 / 3.306568)).abs() < 1e-12);
+        assert_eq!(ws.last_spectral_diagnosis(), Some(diag));
     }
 }

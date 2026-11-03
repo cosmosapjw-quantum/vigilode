@@ -252,11 +252,11 @@ pub use dense_output_v2::{
 };
 pub use dopri5::{
     DOPRI5_A, DOPRI5_ADAPTIVE_METHOD, DOPRI5_B, DOPRI5_B_EMBEDDED, DOPRI5_C, Dopri5Attempt,
-    Dopri5AttemptErrorNorm, Dopri5Config, Dopri5IntegrationResult, Dopri5Session, Dopri5StopReason,
-    Dopri5Workspace, NativeSessionAdvance, NativeSessionCheckpoint, NativeSessionIdentity,
-    NativeSessionMethod, NativeSessionTelemetry, integrate_dopri5_dense_observed,
-    integrate_dopri5_dense_observed_with_norm, integrate_dopri5_observed,
-    integrate_dopri5_observed_with_norm,
+    Dopri5AttemptErrorNorm, Dopri5Config, Dopri5IntegrationResult, Dopri5Session,
+    Dopri5SpectralDiagnosis, Dopri5StopReason, Dopri5Workspace, NativeSessionAdvance,
+    NativeSessionCheckpoint, NativeSessionIdentity, NativeSessionMethod, NativeSessionTelemetry,
+    StabilityModeClass, integrate_dopri5_dense_observed, integrate_dopri5_dense_observed_with_norm,
+    integrate_dopri5_observed, integrate_dopri5_observed_with_norm,
 };
 pub use dopri5_dense::DOPRI5_DENSE_P;
 pub use exponential::{

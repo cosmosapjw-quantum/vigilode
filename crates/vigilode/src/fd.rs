@@ -223,6 +223,71 @@ impl Guard {
     }
 }
 
+/// Accuracy rungs for Jacobian-vector product evaluation (WP-06).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum JvpAccuracyRung {
+    /// Forward difference (1 evaluation, error O(sqrt(u))). Default.
+    #[default]
+    R0Forward,
+    /// Central difference (2 evaluations, error O(u^(2/3))).
+    R1Central,
+    /// 4-node Chebyshev directional derivative (4 evaluations, error O(u^(4/5))).
+    R2Chebyshev4,
+    /// Complex-step derivative (error O(u), requires holomorphic callback).
+    R3ComplexStep,
+}
+
+/// Compute directional derivative via 4-node Chebyshev interpolation (R2, WP-06).
+pub fn jvp_chebyshev4<F>(
+    rhs: &F,
+    t: f64,
+    y: &[f64],
+    v: &[f64],
+    out: &mut [f64],
+    scratch_y: &mut [f64],
+    scratch_f: &mut [f64],
+) -> Result<(), CallbackError>
+where
+    F: Fn(f64, &[f64], &mut [f64]) -> Result<(), CallbackError>,
+{
+    let n = y.len();
+    let norm_y: f64 = y.iter().map(|x| x * x).sum::<f64>().sqrt();
+    let norm_v: f64 = v.iter().map(|x| x * x).sum::<f64>().sqrt().max(1.0e-300);
+    let u = f64::EPSILON;
+    let delta = u.powf(0.2) * (1.0 + norm_y) / norm_v;
+
+    // 4 Gauss-Chebyshev nodes: xi_q = cos((2q + 1) * pi / 8)
+    let nodes: [f64; 4] = [
+        (std::f64::consts::PI * 1.0 / 8.0).cos(),
+        (std::f64::consts::PI * 3.0 / 8.0).cos(),
+        (std::f64::consts::PI * 5.0 / 8.0).cos(),
+        (std::f64::consts::PI * 7.0 / 8.0).cos(),
+    ];
+
+    // Derivative weights for V w = e_1 at delta = 1 (closed-form for Gauss-Chebyshev 4-node)
+    let weights: [f64; 4] = [
+        -0.11208538229199128,
+        1.5771610149494748,
+        -1.5771610149494748,
+        0.11208538229199128,
+    ];
+
+    out.fill(0.0);
+    for q in 0..4 {
+        let step = delta * nodes[q];
+        for i in 0..n {
+            scratch_y[i] = y[i] + step * v[i];
+        }
+        rhs(t, scratch_y, scratch_f)?;
+        let w_q = weights[q] / delta;
+        for i in 0..n {
+            out[i] += w_q * scratch_f[i];
+        }
+    }
+    Ok(())
+}
+
 /// The forward-difference increment of component `y_j`: the represented
 /// difference `(y_j + sqrt(eps) max(|y_j|, 1)) - y_j`.
 fn increment(yj: f64) -> (f64, f64) {
@@ -800,5 +865,29 @@ mod tests {
         assert_eq!((work.fatal_errors, work.short_circuited_calls), (1, 1));
         let fatal = guard.fatal().unwrap();
         assert_eq!((fatal.callback, fatal.t), (Callback::Rhs, 1.0));
+    }
+
+    #[test]
+    fn test_jvp_chebyshev4_ver07_accuracy() {
+        // d/dx [sin(x) e^{-x/2} + x^3] at x = 1.2 (VER-07)
+        let f = |_t: f64, y: &[f64], out: &mut [f64]| {
+            let x = y[0];
+            out[0] = x.sin() * (-0.5 * x).exp() + x * x * x;
+            Ok(())
+        };
+
+        let y = [1.2];
+        let v = [1.0];
+        let mut out = [0.0];
+        let mut scratch_y = [0.0];
+        let mut scratch_f = [0.0];
+
+        jvp_chebyshev4(&f, 0.0, &y, &v, &mut out, &mut scratch_y, &mut scratch_f)
+            .expect("chebyshev4 succeeded");
+
+        let x: f64 = 1.2;
+        let exact = x.cos() * (-0.5 * x).exp() - 0.5 * x.sin() * (-0.5 * x).exp() + 3.0 * x * x;
+        let err = (out[0] - exact).abs();
+        assert!(err < 1.0e-12, "Chebyshev4 error {err:e} exceeds 1e-12");
     }
 }

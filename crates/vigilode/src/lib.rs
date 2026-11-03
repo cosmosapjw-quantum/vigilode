@@ -192,6 +192,7 @@ pub use causal_budget::*;
 pub use cofactor_chart::*;
 pub use error::{CallbackError, SolveError, Unsupported};
 pub use events::{Direction, EventRecord};
+pub use fd::{JvpAccuracyRung, jvp_chebyshev4};
 pub use lawson::*;
 pub use options::{Atol, InteriorError, Options, Tier};
 pub use oscillatory_chart::*;
