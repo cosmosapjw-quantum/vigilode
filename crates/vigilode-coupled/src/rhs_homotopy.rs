@@ -159,7 +159,84 @@ impl<M: RhsOnlyMap, P: PreconditionerAction> RhsOnlyMap for PreconditionedFixedP
     }
 }
 
-/// Contraction condition certificate (C15):
+impl<M: RhsOnlyMap, P: PreconditionerAction> PreconditionedFixedPointMap<M, P> {
+    /// Evaluates the preconditioned fixed-point map using a caller-provided scratch workspace.
+    ///
+    /// Guarantees zero heap allocations even when `dim > 64` (satisfying VG-1).
+    pub fn evaluate_with_workspace(
+        &self,
+        x: &[f64],
+        out: &mut [f64],
+        workspace: &mut [f64],
+    ) -> Result<(), String> {
+        let dim = self.dimension();
+        if x.len() != dim || out.len() != dim {
+            return Err("PreconditionedFixedPointMap: dimension mismatch".into());
+        }
+        if workspace.len() < dim {
+            return Err(format!(
+                "PreconditionedFixedPointMap: scratch workspace length {} < dimension {}",
+                workspace.len(),
+                dim
+            ));
+        }
+        if self.preconditioner.is_identity() {
+            return self.base_map.evaluate(x, out);
+        }
+
+        let g_slice = &mut workspace[..dim];
+        self.base_map.evaluate(x, g_slice)?;
+        for (gi, &xi) in g_slice.iter_mut().zip(x) {
+            *gi = xi - *gi;
+        }
+        self.preconditioner.apply(g_slice, out)?;
+        for (oi, &xi) in out.iter_mut().zip(x) {
+            *oi = xi - *oi;
+        }
+        Ok(())
+    }
+}
+
+/// Sealed evidence establishing that the derivative supremum bound
+/// $\sup_{x \in B(x_c, r)} \|I - P \partial F(x)\| \le q < 1$
+/// has been externally verified or certified.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+pub struct DerivativeSupremumEvidence {
+    pub operator_id: u64,
+    pub model_epoch: u64,
+    pub ball_radius: f64,
+    pub certified_q: f64,
+    pub evidence_reference: u64,
+}
+
+impl DerivativeSupremumEvidence {
+    pub fn new(
+        operator_id: u64,
+        model_epoch: u64,
+        ball_radius: f64,
+        certified_q: f64,
+        evidence_reference: u64,
+    ) -> Result<Self, String> {
+        if !ball_radius.is_finite() || ball_radius <= 0.0 {
+            return Err("ball_radius must be finite and positive".into());
+        }
+        if !certified_q.is_finite() || !(0.0..1.0).contains(&certified_q) {
+            return Err("certified_q must be in [0.0, 1.0)".into());
+        }
+        if evidence_reference == 0 {
+            return Err("evidence_reference must be nonzero".into());
+        }
+        Ok(Self {
+            operator_id,
+            model_epoch,
+            ball_radius,
+            certified_q,
+            evidence_reference,
+        })
+    }
+}
+
+/// Contraction condition certificate (C15 / WP14):
 ///
 /// If sup ||I - P \partial F|| <= q < 1 on a ball B(x_c, r) and
 /// ||P F(x_c)|| <= (1 - q) r, then T is a q-contraction with a unique root in the ball.
@@ -168,17 +245,24 @@ pub struct QContractionCertificate {
     pub q: f64,
     pub radius: f64,
     pub initial_residual_norm: f64,
+    /// Indicates whether the purely algebraic scalar inequality
+    /// `initial_residual_norm <= (1 - q) * radius` is satisfied.
+    pub scalar_condition_satisfied: bool,
+    /// Authoritative certification status. True ONLY when bound to certified `DerivativeSupremumEvidence`.
     pub is_certified: bool,
+    /// Sealed evidence establishing the derivative supremum on the ball.
+    pub evidence: Option<DerivativeSupremumEvidence>,
 }
 
 pub type QContractionEnclosure = QContractionCertificate;
 
 impl QContractionCertificate {
-    /// Verifies the C15 contraction condition on a ball B(x_c, radius):
-    /// 1. 0.0 <= q < 1.0
-    /// 2. radius > 0.0
-    /// 3. initial_residual_norm >= 0.0
-    /// 4. initial_residual_norm <= (1.0 - q) * radius
+    /// Verifies the scalar algebraic condition `||P F(x_c)|| <= (1 - q) * radius`.
+    ///
+    /// NOTE: In accordance with Node P7 governance, a scalar check alone does NOT
+    /// grant authoritative certificate status (`is_certified = false`), because caller-supplied
+    /// scalars do not prove the derivative supremum over the closed ball.
+    /// To produce an authoritative certificate, call [`QContractionCertificate::verify_with_evidence`].
     pub fn verify(q: f64, radius: f64, initial_residual_norm: f64) -> Self {
         let valid_inputs = q.is_finite()
             && radius.is_finite()
@@ -187,7 +271,7 @@ impl QContractionCertificate {
             && radius > 0.0
             && initial_residual_norm >= 0.0;
 
-        let is_certified = if valid_inputs {
+        let scalar_condition_satisfied = if valid_inputs {
             let max_allowed = (1.0 - q) * radius;
             initial_residual_norm <= max_allowed
         } else {
@@ -198,13 +282,54 @@ impl QContractionCertificate {
             q,
             radius,
             initial_residual_norm,
+            scalar_condition_satisfied,
+            is_certified: false,
+            evidence: None,
+        }
+    }
+
+    /// Verifies the contraction condition bound to authoritative `DerivativeSupremumEvidence`.
+    ///
+    /// Returns `is_certified = true` if and only if:
+    /// 1. The scalar inequality `initial_residual_norm <= (1 - q) * radius` holds.
+    /// 2. The declared `radius <= evidence.ball_radius`.
+    /// 3. The declared contraction rate `q >= evidence.certified_q`.
+    pub fn verify_with_evidence(
+        q: f64,
+        radius: f64,
+        initial_residual_norm: f64,
+        evidence: DerivativeSupremumEvidence,
+    ) -> Self {
+        let valid_inputs = q.is_finite()
+            && radius.is_finite()
+            && initial_residual_norm.is_finite()
+            && (0.0..1.0).contains(&q)
+            && radius > 0.0
+            && initial_residual_norm >= 0.0;
+
+        let scalar_condition_satisfied = if valid_inputs {
+            let max_allowed = (1.0 - q) * radius;
+            initial_residual_norm <= max_allowed
+        } else {
+            false
+        };
+
+        let evidence_valid = radius <= evidence.ball_radius && q >= evidence.certified_q;
+        let is_certified = scalar_condition_satisfied && evidence_valid;
+
+        Self {
+            q,
+            radius,
+            initial_residual_norm,
+            scalar_condition_satisfied,
             is_certified,
+            evidence: Some(evidence),
         }
     }
 
     /// Root error upper bound ||x^* - x_c|| <= ||P F(x_c)|| / (1 - q) <= radius.
     pub fn root_error_bound(&self) -> Option<f64> {
-        if self.is_certified && self.q < 1.0 {
+        if self.scalar_condition_satisfied && self.q < 1.0 {
             Some(self.initial_residual_norm / (1.0 - self.q))
         } else {
             None
@@ -215,7 +340,7 @@ impl QContractionCertificate {
 /// Helper function to verify C15 q-contraction condition:
 /// Returns true iff 0 <= q < 1, radius > 0, p_res_norm >= 0, and p_res_norm <= (1 - q) * radius.
 pub fn verify_q_contraction_condition(q: f64, radius: f64, p_res_norm: f64) -> bool {
-    QContractionCertificate::verify(q, radius, p_res_norm).is_certified
+    QContractionCertificate::verify(q, radius, p_res_norm).scalar_condition_satisfied
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -1518,10 +1643,14 @@ mod tests {
 
     #[test]
     fn wp14_q_contraction_certificate_verification() {
-        // Valid certified cases: ||P F(x_c)|| <= (1 - q) * r
-        // q = 0.5, r = 2.0, (1 - q) * r = 1.0
+        // 1. Scalar verification: establishes scalar inequality ||P F(x_c)|| <= (1 - q) * r
+        // But per Node P7 rules, scalar check alone CANNOT manufacture certificate authority!
         let cert1 = QContractionCertificate::verify(0.5, 2.0, 0.8);
-        assert!(cert1.is_certified);
+        assert!(cert1.scalar_condition_satisfied);
+        assert!(
+            !cert1.is_certified,
+            "Scalar check alone must not manufacture authority"
+        );
         assert_eq!(cert1.q, 0.5);
         assert_eq!(cert1.radius, 2.0);
         assert_eq!(cert1.initial_residual_norm, 0.8);
@@ -1530,32 +1659,88 @@ mod tests {
 
         // Exact boundary: ||P F(x_c)|| == (1 - q) * r
         let cert_boundary = QContractionCertificate::verify(0.5, 2.0, 1.0);
-        assert!(cert_boundary.is_certified);
+        assert!(cert_boundary.scalar_condition_satisfied);
+        assert!(!cert_boundary.is_certified);
         assert!((cert_boundary.root_error_bound().unwrap() - 2.0).abs() < 1e-14);
         assert!(verify_q_contraction_condition(0.5, 2.0, 1.0));
 
         // Violated case: ||P F(x_c)|| > (1 - q) * r
         let cert_violated = QContractionCertificate::verify(0.5, 2.0, 1.0001);
+        assert!(!cert_violated.scalar_condition_satisfied);
         assert!(!cert_violated.is_certified);
         assert!(cert_violated.root_error_bound().is_none());
         assert!(!verify_q_contraction_condition(0.5, 2.0, 1.0001));
 
-        // Invalid q: q >= 1.0 or q < 0.0
-        assert!(!QContractionCertificate::verify(1.0, 2.0, 0.1).is_certified);
-        assert!(!QContractionCertificate::verify(1.5, 2.0, 0.1).is_certified);
-        assert!(!QContractionCertificate::verify(-0.1, 2.0, 0.1).is_certified);
+        // 2. Authoritative certificate with DerivativeSupremumEvidence:
+        let ev = DerivativeSupremumEvidence::new(1, 1, 2.0, 0.5, 100).unwrap();
+        let cert_authoritative = QContractionCertificate::verify_with_evidence(0.5, 2.0, 0.8, ev);
+        assert!(cert_authoritative.is_certified);
+        assert!(cert_authoritative.scalar_condition_satisfied);
+        assert_eq!(cert_authoritative.evidence, Some(ev));
 
-        // Invalid radius: <= 0.0
-        assert!(!QContractionCertificate::verify(0.5, 0.0, 0.0).is_certified);
-        assert!(!QContractionCertificate::verify(0.5, -1.0, 0.1).is_certified);
+        // 3. Adversarial lying caller:
+        // (a) Caller claims radius larger than evidence ball_radius
+        let cert_lying_radius = QContractionCertificate::verify_with_evidence(0.5, 2.5, 0.8, ev);
+        assert!(!cert_lying_radius.is_certified);
 
-        // Invalid residual norm: < 0.0
-        assert!(!QContractionCertificate::verify(0.5, 1.0, -0.01).is_certified);
+        // (b) Caller claims smaller contraction rate q than certified by evidence
+        let ev_tight = DerivativeSupremumEvidence::new(1, 1, 2.0, 0.6, 100).unwrap();
+        let cert_lying_q = QContractionCertificate::verify_with_evidence(0.5, 2.0, 0.8, ev_tight);
+        assert!(!cert_lying_q.is_certified);
 
-        // Non-finite values
-        assert!(!QContractionCertificate::verify(f64::NAN, 1.0, 0.1).is_certified);
-        assert!(!QContractionCertificate::verify(0.5, f64::INFINITY, 0.1).is_certified);
-        assert!(!QContractionCertificate::verify(0.5, 1.0, f64::NAN).is_certified);
+        // Invalid inputs
+        assert!(!QContractionCertificate::verify(1.0, 2.0, 0.1).scalar_condition_satisfied);
+        assert!(!QContractionCertificate::verify(1.5, 2.0, 0.1).scalar_condition_satisfied);
+        assert!(!QContractionCertificate::verify(-0.1, 2.0, 0.1).scalar_condition_satisfied);
+        assert!(!QContractionCertificate::verify(0.5, 0.0, 0.0).scalar_condition_satisfied);
+        assert!(!QContractionCertificate::verify(0.5, -1.0, 0.1).scalar_condition_satisfied);
+        assert!(!QContractionCertificate::verify(0.5, 1.0, -0.01).scalar_condition_satisfied);
+        assert!(!QContractionCertificate::verify(f64::NAN, 1.0, 0.1).scalar_condition_satisfied);
+        assert!(
+            !QContractionCertificate::verify(0.5, f64::INFINITY, 0.1).scalar_condition_satisfied
+        );
+        assert!(!QContractionCertificate::verify(0.5, 1.0, f64::NAN).scalar_condition_satisfied);
+    }
+
+    #[test]
+    fn wp14_preconditioned_map_large_dimension_and_workspace() {
+        struct LargeMockMap(usize);
+        impl RhsOnlyMap for LargeMockMap {
+            fn dimension(&self) -> usize {
+                self.0
+            }
+            fn admits(&self, _x: &[f64]) -> bool {
+                true
+            }
+            fn model_epoch(&self) -> Option<u64> {
+                Some(1)
+            }
+            fn evaluate(&self, x: &[f64], out: &mut [f64]) -> Result<(), String> {
+                for (oi, &xi) in out.iter_mut().zip(x) {
+                    *oi = 0.5 * xi;
+                }
+                Ok(())
+            }
+        }
+
+        let dim = 128; // > 64 (stack limit)
+        let map = PreconditionedFixedPointMap::new(LargeMockMap(dim), IdentityPreconditioner);
+        let x = vec![1.0; dim];
+        let mut out = vec![0.0; dim];
+        let mut ws = vec![0.0; dim];
+
+        // Zero-allocation evaluation via evaluate_with_workspace
+        map.evaluate_with_workspace(&x, &mut out, &mut ws).unwrap();
+        for &val in &out {
+            assert!((val - 0.5_f64).abs() < 1e-14);
+        }
+
+        // Insufficient workspace length check
+        let mut small_ws = vec![0.0; dim - 1];
+        assert!(
+            map.evaluate_with_workspace(&x, &mut out, &mut small_ws)
+                .is_err()
+        );
     }
 
     #[test]

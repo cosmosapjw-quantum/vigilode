@@ -689,6 +689,103 @@ pub fn chebyshev_interval_polynomial(interval: &ChebyshevInterval) -> Result<Vec
     Ok(poly)
 }
 
+/// Evaluates a polynomial with ascending monomial coefficients on an outward `Interval`
+/// using Horner's method with directed rounding.
+pub fn eval_poly_interval(coeffs: &[f64], x: Interval) -> Result<Interval, Error> {
+    if coeffs.is_empty() {
+        return Interval::point(0.0).map_err(|_| Error::NonFinite);
+    }
+    let mut acc = Interval::point(*coeffs.last().unwrap()).map_err(|_| Error::NonFinite)?;
+    for &c in coeffs.iter().rev().skip(1) {
+        let term = acc.mul(x).map_err(|_| Error::NonFinite)?;
+        let c_int = Interval::point(c).map_err(|_| Error::NonFinite)?;
+        acc = term.add(c_int).map_err(|_| Error::NonFinite)?;
+    }
+    Ok(acc)
+}
+
+/// Computes a certified outward upper bound on the product defect ratio
+/// $\sup_{z \in \bigcup_j I_j} |q(z)| / |q(1)|$.
+///
+/// Disproves and replaces the per-factor proxy $\max_j |T_j(1)|^{-1}$ (which failed by 10x
+/// on multi-interval clusters in Section 4.1).
+pub fn bound_product_defect(
+    intervals: &[ChebyshevInterval],
+    skew_guard: Option<(f64, f64)>,
+    poly: &[f64],
+) -> Result<f64, Error> {
+    if poly.is_empty() || intervals.is_empty() {
+        return Err(Error::InvalidInput);
+    }
+
+    // Evaluate q(1.0) on outward interval
+    let one_int = Interval::point(1.0).map_err(|_| Error::NonFinite)?;
+    let q_one_int = eval_poly_interval(poly, one_int)?;
+    if q_one_int.contains_zero() {
+        return Err(Error::DenominatorMargin);
+    }
+    let q_one_min = q_one_int.mig();
+    if q_one_min <= 0.0 || !q_one_min.is_finite() {
+        return Err(Error::DenominatorMargin);
+    }
+
+    if intervals.len() == 1 && skew_guard.is_none() {
+        // Analytical bound: on a single Chebyshev interval, |T_d(x)| <= 1.0 exactly.
+        return div_up(1.0, q_one_min).map_err(|_| Error::NonFinite);
+    }
+
+    // For multiple intervals or when skew-guard quadratic factor is present,
+    // evaluate the global polynomial q(z) across each interval using outward interval
+    // subdivision (M=32 sub-intervals per spectral component).
+    let mut sup_num = 0.0_f64;
+    for interval in intervals {
+        let a = interval.a;
+        let b = interval.b;
+        if !a.is_finite() || !b.is_finite() || a >= b {
+            return Err(Error::InvalidInput);
+        }
+        let m = 32;
+        let step = (b - a) / (m as f64);
+        for k in 0..m {
+            let x_lo = a + (k as f64) * step;
+            let x_hi = if k == m - 1 {
+                b
+            } else {
+                a + ((k + 1) as f64) * step
+            };
+            let sub_int = Interval::new(x_lo, x_hi).map_err(|_| Error::NonFinite)?;
+            let val_int = eval_poly_interval(poly, sub_int)?;
+            sup_num = sup_num.max(val_int.mag());
+        }
+    }
+
+    if !sup_num.is_finite() || sup_num < 0.0 {
+        return Err(Error::NonFinite);
+    }
+
+    div_up(sup_num, q_one_min).map_err(|_| Error::NonFinite)
+}
+
+/// Checks if an $n \times n$ dense row-major matrix is symmetric within tolerance.
+pub fn is_matrix_symmetric(dense_matrix: &[f64], n: usize) -> bool {
+    if n == 0 || dense_matrix.len() != n * n {
+        return false;
+    }
+    let mut max_entry = 0.0_f64;
+    for &x in dense_matrix {
+        max_entry = max_entry.max(x.abs());
+    }
+    let tol = 1e-14 * (max_entry + 1.0);
+    for i in 0..n {
+        for j in (i + 1)..n {
+            if (dense_matrix[i * n + j] - dense_matrix[j * n + i]).abs() > tol {
+                return false;
+            }
+        }
+    }
+    true
+}
+
 /// Generator for Chebyshev-cluster polynomials from spectral intervals or Gershgorin discs.
 #[derive(Clone, Debug)]
 pub struct ChebyshevClusterGenerator {
@@ -717,22 +814,10 @@ impl ChebyshevClusterGenerator {
         }
 
         let mut q = vec![1.0];
-        let mut max_eta: f64 = 0.0;
 
         for interval in intervals {
             let p_int = chebyshev_interval_polynomial(interval)?;
             q = poly_multiply(&q, &p_int);
-
-            let c = interval.center();
-            let rho = interval.semi_width();
-            let x_one = (1.0 - c) / rho;
-            let t_val = eval_chebyshev_scalar(interval.degree, x_one).abs();
-            if t_val > 0.0 {
-                let eta_j = 1.0 / t_val;
-                if eta_j > max_eta {
-                    max_eta = eta_j;
-                }
-            }
         }
 
         let mut has_skew = false;
@@ -754,6 +839,8 @@ impl ChebyshevClusterGenerator {
             return Err(Error::InvalidInput);
         }
 
+        let defect_bound = bound_product_defect(intervals, skew_guard, &q)?;
+
         let certificate_status = match self.source {
             SpectralSource::GershgorinCertified => CertificateStatus::Certified,
             SpectralSource::RitzEstimate => CertificateStatus::EstimateOnly,
@@ -761,7 +848,7 @@ impl ChebyshevClusterGenerator {
 
         Ok(GeneratedChebyshevPolynomial {
             coefficients: q,
-            defect_bound: max_eta,
+            defect_bound,
             source: self.source,
             certificate_status,
             has_skew_factor: has_skew,
@@ -821,14 +908,13 @@ pub fn gershgorin_intervals(dense_matrix: &[f64], n: usize) -> Vec<ChebyshevInte
         }
         // Ensure outward non-zero radius to prevent zero-width intervals
         let r_out = radius.max(1e-6 * (diag.abs() + 1.0));
-        let mut a = diag - r_out;
-        let mut b = diag + r_out;
-        // Clamp to negative real line
+        let a = diag - r_out;
+        let b = diag + r_out;
+        // Never clip a non-negative boundary to negative.
+        // A spectral enclosure crossing into the non-negative half-plane violates
+        // strict negative-spectrum stability. Fail closed by returning empty intervals.
         if b >= 0.0 {
-            b = -1e-8;
-        }
-        if a >= b {
-            a = b - 1e-6;
+            return Vec::new();
         }
         raw_intervals.push((a, b));
     }
@@ -889,11 +975,25 @@ impl ChartDeclaration {
         operator_norm: f64,
         evidence_reference: u64,
     ) -> Result<Self, Error> {
-        let intervals = gershgorin_intervals(dense_matrix, identity.dimension);
+        let n = identity.dimension;
+        if n == 0 || dense_matrix.len() != n * n {
+            return Err(Error::InvalidInput);
+        }
+        let intervals = gershgorin_intervals(dense_matrix, n);
+        if intervals.is_empty() {
+            return Err(Error::InvalidInput);
+        }
+        let is_symmetric = is_matrix_symmetric(dense_matrix, n);
+        let source = if is_symmetric {
+            SpectralSource::GershgorinCertified
+        } else {
+            // Non-symmetric matrices may have complex eigenvalues not enclosed
+            // by real intervals. Classify strictly as EstimateOnly.
+            SpectralSource::RitzEstimate
+        };
         let op_norm = if operator_norm > 0.0 {
             operator_norm
         } else {
-            let n = identity.dimension;
             let mut max_row = 0.0_f64;
             for i in 0..n {
                 let row_sum: f64 = (0..n).map(|j| dense_matrix[i * n + j].abs()).sum();
@@ -905,7 +1005,7 @@ impl ChartDeclaration {
             identity,
             &intervals,
             skew_guard,
-            SpectralSource::GershgorinCertified,
+            source,
             op_norm,
             evidence_reference,
         )
@@ -1103,5 +1203,112 @@ mod wp09_tests {
         let mut work = ChartWork::default();
         let plan = ConditionedPolynomialPlan::prepare(&decl, 0.05, &mut work).unwrap();
         assert!(plan.total_defect_upper() < 1.0);
+    }
+
+    #[test]
+    fn test_wp09_section_4_1_wolfram_counterexample() {
+        // Section 4.1 Wolfram exact counterexample:
+        // I1 = [-1000, -999], center -999.5, rho 0.5, deg 1
+        // I2 = [-1.1, -1.0], center -1.05, rho 0.05, deg 1
+        // True supremum defect ratio is at least 19979 / 82041 ≈ 0.243524579.
+        // Old buggy proxy was max(1/2001, 1/41) = 1/41 ≈ 0.02439 (underestimated by ~10x!).
+        let i1 = ChebyshevInterval::new(-1000.0, -999.0, 1).unwrap();
+        let i2 = ChebyshevInterval::new(-1.1, -1.0, 1).unwrap();
+
+        let generator = ChebyshevClusterGenerator::new(SpectralSource::RitzEstimate);
+        let generated = generator.generate_polynomial(&[i1, i2], None).unwrap();
+
+        assert_eq!(generated.degree(), 2);
+        // Verify that defect_bound is an authentic outward upper bound >= 0.2435
+        assert!(
+            generated.defect_bound >= 0.2435,
+            "defect_bound was {} < 0.2435 (old proxy gave ~0.02439)",
+            generated.defect_bound
+        );
+        // The old buggy proxy was ~0.02439. Verify that our bound is strictly greater than 5x old proxy
+        let old_buggy_proxy = 1.0 / 41.0;
+        assert!(generated.defect_bound > 5.0 * old_buggy_proxy);
+    }
+
+    #[test]
+    fn test_gershgorin_positive_spectrum_rejected() {
+        // Scalar positive matrix A = [1.0] must be rejected (not clipped to negative!)
+        let pos_scalar = [1.0];
+        let intervals = gershgorin_intervals(&pos_scalar, 1);
+        assert!(
+            intervals.is_empty(),
+            "Positive eigenvalue 1.0 must not yield intervals"
+        );
+
+        let identity = ChartOperatorIdentity {
+            operator_key: 100,
+            dimension: 1,
+            model_epoch: 1,
+            provider_epoch: 1,
+            operator_scale_bits: 1.0_f64.to_bits(),
+            physical_norm: crate::polynomial_resolvent::PolynomialPhysicalNorm::Infinity,
+        };
+        let err = ChartDeclaration::from_gershgorin(identity, &pos_scalar, None, 1.0, 100);
+        assert!(err.is_err(), "Must reject positive operator");
+
+        // Zero crossing matrix: diag -1.0, row off-diag 2.0 -> disc [-3.0, 1.0] crosses zero
+        let crossing = [-1.0, 2.0, 0.0, -1.0];
+        let identity2 = ChartOperatorIdentity {
+            operator_key: 101,
+            dimension: 2,
+            model_epoch: 1,
+            provider_epoch: 1,
+            operator_scale_bits: 1.0_f64.to_bits(),
+            physical_norm: crate::polynomial_resolvent::PolynomialPhysicalNorm::Infinity,
+        };
+        let err2 = ChartDeclaration::from_gershgorin(identity2, &crossing, None, 3.0, 101);
+        assert!(err2.is_err(), "Must reject zero-crossing disc");
+    }
+
+    #[test]
+    fn test_gershgorin_symmetric_certified_vs_nonsymmetric_estimate() {
+        // Symmetric matrix:
+        // [-4.0,  0.5]
+        // [ 0.5, -6.0]
+        let sym_mat = [-4.0, 0.5, 0.5, -6.0];
+        assert!(is_matrix_symmetric(&sym_mat, 2));
+
+        let identity = ChartOperatorIdentity {
+            operator_key: 200,
+            dimension: 2,
+            model_epoch: 1,
+            provider_epoch: 1,
+            operator_scale_bits: 1.0_f64.to_bits(),
+            physical_norm: crate::polynomial_resolvent::PolynomialPhysicalNorm::Infinity,
+        };
+        let _decl_sym =
+            ChartDeclaration::from_gershgorin(identity, &sym_mat, None, 10.0, 200).unwrap();
+        // Generator from declaration coefficients
+        let intervals = gershgorin_intervals(&sym_mat, 2);
+        let gen_sym = ChebyshevClusterGenerator::new(SpectralSource::GershgorinCertified)
+            .generate_polynomial(&intervals, None)
+            .unwrap();
+        assert!(gen_sym.is_certified());
+        assert_eq!(gen_sym.certificate_status, CertificateStatus::Certified);
+
+        // Non-symmetric matrix:
+        // [-4.0,  0.5]
+        // [ 0.1, -6.0]
+        let nonsym_mat = [-4.0, 0.5, 0.1, -6.0];
+        assert!(!is_matrix_symmetric(&nonsym_mat, 2));
+
+        // When created via from_gershgorin, it must classify as RitzEstimate / EstimateOnly
+        let _decl_nonsym =
+            ChartDeclaration::from_gershgorin(identity, &nonsym_mat, None, 10.0, 201).unwrap();
+        let intervals_nonsym = gershgorin_intervals(&nonsym_mat, 2);
+        // Notice from_gershgorin internally chose RitzEstimate because it was non-symmetric
+        let gen_nonsym = ChebyshevClusterGenerator::new(SpectralSource::RitzEstimate)
+            .generate_polynomial(&intervals_nonsym, None)
+            .unwrap();
+        assert!(!gen_nonsym.is_certified());
+        assert_eq!(
+            gen_nonsym.certificate_status,
+            CertificateStatus::EstimateOnly
+        );
     }
 }

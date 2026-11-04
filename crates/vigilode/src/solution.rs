@@ -630,11 +630,7 @@ impl Solution {
                     Extension::Sequential(segs) => {
                         let index = segs.partition_point(|s| s.t_new < t);
                         let seg = segs.get(index)?;
-                        let val = seg.evaluate(t).ok()?;
-                        if out.len() != val.len() {
-                            return None;
-                        }
-                        out.copy_from_slice(&val);
+                        seg.evaluate_into(t, out).ok()?;
                     }
                     Extension::Fast(segs) => {
                         segs.evaluate_into(t, out).ok()?;

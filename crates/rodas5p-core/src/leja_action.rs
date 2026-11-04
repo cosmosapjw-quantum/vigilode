@@ -2809,20 +2809,141 @@ pub fn complex_imaginary_leja_points(beta: f64, m: usize) -> Vec<f64> {
     }
 }
 
+/// Sealed witness proving that an operator is normal (e.g. skew-symmetric)
+/// and certifying that its imaginary spectrum is enclosed by $[-i\beta, i\beta]$.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+pub struct CertifiedNormalityWitness {
+    operator_key: u64,
+    dimension: usize,
+    model_epoch: u64,
+    certified_beta: f64,
+    evidence_reference: u64,
+}
+
+impl CertifiedNormalityWitness {
+    pub fn operator_key(&self) -> u64 {
+        self.operator_key
+    }
+
+    pub fn dimension(&self) -> usize {
+        self.dimension
+    }
+
+    pub fn model_epoch(&self) -> u64 {
+        self.model_epoch
+    }
+
+    pub fn certified_beta(&self) -> f64 {
+        self.certified_beta
+    }
+
+    pub fn evidence_reference(&self) -> u64 {
+        self.evidence_reference
+    }
+
+    /// Certifies a dense skew-symmetric operator $A^T = -A$ with outward Gershgorin bound on $\beta$.
+    ///
+    /// Validates $A_{ij} == -A_{ji}$ within floating-point tolerance, $A_{ii} == 0$,
+    /// and computes outward Gershgorin row-sum bound on the purely imaginary eigenvalues.
+    pub fn certify_dense_skew_symmetric(
+        dense_matrix: &[f64],
+        n: usize,
+        operator_key: u64,
+        model_epoch: u64,
+        evidence_reference: u64,
+    ) -> CoreResult<Self> {
+        if n == 0 || dense_matrix.len() != n * n {
+            return Err(CoreError::InvalidInput("invalid matrix dimensions".into()));
+        }
+        let mut max_entry = 0.0_f64;
+        for &x in dense_matrix {
+            max_entry = max_entry.max(x.abs());
+        }
+        let tol = 1e-14 * (max_entry + 1.0);
+        for i in 0..n {
+            if dense_matrix[i * n + i].abs() > tol {
+                return Err(CoreError::InvalidInput(
+                    "diagonal entry is not zero for skew-symmetric operator".into(),
+                ));
+            }
+            for j in (i + 1)..n {
+                let a_ij = dense_matrix[i * n + j];
+                let a_ji = dense_matrix[j * n + i];
+                if (a_ij + a_ji).abs() > tol {
+                    return Err(CoreError::InvalidInput(
+                        "operator is not skew-symmetric: A_ij != -A_ji".into(),
+                    ));
+                }
+            }
+        }
+        // Gershgorin outward bound on imaginary eigenvalues:
+        let mut beta_max = 0.0_f64;
+        for i in 0..n {
+            let mut row_sum = 0.0_f64;
+            for j in 0..n {
+                row_sum = add_up(row_sum, dense_matrix[i * n + j].abs())?;
+            }
+            beta_max = beta_max.max(row_sum);
+        }
+        if !beta_max.is_finite() || beta_max < 0.0 {
+            return Err(CoreError::NonFinite("nonfinite beta bound".into()));
+        }
+        Ok(Self {
+            operator_key,
+            dimension: n,
+            model_epoch,
+            certified_beta: beta_max,
+            evidence_reference,
+        })
+    }
+}
+
 /// Configuration for complex Newton-Leja phi-actions on oscillatory spectra.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 pub struct ComplexLejaConfig {
     pub beta: f64,
     pub order: usize,
+    /// Historical caller boolean. Note that `is_normal = true` ALONE does NOT grant `Certified` status;
+    /// certification strictly requires a verified `witness`.
     pub is_normal: bool,
+    /// Sealed normality and spectral enclosure witness.
+    pub witness: Option<CertifiedNormalityWitness>,
 }
 
 impl ComplexLejaConfig {
+    /// Creates an uncertified estimate-only configuration.
+    ///
+    /// Even if `is_normal` is true, without a sealed `witness` the action returns `EstimateOnly`.
     pub fn new(beta: f64, order: usize, is_normal: bool) -> Self {
         Self {
             beta,
             order,
             is_normal,
+            witness: None,
+        }
+    }
+
+    /// Creates a certified configuration bound to a verified sealed normality witness.
+    pub fn with_witness(order: usize, witness: CertifiedNormalityWitness) -> Self {
+        Self {
+            beta: witness.certified_beta,
+            order,
+            is_normal: true,
+            witness: Some(witness),
+        }
+    }
+
+    /// Creates a certified configuration with custom beta (which must be >= witness.certified_beta).
+    pub fn with_witness_and_beta(
+        beta: f64,
+        order: usize,
+        witness: CertifiedNormalityWitness,
+    ) -> Self {
+        Self {
+            beta,
+            order,
+            is_normal: true,
+            witness: Some(witness),
         }
     }
 }
@@ -3159,7 +3280,17 @@ pub fn complex_leja_phi_action_into<Op: LinearOperator>(
         ));
     }
 
-    if config.is_normal {
+    // Certified status requires BOTH:
+    // 1. config.is_normal == true
+    // 2. A verified sealed witness whose dimension matches op.dimension()
+    //    and whose certified_beta is enclosed by config.beta.
+    let is_certified_normal = if let Some(ref w) = config.witness {
+        config.is_normal && w.dimension() == n && config.beta >= w.certified_beta()
+    } else {
+        false
+    };
+
+    if is_certified_normal {
         let v_norm = safe_l2(v);
         if v_norm == 0.0 {
             return Ok(TotalErrorStatus::Certified { bound: 0.0 });
@@ -3190,8 +3321,21 @@ pub fn complex_leja_phi_action_into<Op: LinearOperator>(
         let total_bound = add_up(truncation, roundoff)?;
         Ok(TotalErrorStatus::Certified { bound: total_bound })
     } else {
+        let reason = if config.witness.is_none() && config.is_normal {
+            "COMPLEX_LEJA_CALLER_UNSEALED_NORMALITY: caller boolean is_normal=true without sealed CertifiedNormalityWitness"
+        } else if let Some(ref w) = config.witness {
+            if w.dimension() != n {
+                "COMPLEX_LEJA_WITNESS_DIMENSION_MISMATCH: witness dimension does not match operator"
+            } else if config.beta < w.certified_beta() {
+                "COMPLEX_LEJA_BETA_TOO_SMALL: config.beta is smaller than certified_beta enclosure"
+            } else {
+                "COMPLEX_LEJA_NONNORMAL_NOT_ENCLOSED: operator is not normal or spectral enclosure is unverified"
+            }
+        } else {
+            "COMPLEX_LEJA_NONNORMAL_NOT_ENCLOSED: operator is not normal or spectral enclosure is unverified"
+        };
         Ok(TotalErrorStatus::EstimateOnly {
-            reason: "COMPLEX_LEJA_NONNORMAL_NOT_ENCLOSED: operator is not normal or spectral enclosure is unverified".into(),
+            reason: reason.into(),
             bounded_components: 0.0,
         })
     }
@@ -3783,11 +3927,19 @@ mod production_audit_suffix {
     fn test_complex_leja_action_harmonic_oscillator() {
         let omega = 1.5;
         let t = 1.0;
+        let mat_slice = [0.0, -omega, omega, 0.0];
         let matrix = DenseMatrix::from_rows(&[&[0.0, -omega], &[omega, 0.0]]).unwrap();
         let op = DenseOperator::new(matrix).unwrap();
         let v = [1.0, 0.0];
         let mut out = [0.0; 2];
-        let config = ComplexLejaConfig::new(omega, 25, true);
+
+        // 1. Certified route: requiring a sealed CertifiedNormalityWitness
+        let witness =
+            CertifiedNormalityWitness::certify_dense_skew_symmetric(&mat_slice, 2, 1, 1, 100)
+                .unwrap();
+        assert_eq!(witness.certified_beta(), omega);
+        let config_certified = ComplexLejaConfig::with_witness(25, witness);
+
         let mut workspace = ComplexLejaWorkspace::new(2, 30);
         let mut work = WorkCounters::default();
 
@@ -3795,7 +3947,7 @@ mod production_audit_suffix {
             &op,
             t,
             0,
-            &config,
+            &config_certified,
             &v,
             &mut out,
             &mut workspace,
@@ -3831,6 +3983,28 @@ mod production_audit_suffix {
         assert!(work.poly_block_products > 0);
         assert!(work.poly_coefficient_setups > 0);
 
+        // 2. Adversarial test: Caller lies about normality with unsealed boolean
+        let config_lying_caller = ComplexLejaConfig::new(omega, 25, true);
+        let status_lying = complex_leja_phi_action_into(
+            &op,
+            t,
+            0,
+            &config_lying_caller,
+            &v,
+            &mut out,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+        assert!(matches!(
+            status_lying,
+            TotalErrorStatus::EstimateOnly {
+                ref reason,
+                ..
+            } if reason.contains("COMPLEX_LEJA_CALLER_UNSEALED_NORMALITY")
+        ));
+
+        // 3. Explicit non-normal config
         let config_nonnormal = ComplexLejaConfig::new(omega, 25, false);
         let status_nn = complex_leja_phi_action_into(
             &op,
@@ -3845,10 +4019,46 @@ mod production_audit_suffix {
         .unwrap();
         assert!(matches!(status_nn, TotalErrorStatus::EstimateOnly { .. }));
 
+        // 4. Adversarial test: Caller tries to certify non-normal / non-skew matrix
+        let nonnormal_mat = [1.0, 2.0, 3.0, 4.0];
+        let witness_attempt =
+            CertifiedNormalityWitness::certify_dense_skew_symmetric(&nonnormal_mat, 2, 2, 1, 200);
+        assert!(
+            witness_attempt.is_err(),
+            "Non-skew matrix must be rejected by certify_dense_skew_symmetric"
+        );
+
+        // 5. Adversarial test: Caller supplies beta that is too small for enclosure
+        let mut config_small_beta = ComplexLejaConfig::with_witness(25, witness);
+        config_small_beta.beta = omega * 0.5; // strictly smaller than certified_beta
+        let status_small_beta = complex_leja_phi_action_into(
+            &op,
+            t,
+            0,
+            &config_small_beta,
+            &v,
+            &mut out,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+        assert!(matches!(
+            status_small_beta,
+            TotalErrorStatus::EstimateOnly {
+                ref reason,
+                ..
+            } if reason.contains("COMPLEX_LEJA_BETA_TOO_SMALL")
+        ));
+
+        // 6. Direct action with scaled matrix and certified witness
+        let scaled_slice = [0.0, -omega * t, omega * t, 0.0];
         let scaled_matrix =
             DenseMatrix::from_rows(&[&[0.0, -omega * t], &[omega * t, 0.0]]).unwrap();
         let op_scaled = DenseOperator::new(scaled_matrix).unwrap();
-        let config_direct = ComplexLejaConfig::new(omega * t, 25, true);
+        let scaled_witness =
+            CertifiedNormalityWitness::certify_dense_skew_symmetric(&scaled_slice, 2, 3, 1, 300)
+                .unwrap();
+        let config_direct = ComplexLejaConfig::with_witness(25, scaled_witness);
         let status_direct = complex_leja_phi_action_direct_into(
             &op_scaled,
             0,

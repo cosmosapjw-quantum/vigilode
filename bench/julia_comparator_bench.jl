@@ -1,4 +1,4 @@
-# Julia Comparator Benchmark for VigilODE Evaluation
+# Julia Comparator Benchmark for VigilODE Evaluation (v2 with strict execution provenance)
 # Problems: Robertson (n=3), HIRES (n=8), Van der Pol (mu=1000, n=2), Brusselator 1D (n=100)
 # Algorithms: Rodas5P() (Rosenbrock-Wanner 5th order), FBDF() (Fixed-leading coefficient BDF), CVODE_BDF()
 
@@ -8,6 +8,7 @@ using Sundials
 using LinearAlgebra
 using Statistics
 using JSON3
+using SHA
 
 # 1. Problem Definitions
 
@@ -182,8 +183,27 @@ function calc_max_wrms(states, ref_states, atol_scale, error_rtol)
     return worst
 end
 
+function get_cpu_model()
+    try
+        for line in eachline("/proc/cpuinfo")
+            if startswith(line, "model name")
+                return strip(split(line, ":")[2])
+            end
+        end
+    catch
+    end
+    return "unknown"
+end
+
+function sha256_of_file(path)
+    if isfile(path)
+        return bytes2hex(open(sha256, path))
+    end
+    return nothing
+end
+
 function main()
-    println("=== Starting Julia Comparator Benchmark ===")
+    println("=== Starting Julia Comparator Benchmark (v2 Strict Provenance) ===")
     ref_file = nothing
     out_file = "bench/out/julia_bench_results.json"
     
@@ -202,17 +222,38 @@ function main()
     end
 
     ref_data = Dict{String, Any}()
+    ref_sha256 = nothing
     if ref_file !== nothing && isfile(ref_file)
         println("Loading reference solution from: ", ref_file)
+        ref_sha256 = sha256_of_file(ref_file)
         raw = JSON3.read(read(ref_file, String))
         for row in raw["references"]
             prob_id = String(row["problem"])
             ref_data[prob_id] = row["states"]
         end
-        println("Loaded references for: ", keys(ref_data))
+        println("Loaded references for: ", keys(ref_data), " (SHA: ", ref_sha256[1:8], "...)")
     else
-        println("No reference file provided or found; WRMS error will be omitted or computed self-consistently.")
+        println("No reference file provided or found; WRMS error will be omitted.")
     end
+
+    cpu_model = get_cpu_model()
+    kernel = try readchomp(`uname -sr`) catch; "unknown" end
+    git_commit = try readchomp(`git rev-parse HEAD`) catch; "unknown" end
+    runner_sha = sha256_of_file(@__FILE__)
+    manifest_sha = sha256_of_file("tools/benchmarks/component_julia/Manifest.toml")
+
+    provenance = Dict(
+        "host_cpu" => cpu_model,
+        "host_logical_cpus" => Sys.CPU_THREADS,
+        "host_kernel" => kernel,
+        "julia_version" => string(VERSION),
+        "julia_manifest_sha256" => manifest_sha,
+        "git_commit" => git_commit,
+        "reference_file" => ref_file,
+        "reference_sha256" => ref_sha256,
+        "runner_source_sha256" => runner_sha,
+        "timing_authority" => "diagnostic_only"
+    )
 
     problems = get_problems()
     algorithms = [
@@ -238,9 +279,10 @@ function main()
                 # Scalar atol matching vigilode corpus
                 atol = rtol * prob.atol_scale[1]
                 
-                # Warmup run
+                # Warmup run (2 runs matching corpus warmups)
                 local sol
                 try
+                    solve(prob_ode, alg, reltol=rtol, abstol=atol, saveat=grid, maxiters=1000000)
                     sol = solve(prob_ode, alg, reltol=rtol, abstol=atol, saveat=grid, maxiters=1000000)
                 catch e
                     println("  ", rtol, " ", alg_name, " Warmup FAILED: ", e)
@@ -261,21 +303,23 @@ function main()
                         "algorithm" => alg_name,
                         "rtol" => rtol,
                         "status" => string(sol.retcode),
-                        "time_ms" => nothing
+                        "time_median_ms" => nothing
                     ))
                     continue
                 end
 
-                # Timed repetitions (5 runs)
-                times_ms = Float64[]
+                # Timed repetitions (5 runs, retaining raw samples in ns)
+                times_ns = Int64[]
                 n_reps = 5
                 for _ in 1:n_reps
                     t0 = time_ns()
                     sol = solve(prob_ode, alg, reltol=rtol, abstol=atol, saveat=grid, maxiters=1000000)
                     t1 = time_ns()
-                    push!(times_ms, (t1 - t0) / 1e6)
+                    push!(times_ns, Int64(t1 - t0))
                 end
-                med_time = median(times_ms)
+                med_ns = median(times_ns)
+                mad_ns = median(abs.(times_ns .- med_ns))
+                med_time_ms = med_ns / 1e6
 
                 # Extract states (101 points)
                 states = [Vector{Float64}(sol.u[k]) for k in 1:length(sol.u)]
@@ -285,14 +329,19 @@ function main()
                 end
 
                 stats = sol.stats
-                println("  ", rtol, " ", rpad(alg_name, 18), ": Success | err: ", err !== nothing ? string(err) : "N/A", " | time: ", round(med_time, digits=3), " ms | nf: ", stats.nf, " | njac: ", stats.njacs)
+                println("  ", rtol, " ", rpad(alg_name, 18), ": Success | err: ", err !== nothing ? string(err) : "N/A", " | time: ", round(med_time_ms, digits=3), " ms | nf: ", stats.nf, " | njac: ", stats.njacs)
 
                 push!(results, Dict(
                     "problem" => prob.id,
                     "algorithm" => alg_name,
                     "rtol" => rtol,
                     "status" => "Success",
-                    "time_median_ms" => med_time,
+                    "time_median_ms" => med_time_ms,
+                    "raw_timing_samples_ns" => times_ns,
+                    "timing_summary" => Dict(
+                        "median_ns" => med_ns,
+                        "mad_ns" => mad_ns,
+                    ),
                     "error_common" => err,
                     "nf" => stats.nf,
                     "njacs" => stats.njacs,
@@ -304,10 +353,16 @@ function main()
         end
     end
 
+    output_doc = Dict(
+        "schema" => "vigilode.cross_solver_run.v2",
+        "provenance" => provenance,
+        "results" => results
+    )
+
     # Write output JSON
     mkpath(dirname(out_file))
     open(out_file, "w") do io
-        JSON3.pretty(io, results)
+        JSON3.pretty(io, output_doc)
     end
     println("\n=== Julia Benchmark completed. Saved to: ", out_file, " ===")
 end

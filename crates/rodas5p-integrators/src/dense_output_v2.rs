@@ -1118,14 +1118,34 @@ pub(crate) fn rodas5p_dense_output_parts(
     stages: &[Vec<f64>],
     theta: f64,
 ) -> DenseOutputResult<Vec<f64>> {
+    let mut output = vec![0.0; y_old.len()];
+    rodas5p_dense_output_parts_into(y_old, y_new, stages, theta, &mut output)?;
+    Ok(output)
+}
+
+/// In-place variant of [`rodas5p_dense_output_parts`]: writes into `out` with zero allocations.
+pub(crate) fn rodas5p_dense_output_parts_into(
+    y_old: &[f64],
+    y_new: &[f64],
+    stages: &[Vec<f64>],
+    theta: f64,
+    out: &mut [f64],
+) -> DenseOutputResult<()> {
     validate_theta(theta)?;
+    let dimension = y_old.len();
+    if out.len() != dimension {
+        return Err(
+            CoreError::Dimension("RODAS5P dense-output buffer length mismatch".into()).into(),
+        );
+    }
     if theta == 0.0 {
-        return Ok(y_old.to_vec());
+        out.copy_from_slice(y_old);
+        return Ok(());
     }
     if theta == 1.0 {
-        return Ok(y_new.to_vec());
+        out.copy_from_slice(y_new);
+        return Ok(());
     }
-    let dimension = y_old.len();
     if dimension == 0
         || y_new.len() != dimension
         || stages.len() != 8
@@ -1143,7 +1163,6 @@ pub(crate) fn rodas5p_dense_output_parts(
         .into());
     }
     let complement = 1.0 - theta;
-    let mut output = vec![0.0; dimension];
     for component in 0..dimension {
         let d0 = coefficients
             .dense_d
@@ -1166,13 +1185,13 @@ pub(crate) fn rodas5p_dense_output_parts(
             .zip(stages)
             .map(|(coefficient, stage)| coefficient * stage[component])
             .sum::<f64>();
-        output[component] = complement * y_old[component]
+        out[component] = complement * y_old[component]
             + theta * (y_new[component] + complement * (d0 + theta * (d1 + theta * d2)));
     }
-    if !output.iter().all(|value| value.is_finite()) {
+    if !out.iter().all(|value| value.is_finite()) {
         return Err(CoreError::NonFinite("RODAS5P dense output contains NaN/Inf".into()).into());
     }
-    Ok(output)
+    Ok(())
 }
 
 /// How the adaptive RODAS5P dense path treats its interior (interpolant)
@@ -1749,16 +1768,30 @@ impl Rodas5pDenseSegment {
     /// as the output collector forms it, so a sampled output time gives the
     /// driver's sample bit for bit.
     pub fn evaluate(&self, t: f64) -> DenseOutputResult<Vec<f64>> {
+        let mut out = vec![0.0; self.y_old.len()];
+        self.evaluate_into(t, &mut out)?;
+        Ok(out)
+    }
+
+    /// In-place continuous extension at `t` in `[t_old, t_new]`, with zero heap allocations (VG-1).
+    pub fn evaluate_into(&self, t: f64, out: &mut [f64]) -> DenseOutputResult<()> {
         if !(t >= self.t_old && t <= self.t_new) {
             return Err(
                 CoreError::InvalidInput("dense segment evaluated outside its step".into()).into(),
             );
         }
+        if out.len() != self.y_old.len() {
+            return Err(CoreError::Dimension(
+                "dense segment evaluation output buffer dimension mismatch".into(),
+            )
+            .into());
+        }
         if t == self.t_new {
-            return Ok(self.y_new.clone());
+            out.copy_from_slice(&self.y_new);
+            return Ok(());
         }
         let theta = (t - self.t_old) / (self.t_new - self.t_old);
-        rodas5p_dense_output_parts(&self.y_old, &self.y_new, &self.stages, theta)
+        rodas5p_dense_output_parts_into(&self.y_old, &self.y_new, &self.stages, theta, out)
     }
 }
 

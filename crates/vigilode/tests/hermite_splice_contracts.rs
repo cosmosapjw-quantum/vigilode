@@ -301,3 +301,41 @@ fn solution_splice_wiring_and_truncation() {
     spliced_sol.at_into(t_mid, &mut buf).unwrap();
     assert_eq!(buf[0].to_bits(), spliced_mid.to_bits());
 }
+
+/// VG-1: Sequential extension public at_into must be 100% allocation-free (Node P6).
+#[test]
+fn solution_sequential_extension_at_into_zero_allocation() {
+    let problem = Problem::new(1, |_t, y, dy| {
+        dy[0] = -y[0];
+        Ok::<(), CallbackError>(())
+    })
+    .autonomous();
+
+    let opts = Options {
+        dense_output: true,
+        ..Options::default()
+    };
+
+    let base_sol = Rodas5p::solve(&problem, (0.0, 2.0), &[1.0], &opts).unwrap();
+    let t0 = base_sol.t[1];
+    let t1 = base_sol.t[2];
+    let splice = CubicHermiteSplice::new(t0, t1, vec![0.05], vec![0.0]).unwrap();
+    let spliced_sol = base_sol.with_splice(splice);
+
+    let mut buf = [0.0; 1];
+    // Warmup
+    spliced_sol.at_into(0.5 * (t0 + t1), &mut buf).unwrap();
+
+    // Hot-loop measurement of public at_into
+    let (_, allocs) = measured(|| {
+        for i in 0..10_000 {
+            let t = t0 + (t1 - t0) * (i as f64 / 10_000.0);
+            spliced_sol.at_into(t, &mut buf).unwrap();
+        }
+    });
+
+    assert_eq!(
+        allocs, 0,
+        "VG-1 violation: Sequential extension at_into must perform 0 heap allocations, got {allocs}"
+    );
+}

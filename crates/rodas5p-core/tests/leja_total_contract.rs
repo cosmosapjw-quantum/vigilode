@@ -884,14 +884,18 @@ fn cloud_scoped_enclosed_warm_call_is_allocation_free() {
 fn test_vg1_complex_leja_zero_allocation() {
     use rodas5p_core::DenseOperator;
     use rodas5p_core::leja_action::{
-        ComplexLejaConfig, ComplexLejaWorkspace, complex_leja_phi_action_into,
+        CertifiedNormalityWitness, ComplexLejaConfig, ComplexLejaWorkspace,
+        complex_leja_phi_action_into,
     };
 
+    let mat_slice = [0.0, -1.5, 1.5, 0.0];
     let matrix = DenseMatrix::from_rows(&[&[0.0, -1.5], &[1.5, 0.0]]).unwrap();
     let op = DenseOperator::new(matrix).unwrap();
     let v = [1.0, 0.5];
     let mut out = [0.0; 2];
-    let config = ComplexLejaConfig::new(1.5, 20, true);
+    let witness =
+        CertifiedNormalityWitness::certify_dense_skew_symmetric(&mat_slice, 2, 1, 1, 100).unwrap();
+    let config = ComplexLejaConfig::with_witness(20, witness);
     let mut workspace = ComplexLejaWorkspace::new(2, 25);
     let mut work = WorkCounters::default();
 

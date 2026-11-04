@@ -1,470 +1,881 @@
-[
-    {
-        "rtol": 0.0001,
-        "njacs": 36,
-        "time_median_ms": 0.077666,
-        "nreject": 2,
-        "status": "Success",
-        "nf": 342,
-        "naccept": 36,
-        "error_common": 1.1563902514550947e-6,
-        "algorithm": "julia-rodas5p",
-        "problem": "robertson",
-        "nsolve": 304
+{
+    "provenance": {
+        "git_commit": "06f995c2019af79d0bde6dd5dcee97f89643b2dc",
+        "reference_sha256": "1c8c9a4c3ce43d66519034b8fda5be160d0f64e026ed9f1b54c0a2462f753082",
+        "julia_version": "1.12.7",
+        "host_cpu": "AMD Ryzen 9 5900X 12-Core Processor",
+        "reference_file": "research/bench_wave2_20261021/results_v1.json",
+        "host_logical_cpus": 24,
+        "host_kernel": "Linux 7.0.0-38-generic",
+        "runner_source_sha256": "24e896f6eb5a24394f1aa643dcf847c1c726a3946a2f34012243e1b886bfd291",
+        "timing_authority": "diagnostic_only",
+        "julia_manifest_sha256": "66296b7cb6abab55547b7a8473c9b99475ee54abb54c3f5c4126fe8e54d9ce48"
     },
-    {
-        "rtol": 1.0e-6,
-        "njacs": 66,
-        "time_median_ms": 0.08467,
-        "nreject": 2,
-        "status": "Success",
-        "nf": 612,
-        "naccept": 66,
-        "error_common": 5.4067857284849413e-8,
-        "algorithm": "julia-rodas5p",
-        "problem": "robertson",
-        "nsolve": 544
-    },
-    {
-        "rtol": 1.0e-8,
-        "njacs": 162,
-        "time_median_ms": 0.263748,
-        "nreject": 3,
-        "status": "Success",
-        "nf": 1484,
-        "naccept": 162,
-        "error_common": 1.1468112516874092e-9,
-        "algorithm": "julia-rodas5p",
-        "problem": "robertson",
-        "nsolve": 1320
-    },
-    {
-        "rtol": 0.0001,
-        "njacs": 2,
-        "time_median_ms": 0.139673,
-        "nreject": 4,
-        "status": "Success",
-        "nf": 236,
-        "naccept": 96,
-        "error_common": 7.964790224644122e-5,
-        "algorithm": "julia-fbdf",
-        "problem": "robertson",
-        "nsolve": 233
-    },
-    {
-        "rtol": 1.0e-6,
-        "njacs": 2,
-        "time_median_ms": 0.297391,
-        "nreject": 18,
-        "status": "Success",
-        "nf": 436,
-        "naccept": 189,
-        "error_common": 8.66576252945495e-7,
-        "algorithm": "julia-fbdf",
-        "problem": "robertson",
-        "nsolve": 433
-    },
-    {
-        "rtol": 1.0e-8,
-        "njacs": 2,
-        "time_median_ms": 0.910547,
-        "nreject": 14,
-        "status": "Success",
-        "nf": 702,
-        "naccept": 374,
-        "error_common": 6.755152861568257e-9,
-        "algorithm": "julia-fbdf",
-        "problem": "robertson",
-        "nsolve": 699
-    },
-    {
-        "rtol": 0.0001,
-        "njacs": 4,
-        "time_median_ms": 0.150043,
-        "nreject": 8,
-        "status": "Success",
-        "nf": 207,
-        "naccept": 130,
-        "error_common": 0.00028631995379199904,
-        "algorithm": "julia-cvode-bdf",
-        "problem": "robertson",
-        "nsolve": 0
-    },
-    {
-        "rtol": 1.0e-6,
-        "njacs": 5,
-        "time_median_ms": 0.223772,
-        "nreject": 7,
-        "status": "Success",
-        "nf": 304,
-        "naccept": 224,
-        "error_common": 1.984815678105068e-6,
-        "algorithm": "julia-cvode-bdf",
-        "problem": "robertson",
-        "nsolve": 0
-    },
-    {
-        "rtol": 1.0e-8,
-        "njacs": 8,
-        "time_median_ms": 0.331976,
-        "nreject": 29,
-        "status": "Success",
-        "nf": 554,
-        "naccept": 374,
-        "error_common": 5.150429905729544e-8,
-        "algorithm": "julia-cvode-bdf",
-        "problem": "robertson",
-        "nsolve": 0
-    },
-    {
-        "rtol": 0.0001,
-        "njacs": 81,
-        "time_median_ms": 0.238549,
-        "nreject": 11,
-        "status": "Success",
-        "nf": 819,
-        "naccept": 81,
-        "error_common": 0.00048495855521430857,
-        "algorithm": "julia-rodas5p",
-        "problem": "hires",
-        "nsolve": 736
-    },
-    {
-        "rtol": 1.0e-6,
-        "njacs": 258,
-        "time_median_ms": 0.727091,
-        "nreject": 25,
-        "status": "Success",
-        "nf": 2524,
-        "naccept": 258,
-        "error_common": 2.3291806252071974e-6,
-        "algorithm": "julia-rodas5p",
-        "problem": "hires",
-        "nsolve": 2264
-    },
-    {
-        "rtol": 1.0e-8,
-        "njacs": 873,
-        "time_median_ms": 2.093066,
-        "nreject": 29,
-        "status": "Success",
-        "nf": 8091,
-        "naccept": 873,
-        "error_common": 5.29272206591418e-9,
-        "algorithm": "julia-rodas5p",
-        "problem": "hires",
-        "nsolve": 7216
-    },
-    {
-        "rtol": 0.0001,
-        "njacs": 8,
-        "time_median_ms": 0.597917,
-        "nreject": 16,
-        "status": "Success",
-        "nf": 618,
-        "naccept": 181,
-        "error_common": 0.00014311325952327965,
-        "algorithm": "julia-fbdf",
-        "problem": "hires",
-        "nsolve": 615
-    },
-    {
-        "rtol": 1.0e-6,
-        "njacs": 6,
-        "time_median_ms": 1.299911,
-        "nreject": 20,
-        "status": "Success",
-        "nf": 1440,
-        "naccept": 395,
-        "error_common": 3.6093550557112895e-5,
-        "algorithm": "julia-fbdf",
-        "problem": "hires",
-        "nsolve": 1437
-    },
-    {
-        "rtol": 1.0e-8,
-        "njacs": 7,
-        "time_median_ms": 2.497008,
-        "nreject": 43,
-        "status": "Success",
-        "nf": 2398,
-        "naccept": 898,
-        "error_common": 1.0085341978700186e-7,
-        "algorithm": "julia-fbdf",
-        "problem": "hires",
-        "nsolve": 2395
-    },
-    {
-        "rtol": 0.0001,
-        "njacs": 9,
-        "time_median_ms": 0.312109,
-        "nreject": 13,
-        "status": "Success",
-        "nf": 383,
-        "naccept": 225,
-        "error_common": 0.0003037714811696669,
-        "algorithm": "julia-cvode-bdf",
-        "problem": "hires",
-        "nsolve": 0
-    },
-    {
-        "rtol": 1.0e-6,
-        "njacs": 12,
-        "time_median_ms": 0.650827,
-        "nreject": 46,
-        "status": "Success",
-        "nf": 826,
-        "naccept": 467,
-        "error_common": 8.503586110454805e-6,
-        "algorithm": "julia-cvode-bdf",
-        "problem": "hires",
-        "nsolve": 0
-    },
-    {
-        "rtol": 1.0e-8,
-        "njacs": 19,
-        "time_median_ms": 1.069777,
-        "nreject": 62,
-        "status": "Success",
-        "nf": 1512,
-        "naccept": 1041,
-        "error_common": 1.637870782780893e-7,
-        "algorithm": "julia-cvode-bdf",
-        "problem": "hires",
-        "nsolve": 0
-    },
-    {
-        "rtol": 0.0001,
-        "njacs": 163,
-        "time_median_ms": 0.325934,
-        "nreject": 80,
-        "status": "Success",
-        "nf": 2109,
-        "naccept": 163,
-        "error_common": 7.104916987859717e-5,
-        "algorithm": "julia-rodas5p",
-        "problem": "van-der-pol-mu1000",
-        "nsolve": 1944
-    },
-    {
-        "rtol": 1.0e-6,
-        "njacs": 381,
-        "time_median_ms": 0.53064,
-        "nreject": 166,
-        "status": "Success",
-        "nf": 4759,
-        "naccept": 381,
-        "error_common": 1.754195540334879e-6,
-        "algorithm": "julia-rodas5p",
-        "problem": "van-der-pol-mu1000",
-        "nsolve": 4376
-    },
-    {
-        "rtol": 1.0e-8,
-        "njacs": 975,
-        "time_median_ms": 1.418304,
-        "nreject": 224,
-        "status": "Success",
-        "nf": 10569,
-        "naccept": 975,
-        "error_common": 1.723953437425332e-8,
-        "algorithm": "julia-rodas5p",
-        "problem": "van-der-pol-mu1000",
-        "nsolve": 9592
-    },
-    {
-        "rtol": 0.0001,
-        "njacs": 31,
-        "time_median_ms": 1.116034,
-        "nreject": 113,
-        "status": "Success",
-        "nf": 1953,
-        "naccept": 449,
-        "error_common": 0.005172118731663264,
-        "algorithm": "julia-fbdf",
-        "problem": "van-der-pol-mu1000",
-        "nsolve": 1950
-    },
-    {
-        "rtol": 1.0e-6,
-        "njacs": 13,
-        "time_median_ms": 2.149834,
-        "nreject": 153,
-        "status": "Success",
-        "nf": 3342,
-        "naccept": 936,
-        "error_common": 6.0971724672343695e-5,
-        "algorithm": "julia-fbdf",
-        "problem": "van-der-pol-mu1000",
-        "nsolve": 3339
-    },
-    {
-        "rtol": 1.0e-8,
-        "njacs": 11,
-        "time_median_ms": 4.270442,
-        "nreject": 185,
-        "status": "Success",
-        "nf": 5796,
-        "naccept": 1944,
-        "error_common": 1.815257284330346e-6,
-        "algorithm": "julia-fbdf",
-        "problem": "van-der-pol-mu1000",
-        "nsolve": 5793
-    },
-    {
-        "rtol": 0.0001,
-        "njacs": 19,
-        "time_median_ms": 0.412227,
-        "nreject": 55,
-        "status": "Success",
-        "nf": 779,
-        "naccept": 432,
-        "error_common": 0.0037181279174893084,
-        "algorithm": "julia-cvode-bdf",
-        "problem": "van-der-pol-mu1000",
-        "nsolve": 0
-    },
-    {
-        "rtol": 1.0e-6,
-        "njacs": 23,
-        "time_median_ms": 0.759412,
-        "nreject": 90,
-        "status": "Success",
-        "nf": 1354,
-        "naccept": 835,
-        "error_common": 0.0002538616303950627,
-        "algorithm": "julia-cvode-bdf",
-        "problem": "van-der-pol-mu1000",
-        "nsolve": 0
-    },
-    {
-        "rtol": 1.0e-8,
-        "njacs": 37,
-        "time_median_ms": 1.432731,
-        "nreject": 169,
-        "status": "Success",
-        "nf": 2858,
-        "naccept": 1854,
-        "error_common": 3.5019022670341458e-6,
-        "algorithm": "julia-cvode-bdf",
-        "problem": "van-der-pol-mu1000",
-        "nsolve": 0
-    },
-    {
-        "rtol": 0.0001,
-        "njacs": 46,
-        "time_median_ms": 3.046243,
-        "nreject": 3,
-        "status": "Success",
-        "nf": 440,
-        "naccept": 46,
-        "error_common": 0.00023540100910056044,
-        "algorithm": "julia-rodas5p",
-        "problem": "brusselator-1d-n100",
-        "nsolve": 392
-    },
-    {
-        "rtol": 1.0e-6,
-        "njacs": 100,
-        "time_median_ms": 6.826761,
-        "nreject": 9,
-        "status": "Success",
-        "nf": 974,
-        "naccept": 100,
-        "error_common": 5.6268667253083045e-6,
-        "algorithm": "julia-rodas5p",
-        "problem": "brusselator-1d-n100",
-        "nsolve": 872
-    },
-    {
-        "rtol": 1.0e-8,
-        "njacs": 228,
-        "time_median_ms": 14.916593,
-        "nreject": 10,
-        "status": "Success",
-        "nf": 2134,
-        "naccept": 228,
-        "error_common": 5.582554879632487e-8,
-        "algorithm": "julia-rodas5p",
-        "problem": "brusselator-1d-n100",
-        "nsolve": 1904
-    },
-    {
-        "rtol": 0.0001,
-        "njacs": 2,
-        "time_median_ms": 2.515273,
-        "nreject": 5,
-        "status": "Success",
-        "nf": 324,
-        "naccept": 112,
-        "error_common": 0.0010738243290490872,
-        "algorithm": "julia-fbdf",
-        "problem": "brusselator-1d-n100",
-        "nsolve": 321
-    },
-    {
-        "rtol": 1.0e-6,
-        "njacs": 1,
-        "time_median_ms": 3.432251,
-        "nreject": 8,
-        "status": "Success",
-        "nf": 491,
-        "naccept": 215,
-        "error_common": 1.7750610501618817e-5,
-        "algorithm": "julia-fbdf",
-        "problem": "brusselator-1d-n100",
-        "nsolve": 488
-    },
-    {
-        "rtol": 1.0e-8,
-        "njacs": 1,
-        "time_median_ms": 5.812449,
-        "nreject": 9,
-        "status": "Success",
-        "nf": 854,
-        "naccept": 493,
-        "error_common": 3.884281912398728e-7,
-        "algorithm": "julia-fbdf",
-        "problem": "brusselator-1d-n100",
-        "nsolve": 851
-    },
-    {
-        "rtol": 0.0001,
-        "njacs": 3,
-        "time_median_ms": 1.011367,
-        "nreject": 2,
-        "status": "Success",
-        "nf": 142,
-        "naccept": 117,
-        "error_common": 0.0015666344208045007,
-        "algorithm": "julia-cvode-bdf",
-        "problem": "brusselator-1d-n100",
-        "nsolve": 0
-    },
-    {
-        "rtol": 1.0e-6,
-        "njacs": 4,
-        "time_median_ms": 2.108436,
-        "nreject": 6,
-        "status": "Success",
-        "nf": 236,
-        "naccept": 190,
-        "error_common": 1.1825954457960561e-5,
-        "algorithm": "julia-cvode-bdf",
-        "problem": "brusselator-1d-n100",
-        "nsolve": 0
-    },
-    {
-        "rtol": 1.0e-8,
-        "njacs": 7,
-        "time_median_ms": 3.647557,
-        "nreject": 6,
-        "status": "Success",
-        "nf": 428,
-        "naccept": 374,
-        "error_common": 6.182064125788717e-7,
-        "algorithm": "julia-cvode-bdf",
-        "problem": "brusselator-1d-n100",
-        "nsolve": 0
-    }
-]
+    "results": [
+        {
+            "rtol": 0.0001,
+            "njacs": 36,
+            "time_median_ms": 0.046748,
+            "nreject": 2,
+            "status": "Success",
+            "nf": 342,
+            "naccept": 36,
+            "error_common": 1.1563902514550947e-6,
+            "algorithm": "julia-rodas5p",
+            "problem": "robertson",
+            "timing_summary": {
+                "median_ns": 46748,
+                "mad_ns": 3016
+            },
+            "nsolve": 304,
+            "raw_timing_samples_ns": [
+                90711,
+                49844,
+                44594,
+                43732,
+                46748
+            ]
+        },
+        {
+            "rtol": 1.0e-6,
+            "njacs": 66,
+            "time_median_ms": 0.072607,
+            "nreject": 2,
+            "status": "Success",
+            "nf": 612,
+            "naccept": 66,
+            "error_common": 5.4067857284849413e-8,
+            "algorithm": "julia-rodas5p",
+            "problem": "robertson",
+            "timing_summary": {
+                "median_ns": 72607,
+                "mad_ns": 51
+            },
+            "nsolve": 544,
+            "raw_timing_samples_ns": [
+                73829,
+                74209,
+                72556,
+                72607,
+                72556
+            ]
+        },
+        {
+            "rtol": 1.0e-8,
+            "njacs": 162,
+            "time_median_ms": 0.165401,
+            "nreject": 3,
+            "status": "Success",
+            "nf": 1484,
+            "naccept": 162,
+            "error_common": 1.1468112516874092e-9,
+            "algorithm": "julia-rodas5p",
+            "problem": "robertson",
+            "timing_summary": {
+                "median_ns": 165401,
+                "mad_ns": 1292
+            },
+            "nsolve": 1320,
+            "raw_timing_samples_ns": [
+                164279,
+                163788,
+                193524,
+                165401,
+                166693
+            ]
+        },
+        {
+            "rtol": 0.0001,
+            "njacs": 2,
+            "time_median_ms": 0.130315,
+            "nreject": 4,
+            "status": "Success",
+            "nf": 236,
+            "naccept": 96,
+            "error_common": 7.964790224644122e-5,
+            "algorithm": "julia-fbdf",
+            "problem": "robertson",
+            "timing_summary": {
+                "median_ns": 130315,
+                "mad_ns": 2374
+            },
+            "nsolve": 233,
+            "raw_timing_samples_ns": [
+                178075,
+                134553,
+                130315,
+                127941,
+                129493
+            ]
+        },
+        {
+            "rtol": 1.0e-6,
+            "njacs": 2,
+            "time_median_ms": 0.283132,
+            "nreject": 18,
+            "status": "Success",
+            "nf": 436,
+            "naccept": 189,
+            "error_common": 8.66576252945495e-7,
+            "algorithm": "julia-fbdf",
+            "problem": "robertson",
+            "timing_summary": {
+                "median_ns": 283132,
+                "mad_ns": 3166
+            },
+            "nsolve": 433,
+            "raw_timing_samples_ns": [
+                286298,
+                278904,
+                283132,
+                290646,
+                282932
+            ]
+        },
+        {
+            "rtol": 1.0e-8,
+            "njacs": 2,
+            "time_median_ms": 0.547639,
+            "nreject": 14,
+            "status": "Success",
+            "nf": 702,
+            "naccept": 374,
+            "error_common": 6.755152861568257e-9,
+            "algorithm": "julia-fbdf",
+            "problem": "robertson",
+            "timing_summary": {
+                "median_ns": 547639,
+                "mad_ns": 5862
+            },
+            "nsolve": 699,
+            "raw_timing_samples_ns": [
+                553501,
+                551296,
+                547639,
+                540686,
+                526480
+            ]
+        },
+        {
+            "rtol": 0.0001,
+            "njacs": 4,
+            "time_median_ms": 0.17036,
+            "nreject": 8,
+            "status": "Success",
+            "nf": 207,
+            "naccept": 130,
+            "error_common": 0.00028631995379199904,
+            "algorithm": "julia-cvode-bdf",
+            "problem": "robertson",
+            "timing_summary": {
+                "median_ns": 170360,
+                "mad_ns": 38803
+            },
+            "nsolve": 0,
+            "raw_timing_samples_ns": [
+                317206,
+                180740,
+                170360,
+                131557,
+                125516
+            ]
+        },
+        {
+            "rtol": 1.0e-6,
+            "njacs": 5,
+            "time_median_ms": 0.183315,
+            "nreject": 7,
+            "status": "Success",
+            "nf": 304,
+            "naccept": 224,
+            "error_common": 1.984815678105068e-6,
+            "algorithm": "julia-cvode-bdf",
+            "problem": "robertson",
+            "timing_summary": {
+                "median_ns": 183315,
+                "mad_ns": 2415
+            },
+            "nsolve": 0,
+            "raw_timing_samples_ns": [
+                183315,
+                214483,
+                185730,
+                178335,
+                181031
+            ]
+        },
+        {
+            "rtol": 1.0e-8,
+            "njacs": 8,
+            "time_median_ms": 0.242897,
+            "nreject": 29,
+            "status": "Success",
+            "nf": 554,
+            "naccept": 374,
+            "error_common": 5.150429905729544e-8,
+            "algorithm": "julia-cvode-bdf",
+            "problem": "robertson",
+            "timing_summary": {
+                "median_ns": 242897,
+                "mad_ns": 6702
+            },
+            "nsolve": 0,
+            "raw_timing_samples_ns": [
+                250861,
+                239410,
+                249599,
+                234060,
+                242897
+            ]
+        },
+        {
+            "rtol": 0.0001,
+            "njacs": 81,
+            "time_median_ms": 0.165931,
+            "nreject": 11,
+            "status": "Success",
+            "nf": 819,
+            "naccept": 81,
+            "error_common": 0.00048495855521430857,
+            "algorithm": "julia-rodas5p",
+            "problem": "hires",
+            "timing_summary": {
+                "median_ns": 165931,
+                "mad_ns": 50
+            },
+            "nsolve": 736,
+            "raw_timing_samples_ns": [
+                176041,
+                166373,
+                165902,
+                165931,
+                165881
+            ]
+        },
+        {
+            "rtol": 1.0e-6,
+            "njacs": 258,
+            "time_median_ms": 0.496794,
+            "nreject": 25,
+            "status": "Success",
+            "nf": 2524,
+            "naccept": 258,
+            "error_common": 2.3291806252071974e-6,
+            "algorithm": "julia-rodas5p",
+            "problem": "hires",
+            "timing_summary": {
+                "median_ns": 496794,
+                "mad_ns": 2485
+            },
+            "nsolve": 2264,
+            "raw_timing_samples_ns": [
+                516020,
+                496794,
+                489691,
+                494309,
+                499218
+            ]
+        },
+        {
+            "rtol": 1.0e-8,
+            "njacs": 873,
+            "time_median_ms": 1.607302,
+            "nreject": 29,
+            "status": "Success",
+            "nf": 8091,
+            "naccept": 873,
+            "error_common": 5.29272206591418e-9,
+            "algorithm": "julia-rodas5p",
+            "problem": "hires",
+            "timing_summary": {
+                "median_ns": 1607302,
+                "mad_ns": 6353
+            },
+            "nsolve": 7216,
+            "raw_timing_samples_ns": [
+                1631316,
+                1637318,
+                1607302,
+                1604606,
+                1600949
+            ]
+        },
+        {
+            "rtol": 0.0001,
+            "njacs": 8,
+            "time_median_ms": 0.386567,
+            "nreject": 16,
+            "status": "Success",
+            "nf": 618,
+            "naccept": 181,
+            "error_common": 0.00014311325952327965,
+            "algorithm": "julia-fbdf",
+            "problem": "hires",
+            "timing_summary": {
+                "median_ns": 386567,
+                "mad_ns": 2916
+            },
+            "nsolve": 615,
+            "raw_timing_samples_ns": [
+                390774,
+                386567,
+                390574,
+                383651,
+                385876
+            ]
+        },
+        {
+            "rtol": 1.0e-6,
+            "njacs": 6,
+            "time_median_ms": 0.852823,
+            "nreject": 20,
+            "status": "Success",
+            "nf": 1440,
+            "naccept": 395,
+            "error_common": 3.6093550557112895e-5,
+            "algorithm": "julia-fbdf",
+            "problem": "hires",
+            "timing_summary": {
+                "median_ns": 852823,
+                "mad_ns": 10390
+            },
+            "nsolve": 1437,
+            "raw_timing_samples_ns": [
+                863213,
+                850940,
+                873312,
+                852823,
+                837234
+            ]
+        },
+        {
+            "rtol": 1.0e-8,
+            "njacs": 7,
+            "time_median_ms": 1.746322,
+            "nreject": 43,
+            "status": "Success",
+            "nf": 2398,
+            "naccept": 898,
+            "error_common": 1.0085341978700186e-7,
+            "algorithm": "julia-fbdf",
+            "problem": "hires",
+            "timing_summary": {
+                "median_ns": 1746322,
+                "mad_ns": 6854
+            },
+            "nsolve": 2395,
+            "raw_timing_samples_ns": [
+                1753176,
+                1717508,
+                1730122,
+                1746322,
+                1749839
+            ]
+        },
+        {
+            "rtol": 0.0001,
+            "njacs": 9,
+            "time_median_ms": 0.218,
+            "nreject": 13,
+            "status": "Success",
+            "nf": 383,
+            "naccept": 225,
+            "error_common": 0.0003037714811696669,
+            "algorithm": "julia-cvode-bdf",
+            "problem": "hires",
+            "timing_summary": {
+                "median_ns": 218000,
+                "mad_ns": 10940
+            },
+            "nsolve": 0,
+            "raw_timing_samples_ns": [
+                245342,
+                218000,
+                228940,
+                211848,
+                202681
+            ]
+        },
+        {
+            "rtol": 1.0e-6,
+            "njacs": 12,
+            "time_median_ms": 0.426742,
+            "nreject": 46,
+            "status": "Success",
+            "nf": 826,
+            "naccept": 467,
+            "error_common": 8.503586110454805e-6,
+            "algorithm": "julia-cvode-bdf",
+            "problem": "hires",
+            "timing_summary": {
+                "median_ns": 426742,
+                "mad_ns": 2976
+            },
+            "nsolve": 0,
+            "raw_timing_samples_ns": [
+                424117,
+                426742,
+                434928,
+                429718,
+                412125
+            ]
+        },
+        {
+            "rtol": 1.0e-8,
+            "njacs": 19,
+            "time_median_ms": 0.790747,
+            "nreject": 62,
+            "status": "Success",
+            "nf": 1512,
+            "naccept": 1041,
+            "error_common": 1.637870782780893e-7,
+            "algorithm": "julia-cvode-bdf",
+            "problem": "hires",
+            "timing_summary": {
+                "median_ns": 790747,
+                "mad_ns": 72286
+            },
+            "nsolve": 0,
+            "raw_timing_samples_ns": [
+                718461,
+                728279,
+                869695,
+                1284695,
+                790747
+            ]
+        },
+        {
+            "rtol": 0.0001,
+            "njacs": 163,
+            "time_median_ms": 0.210576,
+            "nreject": 80,
+            "status": "Success",
+            "nf": 2109,
+            "naccept": 163,
+            "error_common": 7.104916987859717e-5,
+            "algorithm": "julia-rodas5p",
+            "problem": "van-der-pol-mu1000",
+            "timing_summary": {
+                "median_ns": 210576,
+                "mad_ns": 2175
+            },
+            "nsolve": 1944,
+            "raw_timing_samples_ns": [
+                213021,
+                210576,
+                216908,
+                208401,
+                208973
+            ]
+        },
+        {
+            "rtol": 1.0e-6,
+            "njacs": 381,
+            "time_median_ms": 0.476175,
+            "nreject": 166,
+            "status": "Success",
+            "nf": 4759,
+            "naccept": 381,
+            "error_common": 1.754195540334879e-6,
+            "algorithm": "julia-rodas5p",
+            "problem": "van-der-pol-mu1000",
+            "timing_summary": {
+                "median_ns": 476175,
+                "mad_ns": 17713
+            },
+            "nsolve": 4376,
+            "raw_timing_samples_ns": [
+                476175,
+                500030,
+                504819,
+                475464,
+                458462
+            ]
+        },
+        {
+            "rtol": 1.0e-8,
+            "njacs": 975,
+            "time_median_ms": 1.020779,
+            "nreject": 224,
+            "status": "Success",
+            "nf": 10569,
+            "naccept": 975,
+            "error_common": 1.723953437425332e-8,
+            "algorithm": "julia-rodas5p",
+            "problem": "van-der-pol-mu1000",
+            "timing_summary": {
+                "median_ns": 1020779,
+                "mad_ns": 18094
+            },
+            "nsolve": 9592,
+            "raw_timing_samples_ns": [
+                1035818,
+                1002685,
+                1123853,
+                1020779,
+                994750
+            ]
+        },
+        {
+            "rtol": 0.0001,
+            "njacs": 31,
+            "time_median_ms": 0.759758,
+            "nreject": 113,
+            "status": "Success",
+            "nf": 1953,
+            "naccept": 449,
+            "error_common": 0.005172118731663264,
+            "algorithm": "julia-fbdf",
+            "problem": "van-der-pol-mu1000",
+            "timing_summary": {
+                "median_ns": 759758,
+                "mad_ns": 360
+            },
+            "nsolve": 1950,
+            "raw_timing_samples_ns": [
+                760118,
+                759728,
+                748948,
+                853244,
+                759758
+            ]
+        },
+        {
+            "rtol": 1.0e-6,
+            "njacs": 13,
+            "time_median_ms": 1.586793,
+            "nreject": 153,
+            "status": "Success",
+            "nf": 3342,
+            "naccept": 936,
+            "error_common": 6.0971724672343695e-5,
+            "algorithm": "julia-fbdf",
+            "problem": "van-der-pol-mu1000",
+            "timing_summary": {
+                "median_ns": 1586793,
+                "mad_ns": 31659
+            },
+            "nsolve": 3339,
+            "raw_timing_samples_ns": [
+                1586793,
+                1670230,
+                2154831,
+                1577154,
+                1555134
+            ]
+        },
+        {
+            "rtol": 1.0e-8,
+            "njacs": 11,
+            "time_median_ms": 2.951077,
+            "nreject": 185,
+            "status": "Success",
+            "nf": 5796,
+            "naccept": 1944,
+            "error_common": 1.815257284330346e-6,
+            "algorithm": "julia-fbdf",
+            "problem": "van-der-pol-mu1000",
+            "timing_summary": {
+                "median_ns": 2951077,
+                "mad_ns": 4848
+            },
+            "nsolve": 5793,
+            "raw_timing_samples_ns": [
+                2978789,
+                2946229,
+                2948752,
+                3007724,
+                2951077
+            ]
+        },
+        {
+            "rtol": 0.0001,
+            "njacs": 19,
+            "time_median_ms": 0.301046,
+            "nreject": 55,
+            "status": "Success",
+            "nf": 779,
+            "naccept": 432,
+            "error_common": 0.0037181279174893084,
+            "algorithm": "julia-cvode-bdf",
+            "problem": "van-der-pol-mu1000",
+            "timing_summary": {
+                "median_ns": 301046,
+                "mad_ns": 23534
+            },
+            "nsolve": 0,
+            "raw_timing_samples_ns": [
+                350478,
+                276930,
+                277512,
+                312528,
+                301046
+            ]
+        },
+        {
+            "rtol": 1.0e-6,
+            "njacs": 23,
+            "time_median_ms": 0.475363,
+            "nreject": 90,
+            "status": "Success",
+            "nf": 1354,
+            "naccept": 835,
+            "error_common": 0.0002538616303950627,
+            "algorithm": "julia-cvode-bdf",
+            "problem": "van-der-pol-mu1000",
+            "timing_summary": {
+                "median_ns": 475363,
+                "mad_ns": 7724
+            },
+            "nsolve": 0,
+            "raw_timing_samples_ns": [
+                508014,
+                497185,
+                467639,
+                469513,
+                475363
+            ]
+        },
+        {
+            "rtol": 1.0e-8,
+            "njacs": 37,
+            "time_median_ms": 0.978639,
+            "nreject": 169,
+            "status": "Success",
+            "nf": 2858,
+            "naccept": 1854,
+            "error_common": 3.5019022670341458e-6,
+            "algorithm": "julia-cvode-bdf",
+            "problem": "van-der-pol-mu1000",
+            "timing_summary": {
+                "median_ns": 978639,
+                "mad_ns": 1412
+            },
+            "nsolve": 0,
+            "raw_timing_samples_ns": [
+                977227,
+                977798,
+                994019,
+                986585,
+                978639
+            ]
+        },
+        {
+            "rtol": 0.0001,
+            "njacs": 46,
+            "time_median_ms": 2.445116,
+            "nreject": 3,
+            "status": "Success",
+            "nf": 440,
+            "naccept": 46,
+            "error_common": 0.00023540100910056044,
+            "algorithm": "julia-rodas5p",
+            "problem": "brusselator-1d-n100",
+            "timing_summary": {
+                "median_ns": 2445116,
+                "mad_ns": 29956
+            },
+            "nsolve": 392,
+            "raw_timing_samples_ns": [
+                2385785,
+                2415160,
+                2445116,
+                2460966,
+                2520477
+            ]
+        },
+        {
+            "rtol": 1.0e-6,
+            "njacs": 100,
+            "time_median_ms": 5.443873,
+            "nreject": 9,
+            "status": "Success",
+            "nf": 974,
+            "naccept": 100,
+            "error_common": 5.6268667253083045e-6,
+            "algorithm": "julia-rodas5p",
+            "problem": "brusselator-1d-n100",
+            "timing_summary": {
+                "median_ns": 5443873,
+                "mad_ns": 31890
+            },
+            "nsolve": 872,
+            "raw_timing_samples_ns": [
+                5443873,
+                5265248,
+                5411983,
+                5515318,
+                5443983
+            ]
+        },
+        {
+            "rtol": 1.0e-8,
+            "njacs": 228,
+            "time_median_ms": 12.507612,
+            "nreject": 10,
+            "status": "Success",
+            "nf": 2134,
+            "naccept": 228,
+            "error_common": 5.582554879632487e-8,
+            "algorithm": "julia-rodas5p",
+            "problem": "brusselator-1d-n100",
+            "timing_summary": {
+                "median_ns": 12507612,
+                "mad_ns": 141416
+            },
+            "nsolve": 1904,
+            "raw_timing_samples_ns": [
+                12507612,
+                12509916,
+                12649028,
+                11778882,
+                11944894
+            ]
+        },
+        {
+            "rtol": 0.0001,
+            "njacs": 2,
+            "time_median_ms": 2.015939,
+            "nreject": 5,
+            "status": "Success",
+            "nf": 324,
+            "naccept": 112,
+            "error_common": 0.0010738243290490872,
+            "algorithm": "julia-fbdf",
+            "problem": "brusselator-1d-n100",
+            "timing_summary": {
+                "median_ns": 2015939,
+                "mad_ns": 23473
+            },
+            "nsolve": 321,
+            "raw_timing_samples_ns": [
+                2044002,
+                2064421,
+                2015939,
+                2007003,
+                1992466
+            ]
+        },
+        {
+            "rtol": 1.0e-6,
+            "njacs": 1,
+            "time_median_ms": 2.753395,
+            "nreject": 8,
+            "status": "Success",
+            "nf": 491,
+            "naccept": 215,
+            "error_common": 1.7750610501618817e-5,
+            "algorithm": "julia-fbdf",
+            "problem": "brusselator-1d-n100",
+            "timing_summary": {
+                "median_ns": 2753395,
+                "mad_ns": 60385
+            },
+            "nsolve": 488,
+            "raw_timing_samples_ns": [
+                2813780,
+                2681551,
+                2753395,
+                2972317,
+                2752474
+            ]
+        },
+        {
+            "rtol": 1.0e-8,
+            "njacs": 1,
+            "time_median_ms": 4.489759,
+            "nreject": 9,
+            "status": "Success",
+            "nf": 854,
+            "naccept": 493,
+            "error_common": 3.884281912398728e-7,
+            "algorithm": "julia-fbdf",
+            "problem": "brusselator-1d-n100",
+            "timing_summary": {
+                "median_ns": 4489759,
+                "mad_ns": 27463
+            },
+            "nsolve": 851,
+            "raw_timing_samples_ns": [
+                4562397,
+                4476245,
+                4489759,
+                4346661,
+                4517222
+            ]
+        },
+        {
+            "rtol": 0.0001,
+            "njacs": 3,
+            "time_median_ms": 0.855197,
+            "nreject": 2,
+            "status": "Success",
+            "nf": 142,
+            "naccept": 117,
+            "error_common": 0.0015666344208045007,
+            "algorithm": "julia-cvode-bdf",
+            "problem": "brusselator-1d-n100",
+            "timing_summary": {
+                "median_ns": 855197,
+                "mad_ns": 15379
+            },
+            "nsolve": 0,
+            "raw_timing_samples_ns": [
+                1160652,
+                906986,
+                839818,
+                855197,
+                850228
+            ]
+        },
+        {
+            "rtol": 1.0e-6,
+            "njacs": 4,
+            "time_median_ms": 1.395383,
+            "nreject": 6,
+            "status": "Success",
+            "nf": 236,
+            "naccept": 190,
+            "error_common": 1.1825954457960561e-5,
+            "algorithm": "julia-cvode-bdf",
+            "problem": "brusselator-1d-n100",
+            "timing_summary": {
+                "median_ns": 1395383,
+                "mad_ns": 54373
+            },
+            "nsolve": 0,
+            "raw_timing_samples_ns": [
+                1365787,
+                1341010,
+                1451849,
+                1541979,
+                1395383
+            ]
+        },
+        {
+            "rtol": 1.0e-8,
+            "njacs": 7,
+            "time_median_ms": 2.349827,
+            "nreject": 6,
+            "status": "Success",
+            "nf": 428,
+            "naccept": 374,
+            "error_common": 6.182064125788717e-7,
+            "algorithm": "julia-cvode-bdf",
+            "problem": "brusselator-1d-n100",
+            "timing_summary": {
+                "median_ns": 2349827,
+                "mad_ns": 44584
+            },
+            "nsolve": 0,
+            "raw_timing_samples_ns": [
+                2317316,
+                2349827,
+                2495802,
+                2449916,
+                2305243
+            ]
+        }
+    ],
+    "schema": "vigilode.cross_solver_run.v2"
+}
