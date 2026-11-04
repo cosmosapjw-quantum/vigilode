@@ -47,6 +47,13 @@ pub use directional_quadratic::{
 mod dopri5;
 mod dopri5_dense;
 pub mod dopri5_stiffness;
+pub use dopri5_stiffness::{
+    DOPRI5_REAL_AXIS_BOUNDARY, DOPRI5_Y7_MINUS_Y6, NonlinearStiffCalibration,
+    NonnormalLinearCalibration, OffRegistryBrusselatorCalibration, ScalarLinearCalibration,
+    SecantCalibrationReport, SecantClassification, SecantScreenGuard, SecantStatus,
+    calibrate_secant_screen, dopri5_secant_h_lambda, dopri5_secant_h_lambda_guarded,
+    dopri5_stability_limited,
+};
 mod quotient_flow;
 pub use quotient_flow::{
     DampedRotationAffineWorkspace, DampedRotationBlock, DampedRotationFlow, LawsonDopri5Result,

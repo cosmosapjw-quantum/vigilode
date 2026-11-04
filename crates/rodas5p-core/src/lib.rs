@@ -19,6 +19,7 @@ pub mod n01_affine_owner;
 pub mod n01_mass_action_owner;
 pub mod n01_source_owner;
 pub mod nonnormal_certificate;
+pub mod nonnormal_observers;
 pub use n01_mass_action_owner::{
     N01MassActionJvpReport, N01MassActionOwner, N01MassActionReport, N01MassActionTrial,
 };
@@ -72,6 +73,11 @@ pub use matrix::{DenseMatrix, LuFactorization, LuSolveWorkspace, direct_solve, i
 pub use matrix_functions::{
     DensePhiCombinationReport, dense_fused_phi_action, dense_fused_phi_action_report,
     dense_phi_action, dense_phi_combination, dense_phi_combination_report, matrix_exp_pade13,
+};
+pub use nonnormal_observers::{
+    FixedHLogNormObserver, FixedHMetric, GrowthBoundStatus, MovingHMetricObserver,
+    ObserverWorkCounters, QrSackerSellObserver, ResolventAnalysis,
+    ResolventNumericalAbscissaObserver,
 };
 pub use norms::{error_scale, safe_l2, scaled_error_component, step_error_wrms, wrms};
 pub use operator::{

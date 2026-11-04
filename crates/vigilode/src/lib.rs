@@ -171,6 +171,7 @@ mod explicit;
 mod explicit_ensemble;
 mod fd;
 pub mod hermite_splice;
+pub mod hybrid_automaton;
 mod lawson;
 pub mod margin;
 mod options;
@@ -193,8 +194,11 @@ pub use causal_budget::*;
 pub use cofactor_chart::*;
 pub use error::{CallbackError, SolveError, Unsupported};
 pub use events::{Direction, EventRecord};
-pub use fd::{JvpAccuracyRung, jvp_chebyshev4};
+pub use fd::{
+    JvpAccuracyRung, jvp_chebyshev4, jvp_chebyshev4_guarded, jvp_chebyshev4_guarded_with_delta,
+};
 pub use hermite_splice::*;
+pub use hybrid_automaton::*;
 pub use lawson::*;
 pub use options::{Atol, InteriorError, Options, Tier};
 pub use oscillatory_chart::*;
