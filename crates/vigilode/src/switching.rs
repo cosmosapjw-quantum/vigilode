@@ -287,6 +287,10 @@ pub struct SwitchingConfig {
     /// Optional fraction `(0, 1]` of DOPRI5 real-axis stability boundary for stiffness-gated entry pilots.
     #[serde(default)]
     pub stiffness_gate_fraction: Option<f64>,
+    /// Whether to pre-screen for stiffness at t0 before starting the first window.
+    /// If extreme stiffness is detected, begins directly under the authorized RODAS route.
+    #[serde(default)]
+    pub prescreen_initial_stiffness: bool,
 }
 
 mod opt_margin_ratio_serde {
@@ -362,6 +366,7 @@ impl Default for SwitchingConfig {
             entry_margin: None,
             return_margin: None,
             stiffness_gate_fraction: None,
+            prescreen_initial_stiffness: false,
         }
     }
 }
@@ -636,6 +641,93 @@ pub struct SwitchingSolution {
 #[error("invalid switching request: {0}")]
 pub struct SwitchingError(pub String);
 
+/// Check if a dense Jacobian exhibits stiff dissipative modes relative to the integration interval.
+#[inline]
+fn is_stiff_jacobian(jac: &[f64], n: usize, span: f64) -> bool {
+    let mut min_diag = 0.0;
+    for i in 0..n {
+        let diag = jac[i * n + i];
+        if diag < min_diag {
+            min_diag = diag;
+        }
+    }
+    // A negative real diagonal entry indicates a dissipative/decay mode.
+    // If min_diag < -5.0 and |min_diag| * span > 200.0, an explicit RK solver with
+    // linear stability boundary ~3.3 would require over 60 steps purely for stability.
+    min_diag < -5.0 && min_diag.abs() * span > 200.0
+}
+
+/// Pre-screen for initial stiffness at t0 before starting the first window.
+///
+/// Returns `true` if the problem's Jacobian (either at t0 or after an initial
+/// micro-probe) exhibits extreme stiffness on the integration interval.
+fn prescreen_initial_stiffness(
+    problem: &Problem,
+    t0: f64,
+    t1: f64,
+    y0: &[f64],
+    h0: f64,
+    rhs_calls: &mut u64,
+    jac_builds: &mut u64,
+) -> bool {
+    // Non-autonomous problems with explicit time dependence (e.g. forced oscillations,
+    // Prothero-Robinson type) suffer from Rosenbrock order reduction when h is moderately large,
+    // whereas high-order explicit RK often outperforms implicit methods on smooth forced tracks.
+    // Therefore, only autonomously stiff dissipative IVPs are pre-screened for instant Rodas5p entry.
+    if !problem.autonomous {
+        return false;
+    }
+    let n = problem.dimension;
+    if n == 0 || n > 64 || y0.len() != n {
+        return false;
+    }
+    let span = t1 - t0;
+    if span <= 1e-4 || !span.is_finite() {
+        return false;
+    }
+    let jac_fn = match &problem.jacobian {
+        Jacobian::Dense(jac) => jac,
+        _ => return false,
+    };
+
+    let mut jac = [0.0; 4096];
+    *jac_builds += 1;
+    if (jac_fn)(t0, y0, &mut jac[..n * n]).is_ok() && is_stiff_jacobian(&jac[..n * n], n, span) {
+        return true;
+    }
+
+    // Micro-probe for nonlinear chemical kinetics
+    let h_probe = if h0 > 0.0 && h0.is_finite() {
+        h0.min(span * 1e-4)
+    } else {
+        span * 1e-4
+    };
+    if h_probe <= 0.0 || !h_probe.is_finite() {
+        return false;
+    }
+
+    let mut f0 = [0.0; 64];
+    *rhs_calls += 1;
+    if (problem.rhs)(t0, y0, &mut f0[..n]).is_err() {
+        return false;
+    }
+
+    let mut y_probe = [0.0; 64];
+    for i in 0..n {
+        y_probe[i] = y0[i] + h_probe * f0[i];
+    }
+
+    jac[..n * n].fill(0.0);
+    *jac_builds += 1;
+    if (jac_fn)(t0 + h_probe, &y_probe[..n], &mut jac[..n * n]).is_ok()
+        && is_stiff_jacobian(&jac[..n * n], n, span)
+    {
+        return true;
+    }
+
+    false
+}
+
 /// RHS-first, derivative-opt-in adaptive window adapter.
 ///
 /// Smooth forward identity-mass IVPs with endpoint observations are supported.
@@ -710,9 +802,29 @@ impl SwitchingSolver {
             result.message = "reached final time".into();
             return Ok(result);
         }
+        let mut prescreen_rhs = 0u64;
+        let mut prescreen_jac = 0u64;
+        let initial_stiff = config.prescreen_initial_stiffness
+            && fallback
+            && prescreen_initial_stiffness(
+                problem,
+                t0,
+                t1,
+                y0,
+                opts.h0,
+                &mut prescreen_rhs,
+                &mut prescreen_jac,
+            );
+        result.stats.rhs_calls += prescreen_rhs;
+        result.stats.jacobian_builds += prescreen_jac;
+        let initial_method = if initial_stiff {
+            SwitchingMethod::Rodas5p
+        } else {
+            SwitchingMethod::Dopri5
+        };
         let mut progress = Some(DriveState {
             result,
-            method: SwitchingMethod::Dopri5,
+            method: initial_method,
             implicit_windows: 0,
             since_probe: 0,
             implicit_rate: None,

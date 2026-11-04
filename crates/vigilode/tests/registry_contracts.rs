@@ -19,6 +19,7 @@ fn state_machine_table_driven_all_transitions() {
         (EntryTrial, PilotWonStrict, ImplicitTenure),
         (EntryTrial, PilotLostOrCeiling, ExplicitTenure),
         (EntryTrial, FatalStop, Stopped),
+        (EntryTrial, BudgetStop, Stopped),
         (ImplicitTenure, ImplicitBatchDone, ImplicitTenure),
         (ImplicitTenure, RecheckDue, ReturnTrial),
         (ImplicitTenure, SentinelDue, ReturnSentinel),
@@ -26,8 +27,12 @@ fn state_machine_table_driven_all_transitions() {
         (ImplicitTenure, BudgetStop, Stopped),
         (ReturnTrial, ReturnWonStrict, ExplicitTenure),
         (ReturnTrial, ReturnLost, ImplicitTenure),
+        (ReturnTrial, FatalStop, Stopped),
+        (ReturnTrial, BudgetStop, Stopped),
         (ReturnSentinel, SentinelWon, ExplicitTenure),
         (ReturnSentinel, SentinelLost, ImplicitTenure),
+        (ReturnSentinel, FatalStop, Stopped),
+        (ReturnSentinel, BudgetStop, Stopped),
     ];
 
     for &(from, cause, expected) in valid_cases {
