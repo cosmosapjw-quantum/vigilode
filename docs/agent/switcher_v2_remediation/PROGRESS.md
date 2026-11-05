@@ -224,4 +224,14 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - mutation: none (X15 has no mutation-test acceptance item)
 - notes: distinguished continuous-time exact identity theorems from finite-step floating-point implementations; reserved Certified status for stationary identity metrics and initial orthogonal frames while general floating-point metrics, moving-metric Euler integration without quadrature envelopes, and discrete continuous QR integration return EstimateOnly; verified all negative controls (indefinite and singular metrics rejected) and zero hot-loop allocations.
 
+## X16 — Quarantine hybrid FSM as standalone — 2026-11-06
+- result: done
+- commit: uncommitted
+- toolchain: pinned Rust 1.94.1
+- commands: gate-validate: 0
+- red: none (X16 is a docs task)
+- mutation: none (X16 has no mutation-test acceptance item)
+- notes: inspected live call graph and verified HybridRouteAutomaton is not part of SwitchingSolver live dispatch; documented in crates/vigilode/SWITCHING.md and crates/vigilode/README.md that HybridRouteAutomaton is a standalone experimental component and existing component tests do not demonstrate production routing.
+
+
 

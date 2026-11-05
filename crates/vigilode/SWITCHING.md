@@ -171,3 +171,16 @@ for a fixed IVP throughout a solve.
 Contract tests: `cargo test -p vigilode --locked --offline --test switching_contracts`.
 The experiment harness compares this policy with forced methods and retains
 unfavorable work-precision results.
+
+## Hybrid Route Automaton
+
+`HybridRouteAutomaton` (`crates/vigilode/src/hybrid_automaton.rs`) is a
+standalone experimental component; it is not part of SwitchingSolver live dispatch.
+The default `SwitchingSolver::solve` adapter uses direct batch evaluation
+and does not instantiate or transition `HybridRouteAutomaton`. Existing unit
+and integration tests (`tests/hybrid_automaton_contracts.rs` and
+`tests/holdout_and_global_order_contracts.rs`) verify the state transition
+guards, anti-chattering dwell bounds, and speculative work accumulation of the
+FSM in isolation; these component tests do not demonstrate production routing
+under the live solver facade.
+
