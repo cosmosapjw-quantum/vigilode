@@ -2350,6 +2350,507 @@
       },
       "anchors": [],
       "mutation_waivers": {}
+    },
+    {
+      "id": "X12",
+      "title": "Make contraction evidence provenance non-forgeable",
+      "phase": 3,
+      "tier": "H",
+      "kind": "default_behaviour",
+      "depends_on": [
+        "X11"
+      ],
+      "files_allowed": [
+        "crates/vigilode-coupled/src/rhs_homotopy.rs",
+        "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs"
+      ],
+      "anchors": [
+        {
+          "file": "crates/vigilode-coupled/src/rhs_homotopy.rs",
+          "text": "pub struct DerivativeSupremumEvidence {",
+          "count": 1,
+          "at": "head"
+        }
+      ],
+      "design_section": "t-x12",
+      "invariants": [
+        "INV-07",
+        "INV-08",
+        "INV-10",
+        "INV-11",
+        "INV-14"
+      ],
+      "tests_required": [
+        {
+          "file": "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs",
+          "name": "caller_scalar_evidence_cannot_authorize_contraction_certificate"
+        }
+      ],
+      "red": {
+        "cmd": "cargo test --locked -p vigilode-coupled --release --test rhs_homotopy_contracts caller_scalar_evidence_cannot_authorize_contraction_certificate -- --exact",
+        "copy": [
+          "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs"
+        ],
+        "tests": [
+          "caller_scalar_evidence_cannot_authorize_contraction_certificate"
+        ],
+        "allow_compile_red": false,
+        "new_symbols": [],
+        "timeout_s": 1800
+      },
+      "commands": [
+        {
+          "name": "gate-validate",
+          "cmd": "python3 tools/agent_gate.py validate",
+          "timeout_s": 120
+        },
+        {
+          "name": "focused",
+          "cmd": "cargo test --locked -p vigilode-coupled --release --test rhs_homotopy_contracts",
+          "timeout_s": 1800
+        },
+        {
+          "name": "crate-suite",
+          "cmd": "cargo test --locked -p vigilode-coupled --release --no-fail-fast",
+          "timeout_s": 3600
+        },
+        {
+          "name": "clippy",
+          "cmd": "cargo clippy --locked -p vigilode-coupled --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "fmt",
+          "cmd": "cargo fmt --all -- --check",
+          "timeout_s": 300
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "test_name_present",
+          "file": "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs",
+          "text": "caller_scalar_evidence_cannot_authorize_contraction_certificate"
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "No full-ball derivative supremum enclosure provider is defined.",
+        "No expected-red negative test on task base.",
+        "A protected authority path is required.",
+        "The only proposed evidence is a caller-supplied scalar/reference integer."
+      ],
+      "commit_message": "fix(vigilode-coupled): bind contraction certificate to verified enclosure",
+      "removals_allowed": [],
+      "spec_only": false,
+      "mutation_waivers": {}
+    },
+    {
+      "id": "X13",
+      "title": "Bind Leja normality witness to the consumed operator",
+      "phase": 3,
+      "tier": "H",
+      "kind": "default_behaviour",
+      "depends_on": [
+        "X11"
+      ],
+      "files_allowed": [
+        "crates/rodas5p-core/src/leja_action.rs",
+        "crates/rodas5p-core/tests/leja_total_contract.rs"
+      ],
+      "anchors": [
+        {
+          "file": "crates/rodas5p-core/src/leja_action.rs",
+          "text": "pub struct CertifiedNormalityWitness {",
+          "count": 1,
+          "at": "head"
+        },
+        {
+          "file": "crates/rodas5p-core/src/leja_action.rs",
+          "text": "pub fn complex_leja_phi_action_into<Op: LinearOperator>(",
+          "count": 1,
+          "at": "head"
+        }
+      ],
+      "design_section": "t-x13",
+      "invariants": [
+        "INV-07",
+        "INV-08",
+        "INV-10",
+        "INV-11",
+        "INV-14"
+      ],
+      "tests_required": [
+        {
+          "file": "crates/rodas5p-core/tests/leja_total_contract.rs",
+          "name": "normality_witness_must_match_consumed_operator_identity"
+        }
+      ],
+      "red": {
+        "cmd": "cargo test --locked -p rodas5p-core --release --test leja_total_contract normality_witness_must_match_consumed_operator_identity -- --exact",
+        "copy": [
+          "crates/rodas5p-core/tests/leja_total_contract.rs"
+        ],
+        "tests": [
+          "normality_witness_must_match_consumed_operator_identity"
+        ],
+        "allow_compile_red": false,
+        "new_symbols": [],
+        "timeout_s": 1800
+      },
+      "commands": [
+        {
+          "name": "gate-validate",
+          "cmd": "python3 tools/agent_gate.py validate",
+          "timeout_s": 120
+        },
+        {
+          "name": "focused",
+          "cmd": "cargo test --locked -p rodas5p-core --release --test leja_total_contract",
+          "timeout_s": 1800
+        },
+        {
+          "name": "crate-suite",
+          "cmd": "cargo test --locked -p rodas5p-core --release --no-fail-fast",
+          "timeout_s": 3600
+        },
+        {
+          "name": "clippy",
+          "cmd": "cargo clippy --locked -p rodas5p-core --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "fmt",
+          "cmd": "cargo fmt --all -- --check",
+          "timeout_s": 300
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "test_name_present",
+          "file": "crates/rodas5p-core/tests/leja_total_contract.rs",
+          "text": "normality_witness_must_match_consumed_operator_identity"
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "Operator identity cannot be exposed without an unrelated broad trait refactor.",
+        "A cross-operator same-dimension negative test cannot be made red.",
+        "A protected path is required."
+      ],
+      "commit_message": "fix(rodas5p-core): bind Leja normality witness to operator identity",
+      "removals_allowed": [],
+      "spec_only": false,
+      "mutation_waivers": {}
+    },
+    {
+      "id": "X14",
+      "title": "Make spectral-source claims proof-carrying",
+      "phase": 3,
+      "tier": "H",
+      "kind": "default_behaviour",
+      "depends_on": [
+        "X11"
+      ],
+      "files_allowed": [
+        "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+        "crates/rodas5p-integrators/tests/conditioned_polynomial_contracts.rs"
+      ],
+      "anchors": [
+        {
+          "file": "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+          "text": "pub enum SpectralSource {",
+          "count": 1,
+          "at": "head"
+        }
+      ],
+      "design_section": "t-x14",
+      "invariants": [
+        "INV-07",
+        "INV-08",
+        "INV-10",
+        "INV-11",
+        "INV-14"
+      ],
+      "tests_required": [
+        {
+          "file": "crates/rodas5p-integrators/tests/conditioned_polynomial_contracts.rs",
+          "name": "caller_selected_spectral_source_cannot_forge_certificate"
+        }
+      ],
+      "red": {
+        "cmd": "cargo test --locked -p rodas5p-integrators --release --test conditioned_polynomial_contracts caller_selected_spectral_source_cannot_forge_certificate -- --exact",
+        "copy": [
+          "crates/rodas5p-integrators/tests/conditioned_polynomial_contracts.rs"
+        ],
+        "tests": [
+          "caller_selected_spectral_source_cannot_forge_certificate"
+        ],
+        "allow_compile_red": false,
+        "new_symbols": [],
+        "timeout_s": 1800
+      },
+      "commands": [
+        {
+          "name": "gate-validate",
+          "cmd": "python3 tools/agent_gate.py validate",
+          "timeout_s": 120
+        },
+        {
+          "name": "focused",
+          "cmd": "cargo test --locked -p rodas5p-integrators --release --test conditioned_polynomial_contracts",
+          "timeout_s": 1800
+        },
+        {
+          "name": "crate-suite",
+          "cmd": "cargo test --locked -p rodas5p-integrators --release --no-fail-fast",
+          "timeout_s": 3600
+        },
+        {
+          "name": "clippy",
+          "cmd": "cargo clippy --locked -p rodas5p-integrators --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "fmt",
+          "cmd": "cargo fmt --all -- --check",
+          "timeout_s": 300
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "test_name_present",
+          "file": "crates/rodas5p-integrators/tests/conditioned_polynomial_contracts.rs",
+          "text": "caller_selected_spectral_source_cannot_forge_certificate"
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "The actual operator class or real-spectrum assumption cannot be established.",
+        "No outward enclosure method is available for Gershgorin endpoint arithmetic.",
+        "A protected path is required."
+      ],
+      "commit_message": "fix(rodas5p-integrators): require source-bound spectral enclosure",
+      "removals_allowed": [],
+      "spec_only": false,
+      "mutation_waivers": {}
+    },
+    {
+      "id": "X15",
+      "title": "Downgrade or rigorously enclose nonnormal observer status",
+      "phase": 3,
+      "tier": "H",
+      "kind": "default_behaviour",
+      "depends_on": [
+        "X11"
+      ],
+      "files_allowed": [
+        "crates/rodas5p-core/src/nonnormal_observers.rs",
+        "crates/rodas5p-core/tests/nonnormal_observers_contracts.rs"
+      ],
+      "anchors": [
+        {
+          "file": "crates/rodas5p-core/src/nonnormal_observers.rs",
+          "text": "pub struct MovingHMetricObserver {",
+          "count": 1,
+          "at": "head"
+        }
+      ],
+      "design_section": "t-x15",
+      "invariants": [
+        "INV-07",
+        "INV-08",
+        "INV-10",
+        "INV-11",
+        "INV-14"
+      ],
+      "tests_required": [
+        {
+          "file": "crates/rodas5p-core/tests/nonnormal_observers_contracts.rs",
+          "name": "finite_precision_observer_status_requires_outward_error_enclosure"
+        }
+      ],
+      "red": {
+        "cmd": "cargo test --locked -p rodas5p-core --release --test nonnormal_observers_contracts finite_precision_observer_status_requires_outward_error_enclosure -- --exact",
+        "copy": [
+          "crates/rodas5p-core/tests/nonnormal_observers_contracts.rs"
+        ],
+        "tests": [
+          "finite_precision_observer_status_requires_outward_error_enclosure"
+        ],
+        "allow_compile_red": false,
+        "new_symbols": [],
+        "timeout_s": 1800
+      },
+      "commands": [
+        {
+          "name": "gate-validate",
+          "cmd": "python3 tools/agent_gate.py validate",
+          "timeout_s": 120
+        },
+        {
+          "name": "focused",
+          "cmd": "cargo test --locked -p rodas5p-core --release --test nonnormal_observers_contracts",
+          "timeout_s": 1800
+        },
+        {
+          "name": "crate-suite",
+          "cmd": "cargo test --locked -p rodas5p-core --release --no-fail-fast",
+          "timeout_s": 3600
+        },
+        {
+          "name": "clippy",
+          "cmd": "cargo clippy --locked -p rodas5p-core --all-targets --release --no-deps -- -D warnings",
+          "timeout_s": 1800
+        },
+        {
+          "name": "fmt",
+          "cmd": "cargo fmt --all -- --check",
+          "timeout_s": 300
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "test_name_present",
+          "file": "crates/rodas5p-core/tests/nonnormal_observers_contracts.rs",
+          "text": "finite_precision_observer_status_requires_outward_error_enclosure"
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "No validated quadrature/QR/eigenvalue error envelope is available.",
+        "The test would conflate a correct analytic identity with an uncertified floating-point estimate.",
+        "A status downgrade would change public semantics beyond the declared file scope."
+      ],
+      "commit_message": "fix(rodas5p-core): reserve Certified observer status for enclosed estimates",
+      "removals_allowed": [],
+      "spec_only": false,
+      "mutation_waivers": {}
+    },
+    {
+      "id": "X16",
+      "title": "Quarantine the hybrid FSM as standalone until live dispatch is demonstrated",
+      "phase": 3,
+      "tier": "S",
+      "kind": "docs",
+      "depends_on": [
+        "X11"
+      ],
+      "files_allowed": [
+        "crates/vigilode/SWITCHING.md",
+        "crates/vigilode/README.md"
+      ],
+      "anchors": [
+        {
+          "file": "crates/vigilode/src/hybrid_automaton.rs",
+          "text": "pub struct HybridRouteAutomaton {",
+          "count": 1,
+          "at": "head"
+        }
+      ],
+      "design_section": "t-x16",
+      "invariants": [
+        "INV-07",
+        "INV-08",
+        "INV-14"
+      ],
+      "tests_required": [],
+      "red": {
+        "tests": [],
+        "allow_compile_red": false,
+        "new_symbols": []
+      },
+      "commands": [
+        {
+          "name": "gate-validate",
+          "cmd": "python3 tools/agent_gate.py validate",
+          "timeout_s": 120
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "grep_present",
+          "file": "crates/vigilode/SWITCHING.md",
+          "text": "standalone experimental component; it is not part of SwitchingSolver live dispatch"
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "Call graph proves an existing live caller not covered by the proposal.",
+        "Accurate scope cannot be established from source call graph.",
+        "Documentation would imply a default route change."
+      ],
+      "commit_message": "docs(vigilode): clarify hybrid FSM integration status",
+      "removals_allowed": [],
+      "spec_only": true,
+      "mutation_waivers": {}
+    },
+    {
+      "id": "X17",
+      "title": "Reconcile user-facing production claims with official authority",
+      "phase": 3,
+      "tier": "S",
+      "kind": "docs",
+      "depends_on": [
+        "X11"
+      ],
+      "files_allowed": [
+        "README.md",
+        "VIGILODE_PRODUCTION_SOLVER_NEXT_LOOP_20261104.md"
+      ],
+      "anchors": [
+        {
+          "file": "README.md",
+          "text": "> The evidence-driven adaptive polyalgorithm (`SwitchingSolver` / `HybridRouteAutomaton`) has successfully cleared all four mandatory promotion verification gates (**Gate 1: Zero-Allocation VG-1**, **Gate 2: Convergence Order VG-2**, **Gate 3: Invariants & Accounting VG-3**, and **Gate 4: 8-Problem Battery Zero-Regression Gate**).",
+          "count": 1,
+          "at": "head"
+        }
+      ],
+      "design_section": "t-x17",
+      "invariants": [
+        "INV-07",
+        "INV-14",
+        "INV-15"
+      ],
+      "tests_required": [],
+      "red": {
+        "tests": [],
+        "allow_compile_red": false,
+        "new_symbols": []
+      },
+      "commands": [
+        {
+          "name": "gate-validate",
+          "cmd": "python3 tools/agent_gate.py validate",
+          "timeout_s": 120
+        },
+        {
+          "name": "report-tests",
+          "cmd": "python3 -m unittest bench.tests.test_report_generator -v",
+          "timeout_s": 300
+        }
+      ],
+      "acceptance": [
+        {
+          "kind": "grep_present",
+          "file": "README.md",
+          "text": "Production status: HOLD"
+        },
+        {
+          "kind": "grep_present",
+          "file": "VIGILODE_PRODUCTION_SOLVER_NEXT_LOOP_20261104.md",
+          "text": "Production status: HOLD"
+        }
+      ],
+      "ledger_required": false,
+      "escalate_if": [
+        "Evidence IDs for a production claim cannot be identified.",
+        "A claim requires changing official DAG/ledger or G0 threshold.",
+        "The available evidence contradicts the intended wording."
+      ],
+      "commit_message": "docs(vigilode): align production claims with official HOLD",
+      "removals_allowed": [],
+      "spec_only": true,
+      "mutation_waivers": {}
     }
   ]
 }

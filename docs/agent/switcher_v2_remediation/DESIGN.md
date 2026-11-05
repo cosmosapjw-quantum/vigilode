@@ -2856,3 +2856,63 @@ The card's `commit_message`, a blank line, then `Task: <ID> (docs/agent/switcher
 - Spracklen et al., package hallucinations by code-generating LLMs. arXiv:2406.10279
 - Dhuliawala et al., Chain-of-Verification. arXiv:2309.11495 (basis of the questions in 6.3)
 - cargo-mutants `--in-diff`: https://mutants.rs/in-diff.html
+
+<!-- OWNER-APPROVED FOLLOW-UP TASKS X12-X17 APPENDED 2026-11-05 -->
+
+# DESIGN.md addition proposal: authority and scope follow-up
+
+> Proposal only. Append these sections only after owner approval. Keep the existing historical design sections and base commit unchanged.
+
+<a id="t-x12"></a>
+### X12 — Make contraction evidence provenance non-forgeable
+
+**Objective.** A `QContractionCertificate` may be `Certified` only when its derivative supremum evidence is an independently verifiable, outward-enclosed bound for the exact operator/model epoch/norm/closed ball consumed by the certificate.
+
+**Non-goals.** Do not weaken the Banach contraction theorem; do not change homotopy defaults; do not infer a proof from an integer reference or caller-supplied scalar; do not edit official DAG/ledger/gate.
+
+**Required red contract.** Add `caller_scalar_evidence_cannot_authorize_contraction_certificate` to `rhs_homotopy_contracts.rs`. On the task base it must demonstrate that arbitrary `q`, radius, operator identifier, epoch, or nonzero evidence reference cannot create `Certified`. A legitimate enclosure-provider artifact must remain accepted only when the artifact verifies against the exact source identity.
+
+**Acceptance.** Bind evidence to operator digest, epoch, norm, radius/ball, derivative enclosure algorithm/version and outward interval artifact. The full closed-ball supremum must be enclosed, not sampled at a few points. If no source-bound provider exists, the API returns `EstimateOnly`/refusal.
+
+**Escalation.** No provider or no full-ball enclosure means BLOCKED, not a synthetic proof factory.
+
+<a id="t-x13"></a>
+### X13 — Bind Leja normality witness to the consumed operator
+
+**Objective.** The `CertifiedNormalityWitness` must be checked against the exact operator representation and epoch used by `complex_leja_phi_action_into`, not just dimension/beta or constructor-time dense data.
+
+**Required red contract.** `normality_witness_must_match_consumed_operator_identity` must reject a same-dimension witness from another operator, stale epoch, changed scaling, changed matrix values and changed representation. The valid skew-symmetric case remains admitted only when its source identity is exact.
+
+**Acceptance.** The consumer checks a stable operator identity/digest and epoch before any certified route is used. If the `LinearOperator` API cannot provide stable identity without a broad refactor, keep the witness route `EstimateOnly` or unavailable. A private constructor alone is insufficient.
+
+<a id="t-x14"></a>
+### X14 — Make spectral-source claims proof-carrying
+
+**Objective.** Remove caller-selected enum status as sufficient authority for a certified Chebyshev spectral interval.
+
+**Required red contract.** `caller_selected_spectral_source_cannot_forge_certificate` rejects a caller-created `GershgorinCertified` status without operator-bound assumptions/evidence, and covers nonsymmetric complex-spectrum and positive-spectrum counterexamples.
+
+**Acceptance.** Gershgorin row-radius accumulation and interval endpoints must use outward arithmetic. The real-spectrum/operator-class assumptions must be explicit and checked. Ritz values remain `EstimateOnly` unless accompanied by a separate enclosure. Keep polynomial defect enclosure distinct from spectral-input enclosure.
+
+<a id="t-x15"></a>
+### X15 — Downgrade or rigorously enclose nonnormal observer status
+
+**Objective.** Return `Certified` only if matrix/metric/eigenvalue/time-integration/floating-point errors are enclosed for Fixed-H, Moving-H and QR observers.
+
+**Required red contract.** `finite_precision_observer_status_requires_outward_error_enclosure` distinguishes the continuous-time theorem from the finite-step floating-point implementation. Point estimates and sampled/finite-step QR rates are `EstimateOnly` absent a validated error envelope.
+
+**Acceptance.** Moving-H accumulation needs outward quadrature/envelope; QR requires method-order/global/local error bounds; eigenvalue and SPD cases cover degeneracy/ill-conditioning. Do not relabel status without negative controls.
+
+<a id="t-x16"></a>
+### X16 — Quarantine the hybrid FSM as standalone until live dispatch is demonstrated
+
+**Objective.** Document the live call graph and accurately state whether `HybridRouteAutomaton` is called by `SwitchingSolver`/automatic facade. This documentation-only task must not change default dispatch.
+
+**Acceptance.** If no live call path exists, mark the FSM as a standalone experimental component and state that component tests do not demonstrate production routing. If a live path is discovered, stop and propose a separate opt-in integration task; do not silently expand this task into implementation.
+
+<a id="t-x17"></a>
+### X17 — Reconcile user-facing production claims with official authority
+
+**Objective.** Correct README/roadmap wording so implementation status, focused tests, rigorous certificate authority, benchmark authority, official DAG closure and production release are separately labelled.
+
+**Acceptance.** Every production claim references an evidence ID and exact scope. State `Production status: HOLD` while official DAG remains HOLD. Preserve negative/not-run evidence. Do not edit the official DAG, ledger, G0 thresholds or historical verdicts.
