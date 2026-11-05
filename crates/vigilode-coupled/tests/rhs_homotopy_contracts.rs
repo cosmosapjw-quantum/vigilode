@@ -1,7 +1,8 @@
 use std::cell::Cell;
 use vigilode_coupled::rhs_homotopy::{
-    CubicDecayAccuracyPlan, RhsAcceleration, RhsHomotopyConfig, RhsHomotopyFailureKind, RhsOnlyMap,
-    integrate_cubic_decay_accuracy, solve_rhs_homotopy,
+    CubicDecayAccuracyPlan, DerivativeSupremumEvidence, QContractionCertificate, RhsAcceleration,
+    RhsHomotopyConfig, RhsHomotopyFailureKind, RhsOnlyMap, integrate_cubic_decay_accuracy,
+    solve_rhs_homotopy,
 };
 
 struct Affine {
@@ -357,4 +358,31 @@ fn interval_polish_refuses_a_budget_below_the_represented_residual_floor() {
             || result.failure.as_ref().unwrap().contains("floor")
     );
     assert_eq!(result.points.len(), 1);
+}
+
+#[test]
+fn caller_scalar_evidence_cannot_authorize_contraction_certificate() {
+    // IDs, epochs, radii, q values and nonzero reference integers are caller
+    // metadata. None of them encloses the derivative on the complete ball.
+    let forged_claims = [
+        (1_u64, 1_u64, 2.0_f64, 0.0_f64, 1_u64),
+        (u64::MAX, u64::MAX, 10.0_f64, 0.49_f64, u64::MAX),
+        (0_u64, 0_u64, 2.0_f64, 0.5_f64, 100_u64),
+    ];
+
+    for (operator_id, model_epoch, ball_radius, claimed_q, reference) in forged_claims {
+        let evidence = DerivativeSupremumEvidence::new(
+            operator_id,
+            model_epoch,
+            ball_radius,
+            claimed_q,
+            reference,
+        )
+        .expect("syntactically valid caller metadata");
+        let certificate = QContractionCertificate::verify_with_evidence(0.5, 2.0, 0.8, evidence);
+        assert!(
+            !certificate.is_certified(),
+            "caller metadata forged authority: operator_id={operator_id}, epoch={model_epoch}, q={claimed_q}, radius={ball_radius}, reference={reference}"
+        );
+    }
 }

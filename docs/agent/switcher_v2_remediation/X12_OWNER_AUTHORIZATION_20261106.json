@@ -1,0 +1,54 @@
+{
+  "schema": "vigilode.owner-authorization.v1",
+  "date": "2026-11-06",
+  "timezone": "Asia/Seoul",
+  "authorization_source": "Explicit owner instruction in the current ChatGPT conversation on 2026-11-06.",
+  "task_id": "X12",
+  "reason": "The X12 contract changes caller-supplied scalar evidence from certificate authority to non-authoritative metadata. One pre-existing unit assertion encoded the old, forgeable behavior and must be inverted so the test suite reflects the new contract.",
+  "approved_scope": {
+    "repository": "/home/cosmosapjw/vigilode-authority-followup",
+    "branch": "research/vig-authority-followup-20261105",
+    "base_head": "4f650a6d983141fc51f3fb3e75fe71b045f70eda",
+    "code_paths": [
+      "crates/vigilode-coupled/src/rhs_homotopy.rs",
+      "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs",
+      "crates/vigilode-coupled/src/lib.rs"
+    ],
+    "governance_paths": [
+      "docs/agent/switcher_v2_remediation/TASKS.json",
+      "docs/agent/switcher_v2_remediation/X12_OWNER_AUTHORIZATION_20261106.json",
+      "docs/agent/switcher_v2_remediation/X12_CONTINUE_LOCAL_HANDOFF_20261106.json",
+      "docs/agent/switcher_v2_remediation/X12_CONTINUE_LOCAL_HANDOFF_20261106.md",
+      "docs/agent/switcher_v2_remediation/X12_HANDOFF_SHA256SUMS"
+    ],
+    "exact_existing_assertion_change": {
+      "file": "crates/vigilode-coupled/src/rhs_homotopy.rs",
+      "removed_line": "assert!(cert_authoritative.is_certified);",
+      "replacement": "assert!(!cert_authoritative.is_certified);"
+    },
+    "task_registry_amendments": [
+      "Add TASKS.json and this authorization record to X12 files_allowed.",
+      "Remove only TASKS.json from global forbidden_paths; all other task definitions remain path-scoped.",
+      "Add the exact existing assertion above to X12 removals_allowed.",
+      "Allow additive crate-root re-exports and machine-readable/local Continue handoff files.",
+      "Include a SHA-256 manifest for the durable handoff artifacts."
+    ],
+    "task_base_sha": "4f650a6d983141fc51f3fb3e75fe71b045f70eda",
+    "registry_base_commit": "4339facc62258b5fb9a2469f16a3af8b93763e24",
+    "registry_base_is_ancestor_of_task_base": true
+  },
+  "protected_or_not_authorized": [
+    "Do not weaken or remove any other assertion, test, tolerance, invariant, ledger row, preregistration, gate rule, or design authority.",
+    "Do not edit tools/agent_gate.py, DESIGN.md, TASKS.schema.json, Cargo manifests, Cargo.lock, or rust-toolchain.",
+    "Do not add dependencies or unsafe code.",
+    "Do not access credentials, .env files, or provider secrets.",
+    "Do not commit, push, merge, tag, release, or publish without separate explicit authorization."
+  ],
+  "verification_requirements": [
+    "Run X12 expected-red on the recorded task base.",
+    "Run focused integration tests, the complete vigilode-coupled crate suite, clippy and cargo fmt check.",
+    "Run agent_gate validate and finish X12 only when fast checks, self-audit and every registered command pass.",
+    "Continue must independently review mathematical soundness, call-site integration and exact-real versus floating-point scope; no formal proof claim without kernel validation."
+  ],
+  "status": "APPROVED_SCOPE_AMENDMENT"
+}

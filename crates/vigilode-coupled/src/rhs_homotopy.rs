@@ -15,7 +15,9 @@
 //! The binary64 residual returned here is an operational measurement: callers
 //! supplying a rigorous error bound must also bound evaluation and rounding.
 
-use serde::Serialize;
+use rodas5p_core::directed::{Interval, add_up, div_up, mul_down, mul_up, sqrt_up, sub_down};
+use rodas5p_core::sha256_hex;
+use serde::{Deserialize, Serialize};
 
 /// A direct fixed-point map. Callback outputs must be fully overwritten.
 /// The callback and domain predicate must describe one unchanged map/epoch.
@@ -197,9 +199,9 @@ impl<M: RhsOnlyMap, P: PreconditionerAction> PreconditionedFixedPointMap<M, P> {
     }
 }
 
-/// Sealed evidence establishing that the derivative supremum bound
-/// $\sup_{x \in B(x_c, r)} \|I - P \partial F(x)\| \le q < 1$
-/// has been externally verified or certified.
+/// Legacy caller-supplied metadata only. This public scalar record is not a
+/// proof object and can never authorize a contraction certificate. Use
+/// PolynomialContractionSource plus replay-verified evidence instead.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 pub struct DerivativeSupremumEvidence {
     pub operator_id: u64,
@@ -236,10 +238,499 @@ impl DerivativeSupremumEvidence {
     }
 }
 
-/// Contraction condition certificate (C15 / WP14):
-///
-/// If sup ||I - P \partial F|| <= q < 1 on a ball B(x_c, r) and
-/// ||P F(x_c)|| <= (1 - q) r, then T is a q-contraction with a unique root in the ball.
+pub const Q_CONTRACTION_EVIDENCE_SCHEMA_V1: &str = "vigilode.q-contraction-evidence.v1";
+pub const Q_CONTRACTION_ENCLOSURE_ALGORITHM_V1: &str = "outward-interval-monomial-box-frobenius-v1";
+pub const Q_CONTRACTION_NORM_EUCLIDEAN: &str = "euclidean-l2-induced";
+const MAX_CERTIFIED_DIMENSION: usize = 32;
+const MAX_CERTIFIED_TERMS: usize = 4096;
+const MAX_CERTIFIED_DEGREE: u32 = 64;
+const MAX_CERTIFIED_INTERVAL_WORK: u64 = 2_000_000;
+
+/// A polynomial monomial with an exact finite-binary64 dyadic coefficient.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct PolynomialTerm {
+    pub coefficient: f64,
+    pub exponents: Vec<u16>,
+}
+
+/// Immutable canonical polynomial fixed-point map G.
+#[derive(Clone, Debug, PartialEq)]
+pub struct PolynomialRhsMap {
+    dimension: usize,
+    model_epoch: u64,
+    outputs: Vec<Vec<PolynomialTerm>>,
+}
+
+impl PolynomialRhsMap {
+    pub fn new(
+        dimension: usize,
+        model_epoch: u64,
+        mut outputs: Vec<Vec<PolynomialTerm>>,
+    ) -> Result<Self, String> {
+        if dimension == 0 || dimension > MAX_CERTIFIED_DIMENSION || outputs.len() != dimension {
+            return Err("invalid polynomial source dimension or output count".into());
+        }
+        let mut total = 0usize;
+        let mut interval_work = 0u64;
+        for terms in outputs.iter_mut() {
+            total = total
+                .checked_add(terms.len())
+                .ok_or("polynomial term count overflow")?;
+            if total > MAX_CERTIFIED_TERMS {
+                return Err("polynomial term budget exceeded".into());
+            }
+            for term in terms.iter_mut() {
+                if !term.coefficient.is_finite() || term.exponents.len() != dimension {
+                    return Err("invalid polynomial coefficient or exponent dimension".into());
+                }
+                let degree = term
+                    .exponents
+                    .iter()
+                    .try_fold(0u32, |n, p| n.checked_add(u32::from(*p)))
+                    .ok_or("polynomial degree overflow")?;
+                if degree > MAX_CERTIFIED_DEGREE {
+                    return Err("polynomial degree budget exceeded".into());
+                }
+                let n = dimension as u64;
+                let work = n
+                    .checked_mul(n)
+                    .and_then(|v| v.checked_mul(u64::from(degree) + n + 1))
+                    .ok_or("polynomial interval work estimate overflow")?;
+                interval_work = interval_work
+                    .checked_add(work)
+                    .ok_or("polynomial interval work budget overflow")?;
+                if interval_work > MAX_CERTIFIED_INTERVAL_WORK {
+                    return Err("polynomial interval work budget exceeded".into());
+                }
+                if term.coefficient == 0.0 {
+                    term.coefficient = 0.0;
+                }
+            }
+            terms.sort_by(|a, b| {
+                a.exponents
+                    .cmp(&b.exponents)
+                    .then_with(|| a.coefficient.total_cmp(&b.coefficient))
+            });
+        }
+        Ok(Self {
+            dimension,
+            model_epoch,
+            outputs,
+        })
+    }
+
+    pub fn outputs(&self) -> &[Vec<PolynomialTerm>] {
+        &self.outputs
+    }
+    pub fn model_epoch_value(&self) -> u64 {
+        self.model_epoch
+    }
+}
+
+impl RhsOnlyMap for PolynomialRhsMap {
+    fn dimension(&self) -> usize {
+        self.dimension
+    }
+    fn model_epoch(&self) -> Option<u64> {
+        Some(self.model_epoch)
+    }
+
+    fn evaluate(&self, x: &[f64], out: &mut [f64]) -> Result<(), String> {
+        if x.len() != self.dimension || out.len() != self.dimension {
+            return Err("PolynomialRhsMap dimension mismatch".into());
+        }
+        for (value_out, terms) in out.iter_mut().zip(&self.outputs) {
+            let mut sum = 0.0_f64;
+            for term in terms {
+                let mut value = term.coefficient;
+                for (&coordinate, &power) in x.iter().zip(&term.exponents) {
+                    for _ in 0..power {
+                        value *= coordinate;
+                        if !value.is_finite() {
+                            return Err("non-finite polynomial evaluation".into());
+                        }
+                    }
+                }
+                sum += value;
+                if !sum.is_finite() {
+                    return Err("non-finite polynomial sum".into());
+                }
+            }
+            *value_out = sum;
+        }
+        Ok(())
+    }
+}
+
+/// Immutable polynomial map plus a fixed, invertible diagonal preconditioner.
+/// General callback preconditioners intentionally have no certification path.
+#[derive(Clone, Debug, PartialEq)]
+pub struct PolynomialContractionSource {
+    rhs: PolynomialRhsMap,
+    preconditioner_diagonal: Vec<f64>,
+}
+
+impl PolynomialContractionSource {
+    pub fn new(rhs: PolynomialRhsMap, preconditioner_diagonal: Vec<f64>) -> Result<Self, String> {
+        if preconditioner_diagonal.len() != rhs.dimension
+            || preconditioner_diagonal
+                .iter()
+                .any(|v| !v.is_finite() || *v == 0.0)
+        {
+            return Err(
+                "preconditioner must be a finite, invertible diagonal of matching dimension".into(),
+            );
+        }
+        Ok(Self {
+            rhs,
+            preconditioner_diagonal,
+        })
+    }
+
+    pub fn identity(rhs: PolynomialRhsMap) -> Self {
+        Self {
+            preconditioner_diagonal: vec![1.0; rhs.dimension],
+            rhs,
+        }
+    }
+
+    pub fn rhs(&self) -> &PolynomialRhsMap {
+        &self.rhs
+    }
+
+    pub fn preconditioner_diagonal(&self) -> &[f64] {
+        &self.preconditioner_diagonal
+    }
+
+    /// Construct the runtime map from the same immutable polynomial and P
+    /// consumed by the enclosure producer.
+    pub fn to_preconditioned_map(
+        &self,
+    ) -> PreconditionedFixedPointMap<PolynomialRhsMap, DiagonalPreconditioner> {
+        PreconditionedFixedPointMap::new(
+            self.rhs.clone(),
+            DiagonalPreconditioner::new(self.preconditioner_diagonal.clone()),
+        )
+    }
+
+    pub fn source_sha256(&self) -> String {
+        let mut bytes = Vec::new();
+        bytes.extend_from_slice(b"VIGILODE_POLYNOMIAL_CONTRACTION_SOURCE_V1\0");
+        bytes.extend_from_slice(&(self.rhs.dimension as u64).to_le_bytes());
+        bytes.extend_from_slice(&self.rhs.model_epoch.to_le_bytes());
+        bytes.extend_from_slice(&(self.rhs.outputs.len() as u64).to_le_bytes());
+        for terms in &self.rhs.outputs {
+            bytes.extend_from_slice(&(terms.len() as u64).to_le_bytes());
+            for term in terms {
+                bytes.extend_from_slice(&term.coefficient.to_bits().to_le_bytes());
+                bytes.extend_from_slice(&(term.exponents.len() as u64).to_le_bytes());
+                for exponent in &term.exponents {
+                    bytes.extend_from_slice(&exponent.to_le_bytes());
+                }
+            }
+        }
+        for value in &self.preconditioner_diagonal {
+            bytes.extend_from_slice(&value.to_bits().to_le_bytes());
+        }
+        bytes.extend_from_slice(Q_CONTRACTION_NORM_EUCLIDEAN.as_bytes());
+        sha256_hex(&bytes)
+    }
+}
+
+/// Untrusted portable producer artifact; every field is replayed before authority.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct QContractionEvidenceArtifactV1 {
+    pub schema: String,
+    pub algorithm: String,
+    pub source_sha256: String,
+    pub model_epoch: u64,
+    pub norm: String,
+    pub center: Vec<f64>,
+    pub radius: f64,
+    pub bounding_box: Vec<[f64; 2]>,
+    pub derivative_bounds: Vec<[f64; 2]>,
+    pub residual_bounds: Vec<[f64; 2]>,
+    pub derivative_norm_upper: f64,
+    pub residual_norm_upper: f64,
+    pub self_map_margin_lower: f64,
+}
+
+/// Private-constructor certificate; only exact source replay creates this type.
+#[derive(Clone, Debug, PartialEq)]
+pub struct VerifiedQContractionCertificate {
+    artifact: QContractionEvidenceArtifactV1,
+}
+
+impl VerifiedQContractionCertificate {
+    pub fn is_certified(&self) -> bool {
+        true
+    }
+    pub fn q_upper_bound(&self) -> f64 {
+        self.artifact.derivative_norm_upper
+    }
+    pub fn radius(&self) -> f64 {
+        self.artifact.radius
+    }
+    pub fn residual_upper_bound(&self) -> f64 {
+        self.artifact.residual_norm_upper
+    }
+    pub fn model_epoch(&self) -> u64 {
+        self.artifact.model_epoch
+    }
+    pub fn source_sha256(&self) -> &str {
+        &self.artifact.source_sha256
+    }
+    pub fn artifact(&self) -> &QContractionEvidenceArtifactV1 {
+        &self.artifact
+    }
+
+    pub fn root_error_bound(&self) -> Result<f64, String> {
+        let denominator =
+            sub_down(1.0, self.q_upper_bound()).map_err(|e| format!("1-q enclosure: {e}"))?;
+        if denominator <= 0.0 {
+            return Err("non-positive contraction denominator".into());
+        }
+        div_up(self.residual_upper_bound(), denominator)
+            .map_err(|e| format!("root error enclosure: {e}"))
+    }
+}
+
+fn interval_point(x: f64) -> Result<Interval, String> {
+    Interval::point(x).map_err(|e| format!("interval point: {e}"))
+}
+
+fn interval_power(x: Interval, n: u16) -> Result<Interval, String> {
+    let mut out = interval_point(1.0)?;
+    for _ in 0..n {
+        out = out.mul(x).map_err(|e| format!("interval power: {e}"))?;
+    }
+    Ok(out)
+}
+
+fn polynomial_interval(
+    outputs: &[Vec<PolynomialTerm>],
+    x: &[Interval],
+) -> Result<Vec<Interval>, String> {
+    let mut result = Vec::with_capacity(outputs.len());
+    for terms in outputs {
+        let mut sum = interval_point(0.0)?;
+        for term in terms {
+            let mut product = interval_point(term.coefficient)?;
+            for (&xi, &power) in x.iter().zip(&term.exponents) {
+                product = product
+                    .mul(interval_power(xi, power)?)
+                    .map_err(|e| format!("polynomial interval product: {e}"))?;
+            }
+            sum = sum
+                .add(product)
+                .map_err(|e| format!("polynomial interval sum: {e}"))?;
+        }
+        result.push(sum);
+    }
+    Ok(result)
+}
+
+fn polynomial_jacobian_interval(
+    outputs: &[Vec<PolynomialTerm>],
+    x: &[Interval],
+    n: usize,
+) -> Result<Vec<Interval>, String> {
+    let mut jac = Vec::with_capacity(n * n);
+    for terms in outputs {
+        for j in 0..n {
+            let mut sum = interval_point(0.0)?;
+            for term in terms {
+                let exponent = term.exponents[j];
+                if exponent == 0 {
+                    continue;
+                }
+                let mut product = interval_point(term.coefficient)?
+                    .mul(interval_point(f64::from(exponent))?)
+                    .map_err(|e| format!("derivative coefficient: {e}"))?;
+                for (k, &variable) in x.iter().enumerate() {
+                    let power = if k == j {
+                        term.exponents[k] - 1
+                    } else {
+                        term.exponents[k]
+                    };
+                    product = product
+                        .mul(interval_power(variable, power)?)
+                        .map_err(|e| format!("derivative product: {e}"))?;
+                }
+                sum = sum
+                    .add(product)
+                    .map_err(|e| format!("derivative sum: {e}"))?;
+            }
+            jac.push(sum);
+        }
+    }
+    Ok(jac)
+}
+
+fn interval_l2_upper(x: &[Interval]) -> Result<f64, String> {
+    let mut sum = 0.0;
+    for value in x {
+        let m = value.mag();
+        sum = add_up(sum, mul_up(m, m).map_err(|e| format!("norm square: {e}"))?)
+            .map_err(|e| format!("norm sum: {e}"))?;
+    }
+    sqrt_up(sum).map_err(|e| format!("norm sqrt: {e}"))
+}
+
+fn build_q_contraction_evidence(
+    source: &PolynomialContractionSource,
+    center: &[f64],
+    radius: f64,
+) -> Result<QContractionEvidenceArtifactV1, String> {
+    let n = source.rhs.dimension;
+    if center.len() != n || center.iter().any(|v| !v.is_finite()) {
+        return Err("center must be finite and dimension-matched".into());
+    }
+    if !radius.is_finite() || radius <= 0.0 {
+        return Err("radius must be finite and positive".into());
+    }
+
+    // The Euclidean ball is contained in the outward-rounded coordinate box.
+    let mut box_iv = Vec::with_capacity(n);
+    let mut bounding_box = Vec::with_capacity(n);
+    for &c in center {
+        let lo = sub_down(c, radius).map_err(|e| format!("ball lower endpoint: {e}"))?;
+        let hi = add_up(c, radius).map_err(|e| format!("ball upper endpoint: {e}"))?;
+        let iv = Interval::new(lo, hi).map_err(|e| format!("ball box: {e}"))?;
+        bounding_box.push([iv.lo, iv.hi]);
+        box_iv.push(iv);
+    }
+
+    // D(T_P) = I - P + P D(G). Frobenius upper-bounds induced L2 norm.
+    let dg = polynomial_jacobian_interval(&source.rhs.outputs, &box_iv, n)?;
+    let mut dt = Vec::with_capacity(n * n);
+    for i in 0..n {
+        let pi = interval_point(source.preconditioner_diagonal[i])?;
+        for j in 0..n {
+            let id_minus_p = if i == j {
+                interval_point(1.0)?
+                    .sub(pi)
+                    .map_err(|e| format!("I-P: {e}"))?
+            } else {
+                interval_point(0.0)?
+            };
+            let p_dg = pi.mul(dg[i * n + j]).map_err(|e| format!("P*DG: {e}"))?;
+            dt.push(id_minus_p.add(p_dg).map_err(|e| format!("D(T): {e}"))?);
+        }
+    }
+    let q_hi = interval_l2_upper(&dt)?;
+    if q_hi >= 1.0 {
+        return Err(format!(
+            "full-ball derivative bound is not contractive: {q_hi}"
+        ));
+    }
+
+    // Outward center residual enclosure P(x_c-G(x_c)).
+    let center_iv = center
+        .iter()
+        .copied()
+        .map(interval_point)
+        .collect::<Result<Vec<_>, _>>()?;
+    let g_center = polynomial_interval(&source.rhs.outputs, &center_iv)?;
+    let mut residual_iv = Vec::with_capacity(n);
+    for i in 0..n {
+        let r = center_iv[i]
+            .sub(g_center[i])
+            .map_err(|e| format!("center residual: {e}"))?
+            .scale(source.preconditioner_diagonal[i])
+            .map_err(|e| format!("P residual: {e}"))?;
+        residual_iv.push(r);
+    }
+    let rho_hi = interval_l2_upper(&residual_iv)?;
+    let margin_lo = mul_down(
+        sub_down(1.0, q_hi).map_err(|e| format!("Banach margin subtraction: {e}"))?,
+        radius,
+    )
+    .map_err(|e| format!("Banach margin product: {e}"))?;
+    if rho_hi > margin_lo {
+        return Err(format!(
+            "Banach self-map condition fails: rho={rho_hi}, margin={margin_lo}"
+        ));
+    }
+
+    Ok(QContractionEvidenceArtifactV1 {
+        schema: Q_CONTRACTION_EVIDENCE_SCHEMA_V1.into(),
+        algorithm: Q_CONTRACTION_ENCLOSURE_ALGORITHM_V1.into(),
+        source_sha256: source.source_sha256(),
+        model_epoch: source.rhs.model_epoch,
+        norm: Q_CONTRACTION_NORM_EUCLIDEAN.into(),
+        center: center.to_vec(),
+        radius,
+        bounding_box,
+        derivative_bounds: dt.iter().map(|v| v.as_pair()).collect(),
+        residual_bounds: residual_iv.iter().map(|v| v.as_pair()).collect(),
+        derivative_norm_upper: q_hi,
+        residual_norm_upper: rho_hi,
+        self_map_margin_lower: margin_lo,
+    })
+}
+
+pub fn produce_q_contraction_evidence(
+    source: &PolynomialContractionSource,
+    center: &[f64],
+    radius: f64,
+) -> Result<QContractionEvidenceArtifactV1, String> {
+    build_q_contraction_evidence(source, center, radius)
+}
+
+fn same_pairs(a: &[[f64; 2]], b: &[[f64; 2]]) -> bool {
+    a.len() == b.len()
+        && a.iter()
+            .zip(b)
+            .all(|(x, y)| x[0].to_bits() == y[0].to_bits() && x[1].to_bits() == y[1].to_bits())
+}
+
+fn artifacts_match(a: &QContractionEvidenceArtifactV1, b: &QContractionEvidenceArtifactV1) -> bool {
+    a.schema == b.schema
+        && a.algorithm == b.algorithm
+        && a.source_sha256 == b.source_sha256
+        && a.model_epoch == b.model_epoch
+        && a.norm == b.norm
+        && a.center.len() == b.center.len()
+        && a.center
+            .iter()
+            .zip(&b.center)
+            .all(|(x, y)| x.to_bits() == y.to_bits())
+        && a.radius.to_bits() == b.radius.to_bits()
+        && same_pairs(&a.bounding_box, &b.bounding_box)
+        && same_pairs(&a.derivative_bounds, &b.derivative_bounds)
+        && same_pairs(&a.residual_bounds, &b.residual_bounds)
+        && a.derivative_norm_upper.to_bits() == b.derivative_norm_upper.to_bits()
+        && a.residual_norm_upper.to_bits() == b.residual_norm_upper.to_bits()
+        && a.self_map_margin_lower.to_bits() == b.self_map_margin_lower.to_bits()
+}
+
+/// Recompute every enclosure against the exact source; only this creates authority.
+pub fn verify_q_contraction_evidence(
+    source: &PolynomialContractionSource,
+    artifact: &QContractionEvidenceArtifactV1,
+) -> Result<VerifiedQContractionCertificate, String> {
+    let replay = build_q_contraction_evidence(source, &artifact.center, artifact.radius)?;
+    if !artifacts_match(artifact, &replay) {
+        return Err("contraction evidence replay mismatch".into());
+    }
+    Ok(VerifiedQContractionCertificate { artifact: replay })
+}
+
+pub fn certify_polynomial_contraction(
+    source: &PolynomialContractionSource,
+    center: &[f64],
+    radius: f64,
+) -> Result<VerifiedQContractionCertificate, String> {
+    let artifact = produce_q_contraction_evidence(source, center, radius)?;
+    verify_q_contraction_evidence(source, &artifact)
+}
+
+/// Legacy scalar-only condition record. It reports the algebraic inequality
+/// but is never an authoritative certificate. The theorem applies to
+/// T_P(x)=x-P(x-G(x)) when the full-ball derivative and residual bounds hold;
+/// use VerifiedQContractionCertificate for the source-bound polynomial lane.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 pub struct QContractionCertificate {
     pub q: f64,
@@ -248,21 +739,24 @@ pub struct QContractionCertificate {
     /// Indicates whether the purely algebraic scalar inequality
     /// `initial_residual_norm <= (1 - q) * radius` is satisfied.
     pub scalar_condition_satisfied: bool,
-    /// Authoritative certification status. True ONLY when bound to certified `DerivativeSupremumEvidence`.
-    pub is_certified: bool,
-    /// Sealed evidence establishing the derivative supremum on the ball.
+    /// Legacy compatibility flag; caller-supplied evidence never sets authority. True ONLY when bound to certified `DerivativeSupremumEvidence`.
+    is_certified: bool,
+    /// Untrusted caller metadata; it does not establish a derivative supremum.
     pub evidence: Option<DerivativeSupremumEvidence>,
 }
 
+/// Legacy alias for scalar-only metadata; not a verified enclosure.
 pub type QContractionEnclosure = QContractionCertificate;
 
 impl QContractionCertificate {
-    /// Verifies the scalar algebraic condition `||P F(x_c)|| <= (1 - q) * radius`.
-    ///
-    /// NOTE: In accordance with Node P7 governance, a scalar check alone does NOT
-    /// grant authoritative certificate status (`is_certified = false`), because caller-supplied
-    /// scalars do not prove the derivative supremum over the closed ball.
-    /// To produce an authoritative certificate, call [`QContractionCertificate::verify_with_evidence`].
+    /// Legacy scalar evidence is never an authoritative certificate.
+    pub fn is_certified(&self) -> bool {
+        false
+    }
+
+    /// Verifies only the scalar algebraic inequality
+    /// initial_residual_norm <= (1 - q) * radius. This does not establish a
+    /// fixed-point theorem or certificate authority.
     pub fn verify(q: f64, radius: f64, initial_residual_norm: f64) -> Self {
         let valid_inputs = q.is_finite()
             && radius.is_finite()
@@ -288,12 +782,9 @@ impl QContractionCertificate {
         }
     }
 
-    /// Verifies the contraction condition bound to authoritative `DerivativeSupremumEvidence`.
-    ///
-    /// Returns `is_certified = true` if and only if:
-    /// 1. The scalar inequality `initial_residual_norm <= (1 - q) * radius` holds.
-    /// 2. The declared `radius <= evidence.ball_radius`.
-    /// 3. The declared contraction rate `q >= evidence.certified_q`.
+    /// Legacy scalar comparison only. Caller-created DerivativeSupremumEvidence
+    /// cannot establish a derivative supremum on a complete ball. This method
+    /// always returns is_certified=false. Use the polynomial replay verifier.
     pub fn verify_with_evidence(
         q: f64,
         radius: f64,
@@ -314,15 +805,12 @@ impl QContractionCertificate {
             false
         };
 
-        let evidence_valid = radius <= evidence.ball_radius && q >= evidence.certified_q;
-        let is_certified = scalar_condition_satisfied && evidence_valid;
-
         Self {
             q,
             radius,
             initial_residual_norm,
             scalar_condition_satisfied,
-            is_certified,
+            is_certified: false,
             evidence: Some(evidence),
         }
     }
@@ -1671,10 +2159,10 @@ mod tests {
         assert!(cert_violated.root_error_bound().is_none());
         assert!(!verify_q_contraction_condition(0.5, 2.0, 1.0001));
 
-        // 2. Authoritative certificate with DerivativeSupremumEvidence:
+        // 2. Legacy metadata cannot authorize a certificate:
         let ev = DerivativeSupremumEvidence::new(1, 1, 2.0, 0.5, 100).unwrap();
         let cert_authoritative = QContractionCertificate::verify_with_evidence(0.5, 2.0, 0.8, ev);
-        assert!(cert_authoritative.is_certified);
+        assert!(!cert_authoritative.is_certified);
         assert!(cert_authoritative.scalar_condition_satisfied);
         assert_eq!(cert_authoritative.evidence, Some(ev));
 
@@ -1700,6 +2188,115 @@ mod tests {
             !QContractionCertificate::verify(0.5, f64::INFINITY, 0.1).scalar_condition_satisfied
         );
         assert!(!QContractionCertificate::verify(0.5, 1.0, f64::NAN).scalar_condition_satisfied);
+    }
+
+    #[test]
+    fn polynomial_source_produces_a_replay_verified_contraction() {
+        let rhs = PolynomialRhsMap::new(
+            1,
+            7,
+            vec![vec![
+                PolynomialTerm {
+                    coefficient: 0.1,
+                    exponents: vec![0],
+                },
+                PolynomialTerm {
+                    coefficient: -0.25,
+                    exponents: vec![2],
+                },
+            ]],
+        )
+        .expect("valid polynomial source");
+        let source = PolynomialContractionSource::identity(rhs);
+        let runtime_map = source.to_preconditioned_map();
+        assert_eq!(runtime_map.model_epoch(), Some(7));
+        let cert = certify_polynomial_contraction(&source, &[0.0], 1.0)
+            .expect("full-ball contraction enclosure");
+        let encoded = serde_json::to_vec(cert.artifact()).expect("serialize evidence artifact");
+        let decoded: QContractionEvidenceArtifactV1 =
+            serde_json::from_slice(&encoded).expect("deserialize evidence artifact");
+        assert!(verify_q_contraction_evidence(&source, &decoded).is_ok());
+        assert!(cert.is_certified());
+        assert!(cert.q_upper_bound() >= 0.5);
+        assert!(cert.q_upper_bound() < 1.0);
+        assert!(cert.residual_upper_bound() >= 0.1);
+        assert!(
+            cert.root_error_bound()
+                .expect("verified contraction has a positive denominator")
+                <= cert.radius()
+        );
+        assert_eq!(cert.model_epoch(), 7);
+        assert_eq!(cert.source_sha256().len(), 64);
+    }
+
+    #[test]
+    fn polynomial_evidence_replay_rejects_tampering_and_source_changes() {
+        let make_source = |epoch, quadratic| {
+            let rhs = PolynomialRhsMap::new(
+                1,
+                epoch,
+                vec![vec![
+                    PolynomialTerm {
+                        coefficient: 0.1,
+                        exponents: vec![0],
+                    },
+                    PolynomialTerm {
+                        coefficient: quadratic,
+                        exponents: vec![2],
+                    },
+                ]],
+            )
+            .expect("valid polynomial source");
+            PolynomialContractionSource::identity(rhs)
+        };
+        let source = make_source(11, -0.25);
+        let mut artifact =
+            produce_q_contraction_evidence(&source, &[0.0], 1.0).expect("producer succeeds");
+        artifact.derivative_norm_upper = 0.25;
+        assert!(verify_q_contraction_evidence(&source, &artifact).is_err());
+
+        let artifact =
+            produce_q_contraction_evidence(&source, &[0.0], 1.0).expect("producer succeeds");
+        assert!(verify_q_contraction_evidence(&make_source(12, -0.2), &artifact).is_err());
+    }
+
+    #[test]
+    fn polynomial_source_fails_closed_for_noncontractions_and_singular_preconditioners() {
+        let expanding = PolynomialRhsMap::new(
+            1,
+            1,
+            vec![vec![PolynomialTerm {
+                coefficient: 2.0,
+                exponents: vec![1],
+            }]],
+        )
+        .expect("valid expanding map");
+        let source = PolynomialContractionSource::identity(expanding);
+        assert!(certify_polynomial_contraction(&source, &[0.0], 0.5).is_err());
+
+        let constant = PolynomialRhsMap::new(
+            1,
+            1,
+            vec![vec![PolynomialTerm {
+                coefficient: 0.0,
+                exponents: vec![0],
+            }]],
+        )
+        .expect("valid constant map");
+        assert!(PolynomialContractionSource::new(constant, vec![0.0]).is_err());
+    }
+
+    #[test]
+    fn polynomial_source_refuses_excessive_interval_work() {
+        let dimension = 32;
+        let outputs = vec![
+            vec![PolynomialTerm {
+                coefficient: 1.0,
+                exponents: vec![2; dimension],
+            }];
+            dimension
+        ];
+        assert!(PolynomialRhsMap::new(dimension, 1, outputs).is_err());
     }
 
     #[test]

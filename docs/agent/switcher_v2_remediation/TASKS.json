@@ -3,7 +3,7 @@
   "base_commit": "4339facc62258b5fb9a2469f16a3af8b93763e24",
   "design_doc": "docs/agent/switcher_v2_remediation/DESIGN.md",
   "generated": "2026-11-03",
-  "notes": "Generated from one source together with DESIGN.md. Agents may not edit this file.",
+  "notes": "Generated baseline from build sources; the X12-X17 owner-approved follow-up overlay includes a narrowly scoped X12 registry amendment recorded in X12_OWNER_AUTHORIZATION_20261106.json.",
   "global": {
     "forbidden_paths": [
       "Cargo.lock",
@@ -16,7 +16,6 @@
       ".claude/*",
       "tools/agent_gate.py",
       "docs/agent/switcher_v2_remediation/DESIGN.md",
-      "docs/agent/switcher_v2_remediation/TASKS.json",
       "docs/agent/switcher_v2_remediation/TASKS.schema.json",
       "docs/agent/switcher_v2_remediation/build/*",
       "docs/agent/switcher_v2_remediation/reference/*",
@@ -2362,7 +2361,13 @@
       ],
       "files_allowed": [
         "crates/vigilode-coupled/src/rhs_homotopy.rs",
-        "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs"
+        "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs",
+        "docs/agent/switcher_v2_remediation/TASKS.json",
+        "docs/agent/switcher_v2_remediation/X12_OWNER_AUTHORIZATION_20261106.json",
+        "crates/vigilode-coupled/src/lib.rs",
+        "docs/agent/switcher_v2_remediation/X12_CONTINUE_LOCAL_HANDOFF_20261106.json",
+        "docs/agent/switcher_v2_remediation/X12_CONTINUE_LOCAL_HANDOFF_20261106.md",
+        "docs/agent/switcher_v2_remediation/X12_HANDOFF_SHA256SUMS"
       ],
       "anchors": [
         {
@@ -2440,7 +2445,12 @@
         "The only proposed evidence is a caller-supplied scalar/reference integer."
       ],
       "commit_message": "fix(vigilode-coupled): bind contraction certificate to verified enclosure",
-      "removals_allowed": [],
+      "removals_allowed": [
+        {
+          "file": "crates/vigilode-coupled/src/rhs_homotopy.rs",
+          "line": "assert!(cert_authoritative.is_certified);"
+        }
+      ],
       "spec_only": false,
       "mutation_waivers": {}
     },

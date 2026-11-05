@@ -19,8 +19,12 @@ pub mod nonlinear_be;
 pub mod rhs_homotopy;
 pub use rhs_homotopy::{
     DerivativeSupremumEvidence, DiagonalPreconditioner, IdentityPreconditioner,
-    PreconditionedFixedPointMap, PreconditionerAction, QContractionCertificate,
-    QContractionEnclosure, verify_q_contraction_condition,
+    PolynomialContractionSource, PolynomialRhsMap, PolynomialTerm, PreconditionedFixedPointMap,
+    PreconditionerAction, Q_CONTRACTION_ENCLOSURE_ALGORITHM_V1, Q_CONTRACTION_EVIDENCE_SCHEMA_V1,
+    Q_CONTRACTION_NORM_EUCLIDEAN, QContractionCertificate, QContractionEnclosure,
+    QContractionEvidenceArtifactV1, VerifiedQContractionCertificate,
+    certify_polynomial_contraction, produce_q_contraction_evidence, verify_q_contraction_condition,
+    verify_q_contraction_evidence,
 };
 mod solver;
 pub mod structural_mean_field;

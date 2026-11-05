@@ -1,0 +1,281 @@
+{
+  "schema": "vigilode.x12.continue-local-handoff.v1",
+  "date": "2026-11-06",
+  "timezone": "Asia/Seoul",
+  "status": "X12_REGISTERED_GATE_PASS_CONTINUE_LOCAL_AUDIT_PENDING",
+  "authority": {
+    "repository": "/home/cosmosapjw/vigilode-authority-followup",
+    "branch": "research/vig-authority-followup-20261105",
+    "head_at_handoff": "4f650a6d983141fc51f3fb3e75fe71b045f70eda",
+    "task_base_sha": "4f650a6d983141fc51f3fb3e75fe71b045f70eda",
+    "registry_base_commit": "4339facc62258b5fb9a2469f16a3af8b93763e24",
+    "registry_base_is_ancestor_of_task_base": true,
+    "human_approval": "OWNER_APPROVED_IN_CHAT_2026-11-06",
+    "registered_task": "X12",
+    "task_status": "done",
+    "allowed_paths": [
+      "crates/vigilode-coupled/src/rhs_homotopy.rs",
+      "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs",
+      "docs/agent/switcher_v2_remediation/TASKS.json",
+      "docs/agent/switcher_v2_remediation/X12_OWNER_AUTHORIZATION_20261106.json",
+      "crates/vigilode-coupled/src/lib.rs",
+      "docs/agent/switcher_v2_remediation/X12_CONTINUE_LOCAL_HANDOFF_20261106.json",
+      "docs/agent/switcher_v2_remediation/X12_CONTINUE_LOCAL_HANDOFF_20261106.md"
+    ],
+    "approved_single_assertion_removal": [
+      {
+        "file": "crates/vigilode-coupled/src/rhs_homotopy.rs",
+        "line": "assert!(cert_authoritative.is_certified);"
+      }
+    ],
+    "task_receipt": "fb406053789c42079750654085c1a4e24061ecbcd19250ae89f5cf27d26c4525",
+    "gate_finish_exit_code": 0,
+    "current_task_after_finish": null,
+    "working_tree_status": "uncommitted; no commit/push/merge performed"
+  },
+  "security": {
+    "never_read_or_print": [
+      ".env",
+      "provider_runtime secret material",
+      "api key values",
+      "tokens",
+      "passwords"
+    ],
+    "do_not_mutate": [
+      "Airflow DAG policy",
+      "free_provider_policy.py",
+      "Continue config.yaml",
+      "tools/agent_gate.py",
+      "DESIGN.md",
+      "TASKS.schema.json",
+      "Cargo manifests",
+      "Cargo.lock",
+      "research/LEDGER.jsonl"
+    ],
+    "do_not_perform": [
+      "commit",
+      "push",
+      "merge",
+      "tag",
+      "release",
+      "publish",
+      "automatic patch application"
+    ],
+    "free_provider_policy_only": true
+  },
+  "harness": {
+    "continue_root": "/home/cosmosapjw/.continue",
+    "continue_prompt_dir": "/home/cosmosapjw/.continue/prompts",
+    "airflow_root": "/home/cosmosapjw/airflow",
+    "airflow_dag_id": "subagent_driven_hpc_development",
+    "airflow_tasks": [
+      "orchestrator",
+      "researcher",
+      "math_solver",
+      "formal_prover_assistant",
+      "context_synthesizer",
+      "hpc_coder",
+      "patch_validation",
+      "critic",
+      "acceptance_gate"
+    ],
+    "airflow_schedule": null,
+    "airflow_max_active_runs": 1,
+    "airflow_max_active_tasks": 2,
+    "airflow_behavior": "produces plan/research/math/Lean/spec/diff/review artifacts; does not apply patches, execute generated project code, commit, push or merge",
+    "repo_context_upload": "disabled unless HPC_ALLOW_REPOSITORY_UPLOAD is explicitly set; do not enable it for this task",
+    "role_chains": {
+      "orchestrator": [
+        "nvidia_mistral_large4",
+        "gemini_38_flash",
+        "groq_gpt_oss_120b",
+        "or_free_router"
+      ],
+      "researcher": [
+        "gemini_38_flash",
+        "groq_gpt_oss_120b",
+        "or_free_router",
+        "nvidia_deepseek_v41_flash",
+        "nvidia_glm53_flash"
+      ],
+      "math_solver": [
+        "groq_gpt_oss_120b",
+        "or_free_router",
+        "nvidia_step5_preview",
+        "gemini_38_flash",
+        "nvidia_deepseek_v41_flash"
+      ],
+      "formal_prover_assistant": [
+        "or_free_router",
+        "gemini_38_flash",
+        "nvidia_step5_preview",
+        "groq_gpt_oss_120b"
+      ],
+      "context_synthesizer": [
+        "gemini_38_flash",
+        "groq_gpt_oss_120b",
+        "or_free_router",
+        "nvidia_mistral_large4"
+      ],
+      "hpc_coder": [
+        "nvidia_minimax_m31_flash",
+        "groq_qwen38_27b",
+        "or_free_router",
+        "gemini_38_flash",
+        "nvidia_deepseek_v41_flash"
+      ],
+      "critic": [
+        "or_free_router",
+        "gemini_38_flash",
+        "groq_gpt_oss_120b",
+        "nvidia_nemotron_super_vl",
+        "nvidia_mistral_large4",
+        "nvidia_glm53_flash"
+      ]
+    },
+    "continue_model_catalog": [
+      "NVIDIA Mistral Large 4",
+      "NVIDIA Step 5 Preview",
+      "NVIDIA DeepSeek V4.1 Flash",
+      "NVIDIA GLM 5.3 Flash",
+      "NVIDIA MiniMax M3.1 Flash",
+      "NVIDIA Nemotron 3.5 Super VL",
+      "NVIDIA Nemotron 3.5 Lightning",
+      "OpenRouter GLM 5.2 Free",
+      "OpenRouter Qwen3 235B A22B Free",
+      "OpenRouter DeepSeek R1 0528 Free",
+      "OpenRouter MiniMax M2.7 Free",
+      "OpenRouter Nemotron 3.5 Super VL Free",
+      "OpenRouter Nemotron 3.5 Lightning Free",
+      "OpenRouter Nemotron 3 Ultra Free (optional)",
+      "OpenRouter Free Router",
+      "Groq GPT-OSS 120B Free",
+      "Groq Qwen 3.8 27B Free",
+      "Gemini 3.8 Flash Free",
+      "Local Qwen2.5 Coder 3B (autocomplete only)"
+    ],
+    "provider_families": [
+      "nvidia",
+      "google",
+      "groq",
+      "openrouter"
+    ],
+    "critic_provider_separation": "Airflow critic route excludes the actual author provider through avoid_providers",
+    "local_autocomplete_only": [
+      "Qwen2.5 Coder 3B"
+    ],
+    "continue_prompt": {
+      "path": "/home/cosmosapjw/.continue/prompts/vigilode-x12-local-audit-20261106.md",
+      "purpose": "Independent local audit and extra workspace verification after X12 registered gate completion",
+      "must_not_rerun_x12_finish": true
+    }
+  },
+  "implementation": {
+    "legacy_behavior": "DerivativeSupremumEvidence is caller metadata only. QContractionCertificate.verify_with_evidence always leaves is_certified false; the is_certified field is private and its public accessor always returns false.",
+    "authority_type": "VerifiedQContractionCertificate has private fields and can only be created by verify_q_contraction_evidence after replay.",
+    "source_model": "PolynomialRhsMap with coefficients interpreted as exact finite binary64 dyadic values, canonical term ordering and immutable model epoch.",
+    "preconditioner": "fixed invertible diagonal P; arbitrary PreconditionerAction callbacks have no certification route.",
+    "fixed_point_map": "T_P(x)=x-P(x-G(x)); D(T_P)=I-P+P D(G).",
+    "domain_enclosure": "Euclidean ball is contained in outward-rounded coordinate box [x_c_i-r,x_c_i+r].",
+    "derivative_bound": "outward interval Jacobian over the entire containing box; Frobenius upper bound dominates induced Euclidean operator 2-norm.",
+    "residual_bound": "outward interval upper bound on ||P(x_c-G(x_c))||_2.",
+    "banach_gate": "rho_hi <= lower_outward((1-q_hi)*r), with q_hi<1.",
+    "artifact": "versioned schema/algorithm/source SHA/model epoch/norm/center/radius/box/derivative bounds/residual bounds/q/rho/margin; replay compares exact binary64 endpoint bits.",
+    "runtime_binding": "PolynomialContractionSource.to_preconditioned_map constructs the runtime map from the same immutable G and P descriptor.",
+    "resource_limits": {
+      "dimension_max": 32,
+      "total_terms_max": 4096,
+      "total_degree_max": 64,
+      "estimated_interval_work_max": 2000000
+    },
+    "failure_policy": "nonfinite values, overflow, unsupported source, singular P, noncontraction, failed Banach self-map check or resource cap produce Err/refusal."
+  },
+  "limitations_and_open_review": {
+    "exact_real_vs_fp": "The theorem applies to the exact real polynomial whose coefficients are the exact dyadic values represented by f64. It does not yet enclose all floating-point evaluation/roundoff effects of the runtime solver.",
+    "replay_independence": "Producer and verifier currently share build_q_contraction_evidence. Replay detects source/artifact mismatch, but the algorithm itself is not a separately implemented or formally verified checker.",
+    "consumer_integration": "The repository search found the legacy certificate API in rhs_homotopy.rs/tests/lib exports and no solver consumer. Review whether a downstream consumer needs explicit VerifiedQContractionCertificate integration; do not change default solver behavior.",
+    "norm_domain": "The certificate uses Euclidean L2 vector norm and its induced operator norm, with a conservative coordinate-box superset of the ball.",
+    "formal_status": "No Lean kernel-checked proof is claimed. Recheck local Lean/Mathlib availability before proposing formalization."
+  },
+  "evidence_already_observed": {
+    "expected_red": "PASS: python3 tools/agent_gate.py red X12; the new caller_scalar_evidence_cannot_authorize_contraction_certificate test failed on the recorded task base as expected.",
+    "green_regression": "PASS: focused release integration regression caller_scalar_evidence_cannot_authorize_contraction_certificate.",
+    "polynomial_unit_tests": "PASS: four targeted release unit tests covering positive certificate, artifact/source tampering, noncontraction/singular P refusal, and interval work-budget refusal.",
+    "gate_finish": "PENDING",
+    "full_crate_suite": "PENDING",
+    "clippy": "PASS: cargo clippy --locked -p vigilode-coupled --all-targets --release --no-deps -- -D warnings; exit_code=0",
+    "cargo_fmt_check": "PENDING",
+    "registered_gate_finish": "PASS: python3 tools/agent_gate.py finish X12; exit_code=0; task receipt recorded",
+    "gate_validate": "PASS: 29 tasks, anchors verified at registry base 4339facc",
+    "gate_fast_checks": "PASS: X12 fast checks pass",
+    "focused_integration_suite": "PASS: 18 passed, 0 failed",
+    "full_registered_crate_suite": "PASS under gate RUST_TEST_THREADS=1: 55 unit tests passed, 1 registered benchmark ignored; every integration target passed, including trace_certificate_allocations 2/2; doc-tests 0",
+    "format": "PASS: cargo fmt --all -- --check; exit_code=0",
+    "diff_check": "PASS: git diff --check; exit_code=0",
+    "allocation_test_note": "An initial manual parallel cargo test invocation produced an allocation-count failure (4 vs 2), followed by a mutex PoisonError. The target passed 2/2 serialized and the complete suite passed with RUST_TEST_THREADS=1, matching the agent gate run_commands environment.",
+    "continue_local_audit": "PENDING: Continue has the exact local prompt; workspace-wide tests/clippy, independent mathematical/code review, CAS reproduction and Lean/Mathlib availability check remain delegated.",
+    "gate_finish_receipt": "fb406053789c42079750654085c1a4e24061ecbcd19250ae89f5cf27d26c4525"
+  },
+  "continue_work": {
+    "objective": "Perform independent local mathematical, source-provenance, API/call-site, CAS and whole-workspace compatibility review. Do not rewrite the completed X12 implementation merely to create more activity.",
+    "steps": [
+      "Verify exact repository root, branch, HEAD, git status and the X12 completion receipt; preserve all existing changes.",
+      "Do not run finish X12 again, do not start X13, and do not alter X12 gate/registry/ledger state.",
+      "Read this handoff, DESIGN.md section t-x12, TASKS.json, owner authorization and the three approved Rust files.",
+      "Use the Airflow free-only ROLE_CHAINS and existing manual DAG roles for an independent audit; do not change provider policy or use paid providers.",
+      "Independently re-derive the derivative formula, Euclidean ball inclusion, interval Jacobian soundness, Frobenius-to-induced-L2 inequality, residual enclosure, outward Banach margin and uniqueness implication.",
+      "Review exact-real dyadic polynomial semantics versus floating-point runtime evaluation and report roundoff limitations precisely.",
+      "Assess the shared producer/replay algorithm as an assurance limitation; propose a separately implemented checker only as a follow-up, without expanding X12.",
+      "Inspect API exports/call sites and establish whether a downstream solver consumes VerifiedQContractionCertificate; do not change default solver behavior.",
+      "Run workspace-wide release tests and workspace clippy as additional compatibility checks, preserving exact exit codes and logs.",
+      "Reproduce the polynomial example using SageMath, WolframScript and Singular as computational cross-checks; do not describe CAS output as formal proof.",
+      "Check Lean 4.35.0 and Mathlib; if the proof library is unavailable, record BLOCKED without installing dependencies or claiming kernel verification.",
+      "Return an adversarial review with severity, exact symbols/lines, commands, results, remaining limits and recommended next bounded task."
+    ],
+    "mutation_policy": {
+      "read_only_by_default": true,
+      "permitted_if_actionable": "Only a demonstrably necessary X12 correction within the already approved allowlist; record the finding and rerun the complete X12 gate.",
+      "not_permitted": "No gate/ledger/design rewrite, no new dependencies, no broad refactor, no automatic apply, no commit/push/merge."
+    }
+  },
+  "required_final_report": [
+    "Verified repository identity and final diff scope.",
+    "Independent mathematical findings with assumptions and theorem domain.",
+    "Call-site/API integration status.",
+    "Exact CAS/Lean toolchain results, including BLOCKED items.",
+    "Full registered X12 gate and any extra workspace test/clippy results.",
+    "Residual risks: real-vs-floating-point semantics and replay implementation independence.",
+    "No commit/push/merge performed."
+  ],
+  "source_provenance": {
+    "crates/vigilode-coupled/src/rhs_homotopy.rs": {
+      "bytes": 88840,
+      "sha256": "81d39a193467314784e5ddef53ed10545ffa73ca9b0a973a3bf2e079384e87a4"
+    },
+    "crates/vigilode-coupled/src/lib.rs": {
+      "bytes": 13269,
+      "sha256": "c8fad4910a6f575726a0da7fd7f750e311632a1c0969fbb0bfc00d0f7541466a"
+    },
+    "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs": {
+      "bytes": 13693,
+      "sha256": "b1454294e4d0c43a31fc33131b5244f74d2f2e6a73eee182ffcc564d86d77c06"
+    },
+    "docs/agent/switcher_v2_remediation/TASKS.json": {
+      "bytes": 95272,
+      "sha256": "892d499687a69e937a22c1dc50e2534fb1b819af8a732a345e46535ab1fa2299"
+    },
+    "docs/agent/switcher_v2_remediation/X12_OWNER_AUTHORIZATION_20261106.json": {
+      "bytes": 3242,
+      "sha256": "3e4b19e212e8f706459f04d12c4b0f9889552af09f7af3fdc47be4b293993ca0"
+    },
+    "docs/agent/switcher_v2_remediation/PROGRESS.md": {
+      "bytes": 12637,
+      "sha256": "e6b1d0cf624b4af68a55b34bfc2da4a45bd5bb6038d64eb851c5118233da9b45"
+    },
+    "continue_local_prompt": {
+      "bytes": 4240,
+      "sha256": "d4a66f51e4e0bf8db9f73e4d93b581d22f82cac9ab126989c0419e7ae049c66d",
+      "path": "/home/cosmosapjw/.continue/prompts/vigilode-x12-local-audit-20261106.md"
+    }
+  }
+}

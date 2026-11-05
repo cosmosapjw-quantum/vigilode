@@ -185,3 +185,14 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - files: crates/vigilode/src/coloring.rs, crates/vigilode/src/problem.rs, crates/vigilode/src/registry.rs, crates/vigilode/src/solve.rs, crates/vigilode/src/capabilities.rs, crates/vigilode/tests/sparse_jvp_contracts.rs, research/c1_coloured_assembly_20261104/PREREGISTRATION.md, research/c1_coloured_assembly_20261104/eval_c1.py, research/c1_coloured_assembly_20261104/RESULTS.json, research/LEDGER.jsonl
 - verification: `python3 tools/agent_gate.py finish X7`
 - notes: implemented `Jacobian::sparse_jvp` with Curtis-Powell-Reid column colouring assembly into banded factorization for banded patterns and matrix-free GMRES fallback for non-banded patterns; verified 0 hot-loop heap allocations and exact bit-identity of existing routes; recorded preregistered node C1 (L-0214, verdict PASS: uses <= colours + 1 JVPs per step, matches dense LU trajectories to 2.1e-14 <= 1e-12, and achieves 2.46x-2.87x lower Ir than X2 shared-basis Krylov)
+
+## X12 — Make contraction evidence provenance non-forgeable — 2026-11-06
+- result: done
+- commit: uncommitted
+- toolchain: pinned Rust 1.94.1
+- commands: gate-validate: 0, focused: 0, crate-suite: 0 (55 unit passed, 1 ignored; all integration targets passed), clippy: 0, fmt: 0
+- red: caller_scalar_evidence_cannot_authorize_contraction_certificate (failed on recorded task base, expected)
+- mutation: none (X12 has no mutation-test acceptance item)
+- notes: caller-created DerivativeSupremumEvidence is now non-authoritative; legacy is_certified is private and always false. Added opt-in immutable PolynomialRhsMap plus fixed invertible diagonal P source, outward interval Jacobian enclosure on a box containing the full Euclidean ball, Frobenius upper bound for the induced L2 norm, outward center-residual bound, Banach self-map check, versioned source-bound artifact and bitwise replay into a private-constructor VerifiedQContractionCertificate. Added fail-closed dimension/term/degree/work limits and source/artifact tamper tests. X12 gate completed with receipt fb406053789c42079750654085c1a4e24061ecbcd19250ae89f5cf27d26c4525.
+- limitations: certificate concerns the exact real polynomial with represented binary64 dyadic coefficients, not a complete bound for floating-point runtime evaluation/roundoff. Producer and replay currently share the same enclosure routine; this is not an independent implementation or formal kernel proof. New verified API is not yet consumed by a default solver.
+- handoff: Continue local independent audit prompt at /home/cosmosapjw/.continue/prompts/vigilode-x12-local-audit-20261106.md; workspace-wide compatibility, CAS and Lean/Mathlib audit remain assigned there.
