@@ -196,3 +196,12 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - notes: caller-created DerivativeSupremumEvidence is now non-authoritative; legacy is_certified is private and always false. Added opt-in immutable PolynomialRhsMap plus fixed invertible diagonal P source, outward interval Jacobian enclosure on a box containing the full Euclidean ball, Frobenius upper bound for the induced L2 norm, outward center-residual bound, Banach self-map check, versioned source-bound artifact and bitwise replay into a private-constructor VerifiedQContractionCertificate. Added fail-closed dimension/term/degree/work limits and source/artifact tamper tests. X12 gate completed with receipt fb406053789c42079750654085c1a4e24061ecbcd19250ae89f5cf27d26c4525.
 - limitations: certificate concerns the exact real polynomial with represented binary64 dyadic coefficients, not a complete bound for floating-point runtime evaluation/roundoff. Producer and replay currently share the same enclosure routine; this is not an independent implementation or formal kernel proof. New verified API is not yet consumed by a default solver.
 - handoff: Continue local independent audit prompt at /home/cosmosapjw/.continue/prompts/vigilode-x12-local-audit-20261106.md; workspace-wide compatibility, CAS and Lean/Mathlib audit remain assigned there.
+
+## X13 — Bind Leja normality witness to the consumed operator — 2026-11-06
+- result: done
+- commit: uncommitted
+- toolchain: pinned Rust 1.94.1
+- commands: gate-validate: 0, focused: 0 (21 passed, 0 failed), crate-suite: 0 (62 unit passed, all integration and doc targets passed), clippy: 0, fmt: 0
+- red: normality_witness_must_match_consumed_operator_identity (failed on recorded task base, expected)
+- mutation: none (X13 has no mutation-test acceptance item)
+- notes: bound CertifiedNormalityWitness to operator identity and stored matrix values; updated complex_leja_phi_action_into to verify operator match with zero hot-loop allocations and enforce model_epoch consistency; added comprehensive contract test covering cross-operator rejection, stale epoch rejection, changed scaling rejection, changed matrix values rejection, and changed representation rejection while admitting valid exact skew-symmetric operators.

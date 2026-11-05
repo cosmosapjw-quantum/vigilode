@@ -935,3 +935,164 @@ fn test_vg1_complex_leja_zero_allocation() {
         TotalErrorStatus::Certified { .. }
     ));
 }
+
+#[test]
+fn normality_witness_must_match_consumed_operator_identity() {
+    use rodas5p_core::leja_action::{
+        CertifiedNormalityWitness, ComplexLejaConfig, ComplexLejaWorkspace,
+        complex_leja_phi_action_into,
+    };
+    use rodas5p_core::{ClosureOperator, DenseOperator};
+
+    let omega = 2.0;
+    let mat_a = [0.0, -omega, omega, 0.0];
+    let matrix_a = DenseMatrix::from_rows(&[&[0.0, -omega], &[omega, 0.0]]).unwrap();
+    let op_a = DenseOperator::new(matrix_a).unwrap();
+
+    let witness_a =
+        CertifiedNormalityWitness::certify_dense_skew_symmetric(&mat_a, 2, 1, 7, 100).unwrap();
+    let config_a = ComplexLejaConfig::with_witness(20, witness_a.clone());
+
+    let mut workspace = ComplexLejaWorkspace::new(2, 25);
+    let mut work = WorkCounters::default();
+    let v = [1.0, 0.5];
+    let mut out = [0.0; 2];
+
+    // 0. Exact matching operator and epoch admits Certified
+    let status_exact = complex_leja_phi_action_into(
+        &op_a,
+        0.5,
+        0,
+        &config_a,
+        &v,
+        &mut out,
+        &mut workspace,
+        &mut work,
+    )
+    .unwrap();
+    assert!(
+        matches!(status_exact, TotalErrorStatus::Certified { .. }),
+        "exact source identity must be admitted as Certified"
+    );
+
+    // 1. Same-dimension witness from another operator: reject
+    let omega_b = 4.0;
+    let matrix_b = DenseMatrix::from_rows(&[&[0.0, -omega_b], &[omega_b, 0.0]]).unwrap();
+    let op_b = DenseOperator::new(matrix_b).unwrap();
+    let status_b = complex_leja_phi_action_into(
+        &op_b,
+        0.5,
+        0,
+        &config_a,
+        &v,
+        &mut out,
+        &mut workspace,
+        &mut work,
+    )
+    .unwrap();
+    assert!(
+        matches!(
+            status_b,
+            TotalErrorStatus::EstimateOnly { ref reason, .. }
+                if reason.contains("COMPLEX_LEJA_WITNESS_OPERATOR_MISMATCH")
+        ),
+        "witness from operator A must reject operator B"
+    );
+
+    // 2. Stale epoch: reject
+    let config_stale_epoch = config_a.clone().with_model_epoch(8);
+    let status_stale = complex_leja_phi_action_into(
+        &op_a,
+        0.5,
+        0,
+        &config_stale_epoch,
+        &v,
+        &mut out,
+        &mut workspace,
+        &mut work,
+    )
+    .unwrap();
+    assert!(
+        matches!(
+            status_stale,
+            TotalErrorStatus::EstimateOnly { ref reason, .. }
+                if reason.contains("COMPLEX_LEJA_WITNESS_EPOCH_MISMATCH")
+        ),
+        "stale epoch must reject"
+    );
+
+    // 3. Changed scaling: reject
+    let scale = 1.5;
+    let matrix_scaled =
+        DenseMatrix::from_rows(&[&[0.0, -omega * scale], &[omega * scale, 0.0]]).unwrap();
+    let op_scaled = DenseOperator::new(matrix_scaled).unwrap();
+    let status_scaled = complex_leja_phi_action_into(
+        &op_scaled,
+        0.5,
+        0,
+        &config_a,
+        &v,
+        &mut out,
+        &mut workspace,
+        &mut work,
+    )
+    .unwrap();
+    assert!(
+        matches!(
+            status_scaled,
+            TotalErrorStatus::EstimateOnly { ref reason, .. }
+                if reason.contains("COMPLEX_LEJA_WITNESS_OPERATOR_MISMATCH")
+        ),
+        "changed scaling must reject"
+    );
+
+    // 4. Changed matrix values: reject
+    let matrix_perturbed =
+        DenseMatrix::from_rows(&[&[0.0, -omega - 0.1], &[omega + 0.1, 0.0]]).unwrap();
+    let op_perturbed = DenseOperator::new(matrix_perturbed).unwrap();
+    let status_perturbed = complex_leja_phi_action_into(
+        &op_perturbed,
+        0.5,
+        0,
+        &config_a,
+        &v,
+        &mut out,
+        &mut workspace,
+        &mut work,
+    )
+    .unwrap();
+    assert!(
+        matches!(
+            status_perturbed,
+            TotalErrorStatus::EstimateOnly { ref reason, .. }
+                if reason.contains("COMPLEX_LEJA_WITNESS_OPERATOR_MISMATCH")
+        ),
+        "changed matrix values must reject"
+    );
+
+    // 5. Changed representation (ClosureOperator instead of DenseOperator): reject
+    let closure_op = ClosureOperator::new(2, move |x: &[f64], y: &mut [f64]| {
+        y[0] = -omega * x[1];
+        y[1] = omega * x[0];
+        Ok(())
+    });
+    let status_closure = complex_leja_phi_action_into(
+        &closure_op,
+        0.5,
+        0,
+        &config_a,
+        &v,
+        &mut out,
+        &mut workspace,
+        &mut work,
+    )
+    .unwrap();
+    assert!(
+        matches!(
+            status_closure,
+            TotalErrorStatus::EstimateOnly { ref reason, .. }
+                if reason.contains("COMPLEX_LEJA_WITNESS_OPERATOR_MISMATCH")
+        ),
+        "changed representation must reject"
+    );
+}
