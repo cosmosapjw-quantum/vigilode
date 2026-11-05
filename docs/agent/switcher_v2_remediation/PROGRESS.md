@@ -233,5 +233,15 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - mutation: none (X16 has no mutation-test acceptance item)
 - notes: inspected live call graph and verified HybridRouteAutomaton is not part of SwitchingSolver live dispatch; documented in crates/vigilode/SWITCHING.md and crates/vigilode/README.md that HybridRouteAutomaton is a standalone experimental component and existing component tests do not demonstrate production routing.
 
+## X17 — Reconcile production claims with official authority — 2026-11-06
+- result: done
+- commit: uncommitted
+- toolchain: pinned Rust 1.94.1
+- commands: gate-validate: 0, report-tests: 0 (5 passed)
+- red: none (X17 is a docs task)
+- mutation: none (X17 has no mutation-test acceptance item)
+- notes: reconciled user-facing documentation and roadmap claims with official authority; separately labelled component implementation status, isolated unit/battery focus gates, and official production status; explicitly stated Production status: HOLD in README.md and VIGILODE_PRODUCTION_SOLVER_NEXT_LOOP_20261104.md while the official DAG remains on HOLD; confirmed original protected RODAS5P baseline (RJF_SEQ) remains the default release route.
+
+
 
 

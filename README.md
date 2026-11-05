@@ -1,11 +1,16 @@
 # VigilODE
 
+> **Authority Status: Production status: HOLD**
+> Official production solver status remains on HOLD while authority remediations, certificate non-forgeability, and multi-host benchmark provenance are completed. The default release route remains the original protected RODAS5P baseline (`RJF_SEQ`).
+>
 > **2026-11-04 Production Polyalgorithm & Adaptive Switcher Promotion Update:**
 > The evidence-driven adaptive polyalgorithm (`SwitchingSolver` / `HybridRouteAutomaton`) has successfully cleared all four mandatory promotion verification gates (**Gate 1: Zero-Allocation VG-1**, **Gate 2: Convergence Order VG-2**, **Gate 3: Invariants & Accounting VG-3**, and **Gate 4: 8-Problem Battery Zero-Regression Gate**).
-> - **Self-Adapting Multi-Integrator Routing:** On large-scale diffusion systems (B06 Brusselator 1D, $n=100$), the switcher starts explicit and smoothly transitions into matrix-free Krylov-RODAS5P, achieving a **23× to 169× speedup** over direct implicit LU ($561\,\text{ms} \to 3.3\,\text{ms}$).
+> - **Component Test Scope:** The promotion gates above confirm isolated unit/battery contracts in focused test harnesses (`tests/switching_contracts.rs`, `tools/compare_opt_battery.py`). `HybridRouteAutomaton` is an experimental standalone finite-state controller quarantined from live `SwitchingSolver` facade dispatch (see `crates/vigilode/SWITCHING.md`).
+> - **Benchmark Timing Authority:** Wall-clock timings below are single-process, pinned-core diagnostic measurements (`timing_authority: diagnostic_only`). Official authority requires deterministic `WorkCounters` and audited multi-host provenance.
+> - **Self-Adapting Multi-Integrator Routing:** On large-scale diffusion systems (B06 Brusselator 1D, $n=100$), the switcher starts explicit and smoothly transitions into matrix-free Krylov-RODAS5P, achieving a **23× to 169× speedup** over direct implicit LU ($561\,\text{ms} \to 3.3\,\text{ms}$) under diagnostic profiling.
 > - **Order-Reduction Defense:** On non-autonomous forced oscillations (B07/B08), where implicit Rosenbrock methods stall under severe order reduction ($54\,\text{ms}$ timeout failure), the switcher autonomously detects uneconomical implicit pilots and stays with explicit DOPRI5, achieving a **27× to 50× speedup ($54\,\text{ms} \to 1.0\,\text{ms}$)** with high-precision convergence.
-> - **Zero Regression Across 96 Battery Runs:** Rigorous A/B regression verification (`tools/compare_opt_battery.py`) confirmed **zero work or error regressions** across all 32 problem-tolerance scenarios.
-> - **Cross-Solver Benchmarks:** Validated against classic DVODE (Fortran), Diffsol (Rust), and DifferentialEquations.jl on identical single-thread pinned hardware (AMD Ryzen 9 5900X).
+> - **Zero Regression Across 96 Battery Runs:** Rigorous A/B regression verification (`tools/compare_opt_battery.py`) confirmed **zero work or error regressions** across all 32 problem-tolerance scenarios in component testing.
+> - **Cross-Solver Benchmarks:** Validated against classic DVODE (Fortran), Diffsol (Rust), and DifferentialEquations.jl on identical single-thread pinned hardware (AMD Ryzen 9 5900X; diagnostic comparison).
 
 > **2026-10-28 polyalgorithm theory update:** The latest
 > [research supplement](research/polyalgorithm_alternatives_20261028/REPORT_KO.md)
@@ -39,6 +44,14 @@ VigilODE is a high-performance numerical ODE library and research platform for s
    - Evaluates work pressure, step rejection ratios, and competitive same-checkpoint pilots to switch seamlessly between explicit (DOPRI5) and implicit/matrix-free (RODAS5P Dense / Krylov).
 4. **Order-Reduction Defense:**
    - Detects when stiff forced oscillations or algebraic constraints cause Rosenbrock order reduction, preventing solver stalls and preserving explicit high-order efficiency.
+
+---
+
+## Authority Status & Production Readiness
+
+- **Production status: HOLD**: Official DAG promotion remains on HOLD pending verified multi-host benchmark provenance and complete formal proof kernels.
+- **Official Protected Baseline**: The original protected RODAS5P baseline (`RJF_SEQ`) remains the default release route.
+- **Component Implementations & Focus Gates**: Polyalgorithm switching modules (`SwitchingSolver`, `HybridRouteAutomaton`, contraction certificates, Leja witness verification, Chebyshev spectral source proofs, nonnormal observers) pass isolated component gates but are quarantined from unverified default promotion.
 
 ---
 

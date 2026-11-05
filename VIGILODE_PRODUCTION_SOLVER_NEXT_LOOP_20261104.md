@@ -33,6 +33,8 @@ browser_context: blocked_missing_originating_browser_context
 
 ## 0. Executive decision
 
+**Production status: HOLD** (Official production DAG status remains HOLD; default route is original protected RODAS5P / RJF_SEQ).
+
 This document records a fresh audit at repository HEAD 06f995c2019af79d0bde6dd5dcee97f89643b2dc and defines the next bounded theory/coding loop. The commit since the previous audit adds cross-solver benchmark and report-generation artifacts; it does not modify the Rust solver crates. The newly added unified comparison report is not admissible as a same-host speed comparison: its inputs have different or missing execution provenance, it mislabels nonzero allocations as zero-allocation, and it formats two tolerance labels incorrectly.
 
 The previous mathematical/certificate blockers remain open. The new time-dependent-metric lemma is a useful derived observer bound, but the CTSH candidate remains OPEN and is not a formal proof or a production certificate. The correct decision is therefore unchanged: retain the original RODAS5P/RJF_SEQ protected route and keep production HOLD.
