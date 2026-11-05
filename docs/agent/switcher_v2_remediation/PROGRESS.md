@@ -205,3 +205,13 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - red: normality_witness_must_match_consumed_operator_identity (failed on recorded task base, expected)
 - mutation: none (X13 has no mutation-test acceptance item)
 - notes: bound CertifiedNormalityWitness to operator identity and stored matrix values; updated complex_leja_phi_action_into to verify operator match with zero hot-loop allocations and enforce model_epoch consistency; added comprehensive contract test covering cross-operator rejection, stale epoch rejection, changed scaling rejection, changed matrix values rejection, and changed representation rejection while admitting valid exact skew-symmetric operators.
+
+## X14 — Make spectral-source claims proof-carrying — 2026-11-06
+- result: done
+- commit: uncommitted
+- toolchain: pinned Rust 1.94.1
+- commands: gate-validate: 0, focused: 0 (12 passed, 0 failed), crate-suite: 0 (133 unit passed, all integration and doc targets passed), clippy: 0, fmt: 0
+- red: caller_selected_spectral_source_cannot_forge_certificate (failed on recorded task base, expected)
+- mutation: none (X14 has no mutation-test acceptance item)
+- notes: removed caller-selected enum status as sufficient authority for Chebyshev spectral certification; added operator-bound GershgorinEvidence verifying symmetry and strict negative spectral containment before granting Certified status; replaced Gershgorin row-radius accumulation and interval endpoints with outward directed arithmetic (add_up, sub_down, mul_up); enforced fail-closed rejection of positive and zero-crossing spectrum in ChebyshevInterval::new and gershgorin_intervals; unverified and nonsymmetric operators default strictly to EstimateOnly.
+

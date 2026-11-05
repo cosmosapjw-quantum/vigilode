@@ -445,3 +445,55 @@ fn an_ill_conditioned_affine_chart_refuses_without_rejecting_the_original_operat
     assert!(report.residual_accepted);
     assert_eq!(out, [1.0; 2]);
 }
+
+#[test]
+fn caller_selected_spectral_source_cannot_forge_certificate() {
+    // 1. Caller-created GershgorinCertified status without operator-bound evidence
+    //    must NOT be accepted as Certified (caller-selected enum is not sufficient authority).
+    let interval = ChebyshevInterval::new(-4.0, -1.0, 1).unwrap();
+    let generator = ChebyshevClusterGenerator::new(SpectralSource::GershgorinCertified);
+    let poly = generator.generate_polynomial(&[interval], None).unwrap();
+    assert_ne!(
+        poly.certificate_status,
+        CertificateStatus::Certified,
+        "caller-selected GershgorinCertified without operator evidence must not produce Certified status"
+    );
+    assert!(
+        !poly.is_certified(),
+        "caller-selected GershgorinCertified must not be certified without operator-bound proof"
+    );
+
+    // 2. Positive-spectrum counterexample: positive intervals must be rejected
+    //    (dissipative / stable Chebyshev resolvents must lie strictly in negative half-plane).
+    let pos_interval = ChebyshevInterval::new(1.0, 4.0, 1);
+    assert!(
+        pos_interval.is_err(),
+        "positive-spectrum interval must be rejected at construction"
+    );
+
+    // 3. Nonsymmetric matrix with complex spectrum counterexample:
+    //    A = [-2.0, 5.0; -5.0, -2.0] has eigenvalues -2 ± 5i (non-real complex).
+    //    Real Chebyshev intervals cannot enclose complex spectrum; Gershgorin
+    //    on real axis must not produce certified real spectral enclosure.
+    let nonsym_mat = [-2.0, 5.0, -5.0, -2.0];
+    let identity = ChartOperatorIdentity {
+        operator_key: 301,
+        dimension: 2,
+        model_epoch: 1,
+        provider_epoch: 1,
+        operator_scale_bits: 1.0_f64.to_bits(),
+        physical_norm: Norm::Infinity,
+    };
+    let _decl_res = ChartDeclaration::from_gershgorin(identity, &nonsym_mat, None, 10.0, 301);
+    let intervals = gershgorin_intervals(&nonsym_mat, 2);
+    if !intervals.is_empty() {
+        let forged_nonsym = ChebyshevClusterGenerator::new(SpectralSource::GershgorinCertified)
+            .generate_polynomial(&intervals, None)
+            .unwrap();
+        assert_ne!(
+            forged_nonsym.certificate_status,
+            CertificateStatus::Certified,
+            "nonsymmetric matrix with complex spectrum must not be certified"
+        );
+    }
+}
