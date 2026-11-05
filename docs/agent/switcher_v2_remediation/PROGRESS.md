@@ -215,3 +215,13 @@ Append-only (the gate rejects edits to earlier lines). One entry per task, forma
 - mutation: none (X14 has no mutation-test acceptance item)
 - notes: removed caller-selected enum status as sufficient authority for Chebyshev spectral certification; added operator-bound GershgorinEvidence verifying symmetry and strict negative spectral containment before granting Certified status; replaced Gershgorin row-radius accumulation and interval endpoints with outward directed arithmetic (add_up, sub_down, mul_up); enforced fail-closed rejection of positive and zero-crossing spectrum in ChebyshevInterval::new and gershgorin_intervals; unverified and nonsymmetric operators default strictly to EstimateOnly.
 
+## X15 — Downgrade or rigorously enclose nonnormal observer status — 2026-11-06
+- result: done
+- commit: uncommitted
+- toolchain: pinned Rust 1.94.1
+- commands: gate-validate: 0, focused: 0 (5 passed, 0 failed), crate-suite: 0 (62 unit passed, all integration and doc targets passed), clippy: 0, fmt: 0
+- red: finite_precision_observer_status_requires_outward_error_enclosure (failed on recorded task base, expected)
+- mutation: none (X15 has no mutation-test acceptance item)
+- notes: distinguished continuous-time exact identity theorems from finite-step floating-point implementations; reserved Certified status for stationary identity metrics and initial orthogonal frames while general floating-point metrics, moving-metric Euler integration without quadrature envelopes, and discrete continuous QR integration return EstimateOnly; verified all negative controls (indefinite and singular metrics rejected) and zero hot-loop allocations.
+
+

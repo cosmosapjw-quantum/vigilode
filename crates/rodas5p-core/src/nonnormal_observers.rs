@@ -260,9 +260,24 @@ impl FixedHLogNormObserver {
     }
 
     /// Certification status of the bound.
+    ///
+    /// Continuous-time theorem on exact identity metric recovers certified
+    /// Euclidean logarithmic norm $\mu_2(J)$. For general floating-point metrics,
+    /// point estimates without outward error envelopes are [`GrowthBoundStatus::EstimateOnly`].
     #[inline]
     pub fn status(&self) -> GrowthBoundStatus {
-        GrowthBoundStatus::Certified
+        match &self.metric {
+            FixedHMetric::Identity { .. } => GrowthBoundStatus::Certified,
+            FixedHMetric::Diagonal { diag } if diag.iter().all(|&d| d == 1.0) => {
+                GrowthBoundStatus::Certified
+            }
+            FixedHMetric::Dense2x2 { h, .. }
+                if h[0][0] == 1.0 && h[0][1] == 0.0 && h[1][0] == 0.0 && h[1][1] == 1.0 =>
+            {
+                GrowthBoundStatus::Certified
+            }
+            _ => GrowthBoundStatus::EstimateOnly,
+        }
     }
 
     /// Directly computes Euclidean numerical abscissa $\mu_2(J) = \lambda_{\max}((J + J^T)/2)$.
@@ -409,6 +424,7 @@ pub struct MovingHMetricObserver {
     cumulative_jump_factor: f64,
     cumulative_growth_bound: f64,
     current_mu: f64,
+    status: GrowthBoundStatus,
     pub work_counters: ObserverWorkCounters,
 }
 
@@ -420,6 +436,15 @@ impl MovingHMetricObserver {
             setup_work: 1,
             ..Default::default()
         };
+        let is_identity = initial_h[0][0] == 1.0
+            && initial_h[0][1] == 0.0
+            && initial_h[1][0] == 0.0
+            && initial_h[1][1] == 1.0;
+        let status = if is_identity {
+            GrowthBoundStatus::Certified
+        } else {
+            GrowthBoundStatus::EstimateOnly
+        };
         Ok(Self {
             dim: 2,
             current_h_2x2: initial_h,
@@ -427,6 +452,7 @@ impl MovingHMetricObserver {
             cumulative_jump_factor: 1.0,
             cumulative_growth_bound: 1.0,
             current_mu: 0.0,
+            status,
             work_counters: counters,
         })
     }
@@ -445,14 +471,19 @@ impl MovingHMetricObserver {
             cumulative_jump_factor: 1.0,
             cumulative_growth_bound: 1.0,
             current_mu: 0.0,
+            status: GrowthBoundStatus::Certified,
             work_counters: counters,
         }
     }
 
     /// Certification status of the bound.
+    ///
+    /// The continuous-time theorem on stationary identity metric recovers a certified
+    /// bound. Discrete time integration on moving metrics or uncertified metric switches
+    /// without an outward quadrature envelope yields [`GrowthBoundStatus::EstimateOnly`].
     #[inline]
     pub fn status(&self) -> GrowthBoundStatus {
-        GrowthBoundStatus::Certified
+        self.status
     }
 
     /// Computes instantaneous growth rate $\mu_H(t) = \lambda_{\max}(M_H(t))$ for 2x2.
@@ -508,6 +539,17 @@ impl MovingHMetricObserver {
                 "step size dt must be positive and finite".into(),
             ));
         }
+        let is_stationary_identity = h[0][0] == 1.0
+            && h[0][1] == 0.0
+            && h[1][0] == 0.0
+            && h[1][1] == 1.0
+            && hdot[0][0] == 0.0
+            && hdot[0][1] == 0.0
+            && hdot[1][0] == 0.0
+            && hdot[1][1] == 0.0;
+        if !is_stationary_identity {
+            self.status = GrowthBoundStatus::EstimateOnly;
+        }
         let mu_h = self.compute_mu_h_2x2(j, h, hdot)?;
         self.integrated_exponent += mu_h * dt;
         self.cumulative_growth_bound = self.cumulative_jump_factor * self.integrated_exponent.exp();
@@ -519,6 +561,11 @@ impl MovingHMetricObserver {
     /// Bounding norm jump by $\gamma_{\mathrm{jump}} = \sqrt{\lambda_{\max}(H_-^{-1/2} H_+ H_-^{-1/2})}$,
     /// and multiplying cumulative growth bound by $\gamma_{\mathrm{jump}}$.
     pub fn switch_metric_2x2(&mut self, h_new: [[f64; 2]; 2]) -> Result<f64, CoreError> {
+        let is_identity =
+            h_new[0][0] == 1.0 && h_new[0][1] == 0.0 && h_new[1][0] == 0.0 && h_new[1][1] == 1.0;
+        if !is_identity {
+            self.status = GrowthBoundStatus::EstimateOnly;
+        }
         let gamma_jump = jump_factor_2x2(&self.current_h_2x2, &h_new)?;
         self.cumulative_jump_factor *= gamma_jump;
         self.cumulative_growth_bound *= gamma_jump;
@@ -581,6 +628,7 @@ pub struct QrSackerSellObserver {
     current_alpha_max: f64,
     integrated_exponent: f64,
     cumulative_growth_bound: f64,
+    status: GrowthBoundStatus,
     pub work_counters: ObserverWorkCounters,
 }
 
@@ -598,6 +646,7 @@ impl QrSackerSellObserver {
             current_alpha_max: 0.0,
             integrated_exponent: 0.0,
             cumulative_growth_bound: 1.0,
+            status: GrowthBoundStatus::Certified,
             work_counters: counters,
         }
     }
@@ -613,6 +662,12 @@ impl QrSackerSellObserver {
             setup_work: 1,
             ..Default::default()
         };
+        let is_identity = q[0][0] == 1.0 && q[0][1] == 0.0 && q[1][0] == 0.0 && q[1][1] == 1.0;
+        let status = if is_identity {
+            GrowthBoundStatus::Certified
+        } else {
+            GrowthBoundStatus::EstimateOnly
+        };
         Ok(Self {
             dim: 2,
             q_2x2: q,
@@ -620,14 +675,19 @@ impl QrSackerSellObserver {
             current_alpha_max: 0.0,
             integrated_exponent: 0.0,
             cumulative_growth_bound: 1.0,
+            status,
             work_counters: counters,
         })
     }
 
     /// Certification status of the bound.
+    ///
+    /// The continuous-time theorem on exact initial basis recovers a certified
+    /// bound. Discrete finite-step continuous QR integration without method-order/local
+    /// error bounds yields [`GrowthBoundStatus::EstimateOnly`].
     #[inline]
     pub fn status(&self) -> GrowthBoundStatus {
-        GrowthBoundStatus::Certified
+        self.status
     }
 
     /// Computes diagonal growth rates $\alpha_i(t) = (Q(t)^T J(t) Q(t))_{ii}$ and $\alpha_{\max}$.
@@ -656,6 +716,7 @@ impl QrSackerSellObserver {
             ));
         }
         let (_, a_max) = self.compute_rates_2x2(j);
+        self.status = GrowthBoundStatus::EstimateOnly;
         self.integrated_exponent += a_max * dt;
         self.cumulative_growth_bound = self.integrated_exponent.exp();
 

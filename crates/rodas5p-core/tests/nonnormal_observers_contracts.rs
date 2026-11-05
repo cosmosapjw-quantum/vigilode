@@ -369,3 +369,68 @@ fn test_vg1_zero_allocation() {
     assert!(alpha_qr.is_finite());
     assert!(norm_res.is_finite());
 }
+
+#[test]
+fn finite_precision_observer_status_requires_outward_error_enclosure() {
+    let j = [[-1.0, 10.0], [0.0, -2.0]];
+    let dt = 0.001;
+
+    // 1. Continuous-time theorem on exact identity metric yields Certified:
+    let fixed_euclidean = FixedHLogNormObserver::identity(2);
+    assert_eq!(
+        fixed_euclidean.status(),
+        GrowthBoundStatus::Certified,
+        "continuous-time theorem on exact identity metric is certified"
+    );
+
+    // General floating-point metric point estimate without outward error envelope is EstimateOnly:
+    let h_general = [[2.0, 0.5], [0.5, 3.0]];
+    let fixed_general = FixedHLogNormObserver::from_2x2(h_general).unwrap();
+    assert_eq!(
+        fixed_general.status(),
+        GrowthBoundStatus::EstimateOnly,
+        "general floating-point metric point estimate without error envelope must be EstimateOnly"
+    );
+
+    // 2. Moving-H: time integration with moving metric without outward quadrature envelope becomes EstimateOnly:
+    let mut moving_h = MovingHMetricObserver::identity_2x2();
+    let h_moving = [[1.0, 0.0], [0.0, 2.0]];
+    let hdot_moving = [[0.0, 0.0], [0.0, 1.0]];
+    moving_h.step_2x2(dt, &j, &h_moving, &hdot_moving).unwrap();
+    assert_eq!(
+        moving_h.status(),
+        GrowthBoundStatus::EstimateOnly,
+        "discrete time integration on moving metric without quadrature envelope must be EstimateOnly"
+    );
+
+    // 3. QR Sacker-Sell: finite-step integration without method-order/global error bounds becomes EstimateOnly:
+    let mut qr_obs = QrSackerSellObserver::new_2x2();
+    assert_eq!(qr_obs.status(), GrowthBoundStatus::Certified);
+    qr_obs.step_2x2(dt, &j).unwrap();
+    assert_eq!(
+        qr_obs.status(),
+        GrowthBoundStatus::EstimateOnly,
+        "finite-step QR integration without error envelope must be EstimateOnly"
+    );
+
+    // 4. Negative controls: indefinite and singular metrics must be rejected
+    let indefinite_metric = [[1.0, 2.0], [2.0, 1.0]];
+    assert!(
+        FixedHLogNormObserver::from_2x2(indefinite_metric).is_err(),
+        "indefinite metric must be rejected"
+    );
+    assert!(
+        MovingHMetricObserver::new_2x2(indefinite_metric).is_err(),
+        "indefinite metric must be rejected by Moving-H"
+    );
+
+    let singular_metric = [[1.0, 1.0], [1.0, 1.0]];
+    assert!(
+        FixedHLogNormObserver::from_2x2(singular_metric).is_err(),
+        "singular metric must be rejected"
+    );
+    assert!(
+        MovingHMetricObserver::new_2x2(singular_metric).is_err(),
+        "singular metric must be rejected by Moving-H"
+    );
+}
