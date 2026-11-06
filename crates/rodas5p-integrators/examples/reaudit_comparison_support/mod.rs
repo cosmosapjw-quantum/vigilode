@@ -50,7 +50,8 @@ pub fn parse_args(args: &[String]) -> Result<(String, String, String, usize)> {
         return Err("expected --suite SUITE --case CASE --arm ARM --threads N; or --list".into());
     }
     let mut values = std::collections::BTreeMap::new();
-    for pair in args.chunks_exact(2) {
+    let (pairs, _) = args.as_chunks::<2>();
+    for pair in pairs {
         if !["--suite", "--case", "--arm", "--threads"].contains(&pair[0].as_str())
             || values.insert(pair[0].as_str(), pair[1].as_str()).is_some()
         {

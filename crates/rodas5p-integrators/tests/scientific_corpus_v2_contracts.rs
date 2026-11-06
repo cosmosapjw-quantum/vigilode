@@ -233,7 +233,8 @@ fn source_equation_spot_checks_include_both_sides_of_discontinuities() {
 
     let medical = build_holdout(ScientificFamily::MedicalAkzo);
     assert_eq!(medical.y0.len(), 400);
-    assert!(medical.y0.chunks_exact(2).all(|pair| pair == [0.0, 1.0]));
+    let (pairs, _) = medical.y0.as_chunks::<2>();
+    assert!(pairs.iter().all(|pair| pair == &[0.0, 1.0]));
     let before = medical
         .problem
         .eval_rhs(5.0 - 1.0e-12, &medical.y0, &mut WorkCounters::default())

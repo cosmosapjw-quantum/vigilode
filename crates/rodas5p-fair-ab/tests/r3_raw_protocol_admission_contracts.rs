@@ -43,9 +43,8 @@ fn mutations() -> Vec<Mutation> {
     vec![
         ("empty_order", |case| case.order.clear()),
         ("wrong_order", |case| {
-            for arms in &mut case.order {
-                *arms = [PairedArm::Candidate, PairedArm::Reference];
-            }
+            case.order
+                .fill([PairedArm::Candidate, PairedArm::Reference]);
         }),
         ("wrong_batch", |case| case.batch_iterations += 1),
         ("negative_warmup", |case| case.warmup_seconds[0] = -1.0),

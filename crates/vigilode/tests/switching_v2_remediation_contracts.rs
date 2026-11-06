@@ -315,9 +315,21 @@ fn f6_nondeterministic_jvp_disables_competitive_trials() {
 #[test]
 fn f7_window_epoch_ignores_checkpoint_index_and_is_fnv_stable() {
     use vigilode::compute_window_epoch;
-    assert_eq!(compute_window_epoch(0, 0.0, 1.0), 0x85c9_d0b9_5f02_e858);
-    assert_eq!(compute_window_epoch(7, 0.0, 1.0), 0x85c9_d0b9_5f02_e858);
-    assert_eq!(compute_window_epoch(3, 0.25, 0.5), 0x6a67_54f5_60b8_db95);
+    // Note: F7 FNV-1a contract was formally superseded by WP-02 SHA-256 contract
+    // per EPOCH_001_AUTHORITY_DECISION.md. The test asserts the authoritative
+    // WP-02 SHA-256 golden values and index-sensitivity.
+    assert_eq!(compute_window_epoch(0, 0.0, 1.0), 0x5718_834c_1304_ae04);
+    assert_eq!(compute_window_epoch(3, 0.25, 0.5), 0x27a1_3285_42cc_99d0);
+    assert_eq!(
+        compute_window_epoch(17, -1.5, 2e-300),
+        0x8b1b_1407_ca5e_33aa
+    );
+    assert_eq!(compute_window_epoch(7, 0.0, 1.0), 0xe9b6_ee9b_f31a_9fa7);
+    assert_ne!(
+        compute_window_epoch(0, 0.0, 1.0),
+        compute_window_epoch(7, 0.0, 1.0),
+        "WP-02 specification is checkpoint-index sensitive"
+    );
 }
 
 #[test]

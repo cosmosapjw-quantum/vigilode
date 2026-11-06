@@ -25,6 +25,8 @@ pub enum Kind {
     /// Brusselator 1D reaction-diffusion, interleaved (u_k, v_k), Dirichlet
     /// u = 1, v = 3 at both ends, alpha = 1/50; n = 2m.
     Brusselator1d,
+    /// Oregonator (Field & Noyes 1974, Hairer & Wanner Vol II p. 144), n = 3.
+    Oregonator,
     /// y1' = -y1, y2' = 1000 (y1 - y2), y(0) = (1, 0): exact solution
     /// y1 = e^-t, y2 = 1000/999 (e^-t - e^-1000t).
     LinearExact,
@@ -74,7 +76,7 @@ impl Model {
     /// Build and check a model.
     pub fn new(kind: Kind, n: usize) -> Result<Self, String> {
         let ok = match kind {
-            Kind::Robertson => n == 3,
+            Kind::Robertson | Kind::Oregonator => n == 3,
             Kind::Hires => n == 8,
             Kind::VanDerPolMu1000 | Kind::LinearExact => n == 2,
             Kind::Brusselator1d => n >= 4 && n.is_multiple_of(2),
@@ -90,6 +92,7 @@ impl Model {
     pub fn y0(&self) -> Vec<f64> {
         match self.kind {
             Kind::Robertson => vec![1.0, 0.0, 0.0],
+            Kind::Oregonator => vec![1.0, 2.0, 3.0],
             Kind::Hires => vec![1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0057],
             Kind::VanDerPolMu1000 => vec![2.0, 0.0],
             Kind::Brusselator1d => {
@@ -133,6 +136,12 @@ impl Model {
                 dy[0] = -0.04 * y[0] + 1e4 * y[1] * y[2];
                 dy[1] = 0.04 * y[0] - 1e4 * y[1] * y[2] - 3e7 * y[1] * y[1];
                 dy[2] = 3e7 * y[1] * y[1];
+            }
+            Kind::Oregonator => {
+                let q = 8.375e-6;
+                dy[0] = 77.27 * (y[1] - y[0] * y[1] + y[0] - q * y[0] * y[0]);
+                dy[1] = (1.0 / 77.27) * (-y[1] - y[0] * y[1] + y[2]);
+                dy[2] = 0.161 * (y[0] - y[2]);
             }
             Kind::Hires => {
                 dy[0] = -1.71 * y[0] + 0.43 * y[1] + 8.32 * y[2] + 0.0007;
@@ -188,6 +197,16 @@ impl Model {
                 emit(1, 1, -1e4 * y[2] - 6e7 * y[1]);
                 emit(1, 2, -1e4 * y[1]);
                 emit(2, 1, 6e7 * y[1]);
+            }
+            Kind::Oregonator => {
+                let q = 8.375e-6;
+                emit(0, 0, 77.27 * (-y[1] + 1.0 - 2.0 * q * y[0]));
+                emit(0, 1, 77.27 * (1.0 - y[0]));
+                emit(1, 0, (1.0 / 77.27) * (-y[1]));
+                emit(1, 1, (1.0 / 77.27) * (-1.0 - y[0]));
+                emit(1, 2, 1.0 / 77.27);
+                emit(2, 0, 0.161);
+                emit(2, 2, -0.161);
             }
             Kind::Hires => {
                 for (i, j, z) in [
@@ -353,6 +372,7 @@ mod tests {
     fn jacobians_match_finite_differences() {
         for (k, n) in [
             (Kind::Robertson, 3),
+            (Kind::Oregonator, 3),
             (Kind::Hires, 8),
             (Kind::VanDerPolMu1000, 2),
             (Kind::Brusselator1d, 20),

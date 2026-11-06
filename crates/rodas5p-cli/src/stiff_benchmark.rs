@@ -446,10 +446,9 @@ pub(crate) fn run_sp03_with(
 pub fn option_arm(arm: &str) -> Option<(bool, Rodas5pFastOptions)> {
     let (small, suffix) = if let Some(rest) = arm.strip_prefix("rodas5p-fast-small-") {
         (true, rest)
-    } else if let Some(rest) = arm.strip_prefix("rodas5p-fast-") {
-        (false, rest)
     } else {
-        return None;
+        let rest = arm.strip_prefix("rodas5p-fast-")?;
+        (false, rest)
     };
     let options = match suffix {
         "val" => Rodas5pFastOptions {

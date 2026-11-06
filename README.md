@@ -136,7 +136,7 @@ python3 tools/compare_opt_battery.py bench/out/opt_candidate_current.json bench/
 
 ---
 
-## Build Reproducibility
+## Build reproducibility
 
 A normal fresh clone uses Cargo's default configuration:
 
@@ -144,6 +144,8 @@ A normal fresh clone uses Cargo's default configuration:
 cargo metadata --locked --format-version 1
 cargo test --workspace --all-targets --no-run --locked
 ```
+
+No repository-external sibling directory is required by default. Network access is needed only when the pinned registry artifacts are not already present in the local Cargo cache.
 
 For air-gapped or deliberately offline development, create a standard Cargo vendor directory and opt in explicitly:
 
@@ -156,6 +158,10 @@ bash ./tools/cargo-offline.sh \
   --vendor-dir /absolute/path/to/vendor \
   test --workspace --all-targets --no-run --frozen
 ```
+
+`tools/cargo-offline.sh` accepts either `--vendor-dir PATH` or the `VIGILODE_CARGO_VENDOR_DIR` environment variable. The vendor directory must be a standard Cargo directory source created by `cargo vendor`; the wrapper validates its structure, uses an isolated temporary Cargo home with an absolute vendor path, and leaves `Cargo.toml`, `Cargo.lock`, and tracked Cargo configuration unchanged.
+
+The repository keeps `vendor/` untracked. `.cargo/config.offline.toml` is a documented template for users who prefer a repository-local `vendor/` directory and an explicit manual Cargo configuration.
 
 ---
 

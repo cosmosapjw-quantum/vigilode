@@ -1093,7 +1093,7 @@ impl VerifiedTrajectoryState {
             ));
         }
         let lineage = VERIFIED_LINEAGE
-            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |x| x.checked_add(1))
+            .try_update(Ordering::Relaxed, Ordering::Relaxed, |x| x.checked_add(1))
             .map_err(|_| VerifiedTrajectoryRefusal::Capacity)?;
         let centers = vcopy(model.initial_amplitudes(), w)?;
         let radii = vcopy(radii, w)?;

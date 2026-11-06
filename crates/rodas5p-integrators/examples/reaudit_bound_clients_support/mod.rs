@@ -47,7 +47,8 @@ pub fn parse(args: &[String]) -> Result<(String, String, usize)> {
         return Err("expected --case CASE --arm ARM --threads N".into());
     }
     let mut fields = std::collections::BTreeMap::new();
-    for pair in args.chunks_exact(2) {
+    let (pairs, _) = args.as_chunks::<2>();
+    for pair in pairs {
         if !["--case", "--arm", "--threads"].contains(&pair[0].as_str())
             || fields.insert(pair[0].as_str(), pair[1].as_str()).is_some()
         {

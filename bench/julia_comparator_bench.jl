@@ -118,6 +118,25 @@ function brusselator1d_u0(n)
     return u0
 end
 
+function oregonator!(dy, y, p, t)
+    q = 8.375e-6
+    dy[1] = 77.27 * (y[2] - y[1] * y[2] + y[1] - q * y[1]^2)
+    dy[2] = (1.0 / 77.27) * (-y[2] - y[1] * y[2] + y[3])
+    dy[3] = 0.161 * (y[1] - y[3])
+end
+
+function oregonator_jac!(J, y, p, t)
+    q = 8.375e-6
+    fill!(J, 0.0)
+    J[1, 1] = 77.27 * (-y[2] + 1.0 - 2.0 * q * y[1])
+    J[1, 2] = 77.27 * (1.0 - y[1])
+    J[2, 1] = (1.0 / 77.27) * (-y[2])
+    J[2, 2] = (1.0 / 77.27) * (-1.0 - y[1])
+    J[2, 3] = 1.0 / 77.27
+    J[3, 1] = 0.161
+    J[3, 3] = -0.161
+end
+
 # 2. Problem Setup Registry
 struct ProblemConfig
     id::String
@@ -135,6 +154,13 @@ function get_problems()
             [1.0, 0.0, 0.0],
             [1e-4, 1e-4, 1e-4],
             ODEFunction(robertson!, jac=robertson_jac!)
+        ),
+        ProblemConfig(
+            "oregonator",
+            (0.0, 360.0),
+            [1.0, 2.0, 3.0],
+            fill(1e-4, 3),
+            ODEFunction(oregonator!, jac=oregonator_jac!)
         ),
         ProblemConfig(
             "hires",
