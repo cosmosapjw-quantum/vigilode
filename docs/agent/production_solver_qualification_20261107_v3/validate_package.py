@@ -44,7 +44,7 @@ for rel, record in files.items():
     if not path.is_file():
         fail(f"missing file: {rel}")
     data=path.read_bytes()
-    header=f"blob {len(data)}\\0".encode("ascii")
+    header=f"blob {len(data)}\0".encode("ascii")
     actual=hashlib.sha1(header+data).hexdigest()
     if actual!=record.get("git_blob_sha1"):
         fail(f"Git blob identity mismatch: {rel}")
