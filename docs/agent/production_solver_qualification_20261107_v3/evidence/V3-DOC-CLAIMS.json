@@ -1,0 +1,39 @@
+{
+  "evidence_id": "EV-V3-DOC-CLAIMS-20261107",
+  "task_id": "V3-DOC-CLAIMS",
+  "claim_support": [
+    "IMPLEMENTATION_VERIFIED",
+    "NUMERICALLY_CHECKED"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "continue",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "https://github.com/cosmosapjw-quantum/vigilode",
+    "branch": "research/switcher-v2-20261103",
+    "head": "bcf6fcefa8322f7e8d4454ab40498256f4ff1e22",
+    "tree": "076c5d01e8419b1b8f0d88ca2d0de04407e21aa2",
+    "worktree_clean": true
+  },
+  "command_records": [
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "README.md",
+        "bench/"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "git 2.43.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    }
+  ],
+  "result": "README.md and benchmark comparison scripts reconciled with qualified evidence. Clearly distinguished algebraic dense/banded Jacobian representation from continuous-time dense output interpolant. Explicitly separated endpoint-only free-stepping arms (vigilode-dense, vigilode-banded-dense with output_clipped_steps == 0) from grid-clipped continuity controls (vigilode, vigilode-banded with 99 clipped steps). Clarified allocation scopes: numerical stepping hot loop achieves exact zero allocations (VG-1 Pass), while whole-run solve and driver executions incur setup and trajectory storage allocations. Explicitly reported fail-closed dual reference dispute accounting on semilinear 2d/3d grids and confirmed all 953 matched-error comparison rows are diagnostic_only with zero admitted speedup or ranking claims. Maintained overall solver production status as HOLD_NOT_RELEASE_QUALIFIED.",
+  "limitations": [
+    "Documentation updates describe empirical benchmarks and scope boundaries; production qualification remains on hold pending complete end-to-end qualification gate closure."
+  ]
+}
+

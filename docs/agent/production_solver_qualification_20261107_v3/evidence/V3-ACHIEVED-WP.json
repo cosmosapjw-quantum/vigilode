@@ -1,0 +1,55 @@
+{
+  "evidence_id": "EV-V3-ACHIEVED-WP-20261107",
+  "task_id": "V3-ACHIEVED-WP",
+  "claim_support": [
+    "NUMERICALLY_CHECKED",
+    "EMPIRICAL_DIAGNOSTIC"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "continue",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "https://github.com/cosmosapjw-quantum/vigilode",
+    "branch": "research/switcher-v2-20261103",
+    "head": "bcf6fcefa8322f7e8d4454ab40498256f4ff1e22",
+    "tree": "076c5d01e8419b1b8f0d88ca2d0de04407e21aa2",
+    "worktree_clean": true,
+    "binary_sha256": "bdeaa8961e240bf33745a3d4a7cae1ba1546a581202359bfb89c339bdd4401ad"
+  },
+  "command_records": [
+    {
+      "argv": [
+        "crates/vigilode-bench/target/release/vigilode-bench",
+        "wp",
+        "--corpus",
+        "bench/protocols/adversarial_spatial_grid_v2.json",
+        "--out",
+        "bench/out/adversarial_spatial_grid_v2_results.json"
+      ],
+      "cwd": "/tmp/vigilode-v3-worktree",
+      "toolchain": "rustc 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "argv": [
+        "crates/vigilode-bench/target/release/vigilode-bench",
+        "report",
+        "--in",
+        "bench/out/adversarial_spatial_grid_v2_results.json",
+        "--out",
+        "bench/out/ADVERSARIAL_SPATIAL_GRID_V2_REPORT.md"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "rustc 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    }
+  ],
+  "result": "Spatial work-precision benchmark completed across 4 problems (sphere-photon-2d, semilinear-advection-diffusion-2d, semilinear-advection-diffusion-3d, sphere-photon-3d) from clean worktree with verified build source (dirty_source_allowed=false). vigilode-dense and vigilode-banded-dense ran as primary endpoint-only arms taking output_clipped_steps == 0 on the 101-point evaluation grid (protocol-violation rows == 0), while vigilode and vigilode-banded were preserved as separate grid-clipped continuity controls. All 953 matched-error comparison rows were reported as DIAGNOSTIC_ONLY due to either unbracketed error regimes or cross-family reference disputes (semilinear 2d/3d cross-family discrepancy exceeded 1e-10 at initial tolerance). All wall-clock timings were strictly maintained under timing_authority: diagnostic_only. Zero unbracketed speedup or performance ranking ratios were admitted.",
+  "limitations": [
+    "In-process timing remains diagnostic_only; no claims of production speedup or ranking over Sundials/DiffSol are admitted without pre-registered multi-run timing authority.",
+    "Agreement with numerical reference solvers on discrete observation grids does not constitute a rigorous continuous-time validated trajectory enclosure."
+  ]
+}
+

@@ -1,0 +1,41 @@
+{
+  "evidence_id": "EV-V3-ALLOC-20261107",
+  "task_id": "V3-ALLOC",
+  "claim_support": [
+    "NUMERICALLY_CHECKED",
+    "IMPLEMENTATION_VERIFIED"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "continue",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "https://github.com/cosmosapjw-quantum/vigilode",
+    "branch": "research/switcher-v2-20261103",
+    "head": "bcf6fcefa8322f7e8d4454ab40498256f4ff1e22",
+    "tree": "076c5d01e8419b1b8f0d88ca2d0de04407e21aa2",
+    "worktree_clean": true
+  },
+  "command_records": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "vigilode",
+        "--test",
+        "production_hotloop_allocation_contracts",
+        "--",
+        "--nocapture"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    }
+  ],
+  "result": "5/5 allocation contracts passed. Positive control proved tracking hook sensitivity (>= 2 allocs, >= 168 bytes). Implicit stepping hot loop (CollectiveRodas5pWorkspace::step_into) verified exact 0 allocations across 50 steps. Full attempt instrumentation measured 4 allocations per batch driver attempt (boxed DriverRecord + return state vector), 1.14 allocs/step in Dopri5::with_session stepping (output trajectory serialization), and 2.77 allocs/step in whole-run ProductionSolver::solve (36 allocations total across 13 accepted steps), confirming whole-run allocations are bounded by trajectory storage without unbounded memory growth.",
+  "limitations": [
+    "Numerical stepping hot loops achieve exact 0 heap allocations; whole-run ProductionSolver::solve and batch outcomes intentionally allocate bounded memory for return states, telemetry records, and output trajectory storage."
+  ]
+}

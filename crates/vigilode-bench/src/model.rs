@@ -6,8 +6,8 @@
 //! that the evaluation work of every arm is measured by the same authority,
 //! independently of what the solver itself reports.
 
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::OnceLock;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use serde::{Deserialize, Serialize};
 
@@ -180,8 +180,7 @@ impl Model {
                     let q = 0.5 * (l.q_edges[i] + l.q_edges[i + 1]);
                     for j in 0..l.nm {
                         let mu = 0.5 * (l.mu_edges[j] + l.mu_edges[j + 1]);
-                        let val =
-                            (-((q - (-0.5)).powi(2) / 0.5 + (mu - 0.2).powi(2) / 0.4)).exp();
+                        let val = (-((q - (-0.5)).powi(2) / 0.5 + (mu - 0.2).powi(2) / 0.4)).exp();
                         y0[l.cell(i, j, 0)] = val * l.dq[i] * l.dm[j] * l.dphi[0];
                     }
                 }
@@ -361,8 +360,8 @@ impl Model {
                         let right = if i + 1 == nx { 0.0 } else { y[k + 1] };
                         let down = if j == 0 { 0.0 } else { y[k - nx] };
                         let up = if j + 1 == ny { 0.0 } else { y[k + nx] };
-                        let lap =
-                            (left - 2.0 * u + right) / (hx * hx) + (down - 2.0 * u + up) / (hy * hy);
+                        let lap = (left - 2.0 * u + right) / (hx * hx)
+                            + (down - 2.0 * u + up) / (hy * hy);
                         let adv = vx * (u - left) / hx + vy * (u - down) / hy;
                         let reaction = 2.0 * u * u - u;
                         dy[k] = d * lap - adv + reaction;

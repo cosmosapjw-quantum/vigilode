@@ -60,8 +60,18 @@ def format_allocations(alloc_data) -> str:
     return f"{calls} calls ({format_bytes(n_bytes)})"
 
 def main():
-    json_path = "/home/cosmosapjw/vigilode-task-worktrees/task-BENCH-SPHERE-GRID-20261107/bench/out/adversarial_spatial_grid_rust_results.json"
-    report_path = "/home/cosmosapjw/vigilode-task-worktrees/task-BENCH-SPHERE-GRID-20261107/bench/out/ADVERSARIAL_SPATIAL_GRID_REPORT.md"
+    json_path = os.environ.get(
+        "BENCH_RESULTS_JSON",
+        "bench/out/adversarial_spatial_grid_rust_results.json"
+        if os.path.exists("bench/out/adversarial_spatial_grid_rust_results.json")
+        else "/home/cosmosapjw/vigilode-task-worktrees/task-BENCH-SPHERE-GRID-20261107/bench/out/adversarial_spatial_grid_rust_results.json",
+    )
+    report_path = os.environ.get(
+        "BENCH_REPORT_MD",
+        "bench/out/ADVERSARIAL_SPATIAL_GRID_REPORT.md"
+        if os.path.exists("bench/out/ADVERSARIAL_SPATIAL_GRID_REPORT.md")
+        else "/home/cosmosapjw/vigilode-task-worktrees/task-BENCH-SPHERE-GRID-20261107/bench/out/ADVERSARIAL_SPATIAL_GRID_REPORT.md",
+    )
 
     with open(json_path, "r") as f:
         data = json.load(f)

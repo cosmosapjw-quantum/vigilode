@@ -63,20 +63,36 @@ Evaluated on AMD Ryzen 9 5900X (Single-Thread Pinned, Release Profile, `timing_a
 ## Adversarial Spatial Grid & Spherical Coordinate Benchmarks (2026-11-07, Diagnostic Only)
 
 Evaluated on AMD Ryzen 9 5900X (Single-Thread Pinned `taskset -c 0`, `timing_authority: diagnostic_only`).
-Dual reference solutions independently verified with Hairer RADAU5 ($rtol=10^{-12}$) and cross-checked against SUNDIALS CVODE ($rtol=10^{-12}$) on a 101-point uniform grid (**0 reference disputes**, max discrepancy $\le 1.46 \times 10^{-10}$ vs $10^{-8}$ threshold).
+Dual reference solutions independently verified with Hairer RADAU5 and cross-checked against SUNDIALS CVODE BDF on a 101-point uniform evaluation grid under the pre-registered `adversarial_spatial_grid_v2` protocol (`bench/protocols/adversarial_spatial_grid_v2.json`).
 
-| Problem ID | Physical System & Geometry | State Dim ($N$) | Bandwidth ($M+1$) | Winner Arm (Banded) | Banded Speedup vs Dense | VigilODE RODAS5P Max WRMS Error | Hot-Loop Allocations |
-|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|
-| **Sphere-2D** | Cosmological Shear Photon Transport $(q, \mu)$ | $N=86$ | $M+1=7$ | DVODE MF=24 (0.18 ms) | 1.9x ~ 2.0x | $1.46 \times 10^{-10}$ | **0 (VG-1 Pass)** |
-| **Sphere-3D** | Full-Sphere Quadrupole Thomson Scattering $(q, \mu, \phi)$ | $N=302$ | $M+1=25$ | DVODE MF=24 (1.34 ms) | **2.4x ~ 4.9x** | $1.46 \times 10^{-10}$ | **0 (VG-1 Pass)** |
-| **Grid-2D** | Semilinear Advection-Diffusion Grid ($8 \times 12$) | $N=96$ | $M+1=8$ | DVODE MF=24 (0.33 ms) | 1.6x ~ 2.9x | $1.34 \times 10^{-10}$ | **0 (VG-1 Pass)** |
-| **Grid-3D** | Semilinear Advection-Diffusion Grid ($6 \times 6 \times 6$) | $N=216$ | $M+1=36$ | DVODE MF=24 (1.13 ms) | 2.2x ~ 2.9x | $1.07 \times 10^{-10}$ | **0 (VG-1 Pass)** |
+### 1. Distinction Between Dense Jacobian and Dense Output
 
-*Key Findings:*
-- **Banded Scaling Advantage:** On 3D spherical geometry ($N=302, M+1=25$), banded Jacobian factorization achieves substantial scaling speedups across all solvers (Hairer RADAU5 $4.9\times$, Hairer RODAS $4.0\times$, CVODE $4.0\times$, DVODE $3.3\times$, Diffsol $2.4\times$).
-- **Zero-Allocation Compliance (`VG-1`):** VigilODE RODAS5P integration hot loops execute with exactly 0 heap allocations across all spatial grid topologies.
-- **High-Order Accuracy:** 5th-order L-stable RODAS5P maintains tight global errors $\le 1.46 \times 10^{-10}$ across all tolerances.
-- **Report & Data:** Full 144-row multi-solver results available in `bench/out/ADVERSARIAL_SPATIAL_GRID_REPORT.md` and `bench/out/adversarial_spatial_grid_rust_results.json`.
+- **Dense Jacobian vs Banded Jacobian:** Refers strictly to linear algebra and storage representation of $\partial f/\partial y \in \mathbb{R}^{N \times N}$. Banded Jacobian representation ($M+1$ diagonals) achieves significant factorization speedups on 3D geometries ($N=302, M+1=25$: 2.4x ~ 4.9x scaling advantage across external solvers).
+- **Dense Output (Continuous Interpolant) vs Grid-Clipped Stepping:** Refers to the continuous-time polynomial trajectory interpolant (`Solution::at`). In the qualified protocol (`ADVERSARIAL_SPATIAL_GRID_V2_REPORT.md`), endpoint-only arms (`vigilode-dense`, `vigilode-banded-dense`) step freely without grid constraints (`output_clipped_steps == 0`, taking 6 to 47 steps total), while baseline grid-clipped arms (`vigilode`, `vigilode-banded`) land steps on all 101 grid points (99 clipped steps) to serve strictly as continuity controls.
+
+### 2. Multi-Solver Reference Validation & Dispute Accounting
+
+| Problem ID | Physical System & Geometry | State Dim ($N$) | Bandwidth ($M+1$) | Dual Reference Agreement ($rtol=10^{-12}$) | Reference Status | Dispute Threshold |
+|:---|:---|:---:|:---:|:---:|:---:|:---:|
+| **Sphere-2D** | Cosmological Shear Photon Transport $(q, \mu)$ | $N=86$ | $M+1=7$ | $3.29 \times 10^{-12}$ | **PASS** | $10^{-10}$ |
+| **Sphere-3D** | Full-Sphere Quadrupole Thomson Scattering $(q, \mu, \phi)$ | $N=302$ | $M+1=25$ | $2.10 \times 10^{-12}$ | **PASS** | $10^{-10}$ |
+| **Grid-2D** | Semilinear Advection-Diffusion Grid ($8 \times 12$) | $N=96$ | $M+1=8$ | $1.07 \times 10^{-9}$ (at $10^{-10}$) | **REFERENCE_DISPUTED** | $10^{-10}$ |
+| **Grid-3D** | Semilinear Advection-Diffusion Grid ($6 \times 6 \times 6$) | $N=216$ | $M+1=36$ | $1.15 \times 10^{-11}$ (at $10^{-12}$) | **REFERENCE_DISPUTED** | $10^{-10}$ |
+
+*Protocol Findings & Fail-Closed Reporting:*
+- **Independent Reference Fail-Closed Gate:** On Semilinear Advection-Diffusion 2D/3D grids, cross-family discrepancy at initial tolerance ($rtol=10^{-10}$) exceeded the strict $10^{-10}$ agreement threshold ($1.07 \times 10^{-9}$), correctly triggering `REFERENCE_DISPUTED`. All comparisons against disputed references are fail-closed marked `DIAGNOSTIC_ONLY`.
+- **Matched-Error Work-Precision:** All 953 comparison rows in `ADVERSARIAL_SPATIAL_GRID_V2_REPORT.md` are designated `DIAGNOSTIC_ONLY`. No speedup ratios or solver rankings are admitted for unbracketed error regimes or disputed reference points.
+
+### 3. Allocation Scope Clarification
+
+- **Numerical Integration Hot Loop (`VG-1 Pass`):** Pre-allocated stepper workspaces (`CollectiveRodas5pWorkspace::step_into`) execute with **strictly zero (0) heap allocations** across all spatial geometries and grid dimensions.
+- **Whole-Run & Driver Scope:** Whole-run solve invocations (`ProductionSolver::solve`) and batch driver runs include pre-integration setup, trajectory serialization, and solution return (4 allocations per driver attempt, bounded trajectory storage allocations). These setup/teardown allocations are separate from the zero-allocation numerical stepping hot loop.
+
+### 4. Benchmark Artifacts
+
+- **V2 Qualified Work-Precision Report:** `bench/out/ADVERSARIAL_SPATIAL_GRID_V2_REPORT.md` (305 KB, SHA-256: `89569b16...`)
+- **V2 Raw Measurement Data:** `bench/out/adversarial_spatial_grid_v2_results.json` (3.7 MB, SHA-256: `79ec876a...`)
+- **Historical Grid-Clipped Continuity Report:** `bench/out/ADVERSARIAL_SPATIAL_GRID_REPORT.md` (22 KB)
 
 ---
 

@@ -1,0 +1,106 @@
+{
+  "evidence_id": "EV-V3-SESSION-FSM-20261107",
+  "task_id": "V3-SESSION-FSM",
+  "claim_support": [
+    "IMPLEMENTATION_VERIFIED",
+    "NUMERICALLY_CHECKED"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "continue",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "https://github.com/cosmosapjw-quantum/vigilode",
+    "branch": "research/switcher-v2-20261103",
+    "head": "bcf6fcefa8322f7e8d4454ab40498256f4ff1e22",
+    "tree": "076c5d01e8419b1b8f0d88ca2d0de04407e21aa2",
+    "worktree_clean": true
+  },
+  "command_records": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "frontier_session_contracts"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "vigilode",
+        "--test",
+        "production_session_contracts"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "vigilode",
+        "--test",
+        "hybrid_automaton_contracts"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "vigilode",
+        "--test",
+        "switching_integration_contracts",
+        "--test",
+        "switching_v2_remediation_contracts",
+        "--test",
+        "switching_contracts",
+        "--test",
+        "switching_economy_contracts"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "causal_depth_stage_residual_contracts"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    }
+  ],
+  "result": "89/89 session and switching FSM contract tests passed cleanly. SwitchingSolver live dispatch with DriveState verified, HybridRouteAutomaton offline verification model contracts confirmed, and multi-session work conservation proven.",
+  "limitations": [
+    "Switching behavior verified under registered test suites; unbounded autonomous regime switches remain heuristic."
+  ]
+}
+
