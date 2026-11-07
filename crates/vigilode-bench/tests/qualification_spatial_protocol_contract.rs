@@ -11,6 +11,22 @@ use vigilode_bench::arms::Arm;
 use vigilode_bench::corpus::Corpus;
 
 const PROTOCOL_V2_PATH: &str = "../../bench/protocols/adversarial_spatial_grid_v2.json";
+const PROTOCOL_V3_PATH: &str = "../../bench/protocols/adversarial_spatial_battery_v3.json";
+
+#[test]
+fn test_spatial_battery_protocol_v3_syntax_and_semantic_validation() {
+    let content = std::fs::read_to_string(PROTOCOL_V3_PATH)
+        .or_else(|_| std::fs::read_to_string("bench/protocols/adversarial_spatial_battery_v3.json"))
+        .expect("adversarial_spatial_battery_v3.json must exist");
+
+    let corpus = Corpus::from_json(&content).expect("Corpus JSON parsing must succeed");
+    corpus
+        .validate()
+        .expect("Corpus semantic validation must pass");
+
+    assert_eq!(corpus.id, "adversarial-spatial-battery-v3");
+    assert_eq!(corpus.problems.len(), 9);
+}
 
 #[test]
 fn test_spatial_grid_protocol_v2_syntax_and_semantic_validation() {

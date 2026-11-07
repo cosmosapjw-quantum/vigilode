@@ -90,9 +90,30 @@ Dual reference solutions independently verified with Hairer RADAU5 and cross-che
 
 ### 4. Benchmark Artifacts
 
+- **V3 Expanded Spatial Battery Report:** `bench/out/ADVERSARIAL_SPATIAL_BATTERY_V3_REPORT.md` (55 KB, SHA-256: `c0d84e3d...`)
+- **V3 Raw Measurement Data:** `bench/out/adversarial_spatial_battery_v3_results.json` (6.4 MB, SHA-256: `e27526aa...`)
+- **V3 Protocol Specification:** `bench/protocols/adversarial_spatial_battery_v3.json` (9 spatial PDE problems, 14 solver arms)
 - **V2 Qualified Work-Precision Report:** `bench/out/ADVERSARIAL_SPATIAL_GRID_V2_REPORT.md` (305 KB, SHA-256: `89569b16...`)
 - **V2 Raw Measurement Data:** `bench/out/adversarial_spatial_grid_v2_results.json` (3.7 MB, SHA-256: `79ec876a...`)
 - **Historical Grid-Clipped Continuity Report:** `bench/out/ADVERSARIAL_SPATIAL_GRID_REPORT.md` (22 KB)
+
+### 5. Expanded Spatial & Spherical PDE Battery with Adaptive Grid Zero-Alloc (`VG-1`)
+
+The spatial benchmark suite has been expanded into a comprehensive 9-problem PDE battery spanning diverse mathematical structures:
+
+| Problem ID | Physical / Mathematical System | Topology | State Dim ($N$) | Bandwidth ($M+1$) | Key Numerical Characteristics |
+|:---|:---|:---:|:---:|:---:|:---|
+| **Sphere-2D** | Cosmological Shear Photon Transport | Sphere $(q, \mu)$ | $N=86$ | $M+1=7$ | Metric-weighted finite-volume Thomson scattering |
+| **Sphere-3D** | Full-Sphere Quadrupole Thomson Scattering | Sphere $(q, \mu, \phi)$ | $N=302$ | $M+1=25$ | 3D angular-momentum transport on $S^2 \times \mathbb{R}^+$ |
+| **Spherical-Diff-2D** | Spherical Surface Diffusion | Sphere $(\theta, \phi)$ on $S^2$ | $N=64$ | $M+1=8$ | Conservative metric weights $\Delta\Omega_j$, exact pole regularization |
+| **Allen-Cahn-2D** | Phase-Field Interface Dynamics | Rectangular $[-1, 1]^2$ | $N=64$ | $M+1=8$ | Stiff cubic reaction $-(u^3-u)$, diffuse interface motion |
+| **Gray-Scott-2D** | Spot-Dividing Reaction-Diffusion | Rectangular $[0, 1]^2$ | $N=128$ | $M+1=17$ | Turing pattern formation, coupled 2-field nonlinear reaction |
+| **Burgers-2D** | Viscous Burgers Shock Waves | Rectangular $[0, 1]^2$ | $N=72$ | $M+1=13$ | Upwind hyperbolic advection + viscous diffusion shock layer |
+| **Sine-Gordon-2D** | Nonlinear Wave Soliton Dynamics | Rectangular $[-L/2, L/2]^2$ | $N=72$ | $M+1=13$ | Hamiltonian system, exact energy conservation ($dH/dt < 10^{-10}$) |
+| **Grid-2D** | Semilinear Advection-Diffusion | Rectangular $(8 \times 12)$ | $N=96$ | $M+1=8$ | Mixed hyperbolic-parabolic boundary layers |
+| **Grid-3D** | Semilinear Advection-Diffusion | Box $(6 \times 6 \times 6)$ | $N=216$ | $M+1=36$ | 3D sparse banded coupling |
+
+- **Runtime-Configurable Resolution & Moving Mesh (MMPDE r-refinement):** Grid dimensions can be configured at runtime with single-allocation arena initialization (`SpatialWorkspace::new`), guaranteeing **strictly zero heap allocations in integration hot loops (`VG-1`)**. Moving mesh coordinate relocation tracks steep shock fronts while keeping state dimension $N$ invariant.
 
 ---
 

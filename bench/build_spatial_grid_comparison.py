@@ -16,13 +16,20 @@ PROBLEMS = [
     ("semilinear-advection-diffusion-2d", "2D Semilinear Advection-Diffusion Grid (8x12)", 96, 8),
     ("semilinear-advection-diffusion-3d", "3D Semilinear Advection-Diffusion Grid (6x6x6)", 216, 36),
     ("sphere-photon-3d", "3D Spherical Full-Sphere Photon Transport (q, μ, φ)", 302, 25),
+    ("spherical-diffusion-2d", "2D Spherical Surface Diffusion on S² (8x8)", 64, 8),
+    ("allen-cahn-2d", "2D Allen-Cahn Phase Field Interface (8x8)", 64, 8),
+    ("gray-scott-2d", "2D Gray-Scott Reaction-Diffusion Spot Mitosis (8x8x2)", 128, 17),
+    ("burgers-2d", "2D Viscous Burgers Advective Shock Wave (6x6x2)", 72, 13),
+    ("sine-gordon-2d", "2D Sine-Gordon Nonlinear Wave Soliton (6x6x2)", 72, 13),
 ]
 
 RTOLS = [1e-4, 1e-6, 1e-8]
 
 ARMS = [
-    ("VigilODE (Banded RODAS5P)", "vigilode-banded", "Banded"),
-    ("VigilODE (Dense RODAS5P)", "vigilode", "Dense"),
+    ("VigilODE (Banded Dense Continuous)", "vigilode-banded-dense", "Banded Endpoint"),
+    ("VigilODE (Dense Continuous)", "vigilode-dense", "Dense Endpoint"),
+    ("VigilODE (Banded RODAS5P Continuity)", "vigilode-banded", "Banded Clipped"),
+    ("VigilODE (Dense RODAS5P Continuity)", "vigilode", "Dense Clipped"),
     ("Netlib DVODE (MF=24 Banded)", "dvode-mf24", "Banded"),
     ("Netlib DVODE (MF=21 Dense)", "dvode-mf21", "Dense"),
     ("Diffsol BDF (Sparse Coloured)", "diffsol-bdf-sparse", "Sparse"),

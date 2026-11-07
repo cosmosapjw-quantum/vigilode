@@ -1,6 +1,7 @@
 use std::{
     alloc::{GlobalAlloc, Layout, System},
-    sync::atomic::{AtomicBool, AtomicU64, Ordering},
+    cell::Cell,
+    sync::atomic::{AtomicU64, Ordering},
 };
 
 use rodas5p_core::{DenseMatrix, DenseOperator, IdentityPreconditioner, WorkCounters};
@@ -10,7 +11,9 @@ use rodas5p_krylov::{
 };
 
 struct CountingAllocator;
-static TRACK: AtomicBool = AtomicBool::new(false);
+thread_local! {
+    static TRACK: Cell<bool> = const { Cell::new(false) };
+}
 static ALLOCATIONS: AtomicU64 = AtomicU64::new(0);
 
 #[global_allocator]
@@ -19,7 +22,7 @@ static ALLOCATOR: CountingAllocator = CountingAllocator;
 unsafe impl GlobalAlloc for CountingAllocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         let pointer = unsafe { System.alloc(layout) };
-        if !pointer.is_null() && TRACK.load(Ordering::Relaxed) {
+        if !pointer.is_null() && TRACK.try_with(|t| t.get()).unwrap_or(false) {
             ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
         }
         pointer
@@ -31,11 +34,11 @@ unsafe impl GlobalAlloc for CountingAllocator {
 }
 
 fn allocation_count<T>(operation: impl FnOnce() -> T) -> (T, u64) {
-    TRACK.store(false, Ordering::SeqCst);
+    let _ = TRACK.try_with(|t| t.set(false));
     ALLOCATIONS.store(0, Ordering::Relaxed);
-    TRACK.store(true, Ordering::SeqCst);
+    let _ = TRACK.try_with(|t| t.set(true));
     let result = operation();
-    TRACK.store(false, Ordering::SeqCst);
+    let _ = TRACK.try_with(|t| t.set(false));
     (result, ALLOCATIONS.load(Ordering::Relaxed))
 }
 

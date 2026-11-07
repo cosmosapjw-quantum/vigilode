@@ -266,10 +266,22 @@ pub fn verify(root: &Path, built_manifest: &str) -> Result<(), String> {
     if !built_manifest.starts_with(&format!("{SCHEMA}\n")) {
         return Err("unrecognized build source manifest".into());
     }
-    if snapshot(root)? != built_manifest {
-        return Err(
-            "SOURCE_MISMATCH: source differs from executable build; rebuild before running".into(),
-        );
+    let cur = snapshot(root)?;
+    if cur != built_manifest {
+        let mut diff = String::new();
+        for line in cur.lines() {
+            if !built_manifest.contains(line) {
+                diff.push_str(&format!("+ {}\n", line));
+            }
+        }
+        for line in built_manifest.lines() {
+            if !cur.contains(line) {
+                diff.push_str(&format!("- {}\n", line));
+            }
+        }
+        return Err(format!(
+            "SOURCE_MISMATCH: source differs from executable build; rebuild before running\nDIFF:\n{diff}"
+        ));
     }
     Ok(())
 }

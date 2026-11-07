@@ -20,6 +20,20 @@ use sphere_photon_fv_support::{
     uniform_phi_edges,
 };
 
+use crate::pde_models::{AllenCahn2D, Burgers2D, GrayScott2D, SineGordon2D, SphericalDiffusion2D};
+
+/// Find best factor pair (nx, ny) such that nx * ny = total and nx <= ny.
+pub fn factor_2d(total: usize) -> (usize, usize) {
+    let mut best_nx = 1;
+    let limit = (total as f64).sqrt() as usize;
+    for i in 1..=limit {
+        if total.is_multiple_of(i) {
+            best_nx = i;
+        }
+    }
+    (best_nx, total / best_nx)
+}
+
 static SPHERE_2D_MODEL: OnceLock<Model3> = OnceLock::new();
 static SPHERE_3D_MODEL: OnceLock<Model3> = OnceLock::new();
 
@@ -93,6 +107,16 @@ pub enum Kind {
     SemilinearAdvectionDiffusion2d,
     /// Semilinear advection-diffusion reaction 3D grid, n = 216 (6x6x6), bandwidth = 36.
     SemilinearAdvectionDiffusion3d,
+    /// 2D Gray-Scott reaction-diffusion pattern formation model.
+    GrayScott2d,
+    /// 2D Allen-Cahn phase field interface model.
+    AllenCahn2d,
+    /// 2D Viscous Burgers advection-diffusion shock model.
+    Burgers2d,
+    /// 2D Sine-Gordon nonlinear wave Hamiltonian model.
+    SineGordon2d,
+    /// 2D Spherical surface diffusion with pole regularization.
+    SphericalDiffusion2d,
 }
 
 /// A problem instance: kind and dimension.
@@ -147,6 +171,11 @@ impl Model {
             Kind::SpherePhoton3d => n == 302,
             Kind::SemilinearAdvectionDiffusion2d => n == 96,
             Kind::SemilinearAdvectionDiffusion3d => n == 216,
+            Kind::GrayScott2d => n >= 8 && n.is_multiple_of(2),
+            Kind::AllenCahn2d => n >= 4,
+            Kind::Burgers2d => n >= 8 && n.is_multiple_of(2),
+            Kind::SineGordon2d => n >= 8 && n.is_multiple_of(2),
+            Kind::SphericalDiffusion2d => n >= 4,
         };
         if ok {
             Ok(Self { kind, n })
@@ -257,6 +286,26 @@ impl Model {
                 }
                 y0
             }
+            Kind::GrayScott2d => {
+                let (nx, ny) = factor_2d(self.n / 2);
+                GrayScott2D::standard(nx, ny).initial_state()
+            }
+            Kind::AllenCahn2d => {
+                let (nx, ny) = factor_2d(self.n);
+                AllenCahn2D::standard(nx, ny).initial_state()
+            }
+            Kind::Burgers2d => {
+                let (nx, ny) = factor_2d(self.n / 2);
+                Burgers2D::standard(nx, ny, 0.01).initial_state()
+            }
+            Kind::SineGordon2d => {
+                let (nx, ny) = factor_2d(self.n / 2);
+                SineGordon2D::standard(nx, ny, 10.0).initial_state()
+            }
+            Kind::SphericalDiffusion2d => {
+                let (nt, np) = factor_2d(self.n);
+                SphericalDiffusion2D::standard(nt, np).initial_state()
+            }
         }
     }
 
@@ -267,6 +316,26 @@ impl Model {
             Kind::SpherePhoton3d => (25, 25),
             Kind::SemilinearAdvectionDiffusion2d => (8, 8),
             Kind::SemilinearAdvectionDiffusion3d => (36, 36),
+            Kind::GrayScott2d => {
+                let (nx, _ny) = factor_2d(self.n / 2);
+                (2 * nx + 1, 2 * nx + 1)
+            }
+            Kind::AllenCahn2d => {
+                let (nx, _ny) = factor_2d(self.n);
+                (nx, nx)
+            }
+            Kind::Burgers2d => {
+                let (nx, _ny) = factor_2d(self.n / 2);
+                (2 * nx + 1, 2 * nx + 1)
+            }
+            Kind::SineGordon2d => {
+                let (nx, _ny) = factor_2d(self.n / 2);
+                (2 * nx + 1, 2 * nx + 1)
+            }
+            Kind::SphericalDiffusion2d => {
+                let (_nt, np) = factor_2d(self.n);
+                (np, np)
+            }
             Kind::Brusselator1d => (2, 2),
             Kind::LinearExact => (1, 0),
             _ => (self.n - 1, self.n - 1),
@@ -398,6 +467,26 @@ impl Model {
                         }
                     }
                 }
+            }
+            Kind::GrayScott2d => {
+                let (nx, ny) = factor_2d(self.n / 2);
+                GrayScott2D::standard(nx, ny).rhs(_t, y, dy);
+            }
+            Kind::AllenCahn2d => {
+                let (nx, ny) = factor_2d(self.n);
+                AllenCahn2D::standard(nx, ny).rhs(_t, y, dy);
+            }
+            Kind::Burgers2d => {
+                let (nx, ny) = factor_2d(self.n / 2);
+                Burgers2D::standard(nx, ny, 0.01).rhs(_t, y, dy);
+            }
+            Kind::SineGordon2d => {
+                let (nx, ny) = factor_2d(self.n / 2);
+                SineGordon2D::standard(nx, ny, 10.0).rhs(_t, y, dy);
+            }
+            Kind::SphericalDiffusion2d => {
+                let (nt, np) = factor_2d(self.n);
+                SphericalDiffusion2D::standard(nt, np).rhs(_t, y, dy);
             }
         }
     }
@@ -573,6 +662,26 @@ impl Model {
                     }
                 }
             }
+            Kind::GrayScott2d => {
+                let (nx, ny) = factor_2d(self.n / 2);
+                GrayScott2D::standard(nx, ny).jac_entries(y, &mut emit);
+            }
+            Kind::AllenCahn2d => {
+                let (nx, ny) = factor_2d(self.n);
+                AllenCahn2D::standard(nx, ny).jac_entries(y, &mut emit);
+            }
+            Kind::Burgers2d => {
+                let (nx, ny) = factor_2d(self.n / 2);
+                Burgers2D::standard(nx, ny, 0.01).jac_entries(y, &mut emit);
+            }
+            Kind::SineGordon2d => {
+                let (nx, ny) = factor_2d(self.n / 2);
+                SineGordon2D::standard(nx, ny, 10.0).jac_entries(y, &mut emit);
+            }
+            Kind::SphericalDiffusion2d => {
+                let (nt, np) = factor_2d(self.n);
+                SphericalDiffusion2D::standard(nt, np).jac_entries(y, &mut emit);
+            }
         }
     }
 
@@ -685,6 +794,10 @@ mod tests {
             (Kind::SemilinearAdvectionDiffusion2d, 96),
             (Kind::SemilinearAdvectionDiffusion3d, 216),
             (Kind::SpherePhoton3d, 302),
+            (Kind::GrayScott2d, 32),
+            (Kind::AllenCahn2d, 36),
+            (Kind::Burgers2d, 32),
+            (Kind::SineGordon2d, 32),
         ] {
             let m = Model::new(k, n).unwrap();
             let y: Vec<f64> = m
@@ -705,6 +818,10 @@ mod tests {
             (Kind::SemilinearAdvectionDiffusion2d, 96),
             (Kind::SemilinearAdvectionDiffusion3d, 216),
             (Kind::SpherePhoton3d, 302),
+            (Kind::GrayScott2d, 32),
+            (Kind::AllenCahn2d, 36),
+            (Kind::Burgers2d, 32),
+            (Kind::SineGordon2d, 32),
         ] {
             let m = Model::new(k, n).unwrap();
             let y = m.y0();
