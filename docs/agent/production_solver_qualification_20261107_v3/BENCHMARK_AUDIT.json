@@ -1,0 +1,100 @@
+{
+  "schema": "vigilode.benchmark_audit.v3",
+  "artifact": {
+    "result_path": "bench/out/adversarial_spatial_grid_rust_results.json",
+    "result_git_blob_sha1": "cf34d767beb1695b389a33c85fc777d5cb780b3e",
+    "report_path": "bench/out/ADVERSARIAL_SPATIAL_GRID_REPORT.md",
+    "report_git_blob_sha1": "60bc3fd5db65f9d993a69fd721cdbf4f51229661",
+    "corpus_path": "bench/protocols/adversarial_spatial_grid_v1.json",
+    "corpus_git_blob_sha1": "7fccabd07ec541c13027d39c82c5b5bcc4e7721f"
+  },
+  "observed": {
+    "rows": 144,
+    "problems": 4,
+    "arms": 12,
+    "rtols": [
+      0.0001,
+      0.000001,
+      1e-8
+    ],
+    "repetitions": 3,
+    "all_rows_successful": true,
+    "failed_repetitions": 0,
+    "protocol_violation_rows": 0,
+    "matched_entries": 520,
+    "matched_statuses": {
+      "DIAGNOSTIC_ONLY": 520
+    },
+    "reference_records": 4,
+    "reference_rtol": 1e-12,
+    "reference_crosscheck": "Hairer RADAU5 vs SUNDIALS CVODE BDF",
+    "reference_disagreement_range": [
+      1.0763051836037362e-10,
+      1.4883015696825263e-10
+    ],
+    "dispute_threshold": 1e-8,
+    "sampled_grid_points": 101,
+    "timing_authority": "diagnostic_only"
+  },
+  "metric_contract": {
+    "error_wrms_own": "max over output grid of per-time WRMS using each row's own rtol/atol vector",
+    "error_common": "max over output grid of per-time WRMS using tolerance-independent common error scaling",
+    "warning": "Both are sampled-grid metrics, not a continuous-time supremum. They are not interchangeable."
+  },
+  "grid_clipped_baseline": {
+    "arms": [
+      "vigilode",
+      "vigilode-banded"
+    ],
+    "report_contract": "Grid-clipped continuity arms; take a step at every requested output grid time.",
+    "observed_accepted_steps": "102 at each of the three tolerances on all four spatial problems. This is consistent with the declared clipped protocol and is not by itself evidence of a tolerance-response defect.",
+    "endpoint_only_arms_available": [
+      "vigilode-dense",
+      "vigilode-banded-dense"
+    ],
+    "included_in_v1": false
+  },
+  "within_family_dense_to_banded_speedup_diagnostic": {
+    "metric": "dense median wall time / banded median wall time at same problem, arm family and rtol=1e-8",
+    "ranges": {
+      "CVODE": [
+        2.2839,
+        4.0242
+      ],
+      "DVODE": [
+        1.5583,
+        2.7079
+      ],
+      "Hairer_RADAU5": [
+        2.2087,
+        5.2024
+      ],
+      "Hairer_RODAS": [
+        1.6092,
+        4.4498
+      ],
+      "VigilODE_RODAS5P": [
+        0.8737,
+        1.2558
+      ]
+    },
+    "scope": "Within-family dense-versus-banded linear algebra diagnostic only; not a cross-solver speedup claim."
+  },
+  "allocation_measurement": {
+    "scope": "setup + integration + final grid-state storage + teardown; statistics formatting excluded",
+    "verdict": "Whole-run allocation counts do not prove or disprove zero allocation inside the solver hot loop.",
+    "sample_counts": {
+      "vigilode_dense": 256,
+      "vigilode_banded": 155
+    }
+  },
+  "provenance": {
+    "build_commit_context": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "build_dirty": true,
+    "git_commit": null,
+    "dirty_source_allowed": true,
+    "content_sha256_manifest_present": true,
+    "binary_and_corpus_hashes_present": true,
+    "verdict": "CONTENT_BOUND_DIRTY_BUILD; clean current-HEAD reproduction still required."
+  }
+}

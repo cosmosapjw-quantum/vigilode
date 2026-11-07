@@ -1,0 +1,114 @@
+{
+  "schema": "vigilode.mutation_policy.v3",
+  "current_authorization": {
+    "authorized_now": [
+      "Add the v3 audit/qualification plan documentation package to branch research/switcher-v2-20261103 as one additive commit."
+    ],
+    "not_authorized_now": [
+      "solver source changes",
+      "public API changes",
+      "numerical tolerance/default changes",
+      "acceptance-threshold changes",
+      "official research DAG/ledger rewrites",
+      "release or publication of solver binaries"
+    ],
+    "rule": "The user's instruction to push applies only to this v3 documentation package. It is not continuing authorization for solver-code changes."
+  },
+  "default": "READ_ONLY",
+  "hard_denies": [
+    ".env, credentials, tokens, private keys or secret stores",
+    "git history rewrite, reset --hard, force push, branch deletion",
+    "delete or overwrite historical evidence, fixtures, baselines or existing worktrees",
+    "global tolerance/default/threshold changes without separate authority",
+    "public API breaking change or feature expansion outside exact task authority",
+    "official research DAG/ledger mutation outside exact task authority",
+    "commit/push/merge/rebase/tag/publish/release of solver code under this plan"
+  ],
+  "gates": [
+    {
+      "gate": "G0_PREFLIGHT",
+      "required": [
+        "verify branch/HEAD/tree/remote/status",
+        "verify task base identity and toolchain",
+        "preserve untracked/ignored files",
+        "read exact task and authority"
+      ],
+      "mutation": "NONE"
+    },
+    {
+      "gate": "G1_TASK_AUTHORITY",
+      "required": [
+        "execute only explicit task IDs",
+        "exact write_allowlist from TASK_QUEUE is complete authority",
+        "no wildcard expansion"
+      ],
+      "mutation": "NONE"
+    },
+    {
+      "gate": "G2_ISOLATION",
+      "required": [
+        "task worktree from exact SHA",
+        "clean worktree",
+        "before hashes",
+        "single writer per file"
+      ],
+      "mutation": "WORKTREE_ONLY"
+    },
+    {
+      "gate": "G3_RED_TEST",
+      "required": [
+        "minimal falsifying test first",
+        "prove RED is intended behavior rather than build/runtime failure"
+      ],
+      "mutation": "ALLOWLIST_ONLY"
+    },
+    {
+      "gate": "G4_PATCH",
+      "required": [
+        "smallest justified correction",
+        "only exact write_allowlist",
+        "preserve API compatibility",
+        "never relax tolerances or acceptance"
+      ],
+      "mutation": "ALLOWLIST_ONLY"
+    },
+    {
+      "gate": "G5_VERIFY",
+      "required": [
+        "focused tests",
+        "negative controls",
+        "fmt/clippy as applicable",
+        "exact commands and log hashes"
+      ],
+      "mutation": "ALLOWLIST_ONLY"
+    },
+    {
+      "gate": "G6_REVIEW",
+      "required": [
+        "one fresh-context read-only review",
+        "no review-of-review"
+      ],
+      "mutation": "READ_ONLY"
+    },
+    {
+      "gate": "G7_CLOSE",
+      "required": [
+        "schema-valid evidence",
+        "source hashes",
+        "task report",
+        "no implicit publication"
+      ],
+      "mutation": "DOCUMENTATION_ONLY"
+    }
+  ],
+  "path_rules": {
+    "relative_paths_only": true,
+    "reject_parent_traversal": true,
+    "reject_globs": true,
+    "reject_directories_as_write_targets": true,
+    "require_exact_file_paths": true,
+    "one_writer_per_path": true,
+    "base_sha_must_be_revalidated": true
+  },
+  "publication": "No solver-source commit or push is authorized. This v3 plan publication does not grant future publish rights."
+}

@@ -1,0 +1,582 @@
+{
+  "schema": "vigilode.production_task_queue.v3",
+  "plan_id": "VIGILODE-PRODUCTION-QUALIFICATION-V3-20261107",
+  "status": "PROPOSED_EXECUTABLE_PLAN",
+  "repository": {
+    "full_name": "cosmosapjw-quantum/vigilode",
+    "branch": "research/switcher-v2-20261103",
+    "base_sha": "92d975dd4abfebb924f9a691dac1e5f87fb69943",
+    "base_tree_sha": "2fd16cb90a9e75f9fde87de3584f1feab2668aca"
+  },
+  "execution_boundary": {
+    "selected_stages": [
+      "C9",
+      "C10"
+    ],
+    "supporting_checks": [
+      "C2",
+      "C7",
+      "C8"
+    ],
+    "native_subagent": "NOT_RUN"
+  },
+  "task_count": 13,
+  "execution_rule": "One task at a time in dependency order. Exact task write_allowlist is the complete authority for source mutations; use task worktrees. Preserve all failures and historical artifacts. This plan publication does not authorize solver-code publication.",
+  "tasks": [
+    {
+      "id": "V3-BASELINE-IDENTITY",
+      "title": "Rebind qualification receipts to clean current-HEAD build",
+      "priority": "P0",
+      "status": "PENDING",
+      "depends_on": [],
+      "worktree_required": false,
+      "mutation_class": "READ_ONLY",
+      "objective": "Build and inspect a clean worktree from the exact current HEAD. Reconcile the 19 v2 remediation receipts, which were executed from predecessor base 1403e108..., against current merged source. Do not infer equivalence from ancestry alone.",
+      "read_allowlist": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "rust-toolchain.toml",
+        "README.md",
+        "docs/agent/production_solver_qualification_20261106_v2/",
+        "docs/agent/switcher_v2_remediation/",
+        "crates/"
+      ],
+      "write_allowlist": [
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-BASELINE-IDENTITY.json"
+      ],
+      "commands": [
+        "git status --porcelain=v1",
+        "git rev-parse HEAD && git rev-parse 'HEAD^{tree}' && git rev-parse origin/research/switcher-v2-20261103",
+        "rustc --version && cargo --version",
+        "cargo metadata --locked --format-version 1",
+        "cargo build --locked --workspace --release"
+      ],
+      "acceptance": [
+        "Clean worktree and exact source identity recorded.",
+        "Build source manifest binds source inputs; no dirty-source override is used for authoritative receipts.",
+        "Each v2 receipt is marked historical, direct, transformed, conditional, partial or unverified for the current source.",
+        "No historical receipt is rewritten as if run on current HEAD."
+      ],
+      "stop_conditions": [
+        "Branch diverged or current HEAD cannot be mapped to the pinned source.",
+        "Source dirty/incomplete or toolchain/dependency identity unexplained."
+      ],
+      "evidence_artifacts": [
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-BASELINE-IDENTITY.json"
+      ]
+    },
+    {
+      "id": "V3-BENCH-PROTOCOL",
+      "title": "Construct endpoint-only spatial work-precision protocol v2",
+      "priority": "P0",
+      "status": "PENDING",
+      "depends_on": [
+        "V3-BASELINE-IDENTITY"
+      ],
+      "worktree_required": true,
+      "mutation_class": "ALLOWLIST_ONLY",
+      "objective": "Create a new spatial benchmark corpus including endpoint-only VigilODE dense-output arms. Preserve v1 unchanged. Verify the real output call paths before admitting arms.",
+      "read_allowlist": [
+        "crates/vigilode-bench/src/arms.rs",
+        "crates/vigilode-bench/src/corpus.rs",
+        "crates/vigilode-bench/src/harness.rs",
+        "crates/vigilode-bench/src/report.rs",
+        "bench/protocols/adversarial_spatial_grid_v1.json"
+      ],
+      "write_allowlist": [
+        "bench/protocols/adversarial_spatial_grid_v2.json",
+        "crates/vigilode-bench/tests/qualification_spatial_protocol_contract.rs",
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-BENCH-PROTOCOL.json"
+      ],
+      "commands": [
+        "cargo test --locked -p vigilode-bench"
+      ],
+      "acceptance": [
+        "Include vigilode-dense and vigilode-banded-dense as primary endpoint-only arms.",
+        "Keep grid-clipped arms as separate continuity controls, not primary work-precision baselines.",
+        "For endpoint-only arms require output_clipped_steps == 0 and complete requested grid output.",
+        "Dense Jacobian and dense output are separately named and explained.",
+        "Do not alter tolerances, public defaults or inherited acceptance thresholds."
+      ],
+      "stop_conditions": [
+        "Dense-output path does not use continuous interpolant or cannot answer all requested grid points.",
+        "New tests would require API/default/tolerance changes outside allowlist."
+      ],
+      "evidence_artifacts": [
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-BENCH-PROTOCOL.json"
+      ]
+    },
+    {
+      "id": "V3-REFERENCE-LADDER",
+      "title": "Qualify empirical reference uncertainty",
+      "priority": "P0",
+      "status": "PENDING",
+      "depends_on": [
+        "V3-BASELINE-IDENTITY",
+        "V3-BENCH-PROTOCOL"
+      ],
+      "worktree_required": true,
+      "mutation_class": "ALLOWLIST_ONLY",
+      "objective": "Establish a preregistered decreasing-tolerance reference ladder for each spatial problem. Distinguish empirical cross-family agreement from rigorous validated enclosures.",
+      "read_allowlist": [
+        "crates/vigilode-bench/src/harness.rs",
+        "crates/vigilode-bench/src/reference_policy.rs",
+        "crates/vigilode-bench/src/metrics.rs",
+        "bench/protocols/adversarial_spatial_grid_v2.json"
+      ],
+      "write_allowlist": [
+        "bench/protocols/adversarial_spatial_grid_v2.json",
+        "crates/vigilode-bench/tests/qualification_reference_ladder_contract.rs",
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-REFERENCE-LADDER.json"
+      ],
+      "commands": [
+        "cargo test --locked -p vigilode-bench --test qualification_reference_ladder_contract"
+      ],
+      "acceptance": [
+        "Every reference level records both solver statuses, full grid coverage, tolerance, atol, state, work and discrepancy.",
+        "Agreement and refinement use identical model, initial state, sample grid, common norm and scaling.",
+        "Use a third family or higher precision arbiter where feasible; record unavailable arms explicitly.",
+        "Set an uncertainty budget before interpreting candidate errors.",
+        "Call the result empirical reference uncertainty, never a rigorous enclosure."
+      ],
+      "stop_conditions": [
+        "Reference ladder fails to refine or disagreements exceed the preregistered budget.",
+        "No evidence supports a reliable reference scale near the claimed candidate error."
+      ],
+      "evidence_artifacts": [
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-REFERENCE-LADDER.json"
+      ]
+    },
+    {
+      "id": "V3-ACHIEVED-WP",
+      "title": "Produce matched-achieved-error work-precision evidence",
+      "priority": "P0",
+      "status": "PENDING",
+      "depends_on": [
+        "V3-BENCH-PROTOCOL",
+        "V3-REFERENCE-LADDER"
+      ],
+      "worktree_required": true,
+      "mutation_class": "ALLOWLIST_ONLY",
+      "objective": "Run spatial work-precision using endpoint-only VigilODE arms and external solvers. Admit ratios only at common errors bracketed by both observed curves.",
+      "read_allowlist": [
+        "crates/vigilode-bench/src/harness.rs",
+        "crates/vigilode-bench/src/metrics.rs",
+        "crates/vigilode-bench/src/report.rs",
+        "bench/protocols/adversarial_spatial_grid_v2.json"
+      ],
+      "write_allowlist": [
+        "bench/out/adversarial_spatial_grid_v2_results.json",
+        "bench/out/ADVERSARIAL_SPATIAL_GRID_V2_REPORT.md",
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-ACHIEVED-WP.json"
+      ],
+      "commands": [
+        "cargo run --manifest-path crates/vigilode-bench/Cargo.toml --release -- wp --corpus bench/protocols/adversarial_spatial_grid_v2.json --out bench/out/adversarial_spatial_grid_v2_results.json",
+        "cargo run --manifest-path crates/vigilode-bench/Cargo.toml --release -- report --in bench/out/adversarial_spatial_grid_v2_results.json --out bench/out/ADVERSARIAL_SPATIAL_GRID_V2_REPORT.md"
+      ],
+      "acceptance": [
+        "Every MATCHED row has full successful deterministic runs and both curves bracket the common error target.",
+        "No extrapolation, dropped failure or reference-disputed point contributes to ratios.",
+        "Report all MATCHED/DIAGNOSTIC_ONLY counts, reasons, work, failures and reference uncertainty.",
+        "Keep error_wrms_own and error_common separate.",
+        "Timing remains diagnostic_only absent a preregistered multi-run timing-authority protocol."
+      ],
+      "stop_conditions": [
+        "No common targets are bracketed: preserve diagnostics and report no admitted speedup.",
+        "Reference disputed, provenance invalid or incomplete state grid."
+      ],
+      "evidence_artifacts": [
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-ACHIEVED-WP.json"
+      ]
+    },
+    {
+      "id": "V3-PHYSICS",
+      "title": "Verify spatial ODE models and physical scope",
+      "priority": "P1",
+      "status": "PENDING",
+      "depends_on": [
+        "V3-BASELINE-IDENTITY"
+      ],
+      "worktree_required": true,
+      "mutation_class": "ALLOWLIST_ONLY",
+      "objective": "Verify finite-volume full-sphere photon transport and semilinear advection-diffusion models against equations, boundary conditions, weights, invariants and intended scientific scope.",
+      "read_allowlist": [
+        "crates/vigilode-bench/src/model.rs",
+        "crates/rodas5p-integrators/examples/sphere_photon_fv_support/mod.rs",
+        "research/bassrei_p06_full_sphere_scoped_20261022/"
+      ],
+      "write_allowlist": [
+        "crates/vigilode-bench/tests/qualification_spatial_model_contract.rs",
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-PHYSICS.json"
+      ],
+      "commands": [
+        "cargo test --locked -p vigilode-bench --test qualification_spatial_model_contract",
+        "cargo test --locked -p rodas5p-integrators"
+      ],
+      "acceptance": [
+        "Document sphere model as non-tilted triaxial Bianchi-I, constant benchmark geometry, unpolarized rank-six Thomson kernel and q/mu/phi finite-volume states with ledger slots.",
+        "Verify cell measures, boundary fluxes, positivity, number/absorber-ledger closure and Jacobian-vs-RHS consistency.",
+        "Document advection-diffusion Dirichlet conditions and exact method-of-lines stencil.",
+        "Add mesh-refinement or manufactured-solution test before claiming spatial convergence order.",
+        "Keep physical model validation separate from ODE integrator validation."
+      ],
+      "stop_conditions": [
+        "Equation-to-code trace is incomplete.",
+        "Invariant asserted without derivation or falsifying controls.",
+        "Claim scope exceeds benchmark model."
+      ],
+      "evidence_artifacts": [
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-PHYSICS.json"
+      ]
+    },
+    {
+      "id": "V3-ALLOC",
+      "title": "Measure zero-allocation behavior in complete production hot loops",
+      "priority": "P1",
+      "status": "PENDING",
+      "depends_on": [
+        "V3-BASELINE-IDENTITY"
+      ],
+      "worktree_required": true,
+      "mutation_class": "ALLOWLIST_ONLY",
+      "objective": "Separate setup/teardown from allocation measurement and instrument full production attempts, including rejected attempts, speculative pilots and switches.",
+      "read_allowlist": [
+        "crates/rodas5p-core/tests/allocation_contracts.rs",
+        "crates/rodas5p-integrators/tests/collective_rodas5p_allocation_contract.rs",
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/src/session.rs",
+        "crates/vigilode-bench/src/main.rs",
+        "crates/vigilode-bench/src/alloc.rs"
+      ],
+      "write_allowlist": [
+        "crates/vigilode/tests/production_hotloop_allocation_contracts.rs",
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-ALLOC.json"
+      ],
+      "commands": [
+        "cargo test --locked -p vigilode --test production_hotloop_allocation_contracts -- --nocapture"
+      ],
+      "acceptance": [
+        "Allocator positive control proves counter is active.",
+        "Problem/workspace construction, callback setup and output serialization are outside measured interval.",
+        "Measure full solver step attempts including accepts, rejects, probes and route transitions.",
+        "Report allocations per attempt and aggregate allocations.",
+        "If complete production path is not measured, status is NOT_ESTABLISHED, not PASS."
+      ],
+      "stop_conditions": [
+        "Allocator calibration fails.",
+        "Instrumentation changes execution path or cannot capture all relevant allocators.",
+        "Only isolated operator.apply or a non-production subsolver was measured."
+      ],
+      "evidence_artifacts": [
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-ALLOC.json"
+      ]
+    },
+    {
+      "id": "V3-CERT-BOUNDARY",
+      "title": "Revalidate AUTH and observer certificate authority on current HEAD",
+      "priority": "P1",
+      "status": "PENDING",
+      "depends_on": [
+        "V3-BASELINE-IDENTITY"
+      ],
+      "worktree_required": false,
+      "mutation_class": "READ_ONLY",
+      "objective": "Re-run current tests for contraction, Leja normality, Gershgorin enclosure and nonnormal slab observers. Preserve EstimateOnly and diagnostic boundaries.",
+      "read_allowlist": [
+        "crates/vigilode-coupled/src/rhs_homotopy.rs",
+        "crates/rodas5p-core/src/leja_action.rs",
+        "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+        "crates/rodas5p-core/src/nonnormal_observers.rs",
+        "docs/agent/switcher_v2_remediation/"
+      ],
+      "write_allowlist": [
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-CERT-BOUNDARY.json"
+      ],
+      "commands": [
+        "cargo test --locked -p vigilode-coupled --test rhs_homotopy_contracts",
+        "cargo test --locked -p rodas5p-core --test leja_total_contract",
+        "cargo test --locked -p rodas5p-integrators --test conditioned_polynomial_contracts",
+        "cargo test --locked -p rodas5p-core --test nonnormal_observers_contracts"
+      ],
+      "acceptance": [
+        "Verifier-created map/operator/source-bound evidence only can mint Certified statuses.",
+        "Generic nonnormal operators and higher-dimensional slab observers remain EstimateOnly unless a sound outward enclosure is actually proven.",
+        "Current-source test receipts record exact HEAD/tree."
+      ],
+      "stop_conditions": [
+        "Certificate consumer accepts stale or foreign evidence.",
+        "Sampled observer is consumed as continuous-time certificate."
+      ],
+      "evidence_artifacts": [
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-CERT-BOUNDARY.json"
+      ]
+    },
+    {
+      "id": "V3-SESSION-FSM",
+      "title": "Recheck persistent sessions and live DriveState dispatcher",
+      "priority": "P1",
+      "status": "PENDING",
+      "depends_on": [
+        "V3-BASELINE-IDENTITY"
+      ],
+      "worktree_required": false,
+      "mutation_class": "READ_ONLY",
+      "objective": "Rebind M2/FSM receipts to the merged source and check live dispatcher, sessions, causal stage contracts and route re-entry.",
+      "read_allowlist": [
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/src/session.rs",
+        "crates/vigilode/src/hybrid_automaton.rs",
+        "crates/rodas5p-integrators/tests/",
+        "crates/vigilode/tests/",
+        "docs/agent/switcher_v2_remediation/"
+      ],
+      "write_allowlist": [
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-SESSION-FSM.json"
+      ],
+      "commands": [
+        "cargo test --locked -p rodas5p-integrators --test frontier_session_contracts",
+        "cargo test --locked -p vigilode --test production_session_contracts",
+        "cargo test --locked -p vigilode --test hybrid_automaton_contracts",
+        "cargo test --locked -p vigilode --test switching_integration_contracts --test switching_v2_remediation_contracts --test switching_contracts --test switching_economy_contracts",
+        "cargo test --locked -p rodas5p-integrators --test causal_depth_stage_residual_contracts"
+      ],
+      "acceptance": [
+        "DriveState is named as live controller; HybridRouteAutomaton is not misrepresented as live runtime dispatcher.",
+        "Paused and uninterrupted sessions preserve accepted state, controller/FSAL/epoch and cumulative work.",
+        "Reentrant switches preserve y,t,tolerances and work counters."
+      ],
+      "stop_conditions": [
+        "Only standalone FSM tests exist without live route traces.",
+        "State or cumulative work changes across a pause/reentry unexpectedly."
+      ],
+      "evidence_artifacts": [
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-SESSION-FSM.json"
+      ]
+    },
+    {
+      "id": "V3-API-SEMANTICS",
+      "title": "Verify ProductionSolver outcome and support boundary",
+      "priority": "P1",
+      "status": "PENDING",
+      "depends_on": [
+        "V3-BASELINE-IDENTITY"
+      ],
+      "worktree_required": false,
+      "mutation_class": "READ_ONLY",
+      "objective": "Verify solve_checked, partial accepted prefix, early stop, complete accounting and declared adapter support/refusal semantics.",
+      "read_allowlist": [
+        "crates/vigilode/src/production.rs",
+        "crates/vigilode/src/solution.rs",
+        "crates/vigilode/tests/production_contracts.rs",
+        "README.md"
+      ],
+      "write_allowlist": [
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-API-SEMANTICS.json"
+      ],
+      "commands": [
+        "cargo test --locked -p vigilode --test production_contracts",
+        "cargo test --locked -p vigilode --test production_session_contracts",
+        "cargo test --locked -p vigilode --test production_selection_contracts"
+      ],
+      "acceptance": [
+        "Ok(solution) is not interpreted as endpoint completion.",
+        "solve_checked succeeds only on success && accounting_complete and retains partial data on failure.",
+        "Events, dense output, backward integration and DAE/mass matrix support remain explicitly scoped/refused unless source proves otherwise."
+      ],
+      "stop_conditions": [
+        "Documented API capability contradicts actual validation.",
+        "Failure loses accepted prefix or work counters."
+      ],
+      "evidence_artifacts": [
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-API-SEMANTICS.json"
+      ]
+    },
+    {
+      "id": "V3-WORKSPACE",
+      "title": "Run clean full-workspace verification",
+      "priority": "P0",
+      "status": "PENDING",
+      "depends_on": [
+        "V3-BASELINE-IDENTITY",
+        "V3-CERT-BOUNDARY",
+        "V3-SESSION-FSM",
+        "V3-API-SEMANTICS"
+      ],
+      "worktree_required": false,
+      "mutation_class": "READ_ONLY",
+      "objective": "Run full test, fmt, clippy and release build on exact clean current source; historical receipts and empty GitHub status are not substitutes.",
+      "read_allowlist": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "rust-toolchain.toml",
+        "crates/",
+        "tools/",
+        "fixtures/"
+      ],
+      "write_allowlist": [
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-WORKSPACE.json"
+      ],
+      "commands": [
+        "cargo fmt --all -- --check",
+        "cargo test --locked --workspace --all-targets",
+        "cargo clippy --locked --workspace --all-targets -- -D warnings",
+        "cargo build --locked --workspace --release",
+        "python3 tools/check_ignored_tests_in_ci.py"
+      ],
+      "acceptance": [
+        "Every command includes argv,cwd,toolchain,exit and log hashes.",
+        "NOT_RUN, timeout, environment error and test failure remain distinct.",
+        "Ignored/negative controls are not silently skipped or counted as passes.",
+        "Clean source identity remains unchanged throughout the campaign."
+      ],
+      "stop_conditions": [
+        "Any current-code nonzero exit without a grounded disposition.",
+        "Tree changes during execution.",
+        "Source identity cannot be bound."
+      ],
+      "evidence_artifacts": [
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-WORKSPACE.json"
+      ]
+    },
+    {
+      "id": "V3-DOC-CLAIMS",
+      "title": "Reconcile documentation with qualified evidence",
+      "priority": "P2",
+      "status": "PENDING",
+      "depends_on": [
+        "V3-ACHIEVED-WP",
+        "V3-PHYSICS",
+        "V3-ALLOC",
+        "V3-WORKSPACE"
+      ],
+      "worktree_required": true,
+      "mutation_class": "ALLOWLIST_ONLY",
+      "objective": "Correct only documentation claims where current evidence warrants correction. Preserve old reports and explain metric, interpolation and allocation scope.",
+      "read_allowlist": [
+        "README.md",
+        "bench/out/ADVERSARIAL_SPATIAL_GRID_REPORT.md",
+        "bench/build_spatial_grid_comparison.py",
+        "docs/agent/production_solver_qualification_20261106_v2/"
+      ],
+      "write_allowlist": [
+        "README.md",
+        "bench/build_spatial_grid_comparison.py",
+        "bench/out/ADVERSARIAL_SPATIAL_GRID_V2_REPORT.md",
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-DOC-CLAIMS.json"
+      ],
+      "commands": [
+        "git diff --check -- README.md bench/"
+      ],
+      "acceptance": [
+        "Dense Jacobian and dense output are distinct.",
+        "Whole-run allocation counters are not called hot-loop counters.",
+        "Grid-clipped and endpoint-only results are separate.",
+        "WRMS metric, output grid and reference disagreement are explicitly stated.",
+        "Overall production status remains HOLD unless all gates have current evidence."
+      ],
+      "stop_conditions": [
+        "Documentation implies unverified or diagnostic claims are production guarantees.",
+        "Historical report would be overwritten."
+      ],
+      "evidence_artifacts": [
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-DOC-CLAIMS.json"
+      ]
+    },
+    {
+      "id": "V3-INDEPENDENT-REVIEW",
+      "title": "One bounded fresh-context adversarial review",
+      "priority": "P1",
+      "status": "PENDING",
+      "depends_on": [
+        "V3-ACHIEVED-WP",
+        "V3-PHYSICS",
+        "V3-ALLOC",
+        "V3-CERT-BOUNDARY",
+        "V3-SESSION-FSM",
+        "V3-API-SEMANTICS",
+        "V3-WORKSPACE",
+        "V3-DOC-CLAIMS"
+      ],
+      "worktree_required": false,
+      "mutation_class": "READ_ONLY",
+      "objective": "Review equations, numerical metric, model scope, benchmark protocol, source identity and release claim once. No recursive review tree.",
+      "read_allowlist": [
+        "docs/agent/production_solver_qualification_20261107_v3/",
+        "crates/vigilode-bench/",
+        "crates/vigilode/",
+        "crates/rodas5p-core/",
+        "crates/rodas5p-integrators/",
+        "bench/"
+      ],
+      "write_allowlist": [
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-INDEPENDENT-REVIEW.json"
+      ],
+      "commands": [],
+      "acceptance": [
+        "Every finding has exact source location, reproducible evidence, consequence and smallest repair.",
+        "Failure kinds are separated.",
+        "If native agents are unavailable, record NOT_RUN and perform a serial adversarial check without claiming independence."
+      ],
+      "stop_conditions": [
+        "Review scope expands into review-of-review without a newly observed material defect."
+      ],
+      "evidence_artifacts": [
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-INDEPENDENT-REVIEW.json"
+      ]
+    },
+    {
+      "id": "V3-M4-QUALIFY",
+      "title": "Final claim-specific production qualification decision",
+      "priority": "P0",
+      "status": "PENDING",
+      "depends_on": [
+        "V3-BASELINE-IDENTITY",
+        "V3-BENCH-PROTOCOL",
+        "V3-REFERENCE-LADDER",
+        "V3-ACHIEVED-WP",
+        "V3-PHYSICS",
+        "V3-ALLOC",
+        "V3-CERT-BOUNDARY",
+        "V3-SESSION-FSM",
+        "V3-API-SEMANTICS",
+        "V3-WORKSPACE",
+        "V3-DOC-CLAIMS",
+        "V3-INDEPENDENT-REVIEW"
+      ],
+      "worktree_required": true,
+      "mutation_class": "DOCUMENTATION_ONLY",
+      "objective": "Make a claim-by-claim decision and replayable handoff. Do not collapse scoped numerical solver qualification into validated-IVP or general production qualification.",
+      "read_allowlist": [
+        "docs/agent/production_solver_qualification_20261107_v3/",
+        "docs/agent/production_solver_qualification_20261106_v2/",
+        "README.md",
+        "bench/"
+      ],
+      "write_allowlist": [
+        "docs/agent/production_solver_qualification_20261107_v3/PRODUCTION_VERDICT.json",
+        "docs/agent/production_solver_qualification_20261107_v3/CURRENT_AUDIT.json",
+        "docs/agent/production_solver_qualification_20261107_v3/ACCEPTANCE_MATRIX.json",
+        "docs/agent/production_solver_qualification_20261107_v3/FINAL_REPORT_KO.md",
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-M4-QUALIFY.json"
+      ],
+      "commands": [
+        "python3 docs/agent/production_solver_qualification_20261107_v3/validate_package.py"
+      ],
+      "acceptance": [
+        "Separate scoped ordinary IVP, adaptive switching, matched performance, physical-model scope, continuous validated enclosure and reproducible release.",
+        "Legacy thresholds stay CARRIED_FORWARD_NOT_REAUTHORIZED until bound to authority.",
+        "Every PASS binds exact current-source evidence.",
+        "No sampled-grid measurement or finite test suite is promoted to theorem or continuous guarantee."
+      ],
+      "stop_conditions": [
+        "Any P0 blocker remains.",
+        "Source identity or acceptance authority unresolved.",
+        "Final PASS depends on missing artifact."
+      ],
+      "evidence_artifacts": [
+        "docs/agent/production_solver_qualification_20261107_v3/evidence/V3-M4-QUALIFY.json",
+        "docs/agent/production_solver_qualification_20261107_v3/FINAL_REPORT_KO.md"
+      ]
+    }
+  ]
+}

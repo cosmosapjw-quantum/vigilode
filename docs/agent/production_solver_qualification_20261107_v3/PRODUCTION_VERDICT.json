@@ -1,0 +1,93 @@
+{
+  "schema": "vigilode.production_qualification_verdict.v3",
+  "decision_date": "2026-11-07",
+  "overall": "HOLD_NOT_RELEASE_QUALIFIED",
+  "source": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "branch": "research/switcher-v2-20261103",
+    "head": "92d975dd4abfebb924f9a691dac1e5f87fb69943",
+    "tree": "2fd16cb90a9e75f9fde87de3584f1feab2668aca",
+    "previous_task_base": "1403e1082c3a8d0d52d33a85924791238460b9d6"
+  },
+  "claim_axes": {
+    "scoped_ordinary_numerical_ivp_solver": {
+      "status": "PARTIAL_SCOPED_RESEARCH_IMPLEMENTATION",
+      "scope": "Smooth forward identity-mass IVPs with endpoint observations, subject to provider restrictions.",
+      "limitations": [
+        "v2 receipts are based on predecessor source and have not been rerun on current HEAD",
+        "events, dense output in public ProductionSolver adapter, DAE/mass matrix and backward integration not qualified",
+        "full current-HEAD workspace verification not run in this audit"
+      ]
+    },
+    "adaptive_switching": {
+      "status": "HEURISTIC_PARTIAL",
+      "scope": "Live runtime dispatch via DriveState; HybridRouteAutomaton is a discrete verification model.",
+      "limitations": [
+        "work-pressure/stiffness indicators are empirical heuristics",
+        "no class-wide stability theorem is claimed"
+      ]
+    },
+    "matched_achieved_error_performance": {
+      "status": "NOT_ESTABLISHED_ON_SPATIAL_V1",
+      "limitations": [
+        "520/520 matched rows are DIAGNOSTIC_ONLY",
+        "spatial v1 includes grid-clipped VigilODE controls, not endpoint-only dense output",
+        "dirty build source context requires clean current-HEAD reproduction",
+        "single-host wall timing remains diagnostic_only"
+      ]
+    },
+    "validated_continuous_ivp_enclosure": {
+      "status": "NOT_QUALIFIED",
+      "limitations": [
+        "local floating-point error control is not a rigorous enclosure",
+        "generic callback interval extension and full-domain existence/uniqueness are not established",
+        "continuous global error propagation is not certified for the whole solver",
+        "nonnormal slab observer is restricted in dimension/domain"
+      ]
+    },
+    "spatial_physics_benchmark": {
+      "status": "SCOPED_RESEARCH_MODEL",
+      "scope": "Non-tilted triaxial Bianchi-I finite-volume full-sphere photon model with unpolarized rank-six Thomson kernel and constant benchmark geometry, plus semilinear advection-diffusion method-of-lines systems.",
+      "limitations": [
+        "not a full polarized or tilted Einstein-Boltzmann solver",
+        "mesh-refinement and physical-model qualification remain incomplete"
+      ]
+    },
+    "zero_allocation_hot_loop": {
+      "status": "PARTIAL_EVIDENCE",
+      "limitations": [
+        "specific isolated hot-loop tests report zero allocations",
+        "spatial whole-run allocation counter cannot establish zero allocation across all production routes"
+      ]
+    },
+    "reproducible_release": {
+      "status": "NOT_EVIDENCED_ON_CURRENT_HEAD",
+      "limitations": [
+        "no current-HEAD GitHub CI evidence observed",
+        "dirty build is not clean committed-HEAD reproduction",
+        "full current-HEAD workspace tests/build/clippy not run in this audit"
+      ]
+    }
+  },
+  "allowed_claim": "A constrained adaptive floating-point ODE solver research implementation with locally verified components and diagnostic benchmark data.",
+  "disallowed_claims": [
+    "general production-qualified solver",
+    "validated IVP solver with guaranteed continuous-time global error bounds",
+    "safety-critical verified solver",
+    "matched cross-solver speedup on spatial v1",
+    "zero allocation throughout every production hot-loop path based only on the spatial benchmark"
+  ],
+  "release_blockers": [
+    "F-BENCH-001",
+    "F-BENCH-002",
+    "F-REF-001",
+    "F-CI-001",
+    "F-SCOPE-001"
+  ],
+  "nonblocking_hardening": [
+    "F-ALLOC-001",
+    "F-PROV-001"
+  ],
+  "decision": "hold",
+  "stop_condition": "Do not promote overall qualification unless each applicable gate has current exact-source evidence. Do not relax inherited thresholds to fit measurements."
+}
