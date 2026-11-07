@@ -1043,6 +1043,8 @@ pub fn compute_provider_epoch(route: RouteId, problem: &Problem) -> u64 {
 
 /// Compute the 64-bit window epoch digest from the window endpoints using fixed-layout SHA-256.
 ///
+/// Authority: Governed by `docs/agent/switcher_v2_remediation/EPOCH_001_AUTHORITY_DECISION.md` (WP-02 specification).
+///
 /// Layout: `(checkpoint_index as u64).to_le_bytes() ++ start.to_bits().to_le_bytes() ++ target.to_bits().to_le_bytes()` (24 bytes).
 /// Digest: First 8 bytes of SHA-256 in little-endian order.
 /// Note: -0.0 and +0.0 have distinct bit representations and yield distinct epochs.

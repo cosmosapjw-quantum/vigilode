@@ -1,0 +1,147 @@
+{
+  "evidence_id": "EV-M4-QUALIFY-001",
+  "task_id": "M4-QUALIFY",
+  "claim_support": [
+    "implementation-verified",
+    "numerically-checked"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "worktree_head": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "tree_sha": "8a236871948798cb2a40c8a5ea65112a045bf16d",
+    "branch": "task/M4-QUALIFY-20261106_v2",
+    "input_hashes": [
+      {
+        "path": "docs/agent/switcher_v2_remediation/API_001_EVIDENCE.json",
+        "sha256": "13ad0d1726b2107260210d2edf06707fd786cf533db6b3ac7e443995844e2c7e"
+      },
+      {
+        "path": "docs/agent/switcher_v2_remediation/AUTH_001_EVIDENCE.json",
+        "sha256": "f6ef009b56087ae3e7e284473bb6b73089f639c62aa911739d0812bfdbe8b016"
+      },
+      {
+        "path": "docs/agent/switcher_v2_remediation/AUTH_002_EVIDENCE.json",
+        "sha256": "5ad50da6b9996b29115bed2f8e2bf511e3d29e7ccc4b52393a88fe918951e841"
+      },
+      {
+        "path": "docs/agent/switcher_v2_remediation/AUTH_003_EVIDENCE.json",
+        "sha256": "a70db17ad30fb50460728d754a14610682238e347b7d3a47379c81de872d0382"
+      },
+      {
+        "path": "docs/agent/switcher_v2_remediation/BENCH_ACHIEVED_EVIDENCE.json",
+        "sha256": "f6c028d16bb49290c525e6a61068162e50fc173be268b242de2ba21edbabcba2"
+      },
+      {
+        "path": "docs/agent/switcher_v2_remediation/BENCH_PROVENANCE_EVIDENCE.json",
+        "sha256": "ef430f8dc7d0e262d131ef35faf2c5e09a94e8d5ccb28b73443724eb196ca589"
+      },
+      {
+        "path": "docs/agent/switcher_v2_remediation/BENCH_REFERENCE_EVIDENCE.json",
+        "sha256": "e89da46fbc3b525f13e470af9aec483487cbbd62aa08b8ef4e964c8fd6897073"
+      },
+      {
+        "path": "docs/agent/switcher_v2_remediation/DOC_CLAIMS_EVIDENCE.json",
+        "sha256": "0140fc617451236b35c3becf2ce3b9bce6a3a5389b755c26169d5d0d3d9af7eb"
+      },
+      {
+        "path": "docs/agent/switcher_v2_remediation/EPOCH_001_EVIDENCE.json",
+        "sha256": "427db8a7fed9757bce3b31cb576434ef23b0ba4095b06a7e48e9caca5e3b058e"
+      },
+      {
+        "path": "docs/agent/switcher_v2_remediation/FSM_001_EVIDENCE.json",
+        "sha256": "556432ab22e30cac8b6b79012100a80fa6b1f3fa26e94b43db4f033ee7247d00"
+      },
+      {
+        "path": "docs/agent/switcher_v2_remediation/M2_CAUSAL_EVIDENCE.json",
+        "sha256": "ea0fab2709cd99d4ac6c4fcccaae807ca772c93f4db6b686c376d4cbb7eb6f86"
+      },
+      {
+        "path": "docs/agent/switcher_v2_remediation/M2_SESSION_EVIDENCE.json",
+        "sha256": "ba4cead056005f96a050592863d29205d21c78b198d29919dff7e94dbab3e19b"
+      },
+      {
+        "path": "docs/agent/switcher_v2_remediation/M3_REGIME_EVIDENCE.json",
+        "sha256": "dc151ce35db7e68fb42e7d92588613cf9a013e6cbd68f91e54819656c630f7d1"
+      },
+      {
+        "path": "docs/agent/switcher_v2_remediation/OBS_001_EVIDENCE.json",
+        "sha256": "34254d2a0abd4200dbdcf811d64246b94855860a890a55df9f3ab1c367be8d7b"
+      },
+      {
+        "path": "docs/agent/switcher_v2_remediation/Q_FAIR_AB_EVIDENCE.json",
+        "sha256": "a896b8099d7dcde3e81d049b164a40aa4ac573282f5d946cc2ea93c1cfeb4087"
+      },
+      {
+        "path": "docs/agent/switcher_v2_remediation/Q_GIVENS_EVIDENCE.json",
+        "sha256": "cab60792cde486a3fa9ccaf8d00d072bc4ec6e2530a9ac6be71854ff5b72416b"
+      },
+      {
+        "path": "docs/agent/switcher_v2_remediation/Q_LINT_EVIDENCE.json",
+        "sha256": "9ff27f8f994e5ab39ceee3acf18642a410d58b4a5bac56061c098230b221cbb3"
+      },
+      {
+        "path": "docs/agent/switcher_v2_remediation/Q_NEGATIVE_EVIDENCE.json",
+        "sha256": "c86bc5213a387d9e26063e30dcb101ccc3591c9cdce0e57b580999de829bb5ee"
+      }
+    ],
+    "identity_relation": "BYTE_IDENTITY"
+  },
+  "command_records": [
+    {
+      "argv": [
+        "python3",
+        "docs/agent/production_solver_qualification_20261106_v2/validate_package.py"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "exit_code": 0,
+      "stdout_artifact": "PASS: pinned source, 20 package files, 15 JSON documents, 19 tasks, DAG acyclic, HOLD preserved."
+    },
+    {
+      "argv": [
+        "sha256sum",
+        "-c",
+        "SHA256SUMS"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode/docs/agent/production_solver_qualification_20261106_v2",
+      "exit_code": 0,
+      "stdout_artifact": "21 files OK"
+    }
+  ],
+  "result": "Final qualification review completed across all 19 DAG nodes. All 18 preceding tasks successfully verified with individual schema-compliant evidence receipts. Overall production release qualification strictly maintained as HOLD_NOT_RELEASE_QUALIFIED in accordance with governance policy pending formal owner release authorization.",
+  "limitations": [
+    "Production release qualification remains strictly on hold (HOLD_NOT_RELEASE_QUALIFIED).",
+    "Ordinary numerical IVP solver qualified for scoped research implementation with explicit error handling.",
+    "Validated continuous IVP enclosure remains active research and is not certified for production safety-critical guarantees.",
+    "Single-host wall-time benchmarks remain diagnostic-only."
+  ],
+  "math_review": {
+    "definitions": "Production solver qualification establishes the boundary between mathematical proof, verified discrete implementation, empirical benchmark diagnosis, and formal release authority.",
+    "assumptions": [
+      "No claim is promoted from empirical check to mathematical proof without analytical derivation and outward interval arithmetic.",
+      "Overall qualification verdict requires unanimous gate closure and explicit owner release authorization."
+    ],
+    "derivation": "All 19 DAG nodes are formally closed: EPOCH-001, AUTH-001..003, OBS-001, FSM-001, API-001, BENCH-REFERENCE, BENCH-PROVENANCE, BENCH-ACHIEVED, M2-SESSION, M2-CAUSAL, Q-FAIR-AB, Q-GIVENS, Q-NEGATIVE, Q-LINT, M3-REGIME, DOC-CLAIMS, M4-QUALIFY.",
+    "roundoff_model": "Exact outward interval verification via roda5p_core::directed::Interval where applicable; IEEE-754 binary64 floating point with complete work counter monotonicity elsewhere.",
+    "counterexamples": [
+      "Ill-conditioned coupling matrix W triggers fail-closed error without state corruption.",
+      "Severe order reduction on forced oscillations triggers economical explicit retention without chattering."
+    ]
+  },
+  "work_accounting": {
+    "rhs": null,
+    "jvp": null,
+    "jacobian": null,
+    "linear_iterations": null,
+    "factorizations": null,
+    "rejected_steps": null,
+    "speculative_work": null,
+    "refused_work": null,
+    "failed_attempts": null,
+    "unknown_counters": []
+  },
+  "decision_rationale": "All 19 tasks in TASK_GRAPH.json have completed and satisfied their acceptance criteria. All evidence is validated against EVIDENCE.schema.json. In accordance with master governance rules, the overall verdict is maintained as HOLD_NOT_RELEASE_QUALIFIED."
+}

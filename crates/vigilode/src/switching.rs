@@ -2,6 +2,11 @@
 //!
 //! This adapter uses observed work, not a stiffness estimate. Its default is
 //! RHS-only. Derivative fallbacks require a separate explicit authorization.
+//!
+//! Live route control is executed dynamically by [`DriveState`] across window boundaries,
+//! coordinating method switches, proposal reuse, and speculative pilot trials.
+//! (For the offline/standalone discrete verification model and contract reference,
+//! see [`crate::hybrid_automaton::HybridRouteAutomaton`]).
 
 use crate::registry::{
     BatchOutcome, BatchRequest, BatchStop, Dopri5WindowDriver, Rodas5pWindowDriver, RouteId,
@@ -920,6 +925,16 @@ impl SwitchingSolver {
     }
 }
 
+/// Live operational route controller and execution state for [`SwitchingSolver`].
+///
+/// `DriveState` is the actual, live route controller during integration. It tracks
+/// the currently active route ([`SwitchingMethod`]), completed windows, explicit/implicit
+/// tenure dwell and cooldowns, speculative pilot discards, probe intervals, step proposals,
+/// and adaptive memory.
+///
+/// In contrast to the offline/standalone discrete verification model [`crate::hybrid_automaton::HybridRouteAutomaton`],
+/// `DriveState` manages the hot integration loop, state checkpoints, and dynamic window driver
+/// dispatch in real time while guaranteeing zero heap allocations during transitions (VG-1).
 struct DriveState {
     result: SwitchingSolution,
     method: SwitchingMethod,

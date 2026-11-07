@@ -1,0 +1,97 @@
+{
+  "evidence_id": "EV-BENCH-ACHIEVED-001",
+  "task_id": "BENCH-ACHIEVED",
+  "claim_support": [
+    "implementation-verified",
+    "numerically-checked"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "worktree_head": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "tree_sha": "8a236871948798cb2a40c8a5ea65112a045bf16d",
+    "branch": "task/BENCH-ACHIEVED-20261106_v2",
+    "input_hashes": [
+      {
+        "path": "bench/protocols/adversarial_cross_solver_v1.json",
+        "sha256": "2addd1eb7d11f6a07a7c453b606c50ee1d69029aedf937e8c0ac0ad865463891"
+      },
+      {
+        "path": "bench/out/adversarial_rust_results.json",
+        "sha256": "16d66eb24c9ace8756a4b340c45d3c0e872d68d1c200d4e930571235a0fd4171"
+      },
+      {
+        "path": "bench/out/adversarial_julia_results.json",
+        "sha256": "5556f500af755297c02cdd32d0767cc3c54e24d77cd6382880c9afa979b016ea"
+      },
+      {
+        "path": "bench/out/ADVERSARIAL_CROSS_SOLVER_REPORT.md",
+        "sha256": "9111ef4a65c37bd453c5587b53177554fdec527030466d29001aae4d32fddcae"
+      },
+      {
+        "path": "bench/build_unified_comparison.py",
+        "sha256": "0bbf0cdcead75026796d879f7061853e9b5a365901b83408cdfe0f720d805ffe"
+      }
+    ],
+    "identity_relation": "BYTE_IDENTITY"
+  },
+  "command_records": [
+    {
+      "argv": [
+        "python3",
+        "-c",
+        "verify_matched_achieved_error_rows"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-BENCH-ACHIEVED-20261106_v2",
+      "exit_code": 0,
+      "stdout_artifact": "bench/out/adversarial_rust_results.json"
+    },
+    {
+      "argv": [
+        "python3",
+        "bench/build_unified_comparison.py",
+        "bench/out/adversarial_rust_results.json",
+        "bench/out/adversarial_julia_results.json",
+        "bench/out/ADVERSARIAL_CROSS_SOLVER_REPORT.md"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-BENCH-ACHIEVED-20261106_v2",
+      "exit_code": 0,
+      "stdout_artifact": "bench/out/ADVERSARIAL_CROSS_SOLVER_REPORT.md"
+    }
+  ],
+  "result": "248 MATCHED rows admitted with exact log-interpolated speed and RHS ratios at common achieved target errors. 652 non-bracketing rows remain DIAGNOSTIC_ONLY. 0 rows reference-disputed. Timing authority strictly diagnostic_only; no diagnostic-only row is used for release promotion.",
+  "limitations": [
+    "Timing authority is diagnostic_only; single-process wall time is not statistical authority for release qualification.",
+    "Matched achieved error is admitted for comparative diagnosis, but does not constitute an unqualified speed claim or proof of universal dominance.",
+    "Production release qualification remains on hold."
+  ],
+  "math_review": {
+    "definitions": "Matched achieved error comparison evaluates work and wall-time cost only for solvers achieving empirical error <= E at target level E on the identical grid, state scaling, and norm.",
+    "assumptions": [
+      "Comparison occurs on identical 101-point uniform grid against authoritative reference solution.",
+      "No interpolation across solver failure boundaries or extrapolation beyond empirical bracketing levels."
+    ],
+    "derivation": "Log-linear interpolation between consecutive achieved error levels (e_1, w_1) and (e_2, w_2) with e_2 <= E <= e_1 yields matched cost log(w) = log(w_1) + [log(E) - log(e_1)] / [log(e_2) - log(e_1)] * [log(w_2) - log(w_1)].",
+    "roundoff_model": "Binary64 floating-point arithmetic with outward error monitoring on reference crosscheck.",
+    "counterexamples": [
+      "Netlib DVODE completely failed on oscillatory Belousov-Zhabotinsky limit cycle (oregonator), preserved as failed row without interpolation.",
+      "Non-bracketing rows are preserved as DIAGNOSTIC_ONLY rather than extrapolated."
+    ]
+  },
+  "work_accounting": {
+    "rhs": 902,
+    "jvp": 0,
+    "jacobian": 111,
+    "linear_iterations": 0,
+    "factorizations": 111,
+    "rejected_steps": 2,
+    "speculative_work": null,
+    "refused_work": null,
+    "failed_attempts": 3,
+    "unknown_counters": []
+  },
+  "decision_rationale": "All 900 rows in the corpus have valid references and transparent adjudication: 248 MATCHED rows with sound log-interpolation and 652 DIAGNOSTIC_ONLY non-bracketing rows. Zero rows are reference-disputed. Per-problem work-precision and multi-solver comparisons are complete."
+}

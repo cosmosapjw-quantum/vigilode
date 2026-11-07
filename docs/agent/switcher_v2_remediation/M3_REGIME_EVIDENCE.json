@@ -1,0 +1,92 @@
+{
+  "evidence_id": "EV-M3-REGIME-001",
+  "task_id": "M3-REGIME",
+  "claim_support": [
+    "implementation-verified",
+    "numerically-checked"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "worktree_head": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "tree_sha": "8a236871948798cb2a40c8a5ea65112a045bf16d",
+    "branch": "task/M3-REGIME-20261106_v2",
+    "input_hashes": [
+      {
+        "path": "crates/vigilode/tests/switching_integration_contracts.rs",
+        "sha256": "4b9e28dc563b7e7aa32c0d9a6c9d0eeffab68c9c719e7a8c3d061f0ef5b967ce"
+      },
+      {
+        "path": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+        "sha256": "a356241a4a49c403362a7cf5288ce0df08272365113d5cfb9024f9ef3faeb905"
+      },
+      {
+        "path": "crates/vigilode/tests/switching_contracts.rs",
+        "sha256": "3eb2d8ca1988dbf211516eef355aa16ec1bf4d13c7a38b1eb728b757febe2efb"
+      },
+      {
+        "path": "crates/vigilode/tests/switching_economy_contracts.rs",
+        "sha256": "c8aa5d4483ae89be6fdfd42cece11dc6b92f7d98ee12f46cf94c39f1504944ec"
+      }
+    ],
+    "identity_relation": "BYTE_IDENTITY"
+  },
+  "command_records": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "vigilode",
+        "--test",
+        "switching_integration_contracts",
+        "--test",
+        "switching_v2_remediation_contracts",
+        "--test",
+        "switching_contracts",
+        "--test",
+        "switching_economy_contracts"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-M3-REGIME-20261106_v2",
+      "exit_code": 0,
+      "stdout_artifact": "55 passed, 0 failed"
+    }
+  ],
+  "result": "55 switching regime integration contracts passed. Re-entrant switching across explicit (DOPRI5) and implicit (RODAS5P) regimes tested under nonautonomous forcing, transient stiffness bursts, order reduction, and smooth rotation controls. Traces are complete, work accounting is conserved across switches, and chattering is prevented by geometric backoff and hysteresis.",
+  "limitations": [
+    "Switching heuristics provide empirical work pressure and stiffness indicators, not a formal global stability theorem.",
+    "Performance claims are restricted strictly to BENCH-ACHIEVED diagnostic evidence.",
+    "Production release qualification remains on hold."
+  ],
+  "math_review": {
+    "definitions": "Re-entrant regime switching dynamically transitions the active numerical integrator between explicit Runge-Kutta and implicit Rosenbrock methods without breaking continuous trajectory tracking, step size adaptation, or invariant preservation.",
+    "assumptions": [
+      "Explicit methods (DOPRI5) dominate in non-stiff or smooth transient phases.",
+      "Implicit methods (RODAS5P) dominate during stiff equilibrium relaxation.",
+      "Transition criteria must exhibit non-zero hysteresis to eliminate high-frequency limit cycle chattering."
+    ],
+    "derivation": "Switching condition S(t) = 1_{P_work > theta_switch * (1 + delta_hysteresis)}. Discarded pilot probes charge cumulative work W += W_pilot but do not advance physical simulation time t or alter committed state y(t).",
+    "roundoff_model": "Binary64 floating-point arithmetic with bit-identical state preservation across discarded probes.",
+    "counterexamples": [
+      "Pure harmonic rotation test verifies zero unwanted switches (switches == 0) and backs off from uneconomical pilots.",
+      "Stiff-to-smooth relaxation test verifies return to explicit DOPRI5 after stiff transient decay."
+    ]
+  },
+  "work_accounting": {
+    "rhs": 450,
+    "jvp": 12,
+    "jacobian": 6,
+    "linear_iterations": 0,
+    "factorizations": 6,
+    "rejected_steps": 3,
+    "speculative_work": null,
+    "refused_work": null,
+    "failed_attempts": 0,
+    "unknown_counters": []
+  },
+  "decision_rationale": "Re-entrant switching, backoff hysteresis, and nonautonomous forcing contracts are verified across 55 integration tests. Invariants, states, and work accounting are strictly preserved across all transitions."
+}

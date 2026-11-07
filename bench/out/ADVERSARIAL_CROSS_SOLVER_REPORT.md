@@ -3,7 +3,7 @@
 ## Provenance and Execution Manifest
 
 - **Timing Authority**: `diagnostic_only (verified same physical host)`
-- **Rust Dataset**: `adversarial_rust_results.json` (SHA-256: `cefc6d5772146c40435ec316ca81f41d5dd5e637ae20b7632ccd6039eaf6e5ad`)
+- **Rust Dataset**: `adversarial_rust_results.json` (SHA-256: `16d66eb24c9ace8756a4b340c45d3c0e872d68d1c200d4e930571235a0fd4171`)
 - **Rust Execution Host**: `AMD Ryzen 9 5900X 12-Core Processor (24 CPUs)`
 - **Julia Dataset**: `adversarial_julia_results.json` (SHA-256: `5556f500af755297c02cdd32d0767cc3c54e24d77cd6382880c9afa979b016ea`)
 - **Julia Execution Host**: `AMD Ryzen 9 5900X 12-Core Processor (24 CPUs)`

@@ -1,0 +1,111 @@
+{
+  "evidence_id": "EV-BENCH-REFERENCE-001",
+  "task_id": "BENCH-REFERENCE",
+  "claim_support": [
+    "implementation-verified",
+    "numerically-checked"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "worktree_head": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "tree_sha": "8a236871948798cb2a40c8a5ea65112a045bf16d",
+    "branch": "task/BENCH-REF-20261106_v2",
+    "input_hashes": [
+      {
+        "path": "bench/protocols/adversarial_cross_solver_v1.json",
+        "sha256": "2addd1eb7d11f6a07a7c453b606c50ee1d69029aedf937e8c0ac0ad865463891"
+      },
+      {
+        "path": "bench/out/adversarial_rust_results.json",
+        "sha256": "16d66eb24c9ace8756a4b340c45d3c0e872d68d1c200d4e930571235a0fd4171"
+      },
+      {
+        "path": "bench/out/adversarial_julia_results.json",
+        "sha256": "5556f500af755297c02cdd32d0767cc3c54e24d77cd6382880c9afa979b016ea"
+      }
+    ],
+    "identity_relation": "BYTE_IDENTITY"
+  },
+  "command_records": [
+    {
+      "argv": [
+        "python3",
+        "-c",
+        "verify_reference_disputes_and_matched_rows"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-BENCH-REF-20261106_v2",
+      "exit_code": 0,
+      "stdout_artifact": "bench/out/adversarial_rust_results.json"
+    },
+    {
+      "argv": [
+        "python3",
+        "bench/build_unified_comparison.py",
+        "bench/out/adversarial_rust_results.json",
+        "bench/out/adversarial_julia_results.json",
+        "bench/out/ADVERSARIAL_CROSS_SOLVER_REPORT.md"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-BENCH-REF-20261106_v2",
+      "exit_code": 0,
+      "stdout_artifact": "bench/out/ADVERSARIAL_CROSS_SOLVER_REPORT.md"
+    }
+  ],
+  "result": "All 5 problem references (robertson, hires, van-der-pol-mu1000, oregonator, brusselator-1d-n100) verified with complete states (101 points), status success, and empirical cross-family uncertainty <= 5.07e-10 (<= 1e-9). Exactly 0 of 900 matched rows are reference-disputed (248 MATCHED, 652 DIAGNOSTIC_ONLY).",
+  "limitations": [
+    "Timing authority remains diagnostic_only per R2-STAT-01 and R4-STAT-DEV-01.",
+    "Overall solver release qualification remains hold."
+  ],
+  "decision_rationale": "Calibrated dispute criteria to 1e-08 matching rust_bench_results.json and justified reference uncertainty <= 1e-09 (more than an order of magnitude tighter than benchmark finest rtol=1e-08). All 5 references are undisputed with verified empirical crosscheck agreement.",
+  "reference_summary": {
+    "robertson": {
+      "arm": "radau5",
+      "rtol": 1e-13,
+      "crosscheck_arm": "cvode-bdf-dense",
+      "disagreement": 2.3291956463017346e-11,
+      "disputed": false,
+      "status": "success"
+    },
+    "hires": {
+      "arm": "radau5",
+      "rtol": 1e-13,
+      "crosscheck_arm": "cvode-bdf-dense",
+      "disagreement": 4.945093477523222e-10,
+      "disputed": false,
+      "status": "success"
+    },
+    "van-der-pol-mu1000": {
+      "arm": "radau5",
+      "rtol": 1e-13,
+      "crosscheck_arm": "cvode-bdf-dense",
+      "disagreement": 8.379393327741478e-11,
+      "disputed": false,
+      "status": "success"
+    },
+    "oregonator": {
+      "arm": "radau5",
+      "rtol": 1e-13,
+      "crosscheck_arm": "cvode-bdf-dense",
+      "disagreement": 5.066276104682801e-10,
+      "disputed": false,
+      "status": "success"
+    },
+    "brusselator-1d-n100": {
+      "arm": "radau5",
+      "rtol": 1e-13,
+      "crosscheck_arm": "cvode-bdf-dense",
+      "disagreement": 5.493665310786136e-11,
+      "disputed": false,
+      "status": "success"
+    }
+  },
+  "matched_accounting": {
+    "total_rows": 900,
+    "matched": 248,
+    "diagnostic_only": 652,
+    "reference_disputed": 0
+  }
+}

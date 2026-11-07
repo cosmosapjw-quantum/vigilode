@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "evidence_id": "EV-EPOCH-001-20261106",
+  "task_id": "EPOCH-001",
+  "claim_support": [
+    "derived",
+    "implementation-verified",
+    "numerically-checked"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "worktree_path": "/home/cosmosapjw/vigilode-task-worktrees/task-EPOCH-001-20261106_v2",
+    "branch": "task/EPOCH-001-20261106_v2",
+    "before_hashes": {
+      "crates/vigilode/src/registry.rs": "938751e9499f8610f392f7a4e1a46cbada70628d8b0e8871b6853a67a958cad1",
+      "crates/vigilode/tests/switching_v2_remediation_contracts.rs": "86d9e55d69dc2a8f1376a7802bffc8d189eccc46c3dddb8cda92cdd2fc20339f",
+      "docs/agent/switcher_v2_remediation/EPOCH_001_AUTHORITY_DECISION.md": "NONE"
+    },
+    "after_hashes": {
+      "docs/agent/switcher_v2_remediation/EPOCH_001_AUTHORITY_DECISION.md": "d92a904ff4e32b92b284a0ee6adad8e727ff6d2edf4e10b01529981e5141ee55",
+      "crates/vigilode/src/registry.rs": "4902e85c18f80e1a04cf9478595c81331a5202586f545bf9a71f1b0ca1ff5b6c",
+      "crates/vigilode/tests/switching_v2_remediation_contracts.rs": "a771846b2bd3804b482544f100283f3039a23b524ebde1732e7381f2d45a15a6"
+    },
+    "identity_relation": "EXACT_ALLOWLIST_MUTATION"
+  },
+  "command_records": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "vigilode",
+        "--test",
+        "switching_v2_remediation_contracts"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-EPOCH-001-20261106_v2",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "cargo": "cargo 1.99.0",
+      "exit_code": 0,
+      "summary": "17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "vigilode-coupled",
+        "--test",
+        "rhs_homotopy_contracts"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-EPOCH-001-20261106_v2",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "cargo": "cargo 1.99.0",
+      "exit_code": 0,
+      "summary": "17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+    },
+    {
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-EPOCH-001-20261106_v2",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "cargo": "cargo 1.99.0",
+      "exit_code": 0,
+      "summary": "0 diff (clean)"
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-EPOCH-001-20261106_v2",
+      "exit_code": 0,
+      "summary": "0 whitespace errors (clean)"
+    }
+  ],
+  "result": "Created authoritative decision record EPOCH_001_AUTHORITY_DECISION.md formally superseding F7 (FNV-1a index-independent) with WP-02 (SHA-256 checkpoint-index-sensitive). Aligned docstrings and renamed test function in switching_v2_remediation_contracts.rs to wp02_window_epoch_is_checkpoint_sensitive_sha256_stable with added -0.0 vs +0.0 and large index boundary checks. All targeted tests and formatting pass.",
+  "limitations": [
+    "Overall qualification verdict remains HOLD_NOT_RELEASE_QUALIFIED until all remaining Phase A, B, C blockers are addressed.",
+    "Full workspace test/clippy run was not executed in this bounded task.",
+    "No commit, push, merge, tag, or publication was executed."
+  ],
+  "math_review": {
+    "definitions": "Window epoch is an identity namespace discriminator for checkpoint continuation and cache tagging, defined as Epoch = LE64(SHA-256(LE64(checkpoint_index as u64) || LE64(bits(start)) || LE64(bits(target)))[0..8]). It is not a numerical error bound or Lyapunov certificate.",
+    "assumptions": [
+      "IEEE-754 binary64 representation with distinct signed zeros (-0.0 != +0.0 bitwise).",
+      "Little-endian byte layout across 24-byte payload.",
+      "SHA-256 collision resistance on 192-bit domain."
+    ],
+    "derivation": "Proved in EPOCH_001_AUTHORITY_DECISION.md Section 3.",
+    "roundoff_model": "Exact bit preservation via f64::to_bits(), no floating-point arithmetic performed.",
+    "counterexamples": [
+      "Negative zero vs positive zero: (0, 0.0, 1.0) yields 0x5718_834c_1304_ae04 whereas (0, -0.0, 1.0) yields a distinct digest due to sign bit difference.",
+      "Checkpoint index collision: (0, 0.0, 1.0) != (7, 0.0, 1.0)."
+    ]
+  },
+  "work_accounting": {
+    "rhs": 0,
+    "jvp": 0,
+    "jacobian": 0,
+    "linear_iterations": 0,
+    "factorizations": 0,
+    "rejected_steps": 0,
+    "speculative_work": 0,
+    "refused_work": 0,
+    "failed_attempts": 0,
+    "unknown_counters": []
+  },
+  "decision_rationale": "Resolves finding EPOCH-001 by supplying the missing authoritative decision document, formalizing serialization and cache invalidation policies, and correcting test misnomers while verifying bitwise reproducibility."
+}

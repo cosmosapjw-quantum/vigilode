@@ -1,0 +1,113 @@
+{
+  "schema": "vigilode.execution_evidence.v2",
+  "repository": {
+    "branch": "research/switcher-v2-20261103",
+    "head": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "tree": "8a236871948798cb2a40c8a5ea65112a045bf16d",
+    "origin_tracking_head": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "head_matches_remote": true,
+    "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+    "cargo": "cargo 1.99.0"
+  },
+  "tests": [
+    {
+      "id": "SWITCHER",
+      "command": "cargo test --locked -p vigilode --release --test switching_v2_remediation_contracts",
+      "verdict": "PASS",
+      "summary": "17 passed, 0 failed."
+    },
+    {
+      "id": "HOMOTOPY",
+      "command": "cargo test --locked -p vigilode-coupled --release --test rhs_homotopy_contracts",
+      "verdict": "PASS",
+      "summary": "17 passed, 0 failed."
+    },
+    {
+      "id": "FMT",
+      "command": "cargo fmt --all -- --check",
+      "verdict": "PASS"
+    },
+    {
+      "id": "DIFF-CHECK",
+      "command": "git diff --check",
+      "verdict": "PASS"
+    }
+  ],
+  "not_run": [
+    {
+      "id": "WORKSPACE-TESTS",
+      "command": "cargo test --workspace --all-targets --release --locked",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "id": "CLIPPY",
+      "command": "cargo clippy --workspace --all-targets --release --locked -- -D warnings",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "id": "WORKSPACE-BUILD",
+      "command": "cargo test --workspace --all-targets --no-run --locked",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "id": "GLOBAL-IVP-ENCLOSURE",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "id": "M2-U-CAUSAL-DEPTH",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "id": "M1-MATCHED-ERROR-PERFORMANCE",
+      "verdict": "BLOCKED",
+      "reason": "All 900 matched rows diagnostic-only/reference-disputed."
+    },
+    {
+      "id": "M3-REGIME",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "id": "GITHUB-CI",
+      "verdict": "NOT_RUN",
+      "reason": "No statuses or workflow runs returned."
+    }
+  ],
+  "benchmark": {
+    "rust_sha256": "cefc6d5772146c40435ec316ca81f41d5dd5e637ae20b7632ccd6039eaf6e5ad",
+    "julia_sha256": "5556f500af755297c02cdd32d0767cc3c54e24d77cd6382880c9afa979b016ea",
+    "rust_timing_authority": "diagnostic_only",
+    "rust_rows": 126,
+    "rust_success_rows": 123,
+    "rust_failure_rows": 3,
+    "failed_repetitions": 21,
+    "protocol_violation_rows": 0,
+    "matched_rows": 900,
+    "matched_status": "900 DIAGNOSTIC_ONLY",
+    "matched_reason": "reference-disputed",
+    "julia_rows": 45,
+    "julia_success_rows": 44,
+    "julia_unstable_rows": 1,
+    "julia_missing_common_error_rows": 1,
+    "julia_reference_sha_matches_rust": true,
+    "rust_build_git_context": "e70b4a4012cc59f39d2ba2756cb33bba6ca2c913",
+    "rust_build_dirty_context": true,
+    "julia_git_commit": "e70b4a4012cc59f39d2ba2756cb33bba6ca2c913",
+    "decision": "DIAGNOSTIC_ONLY"
+  },
+  "external_checks": {
+    "wolfram_oregonator_jacobian_symbolic_difference": "ZERO_MATRIX",
+    "exa_search_and_fetch": "EXECUTED",
+    "scispace_search_and_table": "EXECUTED",
+    "native_subagents": "NOT_RUN"
+  },
+  "mutations": {
+    "source_files_modified": false,
+    "official_DAG_modified": false,
+    "ledger_modified": false,
+    "commits": false,
+    "pushes": false,
+    "merges": false,
+    "releases": false,
+    "only_new_package_path_written": true
+  }
+}

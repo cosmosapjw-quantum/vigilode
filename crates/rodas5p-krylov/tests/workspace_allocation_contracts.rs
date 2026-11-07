@@ -4,7 +4,10 @@ use std::{
 };
 
 use rodas5p_core::{DenseMatrix, DenseOperator, IdentityPreconditioner, WorkCounters};
-use rodas5p_krylov::{GmresConfig, GmresWorkspace, solve_gmres, solve_gmres_with_workspace};
+use rodas5p_krylov::{
+    GmresConfig, GmresGivensWorkspace, GmresWorkspace, solve_gmres, solve_gmres_givens,
+    solve_gmres_givens_with_workspace, solve_gmres_with_workspace,
+};
 
 struct CountingAllocator;
 static TRACK: AtomicBool = AtomicBool::new(false);
@@ -104,6 +107,57 @@ fn warmed_gmres_workspace_reduces_heap_allocations_without_changing_operator_wor
         workspace_work.diagnostic_matvecs,
         wrapper_work.diagnostic_matvecs
     );
+    assert_eq!(workspace_report.x, wrapper_report.x);
+    assert!(
+        workspace_allocations < wrapper_allocations,
+        "workspace allocations {workspace_allocations} >= wrapper allocations {wrapper_allocations}"
+    );
+}
+
+#[test]
+fn warmed_gmres_givens_workspace_reduces_heap_allocations() {
+    let (operator, preconditioner, rhs) = system(32);
+    let config = GmresConfig {
+        restart: 12,
+        max_arnoldi: 96,
+        rtol: 1e-11,
+        atol: 1e-13,
+    };
+    let mut workspace = GmresGivensWorkspace::default();
+    let mut warm_work = WorkCounters::default();
+    solve_gmres_givens_with_workspace(
+        &operator,
+        &preconditioner,
+        &rhs,
+        None,
+        &config,
+        &mut workspace,
+        &mut warm_work,
+    )
+    .unwrap();
+
+    let ((workspace_report, workspace_work), workspace_allocations) = allocation_count(|| {
+        let mut work = WorkCounters::default();
+        let report = solve_gmres_givens_with_workspace(
+            &operator,
+            &preconditioner,
+            &rhs,
+            None,
+            &config,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+        (report, work)
+    });
+    let ((wrapper_report, wrapper_work), wrapper_allocations) = allocation_count(|| {
+        let mut work = WorkCounters::default();
+        let report =
+            solve_gmres_givens(&operator, &preconditioner, &rhs, None, &config, &mut work).unwrap();
+        (report, work)
+    });
+
+    assert_eq!(workspace_work.linear_matvecs, wrapper_work.linear_matvecs);
     assert_eq!(workspace_report.x, wrapper_report.x);
     assert!(
         workspace_allocations < wrapper_allocations,

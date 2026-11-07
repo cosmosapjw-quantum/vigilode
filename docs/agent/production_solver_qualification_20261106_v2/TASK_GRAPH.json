@@ -1,0 +1,245 @@
+{
+  "schema": "vigilode.task_graph.v1",
+  "nodes": [
+    "EPOCH-001",
+    "AUTH-001",
+    "AUTH-002",
+    "AUTH-003",
+    "OBS-001",
+    "FSM-001",
+    "API-001",
+    "BENCH-REFERENCE",
+    "BENCH-PROVENANCE",
+    "BENCH-ACHIEVED",
+    "M2-SESSION",
+    "M2-CAUSAL",
+    "Q-FAIR-AB",
+    "Q-GIVENS",
+    "Q-NEGATIVE",
+    "Q-LINT",
+    "M3-REGIME",
+    "DOC-CLAIMS",
+    "M4-QUALIFY"
+  ],
+  "dependencies": {
+    "EPOCH-001": [],
+    "AUTH-001": [],
+    "AUTH-002": [],
+    "AUTH-003": [],
+    "OBS-001": [],
+    "FSM-001": [],
+    "API-001": [],
+    "BENCH-REFERENCE": [],
+    "BENCH-PROVENANCE": [],
+    "BENCH-ACHIEVED": [
+      "BENCH-REFERENCE",
+      "BENCH-PROVENANCE"
+    ],
+    "M2-SESSION": [],
+    "M2-CAUSAL": [
+      "M2-SESSION"
+    ],
+    "Q-FAIR-AB": [
+      "BENCH-PROVENANCE"
+    ],
+    "Q-GIVENS": [],
+    "Q-NEGATIVE": [
+      "AUTH-001",
+      "AUTH-002",
+      "AUTH-003",
+      "OBS-001",
+      "FSM-001",
+      "API-001"
+    ],
+    "Q-LINT": [
+      "AUTH-001",
+      "AUTH-002",
+      "AUTH-003",
+      "OBS-001",
+      "FSM-001",
+      "API-001",
+      "EPOCH-001"
+    ],
+    "M3-REGIME": [
+      "FSM-001",
+      "M2-CAUSAL",
+      "BENCH-ACHIEVED"
+    ],
+    "DOC-CLAIMS": [
+      "FSM-001",
+      "BENCH-ACHIEVED",
+      "Q-LINT"
+    ],
+    "M4-QUALIFY": [
+      "EPOCH-001",
+      "AUTH-001",
+      "AUTH-002",
+      "AUTH-003",
+      "OBS-001",
+      "FSM-001",
+      "API-001",
+      "BENCH-ACHIEVED",
+      "M2-CAUSAL",
+      "Q-FAIR-AB",
+      "Q-GIVENS",
+      "Q-NEGATIVE",
+      "Q-LINT",
+      "M3-REGIME",
+      "DOC-CLAIMS"
+    ]
+  },
+  "edges": [
+    {
+      "from": "BENCH-REFERENCE",
+      "to": "BENCH-ACHIEVED"
+    },
+    {
+      "from": "BENCH-PROVENANCE",
+      "to": "BENCH-ACHIEVED"
+    },
+    {
+      "from": "M2-SESSION",
+      "to": "M2-CAUSAL"
+    },
+    {
+      "from": "BENCH-PROVENANCE",
+      "to": "Q-FAIR-AB"
+    },
+    {
+      "from": "AUTH-001",
+      "to": "Q-NEGATIVE"
+    },
+    {
+      "from": "AUTH-002",
+      "to": "Q-NEGATIVE"
+    },
+    {
+      "from": "AUTH-003",
+      "to": "Q-NEGATIVE"
+    },
+    {
+      "from": "OBS-001",
+      "to": "Q-NEGATIVE"
+    },
+    {
+      "from": "FSM-001",
+      "to": "Q-NEGATIVE"
+    },
+    {
+      "from": "API-001",
+      "to": "Q-NEGATIVE"
+    },
+    {
+      "from": "AUTH-001",
+      "to": "Q-LINT"
+    },
+    {
+      "from": "AUTH-002",
+      "to": "Q-LINT"
+    },
+    {
+      "from": "AUTH-003",
+      "to": "Q-LINT"
+    },
+    {
+      "from": "OBS-001",
+      "to": "Q-LINT"
+    },
+    {
+      "from": "FSM-001",
+      "to": "Q-LINT"
+    },
+    {
+      "from": "API-001",
+      "to": "Q-LINT"
+    },
+    {
+      "from": "EPOCH-001",
+      "to": "Q-LINT"
+    },
+    {
+      "from": "FSM-001",
+      "to": "M3-REGIME"
+    },
+    {
+      "from": "M2-CAUSAL",
+      "to": "M3-REGIME"
+    },
+    {
+      "from": "BENCH-ACHIEVED",
+      "to": "M3-REGIME"
+    },
+    {
+      "from": "FSM-001",
+      "to": "DOC-CLAIMS"
+    },
+    {
+      "from": "BENCH-ACHIEVED",
+      "to": "DOC-CLAIMS"
+    },
+    {
+      "from": "Q-LINT",
+      "to": "DOC-CLAIMS"
+    },
+    {
+      "from": "EPOCH-001",
+      "to": "M4-QUALIFY"
+    },
+    {
+      "from": "AUTH-001",
+      "to": "M4-QUALIFY"
+    },
+    {
+      "from": "AUTH-002",
+      "to": "M4-QUALIFY"
+    },
+    {
+      "from": "AUTH-003",
+      "to": "M4-QUALIFY"
+    },
+    {
+      "from": "OBS-001",
+      "to": "M4-QUALIFY"
+    },
+    {
+      "from": "FSM-001",
+      "to": "M4-QUALIFY"
+    },
+    {
+      "from": "API-001",
+      "to": "M4-QUALIFY"
+    },
+    {
+      "from": "BENCH-ACHIEVED",
+      "to": "M4-QUALIFY"
+    },
+    {
+      "from": "M2-CAUSAL",
+      "to": "M4-QUALIFY"
+    },
+    {
+      "from": "Q-FAIR-AB",
+      "to": "M4-QUALIFY"
+    },
+    {
+      "from": "Q-GIVENS",
+      "to": "M4-QUALIFY"
+    },
+    {
+      "from": "Q-NEGATIVE",
+      "to": "M4-QUALIFY"
+    },
+    {
+      "from": "Q-LINT",
+      "to": "M4-QUALIFY"
+    },
+    {
+      "from": "M3-REGIME",
+      "to": "M4-QUALIFY"
+    },
+    {
+      "from": "DOC-CLAIMS",
+      "to": "M4-QUALIFY"
+    }
+  ]
+}

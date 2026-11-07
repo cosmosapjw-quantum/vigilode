@@ -1,0 +1,150 @@
+{
+  "benchmark_hashes": {
+    "julia": "5556f500af755297c02cdd32d0767cc3c54e24d77cd6382880c9afa979b016ea",
+    "rust": "cefc6d5772146c40435ec316ca81f41d5dd5e637ae20b7632ccd6039eaf6e5ad"
+  },
+  "created_at_utc": "2026-11-06T11:38:28.565804+00:00",
+  "files": {
+    "ACCEPTANCE_MATRIX.json": "b9d77a4a3cc2af8f6afa71f3b2b4db45faa67d85f34e139ca3a01ba2acf50485",
+    "AGENT_PROMPT_KO.txt": "b9e743ce121ef45e7edd7a2c29ff9e0a7da463fed2dad52ed59e4a0a7b076af8",
+    "ANTI_DRIFT.json": "3b04ac43e8bbe5d6b8236adcf0f592c164af1efa86ae0a7e94ec0e5f212d8796",
+    "CURRENT_AUDIT.json": "a00c0c1b559c80c55b78a30bb2bfec220ed968ffc2e0d0ef24b2a2b2a1bd31eb",
+    "DESIGN_CONTRACT.md": "37d51ec821a18da5725d842c25cc155faa9e69184b039cdf14ae89287f95990b",
+    "EVIDENCE.schema.json": "40cf7236801a2fa547ce988cfc573f91960275f93c474028f34fc152972b2735",
+    "EVIDENCE_TEMPLATE.json": "35390c3f12c01bbf4b586f6ffb140d9f85ad03a4654fef9e9e7aaedfd4c2ce69",
+    "EXECUTION_EVIDENCE.json": "6d4f1631900b15159622842c113d7b17648ea95ffe7ee851808b6cb25899900b",
+    "MODEL_ROUTING.json": "ea54f47e81eb40c21dda15fde3ac407a1207867a6ce4184689d9a811369ce06e",
+    "MUTATION_POLICY.json": "f5925bcceb07aa88efa993eb5543c2c6efe4068c348b4b0c829cdf8f93dad594",
+    "PRODUCTION_VERDICT.json": "e0c3ea8e8e9385c520605c620aa9f0ee0afce6fe5474a44b22be0c5a5781e96d",
+    "README.md": "ba9613c86b97c5bdfd35755c964663b97265182d42948d1d91154be3d69b8bd6",
+    "SOLVER_SCOPE.json": "a0db2bde86ce43ae18ad57ecc91dd1b8f3f4c92987cb899877056fe870b50d2c",
+    "SOURCE_REFERENCES.json": "51af8012baccae923e2b528cfb0ae40104883de215bee4a7b53d10ff72d10e1e",
+    "TASK.schema.json": "9e105e1ef5ea065a0488ef3eb1b2bfba8715db1f000e710745ff0a278695d0a8",
+    "TASK_EXECUTION_KO.md": "07c44720b716ac9a065919c6b03bb15ec15580163ee2806a916b2324c93424ee",
+    "TASK_GRAPH.json": "4b9e72e1b914a9dc94462f645d90983309f55ebd89f346dd604b9df4a04223a5",
+    "TASK_QUEUE.json": "6eefbe771e8c65196311daf4977eee8a7c3ba5499ab58abaf34815f9aaae0fdc",
+    "VALIDATION_PROTOCOL.md": "bd4568e3ab55851b291e191d0fdf439dbdfd3aeb8448a42cfd1b3e3912d16335",
+    "validate_package.py": "b23ab9ef295cd7486d6a5ec2cbcdebdba13149c01bf0b432488eb7048f86aa34"
+  },
+  "loop": {
+    "execution": "bounded serial fallback",
+    "native_subagent": "NOT_RUN",
+    "selected_stages": [
+      "C9",
+      "C10"
+    ],
+    "skill": "physmath-research-loop 1.3.0",
+    "supporting_checks": [
+      "C2",
+      "C7",
+      "C8"
+    ]
+  },
+  "package_id": "production_solver_qualification_20261106_v2",
+  "previous_package": {
+    "base_sha": "e70b4a4012cc59f39d2ba2756cb33bba6ca2c913",
+    "path": "docs/agent/production_solver_qualification_20261106/",
+    "status": "HISTORICAL_PARENT_SNAPSHOT"
+  },
+  "repository": {
+    "branch": "research/switcher-v2-20261103",
+    "full_name": "cosmosapjw-quantum/vigilode",
+    "head": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "local_remote_head_equal": true,
+    "origin_tracking_head": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "path": "/home/cosmosapjw/vigilode",
+    "tree": "8a236871948798cb2a40c8a5ea65112a045bf16d"
+  },
+  "schema": "vigilode.production_qualification_manifest.v2",
+  "scope_mutation": "Only this new qualification package directory was written.",
+  "source_hashes": {
+    "Cargo.lock": {
+      "bytes": 29301,
+      "sha256": "efb379071fa42c2b6bdbe969163ac2f41cf318c262c5c67d0910450298333351"
+    },
+    "Cargo.toml": {
+      "bytes": 1263,
+      "sha256": "d852e8796bdc78d953889ea0d6f3b91334cf41d9509cea35436ea724150fb141"
+    },
+    "README.md": {
+      "bytes": 9285,
+      "sha256": "a67565d3aa5f1bbd414e89a8dccc62ea4bcd8bc8b001071a3a377f2a46dbdc09"
+    },
+    "bench/build_unified_comparison.py": {
+      "bytes": 13133,
+      "sha256": "0bbf0cdcead75026796d879f7061853e9b5a365901b83408cdfe0f720d805ffe"
+    },
+    "bench/julia_comparator_bench.jl": {
+      "bytes": 12403,
+      "sha256": "106cfa594faf4020072cbb4cb06808fedd05b319f1a70c1101ce13f273ade6f0"
+    },
+    "bench/out/ADVERSARIAL_CROSS_SOLVER_REPORT.md": {
+      "bytes": 20149,
+      "sha256": "aa038fa9386264eb51f9a55a35986aa402e81805bfbce7fa39cc66647951dc20"
+    },
+    "bench/out/adversarial_julia_results.json": {
+      "bytes": 30603,
+      "sha256": "5556f500af755297c02cdd32d0767cc3c54e24d77cd6382880c9afa979b016ea"
+    },
+    "bench/out/adversarial_rust_results.json": {
+      "bytes": 1960230,
+      "sha256": "cefc6d5772146c40435ec316ca81f41d5dd5e637ae20b7632ccd6039eaf6e5ad"
+    },
+    "bench/protocols/adversarial_cross_solver_v1.json": {
+      "bytes": 3034,
+      "sha256": "42506d7dbac7137bbb44b6f446244cc5ba16a0019b7a391d4dca9b362ce787cf"
+    },
+    "crates/rodas5p-core/src/leja_action.rs": {
+      "bytes": 152437,
+      "sha256": "7022021e9dbee528ed946fef5fecba0888959eacf39b9e7ee9fcc7344bf3746d"
+    },
+    "crates/rodas5p-core/src/nonnormal_observers.rs": {
+      "bytes": 29991,
+      "sha256": "0c16a3317cd6b299b8c1dbdb2936854699c5b102b2b5aa961013056031469bca"
+    },
+    "crates/rodas5p-integrators/src/conditioned_polynomial.rs": {
+      "bytes": 47539,
+      "sha256": "37f6fd72f6abce1e3dd9211137983f8961d0432182a7c5bc2926d7fc4c4c9877"
+    },
+    "crates/vigilode-coupled/src/rhs_homotopy.rs": {
+      "bytes": 67245,
+      "sha256": "83f77048901a4d9e1d928d188eb3c52ef05c62cea2b6f54579803dd3a6170232"
+    },
+    "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs": {
+      "bytes": 12546,
+      "sha256": "ec829e9aa9a84055e4a8cf6f56c98c53aedc220ae3792baec78d9f716c6f0db3"
+    },
+    "crates/vigilode/src/hybrid_automaton.rs": {
+      "bytes": 24567,
+      "sha256": "169c3f934ad9fffabdb8d12425fdd65e13d7213e6fad810324b33fa1392ea051"
+    },
+    "crates/vigilode/src/production.rs": {
+      "bytes": 7963,
+      "sha256": "792a0bfa18e851f8f4878bde11a492439f4ec4ce4b14008fe92970dd873f06a3"
+    },
+    "crates/vigilode/src/registry.rs": {
+      "bytes": 42824,
+      "sha256": "938751e9499f8610f392f7a4e1a46cbada70628d8b0e8871b6853a67a958cad1"
+    },
+    "crates/vigilode/src/switching.rs": {
+      "bytes": 166708,
+      "sha256": "ab6911dc4e505126352dec16b6bca051a6c1b5e08013f5ef8d44dc1f53d3e9d5"
+    },
+    "crates/vigilode/tests/switching_v2_remediation_contracts.rs": {
+      "bytes": 20431,
+      "sha256": "86d9e55d69dc2a8f1376a7802bffc8d189eccc46c3dddb8cda92cdd2fc20339f"
+    },
+    "rust-toolchain.toml": {
+      "bytes": 86,
+      "sha256": "7458b2d74495e6fb1c1edeea4d5a793705476431dadb60627187111f91441e13"
+    }
+  },
+  "task_count": 19,
+  "toolchain": {
+    "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+    "rust_toolchain_channel": "stable (moving)",
+    "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+    "workspace_minimum": "1.99.0"
+  },
+  "verdict": "HOLD_NOT_RELEASE_QUALIFIED"
+}

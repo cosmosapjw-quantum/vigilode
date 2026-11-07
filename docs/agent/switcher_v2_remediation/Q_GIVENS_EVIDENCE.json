@@ -1,0 +1,45 @@
+{
+  "$schema": "../../production_solver_qualification_20261106_v2/EVIDENCE.schema.json",
+  "evidence_id": "Q_GIVENS_EVIDENCE_20261106",
+  "task_id": "Q-GIVENS",
+  "claim_support": [
+    "derived",
+    "implementation-verified",
+    "numerically-checked"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "commit": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "clean_worktree": false,
+    "environment": "Linux x86_64, rustc 1.99.0"
+  },
+  "command_records": [
+    {
+      "command": "cargo test --locked -p rodas5p-krylov --test givens_production_differential_contracts",
+      "exit_code": 0,
+      "summary": "All 5 tests passed: independent true-residual certification, adversarial scaling (1e-14 to 1e14), near-degeneracy, and historical E-05 rows."
+    },
+    {
+      "command": "cargo test --locked -p rodas5p-krylov",
+      "exit_code": 0,
+      "summary": "All 24 unit tests, weighted residual, and workspace allocation contracts passed with 0 failures."
+    },
+    {
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 0,
+      "summary": "Clean formatting without diffs."
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "summary": "Clean diff without whitespace issues."
+    }
+  ],
+  "result": "Resolved finding Q-GIVENS per GIVENS_REVIEW.md: Recomputed and verified independent true residual ||Ax - b|| / ||b|| and orthogonality defect FIRST for every returned solution before evaluating historical budget exhaustion; removed workspace.x.clone() from GMRES-Givens hot loops; added tests for adversarial scaling (1e-14 to 1e14) and near-degenerate singular systems; kept Givens candidate explicitly classified as experimental candidate rather than production dispatch.",
+  "limitations": [
+    "Givens candidate is an exported research candidate and remains unpromoted to production solver.",
+    "Floating-point residual bounds are verified with independent binary64 arithmetic, not rigorous directed-interval enclosures."
+  ]
+}

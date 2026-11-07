@@ -894,7 +894,7 @@ fn test_vg1_complex_leja_zero_allocation() {
     let v = [1.0, 0.5];
     let mut out = [0.0; 2];
     let witness =
-        CertifiedNormalityWitness::certify_dense_skew_symmetric(&mat_slice, 2, 1, 1, 100).unwrap();
+        CertifiedNormalityWitness::certify_dense_skew_symmetric(&mat_slice, 2, 0, 1, 100).unwrap();
     let config = ComplexLejaConfig::with_witness(20, witness);
     let mut workspace = ComplexLejaWorkspace::new(2, 25);
     let mut work = WorkCounters::default();
@@ -932,6 +932,195 @@ fn test_vg1_complex_leja_zero_allocation() {
     );
     assert!(matches!(
         status.unwrap(),
+        TotalErrorStatus::Certified { .. }
+    ));
+}
+
+#[test]
+fn test_auth_002_normality_witness_identity_binding() {
+    use rodas5p_core::DenseOperator;
+    use rodas5p_core::leja_action::{
+        CertifiedNormalityWitness, ComplexLejaConfig, ComplexLejaWorkspace,
+        canonical_matrix_digest, complex_leja_phi_action_into,
+    };
+
+    let mat_a = [0.0, -2.0, 2.0, 0.0];
+    let mat_b = [0.0, -3.5, 3.5, 0.0];
+
+    let op_a =
+        DenseOperator::new(DenseMatrix::from_rows(&[&[0.0, -2.0], &[2.0, 0.0]]).unwrap()).unwrap();
+    let op_b =
+        DenseOperator::new(DenseMatrix::from_rows(&[&[0.0, -3.5], &[3.5, 0.0]]).unwrap()).unwrap();
+
+    let digest_a = canonical_matrix_digest(&mat_a);
+    let digest_b = canonical_matrix_digest(&mat_b);
+    assert_ne!(
+        digest_a, digest_b,
+        "distinct operators must have distinct digests"
+    );
+
+    // 1. Witness correctly binds to canonical operator digest, dimension, unit scaling, model_epoch
+    let witness_a =
+        CertifiedNormalityWitness::certify_dense_skew_symmetric(&mat_a, 2, 0, 10, 500).unwrap();
+    assert_eq!(witness_a.operator_key(), digest_a);
+    assert_eq!(witness_a.dimension(), 2);
+    assert_eq!(witness_a.scaling(), 1.0);
+    assert_eq!(witness_a.model_epoch(), 10);
+    assert_eq!(witness_a.evidence_reference(), 500);
+
+    // Passing canonical digest explicitly also succeeds
+    let witness_explicit_key =
+        CertifiedNormalityWitness::certify_dense_skew_symmetric(&mat_a, 2, digest_a, 10, 500)
+            .unwrap();
+    assert_eq!(witness_explicit_key.operator_key(), digest_a);
+
+    // Passing a forged / mismatched operator_key fails construction
+    assert!(
+        CertifiedNormalityWitness::certify_dense_skew_symmetric(&mat_a, 2, 0x1234_5678, 10, 500)
+            .is_err(),
+        "forged operator_key must be rejected at construction"
+    );
+
+    let v = [1.0, -0.5];
+    let mut out = [0.0; 2];
+    let mut workspace = ComplexLejaWorkspace::new(2, 30);
+    let mut work = WorkCounters::default();
+
+    // 2. Matching consumer call succeeds with Certified status
+    let config_a = ComplexLejaConfig::with_witness(25, witness_a);
+    let status_match = complex_leja_phi_action_into(
+        &op_a,
+        0.2,
+        0,
+        &config_a,
+        &v,
+        &mut out,
+        &mut workspace,
+        &mut work,
+    )
+    .unwrap();
+    assert!(matches!(status_match, TotalErrorStatus::Certified { .. }));
+
+    // 3. Acceptance: A same-dimension witness for another operator is rejected (fail closed to EstimateOnly)
+    let status_mismatched_op = complex_leja_phi_action_into(
+        &op_b, // Operator B consumed
+        0.2,
+        0,
+        &config_a, // Witness A bound
+        &v,
+        &mut out,
+        &mut workspace,
+        &mut work,
+    )
+    .unwrap();
+    match status_mismatched_op {
+        TotalErrorStatus::EstimateOnly { reason, .. } => {
+            assert!(
+                reason.contains("COMPLEX_LEJA_OPERATOR_MISMATCH"),
+                "expected operator mismatch reason, got: {reason}"
+            );
+        }
+        TotalErrorStatus::Certified { .. } => {
+            panic!("same-dimension witness for another operator must NOT be accepted as Certified");
+        }
+    }
+
+    // 4. Acceptance: A stale epoch witness is rejected
+    let config_stale = config_a.with_epoch(11); // witness has epoch 10
+    let status_stale = complex_leja_phi_action_into(
+        &op_a,
+        0.2,
+        0,
+        &config_stale,
+        &v,
+        &mut out,
+        &mut workspace,
+        &mut work,
+    )
+    .unwrap();
+    match status_stale {
+        TotalErrorStatus::EstimateOnly { reason, .. } => {
+            assert!(
+                reason.contains("COMPLEX_LEJA_STALE_EPOCH"),
+                "expected stale epoch reason, got: {reason}"
+            );
+        }
+        TotalErrorStatus::Certified { .. } => {
+            panic!("stale epoch witness must NOT be accepted as Certified");
+        }
+    }
+
+    // 5. Acceptance: One-ulp and tolerance-near skew defects are rejected at construction
+    // Diagonal defect (nonzero diagonal):
+    assert!(
+        CertifiedNormalityWitness::certify_dense_skew_symmetric(
+            &[f64::MIN_POSITIVE, -2.0, 2.0, 0.0],
+            2,
+            0,
+            1,
+            100,
+        )
+        .is_err(),
+        "nonzero diagonal must fail skew-symmetry certification"
+    );
+    assert!(
+        CertifiedNormalityWitness::certify_dense_skew_symmetric(
+            &[1e-18, -2.0, 2.0, 0.0],
+            2,
+            0,
+            1,
+            100,
+        )
+        .is_err(),
+        "small diagonal must fail skew-symmetry certification"
+    );
+    // Off-diagonal 1-ulp defect:
+    let one_ulp_off = [0.0, -2.0, 2.0_f64.next_up(), 0.0];
+    assert!(
+        CertifiedNormalityWitness::certify_dense_skew_symmetric(&one_ulp_off, 2, 0, 1, 100)
+            .is_err(),
+        "1-ulp off-diagonal defect must fail skew-symmetry certification"
+    );
+    // Tolerance-near defect (within historical 1e-14 tolerance):
+    let tol_near_off = [0.0, -2.0, 2.0 + 1e-15, 0.0];
+    assert!(
+        CertifiedNormalityWitness::certify_dense_skew_symmetric(&tol_near_off, 2, 0, 1, 100)
+            .is_err(),
+        "tolerance-near skew defect must fail skew-symmetry certification"
+    );
+
+    // 6. Acceptance: Zero-allocation test on consumer identity checks
+    // Warm-up call
+    complex_leja_phi_action_into(
+        &op_a,
+        0.2,
+        0,
+        &config_a,
+        &v,
+        &mut out,
+        &mut workspace,
+        &mut work,
+    )
+    .unwrap();
+
+    let (status_zero_alloc, allocs) = track_allocations(|| {
+        complex_leja_phi_action_into(
+            &op_a,
+            0.2,
+            0,
+            &config_a,
+            &v,
+            &mut out,
+            &mut workspace,
+            &mut work,
+        )
+    });
+    assert_eq!(
+        allocs, 0,
+        "consumer identity check and action must be zero-allocation"
+    );
+    assert!(matches!(
+        status_zero_alloc.unwrap(),
         TotalErrorStatus::Certified { .. }
     ));
 }

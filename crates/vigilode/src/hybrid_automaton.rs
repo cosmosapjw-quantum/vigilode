@@ -1,8 +1,20 @@
 //! Finite-state hybrid route controller, anti-chattering dwell/hysteresis,
 //! route epoch invalidation, speculative work accounting, and fail-safe fallback.
 //!
-//! Node P8 (P8_HYBRID_CONTROLLER) implements causal, bounded, zero-allocation
+//! Node P8 (P8_HYBRID_CONTROLLER) implements a standalone / experimental discrete
+//! verification model and contract reference for causal, bounded, zero-allocation
 //! switching between DOPRI5 and RODAS5P integrators.
+//!
+//! # Architecture & Operational Dispatch
+//!
+//! - **Standalone / Experimental Verification Model**: [`HybridRouteAutomaton`] defines the
+//!   formal discrete-event finite state machine (FSM), valid transition graphs, anti-chattering
+//!   dwell/hysteresis constraints, epoch validation, and speculative work accounting invariants.
+//!   It serves as the contract and offline verification oracle.
+//! - **Live Operational Route Controller**: Runtime adaptive dispatch within [`crate::SwitchingSolver`]
+//!   is driven directly by `DriveState` in [`crate::switching`], which manages live method selection
+//!   ([`crate::switching::SwitchingMethod`]), window progression, step proposals, adaptive pilot trials,
+//!   and recheck sentinels during active numerical integration.
 
 use core::fmt;
 use rodas5p_core::WorkCounters;
@@ -347,6 +359,14 @@ impl ProtectedFallbackGuarantor {
 }
 
 /// Hybrid route finite-state automaton governing explicit and implicit ODE integration.
+///
+/// **Role**: Standalone / experimental discrete verification model and contract reference (Node P8).
+///
+/// Note that live operational route dispatch in [`crate::SwitchingSolver`] is managed
+/// directly by `DriveState` in `crates/vigilode/src/switching.rs`. This automaton provides
+/// an independent, fully-instrumented discrete-event reference model for validating transition
+/// legality, anti-chattering hysteresis, epoch invalidation, and speculative work conservation
+/// without heap allocations (VG-1).
 ///
 /// Pre-allocates all internal history buffers to ensure zero heap allocations during execution (VG-1).
 #[derive(Clone, Copy, Debug, PartialEq)]

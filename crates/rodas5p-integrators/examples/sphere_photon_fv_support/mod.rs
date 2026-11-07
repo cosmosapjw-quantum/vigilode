@@ -943,7 +943,11 @@ impl Model3 {
     /// `rate (om_r (1 + sum_m Aw_m,r B_m,c) - delta_rc)`; absorber `-kbar_i`
     /// on the diagonal, then `+kbar_i` into `A_i`.
     #[inline(always)]
-    fn jacobian_entries(&self, t: f64, mut add: impl FnMut(usize, usize, f64)) -> CoreResult<()> {
+    pub fn jacobian_entries(
+        &self,
+        t: f64,
+        mut add: impl FnMut(usize, usize, f64),
+    ) -> CoreResult<()> {
         let d = self.drift(t)?;
         let vel = Faces::of(d.v);
         let l = &self.layout;

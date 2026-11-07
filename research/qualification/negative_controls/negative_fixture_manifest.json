@@ -1,0 +1,107 @@
+{
+  "schema": "vigilode.negative_fixture_manifest.v1",
+  "task_id": "Q-NEGATIVE",
+  "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+  "math_contract": {
+    "falsification_principle": "Negative controls are falsification anchors; they ensure that flawed algorithms, broken gate thresholds, and invalid certificates fail demonstrably rather than passing by spurious chance.",
+    "no_loosening_policy": "Thresholds on negative controls (e.g. 15/7 = 2.143x > 1.3x kill-gate, rtol = 1e-6) must never be loosened to produce artificial green tests."
+  },
+  "historical_negative_controls": [
+    {
+      "test_name": "prothero_robinson_wfiltered_enforce_kill_gate",
+      "test_file": "crates/rodas5p-integrators/tests/dense_wfiltered_contracts.rs",
+      "intended_outcome": "FAILED",
+      "failure_signature": "KILL GATE: 2.143x the Off accepted-step count > 1.3x",
+      "step_ratio": "15 / 7 = 2.143",
+      "threshold": 1.3,
+      "falsification_purpose": "Demonstrates that W-filtering under Prothero-Robinson lambda = -1e6 and rtol = 1e-6 increases accepted step count beyond the 1.3x efficiency ceiling, triggering the registered kill gate."
+    }
+  ],
+  "authoritative_fixtures": [
+    {
+      "filename": "fixtures/r3_certified_budget_fixtures.json",
+      "sha256": "b0efb1ca2a99c59dc9531f7978dc93946e9df674d0dcd022d04209ac029f2c84",
+      "bytes": 7396,
+      "intact": true
+    },
+    {
+      "filename": "fixtures/r3_homotopy_certificate_fixtures.json",
+      "sha256": "ef2cdd33168a6736aa987510f07d40f23ec09fd0f7dfcc3d2c4316867b375392",
+      "bytes": 75892,
+      "intact": true
+    },
+    {
+      "filename": "fixtures/r3_polynomial_oracle_fixtures.json",
+      "sha256": "ce7f8662f06c1283c3db89587186613ae48e6eb92a880788bb7123ce5c8f8530",
+      "bytes": 99451,
+      "intact": true
+    },
+    {
+      "filename": "fixtures/r4_polynomial_range_fixtures.json",
+      "sha256": "a2a075941cc9de99ce5e22044c66358e73e09a1f74c6b1ba32848d0416d7d925",
+      "bytes": 5616,
+      "intact": true
+    },
+    {
+      "filename": "fixtures/r4_transform_oracle_fixtures.json",
+      "sha256": "4e2b54ffa0c810d860d2d767489b2bd9e5b63691c89426874c88012b66c1bcc2",
+      "bytes": 155220,
+      "intact": true
+    },
+    {
+      "filename": "fixtures/rodas5p_coefficients_snapshot.json",
+      "sha256": "211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6",
+      "bytes": 4430,
+      "intact": true
+    },
+    {
+      "filename": "fixtures/scientific_corpus_v2_1_calibration_oracle.json",
+      "sha256": "e1e2db7ab897a061a98c5dadb986f07bec468e36a30df07eb99b64a65c87cb82",
+      "bytes": 13341,
+      "intact": true
+    },
+    {
+      "filename": "fixtures/scientific_corpus_v2_1_semilinear_oracle.json",
+      "sha256": "9e748768dbc26313d7316aefbe9ebaa8b32eadeab6482f2065708d34c16e5ce6",
+      "bytes": 6573,
+      "intact": true
+    },
+    {
+      "filename": "fixtures/stage_target_semantics.json",
+      "sha256": "c94f833497aa1abb9a86423376f2382b80c0375cf36c34f8efb243ab25f7b75c",
+      "bytes": 8889,
+      "intact": true
+    },
+    {
+      "filename": "fixtures/thread_transfer_laguerre_cache_cases.json",
+      "sha256": "8a50174cd834e78431e752fc33c85e79bd8c102a1fa5e702db364ab48ce9d7cb",
+      "bytes": 16594,
+      "intact": true
+    },
+    {
+      "filename": "fixtures/thread_transfer_laguerre_cases.json",
+      "sha256": "19c72dcc904cbe6999a8d99891478a297cd4faf83138916ed6dc30f552c8c5b1",
+      "bytes": 74117,
+      "intact": true
+    },
+    {
+      "filename": "fixtures/thread_transfer_r4_root_oracle.json",
+      "sha256": "09f1637918d03762322c2f5e1203a0b563f87e375c1e14665198e2fcff8b784f",
+      "bytes": 44801,
+      "intact": true
+    },
+    {
+      "filename": "fixtures/thread_transfer_r4_stage_inputs.json",
+      "sha256": "f90587b7446915f3f3419447d5c78d93803a8d9e07c8e287bd07b3329e348129",
+      "bytes": 32284,
+      "intact": true
+    },
+    {
+      "filename": "fixtures/thread_transfer_raw_stage_allowance.json",
+      "sha256": "bd1b8028ce33aecea2fef18328381d394aed6c072a5bfb69964d6bf27848bad9",
+      "bytes": 24005,
+      "intact": true
+    }
+  ],
+  "verdict": "MANIFEST_VERIFIED_UNCHANGED"
+}

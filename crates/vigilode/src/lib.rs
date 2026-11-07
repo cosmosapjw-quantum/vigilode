@@ -73,6 +73,20 @@
 //! [`Tier::Performance`] is accepted and, in this release, executes exactly
 //! the `Protected` route (no candidate driver is attached yet).
 //!
+//! ## Adaptive Switching & Hybrid Routing Architecture
+//!
+//! VigilODE provides evidence-driven adaptive polyalgorithm switching between explicit
+//! (DOPRI5) and implicit (RODAS5P) integration via [`SwitchingSolver`]:
+//!
+//! - **Live Operational Dispatch**: Real-time integration and route decisions are governed
+//!   by the internal `DriveState` route controller in `switching` (exercised through
+//!   [`SwitchingSolver::solve`]). `DriveState` manages the active stepper, proposal seeding,
+//!   window advancement, and zero-allocation hot transitions.
+//! - **Standalone / Experimental Verification Model**: [`hybrid_automaton::HybridRouteAutomaton`]
+//!   is exported as a standalone discrete verification model and contract reference (Node P8).
+//!   It models the underlying discrete-event FSM, anti-chattering dwell/hysteresis policies,
+//!   route epoch tracking, and speculative work accounting invariants.
+//!
 //! ## What is refused
 //!
 //! Requests that no protected driver implements are refused with
@@ -205,7 +219,10 @@ pub use oscillatory_chart::*;
 pub use problem::{
     BandJacobianFn, DenseJacobianFn, Jacobian, JvpFn, Problem, RhsFn, TimeDerivativeFn,
 };
-pub use production::{PRODUCTION_CONFIG_SCHEMA, ProductionConfig, ProductionSolver};
+pub use production::{
+    PRODUCTION_CONFIG_SCHEMA, ProductionConfig, ProductionOutcomeError, ProductionSolveError,
+    ProductionSolver,
+};
 pub use records::*;
 pub use registry::*;
 pub use selection::*;

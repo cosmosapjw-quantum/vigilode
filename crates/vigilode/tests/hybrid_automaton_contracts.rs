@@ -9,6 +9,10 @@ use vigilode::hybrid_automaton::{
     AntiChatteringPolicy, HybridAutomatonError, HybridRouteAutomaton, ProtectedFallbackGuarantor,
     RouteEpochTracker, RouteFsmEvent, RouteFsmState, SpeculativeWorkTracker,
 };
+use vigilode::{
+    Atol, CallbackError, DerivativeFallback, Jacobian, Options, Problem, SwitchingConfig,
+    SwitchingSolver,
+};
 
 thread_local! {
     static TRACK: Cell<bool> = const { Cell::new(false) };
@@ -408,4 +412,314 @@ fn test_vg1_zero_allocation() {
         allocs, 0,
         "VG-1 violation: 10,000 FSM evaluations must perform 0 heap allocations, got {allocs}"
     );
+}
+
+#[test]
+fn test_positive_and_negative_routing_controls_with_invariants() {
+    let mut automaton = HybridRouteAutomaton::new();
+    assert_eq!(automaton.state(), RouteFsmState::ExplicitActive);
+    assert_eq!(automaton.transition_count(), 0);
+
+    // Initial epoch and ticket
+    let epoch0 = automaton.epoch_tracker().current_epoch();
+    assert_eq!(epoch0, 0);
+    let ticket0 = automaton.epoch_tracker().issue_ticket();
+    assert!(automaton.epoch_tracker().is_evidence_valid(ticket0));
+
+    // Baseline work
+    automaton
+        .speculative_tracker_mut()
+        .record_committed(WorkCounters {
+            rhs_calls: 50,
+            accepted_steps: 10,
+            ..Default::default()
+        });
+    assert_eq!(
+        automaton.speculative_tracker().committed_work().rhs_calls,
+        50
+    );
+    assert!(automaton.speculative_tracker().accounting_complete());
+
+    // --- Negative Routing Control 1: Illegal transition from ExplicitActive ---
+    let err = automaton
+        .handle_event(RouteFsmEvent::ImplicitWindowAccepted)
+        .expect_err("ImplicitWindowAccepted must be rejected from ExplicitActive");
+    assert_eq!(
+        err,
+        HybridAutomatonError::IllegalTransition {
+            from: RouteFsmState::ExplicitActive,
+            event: RouteFsmEvent::ImplicitWindowAccepted,
+        }
+    );
+    // Invariants preserved after rejected transition
+    assert_eq!(automaton.state(), RouteFsmState::ExplicitActive);
+    assert_eq!(automaton.transition_count(), 0);
+    assert_eq!(automaton.epoch_tracker().current_epoch(), 0);
+    assert!(automaton.speculative_tracker().accounting_complete());
+
+    // --- Positive Routing Control 1: Advance to ScreeningActive ---
+    automaton
+        .handle_event(RouteFsmEvent::PressureOrStiffnessDetected)
+        .expect("PressureOrStiffnessDetected permitted");
+    assert_eq!(automaton.state(), RouteFsmState::ScreeningActive);
+    assert_eq!(automaton.transition_count(), 1);
+    assert_eq!(automaton.epoch_tracker().current_epoch(), 0); // intra-family: no epoch increment
+
+    // --- Negative Routing Control 2: Illegal transition from ScreeningActive ---
+    let err = automaton
+        .handle_event(RouteFsmEvent::ReturnSentinelDue)
+        .expect_err("ReturnSentinelDue must be rejected from ScreeningActive");
+    assert_eq!(
+        err,
+        HybridAutomatonError::IllegalTransition {
+            from: RouteFsmState::ScreeningActive,
+            event: RouteFsmEvent::ReturnSentinelDue,
+        }
+    );
+    assert_eq!(automaton.state(), RouteFsmState::ScreeningActive);
+    assert_eq!(automaton.transition_count(), 1);
+
+    // --- Positive Routing Control 2: Screen passed -> ImplicitPilotTrial ---
+    automaton
+        .handle_event(RouteFsmEvent::ScreenPassedWithEvidence)
+        .expect("ScreenPassedWithEvidence permitted");
+    assert_eq!(automaton.state(), RouteFsmState::ImplicitPilotTrial);
+    assert_eq!(automaton.transition_count(), 2);
+
+    // Record speculative pilot work
+    automaton
+        .speculative_tracker_mut()
+        .record_speculative(WorkCounters {
+            rhs_calls: 20,
+            jvp_calls: 5,
+            linear_solves: 6,
+            ..Default::default()
+        });
+    assert_eq!(
+        automaton
+            .speculative_tracker()
+            .pending_speculative_work()
+            .rhs_calls,
+        20
+    );
+    assert_eq!(automaton.speculative_tracker().total_work().rhs_calls, 70);
+    assert!(automaton.speculative_tracker().accounting_complete());
+
+    // --- Positive Routing Control 3: Pilot won -> ImplicitActive ---
+    automaton
+        .handle_event(RouteFsmEvent::PilotCompletedCheaper)
+        .expect("PilotCompletedCheaper permitted");
+    assert_eq!(automaton.state(), RouteFsmState::ImplicitActive);
+    assert_eq!(automaton.transition_count(), 3);
+    // Route family changed (Explicit -> Implicit): epoch must increment!
+    assert_eq!(automaton.epoch_tracker().current_epoch(), 1);
+    // Stale ticket0 must now be invalidated
+    assert!(!automaton.epoch_tracker().is_evidence_valid(ticket0));
+    // Speculative work committed
+    assert_eq!(
+        automaton
+            .speculative_tracker()
+            .pending_speculative_work()
+            .rhs_calls,
+        0
+    );
+    assert_eq!(
+        automaton.speculative_tracker().committed_work().rhs_calls,
+        70
+    );
+    assert_eq!(
+        automaton.speculative_tracker().committed_work().jvp_calls,
+        5
+    );
+    assert_eq!(
+        automaton
+            .speculative_tracker()
+            .committed_work()
+            .linear_solves,
+        6
+    );
+    assert!(automaton.speculative_tracker().accounting_complete());
+
+    // Issue ticket in epoch 1
+    let ticket1 = automaton.epoch_tracker().issue_ticket();
+    assert_eq!(ticket1, 1);
+    assert!(automaton.epoch_tracker().is_evidence_valid(ticket1));
+
+    // --- Positive Routing Control 4: ReturnSentinelDue -> ExplicitReturnPilot ---
+    automaton
+        .handle_event(RouteFsmEvent::ReturnSentinelDue)
+        .expect("ReturnSentinelDue permitted");
+    assert_eq!(automaton.state(), RouteFsmState::ExplicitReturnPilot);
+    assert_eq!(automaton.transition_count(), 4);
+
+    // Record speculative explicit recheck work
+    automaton
+        .speculative_tracker_mut()
+        .record_speculative(WorkCounters {
+            rhs_calls: 15,
+            ..Default::default()
+        });
+    assert_eq!(
+        automaton
+            .speculative_tracker()
+            .pending_speculative_work()
+            .rhs_calls,
+        15
+    );
+    assert_eq!(automaton.speculative_tracker().total_work().rhs_calls, 85);
+
+    // --- Negative Routing Control 3 (Speculative Discard): Return pilot failed/expensive -> ImplicitActive ---
+    automaton
+        .handle_event(RouteFsmEvent::ReturnPilotFailedOrExpensive)
+        .expect("ReturnPilotFailedOrExpensive permitted");
+    assert_eq!(automaton.state(), RouteFsmState::ImplicitActive);
+    assert_eq!(automaton.transition_count(), 5);
+    // Pending work rolled into refused work, NOT lost
+    assert_eq!(
+        automaton
+            .speculative_tracker()
+            .pending_speculative_work()
+            .rhs_calls,
+        0
+    );
+    assert_eq!(automaton.speculative_tracker().refused_work().rhs_calls, 15);
+    assert_eq!(
+        automaton.speculative_tracker().committed_work().rhs_calls,
+        70
+    );
+    assert_eq!(automaton.speculative_tracker().total_work().rhs_calls, 85);
+    assert!(automaton.speculative_tracker().accounting_complete());
+
+    // Anti-chattering negative controls:
+    let policy = automaton.anti_chattering();
+    assert!(!policy.can_switch_to_implicit(1, 0.9)); // dwell too small
+    assert!(!policy.can_switch_to_implicit(5, 0.7)); // threshold not met
+    assert!(!policy.can_switch_to_explicit(1, 0.2)); // dwell too small
+    assert!(!policy.can_switch_to_explicit(5, 0.5)); // threshold not met
+}
+
+fn rotation_problem() -> Problem {
+    Problem::new(2, |_, y, out| {
+        out[0] = -100.0 * y[1];
+        out[1] = 100.0 * y[0];
+        Ok(())
+    })
+    .jacobian(Jacobian::jvp(|_, _, v, out| {
+        out[0] = -100.0 * v[1];
+        out[1] = 100.0 * v[0];
+        Ok(())
+    }))
+    .autonomous()
+}
+
+fn robertson_problem() -> Problem {
+    Problem::new(3, |_t, y, dy| {
+        dy[0] = -0.04 * y[0] + 1.0e4 * y[1] * y[2];
+        dy[1] = 0.04 * y[0] - 1.0e4 * y[1] * y[2] - 3.0e7 * y[1] * y[1];
+        dy[2] = 3.0e7 * y[1] * y[1];
+        Ok::<(), CallbackError>(())
+    })
+    .jacobian(Jacobian::dense(|_t, y, j| {
+        j.copy_from_slice(&[
+            -0.04,
+            1.0e4 * y[2],
+            1.0e4 * y[1],
+            0.04,
+            -1.0e4 * y[2] - 6.0e7 * y[1],
+            -1.0e4 * y[1],
+            0.0,
+            6.0e7 * y[1],
+            0.0,
+        ]);
+        Ok(())
+    }))
+    .autonomous()
+}
+
+#[test]
+fn test_switching_solver_runtime_traces_and_work_preservation() {
+    let opts = Options {
+        rtol: 1e-6,
+        atol: Atol::Scalar(1e-8),
+        h0: 1e-4,
+        max_steps: 100_000,
+        ..Default::default()
+    };
+
+    // Case 1: Live dispatch on rotation (nonstiff) system
+    // Live controller (DriveState) retains explicit execution without spurious switches
+    let config_nonstiff = SwitchingConfig::adaptive_evidence(DerivativeFallback::ProvidedOnly);
+    let sol_rot = SwitchingSolver::solve(
+        &rotation_problem(),
+        (0.0, 1.0),
+        &[1.0, 0.0],
+        &opts,
+        &config_nonstiff,
+    )
+    .expect("SwitchingSolver rotation solve should succeed");
+
+    assert!(sol_rot.success);
+    assert_eq!(sol_rot.final_time, 1.0);
+    // Physical invariant: energy/radius conservation |r^2 - 1| < 1e-4
+    let r2 = sol_rot.final_state[0].powi(2) + sol_rot.final_state[1].powi(2);
+    assert!(
+        (r2 - 1.0).abs() < 1e-4,
+        "Radius invariant violated: r2 = {r2}"
+    );
+    // Work accounting and preservation
+    assert!(sol_rot.stats.rhs_calls > 0);
+    assert!(sol_rot.stats.attempts > 0);
+    assert!(sol_rot.stats.accounting_complete);
+    // Negative routing control: nonstiff rotation does not switch to Rodas5p
+    assert_eq!(sol_rot.stats.switches, 0);
+
+    // Case 2: Live dispatch on Robertson chemical kinetics (stiff)
+    // Positive routing control: pre-screen detects stiffness and routes to Rodas5p
+    let mut config_stiff = SwitchingConfig::adaptive_evidence(DerivativeFallback::ProvidedOnly);
+    config_stiff.prescreen_initial_stiffness = true;
+    let sol_rob = SwitchingSolver::solve(
+        &robertson_problem(),
+        (0.0, 10.0),
+        &[1.0, 0.0, 0.0],
+        &opts,
+        &config_stiff,
+    )
+    .expect("SwitchingSolver Robertson solve should succeed");
+
+    assert!(sol_rob.success);
+    assert_eq!(sol_rob.final_time, 10.0);
+    // Physical invariant: total mass conservation y0 + y1 + y2 = 1.0
+    let mass = sol_rob.final_state[0] + sol_rob.final_state[1] + sol_rob.final_state[2];
+    assert!(
+        (mass - 1.0).abs() < 1e-6,
+        "Mass conservation invariant violated: mass = {mass}"
+    );
+    // Work accounting and preservation
+    assert!(sol_rob.stats.rhs_calls > 0);
+    assert!(sol_rob.stats.jacobian_builds > 0);
+    assert!(sol_rob.stats.linear_solves > 0);
+    assert!(sol_rob.stats.accounting_complete);
+
+    // Case 3: Negative routing control under forbidden derivatives
+    // Solver must never perform unauthorized Jacobian builds when DerivativeFallback::Forbidden
+    let config_forbidden = SwitchingConfig {
+        prescreen_initial_stiffness: false,
+        ..SwitchingConfig::adaptive_evidence(DerivativeFallback::Forbidden)
+    };
+    let opts_short = Options {
+        max_steps: 1_000,
+        ..opts
+    };
+    let sol_forbidden = SwitchingSolver::solve(
+        &robertson_problem(),
+        (0.0, 1.0),
+        &[1.0, 0.0, 0.0],
+        &opts_short,
+        &config_forbidden,
+    )
+    .expect("Forbidden solve returns result with failure or success");
+
+    // Negative routing verification: zero Jacobian builds authorized or performed
+    assert_eq!(sol_forbidden.stats.jacobian_builds, 0);
+    assert!(sol_forbidden.stats.accounting_complete);
 }

@@ -1,0 +1,75 @@
+{
+  "schema": "vigilode.acceptance_matrix.v2",
+  "claims": [
+    {
+      "claim": "Scoped ordinary numerical IVP use",
+      "current": "PARTIAL_SCOPED_RESEARCH_IMPLEMENTATION",
+      "required": [
+        "full API contract",
+        "workspace tests/build/lint",
+        "partial result semantics",
+        "live dispatch trace",
+        "clean source reproducibility"
+      ]
+    },
+    {
+      "claim": "Validated IVP enclosure",
+      "current": "NOT_QUALIFIED",
+      "required": [
+        "directed-rounding interval/Taylor arithmetic",
+        "sound callback interval extension",
+        "time-slab inclusion and uniqueness/existence",
+        "truncation/global error propagation",
+        "continuous coverage [t0,T]",
+        "independent analytic/adversarial validation"
+      ]
+    },
+    {
+      "claim": "Matched achieved-error performance",
+      "current": "BLOCKED_REFERENCE_DISPUTED",
+      "required": [
+        "accepted references",
+        "clean source/binary/runner hashes",
+        "same-host affinity/thread protocol",
+        "achieved common error",
+        "complete failure/work accounting",
+        "paired uncertainty"
+      ]
+    },
+    {
+      "claim": "Adaptive switching",
+      "current": "HEURISTIC_PARTIAL",
+      "required": [
+        "actual live call path",
+        "runtime transition traces",
+        "reentrant regimes",
+        "state/tolerance/accounting invariants"
+      ]
+    },
+    {
+      "claim": "Reproducible release",
+      "current": "NOT_EVIDENCED",
+      "required": [
+        "toolchain policy",
+        "clean source identity",
+        "workspace tests/build/clippy",
+        "CI or independent receipt",
+        "provenance manifest"
+      ]
+    }
+  ],
+  "legacy_thresholds": {
+    "status": "CARRIED_FORWARD_NOT_REAUTHORIZED",
+    "values": {
+      "median_speedup_min": 1.15,
+      "accepted_step_ratio_max": 1.2,
+      "fallback_ratio_max": 0.1,
+      "critical_depth_max": 8,
+      "critical_depth_p95_max": 6,
+      "applicable_global_order_min": 4.8,
+      "fast_lane_jacobian_calls": 0,
+      "fast_lane_newton_calls": 0
+    },
+    "rule": "These values are from previous handoff, not re-authorized here. Bind official authority before M4; never relax to fit results."
+  }
+}

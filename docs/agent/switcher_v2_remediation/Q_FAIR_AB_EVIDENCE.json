@@ -1,0 +1,117 @@
+{
+  "evidence_id": "EV-Q-FAIR-AB-001",
+  "task_id": "Q-FAIR-AB",
+  "claim_support": [
+    "implementation-verified",
+    "numerically-checked"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "worktree_head": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "tree_sha": "8a236871948798cb2a40c8a5ea65112a045bf16d",
+    "branch": "task/Q-FAIR-AB-20261106_v2",
+    "input_hashes": [
+      {
+        "path": "crates/vigilode/tests/strict_return_work_contracts.rs",
+        "sha256": "4b68ff0df4df94ae1b997864f89d311749ffca86c2aaee16d1f0eb62a78f306d"
+      },
+      {
+        "path": "crates/vigilode/tests/work_model_contracts.rs",
+        "sha256": "82f80164e62243d969ce743770ae26e32623a1f18579fc67db6f849767c9d643"
+      },
+      {
+        "path": "crates/rodas5p-integrators/tests/work_counter_lane_contracts.rs",
+        "sha256": "7ee0df74ffcf87cb4dc0a6a23ca1029288102d99d3e8e2fa0ebf374737aa1408"
+      }
+    ],
+    "identity_relation": "BYTE_IDENTITY"
+  },
+  "command_records": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "vigilode",
+        "--test",
+        "strict_return_work_contracts",
+        "--test",
+        "work_model_contracts"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-Q-FAIR-AB-20261106_v2",
+      "exit_code": 0,
+      "stdout_artifact": "13 passed, 0 failed"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "work_counter_lane_contracts",
+        "--test",
+        "operator_accounting_contracts",
+        "--test",
+        "reaudit_lagged_failure_work"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-Q-FAIR-AB-20261106_v2",
+      "exit_code": 0,
+      "stdout_artifact": "5 passed, 0 failed"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-core",
+        "--test",
+        "work_counter_contracts",
+        "--test",
+        "work_unit_contracts"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-Q-FAIR-AB-20261106_v2",
+      "exit_code": 0,
+      "stdout_artifact": "7 passed, 0 failed"
+    }
+  ],
+  "result": "Total work accounting identity closes on all terminal paths (accounting_complete=true). Strict sentinel returns, same-window competitive pilots, fatal failed proposals, and derivative refusal policies preserve exact cumulative work counters (rhs, jvp, lu, step attempts) without state corruption.",
+  "limitations": [
+    "Work accounting closes deterministically; wall-clock timing authority remains diagnostic_only.",
+    "Zero-allocation contract applies to numerical integration hot loops (VG-1); full-run allocation window includes startup/mesh setup.",
+    "Production release qualification remains on hold."
+  ],
+  "math_review": {
+    "definitions": "A fair A/B comparison requires identical terminal accounting: total work W = sum(W_accepted) + sum(W_rejected) + sum(W_speculative) + sum(W_refused). Discarded proposals must not revert work counters.",
+    "assumptions": [
+      "Every RHS evaluation, JVP vector action, LU decomposition, and linear solver iteration increments a strictly monotonic integer counter.",
+      "Committed state y(t) is only updated upon explicit step acceptance."
+    ],
+    "derivation": "For any segment k in 1..M, W_total(k) = W_total(k-1) + W_segment(k). If segment k fails or is rejected, W_total remains preserved while state y_k is reset to y_{k-1}.",
+    "roundoff_model": "Exact 64-bit unsigned integer counter arithmetic; no floating-point rounding in work counters.",
+    "counterexamples": [
+      "Fatal sentinel explicit trial terminates with success=false, message='fatal sentinel explicit return', and preserves cumulative work before stopping.",
+      "Derivative policy=Forbidden verifies jvp_vectors == 0 while charging exact rhs_calls."
+    ]
+  },
+  "work_accounting": {
+    "rhs": 155,
+    "jvp": 0,
+    "jacobian": 3,
+    "linear_iterations": 0,
+    "factorizations": 3,
+    "rejected_steps": 1,
+    "speculative_work": null,
+    "refused_work": null,
+    "failed_attempts": 1,
+    "unknown_counters": []
+  },
+  "decision_rationale": "Fair A/B accounting identity is formally closed across 25 dedicated unit and integration tests across vigilode, rodas5p-integrators, and rodas5p-core crates. All negative controls pass."
+}

@@ -168,6 +168,127 @@ impl ProductionConfig {
     }
 }
 
+/// Error returned by [`ProductionSolver::solve_checked`].
+#[derive(Debug, thiserror::Error)]
+pub enum ProductionSolveError {
+    /// Pre-solve validation refused the request before entering callbacks.
+    #[error("invalid production solver request: {0}")]
+    InvalidRequest(#[from] SwitchingError),
+
+    /// Integration executed but did not complete successfully or accounting was incomplete.
+    ///
+    /// Preserves the partial accepted prefix, final time and state, stop message,
+    /// and complete work accounting in the boxed [`SwitchingSolution`].
+    #[error(
+        "production solve unsuccessful (final_time = {}, success = {}, accounting_complete = {}): {}",
+        .0.final_time,
+        .0.success,
+        .0.stats.accounting_complete,
+        .0.message
+    )]
+    Unsuccessful(Box<SwitchingSolution>),
+}
+
+impl ProductionSolveError {
+    /// Constructs an `Unsuccessful` error wrapping a partial solution.
+    pub fn unsuccessful(solution: SwitchingSolution) -> Self {
+        Self::Unsuccessful(Box::new(solution))
+    }
+
+    /// Returns a reference to the partial solution if integration executed.
+    pub fn partial_solution(&self) -> Option<&SwitchingSolution> {
+        match self {
+            Self::Unsuccessful(sol) => Some(sol),
+            Self::InvalidRequest(_) => None,
+        }
+    }
+
+    /// Consumes the error and returns the partial solution if integration executed.
+    pub fn into_partial_solution(self) -> Option<SwitchingSolution> {
+        match self {
+            Self::Unsuccessful(sol) => Some(*sol),
+            Self::InvalidRequest(_) => None,
+        }
+    }
+
+    /// Returns `true` if this error represents an unsuccessful solve preserving a partial prefix.
+    pub fn is_unsuccessful(&self) -> bool {
+        matches!(self, Self::Unsuccessful(_))
+    }
+
+    /// Returns `true` if this error was caused by pre-solve validation refusal.
+    pub fn is_invalid_request(&self) -> bool {
+        matches!(self, Self::InvalidRequest(_))
+    }
+}
+
+/// Outcome error indicating that an integration run did not complete successfully or has incomplete accounting.
+#[derive(Clone, Debug, PartialEq, thiserror::Error)]
+#[error(
+    "production outcome incomplete: success = {success}, final_time = {final_time}, accounting_complete = {accounting_complete}: {message}"
+)]
+pub struct ProductionOutcomeError {
+    /// Whether the solver reported local error acceptance across all steps.
+    pub success: bool,
+    /// Last committed endpoint time reached.
+    pub final_time: f64,
+    /// Detail message from the solver or driver.
+    pub message: String,
+    /// Whether all trials, probes, and callback operations were accounted for.
+    pub accounting_complete: bool,
+}
+
+impl ProductionOutcomeError {
+    /// Whether the solver reported success.
+    pub fn success(&self) -> bool {
+        self.success
+    }
+
+    /// Last committed time reached.
+    pub fn final_time(&self) -> f64 {
+        self.final_time
+    }
+
+    /// Detail message.
+    pub fn message(&self) -> &str {
+        &self.message
+    }
+
+    /// Whether accounting was complete.
+    pub fn accounting_complete(&self) -> bool {
+        self.accounting_complete
+    }
+}
+
+impl SwitchingSolution {
+    /// Returns `true` if and only if the solve completed successfully to `target_t` with complete accounting.
+    ///
+    /// Specifically verifies that:
+    /// 1. `self.success == true`,
+    /// 2. `self.stats.accounting_complete == true`,
+    /// 3. `self.final_time == target_t`.
+    pub fn is_successful_endpoint(&self, target_t: f64) -> bool {
+        self.success && self.stats.accounting_complete && self.final_time == target_t
+    }
+
+    /// Verifies that the solve completed successfully with complete work accounting.
+    ///
+    /// Returns `Ok(())` if `self.success && self.stats.accounting_complete`.
+    /// Otherwise returns `Err(ProductionOutcomeError)` describing the incomplete state.
+    pub fn ensure_completed(&self) -> Result<(), ProductionOutcomeError> {
+        if self.success && self.stats.accounting_complete {
+            Ok(())
+        } else {
+            Err(ProductionOutcomeError {
+                success: self.success,
+                final_time: self.final_time,
+                message: self.message.clone(),
+                accounting_complete: self.stats.accounting_complete,
+            })
+        }
+    }
+}
+
 /// Deployment entry point preserving all native solution and accounting data.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct ProductionSolver;
@@ -175,10 +296,30 @@ pub struct ProductionSolver;
 impl ProductionSolver {
     /// Validate the provider contract before callbacks, then run the adapter.
     ///
-    /// A completed call may return `Ok` with `success == false`. Consumers must
-    /// inspect `success`, `final_time`, `message` and `stats.accounting_complete`;
-    /// its accepted prefix and all returned work remain available. Smooth
-    /// forward identity-mass IVPs with endpoint observations are supported.
+    /// # Important Result Semantics (Partial-Prefix & Unsuccessful Ok)
+    ///
+    /// Returning `Ok(solution)` from this method indicates that the adapter
+    /// executed and produced a run record. It **does NOT guarantee** that
+    /// integration reached the final time with error acceptance (`solution.success == true`).
+    /// In particular, when integration terminates early due to:
+    /// - a user callback error ([`crate::CallbackError::Fatal`]),
+    /// - total attempt budget exhaustion ([`crate::Options::max_steps`]),
+    /// - step size underflow or no representable forward progress,
+    ///
+    /// `solve` returns `Ok(solution)` containing the partial accepted prefix
+    /// reached so far, with `solution.success == false`.
+    ///
+    /// Callers **must** inspect:
+    /// - `solution.success`: whether the endpoint was reached with local error acceptance,
+    /// - `solution.final_time`: the last committed time of the accepted prefix,
+    /// - `solution.message`: human-readable explanation of completion or early stop reason,
+    /// - `solution.stats.accounting_complete`: whether all callback invocations and trials were accounted for.
+    ///
+    /// For fail-closed semantics, callers should use [`Self::solve_checked`] or
+    /// [`SwitchingSolution::ensure_completed`], which return an `Err` on unsuccessful
+    /// or incomplete runs while preserving the partial solution.
+    ///
+    /// Smooth forward identity-mass IVPs with endpoint observations are supported.
     /// The underlying adapter refuses events, dense output, unsupported
     /// tolerance/provider combinations and invalid inputs before callbacks.
     pub fn solve(
@@ -189,5 +330,28 @@ impl ProductionSolver {
     ) -> Result<SwitchingSolution, SwitchingError> {
         config.validate_provider(problem)?;
         SwitchingSolver::solve(problem, t_span, y0, &config.options, &config.switching)
+    }
+
+    /// Validate the provider contract and run the adapter, returning an error if integration is unsuccessful.
+    ///
+    /// Returns:
+    /// - `Ok(solution)` if and only if `solution.success == true && solution.stats.accounting_complete == true`.
+    /// - `Err(ProductionSolveError::Unsuccessful(solution))` if the solve terminated early
+    ///   (`success == false` or `accounting_complete == false`). The boxed [`SwitchingSolution`]
+    ///   retains the partial accepted prefix (`t`, `y`, `final_time`, `final_state`), stop message,
+    ///   and complete work accounting.
+    /// - `Err(ProductionSolveError::InvalidRequest(err))` if pre-solve configuration validation fails before callbacks.
+    pub fn solve_checked(
+        problem: &Problem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        config: &ProductionConfig,
+    ) -> Result<SwitchingSolution, ProductionSolveError> {
+        let solution = Self::solve(problem, t_span, y0, config)?;
+        if solution.success && solution.stats.accounting_complete {
+            Ok(solution)
+        } else {
+            Err(ProductionSolveError::Unsuccessful(Box::new(solution)))
+        }
     }
 }

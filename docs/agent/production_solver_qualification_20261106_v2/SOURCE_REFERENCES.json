@@ -1,0 +1,58 @@
+{
+  "schema": "vigilode.source_references.v2",
+  "repository_source_paths": [
+    "README.md",
+    "Cargo.toml",
+    "Cargo.lock",
+    "rust-toolchain.toml",
+    "crates/vigilode/src/production.rs",
+    "crates/vigilode/src/switching.rs",
+    "crates/vigilode/src/registry.rs",
+    "crates/vigilode/src/hybrid_automaton.rs",
+    "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+    "crates/vigilode-coupled/src/rhs_homotopy.rs",
+    "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs",
+    "crates/rodas5p-core/src/leja_action.rs",
+    "crates/rodas5p-core/src/nonnormal_observers.rs",
+    "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+    "bench/out/adversarial_rust_results.json",
+    "bench/out/adversarial_julia_results.json",
+    "bench/out/ADVERSARIAL_CROSS_SOLVER_REPORT.md"
+  ],
+  "benchmark_sha256": {
+    "rust": "cefc6d5772146c40435ec316ca81f41d5dd5e637ae20b7632ccd6039eaf6e5ad",
+    "julia": "5556f500af755297c02cdd32d0767cc3c54e24d77cd6382880c9afa979b016ea"
+  },
+  "literature": [
+    {
+      "claim": "Validated IVP methods return guaranteed solution enclosures under stated success hypotheses, unlike mere error estimates.",
+      "reference": "Nedialkov, Jackson & Corliss (1999), Validated solutions of IVPs for ODEs",
+      "url": "https://dlnext.acm.org/doi/10.1016/S0096-3003(98)10083-8"
+    },
+    {
+      "claim": "Taylor models reduce interval dependency/wrapping but require a sound remainder enclosure.",
+      "reference": "Neher, Jackson & Nedialkov (2007), On Taylor Model Based Integration of ODEs, SIAM JNA 45, 236-262",
+      "url": "https://epubs.siam.org/doi/10.1137/050638448"
+    },
+    {
+      "claim": "Validated Taylor arithmetic must enclose coefficient rounding and remainder.",
+      "reference": "Revol, Berz & Makino (2005), Reliable Implementation of Taylor Models in COSY",
+      "url": "https://perso.ens-lyon.fr/nathalie.revol/publis/RevolBerzMakino2005-Taylor-COSY.pdf"
+    },
+    {
+      "claim": "Verified-solver comparisons need systematic criteria.",
+      "reference": "Auer & Rauh (2009)",
+      "url": "https://scispace.com/papers/toward-definition-of-systematic-criteria-for-the-comparison-fwdptmr3st?utm_source=chatgpt&utm_medium=tool"
+    },
+    {
+      "claim": "Explicit/implicit RK can be adapted to validated integration with separate enclosure machinery.",
+      "reference": "Chapoutot et al. (2015), Validated Explicit and Implicit Runge-Kutta Methods",
+      "url": "https://scispace.com/papers/validated-explicit-and-implicit-runge-kutta-methods-l2jqw4mfos?utm_source=chatgpt&utm_medium=tool"
+    },
+    {
+      "claim": "Stiffness indicators can guide switching but are not validated stability proofs.",
+      "reference": "Wolfram NDSolveStiffnessTest documentation",
+      "url": "https://reference.wolfram.com/language/tutorial/NDSolveStiffnessTest#1547789535"
+    }
+  ]
+}

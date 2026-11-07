@@ -16,8 +16,10 @@ use std::{
 };
 
 use rodas5p_core::{
-    FixedHLogNormObserver, GrowthBoundStatus, MovingHMetricObserver, QrSackerSellObserver,
-    ResolventNumericalAbscissaObserver,
+    CoreError, FixedHLogNormObserver, GrowthBoundStatus, MovingHMetricObserver,
+    QrSackerSellObserver, ResolventNumericalAbscissaObserver,
+    directed::Interval,
+    nonnormal_observers::{ValidatedSlabEnclosureObserver, point_interval_matrix_2x2},
 };
 
 // ---------------------------------------------------------------------------
@@ -137,7 +139,12 @@ fn test_section6_nonnormal_matrix_all_observers() {
     let mut fixed_euclidean = FixedHLogNormObserver::identity(2);
     let mu_i = fixed_euclidean.compute_mu_2x2(&j).unwrap();
     assert!((mu_i - expected_mu2).abs() < 1e-14);
-    assert_eq!(fixed_euclidean.status(), GrowthBoundStatus::Certified);
+    assert_eq!(
+        fixed_euclidean.status(),
+        GrowthBoundStatus::SampledDiagnostic
+    );
+    assert!(fixed_euclidean.status().is_sampled_or_estimate());
+    assert!(!fixed_euclidean.status().is_certified());
     assert_eq!(fixed_euclidean.work_counters.eigen_solves, 1);
 
     // With a properly scaled metric H = diag(1, 100), log norm becomes negative!
@@ -165,7 +172,9 @@ fn test_section6_nonnormal_matrix_all_observers() {
         "bound {bound_at_028} must upper bound true norm {norm_at_028}"
     );
     assert!((bound_at_028 - (expected_mu2 * 0.28).exp()).abs() < 1e-8);
-    assert_eq!(moving_h.status(), GrowthBoundStatus::Certified);
+    assert_eq!(moving_h.status(), GrowthBoundStatus::SampledDiagnostic);
+    assert!(moving_h.status().is_sampled_or_estimate());
+    assert!(!moving_h.status().is_certified());
 
     // Observer 3: QrSackerSellObserver
     let mut qr_obs = QrSackerSellObserver::new_2x2();
@@ -173,7 +182,9 @@ fn test_section6_nonnormal_matrix_all_observers() {
     assert_eq!(rates[0], -1.0);
     assert_eq!(rates[1], -2.0);
     assert_eq!(alpha_max_0, -1.0);
-    assert_eq!(qr_obs.status(), GrowthBoundStatus::Certified);
+    assert_eq!(qr_obs.status(), GrowthBoundStatus::SampledDiagnostic);
+    assert!(qr_obs.status().is_sampled_or_estimate());
+    assert!(!qr_obs.status().is_certified());
 
     // Step continuous QR for 1,000 steps
     for _ in 0..1000 {
@@ -188,6 +199,22 @@ fn test_section6_nonnormal_matrix_all_observers() {
         assert!(dot < 1e-12);
     }
     assert_eq!(qr_obs.work_counters.qr_steps, 1000);
+    assert!(qr_obs.orthogonality_defect() < 1e-12);
+
+    // Observer 5: ValidatedSlabEnclosureObserver (Rigorous Full-Slab Enclosure)
+    let mut validated_obs = ValidatedSlabEnclosureObserver::identity_2x2();
+    assert_eq!(validated_obs.status(), GrowthBoundStatus::Certified);
+    assert!(validated_obs.status().is_certified());
+    assert!(!validated_obs.status().is_sampled_or_estimate());
+    for _ in 0..280 {
+        validated_obs.step_constant_j_2x2(dt, &j).unwrap();
+    }
+    let validated_bound_at_028 = validated_obs.cumulative_growth_bound();
+    assert!(
+        validated_bound_at_028 >= norm_at_028,
+        "certified slab bound {validated_bound_at_028} must upper bound true norm {norm_at_028}"
+    );
+    assert_eq!(validated_obs.work_counters.slab_enclosures, 280);
 
     // Observer 4: ResolventNumericalAbscissaObserver
     let mut res_obs = ResolventNumericalAbscissaObserver::new();
@@ -328,23 +355,37 @@ fn test_vg1_zero_allocation() {
     let mut moving_h = MovingHMetricObserver::new_2x2(h).unwrap();
     let mut qr_obs = QrSackerSellObserver::new_2x2();
     let res_obs = ResolventNumericalAbscissaObserver::new();
+    let mut validated_obs = ValidatedSlabEnclosureObserver::from_constant_h_2x2(h).unwrap();
+    let j_int = point_interval_matrix_2x2(&j).unwrap();
+    let h_int = point_interval_matrix_2x2(&h).unwrap();
+    let hdot_int = point_interval_matrix_2x2(&hdot).unwrap();
 
-    // Hot loop: 1,000 steps executing all 4 observers in-place
-    let ((mu_fixed, mu_moving, alpha_qr, norm_res), allocations, allocated_bytes) =
+    // Hot loop: 1,000 steps executing all 5 observers in-place
+    let ((mu_fixed, mu_moving, alpha_qr, norm_res, mu_val), allocations, allocated_bytes) =
         count_allocations(|| {
             let mut last_mu_fixed = 0.0;
             let mut last_mu_moving = 0.0;
             let mut last_alpha_qr = 0.0;
             let mut last_norm_res = 0.0;
+            let mut last_mu_val = 0.0;
 
             for _step in 0..1000 {
                 last_mu_fixed = fixed_h.compute_mu_2x2(&j).unwrap();
                 last_mu_moving = moving_h.step_2x2(dt, &j, &h, &hdot).unwrap();
                 last_alpha_qr = qr_obs.step_2x2(dt, &j).unwrap();
                 last_norm_res = res_obs.resolvent_norm_2x2(&j, s).unwrap();
+                last_mu_val = validated_obs
+                    .step_slab_2x2(dt, &j_int, &h_int, &hdot_int)
+                    .unwrap();
             }
 
-            (last_mu_fixed, last_mu_moving, last_alpha_qr, last_norm_res)
+            (
+                last_mu_fixed,
+                last_mu_moving,
+                last_alpha_qr,
+                last_norm_res,
+                last_mu_val,
+            )
         });
 
     assert_eq!(
@@ -358,14 +399,276 @@ fn test_vg1_zero_allocation() {
     assert_eq!(moving_h.work_counters.eigen_solves, 1000);
     assert_eq!(moving_h.work_counters.metric_updates, 1000);
     assert_eq!(qr_obs.work_counters.qr_steps, 1000);
+    assert_eq!(validated_obs.work_counters.slab_enclosures, 1000);
 
     assert_eq!(fixed_h.work_counters.hot_loop_allocations, 0);
     assert_eq!(moving_h.work_counters.hot_loop_allocations, 0);
     assert_eq!(qr_obs.work_counters.hot_loop_allocations, 0);
     assert_eq!(res_obs.work_counters.hot_loop_allocations, 0);
+    assert_eq!(validated_obs.work_counters.hot_loop_allocations, 0);
 
     assert!(mu_fixed.is_finite());
     assert!(mu_moving.is_finite());
     assert!(alpha_qr.is_finite());
     assert!(norm_res.is_finite());
+    assert!(mu_val.is_finite());
+}
+
+// ---------------------------------------------------------------------------
+// Test 5: Negative Control - Missed Interior Peak by Pointwise Sampling
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_negative_control_missed_peak() {
+    // Problem: J(t) has mu_2(J(t_n)) <= 0 and mu_2(J(t_{n+1})) <= 0 at endpoints,
+    // but in the interior of the slab t in (t_n, t_{n+1}), a large transient spike occurs
+    // with peak mu_2(J) ~ +48.0.
+    // Pointwise sampling at endpoints evaluates mu <= 0 and computes a cumulative bound <= 1.0 (decay).
+    // The true continuous trajectory experiences amplification exp(48 * 0.1) ~ 121.5!
+    // Sampled observers MUST NOT report Certified, but SampledDiagnostic.
+    // The ValidatedSlabEnclosureObserver requires the interval enclosure over the slab [t_n, t_{n+1}],
+    // correctly bounding the interior peak or refusing certification if the peak is unenclosed.
+
+    let j_endpoint = [[-2.0, 0.0], [0.0, -2.0]];
+    let h_id = [[1.0, 0.0], [0.0, 1.0]];
+    let hdot_zero = [[0.0, 0.0], [0.0, 0.0]];
+    let dt = 0.1;
+
+    // 1. Sampled observer only evaluates at discrete endpoints
+    let mut sampled_obs = MovingHMetricObserver::identity_2x2();
+    let mu_sample = sampled_obs
+        .step_2x2(dt, &j_endpoint, &h_id, &hdot_zero)
+        .unwrap();
+    assert_eq!(mu_sample, -2.0);
+    assert!(
+        sampled_obs.cumulative_growth_bound() < 1.0,
+        "sampled observer falsely predicts decay"
+    );
+    assert_eq!(sampled_obs.status(), GrowthBoundStatus::SampledDiagnostic);
+    assert!(!sampled_obs.status().is_certified());
+
+    // 2. Validated observer with slab enclosure enclosing the interior peak:
+    // Over the slab [t_n, t_{n+1}], J_01 has peak in [0.0, 100.0]
+    let j_slab = [
+        [
+            Interval::new(-2.0, -2.0).unwrap(),
+            Interval::new(0.0, 100.0).unwrap(),
+        ],
+        [
+            Interval::new(0.0, 0.0).unwrap(),
+            Interval::new(-2.0, -2.0).unwrap(),
+        ],
+    ];
+    let h_slab = [
+        [Interval::point(1.0).unwrap(), Interval::point(0.0).unwrap()],
+        [Interval::point(0.0).unwrap(), Interval::point(1.0).unwrap()],
+    ];
+    let hdot_slab = [
+        [Interval::point(0.0).unwrap(), Interval::point(0.0).unwrap()],
+        [Interval::point(0.0).unwrap(), Interval::point(0.0).unwrap()],
+    ];
+
+    let mut validated_obs = ValidatedSlabEnclosureObserver::identity_2x2();
+    let mu_slab_upper = validated_obs
+        .step_slab_2x2(dt, &j_slab, &h_slab, &hdot_slab)
+        .unwrap();
+    // mu_2 of [[-2, 100], [0, -2]] is -2 + 50 = 48.0
+    assert!(
+        mu_slab_upper >= 48.0,
+        "validated observer captures interior peak: {mu_slab_upper}"
+    );
+    assert!(
+        validated_obs.cumulative_growth_bound() > 100.0,
+        "validated bound certifies amplification"
+    );
+    assert_eq!(validated_obs.status(), GrowthBoundStatus::Certified);
+    assert!(validated_obs.status().is_certified());
+}
+
+// ---------------------------------------------------------------------------
+// Test 6: Negative Control - Fast Metric Oscillation Hdot Transport Term
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_negative_control_fast_h_oscillation() {
+    // If H(t) oscillates with high frequency omega = 1000,
+    // Hdot(t) has amplitude omega * epsilon = 100.0.
+    // Pointwise sampling at intervals Delta t >> 1/omega will sample arbitrary phase points,
+    // missing the peak transport rate.
+    // Validated observer requires interval enclosure of Hdot on the entire slab.
+    let omega_eps = 100.0;
+    let hdot_slab = [
+        [
+            Interval::new(-omega_eps, omega_eps).unwrap(),
+            Interval::point(0.0).unwrap(),
+        ],
+        [
+            Interval::point(0.0).unwrap(),
+            Interval::new(-omega_eps, omega_eps).unwrap(),
+        ],
+    ];
+    let j_slab = [
+        [
+            Interval::point(-1.0).unwrap(),
+            Interval::point(0.0).unwrap(),
+        ],
+        [
+            Interval::point(0.0).unwrap(),
+            Interval::point(-1.0).unwrap(),
+        ],
+    ];
+    let h_slab = [
+        [
+            Interval::new(0.8, 1.2).unwrap(),
+            Interval::point(0.0).unwrap(),
+        ],
+        [
+            Interval::point(0.0).unwrap(),
+            Interval::new(0.8, 1.2).unwrap(),
+        ],
+    ];
+
+    let mut validated_obs = ValidatedSlabEnclosureObserver::identity_2x2();
+    let mu_upper = validated_obs
+        .step_slab_2x2(0.01, &j_slab, &h_slab, &hdot_slab)
+        .unwrap();
+    assert!(
+        mu_upper >= 40.0,
+        "fast H oscillation transport term must be enclosed by slab observer, got {mu_upper}"
+    );
+    assert_eq!(validated_obs.status(), GrowthBoundStatus::Certified);
+}
+
+// ---------------------------------------------------------------------------
+// Test 7: Negative Control - Singular or Indefinite Metric Rejection
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_negative_control_singular_or_indefinite_h() {
+    // 1. Singular matrix: det = 0
+    let h_singular = [[1.0, 1.0], [1.0, 1.0]];
+    assert!(MovingHMetricObserver::new_2x2(h_singular).is_err());
+    assert!(ValidatedSlabEnclosureObserver::from_constant_h_2x2(h_singular).is_err());
+
+    // 2. Indefinite matrix: det = -3 < 0
+    let h_indefinite = [[1.0, 2.0], [2.0, 1.0]];
+    assert!(MovingHMetricObserver::new_2x2(h_indefinite).is_err());
+    assert!(ValidatedSlabEnclosureObserver::from_constant_h_2x2(h_indefinite).is_err());
+
+    // 3. Interval matrix that degenerates to singularity on slab
+    let h_slab_singular = [
+        [
+            Interval::new(0.0, 1.0).unwrap(),
+            Interval::point(0.0).unwrap(),
+        ],
+        [Interval::point(0.0).unwrap(), Interval::point(1.0).unwrap()],
+    ];
+    assert!(ValidatedSlabEnclosureObserver::new_2x2(h_slab_singular).is_err());
+
+    // 4. Non-finite matrix
+    let h_nan = [[f64::NAN, 0.0], [0.0, 1.0]];
+    assert!(MovingHMetricObserver::new_2x2(h_nan).is_err());
+    assert!(ValidatedSlabEnclosureObserver::from_constant_h_2x2(h_nan).is_err());
+}
+
+// ---------------------------------------------------------------------------
+// Test 8: Negative Control - Metric Jump Factor Rejection and Outward Bound
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_negative_control_metric_jump_invalid() {
+    let mut obs = ValidatedSlabEnclosureObserver::identity_2x2();
+
+    // Invalid jump target: singular matrix must fail closed
+    let h_bad = [[0.0, 0.0], [0.0, 0.0]];
+    let res = obs.switch_metric_constant_2x2(h_bad);
+    assert!(
+        res.is_err(),
+        "switching to singular metric must fail closed"
+    );
+
+    // Valid jump target: outward enclosure
+    let h_good = [[4.0, 0.0], [0.0, 1.0]];
+    let gamma = obs.switch_metric_constant_2x2(h_good).unwrap();
+    assert!(
+        gamma >= 2.0,
+        "jump factor from I to diag(4,1) must be >= 2.0, got {gamma}"
+    );
+    assert_eq!(obs.cumulative_jump_factor(), gamma);
+}
+
+// ---------------------------------------------------------------------------
+// Test 9: Negative Control - Continuous QR Orthogonality Defect
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_negative_control_qr_loss_and_orthogonality() {
+    let mut qr_obs = QrSackerSellObserver::new_2x2();
+    assert_eq!(qr_obs.orthogonality_defect(), 0.0);
+    assert_eq!(qr_obs.status(), GrowthBoundStatus::SampledDiagnostic);
+    assert!(!qr_obs.status().is_certified());
+
+    // Step with ill-conditioned matrix
+    let stiff_j = [[-1000.0, 5000.0], [0.0, -2000.0]];
+    for _ in 0..100 {
+        let _ = qr_obs.step_2x2(0.001, &stiff_j);
+    }
+    let defect = qr_obs.orthogonality_defect();
+    assert!(defect >= 0.0);
+    assert!(defect.is_finite());
+    // SampledDiagnostic status remains uncertified
+    assert_eq!(qr_obs.status(), GrowthBoundStatus::SampledDiagnostic);
+}
+
+// ---------------------------------------------------------------------------
+// Test 10: Negative Control - Directed Exponential Overflow Protection
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_negative_control_exp_overflow() {
+    // When integrated exponent exceeds 709.0, ordinary f64 exp() produces infinity.
+    // ValidatedSlabEnclosureObserver uses directed exp_interval which fails closed
+    // with CoreError::NonFinite rather than silently certifying infinity.
+    let j_huge = [[800.0, 0.0], [0.0, 800.0]];
+    let mut validated_obs = ValidatedSlabEnclosureObserver::identity_2x2();
+    let res = validated_obs.step_constant_j_2x2(1.0, &j_huge);
+    assert!(
+        res.is_err(),
+        "exponential overflow in validated observer must fail closed"
+    );
+    match res {
+        Err(CoreError::NonFinite(msg)) => {
+            assert!(
+                msg.contains("exp overflow"),
+                "expected exp overflow, got {msg}"
+            );
+        }
+        other => panic!("expected CoreError::NonFinite, got {other:?}"),
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Test 11: Positive Control - Diagonal Decay Certified Enclosure
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_validated_slab_enclosure_diagonal_decay() {
+    // Diagonal stable system J = [[-1.0, 0.0], [0.0, -3.0]]
+    // True matrix exponential norm is exactly exp(-t) <= 1.0 for all t >= 0.
+    let j = [[-1.0, 0.0], [0.0, -3.0]];
+    let mut validated_obs = ValidatedSlabEnclosureObserver::identity_2x2();
+    assert_eq!(validated_obs.status(), GrowthBoundStatus::Certified);
+
+    let dt = 0.05;
+    for _ in 0..20 {
+        let mu = validated_obs.step_constant_j_2x2(dt, &j).unwrap();
+        assert!(mu <= -1.0, "mu_2(J) must be <= -1.0, got {mu}");
+    }
+    let bound = validated_obs.cumulative_growth_bound();
+    assert!(
+        bound <= (-1.0_f64).exp() + 1e-12,
+        "bound must certify decay <= exp(-1)"
+    );
+    assert!(bound < 1.0, "certified bound confirms monotonic decay");
+    assert_eq!(validated_obs.status(), GrowthBoundStatus::Certified);
 }

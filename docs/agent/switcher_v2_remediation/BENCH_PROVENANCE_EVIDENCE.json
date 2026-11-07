@@ -1,0 +1,76 @@
+{
+  "evidence_id": "EV-BENCH-PROVENANCE-001",
+  "task_id": "BENCH-PROVENANCE",
+  "claim_support": [
+    "implementation-verified",
+    "numerically-checked"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "worktree_head": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "tree_sha": "8a236871948798cb2a40c8a5ea65112a045bf16d",
+    "branch": "task/BENCH-REF-20261106_v2",
+    "input_hashes": [
+      {
+        "path": "bench/protocols/adversarial_cross_solver_v1.json",
+        "sha256": "2addd1eb7d11f6a07a7c453b606c50ee1d69029aedf937e8c0ac0ad865463891"
+      },
+      {
+        "path": "bench/out/adversarial_rust_results.json",
+        "sha256": "16d66eb24c9ace8756a4b340c45d3c0e872d68d1c200d4e930571235a0fd4171"
+      },
+      {
+        "path": "bench/out/adversarial_julia_results.json",
+        "sha256": "5556f500af755297c02cdd32d0767cc3c54e24d77cd6382880c9afa979b016ea"
+      },
+      {
+        "path": "bench/out/ADVERSARIAL_CROSS_SOLVER_REPORT.md",
+        "sha256": "9111ef4a65c37bd453c5587b53177554fdec527030466d29001aae4d32fddcae"
+      },
+      {
+        "path": "bench/build_unified_comparison.py",
+        "sha256": "0bbf0cdcead75026796d879f7061853e9b5a365901b83408cdfe0f720d805ffe"
+      }
+    ],
+    "identity_relation": "BYTE_IDENTITY"
+  },
+  "command_records": [
+    {
+      "argv": [
+        "python3",
+        "bench/build_unified_comparison.py",
+        "bench/out/adversarial_rust_results.json",
+        "bench/out/adversarial_julia_results.json",
+        "bench/out/ADVERSARIAL_CROSS_SOLVER_REPORT.md"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-BENCH-REF-20261106_v2",
+      "exit_code": 0,
+      "stdout_artifact": "bench/out/ADVERSARIAL_CROSS_SOLVER_REPORT.md"
+    }
+  ],
+  "result": "All relevant SHA-256 hashes verified. Same physical execution host confirmed (AMD Ryzen 9 5900X 12-Core Processor, 24 logical CPUs) across Rust and Julia cross-solver runs. Failures, step counts, RHS evaluations, Jacobi callbacks, and heap allocations accounted without loss.",
+  "limitations": [
+    "Timing authority remains diagnostic_only (verified same physical host) and does not qualify production speed claims.",
+    "Overall solver release qualification remains hold."
+  ],
+  "decision_rationale": "Execution manifest strictly verified with identical host environment, pinned dependencies (diffsol 0.16.1, rustc 1.99.0, Julia SciML), and complete work accounting.",
+  "hardware_manifest": {
+    "host_cpu": "AMD Ryzen 9 5900X 12-Core Processor (24 CPUs)",
+    "same_host": true,
+    "timing_authority_verdict": "diagnostic_only (verified same physical host)"
+  },
+  "work_accounting": {
+    "total_rust_rows": 126,
+    "success_rows": 123,
+    "failed_rows": 3,
+    "failed_repetitions": 21,
+    "protocol_violation_rows": 0,
+    "total_julia_rows": 45,
+    "julia_success_rows": 44,
+    "julia_unstable_rows": 1
+  }
+}

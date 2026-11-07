@@ -1,0 +1,155 @@
+{
+  "schema": "vigilode.current_source_audit.v2",
+  "review_boundary": {
+    "selected_stages": [
+      "C9",
+      "C10"
+    ],
+    "supporting_checks": [
+      "C2",
+      "C7",
+      "C8"
+    ],
+    "not_completed": [
+      "C1",
+      "C3",
+      "C4",
+      "C5",
+      "C6",
+      "full_C7",
+      "full_C8",
+      "complete_release_C10"
+    ],
+    "native_subagent": "NOT_RUN",
+    "reason": "No native create/spawn/wait/collect delegation facility was exposed; serial fallback used."
+  },
+  "findings": [
+    {
+      "id": "AUTH-001",
+      "severity": "CRITICAL",
+      "status": "SOURCE_CONFIRMED",
+      "failure_class": "implementation/certificate authority",
+      "source": "crates/vigilode-coupled/src/rhs_homotopy.rs:204-237,243-255,291-337",
+      "observation": "DerivativeSupremumEvidence is publicly constructible from caller-supplied operator_id, model_epoch, ball_radius, certified_q and nonzero evidence_reference. verify_with_evidence checks scalar/radius inequalities before is_certified=true; it does not independently verify a derivative enclosure over the full ball or bind exact map/preconditioner identity. root_error_bound uses ordinary f64 division.",
+      "impact": "Caller metadata can acquire certificate status without a verified derivative supremum. Banach's theorem itself is not refuted.",
+      "repair": "Opaque source-bound evidence; bind map G, invertible P, model digest/epoch, norm, center/radius, arithmetic backend and checker version. Replay derivative enclosure over complete ball. Outwardly enclose residual, (1-q)r and quotient. Unsupported callbacks remain EstimateOnly."
+    },
+    {
+      "id": "AUTH-002",
+      "severity": "CRITICAL",
+      "status": "SOURCE_CONFIRMED",
+      "failure_class": "implementation/certificate authority",
+      "source": "crates/rodas5p-core/src/leja_action.rs:2812-2898,3283-3291",
+      "observation": "CertifiedNormalityWitness stores operator_key and model_epoch, but the consumer checks is_normal, dimension and beta only. Construction accepts skew-symmetry within 1e-14*(max_entry+1).",
+      "impact": "A same-dimension or stale witness may be consumed for another operator; approximate skewness is not exact normality.",
+      "repair": "Compare canonical operator digest, scaling, dimension and epoch at consumption. Require exact represented relation or outwardly enclose defect and spectral perturbation."
+    },
+    {
+      "id": "AUTH-003",
+      "severity": "CRITICAL",
+      "status": "SOURCE_CONFIRMED",
+      "failure_class": "numerical/certificate authority",
+      "source": "crates/rodas5p-integrators/src/conditioned_polynomial.rs:543-559,892-938,941-1012",
+      "observation": "Public from_chebyshev_intervals accepts caller intervals and caller-selected GershgorinCertified. gershgorin_intervals uses ordinary row sums and ordinary endpoints. The generated declaration is not source-bound to a private verified enclosure; operator norm fallback also uses ordinary row sums.",
+      "impact": "Caller intervals/source labels can mint Certified without source-bound outward spectral inclusion.",
+      "repair": "Only a private VerifiedSpectralEnclosure can mint Certified. Use outward row sums/endpoints and validate the matrix class. Caller intervals/Ritz remain EstimateOnly."
+    },
+    {
+      "id": "OBS-001",
+      "severity": "HIGH",
+      "status": "SOURCE_CONFIRMED",
+      "failure_class": "numerical/claim authority",
+      "source": "crates/rodas5p-core/src/nonnormal_observers.rs:262-266,452-520,627-696",
+      "observation": "Fixed-H, Moving-H and QR observers report Certified. Moving-H samples J,H,Hdot and integrates mu_H*dt with ordinary f64 then exp(); QR uses (I+dt J)Q and Gram-Schmidt with sampled alpha_max*dt. No full time-slab/roundoff enclosure is constructed in the reviewed paths.",
+      "impact": "Finite samples do not bound a continuous-time supremum over the full slab.",
+      "repair": "Current sample-based modes become EstimateOnly/SampledDiagnostic. Validated mode must enclose J,H,Hdot, SPD lower bound, eigenvalue, quadrature remainder, metric jumps, QR defect and rounding on every slab."
+    },
+    {
+      "id": "FSM-001",
+      "severity": "HIGH",
+      "status": "CALL_GRAPH_CONFIRMED",
+      "failure_class": "integration/documentation",
+      "source": "crates/vigilode/src/hybrid_automaton.rs; crates/vigilode/src/switching.rs:923-949",
+      "observation": "No HybridRouteAutomaton call site was found in the SwitchingSolver dispatch file. Live switching state is DriveState. The automaton is exported and independently testable.",
+      "impact": "README may imply an exported automaton governs live routing without evidence.",
+      "repair": "Integrate it into the real route path and add runtime traces, or mark it standalone/experimental and document DriveState."
+    },
+    {
+      "id": "BENCH-001",
+      "severity": "HIGH",
+      "status": "ARTIFACT_CONFIRMED",
+      "failure_class": "benchmark reference/authority",
+      "source": "bench/out/adversarial_rust_results.json; bench/out/adversarial_julia_results.json; bench/out/ADVERSARIAL_CROSS_SOLVER_REPORT.md",
+      "observation": "Rust result has timing_authority=diagnostic_only, 126 rows (123 success,3 failure), 21 failed repetitions. All 900 matched rows are DIAGNOSTIC_ONLY with reason reference-disputed. Julia has 45 rows (44 Success,1 Unstable), one missing common-error value; it records exact Rust result SHA. Both timing authority fields are diagnostic_only.",
+      "impact": "Useful robustness diagnostics, not matched-achieved-error speedup or solver ranking evidence.",
+      "repair": "Resolve every disputed reference independently; pin clean source/binary/runner/corpus/reference/grid identities; rerun with achieved-error matching, uncertainty and complete failed/refused work accounting."
+    },
+    {
+      "id": "BENCH-002",
+      "severity": "MEDIUM",
+      "status": "REPORT_SEMANTICS_CONFLICT",
+      "failure_class": "documentation/benchmark authority",
+      "source": "bench/out/ADVERSARIAL_CROSS_SOLVER_REPORT.md",
+      "observation": "Report says Timing Authority diagnostic_only but Same-Host Speed Authority PASS.",
+      "impact": "PASS can be read as speed qualification although same-host proves identity only.",
+      "repair": "Rename to SAME_HOST_IDENTITY_CHECK; performance authority remains HOLD until reference and achieved-error gates pass."
+    },
+    {
+      "id": "EPOCH-001",
+      "severity": "HIGH",
+      "status": "TEST_PASS_AUTHORITY_UNRESOLVED",
+      "failure_class": "governance/identity provenance",
+      "source": "crates/vigilode/src/registry.rs:1044-1055,1177-1186; crates/vigilode/tests/switching_v2_remediation_contracts.rs:316-331",
+      "observation": "Implementation/golden tests use SHA-256 over checkpoint index plus endpoint bit patterns; current test passes. The test name still says FNV/index-independent. Its comment cites EPOCH_001_AUTHORITY_DECISION.md, not found in current docs/research.",
+      "impact": "Old test failure is resolved; persisted identity semantics and authority provenance remain unresolved.",
+      "repair": "Find owner-approved authority or create an approved append-only decision. Specify serialization, endianness, usize conversion, IEEE bits, signed zero/nonfinite behavior, index inclusion, digest truncation and migration. Rename test accurately."
+    },
+    {
+      "id": "API-001",
+      "severity": "MEDIUM",
+      "status": "SOURCE_CONFIRMED",
+      "failure_class": "API semantics",
+      "source": "crates/vigilode/src/production.rs:171-192",
+      "observation": "ProductionSolver::solve may return Ok with solution.success=false; consumers must inspect success, final_time, message and stats.accounting_complete.",
+      "impact": "Consumer can mistake partial accepted prefix for completed integration.",
+      "repair": "Add compatible checked outcome/helper and examples; test early exits."
+    },
+    {
+      "id": "CLAIM-001",
+      "severity": "HIGH",
+      "status": "SOURCE_CONFIRMED",
+      "failure_class": "documentation/claim authority",
+      "source": "README.md:3-8,26-41,45-58",
+      "observation": "README claims promotion gates passed, 23x-169x speedups, live HybridRouteAutomaton and broad zero-allocation/routing claims. Latest cross-solver data is diagnostic-only and live path uses DriveState.",
+      "impact": "Conflates local battery, observed speed, cross-solver and live dispatch evidence.",
+      "repair": "Separate local diagnostic, achieved-error, cross-solver, rigorous enclosure and release claims. Bind figures to immutable current evidence."
+    },
+    {
+      "id": "TOOLCHAIN-001",
+      "severity": "MEDIUM",
+      "status": "SOURCE_CONFIRMED",
+      "failure_class": "reproducibility",
+      "source": "rust-toolchain.toml; Cargo.toml",
+      "observation": "rust-toolchain.toml selects moving stable while workspace declares rust-version 1.99.0. Host used rustc/cargo 1.99.0.",
+      "impact": "Fresh builds may move compiler without source change.",
+      "repair": "Pin exact release compiler or document rolling stable policy and archive build metadata."
+    },
+    {
+      "id": "CI-001",
+      "severity": "MEDIUM",
+      "status": "NO_EVIDENCE_RETURNED",
+      "failure_class": "release provenance",
+      "source": "GitHub combined status/workflow query at HEAD",
+      "observation": "Combined status and workflow-run query returned empty results.",
+      "impact": "No CI pass is evidenced for this HEAD.",
+      "repair": "Supply required CI/independent release receipt; empty status is not PASS."
+    }
+  ],
+  "scope_limits": [
+    "Bounded source/artifact review, not a line-by-line proof of every numerical kernel.",
+    "Local Git history is shallow/incomplete for broad authority-reference scan; missing local objects do not establish absence of remote commits.",
+    "Original M2 U-stage residual/causal-depth evidence was not re-established in this pass.",
+    "Full workspace tests/clippy/build, validated global IVP enclosure, official matched-error benchmark and M3 experiment were not run.",
+    "Passing tests establish only the executed contract on this HEAD."
+  ]
+}

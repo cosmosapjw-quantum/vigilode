@@ -469,9 +469,31 @@ pub struct Stats {
 /// The solution of a run: output times, states, the run record and the
 /// status.
 ///
-/// A failed run is returned as a `Solution` too, with
-/// [`Status::Failed`] and the outputs it reached; use
-/// [`Solution::ensure_success`] to turn it into an error.
+/// # Important Result Semantics (Ok vs Successful Endpoint)
+///
+/// Solvers in VigilODE (including [`crate::Rodas5p::solve`] and
+/// [`crate::ProductionSolver::solve`]) return `Ok(solution)` whenever the driver
+/// executed and returned a run record. **`Ok` does NOT imply that integration
+/// reached the endpoint `t1` with error acceptance.**
+///
+/// An early stop caused by:
+/// - step attempts budget exhaustion ([`crate::Options::max_steps`]),
+/// - step size falling below the minimum threshold,
+/// - fatal user callback failure ([`crate::CallbackError::Fatal`]),
+///
+/// returns `Ok(solution)` with [`Status::Failed`] (or `solution.success == false` on
+/// [`crate::SwitchingSolution`]), preserving the partial accepted trajectory prefix and
+/// full work counters.
+///
+/// Callers must check:
+/// - [`Solution::is_success`] (or [`Solution::status`] == [`Status::Success`]),
+/// - [`Solution::final_state`],
+/// - or use [`Solution::ensure_success`] to convert a failed run into [`crate::SolveError::Failed`].
+///
+/// For switching solutions produced by [`crate::ProductionSolver`], inspect `solution.success`,
+/// `solution.final_time`, and `solution.stats.accounting_complete`, or call
+/// [`crate::SwitchingSolution::ensure_completed`], [`crate::SwitchingSolution::is_successful_endpoint`],
+/// or [`crate::ProductionSolver::solve_checked`].
 #[derive(Clone, Debug, Serialize)]
 #[non_exhaustive]
 pub struct Solution {

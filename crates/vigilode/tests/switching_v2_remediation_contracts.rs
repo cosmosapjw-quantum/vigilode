@@ -310,14 +310,13 @@ fn f6_nondeterministic_jvp_disables_competitive_trials() {
     );
 }
 
-// ---- T-F7 ------------------------------------------------------------------
+// ---- T-WP02 (Supersedes T-F7) ----------------------------------------------
 
 #[test]
-fn f7_window_epoch_ignores_checkpoint_index_and_is_fnv_stable() {
+fn wp02_window_epoch_is_checkpoint_sensitive_sha256_stable() {
     use vigilode::compute_window_epoch;
-    // Note: F7 FNV-1a contract was formally superseded by WP-02 SHA-256 contract
-    // per EPOCH_001_AUTHORITY_DECISION.md. The test asserts the authoritative
-    // WP-02 SHA-256 golden values and index-sensitivity.
+    // Governed by docs/agent/switcher_v2_remediation/EPOCH_001_AUTHORITY_DECISION.md.
+    // The test asserts the authoritative WP-02 SHA-256 golden values and index-sensitivity.
     assert_eq!(compute_window_epoch(0, 0.0, 1.0), 0x5718_834c_1304_ae04);
     assert_eq!(compute_window_epoch(3, 0.25, 0.5), 0x27a1_3285_42cc_99d0);
     assert_eq!(
@@ -329,6 +328,21 @@ fn f7_window_epoch_ignores_checkpoint_index_and_is_fnv_stable() {
         compute_window_epoch(0, 0.0, 1.0),
         compute_window_epoch(7, 0.0, 1.0),
         "WP-02 specification is checkpoint-index sensitive"
+    );
+
+    // Negative zero and subnormal boundary stability (-0.0 vs +0.0 distinct bit patterns)
+    assert_ne!(
+        compute_window_epoch(0, 0.0, 1.0),
+        compute_window_epoch(0, -0.0, 1.0),
+        "-0.0 and +0.0 must yield distinct epoch digests"
+    );
+
+    // Large index check (> 2^32) ensures 64-bit index fidelity
+    let large_idx = (1usize << 33) + 42;
+    assert_ne!(
+        compute_window_epoch(42, 0.0, 1.0),
+        compute_window_epoch(large_idx, 0.0, 1.0),
+        "Index bits above 32-bit boundary must affect the digest"
     );
 }
 

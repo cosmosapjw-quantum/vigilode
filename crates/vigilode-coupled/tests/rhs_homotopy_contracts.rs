@@ -1,7 +1,10 @@
 use std::cell::Cell;
 use vigilode_coupled::rhs_homotopy::{
-    CubicDecayAccuracyPlan, RhsAcceleration, RhsHomotopyConfig, RhsHomotopyFailureKind, RhsOnlyMap,
-    integrate_cubic_decay_accuracy, solve_rhs_homotopy,
+    CubicDecayAccuracyPlan, DerivativeSupremumEvidence, PolynomialContractionSource,
+    PolynomialRhsMap, PolynomialTerm, QContractionCertificate, RhsAcceleration, RhsHomotopyConfig,
+    RhsHomotopyFailureKind, RhsOnlyMap, certify_polynomial_contraction,
+    integrate_cubic_decay_accuracy, produce_q_contraction_evidence, solve_rhs_homotopy,
+    verify_q_contraction_evidence,
 };
 
 struct Affine {
@@ -357,4 +360,206 @@ fn interval_polish_refuses_a_budget_below_the_represented_residual_floor() {
             || result.failure.as_ref().unwrap().contains("floor")
     );
     assert_eq!(result.points.len(), 1);
+}
+
+#[test]
+fn caller_scalar_evidence_cannot_authorize_contraction_certificate() {
+    // IDs, epochs, radii, q values and nonzero reference integers are caller
+    // metadata. None of them encloses the derivative on the complete ball.
+    let forged_claims = [
+        (1_u64, 1_u64, 2.0_f64, 0.0_f64, 1_u64),
+        (u64::MAX, u64::MAX, 10.0_f64, 0.49_f64, u64::MAX),
+        (0_u64, 0_u64, 2.0_f64, 0.5_f64, 100_u64),
+    ];
+
+    for (operator_id, model_epoch, ball_radius, claimed_q, reference) in forged_claims {
+        let evidence = DerivativeSupremumEvidence::new(
+            operator_id,
+            model_epoch,
+            ball_radius,
+            claimed_q,
+            reference,
+        )
+        .expect("syntactically valid caller metadata");
+        let certificate = QContractionCertificate::verify_with_evidence(0.5, 2.0, 0.8, evidence);
+        assert!(
+            !certificate.is_certified(),
+            "caller metadata forged authority: operator_id={operator_id}, epoch={model_epoch}, q={claimed_q}, radius={ball_radius}, reference={reference}"
+        );
+    }
+}
+
+#[test]
+fn independent_checker_tamper_suite_rejects_all_corrupted_artifacts() {
+    let make_source = |epoch: u64, quadratic: f64| {
+        let rhs = PolynomialRhsMap::new(
+            1,
+            epoch,
+            vec![vec![
+                PolynomialTerm {
+                    coefficient: 0.1,
+                    exponents: vec![0],
+                },
+                PolynomialTerm {
+                    coefficient: quadratic,
+                    exponents: vec![2],
+                },
+            ]],
+        )
+        .expect("valid polynomial source");
+        PolynomialContractionSource::identity(rhs)
+    };
+
+    let source = make_source(100, -0.25);
+    let original = produce_q_contraction_evidence(&source, &[0.0], 1.0)
+        .expect("producer should succeed on contraction");
+
+    // 1. Tamper: derivative_norm_upper decreased
+    {
+        let mut tampered = original.clone();
+        tampered.derivative_norm_upper = 0.1;
+        let res = verify_q_contraction_evidence(&source, &tampered);
+        assert!(
+            res.is_err(),
+            "checker must reject decreased derivative norm"
+        );
+    }
+
+    // 2. Tamper: derivative_norm_upper increased (does not match re-enclosed value)
+    {
+        let mut tampered = original.clone();
+        tampered.derivative_norm_upper = 0.9;
+        let res = verify_q_contraction_evidence(&source, &tampered);
+        assert!(res.is_err(), "checker must reject altered derivative norm");
+    }
+
+    // 3. Tamper: residual_norm_upper altered
+    {
+        let mut tampered = original.clone();
+        tampered.residual_norm_upper = 0.05;
+        let res = verify_q_contraction_evidence(&source, &tampered);
+        assert!(res.is_err(), "checker must reject altered residual norm");
+    }
+
+    // 4. Tamper: source digest / epoch mismatch
+    {
+        let wrong_epoch_source = make_source(101, -0.25);
+        let res = verify_q_contraction_evidence(&wrong_epoch_source, &original);
+        assert!(
+            res.is_err(),
+            "checker must reject source with different epoch"
+        );
+    }
+
+    // 5. Tamper: same dimension but perturbed coefficient (1 ULP perturbation)
+    {
+        let perturbed_coeff = (-0.25_f64).next_up();
+        let perturbed_source = make_source(100, perturbed_coeff);
+        let res = verify_q_contraction_evidence(&perturbed_source, &original);
+        assert!(
+            res.is_err(),
+            "checker must reject perturbed coefficient source"
+        );
+    }
+
+    // 6. Tamper: altered center
+    {
+        let mut tampered = original.clone();
+        tampered.center = vec![0.001];
+        let res = verify_q_contraction_evidence(&source, &tampered);
+        assert!(res.is_err(), "checker must reject altered center");
+    }
+
+    // 7. Tamper: altered radius
+    {
+        let mut tampered = original.clone();
+        tampered.radius = 1.0001;
+        let res = verify_q_contraction_evidence(&source, &tampered);
+        assert!(res.is_err(), "checker must reject altered radius");
+    }
+
+    // 8. Adversarial: singular preconditioner P = [[0.0]]
+    {
+        let rhs = PolynomialRhsMap::new(
+            1,
+            1,
+            vec![vec![PolynomialTerm {
+                coefficient: -0.5,
+                exponents: vec![1],
+            }]],
+        )
+        .expect("valid polynomial source");
+        let singular_p = vec![0.0];
+        let res = PolynomialContractionSource::new(rhs, singular_p);
+        assert!(res.is_err(), "singular preconditioner must be rejected");
+    }
+
+    // 9. Adversarial: non-contraction (q >= 1.0)
+    {
+        let expanding = PolynomialRhsMap::new(
+            1,
+            1,
+            vec![vec![PolynomialTerm {
+                coefficient: 2.0,
+                exponents: vec![1],
+            }]],
+        )
+        .expect("valid polynomial source");
+        let exp_source = PolynomialContractionSource::identity(expanding);
+        let res = certify_polynomial_contraction(&exp_source, &[0.0], 1.0);
+        assert!(
+            res.is_err(),
+            "expanding map with q >= 1 must fail certification"
+        );
+    }
+
+    // 10. Adversarial: self-map condition violated (residual too large for (1 - q) * r)
+    {
+        let rhs = PolynomialRhsMap::new(
+            1,
+            1,
+            vec![vec![
+                PolynomialTerm {
+                    coefficient: 1.0, // large constant offset
+                    exponents: vec![0],
+                },
+                PolynomialTerm {
+                    coefficient: -0.1,
+                    exponents: vec![1],
+                },
+            ]],
+        )
+        .expect("valid polynomial source");
+        let large_offset_source = PolynomialContractionSource::identity(rhs);
+        // r = 0.5, residual = 1.0, (1 - q)*r ~ 0.9 * 0.5 = 0.45 < 1.0
+        let res = certify_polynomial_contraction(&large_offset_source, &[0.0], 0.5);
+        assert!(res.is_err(), "self-map violation must fail certification");
+    }
+
+    // 11. Adversarial: NaN and infinity coefficients rejected at construction
+    {
+        assert!(
+            PolynomialRhsMap::new(
+                1,
+                1,
+                vec![vec![PolynomialTerm {
+                    coefficient: f64::NAN,
+                    exponents: vec![0],
+                }]],
+            )
+            .is_err()
+        );
+
+        assert!(
+            PolynomialRhsMap::new(
+                1,
+                1,
+                vec![vec![PolynomialTerm {
+                    coefficient: f64::INFINITY,
+                    exponents: vec![0],
+                }]],
+            )
+            .is_err()
+        );
+    }
 }

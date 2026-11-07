@@ -148,6 +148,54 @@ impl GmresGivensWorkspace {
         self.statistics
     }
 
+    pub fn basis(&self) -> &[Vec<f64>] {
+        &self.basis
+    }
+
+    pub fn givens_cosines(&self) -> &[f64] {
+        &self.givens_cosines
+    }
+
+    pub fn givens_sines(&self) -> &[f64] {
+        &self.givens_sines
+    }
+
+    pub fn r_factor(&self) -> &DenseMatrix {
+        &self.r_factor
+    }
+
+    /// Maximum orthogonality defect `|c^2 + s^2 - 1|` across all active Givens rotations.
+    pub fn max_givens_orthogonality_defect(&self) -> f64 {
+        self.givens_cosines
+            .iter()
+            .copied()
+            .zip(self.givens_sines.iter().copied())
+            .filter(|&(c, s)| c != 0.0 || s != 0.0)
+            .map(|(c, s)| (c * c + s * s - 1.0).abs())
+            .fold(0.0_f64, f64::max)
+    }
+
+    /// Maximum off-diagonal dot product `|v_i^T v_j|` and diagonal normalization defect `| ||v_i||^2 - 1 |`
+    /// for the Arnoldi basis vectors in the workspace.
+    pub fn max_basis_orthogonality_defect(&self, active_count: usize) -> (f64, f64) {
+        let count = active_count.min(self.basis.len());
+        let mut max_off_diag = 0.0_f64;
+        let mut max_diag_defect = 0.0_f64;
+        for i in 0..count {
+            let vi = &self.basis[i];
+            let dot_ii: f64 = vi.iter().map(|&x| x * x).sum();
+            if dot_ii > 0.0 {
+                max_diag_defect = max_diag_defect.max((dot_ii - 1.0).abs());
+            }
+            for j in 0..i {
+                let vj = &self.basis[j];
+                let dot_ij: f64 = vi.iter().zip(vj.iter()).map(|(&a, &b)| a * b).sum();
+                max_off_diag = max_off_diag.max(dot_ij.abs());
+            }
+        }
+        (max_off_diag, max_diag_defect)
+    }
+
     pub fn capacity_f64(&self) -> usize {
         self.x.capacity()
             + self.residual.capacity()
@@ -254,7 +302,6 @@ fn back_substitute(
 
 fn build_candidate(
     workspace: &mut GmresGivensWorkspace,
-    base_x: &[f64],
     dimension: usize,
     counters: &mut WorkCounters,
 ) -> CoreResult<()> {
@@ -269,7 +316,7 @@ fn build_candidate(
         &workspace.coefficients[..dimension],
         &mut workspace.correction,
     )?;
-    workspace.candidate_x.copy_from_slice(base_x);
+    workspace.candidate_x.copy_from_slice(&workspace.x);
     axpy(
         1.0,
         &workspace.correction,
@@ -434,8 +481,7 @@ pub fn solve_gmres_givens_with_workspace_and_residual_scale(
                 || (projected_triggered && column >= next_projected_certificate_column);
             if certify_now {
                 workspace.statistics.projected_residual_checks += 1;
-                let base_x = workspace.x.clone();
-                build_candidate(workspace, &base_x, actual, counters)?;
+                build_candidate(workspace, actual, counters)?;
                 if certify_candidate(op, rhs, threshold, residual_scale, workspace, counters)? {
                     workspace.x.copy_from_slice(&workspace.candidate_x);
                     certified = true;
@@ -469,8 +515,7 @@ pub fn solve_gmres_givens_with_workspace_and_residual_scale(
                 "GMRES-Givens produced an empty restart cycle".into(),
             ));
         }
-        let base_x = workspace.x.clone();
-        build_candidate(workspace, &base_x, actual, counters)?;
+        build_candidate(workspace, actual, counters)?;
         workspace.x.copy_from_slice(&workspace.candidate_x);
         total_iterations += actual;
         counters.linear_iterations += actual as u64;
