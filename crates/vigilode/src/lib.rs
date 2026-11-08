@@ -190,6 +190,7 @@ mod lawson;
 pub mod margin;
 mod options;
 mod oscillatory_chart;
+pub mod prelude;
 mod problem;
 mod production;
 mod records;
@@ -200,6 +201,7 @@ mod session;
 mod solution;
 mod solve;
 mod switching;
+pub mod unified;
 pub mod work_model;
 
 pub use automatic::*;
@@ -238,6 +240,7 @@ pub use work_model::*;
 
 pub use explicit::*;
 pub use explicit_ensemble::{Dopri5Ensemble, Dopri5EnsembleJob};
+pub use unified::*;
 
 pub use explicit::ExplicitErrorControl;
 /// Sparse affine physical-space embedded-error controller for explicit solves.
