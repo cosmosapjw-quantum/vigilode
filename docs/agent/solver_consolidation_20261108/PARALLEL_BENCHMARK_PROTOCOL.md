@@ -4,7 +4,7 @@ Freeze repository, branch, commit, tree, Rust toolchain, coefficient source/hash
 
 Corpus: linear stiff diagonal and nonnormal systems with exact solutions; Prothero-Robinson; Robertson, HIRES, Van der Pol; source-locked cooperative cubic and equilibrium-near cohort for normal-form lift; 2D diffusion/reaction and advection-diffusion; 3D anisotropic diffusion; sphere Laplace-Beltrami harmonic modes and anisotropic reaction-transport; PP05/PP06 Fourier-Volterra invariant-leaf source only.
 
-Arms: protected native RODAS5P; selected peer-W coefficient table after order/stability prechecks; normal-form parent/lift only inside validated chart; Fourier direct/FFT predictor only on source-specific model; external BDF/Radau/exponential solver only if a genuine validated implementation exists. Internal BDF1/2 and Radau IIA1/3 are not production comparators by name.
+Arms: protected native RODAS5P; common-shift parallel two-step W (one factorization/multiple RHS); multi-implicit peer two-step W (stage-specific shifts/independent Krylov); implicit parallel peer (nonlinear-stage comparator only); sequential Rosenbrock-type peer and stiffly accurate two-step W controls; normal-form parent/lift only inside validated chart; Fourier direct/FFT predictor only on source-specific model; external BDF/Radau/exponential solver only if a genuine validated implementation exists. Internal BDF1/2 and Radau IIA1/3 are not production comparators by name.
 
 Accuracy and timing:
 - independent high-precision or converged reference with uncertainty;
@@ -12,7 +12,8 @@ Accuracy and timing:
 - at least seven randomized ABBA/BAAB paired repetitions on one CPU host and core budget;
 - charge startup, transform, lift, path construction, FFT padding/transforms, interval certificate, factorization, Jacobian/JVP, preconditioner, Krylov, rejected attempts, fallback, output and memory;
 - report wall time, accepted/rejected steps, stages, RHS/JVP, operator applications, factorization, Krylov iterations, reductions, allocations and peak memory;
-- peer-W includes startup and step-ratio changes;
+- peer-W includes startup, published local/global error-estimator work, step-ratio changes, peer-history storage and any restart after rejection/event;
+- separate common-shift direct factorization reuse from stage-specific multi-implicit Krylov cost; do not charge the latter as one common LU;
 - normal-form lift includes chart validity, transform condition, lift dimension, defect transport and original-state achieved error;
 - preserve negative controls and registered failures.
 
