@@ -104,13 +104,45 @@
       "Recover original full method equations and exact coefficient tables for parallel two-step W, multi-implicit peer two-step W and sequential Rosenbrock-type peer families. Treat them as distinct method identities.",
       "For common-shift TSW derive conditions tilde-A=tilde-Gamma=0 from the selected exact equations; verify every stage RHS depends on previous-step values only and that one shifted operator is genuinely shared.",
       "For multi-implicit peer-W recover stage-specific shifts and derive stagewise order/stability; compare independent Krylov, shared-basis/multi-shift Krylov and reusable preconditioners.",
-      "Verify variable-step order, stage order, zero-stability, L(alpha)-stability, amplification matrix bounds over realistic step-ratio intervals, startup and embedded estimator.",
+      "Verify variable-step order, stage order, zero-stability, L(alpha)-stability, amplification matrix bounds over realistic step-ratio intervals, startup and embedded estimator. Recover the 2011 published local/global peer-W error estimator before considering new estimator design.",
       "Assess the stronger stiffly accurate p*=s+1 construction as a sequential control; quantify the loss of stage concurrency rather than quietly removing the stronger condition.",
       "Extend existing ParallelExecution and stage_batch with the real selected tableau; no second executor or benchmark framework.",
       "Use the existing LinearOperator, LinearSolverConfig, LU/Krylov and preconditioner services; no new Krylov solver before current APIs are audited.",
       "Integrate as a distinct plugin via existing vigilode Problem/session after V11-03/05/08; preserve protected RODAS5P.",
       "Run >=7 randomized paired full-IVP CPU timings at matched achieved output error, including peer startup, rejected trials and step-ratio transitions."
-    ]
+    ],
+    "family_equations": {
+      "parallel_two_step_W": {
+        "predictor": "Y_mi = u_m + h_m*sum_{j=1}^s a_ij*k_(m-1,j) + h_m*sum_{j=1}^{i-1} tilde_a_ij*k_(m,j)",
+        "solve": "(I-h_m*gamma*T_m) k_(m,i) = f(t_mi,Y_mi) + h_m*T_m*sum_{j=1}^s Gamma_ij*k_(m-1,j) + h_m*T_m*sum_{j=1}^{i-1} tilde_Gamma_ij*k_(m,j)",
+        "output": "u_(m+1) = u_m + h_m*sum_{i=1}^s (b_i*k_(m,i) + v_i*k_(m-1,i))",
+        "independence": "tilde_A=0 and tilde_Gamma=0. The current stages then use previous-step data only and share the common shifted matrix I-h*gamma*T_m.",
+        "order_contract": "Stage order q is defined by C(q),Gamma(q); output order p by B(p); convergence order p*=min(q+1,p) under bounded step-ratio and compatible start errors. q=p=s gives the order-s design target."
+      },
+      "multi_implicit_peer_two_step_W": {
+        "independence": "All current peer stages use only previous-step peer data.",
+        "shifts": "Different stage system parameters may give different shifted linear systems. Do not assume one common LU across the stages.",
+        "order_stability": "Published subclass order s-1 with optimal stiff damping and uniform stability for realistic step-size sequences; exact operational step-ratio interval and coefficients must be fetched."
+      },
+      "implicit_parallel_peer": {
+        "independence": "Current peer nonlinear equations can be computed independently from previous-step peer values.",
+        "warning": "Nonlinear solve work must be charged; candidate only if linearly implicit W tables fail the stability/accuracy tradeoff."
+      },
+      "sequential_peer_control": {
+        "form": "Peer representation with lower-triangular current-stage G. Stages are sequential unless the chosen G is diagonal/block-independent.",
+        "warning": "Constant-step effective order s is not variable-step global order."
+      },
+      "stiff_accurate_nonparallel_control": {
+        "property": "An added variable-step superconvergence condition can yield p*=s+1 but the cited construction loses stage parallelism.",
+        "role": "Sequential Pareto control, not main parallel candidate."
+      }
+    },
+    "error_estimation_source": {
+      "citation": "Kulikov & Weiner (2011), Global error estimation and control in linearly-implicit parallel two-step peer W-methods",
+      "doi": "10.1016/j.cam.2011.08.006",
+      "reuse_policy": "First recover and validate the published local/global error estimators and automatic step-size algorithm for the selected tableau. Do not design a new estimator from scratch unless the existing theorem is incompatible with the selected method.",
+      "caveat": "The publication's estimator is not automatically valid for a different coefficient table; rederive compatibility and source the exact estimator equations."
+    }
   },
   "transform_candidate": {
     "id": "V11-20-ALGEBRAIC-LIFT",
@@ -458,6 +490,12 @@
         "citation": "Podhaisky, Weiner & Schmitt, Appl Numer Math 53 (2005), 409-420",
         "doi": "10.1016/j.apnum.2004.08.021",
         "claims": "Stage order s-1, variable-step zero-stability, L(alpha)-stable members for s=4..8; effective order s is specifically a constant-step result."
+      },
+      {
+        "family": "parallel linearly implicit peer-W error estimation",
+        "citation": "Kulikov & Weiner, J Comput Appl Math 236(6) (2011), 1226-1239",
+        "doi": "10.1016/j.cam.2011.08.006",
+        "claims": "Local and global error estimation with automatic step-size control for linearly-implicit parallel two-step peer W methods; tests on stiff, very stiff and large-scale ODEs, including comparison with RODAS."
       }
     ],
     "tradeoff": "Klinge 2020 dissertation, Two-step W-methods and peer methods with approximate matrix factorization, states that an added stiff-accuracy condition giving order s+1 for variable steps can destroy stage parallelism. Treat this as a sequential Pareto control, not a peer-stage acceleration."
