@@ -25,7 +25,7 @@
     "schematic_equations": [
       "Y_ni = U_n + h_n sum_j a_ij U_(n-1,j) + h_n sum_(j<i) a_tilde_ij U_(n,j)",
       "(I-gamma*h_n*T_n) U_ni = F(Y_ni) + h_n*T_n sum_j gamma_ij U_(n-1,j) + h_n*T_n sum_(j<i) gamma_tilde_ij U_(n,j)",
-      "U_(n+1) = U_n + h_n sum_i (b_i U_ni + v_i U_(n-1,i)",
+      "U_(n+1) = U_n + h_n sum_i (b_i U_ni + v_i U_(n-1,i))",
       "Current stages are independent when same-step couplings a_tilde_ij and gamma_tilde_ij vanish; confirm exact notation from primary coefficient source."
     ],
     "acceptance": [
@@ -36,7 +36,28 @@
       "Research target: accepted steps <=1.10x protected RODAS5P and median CPU full-IVP speedup >=1.15x on preregistered subset.",
       "Keep protected RODAS5P tableau/defaults unchanged."
     ],
-    "fallback": "Protected RODAS5P; peer-W remains opt-in or is rejected."
+    "fallback": "Protected RODAS5P; peer-W remains opt-in or is rejected.",
+    "implementation_policy": {
+      "location": "Extend existing crates/rodas5p-integrators and the existing crates/vigilode facade after the plugin lifecycle gate; do not add a rival facade or a new thread pool.",
+      "reuse": [
+        "ParallelExecution",
+        "stage_batch report/timing/concurrency probe",
+        "existing LinearOperator/LinearSolverConfig/LU/Krylov/preconditioner services",
+        "existing WorkLedger and benchmark corpus"
+      ],
+      "dependencies": [
+        "V11-08-OPERATORS",
+        "V11-14-PARALLEL",
+        "V11-15-BENCH",
+        "V11-03-STEPPER",
+        "V11-05-SESSION"
+      ],
+      "new_core_only": [
+        "peer-W coefficient/variable-step transform",
+        "peer history/startup/restart/estimator",
+        "independent-stage assembly for the verified coefficient set"
+      ]
+    }
   },
   "transform_candidate": {
     "id": "V11-20-ALGEBRAIC-LIFT",
@@ -65,7 +86,28 @@
       "Lift dimension/conditioning do not erase savings.",
       "Linear stage-block residual and estimator semantics verified separately."
     ],
-    "fallback": "Refuse nonconvergent, ill-conditioned, high-dimensional or chart-exiting lifts."
+    "fallback": "Refuse nonconvergent, ill-conditioned, high-dimensional or chart-exiting lifts.",
+    "implementation_policy": {
+      "reuse": [
+        "conditioned_polynomial",
+        "polynomial_resolvent",
+        "fixed_point_continuation",
+        "directed interval arithmetic",
+        "affine_transport",
+        "source-owned structural reduction patterns"
+      ],
+      "dependencies": [
+        "V11-08-OPERATORS",
+        "V11-11-SPECIALIZED",
+        "V11-15-BENCH"
+      ],
+      "new_core_only": [
+        "resonance enumeration",
+        "homological-equation/near-resonance handling",
+        "finite parent lift construction",
+        "Lie-derivative ideal-membership verifier"
+      ]
+    }
   },
   "source_specific_transform": {
     "id": "V11-21-FOURIER-INVOLUTION",
@@ -83,7 +125,21 @@
       "Construct genuinely harmful cyclic-alias negative controls.",
       "Keep FFT as predictor and original noncyclic interval certificate as authority.",
       "Run >=7 paired CPU timings at bracketed achieved errors; PP15 has no timing."
-    ]
+    ],
+    "implementation_policy": {
+      "extend_existing_only": true,
+      "reuse": [
+        "fourier_path_certificate.rs",
+        "fourier_path_candidate.rs",
+        "PP05/PP06 tests and fixtures",
+        "existing directed interval arithmetic and report schema"
+      ],
+      "new_core_only": [
+        "harmful alias counterexample",
+        "source-parity repair",
+        "CPU matched-error timing"
+      ]
+    }
   },
   "other_cpu_nodes": [
     {
@@ -98,7 +154,18 @@
         "Concurrency instrumentation",
         ">=7 matched-achieved-error full-IVP timings",
         "CPU workers 1/2/4/8"
-      ]
+      ],
+      "implementation_policy": {
+        "extend": [
+          "ParallelExecution",
+          "stage_batch.rs",
+          "operator and Krylov services"
+        ],
+        "do_not_create": [
+          "new thread pool",
+          "new stage benchmark schema"
+        ]
+      }
     },
     {
       "id": "V11-23-ENSEMBLE-CPU",
@@ -112,7 +179,18 @@
         "Replay/side-effect contract",
         "Throughput and tail latency",
         "CPU workers 1/2/4/8"
-      ]
+      ],
+      "implementation_policy": {
+        "extend": [
+          "Dopri5Ensemble",
+          "ParallelExecution",
+          "existing member-isolation tests"
+        ],
+        "do_not_create": [
+          "second scheduler",
+          "new pool"
+        ]
+      }
     },
     {
       "id": "V11-24-SPATIAL-MOL-CPU",
@@ -129,7 +207,19 @@
         "Serial/parallel operator parity",
         "Matched-achieved-error full cost",
         "No GPU"
-      ]
+      ],
+      "implementation_policy": {
+        "extend": [
+          "vigilode::Problem",
+          "existing operator callbacks",
+          "Gray-Scott 2D/logarithmic-norm source",
+          "V11-13-SPATIAL"
+        ],
+        "do_not_create": [
+          "second ODE frontend",
+          "geometry-specific time integrator"
+        ]
+      }
     }
   ],
   "evidence_map": [
@@ -226,5 +316,56 @@
     "Preserve all prior FAIL/negative evidence.",
     "Two no-progress cycles stop or re-scope a candidate.",
     "GPU is forbidden under all tasks and fallbacks."
-  ]
+  ],
+  "reuse_first": {
+    "inventory_file": "REUSE_FIRST_INVENTORY.md",
+    "policy": "Extend or compose an existing module first. No second frontend, Problem, Options, pool, benchmark harness, WorkLedger, homotopy engine, Fourier algebra, interval transport or Krylov implementation.",
+    "mandatory_order": [
+      "Re-pin exact source branch/commit/tree and verify source blob identities in REUSE_FIRST_INVENTORY.md.",
+      "Reproduce the smallest existing contract tests and archived experiment rows relevant to the node.",
+      "Write a reuse decision record naming exact existing APIs/types/tests, the smallest extension, and why composition is insufficient.",
+      "Implement the smallest delta in the existing crate/module; a new crate requires a written boundary justification.",
+      "Extend existing ParallelExecution, stage_batch report, WorkLedger and matched-error corpus; do not create duplicate infrastructure.",
+      "Promote only after source-backed workload and independent achieved-error comparison pass."
+    ],
+    "reusable_code": [
+      "ParallelExecution and stage_batch benchmark/concurrency harness",
+      "Dopri5Ensemble and explicit_ensemble_contracts",
+      "vigilode::Problem and existing Jacobian/derivative/operator callbacks",
+      "vigilode-coupled raw-U/candidate/transaction/fallback/work contracts",
+      "RhsOnlyMap and RHS-only homotopy",
+      "structural_mean_field, CollectiveModel, collective_rodas5p and actual_k_homotopy",
+      "nonlinear_homotopy and affine_transport",
+      "quotient_flow declared damped-rotation/Lawson actions",
+      "conditioned_polynomial, polynomial_resolvent and fixed_point_continuation",
+      "PP05/PP06 Fourier path, involution, convolution, FFT predictor and interval certificate"
+    ],
+    "base_plan_dependencies": [
+      "V11-02-PROBLEM",
+      "V11-03-STEPPER",
+      "V11-04-CAPABILITIES",
+      "V11-05-SESSION",
+      "V11-08-OPERATORS",
+      "V11-11-SPECIALIZED",
+      "V11-13-SPATIAL",
+      "V11-14-PARALLEL",
+      "V11-15-BENCH",
+      "V11-16-CI"
+    ],
+    "do_not_duplicate": [
+      "Parallel thread pool or ordered map executor",
+      "Public Problem/Options/Solution frontend",
+      "Benchmark timing/report schema and WorkLedger taxonomy",
+      "Generic RHS-only homotopy/continuation engine",
+      "Fourier coefficient algebra or complex interval certificate",
+      "Krylov/LU/preconditioner services already supplied by core crates"
+    ],
+    "absent_scientific_core": [
+      "A coefficient-verified variable-step parallel Rosenbrock-W peer tableau with startup/restart/embedded estimator",
+      "A Poincare-Dulac resonance enumerator and finite invariant-parent lift generator",
+      "A genuinely harmful alias adversarial case for PP06 and the PP05 parity-gate repair",
+      "A method-agnostic IVP ensemble adapter extending the existing DOPRI5 ensemble",
+      "Sphere and full 3D MOL operator implementations beyond current available 2D source examples"
+    ]
+  }
 }
