@@ -19,6 +19,7 @@ Read [REUSE_FIRST_INVENTORY.md](REUSE_FIRST_INVENTORY.md) before any code change
 
 The current research work is extended by six machine-readable/design files:
 - PARALLEL_RESEARCH_PLAN.json: execution nodes, source lock, separate common-shift TSW and multi-implicit peer-W candidates, acceptance/failure gates and explicit GPU prohibition.
+- PEER_METHOD_FAMILY_REVIEW.md: detailed source-bound equations and distinction between parallel W, multi-implicit peer-W, nonlinear parallel peer, and sequential peer controls.
 - PEER_METHOD_FAMILY_REVIEW.md: exact two-step W equations, parallel/nonparallel peer-family taxonomy, variable-step/order tradeoffs and the published 2011 error-controller route.
 - STAGE_TRANSFORMATION_THEORY.md: parallel peer-W, finite resonant normal-form lift, linear parent stage-block identity, Fourier/involution findings and limits.
 - HISTORICAL_RESEARCH_MAP.json: 14 source/PR/code-lineage findings with evidence boundaries.
