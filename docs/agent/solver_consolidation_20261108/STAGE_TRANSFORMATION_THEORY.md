@@ -83,3 +83,12 @@ GPU is forbidden in every node and fallback.
 ## 6. Decision
 
 General candidate: parallel peer-W. Local high-risk candidate: normal-form lift. Source-specific candidate: Fourier-Volterra. Protected RODAS5P remains the baseline and receives dependency-preserving stage-internal CPU optimizations only. No candidate is promoted on nominal steps, symbolic identities, synthetic kernel timing or unmatched achieved errors alone.
+
+
+## 7. Existing algebraic and continuation infrastructure to reuse
+
+The pinned source already exports `conditioned_polynomial` and `polynomial_resolvent`. They provide declared chart/operator identities, polynomial actions/refinement and outward residual infrastructure. They are not normal-form generators and do not establish the truth of caller-supplied declarations. The new resonant lift should reuse their operator/action and residual machinery where the algebra fits; new code should be limited to resonance enumeration, homological equations, parent-matrix construction and invariant-ideal proof.
+
+The existing `fixed_point_continuation` module accepts a source-bound map of the form `T(x,lambda)=x-P F(x,lambda)`, with declared uniform contraction, inverse-action, center-displacement and closed-patch bounds. It explicitly does not certify an ODE trajectory. Reuse it only for a correction subproblem that satisfies those declarations; do not write another continuation engine and do not reinterpret a root certificate as a trajectory certificate.
+
+The existing `vigilode-coupled::rhs_homotopy` provides an independent RHS-only map contract, finite evaluation budget and residual-screened acceleration. Use it for compatible map/root work, while retaining the exact callback and error-bound obligations. `actual_k_homotopy`, `nonlinear_homotopy`, `structural_mean_field`, `collective_rodas5p`, `quotient_flow` and `affine_transport` are further source-specific building blocks documented in `REUSE_FIRST_INVENTORY.md`.
