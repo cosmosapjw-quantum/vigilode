@@ -11,6 +11,10 @@ Start with PLAN_BUNDLE.json. It contains source-pinned audit findings, productio
 
 Architecture decision: extend the existing crates/vigilode frontend with distinct method plugins and common lifecycle/session contracts. DOPRI5 and protected RODAS5P are the first adapters. Internal BDF/Radau remain reference-only until independently qualified. Rosenbrock-K is a new method, not a RODAS5P refactor. Algebraic fixed-point/homotopy components are not generic time steppers.
 
+## Reuse-first implementation gate
+
+Read [REUSE_FIRST_INVENTORY.md](REUSE_FIRST_INVENTORY.md) before any code change. New work must extend the pinned local pool, stage-batch harness, DOPRI5 ensemble, Problem/operator API, homotopy/continuation, polynomial resolvent, Fourier path and source-specific certificate code. No second solver frontend, pool, benchmark framework, WorkLedger, homotopy engine or Fourier implementation is permitted. Greenfield code is restricted to missing mathematical cores such as peer-W coefficients/history/startup/estimator and finite resonant normal-form lift construction.
+
 ## CPU-only parallel Rosenbrock research addendum
 
 The current research work is extended by six machine-readable/design files:
