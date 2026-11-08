@@ -5,11 +5,15 @@ READ FIRST
 docs/agent/solver_consolidation_20261108/PLAN_BUNDLE.json
 docs/agent/solver_consolidation_20261108/DESIGN_CONTRACT.md
 docs/agent/solver_consolidation_20261108/VALIDATION_PROTOCOL.md
-docs/agent/solver_consolidation_20261108/PARALLEL_RESEARCH_PLAN.json
+docs/agent/solver_consolidation_20261108/REUSE_FIRST_INVENTORY.md
+ docs/agent/solver_consolidation_20261108/PARALLEL_RESEARCH_PLAN.json
 docs/agent/solver_consolidation_20261108/STAGE_TRANSFORMATION_THEORY.md
 docs/agent/solver_consolidation_20261108/HISTORICAL_RESEARCH_MAP.json
 docs/agent/solver_consolidation_20261108/CPU_PARALLEL_NODES.md
 docs/agent/solver_consolidation_20261108/PARALLEL_BENCHMARK_PROTOCOL.md
+
+REUSE-FIRST HARD GATE
+Before coding, read REUSE_FIRST_INVENTORY.md and reproduce the relevant existing tests/receipts. Extend existing ParallelExecution, stage_batch, Dopri5Ensemble, Problem, homotopy, polynomial/resolvent, Fourier, affine-transport and source-specific collective modules. Do not create a second pool, ODE frontend, benchmark harness, WorkLedger, homotopy engine, Fourier implementation or Krylov service. New code is allowed only for missing scientific cores such as peer-W coefficients/history/startup/estimator, Poincare-Dulac resonance/parent-lift generation, genuinely harmful alias controls, or missing sphere/3D operators. Record a reuse decision before every implementation task.
 
 MISSION
 Find and validate a Rosenbrock-family method whose stage equations genuinely run in parallel on CPU while retaining low accepted-step counts and stiff stability. Explore algebraic geometry, dynamical systems, finite resonant normal-form lifts, homotopy, involution, convolution and Fourier transformations of nonlinear RHSs where exact assumptions allow. Explore P1/P2/P3 as separate nodes. GPU is forbidden, including fallback.
