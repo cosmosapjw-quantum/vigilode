@@ -17,10 +17,10 @@ Read [REUSE_FIRST_INVENTORY.md](REUSE_FIRST_INVENTORY.md) before any code change
 
 ## CPU-only parallel Rosenbrock research addendum
 
-The current research work is extended by six machine-readable/design files:
+The current research work is extended by the following machine-readable/design files:
 - PARALLEL_RESEARCH_PLAN.json: execution nodes, source lock, separate common-shift TSW and multi-implicit peer-W candidates, acceptance/failure gates and explicit GPU prohibition.
-- PEER_METHOD_FAMILY_REVIEW.md: detailed source-bound equations and distinction between parallel W, multi-implicit peer-W, nonlinear parallel peer, and sequential peer controls.
-- PEER_METHOD_FAMILY_REVIEW.md: exact two-step W equations, parallel/nonparallel peer-family taxonomy, variable-step/order tradeoffs and the published 2011 error-controller route.
+- PEER_METHOD_FAMILY_REVIEW.md: source-bound equations and distinction between parallel W, multi-implicit peer-W, nonlinear parallel peer, and sequential peer controls.
+- PEER_PARALLEL_STAGE_PROOFS_20261109.md: constructive explicit-peer order/stability/convergence proofs, DQC compatibility audit, common-W/rank-r algebra, finite resonant parent lift, and implementation gates.
 - STAGE_TRANSFORMATION_THEORY.md: parallel peer-W, finite resonant normal-form lift, linear parent stage-block identity, Fourier/involution findings and limits.
 - HISTORICAL_RESEARCH_MAP.json: 14 source/PR/code-lineage findings with evidence boundaries.
 - CPU_PARALLEL_NODES.md: stage-internal CPU, independent IVP ensembles, and sphere/2D/3D MOL CPU execution.
@@ -29,9 +29,9 @@ The current research work is extended by six machine-readable/design files:
 
 GPU is explicitly forbidden across all new nodes and fallbacks. The preferred general stage-parallel candidate is a new two-step Rosenbrock-W peer method, not a claimed parallelization of the protected lower-triangular RODAS5P tableau. A finite Poincare-Dulac resonant lift is a separate local/source-class-specific candidate. The Fourier-Volterra code is already implemented for a narrow source, but its PP05/PP06 registered failures and PP15 no-timing caveat remain preserved.
 
-The branch is based on the PR #187 research snapshot, not main. Inspect local branch/worktree state before any merge. No solver source was changed.
+The branch is based on the PR #187 research snapshot, not main. Inspect local branch/worktree state before any merge. This is a documentation-only research update; no solver source was changed.
 
-Remote Desktop device was offline, so /home/cosmosapjw/vigilode was not modified. After fetching this branch, materialize the package with:
+Remote Desktop device was offline at the prior check, so /home/cosmosapjw/vigilode was not modified. After fetching this branch, materialize the package with:
 
 ```bash
 cd /home/cosmosapjw/vigilode
