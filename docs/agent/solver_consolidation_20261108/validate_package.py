@@ -24,6 +24,7 @@ REQUIRED = [
     "CPU_PARALLEL_NODES.md",
     "PARALLEL_BENCHMARK_PROTOCOL.md",
     "PARALLEL_AGENT_PROMPT_KO.txt",
+    "REUSE_FIRST_INVENTORY.md",
     "validate_package.py",
     "MANIFEST.json",
 ]
@@ -78,6 +79,10 @@ if not isinstance(historical, list) or len(historical) < 10:
 prompt = (ROOT / "PARALLEL_AGENT_PROMPT_KO.txt").read_text(encoding="utf-8")
 if "GPU is forbidden" not in prompt and "GPU remains disabled" not in prompt:
     fail("agent prompt does not explicitly forbid GPU")
+reuse = (ROOT / "REUSE_FIRST_INVENTORY.md").read_text(encoding="utf-8")
+for required_reuse in ["ParallelExecution", "Dopri5Ensemble", "stage_batch", "conditioned_polynomial", "fixed_point_continuation", "fourier_path_certificate"]:
+    if required_reuse not in reuse:
+        fail(f"reuse-first inventory omits {required_reuse}")
 
 manifest = read_json("MANIFEST.json")
 manifest_entries = manifest.get("files", [])
