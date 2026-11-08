@@ -1,0 +1,86 @@
+[
+  {
+    "id": "PR74",
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/74",
+    "progress": "Native JVP coupled-stage homotopy and CPU stage RHS/JVP parallelism",
+    "limitation": "Not adaptive/global-error production; four-worker coupled run beat own serial arm but remained slower than generic sequential matrix-free at n=12288; small n loses."
+  },
+  {
+    "id": "PR91",
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/91",
+    "progress": "Causal reuse, structural raw-U, RHS-only homotopy and exact work policy",
+    "limitation": "Source-specific, not generic derivative-free."
+  },
+  {
+    "id": "PR93",
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/93",
+    "progress": "Polynomial actions, algebraic/resolvent and polyalgorithm alternatives",
+    "limitation": "No generic nonlinear stage parallelism."
+  },
+  {
+    "id": "PR117",
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/117",
+    "progress": "Monotone source-specific scalar stage root; exact Fraction checks",
+    "limitation": "Auxiliary diagonal implicit root, not original eight-stage RODAS raw-U; no native full-IVP speed."
+  },
+  {
+    "id": "PR135",
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/135",
+    "progress": "Damped collective convolution and finite affine prefix",
+    "limitation": "Prefix identity is for strictly linear nilpotent recurrence, not generic nonlinear RODAS."
+  },
+  {
+    "id": "PR136",
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/136",
+    "progress": "Rank-2 slow/fast Volterra kernel and energy law",
+    "limitation": "Source-specific rank-2 closure."
+  },
+  {
+    "id": "PR177",
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/177",
+    "progress": "Monotone algebraic homotopy and original first U-stage residual bound",
+    "limitation": "Auxiliary BE/root is not original 8-stage method; homotopy did more work."
+  },
+  {
+    "id": "PR179",
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/179",
+    "progress": "Original 8-stage causal frontier and residual bounds",
+    "limitation": "q2 depth3 used 21 W-solves vs 8 protected stages; q7 depth8 used 36 solves."
+  },
+  {
+    "id": "PR186",
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/186",
+    "progress": "Exact affine path scan on admitted path-forest graph; O(log m) span",
+    "limitation": "Does not reduce outer 8-stage causal depth; O(m log m) work can exceed serial work."
+  },
+  {
+    "id": "PR187",
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/187",
+    "progress": "Native source-owned graph-Schur retaining original 8 stages",
+    "limitation": "Median graph-Schur/fast-direct full-IVP wall ratio 2.242032452, slower in tested scope."
+  },
+  {
+    "id": "PP05",
+    "path": "research/pp05_fourier_client_20261004",
+    "progress": "Native Fourier-Volterra path, conjugation involution, noncyclic convolution and interval certificate",
+    "limitation": "G2 source parity 1.011159 over 1.01 limit; cyclic alias negative test committed benign candidate; registered FAIL."
+  },
+  {
+    "id": "PP06",
+    "path": "research/pp06_fourier_fft_candidate_20261004",
+    "progress": "2D padded FFT predictor; max direct/FFT discrepancy about 5.33e-16 on 48 calls",
+    "limitation": "Harmful alias negative gate failed; no timing."
+  },
+  {
+    "id": "PP07",
+    "path": "research/pp07_fourier_shared_action_20261004",
+    "progress": "Actual client audit",
+    "limitation": "Client has no shifted solve; correctly abstains."
+  },
+  {
+    "id": "PP15",
+    "path": "research/pp15_fourier_comparator_20261004",
+    "progress": "Fourier client vs RODAS same-source achieved errors/counters",
+    "limitation": "No timing and not matched-error in omega=40 or omega=1e4 cases."
+  }
+]
