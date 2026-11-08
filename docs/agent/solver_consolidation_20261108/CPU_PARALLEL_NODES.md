@@ -19,3 +19,8 @@ Cross-cutting admissible work: error-norm reductions, independent output evaluat
 Acceptance: verified spatial tests, serial/parallel operator parity, full setup/communication/preconditioner cost and achieved-error-matched solver comparisons. No GPU.
 
 Shared policy: no CUDA/HIP/OpenCL/SYCL, accelerator-specific dependency, build feature, kernel or benchmark. CPU shared-memory, CPU SIMD and separately declared CPU distributed-memory are allowed. If threading loses, retain sequential CPU path.
+
+
+## Reuse-first implementation rule
+
+Use the source-pinned inventory in `REUSE_FIRST_INVENTORY.md` before changing code. P1 extends `ParallelExecution` and the `stage_batch` report/concurrency harness. P2 extends `Dopri5Ensemble` and preserves its member-level failure semantics. P3 extends the existing `vigilode::Problem`/operator contracts and uses Gray-Scott 2D as an existing reaction-diffusion regression. Do not add a second pool, scheduler, ODE frontend, benchmark schema or WorkLedger. Greenfield code is limited to missing scientific structures such as a peer-W method tableau, resonance/parent-lift construction, or missing sphere/3D spatial operator.
