@@ -62,10 +62,10 @@
       }
     ],
     "schematic_equations": [
-      "Y_ni = U_n + h_n sum_j a_ij U_(n-1,j) + h_n sum_(j<i) a_tilde_ij U_(n,j)",
-      "(I-gamma*h_n*T_n) U_ni = F(Y_ni) + h_n*T_n sum_j gamma_ij U_(n-1,j) + h_n*T_n sum_(j<i) gamma_tilde_ij U_(n,j)",
-      "U_(n+1) = U_n + h_n sum_i (b_i U_ni + v_i U_(n-1,i))",
-      "Current stages are independent when same-step couplings a_tilde_ij and gamma_tilde_ij vanish; confirm exact notation from primary coefficient source."
+      "Y_mi = u_m + h_m*sum_{j=1}^s a_ij*k_(m-1,j) + h_m*sum_{j=1}^{i-1} tilde_a_ij*k_(m,j)",
+      "(I-h_m*gamma*T_m) k_(m,i) = f(t_mi,Y_mi) + h_m*T_m*sum_{j=1}^s Gamma_ij*k_(m-1,j) + h_m*T_m*sum_{j=1}^{i-1} tilde_Gamma_ij*k_(m,j)",
+      "u_(m+1)=u_m+h_m*sum_{i=1}^s (b_i*k_(m,i)+v_i*k_(m-1,i))",
+      "Parallel current stages require tilde_A=0 and tilde_Gamma=0. This two-step W form is distinct from a general peer state method and from multi-implicit peer-W with stage-specific shifts."
     ],
     "acceptance": [
       "Exact coefficient table and primary source pinned by paper version, URL, source hash and method identity.",
@@ -141,7 +141,8 @@
       "citation": "Kulikov & Weiner (2011), Global error estimation and control in linearly-implicit parallel two-step peer W-methods",
       "doi": "10.1016/j.cam.2011.08.006",
       "reuse_policy": "First recover and validate the published local/global error estimators and automatic step-size algorithm for the selected tableau. Do not design a new estimator from scratch unless the existing theorem is incompatible with the selected method.",
-      "caveat": "The publication's estimator is not automatically valid for a different coefficient table; rederive compatibility and source the exact estimator equations."
+      "caveat": "The publication's estimator is not automatically valid for a different coefficient table; rederive compatibility and source the exact estimator equations.",
+      "startup_note": "Two-step W requires initial stage derivatives k_(0,i); a peer GLM requires s initial peer values U_(0,i). Retrieve and validate a matching-order startup from the chosen family. The explicit peer parallel-start paper is not evidence for a stiff linearly implicit startup."
     }
   },
   "transform_candidate": {
