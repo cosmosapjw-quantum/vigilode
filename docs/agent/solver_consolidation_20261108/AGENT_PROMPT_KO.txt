@@ -1,0 +1,34 @@
+VIGILODE SOLVER PORTFOLIO INTEGRATION TASK
+Read the entire package at docs/agent/solver_consolidation_20261108/ before coding.
+
+MISSION: consolidate scattered Rust integrators into one production solver package and one stable frontend. Preserve the original target: improve stiff-system full-IVP performance relative to the eight-stage sequential RODAS5P path, reduce explicit Jacobian assembly costs where justified, and exploit causal/operator/algebraic/singular-geometry/homotopy and parallel/vectorized ideas only under proved assumptions and measured total costs. Extend to sphere, 2D and 3D method-of-lines.
+
+SOURCE LOCK: repository cosmosapjw-quantum/vigilode; audit branch research/vigilode-c5-native-graph-schur-20261102; commit 569ce02629498fec133db9ce368eb303ba943b69; tree a4b2f09521b197b37612ff7dc66a13fbb74a0bae. PR #187 is open draft/HOLD and not merged. main is a different identity. Check exact refs, dirty status and worktree. Stop on source drift.
+
+READ FIRST: PLAN_BUNDLE.json; DESIGN_CONTRACT.md; VALIDATION_PROTOCOL.md; README.md.
+
+CRITICAL FACTS:
+1. Existing vigilode frontend is RODAS5P-centric. GeneralOde selects DOPRI5/RODAS5P; AutomaticOde pilots only within that pair.
+2. Internal BDF1/2 and Radau IIA1/3 are reference-only, not production comparators.
+3. RODAS5P remains eight-stage 5(4) Rosenbrock-W. Lower-triangular stages are dependent; transforming U variables does not remove stages.
+4. C5 graph-Schur retained the eight-stage driver and its median wall ratio against fast-direct was 2.242032452 (slower). 36 native full-IVP conditions; only three physical families plus resolution control; path length one and no affine pair compositions. n=12/24 rings are synthetic controls.
+5. Strict matrix-free RODAS5P needs user JVP+Krylov, refuses direct/Jacobi preconditioners and mass matrix in inspected route, and omits some protected inner forcing/refinement.
+6. JFNK=Newton outer + Krylov inner Jv. FD-JVP avoids full J storage but is still an approximate derivative; preconditioning often essential.
+7. Fixed-point/homotopy are source-specific algebraic/corrector tools, not generic IVP methods.
+8. CI failures: 2 allocations/144 bytes where zero expected; clippy -D warnings; CVODE bridge missing mpi.h; provenance checker missing 19 Git refs; other research jobs failed. Classify/repair separately.
+9. vigilode-coupled is workspace member but not facade dependency; vigilode-hybrid is outside workspace membership.
+10. No local Cargo tests were run by this audit because Remote Desktop was offline. Do not convert plans into test receipts.
+
+DESIGN: one frontend, distinct method plugins. Common Problem/vector-space, derivative/operator contract, method descriptors/capabilities, session, output/event, failure and WorkLedger. Preserve Rodas5p API. Adapt DOPRI5 and protected RODAS5P first without coefficient changes. BDF/Radau enter production only after qualification. Rosenbrock-K is a genuinely new method with new order/stability conditions. Separate analytic J, exact JVP, FD-JVP, matrix-free Krylov, Newton and Newton-free fixed-point/homotopy. Geometry stays in sphere/2D/3D MOL backend. Do not assume RODAS5P stages parallel.
+
+EXECUTION: follow PLAN_BUNDLE.tasks dependency order. Start V11-00/V11-01; define Problem and stepper interfaces before broad adapters. One task at a time, isolated worktree, exact allowlist, RED test before implementation. Preserve old DAG and historic evidence. Avoid recursive meta-audit in place of implementation.
+
+TRACEABILITY: definition -> exact method equation/tableau -> callback/operator -> linear/nonlinear solve -> estimator/acceptance -> metric -> physical interpretation. Use source-locked coefficients and sign/mass convention. Label claim_status, test_status and failure_class independently.
+
+BENCHMARK: same RHS/parameters/IC/span/output/tolerance semantics; independent reference with uncertainty; match achieved output error only when measured tolerance points bracket target; no extrapolation; minimum seven paired randomized timings. Include setup, preconditioner, J/JVP, stage, Krylov, interpolation, rejects/fallbacks, allocations and memory.
+
+MUTATION GATES: no secrets/.env; no force push/reset/history rewrite/direct main push. Do not change tableau/default/tolerance/threshold/DAG/old receipts/holdout/breaking API/release gates without owner approval. Stay inside task allowlist. Do not weaken tests or globally disable clippy.
+
+ANTI-DRIFT: never call JVP derivative-free; matrix-free preconditioner-free; Newton-free generic; synthetic kernel speed full-IVP speed; empty CI PASS; unrun command a receipt. Never claim stages removed without new method proof. Preserve negative evidence. Two no-progress cycles => stop. One independent review; no review-of-review.
+
+DELIVER: task-level machine-readable evidence with source commit/tree/blob, exact commands/logs, claim/test status, failure class, scope and limitations. End with explicit verdict; default HOLD unless all gates pass. Report completed bounded work, verified results, artifacts, blockers and next actions.

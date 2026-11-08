@@ -1,0 +1,917 @@
+{
+  "schema_version": "vigilode-solver-consolidation-bundle-v1",
+  "plan_id": "VIGILODE-SOLVER-PORTFOLIO-20261108",
+  "audit_date": "2026-11-08",
+  "source": {
+    "branch": "research/vigilode-c5-native-graph-schur-20261102",
+    "commit": "569ce02629498fec133db9ce368eb303ba943b69",
+    "tree": "a4b2f09521b197b37612ff7dc66a13fbb74a0bae",
+    "pr": 187,
+    "pr_state": "open_draft_hold",
+    "default_branch": "main",
+    "default_branch_head": "8d0c79184e09efb5bdadc24a6315c60a71a44264",
+    "caveat": "Detailed code audit pins PR #187 active research head; it does not assert this is globally newest across every remote ref."
+  },
+  "audit": {
+    "findings": [
+      {
+        "id": "A01",
+        "status": "IMPLEMENTATION_VERIFIED",
+        "claim": "Existing public vigilode facade is RODAS5P-centric. GeneralOde chooses DOPRI5/RODAS5P; AutomaticOde pilots only within that pair.",
+        "evidence": [
+          "crates/vigilode/src/lib.rs",
+          "crates/vigilode/src/automatic.rs",
+          "crates/vigilode/src/selection.rs"
+        ]
+      },
+      {
+        "id": "A02",
+        "status": "IMPLEMENTATION_VERIFIED",
+        "claim": "Capabilities are route-specific RODAS5P capabilities, not a portfolio-wide registry.",
+        "evidence": [
+          "crates/vigilode/src/capabilities.rs"
+        ]
+      },
+      {
+        "id": "A03",
+        "status": "IMPLEMENTATION_VERIFIED",
+        "claim": "Internal BDF1/BDF2 and Radau IIA1/3 are reference-only, not production comparators.",
+        "evidence": [
+          "crates/rodas5p-integrators/src/bdf.rs",
+          "crates/rodas5p-integrators/src/radau.rs",
+          "README.md"
+        ]
+      },
+      {
+        "id": "A04",
+        "status": "LITERATURE_SUPPORTED_AND_IMPLEMENTATION_VERIFIED",
+        "claim": "RODAS5P is an eight-stage stiffly-accurate Rosenbrock-W 5(4) method. Lower-triangular stages remain dependent.",
+        "evidence": [
+          "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+          "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+          "https://link.springer.com/article/10.1007/s10543-023-00967-x"
+        ]
+      },
+      {
+        "id": "A05",
+        "status": "NUMERICALLY_CHECKED",
+        "claim": "C5 source-owned graph-Schur retained the original 8-stage driver. 36 native full-IVP conditions; median graph-Schur/fast-direct wall ratio 2.242032452 (slower by ~2.24x).",
+        "evidence": [
+          "research/vigilode_c5_native_graph_schur_20261102/REPORT_KO.md",
+          "research/vigilode_c5_native_graph_schur_20261102/RESULTS.json"
+        ],
+        "limitations": [
+          "three physical families plus resolution control",
+          "physical path length 1, affine pair compositions zero",
+          "n=12/24 rings synthetic controls",
+          "output clipping means tolerance rows do not define smooth adaptive work-precision"
+        ]
+      },
+      {
+        "id": "A06",
+        "status": "IMPLEMENTATION_VERIFIED",
+        "claim": "C5 is a source-owned cooperative-cubic specialization using analytic derivatives and StageLinearSystem hook. No JVP callback for that source does not imply generic derivative-free support.",
+        "evidence": [
+          "crates/rodas5p-integrators/src/source_owned_graph_schur.rs"
+        ]
+      },
+      {
+        "id": "A07",
+        "status": "IMPLEMENTATION_VERIFIED",
+        "claim": "Strict matrix-free RODAS5P requires supplied JVP + Krylov; inspected path refuses direct/Jacobi preconditioners and mass matrix and omits some protected inner forcing/refinement.",
+        "evidence": [
+          "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs"
+        ]
+      },
+      {
+        "id": "A08",
+        "status": "IMPLEMENTATION_VERIFIED",
+        "claim": "Fixed-point continuation is source-bound algebraic root continuation under contraction/inverse-action assumptions, not generic IVP stepping.",
+        "evidence": [
+          "crates/rodas5p-integrators/src/fixed_point_continuation.rs"
+        ]
+      },
+      {
+        "id": "A09",
+        "status": "IMPLEMENTATION_VERIFIED",
+        "claim": "Nonlinear homotopy is source-bound window shooting/candidate framework; binary64 candidate is not itself an outward error certificate.",
+        "evidence": [
+          "crates/rodas5p-integrators/src/nonlinear_homotopy.rs"
+        ]
+      },
+      {
+        "id": "A10",
+        "status": "IMPLEMENTATION_VERIFIED",
+        "claim": "Parallel row/operator application exists but does not prove independent RODAS5P stages or full solver speedup. Stage-batch artifacts report no strict common-W matrix-free or explicit SIMD demonstration.",
+        "evidence": [
+          "crates/rodas5p-integrators/src/parallel.rs",
+          "crates/rodas5p-integrators/src/stage_batch.rs"
+        ]
+      },
+      {
+        "id": "A11",
+        "status": "IMPLEMENTATION_VERIFIED",
+        "claim": "vigilode-coupled is a workspace member but not vigilode dependency; vigilode-hybrid exists outside workspace membership.",
+        "evidence": [
+          "Cargo.toml",
+          "crates/vigilode/Cargo.toml"
+        ]
+      },
+      {
+        "id": "A12",
+        "status": "IMPLEMENTATION_VERIFIED",
+        "claim": "PR #176 inventories 28 integrator/driver/step/backend/selector entries, not 28 production solvers. Original 23-node DAG status 7 complete-scoped, 15 pending-local, 1 authority-pending; successor admitted 0/12.",
+        "evidence": [
+          "PR #176 description"
+        ]
+      },
+      {
+        "id": "A13",
+        "status": "IMPLEMENTATION_VERIFIED",
+        "claim": "No single plugin lifecycle, portfolio-wide method registry, common work ledger and generic switch/fallback currently joins all methods.",
+        "evidence": [
+          "crates/vigilode/src",
+          "crates/rodas5p-integrators/src"
+        ]
+      }
+    ],
+    "ci": {
+      "contexts": [],
+      "contexts_note": "Empty combined status contexts are not PASS.",
+      "runs": [
+        {
+          "id": 41403799955,
+          "name": "Production CI",
+          "conclusion": "failure",
+          "jobs": [
+            "clippy",
+            "bench",
+            "test"
+          ]
+        },
+        {
+          "id": 41403799899,
+          "name": "Ignored long tests",
+          "conclusion": "failure"
+        },
+        {
+          "id": 41403799901,
+          "name": "Research ledger and authority refs",
+          "conclusion": "failure"
+        },
+        {
+          "id": 41403799994,
+          "name": "A2+A3 GMRES candidate",
+          "conclusion": "failure"
+        },
+        {
+          "id": 41403799891,
+          "name": "Audit2",
+          "conclusion": "failure"
+        },
+        {
+          "id": 41403799983,
+          "name": "Fresh-clone build",
+          "conclusion": "failure"
+        },
+        {
+          "id": 41403799929,
+          "name": "A1 parity",
+          "conclusion": "failure"
+        }
+      ],
+      "details": [
+        {
+          "class": "IMPLEMENTATION_TEST",
+          "issue": "shifted_operator_apply_is_allocation_free_after_construction",
+          "observed": "2 allocations / 144 bytes; expected 0",
+          "path": "crates/rodas5p-core/tests/allocation_contracts.rs"
+        },
+        {
+          "class": "SOURCE_QUALITY",
+          "issue": "clippy -D warnings",
+          "observed": "items after test module in n01_mass_action_owner.rs and source_owned_graph_schur.rs; negated partial-order comparisons and needless range loops in source_owned_graph_schur.rs"
+        },
+        {
+          "class": "RUNTIME_ENVIRONMENT",
+          "issue": "CVODE bridge compile",
+          "observed": "mpi.h missing",
+          "path": "crates/vigilode-bench/native/bridge/cvode_bridge.c"
+        },
+        {
+          "class": "PROVENANCE",
+          "issue": "authority-ref checker",
+          "observed": "11622 citations, 1600 identities; missing=19, missing+allowlisted=12, non-commit=295, reachable=1263, tree-equivalent=11"
+        },
+        {
+          "class": "UNRESOLVED",
+          "issue": "other failed research/ignored jobs",
+          "observed": "not all logs classified in this audit"
+        }
+      ]
+    },
+    "not_run": [
+      "No local /home/cosmosapjw/vigilode checkout or Cargo tests were accessed because Remote Desktop device was offline.",
+      "No new production benchmark campaign.",
+      "No full DAE/backward/global continuous-error qualification.",
+      "No native subagents were spawned; no spawn/wait/collect facility surfaced."
+    ]
+  },
+  "verdict": {
+    "decision": "HOLD_NOT_RELEASE_QUALIFIED",
+    "allowed_claim": "Research-grade ODE platform with scoped protected RODAS5P facade, explicit and matrix-free experimental paths and source-specific algebraic/homotopy components; not a unified production solver portfolio.",
+    "gates": [
+      {
+        "id": "G0",
+        "status": "FAIL_OR_UNRESOLVED",
+        "name": "source identity, clean clone and provenance"
+      },
+      {
+        "id": "G1",
+        "status": "NOT_IMPLEMENTED",
+        "name": "unified public portfolio frontend"
+      },
+      {
+        "id": "G2",
+        "status": "NOT_PASSED",
+        "name": "method order/stability/estimator/linear/nonlinear conformance"
+      },
+      {
+        "id": "G3",
+        "status": "NOT_PASSED",
+        "name": "switch/fallback/rollback and history invalidation"
+      },
+      {
+        "id": "G4",
+        "status": "NOT_PASSED",
+        "name": "sphere/2D/3D method-of-lines scaling and geometry"
+      },
+      {
+        "id": "G5",
+        "status": "NOT_PASSED",
+        "name": "matched achieved-error performance evidence"
+      },
+      {
+        "id": "G6",
+        "status": "FAIL",
+        "name": "workspace CI/test/clippy/bench/provenance"
+      }
+    ],
+    "current_scope": "smooth forward identity-mass IVPs with currently supported facade callbacks/output modes; local estimator/sampled checks not a generic continuous global bound. General DAE, nonidentity mass, backward integration and portfolio-wide dense output unqualified.",
+    "disallowed": [
+      "general derivative-free stiff solver",
+      "general Newton-free stiff solver",
+      "RODAS5P stages removed or parallel",
+      "C5 speedup claim",
+      "internal BDF/Radau production comparison",
+      "generic validated continuous IVP enclosure"
+    ]
+  },
+  "architecture": {
+    "decision": "one frontend + distinct method plugins; use existing crates/vigilode facade, do not create rival facade or mega-integrator",
+    "layers": [
+      "Problem/vector space",
+      "derivative/operator providers",
+      "linear/nonlinear algebra services",
+      "time-stepper plugins",
+      "shared IVP session/output/work ledger",
+      "capability router/switch/fallback",
+      "public vigilode frontend",
+      "domain/execution backend"
+    ],
+    "problem_contract": {
+      "initial": "dy/dt=f(t,y), y(t0)=y0",
+      "future": "M(t,y)dy/dt=f(t,y) separately capability-gated; singular M/DAE need consistent initialization",
+      "fields": [
+        "dimension",
+        "vector-space/norm",
+        "RHS and callback epoch",
+        "initial state/span",
+        "mass operator",
+        "analytic J",
+        "exact AD/user JVP",
+        "finite-difference JVP policy",
+        "optional f_t",
+        "matrix-free operator",
+        "preconditioner",
+        "replay safety",
+        "domain descriptor"
+      ]
+    },
+    "api": {
+      "entry": "extend GeneralOde/existing facade",
+      "preference": [
+        "Auto",
+        "ExplicitOnly",
+        "StiffOnly",
+        "NamedMethod",
+        "Portfolio"
+      ],
+      "options": [
+        "rtol",
+        "atol",
+        "initial step",
+        "work ceiling",
+        "output schedule",
+        "dense output",
+        "events",
+        "execution policy"
+      ],
+      "result": "common Solution with accepted prefix, stop reason, method segments, output metadata and complete WorkLedger",
+      "compatibility": "Rodas5p compatibility retained"
+    },
+    "lifecycle": [
+      "descriptor",
+      "side-effect-free capability query",
+      "initialize",
+      "attempt_step",
+      "commit",
+      "rollback",
+      "checkpoint/restart",
+      "optional dense extension",
+      "finalize"
+    ],
+    "attempt_fields": [
+      "accepted/rejected/failed",
+      "candidate state",
+      "local estimator and scale",
+      "estimator id/order",
+      "next h",
+      "work delta",
+      "failure reason"
+    ],
+    "routing": {
+      "select": "hard capability filter before callbacks; user choice outranks heuristics",
+      "pilot": "requires replay-safe callbacks and strict work ceiling",
+      "switch": "after accepted committed state only",
+      "reset": [
+        "DOPRI FSAL",
+        "BDF/Nordsieck history",
+        "Krylov recycle basis",
+        "W/factorization/preconditioner identity",
+        "dense-output segment"
+      ],
+      "fallback": "restore last committed state, retry same interval, preserve tolerances/budget, charge failed candidate and fallback work"
+    },
+    "method_status": [
+      {
+        "id": "DOPRI5",
+        "status": "existing_scoped",
+        "role": "explicit nonstiff baseline"
+      },
+      {
+        "id": "RODAS5P",
+        "status": "existing_protected",
+        "role": "8-stage 5(4) Rosenbrock-W; dense/banded and restricted JVP routes"
+      },
+      {
+        "id": "BDF1/2",
+        "status": "reference_only",
+        "role": "not competitive production comparator"
+      },
+      {
+        "id": "Radau IIA1/3",
+        "status": "reference_only",
+        "role": "not competitive production comparator"
+      },
+      {
+        "id": "Rosenbrock-K/BOROK",
+        "status": "research_candidate",
+        "role": "new method encodes Krylov subspace in order conditions; potential stage-solve reduction"
+      },
+      {
+        "id": "exponential phi-Krylov",
+        "status": "specialized_candidate",
+        "role": "semilinear split; requires separate estimator/defect validation"
+      },
+      {
+        "id": "fixed-point/homotopy",
+        "status": "problem_specific",
+        "role": "algebraic corrector/continuation, not generic time-stepper"
+      }
+    ],
+    "spatial": {
+      "principle": "method of lines makes ODE; geometry remains provider layer",
+      "sphere": [
+        "spherical/spin harmonics, sphere finite-volume or cubed-sphere",
+        "area measure/weighted norm",
+        "Laplace-Beltrami eigenmodes",
+        "pole/chart overlap"
+      ],
+      "cartesian": [
+        "2D/3D diffusion/advection/reaction",
+        "refinement/conservation",
+        "sparse/block matrix-free operator and preconditioner"
+      ]
+    },
+    "parallel": [
+      "independent ensembles",
+      "block/multivector operator",
+      "spatial SIMD/GPU/distributed vectors",
+      "derived stage-parallel fully-implicit method only"
+    ],
+    "no_claim": "RODAS5P lower-triangular stages are not automatically independent"
+  },
+  "method_capabilities": [
+    {
+      "id": "dopri5",
+      "status": "existing_scoped",
+      "requires": "RHS",
+      "stiffness": "nonstiff",
+      "nonlinear": "none",
+      "limit": "stability-limited"
+    },
+    {
+      "id": "rodas5p",
+      "status": "existing_protected",
+      "requires": "J or route-specific JVP",
+      "stiffness": "stiff",
+      "nonlinear": "linearly implicit stages",
+      "linear": "dense/banded or restricted Krylov",
+      "limit": "8 stages remain"
+    },
+    {
+      "id": "rodas5p_strict_jvp",
+      "status": "existing_research",
+      "requires": "user JVP + GMRES",
+      "limit": "not derivative-free; direct/Jacobi preconditioner and mass matrix unsupported in inspected route"
+    },
+    {
+      "id": "bdf1_bdf2",
+      "status": "reference_only",
+      "requires": "Newton and dense linear solve",
+      "limit": "only order 1/2 internally"
+    },
+    {
+      "id": "radau_iia1_3",
+      "status": "reference_only",
+      "requires": "Newton and coupled dense stage solve",
+      "limit": "not production-qualified"
+    },
+    {
+      "id": "rosenbrock_k_future",
+      "status": "research_candidate",
+      "requires": "JVP/Krylov basis",
+      "limit": "new method, coefficients/order/stability proof and estimator required"
+    },
+    {
+      "id": "exponential_rosenbrock",
+      "status": "specialized_candidate",
+      "requires": "semilinear split and phi actions",
+      "limit": "defect/adaptivity not qualified"
+    },
+    {
+      "id": "fixed_point_continuation",
+      "status": "source_specific_only",
+      "requires": "uniform contraction and inverse-action bounds",
+      "limit": "not ODE time-stepper"
+    },
+    {
+      "id": "nonlinear_homotopy",
+      "status": "source_specific_only",
+      "requires": "source-bound window model",
+      "limit": "binary64 candidate not global certificate"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "V11-00-BASELINE",
+      "title": "Pin source, refs and provenance",
+      "depends_on": [],
+      "priority": 0,
+      "status": "PLANNED"
+    },
+    {
+      "id": "V11-01-HISTORY",
+      "title": "Reconcile mission/28-entry inventory/DAG",
+      "depends_on": [
+        "V11-00-BASELINE"
+      ],
+      "priority": 1,
+      "status": "PLANNED"
+    },
+    {
+      "id": "V11-02-PROBLEM",
+      "title": "Specify Problem/vector-space/derivative contract",
+      "depends_on": [
+        "V11-00-BASELINE"
+      ],
+      "priority": 1,
+      "status": "PLANNED"
+    },
+    {
+      "id": "V11-03-STEPPER",
+      "title": "Define plugin lifecycle and StepAttempt semantics",
+      "depends_on": [
+        "V11-02-PROBLEM"
+      ],
+      "priority": 1,
+      "status": "PLANNED"
+    },
+    {
+      "id": "V11-04-CAPABILITIES",
+      "title": "Build executable capability registry",
+      "depends_on": [
+        "V11-03-STEPPER"
+      ],
+      "priority": 1,
+      "status": "PLANNED"
+    },
+    {
+      "id": "V11-05-SESSION",
+      "title": "Unify output/events/session/work ledger",
+      "depends_on": [
+        "V11-03-STEPPER"
+      ],
+      "priority": 1,
+      "status": "PLANNED"
+    },
+    {
+      "id": "V11-06-DOPRI",
+      "title": "Adapt DOPRI5 as first plugin",
+      "depends_on": [
+        "V11-04-CAPABILITIES",
+        "V11-05-SESSION"
+      ],
+      "priority": 2,
+      "status": "PLANNED"
+    },
+    {
+      "id": "V11-07-RODAS",
+      "title": "Adapt protected RODAS5P without tableau change",
+      "depends_on": [
+        "V11-04-CAPABILITIES",
+        "V11-05-SESSION"
+      ],
+      "priority": 2,
+      "status": "PLANNED"
+    },
+    {
+      "id": "V11-08-OPERATORS",
+      "title": "Unify J/JVP/operator/preconditioner APIs",
+      "depends_on": [
+        "V11-02-PROBLEM",
+        "V11-03-STEPPER"
+      ],
+      "priority": 2,
+      "status": "PLANNED"
+    },
+    {
+      "id": "V11-09-BDF-RADAU",
+      "title": "Decide BDF/Radau production gaps",
+      "depends_on": [
+        "V11-04-CAPABILITIES",
+        "V11-08-OPERATORS"
+      ],
+      "priority": 2,
+      "status": "PLANNED"
+    },
+    {
+      "id": "V11-10-ROK",
+      "title": "Research genuine Rosenbrock-K/BOROK",
+      "depends_on": [
+        "V11-08-OPERATORS"
+      ],
+      "priority": 2,
+      "status": "PLANNED"
+    },
+    {
+      "id": "V11-11-SPECIALIZED",
+      "title": "Classify coupled/causal/homotopy plugins/support layers",
+      "depends_on": [
+        "V11-04-CAPABILITIES",
+        "V11-05-SESSION"
+      ],
+      "priority": 3,
+      "status": "PLANNED"
+    },
+    {
+      "id": "V11-12-ROUTER",
+      "title": "Implement switch/hysteresis/transactional fallback",
+      "depends_on": [
+        "V11-06-DOPRI",
+        "V11-07-RODAS",
+        "V11-08-OPERATORS"
+      ],
+      "priority": 2,
+      "status": "PLANNED"
+    },
+    {
+      "id": "V11-13-SPATIAL",
+      "title": "Expose sphere/2D/3D MOL backends",
+      "depends_on": [
+        "V11-02-PROBLEM",
+        "V11-08-OPERATORS"
+      ],
+      "priority": 3,
+      "status": "PLANNED"
+    },
+    {
+      "id": "V11-14-PARALLEL",
+      "title": "Implement real block/multivector kernels",
+      "depends_on": [
+        "V11-08-OPERATORS",
+        "V11-13-SPATIAL"
+      ],
+      "priority": 3,
+      "status": "PLANNED"
+    },
+    {
+      "id": "V11-15-BENCH",
+      "title": "Build matched-achieved-error full-IVP corpus",
+      "depends_on": [
+        "V11-00-BASELINE"
+      ],
+      "priority": 1,
+      "status": "PLANNED"
+    },
+    {
+      "id": "V11-16-CI",
+      "title": "Repair CI/provenance independently",
+      "depends_on": [
+        "V11-00-BASELINE",
+        "V11-05-SESSION",
+        "V11-06-DOPRI",
+        "V11-07-RODAS",
+        "V11-15-BENCH"
+      ],
+      "priority": 1,
+      "status": "PLANNED"
+    },
+    {
+      "id": "V11-17-REVIEW",
+      "title": "One independent adversarial review",
+      "depends_on": [
+        "V11-09-BDF-RADAU",
+        "V11-10-ROK",
+        "V11-11-SPECIALIZED",
+        "V11-12-ROUTER",
+        "V11-13-SPATIAL",
+        "V11-14-PARALLEL",
+        "V11-15-BENCH",
+        "V11-16-CI"
+      ],
+      "priority": 4,
+      "status": "PLANNED"
+    },
+    {
+      "id": "V11-18-DECISION",
+      "title": "Explicit release decision",
+      "depends_on": [
+        "V11-17-REVIEW"
+      ],
+      "priority": 5,
+      "status": "PLANNED"
+    }
+  ],
+  "acceptance": {
+    "statuses": [
+      "PASS",
+      "FAIL",
+      "CONCERN",
+      "NOT_RUN",
+      "NOT_APPLICABLE",
+      "BLOCKED"
+    ],
+    "gates": [
+      {
+        "id": "MATH",
+        "tests": [
+          "source-locked equations/tableaux",
+          "order/stability/stiff limit",
+          "mass/f_t assumptions",
+          "geometry/conservation"
+        ]
+      },
+      {
+        "id": "NUMERIC",
+        "tests": [
+          "analytic order",
+          "stiff decay/nonnormal",
+          "estimator versus achieved error",
+          "rejection/fallback"
+        ]
+      },
+      {
+        "id": "API",
+        "tests": [
+          "single frontend",
+          "side-effect-free capability query",
+          "typed refusals",
+          "partial result"
+        ]
+      },
+      {
+        "id": "SWITCH",
+        "tests": [
+          "accepted-boundary switching",
+          "history invalidation",
+          "transactional rollback",
+          "work accounting",
+          "hysteresis"
+        ]
+      },
+      {
+        "id": "SPATIAL",
+        "tests": [
+          "sphere modes/area measure",
+          "2D/3D refinement",
+          "conservation",
+          "preconditioner scaling"
+        ]
+      },
+      {
+        "id": "PERF",
+        "tests": [
+          "matched achieved output error",
+          "bracketed curves",
+          "full-IVP paired timing",
+          "setup/allocation/fallback"
+        ]
+      },
+      {
+        "id": "CI",
+        "tests": [
+          "clean clone",
+          "locked toolchain",
+          "test/clippy/docs/examples/bench",
+          "provenance"
+        ]
+      }
+    ]
+  },
+  "mutation_policy": {
+    "default": "documentation_and_isolated_additive_work_only",
+    "required": [
+      "worktree per task",
+      "task allowlists",
+      "RED test before code",
+      "exact hashes before/after",
+      "targeted then crate/workspace tests",
+      "raw logs and source identities"
+    ],
+    "forbidden": [
+      "touch secrets",
+      "force push/reset/history rewrite",
+      "direct main push",
+      "weaken tests",
+      "globally silence clippy",
+      "recreate missing commit identity",
+      "delete negative evidence",
+      "silent tolerance/budget relaxation",
+      "unapproved default/tableau/threshold/API/release-gate changes"
+    ],
+    "owner_approval": [
+      "default changes",
+      "coefficients/tableau",
+      "tolerances/thresholds",
+      "breaking API",
+      "release criteria",
+      "original DAG",
+      "evidence deletion"
+    ]
+  },
+  "anti_drift": {
+    "rules": [
+      "28 inventory entries are not 28 production solvers.",
+      "JVP is a derivative action; FD-JVP is an approximation, not derivative-free.",
+      "Matrix-free does not mean preconditioner-free.",
+      "JFNK includes Newton outer iterations.",
+      "Newton-free fixed point is assumption-bound, not generic.",
+      "RODAS5P has eight stages; no claim of removing them without new method proof.",
+      "No claim that lower-triangular stages are independent.",
+      "Rosenbrock-K is a new method.",
+      "C5 graph-Schur measured ~2.24x slower.",
+      "Internal BDF/Radau remain reference-only.",
+      "Synthetic kernel speed is not full-IVP speed.",
+      "Sampled grid error is not continuous-time global error.",
+      "Empty CI/unrun commands are NOT_RUN, never PASS.",
+      "Preserve negative evidence."
+    ],
+    "stop": [
+      "two no-progress cycles",
+      "protected mutation requested",
+      "unsupported capability",
+      "unbracketed target",
+      "unproved method properties",
+      "one independent review only; no review-of-review"
+    ]
+  },
+  "benchmark": {
+    "minimum_repetitions": 7,
+    "design": "randomized ABBA or blocked paired timing",
+    "rules": [
+      "same RHS/parameters/IC/span/output/tolerance",
+      "independent reference with uncertainty",
+      "target output error bracketed by measured points for every method",
+      "no extrapolation",
+      "include setup, J/JVP, preconditioner, factorization, Krylov, rejected/fallback, interpolation, allocation and memory"
+    ],
+    "corpus": [
+      "linear stiff/nonnormal",
+      "Robertson",
+      "Van der Pol",
+      "HIRES",
+      "2D diffusion/reaction",
+      "2D advection-diffusion",
+      "3D anisotropic diffusion",
+      "sphere Laplace-Beltrami/harmonic modes",
+      "sphere anisotropic reaction-transport",
+      "long graph forest",
+      "graph feedback core"
+    ],
+    "sizes": {
+      "vector_n": [
+        8,
+        16,
+        32,
+        64,
+        128,
+        256,
+        512,
+        1024,
+        4096
+      ],
+      "grid_2d": [
+        "32x32",
+        "64x64",
+        "128x128",
+        "256x256"
+      ],
+      "grid_3d": [
+        "16^3",
+        "32^3",
+        "64^3"
+      ],
+      "sphere_lmax": [
+        8,
+        16,
+        32,
+        64,
+        128
+      ],
+      "graph_n": [
+        16,
+        32,
+        64,
+        128,
+        256,
+        512,
+        1024,
+        4096
+      ]
+    },
+    "decision": "DIAGNOSTIC_ONLY unless all fidelity, uncertainty and bracketing requirements pass."
+  },
+  "references": [
+    {
+      "id": "L1",
+      "title": "RODAS5P construction and benchmarks",
+      "author": "Gerd Steinebach",
+      "year": 2023,
+      "url": "https://link.springer.com/article/10.1007/s10543-023-00967-x"
+    },
+    {
+      "id": "L2",
+      "title": "Jacobian-free Newton-Krylov methods survey",
+      "authors": "Knoll and Keyes",
+      "year": 2004,
+      "url": "https://www.sciencedirect.com/science/article/pii/S0021999103004340"
+    },
+    {
+      "id": "L3",
+      "title": "Rosenbrock-Krylov Methods for Large Systems of Differential Equations",
+      "authors": "Tranquilli and Sandu",
+      "year": 2014,
+      "url": "https://epubs.siam.org/doi/10.1137/130923336"
+    },
+    {
+      "id": "L4",
+      "title": "ARKODE: A flexible IVP solver infrastructure for one-step methods",
+      "year": 2022,
+      "url": "https://www.osti.gov/pages/servlets/purl/1991757"
+    },
+    {
+      "id": "L5",
+      "title": "SUNDIALS ARKODE code organization",
+      "url": "https://sundials.readthedocs.io/en/latest/arkode/Organization_link.html"
+    },
+    {
+      "id": "L6",
+      "title": "SUNDIALS CVODE documentation",
+      "url": "https://sundials.readthedocs.io/en/latest/cvode/"
+    },
+    {
+      "id": "L7",
+      "title": "Stage-parallel fully implicit Runge-Kutta implementations",
+      "year": 2023,
+      "url": "https://opus.bibliothek.uni-augsburg.de/opus4/files/109862/Munch_Dissertation.pdf"
+    },
+    {
+      "id": "L8",
+      "title": "Stage-Parallel Implicit Runge-Kutta Methods Via Low-Rank Matrix Equation Corrections",
+      "year": 2026,
+      "url": "https://link.springer.com/article/10.1007/s10915-026-03185-z"
+    }
+  ]
+}
