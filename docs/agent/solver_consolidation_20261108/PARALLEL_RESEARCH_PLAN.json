@@ -1,0 +1,230 @@
+{
+  "schema_version": "vigilode-parallel-research-v1",
+  "plan_id": "VIGILODE-CPU-PARALLEL-TRANSFORM-20261108",
+  "source_lock": {
+    "research_branch": "research/vigilode-c5-native-graph-schur-20261102",
+    "research_commit": "569ce02629498fec133db9ce368eb303ba943b69",
+    "research_tree": "a4b2f09521b197b37612ff7dc66a13fbb74a0bae",
+    "plan_branch": "docs/solver-consolidation-plan-20261108",
+    "plan_branch_base": "8a6b32b90afd802d45c9b6eb70fcf7f019a87fa1",
+    "main_head": "8d0c79184e09efb5bdadc24a6315c60a71a44264"
+  },
+  "gpu": "FORBIDDEN under all tasks, dependencies, fallbacks, and benchmarks.",
+  "verdict": "RESEARCH_ADVANCED_PRODUCTION_NOT_QUALIFIED",
+  "main_candidate": {
+    "id": "V11-19-PEER-W",
+    "priority": 0,
+    "status": "PLANNED",
+    "method": "Two-step parallel Rosenbrock-W peer method",
+    "rationale": "A new method can make current stages independent by using previous-step peer data; this is preferable to claiming that the lower-triangular stages of original RODAS5P are independent.",
+    "candidates": [
+      "PW6-P5: six independent peer stages, target variable-step global order >=5",
+      "PW8-P5: eight independent stages, conservative order-five parity target",
+      "PW8-P7: explore only if a real variable-step coefficient set and estimator are verified"
+    ],
+    "schematic_equations": [
+      "Y_ni = U_n + h_n sum_j a_ij U_(n-1,j) + h_n sum_(j<i) a_tilde_ij U_(n,j)",
+      "(I-gamma*h_n*T_n) U_ni = F(Y_ni) + h_n*T_n sum_j gamma_ij U_(n-1,j) + h_n*T_n sum_(j<i) gamma_tilde_ij U_(n,j)",
+      "U_(n+1) = U_n + h_n sum_i (b_i U_ni + v_i U_(n-1,i)",
+      "Current stages are independent when same-step couplings a_tilde_ij and gamma_tilde_ij vanish; confirm exact notation from primary coefficient source."
+    ],
+    "acceptance": [
+      "Pin exact coefficient table and primary source; no invented coefficients.",
+      "Verify variable-step order, stage order, zero-stability, L(alpha)-stability, startup, estimator and step-ratio range.",
+      "Prove/instrument that current peer stages use prior-step data only and overlap on CPU.",
+      "At least 7 randomized paired full-IVP timings at matched achieved output error.",
+      "Research target: accepted steps <=1.10x protected RODAS5P and median CPU full-IVP speedup >=1.15x on preregistered subset.",
+      "Keep protected RODAS5P tableau/defaults unchanged."
+    ],
+    "fallback": "Protected RODAS5P; peer-W remains opt-in or is rejected."
+  },
+  "transform_candidate": {
+    "id": "V11-20-ALGEBRAIC-LIFT",
+    "priority": 1,
+    "status": "PLANNED",
+    "method": "Finite resonant Poincare-Dulac normal-form lift to a linear parent system on an invariant algebraic manifold.",
+    "scope": "Local analytic/polynomial flow near a stable hyperbolic equilibrium only.",
+    "construction": [
+      "x_dot=A*x+F_ge2(x); apply a convergent Poincare-Dulac transformation x=Phi(z).",
+      "Retain resonant monomials z^mu e_j satisfying mu dot lambda=lambda_j, |mu|>=2.",
+      "For finite resonant set phi_i(z), introduce w_i=phi_i(z). Resonant closure gives xi=(z,w), xi_dot=B*xi.",
+      "Original trajectories lie on M={w_i-phi_i(z)=0}; prove invariance by Lie-derivative ideal membership.",
+      "Measure lift dimension, maximum degree, coefficient growth, conditioning and chart radius; refuse outside certified chart."
+    ],
+    "linear_stage_identity": {
+      "block_system": "Lcal=I_s kron W - h*gamma*A_stage kron B - gamma*C_stage kron I; W=I-h*gamma*B",
+      "factor": "Lcal=(I_s kron W)*(I-N), N=h*gamma*A_stage kron W^-1*B + gamma*C_stage kron W^-1",
+      "nilpotence": "A_stage and C_stage are strictly lower triangular, hence N^s=0",
+      "inverse": "(I-N)^-1=sum_(k=0)^(s-1)N^k; for s=8, sum_(k=0)^7 N^k=(I+N)(I+N^2)(I+N^4)",
+      "limitation": "Exact algebraic identity, not a speed result. Count power application, Krylov/multishift work, setup and memory."
+    },
+    "acceptance": [
+      "Normal-form convergence and chart assumptions justified.",
+      "Resonant monomials, parent matrix and algebraic constraints exact/source-bound.",
+      "Original-state output agrees with independent integration under transported error bound.",
+      "Lift dimension/conditioning do not erase savings.",
+      "Linear stage-block residual and estimator semantics verified separately."
+    ],
+    "fallback": "Refuse nonconvergent, ill-conditioned, high-dimensional or chart-exiting lifts."
+  },
+  "source_specific_transform": {
+    "id": "V11-21-FOURIER-INVOLUTION",
+    "priority": 1,
+    "status": "PLANNED",
+    "existing_code": [
+      "crates/rodas5p-integrators/src/fourier_path_certificate.rs",
+      "crates/rodas5p-integrators/src/fourier_path_candidate.rs",
+      "crates/rodas5p-integrators/tests/pp05_fourier_client.rs",
+      "crates/rodas5p-integrators/tests/pp06_fourier_fft.rs",
+      "crates/rodas5p-integrators/tests/pp15_fourier_comparator.rs"
+    ],
+    "tasks": [
+      "Close PP05 source-parity discrepancy without rewriting its old FAIL.",
+      "Construct genuinely harmful cyclic-alias negative controls.",
+      "Keep FFT as predictor and original noncyclic interval certificate as authority.",
+      "Run >=7 paired CPU timings at bracketed achieved errors; PP15 has no timing."
+    ]
+  },
+  "other_cpu_nodes": [
+    {
+      "id": "V11-22-STAGE-INTERNAL-CPU",
+      "priority": 2,
+      "status": "PLANNED",
+      "purpose": "RHS rows/components, JVP/operator application, preconditioners, Krylov reductions, factorization and multiple-RHS solves.",
+      "invariant": "Original one-step RODAS5P stage order remains sequential; only work with available inputs is parallelized.",
+      "acceptance": [
+        "No tableau/dependency change",
+        "Residual/output parity",
+        "Concurrency instrumentation",
+        ">=7 matched-achieved-error full-IVP timings",
+        "CPU workers 1/2/4/8"
+      ]
+    },
+    {
+      "id": "V11-23-ENSEMBLE-CPU",
+      "priority": 2,
+      "status": "PLANNED",
+      "purpose": "Method-agnostic independent IVP/parameter ensembles, extending the DOPRI-only Dopri5Ensemble foundation.",
+      "invariant": "Each member owns controller, norm, history, partial result, failure and work ledger; no pooled norm/step size.",
+      "acceptance": [
+        "Serial member parity",
+        "Failure isolation",
+        "Replay/side-effect contract",
+        "Throughput and tail latency",
+        "CPU workers 1/2/4/8"
+      ]
+    },
+    {
+      "id": "V11-24-SPATIAL-MOL-CPU",
+      "priority": 2,
+      "status": "PLANNED",
+      "purpose": "Sphere/2D/3D MOL CPU row/cell/mode parallelism with geometry-specific norms and conservation.",
+      "required": [
+        "Sphere harmonics/spin harmonics or FV/cubed sphere; area measure; pole/chart overlap; Laplace-Beltrami modes",
+        "2D/3D anisotropic diffusion, advection-diffusion, reaction-diffusion; refinement and conservation",
+        "CPU sparse/block/matrix-free operators and preconditioner scaling"
+      ],
+      "acceptance": [
+        "Geometry/refinement tests",
+        "Serial/parallel operator parity",
+        "Matched-achieved-error full cost",
+        "No GPU"
+      ]
+    }
+  ],
+  "evidence_map": [
+    {
+      "id": "PR74",
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/74",
+      "progress": "Native JVP coupled-stage homotopy and CPU stage RHS/JVP parallelism",
+      "limitation": "Not adaptive/global-error production; four-worker coupled run beat own serial arm but remained slower than generic sequential matrix-free at n=12288; small n loses."
+    },
+    {
+      "id": "PR91",
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/91",
+      "progress": "Causal reuse, structural raw-U, RHS-only homotopy and exact work policy",
+      "limitation": "Source-specific, not generic derivative-free."
+    },
+    {
+      "id": "PR93",
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/93",
+      "progress": "Polynomial actions, algebraic/resolvent and polyalgorithm alternatives",
+      "limitation": "No generic nonlinear stage parallelism."
+    },
+    {
+      "id": "PR117",
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/117",
+      "progress": "Monotone source-specific scalar stage root; exact Fraction checks",
+      "limitation": "Auxiliary diagonal implicit root, not original eight-stage RODAS raw-U; no native full-IVP speed."
+    },
+    {
+      "id": "PR135",
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/135",
+      "progress": "Damped collective convolution and finite affine prefix",
+      "limitation": "Prefix identity is for strictly linear nilpotent recurrence, not generic nonlinear RODAS."
+    },
+    {
+      "id": "PR136",
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/136",
+      "progress": "Rank-2 slow/fast Volterra kernel and energy law",
+      "limitation": "Source-specific rank-2 closure."
+    },
+    {
+      "id": "PR177",
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/177",
+      "progress": "Monotone algebraic homotopy and original first U-stage residual bound",
+      "limitation": "Auxiliary BE/root is not original 8-stage method; homotopy did more work."
+    },
+    {
+      "id": "PR179",
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/179",
+      "progress": "Original 8-stage causal frontier and residual bounds",
+      "limitation": "q2 depth3 used 21 W-solves vs 8 protected stages; q7 depth8 used 36 solves."
+    },
+    {
+      "id": "PR186",
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/186",
+      "progress": "Exact affine path scan on admitted path-forest graph; O(log m) span",
+      "limitation": "Does not reduce outer 8-stage causal depth; O(m log m) work can exceed serial work."
+    },
+    {
+      "id": "PR187",
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/187",
+      "progress": "Native source-owned graph-Schur retaining original 8 stages",
+      "limitation": "Median graph-Schur/fast-direct full-IVP wall ratio 2.242032452, slower in tested scope."
+    },
+    {
+      "id": "PP05",
+      "path": "research/pp05_fourier_client_20261004",
+      "progress": "Native Fourier-Volterra path, conjugation involution, noncyclic convolution and interval certificate",
+      "limitation": "G2 source parity 1.011159 over 1.01 limit; cyclic alias negative test committed benign candidate; registered FAIL."
+    },
+    {
+      "id": "PP06",
+      "path": "research/pp06_fourier_fft_candidate_20261004",
+      "progress": "2D padded FFT predictor; max direct/FFT discrepancy about 5.33e-16 on 48 calls",
+      "limitation": "Harmful alias negative gate failed; no timing."
+    },
+    {
+      "id": "PP07",
+      "path": "research/pp07_fourier_shared_action_20261004",
+      "progress": "Actual client audit",
+      "limitation": "Client has no shifted solve; correctly abstains."
+    },
+    {
+      "id": "PP15",
+      "path": "research/pp15_fourier_comparator_20261004",
+      "progress": "Fourier client vs RODAS same-source achieved errors/counters",
+      "limitation": "No timing and not matched-error in omega=40 or omega=1e4 cases."
+    }
+  ],
+  "global_stop_rules": [
+    "Protected RODAS5P tableau/defaults are immutable.",
+    "No generic derivative-free, preconditioner-free or Newton-free claim without proof.",
+    "Do not treat affine scan identity as native parallel speed evidence.",
+    "Do not compare unmatched achieved errors.",
+    "Preserve all prior FAIL/negative evidence.",
+    "Two no-progress cycles stop or re-scope a candidate.",
+    "GPU is forbidden under all tasks and fallbacks."
+  ]
+}
