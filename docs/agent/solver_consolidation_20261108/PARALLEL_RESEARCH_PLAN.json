@@ -15,12 +15,51 @@
     "id": "V11-19-PEER-W",
     "priority": 0,
     "status": "PLANNED",
-    "method": "Two-step parallel Rosenbrock-W peer method",
+    "method": "Parallel two-step Rosenbrock-W methods: distinguish common-shift parallel two-step W from multi-implicit peer two-step W; compare both to sequential high-stage-order peer controls.",
     "rationale": "A new method can make current stages independent by using previous-step peer data; this is preferable to claiming that the lower-triangular stages of original RODAS5P are independent.",
     "candidates": [
-      "PW6-P5: six independent peer stages, target variable-step global order >=5",
-      "PW8-P5: eight independent stages, conservative order-five parity target",
-      "PW8-P7: explore only if a real variable-step coefficient set and estimator are verified"
+      {
+        "id": "TSW-S6-P6",
+        "family": "parallel two-step W-method",
+        "target": "s=6, stage order q=s, global order p=s on variable-step grids only within the verified ratio domain",
+        "stage_equations": "Y_mi=u_m+h_m*sum_j a_ij*k_(m-1,j); (I-h_m*gamma*T_m)k_mi=f(t_mi,Y_mi)+h_m*T_m*sum_j Gamma_ij*k_(m-1,j); u_(m+1)=u_m+h_m*sum_i(b_i*k_mi+v_i*k_(m-1,i))",
+        "parallel_condition": "same-step lower-triangular couplings tilde-A=tilde-Gamma=0. Then all current stages use previous-step data only and share one shifted matrix I-h*gamma*T_m.",
+        "benefit": "One LU/factorization per step with s independent RHS; strongest common-factor/multiple-RHS reuse candidate.",
+        "caveat": "s=6 table and step-ratio/stability range must come from the paper or be constructed from its exact order/stability equations; not assumed available."
+      },
+      {
+        "id": "TSW-S8-P7",
+        "family": "parallel two-step W / peer-variable W",
+        "target": "s=8, global order p=s-1=7 on admissible variable-step sequences; investigate p=s only if exact stronger conditions preserve stage independence and stability",
+        "parallel_condition": "all same-step coupling terms vanish; independent current stages",
+        "benefit": "Higher available degree of method parallelism and literature-reported parallel methods up to order 7.",
+        "caveat": "Retrieve an actual s=8 coefficient set and its zero-stability/step-ratio region; literature result 'up to order 7' does not automatically identify s=8."
+      },
+      {
+        "id": "MI-PEER-W-S6",
+        "family": "multi-implicit peer two-step W",
+        "target": "s=6 and s=8 order s-1 candidates, with stage-dependent implicit parameters",
+        "stage_equations": "Stage i depends only on peer data from step m-1; each stage has its own shifted operator (I-h_m*gamma_i*T_m) or source-defined equivalent.",
+        "parallel_condition": "all stage equations use prior-step peer variables only; different stage linear systems are independent and may be solved simultaneously.",
+        "benefit": "Stage-specific damping parameters and parallel Krylov solves; shared-shift factorization is not assumed.",
+        "caveat": "Measure total work across independent/block/multi-shift Krylov strategies, distinct preconditioners and memory. Exact tableau and realistic stepsize-ratio stability theorem are prerequisites."
+      },
+      {
+        "id": "PEER-SEQUENTIAL-CONTROL",
+        "family": "Rosenbrock-type peer two-step methods",
+        "target": "stage-order s-1, variable-step zero-stable and L(alpha)-stable published candidates",
+        "role": "High-stage-order stiff-accuracy/order-reduction control, not automatically admitted as a stage-parallel method.",
+        "parallel_condition": "Only admit if the actual selected coefficient matrix for current-step coupling is diagonal (or has proven independent blocks); lower-triangular same-step coupling means sequential stages.",
+        "caveat": "Constant-step effective order s must not be conflated with variable-step global order."
+      },
+      {
+        "id": "TSW-STIFFLY-ACCURATE-PARETO",
+        "family": "stiffly accurate two-step W with added variable-step superconvergence condition",
+        "target": "Explore order p*=s+1 as a nonparallel accuracy/control point",
+        "role": "Pareto comparator for the cost of imposing stronger variable-step order conditions.",
+        "parallel_condition": "Do not presume independent stages. The cited construction reports that the additional condition destroys stage parallelism.",
+        "caveat": "May be useful as a low-step-count sequential comparator, not as primary CPU stage-parallel candidate."
+      }
     ],
     "schematic_equations": [
       "Y_ni = U_n + h_n sum_j a_ij U_(n-1,j) + h_n sum_(j<i) a_tilde_ij U_(n,j)",
@@ -29,12 +68,14 @@
       "Current stages are independent when same-step couplings a_tilde_ij and gamma_tilde_ij vanish; confirm exact notation from primary coefficient source."
     ],
     "acceptance": [
-      "Pin exact coefficient table and primary source; no invented coefficients.",
-      "Verify variable-step order, stage order, zero-stability, L(alpha)-stability, startup, estimator and step-ratio range.",
-      "Prove/instrument that current peer stages use prior-step data only and overlap on CPU.",
-      "At least 7 randomized paired full-IVP timings at matched achieved output error.",
-      "Research target: accepted steps <=1.10x protected RODAS5P and median CPU full-IVP speedup >=1.15x on preregistered subset.",
-      "Keep protected RODAS5P tableau/defaults unchanged."
+      "Exact coefficient table and primary source pinned by paper version, URL, source hash and method identity.",
+      "Prove stage independence from actual coefficient matrices; concurrency instrumentation must show overlap on a real ODE.",
+      "Verify general-step order and zero-stability for the entire declared step-ratio interval, not just constant h.",
+      "Verify stiff stability/damping on negative real and complex sectors, nonnormal systems and Prothero-Robinson/MOL tests.",
+      "Startup produces all required peer data to matching order; rollback/restart after rejection, events and discontinuities is consistent.",
+      "At least seven randomized paired full-IVP CPU timings at matched achieved error.",
+      "Research target: accepted steps <=1.10x protected RODAS5P and median full-IVP CPU speedup >=1.15x on a preregistered subset; preserve a failure if unmet.",
+      "Keep protected RODAS5P tableau/defaults immutable."
     ],
     "fallback": "Protected RODAS5P; peer-W remains opt-in or is rejected.",
     "implementation_policy": {
@@ -43,7 +84,8 @@
         "ParallelExecution",
         "stage_batch report/timing/concurrency probe",
         "existing LinearOperator/LinearSolverConfig/LU/Krylov/preconditioner services",
-        "existing WorkLedger and benchmark corpus"
+        "existing WorkLedger and benchmark corpus",
+        "existing variable-step controllers and output/work session semantics"
       ],
       "dependencies": [
         "V11-08-OPERATORS",
@@ -53,11 +95,22 @@
         "V11-05-SESSION"
       ],
       "new_core_only": [
-        "peer-W coefficient/variable-step transform",
-        "peer history/startup/restart/estimator",
-        "independent-stage assembly for the verified coefficient set"
+        "exact parallel two-step W/multi-implicit peer coefficient sets and their variable-step transforms",
+        "peer history, startup/restart and method-specific embedded estimator",
+        "stage-specific independent shifted solve assembly"
       ]
-    }
+    },
+    "required_work": [
+      "Recover original full method equations and exact coefficient tables for parallel two-step W, multi-implicit peer two-step W and sequential Rosenbrock-type peer families. Treat them as distinct method identities.",
+      "For common-shift TSW derive conditions tilde-A=tilde-Gamma=0 from the selected exact equations; verify every stage RHS depends on previous-step values only and that one shifted operator is genuinely shared.",
+      "For multi-implicit peer-W recover stage-specific shifts and derive stagewise order/stability; compare independent Krylov, shared-basis/multi-shift Krylov and reusable preconditioners.",
+      "Verify variable-step order, stage order, zero-stability, L(alpha)-stability, amplification matrix bounds over realistic step-ratio intervals, startup and embedded estimator.",
+      "Assess the stronger stiffly accurate p*=s+1 construction as a sequential control; quantify the loss of stage concurrency rather than quietly removing the stronger condition.",
+      "Extend existing ParallelExecution and stage_batch with the real selected tableau; no second executor or benchmark framework.",
+      "Use the existing LinearOperator, LinearSolverConfig, LU/Krylov and preconditioner services; no new Krylov solver before current APIs are audited.",
+      "Integrate as a distinct plugin via existing vigilode Problem/session after V11-03/05/08; preserve protected RODAS5P.",
+      "Run >=7 randomized paired full-IVP CPU timings at matched achieved output error, including peer startup, rejected trials and step-ratio transitions."
+    ]
   },
   "transform_candidate": {
     "id": "V11-20-ALGEBRAIC-LIFT",
@@ -367,5 +420,46 @@
       "A method-agnostic IVP ensemble adapter extending the existing DOPRI5 ensemble",
       "Sphere and full 3D MOL operator implementations beyond current available 2D source examples"
     ]
+  },
+  "research_literature": {
+    "primary": [
+      {
+        "family": "parallel two-step W",
+        "citation": "Schmitt & Weiner, SIAM J Numer Anal 42 (2004), 265-282",
+        "doi": "10.1137/S0036142902411057",
+        "claims": "Independent linear stage equations; convergence order s-1 for general step sequences; conditions for order s; identified promising methods up to order 7."
+      },
+      {
+        "family": "parallel two-step W",
+        "citation": "Podhaisky, Schmitt & Weiner, Appl Numer Math 42 (2002), 381-395",
+        "doi": "10.1016/S0168-9274(01)00162-3",
+        "claims": "Parallel stage values; methods stage order q=s and order p=s with favourable A/L-stability generalizations; shared-memory and Krylov tests."
+      },
+      {
+        "family": "parallel peer two-step W",
+        "citation": "Weiner, Schmitt & Podhaisky, Appl Numer Math 48 (2004), 425-439",
+        "doi": "10.1016/j.apnum.2003.10.005",
+        "claims": "Parallel linearly implicit peer W; variants with order/stage order s-1 or s; optimal damping at infinity and MOL Krylov tests."
+      },
+      {
+        "family": "multi-implicit peer two-step W",
+        "citation": "Schmitt, Weiner & Podhaisky, BIT 45 (2005), 197-217",
+        "doi": "10.1007/s10543-005-2635-y",
+        "claims": "Order s-1 subclass; stage-dependent implicit parameters; only previous-step data; uniform stability for realistic step-size sequences; superconvergence analysis."
+      },
+      {
+        "family": "implicit parallel peer",
+        "citation": "Schmitt, Weiner & Erdmann, Appl Numer Math 53 (2005), 457-470",
+        "doi": "10.1016/j.apnum.2004.08.019",
+        "claims": "s peer stages computed in parallel; an order s-1 subclass zero-stable for general step sequences; singular perturbation analysis."
+      },
+      {
+        "family": "sequential peer control",
+        "citation": "Podhaisky, Weiner & Schmitt, Appl Numer Math 53 (2005), 409-420",
+        "doi": "10.1016/j.apnum.2004.08.021",
+        "claims": "Stage order s-1, variable-step zero-stability, L(alpha)-stable members for s=4..8; effective order s is specifically a constant-step result."
+      }
+    ],
+    "tradeoff": "Klinge 2020 dissertation, Two-step W-methods and peer methods with approximate matrix factorization, states that an added stiff-accuracy condition giving order s+1 for variable steps can destroy stage parallelism. Treat this as a sequential Pareto control, not a peer-stage acceleration."
   }
 }
