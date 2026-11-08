@@ -21,6 +21,7 @@ The current research work is extended by the following machine-readable/design f
 - PARALLEL_RESEARCH_PLAN.json: execution nodes, source lock, separate common-shift TSW and multi-implicit peer-W candidates, acceptance/failure gates and explicit GPU prohibition.
 - PEER_METHOD_FAMILY_REVIEW.md: source-bound equations and distinction between parallel W, multi-implicit peer-W, nonlinear parallel peer, and sequential peer controls.
 - PEER_PARALLEL_STAGE_PROOFS_20261109.md: constructive explicit-peer order/stability/convergence proofs, DQC compatibility audit, common-W/rank-r algebra, finite resonant parent lift, and implementation gates.
+- PEER_W_TABLEAU_CERTIFICATES_20261109.md: exact variable-step PTSW2C tableau and estimator, stiff-accuracy/order impossibility, explicit-peer coefficient generator, EPPEER source audit, and method-selection gates.
 - STAGE_TRANSFORMATION_THEORY.md: parallel peer-W, finite resonant normal-form lift, linear parent stage-block identity, Fourier/involution findings and limits.
 - HISTORICAL_RESEARCH_MAP.json: 14 source/PR/code-lineage findings with evidence boundaries.
 - CPU_PARALLEL_NODES.md: stage-internal CPU, independent IVP ensembles, and sphere/2D/3D MOL CPU execution.

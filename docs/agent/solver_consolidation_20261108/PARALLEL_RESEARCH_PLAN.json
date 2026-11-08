@@ -10,7 +10,7 @@
     "main_head": "8d0c79184e09efb5bdadc24a6315c60a71a44264"
   },
   "gpu": "FORBIDDEN under all tasks, dependencies, fallbacks, and benchmarks.",
-  "verdict": "RESEARCH_ADVANCED_PRODUCTION_NOT_QUALIFIED",
+  "verdict": "RESEARCH_ADVANCED_CONCRETE_PTSW2C_TABLEAU_PROVED; PRODUCTION_NOT_QUALIFIED",
   "main_candidate": {
     "id": "V11-19-PEER-W",
     "priority": 0,
@@ -101,10 +101,10 @@
       ]
     },
     "required_work": [
-      "Recover original full method equations and exact coefficient tables for parallel two-step W, multi-implicit peer two-step W and sequential Rosenbrock-type peer families. Treat them as distinct method identities.",
+      "Recover original full method equations and exact coefficient tables for parallel two-step W, multi-implicit peer two-step W and sequential Rosenbrock-type peer families. Treat them as distinct method identities. Exact PTSW2C and PTSW2A coefficient sets are now recovered; PTSW3B/3C remain comparator-only until their full arrays are transcribed.",
       "For common-shift TSW derive conditions tilde-A=tilde-Gamma=0 from the selected exact equations; verify every stage RHS depends on previous-step values only and that one shifted operator is genuinely shared.",
       "For multi-implicit peer-W recover stage-specific shifts and derive stagewise order/stability; compare independent Krylov, shared-basis/multi-shift Krylov and reusable preconditioners.",
-      "Verify variable-step order, stage order, zero-stability, L(alpha)-stability, amplification matrix bounds over realistic step-ratio intervals, startup and embedded estimator. Recover the 2011 published local/global peer-W error estimator before considering new estimator design.",
+      "Verify variable-step order, stage order, zero-stability, L(alpha)-stability, amplification matrix bounds over realistic step-ratio intervals, startup and embedded estimator. Recover the 2011 published local/global peer-W error estimator before considering new estimator design. For PTSW2C, use the exact recovered Podhaisky 2002 embedded estimator; keep the 2011 global/local W-peer estimator as a separate family-level audit.",
       "Assess the stronger stiffly accurate p*=s+1 construction as a sequential control; quantify the loss of stage concurrency rather than quietly removing the stronger condition.",
       "Extend existing ParallelExecution and stage_batch with the real selected tableau; no second executor or benchmark framework.",
       "Use the existing LinearOperator, LinearSolverConfig, LU/Krylov and preconditioner services; no new Krylov solver before current APIs are audited.",
@@ -500,5 +500,191 @@
       }
     ],
     "tradeoff": "Klinge 2020 dissertation, Two-step W-methods and peer methods with approximate matrix factorization, states that an added stiff-accuracy condition giving order s+1 for variable steps can destroy stage parallelism. Treat this as a sequential Pareto control, not a peer-stage acceleration."
+  },
+  "source_certified_tableaus": {
+    "source": {
+      "author": "Helmut Podhaisky",
+      "work": "Parallele Zweischritt-W-Methoden",
+      "year": 2002,
+      "doi": "10.25673/3017",
+      "official_pdf": "https://opendata.uni-halle.de/bitstream/1981185920/9802/1/prom.pdf"
+    },
+    "ptsw2c": {
+      "status": "EXACT_VARIABLE_STEP_TABLEAU_RECONSTRUCTED_AND_SYMBOLICALLY_VERIFIED",
+      "stages": 2,
+      "method_order": 3,
+      "stage_order": 2,
+      "nodes": [
+        "-1",
+        "5/9"
+      ],
+      "gamma": "12/25",
+      "b": [
+        "1/28",
+        "27/28"
+      ],
+      "v": [
+        "0",
+        "0"
+      ],
+      "A_sigma": [
+        [
+          "(8-9*sigma)/28",
+          "9*(sigma-4)/28"
+        ],
+        [
+          "-5*(8+5*sigma)/252",
+          "5*(36+5*sigma)/252"
+        ]
+      ],
+      "Gamma_sigma": [
+        [
+          "(24-54*sigma)/175",
+          "54*(sigma-2)/175"
+        ],
+        [
+          "(24+30*sigma)/175",
+          "(-108-30*sigma)/175"
+        ]
+      ],
+      "conditions": {
+        "C_2": "exact zero residual for symbolic sigma",
+        "Gamma_2": "exact zero residual for symbolic sigma",
+        "B_3": "exact zero residual for symbolic sigma",
+        "convergence_order": "min(q+1,p)=3 under source theorem assumptions and compatible startup"
+      },
+      "common_shift": "W=I-(12/25)*h*T",
+      "stability": {
+        "classification": "A(81.1 degree)-stable",
+        "rho_infinity": 0.6796,
+        "evidence": "source-reported; full sector not independently recomputed"
+      },
+      "startup": {
+        "t1": "t0+2*h0",
+        "stage_derivative_times": [
+          "t0",
+          "t0+(14/9)*h0"
+        ],
+        "required_initial_errors": {
+          "solution": "O(H^3)",
+          "stage_derivatives": "O(H^2)"
+        }
+      },
+      "embedded_estimator": {
+        "b_embedded": [
+          "19/560",
+          "513/560"
+        ],
+        "epsilon": "1/10",
+        "v_embedded_sigma": [
+          "-(8+27*sigma)/560",
+          "9*(4+3*sigma)/560"
+        ],
+        "controller": "0.85*E_emb^(-1/2), clipped [0.5,2], with source history/hysteresis",
+        "source": "Podhaisky 2002 dissertation",
+        "reuse_policy": "method-specific; not interchangeable with DOPRI or generic DQC estimators"
+      }
+    },
+    "ptsw2a_control": {
+      "status": "SOURCE_TABLEAU_RECOVERED",
+      "stages": 2,
+      "gamma": "4/5",
+      "nodes": [
+        "23/9",
+        "1"
+      ],
+      "b": [
+        "0",
+        "4/5"
+      ],
+      "v_sigma": [
+        "-27*sigma/140",
+        "1/5+27*sigma/140"
+      ],
+      "A_sigma": [
+        [
+          "529*sigma/252",
+          "23/9-529*sigma/252"
+        ],
+        [
+          "9*sigma/28",
+          "1-9*sigma/28"
+        ]
+      ],
+      "Gamma_sigma": [
+        [
+          "-46*sigma/35",
+          "-4/5+46*sigma/35"
+        ],
+        [
+          "-18*sigma/35",
+          "-4/5+18*sigma/35"
+        ]
+      ],
+      "stability": "L-stable",
+      "variable_step_order": 2,
+      "fixed_step_superconvergence": "B(3) only for constant step sizes",
+      "caveat": "node 23/9 lies beyond nominal endpoint"
+    },
+    "ptsw3b_control": {
+      "status": "SOURCE_REPORTED_COMPARATOR_TABLEAU_NOT_TRANSCRIBED",
+      "stages": 3,
+      "stability": "L-stable, A(84.8 degree), rho_infinity=0",
+      "caveat": "complete coefficient arrays and estimator still need transcription"
+    },
+    "ptsw3c_control": {
+      "status": "SOURCE_REPORTED_COMPARATOR_TABLEAU_NOT_FULLY_CERTIFIED",
+      "stages": 3,
+      "stability": "A(87.3 degree), rho_infinity approximately 0.8844",
+      "variable_step_order": 4,
+      "nodes": [
+        "-0.96",
+        "0.52766970",
+        "3.28"
+      ],
+      "caveat": "look-ahead node 3.28; full exact arrays not transcribed"
+    },
+    "stiff_accuracy_superorder_tradeoff": {
+      "status": "LITERATURE_PROVED",
+      "claim": "A multi-stage stiffly accurate PTSW satisfying B(s), C(s), Gamma(s) cannot also satisfy B(s+1) on arbitrary variable-step grids.",
+      "implication": "Do not claim fixed-step extra order for the variable-step L-stable stiffly accurate family."
+    }
+  },
+  "explicit_peer_theory": {
+    "general_variable_step_generator": {
+      "status": "DERIVED",
+      "method": "Y_(n+1)=B*Y_n+h_(n+1)*A(r)*F_n",
+      "formula": "R(:,q)=[r^q*c^q-B*(c-1)^q]/(q*r), q=1..s; A(r)=R*inverse(V_minus)",
+      "result": "exact moment conditions through q=s; local defect O(h^(s+1)); global order s under zero-stability and stated assumptions",
+      "assumptions": [
+        "distinct nodes c",
+        "B*ones=ones",
+        "V_minus with columns (c-1)^(q-1) invertible",
+        "B power-bounded with simple unit root and other eigenvalues strictly inside unit disk",
+        "A(r) bounded on admissible ratio domain",
+        "f Lipschitz and initial peer-vector error O(H^s)"
+      ]
+    },
+    "eppeer_source_audit": {
+      "status": "SOURCE_RETRIEVED; ADAPTER_NOT_IMPLEMENTED",
+      "official_page": "https://www.mathematik.uni-marburg.de/~schmitt/peer/",
+      "official_source": "https://www.mathematik.uni-marburg.de/~schmitt/peer/ivpepp.f90",
+      "starter_source": "https://www.mathematik.uni-marburg.de/~schmitt/peer/ivprkp.f90",
+      "features": [
+        "explicit previous-step peer stages",
+        "DOPRI5 starter",
+        "OpenMP method-level parallelism",
+        "odd-stage FSAL methods reuse one RHS and evaluate s-1 new stages",
+        "automatic step-size control and dense output"
+      ],
+      "first_candidate": "EPP5f3, five-stage FSAL; four fresh RHS evaluations are stage independent",
+      "gates": [
+        "verify exact coefficient transform against general generator",
+        "verify method order and internal error-indicator scaling",
+        "verify startup, rejection rollback and restart semantics",
+        "enforce reentrant concurrent RHS callback contract"
+      ],
+      "dqc_warning": "DQC estimator applies only to a coefficient family satisfying its exact DQC conditions; do not infer it from generic explicit-peer status"
+    }
   }
 }
