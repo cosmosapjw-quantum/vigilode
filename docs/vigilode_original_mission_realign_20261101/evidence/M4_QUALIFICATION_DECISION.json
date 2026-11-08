@@ -1,0 +1,75 @@
+{
+  "evidence_id": "EV-M4-QUALIFICATION-DECISION-001",
+  "milestone": "M4",
+  "title": "VigilODE Scientific Core Mission Realignment — Final Production Qualification Decision",
+  "linked_nodes": [
+    "L-RELEASE",
+    "R-QUALIFY"
+  ],
+  "claim_support": [
+    "implementation-verified",
+    "numerically-checked",
+    "governance-enforced"
+  ],
+  "test_verdict": "PASS_SCOPED",
+  "production_verdict": "HOLD",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "base_sha": "c2309b053b43bba05d4a18387d8c52b3ceccd0bc",
+    "commit_head": "c2309b053b43bba05d4a18387d8c52b3ceccd0bc",
+    "branch": "research/switcher-v2-20261103",
+    "input_hashes": [
+      {
+        "path": "docs/vigilode_original_mission_realign_20261101/evidence/M1_HARDWARE_EVIDENCE.json",
+        "sha256": "9e9db4c0ae4fd5ff66a0af7300d7d124b5632d58284b138d8806e389af779921"
+      },
+      {
+        "path": "docs/vigilode_original_mission_realign_20261101/evidence/M2_CAUSAL_DEPTH_EVIDENCE.json",
+        "sha256": "4d11f2f1b7d9f092325ad5f5cb734b17f61fbfbba11bda636608dd66b123b978"
+      },
+      {
+        "path": "docs/vigilode_original_mission_realign_20261101/evidence/M3_POLYALGORITHM_EVIDENCE.json",
+        "sha256": "32a012abd019d7c54fe1594cb73064960de786e77f82ed4364dbbd320f33a94b"
+      },
+      {
+        "path": "crates/vigilode/examples/m1_hardware_runner.rs",
+        "sha256": "a11b400d75e93948996d02bfe32687e6b60344964665e6572d33c4bf93a8c99a"
+      }
+    ]
+  },
+  "q_gates_status": {
+    "Q-GIVENS": "PASS (5/5 tests: orthogonality defect <= 8 eps, true independent residual verification)",
+    "Q-FAIR-AB": "PASS (6/6 tests: exact fair A/B contracts, work model v1/v2 preserved)",
+    "Q-LINT": "PASS (cargo fmt --check and cargo clippy --all-targets -D warnings passed cleanly)",
+    "Q-NEGATIVE": "PASS (85 ignored tests audited and verified reachable in CI)",
+    "Q-API": "PASS (29/29 tests: P0 API and facade return semantics preserved)",
+    "Q-BENCH": "PASS (10/10 comparator contracts: external reference provenance bracketed)",
+    "Q-LEDGER": "PASS (211 ledger rows validated by check-research-node.py)"
+  },
+  "milestones_summary": {
+    "M1": {
+      "status": "COMPLETED",
+      "findings": "Same-runner achieved-error work precision across 4 frozen generic IVPs. Verified VG-1 hot-loop zero-allocation with calibrated positive control. Negative controls preserved (DOPRI5 stiff failure modes). Single-process wall-time designated diagnostic_only."
+    },
+    "M2": {
+      "status": "COMPLETED",
+      "findings": "8-stage causal depth demonstrator verified. Nilpotency L^8 = 0 proven. Raw U-stage residual norm <= 1e-13 under direct solve. Stiff order reduction separated from classical order (Prothero-Robinson slopes in [2.7, 3.6], semilinear slopes >= 4.8). Owned session continuation invariants intact."
+    },
+    "M3": {
+      "status": "COMPLETED",
+      "findings": "Adaptive polyalgorithm verified. Anti-chattering dwell (>=3 batches) and hysteresis (1.15x) prevent limit cycling. Speculative work strictly conserved. Operational router (DriveState) and formal discrete reference model (HybridRouteAutomaton) cleanly decoupled."
+    },
+    "M4": {
+      "status": "COMPLETED",
+      "findings": "Full offline workspace test suite passed without regression. Strict release qualification criteria upheld. Final production promotion verdict remains HOLD in accordance with conservative evidence governance."
+    }
+  },
+  "decision_rationale": "All 23 nodes in REFOCUSED_DAG and supporting Q-gates satisfy strict scoped correctness contracts. However, production status is kept on HOLD to preserve statistical authority hold (STATISTICAL_AUTHORITY_HOLD) and prevent premature unverified promotion without multi-node hardware replication.",
+  "production_verdict_reasons": [
+    "Wall-clock timing remains diagnostic_only until pre-registered multi-machine timing protocol is executed.",
+    "Stiff order reduction is confirmed as an inherent Rosenbrock method property and must not be masked by tolerance relaxation.",
+    "Broad production deployment is withheld; scoped native execution and scientific reproducibility are fully established."
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "evidence_id": "EV-M2-CAUSAL-DEPTH-001",
+  "milestone": "M2",
+  "title": "Original eight-stage causal depth demonstrator, stage residuals, and owned session continuation",
+  "linked_nodes": [
+    "PR-N04",
+    "PR-N05"
+  ],
+  "claim_support": [
+    "established",
+    "derived",
+    "numerically-checked",
+    "implementation-verified"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "base_sha": "c2309b053b43bba05d4a18387d8c52b3ceccd0bc",
+    "commit_head": "c2309b053b43bba05d4a18387d8c52b3ceccd0bc",
+    "input_hashes": [
+      {
+        "path": "crates/rodas5p-integrators/tests/causal_depth_stage_residual_contracts.rs",
+        "sha256": "9894c9fdd33c2d2ba15200c69a20fb7d413b3ef397205c6cf874db628897ac85"
+      },
+      {
+        "path": "crates/rodas5p-integrators/tests/frontier_session_contracts.rs",
+        "sha256": "11b8353e8682a544e7bb76a9a7b8c75aceacc163ddde6fd51ed89a76f0b81617"
+      },
+      {
+        "path": "crates/vigilode/tests/production_session_contracts.rs",
+        "sha256": "638a8414e89d1460cf5a989145bcb77ae188bb123a8bb0014be6be8c8fcaab9d"
+      },
+      {
+        "path": "fixtures/rodas5p_coefficients_snapshot.json",
+        "sha256": "211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6"
+      }
+    ]
+  },
+  "command_records": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "causal_depth_stage_residual_contracts"
+      ],
+      "exit_code": 0,
+      "summary": "5 passed; 0 failed; 0 ignored; finished in 0.15s"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "frontier_session_contracts"
+      ],
+      "exit_code": 0,
+      "summary": "11 passed; 0 failed; 0 ignored; finished in 0.01s"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "vigilode",
+        "--test",
+        "production_session_contracts"
+      ],
+      "exit_code": 0,
+      "summary": "9 passed; 0 failed; 0 ignored; finished in 0.00s"
+    }
+  ],
+  "mathematical_findings": {
+    "nilpotency_and_causal_propagation": {
+      "coupling_matrix_power_L8": 0.0,
+      "is_strictly_nilpotent": true,
+      "raw_coefficient_leakage_upper_bound": 1.0e-15,
+      "causal_depth_property": "After sweep q (1 <= q <= 8), all stages 0 <= i < q match exact sequential values to <= 1e-14. Terminal sweep 8 matches all 8 stages exactly."
+    },
+    "stage_residuals": {
+      "norm_bound": 1.0e-13,
+      "linear_solve_method": "direct_dense_lu",
+      "direct_factorizations": 1,
+      "linear_solves_per_step": 8,
+      "accounting_complete": true
+    },
+    "stiff_order_reduction_separation": {
+      "prothero_robinson_stiff_slopes": [
+        3.08,
+        3.16,
+        3.23
+      ],
+      "prothero_robinson_band_contract": "[2.7, 3.6]",
+      "semilinear_advection_classical_slopes": [
+        4.92,
+        4.98
+      ],
+      "semilinear_classical_order_target": ">= 4.8",
+      "interpretation": "Rosenbrock stage order reduction is confirmed and separated from classical non-stiff order >= 4.8. Stiff reduction on PR is an intrinsic mathematical characteristic of order reduction in DIRK/Rosenbrock methods, not a solver defect."
+    },
+    "session_and_homotopy_invariants": {
+      "global_budget_sticky": true,
+      "unscheduled_accepted_checkpoint_preserved": true,
+      "fatal_callback_fail_closed": true,
+      "recoverable_failure_and_rejected_work_preserved": true,
+      "zero_length_session_no_allocations": true,
+      "pausing_between_trials_preserves_one_shot_path": true
+    }
+  },
+  "limitations": [
+    "Stiff order reduction on Prothero-Robinson is a fundamental mathematical property of Rosenbrock methods, not an implementation defect.",
+    "Higher-precision rational arithmetic is bounded by floating-point binary64 representation (~1e-16 leakage above diagonal in raw native tables)."
+  ]
+}
