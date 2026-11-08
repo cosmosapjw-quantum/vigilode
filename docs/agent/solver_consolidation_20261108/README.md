@@ -18,7 +18,8 @@ Read [REUSE_FIRST_INVENTORY.md](REUSE_FIRST_INVENTORY.md) before any code change
 ## CPU-only parallel Rosenbrock research addendum
 
 The current research work is extended by six machine-readable/design files:
-- PARALLEL_RESEARCH_PLAN.json: six execution nodes, source lock, hypotheses, acceptance/failure gates and explicit GPU prohibition.
+- PARALLEL_RESEARCH_PLAN.json: execution nodes, source lock, separate common-shift TSW and multi-implicit peer-W candidates, acceptance/failure gates and explicit GPU prohibition.
+- PEER_METHOD_FAMILY_REVIEW.md: exact two-step W equations, parallel/nonparallel peer-family taxonomy, variable-step/order tradeoffs and the published 2011 error-controller route.
 - STAGE_TRANSFORMATION_THEORY.md: parallel peer-W, finite resonant normal-form lift, linear parent stage-block identity, Fourier/involution findings and limits.
 - HISTORICAL_RESEARCH_MAP.json: 14 source/PR/code-lineage findings with evidence boundaries.
 - CPU_PARALLEL_NODES.md: stage-internal CPU, independent IVP ensembles, and sphere/2D/3D MOL CPU execution.
