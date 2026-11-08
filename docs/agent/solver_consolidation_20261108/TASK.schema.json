@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/cosmosapjw-quantum/vigilode/blob/docs/solver-consolidation-plan-20261108/docs/agent/solver_consolidation_20261108/TASK.schema.json",
+  "title": "VigilODE research task",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "depends_on",
+    "priority",
+    "status",
+    "mutation_class",
+    "deliverables",
+    "acceptance"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^V11-[0-9]{2}-[A-Z0-9-]+$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 5
+    },
+    "depends_on": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9
+    },
+    "status": {
+      "enum": [
+        "PLANNED",
+        "IN_PROGRESS",
+        "BLOCKED",
+        "PASS",
+        "FAIL",
+        "CANCELLED"
+      ]
+    },
+    "mutation_class": {
+      "type": "string"
+    },
+    "allowed_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "deliverables": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "acceptance": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "failure_class": {
+      "enum": [
+        "NONE",
+        "THEORY",
+        "NUMERICAL",
+        "IMPLEMENTATION",
+        "RUNTIME_ENVIRONMENT",
+        "PROVENANCE",
+        "AUTHORITY",
+        "UNKNOWN"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

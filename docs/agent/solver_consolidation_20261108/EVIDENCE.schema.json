@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/cosmosapjw-quantum/vigilode/blob/docs/solver-consolidation-plan-20261108/docs/agent/solver_consolidation_20261108/EVIDENCE.schema.json",
+  "title": "VigilODE evidence record",
+  "type": "object",
+  "required": [
+    "evidence_id",
+    "claim",
+    "claim_status",
+    "test_status",
+    "failure_class",
+    "source_identity",
+    "provenance",
+    "scope",
+    "limitations"
+  ],
+  "properties": {
+    "evidence_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "claim": {
+      "type": "string",
+      "minLength": 5
+    },
+    "claim_status": {
+      "enum": [
+        "ESTABLISHED",
+        "LITERATURE_SUPPORTED",
+        "DERIVED",
+        "NUMERICALLY_CHECKED",
+        "IMPLEMENTATION_VERIFIED",
+        "CONJECTURAL",
+        "UNRESOLVED",
+        "BLOCKED"
+      ]
+    },
+    "test_status": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "CONCERN",
+        "NOT_RUN",
+        "NOT_APPLICABLE",
+        "BLOCKED"
+      ]
+    },
+    "failure_class": {
+      "enum": [
+        "NONE",
+        "THEORY",
+        "NUMERICAL",
+        "IMPLEMENTATION",
+        "RUNTIME_ENVIRONMENT",
+        "PROVENANCE",
+        "AUTHORITY",
+        "UNKNOWN"
+      ]
+    },
+    "source_identity": {
+      "type": "object",
+      "required": [
+        "repository",
+        "commit"
+      ],
+      "properties": {
+        "repository": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "tree": {
+          "type": "string"
+        },
+        "file": {
+          "type": "string"
+        },
+        "blob": {
+          "type": "string"
+        },
+        "toolchain": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "kind",
+        "locator"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "locator": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "scope": {
+      "type": "string"
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "reproduction": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}
