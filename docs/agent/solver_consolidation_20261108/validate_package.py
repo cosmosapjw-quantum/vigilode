@@ -25,6 +25,7 @@ REQUIRED = [
     "PARALLEL_BENCHMARK_PROTOCOL.md",
     "PARALLEL_AGENT_PROMPT_KO.txt",
     "REUSE_FIRST_INVENTORY.md",
+    "PEER_METHOD_FAMILY_REVIEW.md",
     "validate_package.py",
     "MANIFEST.json",
 ]
@@ -76,6 +77,12 @@ for node in nodes:
         fail(f"GPU policy missing/changed for {node.get('id')}")
 if not isinstance(historical, list) or len(historical) < 10:
     fail("historical map is missing expected PR/research lineage entries")
+peer_review = (ROOT / "PEER_METHOD_FAMILY_REVIEW.md").read_text(encoding="utf-8")
+for peer_term in ["tilde", "multi-implicit", "2011", "sequential", "startup"]:
+    if peer_term not in peer_review:
+        fail(f"peer method family review omits {peer_term}")
+if "Kulikov & Weiner" not in peer_review:
+    fail("peer method family review omits published error-estimator source")
 prompt = (ROOT / "PARALLEL_AGENT_PROMPT_KO.txt").read_text(encoding="utf-8")
 if "GPU is forbidden" not in prompt and "GPU remains disabled" not in prompt:
     fail("agent prompt does not explicitly forbid GPU")
