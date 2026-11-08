@@ -8,6 +8,7 @@ docs/agent/solver_consolidation_20261108/VALIDATION_PROTOCOL.md
 docs/agent/solver_consolidation_20261108/REUSE_FIRST_INVENTORY.md
  docs/agent/solver_consolidation_20261108/PARALLEL_RESEARCH_PLAN.json
 docs/agent/solver_consolidation_20261108/STAGE_TRANSFORMATION_THEORY.md
+ docs/agent/solver_consolidation_20261108/PEER_METHOD_FAMILY_REVIEW.md
 docs/agent/solver_consolidation_20261108/HISTORICAL_RESEARCH_MAP.json
 docs/agent/solver_consolidation_20261108/CPU_PARALLEL_NODES.md
 docs/agent/solver_consolidation_20261108/PARALLEL_BENCHMARK_PROTOCOL.md
@@ -38,7 +39,7 @@ Existing ParallelExecution, stage_batch, Dopri5Ensemble, affine_transport, colle
 Production remains HOLD. No tableau/default/tolerance/release-gate changes.
 
 RESEARCH ORDER
-A. Parallel peer-W first. Retrieve primary papers/coefficient tables. Verify variable-step order, stage order, zero-stability, L(alpha)-stability, startup, output map and embedded estimator. Build PW6-P5 and PW8 only if real coefficient sets exist. Prove current-stage independence. Implement an isolated Rust prototype and compare shared-factor multiple RHS, independent CPU Krylov and block Krylov. Peer-W is a new method, not unchanged RODAS5P.
+A. Parallel peer-W first. Retrieve primary papers/coefficient tables. Verify variable-step order, stage order, zero-stability, L(alpha)-stability, startup, output map and estimator. Distinguish common-shift parallel two-step W, multi-implicit peer two-step W, implicit parallel peer, and sequential Rosenbrock-type peer. First recover the 2011 published global/local error estimator; do not reinvent it blindly. Build PW6-P5 and PW8 only if real coefficient sets exist. Prove current-stage independence. Implement an isolated Rust prototype and compare shared-factor multiple RHS, independent CPU Krylov and block Krylov. Peer-W is a new method, not unchanged RODAS5P.
 B. Finite resonant normal-form lift. Use analytic/polynomial stable-equilibrium source. Derive Poincare-Dulac resonances, convergent chart, parent linear matrix and invariant algebraic manifold. Prove invariance by Lie-derivative ideal membership. Measure lift dimension, degree, coefficient conditioning and chart radius. Derive exact linear parent stage block and verify N^s=0 plus finite inverse. Compare serial substitution, block cyclic reduction and multishift/block Krylov on CPU. Refuse outside chart or if finite closure/conditioning fails. Finite Picard/homotopy corrections do not automatically preserve RODAS.
 C. Fourier/involution/convolution. Reproduce PP05/06 and preserve registered failures. Build harmful alias controls. Close PP05 parity discrepancy prospectively; never rewrite old result. Only then run >=7 paired CPU timings at bracketed achieved error.
 D. Three CPU nodes: P1 stage-internal RHS/JVP/operator/Krylov/multiple RHS, preserving one-step RODAS causality; P2 independent IVP/parameter ensembles with separate controllers/norms/work ledgers; P3 sphere/2D/3D MOL CPU operators with geometry-specific norms/conservation. No GPU source, dependency, build option, test or benchmark.
