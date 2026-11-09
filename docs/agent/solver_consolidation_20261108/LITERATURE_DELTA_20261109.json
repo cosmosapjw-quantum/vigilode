@@ -199,18 +199,56 @@
         "IEEE floating reassociation changes rounding.",
         "Theoretical span is not wall-clock evidence."
       ]
+    },
+    {
+      "id": "PTSW_HIGH_ORDER_FAMILY",
+      "family": "high_order_parallel_two_step_W_peer",
+      "claim": [
+        "Podhaisky, Schmitt and Weiner (2002) report s-stage parallel linearly implicit W methods with order p=s and stage order q=s; therefore an s=5,p=q=5 family-level candidate exists.",
+        "Schmitt and Weiner (2004) prove p=s-1 convergence and stability for general step-size sequences for a fully parallel Peer-W subclass, reporting candidate methods up to order seven; s=6 is a family-level p=5 candidate.",
+        "These are prior-art existence statements, not a recovered/verified concrete coefficient array for VigilODE."
+      ],
+      "evidence": "LITERATURE_SUPPORTED",
+      "limits": [
+        "Complete five-/six-stage coefficient tables, current-stage dependency graphs, shift structure and ratio restrictions still require primary-source recovery.",
+        "Do not infer high-order variable-step/stiff stability from fixed-step order.",
+        "No Rust implementation or full-IVP performance qualification."
+      ],
+      "sources": [
+        "https://doi.org/10.1016/S0168-9274(01)00162-3",
+        "https://doi.org/10.1137/S0036142902411057",
+        "https://doi.org/10.25673/3017"
+      ]
+    },
+    {
+      "id": "TASE_PEER_DERIVATIVE_BOUNDARY",
+      "family": "TASE_stabilized_explicit_peer",
+      "claim": [
+        "Conte, Pagano and Paternoster (2023) and Pagano (2025) establish TASE/SEPP Peer methods as a distinct stage-parallel stiff-method family.",
+        "The TASE operator is Jacobian-related and introduces multiple linear systems per stage; it is not a genuinely derivative-free RHS-only Peer-W method."
+      ],
+      "evidence": "LITERATURE_SUPPORTED",
+      "limits": [
+        "Do not transfer TASE/SEPP stability or order results to common-shift PTSW-W.",
+        "Cost the full number of shifted systems and all TASE setup."
+      ],
+      "sources": [
+        "https://doi.org/10.1016/j.cnsns.2023.107136",
+        "https://doi.org/10.1016/j.apnum.2024.08.023"
+      ]
     }
   ],
   "selection": {
-    "primary": "Common-shift parallel two-step W/peer; PTSW2B is the first exact certificate but only order two.",
-    "secondary": "Multi-implicit peer-W or verified TASE-SEPP3, depending on exact table and cost.",
-    "high_order_control": "2026 variable-step L(alpha)-stable order-five diagonally implicit peer; not presumed parallel.",
+    "primary": "PTSW2C order-3 first prototype; PTSW2B L-stable order-2 stiff control. In parallel, recover a source-certified p>=5 PTSW/Peer-W tableau for original G0.",
+    "secondary": "PTSW3B/3C after exact source transcription; multi-implicit Peer-W and TASE/SEPP as distinct controls; implicit Peer RHS-only homotopy as a separate conjectural lane.",
+    "high_order_control": "2002 p=s,q=s parallel W family (s=5) and 2004 Peer-W p=s-1 family (s=6); no concrete p>=5 table is yet qualified.",
     "MOL_cost_control": "2026 L(theta)-stable reused-stage peer; stage DAG must be checked.",
     "nonstiff_parallel_control": "EPPEER explicit peer family; DQC estimator restrictions remain method-specific.",
     "novelty_boundary": "Parallel peer methods themselves are established prior art. Potential novelty must come from a newly derived/certified algorithmic combination, rollback/error guarantees, operator/geometry integration and matched achieved-error end-to-end evidence.",
-    "immediate_priority": "Revalidate current fair-ab and C5 path economics before implementing Peer-W.",
-    "peer_implementation_status": "literature-supported; no path in pinned source.",
-    "scan_candidate": "Blelloch ordered scan only on measured crossover."
+    "immediate_priority": "PW01/PW02 Peer-W prototypes and PW03 p>=5 source-table recovery begin after PW00; T02 fair-ab replay is mandatory before full-IVP rankings.",
+    "peer_implementation_status": "exact PTSW2B/C documentation certificates exist; Rust Peer-W adapter not implemented; PTSW p>=5 concrete table not recovered.",
+    "scan_candidate": "Blelloch ordered scan only on measured crossover.",
+    "derivative_boundary": "A JVP-based W operator is Jacobian-free but not derivative-free; true RHS-only homotopy belongs to a separate implicit Peer family."
   },
   "research_gates": [
     "Exact primary coefficient tables and exact-rational reconstruction.",
@@ -219,6 +257,9 @@
     "Correct startup and peer history order.",
     "Method-specific local/global estimator and controller.",
     "Stage dependency graph and actual CPU concurrency.",
-    "Full-IVP achieved-error comparison including setup, startup, rejection, output and fallback."
+    "Full-IVP achieved-error comparison including setup, startup, rejection, output and fallback.",
+    "For p>=5 source candidates, recover complete primary coefficient arrays, independent stage-graph proof, exact variable-step conditions, zero-stability and startup before qualification.",
+    "Separate W-operator source/derivative permissions: no explicit J, JVP-based, and strict RHS-only must be different capability values.",
+    "Prove rejection rollback and two-step history transfer/restart before automatic Peer switching."
   ]
 }
