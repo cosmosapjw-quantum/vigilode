@@ -283,10 +283,14 @@
       "family": "two-step parallel Rosenbrock-W/peer-W",
       "stage_graph": "independent current stages only for tables with zero current-stage coupling",
       "derivative": "common-shift or multi-implicit shifted systems; Krylov possible",
-      "maturity": "no implementation path identified in pinned path inventory",
-      "role": "primary genuine time-stage-parallel stiff track",
+      "maturity": "source-certified PTSW2B/2C tableaux documented; no Rust implementation; high-order p>=5 family-level prior art exists but exact arrays remain untranscribed",
+      "role": "first implementation track: PTSW2C order-3 prototype; PTSW2B L-stable order-2 control; recover p>=5 table for G0",
       "limits": [
-        "coefficients, variable-step theorem, startup, estimator, history/restart and outputs missing in code"
+        "PTSW2C is A(81.1 degree)-stable source-reported, rho_infinity about 0.6796, not L-stable; full sector interval proof and variable-step product stability remain open",
+        "PTSW2B is L(90)-stable source-reported with exact stiff-limit nilpotency in prior certificate but only order 2; accepted-step penalty possible",
+        "exact p>=5 five- or six-stage tableau has not yet been recovered and independently transcribed",
+        "W operator T may use a derivative-based JVP; this is Jacobian-free but not derivative-free",
+        "two-step peer history, startup, rollback, dense output and estimator adapter are absent from current public frontend"
       ]
     },
     {
@@ -326,6 +330,76 @@
         "not called parallel by default",
         "audit exact preprint hypotheses and coefficient tables"
       ]
+    },
+    {
+      "id": "PTSW2C",
+      "class": "source_certified_tableau_not_implemented",
+      "family": "common-shift parallel two-step W Peer",
+      "stage_graph": "2 independent current-step linear stage equations; time-step recurrence remains causal",
+      "derivative": "common W=I-(12/25)hT; no nonlinear Newton; derivative status depends on admitted source of T",
+      "maturity": "exact variable-step coefficients and C(2), Gamma(2), B(3) independently exact-arithmetic checked; Rust/runtime NOT_RUN",
+      "role": "first order-3 stiff Peer prototype",
+      "limits": [
+        "source-reported A(81.1 degree)-stability and rho_infinity=0.6796; not L-stable",
+        "prior root-locus scan is numerical, not interval-certified",
+        "startup and method-specific embedded pair must be implemented and tested",
+        "not G0 qualified because p=3"
+      ]
+    },
+    {
+      "id": "PTSW2B",
+      "class": "source_certified_tableau_not_implemented",
+      "family": "stiffly accurate common-shift parallel two-step W Peer",
+      "stage_graph": "2 independent current-step linear stage equations; time-step recurrence remains causal",
+      "derivative": "common W=I-h*((3-sqrt(3))/2)*T; no nonlinear Newton; derivative status depends on T",
+      "maturity": "exact tableau/startup/embedded certificate already in repository documentation; C(2), Gamma(2), B(2) moments independently exact-arithmetic checked this turn; Rust/runtime NOT_RUN",
+      "role": "L-stable stiff-damping order-2 control",
+      "limits": [
+        "source-reported L(90)-stable and rho(M_infinity)=0; prior exact certificate reports nilpotent index 3",
+        "order 2 may violate original accepted-step ratio",
+        "not G0 qualified"
+      ]
+    },
+    {
+      "id": "PTSW5_P5_Q5_FAMILY",
+      "class": "literature_candidate_unqualified",
+      "family": "parallel linearly implicit two-step W method",
+      "stage_graph": "reported s independent linearly-implicit stages; exact current-step coefficient graph must be recovered from selected table",
+      "derivative": "W operator with method-specific shift(s); Newton-free linear stage solves",
+      "maturity": "2002 primary literature reports p=s and q=s; exact s=5 coefficient array not yet transcribed",
+      "role": "minimum-stage p=5/q=5 G0 source-recovery target",
+      "limits": [
+        "do not register an implemented method until complete coefficient table, shift structure, stability and startup are independently verified",
+        "family-level literature result is not a concrete qualified tableau"
+      ]
+    },
+    {
+      "id": "PTSW6_P5_FAMILY",
+      "class": "literature_candidate_unqualified",
+      "family": "parallel two-step W Peer variables",
+      "stage_graph": "s independent current-step linear stage equations proved for the parallel Peer-W subclass",
+      "derivative": "linear W stage solves; exact shift structure must be table-audited",
+      "maturity": "2004 primary literature proves p=s-1 and stability for general step sequences; order up to seven candidates reported; s=6 implies p=5 family-level candidate",
+      "role": "alternative minimum-stage p=5 G0 source-recovery target",
+      "limits": [
+        "six-stage coefficient tables and admissible step-ratio interval still need primary source transcription",
+        "stage order and shift sharing must be verified per table",
+        "no implementation/runtime qualification"
+      ]
+    },
+    {
+      "id": "IPP_RHS_ONLY_HOMOTOPY",
+      "class": "conjectural_research_method",
+      "family": "fully implicit parallel Peer with separate RHS-only nonlinear stage roots",
+      "stage_graph": "current stage roots are parallel only if exact tableau has no same-step coupling",
+      "derivative": "strict RHS-only homotopy target: no J, JVP, FD, AD or Newton; JVP/Krylov fallback separate and permission-gated",
+      "maturity": "design hypothesis; no generic solver or convergence certificate",
+      "role": "future strict derivative-free fast lane",
+      "limits": [
+        "does not inherit PTSW-W order/stability",
+        "must certify original nonlinear stage residual, not only auxiliary homotopy residual",
+        "requires root residual-to-LTE theorem, contraction/domain and roundoff bounds"
+      ]
     }
   ],
   "missing_or_unqualified": [
@@ -354,12 +428,20 @@
       "status": "NOT_QUALIFIED"
     },
     {
-      "item": "Native peer-W solver and exact coefficient tests",
+      "item": "Complete clean-clone workspace CI and production release gate",
+      "status": "NOT_PASSED"
+    },
+    {
+      "item": "Native PTSW2C/2B Peer-W adapter, transactional peer history and common-shift solve reuse",
       "status": "NOT_IMPLEMENTED"
     },
     {
-      "item": "Complete clean-clone workspace CI and production release gate",
-      "status": "NOT_PASSED"
+      "item": "Primary-source p>=5 fully stage-parallel W-Peer coefficient tables and exact certificate",
+      "status": "NOT_TRANSCRIBED"
+    },
+    {
+      "item": "RHS-only implicit Peer homotopy root worker with original-residual error theorem",
+      "status": "CONJECTURAL_NOT_IMPLEMENTED"
     }
   ],
   "current_authority": {
@@ -419,13 +501,15 @@
     ]
   },
   "priority_revision_20261109": {
-    "decision": "No new method implementation before current authority replay and C5 long-path economics.",
+    "decision": "Peer-W is the first new whole-IVP method family. Implement PTSW2C as order-3 prototype and PTSW2B as L-stable order-2 control, while a separate p>=5 tableau source-recovery gate preserves the original G0 order objective.",
     "immediate": [
-      "current fair-ab replay",
-      "C5 long path forest holdout",
-      "BDF/Radau comparator qualification",
-      "exact Peer-W/SEPP math",
-      "frontend after selection"
+      "PW00 source/history/API audit and exact PTSW2B/C order-moment checks completed scoped documentation work.",
+      "PW01 implement PTSW2C using existing ParallelExecution/Krylov/work ledger; do not add a new pool or switcher.",
+      "PW02 implement PTSW2B as stiff-damping control with its own estimator/startup.",
+      "PW03 recover and independently certify p>=5 source tables from primary Peer-W literature.",
+      "T02 replay current fair-ab authority before any full-IVP error/performance ranking.",
+      "PW04 implement two-step history/startup/reject/restart and fair-ab adapter.",
+      "Only after exact method qualification, extend existing AutomaticOde/SwitchingSolver."
     ]
   },
   "audit_revision": "T01 history and source audit"
