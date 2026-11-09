@@ -1,0 +1,52 @@
+{
+  "schema_version": "vigilode.execution-receipt.v1",
+  "task": "PW07_COMPOSITIONAL_ERROR_CERTIFICATE_AND_MOCK_EXPERIMENT",
+  "date_kst": "2026-11-09",
+  "status": "THEORY_AND_MOCK_PUSHED_REMOTE_READBACK_PENDING_RUST_NOT_RUN",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "branch": "research/solver-portfolio-shortdag-20261109",
+  "pinned_code_source": {
+    "branch": "research/vigilode-c5-native-graph-schur-20261102",
+    "commit": "569ce02629498fec133db9ce368eb303ba943b69",
+    "tree": "a4b2f09521b197b37612ff7dc66a13fbb74a0bae",
+    "rust_source_modified": false
+  },
+  "research_loop": {
+    "R2": "expanded prior-art review",
+    "R3": "conditional residual and switch-transfer theorem derived",
+    "R4": "nonnormal product and generic switched-matrix counterexamples",
+    "R5": "exact PTSW2B/C moment checks",
+    "R6": "mock experiments completed",
+    "R7": "scalar observed orders approach 3 and 2",
+    "R8": "novelty boundary narrowed; not established",
+    "R9": "DAG/handoff update",
+    "R10": "compact script and result hash to be read back",
+    "C5": "no Rust runtime; NOT_RUN"
+  },
+  "findings": {
+    "PTSW2C": "C2/Gamma2/B3 exact residuals zero; variable-step observed order 2.98255 at N=640",
+    "PTSW2B": "C2/Gamma2/B2 exact residuals zero; stiff-limit charpoly lambda^3; variable-step observed order 1.99030 at N=640",
+    "stage_residual": "identity residual 5.266e-16; error 4.694e-5 under bound 1.193e-4",
+    "switch_recurrence": "conditional only; kappa/chi/eta/delta source constants unresolved",
+    "nonnormal": "step radii below one; product 2-norm up to ~770/795 at K=1e4; finite transient only",
+    "affine_scan": "200 synthetic updates; serial/product difference 4.24e-22"
+  },
+  "tests": {
+    "python_driver": "COMPLETED_LOCAL",
+    "py_compile": "COMPLETED_LOCAL",
+    "cargo": "NOT_RUN",
+    "rustfmt": "NOT_RUN",
+    "clippy": "NOT_RUN",
+    "CI": "NOT_RUN",
+    "native_Rayon_peer_benchmark": "NOT_RUN",
+    "full_IVP_matched_error": "NOT_RUN"
+  },
+  "limitations": [
+    "Oracle startup excludes startup error/cost.",
+    "No nonlinear MOL or full IVP tests.",
+    "No full complex sector interval proof.",
+    "No generic source-bound propagation/transfer constants.",
+    "2011/2015 Peer and 2017 coupled GL prior art preempt basic global-error claims.",
+    "All 187 PR diffs not scientifically reviewed; account-wide hidden ChatGPT export unavailable."
+  ]
+}
