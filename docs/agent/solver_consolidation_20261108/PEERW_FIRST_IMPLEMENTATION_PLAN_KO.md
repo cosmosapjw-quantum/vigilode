@@ -205,3 +205,10 @@ PW01/PW02/PW03 may progress as separate method-specific tasks after PW00. PW04 n
 8. J. Lang, B. A. Schmitt, “Stiff Norm Estimates for Variable-Stepsize Peer Two-Step Methods,” arXiv:2608.26913 (2026-08-27). https://arxiv.org/abs/2608.26913
 9. D. Conte, G. Pagano, B. Paternoster, “Time-accurate and highly-stable explicit peer methods for stiff differential problems,” Communications in Nonlinear Science and Numerical Simulation 119 (2023), 107136. https://doi.org/10.1016/j.cnsns.2023.107136
 10. G. Pagano, “Stabilized explicit peer methods with parallelism across the stages for stiff problems,” Applied Numerical Mathematics 207 (2025), 156–173. https://doi.org/10.1016/j.apnum.2024.08.023
+
+
+## 11. PW07 conditional error-certificate addendum
+
+Before implementing transactional Peer history or automatic switching, use `PEERW_ERROR_CERTIFICATE_THEORY_20261109.md`. The conditional recurrence is E_(n+1) <= kappa_n(chi_n E_n + eta_n) + delta_n. kappa is a source/method/grid-specific propagation gain; chi and eta bound transfer of the complete history at a method switch; delta includes stage original-W residual and operator perturbation, temporal truncation, startup/history, homotopy-root, rounding and output defects. Missing constants imply fail-closed exclusion, not an assumed value of one.
+
+The mock confirms scalar order smoke tests and adversarial finite-horizon behavior only. No Rust code has been implemented or run. Prior-art includes 2011/2015 Peer global-error control and Constantinescu 2017 coupled-GL estimation. The possible novelty is limited to the heterogeneous transactional switch/history-transfer certificate with original-source residual attestation; it is conjectural.
