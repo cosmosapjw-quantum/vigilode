@@ -1,0 +1,89 @@
+{
+  "schema": "vigilode.pw07.compact-repro.v1",
+  "fixed_observed_orders": {
+    "PTSW2C": [
+      2.761890528643055,
+      2.877102858117317,
+      2.937539341963405,
+      2.9685103344222643,
+      2.9841891292432
+    ],
+    "PTSW2B": [
+      1.8658149390393624,
+      1.9311423376072285,
+      1.9651083899003428,
+      1.9824356710265159,
+      1.9911878409498642
+    ]
+  },
+  "variable_observed_orders": {
+    "PTSW2C": [
+      2.8650488011371023,
+      2.9312162706150433,
+      2.965270870292664,
+      2.982554334999267
+    ],
+    "PTSW2B": [
+      1.9244924074398064,
+      1.961656300154466,
+      1.9806767852372507,
+      1.990300047406758
+    ]
+  },
+  "exact_symbolic": {
+    "PTSW2C_C2_Gamma2_B3": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    "PTSW2B_C2_Gamma2_B2": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    "PTSW2B_stiff_limit_charpoly": "lambda**3",
+    "M_inf2_nonzero": true,
+    "M_inf3_zero": true
+  },
+  "nonnormal_summary": {
+    "max_product_2norm_PTSW2C_K1e4": 769.5910697072753,
+    "max_product_2norm_PTSW2B_K1e4": 795.2308442550208,
+    "step_radii_below_one": true,
+    "classification": "finite_horizon_transient_mock"
+  },
+  "residual_bound": {
+    "identity_inf_norm": 5.266012303409458e-16,
+    "lhs": 0.00004694073765952745,
+    "bound": 0.0001193178001095693,
+    "bound_holds": true
+  },
+  "affine_scan": {
+    "N": 200,
+    "iterative_final": 0.0000013714131110009158,
+    "affine_final": 0.0000013714131110009154,
+    "abs_difference": 4.235164736271502e-22,
+    "work": "O(N)",
+    "span": "O(log N) ideal"
+  },
+  "limitations": [
+    "oracle startup; startup error/cost excluded",
+    "smooth scalar smoke test only",
+    "no Rust/full-IVP/production qualification",
+    "general propagation and history-transfer constants unresolved"
+  ]
+}
