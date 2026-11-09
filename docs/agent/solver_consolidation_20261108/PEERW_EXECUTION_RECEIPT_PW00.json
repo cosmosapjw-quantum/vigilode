@@ -1,0 +1,63 @@
+{
+  "schema_version": "vigilode.execution-receipt.v1",
+  "task": "PW00_PEER_W_SOURCE_AND_API_AUDIT",
+  "date_kst": "2026-11-09",
+  "status": "DOCUMENTATION_ONLY_REMOTE_READBACK_PENDING",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "branch": "research/solver-portfolio-shortdag-20261109",
+  "code_source": {
+    "branch": "research/vigilode-c5-native-graph-schur-20261102",
+    "commit": "569ce02629498fec133db9ce368eb303ba943b69",
+    "tree": "a4b2f09521b197b37612ff7dc66a13fbb74a0bae",
+    "inspected_blobs": {
+      "crates/rodas5p-integrators/src/parallel.rs": "ffdfb1cef258ed43586db0323eb0e7f9de27dd53",
+      "crates/rodas5p-integrators/src/stage_batch.rs": "c2f44c327c53d7c6dfe7ba80b26cd43486d56b43",
+      "crates/rodas5p-core/src/solver_types.rs": "b5e54e85f0606d2c52290e87936b988975cf6ba4",
+      "crates/rodas5p-integrators/src/nonlinear_homotopy.rs": "529e8b26eaebb486654e6e8e19e2cca8c740c00a",
+      "crates/rodas5p-krylov/src/block_gmres.rs": "68968fc1e764d2dd355373928ed11406c8dc9c1c",
+      "crates/rodas5p-krylov/src/workspace.rs": "fa6d92fc9becf6c020c4aad9afa29e09ccbde59d",
+      "crates/vigilode/src/session.rs": "ce30e5703a8d47a6e258a6df829b19a553fe79f9",
+      "crates/vigilode/src/automatic.rs": "ff4f5db411b310039b627d66774b24885eb3cf7d",
+      "crates/vigilode/src/switching.rs": "fb12a401002c0039631a43982cc296a494c366a2",
+      "crates/rodas5p-fair-ab/src/global_error.rs": "c62f996fa18f9815f1f329766abe8fe2c25ca22b",
+      "crates/rodas5p-fair-ab/src/adaptive_global_error.rs": "ccae16353ed1dcc90c6511befea8b42f7d3ad9cd"
+    }
+  },
+  "research_loop": {
+    "R2": "LITERATURE_AND_REUSE_COMPLETE_SCOPED",
+    "R4": "METHOD_FAMILY_DIVERGENCE_COMPLETE_SCOPED",
+    "R5": "EXACT_PTSW2B_C_ORDER_MOMENTS_INDEPENDENTLY_RECHECKED",
+    "C2": "SOURCE_AND_API_MAPPING_COMPLETE_SCOPED",
+    "C3": "PTSW2C_MAIN_PTSW2B_STIFF_CONTROL_PTSW_P5PLUS_GATE",
+    "C4": "ADDITIVE_PEER_W_DAG_AND_IMPLEMENTATION_PLAN",
+    "C5": "NOT_RUN: no local Rust/Cargo execution environment in this session"
+  },
+  "research_findings": {
+    "exact_ptsw2c": "Literature/tableau-supported; C(2), Gamma(2), B(3) moment residuals independently simplified to zero in exact arithmetic in this turn. Full stability sector remains not interval-certified.",
+    "exact_ptsw2b": "Literature/tableau-supported; C(2), Gamma(2), B(2) moment residuals independently simplified to zero in exact arithmetic in this turn. Full stiff-limit script not rerun in this turn.",
+    "high_order": "Primary literature reports p=s,q=s family in 2002 and p=s-1 independent-stage Peer-W family up to order seven in 2004. No p>=5 table transcribed and independently verified in this turn.",
+    "derivative_boundary": "W-Peer linear solves avoid nonlinear Newton, but generic T/JVP use is not derivative-free. RHS-only homotopy must be separate."
+  },
+  "api_reuse": [
+    "Bounded ParallelExecution.map_ordered and try_for_each_ordered_mut; no new thread pool.",
+    "Block GMRES accepts multiple RHS and reports true residuals; compare against independent per-stage Krylov.",
+    "Existing nonlinear_homotopy is source-specific; not a generic RHS-only root worker.",
+    "Current session/switching frontend is DOPRI5/RODAS5P only; two-step Peer history/rollback missing.",
+    "Current fair-ab common-grid/error/work/timing authority exists; replay pending."
+  ],
+  "tests": {
+    "exact_arithmetic": "SCOPED_CHECK_COMPLETED",
+    "cargo": "NOT_RUN",
+    "rustfmt": "NOT_RUN",
+    "CI": "NOT_RUN",
+    "benchmark": "NOT_RUN",
+    "local_runtime": "Remote Desktop cosmosapjw offline"
+  },
+  "limitations": [
+    "All 187 PR diffs were not scientifically reviewed; metadata and selected lineage only.",
+    "Complete hidden/account-wide ChatGPT transcript export was unavailable.",
+    "Current branch's exact Peer certificates are documentation artifacts; no Peer Rust implementation.",
+    "No production/fast lane/benchmark promotion."
+  ],
+  "next_action": "Execute PW01/PW02 in an isolated local worktree after checking latest branch head, then T02 fair-ab authority replay before full-IVP comparison."
+}
