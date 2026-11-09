@@ -1,6 +1,6 @@
 {
   "schema_version": "vigilode.short-dag.v2",
-  "plan_id": "VIGILODE_SOLVER_PORTFOLIO_SHORTDAG_20261109_T01A_ADAPTIVE",
+  "plan_id": "VIGILODE_SOLVER_PORTFOLIO_SHORTDAG_20261109_PW_PRIORITY",
   "audit_date": "2026-11-09",
   "authority": {
     "official_G0_DAG": {
@@ -9,7 +9,7 @@
       "progress": "7/23_UNCHANGED",
       "successor": "0/12_UNCHANGED",
       "production": "HOLD",
-      "note": "not modified"
+      "note": "not modified; all PW00-PW06 nodes are short-DAG overlay only"
     },
     "code_source": {
       "branch": "research/vigilode-c5-native-graph-schur-20261102",
@@ -26,13 +26,16 @@
   "mission": {
     "goal": "Selectively activate a sparse, compatible set of IVP methods, solve backends, source-specific transforms and CPU execution lanes via an adaptive evidence-driven controller, minimizing predicted complete remaining-IVP cost subject to original-source, stability, output, global-error and resource constraints.",
     "immediate": [
-      "T01A integrates original G0 objective, 28-method inventory, 23-node authority, selected PR/branch lineages, R5-R10/C5, C8 dynamics/symbolic routing, WP/RVJ/homotopy/Krylov, prior switching and harness work into a layered adaptive-portfolio architecture.",
-      "T02 replays current fair-ab/global-error authority already in C5 source; do not rebuild evaluator or modify switcher.",
-      "T03/T04 preregister and measure C5 long path-forest full-IVP economics before scan changes.",
-      "T06 qualifies BDF/Radau, common-shift and multi-implicit Peer-W, SEPP and modern variable-step Peer as separate methods.",
-      "T07 extends the existing AutomaticOde/SwitchingSolver into a multi-method adaptive portfolio only after method and global-error gates; do not create a second switcher, WorkLedger, benchmark standard or thread pool.",
-      "Only activate the minimum useful combination for the current IVP segment; probes/features not admitted by capability, source/domain, error or cost contracts remain off.",
-      "Retain original G0 matched-achieved-error, accepted-step, stage-depth, derivative/Newton, fallback and complete-work targets as release gates, not achieved results."
+      "PW00 source/history/API audit and exact PTSW2B/C order-moment checks are complete scoped documentation work.",
+      "PW01 implement PTSW2C as first order-3 common-shift Peer-W prototype using existing CPU execution/Krylov/work infrastructure.",
+      "PW02 implement PTSW2B as separate L-stable order-2 stiff-damping control; do not merge tableaus or estimators.",
+      "PW03 recover exact p>=5 source tableau from the 2002 p=s,q=s or 2004 p=s-1 Peer-W families; this is mandatory for original G0 order >=4.8.",
+      "T02 current fair-ab global-error authority replay remains mandatory before full-IVP ranking.",
+      "PW04 adds two-step startup/history/reject/restart/dense-output and fair-ab integration after PW01/PW02 and T02.",
+      "PW05 explores strict RHS-only implicit Peer homotopy as a separate method identity, not a W-Peer alias.",
+      "PW06 performs matched-achieved-error full-IVP comparisons and preserves original G0 gates.",
+      "C5 T03/T04/T05 scan economics remain a separate preserved research branch; no C5 negative result is erased.",
+      "No exhaustive Cartesian product: choose only sparse prequalified method tuples by admissibility, limited probing, evidence-based cost, transactional switching and hysteresis."
     ],
     "non_goals": [
       "No pipeline that runs every available feature on every IVP; active route is a sparse compatibility-checked tuple.",
@@ -43,7 +46,9 @@
       "No C5 speed or parallel-scan speed claim before long-path native full-IVP evidence.",
       "No merging BDF, Radau, Peer-W, EPPEER, EXPRB and RODAS into one method identity.",
       "No changes to tableau, estimator, controller defaults, tolerance, error thresholds, benchmark targets, budgets, old receipts or official G0 DAG without separate authority.",
-      "No GPU."
+      "No GPU.",
+      "No label of derivative-free is assigned to a W-Peer route merely because it avoids an explicit Jacobian matrix; JVP remains a derivative action.",
+      "No order>=5 qualification is inferred from existence of a high-order family before a concrete primary coefficient table is transcribed and verified."
     ]
   },
   "verdict": {
@@ -56,8 +61,11 @@
       "Physical C5 paths length one, zero affine pair compositions.",
       "Current scan is serial and allocation-heavy.",
       "Legacy v0.10 has no Git common ancestor with C5.",
-      "No Peer-W/SEPP/PTSW source path found in pinned tree.",
-      "Homotopy nonlinear-output certificate is linearized, not a nonlinear remainder enclosure."
+      "Homotopy nonlinear-output certificate is linearized, not a nonlinear remainder enclosure.",
+      "Pinned C5 source has no native Peer-W stepper/history/session integration; a separate documentation package contains exact PTSW2B/PTSW2C tableau certificates and peer-stage proofs.",
+      "PTSW2C is an exact variable-step order-3 candidate with source-reported A(81.1 degree) stability, not L-stable; PTSW2B is an exact order-2 L(90)-stable control.",
+      "Primary literature reports p=s,q=s parallel W methods (2002) and p=s-1 fully parallel Peer-W methods up to order seven (2004); a concrete p>=5 coefficient table is not yet transcribed/qualified.",
+      "Peer-W stages can be independent within one step; physical time advancement remains sequential and two-step history/startup/rollback must be implemented."
     ]
   },
   "turns": [
@@ -75,7 +83,7 @@
     {
       "id": "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
       "status": "PLANNED",
-      "order": 2,
+      "order": 3,
       "depends_on": [
         "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
         "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE"
@@ -96,7 +104,7 @@
     {
       "id": "T03_C5_COST_ATTRIBUTION_AND_LONG_PATH_PREREG",
       "status": "PLANNED",
-      "order": 3,
+      "order": 4,
       "depends_on": [
         "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
         "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE"
@@ -117,7 +125,7 @@
     {
       "id": "T04_C5_LONG_PATH_NATIVE_FULL_IVP_HOLDOUT",
       "status": "PLANNED",
-      "order": 4,
+      "order": 5,
       "depends_on": [
         "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
         "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
@@ -139,7 +147,7 @@
     {
       "id": "T05_C5_WORK_EFFICIENT_ORDERED_SCAN",
       "status": "CONDITIONAL_GATE",
-      "order": 5,
+      "order": 6,
       "depends_on": [
         "T04_C5_LONG_PATH_NATIVE_FULL_IVP_HOLDOUT"
       ],
@@ -161,32 +169,36 @@
     {
       "id": "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION",
       "status": "PLANNED",
-      "order": 6,
+      "order": 7,
       "depends_on": [
         "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
         "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY"
       ],
-      "objective": "Audit BDF/Radau reference status and Peer-W/SEPP exact method math.",
+      "objective": "Keep BDF/Radau as numerical controls and audit diagonal-implicit Peer, reused-stage Peer and TASE/SEPP as distinct comparator families. Primary parallel W-Peer qualification is handled by PW00-PW06.",
       "outputs": [
-        "METHOD_QUALIFICATION_MATRIX.json",
-        "PEER_W_SEPP_COEFFICIENT_AUDIT.md",
+        "BDF_RADAU_COMPARATOR_QUALIFICATION.json",
+        "DIAGONAL_IMPLICIT_AND_TASE_PEER_COMPARATOR_AUDIT.md",
         "EXECUTION_RECEIPT_T06.json"
       ],
       "acceptance": [
-        "Exact coefficients, startup, estimator, step-ratio and stability hypotheses verified",
-        "Stage reuse distinguished from stage independence",
-        "No implementation this turn"
+        "BDF/Radau startup, nonlinear/linear work, output and error semantics are clearly scoped.",
+        "2026 diagonal-implicit Peer is not labelled stage-parallel without exact stage-graph proof.",
+        "TASE/SEPP Jacobian-related operator and all inner shifted linear systems are charged.",
+        "No primary Peer-W p>=5 method is moved out of PW03."
       ],
-      "mutation": "docs only"
+      "mutation": "docs only",
+      "title": "Qualify BDF/Radau and non-primary Peer/TASE comparators"
     },
     {
       "id": "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN",
       "status": "PLANNED",
-      "order": 7,
+      "order": 13,
       "depends_on": [
         "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
         "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
-        "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION"
+        "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION",
+        "PW03_G0_ORDER5_PEER_W_TABLEAU_SOURCE_RECOVERY",
+        "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION"
       ],
       "objective": "After current global-error authority and method qualification, extend existing AutomaticOde/SwitchingSolver with sparse capability-checked method/backend/transform choices, selective observers/probes, cost-aware net-benefit gates, per-regime evidence memory and transactional accepted-boundary switching. No rebuild of existing switcher.",
       "outputs": [
@@ -205,13 +217,14 @@
         "Switches occur at accepted checkpoints with history transfer or valid startup; source/cache epochs are enforced.",
         "Candidate selection requires a conservative net-benefit margin over setup/switch/monitor/fallback cost.",
         "Global-error comparison is supported by qualified authority, not equal rtol/local error alone.",
-        "Existing RHS-only default and protected route are unchanged until separate approval."
+        "Existing RHS-only default and protected route are unchanged until separate approval.",
+        "At least one p>=5 Peer-W tableau and its two-step lifecycle are qualified before automatic whole-IVP Peer selection."
       ]
     },
     {
       "id": "T08_SPATIAL_MOL_SPHERE_AND_3D_GEOMETRY",
       "status": "PLANNED",
-      "order": 8,
+      "order": 14,
       "depends_on": [
         "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN"
       ],
@@ -226,13 +239,14 @@
     {
       "id": "T09_MATCHED_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW",
       "status": "PLANNED",
-      "order": 9,
+      "order": 17,
       "depends_on": [
         "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
         "T05_C5_WORK_EFFICIENT_ORDERED_SCAN",
         "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION",
         "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN",
-        "T08_SPATIAL_MOL_SPHERE_AND_3D_GEOMETRY"
+        "T08_SPATIAL_MOL_SPHERE_AND_3D_GEOMETRY",
+        "PW06_PEER_MATCHED_FULL_IVP_AND_G0_GATE"
       ],
       "objective": "Independent matched achieved-error full-cost review, clean-clone CI and explicit release/HOLD.",
       "outputs": [
@@ -271,6 +285,162 @@
         "No Rust source/default/coefficient/tolerance/benchmark target/historical receipt changed."
       ],
       "mutation": "documentation only; additive overlay"
+    },
+    {
+      "id": "PW00_PEER_W_SOURCE_AND_API_AUDIT",
+      "status": "DOCUMENTATION_TURN_COMPLETE_REMOTE_READBACK_VERIFIED",
+      "order": 8,
+      "depends_on": [
+        "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE"
+      ],
+      "objective": "Integrate PTSW2B/C source certificates and Peer proofs, audit primary high-order Peer-W literature and map pinned C5 ParallelExecution/Krylov/session/error APIs. Exact arithmetic checks of PTSW2B/C order moments; no Rust source changes.",
+      "outputs": [
+        "PEERW_FIRST_IMPLEMENTATION_PLAN_KO.md",
+        "PEERW_EXECUTION_RECEIPT_PW00.json"
+      ],
+      "acceptance": [
+        "PTSW2C C(2), Gamma(2), B(3) and PTSW2B C(2), Gamma(2), B(2) residuals exactly zero in independent symbolic arithmetic.",
+        "Peer-W, multi-implicit Peer-W, IPP, Rosenbrock-Peer, TASE/SEPP, EPPEER and diagonal-implicit Peer identities kept separate.",
+        "C5 API blobs and code source commit/tree pinned.",
+        "No Rust implementation, build, test or performance claim."
+      ],
+      "mutation": "documentation only; additive"
+    },
+    {
+      "id": "PW01_PTSW2C_ORDER3_FIRST_PEER_IMPLEMENTATION",
+      "status": "PLANNED",
+      "order": 9,
+      "depends_on": [
+        "PW00_PEER_W_SOURCE_AND_API_AUDIT"
+      ],
+      "objective": "Implement an opt-in two-step PTSW2C stepper using exact source coefficients, forward startup, common-shift W solves and its method-specific embedded estimator. Reuse existing CPU executor/operator/Krylov/work infrastructure; keep time marching causal.",
+      "outputs": [
+        "PTSW2C implementation",
+        "PTSW2C exact coefficient/order/startup/estimator tests",
+        "PW01 execution receipt"
+      ],
+      "acceptance": [
+        "Exact C(2), Gamma(2), B(3) tests and zero same-step stage dependency assertion.",
+        "Startup solution O(H^3) and derivative O(H^2) compatibility established.",
+        "Direct common-W factor reuse and independent-stage concurrency have parity/work tests.",
+        "Rejected attempt restores accepted state and previous peer history atomically.",
+        "No promotion: p=3 and source stability remains non-L-stable/uninterval-certified."
+      ],
+      "mutation": "isolated opt-in worktree; new module/API only"
+    },
+    {
+      "id": "PW02_PTSW2B_LSTABLE_ORDER2_CONTROL",
+      "status": "PLANNED",
+      "order": 10,
+      "depends_on": [
+        "PW00_PEER_W_SOURCE_AND_API_AUDIT"
+      ],
+      "objective": "Implement PTSW2B separately as L-stable order-2 damping control with its own exact coefficients, RHS rearrangement, startup and embedded pair.",
+      "outputs": [
+        "PTSW2B implementation",
+        "PTSW2B exact algebra/stiff-limit/startup/embedded tests",
+        "PW02 execution receipt"
+      ],
+      "acceptance": [
+        "C(2), Gamma(2), B(2) exact tests; existing nilpotent stiff-limit certificate independently re-run on source.",
+        "Both independent stage solves share the common W factor where backend semantics allow.",
+        "Low-order accepted-step penalty reported against PTSW2C and RODAS5P.",
+        "No promotion: p=2."
+      ],
+      "mutation": "isolated opt-in worktree; separate method identity"
+    },
+    {
+      "id": "PW03_G0_ORDER5_PEER_W_TABLEAU_SOURCE_RECOVERY",
+      "status": "PLANNED",
+      "order": 11,
+      "depends_on": [
+        "PW00_PEER_W_SOURCE_AND_API_AUDIT"
+      ],
+      "objective": "Recover a concrete p>=5 fully stage-parallel W-Peer tableau from Podhaisky/Schmitt/Weiner 2002 p=s,q=s or Schmitt/Weiner 2004 p=s-1. Independently transcribe every coefficient and verify stage graph, variable-step order and stiff stability.",
+      "outputs": [
+        "PEERW_P5_PRIMARY_SOURCE_TRANSCRIPTION.md",
+        "PEERW_P5_EXACT_TABLEAU.json",
+        "PEERW_P5_SYMBOLIC_CERTIFICATE.json",
+        "PW03 execution receipt"
+      ],
+      "acceptance": [
+        "Primary table/page/equation references and exact printed coefficient precision preserved.",
+        "Two independent transcriptions agree; no guessed/secondary-source coefficient accepted.",
+        "p>=5 and required stage order proven on actual variable-step domain.",
+        "Zero-stability, step-ratio restriction, startup, estimator, A(alpha)/L(alpha) and stiff-limit amplification reproduced.",
+        "No implementation until a single concrete tableau passes."
+      ],
+      "mutation": "source research and exact algebra; no default or production changes"
+    },
+    {
+      "id": "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION",
+      "status": "PLANNED",
+      "order": 12,
+      "depends_on": [
+        "PW01_PTSW2C_ORDER3_FIRST_PEER_IMPLEMENTATION",
+        "PW02_PTSW2B_LSTABLE_ORDER2_CONTROL",
+        "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY"
+      ],
+      "objective": "Create Peer-specific session/history lifecycle and connect method-specific estimator plus original fair-ab error/work/output authority. Implement accepted-checkpoint commit/reject/restart and event/history invalidation.",
+      "outputs": [
+        "PEER_SESSION_HISTORY_CONTRACT.md",
+        "PEER_FAIR_AB_ADAPTER",
+        "PW04 lifecycle tests",
+        "PW04 execution receipt"
+      ],
+      "acceptance": [
+        "Two-step history and startup/restart requirements encoded in method identity.",
+        "Every stage, estimator, rejected attempt, setup, startup and fallback operation charged.",
+        "Reference WRMS and common-grid dense/clipped output policy use current fair-ab authority.",
+        "No rigorous global-error theorem claimed solely from a local embedded estimate."
+      ],
+      "mutation": "opt-in integration only"
+    },
+    {
+      "id": "PW05_RHS_ONLY_IMPLICIT_PEER_HOMOTOPY",
+      "status": "CONJECTURAL_RESEARCH_PLANNED",
+      "order": 15,
+      "depends_on": [
+        "PW00_PEER_W_SOURCE_AND_API_AUDIT"
+      ],
+      "objective": "Investigate a distinct implicit parallel Peer whose independent nonlinear stage equations are solved by RHS-only homotopy-assisted root finders. Preserve zero J/JVP/FD/AD/Newton in the strict lane; keep a separately permissioned JVP fallback.",
+      "outputs": [
+        "IPP_RHS_ONLY_HOMOTOPY_THEORY.md",
+        "IPP_ORIGINAL_STAGE_RESIDUAL_CERTIFICATE.json",
+        "PW05 stop/go receipt"
+      ],
+      "acceptance": [
+        "Exact stage equations prove independent current-step roots.",
+        "Original source residual, not auxiliary continuation residual, is certified.",
+        "Residual-to-local-error, contraction/domain, floating-point and failure/rollback bounds are proved.",
+        "No inheritance of PTSW-W order or stability.",
+        "NO-GO if only a linearized or auxiliary residual bound is available."
+      ],
+      "mutation": "theory-first; no production path"
+    },
+    {
+      "id": "PW06_PEER_MATCHED_FULL_IVP_AND_G0_GATE",
+      "status": "PLANNED",
+      "order": 16,
+      "depends_on": [
+        "PW03_G0_ORDER5_PEER_W_TABLEAU_SOURCE_RECOVERY",
+        "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION",
+        "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY"
+      ],
+      "objective": "Compare qualified p>=5 Peer-W against protected RODAS5P and controls at matched achieved global error over full IVPs; measure complete CPU work and work/span. Decide G0 pass/fail without changing original thresholds.",
+      "outputs": [
+        "PEERW_MATCHED_FULL_IVP_RESULTS.json",
+        "PEERW_PARETO_AND_WORK_SPAN_REPORT_KO.md",
+        "PW06 execution receipt"
+      ],
+      "acceptance": [
+        "Same source, IVP, reference, output grid/policy and achieved global error; uncertainty charged.",
+        "Include startup, factorization/preconditioner, stage RHS/solves, estimator, rejection, fallback, output and allocations.",
+        "Report accepted-step ratio, median wall speedup, critical-depth distribution and fallback fraction against original G0 thresholds.",
+        "At least seven randomized paired CPU blocks where feasible; preserve adverse cases and failed runs.",
+        "No G0 change until independent review."
+      ],
+      "mutation": "benchmark/research evidence only; no main merge"
     }
   ],
   "edges": [
@@ -348,6 +518,62 @@
     ],
     [
       "T08_SPATIAL_MOL_SPHERE_AND_3D_GEOMETRY",
+      "T09_MATCHED_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW"
+    ],
+    [
+      "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
+      "PW00_PEER_W_SOURCE_AND_API_AUDIT"
+    ],
+    [
+      "PW00_PEER_W_SOURCE_AND_API_AUDIT",
+      "PW01_PTSW2C_ORDER3_FIRST_PEER_IMPLEMENTATION"
+    ],
+    [
+      "PW00_PEER_W_SOURCE_AND_API_AUDIT",
+      "PW02_PTSW2B_LSTABLE_ORDER2_CONTROL"
+    ],
+    [
+      "PW00_PEER_W_SOURCE_AND_API_AUDIT",
+      "PW03_G0_ORDER5_PEER_W_TABLEAU_SOURCE_RECOVERY"
+    ],
+    [
+      "PW00_PEER_W_SOURCE_AND_API_AUDIT",
+      "PW05_RHS_ONLY_IMPLICIT_PEER_HOMOTOPY"
+    ],
+    [
+      "PW01_PTSW2C_ORDER3_FIRST_PEER_IMPLEMENTATION",
+      "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION"
+    ],
+    [
+      "PW02_PTSW2B_LSTABLE_ORDER2_CONTROL",
+      "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION"
+    ],
+    [
+      "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
+      "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION"
+    ],
+    [
+      "PW03_G0_ORDER5_PEER_W_TABLEAU_SOURCE_RECOVERY",
+      "PW06_PEER_MATCHED_FULL_IVP_AND_G0_GATE"
+    ],
+    [
+      "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION",
+      "PW06_PEER_MATCHED_FULL_IVP_AND_G0_GATE"
+    ],
+    [
+      "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
+      "PW06_PEER_MATCHED_FULL_IVP_AND_G0_GATE"
+    ],
+    [
+      "PW03_G0_ORDER5_PEER_W_TABLEAU_SOURCE_RECOVERY",
+      "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN"
+    ],
+    [
+      "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION",
+      "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN"
+    ],
+    [
+      "PW06_PEER_MATCHED_FULL_IVP_AND_G0_GATE",
       "T09_MATCHED_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW"
     ]
   ],
@@ -444,5 +670,32 @@
     "novelty_gate": "SCIENTIFIC_NOVELTY_GATES_KO.md",
     "history_map": "INTEGRATION_HISTORY_MAP_KO.md",
     "scope": "documentation overlay; official G0 unchanged"
+  },
+  "validation": {
+    "last_checked": "2026-11-09",
+    "nodes": 18,
+    "edges": 33,
+    "acyclic": true,
+    "topological_order": [
+      "T00_LOCK_AND_PLAN",
+      "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
+      "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
+      "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
+      "T03_C5_COST_ATTRIBUTION_AND_LONG_PATH_PREREG",
+      "T04_C5_LONG_PATH_NATIVE_FULL_IVP_HOLDOUT",
+      "T05_C5_WORK_EFFICIENT_ORDERED_SCAN",
+      "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION",
+      "PW00_PEER_W_SOURCE_AND_API_AUDIT",
+      "PW01_PTSW2C_ORDER3_FIRST_PEER_IMPLEMENTATION",
+      "PW02_PTSW2B_LSTABLE_ORDER2_CONTROL",
+      "PW03_G0_ORDER5_PEER_W_TABLEAU_SOURCE_RECOVERY",
+      "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION",
+      "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN",
+      "T08_SPATIAL_MOL_SPHERE_AND_3D_GEOMETRY",
+      "PW05_RHS_ONLY_IMPLICIT_PEER_HOMOTOPY",
+      "PW06_PEER_MATCHED_FULL_IVP_AND_G0_GATE",
+      "T09_MATCHED_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW"
+    ],
+    "overlay": "PW00-PW06 additive; official G0 DAG remains 23 nodes / 34 edges unchanged."
   }
 }
