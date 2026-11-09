@@ -253,5 +253,63 @@
       "branches": 361
     },
     "current_authority_replay": "NOT_RUN"
+  },
+  "secondary_research_locks": [
+    {
+      "id": "CURRENT_AUTOMATIC_SELECTOR",
+      "branch": "research/vigilode-c5-native-graph-schur-20261102",
+      "commit": "569ce02629498fec133db9ce368eb303ba943b69",
+      "paths": [
+        "crates/vigilode/src/automatic.rs",
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/SWITCHING.md",
+        "crates/rodas5p-integrators/src/routing.rs"
+      ],
+      "evidence_scope": "opt-in two-method RHS-first selector/switcher and declared backend routing; not full multi-method portfolio"
+    },
+    {
+      "id": "DYNAMICAL_SYMBOLIC_ROUTER_C8",
+      "branch": "research/vigilode-dyn-symbolic-c8-20261102",
+      "commit": "3336d682139fb2096316e301dd635c6b91b0935e",
+      "tree": "6030988b3574eac9a8bc2a4d8f15502c45715eb7",
+      "parent": "569ce02629498fec133db9ce368eb303ba943b69",
+      "files": [
+        "research/vigilode_dynamical_symbolic_router_20261102/PREREGISTRATION.md",
+        "research/vigilode_dynamical_symbolic_router_20261102/R2_LITERATURE_AND_REUSE.md",
+        "research/vigilode_dynamical_symbolic_router_20261102/R4_CANDIDATES_AND_ROUTER.md",
+        "research/vigilode_dynamical_symbolic_router_20261102/RESEARCH_DAG.json"
+      ],
+      "evidence_scope": "R2/R4 COMPLETE_SCOPED; C8 PENDING. Finite-state solver-router and graph-cost model, not physical ODE Markov partition."
+    },
+    {
+      "id": "DYNAMICS_SYMBOLIC_EXECUTION_PR98",
+      "branch": "validation/dynamics-symbolic-20261028-f9615d",
+      "commit": "bf308589e21b524d0ddc6e571b260f5e94a853f0",
+      "pr": 98,
+      "execution_sources": [
+        "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "c06b1ce5f04c86cb374071dcac7e83b7a100493c"
+      ],
+      "evidence_scope": "Scoped exact trace and guarded prepare/observe ownership-transfer proof; no physical ODE Markov partition or generic solver theorem."
+    },
+    {
+      "id": "HISTORICAL_DROPBOX_DESIGN",
+      "provider": "Dropbox",
+      "path": "/ode_solver/implementation_plan.md",
+      "evidence_scope": "Historical architecture/governance notes: protected dual paths, transactional work ledger, directed intervals, Krylov/phi actions, Loop12 and general solver DAG. Historical design input, not current code authority."
+    },
+    {
+      "id": "CROSS_PROJECT_TRANSFER_EXAMPLE",
+      "provider": "Dropbox",
+      "path": "/PHYS70_NEW_THREAD_HANDOFF_20261020.md",
+      "project": "WU088_HH",
+      "evidence_scope": "Cross-project example of source-bounded block shifted inverse, ordered SIMD and independent IVP batch reuse. Not VigilODE implementation authority; no physics/result transfer."
+    }
+  ],
+  "archival_limits": {
+    "github_inventory": "187 PR metadata and 361 branch refs enumerated in T01; selected scientific lineages reviewed, not every diff independently audited.",
+    "conversation_archive": "Current context, recent summaries, memory and indexed Library searched; complete hidden/archived account-wide transcript export unavailable.",
+    "dropbox": "Relevant historical /ode_solver plan and cross-project PHYS70 handoffs inspected.",
+    "local_runtime": "Remote Desktop device cosmosapjw OFFLINE; no local Cargo/Rust tests, fmt, benchmarks or CI were executed from this session."
   }
 }

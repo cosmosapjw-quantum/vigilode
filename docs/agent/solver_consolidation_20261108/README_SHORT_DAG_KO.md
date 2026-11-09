@@ -23,3 +23,16 @@ The official G0 DAG remains unchanged: 23 nodes / 34 edges, progress 7/23, succe
 Blelloch (1990), work-efficient scan: https://www.cs.cmu.edu/~guyb/papers/Ble93.pdf. Ordered affine composition is associative in exact arithmetic but noncommutative; floating reassociation must pass original-W residual/fallback gates.
 
 Work branch: https://github.com/cosmosapjw-quantum/vigilode/tree/research/solver-portfolio-shortdag-20261109
+
+
+## T01A: 통합 연구 아키텍처와 adaptive portfolio
+
+핵심 설계는 모든 수치기법을 동시에 실행하는 pipeline이 아니다. 현재 IVP에서 필요한 **희소한 조합만 자동 선택·활성화**한다. 상위 selector는 전체 IVP method를, 중간 selector는 해당 method의 stage/linear backend를, 별도 selector는 source-specific transform과 CPU execution lane을 선택한다. 각 후보는 capability/compatibility, original-source residual, error, setup·probe·switch·fallback cost를 통과해야 한다.
+
+- `ADAPTIVE_PORTFOLIO_ROUTER_SPEC_KO.md`: S0 permission/admissibility → S1 whole-IVP method → S2 solve backend → S3 optional structural worker → S4 execution lane.
+- `ADAPTIVE_ROUTER_CONTRACTS.json`: 기계 판독 selector state, observation tiers, regime alphabet, cost gate, switching semantics 및 현 구현 상태.
+- 기존 `AutomaticOde`/`SwitchingSolver`를 확장한다. 별도 switcher/WorkLedger/thread pool/benchmark framework를 만들지 않는다.
+- 기존 switcher는 현재 DOPRI5와 허가된 RODAS 경로 중심이다. C8 finite-state router는 R2/R4 scoped, C8 numeric gate pending이다. 따라서 full adaptive portfolio는 아직 구현되지 않았다.
+- 빠른 진동계의 약 32.5배 JVP-switching slowdown과 추후 stiff-transition 재탐색 실패 사례를 negative evidence로 보존한다. pressure-only 또는 한 번의 pilot에 의존하지 않는다.
+
+공식 G0 23-node/34-edge DAG, 7/23, successor 0/12 및 production HOLD는 그대로 유지한다. 실행 overlay는 T01A 이후 T02 current global-error replay와 T03/T04 C5 economics, T06 method qualification을 진행하고, T07은 기존 switcher를 qualified candidate에 한해 확장하는 단계로 둔다.

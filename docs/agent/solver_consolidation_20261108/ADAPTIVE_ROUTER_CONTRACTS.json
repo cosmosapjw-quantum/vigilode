@@ -1,0 +1,276 @@
+{
+  "schema_version": "vigilode.adaptive-router-contracts.v1",
+  "date": "2026-11-09",
+  "authority": {
+    "code_branch": "research/vigilode-c5-native-graph-schur-20261102",
+    "code_commit": "569ce02629498fec133db9ce368eb303ba943b69",
+    "work_branch": "research/solver-portfolio-shortdag-20261109",
+    "work_parent": "af953c6e33eff78fdea2748c2b13fcb60036e5fe"
+  },
+  "goal": {
+    "type": "adaptive_selective_solver_portfolio",
+    "description": "Select the smallest admissible combination of IVP method, solve backend, source-specific transform and execution lane that minimizes predicted complete remaining-IVP cost while satisfying original source, stability, output, global-error and resource contracts.",
+    "global_optimum_claim": false,
+    "meaning_of_optimal": "best among currently admitted candidates under observed evidence and remaining budget; no clairvoyant global optimality or regret guarantee"
+  },
+  "active_choice": {
+    "fields": [
+      "ivp_method",
+      "stage_or_linear_backend",
+      "optional_structural_workers",
+      "execution_lane",
+      "error_and_certificate_policy"
+    ],
+    "combination_rule": "sparse whitelist of mathematically compatible tuples; never unconstrained Cartesian product",
+    "simultaneous_policy": "one committed IVP method; one backend per active stage/solve; zero or small explicitly admitted transform set; unused probes/features remain off"
+  },
+  "decision_levels": [
+    {
+      "id": "S0_ADMISSION",
+      "purpose": "read-only capability and permission filter before user callbacks",
+      "checks": [
+        "source/model epoch",
+        "IC/span/output/events/norm",
+        "mass/DAE and direction",
+        "callback replay safety",
+        "derivative policy",
+        "memory/thread/work ceilings"
+      ]
+    },
+    {
+      "id": "S1_METHOD",
+      "purpose": "select whole-IVP method identity",
+      "candidates": [
+        "RODAS5P",
+        "DOPRI5_OR_LAWSON",
+        "BDF",
+        "RADAU",
+        "EXPRB",
+        "PEER_W_SEPP"
+      ],
+      "constraint": "distinct equations/tableau/history/startup/estimator; method switching is not backend substitution"
+    },
+    {
+      "id": "S2_BACKEND",
+      "purpose": "choose backend preserving selected method equations",
+      "candidates": [
+        "dense/banded/sparse direct",
+        "GMRES/GCRO-DR",
+        "source-certified graph Schur"
+      ],
+      "constraint": "same original W/target residual; do not alter method tableau"
+    },
+    {
+      "id": "S3_STRUCTURAL_WORKERS",
+      "purpose": "activate only source/domain-eligible optional workers",
+      "candidates": [
+        "homotopy/inverse-Picard",
+        "polynomial/phi actions",
+        "quotient/Lawson",
+        "Fourier/Volterra",
+        "invariant/chart/observable",
+        "graph/path scan"
+      ],
+      "constraint": "zero or few workers; original-equation back-map and error certificate required"
+    },
+    {
+      "id": "S4_EXECUTION",
+      "purpose": "select actually available CPU concurrency",
+      "candidates": [
+        "operator rows",
+        "independent IVP ensemble",
+        "spatial MOL",
+        "peer current stages",
+        "SIMD"
+      ],
+      "constraint": "no stage parallel claim from SIMD/ensemble/operator parallelism"
+    }
+  ],
+  "observation_tiers": [
+    {
+      "tier": 0,
+      "name": "already_available",
+      "signals": [
+        "accepted/rejected steps",
+        "proposed/accepted h",
+        "embedded error ratio",
+        "RHS/JVP/Jacobian/linear/preconditioner counters",
+        "true residual",
+        "elapsed time",
+        "allocation/peak RSS",
+        "source epoch"
+      ],
+      "new_callback_cost": false
+    },
+    {
+      "tier": 1,
+      "name": "cheap_derived",
+      "signals": [
+        "work per advanced time",
+        "rejection trend",
+        "step shrink trend",
+        "damping/oscillation proxy",
+        "graph descriptor if already declared",
+        "cost-model uncertainty"
+      ],
+      "new_callback_cost": "none where possible"
+    },
+    {
+      "tier": 2,
+      "name": "conditional_probe",
+      "signals": [
+        "logarithmic norm/numerical abscissa",
+        "small Krylov transient gain",
+        "fill estimate",
+        "same-checkpoint short method replay"
+      ],
+      "trigger": "uncertainty, measured deterioration/relaxation, or regime change",
+      "budgeted": true,
+      "callbacks": "only with permission and replay-safe declaration"
+    },
+    {
+      "tier": 3,
+      "name": "rare_expensive_analysis",
+      "signals": [
+        "CAD/sign-invariant decomposition",
+        "chart/invariant-manifold construction",
+        "pseudospectral probe",
+        "Fourier/Volterra decomposition"
+      ],
+      "trigger": "declared source family and repeat-use amortization",
+      "default": "OFF"
+    }
+  ],
+  "regime_alphabet": [
+    {
+      "symbol": "P",
+      "meaning": "source-positive/path graph eligible"
+    },
+    {
+      "symbol": "N",
+      "meaning": "nonnormal/transient-growth warning"
+    },
+    {
+      "symbol": "D",
+      "meaning": "strongly dissipative/stiff"
+    },
+    {
+      "symbol": "O",
+      "meaning": "weakly damped/high-frequency oscillatory"
+    },
+    {
+      "symbol": "S",
+      "meaning": "sparse irregular/high-fill risk"
+    },
+    {
+      "symbol": "R",
+      "meaning": "reentrant or regime-change signal"
+    },
+    {
+      "symbol": "U",
+      "meaning": "uncertain / insufficient evidence"
+    },
+    {
+      "symbol": "X",
+      "meaning": "source/model epoch changed or invalidated"
+    }
+  ],
+  "selector_state": [
+    "active_choice",
+    "recent_regime_word",
+    "residence_count",
+    "negative_evidence_age",
+    "source_epoch",
+    "method_history_epoch",
+    "workspace_epoch",
+    "global_error_budget_state",
+    "work_budget_state"
+  ],
+  "cost": {
+    "formula": "C_j(H)=C_setup,j+C_probe,j+C_transition,j+N_j(H)*C_step,j+C_certificate,j+C_rejections,j+C_failed,j+C_fallback,j+C_output,j+C_memory,j",
+    "units": [
+      "deterministic work units",
+      "measured CPU time",
+      "memory/peak RSS"
+    ],
+    "mixing_rule": "never mix units without calibrated mapping",
+    "switch_gate": "LCB(C_current(H)-C_candidate(H)) > C_switch_reserve",
+    "tie_rule": "keep current method",
+    "short_horizon_rule": "do not switch if expected residence horizon cannot amortize setup/startup/history transfer",
+    "include": [
+      "observer/probe",
+      "setup",
+      "startup",
+      "history transfer",
+      "cache invalidation",
+      "rejected/failed attempts",
+      "discarded trial work",
+      "certificate",
+      "router overhead",
+      "fallback",
+      "output"
+    ]
+  },
+  "accuracy": {
+    "rule": "equal rtol or matching local embedded error does not imply equal achieved global error",
+    "admissibility": "certified original-target error bound when available; otherwise explicitly scoped calibrated error evidence and no global guarantee claim",
+    "same_checkpoint_probe": "same accepted (t_n,y_n), same source/output semantics and same target endpoint; probe never mutates committed trajectory; all work charged",
+    "original_target_receipt": [
+      "source identity",
+      "original governing equation residual",
+      "stage/linear residual",
+      "operator/Jacobian mismatch",
+      "transform/chart defect",
+      "time discretization defect",
+      "roundoff",
+      "output/interpolation defect",
+      "global error/status"
+    ]
+  },
+  "switching": {
+    "boundary": "accepted checkpoint only",
+    "history": "exact transfer if proved; otherwise valid new-method startup from accepted state and charge lost history",
+    "commit": "only original-target-admissible candidate state committed",
+    "recoverable_failure": "discard candidate state, keep last accepted state, charge work, use protected fallback",
+    "fatal_callback": "stop; do not retry in another route",
+    "cache": "reuse only if method, step ratio, provider, source/model epoch, norm and workspace identities still match",
+    "hysteresis": true,
+    "dwell": true,
+    "bounded_reprobe": true,
+    "emergency_override": "residual/nonfinite/domain/certificate/stability failure goes immediately to safe fallback or STOP"
+  },
+  "current_implementation": {
+    "automaticOde": "opt-in DOPRI5 versus explicitly authorized RODAS route; default derivative policy Forbidden; solve_adaptive exists; does not infer charts, certify stiffness or choose thread count",
+    "switchingSolver": "bounded accepted-window switching, persistent RHS-only DOPRI5, optional supplied Jacobian/JVP/FD challenger, work-pressure pilots, recheck/backoff and complete-attempt accounting",
+    "declaredStructureRouting": "caller-declared and validated RODAS backend routing; not automatic portfolio inference",
+    "Lawson": "declared damped-rotation structure selected by caller; automatic structural discovery/competition not implemented",
+    "C8": "R2/R4 COMPLETE_SCOPED; C8 numerical validation PENDING",
+    "PR98": "scoped guarded symbolic controller-state/ownership proof; not physical ODE Markov partition",
+    "fullPortfolio": "NOT_IMPLEMENTED"
+  },
+  "negative_evidence": [
+    {
+      "source": "research/adaptive_causal_20261023/analysis/SWITCHING_BENCHMARK_KO.md",
+      "finding": "864 single-thread configurations; rapid oscillation JVP switching about 32.5x slower than whole DOPRI5 at common endpoint-error cap; FD also slower in that rapid case",
+      "policy": "never use explicit pressure/rejection alone as stiffness certificate or universal switch trigger"
+    },
+    {
+      "source": "research/production_frontier_20261023/analysis/SWITCHING.md",
+      "finding": "same-checkpoint bounded pilot can reject costly JVP entry, but a later stiff-transition case showed early negative evidence can miss a later regime and the probe policy about 3.05x slower",
+      "policy": "negative evidence expires on deterioration/relaxation/epoch and is re-probed under bounded budget; never trust initial pilot forever"
+    }
+  ],
+  "claims": {
+    "adaptive_selection": "a policy decision over currently admitted candidates",
+    "economic_benefit": "requires same achieved global error and full-IVP cost",
+    "switching_stability": "requires actual accepted-step/history error-transfer map analysis",
+    "global_optimality": "NOT_CLAIMED"
+  },
+  "stop_rules": [
+    "no bounded source/history transfer map",
+    "probe+router+certificate+transition cost erases full-IVP gain",
+    "feature cannot be observed within derivative permission",
+    "source/domain/branch identity fails",
+    "candidate fails original residual or requested output/error contract"
+  ]
+}

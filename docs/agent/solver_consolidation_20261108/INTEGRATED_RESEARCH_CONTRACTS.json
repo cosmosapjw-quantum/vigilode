@@ -1,0 +1,494 @@
+{
+  "schema_version": "vigilode.integrated-portfolio-contracts.v1",
+  "audit_date": "2026-11-09",
+  "authority": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "code_source": {
+      "branch": "research/vigilode-c5-native-graph-schur-20261102",
+      "commit": "569ce02629498fec133db9ce368eb303ba943b69",
+      "tree": "a4b2f09521b197b37612ff7dc66a13fbb74a0bae"
+    },
+    "work_branch": {
+      "name": "research/solver-portfolio-shortdag-20261109",
+      "base_head": "af953c6e33eff78fdea2748c2b13fcb60036e5fe"
+    },
+    "official_g0": {
+      "nodes": 23,
+      "edges": 34,
+      "historical_progress": "7/23",
+      "successor_admitted": "0/12",
+      "production": "HOLD"
+    }
+  },
+  "mission": {
+    "problem": "Reduce complete-IVP CPU cost for stiff/oscillatory/nonnormal ODEs while preserving achieved global error and accepted-step economy; reduce explicit Jacobian construction and, in declared routes, derivative and Newton use; exploit only proved stage/operator/spatial/ensemble concurrency.",
+    "original_targets": {
+      "global_order_min": 4.8,
+      "accepted_steps_vs_protected_RJF_max_ratio": 1.2,
+      "median_same_global_error_wall_speedup_min": 1.15,
+      "fast_lane_explicit_jacobian_builds": 0,
+      "fast_lane_newton_iterations": 0,
+      "critical_depth_p95_max": 6,
+      "critical_depth_absolute_max": 8,
+      "fallback_fraction_max": 0.1,
+      "status": "GOAL_NOT_ACHIEVED"
+    }
+  },
+  "semantics": {
+    "jacobian_free": "No explicit J matrix assembly/storage; exact/approximate Jv may remain.",
+    "jvp_based": "Derivative action Jv, not derivative-free.",
+    "fd_jvp": "Approximate derivative action with perturbation/truncation/cancellation and additional RHS calls.",
+    "derivative_free": "No analytic/AD/FD derivative or JVP action; enforce RHS-only contract.",
+    "matrix_free": "Operator not materialized; operator apply, solve and preconditioning remain charged.",
+    "newton_free": "No Newton; fixed-point/BE/homotopy needs existence/contraction/branch/original-residual proof.",
+    "stage_parallel": "Independent current stages only if selected tableau dependency graph proves it.",
+    "vectorized": "SIMD/lane execution; not automatic reduction of algorithmic work or causal span.",
+    "symbolic_dynamics": "C8 means finite-state labelled regime/solver-router sequences; not physical ODE Markov partition or BKL symbolic coding."
+  },
+  "layers": [
+    {
+      "id": "L0",
+      "name": "Original problem/source identity",
+      "contract": [
+        "f(t,y), f_t, mass/DAE scope",
+        "IC, time interval, vector-space norm, requested outputs/events",
+        "source/model epoch, callback purity/reentrancy, invariant domain"
+      ]
+    },
+    {
+      "id": "L1",
+      "name": "Dynamical/geometric model",
+      "contract": [
+        "dissipativity/logarithmic norm",
+        "nonnormal transient and resolvent diagnostics",
+        "invariants, quotient/semigroup, invariant manifold/chart",
+        "Fourier/Volterra kernels and source-owned reductions"
+      ]
+    },
+    {
+      "id": "L2",
+      "name": "Derivative/operator permissions",
+      "contract": [
+        "ANALYTIC_J",
+        "EXACT_JVP",
+        "AD_JVP",
+        "FD_JVP",
+        "OPERATOR_ONLY",
+        "RHS_ONLY",
+        "side-effect and epoch declaration"
+      ]
+    },
+    {
+      "id": "L3",
+      "name": "Integrator method plugin",
+      "contract": [
+        "equations/tableau/coefficient source/hash",
+        "formal/stage order and step-ratio domain",
+        "stability hypotheses",
+        "history/startup/rejection/restart",
+        "estimator/controller/dense output/events"
+      ]
+    },
+    {
+      "id": "L4",
+      "name": "Linear/nonlinear solve and stage execution",
+      "contract": [
+        "direct/Krylov/preconditioner and true residual",
+        "original RODAS sequential stage graph",
+        "Peer current-stage DAG if proven independent",
+        "SIMD, independent IVP ensemble, spatial MOL CPU"
+      ]
+    },
+    {
+      "id": "L5",
+      "name": "Optional structure-aware transform/corrector",
+      "contract": [
+        "causal reuse and graph Schur/scan",
+        "homotopy/inverse Picard",
+        "polynomial/resolvent/chart",
+        "quotient/Lawson, Fourier/Volterra, invariant lift",
+        "explicit source binding and transform residual"
+      ]
+    },
+    {
+      "id": "L6",
+      "name": "Original-target residual/global error",
+      "contract": [
+        "time truncation defect",
+        "original W/Jacobian/operator mismatch",
+        "actual linear/Krylov and nonlinear residual",
+        "transform/chart/alias/roundoff/output defects",
+        "history propagation/global error/fail-closed status"
+      ]
+    },
+    {
+      "id": "L7",
+      "name": "Portfolio supervisor",
+      "contract": [
+        "read-only capability query",
+        "finite-state regime language",
+        "hysteresis and dwell/residence",
+        "accepted-boundary transition",
+        "history/cache epoch invalidation and rollback",
+        "transition stability proof if claimed"
+      ]
+    },
+    {
+      "id": "L8",
+      "name": "Complete work/performance authority",
+      "contract": [
+        "all RHS/JVP/Jacobian/linear/preconditioner operations",
+        "setup/startup, rejected work, retries",
+        "certificate/scan/router/fallback/output costs",
+        "paired same-global-error wall time and peak RSS/allocations"
+      ]
+    }
+  ],
+  "derivative_policies": [
+    "ANALYTIC_J",
+    "EXACT_JVP",
+    "AD_JVP",
+    "FD_JVP",
+    "OPERATOR_ONLY",
+    "RHS_ONLY"
+  ],
+  "concurrency_lanes": [
+    {
+      "id": "P1_OPERATOR",
+      "parallel": "RHS rows, JVP/operator rows, Krylov reductions, multi-RHS",
+      "not_proves": "time-stage independence"
+    },
+    {
+      "id": "P2_ENSEMBLE",
+      "parallel": "independent IVPs/parameter sets",
+      "must_preserve": "per-member controller, norm, history, partial output, failure and WorkLedger"
+    },
+    {
+      "id": "P3_SPATIAL_MOL",
+      "parallel": "spatial cells/rows/modes on CPU",
+      "must_prove": "geometry measure, conservation, refinement, operator parity"
+    },
+    {
+      "id": "P4_TIME_STAGE",
+      "parallel": "current Peer-W/SEPP peer stages only if exact tableau dependency terms vanish or independent blocks are proved",
+      "not_proves": "RODAS5P stage parallelism"
+    },
+    {
+      "id": "P5_SIMD",
+      "parallel": "vector lanes",
+      "not_proves": "automatic causal-span or work reduction"
+    }
+  ],
+  "method_identities": [
+    {
+      "id": "RODAS5P_PROTECTED",
+      "family": "one-step Rosenbrock-W 5(4)",
+      "stage_graph": "8-stage strict-lower causal",
+      "derivative": [
+        "ANALYTIC_J",
+        "EXACT_JVP",
+        "AD_JVP",
+        "FD_JVP"
+      ],
+      "role": "protected baseline/fallback",
+      "maturity": "protected scoped full-IVP",
+      "limitation": "no stage independence"
+    },
+    {
+      "id": "RODAS5P_MATRIX_FREE",
+      "family": "same RODAS5P",
+      "stage_graph": "same 8-stage serial",
+      "derivative": [
+        "EXACT_JVP",
+        "AD_JVP",
+        "FD_JVP"
+      ],
+      "role": "avoid explicit matrix materialization",
+      "maturity": "route-specific",
+      "limitation": "not RHS-only or derivative-free"
+    },
+    {
+      "id": "DOPRI5",
+      "family": "explicit RK",
+      "stage_graph": "tableau-defined",
+      "derivative": [
+        "RHS_ONLY"
+      ],
+      "role": "nonstiff control",
+      "maturity": "frontend supported"
+    },
+    {
+      "id": "BDF1_BDF2",
+      "family": "variable-step BDF",
+      "stage_graph": "nonlinear solve/history",
+      "derivative": [
+        "ANALYTIC_J",
+        "JVP/linearisation"
+      ],
+      "role": "reference-only",
+      "maturity": "internal comparator only"
+    },
+    {
+      "id": "RADAU_IIA1_3",
+      "family": "implicit collocation",
+      "stage_graph": "coupled stages/Newton",
+      "derivative": [
+        "ANALYTIC_J",
+        "JVP/linearisation"
+      ],
+      "role": "reference-only",
+      "maturity": "internal comparator only"
+    },
+    {
+      "id": "EXPRB_PHI_KRYLOV",
+      "family": "exponential Rosenbrock",
+      "stage_graph": "phi-action method-specific",
+      "derivative": [
+        "JVP",
+        "OPERATOR_ONLY"
+      ],
+      "role": "stiff/oscillatory alternative",
+      "maturity": "components/full-IVP candidate, not uniformly qualified"
+    },
+    {
+      "id": "HOMOTOPY_RHS_ONLY",
+      "family": "nonlinear source-specific stage root",
+      "stage_graph": "method-specific",
+      "derivative": [
+        "RHS_ONLY"
+      ],
+      "role": "Newton-free candidate/corrector",
+      "maturity": "source-scoped",
+      "limitation": "root residual does not certify time discretization/global error"
+    },
+    {
+      "id": "Q1Q2_CAUSAL",
+      "family": "causal predictor/corrector",
+      "stage_graph": "original stage dependency still checked",
+      "derivative": [
+        "JVP or RHS_ONLY according to route"
+      ],
+      "role": "reduce correction work/causal depth",
+      "maturity": "research-unpromoted"
+    },
+    {
+      "id": "SOURCE_GRAPH_SCHUR",
+      "family": "source-specific graph transformation of original W",
+      "stage_graph": "preserves original RODAS stage order",
+      "derivative": [
+        "source/operator declared"
+      ],
+      "role": "reduce solve cost on admitted graph structure",
+      "maturity": "scoped source candidate",
+      "limitation": "C5 full-IVP negative vs fast-direct"
+    },
+    {
+      "id": "PARALLEL_PEER_W",
+      "family": "two-step general-linear/peer W",
+      "stage_graph": "independent current stages only for exact coefficient subfamily",
+      "derivative": [
+        "W/JVP/operator"
+      ],
+      "role": "actual time-stage concurrency as a new integrator",
+      "maturity": "literature-supported; native runtime absent"
+    },
+    {
+      "id": "MULTI_IMPLICIT_PEER_W",
+      "family": "multi-shift two-step peer W",
+      "stage_graph": "independent current stages in published selected subclass",
+      "derivative": [
+        "stage-specific shifted operators"
+      ],
+      "role": "stiff damping and stage concurrency",
+      "maturity": "literature-supported; native runtime absent"
+    },
+    {
+      "id": "SEPP_TASE",
+      "family": "TASE-stabilized explicit peer",
+      "stage_graph": "selected peer stages",
+      "derivative": [
+        "TASE/operator"
+      ],
+      "role": "lower-order comparison family",
+      "maturity": "literature-supported"
+    },
+    {
+      "id": "EPPEER_DQC",
+      "family": "explicit peer/embedded DQC",
+      "stage_graph": "independent explicit peer RHS when conditions hold",
+      "derivative": [
+        "RHS_ONLY"
+      ],
+      "role": "nonstiff parallel control",
+      "maturity": "exact tableau checks; adapter absent"
+    },
+    {
+      "id": "DIAGONAL_IMPLICIT_PEER_2026",
+      "family": "variable-step L(alpha)-stable peer",
+      "stage_graph": "do not infer concurrency from diagonal implicitness",
+      "derivative": [
+        "implicit diagonal solve"
+      ],
+      "role": "high-order stiff-norm control",
+      "maturity": "literature-supported"
+    },
+    {
+      "id": "REUSED_STAGE_PEER_2026",
+      "family": "two-step ADR peer with reused stages",
+      "stage_graph": "inspect actual current-step dependency matrix",
+      "derivative": [
+        "implicit peer"
+      ],
+      "role": "modern MOL cost control",
+      "maturity": "literature-supported"
+    },
+    {
+      "id": "FOURIER_VOLTERRA",
+      "family": "source-specific harmonic/causal operator",
+      "stage_graph": "not an IVP method without controller/trajectory",
+      "derivative": [
+        "source-specific"
+      ],
+      "role": "structured transform/reduced kernel",
+      "maturity": "mixed; PP05/06 failures retained"
+    },
+    {
+      "id": "LAWSON_QUOTIENT",
+      "family": "exact declared semigroup split plus RK residual",
+      "stage_graph": "method-specific",
+      "derivative": [
+        "RHS_ONLY for declared split"
+      ],
+      "role": "source-specific oscillatory/damped blocks",
+      "maturity": "scoped"
+    },
+    {
+      "id": "ALGEBRAIC_CHART_HOMOTOPY",
+      "family": "polynomial chart/continuation",
+      "stage_graph": "corrector/transform, not generic time stepper",
+      "derivative": [
+        "RHS_ONLY or source exact"
+      ],
+      "role": "source-specific nonlinear solve reduction",
+      "maturity": "scoped"
+    },
+    {
+      "id": "COLLECTIVE_VOLTERRA_PACKET",
+      "family": "rank-r collective moment and causal kernel",
+      "stage_graph": "source-specific",
+      "derivative": [
+        "operator/model specific"
+      ],
+      "role": "reduced source models",
+      "maturity": "source-scoped research"
+    },
+    {
+      "id": "GRAY_SCOTT_2D_SPHERE_P06",
+      "family": "spatial MOL client/geometry adapter",
+      "stage_graph": "spatial parallelism, not new time method",
+      "derivative": [
+        "operator specific"
+      ],
+      "role": "2D/spherical validation clients",
+      "maturity": "scoped"
+    }
+  ],
+  "structure_methods": [
+    {
+      "id": "C8_GRAPH_ALGEBRA",
+      "source": "research/vigilode-dyn-symbolic-c8-20261102",
+      "status": "R2/R4 COMPLETE_SCOPED; C8 PENDING",
+      "scope": "source graph eligibility, affine path operator, scan economics, nonnormal observer; C5 graph-Schur not economic in tested set"
+    },
+    {
+      "id": "SYMBOLIC_EXECUTION_PR98",
+      "source": "validation/dynamics-symbolic-20261028-f9615d",
+      "status": "SCOPED_IMPLEMENTATION_VERIFIED",
+      "scope": "guarded labelled controller transition/ownership proof; not physical ODE Markov partition"
+    },
+    {
+      "id": "WP6_WP9",
+      "source": "PR167/170/171/172/174",
+      "status": "SCOPED",
+      "scope": "Bernstein defect, weighted observable, source response; not generic solver"
+    },
+    {
+      "id": "RVJ_VOLTERRA",
+      "source": "PR135/136",
+      "status": "SCOPED",
+      "scope": "rank-2 damped slow-fast kernel and original-target residual"
+    },
+    {
+      "id": "FOURIER_PP05_PP06_PP15",
+      "source": "PP05/PP06/PP15",
+      "status": "MIXED_NEGATIVE",
+      "scope": "preserve G2/G3 and harmful alias FAIL; PP15 no timing"
+    },
+    {
+      "id": "APPLIED_REI",
+      "source": "PR175/178/180/181/183",
+      "status": "APPLICATION_ONLY",
+      "scope": "physical client, not generic solver proof"
+    }
+  ],
+  "error_contract": {
+    "recurrence": "E_(n+1) <= Lambda_n*E_n + d_n + eta_n",
+    "unfolded": "E_N <= prod(Lambda)*E_0 + sum_k prod_(j>k)(Lambda_j)*(d_k+eta_k)",
+    "w_mismatch": "W*(k_tilde-k)= (W-W_tilde)*k_tilde - r_tilde, where r_tilde=b-W_tilde*k_tilde",
+    "w_bound": "||k_tilde-k|| <= ||W^{-1}||*(||W-W_tilde||*||k_tilde|| + ||r_tilde||)",
+    "status": "standard derived composition identities; method-specific nonlinear/global certificate not established",
+    "multistep": "augment numerical state by full Peer/multistep history",
+    "switching": "include state/history transfer and prove common/multiple norm or dwell-time product bound for actual error-transfer maps"
+  },
+  "novelty": {
+    "established_prior_art": [
+      "parallel two-step W/Peer stages",
+      "Peer local/global error control",
+      "variable-grid Peer stiff norm estimates",
+      "Krylov residual estimation",
+      "homotopy/continuation",
+      "symbolic dwell-time switching",
+      "CAD/semialgebraic sign decomposition",
+      "nonnormal/logarithmic-norm diagnostics",
+      "affine ordered scans"
+    ],
+    "candidate_hypothesis": "source-attested compositional global-error and work certificate across original-W mismatch, actual inexact stage residual, source transform/chart defect, variable-step history and admissible portfolio transitions",
+    "status": "CONJECTURAL_UNRESOLVED_NOT_A_NOVELTY_CLAIM",
+    "required": "method-specific theorem, nearest-prior-art comparison, adversarial nonnormal/variable-step/switch tests, measured full-IVP Pareto advantage",
+    "stop": "if a publication already covers the exact class, proof constants are unusable, source/chart identity can drift, or certificate cost erases performance gain"
+  },
+  "history_sources": [
+    {
+      "id": "ORIGINAL_MISSION",
+      "pr": 176,
+      "path": "docs/vigilode_original_mission_realign_20261101/"
+    },
+    {
+      "id": "C8_ROUTER",
+      "branch": "research/vigilode-dyn-symbolic-c8-20261102",
+      "commit": "3336d682139fb2096316e301dd635c6b91b0935e"
+    },
+    {
+      "id": "SYMBOLIC_EXECUTION",
+      "pr": 98,
+      "branch": "validation/dynamics-symbolic-20261028-f9615d",
+      "commit": "bf308589e21b524d0ddc6e571b260f5e94a853f0"
+    },
+    {
+      "id": "T01_HISTORY",
+      "path": "HISTORY_MATRIX.json",
+      "coverage": "187 PR metadata, 361 branches, selected diff/source review"
+    },
+    {
+      "id": "OLD_DESIGN",
+      "provider": "Dropbox",
+      "path": "/ode_solver/implementation_plan.md"
+    },
+    {
+      "id": "OTHER_PROJECT_TRANSFER",
+      "provider": "Dropbox",
+      "path": "/PHYS70_NEW_THREAD_HANDOFF_20261020.md",
+      "note": "source-specific method transfer only"
+    }
+  ]
+}

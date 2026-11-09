@@ -1,21 +1,38 @@
 # VigilODE local coding agent resume prompt: T02
 
-Repository `cosmosapjw-quantum/vigilode`. Work branch `research/solver-portfolio-shortdag-20261109`; fetch and verify current HEAD. Code source lock `research/vigilode-c5-native-graph-schur-20261102` @ `569ce02629498fec133db9ce368eb303ba943b69`, tree `a4b2f09521b197b37612ff7dc66a13fbb74a0bae`. Official G0 DAG 23 nodes/34 edges, 7/23, successor 0/12, production HOLD; do not modify it.
+Repository: `cosmosapjw-quantum/vigilode`
+Work branch: `research/solver-portfolio-shortdag-20261109`. Fetch and verify its current HEAD before any edit.
+Pinned C5 code source: `research/vigilode-c5-native-graph-schur-20261102` @ `569ce02629498fec133db9ce368eb303ba943b69`, tree `a4b2f09521b197b37612ff7dc66a13fbb74a0bae`.
+Official G0: 23 nodes / 34 edges; historical progress 7/23; successor 0/12; production HOLD. Do not modify the official G0 DAG.
 
-Use `$physmath-research-loop` if available locally, with Exa/SciSpace/Wolfram as helpful. It was unavailable in the ChatGPT tool catalog here. If absent locally, record `BLOCKED_UNAVAILABLE`; never claim it ran.
+## Central research goal
 
-## Read before starting
+Build an **adaptive, selectively activated solver portfolio**, not a pipeline that executes every feature. The switcher must choose the smallest admissible combination of whole-IVP method, in-method backend, optional source-specific transform and execution lane that minimizes predicted complete remaining-IVP cost subject to original-source, stability, output, global-error and resource contracts.
 
-`README_SHORT_DAG_KO.md`, `SHORT_TERM_DAG_20261109.json`, `HISTORY_MATRIX.json`, `SOLVER_COMPONENT_INVENTORY.json`, `NEGATIVE_EVIDENCE_INDEX.json`, `REPLAY_COMMANDS.json`, `EXECUTION_RECEIPT_T01.json`; then exact current locked blobs for `crates/rodas5p-fair-ab/src/{lib.rs,global_error.rs,adaptive_global_error.rs,numerical_reference.rs,output_accuracy.rs,timing_authority.rs}` and matching tests.
+Read first:
+- `README_SHORT_DAG_KO.md`
+- `SHORT_TERM_DAG_20261109.json`
+- `HISTORY_MATRIX.json`
+- `LINEAGE_DAG.mmd`
+- `SOLVER_COMPONENT_INVENTORY.json`
+- `NEGATIVE_EVIDENCE_INDEX.json`
+- `INTEGRATED_RESEARCH_ARCHITECTURE_KO.md`
+- `INTEGRATED_RESEARCH_CONTRACTS.json`
+- `ADAPTIVE_PORTFOLIO_ROUTER_SPEC_KO.md`
+- `ADAPTIVE_ROUTER_CONTRACTS.json`
+- `SCIENTIFIC_NOVELTY_GATES_KO.md`
+- `SOURCE_LOCK_20261109.json`
+
+T01 enumerated 187 PR metadata rows and 361 branch refs, recovered PR176's 28-method inventory, and audited selected scientific lineages. Do not claim all 187 diffs were independently reviewed. Full hidden/archived ChatGPT transcript export was unavailable.
 
 ## T02: replay current global-error authority only
 
-Current C5 source already has `rodas5p-fair-ab`. Do not rebuild, cherry-pick or copy the old v0.10 tree. Commit `f2e9b1e8883bc49c124ce5ab421c92fb58516b74` and C5 commit `569ce026...` have NO common Git ancestor. Current source files have their own history from the v3.5 import; audit their exact current blobs.
+Current C5 source already has `rodas5p-fair-ab`. Audit exact current blobs for:
+`crates/rodas5p-fair-ab/src/{lib.rs,global_error.rs,adaptive_global_error.rs,numerical_reference.rs,output_accuracy.rs,timing_authority.rs}` and matching tests.
 
-Audit common output grid, reference WRMS, endpoint/max-grid/RMS metrics, exact/numerical reference provenance and uncertainty, clipped/dense output policy pairing, same-error ranking admissibility, preservation of reference-dominated/failure rows, work/timing counters, adaptive BDF/Radau fidelity, stored output bytes versus peak RSS. Historical v0.10 reported 70 fixed-step rows/4 analytic references/pass-with-scope-hold and solver ranking HOLD; it does not validate current blobs.
+Audit common output grid, reference WRMS, endpoint/max-grid/RMS metrics, exact/numerical reference provenance and uncertainty, clipped/dense output-policy pairing, same-error ranking admissibility, preservation of reference-dominated/failure rows, work/timing counters, adaptive BDF/Radau fidelity, stored output bytes versus peak RSS.
 
-Capture `git rev-parse HEAD`, `git rev-parse HEAD^{tree}`, `rustc --version`, `cargo --version`, and source blobs. Use clean worktree or fresh `CARGO_TARGET_DIR`. Proposed commands, all currently NOT_RUN:
-
+Proposed commands (NOT_RUN until executed on the locked source):
 ```bash
 cargo test -p rodas5p-fair-ab --test global_error_contracts -- --nocapture
 cargo test -p rodas5p-fair-ab --test adaptive_global_error_contracts -- --nocapture
@@ -24,15 +41,40 @@ cargo test -p rodas5p-fair-ab --test numerical_reference_v2_contracts -- --nocap
 cargo check -p rodas5p-fair-ab --all-targets
 cargo fmt --all -- --check
 ```
+Capture HEAD/tree, rustc/cargo versions, exact source blobs, environment and complete receipts. Preserve first REDs. Do not relax reference uncertainty, output gates, comparator fidelity or historical failures. No solver/tableau/tolerance/controller/default/public-API/budget mutation in T02. Deliver `GLOBAL_ERROR_AUTHORITY_REPLAY_KO.md`, `GLOBAL_ERROR_AUTHORITY_REPLAY.json`, `EXECUTION_RECEIPT_T02.json`.
 
-Preserve first REDs. Classify theory/numerical/implementation/runtime/provenance/authority failure separately. Do not relax reference uncertainty, output gates or comparator fidelity. No solver/tableau/tolerance/controller/default/public-API/budget mutation in T02.
+If references/output authority are insufficient, mark BLOCKED and keep ranking HOLD. Passing these tests qualifies the authority only; it does not promote a solver.
 
-Deliver `GLOBAL_ERROR_AUTHORITY_REPLAY_KO.md`, `GLOBAL_ERROR_AUTHORITY_REPLAY.json`, `EXECUTION_RECEIPT_T02.json`. If reference/output authority is insufficient, mark BLOCKED and keep rankings HOLD. If all tests pass, only qualify this current authority; do not promote a solver.
+## Existing selector/switcher: reuse, do not rebuild
 
-## T03/T04 preview
+Current source anchors:
+- `crates/vigilode/src/automatic.rs`: opt-in `AutomaticOde`, `solve_adaptive`; current candidates are primarily DOPRI5 and explicitly authorized RODAS. Default derivative permission is forbidden. It does not infer charts, certify stiffness or choose thread count.
+- `crates/vigilode/src/switching.rs` and `crates/vigilode/SWITCHING.md`: accepted-window switching, persistent RHS-only DOPRI5, optional supplied J/JVP/FD challenger, bounded probes/backoff, full work accounting and rollback.
+- `crates/rodas5p-integrators/src/routing.rs`: caller-declared structural routing among RODAS backends.
+- Lawson damped-rotation structure is caller-declared, not automatically discovered.
+- C8 R2/R4 finite-state router is COMPLETE_SCOPED; C8 numeric validation is PENDING.
+- PR98 symbolic execution proof is controller-state refinement, not a physical ODE Markov partition.
 
-C5 affine maps `F_i(x)=a_i x+b_i`; ordered composition is associative in exact arithmetic but noncommutative. Current `scan_into` is serial, allocates a vector per path and clones per Hillis-Steele stride. Original physical C5 paths are length one and do zero pair operations. R10 ring96 538 vs 94 is synthetic operation count only. Blelloch O(m) work/O(log m) depth is a candidate, not an achieved speedup. Floating-point reassociation must be tested against direct recurrence and original-W residual/fallback. No scan code before preregistered long-path full-IVP achieved-error comparison.
+Critical counterevidence:
+- 2026-10-23 864-row single-thread switching campaign: rapid oscillation JVP switching was about 32.5x slower than whole DOPRI5 at the same endpoint-error cap.
+- Later bounded-pilot work rejected expensive rapid-rotation JVP entry, but an early negative probe missed a later stiff transition and cost about 3.05x more.
+- These prohibit pressure-only universal switching and permanent trust in one pilot. The complete probe/setup/transition/fallback cost and bounded evidence expiry/reprobe must be retained.
+
+Do not implement the full adaptive selector during T02. Later T07 may extend the existing framework only after method/error qualification. Selective policy requirements:
+1. Static capability/permission filter before callbacks.
+2. Cheap telemetry first; expensive diagnostics/probes only on uncertainty or measured regime drift.
+3. Separate whole-IVP method choice from stage/linear backend, optional transforms and execution lane.
+4. Select only compatible sparse tuples; leave unused capabilities OFF.
+5. Compare complete expected remaining work; switch only when conservative net saving exceeds setup/transition reserve.
+6. Switch at accepted checkpoints; transfer valid history or initialize with proper startup and charge it.
+7. Keep current route on ties/uncertainty; use hysteresis/dwell/backoff; fatal callback stops rather than retries.
+
+## T03/T04 and T06 preview
+
+C5 affine maps (F_i(x)=a_i x+b_i); ordered composition is associative in exact arithmetic but noncommutative. Current scan is serial/allocating. Original physical C5 paths are length one and execute zero affine pair operations. R10 ring96 538 vs 94 is synthetic operation count only. C5 graph-Schur/fast-direct full-IVP median ratio 2.242032452... is historical negative in its tested scope.
+
+Do not implement a scan before preregistered long-path full-IVP achieved-error comparison. For T06 qualify exact BDF/Radau reference fidelity and each Peer-W/SEPP family independently: coefficients, tableau, startup, full peer history, variable-step ratio, estimator, stability hypotheses and observed CPU overlap. Peer-W is a new method identity, not parallelized RODAS5P.
 
 ## Safeguards
 
-No main push, merge, force push, reset, rebase or history rewrite. Use isolated worktree for later code. Reuse existing `ParallelExecution`, no second pool. Do not claim original RODAS stages are independent. Preserve all C5/R6/R7/WP1/PR90/PP05/PP06/PP15 negative results. Distinguish JVP from derivative-free and synthetic controls from physical full-IVP evidence. Every turn must lock source, add receipt, push non-force and remote-readback all changed files. No promotion without full-IVP matched achieved-error, complete work, clean-clone CI and distinct-author review.
+No main push/merge, force push/reset/rebase/history rewrite. Use per-task worktree and red test before code. Do not touch secrets/.env. Preserve negative evidence. Do not claim global error equivalence from equal rtol/local estimator. Reuse existing thread pools, WorkLedger, switcher and benchmark infrastructure. Every completed task must lock source, add receipt, push non-force and remote-readback changed files. Production remains HOLD unless all original release gates pass and distinct-author review is complete.

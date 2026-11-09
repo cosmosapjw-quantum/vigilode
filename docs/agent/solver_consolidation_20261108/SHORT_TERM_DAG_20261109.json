@@ -1,6 +1,6 @@
 {
   "schema_version": "vigilode.short-dag.v2",
-  "plan_id": "VIGILODE_SOLVER_PORTFOLIO_SHORTDAG_20261109_T01_REVISION",
+  "plan_id": "VIGILODE_SOLVER_PORTFOLIO_SHORTDAG_20261109_T01A_ADAPTIVE",
   "audit_date": "2026-11-09",
   "authority": {
     "official_G0_DAG": {
@@ -22,20 +22,26 @@
     }
   },
   "mission": {
-    "goal": "Qualify a source-locked solver portfolio through common achieved global error and complete-IVP work; optimize only when both mathematical and measured evidence support it.",
+    "goal": "Selectively activate a sparse, compatible set of IVP methods, solve backends, source-specific transforms and CPU execution lanes via an adaptive evidence-driven controller, minimizing predicted complete remaining-IVP cost subject to original-source, stability, output, global-error and resource constraints.",
     "immediate": [
-      "Replay current fair-ab/global-error authority already in the C5 source.",
-      "Preregister and measure C5 long path-forest IVP before scan optimization.",
-      "Only if end-to-end crossover exists, implement a work-efficient ordered scan.",
-      "Qualify BDF/Radau references and Peer-W/SEPP separately before frontend."
+      "T01A integrates original G0 objective, 28-method inventory, 23-node authority, selected PR/branch lineages, R5-R10/C5, C8 dynamics/symbolic routing, WP/RVJ/homotopy/Krylov, prior switching and harness work into a layered adaptive-portfolio architecture.",
+      "T02 replays current fair-ab/global-error authority already in C5 source; do not rebuild evaluator or modify switcher.",
+      "T03/T04 preregister and measure C5 long path-forest full-IVP economics before scan changes.",
+      "T06 qualifies BDF/Radau, common-shift and multi-implicit Peer-W, SEPP and modern variable-step Peer as separate methods.",
+      "T07 extends the existing AutomaticOde/SwitchingSolver into a multi-method adaptive portfolio only after method and global-error gates; do not create a second switcher, WorkLedger, benchmark standard or thread pool.",
+      "Only activate the minimum useful combination for the current IVP segment; probes/features not admitted by capability, source/domain, error or cost contracts remain off.",
+      "Retain original G0 matched-achieved-error, accepted-step, stage-depth, derivative/Newton, fallback and complete-work targets as release gates, not achieved results."
     ],
     "non_goals": [
-      "No claim of RODAS stage independence.",
-      "No C5 speed or parallel-scan claim.",
-      "No re-import of unrelated v0.10 tree as ancestor.",
-      "No application-specific kernel promoted to generic solver.",
-      "No change to defaults, tableau, tolerance, error thresholds, budgets or main.",
-      "No GPU in this short plan."
+      "No pipeline that runs every available feature on every IVP; active route is a sparse compatibility-checked tuple.",
+      "No clairvoyant global optimality/regret claim; optimize over admitted candidates and current evidence only.",
+      "No claim original lower-triangular 8-stage RODAS5P stages are independent.",
+      "No claim derivative-free from JVP, or solve-free from matrix-free.",
+      "No source-specific homotopy/graph-Schur/polynomial chart/Fourier-Volterra packet is a general-purpose integrator.",
+      "No C5 speed or parallel-scan speed claim before long-path native full-IVP evidence.",
+      "No merging BDF, Radau, Peer-W, EPPEER, EXPRB and RODAS into one method identity.",
+      "No changes to tableau, estimator, controller defaults, tolerance, error thresholds, benchmark targets, budgets, old receipts or official G0 DAG without separate authority.",
+      "No GPU."
     ]
   },
   "verdict": {
@@ -69,7 +75,8 @@
       "status": "PLANNED",
       "order": 2,
       "depends_on": [
-        "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY"
+        "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
+        "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE"
       ],
       "objective": "Replay/audit current fair-ab source identity, references, global error, clipped/dense policy, adaptive-ranking gates and work reports.",
       "outputs": [
@@ -89,7 +96,8 @@
       "status": "PLANNED",
       "order": 3,
       "depends_on": [
-        "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY"
+        "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
+        "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE"
       ],
       "objective": "Derive C5 affine scan work/depth/roundoff/memory and preregister long path-forest full-IVP holdout.",
       "outputs": [
@@ -109,6 +117,7 @@
       "status": "PLANNED",
       "order": 4,
       "depends_on": [
+        "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
         "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
         "T03_C5_COST_ATTRIBUTION_AND_LONG_PATH_PREREG"
       ],
@@ -152,6 +161,7 @@
       "status": "PLANNED",
       "order": 6,
       "depends_on": [
+        "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
         "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY"
       ],
       "objective": "Audit BDF/Radau reference status and Peer-W/SEPP exact method math.",
@@ -172,16 +182,29 @@
       "status": "PLANNED",
       "order": 7,
       "depends_on": [
-        "T05_C5_WORK_EFFICIENT_ORDERED_SCAN",
+        "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
+        "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
         "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION"
       ],
-      "objective": "Build unified capability/transactional frontend and smallest opt-in plugin only after method selection.",
+      "objective": "After current global-error authority and method qualification, extend existing AutomaticOde/SwitchingSolver with sparse capability-checked method/backend/transform choices, selective observers/probes, cost-aware net-benefit gates, per-regime evidence memory and transactional accepted-boundary switching. No rebuild of existing switcher.",
       "outputs": [
-        "METHOD_FRONTEND_CONTRACT.md",
-        "OPT_IN_PLUGIN_DESIGN.md",
+        "ADAPTIVE_PORTFOLIO_IMPLEMENTATION_PLAN_KO.md",
+        "METHOD_CAPABILITY_REGISTRY.json",
+        "ADAPTIVE_ROUTER_CONTRACT_TESTS.md",
         "EXECUTION_RECEIPT_T07.json"
       ],
-      "mutation": "isolated opt-in only"
+      "mutation": "isolated opt-in extension only; no default promotion",
+      "title": "Extend existing switcher into adaptive multi-method portfolio",
+      "acceptance": [
+        "At least two qualified method identities and one safe fallback are available before automatic whole-IVP choice.",
+        "Compatibility registry prevents invalid method/backend/transform/concurrency combinations.",
+        "Only minimal relevant observers/probes run; callback permission and replay-safety are checked before callbacks.",
+        "Same-checkpoint probes never mutate the committed trajectory; every failed/discarded attempt is charged.",
+        "Switches occur at accepted checkpoints with history transfer or valid startup; source/cache epochs are enforced.",
+        "Candidate selection requires a conservative net-benefit margin over setup/switch/monitor/fallback cost.",
+        "Global-error comparison is supported by qualified authority, not equal rtol/local error alone.",
+        "Existing RHS-only default and protected route are unchanged until separate approval."
+      ]
     },
     {
       "id": "T08_SPATIAL_MOL_SPHERE_AND_3D_GEOMETRY",
@@ -203,6 +226,7 @@
       "status": "PLANNED",
       "order": 9,
       "depends_on": [
+        "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
         "T05_C5_WORK_EFFICIENT_ORDERED_SCAN",
         "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION",
         "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN",
@@ -220,6 +244,31 @@
         "All failures charged; distinct-author reviewer; otherwise HOLD"
       ],
       "mutation": "no main merge"
+    },
+    {
+      "id": "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
+      "status": "DOCUMENTATION_TURN_COMPLETE_REMOTE_READBACK_PENDING",
+      "order": 2,
+      "objective": "Integrate the original G0 objective, 28-method inventory, 23-node authority, selected PR/branch/Library/Dropbox lineages, current switcher, R5-R10/C5, C8 dynamics/symbolic routing, WP/RVJ/Volterra/Fourier, homotopy, Krylov and geometry into one selective adaptive portfolio architecture and novelty/gap map.",
+      "outputs": [
+        "INTEGRATED_RESEARCH_ARCHITECTURE_KO.md",
+        "INTEGRATED_RESEARCH_CONTRACTS.json",
+        "ADAPTIVE_PORTFOLIO_ROUTER_SPEC_KO.md",
+        "ADAPTIVE_ROUTER_CONTRACTS.json",
+        "SCIENTIFIC_NOVELTY_GATES_KO.md",
+        "INTEGRATION_HISTORY_MAP_KO.md",
+        "INTEGRATION_RECEIPT_T01A.json"
+      ],
+      "acceptance": [
+        "G0 23 nodes/34 edges, 7/23, successor 0/12 and Production HOLD unchanged.",
+        "Every method classified by its identity, derivative/Jacobian permission, stage dependency, solve type, source scope, estimator/history and evidence maturity.",
+        "Router uses nested S0 admission, S1 whole-IVP method, S2 backend, S3 optional structural worker, S4 execution-lane decisions.",
+        "Only sparse admissible tuples are considered; unused features and expensive probes remain off.",
+        "Normal switching is transactional at accepted checkpoints and charges probe/setup/startup/history transfer/rejection/fallback work.",
+        "Error contract and novelty candidates retain explicit assumptions, prior-art overlap, proof obligations, falsification tests and stop rules.",
+        "No Rust source/default/coefficient/tolerance/benchmark target/historical receipt changed."
+      ],
+      "mutation": "documentation only; additive overlay"
     }
   ],
   "edges": [
@@ -229,11 +278,19 @@
     ],
     [
       "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
+      "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE"
+    ],
+    [
+      "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
       "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY"
     ],
     [
-      "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
+      "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
       "T03_C5_COST_ATTRIBUTION_AND_LONG_PATH_PREREG"
+    ],
+    [
+      "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
+      "T04_C5_LONG_PATH_NATIVE_FULL_IVP_HOLDOUT"
     ],
     [
       "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
@@ -248,11 +305,19 @@
       "T05_C5_WORK_EFFICIENT_ORDERED_SCAN"
     ],
     [
+      "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
+      "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION"
+    ],
+    [
       "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
       "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION"
     ],
     [
-      "T05_C5_WORK_EFFICIENT_ORDERED_SCAN",
+      "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
+      "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN"
+    ],
+    [
+      "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
       "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN"
     ],
     [
@@ -262,6 +327,10 @@
     [
       "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN",
       "T08_SPATIAL_MOL_SPHERE_AND_3D_GEOMETRY"
+    ],
+    [
+      "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
+      "T09_MATCHED_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW"
     ],
     [
       "T05_C5_WORK_EFFICIENT_ORDERED_SCAN",
@@ -364,5 +433,14 @@
       "Current fair-ab exists; replay current source; don't recreate it.",
       "Legacy v0.10 is not an ancestor of current C5 source."
     ]
+  },
+  "integrated_architecture": {
+    "file": "INTEGRATED_RESEARCH_ARCHITECTURE_KO.md",
+    "machine_contract": "INTEGRATED_RESEARCH_CONTRACTS.json",
+    "adaptive_router": "ADAPTIVE_PORTFOLIO_ROUTER_SPEC_KO.md",
+    "adaptive_contract": "ADAPTIVE_ROUTER_CONTRACTS.json",
+    "novelty_gate": "SCIENTIFIC_NOVELTY_GATES_KO.md",
+    "history_map": "INTEGRATION_HISTORY_MAP_KO.md",
+    "scope": "documentation overlay; official G0 unchanged"
   }
 }
