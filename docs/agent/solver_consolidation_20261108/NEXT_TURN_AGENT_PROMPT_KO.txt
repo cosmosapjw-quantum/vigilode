@@ -89,3 +89,11 @@ The conditional recurrence is E_(n+1) <= kappa_n(chi_n E_n + eta_n) + delta_n. H
 Prior-art restrictions: Peer-W global/local control (2011), ITSP3 true global error control (2015) and Constantinescu coupled-GL solution/defect estimation (2017) are established. The candidate is only a heterogeneous transactional method-switch/history-transfer certificate with source-bound residuals; novelty remains unestablished.
 
 Next work: PW03 exact primary p>=5 tableau recovery; PW01 PTSW2C then PW02 PTSW2B native opt-in kernels; PW04 transactional two-step history/session and fair-ab adapter after T02; PW05 RHS-only implicit Peer remains a separate family; PW06 matched achieved-error full-IVP benchmark. No Rust/Cargo/CI was run in PW07. The local research ZIP contains full experiment traces and the larger independent mock driver.
+
+
+## PW07 final replay status (2026-11-09)
+- Both full and compact Python/SymPy mock drivers were freshly `py_compile`'d and executed; see `PEERW_EXECUTION_RECEIPT_PW07.json` for hashes.
+- Compact GitHub driver blob: `69151b577e18ed77bc7fce8422d9d028335c0b07`; compact results blob: `d8da8a91b461bfe944912cd2a65d618a1eef4828`.
+- Fresh full mock JSON SHA-256: `f4b31cab861ac1366b3027ac248243a762e57d66b76e3c02ab72fc4cc3f8e121`.
+- Synthetic CPU stage overlap replay was 1.489x in the latest run (prior 1.781x); classify as noisy operator-action microbenchmark only, not an IVP speed claim.
+- Rust/Cargo/Clippy/rustfmt/CI/native Peer kernels/full-IVP matched-error benchmark remain NOT RUN. Do not describe PW07 as an implementation pass.
