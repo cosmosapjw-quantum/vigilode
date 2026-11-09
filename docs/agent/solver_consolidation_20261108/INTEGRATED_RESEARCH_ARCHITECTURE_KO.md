@@ -116,3 +116,12 @@ left(|W-widetilde W||widetilde k|+|widetilde r|ight).
 T02 current fair-ab/global-error authority replay → T03/T04 C5 long-path full-IVP economics → T06 BDF/Radau/Peer-W/SEPP method qualification → T07 existing switcher의 adaptive multi-method extension → T08 geometry-specific MOL → T09 matched full-IVP/release review. T05 scan은 long-path holdout에서 crossover가 보일 때만 구현한다.
 
 상세 이력은 HISTORY_MATRIX, LINEAGE_DAG, SOLVER_COMPONENT_INVENTORY, NEGATIVE_EVIDENCE_INDEX와 INTEGRATION_HISTORY_MAP에 연결한다. Official G0 remains unchanged and production HOLD.
+
+
+## 8. Peer-W first implementation track (2026-11-09 addendum)
+
+The first new whole-IVP candidate family is fully stage-parallel two-step W/Peer. PTSW2C is the first order-3 prototype; PTSW2B is a separate L-stable order-2 stiff-damping control. Both have exact source coefficient certificates in repository documentation, but neither has a Rust stepper/session implementation or runtime qualification. The original G0 order target still requires a concrete p>=5 tableau.
+
+The current C5 source already provides bounded local Rayon ParallelExecution, block-GMRES for multiple RHS, solver work counters, a DOPRI5 checkpoint/session, accepted-boundary DOPRI5/RODAS5P switching and fair-ab global-error/work/output authority. It does not provide Peer two-step history, Peer startup/rollback or a Peer-W integrator. Reuse those components; do not create a second executor, WorkLedger, benchmark authority or switcher.
+
+Method taxonomy must keep common-shift PTSW-W, multi-implicit Peer-W, implicit Peer, Rosenbrock-type Peer, TASE/SEPP, explicit EPPEER and diagonal-implicit Peer separate. A W-Peer avoids nonlinear Newton but still solves linear W systems. JVP is Jacobian-free, not derivative-free. A genuinely RHS-only homotopy implicit Peer is a distinct conjectural family and inherits none of the W-Peer order/stability claims.
