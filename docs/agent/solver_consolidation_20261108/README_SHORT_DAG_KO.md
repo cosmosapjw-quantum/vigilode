@@ -48,3 +48,6 @@ Peer-W overlay PW00-PW06 is now the next primary implementation path. PW01/PW02 
 ## PW07 conditional theory and mock research completed (2026-11-09)
 
 Added original-W residual/operator-perturbation bound, method-switch/history-transfer global-error recurrence, RHS-only contraction assumptions, nonnormal product adversaries and affine-scan mock. Exact order moments and scalar mock slopes approach orders 3 (PTSW2C) and 2 (PTSW2B). Evidence is Python/SymPy mock only; no Rust solver, native concurrency, fair-ab matched-error run or G0 qualification. Prior-art boundary includes 2011/2015 Peer global-error control and Constantinescu 2017 coupled-GL estimation.
+
+
+PW07 fresh replay: exact compact driver and full mock both executed after `py_compile`; variable-step scalar slopes 2.98255 (PTSW2C) and 1.99030 (PTSW2B). Synthetic CPU operator-action overlap was 1.489x in the latest replay (an earlier run gave 1.781x), so no end-to-end speed claim is made. Rust/Cargo/CI/native Peer solver/full-IVP tests remain NOT RUN.
