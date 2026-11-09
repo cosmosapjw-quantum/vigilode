@@ -1,0 +1,206 @@
+{
+  "schema_version": "vigilode.source-lock.v1",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "audit_date": "2026-11-09",
+  "work_branch": "research/solver-portfolio-shortdag-20261109",
+  "plan_base": {
+    "branch": "docs/solver-consolidation-plan-20261108",
+    "commit": "becbc75438354d7bc8ae3fea362ce943d4d2272a"
+  },
+  "code_source_lock": {
+    "branch": "research/vigilode-c5-native-graph-schur-20261102",
+    "commit": "569ce02629498fec133db9ce368eb303ba943b69",
+    "tree": "a4b2f09521b197b37612ff7dc66a13fbb74a0bae",
+    "tree_entry_count": 20017,
+    "truncated": false
+  },
+  "comparison": {
+    "base": "research/vigilode-c5-native-graph-schur-20261102",
+    "head": "docs/solver-consolidation-plan-20261108",
+    "ahead_by": 39,
+    "behind_by": 0,
+    "changed_files": 27,
+    "changed_code_files": 0,
+    "interpretation": "All 27 compared paths are documentation under docs/agent/solver_consolidation_20261108; the source code tree remains pinned at C5."
+  },
+  "main_warning": {
+    "observed_commit": "8d0c791",
+    "current_research_authority": false,
+    "reason": "main is older than the pinned research source; do not silently substitute it."
+  },
+  "protected_rules": [
+    "Do not edit the pinned source in place.",
+    "Never push directly to main or rewrite history.",
+    "Any changed code source commit/tree invalidates implementation claims until the source inventory is refreshed.",
+    "Use per-file blob identities for code path provenance."
+  ],
+  "blobs": [
+    {
+      "path": "crates/rodas5p-integrators/src/parallel.rs",
+      "blob": "ffdfb1cef258ed43586db0323eb0e7f9de27dd53",
+      "role": "bounded Rayon CPU executor"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/stage_batch.rs",
+      "blob": "c2f44c327c53d7c6dfe7ba80b26cd43486d56b43",
+      "role": "batch/parity/concurrency feasibility harness; not proof of RODAS stage independence"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/sequential.rs",
+      "blob": "4153e286a2ac756252978d5d77cf1abe0e6a4e0c",
+      "role": "protected sequential RODAS5P and strict matrix-free step"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+      "blob": "d68239d53977e36f98b186b627aa0c4c5c7de7cb",
+      "role": "matrix-free RODAS5P full-IVP research route"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/homotopy.rs",
+      "blob": "771304cbd1e24b0b3a301f0e0325c89085a543de",
+      "role": "bounded homotopy and candidate certificates"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/actual_k_homotopy.rs",
+      "blob": "32f0c397645b10ac7e707c4c74526166b196d485",
+      "role": "source-owned actual-K homotopy certificate"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/collective_rodas5p.rs",
+      "blob": "45300fc235e56faa45938fa94143c1cafc96ded3",
+      "role": "collective original RODAS5P; eight causal stages remain"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/source_owned_graph_schur.rs",
+      "blob": "5d2c4319143e60117a7804c1f4524b269df358ea",
+      "role": "source-specific graph-Schur candidate"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/affine_transport.rs",
+      "blob": "1c7024c2e1c567b337f82b0ba4530a1747022f51",
+      "role": "associative affine error-prefix composition"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/quotient_flow.rs",
+      "blob": "7b76f3bd2d352504fa4c02e0fcaa2733ab1c2dce",
+      "role": "declared damped-rotation semigroup and Lawson flow"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/polynomial_resolvent.rs",
+      "blob": "f8e0ef1dc8780fda12dc18483a816be5163996e2",
+      "role": "declared polynomial relation/resolvent support"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+      "blob": "df466c69b4b1cfadc1c62fb0c6ae10f3cb935767",
+      "role": "conditioned polynomial chart and residual refinement"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/quadratic_branch.rs",
+      "blob": "708c03698ff7f5ca03a46b9d7c7f14454cb75984",
+      "role": "source-scoped scalar quadratic homotopy chart"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/gray_scott.rs",
+      "blob": "40bd15f65acefcbf1f0abb63f1b223f6f5c003d7",
+      "role": "2D periodic Gray-Scott MOL and source-specific log norm"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/gray_scott_verified.rs",
+      "blob": "5e84ce711b53ccbc1f9457542703dd0c111aa4ff",
+      "role": "immutable verified Gray-Scott continuous-residual provider"
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/sphere_photon_fv_run.rs",
+      "blob": "aedad4f65200cc4b199be368a3c2b0150d3b8af7",
+      "role": "full-sphere finite-volume application runner"
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/sphere_photon_fv_support/mod.rs",
+      "blob": "a610f6414e9bdd17a14f15bec7d28d53cdddd209",
+      "role": "source-owned full-sphere FV spatial adapter"
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/sphere_photon_fv_contracts.rs",
+      "blob": "f15ee2c0c797ee33f8a21b5dd2692c1727122fb5",
+      "role": "sphere application parity/conservation/refusal tests"
+    },
+    {
+      "path": "crates/vigilode/src/lib.rs",
+      "blob": "9370f4e50e454dd43472160c8d65e4fdcd030e8a",
+      "role": "public frontend root"
+    },
+    {
+      "path": "crates/vigilode/src/problem.rs",
+      "blob": "f1b5ef43ec66d11585193b6be9d0ee0ce271f2ec",
+      "role": "Problem and derivative-provider contract"
+    },
+    {
+      "path": "crates/vigilode/src/session.rs",
+      "blob": "ce30e5703a8d47a6e258a6df829b19a553fe79f9",
+      "role": "DOPRI session/checkpoint"
+    },
+    {
+      "path": "crates/vigilode/src/production.rs",
+      "blob": "6747a9b30460dc8bf61cb3e63bf6ec43da95d97d",
+      "role": "production configuration/facade"
+    },
+    {
+      "path": "crates/vigilode/src/selection.rs",
+      "blob": "380f156458d06aec18c577a5f28ebf3e31200513",
+      "role": "DOPRI5/RODAS5P selection"
+    },
+    {
+      "path": "crates/vigilode/src/automatic.rs",
+      "blob": "ff4f5db411b310039b627d66774b24885eb3cf7d",
+      "role": "automatic DOPRI5/RODAS5P selection"
+    },
+    {
+      "path": "crates/vigilode/src/switching.rs",
+      "blob": "fb12a401002c0039631a43982cc296a494c366a2",
+      "role": "accepted-boundary DOPRI5/RODAS5P switching"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/bdf.rs",
+      "blob": "8484695daed6e508f157439ce0704c7c54e59c8c",
+      "role": "internal BDF reference"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/radau.rs",
+      "blob": "cb694ce56cc301967f5458a5bff260480088bd49",
+      "role": "internal Radau IIA reference"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/exponential.rs",
+      "blob": "2a6a438e1a54b95da1c7e8437f522e4a1591bba2",
+      "role": "exponential and phi-Krylov research"
+    }
+  ],
+  "spatial_evidence": [
+    {
+      "path": "research/bassrei_p06_full_sphere_scoped_20261022/DAG_STATUS.json",
+      "blob": "9447b3dac9abbe7e07cd32e55aff4a67475ce3fd",
+      "status": "PASS_SCOPED",
+      "scope": "unpolarized full-sphere transport; production HOLD"
+    },
+    {
+      "path": "research/spherical_information_20261023/NEXT_STEPS.json",
+      "blob": "d66e73fb816e3ba610094bb2eea4858c200f5a66",
+      "status": "mixed ready/pending",
+      "scope": "sphere remap, information geometry and spectral tools"
+    },
+    {
+      "path": "research/dynamics_symbolic_validation_20261028/CURRENT_STATE.json",
+      "blob": "4dde7f15fb236369b33a64145d7247cd23efa909",
+      "status": "production HOLD",
+      "scope": "source-bound symbolic dynamics validation"
+    }
+  ],
+  "absence_checks": [
+    {
+      "claim": "No PTSW/SEPP/parallel peer implementation source path was found in the pinned 20,017-entry Git tree.",
+      "status": "PATH_INVENTORY_NOT_FOUND",
+      "limitation": "Path-name scan only; T01 must inspect Cargo module exports and symbols before making a complete absence claim."
+    }
+  ]
+}
