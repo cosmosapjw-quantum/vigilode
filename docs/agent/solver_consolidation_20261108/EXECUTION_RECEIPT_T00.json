@@ -1,0 +1,164 @@
+{
+  "schema_version": "vigilode.execution-receipt.v1",
+  "task_id": "T00_LOCK_AND_PLAN",
+  "plan_id": "VIGILODE-SOLVER-PORTFOLIO-SHORTDAG-20261109",
+  "timestamp_utc": "2026-11-09",
+  "status": "DOCUMENTATION_TURN_COMPLETE_PENDING_THIS_RECEIPT_READBACK",
+  "source_lock": {
+    "branch": "research/vigilode-c5-native-graph-schur-20261102",
+    "commit": "569ce02629498fec133db9ce368eb303ba943b69",
+    "tree": "a4b2f09521b197b37612ff7dc66a13fbb74a0bae"
+  },
+  "work_branch": {
+    "name": "research/solver-portfolio-shortdag-20261109",
+    "created_from": "docs/solver-consolidation-plan-20261108",
+    "base_commit": "becbc75438354d7bc8ae3fea362ce943d4d2272a"
+  },
+  "work_summary": [
+    "Pinned the exact code source branch/commit/tree and the documentation plan branch head.",
+    "Compared the documentation branch against the C5 code source: 39 commits ahead, 0 behind; all 27 changed files are documentation files.",
+    "Inspected the current public frontend, Problem/derivative contract, DOPRI session, production facade, switching, sequential RODAS5P, matrix-free RODAS5P, homotopy, collective RODAS5P, graph-Schur, affine transport, quotient flow, polynomial charts, Gray-Scott 2D and sphere FV files by blob identity.",
+    "Retrieved and summarized peer-W, multi-implicit peer-W, peer-W error control, TASE/SEPP, 2026 reused-stage peer and 2026 variable-step stiff-peer literature.",
+    "Created the multi-turn DAG and local agent T01 continuation prompt."
+  ],
+  "literature_delta": [
+    {
+      "source": "Schmitt-Weiner 2004 / Podhaisky et al. 2002",
+      "claim": "Parallel two-step W/peer methods are a distinct established time integrator family with independent peer stages in selected subclasses.",
+      "status": "LITERATURE_SUPPORTED"
+    },
+    {
+      "source": "Schmitt-Weiner-Podhaisky 2005",
+      "claim": "Multi-implicit peer-W uses stage-specific shifts and remains stage-parallel in its selected subclass.",
+      "status": "LITERATURE_SUPPORTED"
+    },
+    {
+      "source": "Kulikov-Weiner 2011",
+      "claim": "Published local/global error control exists for linearly implicit parallel two-step peer-W; exact method-matched estimator transcription is required.",
+      "status": "LITERATURE_SUPPORTED"
+    },
+    {
+      "source": "Pagano 2025, DOI 10.1016/j.apnum.2024.08.023",
+      "claim": "SEPP order 2/3/4 TASE-stabilized peer methods; the paper's reported examples are sequential, so native speedup is not established.",
+      "status": "LITERATURE_SUPPORTED"
+    },
+    {
+      "source": "Pagano-Randez 2026, DOI 10.1007/s10444-026-10315-6",
+      "claim": "Reused-stage L(theta)-stable peer family is a modern MOL comparator; actual independent-stage DAG must be checked.",
+      "status": "LITERATURE_SUPPORTED"
+    },
+    {
+      "source": "Lang-Schmitt 2026, arXiv:2608.26913",
+      "claim": "Variable-step diagonally implicit L(alpha)-stable peer methods have norm-estimate results through order five; treat as high-order stiff comparator, not parallel by default.",
+      "status": "LITERATURE_SUPPORTED"
+    }
+  ],
+  "mathematical_checks": [
+    {
+      "claim": "For an 8x8 strict-lower triangular N, N^8=0 and (I-lambda N)^-1=sum(k=0..7)(lambda N)^k.",
+      "status": "DERIVED",
+      "basis": "nilpotency of strict lower triangular matrices and finite geometric series"
+    },
+    {
+      "claim": "The binary composition (I+lambda N)(I+lambda^2 N^2)(I+lambda^4 N^4) equals the finite inverse when N^8=0.",
+      "status": "DERIVED",
+      "basis": "binary factorization of 1+x+...+x^7 modulo x^8"
+    },
+    {
+      "claim": "Wolfram exact symbolic witness on a generic bidiagonal 8x8 nilpotent shift returned N^8=0, finite-inverse residual zero and binary-factorization residual zero.",
+      "status": "NUMERICALLY_CHECKED_SYMBOLIC_WITNESS",
+      "limitation": "This is a witness/check of the algebraic implementation; the general claim follows from the nilpotency derivation. Neither result implies a runtime speedup."
+    }
+  ],
+  "current_readiness": {
+    "verdict": "HOLD_NOT_RELEASE_QUALIFIED",
+    "key_blockers": [
+      "Public facade covers DOPRI5/RODAS5P, not the full method portfolio.",
+      "No peer-W runtime implementation identified in pinned source path inventory.",
+      "RODAS5P original eight-stage causal chain remains sequential.",
+      "Current homotopy output certificate is linearized and does not bound nonlinear remainder.",
+      "PR #187 C5 graph-Schur remains draft/HOLD and measured slower than protected fast-direct.",
+      "Sphere P06 is scope-limited and production HOLD; Gray-Scott is 2D only.",
+      "Clean-clone workspace CI/release qualification remains open."
+    ]
+  },
+  "files_created": [
+    {
+      "path": "docs/agent/solver_consolidation_20261108/SOURCE_LOCK_20261109.json",
+      "commit": "505505064f670a10c51f26d5d4838d94553924d7",
+      "blob": "8436761ddb8c9085ca0c43d82c7d66a9a041beea",
+      "status": "REMOTE_READBACK_VERIFIED"
+    },
+    {
+      "path": "docs/agent/solver_consolidation_20261108/LITERATURE_DELTA_20261109.json",
+      "commit": "a7f96193c85a1074f0cddf7e361001b74d89ab11",
+      "blob": "d3f4f1b1a62af59195f26f0e36bf5f80869203bd",
+      "status": "REMOTE_READBACK_VERIFIED"
+    },
+    {
+      "path": "docs/agent/solver_consolidation_20261108/METHOD_PORTFOLIO_20261109.json",
+      "commit": "6426cb23499aea1bd945365a5d05b27684693040",
+      "blob": "8c0f9758cbc5d90570216ef46478d804302b2eb0",
+      "status": "REMOTE_READBACK_VERIFIED"
+    },
+    {
+      "path": "docs/agent/solver_consolidation_20261108/SHORT_TERM_DAG_20261109.json",
+      "commit": "dc982455e64802dc4d580875f206986d61409cf0",
+      "blob": "e590df74e4b8bb3bdc5c6565231decb3fa527b5c",
+      "status": "REMOTE_READBACK_VERIFIED"
+    },
+    {
+      "path": "docs/agent/solver_consolidation_20261108/README_SHORT_DAG_KO.md",
+      "commit": "c71fd2dad4fec6cd019e0a149febf08acf3f70ff",
+      "blob": "0e5c2565d81a2a2dae87bcafb9befd71cc0a0fd2",
+      "status": "REMOTE_READBACK_VERIFIED"
+    },
+    {
+      "path": "docs/agent/solver_consolidation_20261108/NEXT_TURN_AGENT_PROMPT_KO.txt",
+      "commit": "e3477adba5fee2f67feeffb925575ca33b121700",
+      "blob": "ce0d11780597e65178f42e5bdcfaf9e45a0fb4b3",
+      "status": "REMOTE_READBACK_VERIFIED"
+    }
+  ],
+  "validation": {
+    "remote_branch_head_before_receipt": "e3477adba5fee2f67feeffb925575ca33b121700",
+    "branch_ahead_of_plan_branch": 6,
+    "branch_behind_plan_branch": 0,
+    "changed_files_before_receipt": 6,
+    "all_six_remote_blob_ids_read_back": true,
+    "json_parse_validation": "PASS for all four JSON artifacts",
+    "dag_validation": {
+      "nodes": 8,
+      "edges": 10,
+      "acyclic": true,
+      "topological_order": [
+        "T00_LOCK_AND_PLAN",
+        "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
+        "T02_PEER_METHOD_MATHEMATICS_AND_SELECTION",
+        "T03_RODAS_EIGHT_STAGE_PARALLELISM",
+        "T04_UNIFIED_FRONTEND_AND_OPERATOR_CONTRACT",
+        "T05_FIRST_PARALLEL_PEER_PLUGIN",
+        "T06_SPHERE_2D_3D_MOL_GEOMETRY",
+        "T07_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW"
+      ]
+    },
+    "rust_tests": "NOT_RUN: documentation-only turn; no local clone/runtime execution performed.",
+    "cargo_fmt": "NOT_RUN: no Rust source was modified.",
+    "cargo_test": "NOT_RUN: no Rust source was modified.",
+    "full_ci": "NOT_RUN: must be executed by local agent after code changes."
+  },
+  "workflow_tooling": {
+    "research_sources_used": [
+      "GitHub repository/PR/branch/file APIs",
+      "Exa literature search/fetch",
+      "SciSpace literature search/fetch",
+      "Wolfram symbolic algebra evaluator",
+      "conversation Library search/read"
+    ],
+    "physmath_research_loop_connector": "No callable action for this named connector was exposed in the active tool catalog during this turn; research loop was executed manually using the available research and source tools.",
+    "limitation": "No external independent reviewer was run in T00."
+  },
+  "next_turn": "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
+  "next_turn_prompt": "docs/agent/solver_consolidation_20261108/NEXT_TURN_AGENT_PROMPT_KO.txt",
+  "backup_policy": "This receipt is an additional commit on the same work branch. Fetch and verify its own blob and the final branch HEAD after creation."
+}
