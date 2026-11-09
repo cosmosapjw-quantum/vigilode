@@ -114,3 +114,14 @@ Use identical source/IC/span/output/reference. Compare protected RODAS5P/JVP, ap
 - Della Rossa & Jungers (2024), Multiple Lyapunov Functions and Memory, DOI 10.1137/23M1589244.
 - Blelloch (1990), Prefix Sums and Their Applications, CMU-CS-90-190.
 - Collins (1975), Cylindrical Algebraic Decomposition; Coste, An Introduction to Semialgebraic Geometry.
+
+
+## 3. Peer-W prior-art boundary and new falsifiable target
+
+The high-order fully stage-parallel Peer-W concept is established prior art. Podhaisky–Schmitt–Weiner (2002) report parallel W methods with p=s and stage order q=s, while Schmitt–Weiner (2004) prove order p=s-1 and stability for general step sequences for an independent-stage Peer-W subclass up to order seven. Kulikov–Weiner (2011) already provide global/local error estimation and automatic control for linearly implicit parallel two-step Peer-W. A claim of first parallel stiff Peer or first Peer global-error control is therefore excluded.
+
+The next concrete candidates are PTSW2C (order 3, A(81.1 degree)-stable source result, not L-stable) and PTSW2B (order 2, source L(90)-stable control). Neither reaches G0. For G0 the source recovery task must identify and independently verify either a five-stage p=q=5 W tableau or a six-stage p=5 Peer-W tableau. Family-level literature existence is not a qualified coefficient set.
+
+The strongest current conjectural contribution remains a source-attested compositional certificate that combines original stage residuals, inexact W solves, source/homotopy defects, peer-history/startup transfer, step rejection and transactional method changes into one global-error budget, paired with complete CPU work/span accounting. It must be proved for the actual selected tableau and falsified on step-ratio products, nonnormality, poor conditioning, abrupt stiffness changes and failure/rollback cases. Prior art on Peer global-error estimation makes this a narrow integration theorem target, not a guaranteed novelty.
+
+Derivative policy: a W-method may avoid nonlinear Newton and explicit dense J, but a JVP-based operator remains derivative-based. The strict derivative-free homotopy worker belongs to a separate implicit Peer family and must certify the original stage equation. If a residual-to-local-error theorem fails, retain the route as an experimental solver only or NO-GO.
