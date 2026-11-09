@@ -3,7 +3,7 @@
   "task_id": "T00_LOCK_AND_PLAN",
   "plan_id": "VIGILODE-SOLVER-PORTFOLIO-SHORTDAG-20261109",
   "timestamp_utc": "2026-11-09",
-  "status": "DOCUMENTATION_TURN_COMPLETE_PENDING_THIS_RECEIPT_READBACK",
+  "status": "DOCUMENTATION_TURN_COMPLETE_REMOTE_READBACK_VERIFIED",
   "source_lock": {
     "branch": "research/vigilode-c5-native-graph-schur-20261102",
     "commit": "569ce02629498fec133db9ce368eb303ba943b69",
@@ -145,7 +145,12 @@
     "rust_tests": "NOT_RUN: documentation-only turn; no local clone/runtime execution performed.",
     "cargo_fmt": "NOT_RUN: no Rust source was modified.",
     "cargo_test": "NOT_RUN: no Rust source was modified.",
-    "full_ci": "NOT_RUN: must be executed by local agent after code changes."
+    "full_ci": "NOT_RUN: must be executed by local agent after code changes.",
+    "receipt_self_readback": {
+      "status": "PASS",
+      "blob_sha": "879e96e4e6a55de7594fc44318a1c1f58de33006",
+      "commit_before_update": "db7a79776de5b6c5a99b0c97df7d3d2d1cc0ceb4"
+    }
   },
   "workflow_tooling": {
     "research_sources_used": [
