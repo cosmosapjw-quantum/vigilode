@@ -43,3 +43,8 @@ Work branch: https://github.com/cosmosapjw-quantum/vigilode/tree/research/solver
 
 
 Peer-W overlay PW00-PW06 is now the next primary implementation path. PW01/PW02 are separate method kernels; PW03 recovers a concrete p>=5 table; PW04 supplies transactional two-step history and the current fair-ab adapter; PW06 compares matched full IVPs. C5 scan research remains a separate preserved branch.
+
+
+## PW07 conditional theory and mock research completed (2026-11-09)
+
+Added original-W residual/operator-perturbation bound, method-switch/history-transfer global-error recurrence, RHS-only contraction assumptions, nonnormal product adversaries and affine-scan mock. Exact order moments and scalar mock slopes approach orders 3 (PTSW2C) and 2 (PTSW2B). Evidence is Python/SymPy mock only; no Rust solver, native concurrency, fair-ab matched-error run or G0 qualification. Prior-art boundary includes 2011/2015 Peer global-error control and Constantinescu 2017 coupled-GL estimation.
