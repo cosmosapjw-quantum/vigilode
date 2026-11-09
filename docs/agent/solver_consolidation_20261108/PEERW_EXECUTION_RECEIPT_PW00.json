@@ -2,7 +2,7 @@
   "schema_version": "vigilode.execution-receipt.v1",
   "task": "PW00_PEER_W_SOURCE_AND_API_AUDIT",
   "date_kst": "2026-11-09",
-  "status": "DOCUMENTATION_ONLY_REMOTE_READBACK_PENDING",
+  "status": "DOCUMENTATION_ONLY_REMOTE_READBACK_VERIFIED",
   "repository": "cosmosapjw-quantum/vigilode",
   "branch": "research/solver-portfolio-shortdag-20261109",
   "code_source": {
@@ -59,5 +59,27 @@
     "Current branch's exact Peer certificates are documentation artifacts; no Peer Rust implementation.",
     "No production/fast lane/benchmark promotion."
   ],
-  "next_action": "Execute PW01/PW02 in an isolated local worktree after checking latest branch head, then T02 fair-ab authority replay before full-IVP comparison."
+  "next_action": "Execute PW01/PW02 in an isolated local worktree after checking latest branch head, then T02 fair-ab authority replay before full-IVP comparison.",
+  "remote_readback": {
+    "status": "ALL_TARGET_FILES_READ_BACK",
+    "count": 11,
+    "dag_nodes": 18,
+    "dag_edges": 33,
+    "dag_acyclic": true,
+    "official_g0_unchanged": true,
+    "docs_verified": [
+      "SHORT_TERM_DAG_20261109.json",
+      "METHOD_PORTFOLIO_20261109.json",
+      "LITERATURE_DELTA_20261109.json",
+      "SOURCE_LOCK_20261109.json",
+      "PEERW_FIRST_IMPLEMENTATION_PLAN_KO.md",
+      "PEERW_EXECUTION_RECEIPT_PW00.json",
+      "INTEGRATED_RESEARCH_ARCHITECTURE_KO.md",
+      "SCIENTIFIC_NOVELTY_GATES_KO.md",
+      "NEXT_TURN_AGENT_PROMPT_KO.txt",
+      "README_SHORT_DAG_KO.md",
+      "INTEGRATION_HISTORY_MAP_KO.md"
+    ],
+    "note": "The receipt is finalized after remote readback; Cargo/rustfmt/CI/benchmark remain NOT_RUN."
+  }
 }
