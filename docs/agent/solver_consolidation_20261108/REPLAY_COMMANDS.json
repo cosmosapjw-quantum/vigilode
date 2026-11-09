@@ -1,0 +1,75 @@
+{
+  "schema_version": "vigilode.replay-command-plan.v1",
+  "historical": [
+    {
+      "id": "C5",
+      "source": "PR187 REPORT_KO.md",
+      "result": "fresh target build; scoped unit 6/6, integration 7/7, 36/36 original IVPs",
+      "command": "exact CLI commands not preserved in report",
+      "current_replay": "NOT_RUN"
+    },
+    {
+      "id": "V010",
+      "source_commit": "f2e9b1e8883bc49c124ce5ab421c92fb58516b74",
+      "result": "pass-with-scope-hold; 70 fixed-step rows, 4 analytic references; ranking HOLD",
+      "command": "not preserved",
+      "current_replay": "NOT_RUN"
+    },
+    {
+      "id": "THEORY_AUDIT",
+      "source": "Dropbox VigilODE_THEORY_AUDIT_20261103.md",
+      "result": "59 Python checks reported PASS; Rust compile/execute not run",
+      "current_replay": "NOT_RUN"
+    },
+    {
+      "id": "C9",
+      "source": "PR131",
+      "result": "49/49 scoped native tests reported; independent review NOT_RUN",
+      "current_replay": "NOT_RUN"
+    }
+  ],
+  "proposed": [
+    {
+      "id": "IDENTITY",
+      "command": "rustc --version && cargo --version && git rev-parse HEAD && git rev-parse HEAD^{tree}",
+      "status": "PROPOSED_NOT_RUN"
+    },
+    {
+      "id": "GLOBAL_ERROR",
+      "command": "cargo test -p rodas5p-fair-ab --test global_error_contracts -- --nocapture",
+      "status": "PROPOSED_NOT_RUN"
+    },
+    {
+      "id": "ADAPTIVE_GLOBAL_ERROR",
+      "command": "cargo test -p rodas5p-fair-ab --test adaptive_global_error_contracts -- --nocapture",
+      "status": "PROPOSED_NOT_RUN"
+    },
+    {
+      "id": "REFERENCE",
+      "command": "cargo test -p rodas5p-fair-ab --test numerical_reference_contracts -- --nocapture",
+      "status": "PROPOSED_NOT_RUN"
+    },
+    {
+      "id": "REFERENCE_V2",
+      "command": "cargo test -p rodas5p-fair-ab --test numerical_reference_v2_contracts -- --nocapture",
+      "status": "PROPOSED_NOT_RUN"
+    },
+    {
+      "id": "PACKAGE_CHECK",
+      "command": "cargo check -p rodas5p-fair-ab --all-targets",
+      "status": "PROPOSED_NOT_RUN"
+    },
+    {
+      "id": "FORMAT",
+      "command": "cargo fmt --all -- --check",
+      "status": "PROPOSED_NOT_RUN"
+    }
+  ],
+  "environment": {
+    "local_clone_available": false,
+    "rust_tests": "NOT_RUN",
+    "format": "NOT_RUN",
+    "CI": "NOT_RUN",
+    "recommendation": "Fresh CARGO_TARGET_DIR; record first failures before repairs."
+  }
+}

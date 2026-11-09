@@ -1,0 +1,31 @@
+flowchart TD
+ subgraph G0["Standalone ODE / G0"]
+ P174["PR174 WP9"] --> P176["PR176 G0 inventory"] --> P177["PR177 R5"] --> P179["PR179 R6"] --> P182["PR182 R7"] --> P184["PR184 R8"] --> P185["PR185 R9"] --> P186["PR186 R10"] --> P187["PR187 C5"]
+ end
+ subgraph PERF["Performance and global-error authority"]
+ P90["PR90"] --> P91["PR91"] --> P92["PR92"] --> P93["PR93"] --> P96["PR96"]
+ V010["v0.10 frozen commit"] -. "no common ancestor" .-> GA["current fair-ab blobs"]
+ end
+ subgraph COUPLED["Coupled source-specific methods"]
+ P74["PR74"] --> P75["PR75"] --> P77["PR77"]
+ P154["PR154"] --> P156["PR156"] --> P158["PR158 nonrigorous reference delta"]
+ end
+ subgraph N01["N01/C9 source owner"]
+ P115["PR115"] --> P117["PR117"]
+ P128["PR128"] --> P129["PR129 owner substitution"] --> P131["PR131 frozen source"]
+ end
+ subgraph REI["Applied REI, not generic solver"]
+ P175["PR175"] --> P178["PR178"] --> P183["PR183"]
+ P175 --> P180["PR180"] --> P181["PR181"]
+ end
+ P135["PR135 RVJ"] --> P136["PR136 Volterra"]
+ GA --> T02["T02 authority replay"]
+ P187 --> T03["T03 C5 scan economics"]
+ T02 --> T04["T04 long path full IVP"]
+ T03 --> T04 --> T05["T05 conditional ordered scan"]
+ T02 --> T06["T06 BDF/Radau + Peer qualification"]
+ T05 --> T07["T07 frontend"]
+ T06 --> T07 --> T08["T08 spatial MOL"]
+ T05 --> T09["T09 release review"]
+ T06 --> T09
+ T08 --> T09

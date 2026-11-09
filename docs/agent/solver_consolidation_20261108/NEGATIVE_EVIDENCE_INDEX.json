@@ -1,0 +1,92 @@
+{
+  "schema_version": "vigilode.negative-evidence-index.v1",
+  "audit_date": "2026-11-09",
+  "records": [
+    {
+      "id": "C5_SLOWER",
+      "status": "NUMERICALLY_CHECKED",
+      "source": "PR187",
+      "scope": "3 independent physical families + resolution control, 12 clipped-grid pairs, 3 repeats",
+      "finding": "median graph/fast-direct wall ratio 2.242032452000776, all 12 >1; 36/36 IVPs successful",
+      "limit": "path length one, scan count zero; no large-path physical speed claim"
+    },
+    {
+      "id": "C5_SCAN_SERIAL",
+      "status": "IMPLEMENTATION_VERIFIED",
+      "source": "source_owned_graph_schur.rs",
+      "finding": "serial loops, allocation per path, pair clone per stride, no current parallel execution"
+    },
+    {
+      "id": "R10_RING96",
+      "status": "NUMERICALLY_CHECKED_SCOPED",
+      "source": "PR186",
+      "finding": "synthetic 538 pair compositions versus 94 predecessor operations; not native parallel/full-IVP timing"
+    },
+    {
+      "id": "R7_TRANSACTIONAL",
+      "status": "NUMERICALLY_CHECKED",
+      "source": "PR182",
+      "finding": "transactional route median about 4.75x slower in scoped full-IVP campaign"
+    },
+    {
+      "id": "R6_Q2",
+      "status": "NUMERICALLY_CHECKED_SCOPED",
+      "source": "PR179",
+      "finding": "q2 21 vs protected 8 W solves; endpoint errors ~0.00378–0.02016; not admitted"
+    },
+    {
+      "id": "WP1_PARITY",
+      "status": "NUMERICALLY_CHECKED_NONRIGOROUS",
+      "source": "PR158",
+      "finding": "1% achieved-error parity without certified independent-reference uncertainty delta"
+    },
+    {
+      "id": "PR90_TIMING",
+      "status": "NUMERICALLY_CHECKED",
+      "source": "PR90",
+      "finding": "paired ranges crossed unity; no stable wall-time gain"
+    },
+    {
+      "id": "N01_OWNER_SUBSTITUTION",
+      "status": "IMPLEMENTATION_VERIFIED_NEGATIVE",
+      "source": "PR129",
+      "finding": "caller owner substitution can create residual-zero witness while live RHS residual is nonzero; source-binding issue"
+    },
+    {
+      "id": "C9_INDEPENDENT_REVIEW",
+      "status": "NOT_RUN",
+      "source": "PR131",
+      "finding": "49/49 scoped native tests reported; independent distinct-author review not done"
+    },
+    {
+      "id": "P06_SCOPE",
+      "status": "PASS_SCOPED",
+      "source": "P06",
+      "finding": "unpolarized non-tilted full sphere only; tilt/aberration, recoil, AMR, generic 3D unqualified"
+    },
+    {
+      "id": "PP05_PP06_PP15",
+      "status": "FAIL_AND_NOT_RUN_RETAINED",
+      "source": "Fourier-Volterra",
+      "finding": "PP05 G2/G3 fail; PP06 harmful-alias gate fails; PP15 no timing"
+    },
+    {
+      "id": "HOMOTOPY_TAIL",
+      "status": "UNRESOLVED",
+      "source": "homotopy.rs",
+      "finding": "NonlinearOutputCertificate is linearized output correction, not nonlinear remainder/global trajectory enclosure"
+    },
+    {
+      "id": "V010_NO_ANCESTRY",
+      "status": "PROVENANCE_GAP",
+      "source": "GitHub compare",
+      "finding": "v0.10 commit f2e9 and C5 commit 569ce have no common ancestor; legacy branch/tag absent"
+    },
+    {
+      "id": "CHAT_ARCHIVE",
+      "status": "ACCESS_LIMITATION",
+      "source": "conversation/memory/Files",
+      "finding": "complete account-wide hidden/archived ChatGPT transcript not exposed"
+    }
+  ]
+}

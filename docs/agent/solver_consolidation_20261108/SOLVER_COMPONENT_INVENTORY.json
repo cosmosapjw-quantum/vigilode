@@ -1,0 +1,447 @@
+{
+  "schema_version": "vigilode.solver-component-inventory.v1",
+  "audit_date": "2026-11-09",
+  "source": {
+    "branch": "research/vigilode-c5-native-graph-schur-20261102",
+    "commit": "569ce02629498fec133db9ce368eb303ba943b69",
+    "tree": "a4b2f09521b197b37612ff7dc66a13fbb74a0bae",
+    "entries": 20017
+  },
+  "original_PR176_inventory": {
+    "branch": "governance/vigilode-original-mission-realignment-20261101",
+    "snapshot_head": "7e8d7f5cdf2b82c4984528a6a2df1f9647e28fde",
+    "blob": "2a25e0ccc1a4e743eb91ef690e81226caea73fc9",
+    "row_count": 28,
+    "semantic_caution": "28 records are kernels, solvers, operator examples, selectors and references; not 28 complete production solvers.",
+    "rows": [
+      {
+        "id": "RJF_SEQ",
+        "classification": "protected-baseline",
+        "maturity": "full_ivp",
+        "mechanism": "sequential matrix-free eight-stage original RODAS5P with JVP, protected commit/rollback, and same-error authority",
+        "use_when": "stiff, oscillatory or nonnormal general ODE when JVP is authorized",
+        "non_promotion_limit": "reference for all actual speed and accepted-step tests; not new fast-lane claim",
+        "source_path": "crates/rodas5p-integrators/src/sequential.rs",
+        "symbol": "sequential_matrix_free_step",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "RODAS_FAST_DENSE",
+        "classification": "protected-route",
+        "maturity": "full_ivp",
+        "mechanism": "U-form adaptive RODAS5P with dense factorizations and reduced allocations",
+        "use_when": "small or moderate stiff systems with full Jacobian permitted",
+        "non_promotion_limit": "explicit matrix assembly violates primary J-free fast-path target",
+        "source_path": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+        "symbol": "integrate_rodas5p_fast_observed",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "RODAS_FAST_BANDED",
+        "classification": "protected-route",
+        "maturity": "full_ivp",
+        "mechanism": "band-aware direct RODAS5P solver",
+        "use_when": "declared and validated narrow-band stiff system",
+        "non_promotion_limit": "band structure must be source verified; not universally fast",
+        "source_path": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+        "symbol": "integrate_rodas5p_fast_banded_observed",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "RODAS_FAST_DENSE_OUTPUT",
+        "classification": "protected-route",
+        "maturity": "full_ivp",
+        "mechanism": "RODAS5P dense continuous extension, optional interior-error control",
+        "use_when": "dense requested outputs, event location, observed trajectories",
+        "non_promotion_limit": "enforced interior work differs from endpoint-only work",
+        "source_path": "crates/rodas5p-integrators/src/rodas5p_fast_dense.rs",
+        "symbol": "integrate_rodas5p_fast_dense_observed",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "RODAS_MF_FAST",
+        "classification": "research-unpromoted",
+        "maturity": "full_ivp",
+        "mechanism": "raw U-form matrix-free RODAS5P with GMRES and optional retained GCRO-DR/workspace",
+        "use_when": "large sparse operator where JVP is cheap and explicit Jacobian impractical",
+        "non_promotion_limit": "same step equation, stage critical depth still sequential; target-scale cost/performance not admitted",
+        "source_path": "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+        "symbol": "integrate_rodas5p_mf_fast_observed",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "RODAS_LAGGED",
+        "classification": "research-unpromoted",
+        "maturity": "full_ivp",
+        "mechanism": "exact refreshed-J stage equations with lagged LU factorization as preconditioner",
+        "use_when": "slowly varying stiff Jacobian and expensive LU where verification supports reuse",
+        "non_promotion_limit": "lagged factorization may be stale, must admit true residual; explicit J required",
+        "source_path": "crates/rodas5p-integrators/src/rodas5p_lagged.rs",
+        "symbol": "integrate_rodas5p_lagged_observed",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "RODAS_SMALL",
+        "classification": "research-opt-in",
+        "maturity": "full_ivp",
+        "mechanism": "small dense RODAS5P with static tables and reduced setup",
+        "use_when": "very small systems with fast dense arithmetic",
+        "non_promotion_limit": "hardware crossover and identity no unconditional guarantee",
+        "source_path": "crates/rodas5p-integrators/src/rodas5p_fast_small.rs",
+        "symbol": "integrate_rodas5p_fast_small_observed",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "RODAS_SMALL_BATCH",
+        "classification": "research-opt-in",
+        "maturity": "batched_full_ivps",
+        "mechanism": "batch of independent small RODAS5P systems sharing execution organization",
+        "use_when": "many independent short small stiff IVPs",
+        "non_promotion_limit": "batch throughput not per-IVP latency; no generic stage parallelization",
+        "source_path": "crates/rodas5p-integrators/src/rodas5p_fast_small_batch.rs",
+        "symbol": "integrate_rodas5p_fast_small_batch",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "RODAS_DECLARED_ROUTER",
+        "classification": "protected-selection",
+        "maturity": "full_ivp_dispatch",
+        "mechanism": "read-only declared structure chooses banded,dense or JVP RODAS backend",
+        "use_when": "caller supplies trustworthy structure and derivative permissions",
+        "non_promotion_limit": "static structure routing, not demonstrated dynamic guarded fast-path switching",
+        "source_path": "crates/rodas5p-integrators/src/routing.rs",
+        "symbol": "integrate_rodas5p_routed_observed",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "EXPRB2",
+        "classification": "research-step",
+        "maturity": "one_step_only",
+        "mechanism": "exponential Rosenbrock order-two phi-Krylov action",
+        "use_when": "semilinear/stiff problem with useful linearized exponential action",
+        "non_promotion_limit": "no standalone full-order-five adaptive solver admission from step API",
+        "source_path": "crates/rodas5p-integrators/src/exponential.rs",
+        "symbol": "exprb2_step",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "EXPRB43",
+        "classification": "research-step",
+        "maturity": "one_step_only",
+        "mechanism": "embedded higher-order exponential Rosenbrock step and fused phi actions",
+        "use_when": "intermediate candidate/consistency witness for higher-order exponential schemes",
+        "non_promotion_limit": "step kernel and local order do not establish full IVP runtime",
+        "source_path": "crates/rodas5p-integrators/src/exponential.rs",
+        "symbol": "exprb43_step",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "PEXPRB54S4_FUSED",
+        "classification": "research-unpromoted",
+        "maturity": "full_ivp",
+        "mechanism": "fused phi-Krylov adaptive exponential Rosenbrock, resumable bounded prefix; external LLM irrelevant",
+        "use_when": "stiff, oscillatory, smooth semilinear cases where JVP is permitted and phi actions cheap",
+        "non_promotion_limit": "frozen v2.2 selected-case order~4.93 and scoped wall ratio~1.52 cannot be promoted to generic production without matched-accuracy broad holdout and switching economy",
+        "source_path": "crates/rodas5p-integrators/src/adaptive_exponential.rs",
+        "symbol": "integrate_pexprb54s4_fused_adaptive_observed",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "Q1Q2_TRANSACTIONAL",
+        "classification": "research-unpromoted",
+        "maturity": "full_ivp_candidate",
+        "mechanism": "causal q1 prediction + q2 endpoint correction, exact residual admission, charged failure and protected fallback",
+        "use_when": "fast low-depth stage correction when target defect improves before original fallback",
+        "non_promotion_limit": "cannot claim reduced critical path until complete whole-trajectory matched-error work/span",
+        "source_path": "crates/rodas5p-integrators/src/transactional_q1_q2.rs",
+        "symbol": "transactional_q1_q2_step_with_execution",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "HOMOTOPY_JVP",
+        "classification": "research-unpromoted",
+        "maturity": "full_ivp_candidate",
+        "mechanism": "partial-coupling homotopy stage solve and adaptive original-target residual checking",
+        "use_when": "difficult nonlinear/stiff stage roots with residual monotonicity and bounded continuation",
+        "non_promotion_limit": "stage proof/partial root is not generic full-IVP fifth-order and value-only pathway",
+        "source_path": "crates/rodas5p-integrators/src/homotopy.rs",
+        "symbol": "homotopy_step",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "HOMOTOPY_RHS_ONLY",
+        "classification": "research-unpromoted",
+        "maturity": "source_scoped_stage",
+        "mechanism": "exact/nonlinear RHS-only homotopy root proposal and outward residual for frozen models",
+        "use_when": "derivative-free first candidate for cubic/regular source-locked stages",
+        "non_promotion_limit": "full 8-stage generic integration and source epoch binding must be proven; historical C9 flagged owner substitution",
+        "source_path": "crates/vigilode-coupled/src/n01_derivative_free.rs",
+        "symbol": "",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "NONLINEAR_INVERSE_BE",
+        "classification": "research-unpromoted",
+        "maturity": "source_scoped_full_ivp",
+        "mechanism": "nonlinear inverse-Picard backward Euler with outward arithmetic and exact local source",
+        "use_when": "cooperative cubic stiff ODE, Jacobian and Newton forbidden",
+        "non_promotion_limit": "first order, source-specific; not a drop-in order-five general replacement",
+        "source_path": "crates/vigilode-coupled/src/coupled_inverse_be.rs",
+        "symbol": "",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "DOPRI5_RHS",
+        "classification": "supported-scoped",
+        "maturity": "full_ivp",
+        "mechanism": "persistent RHS-only Dormand-Prince 5(4), FSAL and dense output for nonstiff IVPs",
+        "use_when": "nonstiff or unknown identity-mass ODE with budgeted failure",
+        "non_promotion_limit": "may stall on strong stiffness; only explicit-first default, not stiff solver fast-path proof",
+        "source_path": "crates/rodas5p-integrators/src/dopri5.rs",
+        "symbol": "integrate_dopri5_observed",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "LAWSON_DOPRI5",
+        "classification": "research-opt-in",
+        "maturity": "full_ivp",
+        "mechanism": "RHS-only Lawson DOPRI5 with declared damped rotation semigroup/exact quotient actions",
+        "use_when": "constant declared 2x2 damped-rotational linear structure and smooth residual",
+        "non_promotion_limit": "not generic semigroup oracle; no stiffness-uniform nonlinear order",
+        "source_path": "crates/rodas5p-integrators/src/quotient_flow.rs",
+        "symbol": "integrate_lawson_dopri5_observed",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "BDF1_BDF2",
+        "classification": "reference-only",
+        "maturity": "full_ivp",
+        "mechanism": "fixed/adaptive BDF1 and variable-step BDF2, dense Newton reference",
+        "use_when": "stiff correctness and step-economy reference/negative controls",
+        "non_promotion_limit": "explicit frozen reference-only comparator fidelity; not production-equivalent CVODE/BDF baseline",
+        "source_path": "crates/rodas5p-integrators/src/bdf.rs",
+        "symbol": "integrate_bdf_adaptive_observed",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "RADAU_IIA1_IIA3",
+        "classification": "reference-only",
+        "maturity": "full_ivp",
+        "mechanism": "implicit one-/three-stage Radau IIA with dense Newton reference",
+        "use_when": "stiff accuracy and stage/residual oracle",
+        "non_promotion_limit": "internal reference implementation only; not competitive benchmark for production Radau5",
+        "source_path": "crates/rodas5p-integrators/src/radau.rs",
+        "symbol": "integrate_radau_adaptive_observed",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "SABR5P",
+        "classification": "reference-step",
+        "maturity": "one_step_only",
+        "mechanism": "SABR5P original stage predictor and block correctness fallback",
+        "use_when": "stage-root and structured correctness oracle under defined block assumptions",
+        "non_promotion_limit": "no independent complete adaptive full-IVP production route in current library export",
+        "source_path": "crates/rodas5p-integrators/src/sabr.rs",
+        "symbol": "sabr_step",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "VERIFIED_RESIDUAL",
+        "classification": "research-unpromoted",
+        "maturity": "capability_bound_full_ivp",
+        "mechanism": "continuous-residual whole-tube outward verification wrapped around source-owner candidates",
+        "use_when": "model owner provides immutable residual/tube capabilities and bounds",
+        "non_promotion_limit": "cannot be claimed arbitrary callback certified solver; large-scale run and total proof obligations remain",
+        "source_path": "crates/rodas5p-integrators/src/generic_verified.rs",
+        "symbol": "integrate_verified_residual",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "NONLINEAR_WINDOW_HOMOTOPY",
+        "classification": "research-source-scoped",
+        "maturity": "source_scoped_full_ivp",
+        "mechanism": "independent nonlinear-window shooting with complex prefix, outward endpoint certificate",
+        "use_when": "declared collective cubic or special flow, not arbitrary ODE",
+        "non_promotion_limit": "source-bound nonlinear proof and full cost not generic convergence theorem",
+        "source_path": "crates/rodas5p-integrators/src/nonlinear_homotopy.rs",
+        "symbol": "integrate_nonlinear_homotopy",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "PACKET_TRAJECTORY",
+        "classification": "research-source-scoped",
+        "maturity": "source_scoped_full_ivp",
+        "mechanism": "outward reconstructed packet trajectory with physical budget",
+        "use_when": "specific supplied packet/oscillatory system with source-owned certification",
+        "non_promotion_limit": "not a generic Rosenbrock alternative",
+        "source_path": "crates/rodas5p-integrators/src/packet_trajectory.rs",
+        "symbol": "run_packet_trajectory",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "EXPLICIT_RODAS_SWITCH",
+        "classification": "research-opt-in",
+        "maturity": "method_policy",
+        "mechanism": "bounded explicit DOPRI5 / protected RODAS5P switching at accepted windows with cost evidence",
+        "use_when": "changing stiffness only when derivative permission, comparability and model epoch are valid",
+        "non_promotion_limit": "frozen history shows adverse reentrant overhead and no general speedup; default remains RHS-only",
+        "source_path": "crates/vigilode/src/switching.rs",
+        "symbol": "",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "AUTOMATIC_SELECTOR",
+        "classification": "research-opt-in",
+        "maturity": "method_policy",
+        "mechanism": "declared method fitness and derivative-permission selection",
+        "use_when": "known nonstiff/stiff regimes with user permissions",
+        "non_promotion_limit": "not uncharged automatic learning or proof of optimal switching",
+        "source_path": "crates/vigilode/src/automatic.rs",
+        "symbol": "",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "FUSED_POLYNOMIAL_PHI",
+        "classification": "component-not-solver",
+        "maturity": "matrix_action",
+        "mechanism": "Leja, signed Laguerre, Chebyshev, Taylor and low-rank resolvent guarded phi-action alternatives",
+        "use_when": "operator/domain/enclosure available and cost favors polynomial over Krylov",
+        "non_promotion_limit": "matrix action or stage backend alone is NOT a complete integrator or verified fifth-order trajectory",
+        "source_path": "crates/rodas5p-core/src/leja_action.rs",
+        "symbol": "",
+        "science_admission": "not_promoted_by_this_audit"
+      },
+      {
+        "id": "PARALLEL_STAGE_BATCH",
+        "classification": "component-not-solver",
+        "maturity": "stage_backend",
+        "mechanism": "stage batching and causal/prefix span experiments with all attempted work",
+        "use_when": "independent or provably causally grouped stages, expensive RHS",
+        "non_promotion_limit": "parallel stage timing cannot replace full solver same-error benchmark",
+        "source_path": "crates/rodas5p-integrators/src/stage_batch.rs",
+        "symbol": "",
+        "science_admission": "not_promoted_by_this_audit"
+      }
+    ]
+  },
+  "current_components": [
+    {
+      "id": "C5_GRAPH_SCHUR",
+      "path": "crates/rodas5p-integrators/src/source_owned_graph_schur.rs",
+      "blob": "5d2c4319143e60117a7804c1f4524b269df358ea",
+      "status": "source-specific opt-in; production HOLD",
+      "scope": "cooperative cubic and graph decomposition, original W stage; not generic RHS"
+    },
+    {
+      "id": "C5_SCAN",
+      "path": "crates/rodas5p-integrators/src/source_owned_graph_schur.rs",
+      "blob": "5d2c4319143e60117a7804c1f4524b269df358ea",
+      "status": "serial",
+      "scope": "per-chain Vec allocation, per-stride clone and serial loops; no actual ParallelExecution"
+    },
+    {
+      "id": "PARALLEL_EXECUTION",
+      "path": "crates/rodas5p-integrators/src/parallel.rs",
+      "blob": "ffdfb1cef258ed43586db0323eb0e7f9de27dd53",
+      "status": "existing Rayon context",
+      "scope": "reuse if measured parallel work is warranted; not stage independence"
+    },
+    {
+      "id": "STAGE_BATCH",
+      "path": "crates/rodas5p-integrators/src/stage_batch.rs",
+      "blob": "c2f44c327c53d7c6dfe7ba80b26cd43486d56b43",
+      "status": "component only"
+    },
+    {
+      "id": "PUBLIC_SELECTOR",
+      "path": "crates/vigilode/src/selection.rs",
+      "blob": "380f156458d06aec18c577a5f28ebf3e31200513",
+      "status": "DOPRI5/RODAS5P only"
+    },
+    {
+      "id": "AUTOMATIC_ROUTER",
+      "path": "crates/vigilode/src/automatic.rs",
+      "blob": "ff4f5db411b310039b627d66774b24885eb3cf7d",
+      "status": "DOPRI5/RODAS5P only"
+    },
+    {
+      "id": "BDF_REFERENCE",
+      "path": "crates/rodas5p-integrators/src/bdf.rs",
+      "blob": "8484695daed6e508f157439ce0704c7c54e59c8c",
+      "status": "reference-only"
+    },
+    {
+      "id": "RADAU_REFERENCE",
+      "path": "crates/rodas5p-integrators/src/radau.rs",
+      "blob": "cb694ce56cc301967f5458a5bff260480088bd49",
+      "status": "reference-only"
+    },
+    {
+      "id": "FAIR_AB",
+      "path": "crates/rodas5p-fair-ab/src/global_error.rs",
+      "blob": "c62f996fa18f9815f1f329766abe8fe2c25ca22b",
+      "role": "common output grid, reference WRMS, global metrics, output policy, Pareto, work and timing reports"
+    },
+    {
+      "id": "ADAPTIVE",
+      "path": "crates/rodas5p-fair-ab/src/adaptive_global_error.rs",
+      "blob": "ccae16353ed1dcc90c6511befea8b42f7d3ad9cd",
+      "role": "adaptive clipped/dense pairs and same-error rank admissibility"
+    },
+    {
+      "id": "EXPORTS",
+      "path": "crates/rodas5p-fair-ab/src/lib.rs",
+      "blob": "6dd776caa740f82aaaac5e7b05feef764fa30072",
+      "role": "public exports of error target/reference/Pareto/work/timing"
+    },
+    {
+      "id": "TESTS",
+      "path": "crates/rodas5p-fair-ab/tests/global_error_contracts.rs",
+      "blob": "2ddca4c399d632540334f43964ccdffe457151cd2",
+      "role": "current global error contract tests"
+    },
+    {
+      "id": "NUMERICAL_REFERENCE",
+      "path": "crates/rodas5p-fair-ab/src/numerical_reference.rs",
+      "blob": "b8adbdae154eaa243310136f78ec2eaa4d7073d9",
+      "role": "reference provenance/manifests/checksums"
+    },
+    {
+      "id": "OUTPUT_ACCURACY",
+      "path": "crates/rodas5p-fair-ab/src/output_accuracy.rs",
+      "blob": "57401289d7484f5927693b0b47333660f1f2644d",
+      "role": "uncertainty and output admissibility"
+    },
+    {
+      "id": "AFFINE_TRANSPORT",
+      "path": "crates/rodas5p-integrators/src/affine_transport.rs",
+      "blob": "1c7024c2e1c567b337f82b0ba4530a1747022f51",
+      "status": "support kernel only; not whole adaptive IVP parallelization"
+    },
+    {
+      "id": "GRAY_SCOTT",
+      "path": "crates/rodas5p-integrators/src/gray_scott.rs",
+      "blob": "40bd15f65acefcbf1f0abb63f1b223f6f5c003d7",
+      "status": "2D periodic source-specific MOL"
+    },
+    {
+      "id": "GRAY_SCOTT_VERIFIED",
+      "path": "crates/rodas5p-integrators/src/gray_scott_verified.rs",
+      "blob": "5e84ce711b53ccbc1f9457542703dd0c111aa4ff",
+      "status": "source-specific residual provider"
+    },
+    {
+      "id": "P06_SPHERE",
+      "path": "crates/rodas5p-integrators/examples/sphere_photon_fv_run.rs",
+      "blob": "aedad4f65200cc4b199be368a3c2b0150d3b8af7",
+      "status": "PASS_SCOPED unpolarized non-tilted sphere, production HOLD"
+    }
+  ],
+  "peer_presence": {
+    "pinned_tree_entries": 20017,
+    "truncated": false,
+    "peer_W_SEPP_PTSW_source_paths_found": [],
+    "unrelated_peer_review_files": 4,
+    "conclusion": "No implementation source path in this tree; this is a bounded path/module finding, not universal historical absence."
+  }
+}

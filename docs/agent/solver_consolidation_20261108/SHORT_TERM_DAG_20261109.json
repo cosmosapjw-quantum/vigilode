@@ -1,406 +1,225 @@
 {
-  "schema_version": "vigilode.short-term-execution-dag.v1",
-  "plan_id": "VIGILODE-SOLVER-PORTFOLIO-SHORTDAG-20261109",
+  "schema_version": "vigilode.short-dag.v2",
+  "plan_id": "VIGILODE_SOLVER_PORTFOLIO_SHORTDAG_20261109_T01_REVISION",
   "audit_date": "2026-11-09",
-  "execution_mode": "multi-turn; one verified remote backup commit per turn",
   "authority": {
-    "source_lock": "docs/agent/solver_consolidation_20261108/SOURCE_LOCK_20261109.json",
-    "literature": "docs/agent/solver_consolidation_20261108/LITERATURE_DELTA_20261109.json",
-    "method_portfolio": "docs/agent/solver_consolidation_20261108/METHOD_PORTFOLIO_20261109.json",
-    "code_branch": "research/vigilode-c5-native-graph-schur-20261102",
-    "code_commit": "569ce02629498fec133db9ce368eb303ba943b69",
-    "code_tree": "a4b2f09521b197b37612ff7dc66a13fbb74a0bae",
-    "plan_branch": "docs/solver-consolidation-plan-20261108",
-    "plan_commit": "becbc75438354d7bc8ae3fea362ce943d4d2272a",
-    "work_branch": "research/solver-portfolio-shortdag-20261109"
+    "official_G0_DAG": {
+      "nodes": 23,
+      "edges": 34,
+      "progress": "7/23_UNCHANGED",
+      "successor": "0/12_UNCHANGED",
+      "production": "HOLD",
+      "note": "not modified"
+    },
+    "code_source": {
+      "branch": "research/vigilode-c5-native-graph-schur-20261102",
+      "commit": "569ce02629498fec133db9ce368eb303ba943b69",
+      "tree": "a4b2f09521b197b37612ff7dc66a13fbb74a0bae"
+    },
+    "work_branch": {
+      "name": "research/solver-portfolio-shortdag-20261109",
+      "starting_head": "0c04240e440bf462b380cecc55d84ae7a8e66da1"
+    }
   },
   "mission": {
-    "goal": "Consolidate existing integrators, research accelerators and spatial operators into one capability-routed production solver package while preserving method identities and pursuing a defensible stiff-system CPU performance/significance result.",
-    "bottleneck": "RODAS5P has eight causal lower-triangular stages; common-W/factorization reuse does not remove the sequential RHS dependency chain.",
-    "priority": [
-      "Preserve/optimize exact RODAS5P.",
-      "Test residual-certified speculative rounds with transactional fallback.",
-      "Introduce a genuinely stage-parallel stiff peer-W as a separate method if all gates pass.",
-      "Unify frontend/capabilities/session/output/events/rollback/work accounting.",
-      "Reuse 2D and sphere clients; qualify general 3D and sphere MOL separately."
+    "goal": "Qualify a source-locked solver portfolio through common achieved global error and complete-IVP work; optimize only when both mathematical and measured evidence support it.",
+    "immediate": [
+      "Replay current fair-ab/global-error authority already in the C5 source.",
+      "Preregister and measure C5 long path-forest IVP before scan optimization.",
+      "Only if end-to-end crossover exists, implement a work-efficient ordered scan.",
+      "Qualify BDF/Radau references and Peer-W/SEPP separately before frontend."
     ],
     "non_goals": [
-      "Claiming original RODAS stages are independent.",
-      "Relabeling source-specific kernels as general solvers.",
-      "Changing tableau/default/tolerance/threshold/budget/release criteria without approval.",
-      "GPU implementation or benchmark in this short DAG.",
-      "Using kernel timing or nominal step count as full-IVP speed evidence."
+      "No claim of RODAS stage independence.",
+      "No C5 speed or parallel-scan claim.",
+      "No re-import of unrelated v0.10 tree as ancestor.",
+      "No application-specific kernel promoted to generic solver.",
+      "No change to defaults, tableau, tolerance, error thresholds, budgets or main.",
+      "No GPU in this short plan."
     ]
   },
   "verdict": {
     "status": "HOLD_NOT_RELEASE_QUALIFIED",
     "facts": [
-      "Public frontend is DOPRI5/RODAS5P only.",
-      "BDF1/2 and Radau IIA1/3 are internal reference-only paths.",
-      "PR #187 C5 graph-Schur draft/HOLD: recorded full-IVP median about 2.24x slower than protected fast-direct route.",
-      "Current homotopy NonlinearOutputCertificate is linearized and does not bound nonlinear remainder.",
-      "No peer-W implementation path found in pinned source path inventory; method family is literature-backed only.",
-      "P06 sphere FV is PASS_SCOPED, production HOLD; Gray-Scott 2D is an MOL provider, not a general 3D/sphere backend.",
-      "PP05/PP06 failed gates and PP15 no-timing remain preserved."
-    ],
-    "allowed_claim": "Research-grade ODE platform with protected RODAS5P and source-scoped research components; not a unified production solver portfolio.",
-    "forbidden": [
-      "generic Jacobian-free stiff solver",
-      "generic derivative-free solver",
-      "generic Newton-free stiff solver",
-      "parallelized original RODAS5P stages",
-      "general sphere/3D production solver",
-      "end-to-end speedup without matched achieved-error full-IVP evidence",
-      "validated continuous global enclosure from sampled-grid error"
+      "Current C5 source includes `rodas5p-fair-ab`; replay pending.",
+      "Public selector only DOPRI5/RODAS5P.",
+      "BDF/Radau internal reference only.",
+      "C5 median graph/fast-direct 2.242032452000776, all 12 original pairs slower.",
+      "Physical C5 paths length one, zero affine pair compositions.",
+      "Current scan is serial and allocation-heavy.",
+      "Legacy v0.10 has no Git common ancestor with C5.",
+      "No Peer-W/SEPP/PTSW source path found in pinned tree.",
+      "Homotopy nonlinear-output certificate is linearized, not a nonlinear remainder enclosure."
     ]
   },
   "turns": [
     {
       "id": "T00_LOCK_AND_PLAN",
-      "order": 0,
-      "status": "DOCS_CREATED_PENDING_REMOTE_READBACK",
-      "objective": "Pin source, update literature and method inventory, create the executable multi-turn plan and local-agent prompt.",
-      "outputs": [
-        "SOURCE_LOCK_20261109.json",
-        "LITERATURE_DELTA_20261109.json",
-        "METHOD_PORTFOLIO_20261109.json",
-        "SHORT_TERM_DAG_20261109.json",
-        "README_SHORT_DAG_KO.md",
-        "NEXT_TURN_AGENT_PROMPT_KO.txt",
-        "EXECUTION_RECEIPT_T00.json"
-      ],
-      "scope": "documentation only; no Rust code or coefficients changed"
+      "status": "DOCUMENTATION_TURN_COMPLETE_REMOTE_READBACK_VERIFIED",
+      "order": 0
     },
     {
       "id": "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
+      "status": "DOCUMENTATION_TURN_COMPLETE_REMOTE_READBACK_VERIFIED",
       "order": 1,
-      "status": "PLANNED",
-      "depends_on": [
-        "T00_LOCK_AND_PLAN"
-      ],
-      "objective": "Reconstruct PR/branch/commit/Library research genealogy and classify every solver-like path against exact source identity.",
-      "work": [
-        "Audit PR #74, #91, #93, #117, #135, #136 and #174-#187 including head/base SHA, merge/draft state and exact file patches.",
-        "Reconcile PR #176 28-entry inventory with current pinned source; distinguish solver, step kernel, operator, selector, certificate, source-specific application and test fixture.",
-        "Rebuild R5-R10, PR179/184/185/186/187, C5 graph-Schur, PP05/06/07/15, P06 sphere FV, Gray-Scott, spherical_information and dynamics_symbolic_validation ancestry.",
-        "Inspect relevant branches and immutable archived refs; preserve ancestry and all negative evidence.",
-        "Replay the smallest relevant archived tests/receipts if runtime and dependencies are available; otherwise mark NOT_RUN."
-      ],
-      "outputs": [
-        "HISTORY_MATRIX.json",
-        "LINEAGE_DAG.mmd",
-        "SOLVER_COMPONENT_INVENTORY.json",
-        "NEGATIVE_EVIDENCE_INDEX.json",
-        "REPLAY_COMMANDS.json",
-        "EXECUTION_RECEIPT_T01.json"
-      ],
-      "acceptance": [
-        "Every record has repo/branch/commit/tree/blob, source path and category.",
-        "Every performance/theory claim has exact evidence and scope.",
-        "All failed/slower/blocked/unrun records remain explicit.",
-        "No production code changes before T01 acceptance."
-      ],
-      "mutation": "docs/agent/solver_consolidation_20261108/* and research/solver_portfolio_shortdag_20261109/* only",
-      "backup": "Commit source inventory, lineage DAG and receipt; push and verify remote readback."
+      "scope": "187 PR metadata, 361 branch refs, 28-row inventory and selected scientific source lineages"
     },
     {
-      "id": "T02_PEER_METHOD_MATHEMATICS_AND_SELECTION",
-      "order": 2,
+      "id": "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
       "status": "PLANNED",
+      "order": 2,
       "depends_on": [
         "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY"
       ],
-      "objective": "Select a defensible true-stage-parallel stiff method using exact coefficients and complete variable-step/stability/startup/estimator evidence.",
-      "candidates": [
-        "PTSW2B: exact coefficient/startup/estimator certificate exists; order 2; first correctness and large-MOL/Krylov probe, not presumed winner.",
-        "PTSW2C: order-3 comparator; numeric constant-step A(81.1-degree) root-locus corroboration, not L-stable and full-sector interval proof open.",
-        "PTSW3B: higher-concurrency Krylov target; exact coefficients, estimator and startup not fully transcribed.",
-        "Multi-implicit peer-W: independently shifted stages and damping; recover exact table and setup costs.",
-        "TASE-SEPP2/3/4: order 2/3/4; verify exact stability and cost of all TASE solves.",
-        "2026 reused-stage L(theta)-stable peer: mandatory MOL comparator; verify exact current-stage DAG.",
-        "2026 variable-step order-5 diagonally implicit peer: high-order stiff norm comparator, presumed sequential until proven otherwise.",
-        "EPPEER: nonstiff parallel reference only; estimator rules remain method-specific."
-      ],
-      "work": [
-        "Recover primary coefficient tables as exact rationals or declared algebraic numbers with page/equation/table provenance.",
-        "Derive exact variable-step coefficient maps, preconsistency, order/stage order, zero-stability and admissible step-ratio bounds.",
-        "Verify full sector/stiff-limit stability; numeric root loci stay NUMERICALLY_CHECKED, not PROVED.",
-        "Recover matching startup, estimator, step controller, dense output, rejection and event/discontinuity restart.",
-        "Specify common-shift/multi-shift Krylov or independent shifted solves and count all setups."
-      ],
+      "objective": "Replay/audit current fair-ab source identity, references, global error, clipped/dense policy, adaptive-ranking gates and work reports.",
       "outputs": [
-        "PEER_METHOD_SELECTION.json",
-        "COEFFICIENTS_EXACT.json",
-        "ORDER_CONDITIONS_CERTIFICATE.md",
-        "STABILITY_CERTIFICATE.md",
-        "STARTUP_ESTIMATOR_CONTRACT.md",
-        "verify_peer_tables.py",
+        "GLOBAL_ERROR_AUTHORITY_REPLAY_KO.md",
+        "GLOBAL_ERROR_AUTHORITY_REPLAY.json",
         "EXECUTION_RECEIPT_T02.json"
       ],
       "acceptance": [
-        "No guessed coefficient or estimator term.",
-        "Exact algebraic order checks pass and independent derivation is documented.",
-        "Variable-step hypotheses are explicit.",
-        "Current-step stage independence is proven from the selected table.",
-        "No Rust method implementation before method identity freeze."
+        "Current blobs pinned",
+        "Tests executed or explicitly NOT_RUN",
+        "No ranking if uncertainty/output policy unresolved"
       ],
-      "backup": "Commit exact table, proof/checker and selection disposition."
+      "mutation": "docs only"
     },
     {
-      "id": "T03_RODAS_EIGHT_STAGE_PARALLELISM",
-      "order": 3,
+      "id": "T03_C5_COST_ATTRIBUTION_AND_LONG_PATH_PREREG",
       "status": "PLANNED",
+      "order": 3,
       "depends_on": [
         "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY"
       ],
-      "objective": "Optimize original RODAS5P safely and determine whether low-round speculative stage proposals have a nontrivial economic region.",
-      "tracks": [
-        {
-          "id": "P1_STAGE_INTERNAL_CPU",
-          "semantics": "Exact RODAS5P equations preserved; parallelize independent RHS rows/components, JVP/operator rows, sparse assembly, preconditioner build, Krylov reductions and legal multi-RHS kernels.",
-          "reuse": [
-            "ParallelExecution",
-            "stage_batch",
-            "LinearOperator",
-            "existing LU/Krylov/preconditioners",
-            "WorkLedger"
-          ]
-        },
-        {
-          "id": "P2_INDEPENDENT_IVP_ENSEMBLE",
-          "semantics": "Parallel independent IVPs/parameter samples; each member retains its own controller, norm, history, events and work ledger.",
-          "reuse": [
-            "Dopri5Ensemble",
-            "ParallelExecution"
-          ]
-        },
-        {
-          "id": "P3_SPATIAL_MOL_CPU",
-          "semantics": "Parallel spatial rows/cells/modes/subdomains at every time stage; report separately from time-stage parallelism.",
-          "reuse": [
-            "Problem/operator",
-            "Gray-Scott 2D",
-            "sphere P06 client"
-          ]
-        },
-        {
-          "id": "P4_SPECULATIVE_ROUNDS",
-          "semantics": "Batched predictors/corrections are speculative; test original RODAS residual and endpoint/embedded error budget, then rollback and sequential fallback from last accepted state.",
-          "reuse": [
-            "homotopy.rs",
-            "actual_k_homotopy.rs",
-            "transaction.rs",
-            "transactional_q1_q2.rs",
-            "outward_certificate.rs"
-          ]
-        },
-        {
-          "id": "P5_NILPOTENT_BINARY_LIFT",
-          "semantics": "For strict-lower 8x8 N, N^8=0 and (I-lambda N)^-1=sum(k=0..7)(lambda N)^k=(I+lambda N)(I+lambda^2 N^2)(I+lambda^4 N^4). Exact algebraic identity only; powers can densify and do not prove runtime speedup.",
-          "reuse": [
-            "collective_rodas5p",
-            "affine_transport",
-            "stage_batch"
-          ]
-        }
-      ],
-      "decisive_gates": [
-        "T03-A exact affine noncommuting-matrix oracle and predictor-independent endpoint.",
-        "T03-B nonnormal/Jordan/official-stage screens with zero false accepts.",
-        "T03-C measured Rust batch-cost envelope with robust >=15% break-even margin under uncertainty.",
-        "T03-D nonlinear curvature and within-step Jacobian variation map.",
-        "T03-E fifth-order and stiff-decay checks including accepted speculative endpoints and fallback.",
-        "T03-F controls: block Jacobi, prefix locking, SABR, PTIRK-like, MHC-R, Anderson, binary lift.",
-        "T03-G adaptive lambda controller versus fixed schedule.",
-        "T03-H full-stage versus goal-oriented certificate; dense output/events covered or refused."
-      ],
-      "stop_rules": [
-        "Any false accept stops the affected speculative lane.",
-        "No r<=3 economic break-even under measured batch kernels stops further performance implementation of that lane.",
-        "Order or stiff-decay loss rejects the fast lane even if fallback masks it.",
-        "Source-specific methods remain source-specific unless assumptions are executable and enforced."
-      ],
+      "objective": "Derive C5 affine scan work/depth/roundoff/memory and preregister long path-forest full-IVP holdout.",
       "outputs": [
-        "P1_P2_P3_CPU_REPORT.json",
-        "P4_HOMOTOPY_GATES.json",
-        "P5_NILPOTENT_LIFT_CERTIFICATE.md",
-        "RODAS_PARALLELISM_DECISION.json",
+        "C5_SCAN_COST_MODEL_KO.md",
+        "C5_LONG_PATH_PREREGISTRATION.json",
         "EXECUTION_RECEIPT_T03.json"
       ],
-      "backup": "Commit all positive and negative gate results; protected RODAS equations stay unchanged."
+      "acceptance": [
+        "Current serial runtime separated from ideal parallel span",
+        "No scan code before prereg",
+        "Synthetic controls separate from physical models"
+      ],
+      "mutation": "docs only"
     },
     {
-      "id": "T04_UNIFIED_FRONTEND_AND_OPERATOR_CONTRACT",
-      "order": 4,
+      "id": "T04_C5_LONG_PATH_NATIVE_FULL_IVP_HOLDOUT",
       "status": "PLANNED",
+      "order": 4,
       "depends_on": [
-        "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY"
+        "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
+        "T03_C5_COST_ATTRIBUTION_AND_LONG_PATH_PREREG"
       ],
-      "objective": "Define one public problem/solver frontend with capability negotiation while preserving each method's distinct lifecycle.",
-      "requirements": [
-        "Common Problem: state/vector-space semantics, t-span/direction, mass operator, RHS, time derivative, derivative provider and callback replay/thread-safety declarations.",
-        "Derivative provider distinguishes assembled J, analytic/AD JVP, finite-difference JVP, source-owned structured operator and absent derivative.",
-        "MethodDescriptor carries method/tableau ID, one/two-step history, stage DAG, order/stage order, stability domain, estimator, startup, step-ratio domain, shifts/preconditioners, dense output, events, backward and geometry constraints.",
-        "StepAttempt carries candidate state/history, accept/reject/fail, estimator, next h, dense segment, event information, typed failure and WorkDelta.",
-        "Commit/rollback/checkpoint is transactional; a rejected attempt cannot mutate committed state/history.",
-        "Fallback restores last accepted state, invalidates caches on method/operator/mesh changes and charges speculative plus fallback work.",
-        "Capability query is callback-free; explicit selection outranks Auto; reference-only methods excluded from production Auto.",
-        "Keep DOPRI5 and RODAS5P public APIs as compatibility wrappers during migration."
-      ],
+      "objective": "Measure C5 graph-Schur versus protected fast-direct on long path forest with same source, achieved error, reference, output semantics and full costs.",
       "outputs": [
-        "PROBLEM_CONTRACT.md",
-        "METHOD_DESCRIPTOR.schema.json",
-        "STEP_ATTEMPT.schema.json",
-        "CAPABILITY_MATRIX.json",
-        "FRONTEND_MIGRATION_DAG.json",
+        "C5_LONG_PATH_NATIVE_RESULTS.json",
+        "C5_LONG_PATH_FULL_IVP_REPORT_KO.md",
         "EXECUTION_RECEIPT_T04.json"
       ],
       "acceptance": [
-        "Contract tests cover shape, units, mass, derivative semantics and callback replay/thread safety.",
-        "Capability query calls no user callbacks.",
-        "Rejected attempts do not mutate committed state.",
-        "History/cache invalidation works on method/operator/mesh/event/discontinuity changes."
+        "At least two nontrivial path regimes and an adverse/nonnormal/time-varying holdout",
+        "No interpolation or policy mismatch",
+        "Residual/fallback cost charged; paired full-IVP speed only"
       ],
-      "mutation": "Additive changes in crates/vigilode, rodas5p-core, integrators, krylov and tests only; opt-in routes; no default promotion.",
-      "backup": "Commit API contracts and migration plan before plugin integration."
+      "mutation": "test/benchmark only"
     },
     {
-      "id": "T05_FIRST_PARALLEL_PEER_PLUGIN",
+      "id": "T05_C5_WORK_EFFICIENT_ORDERED_SCAN",
+      "status": "CONDITIONAL_GATE",
       "order": 5,
-      "status": "PLANNED",
       "depends_on": [
-        "T02_PEER_METHOD_MATHEMATICS_AND_SELECTION",
-        "T04_UNIFIED_FRONTEND_AND_OPERATOR_CONTRACT"
+        "T04_C5_LONG_PATH_NATIVE_FULL_IVP_HOLDOUT"
       ],
-      "objective": "Implement the first exact-source-backed genuinely stage-parallel stiff peer-W plugin as an opt-in method.",
-      "reuse": [
-        "ParallelExecution",
-        "LinearOperator/LinearSolverConfig/existing LU and Krylov",
-        "stage_batch concurrency report",
-        "DOPRI5 starter only if source-compatible",
-        "existing session/checkpoint/transaction/WorkLedger"
-      ],
-      "new_science": [
-        "selected peer tableau and variable-step coefficient transform",
-        "peer-history state and ratio guard",
-        "source-matched startup and restart",
-        "method-specific local/global estimator and output formulas"
-      ],
-      "acceptance": [
-        "Measured overlap of independent current peer stages.",
-        "Startup order, history commit, rejection rollback, step-ratio changes and restart pass.",
-        "Observed order/stability agree with frozen source certificate.",
-        "Stiff scalar, Prothero-Robinson, nonnormal, diffusion MOL and large sparse Krylov tests pass.",
-        "Fallback preserves state/history and charges all work.",
-        "Plugin stays explicitly selected; no Auto/default promotion."
-      ],
+      "objective": "If long-path full-IVP data show scan is material and a crossover exists, implement work-efficient ordered scan.",
       "outputs": [
-        "peer_w_plugin/",
-        "PEER_RUNTIME_CONTRACT.md",
-        "PEER_PARALLEL_RECEIPT.json",
+        "C5_SCAN_IMPLEMENTATION_REPORT_KO.md",
+        "C5_SCAN_NATIVE_TESTS.json",
+        "C5_SCAN_FULL_IVP_RESULTS.json",
         "EXECUTION_RECEIPT_T05.json"
       ],
-      "backup": "Commit plugin/tests/receipt; keep route opt-in."
+      "acceptance": [
+        "Blelloch O(m) work/O(log m) span; preserve noncommutative order",
+        "Reuse ParallelExecution and scratch; no new pool",
+        "Check floating reassociation against original W residual/fallback",
+        "Else NO_GO without code"
+      ],
+      "mutation": "isolated opt-in worktree only"
     },
     {
-      "id": "T06_SPHERE_2D_3D_MOL_GEOMETRY",
-      "order": 6,
+      "id": "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION",
       "status": "PLANNED",
+      "order": 6,
       "depends_on": [
-        "T04_UNIFIED_FRONTEND_AND_OPERATOR_CONTRACT"
+        "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY"
       ],
-      "objective": "Generalize existing 2D/sphere applications into spatial operator contracts and establish a 3D MOL path with geometry-aware error measures.",
-      "reuse": [
-        "Gray-Scott 2D RHS/JVP/log-norm",
-        "sphere_photon_fv_support Layout3/Geometry3/Model3 and 38-check oracle",
-        "sphere_photon_fv_contracts parity/conservation/refusal tests",
-        "spherical_information remap/spectral research",
-        "sphere_pole_split fixed-sphere FV prototype"
-      ],
-      "contract": [
-        "Cartesian 2D/3D: topology, face fluxes, boundary conditions, anisotropic tensor diffusion, halo ownership, conservative flux and matrix-free operator actions.",
-        "Sphere: area/volume measures, polar degeneracy, longitude periodicity, chart/cubed-sphere seam, tangent-vector components, Laplace-Beltrami/surface divergence and conservative remap.",
-        "Physical error norms use geometry weights and component scales.",
-        "Spatial discretization, remap, temporal truncation and linear solve errors are separate ledgers.",
-        "Run space/time convergence separately before combined cost claims."
-      ],
-      "test_corpus": [
-        "periodic Gray-Scott 2D",
-        "2D anisotropic Braginskii conduction with rotated field",
-        "3D Gray-Scott/FitzHugh-Nagumo reaction-diffusion MOL",
-        "3D advection-diffusion with stiff absorbing obstacle",
-        "P06 full-sphere parity followed by separate tilt/aberration scope",
-        "sphere eigenmode/Laplace-Beltrami and mass/positivity"
-      ],
-      "acceptance": [
-        "P06 38-check source oracle and Rust parity reproduce without scope drift.",
-        "Conservation/positivity use declared spatial weights.",
-        "Manufactured-solution refinement shows expected spatial order.",
-        "Serial/parallel operator parity and worker scaling are measured.",
-        "No general sphere claim from one source-specific P06 client."
-      ],
+      "objective": "Audit BDF/Radau reference status and Peer-W/SEPP exact method math.",
       "outputs": [
-        "SPATIAL_OPERATOR.schema.json",
-        "SPHERE_GEOMETRY_CONTRACT.md",
-        "MOL_2D_3D_SPHERE_TESTS.json",
-        "SPATIAL_CONVERGENCE_RECEIPT.json",
+        "METHOD_QUALIFICATION_MATRIX.json",
+        "PEER_W_SEPP_COEFFICIENT_AUDIT.md",
         "EXECUTION_RECEIPT_T06.json"
       ],
-      "backup": "Commit spatial contracts, implementation and raw evidence."
+      "acceptance": [
+        "Exact coefficients, startup, estimator, step-ratio and stability hypotheses verified",
+        "Stage reuse distinguished from stage independence",
+        "No implementation this turn"
+      ],
+      "mutation": "docs only"
     },
     {
-      "id": "T07_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW",
-      "order": 7,
+      "id": "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN",
       "status": "PLANNED",
+      "order": 7,
       "depends_on": [
-        "T03_RODAS_EIGHT_STAGE_PARALLELISM",
-        "T05_FIRST_PARALLEL_PEER_PLUGIN",
-        "T06_SPHERE_2D_3D_MOL_GEOMETRY"
+        "T05_C5_WORK_EFFICIENT_ORDERED_SCAN",
+        "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION"
       ],
-      "objective": "Make a production decision from achieved-error matched full-IVP benchmarks, complete CI and one independent adversarial review.",
-      "benchmark": [
-        "Freeze commit/tree/toolchain/RHS/initial state/span/output/norm/tolerances/startup/ratio policy before timing.",
-        "Compare protected RODAS5P, qualified BDF/Radau/external references, peer-W, matrix-free RODAS and any certified speculative path.",
-        "Match achieved output error against independent reference; no extrapolation outside observed tolerances.",
-        "At least seven randomized paired CPU timings on preregistered cases.",
-        "Charge setup, J/JVP, preconditioner, Krylov, startup, output, rejected attempts, certificate, fallback, memory and allocation.",
-        "Separate trajectory latency, independent-ensemble throughput and spatial throughput.",
-        "No GPU in this DAG."
-      ],
-      "targets": {
-        "peer_accepted_steps_ratio_max": 1.1,
-        "median_full_ivp_speedup_min": 1.15,
-        "paired_runs_min": 7,
-        "scope": "complete solver call including setup/startup/error estimator/output/reject/fallback",
-        "change_policy": "Do not relax after seeing results; owner approval required."
-      },
-      "release_gates": [
-        "exact method/tableau/provenance",
-        "order/stage-order/zero-stability/A(alpha)/L(alpha)/stiff limit",
-        "estimator/controller/startup/output/events/restart",
-        "linear solver/preconditioner/JVP and fault injection",
-        "frontend/capability/rollback/history invalidation",
-        "geometry-specific supported-scope validation",
-        "clean clone workspace CI/fmt/test/clippy/provenance",
-        "one independent adversarial review",
-        "preserve negative and inconclusive results"
-      ],
-      "verdicts": [
-        "PROMOTE_OPT_IN",
-        "PROMOTE_DEFAULT_WITH_OWNER_APPROVAL",
-        "RESEARCH_ONLY",
-        "REJECT",
-        "BLOCKED"
-      ],
+      "objective": "Build unified capability/transactional frontend and smallest opt-in plugin only after method selection.",
       "outputs": [
-        "MATCHED_ERROR_BENCHMARKS.json",
-        "PERFORMANCE_ANALYSIS.md",
-        "PRODUCTION_READINESS_MATRIX.json",
-        "INDEPENDENT_REVIEW.md",
-        "RELEASE_DECISION.json",
+        "METHOD_FRONTEND_CONTRACT.md",
+        "OPT_IN_PLUGIN_DESIGN.md",
         "EXECUTION_RECEIPT_T07.json"
       ],
-      "backup": "Commit full receipts and decision; never merge to main automatically."
+      "mutation": "isolated opt-in only"
+    },
+    {
+      "id": "T08_SPATIAL_MOL_SPHERE_AND_3D_GEOMETRY",
+      "status": "PLANNED",
+      "order": 8,
+      "depends_on": [
+        "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN"
+      ],
+      "objective": "Reuse Gray-Scott 2D and sphere FV, qualify geometry-aware 3D MOL separately.",
+      "outputs": [
+        "SPATIAL_OPERATOR_MATRIX.json",
+        "MOL_GEOMETRY_CONTRACT.md",
+        "EXECUTION_RECEIPT_T08.json"
+      ],
+      "mutation": "opt-in example/operator"
+    },
+    {
+      "id": "T09_MATCHED_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW",
+      "status": "PLANNED",
+      "order": 9,
+      "depends_on": [
+        "T05_C5_WORK_EFFICIENT_ORDERED_SCAN",
+        "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION",
+        "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN",
+        "T08_SPATIAL_MOL_SPHERE_AND_3D_GEOMETRY"
+      ],
+      "objective": "Independent matched achieved-error full-cost review, clean-clone CI and explicit release/HOLD.",
+      "outputs": [
+        "FINAL_METHOD_PARETO.json",
+        "FINAL_RELEASE_REVIEW_KO.md",
+        "EXECUTION_RECEIPT_T09.json"
+      ],
+      "acceptance": [
+        "At least seven randomized paired CPU blocks where feasible",
+        "Exact/uncertainty-bounded refs and peak RSS separate",
+        "All failures charged; distinct-author reviewer; otherwise HOLD"
+      ],
+      "mutation": "no main merge"
     }
   ],
   "edges": [
@@ -410,39 +229,55 @@
     ],
     [
       "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
-      "T02_PEER_METHOD_MATHEMATICS_AND_SELECTION"
+      "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY"
     ],
     [
       "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
-      "T03_RODAS_EIGHT_STAGE_PARALLELISM"
+      "T03_C5_COST_ATTRIBUTION_AND_LONG_PATH_PREREG"
     ],
     [
-      "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
-      "T04_UNIFIED_FRONTEND_AND_OPERATOR_CONTRACT"
+      "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
+      "T04_C5_LONG_PATH_NATIVE_FULL_IVP_HOLDOUT"
     ],
     [
-      "T02_PEER_METHOD_MATHEMATICS_AND_SELECTION",
-      "T05_FIRST_PARALLEL_PEER_PLUGIN"
+      "T03_C5_COST_ATTRIBUTION_AND_LONG_PATH_PREREG",
+      "T04_C5_LONG_PATH_NATIVE_FULL_IVP_HOLDOUT"
     ],
     [
-      "T04_UNIFIED_FRONTEND_AND_OPERATOR_CONTRACT",
-      "T05_FIRST_PARALLEL_PEER_PLUGIN"
+      "T04_C5_LONG_PATH_NATIVE_FULL_IVP_HOLDOUT",
+      "T05_C5_WORK_EFFICIENT_ORDERED_SCAN"
     ],
     [
-      "T04_UNIFIED_FRONTEND_AND_OPERATOR_CONTRACT",
-      "T06_SPHERE_2D_3D_MOL_GEOMETRY"
+      "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
+      "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION"
     ],
     [
-      "T03_RODAS_EIGHT_STAGE_PARALLELISM",
-      "T07_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW"
+      "T05_C5_WORK_EFFICIENT_ORDERED_SCAN",
+      "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN"
     ],
     [
-      "T05_FIRST_PARALLEL_PEER_PLUGIN",
-      "T07_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW"
+      "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION",
+      "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN"
     ],
     [
-      "T06_SPHERE_2D_3D_MOL_GEOMETRY",
-      "T07_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW"
+      "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN",
+      "T08_SPATIAL_MOL_SPHERE_AND_3D_GEOMETRY"
+    ],
+    [
+      "T05_C5_WORK_EFFICIENT_ORDERED_SCAN",
+      "T09_MATCHED_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW"
+    ],
+    [
+      "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION",
+      "T09_MATCHED_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW"
+    ],
+    [
+      "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN",
+      "T09_MATCHED_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW"
+    ],
+    [
+      "T08_SPATIAL_MOL_SPHERE_AND_3D_GEOMETRY",
+      "T09_MATCHED_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW"
     ]
   ],
   "mutation_policy": {
@@ -518,27 +353,16 @@
   },
   "anti_drift": {
     "rules": [
-      "Original RODAS5P strict-lower stage equations remain dependent.",
-      "For strict-lower 8x8 N, N^8=0 and finite inverse/binary factorization are exact algebraic identities, not speedup theorem.",
-      "JVP is derivative action; matrix-free is not derivative-free; FD-JVP is approximate differentiation.",
-      "Newton-free does not mean solve-free or globally convergent.",
-      "Peer-W is a distinct two-step method with own startup/history/estimator/restart.",
-      "Stage reuse does not prove stage independence.",
-      "Constant-step spectral radius is not a variable-step norm proof.",
-      "Algebraic residual is not LTE bound without inverse/Lipschitz/output propagation.",
-      "Affine prefix scan parallelizes supplied recurrence, not nonlinear adaptive trajectory.",
-      "P06/Gray-Scott clients are not a general spatial backend.",
-      "Source-specific Fourier invariant leaf is not generic spectral solver.",
-      "Published table is not implemented or runtime-qualified method.",
-      "Preserve PR187 slowdown, R6/R7 slowdowns, PP05/PP06 failures and PP15 no-timing."
-    ],
-    "stop": [
-      "Two turns with no reproducible progress.",
-      "Any mutation outside allowlist.",
-      "Any false certificate accept.",
-      "Missing coefficient/startup/estimator authority.",
-      "Unsupported capability or geometry claim.",
-      "One independent adversarial review only; no review-of-review recursion."
+      "RODAS five? no: original eight stages remain strict-lower causal.",
+      "Affine composition is exact-arithmetic associative but noncommutative; floating reassociation changes rounding.",
+      "Current scan is serial O(m log m) work and serial time; O(log m) is not attained.",
+      "Blelloch O(m) work/O(log m) span is a candidate, not measured speed.",
+      "JVP is derivative action; matrix-free is no explicit matrix, not no solve.",
+      "Peer-W is a separate two-step method with history/startup/estimator/restart.",
+      "Stored output bytes are not peak RSS.",
+      "Keep all C5/R6/R7/WP1/PR90/PP05/PP06/PP15 negatives.",
+      "Current fair-ab exists; replay current source; don't recreate it.",
+      "Legacy v0.10 is not an ancestor of current C5 source."
     ]
   }
 }

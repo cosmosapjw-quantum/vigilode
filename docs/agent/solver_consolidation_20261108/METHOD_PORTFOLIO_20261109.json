@@ -361,5 +361,72 @@
       "item": "Complete clean-clone workspace CI and production release gate",
       "status": "NOT_PASSED"
     }
-  ]
+  ],
+  "current_authority": {
+    "status": "IMPLEMENTED_IN_PINNED_SOURCE_REPLAY_PENDING",
+    "package": "rodas5p-fair-ab",
+    "files": [
+      {
+        "id": "FAIR_AB",
+        "path": "crates/rodas5p-fair-ab/src/global_error.rs",
+        "blob": "c62f996fa18f9815f1f329766abe8fe2c25ca22b",
+        "role": "common output grid, reference WRMS, global metrics, output policy, Pareto, work and timing reports"
+      },
+      {
+        "id": "ADAPTIVE",
+        "path": "crates/rodas5p-fair-ab/src/adaptive_global_error.rs",
+        "blob": "ccae16353ed1dcc90c6511befea8b42f7d3ad9cd",
+        "role": "adaptive clipped/dense pairs and same-error rank admissibility"
+      },
+      {
+        "id": "EXPORTS",
+        "path": "crates/rodas5p-fair-ab/src/lib.rs",
+        "blob": "6dd776caa740f82aaaac5e7b05feef764fa30072",
+        "role": "public exports of error target/reference/Pareto/work/timing"
+      },
+      {
+        "id": "TESTS",
+        "path": "crates/rodas5p-fair-ab/tests/global_error_contracts.rs",
+        "blob": "2ddca4c399d632540334f43964ccdffe457151cd2",
+        "role": "current global error contract tests"
+      },
+      {
+        "id": "NUMERICAL_REFERENCE",
+        "path": "crates/rodas5p-fair-ab/src/numerical_reference.rs",
+        "blob": "b8adbdae154eaa243310136f78ec2eaa4d7073d9",
+        "role": "reference provenance/manifests/checksums"
+      },
+      {
+        "id": "OUTPUT_ACCURACY",
+        "path": "crates/rodas5p-fair-ab/src/output_accuracy.rs",
+        "blob": "57401289d7484f5927693b0b47333660f1f2644d",
+        "role": "uncertainty and output admissibility"
+      }
+    ],
+    "provides": [
+      "common output grid",
+      "reference WRMS and global error metrics",
+      "reference provenance",
+      "clipped/dense output-policy pairs",
+      "failure-preserving Pareto",
+      "work/timing report"
+    ],
+    "limits": [
+      "replay pending",
+      "stored_state_bytes not peak RSS",
+      "v0.10 not an ancestor",
+      "BDF/Radau comparator-only fidelity"
+    ]
+  },
+  "priority_revision_20261109": {
+    "decision": "No new method implementation before current authority replay and C5 long-path economics.",
+    "immediate": [
+      "current fair-ab replay",
+      "C5 long path forest holdout",
+      "BDF/Radau comparator qualification",
+      "exact Peer-W/SEPP math",
+      "frontend after selection"
+    ]
+  },
+  "audit_revision": "T01 history and source audit"
 }

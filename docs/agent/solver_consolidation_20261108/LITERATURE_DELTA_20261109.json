@@ -167,6 +167,38 @@
         "Preprint hypotheses and exact tables need independent audit.",
         "Diagonal implicitness is not synonymous with stage parallelism."
       ]
+    },
+    {
+      "id": "BLELLOCH_ORDERED_SCAN",
+      "family": "parallel_prefix",
+      "sources": [
+        {
+          "authors": "Guy E. Blelloch",
+          "year": 1990,
+          "title": "Prefix Sums and Their Applications",
+          "venue": "CMU-CS-90-190",
+          "url": "https://www.cs.cmu.edu/~guyb/papers/Ble93.pdf"
+        },
+        {
+          "authors": "Guy E. Blelloch and Bruce M. Maggs",
+          "year": 2004,
+          "title": "Parallel Algorithms",
+          "venue": "Parallel algorithms course material",
+          "url": "https://www.cs.cmu.edu/afs/cs/academic/class/15210-f15/www/tapp.html"
+        }
+      ],
+      "claims": [
+        "Ordered associative scan has work-efficient O(m) work/O(log m) depth using up-sweep/down-sweep.",
+        "Hillis-Steele has O(m log m) work and O(logm) ideal depth only when each level is concurrent.",
+        "C5 affine pair operator is noncommutative and order must be preserved."
+      ],
+      "consequence": "Candidate only after measured long-path full-IVP crossover.",
+      "evidence": "LITERATURE_SUPPORTED_AND_DERIVED",
+      "limits": [
+        "Current loop serial and allocation-heavy.",
+        "IEEE floating reassociation changes rounding.",
+        "Theoretical span is not wall-clock evidence."
+      ]
     }
   ],
   "selection": {
@@ -175,7 +207,10 @@
     "high_order_control": "2026 variable-step L(alpha)-stable order-five diagonally implicit peer; not presumed parallel.",
     "MOL_cost_control": "2026 L(theta)-stable reused-stage peer; stage DAG must be checked.",
     "nonstiff_parallel_control": "EPPEER explicit peer family; DQC estimator restrictions remain method-specific.",
-    "novelty_boundary": "Parallel peer methods themselves are established prior art. Potential novelty must come from a newly derived/certified algorithmic combination, rollback/error guarantees, operator/geometry integration and matched achieved-error end-to-end evidence."
+    "novelty_boundary": "Parallel peer methods themselves are established prior art. Potential novelty must come from a newly derived/certified algorithmic combination, rollback/error guarantees, operator/geometry integration and matched achieved-error end-to-end evidence.",
+    "immediate_priority": "Revalidate current fair-ab and C5 path economics before implementing Peer-W.",
+    "peer_implementation_status": "literature-supported; no path in pinned source.",
+    "scan_candidate": "Blelloch ordered scan only on measured crossover."
   },
   "research_gates": [
     "Exact primary coefficient tables and exact-rational reconstruction.",
