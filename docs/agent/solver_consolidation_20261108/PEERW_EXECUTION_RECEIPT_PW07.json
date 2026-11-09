@@ -2,7 +2,7 @@
   "schema_version": "vigilode.execution-receipt.v1",
   "task": "PW07_COMPOSITIONAL_ERROR_CERTIFICATE_AND_MOCK_EXPERIMENT",
   "date_kst": "2026-11-09",
-  "status": "THEORY_AND_MOCK_REMOTE_READBACK_VERIFIED_RUST_NOT_RUN",
+  "status": "THEORY_AND_MOCK_REPLAYED_REMOTE_READBACK_VERIFIED_RUST_NOT_RUN",
   "repository": "cosmosapjw-quantum/vigilode",
   "branch": "research/solver-portfolio-shortdag-20261109",
   "pinned_code_source": {
@@ -32,16 +32,16 @@
     "affine_scan": "200 synthetic updates; serial/product difference 4.24e-22"
   },
   "tests": {
-    "python_driver": "COMPLETED_LOCAL_FULL_DRIVER",
-    "py_compile": "COMPLETED_LOCAL",
+    "python_full_driver_execution": "PASS",
+    "python_compact_driver_execution": "PASS",
+    "py_compile_full_and_compact": "PASS",
     "cargo": "NOT_RUN",
     "rustfmt": "NOT_RUN",
     "clippy": "NOT_RUN",
     "CI": "NOT_RUN",
-    "native_Rayon_peer_benchmark": "NOT_RUN",
-    "full_IVP_matched_error": "NOT_RUN",
-    "compact_repo_driver": "PY_COMPILE_AND_RUN_PASSED_AFTER_REMOTE_FETCH",
-    "compact_output_synced_to_python_serialization": true
+    "native_Rayon_peer_parallel_test": "NOT_RUN",
+    "full_IVP_matched_error_benchmark": "NOT_RUN",
+    "external_distinct_author_review": "NOT_RUN"
   },
   "limitations": [
     "Oracle startup excludes startup error/cost.",
@@ -49,18 +49,53 @@
     "No full complex sector interval proof.",
     "No generic source-bound propagation/transfer constants.",
     "2011/2015 Peer and 2017 coupled GL prior art preempt basic global-error claims.",
-    "All 187 PR diffs not scientifically reviewed; account-wide hidden ChatGPT export unavailable."
+    "All 187 PR diffs not scientifically reviewed; account-wide hidden ChatGPT export unavailable.",
+    "Fresh CPU microbenchmark speed ratio is 1.489x versus earlier 1.781x; no wall-speed claim for an IVP.",
+    "The compact JSON GitHub copy and locally regenerated JSON parse to the same numeric values but differ in float pretty-print bytes.",
+    "No Rust/Cargo/Clippy/rustfmt/CI/native solver/full-IVP matched-error validation was run."
   ],
   "remote_readback": {
-    "status": "ALL_PW07_ARTIFACTS_READ_BACK",
-    "verified": [
+    "status": "PW07_CORE_FILES_READ_BACK_FROM_BRANCH",
+    "checked": [
       "PEERW_ERROR_CERTIFICATE_THEORY_20261109.md",
       "PEERW_MOCK_EXPERIMENT_20261109.md",
       "PEERW_NOVELTY_PRIOR_ART_BOUNDARY_20261109.md",
       "PEERW_EXECUTION_RECEIPT_PW07.json",
       "peerw_pw07_reproduce.py",
-      "peerw_pw07_compact_results.json"
+      "peerw_pw07_compact_results.json",
+      "SHORT_TERM_DAG_20261109.json",
+      "METHOD_PORTFOLIO_20261109.json",
+      "LITERATURE_DELTA_20261109.json"
     ],
-    "note": "All six PW07 repository artifacts read back. The exact GitHub compact script content was fetched and its Git blob SHA-1 verified, then Python py_compile and execution passed locally. Its output JSON serialization was synced to the repository. Rust/Cargo/CI/native full-IVP/production qualification remain NOT_RUN."
-  }
+    "note": "GitHub compact driver was fetched, copied byte-for-byte from repository source (Git blob 69151...), py_compile'd and executed locally. Generated numeric results match compact result JSON. All tests are mock/research only."
+  },
+  "replay": {
+    "full_driver_sha256": "007543ec21224597ffdccebf5b9053b420e0e9c71add68971bb75a2b3b31ec5b",
+    "full_result_sha256": "f4b31cab861ac1366b3027ac248243a762e57d66b76e3c02ab72fc4cc3f8e121",
+    "compact_driver_sha256": "6080a5bb3f28e29200d18885fa4006848e317d53bc7841744c7609a4a78556e4",
+    "compact_driver_git_blob": "69151b577e18ed77bc7fce8422d9d028335c0b07",
+    "compact_result_sha256_local": "0f4ecc3e8fcda1ab2c2a9d4b6f62b178502f2be72edd0d209a487b5f91dd2372",
+    "compact_result_git_blob_remote": "d8da8a91b461bfe944912cd2a65d618a1eef4828",
+    "compact_parsed_values_match": "PASS",
+    "full_driver_py_compile": "PASS",
+    "full_driver_execution": "PASS",
+    "compact_driver_py_compile": "PASS",
+    "compact_driver_execution": "PASS",
+    "cpu_overlap": {
+      "serial_median_s": 0.032002317999968,
+      "two_thread_median_s": 0.02149668299989571,
+      "ratio": 1.488709583712206,
+      "median_task_overlap_s": 0.017554987000039546,
+      "repeats": 9,
+      "exact_output_parity": true,
+      "prior_run_ratio": 1.7811660238824332,
+      "classification": "synthetic operator-action microbenchmark only"
+    },
+    "local_handoff_zip": {
+      "path": "/mnt/data/VigilODE_PeerW_PW07_Research_Handoff_20261109.zip",
+      "bytes": 34326,
+      "sha256": "3c2b01b5887a01232956f4d18237d49ea2e25dd4b577b77b2fda575b55d7af06"
+    }
+  },
+  "next_action": "PW03 exact p>=5 primary Peer-W tableau recovery and PW01/PW02 native opt-in Peer kernels. PW04 history lifecycle waits for T02 fair-ab replay and uses PW07 conditional transfer contract. No automatic method switch before source-specific kappa/chi/eta are validated."
 }
