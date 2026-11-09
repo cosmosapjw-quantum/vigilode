@@ -1,80 +1,80 @@
-# VigilODE local coding agent resume prompt: T02
+# VigilODE local coding agent 재개 프롬프트: Peer-W 우선 구현 (PW01/PW02)
 
-Repository: `cosmosapjw-quantum/vigilode`
-Work branch: `research/solver-portfolio-shortdag-20261109`. Fetch and verify its current HEAD before any edit.
-Pinned C5 code source: `research/vigilode-c5-native-graph-schur-20261102` @ `569ce02629498fec133db9ce368eb303ba943b69`, tree `a4b2f09521b197b37612ff7dc66a13fbb74a0bae`.
-Official G0: 23 nodes / 34 edges; historical progress 7/23; successor 0/12; production HOLD. Do not modify the official G0 DAG.
+Repository: cosmosapjw-quantum/vigilode
+Work branch: research/solver-portfolio-shortdag-20261109. Fetch and verify its latest HEAD before any edit.
+Pinned code authority: research/vigilode-c5-native-graph-schur-20261102 @ 569ce02629498fec133db9ce368eb303ba943b69, tree a4b2f09521b197b37612ff7dc66a13fbb74a0bae.
+Plan: SHORT_TERM_DAG_20261109.json, nodes PW00-PW06.
+Method plan: PEERW_FIRST_IMPLEMENTATION_PLAN_KO.md.
+Official G0: 23 nodes / 34 edges; historical progress 7/23; successor 0/12; Production HOLD. Do not edit the official G0 DAG or change any G0 target.
 
-## Central research goal
+## Immediate task
 
-Build an **adaptive, selectively activated solver portfolio**, not a pipeline that executes every feature. The switcher must choose the smallest admissible combination of whole-IVP method, in-method backend, optional source-specific transform and execution lane that minimizes predicted complete remaining-IVP cost subject to original-source, stability, output, global-error and resource contracts.
+PW00 source/API audit is complete as a documentation-scoped turn. Implement an opt-in PTSW2C first, and keep PTSW2B as the next independent stiff-damping control. No default method or production promotion.
 
-Read first:
-- `README_SHORT_DAG_KO.md`
-- `SHORT_TERM_DAG_20261109.json`
-- `HISTORY_MATRIX.json`
-- `LINEAGE_DAG.mmd`
-- `SOLVER_COMPONENT_INVENTORY.json`
-- `NEGATIVE_EVIDENCE_INDEX.json`
-- `INTEGRATED_RESEARCH_ARCHITECTURE_KO.md`
-- `INTEGRATED_RESEARCH_CONTRACTS.json`
-- `ADAPTIVE_PORTFOLIO_ROUTER_SPEC_KO.md`
-- `ADAPTIVE_ROUTER_CONTRACTS.json`
-- `SCIENTIFIC_NOVELTY_GATES_KO.md`
-- `SOURCE_LOCK_20261109.json`
+Before editing:
+1. Fetch latest branch refs and verify checkout/worktree identity. Create an isolated worktree/feature branch from the current approved work branch. Do not mutate the pinned C5 source branch in place.
+2. Re-read the exact coefficient certificates: PEER_W_TABLEAU_CERTIFICATES_20261109.md; PTSW2B_EXACT_TABLEAU_CERTIFICATE_20261109.md; PTSW2C_STABILITY_NUMERIC_AUDIT_20261109.md; PEER_PARALLEL_STAGE_PROOFS_20261109.md.
+3. Revalidate source blobs before API use:
+   - crates/rodas5p-integrators/src/parallel.rs (bounded ParallelExecution::map_ordered)
+   - crates/rodas5p-integrators/src/stage_batch.rs (RODAS batch feasibility, not a Peer stepper)
+   - crates/rodas5p-core/src/solver_types.rs
+   - crates/rodas5p-krylov/src/block_gmres.rs and workspace.rs
+   - crates/vigilode/src/session.rs, automatic.rs, switching.rs
+   - crates/rodas5p-fair-ab/src/global_error.rs, adaptive_global_error.rs
+4. Confirm no Peer source landed since the source lock. If C5 head/tree moved, refresh the entire source lock before making implementation claims.
 
-T01 enumerated 187 PR metadata rows and 361 branch refs, recovered PR176's 28-method inventory, and audited selected scientific lineages. Do not claim all 187 diffs were independently reviewed. Full hidden/archived ChatGPT transcript export was unavailable.
+## Method contract: PTSW2C
 
-## T02: replay current global-error authority only
+Use the exact tableau in PEERW_FIRST_IMPLEMENTATION_PLAN_KO.md and the source certificate:
+- c=(-1,5/9), gamma=12/25, b=(1/28,27/28), v=0.
+- Exact A(sigma), Gamma(sigma) arrays are in the source certificate; sigma=h_m/h_(m-1).
+- W_m=I-(12/25)h_mT_m.
+- Two current stage systems are independent and share W; each reads only committed previous-step peer data.
+- Verify C(2), Gamma(2), B(3), zero current-stage dependency, output update and estimator coefficient identities exactly.
+- Startup is forward only: t_1=t_0+2h_0; derivative times t_0 and t_0+(14/9)h_0; solution error O(H^3), stage derivative error O(H^2).
+- Main embedded pair b_e=(19/560,513/560), v_e(sigma)=(-(8+27sigma)/560,9(4+3sigma)/560); source controller safety 0.85, exponent 1/2, clip [0.5,2] plus source hysteresis. Do not use RODAS/DOPRI weights.
+- PTSW2C source stability is A(81.1 degrees), not L-stable; sampled sector reproduction is not an interval proof. Mark runtime and stability gates accurately.
 
-Current C5 source already has `rodas5p-fair-ab`. Audit exact current blobs for:
-`crates/rodas5p-fair-ab/src/{lib.rs,global_error.rs,adaptive_global_error.rs,numerical_reference.rs,output_accuracy.rs,timing_authority.rs}` and matching tests.
+## Required implementation and tests (test-first)
 
-Audit common output grid, reference WRMS, endpoint/max-grid/RMS metrics, exact/numerical reference provenance and uncertainty, clipped/dense output-policy pairing, same-error ranking admissibility, preservation of reference-dominated/failure rows, work/timing counters, adaptive BDF/Radau fidelity, stored output bytes versus peak RSS.
+1. Implement pure coefficient generation from exact constants and sigma; reject non-finite/out-of-domain values.
+2. Represent Peer history as a committed object with time, h_prev, peer vector and stage derivatives. A rejected step must not mutate any committed field, controller state, estimator state or history epoch.
+3. Construct all stage predictions from the previous committed peer derivative vector; build independent RHSs. Assert no same-step stage dependency in coefficient metadata.
+4. Reuse the existing bounded executor. Do not add a global/Rayon pool. Compare deterministic serial versus 2/4/available CPU stage execution.
+5. Compare (a) common-W direct factorization once plus multiple RHS triangular solves, (b) independent matrix-free GMRES per stage, and (c) block-GMRES only if the current LinearOperator/preconditioner contract fits. Record all stage true residuals, operator vectors, block calls, basis rank, iterations, preconditioner, factorization, setup and work. Do not assume block-GMRES has lower wall time.
+6. Verify original stage residuals after each solve; a finite linear residual threshold alone is not a local-IVP error certificate.
+7. Implement bounded variable-step ratio admissibility; no unbounded sigma is silently accepted. On rejection, preserve prior accepted peer state and retry/restart only under the method's source rules.
+8. Add tests for constant-ratio and abrupt-ratio grids, linear stiff scalar, nonnormal linear system, source MOL problem, startup order, dense/output semantics, non-finite callback, stage solver failure, rejection rollback, history invalidation, serial-parallel parity and work accounting.
 
-Proposed commands (NOT_RUN until executed on the locked source):
-```bash
-cargo test -p rodas5p-fair-ab --test global_error_contracts -- --nocapture
-cargo test -p rodas5p-fair-ab --test adaptive_global_error_contracts -- --nocapture
-cargo test -p rodas5p-fair-ab --test numerical_reference_contracts -- --nocapture
-cargo test -p rodas5p-fair-ab --test numerical_reference_v2_contracts -- --nocapture
-cargo check -p rodas5p-fair-ab --all-targets
-cargo fmt --all -- --check
-```
-Capture HEAD/tree, rustc/cargo versions, exact source blobs, environment and complete receipts. Preserve first REDs. Do not relax reference uncertainty, output gates, comparator fidelity or historical failures. No solver/tableau/tolerance/controller/default/public-API/budget mutation in T02. Deliver `GLOBAL_ERROR_AUTHORITY_REPLAY_KO.md`, `GLOBAL_ERROR_AUTHORITY_REPLAY.json`, `EXECUTION_RECEIPT_T02.json`.
+## PTSW2B control (PW02)
 
-If references/output authority are insufficient, mark BLOCKED and keep ranking HOLD. Passing these tests qualifies the authority only; it does not promote a solver.
+After the PTSW2C module/API has stable method identity, implement PTSW2B as a different tableau and separate estimator. Reuse PTSW2B_EXACT_TABLEAU_CERTIFICATE_20261109.md; do not mix its L-stable stiff-limit claim with PTSW2C. Re-run exact C(2), Gamma(2), B(2), nilpotent stiff-limit and embedded/startup tests. Report order-2 accepted-step penalty.
 
-## Existing selector/switcher: reuse, do not rebuild
+## Derivative and homotopy boundary
 
-Current source anchors:
-- `crates/vigilode/src/automatic.rs`: opt-in `AutomaticOde`, `solve_adaptive`; current candidates are primarily DOPRI5 and explicitly authorized RODAS. Default derivative permission is forbidden. It does not infer charts, certify stiffness or choose thread count.
-- `crates/vigilode/src/switching.rs` and `crates/vigilode/SWITCHING.md`: accepted-window switching, persistent RHS-only DOPRI5, optional supplied J/JVP/FD challenger, bounded probes/backoff, full work accounting and rollback.
-- `crates/rodas5p-integrators/src/routing.rs`: caller-declared structural routing among RODAS backends.
-- Lawson damped-rotation structure is caller-declared, not automatically discovered.
-- C8 R2/R4 finite-state router is COMPLETE_SCOPED; C8 numeric validation is PENDING.
-- PR98 symbolic execution proof is controller-state refinement, not a physical ODE Markov partition.
+- A W-Peer solve is Newton-free but not solve-free. If T_m is built from JVP, label it derivative-based/Jacobian-free, not derivative-free.
+- Strict derivative-free means no J, JVP, finite differences, AD or Newton.
+- Any RHS-only implicit-Peer homotopy worker is a different method identity. It must certify the original stage equation and residual-to-local-error implication; nonlinear_homotopy.rs is source-specific, not a generic root solver.
+- Do not count the auxiliary continuation residual as original source residual.
 
-Critical counterevidence:
-- 2026-10-23 864-row single-thread switching campaign: rapid oscillation JVP switching was about 32.5x slower than whole DOPRI5 at the same endpoint-error cap.
-- Later bounded-pilot work rejected expensive rapid-rotation JVP entry, but an early negative probe missed a later stiff transition and cost about 3.05x more.
-- These prohibit pressure-only universal switching and permanent trust in one pilot. The complete probe/setup/transition/fallback cost and bounded evidence expiry/reprobe must be retained.
+## Required command set after implementation
 
-Do not implement the full adaptive selector during T02. Later T07 may extend the existing framework only after method/error qualification. Selective policy requirements:
-1. Static capability/permission filter before callbacks.
-2. Cheap telemetry first; expensive diagnostics/probes only on uncertainty or measured regime drift.
-3. Separate whole-IVP method choice from stage/linear backend, optional transforms and execution lane.
-4. Select only compatible sparse tuples; leave unused capabilities OFF.
-5. Compare complete expected remaining work; switch only when conservative net saving exceeds setup/transition reserve.
-6. Switch at accepted checkpoints; transfer valid history or initialize with proper startup and charge it.
-7. Keep current route on ties/uncertainty; use hysteresis/dwell/backoff; fatal callback stops rather than retries.
+Run exact unit/property tests first, then the exact commands for the tests actually added:
+   cargo fmt --all -- --check
+   cargo test -p rodas5p-integrators -- <new Peer-W tests>
+   cargo test -p vigilode -- <new session/rollback tests>
+   cargo check --workspace --all-targets
 
-## T03/T04 and T06 preview
+Record stdout/stderr hashes, exit codes, source commit/tree, input/output checksums and status. Do not write PASS unless the command was actually executed.
 
-C5 affine maps (F_i(x)=a_i x+b_i); ordered composition is associative in exact arithmetic but noncommutative. Current scan is serial/allocating. Original physical C5 paths are length one and execute zero affine pair operations. R10 ring96 538 vs 94 is synthetic operation count only. C5 graph-Schur/fast-direct full-IVP median ratio 2.242032452... is historical negative in its tested scope.
+## Do not do
 
-Do not implement a scan before preregistered long-path full-IVP achieved-error comparison. For T06 qualify exact BDF/Radau reference fidelity and each Peer-W/SEPP family independently: coefficients, tableau, startup, full peer history, variable-step ratio, estimator, stability hypotheses and observed CPU overlap. Peer-W is a new method identity, not parallelized RODAS5P.
+- Do not edit original RODAS5P tableau or protected path.
+- Do not change G0 thresholds, tolerance, estimator/controller defaults, benchmark budgets or production default.
+- Do not claim PTSW2C is L-stable or that p=3 meets G0.
+- Do not call JVP derivative-free.
+- Do not create another pool, global switcher, WorkLedger or benchmark framework.
+- Do not merge PTSW2B/C, TASE/SEPP, EPPEER, multi-implicit, IPP or diagonal-implicit Peer identities.
+- Do not erase negative evidence or push to main.
 
-## Safeguards
-
-No main push/merge, force push/reset/rebase/history rewrite. Use per-task worktree and red test before code. Do not touch secrets/.env. Preserve negative evidence. Do not claim global error equivalence from equal rtol/local estimator. Reuse existing thread pools, WorkLedger, switcher and benchmark infrastructure. Every completed task must lock source, add receipt, push non-force and remote-readback changed files. Production remains HOLD unless all original release gates pass and distinct-author review is complete.
+After PW01/PW02 code passes local tests, complete T02 current fair-ab authority replay before any full-IVP speed/error ranking. PW03 separately recovers a concrete p>=5 primary tableau; p>=5 qualification is mandatory before a G0 promotion claim.
