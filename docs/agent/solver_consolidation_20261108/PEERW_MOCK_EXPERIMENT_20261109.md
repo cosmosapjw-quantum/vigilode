@@ -11,3 +11,13 @@
 - A synthetic 200-step affine bound recurrence and ordered product agree within 4.24e-22. This verifies the mock composition only; Blelloch scan is known prior art.
 
 Limitations: exact oracle startup; scalar smooth IVP; no nonlinear MOL, no complex-sector interval proof, no real Rust/Rayon run, no fair-ab matched-error/G0 test. See PEERW_MOCK_EXPERIMENT_20261109.md in the research ZIP for detailed values.
+
+
+## Fresh replay and reproducibility update (2026-11-09)
+
+- Full mock driver SHA-256: `007543ec21224597ffdccebf5b9053b420e0e9c71add68971bb75a2b3b31ec5b`.
+- Fresh full result SHA-256: `f4b31cab861ac1366b3027ac248243a762e57d66b76e3c02ab72fc4cc3f8e121`.
+- Compact GitHub-source driver SHA-256: `6080a5bb3f28e29200d18885fa4006848e317d53bc7841744c7609a4a78556e4`; Git blob `69151b577e18ed77bc7fce8422d9d028335c0b07`.
+- Compact regenerated JSON SHA-256: `0f4ecc3e8fcda1ab2c2a9d4b6f62b178502f2be72edd0d209a487b5f91dd2372`; repository JSON blob `d8da8a91b461bfe944912cd2a65d618a1eef4828`. The parsed numeric values agree; pretty-print float formatting differs by two bytes.
+- Fresh CPU overlap replay (9 repeats, BLAS pinned to one thread): serial median `0.032002318 s`, two-thread median `0.021496683 s`, apparent microbenchmark ratio `1.48871×`, median task overlap `0.017554987 s`, output parity exact. An earlier run measured `1.78117×`; this variation is retained and is not an end-to-end solver speed claim.
+- Both Python drivers passed `py_compile` and executed. Rust/Cargo/rustfmt/Clippy/CI/native Peer solver/full-IVP tests remain NOT RUN.
