@@ -252,7 +252,34 @@
       "PRs": 187,
       "branches": 361
     },
-    "current_authority_replay": "NOT_RUN"
+    "current_authority_replay": "NOT_RUN",
+    "peer_w_priority": {
+      "status": "DOCUMENTATION_ONLY",
+      "code_source_commit": "569ce02629498fec133db9ce368eb303ba943b69",
+      "api_blobs": {
+        "crates/rodas5p-integrators/src/parallel.rs": "ffdfb1cef258ed43586db0323eb0e7f9de27dd53",
+        "crates/rodas5p-integrators/src/stage_batch.rs": "c2f44c327c53d7c6dfe7ba80b26cd43486d56b43",
+        "crates/rodas5p-core/src/solver_types.rs": "b5e54e85f0606d2c52290e87936b988975cf6ba4",
+        "crates/rodas5p-integrators/src/nonlinear_homotopy.rs": "529e8b26eaebb486654e6e8e19e2cca8c740c00a",
+        "crates/rodas5p-krylov/src/block_gmres.rs": "68968fc1e764d2dd355373928ed11406c8dc9c1c",
+        "crates/rodas5p-krylov/src/workspace.rs": "fa6d92fc9becf6c020c4aad9afa29e09ccbde59d",
+        "crates/vigilode/src/session.rs": "ce30e5703a8d47a6e258a6df829b19a553fe79f9",
+        "crates/vigilode/src/automatic.rs": "ff4f5db411b310039b627d66774b24885eb3cf7d",
+        "crates/vigilode/src/switching.rs": "fb12a401002c0039631a43982cc296a494c366a2",
+        "crates/rodas5p-fair-ab/src/global_error.rs": "c62f996fa18f9815f1f329766abe8fe2c25ca22b",
+        "crates/rodas5p-fair-ab/src/adaptive_global_error.rs": "ccae16353ed1dcc90c6511befea8b42f7d3ad9cd"
+      },
+      "api_findings": [
+        "ParallelExecution is a bounded local Rayon pool and offers ordered parallel map; no new pool required.",
+        "stage_batch is RODAS-specific batch feasibility/timing, not a Peer solver.",
+        "block-GMRES supports multiple RHS, true residuals and work reports; compare against independent GMRES.",
+        "current session/switcher does not represent two-step Peer history.",
+        "fair-ab authority exists but replay is pending."
+      ],
+      "PTSW2C": "Exact order moments independently checked this turn; not implemented.",
+      "PTSW2B": "Exact order moments independently checked this turn; prior repository stiff-limit certificate not re-run this turn.",
+      "high_order": "p>=5 source family exists in primary literature; concrete table not transcribed."
+    }
   },
   "secondary_research_locks": [
     {
@@ -311,5 +338,24 @@
     "conversation_archive": "Current context, recent summaries, memory and indexed Library searched; complete hidden/archived account-wide transcript export unavailable.",
     "dropbox": "Relevant historical /ode_solver plan and cross-project PHYS70 handoffs inspected.",
     "local_runtime": "Remote Desktop device cosmosapjw OFFLINE; no local Cargo/Rust tests, fmt, benchmarks or CI were executed from this session."
+  },
+  "peer_w_priority_20261109": {
+    "code_source_commit": "569ce02629498fec133db9ce368eb303ba943b69",
+    "api_blobs": {
+      "crates/rodas5p-integrators/src/parallel.rs": "ffdfb1cef258ed43586db0323eb0e7f9de27dd53",
+      "crates/rodas5p-integrators/src/stage_batch.rs": "c2f44c327c53d7c6dfe7ba80b26cd43486d56b43",
+      "crates/rodas5p-core/src/solver_types.rs": "b5e54e85f0606d2c52290e87936b988975cf6ba4",
+      "crates/rodas5p-integrators/src/nonlinear_homotopy.rs": "529e8b26eaebb486654e6e8e19e2cca8c740c00a",
+      "crates/rodas5p-krylov/src/block_gmres.rs": "68968fc1e764d2dd355373928ed11406c8dc9c1c",
+      "crates/rodas5p-krylov/src/workspace.rs": "fa6d92fc9becf6c020c4aad9afa29e09ccbde59d",
+      "crates/vigilode/src/session.rs": "ce30e5703a8d47a6e258a6df829b19a553fe79f9",
+      "crates/vigilode/src/automatic.rs": "ff4f5db411b310039b627d66774b24885eb3cf7d",
+      "crates/vigilode/src/switching.rs": "fb12a401002c0039631a43982cc296a494c366a2",
+      "crates/rodas5p-fair-ab/src/global_error.rs": "c62f996fa18f9815f1f329766abe8fe2c25ca22b",
+      "crates/rodas5p-fair-ab/src/adaptive_global_error.rs": "ccae16353ed1dcc90c6511befea8b42f7d3ad9cd"
+    },
+    "absence_scope": "No Peer integrator/session implementation in pinned C5 source; Peer theorem/tableau certificates are present in research documentation.",
+    "history_research": "PR metadata 187 and branches 361; selected lineages reviewed, not all diffs scientifically reviewed.",
+    "R2_R4_R5_C2_C3_C4": "scoped research complete; C5 runtime/code implementation NOT_RUN"
   }
 }
