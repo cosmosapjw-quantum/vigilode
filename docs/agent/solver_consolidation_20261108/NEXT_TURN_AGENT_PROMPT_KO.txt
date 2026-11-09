@@ -1,0 +1,125 @@
+VIGILODE SOLVER-PORTFOLIO CONSOLIDATION
+LOCAL CODING AGENT RESUME PROMPT
+Version: 2026-11-09 / SHORT DAG T00
+Repository: https://github.com/cosmosapjw-quantum/vigilode
+Work branch: research/solver-portfolio-shortdag-20261109
+
+MISSION
+Continue the source-locked multi-turn research and implementation plan in docs/agent/solver_consolidation_20261108/SHORT_TERM_DAG_20261109.json.
+Execute exactly ONE turn per invocation. The next turn is T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY. Do not jump to peer-W coding or production-default changes before T01/T02 acceptance gates are closed.
+
+AUTHORITATIVE INPUTS
+1. SOURCE_LOCK_20261109.json
+2. SHORT_TERM_DAG_20261109.json
+3. LITERATURE_DELTA_20261109.json
+4. METHOD_PORTFOLIO_20261109.json
+5. REUSE_FIRST_INVENTORY.md
+6. DESIGN_CONTRACT.md
+7. VALIDATION_PROTOCOL.md
+8. PARALLEL_RESEARCH_PLAN.json
+9. PEER_METHOD_FAMILY_REVIEW.md
+10. PEER_PARALLEL_STAGE_PROOFS_20261109.md
+11. PTSW2B_EXACT_TABLEAU_CERTIFICATE_20261109.md
+12. PTSW2C_STABILITY_NUMERIC_AUDIT_20261109.md
+13. EPPEER_EPP3F4_SUPERCONVERGENCE_AUDIT_20261109.md
+14. EXPLICIT_PEER_EPPEER_DQC_AUDIT_20261109.md
+15. PR/branch/research receipts referenced by HISTORICAL_RESEARCH_MAP.json and the PR #176 28-entry inventory.
+
+SOURCE LOCK
+Code branch: research/vigilode-c5-native-graph-schur-20261102
+Code commit: 569ce02629498fec133db9ce368eb303ba943b69
+Code tree: a4b2f09521b197b37612ff7dc66a13fbb74a0bae
+Documentation plan branch: docs/solver-consolidation-plan-20261108
+Documentation branch HEAD at source survey: becbc75438354d7bc8ae3fea362ce943d4d2272a
+Current work branch: research/solver-portfolio-shortdag-20261109
+Main is NOT the current research source. Do not switch to main and infer it is current.
+At the start of every turn, fetch the remote ref and record exact commit/tree. If the source commit/tree changed, stop implementation and redo the source inventory before making code claims.
+
+SCIENTIFIC PREMISE
+The protected RODAS5P method is an eight-stage one-step Rosenbrock-W method with a strict lower-triangular stage dependency graph. The locked transformed tableau has all 28 possible strict-lower couplings nonzero and causal depth eight. A shared W matrix/factorization does not remove the dependency of each stage RHS on earlier stages.
+For a strictly lower-triangular 8x8 stage matrix N, N^8=0 and:
+(I - lambda N)^(-1) = sum_{k=0}^7 lambda^k N^k
+             = (I+lambda N)(I+lambda^2 N^2)(I+lambda^4 N^4).
+This is an exact finite algebraic identity. It is NOT a runtime speedup theorem: operator powers may densify, composing black-box actions has cost, and nonlinear remainder/roundoff/certification still matter.
+
+KEEP THESE EXECUTION AXES SEPARATE
+P1: exact-preserving CPU parallelism inside RHS/JVP/operator/Krylov/spatial rows.
+P2: parallel independent IVPs/parameter ensembles, each with its own controller, norm, history, events and work ledger.
+P3: spatial MOL rows/cells/modes/subdomains; report separately from time-stage parallelism.
+P4: genuine current-step stage-parallel method, e.g. a peer-W method whose exact table has no current-step peer coupling.
+P5: speculative batched approximations to original RODAS stages, accepted only after original-residual-to-error certification and transactional fallback.
+
+CRITICAL SEMANTIC DISTINCTIONS
+- JVP is a derivative action; it is not derivative-free.
+- Matrix-free means no explicit matrix assembly; it does not mean no JVP, preconditioner or linear solve.
+- Finite-difference JVP is approximate differentiation.
+- Newton-free does not mean solve-free, derivative-free or generically convergent.
+- Peer-W is a distinct two-step/general-linear method, not a reordering of RODAS5P.
+- Stage reuse is not proof of stage independence.
+- An affine error-prefix scan parallelizes a supplied recurrence, not an adaptive nonlinear IVP trajectory.
+- A source-specific sphere or Gray-Scott client is not a general sphere/3D solver.
+- A linearized output correction is not a rigorous nonlinear LTE certificate unless nonlinear remainder is bounded.
+
+CURRENT PRODUCTION VERDICT
+HOLD_NOT_RELEASE_QUALIFIED.
+The public frontend currently centers on DOPRI5 and RODAS5P. Internal BDF1/2 and Radau IIA1/3 are reference-only. PR #187 C5 graph-Schur is draft/HOLD and the recorded original full-IVP median was about 2.24x slower than the protected fast-direct route. The current homotopy NonlinearOutputCertificate is linearized and does not bound the nonlinear remainder. PP05/PP06 negative gates and PP15 no-timing remain preserved. P06 sphere FV is PASS_SCOPED for its source-owned unpolarized/non-tilted application only; production remains HOLD.
+
+NEXT TURN: T01 ONLY
+1. Fetch PR metadata, head/base SHAs and changed-file lists for PR #74, #91, #93, #117, #135, #136 and #174-#187. Expand only if newer relevant PRs exist.
+2. Reconcile the PR #176 28-entry inventory against the exact pinned source tree. Distinguish full IVP, step kernel, operator, selector, certificate, source-specific client and benchmark fixture.
+3. Rebuild lineage for R5-R10, PR #179/#184/#185/#186/#187, C5 graph-Schur, PP05/06/07/15, P06 sphere FV, Gray-Scott 2D, spherical_information and dynamics_symbolic_validation.
+4. Inspect relevant branch and commit graphs. Preserve ancestry and archived refs; do not flatten or rewrite history.
+5. For every inventory item record exact repo/branch/commit/tree/blob, equation/tableau identity, function/type/path, maturity, tests/receipts/actual exit status, claim status, execution status, failure class, accepted scope, limits, negative result and next gate.
+6. Produce HISTORY_MATRIX.json, LINEAGE_DAG.mmd, SOLVER_COMPONENT_INVENTORY.json, NEGATIVE_EVIDENCE_INDEX.json, REPLAY_COMMANDS.json and EXECUTION_RECEIPT_T01.json.
+7. Reproduce only the smallest relevant existing tests that fit the local environment. Record exact command and exit code. A code path read is not a test run.
+8. Do not modify Rust production code in T01.
+
+T02 AND LATER
+Follow the turn order and dependencies in SHORT_TERM_DAG_20261109.json. T02 reconstructs exact peer coefficients, variable-step order/stability, startup and estimator. T03 studies original RODAS stage parallelism and certified speculation. T04 defines shared frontend/session/operators. T05 implements only the selected peer plugin. T06 generalizes 2D/3D/sphere MOL. T07 performs achieved-error full-IVP qualification and one independent review.
+
+REUSE-FIRST RULE
+Before each code change, name the existing module/test/receipt being reused and explain the smallest missing scientific element. Reuse ParallelExecution, stage_batch, LinearOperator, LinearSolverConfig, LU/Krylov/preconditioners, WorkLedger, Problem, sessions and transaction patterns. Do not create a second thread pool, benchmark framework, ODE frontend, WorkLedger, homotopy engine, Fourier engine or Krylov service.
+
+MUTATION GATES
+- Use a dedicated git worktree per task.
+- Add a RED contract test before implementation.
+- Stay inside the turn's mutation allowlist.
+- Do not touch secrets, credentials, .env or unrelated files.
+- No force push, reset, rebase, history rewrite, direct main push or deletion of historic refs.
+- Do not weaken tests, tolerances, acceptance thresholds, work budgets or benchmark targets.
+- Do not alter the protected tableau, coefficients, default method or production gates without explicit owner approval.
+- Every task must have source identities and an evidence receipt.
+- All performance work in this DAG is CPU-only. No GPU code, dependencies or benchmark arms.
+
+ANTI-DRIFT / SELF-AUDIT BEFORE EACH CLAIM
+1. Is this a method equation or only a helper/kernel/fixture?
+2. Is the stage graph actually independent, or does a lower-triangular dependency remain?
+3. Is this derivative-free, JVP-only, matrix-free, Newton-free, or simply a different linear solver? Use the narrowest correct term.
+4. Does the estimator belong to this exact tableau and variable-step family?
+5. Are startup, rejected steps, events, discontinuities and restart included?
+6. Are setup, preconditioner, Krylov, output, certificate and fallback costs included?
+7. Does the evidence support the scope of the claim? Otherwise mark conjectural/unresolved.
+8. Did any prior negative result get omitted or silently reclassified?
+9. Are tests marked PASS/FAIL/NOT_RUN/BLOCKED from actual logs, not intention?
+10. Is any change outside the allowlist or a protected mutation?
+
+STOP CONDITIONS
+- Source drift not audited.
+- Any false certificate accept.
+- Missing coefficient/startup/estimator provenance.
+- Unsupported method capability or geometry claim.
+- Two turns without reproducible progress.
+- One independent adversarial review only; no review-of-review recursion.
+
+BACKUP CONTRACT: EVERY TURN
+1. Run git status and record exact commit/tree.
+2. Record exact commands, exit codes, input/output SHA-256, source blob identities and failure classification.
+3. Add the turn's machine-readable execution receipt and concise Korean report.
+4. Commit on research/solver-portfolio-shortdag-20261109, or a child task branch preserving ancestry.
+5. Push without force.
+6. Fetch the remote branch and verify commit/file blob identities.
+7. Report commit SHA, files changed, tests actually run, tests NOT_RUN, blockers and next turn.
+Do not claim completion until remote readback verifies the pushed result.
+
+FINAL REPORT
+Report current source lock/verdict; completed work and concrete evidence; negative/unresolved/blocked items; exact branch and commit backup; next turn; and any owner decision required.
