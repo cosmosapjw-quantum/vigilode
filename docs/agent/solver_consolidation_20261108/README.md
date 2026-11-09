@@ -22,6 +22,7 @@ The current research work is extended by the following machine-readable/design f
 - PEER_METHOD_FAMILY_REVIEW.md: source-bound equations and distinction between parallel W, multi-implicit peer-W, nonlinear parallel peer, and sequential peer controls.
 - PEER_PARALLEL_STAGE_PROOFS_20261109.md: constructive explicit-peer order/stability/convergence proofs, DQC compatibility audit, common-W/rank-r algebra, finite resonant parent lift, and implementation gates.
 - PEER_W_TABLEAU_CERTIFICATES_20261109.md: exact variable-step PTSW2C tableau and estimator, stiff-accuracy/order impossibility, explicit-peer coefficient generator, EPPEER source audit, and method-selection gates.
+- EXPLICIT_PEER_EPPEER_DQC_AUDIT_20261109.md and verify_dqc_peer.py: official EPPEER code-path audit, published variable-step four-stage DQC tableau, embedded p=3/p=4 estimators, admissible-grid theorem, and exact SymPy checks.
 - STAGE_TRANSFORMATION_THEORY.md: parallel peer-W, finite resonant normal-form lift, linear parent stage-block identity, Fourier/involution findings and limits.
 - HISTORICAL_RESEARCH_MAP.json: 14 source/PR/code-lineage findings with evidence boundaries.
 - CPU_PARALLEL_NODES.md: stage-internal CPU, independent IVP ensembles, and sphere/2D/3D MOL CPU execution.
