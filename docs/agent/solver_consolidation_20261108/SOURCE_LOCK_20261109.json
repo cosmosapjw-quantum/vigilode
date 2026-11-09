@@ -361,32 +361,30 @@
   "pw07_research_artifacts": {
     "date": "2026-11-09",
     "code_source_commit": "569ce02629498fec133db9ce368eb303ba943b69",
-    "artifacts": {
-      "PEERW_ERROR_CERTIFICATE_THEORY_20261109.md": "7636da037ca9c86239b31e0920e3f819bb643561",
-      "PEERW_MOCK_EXPERIMENT_20261109.md": "a956ddf70aa222a3bc572d91f816629397da43f1",
-      "PEERW_NOVELTY_PRIOR_ART_BOUNDARY_20261109.md": "e2d7b1608d65222fbc4c7c7ff64001570884e611",
-      "PEERW_EXECUTION_RECEIPT_PW07.json": "703f33e4d804d9f5439b7eebf9418842e0afdadd",
-      "peerw_pw07_reproduce.py": "69151b577e18ed77bc7fce8422d9d028335c0b07",
-      "peerw_pw07_compact_results.json": "be5c5986d5b9709af77856ec61f4acfef898eb24"
+    "repository_blobs": {
+      "theory": "7636da037ca9c86239b31e0920e3f819bb643561",
+      "mock_report": "ec7a682684cede3fb7f31807661ec5b3c36b34a2",
+      "novelty_boundary": "e2d7b1608d65222fbc4c7c7ff64001570884e611",
+      "execution_receipt": "60cafca79f70db4ba1644b4c252e7aabc801b612",
+      "compact_driver": "69151b577e18ed77bc7fce8422d9d028335c0b07",
+      "compact_results": "d8da8a91b461bfe944912cd2a65d618a1eef4828",
+      "dag": "24e7ffb89713d9bdf77335e8102ed0e34f9bf43d",
+      "method_portfolio": "85c7dd823fd28dc001344dd46f7c1f9cfc92ebda",
+      "literature_delta": "2ca40daa15354f871ca01f33d2f421a5a554844c",
+      "local_agent_prompt": "5b0341c9eaafcb03e6b50675996af730c30b37b3"
     },
-    "hashes": {
-      "full_mock_script_sha256": "007543ec21224597ffdccebf5b9053b420e0e9c71add68971bb75a2b3b31ec5b",
-      "full_mock_results_sha256": "ed355fa217938e3c472b485fcd86afc1c97a65c087d6d669b3310d5a6d00127c",
-      "local_compact_driver_sha256": "f5bf92af0c60e00ed1bdeb73a6b4c06c0a22fd5e997ad9dce891e2d23b04a35f",
-      "local_compact_results_sha256": "09c8249d88ddd32ddf110c533ec53be10742d8663c355781968b0fe64577cb70",
-      "full_zip_sha256": "e60538edc49ff5b778bf16f89f13a2fca07c0317d625ab445e9b924832606e7d"
+    "sha256": {
+      "full_mock_driver": "007543ec21224597ffdccebf5b9053b420e0e9c71add68971bb75a2b3b31ec5b",
+      "full_mock_results": "f4b31cab861ac1366b3027ac248243a762e57d66b76e3c02ab72fc4cc3f8e121",
+      "compact_github_driver": "6080a5bb3f28e29200d18885fa4006848e317d53bc7841744c7609a4a78556e4",
+      "compact_local_regenerated_results": "0f4ecc3e8fcda1ab2c2a9d4b6f62b178502f2be72edd0d209a487b5f91dd2372",
+      "local_handoff_zip": "3c2b01b5887a01232956f4d18237d49ea2e25dd4b577b77b2fda575b55d7af06"
+    },
+    "local_handoff_zip": {
+      "path": "/mnt/data/VigilODE_PeerW_PW07_Research_Handoff_20261109.zip",
+      "bytes": 34326
     },
     "source_mutation": false,
-    "runtime": "Python/SymPy mock only; no Rust/Cargo/CI",
-    "compact_results_blob": "8db8ba957695f9f4858ed42c51663c2ff4a40caf",
-    "compact_driver_blob": "69151b577e18ed77bc7fce8422d9d028335c0b07",
-    "remote_compact_script_run": {
-      "status": "PY_COMPILE_AND_RUN_PASSED",
-      "local_sha256": "6080a5bb3f28e29200d18885fa4006848e317d53bc7841744c7609a4a78556e4",
-      "repository_git_blob_sha1_verified": "69151b577e18ed77bc7fce8422d9d028335c0b07",
-      "output_sha256": "0f4ecc3e8fcda1ab2c2a9d4b6f62b178502f2be72edd0d209a487b5f91dd2372",
-      "output_blob": "8db8ba957695f9f4858ed42c51663c2ff4a40caf",
-      "note": "The exact repository script content was fetched, its Git blob SHA-1 matched, then it was py_compile'd and executed from an isolated local directory. Output JSON was synchronized to the executed Python serialization."
-    }
+    "runtime": "Python/SymPy only; full and compact scripts py_compile'd and executed; no Rust/Cargo/CI"
   }
 }
