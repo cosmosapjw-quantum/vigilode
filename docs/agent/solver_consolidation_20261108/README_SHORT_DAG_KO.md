@@ -4,6 +4,10 @@
 
 GitHub REST enumeration captured **187 PR metadata rows and 361 branch refs**. PR #176's 28-row inventory was recovered exactly. Selected source/body audit covered G0, global-error, coupled, N01/C9, applied REI and RVJ lineages. All metadata were inventoried, but it would be inaccurate to say all 187 diffs received a scientific peer review.
 
+## Peer-W priority addendum (2026-11-09)
+
+Peer-W is now the first new whole-IVP implementation family. PTSW2C is the first order-3 prototype; PTSW2B is the separate L-stable order-2 control; p>=5 primary-table recovery is mandatory for G0. The exact tableau/API/source map is in PEERW_FIRST_IMPLEMENTATION_PLAN_KO.md. The original G0 DAG remains immutable.
+
 ## Research priority changed
 
 The pinned C5 source already contains `rodas5p-fair-ab` with common output-grid/error metrics, reference provenance, clipped/dense output-policy pairs, adaptive comparison and work/timing reports. T02 therefore replays the **current** source rather than rebuilding an evaluator. The frozen v0.10 commit `f2e9b1e8883bc49c124ce5ab421c92fb58516b74` has no Git common ancestor with the C5 source; its old tag and successor branch are absent from current refs. The v0.10 result is historical comparison, not current source proof.
@@ -36,3 +40,6 @@ Work branch: https://github.com/cosmosapjw-quantum/vigilode/tree/research/solver
 - 빠른 진동계의 약 32.5배 JVP-switching slowdown과 추후 stiff-transition 재탐색 실패 사례를 negative evidence로 보존한다. pressure-only 또는 한 번의 pilot에 의존하지 않는다.
 
 공식 G0 23-node/34-edge DAG, 7/23, successor 0/12 및 production HOLD는 그대로 유지한다. 실행 overlay는 T01A 이후 T02 current global-error replay와 T03/T04 C5 economics, T06 method qualification을 진행하고, T07은 기존 switcher를 qualified candidate에 한해 확장하는 단계로 둔다.
+
+
+Peer-W overlay PW00-PW06 is now the next primary implementation path. PW01/PW02 are separate method kernels; PW03 recovers a concrete p>=5 table; PW04 supplies transactional two-step history and the current fair-ab adapter; PW06 compares matched full IVPs. C5 scan research remains a separate preserved branch.
