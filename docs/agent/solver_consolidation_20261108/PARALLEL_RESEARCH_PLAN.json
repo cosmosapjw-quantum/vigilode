@@ -10,7 +10,7 @@
     "main_head": "8d0c79184e09efb5bdadc24a6315c60a71a44264"
   },
   "gpu": "FORBIDDEN under all tasks, dependencies, fallbacks, and benchmarks.",
-  "verdict": "RESEARCH_ADVANCED_PTSW2C_AND_VARIABLE_STEP_DQC_EXACT_CERTIFICATES; PRODUCTION_NOT_QUALIFIED",
+  "verdict": "RESEARCH_ADVANCED_PTSW2C_NUMERIC_SECTOR_CROSSCHECK_AND_VARIABLE_STEP_DQC_CERTIFICATE; PRODUCTION_NOT_QUALIFIED",
   "main_candidate": {
     "id": "V11-19-PEER-W",
     "priority": 0,
@@ -555,9 +555,33 @@
       },
       "common_shift": "W=I-(12/25)*h*T",
       "stability": {
-        "classification": "A(81.1 degree)-stable",
+        "classification": "Source-reported A(81.1 degree)-stable; independent root-locus scan reproduces boundary approximately 81.169749 degrees, not interval-certified",
         "rho_infinity": 0.6796,
-        "evidence": "source-reported; full sector not independently recomputed"
+        "evidence": "source-reported; full sector not independently recomputed",
+        "independent_cross_check": {
+          "status": "NUMERICALLY_REPRODUCED; NOT INTERVAL_CERTIFIED",
+          "exact_constant_step_amplification_polynomial": "See PTSW2C_STABILITY_NUMERIC_AUDIT_20261109.md, Eq. (2).",
+          "root_locus_minimum_sector_angle_deg": 81.16974941,
+          "boundary_z": "-0.4373064246 + 2.8149962319 i",
+          "boundary_unit_root_phase": 1.7885465625,
+          "rho_infinity": 0.6795805635,
+          "outside_sector_witness": {
+            "angle_deg": 82,
+            "z": "-0.39487634 + 2.80969117 i",
+            "spectral_radius": 1.0105069736
+          },
+          "sampled_sector": {
+            "angle_deg": 81.1,
+            "angular_samples": 163,
+            "radial_samples": 600,
+            "radial_range": [
+              "1e-6",
+              "1e8"
+            ],
+            "maximum_sampled_spectral_radius": 0.99999984529
+          },
+          "caveat": "Discrete floating-point root-locus and polar scans corroborate the source-reported A(81.1 degree) classification. They do not prove stability on the entire unbounded sector. Interval-certified root-count/Schur positivity remains open."
+        }
       },
       "startup": {
         "t1": "t0+2*h0",
