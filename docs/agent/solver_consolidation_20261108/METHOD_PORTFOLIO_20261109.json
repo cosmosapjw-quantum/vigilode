@@ -190,11 +190,12 @@
       "family": "associative affine error-map composition",
       "stage_graph": "parallel prefix over supplied recurrence",
       "derivative": "none intrinsic",
-      "maturity": "implemented kernel",
+      "maturity": "implemented kernel; PW07 synthetic affine-prefix mock matches serial recurrence; source/method propagation theorem remains external",
       "role": "prefix defect/error envelope",
       "limits": [
         "does not parallelize nonlinear adaptive IVP trajectory",
-        "recurrence proof is external obligation"
+        "recurrence proof is external obligation",
+        "PW07 scan is synthetic only; O(N)/O(log N) is known Blelloch prior art; no claim of IVP time parallelism."
       ]
     },
     {
@@ -400,6 +401,22 @@
         "must certify original nonlinear stage residual, not only auxiliary homotopy residual",
         "requires root residual-to-LTE theorem, contraction/domain and roundoff bounds"
       ]
+    },
+    {
+      "id": "PEERW_COMPOSITIONAL_SWITCH_CERTIFICATE",
+      "class": "conditional_mathematical_research_candidate",
+      "family": "heterogeneous transactional global-error bound across switched solvers",
+      "stage_graph": "ordered affine prefix aggregates certificate only; IVP time advancement remains causal",
+      "derivative": "no derivative intrinsic; operator/root proofs retain method permission labels",
+      "maturity": "conditional recurrence derived and mock checked; source-specific constants unresolved; no Rust implementation",
+      "role": "candidate novelty layer above prequalified method kernels",
+      "limits": [
+        "Requires source-specific propagation gain kappa.",
+        "Requires history-transfer gain chi and defect eta for each method pair/event/restart.",
+        "Requires original-W residual/operator perturbation, truncation, homotopy, rounding and output budgets.",
+        "2011/2015 Peer error control and 2017 coupled-GL estimation are prior art; novelty not established.",
+        "Blelloch scan is known prior art."
+      ]
     }
   ],
   "missing_or_unqualified": [
@@ -442,6 +459,22 @@
     {
       "item": "RHS-only implicit Peer homotopy root worker with original-residual error theorem",
       "status": "CONJECTURAL_NOT_IMPLEMENTED"
+    },
+    {
+      "item": "Validated propagation constants kappa on nonnormal PTSW2B/C admitted variable-step families",
+      "status": "UNRESOLVED"
+    },
+    {
+      "item": "History transfer gain chi and defect eta across RODAS5P/Peer and event/restart",
+      "status": "NOT_IMPLEMENTED"
+    },
+    {
+      "item": "Source-attested heterogeneous portfolio certificate",
+      "status": "CONJECTURAL_NOT_IMPLEMENTED"
+    },
+    {
+      "item": "Outward-rounded native original-W residual and operator perturbation",
+      "status": "NOT_IMPLEMENTED"
     }
   ],
   "current_authority": {
@@ -509,7 +542,9 @@
       "PW03 recover and independently certify p>=5 source tables from primary Peer-W literature.",
       "T02 replay current fair-ab authority before any full-IVP error/performance ranking.",
       "PW04 implement two-step history/startup/reject/restart and fair-ab adapter.",
-      "Only after exact method qualification, extend existing AutomaticOde/SwitchingSolver."
+      "Only after exact method qualification, extend existing AutomaticOde/SwitchingSolver.",
+      "PW07 conditional error recurrence/mock complete; kappa/chi/eta/delta unresolved.",
+      "No automatic method switching until source-specific propagation and transfer bounds are admitted."
     ]
   },
   "audit_revision": "T01 history and source audit"
