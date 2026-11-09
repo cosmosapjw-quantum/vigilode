@@ -399,16 +399,21 @@ Equation (9.1) gives a finite constant matrix \(B\) such that
 \]
 This is an exact finite-dimensional linear parent system on the lifted monomial coordinates, assuming the analytic normal-form transformation itself converges on the selected chart.
 
-**Projection-order lemma.** Suppose a zero-stable order-\(p\) integrator is applied to the parent linear IVP with compatible initial lift, and the numerical parent solution satisfies \(\|\widetilde\xi_n-\xi(t_n)\|=O(H^p)\) on a fixed compact time interval. Let \(\pi_z\) select the original normal-form coordinates and let \(\Phi^{-1}\) be the inverse normal-form chart. If \(\Phi^{-1}\) is Lipschitz on a compact subset containing the exact and numerical projected trajectories, then
+**Projection-order lemma.** Fix the chart convention \(x=\Phi(z)\), where \(z\) is the normal-form coordinate and \(x\) is the original physical coordinate. Suppose a zero-stable order-\(p\) integrator is applied to the parent linear IVP with compatible initial lift, and the numerical parent solution satisfies \(\|\widetilde\xi_n-\xi(t_n)\|=O(H^p)\) on a fixed compact time interval. Let \(\pi_z\) select the normal-form coordinates and suppose \(\Phi\) is Lipschitz on a compact chart subset containing the exact and numerical projected trajectories. Reconstruct the original coordinate by
 \[
-\|\Phi^{-1}(\pi_z\widetilde\xi_n)-x(t_n)\|
-\le \operatorname{Lip}(\Phi^{-1})\,
+x_n^{\rm num}:=\Phi(\pi_z\widetilde\xi_n),\qquad
+x(t_n)=\Phi(\pi_z\xi(t_n)).
+\]
+Then
+\[
+\|x_n^{\rm num}-x(t_n)\|
+\le \operatorname{Lip}(\Phi)\,
 \|\pi_z(\widetilde\xi_n-\xi(t_n))\|
 =O(H^p).
 \]
-Hence numerical drift away from the algebraic graph \(\xi_{\rm lift}=z^\mu\) does **not** by itself reduce the order of the extracted original coordinates. A retraction may be useful for constraint enforcement or conditioning, but it is not required merely to preserve convergence order.
+Hence numerical drift away from the algebraic graph \(\xi_{\rm lift}=z^\mu\) does **not** by itself reduce the order of the extracted original coordinates. A retraction may be useful for constraint enforcement or conditioning, but it is not required merely to preserve convergence order. If the chart is instead defined in the opposite direction \(z=\Psi(x)\), reconstruction must use \(\Psi^{-1}\); the two conventions must not be mixed.
 
-The restrictions remain substantial: convergence of the analytic normal form, Poincaré-domain hypothesis, chart radius, inverse-chart conditioning, lift dimension, and stability/conditioning of the parent matrix \(B\). A finite-order formal normal form, a truncated nonconvergent series, or a source-specific root certificate is not an exact parent lift.
+The restrictions remain substantial: convergence of the analytic normal form, Poincaré-domain hypothesis, chart radius, Lipschitz bound and conditioning of \(\Phi\), lift dimension, and stability/conditioning of the parent matrix \(B\). A finite-order formal normal form, a truncated nonconvergent series, or a source-specific root certificate is not an exact parent lift.
 
 Existing conditioned-polynomial and polynomial-resolvent code can be reused for declared operator actions and outward residuals where identities match. Existing quotient-flow actions apply only to their declared source class. They do not generate the normal form or certify its existence.
 

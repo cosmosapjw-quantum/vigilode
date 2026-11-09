@@ -709,7 +709,7 @@
         "enforce reentrant concurrent RHS callback contract"
       ],
       "dqc_warning": "The four-stage DQC p=2 family is verified separately. DQC error estimates cannot be transferred to EPPEER EPP5f3 without proving its exact tableau satisfies the DQC conditions.",
-      "formal_order": "p=s for method identifiers EPP_s; source variable named order is set to s+1 and is the controller exponent",
+      "formal_order": "p=s is the variable-step guarantee for arbitrary bounded ratios; fixed/smooth-mesh superconvergence is conditional and documented separately.",
       "candidate_detail": {
         "EPP5f3": {
           "stages": 5,
@@ -734,7 +734,58 @@
         }
       },
       "controller_observation": "ivpepp.f90 forms a weighted stage-RHS indicator using its private PE vector, normalizes by atol+rtol*abs(y), scales by h, rejects if the normalized indicator exceeds one, and updates h with exponent 1/(s+1), safety 0.95, lower factor 0.2 and method-specific upper ratio sigx. Source-inspected behavior, not a universal proof of exact global error.",
-      "parallel_callback_contract": "Fortran user RHS is declared PURE. Rust adapter must require semantic reentrancy/purity or isolate callback state; Send+Sync alone does not rule out interior-mutability side effects."
+      "parallel_callback_contract": "Fortran user RHS is declared PURE. Rust adapter must require semantic reentrancy/purity or isolate callback state; Send+Sync alone does not rule out interior-mutability side effects.",
+      "epp3f4_superconvergence": {
+        "status": "EXACT_SOURCE_ALGEBRA_CHECKED; SMOOTH_MESH_EXTENSION_DERIVED_AND_NUMERICALLY_CHECKED",
+        "source_method": "EPP3f4, s=3, c=(0,3/4,1)",
+        "source_coefficient_transform": "A_code(sigma)=PA0+CV*diag(sigma,sigma^2,sigma^3)*PPV; recurrence uses h_old*A_code",
+        "zero_stability": "B^2=1*v^T, v^T*B=v^T, v^T*1=1",
+        "variable_step_consistency": "moments q=0..3 vanish identically for all sigma>0",
+        "extra_order_gate": "v^T*(sigma^4 AB(4))=-(sigma-1)*(106845 sigma^3+79585 sigma^2-10727 sigma-10727)/691200",
+        "result": {
+          "arbitrary_bounded_ratios": "order 3",
+          "constant_step": "order 4 if the starting peer error is O(H^4)",
+          "smooth_mesh": "derived order 4 when |sigma_n-1|=O(H), subject to uniform hypotheses and O(H^4) startup",
+          "general_rate": "derived order 3+min(alpha,1) when |sigma_n-1|=O(H^alpha)"
+        },
+        "source_PE_indicator": {
+          "EPP3f4_vector": [
+            "4/9",
+            "-16/9",
+            "4/3"
+          ],
+          "moments": [
+            "0",
+            "0",
+            "1/3"
+          ],
+          "scaling": "h*PE*F = h^3*f''/6 + O(h^4)",
+          "caveat": "The indicator stays O(H^3) in the order-four smooth-mesh regime and becomes conservative by one order; no general finite-step bound is established."
+        },
+        "controller": "The source controller uses exponent 1/(s+1), a damped heuristic; it is not the formal variable-step convergence order.",
+        "experiments": {
+          "ode": "y'=y^2+phi(t), y_exact=e^t+sin(t), phi=e^t+cos(t)-(e^t+sin(t))^2",
+          "startup": "Exact initial peer values, intentionally isolating the peer recurrence",
+          "constant_mesh": "Observed order approximately 4.00",
+          "smooth_geometric_mesh": "sigma=1+1/N; observed order approximately 4.00",
+          "abrupt_mesh": "ratios 1/2,1,1/3 repeated; observed order approaches 3.00",
+          "evidence_class": "High-precision Python recurrence experiment; not EPPEER Fortran or VigilODE runtime."
+        },
+        "unresolved": [
+          "DOPRI5 startup must be shown to provide O(H^4) initial peer error for the order-four mode.",
+          "An order-four adaptive estimator compatible with the smooth-mesh condition is not yet available.",
+          "Rejections/events can violate the smooth-ratio condition and require restart or order-demotion logic.",
+          "No Rust adapter, build, tests or CPU benchmark has been run."
+        ],
+        "evidence_file": "EPPEER_EPP3F4_SUPERCONVERGENCE_AUDIT_20261109.md",
+        "verification_script": "verify_eppeer_superconvergence.py"
+      },
+      "pe_indicator_structure": {
+        "status": "DERIVED_FROM_SOURCE",
+        "formula": "PE=(1/s)*e_s^T*V(c)^(-1)",
+        "consequence": "PE annihilates node monomials of degree 0..s-2 and PE*c^(s-1)=1/s; h*PE*F is O(h^s).",
+        "significance": "For a smooth superconvergent mesh with solution error O(H^(s+1)), the existing source indicator remains O(H^s), making it conservative and potentially hiding accepted-step savings."
+      }
     },
     "dqc_variable_step_epp": {
       "status": "SOURCE_TABLEAU_RECONSTRUCTED_AND_EXACT_SYMBOLICALLY_VERIFIED",
