@@ -787,7 +787,15 @@
         "risk": "global order two can increase accepted steps relative to higher-order RODAS5P and PTSW2C",
         "benchmark": "must meet existing matched-achieved-error accepted-step and CPU-wall-time gates"
       },
-      "runtime_status": "NOT_IMPLEMENTED; NO_CARGO_BUILD_TEST_OR_CPU_BENCHMARK"
+      "runtime_status": "NOT_IMPLEMENTED; NO_CARGO_BUILD_TEST_OR_CPU_BENCHMARK",
+      "stage_rhs_transform": {
+        "source_equation": "Podhaisky 2002 equation (4.1)",
+        "definition": "p_i=sum_j (Gamma_ij(sigma)/gamma) k_(m-1,j); x_i=k_i+p_i",
+        "transformed_system": "(I-h_m*gamma*T_m)x_i=f(t_m+c_i*h_m,Y_i)+p_i; recover k_i=x_i-p_i",
+        "identity": "exact algebraic rearrangement; the T_m*Gamma*K_(m-1) term cancels exactly",
+        "implementation_benefit": "avoids an explicit source-side T_m multiplication for each stage RHS; both independent stages still share the same W",
+        "caution": "one direct factorization can serve both RHS; do not claim one shared Krylov iteration unless a block-Krylov method is separately validated"
+      }
     }
   },
   "explicit_peer_theory": {

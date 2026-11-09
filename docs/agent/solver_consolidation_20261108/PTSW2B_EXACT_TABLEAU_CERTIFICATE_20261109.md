@@ -106,6 +106,22 @@ u_{m+1}=u_m+h_m\sum_{i=1}^2
 \]
 There is no same-step stage coupling. Both stage solves use exactly the same shifted matrix Wm. This is actual method parallelism, not a concurrent implementation of dependent RODAS5P stages.
 
+### 2.1 Source RHS transformation for the shared W solve
+
+The dissertation further rewrites the stage equation (its equation (4.1)) so that the right-hand side does not require an additional multiplication by T_m. Define
+[
+p_{m,i}=sum_{j=1}^2rac{Gamma_{ij}(sigma_m)}{gamma},k_{m-1,j},
+qquad x_{m,i}=k_{m,i}+p_{m,i}.
+]
+Because (W_m=I-h_mgamma T_m), substitution into (2.4) gives exactly
+[
+W_m x_{m,i}
+=f(t_m+c_i h_m,Y_{m,i})+p_{m,i},
+qquad k_{m,i}=x_{m,i}-p_{m,i}.
+	ag{2.5}
+]
+Indeed, (W_mp_{m,i}=p_{m,i}-h_mT_msum_jGamma_{ij}k_{m-1,j}), which cancels the corresponding operator term in the original equation. This is an exact algebraic rearrangement, not an approximation. It removes the stagewise (T_m)-multiply from the RHS assembly and leaves two independent solves with the same W. A direct implementation can factor W once and apply it to both RHS; a matrix-free implementation can share operator/preconditioner setup while keeping the two Krylov recurrences separate unless a block-Krylov contract is independently proved. The transformation also preserves the original (k_{m,i}) values exactly after the subtraction.
+
 ## 3. Exact order and stiff-limit proofs
 
 ### 3.1 Variable-step order
