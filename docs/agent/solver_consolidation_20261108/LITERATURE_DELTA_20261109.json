@@ -1,0 +1,189 @@
+{
+  "schema_version": "vigilode.peer-literature-delta.v1",
+  "audit_date": "2026-11-09",
+  "findings": [
+    {
+      "id": "PTSW_COMMON_SHIFT",
+      "family": "parallel_two_step_rosenbrock_W_peer",
+      "sources": [
+        {
+          "authors": "H. Podhaisky, B. A. Schmitt, R. Weiner",
+          "year": 2002,
+          "title": "Design, analysis and testing of some parallel two-step W-methods for stiff systems",
+          "venue": "Applied Numerical Mathematics 42, 381-395",
+          "doi": "10.1016/S0168-9274(01)00162-3",
+          "url": "https://doi.org/10.1016/S0168-9274(01)00162-3"
+        },
+        {
+          "authors": "B. A. Schmitt, R. Weiner",
+          "year": 2004,
+          "title": "Parallel Two-Step W-Methods with Peer Variables",
+          "venue": "SIAM Journal on Numerical Analysis 42(1), 265-282",
+          "doi": "10.1137/S0036142902411057",
+          "url": "https://doi.org/10.1137/S0036142902411057"
+        },
+        {
+          "authors": "R. Weiner, B. A. Schmitt, H. Podhaisky",
+          "year": 2004,
+          "title": "Parallel Peer two-step W-methods and their application to MOL-systems",
+          "venue": "Applied Numerical Mathematics 48, 425-439",
+          "doi": "10.1016/j.apnum.2003.10.005",
+          "url": "https://doi.org/10.1016/j.apnum.2003.10.005"
+        }
+      ],
+      "claims": [
+        "Two-step methods propagate multiple peer variables of comparable order.",
+        "The fully parallel subclass removes current-step lower-triangular peer coupling so every current peer stage depends only on previous-step peer data.",
+        "Common-shift variants use one shifted matrix I-h*gamma*T_n and multiple independent right-hand sides.",
+        "Published theory includes order s-1 convergence/stability for general step sequences; stronger order/stability conditions are table-specific."
+      ],
+      "consequence": "Distinct GLM/peer plugin, not a reordering of RODAS5P. Must ship peer history, variable-step coefficients, startup, estimator, rejection/restart and output semantics.",
+      "evidence": "LITERATURE_SUPPORTED",
+      "limits": [
+        "Family theorem does not certify a chosen coefficient table or adapter.",
+        "Need exact coefficient and step-ratio hypotheses."
+      ]
+    },
+    {
+      "id": "MULTI_IMPLICIT_PEER_W",
+      "family": "multi_implicit_parallel_two_step_peer_W",
+      "sources": [
+        {
+          "authors": "B. A. Schmitt, R. Weiner, H. Podhaisky",
+          "year": 2005,
+          "title": "Multi-Implicit Peer Two-Step W-Methods for Parallel Time Integration",
+          "venue": "BIT Numerical Mathematics 45, 197-217",
+          "doi": "10.1007/s10543-005-2635-y",
+          "url": "https://doi.org/10.1007/s10543-005-2635-y"
+        }
+      ],
+      "claims": [
+        "Different implicit parameters/shifts may be assigned to different stages.",
+        "Current stages use only previous-step peer information and are independent.",
+        "Reported general subclass has order s-1, improved stiff damping and shared-memory matrix-free Krylov experiments."
+      ],
+      "consequence": "Compare independent shifted Krylov solves against shared-basis/multi-shift Krylov only after proving that the exact operator/shift contract permits reuse.",
+      "evidence": "LITERATURE_SUPPORTED",
+      "limits": [
+        "Different shifts may need separate preconditioners/factorizations.",
+        "Concurrency may be offset by setup/storage/communication."
+      ]
+    },
+    {
+      "id": "PEER_ERROR_CONTROL",
+      "family": "parallel_two_step_peer_W_error_control",
+      "sources": [
+        {
+          "authors": "G. Yu. Kulikov, R. Weiner",
+          "year": 2011,
+          "title": "Global error estimation and control in linearly-implicit parallel two-step peer W-methods",
+          "venue": "Journal of Computational and Applied Mathematics 236(6), 1226-1239",
+          "doi": "10.1016/j.cam.2011.08.006",
+          "url": "https://doi.org/10.1016/j.cam.2011.08.006"
+        }
+      ],
+      "claims": [
+        "Method-matched local/global error estimation and adaptive step-size control exist for linearly implicit parallel two-step peer W methods.",
+        "Estimator equations are coupled to the exact method family and cannot be replaced by RODAS embedded weights or generic RK estimates."
+      ],
+      "consequence": "Recover the typeset estimator equations and exact coefficient conventions before implementation.",
+      "evidence": "LITERATURE_SUPPORTED",
+      "limits": [
+        "Extracted PDF symbols may be lost; transcription needs independent check."
+      ]
+    },
+    {
+      "id": "SEPP_2024_2025",
+      "family": "TASE_stabilized_parallel_peer",
+      "sources": [
+        {
+          "authors": "G. Pagano",
+          "year": 2025,
+          "title": "Stabilized explicit peer methods with parallelism across the stages for stiff problems",
+          "venue": "Applied Numerical Mathematics 207, 156-173",
+          "doi": "10.1016/j.apnum.2024.08.023",
+          "url": "https://doi.org/10.1016/j.apnum.2024.08.023"
+        }
+      ],
+      "claims": [
+        "TASE-preconditioned explicit two-step peer formulas yield linearly implicit methods with independent current peer stages.",
+        "Published order 2, 3 and 4 families.",
+        "SEPP2 is reported strongly A-stable; SEPP3 has a reported A(theta) angle about 89.4 degrees and stiff-limit spectral radius about 0.69; SEPP4's reported angle is much narrower, about 32.62 degrees."
+      ],
+      "negative_or_limit": "The numerical examples report sequential implementations; this is not measured native stage-parallel speedup for a VigilODE adapter.",
+      "consequence": "SEPP2/3 are low-order candidate controls. SEPP4 is a weaker stiff-sector comparator unless a chosen application fits the sector. Count all TASE/preconditioner solves.",
+      "evidence": "LITERATURE_SUPPORTED",
+      "limits": [
+        "Stability is coefficient and preconditioner specific.",
+        "Order/stage parallelism does not imply cost advantage."
+      ]
+    },
+    {
+      "id": "REUSED_STAGE_PEER_2026",
+      "family": "linearly_implicit_two_step_peer_with_reused_stages",
+      "sources": [
+        {
+          "authors": "G. Pagano, L. Rández",
+          "year": 2026,
+          "title": "L(theta)-stable peer methods with reused stages for advection-diffusion-reaction problems",
+          "venue": "Advances in Computational Mathematics",
+          "doi": "10.1007/s10444-026-10315-6",
+          "url": "https://doi.org/10.1007/s10444-026-10315-6"
+        }
+      ],
+      "claims": [
+        "Linearly implicit two-step peer methods are tailored to nonlinear advection-diffusion-reaction semi-discretizations.",
+        "Families include L-stable and L(theta)-stable methods with theta approaching 90 degrees.",
+        "Stage reuse lowers effective evaluations and linear-system/LU costs for selected order 3 and 4 designs."
+      ],
+      "consequence": "Mandatory modern MOL comparator. Inspect the selected tableau's current-step dependency graph before calling it stage-parallel; reuse alone is insufficient.",
+      "evidence": "LITERATURE_SUPPORTED",
+      "limits": [
+        "Selected ADR workloads do not establish general performance.",
+        "VigilODE adapter and matched-error crossover are untested."
+      ]
+    },
+    {
+      "id": "VARIABLE_STEP_STIFF_PEER_2026",
+      "family": "variable_step_diagonally_implicit_peer",
+      "sources": [
+        {
+          "authors": "J. Lang, B. A. Schmitt",
+          "year": 2026,
+          "title": "Stiff Norm Estimates for Variable-Stepsize Peer Two-Step Methods",
+          "venue": "arXiv:2608.26913 submitted 2026-08-27",
+          "doi": "10.48550/arXiv.2608.26913",
+          "url": "https://arxiv.org/abs/2608.26913"
+        }
+      ],
+      "claims": [
+        "Grid-independent norm estimates are derived for variable-step diagonally implicit L(alpha)-stable peer methods on stiff semilinear systems.",
+        "Constructed methods reach order five with stage order five and a superconvergent order-six result under stated assumptions.",
+        "The analysis emphasizes products of step-varying propagation matrices; fixed-grid spectral radius alone is insufficient for variable-step global stability."
+      ],
+      "consequence": "Use as a high-order variable-step stiff-norm comparator. Assume sequential diagonal-implicit stage dependency until a selected table proves independence.",
+      "evidence": "LITERATURE_SUPPORTED",
+      "limits": [
+        "Preprint hypotheses and exact tables need independent audit.",
+        "Diagonal implicitness is not synonymous with stage parallelism."
+      ]
+    }
+  ],
+  "selection": {
+    "primary": "Common-shift parallel two-step W/peer; PTSW2B is the first exact certificate but only order two.",
+    "secondary": "Multi-implicit peer-W or verified TASE-SEPP3, depending on exact table and cost.",
+    "high_order_control": "2026 variable-step L(alpha)-stable order-five diagonally implicit peer; not presumed parallel.",
+    "MOL_cost_control": "2026 L(theta)-stable reused-stage peer; stage DAG must be checked.",
+    "nonstiff_parallel_control": "EPPEER explicit peer family; DQC estimator restrictions remain method-specific.",
+    "novelty_boundary": "Parallel peer methods themselves are established prior art. Potential novelty must come from a newly derived/certified algorithmic combination, rollback/error guarantees, operator/geometry integration and matched achieved-error end-to-end evidence."
+  },
+  "research_gates": [
+    "Exact primary coefficient tables and exact-rational reconstruction.",
+    "Order, stage-order, preconsistency, zero-stability and variable-step domain.",
+    "Full complex sector/stiff-limit claims; numeric root locus remains NUMERICALLY_CHECKED, not PROVED.",
+    "Correct startup and peer history order.",
+    "Method-specific local/global estimator and controller.",
+    "Stage dependency graph and actual CPU concurrency.",
+    "Full-IVP achieved-error comparison including setup, startup, rejection, output and fallback."
+  ]
+}
