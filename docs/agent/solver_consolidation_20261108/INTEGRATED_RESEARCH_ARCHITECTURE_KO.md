@@ -125,3 +125,10 @@ The first new whole-IVP candidate family is fully stage-parallel two-step W/Peer
 The current C5 source already provides bounded local Rayon ParallelExecution, block-GMRES for multiple RHS, solver work counters, a DOPRI5 checkpoint/session, accepted-boundary DOPRI5/RODAS5P switching and fair-ab global-error/work/output authority. It does not provide Peer two-step history, Peer startup/rollback or a Peer-W integrator. Reuse those components; do not create a second executor, WorkLedger, benchmark authority or switcher.
 
 Method taxonomy must keep common-shift PTSW-W, multi-implicit Peer-W, implicit Peer, Rosenbrock-type Peer, TASE/SEPP, explicit EPPEER and diagonal-implicit Peer separate. A W-Peer avoids nonlinear Newton but still solves linear W systems. JVP is Jacobian-free, not derivative-free. A genuinely RHS-only homotopy implicit Peer is a distinct conjectural family and inherits none of the W-Peer order/stability claims.
+
+
+## 9. PW07 conditional error certificate and evidence boundary
+
+PW07 derives a conditional augmented-state recurrence across accepted-boundary method changes. Each step's defect includes original W residual, W-operator perturbation, truncation, startup/history, homotopy-root, floating-point and output interpolation terms. A method switch adds a Lipschitz history-transfer gain and transfer defect; subsequent propagation requires a method/domain/step-ratio-specific norm gain. The recurrence is associative for certificate aggregation and can use an ordered prefix scan, but the ODE trajectory remains causal.
+
+This is not a general production certificate. PTSW2B/C, RODAS5P and arbitrary IVP sources do not yet have validated common-norm gains or cross-method history-transfer bounds. The controller must exclude a switch if they are unavailable. 2011/2015 Peer global-error control and 2017 coupled-GL defect estimation are prior art; no generic Peer/global-error novelty claim is permitted.
