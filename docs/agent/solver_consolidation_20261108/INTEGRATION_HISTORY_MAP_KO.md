@@ -53,3 +53,16 @@ The 2026-10-23 864-configuration single-thread campaign found rapid oscillation 
 | RHS-only implicit Peer | separate homotopy root proposal | conjectural; no stability/order inheritance |
 
 The pinned C5 code contains no Peer integrator/history/session, but provides a bounded Rayon executor, batch operator application, block-GMRES and fair-ab authority. The code-source absence does not erase the independent research/documentation certificates. See PEERW_FIRST_IMPLEMENTATION_PLAN_KO.md.
+
+
+## PW07 error-certification / global-control lineage
+
+| Prior work | Reusable result | What it preempts | Remaining VigilODE question |
+|---|---|---|---|
+| Kulikov-Weiner 2011 Peer-W | local/global estimators and adaptive control | first Peer-W global control | heterogeneous method change/history transfer with original-W residual |
+| Kulikov-Weiner 2015 ITSP3 | true scaled global-error bound for SDI Peer triple | first Peer true-global control | independent-stage W-Peer and transitions between unlike history spaces |
+| Constantinescu 2017 coupled GL | coupled solution/defect global estimator | first solution-defect GL estimator | transactional transfer of historical multistep state plus inexact source residual |
+| Arevalo et al. 2021 | adaptive LMM error models depend on step ratios | constant-step LTE as complete variable-step model | Peer-specific controller bounds under switching |
+| Lang-Schmitt 2026 | common norm for a selected variable-step Peer family | first variable-step Peer norm estimate | cannot inherit constants for PTSW2B/C or RODAS |
+
+PW07 adds conditional residual/transfer algebra and mock evidence; it does not establish a generic global-error theorem or production method.
