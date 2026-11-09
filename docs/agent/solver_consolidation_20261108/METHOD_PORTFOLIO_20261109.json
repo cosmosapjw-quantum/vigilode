@@ -1,0 +1,365 @@
+{
+  "schema_version": "vigilode.method-portfolio.v1",
+  "audit_date": "2026-11-09",
+  "production_verdict": "HOLD_NOT_RELEASE_QUALIFIED",
+  "frontend": {
+    "current_public_methods": [
+      "DOPRI5",
+      "RODAS5P"
+    ],
+    "selection": "GeneralOde and AutomaticOde select only DOPRI5/RODAS5P; switching occurs at committed boundaries.",
+    "limitations": [
+      "Public Problem is f64 slice based with Dense/Banded/FiniteDifference/JVP derivative providers.",
+      "Output, events, mass matrix and JVP capabilities differ by route and require capability checks.",
+      "Two-step peer history/startup is not represented by the current public facade.",
+      "The current facade is not a portfolio of all internal algorithms."
+    ]
+  },
+  "taxonomy_rules": [
+    "A step kernel, operator, matrix-function action, selector, verified model or example is not automatically a general-purpose solver.",
+    "Method identity includes equations/tableau, coefficient source, controller, estimator, startup, history, restart and dense-output formula.",
+    "Time-stage parallelism means independent current-step method stages. RHS rows, JVP rows, spatial cells and IVP ensembles are separate axes.",
+    "JVP is a derivative action, not derivative-free.",
+    "Matrix-free means no explicit matrix materialization; it does not mean no derivative action, preconditioner or linear solve.",
+    "Newton-free does not mean solve-free, derivative-free or globally convergent.",
+    "No order/stability property is inherited when changing method family."
+  ],
+  "methods": [
+    {
+      "id": "DOPRI5",
+      "class": "public_method",
+      "family": "explicit one-step RK",
+      "stage_graph": "sequential",
+      "derivative": "not required",
+      "maturity": "public full-IVP",
+      "role": "nonstiff baseline and possible peer startup",
+      "limits": [
+        "explicit stability limits stiff use",
+        "preserve independent controller/session semantics"
+      ]
+    },
+    {
+      "id": "RODAS5P_DENSE_BANDED",
+      "class": "protected_method",
+      "family": "one-step 8-stage Rosenbrock-W 5(4)",
+      "stage_graph": "strict-lower causal depth 8",
+      "derivative": "assembled dense/banded or authorized finite difference",
+      "maturity": "protected full-IVP",
+      "role": "stiff baseline and reference",
+      "limits": [
+        "lower-triangular RHS dependencies remain",
+        "common W reuse does not make stages independent",
+        "tableau and embedded estimator protected"
+      ]
+    },
+    {
+      "id": "RODAS5P_MATRIX_FREE",
+      "class": "research_unpromoted_method",
+      "family": "same 8-stage RODAS5P + user JVP/Krylov",
+      "stage_graph": "strict-lower causal depth 8",
+      "derivative": "user-supplied JVP; no explicit J matrix",
+      "maturity": "full-IVP research route",
+      "role": "large sparse systems",
+      "limits": [
+        "JVP is derivative action",
+        "Krylov and preconditioner costs remain",
+        "current frontend refuses some mass/dense-output combinations"
+      ]
+    },
+    {
+      "id": "RODAS5P_LAGGED",
+      "class": "research_unpromoted_method",
+      "family": "RODAS5P with lagged LU preconditioner",
+      "stage_graph": "sequential",
+      "derivative": "explicit J required in inspected route",
+      "maturity": "full-IVP research",
+      "role": "slowly varying operator",
+      "limits": [
+        "stale preconditioner can hurt; true residual required",
+        "not derivative-free"
+      ]
+    },
+    {
+      "id": "RODAS5P_SMALL_ENSEMBLE",
+      "class": "specialized_method",
+      "family": "small dense solver / independent IVP batches",
+      "stage_graph": "each trajectory owns causal RODAS stages; ensemble members independent",
+      "derivative": "route-specific",
+      "maturity": "opt-in/research",
+      "role": "small states or throughput workloads",
+      "limits": [
+        "ensemble parallelism is not single trajectory stage parallelism"
+      ]
+    },
+    {
+      "id": "COLLECTIVE_RODAS5P",
+      "class": "specialized_backend",
+      "family": "original RODAS5P + collective/rank-structured operator",
+      "stage_graph": "eight causal stages remain sequential",
+      "derivative": "source-owned common-W structured model",
+      "maturity": "source-specific",
+      "role": "structured MOL/operator control",
+      "limits": [
+        "rank structure must be exact for admitted source",
+        "factorization reuse does not remove outer stage dependency"
+      ]
+    },
+    {
+      "id": "SOURCE_GRAPH_SCHUR_C5",
+      "class": "source_specific_research_candidate",
+      "family": "graph-Schur transform of source-owned cubic stages",
+      "stage_graph": "source-specific task graph; not generic RODAS stage independence",
+      "derivative": "source-owned derivative-free cubic representation",
+      "maturity": "draft PR #187 / HOLD",
+      "role": "negative performance control",
+      "limits": [
+        "about 2.24x slower than protected fast-direct path in recorded original full-IVP median",
+        "not a generic Jacobian-free solver",
+        "no release/default promotion"
+      ]
+    },
+    {
+      "id": "BDF1_BDF2",
+      "class": "reference_only",
+      "family": "variable-step BDF with Newton nonlinear solve",
+      "stage_graph": "multi-step sequential history",
+      "derivative": "assembled dense Newton path in internal code",
+      "maturity": "reference only",
+      "role": "reference comparison",
+      "limits": [
+        "not production comparator by name",
+        "startup/history/Newton/estimator/restart require full qualification"
+      ]
+    },
+    {
+      "id": "RADAU_IIA1_3",
+      "class": "reference_only",
+      "family": "implicit collocation with coupled stages/Newton",
+      "stage_graph": "coupled nonlinear stage system",
+      "derivative": "dense modified Newton in current internal implementation",
+      "maturity": "reference only",
+      "role": "independent numerical reference",
+      "limits": [
+        "complex/eigen stage transform deferred by real-only core",
+        "include Newton and dense linear solve costs"
+      ]
+    },
+    {
+      "id": "EXPONENTIAL_PHI_KRYLOV",
+      "class": "research_method_family",
+      "family": "exponential Rosenbrock / phi-function Krylov actions",
+      "stage_graph": "method-specific; fused phi actions may share a Krylov basis",
+      "derivative": "matrix-free LinearOperator",
+      "maturity": "research kernels",
+      "role": "semilinear stiff linear-part problems",
+      "limits": [
+        "not general nonlinear IVP frontend",
+        "Krylov residual/phi accuracy/nonlinear remainder require full-IVP validation"
+      ]
+    },
+    {
+      "id": "HOMOTOPY_FLNH_PACH_CSH",
+      "class": "speculative_accelerator",
+      "family": "low-round proposals to original RODAS stage system",
+      "stage_graph": "batched proposal rounds then original-target certificate",
+      "derivative": "variant-dependent; do not call all variants derivative-free",
+      "maturity": "research; production HOLD",
+      "role": "possible critical-path compression with fallback",
+      "limits": [
+        "finite inverse does not imply good conditioning",
+        "current NonlinearOutputCertificate is a linearized output correction and does not bound nonlinear remainder",
+        "needs original residual-to-LTE proof and transactional fallback"
+      ]
+    },
+    {
+      "id": "ACTUAL_K_HOMOTOPY",
+      "class": "source_specific_certificate",
+      "family": "collective actual-K homotopy with interval witness",
+      "stage_graph": "certificate path only; does not replace generic RODAS step",
+      "derivative": "source-specific frozen Jacobian/interval bound",
+      "maturity": "scoped certificate",
+      "role": "admission support for declared source",
+      "limits": [
+        "not generic solver",
+        "order/stiff decay/runtime performance are separate gates"
+      ]
+    },
+    {
+      "id": "AFFINE_ERROR_TRANSPORT",
+      "class": "mathematical_support_kernel",
+      "family": "associative affine error-map composition",
+      "stage_graph": "parallel prefix over supplied recurrence",
+      "derivative": "none intrinsic",
+      "maturity": "implemented kernel",
+      "role": "prefix defect/error envelope",
+      "limits": [
+        "does not parallelize nonlinear adaptive IVP trajectory",
+        "recurrence proof is external obligation"
+      ]
+    },
+    {
+      "id": "FOURIER_VOLterra_PP05_PP06_PP15",
+      "class": "source_specific_research",
+      "family": "harmonic-polynomial Volterra path and FFT predictor",
+      "stage_graph": "path-specific coefficient/convolution recurrence",
+      "derivative": "source-specific algebraic representation",
+      "maturity": "partial with registered failures",
+      "role": "invariant-leaf/source model",
+      "limits": [
+        "PP05 G2/G3 failures retained",
+        "PP06 harmful-alias gate failed",
+        "PP15 no timing",
+        "no generic Rust speedup or fifth-order claim"
+      ]
+    },
+    {
+      "id": "ALGEBRAIC_POLYNOMIAL_CHARTS",
+      "class": "mathematical_support_kernel",
+      "family": "declared polynomial resolvent/conditioned chart/scalar quadratic root chart",
+      "stage_graph": "problem/chart dependent",
+      "derivative": "quadratic chart avoids derivative callback; polynomial relations do not infer arbitrary derivatives",
+      "maturity": "implemented support kernels",
+      "role": "source/operator reduction",
+      "limits": [
+        "not a general Poincare-Dulac normal-form generator",
+        "declared operator relation must be source certified"
+      ]
+    },
+    {
+      "id": "DAMPED_ROTATION_LAWSON",
+      "class": "source_structure_solver",
+      "family": "declared 2x2 damped-rotation semigroup + Lawson-DOPRI5",
+      "stage_graph": "explicit remainder flow",
+      "derivative": "no inferred Jacobian",
+      "maturity": "implemented fixed-block route",
+      "role": "oscillatory/damped block control",
+      "limits": [
+        "fixed declared blocks only",
+        "no generic stiffness-uniform theorem"
+      ]
+    },
+    {
+      "id": "GRAY_SCOTT_2D",
+      "class": "spatial_problem_provider",
+      "family": "periodic 2D reaction-diffusion MOL + structural logarithmic norm",
+      "stage_graph": "spatial rows parallel at each time stage",
+      "derivative": "JVP and source-specific log-norm provider",
+      "maturity": "implemented",
+      "role": "2D regression and norm test",
+      "limits": [
+        "not general 3D or sphere backend"
+      ]
+    },
+    {
+      "id": "SPHERE_PHOTON_FV_P06",
+      "class": "source_specific_spatial_application",
+      "family": "fixed-grid full-sphere finite-volume Bianchi-I photon transport",
+      "stage_graph": "spatial FV adapter coupled to RODAS5P time integration",
+      "derivative": "source-owned banded Jacobian",
+      "maturity": "PASS_SCOPED; production HOLD",
+      "role": "sphere geometry/FV source and test fixture",
+      "limits": [
+        "unpolarized non-tilted scope only",
+        "tilt, aberration, recoil, AMR and structured sphere solver remain HOLD",
+        "not a general spherical MOL solver"
+      ]
+    },
+    {
+      "id": "SPHERICAL_INFORMATION_PACKAGE",
+      "class": "spatial_support_research",
+      "family": "spherical remap/information geometry/spectral tools",
+      "stage_graph": "not a time integrator",
+      "derivative": "not applicable",
+      "maturity": "mixed ready/pending",
+      "role": "sphere geometry/remap research reuse",
+      "limits": [
+        "not end-to-end production certification",
+        "remap error separated from temporal truncation"
+      ]
+    },
+    {
+      "id": "PARALLEL_PEER_W",
+      "class": "literature_candidate_not_implemented",
+      "family": "two-step parallel Rosenbrock-W/peer-W",
+      "stage_graph": "independent current stages only for tables with zero current-stage coupling",
+      "derivative": "common-shift or multi-implicit shifted systems; Krylov possible",
+      "maturity": "no implementation path identified in pinned path inventory",
+      "role": "primary genuine time-stage-parallel stiff track",
+      "limits": [
+        "coefficients, variable-step theorem, startup, estimator, history/restart and outputs missing in code"
+      ]
+    },
+    {
+      "id": "TASE_SEPP",
+      "class": "literature_candidate_not_implemented",
+      "family": "TASE-stabilized linearly implicit peer",
+      "stage_graph": "stage-parallel in published construction",
+      "derivative": "TASE/preconditioner shifted systems",
+      "maturity": "literature only",
+      "role": "low-order true-parallel comparator",
+      "limits": [
+        "linear system/preconditioner count may erase concurrency",
+        "published tests do not establish native parallel speedup"
+      ]
+    },
+    {
+      "id": "REUSED_STAGE_PEER_2026",
+      "class": "literature_candidate_not_implemented",
+      "family": "L(theta)-stable reused-stage two-step peer",
+      "stage_graph": "unverified; inspect exact table first",
+      "derivative": "TASE/preconditioned shifts",
+      "maturity": "literature only",
+      "role": "modern MOL efficiency comparator",
+      "limits": [
+        "stage reuse does not by itself prove stage independence"
+      ]
+    },
+    {
+      "id": "DIAGONAL_IMPLICIT_PEER_2026",
+      "class": "literature_candidate_not_implemented",
+      "family": "variable-step L(alpha)-stable peer through order five",
+      "stage_graph": "assume sequential diagonal-implicit/lower-triangular until proven otherwise",
+      "derivative": "diagonal stage shifts with uniform variable-step norm estimates",
+      "maturity": "2026 preprint comparator",
+      "role": "high-order stiff accuracy control",
+      "limits": [
+        "not called parallel by default",
+        "audit exact preprint hypotheses and coefficient tables"
+      ]
+    }
+  ],
+  "missing_or_unqualified": [
+    {
+      "item": "Single portfolio frontend covering peer/BDF/Radau/exponential/specialized routes",
+      "status": "NOT_IMPLEMENTED"
+    },
+    {
+      "item": "Shared executable method capability registry",
+      "status": "PARTIAL_DOPRI_RODAS_ONLY"
+    },
+    {
+      "item": "Step attempt commit/rollback/checkpoint for two-step peer history",
+      "status": "NOT_IMPLEMENTED"
+    },
+    {
+      "item": "General 3D MOL provider and geometry-aware norms",
+      "status": "NOT_IMPLEMENTED"
+    },
+    {
+      "item": "General spherical MOL operator separate from P06 photon client",
+      "status": "NOT_IMPLEMENTED"
+    },
+    {
+      "item": "Proof-backed homotopy residual-to-local-error certificate",
+      "status": "NOT_QUALIFIED"
+    },
+    {
+      "item": "Native peer-W solver and exact coefficient tests",
+      "status": "NOT_IMPLEMENTED"
+    },
+    {
+      "item": "Complete clean-clone workspace CI and production release gate",
+      "status": "NOT_PASSED"
+    }
+  ]
+}
