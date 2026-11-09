@@ -2,7 +2,7 @@
   "schema_version": "vigilode.execution-receipt.v1",
   "task": "PW07_COMPOSITIONAL_ERROR_CERTIFICATE_AND_MOCK_EXPERIMENT",
   "date_kst": "2026-11-09",
-  "status": "THEORY_AND_MOCK_PUSHED_REMOTE_READBACK_PENDING_RUST_NOT_RUN",
+  "status": "THEORY_AND_MOCK_REMOTE_READBACK_VERIFIED_RUST_NOT_RUN",
   "repository": "cosmosapjw-quantum/vigilode",
   "branch": "research/solver-portfolio-shortdag-20261109",
   "pinned_code_source": {
@@ -32,14 +32,15 @@
     "affine_scan": "200 synthetic updates; serial/product difference 4.24e-22"
   },
   "tests": {
-    "python_driver": "COMPLETED_LOCAL",
+    "python_driver": "COMPLETED_LOCAL_FULL_DRIVER",
     "py_compile": "COMPLETED_LOCAL",
     "cargo": "NOT_RUN",
     "rustfmt": "NOT_RUN",
     "clippy": "NOT_RUN",
     "CI": "NOT_RUN",
     "native_Rayon_peer_benchmark": "NOT_RUN",
-    "full_IVP_matched_error": "NOT_RUN"
+    "full_IVP_matched_error": "NOT_RUN",
+    "compact_repo_driver": "CREATED_REMOTE_NOT_EXECUTED_AFTER_PUSH"
   },
   "limitations": [
     "Oracle startup excludes startup error/cost.",
@@ -48,5 +49,17 @@
     "No generic source-bound propagation/transfer constants.",
     "2011/2015 Peer and 2017 coupled GL prior art preempt basic global-error claims.",
     "All 187 PR diffs not scientifically reviewed; account-wide hidden ChatGPT export unavailable."
-  ]
+  ],
+  "remote_readback": {
+    "status": "ALL_PW07_ARTIFACTS_READ_BACK",
+    "verified": [
+      "PEERW_ERROR_CERTIFICATE_THEORY_20261109.md",
+      "PEERW_MOCK_EXPERIMENT_20261109.md",
+      "PEERW_NOVELTY_PRIOR_ART_BOUNDARY_20261109.md",
+      "PEERW_EXECUTION_RECEIPT_PW07.json",
+      "peerw_pw07_reproduce.py",
+      "peerw_pw07_compact_results.json"
+    ],
+    "note": "Repository bytes were read back successfully. Local Python/SymPy mock ran. The compact repository copy was created but not executed after push. Rust/Cargo/CI/native solver/production qualification remain NOT_RUN."
+  }
 }
