@@ -40,3 +40,16 @@ The 2026-10-23 864-configuration single-thread campaign found rapid oscillation 
 - Remote Desktop device cosmosapjw was OFFLINE. This session could not edit `/home/cosmosapjw/vigilode` or execute Cargo/Rust/CI locally.
 - Dropbox `/ode_solver/implementation_plan.md` is a historical design snapshot, not current code authority.
 - PHYS70/WU088_HH is a different project. Its source-bound block/SIMD/ensemble patterns may inspire transfer questions, but its physics/results are not VigilODE evidence.
+
+
+## Peer-W 우선 계보 복원 (2026-11-09)
+
+| 계열 | 확보된 자료 | 현재 판정 |
+|---|---|---|
+| PTSW2C | exact variable-step 2-stage coefficients; C(2), Gamma(2), B(3); forward startup; embedded estimator; source A(81.1 degree) / rho-infinity 0.6796; numerical root-locus audit | 첫 order-3 implementation prototype; stability sector not interval-certified; Rust NOT_RUN |
+| PTSW2B | exact algebraic 2-stage coefficients; C(2), Gamma(2), B(2); RHS rearrangement; startup; embedded pair; source L(90), rho-infinity 0 | stiff-damping order-2 control; step-count risk; Rust NOT_RUN |
+| PTSW3B/3C | source-reported stability/order records | full coefficient/estimator transcription pending |
+| p>=5 parallel W-Peer | 2002 p=s,q=s and 2004 p=s-1 families | original G0 candidate; concrete exact table not yet recovered |
+| RHS-only implicit Peer | separate homotopy root proposal | conjectural; no stability/order inheritance |
+
+The pinned C5 code contains no Peer integrator/history/session, but provides a bounded Rayon executor, batch operator application, block-GMRES and fair-ab authority. The code-source absence does not erase the independent research/documentation certificates. See PEERW_FIRST_IMPLEMENTATION_PLAN_KO.md.
