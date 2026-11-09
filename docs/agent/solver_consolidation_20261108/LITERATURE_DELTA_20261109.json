@@ -236,6 +236,67 @@
         "https://doi.org/10.1016/j.cnsns.2023.107136",
         "https://doi.org/10.1016/j.apnum.2024.08.023"
       ]
+    },
+    {
+      "id": "PEER_GLOBAL_TRUE_ERROR_2015",
+      "family": "singly_diagonally_implicit_peer_global_error_control",
+      "claim": [
+        "Kulikov-Weiner (2015) construct an SDI two-step Peer triple ITSP3 with true scaled global-error control under stated hypotheses.",
+        "It is not independent-stage parallel W-Peer and does not certify heterogeneous switching."
+      ],
+      "evidence": "LITERATURE_SUPPORTED",
+      "sources": [
+        "https://doi.org/10.1137/140979952"
+      ]
+    },
+    {
+      "id": "COUPLED_GL_GLOBAL_DEFECT_2017",
+      "family": "coupled_general_linear_global_error_estimation",
+      "claim": [
+        "Constantinescu (2017) estimates global error by coupled GL solution/defect propagation for same-order methods, same exact initial condition and proportional principal LTE with gamma not equal to 1.",
+        "The self-starting setting does not establish arbitrary switching between history-bearing methods with heterogeneous history remapping."
+      ],
+      "evidence": "LITERATURE_SUPPORTED",
+      "limits": [
+        "Do not claim first solution-plus-defect propagation or first coupled-GL estimator.",
+        "Focused comparison needed for heterogeneous transfer theorem."
+      ],
+      "sources": [
+        "https://doi.org/10.1016/j.cam.2017.05.012",
+        "https://www.osti.gov/servlets/purl/1422717"
+      ]
+    },
+    {
+      "id": "ADAPTIVE_LMM_RATIO_ERROR_2021",
+      "family": "variable_step_adaptive_multistep_error_model",
+      "claim": [
+        "Arevalo et al. (2021) show actual and estimated local errors in adaptive LMM depend on recent step ratios and controller history.",
+        "Constant-step LTE alone is not a complete model of the adaptive sequence."
+      ],
+      "evidence": "LITERATURE_SUPPORTED",
+      "sources": [
+        "https://doi.org/10.1007/s11075-020-00900-1"
+      ]
+    },
+    {
+      "id": "PW07_HETEROGENEOUS_SWITCH_CERTIFICATE",
+      "family": "heterogeneous_transactional_method_switch_error_certificate",
+      "claim": [
+        "A conditional recurrence composes method propagation, original-W residual/operator defect, history-transfer gain/defect, nonlinear root residual, truncation, rounding and output defects.",
+        "It is algebraically derived but constants are not source-certified for arbitrary VigilODE methods/sources.",
+        "Ordered affine scan accelerates aggregation; scan novelty is excluded."
+      ],
+      "evidence": "DERIVED_CONDITIONAL_CONJECTURAL_AS_GENERAL_VIGILODE_THEOREM",
+      "limits": [
+        "Requires method/domain-specific kappa and switch chi/eta; local estimator and per-step spectral radius are insufficient.",
+        "Needs focused prior-art review of heterogeneous runtime method changes/history transfers."
+      ],
+      "sources": [
+        "https://doi.org/10.1016/j.cam.2017.05.012",
+        "https://doi.org/10.1016/j.cam.2011.08.006",
+        "https://doi.org/10.1137/140979952",
+        "https://arxiv.org/abs/2608.26913"
+      ]
     }
   ],
   "selection": {
@@ -244,8 +305,8 @@
     "high_order_control": "2002 p=s,q=s parallel W family (s=5) and 2004 Peer-W p=s-1 family (s=6); no concrete p>=5 table is yet qualified.",
     "MOL_cost_control": "2026 L(theta)-stable reused-stage peer; stage DAG must be checked.",
     "nonstiff_parallel_control": "EPPEER explicit peer family; DQC estimator restrictions remain method-specific.",
-    "novelty_boundary": "Parallel peer methods themselves are established prior art. Potential novelty must come from a newly derived/certified algorithmic combination, rollback/error guarantees, operator/geometry integration and matched achieved-error end-to-end evidence.",
-    "immediate_priority": "PW01/PW02 Peer-W prototypes and PW03 p>=5 source-table recovery begin after PW00; T02 fair-ab replay is mandatory before full-IVP rankings.",
+    "novelty_boundary": "No claim of first Peer global control, coupled-GL solution/defect estimator, or affine scan. Only a source-attested heterogeneous transactional switch certificate with original residual/operator and history-transfer bounds remains conjectural.",
+    "immediate_priority": "PW07 theory/mock scoped complete; next PW03 p>=5 tableau recovery and PW01/PW02 native kernels; PW04 needs the transfer contract after T02 fair-ab replay.",
     "peer_implementation_status": "exact PTSW2B/C documentation certificates exist; Rust Peer-W adapter not implemented; PTSW p>=5 concrete table not recovered.",
     "scan_candidate": "Blelloch ordered scan only on measured crossover.",
     "derivative_boundary": "A JVP-based W operator is Jacobian-free but not derivative-free; true RHS-only homotopy belongs to a separate implicit Peer family."
@@ -260,6 +321,10 @@
     "Full-IVP achieved-error comparison including setup, startup, rejection, output and fallback.",
     "For p>=5 source candidates, recover complete primary coefficient arrays, independent stage-graph proof, exact variable-step conditions, zero-stability and startup before qualification.",
     "Separate W-operator source/derivative permissions: no explicit J, JVP-based, and strict RHS-only must be different capability values.",
-    "Prove rejection rollback and two-step history transfer/restart before automatic Peer switching."
+    "Prove rejection rollback and two-step history transfer/restart before automatic Peer switching.",
+    "Compare against Constantinescu 2017 and Kulikov-Weiner 2011/2015 before novelty claim.",
+    "Validate source-specific propagation kappa and transfer chi/eta.",
+    "Check original-W residual/operator perturbation and floating enclosures.",
+    "Adversarial tests: nonnormal products, step ratios, event/restart, source epoch mutation and auxiliary-vs-original homotopy residual."
   ]
 }
