@@ -377,7 +377,9 @@
         "No inherited RODAS embedded weights",
         "No time-parallel march",
         "No accepted state mutation on rejection"
-      ]
+      ],
+      "receipt": "PW01_PW02_READINESS_AUDIT.json",
+      "result_note": "Readiness audit: exact order 3, A(alpha)=81.17deg, not L-stable; G1 verdict NOT_READY (controller constants, startup, derivative class, allowlist, 1.10x vs 1.20x ceiling UNRESOLVED)."
     },
     {
       "id": "PW02_PTSW2B_LSTABLE_ORDER2_CONTROL",
@@ -404,13 +406,15 @@
       "stop_conditions": [
         "Never merge with PTSW2C coefficients/estimator",
         "Do not claim one shared Krylov iteration from common W"
-      ]
+      ],
+      "receipt": "PW01_PW02_READINESS_AUDIT.json",
+      "result_note": "Readiness audit: exact order 2, nilpotent stiff limit; G1 verdict CONDITIONALLY_READY for RED tests only; L(90) sector UNRESOLVED."
     },
     {
       "id": "PW03_G0_ORDER5_PEER_W_TABLEAU_SOURCE_RECOVERY",
       "title": "Recover and exactly qualify concrete primary p>=5 fully stage-parallel Peer-W tableau",
-      "status": "PLANNED",
-      "evidence": "NOT_RUN",
+      "status": "PARTIAL_SCOPED",
+      "evidence": "LITERATURE_SUPPORTED",
       "priority": 11,
       "depends_on": [
         "PW00_PEER_W_SOURCE_AND_API_AUDIT"
@@ -437,7 +441,9 @@
       "stop_conditions": [
         "No guessed or secondary-source coefficient",
         "No generic family theorem transferred to unverified tableau"
-      ]
+      ],
+      "receipt": "PW03_PEERW_P5_LITERATURE_RECOVERY.json",
+      "result_note": "Only PPSW2-6 (s=6,p=5,L(81deg)) is a p>=5 stage-parallel Peer-W candidate; printed data are nodes c and gamma0/gamma1 only, B/A/G matrices not printed (derivation unverified); preprint only, journal/BIT/SINUM text not read. No qualified p>=5 table: PW04/PW06 remain gated."
     },
     {
       "id": "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION",
