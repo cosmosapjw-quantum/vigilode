@@ -1,0 +1,17 @@
+{
+  "schema_version": "vigilode.receipt-addendum.v1",
+  "task": "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
+  "addendum_to": "EXECUTION_RECEIPT_T02.json (immutable, unchanged)",
+  "resolves": "T02-F4",
+  "cause": "validate_package.py requires per-node status in {PLANNED,IN_PROGRESS,BLOCKED,PASS,FAIL,CANCELLED} and node gpu==FORBIDDEN; PARALLEL_RESEARCH_PLAN.json violated both (V11-19 compound status string; V11-19..21 lacked the per-node gpu field).",
+  "fix": "data-side only; validator NOT loosened. V11-19 status -> BLOCKED with the original string preserved verbatim in status_detail; per-node gpu=FORBIDDEN added to V11-19, V11-20, V11-21 (restates the plan-level gpu policy); MANIFEST.json blob hash for PARALLEL_RESEARCH_PLAN.json refreshed.",
+  "authorization": "owner instruction 2026-11-10 ('검증기 불일치도 교정해줘')",
+  "validator_rerun": {
+    "command": "python3 -I docs/agent/solver_consolidation_20261108/validate_package.py",
+    "exit_code": 0,
+    "status": "PASS",
+    "stdout_sha256": "4383fd658035e3b8837be8db6e56dc3a9bedcb4b603e7348875de4886dfe5ba7",
+    "result_line": "PASS static package: 19 base tasks; 6 parallel nodes; 14 history entries; 42 Git blob identities verified"
+  },
+  "note": "fix touches a historical plan file by additive field/status change only; prior content is recoverable from git history (bd82eff9)."
+}
