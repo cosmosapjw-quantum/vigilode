@@ -1,0 +1,465 @@
+{
+  "schema_version": "vigilode.t02-global-error-authority-replay.v1",
+  "task": "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
+  "repo": "cosmosapjw-quantum/vigilode",
+  "base": {
+    "branch": "research/unified-t02-20261110",
+    "head": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+    "tree": "a032d2f9fa615d776e0b31af9d672e62a998fbc2",
+    "pinned_code_source": "569ce02629498fec133db9ce368eb303ba943b69",
+    "crates_tree_equals_C5": true
+  },
+  "sources": {
+    "global_error": {
+      "path": "crates/rodas5p-fair-ab/src/global_error.rs",
+      "blob": "c62f996fa18f9815f1f329766abe8fe2c25ca22b"
+    },
+    "adaptive_global_error": {
+      "path": "crates/rodas5p-fair-ab/src/adaptive_global_error.rs",
+      "blob": "ccae16353ed1dcc90c6511befea8b42f7d3ad9cd"
+    },
+    "numerical_reference": {
+      "path": "crates/rodas5p-fair-ab/src/numerical_reference.rs",
+      "blob": "b8adbdae154eaa243310136f78ec2eaa4d7073d9"
+    },
+    "output_accuracy": {
+      "path": "crates/rodas5p-fair-ab/src/output_accuracy.rs",
+      "blob": "57401289d7484f5927693b0b47333660f1f2644d"
+    },
+    "output_admissibility": {
+      "path": "crates/rodas5p-fair-ab/src/output_admissibility.rs",
+      "blob": "b1f084aad4c50770dcbae141e7ab1741f6ec37a8"
+    },
+    "work_counters": {
+      "path": "crates/rodas5p-core/src/work.rs",
+      "blob": "76577cf6cb0295f859efcad2606150a01961cae7"
+    }
+  },
+  "constants": {
+    "reference_dominance_fraction": 0.1,
+    "output_policy_dominance_fraction": 0.1,
+    "two_arm_global_error_budget_wrms": 10.0,
+    "two_arm_interpolant_delta_limit": 2.0
+  },
+  "status_values": {
+    "IntegratorRunStatus": [
+      "Success",
+      "ReferenceDominated",
+      "OutputPolicyDominated",
+      "SolverFailure",
+      "MissingOutput",
+      "NonFinite",
+      "TimingFailure"
+    ],
+    "AdaptiveOutputPolicyPairStatus": [
+      "Admissible",
+      "OutputPolicyDominated",
+      "Incomplete"
+    ],
+    "ReferenceDominance": [
+      "Admissible",
+      "Dominated"
+    ],
+    "OutputPolicyDominance": [
+      "Admissible",
+      "Dominated"
+    ],
+    "ArmBudget": [
+      "WithinBudget",
+      "ExceedsBudget",
+      "ReferenceUndecidable"
+    ],
+    "TwoArmRowStatus": [
+      "Pass",
+      "ReferenceDominated",
+      "GlobalErrorExceedsBudget",
+      "InterpolantUnchecked",
+      "InterpolantDominated"
+    ]
+  },
+  "claims": [
+    {
+      "source": "crates/rodas5p-fair-ab/src/global_error.rs",
+      "blob": "c62f996fa18f9815f1f329766abe8fe2c25ca22b",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "30-49",
+      "claim": "CommonOutputGrid = strictly increasing finite nonempty times; grid_id = sha256(JSON(times))."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/global_error.rs",
+      "blob": "c62f996fa18f9815f1f329766abe8fe2c25ca22b",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "51-80",
+      "claim": "uniform grid: spacing must divide the span within min(128*eps*max(|t|,1), spacing/1024); a nonzero span needs >=1 interval; last point snapped to end."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/global_error.rs",
+      "blob": "c62f996fa18f9815f1f329766abe8fe2c25ca22b",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "130-134",
+      "claim": "WRMS weight_i = absolute_i + relative*|reference_i| (evaluated at the reference state on each grid point); must be finite and >0."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/global_error.rs",
+      "blob": "c62f996fa18f9815f1f329766abe8fe2c25ca22b",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "354-360",
+      "claim": "per grid point: l2 on raw difference; wrms = safe_l2(diff/weights)/sqrt(dim)."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/global_error.rs",
+      "blob": "c62f996fa18f9815f1f329766abe8fe2c25ca22b",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "363-381",
+      "claim": "metrics: endpoint, max_grid, rms_grid for l2 and wrms; conservative_max_wrms = max_grid_wrms + reference_uncertainty_wrms."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/global_error.rs",
+      "blob": "c62f996fa18f9815f1f329766abe8fe2c25ca22b",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "551-559",
+      "claim": "IntegratorRunStatus = Success | ReferenceDominated | OutputPolicyDominated | SolverFailure | MissingOutput | NonFinite | TimingFailure."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/global_error.rs",
+      "blob": "c62f996fa18f9815f1f329766abe8fe2c25ca22b",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "711-734",
+      "claim": "output-policy dominance: Dominated iff clipped/dense max-grid WRMS discrepancy > 0.1*dense max-grid WRMS error (equality admissible)."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/global_error.rs",
+      "blob": "c62f996fa18f9815f1f329766abe8fe2c25ca22b",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "759-767",
+      "claim": "IntegratorWorkReport = WorkCounters + internal_steps + output_clipped_steps + stored_state_bytes (retained output bytes, explicitly NOT peak RSS)."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/global_error.rs",
+      "blob": "c62f996fa18f9815f1f329766abe8fe2c25ca22b",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "864-900",
+      "claim": "completed_reference_status fails closed to ReferenceDominated when numerical provenance is missing, source_kind/uncertainty bits disagree, or error-scale mismatch; else applies classify_reference_dominance on max_grid_wrms."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/numerical_reference.rs",
+      "blob": "b8adbdae154eaa243310136f78ec2eaa4d7073d9",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "375-397",
+      "claim": "reference dominance: Dominated iff reference_uncertainty_wrms > 0.1*measured max-grid WRMS (equality admissible)."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/numerical_reference.rs",
+      "blob": "b8adbdae154eaa243310136f78ec2eaa4d7073d9",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "401-420",
+      "claim": "validate_numerical_reference_error_scale: candidate error scale must bit-match the reference convergence wrms_scale and uncertainty."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/numerical_reference.rs",
+      "blob": "b8adbdae154eaa243310136f78ec2eaa4d7073d9",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "976-995",
+      "claim": "reference uncertainty = Richardson (D1*q/(1-q)) + method disagreement, enforced bit-exactly."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/numerical_reference.rs",
+      "blob": "b8adbdae154eaa243310136f78ec2eaa4d7073d9",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "1030-1075",
+      "claim": "loader authenticates artifact SHA-256 against manifest, builds CommonOutputGrid from artifact.requested_times, source_kind=HighAccuracyNumerical, uniform absolute scale vector."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/adaptive_global_error.rs",
+      "blob": "ccae16353ed1dcc90c6511befea8b42f7d3ad9cd",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "65-69,106-111",
+      "claim": "AdaptiveOutputMode = Clipped | Dense; pair status = Admissible | OutputPolicyDominated | Incomplete."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/adaptive_global_error.rs",
+      "blob": "ccae16353ed1dcc90c6511befea8b42f7d3ad9cd",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "1040-1047",
+      "claim": "only the dense row of a pair where both rows are Success and policy classification is Admissible gets same_error_ranking_admissible=true."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/adaptive_global_error.rs",
+      "blob": "ccae16353ed1dcc90c6511befea8b42f7d3ad9cd",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "732-745",
+      "claim": "observed_work wraps WorkCounters with accepted internal_steps, output_clipped_steps, retained_state_bytes."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/output_admissibility.rs",
+      "blob": "b1f084aad4c50770dcbae141e7ab1741f6ec37a8",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "25-27",
+      "claim": "two-arm v3 protocol: global-error budget B=10.0 WRMS, interpolant-delta limit 2.0, order reference->budget->interpolant."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/output_admissibility.rs",
+      "blob": "b1f084aad4c50770dcbae141e7ab1741f6ec37a8",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "69-91",
+      "claim": "arm budget bands on exact sums: Within iff E+U<=B; Exceeds iff E-U>B; else ReferenceUndecidable."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/output_admissibility.rs",
+      "blob": "b1f084aad4c50770dcbae141e7ab1741f6ec37a8",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "188-219",
+      "claim": "row status: any undecidable->ReferenceDominated; any exceeds->GlobalErrorExceedsBudget; both Within: no interpolant->InterpolantUnchecked, delta>2->InterpolantDominated, else Pass."
+    },
+    {
+      "source": "crates/rodas5p-core/src/work.rs",
+      "blob": "76577cf6cb0295f859efcad2606150a01961cae7",
+      "commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "lines": "4-80",
+      "claim": "WorkCounters includes rhs/jvp/jacobian/nonlinear/linear/precond/factorization/recycle/phi counters plus accepted_steps, rejected_steps, fast_attempts, fallback_steps, failure classes and vector-unit fields."
+    }
+  ],
+  "findings": [
+    {
+      "id": "T02-F1",
+      "severity": "CONCERN",
+      "text": "Two different admissibility regimes coexist: (a) per-pair 10% rules (reference dominance, output-policy dominance) and (b) two-arm v3 fixed absolute budget B=10 WRMS. B is a pass/fail budget, not a matched-achieved-error comparison; PW06/T09 must not treat equal-rtol or B-pass as matched achieved error."
+    },
+    {
+      "id": "T02-F2",
+      "severity": "CONCERN",
+      "text": "stored_state_bytes is retained output size, not peak RSS. WorkCounters has no explicit allocation, peak-memory, setup or startup-work field; the handoff requires these to be charged in PW06/T09, so they must be measured outside this ledger or added with owner approval."
+    },
+    {
+      "id": "T02-F3",
+      "severity": "INFO",
+      "text": "Analytic reference problems carry reference_uncertainty_wrms = 0.0 (offload digest cited adaptive_global_error.rs L343; not independently re-read here); numerical references derive uncertainty only from Richardson + method disagreement."
+    },
+    {
+      "id": "T02-F4",
+      "severity": "CONCERN",
+      "text": "Parent package validator validate_package.py FAILS on this immutable commit: 'invalid status for node V11-19-PEER-W' (PARALLEL_RESEARCH_PLAN.json status string is outside the validator's allowed set). Documentation-tooling mismatch; not repaired (no silent change to historical evidence)."
+    }
+  ],
+  "tests": [
+    {
+      "test_binary": "global_error_contracts",
+      "tests": [
+        {
+          "name": "common_grid_rejects_missing_output_times_instead_of_interpolating",
+          "outcome": "ok"
+        },
+        {
+          "name": "exact_and_known_perturbed_trajectories_have_expected_external_errors",
+          "outcome": "ok"
+        },
+        {
+          "name": "output_policy_dominance_is_strict_at_ten_percent_and_excludes_only_the_policy_row",
+          "outcome": "ok"
+        },
+        {
+          "name": "output_policy_gap_uses_the_tight_reference_weight_table",
+          "outcome": "ok"
+        },
+        {
+          "name": "pareto_and_target_selection_preserve_failures_and_choose_true_nondominated_points",
+          "outcome": "ok"
+        },
+        {
+          "name": "every_fixed_anchor_comparator_row_serializes_comparator_fidelity",
+          "outcome": "ok"
+        },
+        {
+          "name": "fixed_anchor_screen_is_thread_deterministic_and_exposes_all_five_candidates",
+          "outcome": "ok"
+        },
+        {
+          "name": "operator_application_cost_axis_counts_vectors_without_double_counting_block_calls",
+          "outcome": "ok"
+        },
+        {
+          "name": "pareto_screen_stores_only_common_outputs_and_retains_paired_output_policy_evidence",
+          "outcome": "ok"
+        }
+      ]
+    },
+    {
+      "test_binary": "adaptive_global_error_contracts",
+      "tests": [
+        {
+          "name": "g1_adaptive_screen_is_limited_to_the_transactional_decision_set",
+          "outcome": "ok"
+        },
+        {
+          "name": "adaptive_screen_covers_every_current_family_and_preserves_every_run_row",
+          "outcome": "ok"
+        },
+        {
+          "name": "every_adaptive_comparator_row_serializes_comparator_fidelity",
+          "outcome": "ok"
+        },
+        {
+          "name": "adaptive_screen_is_scientifically_identical_in_one_and_four_threads",
+          "outcome": "ok"
+        }
+      ]
+    },
+    {
+      "test_binary": "numerical_reference_contracts",
+      "tests": [
+        {
+          "name": "legacy_analytic_provenance_deserializes_without_changing_its_wire_shape",
+          "outcome": "ok"
+        },
+        {
+          "name": "numerical_reference_and_reference_dominated_wire_spellings_are_stable",
+          "outcome": "ok"
+        },
+        {
+          "name": "pinned_numerical_reference_manifest_is_present_for_fair_ab_consumption",
+          "outcome": "ok"
+        },
+        {
+          "name": "reference_dominance_is_strict_at_ten_percent_and_excludes_pareto_success",
+          "outcome": "ok"
+        },
+        {
+          "name": "checked_in_artifacts_load_for_each_holdout_and_preserve_numerical_provenance",
+          "outcome": "ok"
+        },
+        {
+          "name": "loader_rejects_bad_q_nonfinite_convergence_runtime_pin_grid_checksum_and_canonical_source",
+          "outcome": "ok"
+        }
+      ]
+    },
+    {
+      "test_binary": "numerical_reference_v2_contracts",
+      "tests": [
+        {
+          "name": "every_v2_comparison_uses_the_tight_reference_state_as_the_only_wrms_anchor",
+          "outcome": "ok"
+        },
+        {
+          "name": "v2_grid_and_state_payload_checksums_remain_v1_compatible",
+          "outcome": "ok"
+        },
+        {
+          "name": "checked_in_python_not_run_manifest_is_bit_for_bit_semantically_equal_to_the_rust_layout",
+          "outcome": "ok"
+        },
+        {
+          "name": "v2_layout_is_exactly_twenty_two_physical_artifacts_and_sixty_six_case_bindings",
+          "outcome": "ok"
+        },
+        {
+          "name": "historical_v1_manifest_and_artifact_bytes_remain_pinned",
+          "outcome": "ok"
+        },
+        {
+          "name": "v2_manifest_rejects_missing_extra_duplicate_unreferenced_misbound_and_v1_shapes",
+          "outcome": "ok"
+        },
+        {
+          "name": "v1_loader_remains_live_while_v2_loader_dispatches_by_exact_case_id_and_is_lazy",
+          "outcome": "ok"
+        }
+      ]
+    },
+    {
+      "test_binary": "output_accuracy_assessment_contracts",
+      "tests": [
+        {
+          "name": "accurate_but_policy_sensitive_is_not_accuracy_failure",
+          "outcome": "ok"
+        },
+        {
+          "name": "boundary_and_lower_bound_are_distinct",
+          "outcome": "ok"
+        },
+        {
+          "name": "missing_budget_is_not_pass",
+          "outcome": "ok"
+        },
+        {
+          "name": "equal_bad_trajectories_do_not_certify_accuracy",
+          "outcome": "ok"
+        },
+        {
+          "name": "nonfinite_negative_and_overflow_rejected",
+          "outcome": "ok"
+        },
+        {
+          "name": "scalar_error_gap_is_not_trajectory_distance",
+          "outcome": "ok"
+        },
+        {
+          "name": "paired_assessment_preserves_evidence_and_legacy_sensitivity",
+          "outcome": "ok"
+        },
+        {
+          "name": "signed_zero_zero_budget_is_well_defined",
+          "outcome": "ok"
+        },
+        {
+          "name": "uncertain_reference_does_not_pass_boundary",
+          "outcome": "ok"
+        }
+      ]
+    },
+    {
+      "test_binary": "two_arm_admissibility_contracts",
+      "tests": [
+        {
+          "name": "arm_budget_bands_are_decided_on_the_exact_sum_and_difference",
+          "outcome": "ok"
+        },
+        {
+          "name": "arm_budget_has_three_bands_with_reference_uncertainty",
+          "outcome": "ok"
+        },
+        {
+          "name": "case_tolerance_uncertainty_is_rounded_upward",
+          "outcome": "ok"
+        },
+        {
+          "name": "case_tolerance_basis_scales_exactly_when_weights_are_proportional",
+          "outcome": "ok"
+        },
+        {
+          "name": "gap_triangle_is_an_integrity_assertion",
+          "outcome": "ok"
+        },
+        {
+          "name": "protocol_id_declares_budget_and_interpolant_limit_before_any_run",
+          "outcome": "ok"
+        },
+        {
+          "name": "row_status_order_is_reference_then_budget_then_interpolant",
+          "outcome": "ok"
+        },
+        {
+          "name": "two_arm_classification_holds_the_triangle_on_random_trajectories",
+          "outcome": "ok"
+        },
+        {
+          "name": "audit_records_classify_as_predeclared_under_the_new_protocol",
+          "outcome": "ok"
+        }
+      ]
+    }
+  ],
+  "not_run": [
+    "Concrete end-to-end replay of a specific numerical reference artifact + candidate run (reference identity/uncertainty of a real case): NOT_RUN",
+    "Independent re-read of analytic_reference_problem uncertainty (adaptive_global_error.rs ~L317-343): taken from offload digest only",
+    "cargo fmt/clippy/workspace-wide tests: NOT_RUN (docs-only mutation, no Rust change)",
+    "GitHub readback of committed files: NOT_RUN (no push performed; push needs owner approval)",
+    "Performance ranking: NOT_RUN by design (T02 gate)"
+  ],
+  "verdict": {
+    "authority_traced": true,
+    "ranking_allowed": false,
+    "status": "PARTIAL_SCOPED",
+    "reason": "source authority traced and contract tests PASS; concrete reference-artifact replay NOT_RUN; ranking/matched-error claims stay gated (T02-F1, T02-F2)."
+  }
+}

@@ -1,0 +1,1381 @@
+{
+  "schema_version": "vigilode.unified-development-dag.v1",
+  "plan_id": "VIGILODE_UNIFIED_LOCAL_AGENT_20261109",
+  "created_at_kst": "2026-11-09",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "scope": "VigilODE repository and research performed in this conversation; exclude all other repositories/projects",
+  "authority": {
+    "latest_research_branch": "research/solver-portfolio-shortdag-20261109",
+    "latest_research_head": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+    "latest_research_commit_time_utc": "2026-11-09T11:38:53Z",
+    "latest_research_commit_time_kst": "2026-11-09 20:38:53+09:00",
+    "latest_research_url": "https://github.com/cosmosapjw-quantum/vigilode/commit/bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+    "plan_ancestor_branch": "docs/solver-consolidation-plan-20261108",
+    "plan_ancestor_head": "becbc75438354d7bc8ae3fea362ce943d4d2272a",
+    "plan_ancestor_relation": {
+      "ahead_by": 56,
+      "behind_by": 0,
+      "merge_base": "becbc75438354d7bc8ae3fea362ce943d4d2272a",
+      "changed_code_files": 0,
+      "compared_paths": 27,
+      "interpretation": "latest research branch descends from plan branch; current incremental changes were docs/research only"
+    },
+    "code_source_branch": "research/vigilode-c5-native-graph-schur-20261102",
+    "code_source_commit": "569ce02629498fec133db9ce368eb303ba943b69",
+    "code_source_tree": "a4b2f09521b197b37612ff7dc66a13fbb74a0bae",
+    "main_head_observed": "8d0c79184e09efb5bdadc24a6315c60a71a44264",
+    "main_warning": "main is older than the current research source; do not use it as the implementation source or silently cherry-pick from it",
+    "g0_authority": {
+      "nodes": 23,
+      "edges": 34,
+      "progress": "7/23",
+      "successor_admitted": "0/12",
+      "production": "HOLD",
+      "policy": "immutable; this DAG is an additive execution overlay only"
+    },
+    "inventory": {
+      "pull_request_metadata_rows": 187,
+      "branch_refs": 361,
+      "pr176_method_inventory_rows": 28,
+      "coverage": "metadata inventory plus selected lineage/source reviews; not all 187 diffs received independent scientific review"
+    }
+  },
+  "mission": {
+    "statement": "For stiff/oscillatory/nonnormal IVPs, minimize complete CPU cost at matched achieved global output error while preserving original-source equations, numerical stability, output semantics, transactional history, and explicit evidence limits.",
+    "success_claim": "Only when original G0 thresholds are demonstrated with current source, same achieved global error, same output policy, all costs charged, and independent review.",
+    "non_goals": [
+      "no exhaustive method x backend x transform Cartesian product",
+      "no clairvoyant global optimality/regret claim",
+      "no genericity inferred from a source-specific theorem",
+      "no GPU scope in this portfolio plan",
+      "no merging method identities",
+      "no production/default promotion by this overlay"
+    ]
+  },
+  "official_g0_targets": {
+    "global_order_min": 4.8,
+    "accepted_steps_vs_protected_RJF_max_ratio": 1.2,
+    "median_same_global_error_wall_speedup_min": 1.15,
+    "fast_lane_explicit_jacobian_builds": 0,
+    "fast_lane_newton_iterations": 0,
+    "critical_depth_p95_max": 6,
+    "critical_depth_absolute_max": 8,
+    "fallback_fraction_max": 0.1,
+    "status": "GOAL_NOT_ACHIEVED; thresholds immutable"
+  },
+  "evidence_status_enum": [
+    "ESTABLISHED",
+    "LITERATURE_SUPPORTED",
+    "DERIVED",
+    "NUMERICALLY_CHECKED",
+    "IMPLEMENTATION_VERIFIED",
+    "CONJECTURAL",
+    "UNRESOLVED",
+    "BLOCKED",
+    "NOT_RUN",
+    "NOT_APPLICABLE"
+  ],
+  "execution_status_enum": [
+    "COMPLETE_SCOPED",
+    "COMPLETE_SCOPED_NEGATIVE",
+    "PARTIAL_SCOPED",
+    "PLANNED",
+    "CONDITIONAL_GATE",
+    "CONJECTURAL_RESEARCH_PLANNED",
+    "BLOCKED",
+    "NOT_RUN"
+  ],
+  "nodes": [
+    {
+      "id": "T00_LOCK_AND_PLAN",
+      "title": "기준선·권한·범위 잠금",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "REMOTE_READBACK_VERIFIED",
+      "priority": 0,
+      "depends_on": [],
+      "mutation": "DOCS_ONLY",
+      "source_refs": [
+        "research/solver-portfolio-shortdag-20261109@bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+        "docs/solver-consolidation-plan-20261108@becbc75438354d7bc8ae3fea362ce943d4d2272a"
+      ],
+      "acceptance": [
+        "Repo/branch/commit/tree identity recorded",
+        "main not treated as current source authority",
+        "G0 authority preserved"
+      ],
+      "stop_conditions": [
+        "Branch head cannot be fetched",
+        "Source tree identity mismatches"
+      ]
+    },
+    {
+      "id": "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
+      "title": "PR·branch·commit·ledger lineage 복원",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "REMOTE_METADATA_AND_SELECTED_SOURCE_READBACK",
+      "priority": 1,
+      "depends_on": [
+        "T00_LOCK_AND_PLAN"
+      ],
+      "mutation": "DOCS_ONLY",
+      "source_refs": [
+        "GitHub PR inventory 187 metadata rows",
+        "GitHub branch inventory 361 refs",
+        "PR #176 28-row method inventory",
+        "HISTORY_MATRIX.json",
+        "HISTORICAL_RESEARCH_MAP.json"
+      ],
+      "acceptance": [
+        "PR metadata and branch refs enumerated",
+        "selected lineage/source diffs reviewed",
+        "unreviewed diffs explicitly marked not fully audited"
+      ],
+      "stop_conditions": [
+        "Never describe metadata enumeration as semantic review of every PR"
+      ]
+    },
+    {
+      "id": "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
+      "title": "통합 solver portfolio architecture·method identity·capability contract",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "REMOTE_READBACK_VERIFIED",
+      "priority": 2,
+      "depends_on": [
+        "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY"
+      ],
+      "mutation": "DOCS_ONLY_ADDITIVE",
+      "source_refs": [
+        "INTEGRATED_RESEARCH_ARCHITECTURE_KO.md",
+        "INTEGRATED_RESEARCH_CONTRACTS.json",
+        "ADAPTIVE_PORTFOLIO_ROUTER_SPEC_KO.md",
+        "ADAPTIVE_ROUTER_CONTRACTS.json",
+        "METHOD_PORTFOLIO_20261109.json"
+      ],
+      "acceptance": [
+        "S0 admission -> S1 IVP method -> S2 backend -> S3 optional transform -> S4 execution lane separated",
+        "method identities include equation/tableau, estimator, controller, history/startup/restart/output",
+        "G0 authority unchanged"
+      ],
+      "stop_conditions": [
+        "No exhaustive Cartesian-product runner",
+        "No auto-promotion based on capability label alone"
+      ]
+    },
+    {
+      "id": "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
+      "title": "현재 fair-ab achieved-error authority replay",
+      "status": "PARTIAL_SCOPED",
+      "evidence": "NUMERICALLY_CHECKED",
+      "priority": 3,
+      "depends_on": [
+        "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
+        "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE"
+      ],
+      "mutation": "DOCS_ONLY_UNTIL_REPLAY_COMPLETE",
+      "source_refs": [
+        "crates/rodas5p-fair-ab/src/global_error.rs@c62f996fa18f9815f1f329766abe8fe2c25ca22b",
+        "crates/rodas5p-fair-ab/src/adaptive_global_error.rs@ccae16353ed1dcc90c6511befea8b42f7d3ad9cd",
+        "crates/rodas5p-fair-ab/src/numerical_reference.rs@b8adbdae154eaa243310136f78ec2eaa4d7073d9",
+        "crates/rodas5p-fair-ab/src/output_accuracy.rs@57401289d7484f5927693b0b47333660f1f2644d"
+      ],
+      "outputs": [
+        "GLOBAL_ERROR_AUTHORITY_REPLAY_KO.md",
+        "GLOBAL_ERROR_AUTHORITY_REPLAY.json",
+        "EXECUTION_RECEIPT_T02.json"
+      ],
+      "acceptance": [
+        "Current blobs re-read and pinned",
+        "reference provenance/uncertainty and common output grid verified",
+        "clipped/dense policy and global WRMS calculation traced",
+        "all command outcomes recorded as PASS/FAIL/NOT_RUN/BLOCKED",
+        "no ranking until output/error authority is accepted"
+      ],
+      "stop_conditions": [
+        "Any source blob mismatch",
+        "reference uncertainty or output policy unresolved",
+        "no extrapolation between achieved-error measurements"
+      ],
+      "receipt": "EXECUTION_RECEIPT_T02.json",
+      "result_note": "Source authority traced; 44 fair-ab contract tests PASS; concrete reference-artifact replay NOT_RUN; ranking stays gated (findings T02-F1,F2,F4)."
+    },
+    {
+      "id": "T03_C5_COST_ATTRIBUTION_AND_LONG_PATH_PREREG",
+      "title": "C5 affine scan cost model·long-path preregistration",
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "priority": 4,
+      "depends_on": [
+        "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
+        "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY"
+      ],
+      "mutation": "DOCS_ONLY",
+      "source_refs": [
+        "PR #186 R10",
+        "PR #187 C5",
+        "research/vigilode_r10_affine_scan_closure_20261102/RESULTS.json",
+        "research/vigilode_c5_native_graph_schur_20261102/RESULTS.json"
+      ],
+      "outputs": [
+        "C5_SCAN_COST_MODEL_KO.md",
+        "C5_LONG_PATH_PREREGISTRATION.json",
+        "EXECUTION_RECEIPT_T03.json"
+      ],
+      "acceptance": [
+        "separate work, span, allocation, roundoff, memory and actual serial runtime",
+        "long path physical holdout preregistered before run",
+        "synthetic and physical model regimes separated"
+      ],
+      "stop_conditions": [
+        "No scan implementation before preregistration",
+        "No inference from synthetic ring96 path count to physical speed"
+      ]
+    },
+    {
+      "id": "T04_C5_LONG_PATH_NATIVE_FULL_IVP_HOLDOUT",
+      "title": "C5 long path native full-IVP negative/positive crossover test",
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "priority": 5,
+      "depends_on": [
+        "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
+        "T03_C5_COST_ATTRIBUTION_AND_LONG_PATH_PREREG"
+      ],
+      "mutation": "TEST_BENCHMARK_ONLY_IN_ISOLATED_WORKTREE",
+      "source_refs": [
+        "PR #187 head 569ce02629498fec133db9ce368eb303ba943b69"
+      ],
+      "acceptance": [
+        "same source, initial state, interval, output policy, reference and achieved error",
+        "at least two nontrivial path regimes and adverse nonnormal/time-varying holdout",
+        "all residual checks/fallback/setup/allocation costs charged",
+        "paired complete-IVP wall time and peak RSS reported"
+      ],
+      "stop_conditions": [
+        "No measured crossover -> NO_GO for scan implementation",
+        "Do not erase existing negative result"
+      ]
+    },
+    {
+      "id": "T05_C5_WORK_EFFICIENT_ORDERED_SCAN",
+      "title": "C5 work-efficient ordered affine scan (conditional)",
+      "status": "CONDITIONAL_GATE",
+      "evidence": "NOT_RUN",
+      "priority": 6,
+      "depends_on": [
+        "T04_C5_LONG_PATH_NATIVE_FULL_IVP_HOLDOUT"
+      ],
+      "mutation": "ISOLATED_OPT_IN_WORKTREE_ONLY",
+      "source_refs": [
+        "Blelloch ordered scan prior art",
+        "R10 affine composition proofs"
+      ],
+      "acceptance": [
+        "only execute if T04 shows bottleneck and end-to-end crossover",
+        "O(m) work/O(log m) span algorithm",
+        "noncommutative affine composition order preserved",
+        "reuse existing ParallelExecution and scratch; no new pool",
+        "floating reassociation checked against original-W residual/fallback"
+      ],
+      "stop_conditions": [
+        "No bottleneck/crossover -> NO_GO without code"
+      ]
+    },
+    {
+      "id": "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION",
+      "title": "BDF/Radau·diagonal Peer·TASE/SEPP·reused-stage Peer comparator qualification",
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "priority": 7,
+      "depends_on": [
+        "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
+        "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY"
+      ],
+      "mutation": "DOCS_ONLY",
+      "source_refs": [
+        "METHOD_PORTFOLIO_20261109.json",
+        "LITERATURE_DELTA_20261109.json",
+        "EXPLICIT_PEER_EPPEER_DQC_AUDIT_20261109.md",
+        "EPPEER_EPP3F4_SUPERCONVERGENCE_AUDIT_20261109.md",
+        "PEER_PARALLEL_STAGE_PROOFS_20261109.md",
+        "PARALLEL_BENCHMARK_PROTOCOL.md"
+      ],
+      "outputs": [
+        "BDF_RADAU_COMPARATOR_QUALIFICATION.json",
+        "DIAGONAL_IMPLICIT_AND_TASE_PEER_COMPARATOR_AUDIT.md",
+        "EXECUTION_RECEIPT_T06.json"
+      ],
+      "acceptance": [
+        "BDF/Radau are marked reference-only in this source snapshot",
+        "startup/history/nonlinear solve/output/work costs documented",
+        "2026 diagonal-implicit Peer not labelled stage-parallel without coefficient dependency proof",
+        "TASE/SEPP inner operators and solves fully charged",
+        "primary p>=5 parallel Peer-W remains PW03"
+      ],
+      "stop_conditions": [
+        "No family-level inference transferred to unverified coefficient table"
+      ]
+    },
+    {
+      "id": "PW00_PEER_W_SOURCE_AND_API_AUDIT",
+      "title": "Peer-W source/API/method-family audit",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "REMOTE_READBACK_AND_SYMBOLIC_CHECKS",
+      "priority": 8,
+      "depends_on": [
+        "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE"
+      ],
+      "mutation": "DOCS_ONLY_ADDITIVE",
+      "source_refs": [
+        "PEERW_FIRST_IMPLEMENTATION_PLAN_KO.md",
+        "PEERW_EXECUTION_RECEIPT_PW00.json",
+        "PEER_METHOD_FAMILY_REVIEW.md",
+        "PEER_PARALLEL_STAGE_PROOFS_20261109.md",
+        "PEER_W_TABLEAU_CERTIFICATES_20261109.md",
+        "PTSW2B_EXACT_TABLEAU_CERTIFICATE_20261109.md",
+        "PTSW2C_STABILITY_NUMERIC_AUDIT_20261109.md",
+        "EPPEER_EPP3F4_SUPERCONVERGENCE_AUDIT_20261109.md",
+        "EXPLICIT_PEER_EPPEER_DQC_AUDIT_20261109.md",
+        "STAGE_TRANSFORMATION_THEORY.md",
+        "PARALLEL_RESEARCH_PLAN.json"
+      ],
+      "acceptance": [
+        "PTSW2C C(2), Gamma(2), B(3) exact residuals zero",
+        "PTSW2B C(2), Gamma(2), B(2) exact residuals zero",
+        "Peer-W, multi-implicit Peer-W, IPP, Rosenbrock-Peer, TASE/SEPP, EPPEER and diagonal-implicit Peer remain distinct",
+        "p>=5 concrete table not claimed recovered",
+        "C5 APIs pinned"
+      ],
+      "stop_conditions": [
+        "No Rust implementation/pass/performance claim in PW00"
+      ]
+    },
+    {
+      "id": "PW01_PTSW2C_ORDER3_FIRST_PEER_IMPLEMENTATION",
+      "title": "PTSW2C order-3 common-shift two-step Peer-W prototype",
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "priority": 9,
+      "depends_on": [
+        "PW00_PEER_W_SOURCE_AND_API_AUDIT"
+      ],
+      "mutation": "ISOLATED_OPT_IN_WORKTREE_NEW_MODULE_ONLY",
+      "source_refs": [
+        "PTSW2C_STABILITY_NUMERIC_AUDIT_20261109.md",
+        "PEERW_FIRST_IMPLEMENTATION_PLAN_KO.md",
+        "SOURCE_LOCK_20261109.json"
+      ],
+      "acceptance": [
+        "exact tableau/order/embedded estimator tests",
+        "zero same-step stage dependency assertion",
+        "forward startup solution O(H^3), derivative O(H^2)",
+        "one shared W factor if direct backend contract permits; two independent RHS solves",
+        "serial/parallel parity and work accounting",
+        "atomic rejection rollback of accepted peer history/controller/epoch"
+      ],
+      "claim_ceiling": "ORDER3_CANDIDATE_A(81.1_DEGREE)_NOT_L_STABLE_NOT_G0_QUALIFIED",
+      "stop_conditions": [
+        "No inherited RODAS embedded weights",
+        "No time-parallel march",
+        "No accepted state mutation on rejection"
+      ]
+    },
+    {
+      "id": "PW02_PTSW2B_LSTABLE_ORDER2_CONTROL",
+      "title": "PTSW2B order-2 L-stable damping control",
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "priority": 10,
+      "depends_on": [
+        "PW00_PEER_W_SOURCE_AND_API_AUDIT"
+      ],
+      "mutation": "ISOLATED_OPT_IN_WORKTREE_SEPARATE_METHOD",
+      "source_refs": [
+        "PTSW2B_EXACT_TABLEAU_CERTIFICATE_20261109.md",
+        "Podhaisky 2002 equation (4.1)"
+      ],
+      "acceptance": [
+        "exact C(2), Gamma(2), B(2) re-run",
+        "nilpotent stiff-limit certificate independently re-run",
+        "startup/embedded/controller identities reproduced",
+        "source RHS transform p_i and x_i exact parity verified",
+        "low-order accepted-step penalty measured"
+      ],
+      "claim_ceiling": "ORDER2_L_STABLE_CONTROL_NOT_G0_QUALIFIED",
+      "stop_conditions": [
+        "Never merge with PTSW2C coefficients/estimator",
+        "Do not claim one shared Krylov iteration from common W"
+      ]
+    },
+    {
+      "id": "PW03_G0_ORDER5_PEER_W_TABLEAU_SOURCE_RECOVERY",
+      "title": "Recover and exactly qualify concrete primary p>=5 fully stage-parallel Peer-W tableau",
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "priority": 11,
+      "depends_on": [
+        "PW00_PEER_W_SOURCE_AND_API_AUDIT"
+      ],
+      "mutation": "SOURCE_RESEARCH_AND_EXACT_ALGEBRA_ONLY",
+      "source_refs": [
+        "Podhaisky, Schmitt & Weiner 2002 DOI 10.1016/S0168-9274(01)00162-3",
+        "Schmitt & Weiner 2004 DOI 10.1137/S0036142902411057"
+      ],
+      "outputs": [
+        "PEERW_P5_PRIMARY_SOURCE_TRANSCRIPTION.md",
+        "PEERW_P5_EXACT_TABLEAU.json",
+        "PEERW_P5_SYMBOLIC_CERTIFICATE.json",
+        "EXECUTION_RECEIPT_PW03.json"
+      ],
+      "acceptance": [
+        "recover exact primary table/page/equation and precision",
+        "two independent coefficient transcriptions agree",
+        "prove p>=5 variable-step order on actual ratio domain",
+        "zero-stability, step-ratio, startup, estimator and A(alpha)/L(alpha) tests",
+        "prove current-stage independence from actual coefficient matrix",
+        "no implementation until one concrete table passes"
+      ],
+      "stop_conditions": [
+        "No guessed or secondary-source coefficient",
+        "No generic family theorem transferred to unverified tableau"
+      ]
+    },
+    {
+      "id": "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION",
+      "title": "Peer-specific session/history/startup/restart plus fair-ab adapter",
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "priority": 13,
+      "depends_on": [
+        "PW01_PTSW2C_ORDER3_FIRST_PEER_IMPLEMENTATION",
+        "PW02_PTSW2B_LSTABLE_ORDER2_CONTROL",
+        "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
+        "PW07_COMPOSITIONAL_ERROR_CERTIFICATE_AND_MOCK_EXPERIMENT"
+      ],
+      "mutation": "ISOLATED_OPT_IN_INTEGRATION_ONLY",
+      "source_refs": [
+        "crates/vigilode/src/session.rs@ce30e5703a8d47a6e258a6df829b19a553fe79f9",
+        "crates/rodas5p-fair-ab/src/global_error.rs@c62f996fa18f9815f1f329766abe8fe2c25ca22b"
+      ],
+      "acceptance": [
+        "full Peer history part of method session state",
+        "startup/restart after reject/event/epoch change explicitly defined",
+        "atomic commit/reject and rollback tested",
+        "reference WRMS + common-grid dense/clipped policy connected",
+        "every startup, estimator, stage, rejected attempt, retry, fallback and output cost charged",
+        "no local estimator promoted as global certificate"
+      ],
+      "stop_conditions": [
+        "No global error ranking before T02",
+        "No partial or stale history after rollback"
+      ]
+    },
+    {
+      "id": "PW05_RHS_ONLY_IMPLICIT_PEER_HOMOTOPY",
+      "title": "Distinct RHS-only implicit Peer homotopy exploration",
+      "status": "CONJECTURAL_RESEARCH_PLANNED",
+      "evidence": "UNRESOLVED",
+      "priority": 16,
+      "depends_on": [
+        "PW00_PEER_W_SOURCE_AND_API_AUDIT",
+        "PW07_COMPOSITIONAL_ERROR_CERTIFICATE_AND_MOCK_EXPERIMENT"
+      ],
+      "mutation": "THEORY_FIRST_NO_PRODUCTION_PATH",
+      "source_refs": [
+        "crates/rodas5p-integrators/src/nonlinear_homotopy.rs@529e8b26eaebb486654e6e8e19e2cca8c740c00a",
+        "PEERW_ERROR_CERTIFICATE_THEORY_20261109.md"
+      ],
+      "acceptance": [
+        "strict RHS_ONLY means no analytic J/JVP/FD/AD/Newton",
+        "prove current-stage equation independence for its own method",
+        "certify original source residual, not continuation surrogate",
+        "prove residual-to-root/LTE implication, domain, rounding, rollback"
+      ],
+      "stop_conditions": [
+        "No inheritance of Peer-W order/stability",
+        "NO_GO if certificate only linearized/auxiliary residual"
+      ]
+    },
+    {
+      "id": "PW06_PEER_MATCHED_FULL_IVP_AND_G0_GATE",
+      "title": "Matched achieved-error full-IVP Peer-W evaluation and original G0 gate",
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "priority": 17,
+      "depends_on": [
+        "PW03_G0_ORDER5_PEER_W_TABLEAU_SOURCE_RECOVERY",
+        "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION",
+        "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
+        "PW07_COMPOSITIONAL_ERROR_CERTIFICATE_AND_MOCK_EXPERIMENT"
+      ],
+      "mutation": "BENCHMARK_EVIDENCE_ONLY_NO_MAIN_MERGE",
+      "source_refs": [
+        "official G0 goals in INTEGRATED_RESEARCH_CONTRACTS.json",
+        "PEERW_ERROR_CERTIFICATE_THEORY_20261109.md"
+      ],
+      "acceptance": [
+        "same IVP/source/initial state/span/output/reference/achieved error",
+        "charge setup, factorization, J/JVP, stage/estimator, startup/reject/fallback/output/allocations",
+        "at least 7 randomized paired CPU blocks where feasible",
+        "report accepted-step ratio, median wall speedup, p95/max critical depth, fallback fraction",
+        "apply original threshold values unchanged",
+        "adverse/nonnormal/step-ratio holdout included"
+      ],
+      "stop_conditions": [
+        "No comparison using equal rtol as achieved-error surrogate",
+        "No G0 change without independent approval"
+      ]
+    },
+    {
+      "id": "PW07_COMPOSITIONAL_ERROR_CERTIFICATE_AND_MOCK_EXPERIMENT",
+      "title": "Original-W residual bound and conditional history-switch recurrence + mock",
+      "status": "COMPLETE_SCOPED_RUST_NOT_RUN",
+      "evidence": "PYTHON_SYMPY_REPLAYED_REMOTE_READBACK",
+      "priority": 12,
+      "depends_on": [
+        "PW00_PEER_W_SOURCE_AND_API_AUDIT"
+      ],
+      "mutation": "RESEARCH_DOCS_AND_MOCK_ONLY",
+      "source_refs": [
+        "PEERW_ERROR_CERTIFICATE_THEORY_20261109.md",
+        "PEERW_MOCK_EXPERIMENT_20261109.md",
+        "PEERW_NOVELTY_PRIOR_ART_BOUNDARY_20261109.md",
+        "PEERW_EXECUTION_RECEIPT_PW07.json",
+        "peerw_pw07_reproduce.py",
+        "peerw_pw07_compact_results.json"
+      ],
+      "acceptance": [
+        "W residual/operator perturbation identity derived and mock checked",
+        "E+ <= chi E- + eta and E_next <= kappa(chi E + eta)+delta explicitly conditional",
+        "non-normal products counterexample included",
+        "affine scan matches serial mock but not IVP concurrency",
+        "PYTHON drivers compiled and executed",
+        "Rust/Cargo/Clippy/native Peer/full-IVP not run"
+      ],
+      "claim_ceiling": "DERIVED_CONDITIONAL_AND_SYNTHETIC_NUMERICALLY_CHECKED_ONLY; SOURCE_CONSTANTS_UNRESOLVED",
+      "stop_conditions": [
+        "No generic production theorem",
+        "No automatic history switch until kappa/chi/eta/delta are source/domain validated"
+      ]
+    },
+    {
+      "id": "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN",
+      "title": "Extend existing AutomaticOde/SwitchingSolver to sparse evidence-driven portfolio",
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "priority": 18,
+      "depends_on": [
+        "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
+        "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION",
+        "PW03_G0_ORDER5_PEER_W_TABLEAU_SOURCE_RECOVERY",
+        "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION",
+        "PW07_COMPOSITIONAL_ERROR_CERTIFICATE_AND_MOCK_EXPERIMENT"
+      ],
+      "mutation": "ISOLATED_OPT_IN_EXTENSION_NO_DEFAULT_PROMOTION",
+      "source_refs": [
+        "crates/vigilode/src/automatic.rs@ff4f5db411b310039b627d66774b24885eb3cf7d",
+        "crates/vigilode/src/switching.rs@fb12a401002c0039631a43982cc296a494c366a2",
+        "ADAPTIVE_ROUTER_CONTRACTS.json"
+      ],
+      "acceptance": [
+        "at least two qualified method identities plus safe fallback",
+        "side-effect-free capability query and typed refusal for incompatible tuples",
+        "minimal observers/probes only; same-checkpoint probes are non-mutating",
+        "accepted-checkpoint-only switches",
+        "history transfer/startup and source/cache epoch checked",
+        "all probe/setup/startup/reject/fallback/output cost charged",
+        "conservative net-benefit margin required",
+        "current defaults unchanged"
+      ],
+      "stop_conditions": [
+        "No exhaustive Cartesian product",
+        "No clairvoyant global optimality/regret claim",
+        "Missing transfer gains/defects -> fail closed"
+      ]
+    },
+    {
+      "id": "T08_SPATIAL_MOL_SPHERE_AND_3D_GEOMETRY",
+      "title": "Spatial MOL, sphere FV and geometry-aware 3D extension",
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "priority": 19,
+      "depends_on": [
+        "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN"
+      ],
+      "mutation": "OPT_IN_OPERATOR_OR_EXAMPLE_ONLY",
+      "source_refs": [
+        "crates/rodas5p-integrators/src/gray_scott.rs@40bd15f65acefcbf1f0abb63f1b223f6f5c003d7",
+        "research/bassrei_p06_full_sphere_scoped_20261022/DAG_STATUS.json",
+        "research/spherical_information_20261023/NEXT_STEPS.json"
+      ],
+      "acceptance": [
+        "reuse current 2D and scoped sphere sources",
+        "geometry measure/conservation/refinement verified",
+        "spatial work lane kept distinct from time-stage parallelism"
+      ],
+      "stop_conditions": [
+        "No general sphere solver claim from fixed-grid unpolarized source"
+      ]
+    },
+    {
+      "id": "T09_MATCHED_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW",
+      "title": "Independent matched-error Pareto review and explicit release decision",
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "priority": 20,
+      "depends_on": [
+        "T05_C5_WORK_EFFICIENT_ORDERED_SCAN",
+        "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION",
+        "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN",
+        "T08_SPATIAL_MOL_SPHERE_AND_3D_GEOMETRY",
+        "PW06_PEER_MATCHED_FULL_IVP_AND_G0_GATE"
+      ],
+      "mutation": "NO_MAIN_MERGE_NO_RELEASE_UNLESS_OWNER_APPROVES",
+      "source_refs": [
+        "G0 original thresholds",
+        "VALIDATION_PROTOCOL.md",
+        "PARALLEL_BENCHMARK_PROTOCOL.md"
+      ],
+      "acceptance": [
+        ">=7 randomized paired blocks where feasible",
+        "independent source-backed reference with uncertainty",
+        "achieved error bracketed for every method",
+        "all failures/fallback/setup/output/allocations charged",
+        "one independent adversarial review",
+        "explicit PASS/FAIL/HOLD release decision"
+      ],
+      "stop_conditions": [
+        "Any unreviewed claim or missing receipts -> HOLD"
+      ]
+    },
+    {
+      "id": "R5_RHS_ONLY_HOMOTOPY_LINEAGE",
+      "title": "R5 monotone derivative-free homotopy and original-source first-stage proof",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "DERIVED_AND_SOURCE_SCOPED",
+      "priority": 30,
+      "depends_on": [
+        "T00_LOCK_AND_PLAN"
+      ],
+      "mutation": "HISTORICAL_EVIDENCE_READ_ONLY",
+      "source_refs": [
+        "PR #177",
+        "research/vigilode-r5-monotone-homotopy-original-stage-20261101@7af490762873387c992edfbbbd66d0f8e6198607",
+        "PR #176 original G0 mission"
+      ],
+      "claim_ceiling": "SOURCE_SCOPED_HOMOTOPY_NOT_GENERIC_IVP_METHOD",
+      "acceptance": [
+        "original source equation and source identity pinned",
+        "original residual distinct from auxiliary homotopy residual",
+        "all assumptions and negative evidence preserved"
+      ],
+      "stop_conditions": [
+        "Do not generalize to unknown RHS"
+      ]
+    },
+    {
+      "id": "R6_CAUSAL_FRONTIER_LINEAGE",
+      "title": "R6 original eight-stage raw-U causal frontier and q2 failure",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "SOURCE_MATH_AND_NUMERIC_CHECKS",
+      "priority": 31,
+      "depends_on": [
+        "R5_RHS_ONLY_HOMOTOPY_LINEAGE"
+      ],
+      "mutation": "HISTORICAL_EVIDENCE_READ_ONLY",
+      "source_refs": [
+        "PR #179",
+        "research/vigilode-r6-eightstage-causal-frontier-20261101@87ae3f8b102fdcebb6ccf9950ed0fce3ae6a8e1d"
+      ],
+      "claim_ceiling": "ORIGINAL_8_STAGE_CAUSAL_GRAPH_NOT_GENERIC_PARALLELISM",
+      "acceptance": [
+        "stage dependencies checked against original raw-U",
+        "q2 failure retained"
+      ],
+      "stop_conditions": [
+        "No claim lower-triangular RODAS stages are independent"
+      ]
+    },
+    {
+      "id": "R7_TRANSACTIONAL_FULL_IVP_NEGATIVE",
+      "title": "R7 protected versus transactional full-IVP matched achieved-error comparison",
+      "status": "COMPLETE_SCOPED_NEGATIVE",
+      "evidence": "NATIVE_FULL_IVP_MEASURED_SOURCE_LOCKED",
+      "priority": 32,
+      "depends_on": [
+        "R6_CAUSAL_FRONTIER_LINEAGE"
+      ],
+      "mutation": "HISTORICAL_EVIDENCE_READ_ONLY",
+      "source_refs": [
+        "PR #182",
+        "research/vigilode-r7-native-transactional-discriminant-20261101@8fd2ac31d65df5e70e3bbb266d51b397562edfb5"
+      ],
+      "claim_ceiling": "NEGATIVE_RESULT_FOR_TESTED_FAMILIES_ONLY",
+      "acceptance": [
+        "same source and full output error comparison preserved",
+        "failed timings and work included"
+      ],
+      "stop_conditions": [
+        "No universal no-go extrapolation"
+      ]
+    },
+    {
+      "id": "R8_SOURCE_OWNED_CAYLEY_HAMILTON_W",
+      "title": "R8 source-owned Cayley-Hamilton W raw-U proof",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "DERIVED_AND_ORIGINAL_STAGE_CHECKED",
+      "priority": 33,
+      "depends_on": [
+        "R7_TRANSACTIONAL_FULL_IVP_NEGATIVE"
+      ],
+      "mutation": "HISTORICAL_EVIDENCE_READ_ONLY",
+      "source_refs": [
+        "PR #184",
+        "research/vigilode-r8-source-owned-W-cayley-20261101@e7e33fb77599be99f214009ab5a330ebaa3b62d2"
+      ],
+      "claim_ceiling": "SOURCE_SPECIFIC_STAGE_ALGEBRA_NOT_GENERIC_TABLEAU",
+      "acceptance": [
+        "original W identity and residual tied to source"
+      ],
+      "stop_conditions": [
+        "No genericity without source family theorem"
+      ]
+    },
+    {
+      "id": "R9_GRAPH_CYCLE_CORE_SCHUR",
+      "title": "R9 graph cycle-core Schur theorem, 64 original-stage checks and partial HOL",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "DERIVED_NUMERICALLY_CHECKED_PARTIAL_HOL",
+      "priority": 34,
+      "depends_on": [
+        "R8_SOURCE_OWNED_CAYLEY_HAMILTON_W"
+      ],
+      "mutation": "HISTORICAL_EVIDENCE_READ_ONLY",
+      "source_refs": [
+        "PR #185",
+        "research/vigilode-r9-feedback-cycle-schur-20261101@9694303d453c55ebcaf1ec4d851d0eb37cc87d52"
+      ],
+      "claim_ceiling": "SCOPED_GRAPH_MATH_64_CHECKS_2X2_HOL_KERNEL_ONLY",
+      "acceptance": [
+        "source sign assumptions and DAG complement verified",
+        "n-dimensional proof not claimed from 2x2 kernel"
+      ],
+      "stop_conditions": [
+        "No small cycle core implies short critical path"
+      ]
+    },
+    {
+      "id": "R10_AFFINE_SCAN_THEORY",
+      "title": "R10 ordered affine path-scan theory and partial HOL/search",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "DERIVED_PARTIAL_FORMALIZATION_SYNTHETIC_SEARCH",
+      "priority": 35,
+      "depends_on": [
+        "R9_GRAPH_CYCLE_CORE_SCHUR"
+      ],
+      "mutation": "HISTORICAL_EVIDENCE_READ_ONLY",
+      "source_refs": [
+        "PR #186",
+        "research/vigilode-r10-affine-scan-theory-closure-20261102@15ec1b78704babff9f61f3e4a6eee992ce66cfde"
+      ],
+      "claim_ceiling": "ORDERED_AFFINE_SCAN_IDENTITY_NOT_IVP_TIME_PARALLELISM",
+      "acceptance": [
+        "noncommutative order preserved",
+        "ideal span separated from measured runtime",
+        "partial HOL lemmas labelled accurately"
+      ],
+      "stop_conditions": [
+        "No scan speedup claim absent native long-path full-IVP crossover"
+      ]
+    },
+    {
+      "id": "C5_GRAPH_SCHUR_NATIVE_NEGATIVE",
+      "title": "C5 source-owned graph-Schur native full-IVP negative benchmark",
+      "status": "COMPLETE_SCOPED_NEGATIVE",
+      "evidence": "IMPLEMENTATION_VERIFIED_AND_NATIVE_FULL_IVP_MEASURED",
+      "priority": 36,
+      "depends_on": [
+        "R10_AFFINE_SCAN_THEORY"
+      ],
+      "mutation": "HISTORICAL_EVIDENCE_READ_ONLY",
+      "source_refs": [
+        "PR #187",
+        "research/vigilode-c5-native-graph-schur-20261102@569ce02629498fec133db9ce368eb303ba943b69"
+      ],
+      "claim_ceiling": "2.242032452000776_MEDIAN_WALL_RATIO_GRAPH_SCHUR_OVER_FAST_DIRECT_ALL_12_PAIRS_SLOWER_TESTED_SOURCE_FAMILIES",
+      "acceptance": [
+        "negative measurements retained",
+        "source-specific scope and same-output policy recorded"
+      ],
+      "stop_conditions": [
+        "No promotion without new preregistered long-path positive crossover"
+      ]
+    },
+    {
+      "id": "WP6_WP9_SOURCE_CONDITIONED_EVIDENCE",
+      "title": "WP6-WP9 Bernstein defect, weighted observable, perturbation response and measured search history",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "SOURCE_CONDITIONED_DERIVED_AND_NUMERICALLY_CHECKED",
+      "priority": 37,
+      "depends_on": [
+        "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY"
+      ],
+      "mutation": "HISTORICAL_EVIDENCE_READ_ONLY",
+      "source_refs": [
+        "PR #167/#170/#171/#172/#174",
+        "research/wp6-shape-bounded-defect-20261101",
+        "research/vigilode-wp7-bernstein-degree-elevation-20261101",
+        "research/vigilode-wp8-weighted-observable-20261101",
+        "research/vigilode-wp9-perturbation-response-20261101",
+        "research/vigilode-wp9b-measured-search-correction-20261101"
+      ],
+      "claim_ceiling": "SOURCE_CONDITIONED_MATH_AND_DATA_NOT_GENERIC_INTEGRATOR",
+      "acceptance": [
+        "L-0194 through L-0198 retained with exact source identity",
+        "WP8 historical authority corrections retained",
+        "WP9B search negative/positive outcomes preserved"
+      ],
+      "stop_conditions": [
+        "No conversion of source-specific observables into generic solver claims"
+      ]
+    },
+    {
+      "id": "C8_SYMBOLIC_ROUTER_AND_PR98",
+      "title": "C8 finite-state solver router and PR98 guarded symbolic execution lineage",
+      "status": "PARTIAL_SCOPED",
+      "evidence": "R2_R4_SCOPED_C8_PENDING_PR98_SCOPED_IMPLEMENTATION",
+      "priority": 38,
+      "depends_on": [
+        "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY"
+      ],
+      "mutation": "HISTORICAL_EVIDENCE_READ_ONLY",
+      "source_refs": [
+        "research/vigilode-dyn-symbolic-c8-20261102@3336d682139fb2096316e301dd635c6b91b0935e",
+        "PR #98",
+        "validation/dynamics-symbolic-20261028-f9615d@bf308589e21b524d0ddc6e571b260f5e94a853f0"
+      ],
+      "claim_ceiling": "FINITE_STATE_LABELLED_ROUTER_NOT_PHYSICAL_ODE_MARKOV_PARTITION",
+      "acceptance": [
+        "C8 numeric gate remains pending",
+        "guarded transition/ownership proof is scoped"
+      ],
+      "stop_conditions": [
+        "No physical dynamics claim"
+      ]
+    },
+    {
+      "id": "RVJ_VOLTERRA_AND_FOURIER_NEGATIVES",
+      "title": "RVJ damped slow-fast Volterra and PP05/PP06/PP15 evidence including failures",
+      "status": "MIXED_SCOPED_WITH_NEGATIVES",
+      "evidence": "SOURCE_SCOPED_AND_PARTIAL",
+      "priority": 39,
+      "depends_on": [
+        "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY"
+      ],
+      "mutation": "HISTORICAL_EVIDENCE_READ_ONLY",
+      "source_refs": [
+        "PR #135/#136",
+        "PP05",
+        "PP06",
+        "PP15"
+      ],
+      "claim_ceiling": "RANK2_DAMPED_SLOW_FAST_SCOPED; FOURIER_FAILS_RETAINED",
+      "acceptance": [
+        "PP05 G2/G3 failure retained",
+        "PP06 harmful-alias gate FAIL retained",
+        "PP15 no timing retained"
+      ],
+      "stop_conditions": [
+        "No generic solver/speed/order claim"
+      ]
+    },
+    {
+      "id": "APPLIED_REI_BASS21_APPLICATION_LINEAGE",
+      "title": "Applied REI/BASS21 physical client branches kept separate from core solver proof",
+      "status": "APPLICATION_ONLY",
+      "evidence": "SELECTED_BRANCH_PR_METADATA_AND_SOURCE_SCOPE",
+      "priority": 40,
+      "depends_on": [
+        "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY"
+      ],
+      "mutation": "HISTORICAL_EVIDENCE_READ_ONLY",
+      "source_refs": [
+        "PR #159-#183 applied REI/BASS families",
+        "governance/rei-igm-mission-realignment-20261101"
+      ],
+      "claim_ceiling": "APPLICATION_ADAPTER_NOT_GENERIC_ODE_SOLVER_THEOREM",
+      "acceptance": [
+        "application-only scope explicit",
+        "no source/result transfer into generic integrator claims"
+      ],
+      "stop_conditions": [
+        "No cross-project physics or coefficients imported silently"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "T00_LOCK_AND_PLAN",
+      "to": "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY"
+    },
+    {
+      "from": "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
+      "to": "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE"
+    },
+    {
+      "from": "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
+      "to": "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY"
+    },
+    {
+      "from": "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
+      "to": "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY"
+    },
+    {
+      "from": "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
+      "to": "T03_C5_COST_ATTRIBUTION_AND_LONG_PATH_PREREG"
+    },
+    {
+      "from": "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
+      "to": "T03_C5_COST_ATTRIBUTION_AND_LONG_PATH_PREREG"
+    },
+    {
+      "from": "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
+      "to": "T04_C5_LONG_PATH_NATIVE_FULL_IVP_HOLDOUT"
+    },
+    {
+      "from": "T03_C5_COST_ATTRIBUTION_AND_LONG_PATH_PREREG",
+      "to": "T04_C5_LONG_PATH_NATIVE_FULL_IVP_HOLDOUT"
+    },
+    {
+      "from": "T04_C5_LONG_PATH_NATIVE_FULL_IVP_HOLDOUT",
+      "to": "T05_C5_WORK_EFFICIENT_ORDERED_SCAN"
+    },
+    {
+      "from": "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
+      "to": "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION"
+    },
+    {
+      "from": "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
+      "to": "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION"
+    },
+    {
+      "from": "T01A_INTEGRATED_PORTFOLIO_ARCHITECTURE",
+      "to": "PW00_PEER_W_SOURCE_AND_API_AUDIT"
+    },
+    {
+      "from": "PW00_PEER_W_SOURCE_AND_API_AUDIT",
+      "to": "PW01_PTSW2C_ORDER3_FIRST_PEER_IMPLEMENTATION"
+    },
+    {
+      "from": "PW00_PEER_W_SOURCE_AND_API_AUDIT",
+      "to": "PW02_PTSW2B_LSTABLE_ORDER2_CONTROL"
+    },
+    {
+      "from": "PW00_PEER_W_SOURCE_AND_API_AUDIT",
+      "to": "PW03_G0_ORDER5_PEER_W_TABLEAU_SOURCE_RECOVERY"
+    },
+    {
+      "from": "PW01_PTSW2C_ORDER3_FIRST_PEER_IMPLEMENTATION",
+      "to": "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION"
+    },
+    {
+      "from": "PW02_PTSW2B_LSTABLE_ORDER2_CONTROL",
+      "to": "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION"
+    },
+    {
+      "from": "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
+      "to": "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION"
+    },
+    {
+      "from": "PW07_COMPOSITIONAL_ERROR_CERTIFICATE_AND_MOCK_EXPERIMENT",
+      "to": "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION"
+    },
+    {
+      "from": "PW00_PEER_W_SOURCE_AND_API_AUDIT",
+      "to": "PW05_RHS_ONLY_IMPLICIT_PEER_HOMOTOPY"
+    },
+    {
+      "from": "PW07_COMPOSITIONAL_ERROR_CERTIFICATE_AND_MOCK_EXPERIMENT",
+      "to": "PW05_RHS_ONLY_IMPLICIT_PEER_HOMOTOPY"
+    },
+    {
+      "from": "PW03_G0_ORDER5_PEER_W_TABLEAU_SOURCE_RECOVERY",
+      "to": "PW06_PEER_MATCHED_FULL_IVP_AND_G0_GATE"
+    },
+    {
+      "from": "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION",
+      "to": "PW06_PEER_MATCHED_FULL_IVP_AND_G0_GATE"
+    },
+    {
+      "from": "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
+      "to": "PW06_PEER_MATCHED_FULL_IVP_AND_G0_GATE"
+    },
+    {
+      "from": "PW07_COMPOSITIONAL_ERROR_CERTIFICATE_AND_MOCK_EXPERIMENT",
+      "to": "PW06_PEER_MATCHED_FULL_IVP_AND_G0_GATE"
+    },
+    {
+      "from": "PW00_PEER_W_SOURCE_AND_API_AUDIT",
+      "to": "PW07_COMPOSITIONAL_ERROR_CERTIFICATE_AND_MOCK_EXPERIMENT"
+    },
+    {
+      "from": "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
+      "to": "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN"
+    },
+    {
+      "from": "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION",
+      "to": "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN"
+    },
+    {
+      "from": "PW03_G0_ORDER5_PEER_W_TABLEAU_SOURCE_RECOVERY",
+      "to": "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN"
+    },
+    {
+      "from": "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION",
+      "to": "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN"
+    },
+    {
+      "from": "PW07_COMPOSITIONAL_ERROR_CERTIFICATE_AND_MOCK_EXPERIMENT",
+      "to": "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN"
+    },
+    {
+      "from": "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN",
+      "to": "T08_SPATIAL_MOL_SPHERE_AND_3D_GEOMETRY"
+    },
+    {
+      "from": "T05_C5_WORK_EFFICIENT_ORDERED_SCAN",
+      "to": "T09_MATCHED_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW"
+    },
+    {
+      "from": "T06_BDF_RADAU_AND_PEER_METHOD_QUALIFICATION",
+      "to": "T09_MATCHED_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW"
+    },
+    {
+      "from": "T07_CAPABILITY_FRONTEND_AND_METHOD_PLUGIN",
+      "to": "T09_MATCHED_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW"
+    },
+    {
+      "from": "T08_SPATIAL_MOL_SPHERE_AND_3D_GEOMETRY",
+      "to": "T09_MATCHED_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW"
+    },
+    {
+      "from": "PW06_PEER_MATCHED_FULL_IVP_AND_G0_GATE",
+      "to": "T09_MATCHED_FULL_IVP_BENCHMARK_AND_RELEASE_REVIEW"
+    },
+    {
+      "from": "T00_LOCK_AND_PLAN",
+      "to": "R5_RHS_ONLY_HOMOTOPY_LINEAGE"
+    },
+    {
+      "from": "R5_RHS_ONLY_HOMOTOPY_LINEAGE",
+      "to": "R6_CAUSAL_FRONTIER_LINEAGE"
+    },
+    {
+      "from": "R6_CAUSAL_FRONTIER_LINEAGE",
+      "to": "R7_TRANSACTIONAL_FULL_IVP_NEGATIVE"
+    },
+    {
+      "from": "R7_TRANSACTIONAL_FULL_IVP_NEGATIVE",
+      "to": "R8_SOURCE_OWNED_CAYLEY_HAMILTON_W"
+    },
+    {
+      "from": "R8_SOURCE_OWNED_CAYLEY_HAMILTON_W",
+      "to": "R9_GRAPH_CYCLE_CORE_SCHUR"
+    },
+    {
+      "from": "R9_GRAPH_CYCLE_CORE_SCHUR",
+      "to": "R10_AFFINE_SCAN_THEORY"
+    },
+    {
+      "from": "R10_AFFINE_SCAN_THEORY",
+      "to": "C5_GRAPH_SCHUR_NATIVE_NEGATIVE"
+    },
+    {
+      "from": "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
+      "to": "WP6_WP9_SOURCE_CONDITIONED_EVIDENCE"
+    },
+    {
+      "from": "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
+      "to": "C8_SYMBOLIC_ROUTER_AND_PR98"
+    },
+    {
+      "from": "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
+      "to": "RVJ_VOLTERRA_AND_FOURIER_NEGATIVES"
+    },
+    {
+      "from": "T01_HISTORICAL_LINEAGE_AND_SOURCE_REPLAY",
+      "to": "APPLIED_REI_BASS21_APPLICATION_LINEAGE"
+    }
+  ],
+  "gate_policy": {
+    "MATH": [
+      "source-locked equations/tableau",
+      "order and stability/stiff-limit proof",
+      "step-ratio and domain assumptions",
+      "original source residual identity"
+    ],
+    "NUMERIC": [
+      "analytic order tests",
+      "stiff decay and nonnormal tests",
+      "estimator versus achieved error",
+      "reject/retry/fallback and roundoff"
+    ],
+    "API": [
+      "method identity includes lifecycle",
+      "side-effect-free capability query",
+      "typed refusal and partial result"
+    ],
+    "SWITCH": [
+      "accepted-boundary switching",
+      "complete history transfer/restart",
+      "source/cache epoch invalidation",
+      "atomic rollback and work accounting",
+      "hysteresis/dwell"
+    ],
+    "SPATIAL": [
+      "geometry measure",
+      "conservation and refinement",
+      "spatial lane distinct from time-stage concurrency"
+    ],
+    "PERF": [
+      "matched achieved output error",
+      "bracketed points without extrapolation",
+      "full-IVP randomized paired timing",
+      "setup/reject/fallback/output/allocation/memory included"
+    ],
+    "CI": [
+      "clean clone",
+      "locked toolchain",
+      "format/check/test/clippy/docs/examples/bench on exact commit",
+      "provenance receipts"
+    ]
+  },
+  "mutation_policy": {
+    "default": "DOCS_ONLY_ON_DEDICATED_BRANCH; code experiments only in task-scoped isolated worktrees and opt-in APIs",
+    "must_record": [
+      "base commit/tree and clean status",
+      "task ID and exact allowlist",
+      "RED test before code",
+      "pre/post Git blob identities",
+      "exact command, exit code, stdout/stderr hash",
+      "source/input/output/reference hashes",
+      "all work counters including failed/discarded work"
+    ],
+    "forbidden": [
+      "push to main",
+      "force push/reset/history rewrite",
+      "editing pinned C5 source in place",
+      "silently changing tableau/controller/tolerance/error thresholds/budget/benchmark targets",
+      "weaken/delete tests",
+      "globally silence clippy",
+      "delete or rewrite negative evidence",
+      "claim NOT_RUN as PASS",
+      "adopt external coefficients without source transcription"
+    ],
+    "owner_approval_required": [
+      "default solver or router behavior",
+      "tableau/coefficient/controller/estimator changes",
+      "tolerance/threshold/budget/error policy",
+      "breaking public API",
+      "official G0 DAG mutation",
+      "evidence deletion",
+      "merge/release decision"
+    ],
+    "allowed_task_mutation": [
+      "T02/T03/T06: docs and receipts only",
+      "PW01/PW02/PW04/T07: isolated opt-in implementation after prerequisite gates",
+      "PW03: exact source transcription and symbolic verification only",
+      "PW05: theory/mock only until original residual theorem",
+      "T04/PW06/T09: preregistered benchmark and evidence only",
+      "T05: conditional isolated implementation only after positive long-path crossover"
+    ]
+  },
+  "anti_drift_contract": {
+    "terminology": [
+      "JVP is derivative action, not derivative-free",
+      "FD-JVP is approximate derivative action, incurs extra RHS and perturbation error",
+      "matrix-free does not mean solve-free or preconditioner-free",
+      "Newton-free does not imply globally convergent or root-certified",
+      "stage-parallel means independent current-step method stages proven from exact tableau; spatial/ensemble/RHS-row parallelism are separate axes",
+      "RODAS5P has eight strictly causal lower-triangular stages",
+      "common W/factor reuse does not remove stage dependencies",
+      "PTSW2C is order 3 A(81.1-degree) candidate, not L-stable",
+      "PTSW2B is distinct order-2 L-stable control",
+      "BDF/Radau are reference-only in pinned source",
+      "a method family theorem does not certify an unverified coefficient table",
+      "sampled output error is not a continuous-time/global error enclosure"
+    ],
+    "negative_evidence_must_survive": [
+      "R7 transactional vs protected full-IVP negative result",
+      "C5 graph-Schur median wall ratio 2.242032452000776, all 12 original test pairs slower",
+      "C5 path length one/zero physical affine compositions",
+      "R9 ring24 core size one but long DAG path witness",
+      "R10 scan is ordered affine recurrence, not causal IVP parallelism",
+      "PP05 G2/G3 fail, PP06 harmful alias gate fail, PP15 no timing",
+      "C8 numerical gate pending",
+      "PW07 CPU overlap 1.489x is synthetic operator-action microbenchmark only; prior 1.781x run indicates variability"
+    ],
+    "uncertainty_rules": [
+      "every claim cites a source path/commit/blob or explicit literature source",
+      "distinguish remote readback from local execution",
+      "distinguish exact arithmetic from floating-point numeric check",
+      "distinguish source-verified implementation from method theorem",
+      "if evidence is missing, write UNRESOLVED or NOT_RUN",
+      "do not fill missing coefficients, thresholds, source paths or benchmark values from guesswork"
+    ],
+    "stop_rules": [
+      "two bounded no-progress cycles on same claim -> reframe or close with blocker",
+      "missing source identity or capability -> fail closed",
+      "unproved domain/step-ratio/stability -> no implementation promotion",
+      "no T02 authority -> no full-IVP ranking",
+      "no PW03 p>=5 table -> no G0 order>=5 claim or automatic Peer portfolio selection",
+      "missing kappa/chi/eta/delta -> no automatic Peer history switching",
+      "no T04 crossover -> T05 NO_GO"
+    ]
+  },
+  "source_lock": {
+    "branch": "research/vigilode-c5-native-graph-schur-20261102",
+    "commit": "569ce02629498fec133db9ce368eb303ba943b69",
+    "tree": "a4b2f09521b197b37612ff7dc66a13fbb74a0bae",
+    "critical_blobs": {
+      "parallel_executor": "ffdfb1cef258ed43586db0323eb0e7f9de27dd53",
+      "stage_batch": "c2f44c327c53d7c6dfe7ba80b26cd43486d56b43",
+      "protected_sequential": "4153e286a2ac756252978d5d77cf1abe0e6a4e0c",
+      "matrix_free_fast": "d68239d53977e36f98b186b627aa0c4c5c7de7cb",
+      "graph_schur": "5d2c4319143e60117a7804c1f4524b269df358ea",
+      "affine_transport": "1c7024c2e1c567b337f82b0ba4530a1747022f51",
+      "problem_api": "f1b5ef43ec66d11585193b6be9d0ee0ce271f2ec",
+      "session": "ce30e5703a8d47a6e258a6df829b19a553fe79f9",
+      "automatic": "ff4f5db411b310039b627d66774b24885eb3cf7d",
+      "switching": "fb12a401002c0039631a43982cc296a494c366a2",
+      "fair_ab_global_error": "c62f996fa18f9815f1f329766abe8fe2c25ca22b",
+      "fair_ab_adaptive_error": "ccae16353ed1dcc90c6511befea8b42f7d3ad9cd"
+    },
+    "warning": "Any source code blob mismatch invalidates inherited implementation claims; refresh lock from exact Git tree before coding."
+  },
+  "prior_art_and_novelty": {
+    "established_or_literature_supported": [
+      "parallel two-step W/Peer stage families (2002/2004)",
+      "multi-implicit Peer-W (2005)",
+      "Peer global error estimation/control (2011)",
+      "ITSP3 Peer global-error control (2015)",
+      "coupled GL solution-defect estimation (2017)",
+      "ordered affine prefix scan / Blelloch (1990)",
+      "JFNK and Krylov residual estimation"
+    ],
+    "unresolved_candidate": "source-attested compositional error-and-work certificate spanning original-W mismatch, true stage residual, source-transform/chart defect, multistep history transfer and transactional method transitions",
+    "novelty_status": "CONJECTURAL_UNRESOLVED_NOT_A_NOVELTY_CLAIM"
+  },
+  "validation": {
+    "schema": "JSON is authoritative; task nodes and edge list must be consistent",
+    "acyclic": true,
+    "all_task_ids_unique": true,
+    "G0_mutation": false,
+    "code_source_mutation": false,
+    "docs_only_scope": true
+  },
+  "lineage_branches": [
+    {
+      "branch": "research/solver-portfolio-shortdag-20261109",
+      "head": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+      "role": "latest integrated research and PW07 documentation"
+    },
+    {
+      "branch": "docs/solver-consolidation-plan-20261108",
+      "head": "becbc75438354d7bc8ae3fea362ce943d4d2272a",
+      "role": "ancestor; includes PTSW2B/2C, EPPEER/DQC and reusable plan docs"
+    },
+    {
+      "branch": "research/vigilode-c5-native-graph-schur-20261102",
+      "head": "569ce02629498fec133db9ce368eb303ba943b69",
+      "role": "pinned source-code authority for this evidence package"
+    },
+    {
+      "branch": "governance/vigilode-original-mission-realignment-20261101",
+      "head": "3f293e1ac52fb9edf70aaba52201932c050feb3f",
+      "role": "original G0 mission reconstruction and immutable authority restoration"
+    },
+    {
+      "branch": "research/vigilode-r10-affine-scan-theory-closure-20261102",
+      "head": "15ec1b78704babff9f61f3e4a6eee992ce66cfde",
+      "role": "R10 theory lineage"
+    },
+    {
+      "branch": "research/vigilode-r9-feedback-cycle-schur-20261101",
+      "head": "9694303d453c55ebcaf1ec4d851d0eb37cc87d52",
+      "role": "R9 theory lineage"
+    },
+    {
+      "branch": "research/vigilode-r8-source-owned-W-cayley-20261101",
+      "head": "e7e33fb77599be99f214009ab5a330ebaa3b62d2",
+      "role": "R8 theory lineage"
+    },
+    {
+      "branch": "research/vigilode-r7-native-transactional-discriminant-20261101",
+      "head": "8fd2ac31d65df5e70e3bbb266d51b397562edfb5",
+      "role": "R7 full-IVP negative lineage"
+    },
+    {
+      "branch": "research/vigilode-r6-eightstage-causal-frontier-20261101",
+      "head": "87ae3f8b102fdcebb6ccf9950ed0fce3ae6a8e1d",
+      "role": "R6 causal frontier lineage"
+    },
+    {
+      "branch": "research/vigilode-r5-monotone-homotopy-original-stage-20261101",
+      "head": "7af490762873387c992edfbbbd66d0f8e6198607",
+      "role": "R5 homotopy lineage"
+    }
+  ],
+  "pr_inventory_sample": [
+    {
+      "number": 187,
+      "status": "OPEN_DRAFT_HOLD",
+      "title": "C5 source-owned native graph Schur full-IVP negative work-precision"
+    },
+    {
+      "number": 186,
+      "status": "OPEN_DRAFT_HOLD",
+      "title": "R10 ordered affine scan theory/HOL/search"
+    },
+    {
+      "number": 185,
+      "status": "OPEN_DRAFT_HOLD",
+      "title": "R9 graph cycle-core Schur/HOL/search"
+    },
+    {
+      "number": 184,
+      "status": "OPEN_DRAFT_HOLD",
+      "title": "R8 source-owned Cayley-Hamilton W proof"
+    },
+    {
+      "number": 182,
+      "status": "OPEN_DRAFT_HOLD",
+      "title": "R7 transactional matched-error whole-IVP negative"
+    },
+    {
+      "number": 179,
+      "status": "OPEN_DRAFT_HOLD",
+      "title": "R6 original eight-stage causal frontier"
+    },
+    {
+      "number": 177,
+      "status": "OPEN_DRAFT_HOLD",
+      "title": "R5 monotone homotopy/original U-stage"
+    },
+    {
+      "number": 176,
+      "status": "OPEN_DRAFT_HOLD",
+      "title": "Original G0 mission, 28-method inventory and 23-node overlay"
+    },
+    {
+      "number": 183,
+      "status": "OPEN_DRAFT_HOLD_APPLICATION_ONLY",
+      "title": "VigilODE to REI native photon-source application"
+    }
+  ],
+  "limits": {
+    "not_audit_all_diffs": true,
+    "not_full_account_chat_export": true,
+    "desktop_agent_not_connected": true,
+    "cargo_rust_clippy_ci_not_run_in_authoring_session": true
+  }
+}

@@ -1,0 +1,174 @@
+{
+  "schema_version": "vigilode.mutation-evidence-contract.v1",
+  "default_mutation_mode": "DOCS_ONLY_ON_DEDICATED_BRANCH",
+  "evidence_status": [
+    "ESTABLISHED",
+    "LITERATURE_SUPPORTED",
+    "DERIVED",
+    "NUMERICALLY_CHECKED",
+    "IMPLEMENTATION_VERIFIED",
+    "CONJECTURAL",
+    "UNRESOLVED",
+    "BLOCKED",
+    "NOT_RUN",
+    "NOT_APPLICABLE"
+  ],
+  "execution_status": [
+    "PASS",
+    "FAIL",
+    "CONCERN",
+    "NOT_RUN",
+    "NOT_APPLICABLE",
+    "BLOCKED"
+  ],
+  "mutation_gates": [
+    {
+      "id": "G0_DOCS",
+      "when": "DAG/lineage/literature/replay documentation",
+      "allowed": [
+        "new docs files on dedicated branch",
+        "JSON schemas and validators",
+        "receipts preserving exact source identity"
+      ],
+      "forbidden": [
+        "Rust source change",
+        "default/API/tableau/tolerance/threshold change",
+        "main merge"
+      ],
+      "required_evidence": [
+        "base/head commit and tree",
+        "file blob SHA-1/SHA-256",
+        "JSON/DAG validation receipt"
+      ]
+    },
+    {
+      "id": "G1_OPT_IN_KERNEL",
+      "when": "PW01/PW02/PW04 isolated kernel or session implementation",
+      "allowed": [
+        "one new opt-in module",
+        "task allowlisted tests",
+        "opt-in factory/API only if existing contracts permit"
+      ],
+      "forbidden": [
+        "protected RODAS path edits",
+        "default router change",
+        "global thread pool",
+        "shared WorkLedger replacement",
+        "silent estimator/controller reuse"
+      ],
+      "required_evidence": [
+        "RED test before code",
+        "method identity and source coefficients",
+        "rollback/history tests",
+        "exact work accounting",
+        "post-change source hashes"
+      ]
+    },
+    {
+      "id": "G2_STRUCTURE_OR_ROUTER",
+      "when": "T05/T07 portfolio router or ordered scan",
+      "allowed": [
+        "only after prerequisite DAG nodes pass",
+        "isolated worktree and opt-in path"
+      ],
+      "forbidden": [
+        "exhaustive Cartesian product",
+        "new switcher/benchmark framework",
+        "automatic admission without source-specific certificate"
+      ],
+      "required_evidence": [
+        "T02 complete",
+        "compatibility matrix",
+        "accepted-boundary transaction tests",
+        "measured net benefit after setup/probe/switch/fallback costs"
+      ]
+    },
+    {
+      "id": "G3_OWNER_APPROVAL",
+      "when": "protected policy changes",
+      "allowed": [],
+      "forbidden": [
+        "perform without explicit owner approval"
+      ],
+      "owner_approval_required": [
+        "default solver/router",
+        "tableau/coefficients/controller/estimator",
+        "tolerance/error threshold/budget",
+        "breaking public API",
+        "official G0 DAG",
+        "deleting/reclassifying negative evidence",
+        "merge/release"
+      ]
+    }
+  ],
+  "universal_forbidden": [
+    "direct push to main",
+    "force push/reset/history rewrite",
+    "delete negative evidence",
+    "weaken tests",
+    "global clippy suppression",
+    "invent source coefficients or receipts",
+    "call NOT_RUN PASS",
+    "claim full-IVP speed from microbenchmark",
+    "claim global error from local embedded estimator alone"
+  ],
+  "mandatory_receipt_fields": [
+    "task_id",
+    "repo",
+    "branch",
+    "base_commit",
+    "head_commit",
+    "tree_sha",
+    "source_blob_locks",
+    "worktree_clean_before",
+    "allowed_paths",
+    "changed_paths",
+    "commands",
+    "exit_codes",
+    "stdout_sha256",
+    "stderr_sha256",
+    "test_names",
+    "toolchain",
+    "inputs_sha256",
+    "outputs_sha256",
+    "reference_identity",
+    "achieved_error",
+    "all_work_counters",
+    "status",
+    "evidence_level",
+    "limitations",
+    "stop_reason"
+  ],
+  "failure_taxonomy": [
+    "THEORY_OR_ASSUMPTION_ERROR",
+    "NUMERICAL_ANALYSIS_ERROR",
+    "IMPLEMENTATION_ERROR",
+    "RUNTIME_OR_ENVIRONMENT_BLOCKER",
+    "PROVENANCE_OR_SOURCE_IDENTITY_FAILURE",
+    "PERMISSION_OR_POLICY_BLOCKER",
+    "MISSING_EVIDENCE_NOT_RUN"
+  ],
+  "stop_rules": [
+    "source identity mismatch",
+    "missing primary coefficient source",
+    "unsupported derivative/capability combination",
+    "unbounded step ratio/domain",
+    "unvalidated history transfer",
+    "T02 incomplete before ranking",
+    "no long-path crossover before T05",
+    "two no-progress cycles on the same obligation",
+    "any request to mutate protected state without owner approval"
+  ],
+  "required_pre_mutation_questions": [
+    "What exact repo/branch/HEAD/tree is checked out?",
+    "Which exact blobs authorize every touched API?",
+    "What method family and tableau is being implemented?",
+    "What are derivative permissions and current-stage dependency graph?",
+    "Which original-source residual is certified and what is excluded?",
+    "Has the required parent task passed?",
+    "What complete work is charged?",
+    "Which exact file paths may change?",
+    "What result falsifies the hypothesis?",
+    "What is the rollback/stop path?"
+  ]
+}
