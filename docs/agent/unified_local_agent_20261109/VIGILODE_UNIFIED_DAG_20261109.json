@@ -384,8 +384,8 @@
     {
       "id": "PW02_PTSW2B_LSTABLE_ORDER2_CONTROL",
       "title": "PTSW2B order-2 L-stable damping control",
-      "status": "PLANNED",
-      "evidence": "NOT_RUN",
+      "status": "PARTIAL_SCOPED",
+      "evidence": "NUMERICALLY_CHECKED",
       "priority": 10,
       "depends_on": [
         "PW00_PEER_W_SOURCE_AND_API_AUDIT"
@@ -407,8 +407,12 @@
         "Never merge with PTSW2C coefficients/estimator",
         "Do not claim one shared Krylov iteration from common W"
       ],
-      "receipt": "PW01_PW02_READINESS_AUDIT.json",
-      "result_note": "Readiness audit: exact order 2, nilpotent stiff limit; G1 verdict CONDITIONALLY_READY for RED tests only; L(90) sector UNRESOLVED. Owner decision OD-1: accepted-step ceiling <=1.10x."
+      "receipt": [
+        "PW01_PW02_READINESS_AUDIT.json",
+        "PW02_SCAN_AND_RED_TEST.json",
+        "PW02_ORACLE_ADDENDUM.json"
+      ],
+      "result_note": "Readiness audit: exact order 2, nilpotent stiff limit; G1 verdict CONDITIONALLY_READY for RED tests only; L(90) sector UNRESOLVED. Owner decision OD-1: accepted-step ceiling <=1.10x. RED tests written (tests/ptsw2b_contracts.rs, 24 tests; RED = compile error, exit 101); throwaway-oracle GREEN 24/24 in scratch copy (not independent). No implementation in worktree. GREEN step needs owner decisions: derivative class, startup starter, reject-state semantics, coefficient precision policy, lib.rs `pub mod ptsw2b;` line."
     },
     {
       "id": "PW03_G0_ORDER5_PEER_W_TABLEAU_SOURCE_RECOVERY",
