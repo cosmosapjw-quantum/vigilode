@@ -114,6 +114,12 @@
       "topic": "apply decisions",
       "value": "approved to apply OD-15..17 to the PW04 plan; PW04 code/RED tests still need derivative-class and allowlist approval",
       "date_kst": "2026-11-12"
+    },
+    {
+      "id": "OD-19",
+      "topic": "OD-16 search result",
+      "value": "COMMON_W_ORDER5_CANDIDATE_FOUND: PPSW1-6b (gamma=0.619411975066, L(alpha) 57.5 deg) and PPSW1-6c (gamma=1.087080240637, L(alpha) 87.9 deg), Schmitt-Weiner SINUM 2004, singly implicit => one factorization per step. Under OD-17 the 6-factorization mipeer6 fallback is NOT needed. Coordinator verified: Table 2 knots, printed gamma roots (eq. at SINUM p.~271), singly-implicit statement, M(inf)=-gamma1*beta with rho(beta)=0 (L(alpha) framework). Stability is L(alpha), not A-stable.",
+      "date_kst": "2026-11-12"
     }
   ],
   "not_decided": [
@@ -122,6 +128,10 @@
     "PW04: define 'critical depth' (do Krylov iterations count?) before G0 comparison",
     "PW04: critical-depth definition (do Krylov iterations count?)",
     "PW04: derivative class and file allowlist for mipeer6 RED/GREEN",
-    "PW04: starter for mipeer6 (own starter per OD-6 pattern?)"
+    "PW04: starter for mipeer6 (own starter per OD-6 pattern?)",
+    "PW04 (PPSW1-6b): choose 6b (smaller gamma, L(alpha) 57.5) or 6c (L(alpha) 87.9, larger error per paper)",
+    "PW04 (PPSW1-6b): own order-5 starter (Thm 3.3 needs starting error O(h^5)); RODAS is protected and paper used it",
+    "PW04 (PPSW1-6b): derivative class and file allowlist (same pattern as PW02?)",
+    "PW04: sigma_max: owner rule 1.10 applies; paper experiments used 1.5"
   ]
 }

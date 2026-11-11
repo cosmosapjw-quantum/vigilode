@@ -1,0 +1,66 @@
+{
+  "task": "PW04 common-shift W-peer alternative search (literature + exact/numeric checks only)",
+  "date": "2026-11-12",
+  "verdict": "COMMON_W_ORDER5_CANDIDATE_FOUND",
+  "candidate": {
+    "name": "PPSW1-6b / PPSW1-6c (Schmitt & Weiner, SIAM J. Numer. Anal. 42 (2004) 265-282, DOI 10.1137/S0036142902411057)",
+    "stages": 6,
+    "gamma": {"6b": "0.619411975066250516 (printed 0.619411)", "6c": "1.087080240637296733 (printed 1.087080)"},
+    "knots_printed": "Table 2: c = (-1, -0.5, 0, 0.4, 0.8, 1)",
+    "A_B_Gamma_printed": false,
+    "A_B_Gamma_reconstruction": "SINUM eqs (16) Gamma=-gamma*Theta, (23) beta=V F0 S D^-1 V^-1, A=beta-Gamma, (20) B=Theta-sigma*A*V*D*F0^T*V^-1",
+    "order_local_variable_step": "Gamma(5) and AB(6) residuals <= 3e-58 for sigma in {0.8,1,1.2,1.5} (mp 60 digits) NUMERICALLY_CHECKED",
+    "order_global_variable_step": "order 5 claimed by paper Thm 3.3 (requires starting values O(h^5)); global run NOT_RUN",
+    "superconvergence_global_order_6_const_step": "claimed by paper (Table 1 gamma-hat); AB(7) residual nonzero as expected; global run NOT_RUN",
+    "alpha_deg": {"6b": 57.5, "6c": 87.9},
+    "alpha_check": "double-precision scan on 0.1 deg grid reproduces 57.5 and 87.9 NUMERICALLY_CHECKED",
+    "zero_stability": "B - e1 1^T nilpotent (paper Thm 3.1); products of 5 B_m rank one, mp ratio 2.7e-58 NUMERICALLY_CHECKED",
+    "L_stability": "beta nilpotent (beta^6 ~ 1e-63); rho(M(-1e8)) ~ 3e-2 NUMERICALLY_CHECKED; paper Thm 3.1 claims L(alpha)"
+  },
+  "T_table": {
+    "T1_linearly_implicit": "yes",
+    "T2_same_step_independent_stages": "yes",
+    "T3_common_shift": "yes, one factorization of I - h*gamma*T per step",
+    "T4_order_ge_5": "yes, order s-1 = 5 variable step (paper), local conditions verified; global run NOT_RUN",
+    "T5_zero_and_A_L_stability": "zero-stable; L(alpha) with alpha 57.5 (6b) and 87.9 deg (6c); not A-stable",
+    "T6_tableau": "c and gamma printed; full tableau reconstructible exactly from printed formulas (indirect identity, UNRESOLVED U1)"
+  },
+  "preconditions": ["gamma fixed independent of sigma", "sigma <= sigma_bar (paper tests sigma_max = 1.5)", "starting values O(h^5) accurate", "T approximates Jacobian", "sigma-dependent coefficients recomputed each step, O(s^3)"],
+  "loop_free_count": {"nonlinear_loops": 0, "linear_solves_per_step": 6, "factorizations_direct": 1, "inner_krylov_iterations": "6 independent Krylov solves per step if matrix-free; 0 with direct LU"},
+  "fallback_per_OD17": "not applied (common-shift candidate exists)",
+  "literature_table": [
+    {"method": "PPSW1-6b/6c", "source": "SINUM 2004", "s": 6, "order": "5 variable (global claimed)", "shift": "single gamma", "printed_tableau": "c,gamma printed; A,B,Gamma not printed", "pages": "Table 1 p.276, Table 2 p.277, Thm 3.1 p.271, Thm 3.3 p.272, eqs (16)-(24) pp.269-272", "T1_T3": "yes", "T4": "yes"},
+    {"method": "PTSW3C", "source": "thesis Podhaisky 2002 Sec 3.3.7 p.28", "s": 3, "order": 4, "shift": "single gamma", "printed_tableau": "formula for c3 with c1,c2,gamma free; numerical choice in Abb 3.10-3.11", "T4": "no (order 4)"},
+    {"method": "4-stage A(alpha) order-5 (numerical only)", "source": "thesis Sec 3.3.8 p.29", "s": 4, "order": "5 numerical claim, B(5) not imposed", "shift": "single gamma", "printed_tableau": "gamma, c, rho, alpha printed", "T4": "unproven; author calls it very sensitive; UNRESOLVED U6"},
+    {"method": "PPSW2-6, mipeer6", "source": "APNUM 2004 / BIT 2005", "s": 6, "order": "5 variable", "shift": "6 distinct gammas", "T3": "no (6 factorizations)"},
+    {"method": "Beck, Weiner, Podhaisky, Schmitt 2012", "source": "J. Appl. Math. Comput. 38 (2012) 389-406", "access": "body not read (login gate)", "order": "unverified (snippet: singly-implicit p=s-1, s<=5)", "UNRESOLVED": "U2"},
+    {"method": "Montijano, Podhaisky, Randez, Calvo 2019", "source": "BIT 59 (2019)", "access": "not read (DOI guess 404)", "order": "unverified", "UNRESOLVED": "U3"}
+  ],
+  "urls": [
+    {"url": "https://www.mathematik.uni-marburg.de/~schmitt/peer", "access": "opened", "note": "publication list, no orders stated for W-type parallel methods"},
+    {"url": "https://www.mathematik.uni-marburg.de/~schmitt/peer/index.html", "access": "search result only"},
+    {"url": "https://link.springer.com/article/10.1007/s12190-011-0485-0", "access": "redirect to login (idp.springer.com), not followed"},
+    {"url": "https://springerlink.bibliotecabuap.elogim.com/doi/10.1007/s12190-011-0485-0", "access": "institutional mirror login gate, not followed, no bypass"},
+    {"url": "https://doi.org/10.1007/s10543-019-00751-5", "access": "HTTP 404 (guessed DOI, wrong)"},
+    {"url": "https://arxiv.org/pdf/2608.26913", "access": "search result only, not fetched"}
+  ],
+  "receipts": {
+    "scripts_scratchpad": {
+      "ppsw1_check.py": {"sha256_prefix": "de3735865934b8c2568b", "exit": 0},
+      "ppsw1_stab.py": {"sha256_prefix": "534371a9dd941bc2bdbc", "exit": 0},
+      "ppsw1_rank.py": {"sha256_prefix": "25ea39dcfcb700989d18", "exit": 0}
+    },
+    "stdout": {
+      "out_check.txt": "bc5d75869a835f67cea1",
+      "out_stab.txt": "de674d1b2a15af19fb8b",
+      "out_rank.txt": "a7d76f4b9ccaf70c6d45"
+    },
+    "stderr_all_empty_sha256_prefix": "e3b0c44298fc1c149afb",
+    "command": "python3 -I <script>",
+    "pdf_sha256_prefix": {"BIT2005": "e9f8ef8ca7a788df", "APNUM2004": "7e8d17deeecf896b", "SINUM2004": "da9cd10e45c53907", "thesis2002": "4a3cfa7f03a3f004"}
+  },
+  "not_run": ["global convergence experiment for PPSW1-6b/6c", "starting-step implementation", "Beck 2012 and Montijano 2019 body text"],
+  "double_precision_artifact": "ppsw1_stab.py rank-one ratio 3e-3 is a conditioning artifact; mp value 2.7e-58 is authoritative",
+  "premise_correction": "Common-shift order-5 candidate is PPSW1 (singly implicit, SINUM 2004), not PPSW2 (multi-implicit, APNUM 2004). Prior A=gamma*Theta reconstruction was invalid; A=beta+gamma*Theta reproduces printed alpha.",
+  "UNRESOLVED": ["U1 exact authors' tableau not printed", "U2 Beck 2012 body unread", "U3 Montijano 2019 unread", "U4 global order 5 numerically unverified", "U5 no proven barrier for common-shift order > s-1 (only SINUM 'unlikely' remark)", "U6 thesis 4-stage order-5 B(5) unverified", "U7 double vs mp rank-one discrepancy"]
+}
