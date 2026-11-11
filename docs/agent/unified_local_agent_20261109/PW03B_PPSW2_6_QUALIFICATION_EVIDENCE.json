@@ -1,0 +1,2869 @@
+{
+ "task": "PW03B",
+ "date": "2026-11-11",
+ "verdict": {
+  "QUALIFICATION_STATUS": "CANDIDATE_FOR_PW04_CONDITIONAL",
+  "g0_gates": {
+   "global_order>=4.8": "NOT_RUN on real IVP battery; synthetic prototype PR/Riccati ~4.99-5.5 (exact starter) = supportive only",
+   "accepted_step_ratio<=1.2": "NOT_RUN",
+   "median_wall_speedup>=1.15": "NOT_RUN",
+   "critical_depth_p95<=6": "NOT_RUN",
+   "fallback<=0.1": "NOT_RUN",
+   "zero_Newton_explicit_J_fast_lane": "NOT_RUN (method is linearly implicit with T; T=0.6*J unstable in probe)"
+  },
+  "preconditions": [
+   "restrict sigma_max<=~1.15 (printed 1.2 is adversarially unstable: alternating r,1/r with r>=1.19 gives quotient rho>1) and verify longer words / controller-realised sequences",
+   "define startup (forward starter from IVP time over (1-c1)h0=2.7h0 ; printed only as ROWMAP/RODAS, order of starter unprinted)",
+   "W-tolerance of T (stable for kappa=T/J in [0.7,1.5] at h*lam=-250, unstable at 0.6)",
+   "error-estimator scaling/controller (other agent)",
+   "PW06 full-IVP matched-error benchmark"
+  ],
+  "alternative": "BIT mipeer6 reconstruction (g1=1-1/sigma_sup=0.248074, nodes (5.8), g0 from superconvergence 0.279786): provable zero-stability for sigma<=sigma_bar (BIT Thm 2.2), numerically pair-stable to ~1.3; but BIT omitted its results (no improvement), g0 for s=5 off from Table 7.1 (0.3771 vs 0.3756), maxB 55.8"
+ },
+ "receipts": {
+  "z1": {
+   "purpose": "zero-stability random products + word search",
+   "cmd": "python3 -I z1.py > z1.out 2> z1.err",
+   "exit": 0,
+   "script_sha256": "37304e79d9cc82bc1b84ca366bfb7fa4770c0fc31fece6958d0dcb9c8f208f49",
+   "stdout_sha256": "8d67c21b790f38fd15d7a0d6aefd2a73f4bc98f797979428e525595bc613eb15",
+   "stderr_sha256": "6e993988a9cb935ce915eb9955ea240b61584e01ff78b476e6dbfeb5a2e25927",
+   "stderr_bytes": 423,
+   "script_text": "# PW03B common: PPSW-family coefficient construction (APNUM (3.2),(3.3); route 'tau-solve'), float64 + mpmath.\nimport numpy as np, mpmath as mp\nP26 = dict(c=[\"-1.702\",\"-0.51\",\"-0.195797762\",\"0.155193392\",\"0.755672784\",\"1\"],\n  g0=[\"0.214789562\",\"0.249182503\",\"0.237832565\",\"0.245204742\",\"0.353848357\"],\n  g1=[\"0.566334104\",\"0.496228487\",\"0.518584061\",\"0.498857638\",\"0.502412430\"])\ndef gam_ppsw2(c, g0, g1, sg):   # APNUM (3.8) for i<s, (3.6) for i=s ; works for numpy and mpmath\n    s=len(c); g=[g0[i]/(1+sg*g1[i]) for i in range(s-1)]\n    g.append(1/(sg*sum(1/(1+sg-cj) for cj in c))); return g\ndef coeffs_np(c, g, sg):\n    c=np.asarray(c,float); g=np.asarray(g,float); s=len(c); tau=(c-1)/sg\n    Wt=np.vander(tau,s,increasing=True).T            # Wt[k,j]=tau_j^k\n    Cp=np.array([c**k for k in range(s)])            # Cp[k,i]=c_i^k\n    ThT=np.linalg.solve(Wt,Cp); Th=ThT.T\n    A=g[:,None]*Th\n    Dm=np.zeros((s,s))\n    for k in range(1,s): Dm[k]=k*tau**(k-1)\n    R2=Cp-Dm@A.T\n    B=np.linalg.solve(Wt,R2).T\n    return B,A,-A,Th\ndef coeffs_mp(c, g, sg):\n    mp.mp.dps=mp.mp.dps; s=len(c); tau=[(cj-1)/sg for cj in c]\n    Wt=mp.matrix(s,s); Cp=mp.matrix(s,s); Dm=mp.zeros(s,s)\n    for k in range(s):\n        for j in range(s):\n            Wt[k,j]=tau[j]**k; Cp[k,j]=c[j]**k\n            if k>=1: Dm[k,j]=k*tau[j]**(k-1)\n    Wi=Wt**-1\n    Th=(Wi*Cp).T\n    A=mp.matrix(s,s)\n    for i in range(s):\n        for j in range(s): A[i,j]=g[i]*Th[i,j]\n    B=(Wi*(Cp-Dm*A.T)).T\n    return B,A\ndef quotient(B):\n    s=B.shape[0]; S=np.eye(s); S[:,0]=1.0\n    M=np.linalg.solve(S,B@S); return M[1:,1:], M[0,1:]\ndef alpha_deg(B,g,nphi=361,nr=300,rlo=-5,rhi=9):\n    rs=np.logspace(rlo,rhi,nr); g=np.asarray(g,float)\n    def f(p):\n        z=rs*np.exp(1j*(np.pi-np.radians(p)))\n        M=(1.0/(1.0-z[:,None]*g[None,:]))[:,:,None]*B[None,:,:]\n        return float(np.max(np.abs(np.linalg.eigvals(M))))\n    prev=0.0\n    for p in np.linspace(0,90,nphi):\n        if f(p)>=1-1e-12:\n            lo,hi=prev,p\n            for _ in range(40):\n                m=0.5*(lo+hi)\n                if f(m)>=1-1e-12: hi=m\n                else: lo=m\n            return lo\n        prev=p\n    return 90.0\n# PW03B-1: NUMERICAL variable-step zero-stability checks for reconstructed PPSW2-6. NOT a proof.\nimport numpy as np, json, itertools, sys\nc=np.array([float(x) for x in P26[\"c\"]]); g0=np.array([float(x) for x in P26[\"g0\"]]); g1=np.array([float(x) for x in P26[\"g1\"]])\ndef Bof(sg): return coeffs_np(c, gam_ppsw2(c,g0,g1,sg), sg)[0]\nout={}\n# Z1 pointwise quotient spectral radius on fine grid\nsg_grid=np.round(np.arange(0.05,1.6001,0.01),4)\nrq=[]\nfor sg in sg_grid:\n    Bq,_=quotient(Bof(sg)); rq.append(float(np.max(np.abs(np.linalg.eigvals(Bq)))))\nrq=np.array(rq); out[\"Z1_pointwise_quotient_rho\"]={\"sigma\":[float(x) for x in sg_grid[::5]],\"rho\":[round(float(x),5) for x in rq[::5]],\n   \"max_sigma_with_rho_lt_1_contiguous_from_1\":None}\ni1=int(np.argmin(abs(sg_grid-1.0))); j=i1\nwhile j+1<len(rq) and rq[j+1]<1: j+=1\nk=i1\nwhile k-1>=0 and rq[k-1]<1: k-=1\nout[\"Z1_pointwise_quotient_rho\"][\"max_sigma_with_rho_lt_1_contiguous_from_1\"]=[float(sg_grid[k]),float(sg_grid[j])]\nout[\"Z1_max_entry_|B|_at\"]={str(s):float(np.max(abs(Bof(s)))) for s in [0.1,0.5,0.8,1.0,1.2,1.33,1.5]}\n# Z2 random sequences on [sa,sb]\nrng=np.random.default_rng(20261111)\ndef run(sa,sb,mode,M=20000):\n    L=np.eye(6); worst=0.0\n    for m in range(M):\n        if mode==\"uniform\": sg=rng.uniform(sa,sb)\n        elif mode==\"vertex\": sg=sa if rng.random()<0.5 else sb\n        elif mode==\"alt\": sg=sa if m%2==0 else sb\n        elif mode==\"1:k\": sg=sb if m%4==3 else sa   # 3 shrink 1 grow\n        L=Bof(sg)@L; worst=max(worst,float(np.max(abs(L))))\n    return worst\nZ2={}\nfor sa in [0.1,0.5,0.8]:\n    for sb in [1.0,1.1,1.2,1.3,1.5]:\n        for mode in [\"uniform\",\"vertex\",\"alt\"]:\n            Z2[f\"[{sa},{sb}]_{mode}\"]=run(sa,sb,mode,6000)\nout[\"Z2_max_entry_of_product_6000_steps\"]=Z2\n# Z3 word search (quotient JSR lower bound / norm upper bound on FINITE alphabet)\ndef jsr_words(alpha_set,Lmax):\n    Bq=[quotient(Bof(s))[0] for s in alpha_set]; res={}\n    cur=[np.eye(5)]\n    best_lb=0.0; ub={}\n    for L in range(1,Lmax+1):\n        nxt=[]\n        for M in cur:\n            for Bm in Bq: nxt.append(Bm@M)\n        cur=nxt; arr=np.array(cur)\n        lb=max(float(np.max(np.abs(np.linalg.eigvals(a))))**(1.0/L) for a in arr[::max(1,len(arr)//20000)])\n        nb=float(np.max(np.linalg.norm(arr,2,axis=(1,2))))**(1.0/L)\n        res[L]=dict(max_rho_word_pow=round(lb,5),max_norm_pow=round(nb,5),n_words=len(arr))\n    return res\nZ3={}\nfor sa,sb in [(0.8,1.2),(1/1.2,1.2),(0.5,1.2),(0.1,1.2),(0.8,1.1),(0.8,1.3),(0.9,1.5)]:\n    al=sorted(set(np.round([sa,0.5*(sa+1),1.0,0.5*(1+sb),sb],6)))\n    Z3[f\"[{sa:.4f},{sb}]\"]=dict(alphabet=al,words=jsr_words(al,7))\nout[\"Z3_finite_alphabet_words\"]=Z3\nprint(json.dumps(out,indent=1))\n",
+   "stdout": {
+    "Z1_pointwise_quotient_rho": {
+     "sigma": [
+      0.05,
+      0.1,
+      0.15,
+      0.2,
+      0.25,
+      0.3,
+      0.35,
+      0.4,
+      0.45,
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9,
+      0.95,
+      1.0,
+      1.05,
+      1.1,
+      1.15,
+      1.2,
+      1.25,
+      1.3,
+      1.35,
+      1.4,
+      1.45,
+      1.5,
+      1.55,
+      1.6
+     ],
+     "rho": [
+      0.12212,
+      0.19691,
+      0.25177,
+      0.29497,
+      0.33014,
+      0.35963,
+      0.38553,
+      0.41003,
+      0.43526,
+      0.46307,
+      0.49476,
+      0.53091,
+      0.57145,
+      0.61582,
+      0.66309,
+      0.71206,
+      0.76132,
+      0.80925,
+      0.85402,
+      0.89355,
+      0.92555,
+      0.9474,
+      0.9562,
+      0.94864,
+      0.92097,
+      0.86894,
+      0.87768,
+      0.91283,
+      0.9392,
+      0.95282,
+      1.17644,
+      1.55367
+     ],
+     "max_sigma_with_rho_lt_1_contiguous_from_1": [
+      0.05,
+      1.53
+     ]
+    },
+    "Z1_max_entry_|B|_at": {
+     "0.1": 1.3066158471368767,
+     "0.5": 4.138497997823286,
+     "0.8": 11.610609291434562,
+     "1.0": 20.078052149247416,
+     "1.2": 32.41966684217863,
+     "1.33": 44.52883029581282,
+     "1.5": 66.33262306156377
+    },
+    "Z2_max_entry_of_product_6000_steps": {
+     "[0.1,1.0]_uniform": 29.36366996365815,
+     "[0.1,1.0]_vertex": 54.424081742815154,
+     "[0.1,1.0]_alt": 4.24717780649242,
+     "[0.1,1.1]_uniform": 18.12562967320372,
+     "[0.1,1.1]_vertex": 79.94293421856813,
+     "[0.1,1.1]_alt": 5.501263308563479,
+     "[0.1,1.2]_uniform": 9.904109700943867,
+     "[0.1,1.2]_vertex": 8.920494974114066,
+     "[0.1,1.2]_alt": 6.989540827563108,
+     "[0.1,1.3]_uniform": 53.660661364181216,
+     "[0.1,1.3]_vertex": 35.60234301299513,
+     "[0.1,1.3]_alt": 7.797860230497414e+65,
+     "[0.1,1.5]_uniform": 124.71159757446519,
+     "[0.1,1.5]_vertex": 211.04885951992583,
+     "[0.1,1.5]_alt": Infinity,
+     "[0.5,1.0]_uniform": 11.29492666451771,
+     "[0.5,1.0]_vertex": 44.19118927389672,
+     "[0.5,1.0]_alt": 29.83529289193913,
+     "[0.5,1.1]_uniform": 48.76308552942827,
+     "[0.5,1.1]_vertex": 94.6130782276519,
+     "[0.5,1.1]_alt": 43.685661398535856,
+     "[0.5,1.2]_uniform": 31.116738042552445,
+     "[0.5,1.2]_vertex": 5.124141118050823,
+     "[0.5,1.2]_alt": 63.63544259517371,
+     "[0.5,1.3]_uniform": 144.12404964372226,
+     "[0.5,1.3]_vertex": 5.069489172242001,
+     "[0.5,1.3]_alt": 97.29759442111632,
+     "[0.5,1.5]_uniform": 120.6082712849863,
+     "[0.5,1.5]_vertex": 361.18320199678004,
+     "[0.5,1.5]_alt": 443.98753412453834,
+     "[0.8,1.0]_uniform": 41.64449792136138,
+     "[0.8,1.0]_vertex": 36.80676285379716,
+     "[0.8,1.0]_alt": 83.3496497332517,
+     "[0.8,1.1]_uniform": 153.19017277924684,
+     "[0.8,1.1]_vertex": 231.12159286723514,
+     "[0.8,1.1]_alt": 293.63598550653603,
+     "[0.8,1.2]_uniform": 156.15063244451994,
+     "[0.8,1.2]_vertex": 147.06996874386255,
+     "[0.8,1.2]_alt": 8800.537672536973,
+     "[0.8,1.3]_uniform": 339.2893406729496,
+     "[0.8,1.3]_vertex": 207.36357457510792,
+     "[0.8,1.3]_alt": 7.500080599669342e+285,
+     "[0.8,1.5]_uniform": 21849831.602913976,
+     "[0.8,1.5]_vertex": 1.3205970144036892e+191,
+     "[0.8,1.5]_alt": Infinity
+    },
+    "Z3_finite_alphabet_words": {
+     "[0.8000,1.2]": {
+      "alphabet": [
+       0.8,
+       0.9,
+       1.0,
+       1.1,
+       1.2
+      ],
+      "words": {
+       "1": {
+        "max_rho_word_pow": 0.94864,
+        "max_norm_pow": 53.20041,
+        "n_words": 5
+       },
+       "2": {
+        "max_rho_word_pow": 1.02674,
+        "max_norm_pow": 17.06602,
+        "n_words": 25
+       },
+       "3": {
+        "max_rho_word_pow": 1.00636,
+        "max_norm_pow": 7.60797,
+        "n_words": 125
+       },
+       "4": {
+        "max_rho_word_pow": 1.02674,
+        "max_norm_pow": 5.41716,
+        "n_words": 625
+       },
+       "5": {
+        "max_rho_word_pow": 0.96644,
+        "max_norm_pow": 3.79306,
+        "n_words": 3125
+       },
+       "6": {
+        "max_rho_word_pow": 1.02674,
+        "max_norm_pow": 3.18618,
+        "n_words": 15625
+       },
+       "7": {
+        "max_rho_word_pow": 0.99609,
+        "max_norm_pow": 2.61858,
+        "n_words": 78125
+       }
+      }
+     },
+     "[0.8333,1.2]": {
+      "alphabet": [
+       0.833333,
+       0.916667,
+       1.0,
+       1.1,
+       1.2
+      ],
+      "words": {
+       "1": {
+        "max_rho_word_pow": 0.94864,
+        "max_norm_pow": 53.20041,
+        "n_words": 5
+       },
+       "2": {
+        "max_rho_word_pow": 1.02784,
+        "max_norm_pow": 17.06602,
+        "n_words": 25
+       },
+       "3": {
+        "max_rho_word_pow": 1.00737,
+        "max_norm_pow": 7.61034,
+        "n_words": 125
+       },
+       "4": {
+        "max_rho_word_pow": 1.02784,
+        "max_norm_pow": 5.41716,
+        "n_words": 625
+       },
+       "5": {
+        "max_rho_word_pow": 0.96644,
+        "max_norm_pow": 3.79132,
+        "n_words": 3125
+       },
+       "6": {
+        "max_rho_word_pow": 1.02784,
+        "max_norm_pow": 3.18802,
+        "n_words": 15625
+       },
+       "7": {
+        "max_rho_word_pow": 0.99675,
+        "max_norm_pow": 2.61844,
+        "n_words": 78125
+       }
+      }
+     },
+     "[0.5000,1.2]": {
+      "alphabet": [
+       0.5,
+       0.75,
+       1.0,
+       1.1,
+       1.2
+      ],
+      "words": {
+       "1": {
+        "max_rho_word_pow": 0.94864,
+        "max_norm_pow": 53.20041,
+        "n_words": 5
+       },
+       "2": {
+        "max_rho_word_pow": 1.01768,
+        "max_norm_pow": 17.06602,
+        "n_words": 25
+       },
+       "3": {
+        "max_rho_word_pow": 1.00217,
+        "max_norm_pow": 7.57546,
+        "n_words": 125
+       },
+       "4": {
+        "max_rho_word_pow": 1.01768,
+        "max_norm_pow": 5.41716,
+        "n_words": 625
+       },
+       "5": {
+        "max_rho_word_pow": 0.96644,
+        "max_norm_pow": 3.75647,
+        "n_words": 3125
+       },
+       "6": {
+        "max_rho_word_pow": 1.01768,
+        "max_norm_pow": 3.15454,
+        "n_words": 15625
+       },
+       "7": {
+        "max_rho_word_pow": 0.98689,
+        "max_norm_pow": 2.59222,
+        "n_words": 78125
+       }
+      }
+     },
+     "[0.1000,1.2]": {
+      "alphabet": [
+       0.1,
+       0.55,
+       1.0,
+       1.1,
+       1.2
+      ],
+      "words": {
+       "1": {
+        "max_rho_word_pow": 0.94864,
+        "max_norm_pow": 53.20041,
+        "n_words": 5
+       },
+       "2": {
+        "max_rho_word_pow": 1.01768,
+        "max_norm_pow": 17.06602,
+        "n_words": 25
+       },
+       "3": {
+        "max_rho_word_pow": 0.99019,
+        "max_norm_pow": 7.47827,
+        "n_words": 125
+       },
+       "4": {
+        "max_rho_word_pow": 1.01768,
+        "max_norm_pow": 5.41716,
+        "n_words": 625
+       },
+       "5": {
+        "max_rho_word_pow": 0.96644,
+        "max_norm_pow": 3.75647,
+        "n_words": 3125
+       },
+       "6": {
+        "max_rho_word_pow": 1.01768,
+        "max_norm_pow": 3.14025,
+        "n_words": 15625
+       },
+       "7": {
+        "max_rho_word_pow": 0.98664,
+        "max_norm_pow": 2.57649,
+        "n_words": 78125
+       }
+      }
+     },
+     "[0.8000,1.1]": {
+      "alphabet": [
+       0.8,
+       0.9,
+       1.0,
+       1.05,
+       1.1
+      ],
+      "words": {
+       "1": {
+        "max_rho_word_pow": 0.9474,
+        "max_norm_pow": 42.17949,
+        "n_words": 5
+       },
+       "2": {
+        "max_rho_word_pow": 0.9474,
+        "max_norm_pow": 14.04974,
+        "n_words": 25
+       },
+       "3": {
+        "max_rho_word_pow": 0.9474,
+        "max_norm_pow": 6.83555,
+        "n_words": 125
+       },
+       "4": {
+        "max_rho_word_pow": 0.9474,
+        "max_norm_pow": 4.76711,
+        "n_words": 625
+       },
+       "5": {
+        "max_rho_word_pow": 0.9474,
+        "max_norm_pow": 3.38021,
+        "n_words": 3125
+       },
+       "6": {
+        "max_rho_word_pow": 0.9474,
+        "max_norm_pow": 2.80298,
+        "n_words": 15625
+       },
+       "7": {
+        "max_rho_word_pow": 0.9453,
+        "max_norm_pow": 2.33509,
+        "n_words": 78125
+       }
+      }
+     },
+     "[0.8000,1.3]": {
+      "alphabet": [
+       0.8,
+       0.9,
+       1.0,
+       1.15,
+       1.3
+      ],
+      "words": {
+       "1": {
+        "max_rho_word_pow": 0.9562,
+        "max_norm_pow": 68.05324,
+        "n_words": 5
+       },
+       "2": {
+        "max_rho_word_pow": 1.143,
+        "max_norm_pow": 19.98177,
+        "n_words": 25
+       },
+       "3": {
+        "max_rho_word_pow": 1.12247,
+        "max_norm_pow": 8.28873,
+        "n_words": 125
+       },
+       "4": {
+        "max_rho_word_pow": 1.143,
+        "max_norm_pow": 5.97605,
+        "n_words": 625
+       },
+       "5": {
+        "max_rho_word_pow": 1.0445,
+        "max_norm_pow": 4.16868,
+        "n_words": 3125
+       },
+       "6": {
+        "max_rho_word_pow": 1.143,
+        "max_norm_pow": 3.5474,
+        "n_words": 15625
+       },
+       "7": {
+        "max_rho_word_pow": 1.09634,
+        "max_norm_pow": 2.91816,
+        "n_words": 78125
+       }
+      }
+     },
+     "[0.9000,1.5]": {
+      "alphabet": [
+       0.9,
+       0.95,
+       1.0,
+       1.25,
+       1.5
+      ],
+      "words": {
+       "1": {
+        "max_rho_word_pow": 0.95282,
+        "max_norm_pow": 124.60737,
+        "n_words": 5
+       },
+       "2": {
+        "max_rho_word_pow": 1.44573,
+        "max_norm_pow": 24.63966,
+        "n_words": 25
+       },
+       "3": {
+        "max_rho_word_pow": 1.53305,
+        "max_norm_pow": 9.92133,
+        "n_words": 125
+       },
+       "4": {
+        "max_rho_word_pow": 1.45134,
+        "max_norm_pow": 7.07329,
+        "n_words": 625
+       },
+       "5": {
+        "max_rho_word_pow": 1.409,
+        "max_norm_pow": 5.04904,
+        "n_words": 3125
+       },
+       "6": {
+        "max_rho_word_pow": 1.53305,
+        "max_norm_pow": 4.22859,
+        "n_words": 15625
+       },
+       "7": {
+        "max_rho_word_pow": 1.51018,
+        "max_norm_pow": 3.71957,
+        "n_words": 78125
+       }
+      }
+     }
+    }
+   }
+  },
+  "z2": {
+   "purpose": "pair/word instability map + mpmath50 confirm",
+   "cmd": "python3 -I z2.py > z2.out 2> z2.err",
+   "exit": 0,
+   "script_sha256": "d30200fcc6d18f765b23f3a26e72ff93dbc5c38ff042eb8228447da0d1ac2099",
+   "stdout_sha256": "3d4d989fa163bd0ad807f669594bff3b34bcbca5803dc76a0229657961f89f29",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "stderr_bytes": 0,
+   "script_text": "# PW03B common: PPSW-family coefficient construction (APNUM (3.2),(3.3); route 'tau-solve'), float64 + mpmath.\nimport numpy as np, mpmath as mp\nP26 = dict(c=[\"-1.702\",\"-0.51\",\"-0.195797762\",\"0.155193392\",\"0.755672784\",\"1\"],\n  g0=[\"0.214789562\",\"0.249182503\",\"0.237832565\",\"0.245204742\",\"0.353848357\"],\n  g1=[\"0.566334104\",\"0.496228487\",\"0.518584061\",\"0.498857638\",\"0.502412430\"])\ndef gam_ppsw2(c, g0, g1, sg):   # APNUM (3.8) for i<s, (3.6) for i=s ; works for numpy and mpmath\n    s=len(c); g=[g0[i]/(1+sg*g1[i]) for i in range(s-1)]\n    g.append(1/(sg*sum(1/(1+sg-cj) for cj in c))); return g\ndef coeffs_np(c, g, sg):\n    c=np.asarray(c,float); g=np.asarray(g,float); s=len(c); tau=(c-1)/sg\n    Wt=np.vander(tau,s,increasing=True).T            # Wt[k,j]=tau_j^k\n    Cp=np.array([c**k for k in range(s)])            # Cp[k,i]=c_i^k\n    ThT=np.linalg.solve(Wt,Cp); Th=ThT.T\n    A=g[:,None]*Th\n    Dm=np.zeros((s,s))\n    for k in range(1,s): Dm[k]=k*tau**(k-1)\n    R2=Cp-Dm@A.T\n    B=np.linalg.solve(Wt,R2).T\n    return B,A,-A,Th\ndef coeffs_mp(c, g, sg):\n    mp.mp.dps=mp.mp.dps; s=len(c); tau=[(cj-1)/sg for cj in c]\n    Wt=mp.matrix(s,s); Cp=mp.matrix(s,s); Dm=mp.zeros(s,s)\n    for k in range(s):\n        for j in range(s):\n            Wt[k,j]=tau[j]**k; Cp[k,j]=c[j]**k\n            if k>=1: Dm[k,j]=k*tau[j]**(k-1)\n    Wi=Wt**-1\n    Th=(Wi*Cp).T\n    A=mp.matrix(s,s)\n    for i in range(s):\n        for j in range(s): A[i,j]=g[i]*Th[i,j]\n    B=(Wi*(Cp-Dm*A.T)).T\n    return B,A\ndef quotient(B):\n    s=B.shape[0]; S=np.eye(s); S[:,0]=1.0\n    M=np.linalg.solve(S,B@S); return M[1:,1:], M[0,1:]\ndef alpha_deg(B,g,nphi=361,nr=300,rlo=-5,rhi=9):\n    rs=np.logspace(rlo,rhi,nr); g=np.asarray(g,float)\n    def f(p):\n        z=rs*np.exp(1j*(np.pi-np.radians(p)))\n        M=(1.0/(1.0-z[:,None]*g[None,:]))[:,:,None]*B[None,:,:]\n        return float(np.max(np.abs(np.linalg.eigvals(M))))\n    prev=0.0\n    for p in np.linspace(0,90,nphi):\n        if f(p)>=1-1e-12:\n            lo,hi=prev,p\n            for _ in range(40):\n                m=0.5*(lo+hi)\n                if f(m)>=1-1e-12: hi=m\n                else: lo=m\n            return lo\n        prev=p\n    return 90.0\n# PW03B-1b: which step-ratio words destabilize PPSW2-6?  (quotient of B products; NUMERICALLY_CHECKED)\nimport numpy as np, json, mpmath as mp\nc=np.array([float(x) for x in P26[\"c\"]]); g0=np.array([float(x) for x in P26[\"g0\"]]); g1=np.array([float(x) for x in P26[\"g1\"]])\ndef Bof(sg): return coeffs_np(c, gam_ppsw2(c,g0,g1,sg), sg)[0]\nBq=lambda s: quotient(Bof(s))[0]\nrho=lambda M: float(np.max(np.abs(np.linalg.eigvals(M))))\nout={}\n# (a) oscillating step sizes h, r h, h, r h ...  => sigma alternates r, 1/r\nrs=np.round(np.arange(1.02,1.40,0.01),3)\nout[\"osc_pair_(r,1/r)_rho_per_step\"]={str(r):round(rho(Bq(r)@Bq(1/r))**0.5,5) for r in rs}\nfirst=[float(r) for r in rs if rho(Bq(r)@Bq(1/r))**0.5>=1]\nout[\"first_r_with_rho>=1_for_pair(r,1/r)\"]=first[:1]\n# (b) general pairs on grid: largest sigma_max such that all pairs from [sa,smax]^2 have rho<1\ngrid=np.round(np.arange(0.1,1.5001,0.02),3)\nBqs={float(s):Bq(float(s)) for s in grid}\ndef maxpair(sa,sb):\n    G=[s for s in Bqs if sa<=s<=sb]; w=0; arg=None\n    for x in G:\n        for y in G:\n            v=rho(Bqs[x]@Bqs[y])**0.5\n            if v>w: w=v; arg=(x,y)\n    return w,arg\nres={}\nfor sa in [0.1,0.5,0.8]:\n    for sb in [1.05,1.08,1.1,1.12,1.14,1.16,1.18,1.2]:\n        w,arg=maxpair(sa,sb); res[f\"[{sa},{sb}]\"]=(round(w,5),arg)\nout[\"max_pair_rho_per_step_on_grid\"]=res\n# (c) triples/quads at sa=0.8 : first sb with rho>=1 among words up to length 4 over coarse grid\nimport itertools\ndef maxword(sa,sb,L,n=9):\n    G=np.linspace(sa,sb,n); M={float(s):Bq(float(s)) for s in G}; w=0; arg=None\n    for t in itertools.product(list(M),repeat=L):\n        P=np.eye(5)\n        for s in t: P=M[s]@P\n        v=rho(P)**(1.0/L)\n        if v>w: w=v; arg=t\n    return w,arg\nout[\"words_len3_len4_sa0.8\"]={f\"sb={sb}_L{L}\":(lambda r:(round(r[0],5),r[1]))(maxword(0.8,sb,L)) for sb in [1.1,1.15,1.2] for L in (3,4)}\n# (d) high precision confirmation of the oscillating pair at r=1.2 (mpmath 50 digits)\nmp.mp.dps=50\ndef Bmp(sg):\n    sg=mp.mpf(sg); c_=[mp.mpf(x) for x in P26[\"c\"]]; a0=[mp.mpf(x) for x in P26[\"g0\"]]; a1=[mp.mpf(x) for x in P26[\"g1\"]]\n    B,A=coeffs_mp(c_,gam_ppsw2(c_,a0,a1,sg),sg); return B\ndef quot_mp(B):\n    s=B.rows; S=mp.eye(s)\n    for i in range(s): S[i,0]=1\n    M=S**-1*B*S; Q=mp.matrix(s-1,s-1)\n    for i in range(s-1):\n        for j in range(s-1): Q[i,j]=M[i+1,j+1]\n    return Q\nfor r in [\"6/5\",\"11/10\"]:\n    r=mp.mpf(eval(r.replace(\"/\",\"*1.0/\")) if False else mp.mpf(r.split(\"/\")[0])/mp.mpf(r.split(\"/\")[1]))\n    Pm=quot_mp(Bmp(r))*quot_mp(Bmp(1/r)) if False else quot_mp(Bmp(r))*quot_mp(Bmp(1/r))\n    ev=mp.eig(Pm)[0]\n    out[f\"mp50_pair_(r,1/r)_r={mp.nstr(r,6)}_max|eig|^(1/2)\"]=mp.nstr(max(abs(e) for e in ev)**mp.mpf(\"0.5\"),15)\nprint(json.dumps(out,indent=1,default=str))\n",
+   "stdout": {
+    "osc_pair_(r,1/r)_rho_per_step": {
+     "1.02": 0.89558,
+     "1.03": 0.89802,
+     "1.04": 0.90131,
+     "1.05": 0.90536,
+     "1.06": 0.91009,
+     "1.07": 0.9154,
+     "1.08": 0.9212,
+     "1.09": 0.92743,
+     "1.1": 0.93402,
+     "1.11": 0.9409,
+     "1.12": 0.94804,
+     "1.13": 0.95538,
+     "1.14": 0.96291,
+     "1.15": 0.97058,
+     "1.16": 0.97837,
+     "1.17": 0.98627,
+     "1.18": 0.99427,
+     "1.19": 1.00234,
+     "1.2": 1.01048,
+     "1.21": 1.01869,
+     "1.22": 1.02695,
+     "1.23": 1.03528,
+     "1.24": 1.04365,
+     "1.25": 1.05208,
+     "1.26": 1.06056,
+     "1.27": 1.06909,
+     "1.28": 1.07768,
+     "1.29": 1.08633,
+     "1.3": 1.09504,
+     "1.31": 1.10381,
+     "1.32": 1.11264,
+     "1.33": 1.12155,
+     "1.34": 1.13053,
+     "1.35": 1.13959,
+     "1.36": 1.14873,
+     "1.37": 1.15796,
+     "1.38": 1.16727,
+     "1.39": 1.17668
+    },
+    "first_r_with_rho>=1_for_pair(r,1/r)": [
+     1.19
+    ],
+    "max_pair_rho_per_step_on_grid": {
+     "[0.1,1.05]": [
+      0.91987,
+      [
+       1.04,
+       1.04
+      ]
+     ],
+     "[0.1,1.08]": [
+      0.94005,
+      [
+       1.08,
+       1.08
+      ]
+     ],
+     "[0.1,1.1]": [
+      0.9474,
+      [
+       1.1,
+       1.1
+      ]
+     ],
+     "[0.1,1.12]": [
+      0.95499,
+      [
+       1.12,
+       0.98
+      ]
+     ],
+     "[0.1,1.14]": [
+      0.97114,
+      [
+       1.14,
+       0.96
+      ]
+     ],
+     "[0.1,1.16]": [
+      0.98894,
+      [
+       1.16,
+       0.94
+      ]
+     ],
+     "[0.1,1.18]": [
+      1.00777,
+      [
+       0.94,
+       1.18
+      ]
+     ],
+     "[0.1,1.2]": [
+      1.02792,
+      [
+       1.2,
+       0.92
+      ]
+     ],
+     "[0.5,1.05]": [
+      0.91987,
+      [
+       1.04,
+       1.04
+      ]
+     ],
+     "[0.5,1.08]": [
+      0.94005,
+      [
+       1.08,
+       1.08
+      ]
+     ],
+     "[0.5,1.1]": [
+      0.9474,
+      [
+       1.1,
+       1.1
+      ]
+     ],
+     "[0.5,1.12]": [
+      0.95499,
+      [
+       1.12,
+       0.98
+      ]
+     ],
+     "[0.5,1.14]": [
+      0.97114,
+      [
+       1.14,
+       0.96
+      ]
+     ],
+     "[0.5,1.16]": [
+      0.98894,
+      [
+       1.16,
+       0.94
+      ]
+     ],
+     "[0.5,1.18]": [
+      1.00777,
+      [
+       0.94,
+       1.18
+      ]
+     ],
+     "[0.5,1.2]": [
+      1.02792,
+      [
+       1.2,
+       0.92
+      ]
+     ],
+     "[0.8,1.05]": [
+      0.91987,
+      [
+       1.04,
+       1.04
+      ]
+     ],
+     "[0.8,1.08]": [
+      0.94005,
+      [
+       1.08,
+       1.08
+      ]
+     ],
+     "[0.8,1.1]": [
+      0.9474,
+      [
+       1.1,
+       1.1
+      ]
+     ],
+     "[0.8,1.12]": [
+      0.95499,
+      [
+       1.12,
+       0.98
+      ]
+     ],
+     "[0.8,1.14]": [
+      0.97114,
+      [
+       1.14,
+       0.96
+      ]
+     ],
+     "[0.8,1.16]": [
+      0.98894,
+      [
+       1.16,
+       0.94
+      ]
+     ],
+     "[0.8,1.18]": [
+      1.00777,
+      [
+       0.94,
+       1.18
+      ]
+     ],
+     "[0.8,1.2]": [
+      1.02792,
+      [
+       1.2,
+       0.92
+      ]
+     ]
+    },
+    "words_len3_len4_sa0.8": {
+     "sb=1.1_L3": [
+      0.9474,
+      [
+       1.1,
+       1.1,
+       1.1
+      ]
+     ],
+     "sb=1.1_L4": [
+      0.9474,
+      [
+       1.1,
+       1.1,
+       1.1,
+       1.1
+      ]
+     ],
+     "sb=1.15_L3": [
+      0.96592,
+      [
+       1.15,
+       1.15,
+       0.8875
+      ]
+     ],
+     "sb=1.15_L4": [
+      0.97964,
+      [
+       1.15,
+       0.93125,
+       1.15,
+       0.93125
+      ]
+     ],
+     "sb=1.2_L3": [
+      1.0073,
+      [
+       1.2,
+       0.8500000000000001,
+       1.2
+      ]
+     ],
+     "sb=1.2_L4": [
+      1.02712,
+      [
+       1.2,
+       0.9,
+       1.2,
+       0.95
+      ]
+     ]
+    },
+    "mp50_pair_(r,1/r)_r=1.2_max|eig|^(1/2)": "1.01048154501664",
+    "mp50_pair_(r,1/r)_r=1.1_max|eig|^(1/2)": "0.934015378492318"
+   }
+  },
+  "z3": {
+   "purpose": "BIT mipeer + SINUM(invalid) reconstruction",
+   "cmd": "python3 -I z3.py > z3.out 2> z3.err",
+   "exit": 0,
+   "script_sha256": "6b5ddf675d5fe1a6f41a664b354f4d07d821c3429cb2b68a3bce1c4eeae9274f",
+   "stdout_sha256": "ecfc8c15931adaa3ace27ab2f61c5a6af9574b3e2ef48e576162d448d6c8f38b",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "stderr_bytes": 0,
+   "script_text": "# PW03B common: PPSW-family coefficient construction (APNUM (3.2),(3.3); route 'tau-solve'), float64 + mpmath.\nimport numpy as np, mpmath as mp\nP26 = dict(c=[\"-1.702\",\"-0.51\",\"-0.195797762\",\"0.155193392\",\"0.755672784\",\"1\"],\n  g0=[\"0.214789562\",\"0.249182503\",\"0.237832565\",\"0.245204742\",\"0.353848357\"],\n  g1=[\"0.566334104\",\"0.496228487\",\"0.518584061\",\"0.498857638\",\"0.502412430\"])\ndef gam_ppsw2(c, g0, g1, sg):   # APNUM (3.8) for i<s, (3.6) for i=s ; works for numpy and mpmath\n    s=len(c); g=[g0[i]/(1+sg*g1[i]) for i in range(s-1)]\n    g.append(1/(sg*sum(1/(1+sg-cj) for cj in c))); return g\ndef coeffs_np(c, g, sg):\n    c=np.asarray(c,float); g=np.asarray(g,float); s=len(c); tau=(c-1)/sg\n    Wt=np.vander(tau,s,increasing=True).T            # Wt[k,j]=tau_j^k\n    Cp=np.array([c**k for k in range(s)])            # Cp[k,i]=c_i^k\n    ThT=np.linalg.solve(Wt,Cp); Th=ThT.T\n    A=g[:,None]*Th\n    Dm=np.zeros((s,s))\n    for k in range(1,s): Dm[k]=k*tau**(k-1)\n    R2=Cp-Dm@A.T\n    B=np.linalg.solve(Wt,R2).T\n    return B,A,-A,Th\ndef coeffs_mp(c, g, sg):\n    mp.mp.dps=mp.mp.dps; s=len(c); tau=[(cj-1)/sg for cj in c]\n    Wt=mp.matrix(s,s); Cp=mp.matrix(s,s); Dm=mp.zeros(s,s)\n    for k in range(s):\n        for j in range(s):\n            Wt[k,j]=tau[j]**k; Cp[k,j]=c[j]**k\n            if k>=1: Dm[k,j]=k*tau[j]**(k-1)\n    Wi=Wt**-1\n    Th=(Wi*Cp).T\n    A=mp.matrix(s,s)\n    for i in range(s):\n        for j in range(s): A[i,j]=g[i]*Th[i,j]\n    B=(Wi*(Cp-Dm*A.T)).T\n    return B,A\ndef quotient(B):\n    s=B.shape[0]; S=np.eye(s); S[:,0]=1.0\n    M=np.linalg.solve(S,B@S); return M[1:,1:], M[0,1:]\ndef alpha_deg(B,g,nphi=361,nr=300,rlo=-5,rhi=9):\n    rs=np.logspace(rlo,rhi,nr); g=np.asarray(g,float)\n    def f(p):\n        z=rs*np.exp(1j*(np.pi-np.radians(p)))\n        M=(1.0/(1.0-z[:,None]*g[None,:]))[:,:,None]*B[None,:,:]\n        return float(np.max(np.abs(np.linalg.eigvals(M))))\n    prev=0.0\n    for p in np.linspace(0,90,nphi):\n        if f(p)>=1-1e-12:\n            lo,hi=prev,p\n            for _ in range(40):\n                m=0.5*(lo+hi)\n                if f(m)>=1-1e-12: hi=m\n                else: lo=m\n            return lo\n        prev=p\n    return 90.0\n# PW03B-2: reproduce OTHER parallel peer-W families from printed/derivable parameters (BIT 2005 mipeer s; SINUM 2004 PPSW1 6b/6c).\nimport numpy as np, json\nfrom scipy.optimize import brentq\nrho=lambda M: float(np.max(np.abs(np.linalg.eigvals(M))))\ndef cheb_nodes(s):  # BIT (5.8)\n    i=np.arange(1,s+1); return np.cos((2*s+1-2*i)/(2*s)*np.pi)/np.cos(np.pi/(2*s))\ndef sup_root(s):    # BIT Remark 2.1: (s-2) x^(s-1) - (s-1) x^(s-2) - 1 = 0 in (0,2/(s-1))?? printed text; solve root >1 numerically\n    f=lambda x:(s-2)*x**(s-1)-(s-1)*x**(s-2)-1\n    xs=np.linspace(1.0001,3,30000); v=[f(x) for x in xs]\n    for a,b,fa,fb in zip(xs[:-1],xs[1:],v[:-1],v[1:]):\n        if fa*fb<0: return brentq(f,a,b)\ndef superconv_resid(c,gam):  # v.w with v left eigvec of B(1) (eig 1, v.1=1), w_i=phi(1+c_i)-gam_i phi'(1+c_i)   (BIT (4.5),(4.7))\n    B,A,_,_=coeffs_np(c,gam,1.0)\n    ev,V=np.linalg.eig(B.T); k=int(np.argmin(abs(ev-1))); v=np.real(V[:,k]); v=v/np.sum(v)\n    ph=np.poly(c); dph=np.polyder(ph); x=1+c\n    w=np.polyval(ph,x)-gam*np.polyval(dph,x)\n    return float(v@w)\ndef analyse(name,c,gam,sig_list=(0.8,0.9,1.0,1.1,1.2,1.33,1.5)):\n    c=np.asarray(c,float); gam=np.asarray(gam,float)\n    B,_,_,_=coeffs_np(c,gam,1.0)\n    r=dict(name=name,s=len(c),c=[float(x) for x in c],gamma=[float(x) for x in gam],gamma_min=float(gam.min()),\n           alpha_deg_sigma1=round(alpha_deg(B,gam),3),abs_eig_B1=[round(float(x),6) for x in sorted(abs(np.linalg.eigvals(B)),reverse=True)],\n           max_abs_B1=float(abs(B).max()),superconv_resid_sigma1=superconv_resid(c,gam))\n    rq={}\n    for sg in sig_list:\n        Bs=coeffs_np(c,gam,sg)[0]; Bq=quotient(Bs)[0]; rq[str(sg)]=round(rho(Bq),5)\n    r[\"quotient_rho_by_sigma\"]=rq\n    # oscillating pair (r,1/r) and general-pair worst on grid [0.5,smax]\n    Bqf=lambda sg: quotient(coeffs_np(c,gam,sg)[0])[0]\n    r[\"pair_(r,1/r)_rho_per_step\"]={str(x):round(rho(Bqf(x)@Bqf(1/x))**0.5,5) for x in (1.1,1.2,1.3,1.33,1.4)}\n    gr=np.round(np.arange(0.5,1.5001,0.025),4); M={float(x):Bqf(float(x)) for x in gr}\n    wc={}\n    for smax in (1.1,1.2,1.3,1.4):\n        G=[x for x in M if x<=smax]; wmax=0\n        for x in G:\n            for y in G: wmax=max(wmax,rho(M[x]@M[y])**0.5)\n        wc[str(smax)]=round(wmax,5)\n    r[\"worst_pair_rho_per_step_on_[0.5,smax]\"]=wc\n    return r\nout={}\n# --- BIT mipeer s, s=3,4,5 reproduce Table 7.1; s=6 reconstruct\ntab71={3:(0.5858,0.9057,90.0),4:(0.4039,0.5443,90.0),5:(0.3075,0.3756,89.8)}\nfor s in (3,4,5,6):\n    c=cheb_nodes(s); sup=sup_root(s); g1=1-1/sup\n    gm=lambda g0: g0+g1*c\n    gs=np.linspace(g1*1.0001+1e-6,3.0,3000)   # (2.18): g0 > -g1 min c = g1\n    vals=[superconv_resid(c,gm(g)) for g in gs]; roots=[]\n    for a,b,fa,fb in zip(gs[:-1],gs[1:],vals[:-1],vals[1:]):\n        if fa*fb<0: roots.append(brentq(lambda g:superconv_resid(c,gm(g)),a,b,xtol=1e-14))\n    rec=dict(s=s,sigma_sup=sup,g1_from_Remark2_1=g1,g0_roots_superconv=roots,table71=tab71.get(s),c_cheb=[float(x) for x in c])\n    if roots: rec[\"analysis_first_root\"]=analyse(f\"mipeer{s}(g0=root0)\",c,gm(roots[0]))\n    out[f\"mipeer{s}\"]=rec\n# also BIT-table-71 printed (rounded) values for s=3,4,5 for direct comparison\nfor s,(g1p,g0p,al) in tab71.items():\n    c=cheb_nodes(s); out[f\"mipeer{s}_printed_g0g1\"]=analyse(f\"mipeer{s}_printed\",c,g0p+g1p*c)\n# --- SINUM 2004 PPSW1 (single gamma): Table 1 gammas, Table 2 knots\nsin={\"5b\":([-1,-0.5,0,0.5,1],0.722499,79.6),\"6b\":([-1,-0.5,0,0.4,0.8,1],0.619411,57.5),\"6c\":([-1,-0.5,0,0.4,0.8,1],1.087080,87.9),\n     \"4b\":([-1,-0.3,0.7,1],0.912763,89.9),\"7c\":([-1,-0.7,-0.2,0,0.2,0.6,1],0.885444,81.3)}\nfor k,(c,g,al) in sin.items():\n    a=analyse(f\"SINUM_PPSW1-{k}\",c,[g]*len(c)); a[\"printed_alpha\"]=al; out[\"SINUM_\"+k]=a\nprint(json.dumps(out,indent=1,default=float))\n",
+   "stdout": {
+    "mipeer3": {
+     "s": 3,
+     "sigma_sup": 2.4142135623730954,
+     "g1_from_Remark2_1": 0.5857864376269051,
+     "g0_roots_superconv": [
+      0.9056980397667147,
+      2.1494920172599157
+     ],
+     "table71": [
+      0.5858,
+      0.9057,
+      90.0
+     ],
+     "c_cheb": [
+      -1.0,
+      7.070501591499379e-17,
+      1.0
+     ],
+     "analysis_first_root": {
+      "name": "mipeer3(g0=root0)",
+      "s": 3,
+      "c": [
+       -1.0,
+       7.070501591499379e-17,
+       1.0
+      ],
+      "gamma": [
+       0.3199116021398096,
+       0.9056980397667147,
+       1.4914844773936198
+      ],
+      "gamma_min": 0.3199116021398096,
+      "alpha_deg_sigma1": 90.0,
+      "abs_eig_B1": [
+       1.0,
+       0.414214,
+       0.171573
+      ],
+      "max_abs_B1": 2.965937909574479,
+      "superconv_resid_sigma1": -6.661338147750939e-15,
+      "quotient_rho_by_sigma": {
+       "0.8": 0.33137,
+       "0.9": 0.37279,
+       "1.0": 0.41421,
+       "1.1": 0.45563,
+       "1.2": 0.49706,
+       "1.33": 0.5509,
+       "1.5": 0.62132
+      },
+      "pair_(r,1/r)_rho_per_step": {
+       "1.1": 0.41421,
+       "1.2": 0.41421,
+       "1.3": 0.41421,
+       "1.33": 0.41421,
+       "1.4": 0.41421
+      },
+      "worst_pair_rho_per_step_on_[0.5,smax]": {
+       "1.1": 0.45563,
+       "1.2": 0.49706,
+       "1.3": 0.53848,
+       "1.4": 0.5799
+      }
+     }
+    },
+    "mipeer4": {
+     "s": 4,
+     "sigma_sup": 1.67765069880406,
+     "g1_from_Remark2_1": 0.4039283620166785,
+     "g0_roots_superconv": [
+      0.5443191245364449,
+      1.2625423170862364,
+      2.216981848645974
+     ],
+     "table71": [
+      0.4039,
+      0.5443,
+      90.0
+     ],
+     "c_cheb": [
+      -1.0,
+      -0.41421356237309503,
+      0.41421356237309515,
+      1.0
+     ],
+     "analysis_first_root": {
+      "name": "mipeer4(g0=root0)",
+      "s": 4,
+      "c": [
+       -1.0,
+       -0.41421356237309503,
+       0.41421356237309515,
+       1.0
+      ],
+      "gamma": [
+       0.14039076251976645,
+       0.3770065187619874,
+       0.7116317303109025,
+       0.9482474865531234
+      ],
+      "gamma_min": 0.14039076251976645,
+      "alpha_deg_sigma1": 90.0,
+      "abs_eig_B1": [
+       1.0,
+       0.596072,
+       0.211785,
+       0.192143
+      ],
+      "max_abs_B1": 6.934647355519871,
+      "superconv_resid_sigma1": 3.552713678800501e-14,
+      "quotient_rho_by_sigma": {
+       "0.8": 0.47686,
+       "0.9": 0.53646,
+       "1.0": 0.59607,
+       "1.1": 0.65568,
+       "1.2": 0.71529,
+       "1.33": 0.79278,
+       "1.5": 0.89411
+      },
+      "pair_(r,1/r)_rho_per_step": {
+       "1.1": 0.59607,
+       "1.2": 0.59607,
+       "1.3": 0.59607,
+       "1.33": 0.59607,
+       "1.4": 0.59607
+      },
+      "worst_pair_rho_per_step_on_[0.5,smax]": {
+       "1.1": 0.65568,
+       "1.2": 0.71529,
+       "1.3": 0.77489,
+       "1.4": 0.8345
+      }
+     }
+    },
+    "mipeer5": {
+     "s": 5,
+     "sigma_sup": 1.4440332233434992,
+     "g1_from_Remark2_1": 0.3074951574281576,
+     "g0_roots_superconv": [
+      0.37709171145179377,
+      0.8714684873286996,
+      1.4830597062375648,
+      2.2879653044119346
+     ],
+     "table71": [
+      0.3075,
+      0.3756,
+      89.8
+     ],
+     "c_cheb": [
+      -1.0,
+      -0.6180339887498948,
+      6.438349236688752e-17,
+      0.6180339887498949,
+      1.0
+     ],
+     "analysis_first_root": {
+      "name": "mipeer5(g0=root0)",
+      "s": 5,
+      "c": [
+       -1.0,
+       -0.6180339887498948,
+       6.438349236688752e-17,
+       0.6180339887498949,
+       1.0
+      ],
+      "gamma": [
+       0.06959655402363618,
+       0.1870492527851927,
+       0.37709171145179377,
+       0.5671341701183948,
+       0.6845868688799513
+      ],
+      "gamma_min": 0.06959655402363618,
+      "alpha_deg_sigma1": 89.901,
+      "abs_eig_B1": [
+       1.0,
+       0.692505,
+       0.38501,
+       0.229981,
+       0.077515
+      ],
+      "max_abs_B1": 19.028852006909627,
+      "superconv_resid_sigma1": -2.842170943040401e-14,
+      "quotient_rho_by_sigma": {
+       "0.8": 0.554,
+       "0.9": 0.62325,
+       "1.0": 0.6925,
+       "1.1": 0.76176,
+       "1.2": 0.83101,
+       "1.33": 0.92103,
+       "1.5": 1.16428
+      },
+      "pair_(r,1/r)_rho_per_step": {
+       "1.1": 0.6925,
+       "1.2": 0.6925,
+       "1.3": 0.6925,
+       "1.33": 0.6925,
+       "1.4": 0.6925
+      },
+      "worst_pair_rho_per_step_on_[0.5,smax]": {
+       "1.1": 0.76176,
+       "1.2": 0.83101,
+       "1.3": 0.90026,
+       "1.4": 0.96951
+      }
+     }
+    },
+    "mipeer6": {
+     "s": 6,
+     "sigma_sup": 1.3299173984804804,
+     "g1_from_Remark2_1": 0.24807360130594058,
+     "g0_roots_superconv": [
+      0.27978618386094856,
+      0.6525725223334009,
+      1.0994370348619016,
+      1.6420312676219715,
+      2.3472065728133242
+     ],
+     "table71": null,
+     "c_cheb": [
+      -0.9999999999999999,
+      -0.7320508075688772,
+      -0.2679491924311228,
+      0.2679491924311227,
+      0.7320508075688773,
+      1.0
+     ],
+     "analysis_first_root": {
+      "name": "mipeer6(g0=root0)",
+      "s": 6,
+      "c": [
+       -0.9999999999999999,
+       -0.7320508075688772,
+       -0.2679491924311228,
+       0.2679491924311227,
+       0.7320508075688773,
+       1.0
+      ],
+      "gamma": [
+       0.031712582555008,
+       0.09818370368841509,
+       0.21331506272754144,
+       0.34625730499435564,
+       0.46138866403348205,
+       0.5278597851668891
+      ],
+      "gamma_min": 0.031712582555008,
+      "alpha_deg_sigma1": 89.579,
+      "abs_eig_B1": [
+       1.0,
+       0.751926,
+       0.503853,
+       0.255779,
+       0.240368,
+       0.007706
+      ],
+      "max_abs_B1": 55.752376225831206,
+      "superconv_resid_sigma1": -2.455635694786906e-10,
+      "quotient_rho_by_sigma": {
+       "0.8": 0.60154,
+       "0.9": 0.67673,
+       "1.0": 0.75193,
+       "1.1": 0.82712,
+       "1.2": 0.90231,
+       "1.33": 1.00031,
+       "1.5": 1.82529
+      },
+      "pair_(r,1/r)_rho_per_step": {
+       "1.1": 0.75193,
+       "1.2": 0.75193,
+       "1.3": 0.75193,
+       "1.33": 0.75193,
+       "1.4": 0.75193
+      },
+      "worst_pair_rho_per_step_on_[0.5,smax]": {
+       "1.1": 0.82712,
+       "1.2": 0.90231,
+       "1.3": 0.9775,
+       "1.4": 1.29276
+      }
+     }
+    },
+    "mipeer3_printed_g0g1": {
+     "name": "mipeer3_printed",
+     "s": 3,
+     "c": [
+      -1.0,
+      7.070501591499379e-17,
+      1.0
+     ],
+     "gamma": [
+      0.31989999999999996,
+      0.9057,
+      1.4914999999999998
+     ],
+     "gamma_min": 0.31989999999999996,
+     "alpha_deg_sigma1": 90.0,
+     "abs_eig_B1": [
+      1.0,
+      0.4142,
+      0.1716
+     ],
+     "max_abs_B1": 2.9659999999999975,
+     "superconv_resid_sigma1": 3.6913988987308244e-05,
+     "quotient_rho_by_sigma": {
+      "0.8": 0.33136,
+      "0.9": 0.37278,
+      "1.0": 0.4142,
+      "1.1": 0.45562,
+      "1.2": 0.49704,
+      "1.33": 0.55089,
+      "1.5": 0.6213
+     },
+     "pair_(r,1/r)_rho_per_step": {
+      "1.1": 0.4142,
+      "1.2": 0.4142,
+      "1.3": 0.4142,
+      "1.33": 0.4142,
+      "1.4": 0.4142
+     },
+     "worst_pair_rho_per_step_on_[0.5,smax]": {
+      "1.1": 0.45562,
+      "1.2": 0.49704,
+      "1.3": 0.53846,
+      "1.4": 0.57988
+     }
+    },
+    "mipeer4_printed_g0g1": {
+     "name": "mipeer4_printed",
+     "s": 4,
+     "c": [
+      -1.0,
+      -0.41421356237309503,
+      0.41421356237309515,
+      1.0
+     ],
+     "gamma": [
+      0.14040000000000002,
+      0.37699914215750696,
+      0.7116008578424932,
+      0.9481999999999999
+     ],
+     "gamma_min": 0.14040000000000002,
+     "alpha_deg_sigma1": 90.0,
+     "abs_eig_B1": [
+      1.0,
+      0.5961,
+      0.2117,
+      0.1922
+     ],
+     "max_abs_B1": 6.933771590074995,
+     "superconv_resid_sigma1": -0.0016305293152818479,
+     "quotient_rho_by_sigma": {
+      "0.8": 0.47688,
+      "0.9": 0.53649,
+      "1.0": 0.5961,
+      "1.1": 0.65571,
+      "1.2": 0.71532,
+      "1.33": 0.79281,
+      "1.5": 0.89415
+     },
+     "pair_(r,1/r)_rho_per_step": {
+      "1.1": 0.5961,
+      "1.2": 0.5961,
+      "1.3": 0.5961,
+      "1.33": 0.5961,
+      "1.4": 0.5961
+     },
+     "worst_pair_rho_per_step_on_[0.5,smax]": {
+      "1.1": 0.65571,
+      "1.2": 0.71532,
+      "1.3": 0.77493,
+      "1.4": 0.83454
+     }
+    },
+    "mipeer5_printed_g0g1": {
+     "name": "mipeer5_printed",
+     "s": 5,
+     "c": [
+      -1.0,
+      -0.6180339887498948,
+      6.438349236688752e-17,
+      0.6180339887498949,
+      1.0
+     ],
+     "gamma": [
+      0.0681,
+      0.18555454845940733,
+      0.3756,
+      0.5656454515405926,
+      0.6831
+     ],
+     "gamma_min": 0.0681,
+     "alpha_deg_sigma1": 89.89,
+     "abs_eig_B1": [
+      1.0,
+      0.6925,
+      0.385,
+      0.23,
+      0.0775
+     ],
+     "max_abs_B1": 18.925804631022643,
+     "superconv_resid_sigma1": -0.34489559990507246,
+     "quotient_rho_by_sigma": {
+      "0.8": 0.554,
+      "0.9": 0.62325,
+      "1.0": 0.6925,
+      "1.1": 0.76175,
+      "1.2": 0.831,
+      "1.33": 0.92103,
+      "1.5": 1.16438
+     },
+     "pair_(r,1/r)_rho_per_step": {
+      "1.1": 0.6925,
+      "1.2": 0.6925,
+      "1.3": 0.6925,
+      "1.33": 0.6925,
+      "1.4": 0.6925
+     },
+     "worst_pair_rho_per_step_on_[0.5,smax]": {
+      "1.1": 0.76175,
+      "1.2": 0.831,
+      "1.3": 0.90025,
+      "1.4": 0.9695
+     }
+    },
+    "SINUM_5b": {
+     "name": "SINUM_PPSW1-5b",
+     "s": 5,
+     "c": [
+      -1.0,
+      -0.5,
+      0.0,
+      0.5,
+      1.0
+     ],
+     "gamma": [
+      0.722499,
+      0.722499,
+      0.722499,
+      0.722499,
+      0.722499
+     ],
+     "gamma_min": 0.722499,
+     "alpha_deg_sigma1": 0.0,
+     "abs_eig_B1": [
+      1.000934,
+      1.000934,
+      0.999645,
+      0.999645,
+      0.998842
+     ],
+     "max_abs_B1": 33.02989200000003,
+     "superconv_resid_sigma1": 89425339651.8446,
+     "quotient_rho_by_sigma": {
+      "0.8": 0.8,
+      "0.9": 0.9,
+      "1.0": 1.00013,
+      "1.1": 1.4641,
+      "1.2": 2.0736,
+      "1.33": 3.12901,
+      "1.5": 5.0625
+     },
+     "pair_(r,1/r)_rho_per_step": {
+      "1.1": 1.00023,
+      "1.2": 1.0003,
+      "1.3": 1.00035,
+      "1.33": 1.00018,
+      "1.4": 1.00024
+     },
+     "worst_pair_rho_per_step_on_[0.5,smax]": {
+      "1.1": 1.4641,
+      "1.2": 2.0736,
+      "1.3": 2.8561,
+      "1.4": 3.8416
+     },
+     "printed_alpha": 79.6
+    },
+    "SINUM_6b": {
+     "name": "SINUM_PPSW1-6b",
+     "s": 6,
+     "c": [
+      -1.0,
+      -0.5,
+      0.0,
+      0.4,
+      0.8,
+      1.0
+     ],
+     "gamma": [
+      0.619411,
+      0.619411,
+      0.619411,
+      0.619411,
+      0.619411,
+      0.619411
+     ],
+     "gamma_min": 0.619411,
+     "alpha_deg_sigma1": 0.0,
+     "abs_eig_B1": [
+      1.007337,
+      1.003709,
+      1.003709,
+      0.996351,
+      0.996351,
+      0.992624
+     ],
+     "max_abs_B1": 133.8581944444464,
+     "superconv_resid_sigma1": -187498941586.61816,
+     "quotient_rho_by_sigma": {
+      "0.8": 0.8,
+      "0.9": 0.9,
+      "1.0": 1.00263,
+      "1.1": 1.61051,
+      "1.2": 2.48832,
+      "1.33": 4.16158,
+      "1.5": 7.59375
+     },
+     "pair_(r,1/r)_rho_per_step": {
+      "1.1": 1.00452,
+      "1.2": 1.0046,
+      "1.3": 1.0035,
+      "1.33": 1.00418,
+      "1.4": 1.00387
+     },
+     "worst_pair_rho_per_step_on_[0.5,smax]": {
+      "1.1": 1.61051,
+      "1.2": 2.48832,
+      "1.3": 3.71293,
+      "1.4": 5.37824
+     },
+     "printed_alpha": 57.5
+    },
+    "SINUM_6c": {
+     "name": "SINUM_PPSW1-6c",
+     "s": 6,
+     "c": [
+      -1.0,
+      -0.5,
+      0.0,
+      0.4,
+      0.8,
+      1.0
+     ],
+     "gamma": [
+      1.08708,
+      1.08708,
+      1.08708,
+      1.08708,
+      1.08708,
+      1.08708
+     ],
+     "gamma_min": 1.08708,
+     "alpha_deg_sigma1": 0.0,
+     "abs_eig_B1": [
+      1.001931,
+      1.001931,
+      1.000301,
+      1.000301,
+      0.997772,
+      0.997772
+     ],
+     "max_abs_B1": 347.27857142857596,
+     "superconv_resid_sigma1": -9540835310.45996,
+     "quotient_rho_by_sigma": {
+      "0.8": 0.8,
+      "0.9": 0.9,
+      "1.0": 1.00079,
+      "1.1": 1.61051,
+      "1.2": 2.48832,
+      "1.33": 4.16158,
+      "1.5": 7.59375
+     },
+     "pair_(r,1/r)_rho_per_step": {
+      "1.1": 1.00224,
+      "1.2": 1.00113,
+      "1.3": 1.00163,
+      "1.33": 1.00237,
+      "1.4": 1.00133
+     },
+     "worst_pair_rho_per_step_on_[0.5,smax]": {
+      "1.1": 1.61051,
+      "1.2": 2.48832,
+      "1.3": 3.71293,
+      "1.4": 5.37824
+     },
+     "printed_alpha": 87.9
+    },
+    "SINUM_4b": {
+     "name": "SINUM_PPSW1-4b",
+     "s": 4,
+     "c": [
+      -1.0,
+      -0.3,
+      0.7,
+      1.0
+     ],
+     "gamma": [
+      0.912763,
+      0.912763,
+      0.912763,
+      0.912763
+     ],
+     "gamma_min": 0.912763,
+     "alpha_deg_sigma1": 0.0,
+     "abs_eig_B1": [
+      1.000038,
+      1.000038,
+      0.999962,
+      0.999962
+     ],
+     "max_abs_B1": 8.305310980392147,
+     "superconv_resid_sigma1": -13760260786.902832,
+     "quotient_rho_by_sigma": {
+      "0.8": 0.8,
+      "0.9": 0.9,
+      "1.0": 1.0,
+      "1.1": 1.331,
+      "1.2": 1.728,
+      "1.33": 2.35264,
+      "1.5": 3.375
+     },
+     "pair_(r,1/r)_rho_per_step": {
+      "1.1": 1.0,
+      "1.2": 1.0,
+      "1.3": 1.0,
+      "1.33": 1.00001,
+      "1.4": 1.0
+     },
+     "worst_pair_rho_per_step_on_[0.5,smax]": {
+      "1.1": 1.331,
+      "1.2": 1.728,
+      "1.3": 2.197,
+      "1.4": 2.744
+     },
+     "printed_alpha": 89.9
+    },
+    "SINUM_7c": {
+     "name": "SINUM_PPSW1-7c",
+     "s": 7,
+     "c": [
+      -1.0,
+      -0.7,
+      -0.2,
+      0.0,
+      0.2,
+      0.6,
+      1.0
+     ],
+     "gamma": [
+      0.885444,
+      0.885444,
+      0.885444,
+      0.885444,
+      0.885444,
+      0.885444,
+      0.885444
+     ],
+     "gamma_min": 0.885444,
+     "alpha_deg_sigma1": 0.0,
+     "abs_eig_B1": [
+      1.006661,
+      1.005643,
+      1.005643,
+      0.999409,
+      0.999409,
+      0.99168,
+      0.99168
+     ],
+     "max_abs_B1": 5440.576356003989,
+     "superconv_resid_sigma1": -831207085.5137634,
+     "quotient_rho_by_sigma": {
+      "0.8": 0.8,
+      "0.9": 0.9,
+      "1.0": 1.00444,
+      "1.1": 1.77156,
+      "1.2": 2.98598,
+      "1.33": 5.5349,
+      "1.5": 11.39063
+     },
+     "pair_(r,1/r)_rho_per_step": {
+      "1.1": 1.00681,
+      "1.2": 1.00891,
+      "1.3": 1.00674,
+      "1.33": 1.00585,
+      "1.4": 1.0062
+     },
+     "worst_pair_rho_per_step_on_[0.5,smax]": {
+      "1.1": 1.77156,
+      "1.2": 2.98598,
+      "1.3": 4.82681,
+      "1.4": 7.52954
+     },
+     "printed_alpha": 81.3
+    }
+   }
+  },
+  "z4": {
+   "purpose": "global order main table",
+   "cmd": "python3 -I z4.py > z4.out 2> z4.err",
+   "exit": 0,
+   "script_sha256": "0b5f1cb065db82fe1dfa8048dfc7e3cf5cf2b7558707186d77a46c9e85b31535",
+   "stdout_sha256": "f7026117d5ab79663ac522cc6ad72d48a0be6c204272f25eb11f739ca45b5a83",
+   "stderr_sha256": "bd6f26a48b0d06a472b7fd3f1cdc1a4a6b3c248aa215e5a1338711aa1cd6450b",
+   "stderr_bytes": 4355,
+   "script_text": "# PW03B common: PPSW-family coefficient construction (APNUM (3.2),(3.3); route 'tau-solve'), float64 + mpmath.\nimport numpy as np, mpmath as mp\nP26 = dict(c=[\"-1.702\",\"-0.51\",\"-0.195797762\",\"0.155193392\",\"0.755672784\",\"1\"],\n  g0=[\"0.214789562\",\"0.249182503\",\"0.237832565\",\"0.245204742\",\"0.353848357\"],\n  g1=[\"0.566334104\",\"0.496228487\",\"0.518584061\",\"0.498857638\",\"0.502412430\"])\ndef gam_ppsw2(c, g0, g1, sg):   # APNUM (3.8) for i<s, (3.6) for i=s ; works for numpy and mpmath\n    s=len(c); g=[g0[i]/(1+sg*g1[i]) for i in range(s-1)]\n    g.append(1/(sg*sum(1/(1+sg-cj) for cj in c))); return g\ndef coeffs_np(c, g, sg):\n    c=np.asarray(c,float); g=np.asarray(g,float); s=len(c); tau=(c-1)/sg\n    Wt=np.vander(tau,s,increasing=True).T            # Wt[k,j]=tau_j^k\n    Cp=np.array([c**k for k in range(s)])            # Cp[k,i]=c_i^k\n    ThT=np.linalg.solve(Wt,Cp); Th=ThT.T\n    A=g[:,None]*Th\n    Dm=np.zeros((s,s))\n    for k in range(1,s): Dm[k]=k*tau**(k-1)\n    R2=Cp-Dm@A.T\n    B=np.linalg.solve(Wt,R2).T\n    return B,A,-A,Th\ndef coeffs_mp(c, g, sg):\n    mp.mp.dps=mp.mp.dps; s=len(c); tau=[(cj-1)/sg for cj in c]\n    Wt=mp.matrix(s,s); Cp=mp.matrix(s,s); Dm=mp.zeros(s,s)\n    for k in range(s):\n        for j in range(s):\n            Wt[k,j]=tau[j]**k; Cp[k,j]=c[j]**k\n            if k>=1: Dm[k,j]=k*tau[j]**(k-1)\n    Wi=Wt**-1\n    Th=(Wi*Cp).T\n    A=mp.matrix(s,s)\n    for i in range(s):\n        for j in range(s): A[i,j]=g[i]*Th[i,j]\n    B=(Wi*(Cp-Dm*A.T)).T\n    return B,A\ndef quotient(B):\n    s=B.shape[0]; S=np.eye(s); S[:,0]=1.0\n    M=np.linalg.solve(S,B@S); return M[1:,1:], M[0,1:]\ndef alpha_deg(B,g,nphi=361,nr=300,rlo=-5,rhi=9):\n    rs=np.logspace(rlo,rhi,nr); g=np.asarray(g,float)\n    def f(p):\n        z=rs*np.exp(1j*(np.pi-np.radians(p)))\n        M=(1.0/(1.0-z[:,None]*g[None,:]))[:,:,None]*B[None,:,:]\n        return float(np.max(np.abs(np.linalg.eigvals(M))))\n    prev=0.0\n    for p in np.linspace(0,90,nphi):\n        if f(p)>=1-1e-12:\n            lo,hi=prev,p\n            for _ in range(40):\n                m=0.5*(lo+hi)\n                if f(m)>=1-1e-12: hi=m\n                else: lo=m\n            return lo\n        prev=p\n    return 90.0\n# PW03B-3: SYNTHETIC-PROBLEM global-order prototype for reconstructed PPSW2-6 (and BIT mipeer6 as comparator).\n# Method: APNUM (2.1)/(2.2): (I-gamma_i h_m T_m)Y_mi = sum_j (b_ij + h_m gamma_ij T_m) Y_{m-1,j} + h_m sum_j a_ij f(t_{m-1,j},Y_{m-1,j}),\n# coefficients from (3.2),(3.3),(3.6),(3.8) recomputed each step in mpmath (dps=40).  Starter: EXACT (or 1e-13 DOP853) solution at t_0+c_j h_0, c_1<0 => t_0=-c_1 h_0.\n# NOT qualification: synthetic problems, scalar/2D, exact starter, no controller.\nimport mpmath as mp, numpy as np, json, sys, time\nmp.mp.dps=40\nfrom scipy.integrate import solve_ivp\ndef M_(x): return mp.mpf(x)\nc26=[M_(x) for x in P26[\"c\"]]; g0_=[M_(x) for x in P26[\"g0\"]]; g1_=[M_(x) for x in P26[\"g1\"]]\ndef gam26(sg): return gam_ppsw2(c26,g0_,g1_,sg)\n# mipeer6 (BIT 2005): nodes (5.8), gamma_i=g0+g1 c_i, g1=1-1/sigma_sup, g0 from superconvergence (root #0 computed in z3: 0.27978618386094856)\ns6=6; cm=[mp.cos((2*s6+1-2*i)*mp.pi/(2*s6))/mp.cos(mp.pi/(2*s6)) for i in range(1,s6+1)]\nG1m=M_(\"0.24807360130594058\"); G0m=M_(\"0.27978618386094856\")\ndef gam_mip(sg): return [G0m+G1m*x for x in cm]\nMETHODS={\"PPSW2-6\":(c26,gam26),\"mipeer6_BITrecon\":(cm,gam_mip)}\ndef step_coeffs(c,gam,sg):\n    g=gam(sg); B,A=coeffs_mp(c,g,sg); return g,B,A\ndef run(meth,prob,N,mode,Tpert,starter_pert=None,seed=7,T=None):\n    c,gam=METHODS[meth]; s=len(c); n=prob[\"n\"]; T=T or prob[\"T\"]\n    rng=np.random.default_rng(seed+N)\n    r=[M_(1) for _ in range(N)] if mode==\"uniform\" else [M_(1)+M_(\"0.09\")*M_(float(rng.uniform(-1,1))) for _ in range(N)]\n    scale=T/(sum(r)+c[0]*r[0]); h=[scale*x for x in r]       # h_0..h_{N-1}; M=N-1 steps\n    t=[-c[0]*h[0]]\n    for m in range(N): t.append(t[-1]+h[m])                   # t_0..t_N ; t_N = T\n    Y=[prob[\"ex\"](t[0]+c[j]*h[0]) for j in range(s)]\n    if starter_pert: q,kap=starter_pert; Y=[Y[j]+mp.matrix([kap*h[0]**q*(1+j)]*n) for j in range(s)]\n    smax=0\n    for m in range(1,N):\n        sg=h[m]/h[m-1]; smax=max(smax,sg)\n        g,B,A=step_coeffs(c,gam,sg)\n        tp=[t[m-1]+c[j]*h[m-1] for j in range(s)]\n        F=[prob[\"f\"](tp[j],Y[j]) for j in range(s)]\n        T_=prob[\"J\"](tp[s-1],Y[s-1])*Tpert\n        I=mp.eye(n); Tn=[]\n        for i in range(s):\n            rhs=mp.zeros(n,1)\n            for j in range(s):\n                rhs+=B[i,j]*Y[j]-h[m]*A[i,j]*(T_*Y[j])+h[m]*A[i,j]*F[j]    # gamma_ij=-A_ij\n            Tn.append(mp.lu_solve(I-h[m]*g[i]*T_,rhs))\n        Y=Tn\n    tl=t[N-1]; hl=h[N-1]\n    errs=[mp.norm(Y[j]-prob[\"ex\"](tl+c[j]*hl),mp.inf) for j in range(s)]\n    return float(max(errs)), float(errs[-1]), float(smax), float(max(abs(x) for x in map(float,[Y[0][0]]))) \n# --- problems\nlam_cache={}\ndef PR(lam):\n    lam=M_(lam); g=lambda t: mp.cos(t)+mp.sin(2*t)/2; gp=lambda t:-mp.sin(t)+mp.cos(2*t)\n    return dict(n=1,T=M_(1),ex=lambda t: mp.matrix([g(t)]),f=lambda t,y: mp.matrix([lam*(y[0]-g(t))+gp(t)]),J=lambda t,y: mp.matrix([[lam]]))\nRIC=dict(n=1,T=M_(2),ex=lambda t: mp.matrix([1/(1+t)]),f=lambda t,y: mp.matrix([-y[0]**2]),J=lambda t,y: mp.matrix([[-2*y[0]]]))\n# Van der Pol mu=1 (reference DOP853 rtol 1e-13), J frozen from last stage\nmu=1.0\ndef vdp(t,y): return [y[1],mu*(1-y[0]**2)*y[1]-y[0]]\n_sol=solve_ivp(vdp,[0,2.0],[2.0,0.0],method=\"DOP853\",rtol=1e-13,atol=1e-15,dense_output=True)\nVDP=dict(n=2,T=M_(2),ex=lambda t: mp.matrix([float(v) for v in _sol.sol(float(t))]),\n  f=lambda t,y: mp.matrix([y[1],M_(mu)*(1-y[0]**2)*y[1]-y[0]]),\n  J=lambda t,y: mp.matrix([[0,1],[-2*M_(mu)*y[0]*y[1]-1,M_(mu)*(1-y[0]**2)]]))\ndef table(meth,prob,Ns,mode,Tpert,**kw):\n    rows=[]\n    for N in Ns:\n        e_all,e_end,smax,_=run(meth,prob,N,mode,Tpert,**kw); rows.append((N,e_all,e_end,smax))\n    out=[]\n    for k,(N,ea,ee,sm) in enumerate(rows):\n        po=None if k==0 else (np.log(rows[k-1][1]/ea)/np.log(N/rows[k-1][0]) if ea>0 and rows[k-1][1]>0 else None)\n        out.append(dict(N=N,err_maxstages_last_step=ea,err_endpoint_stage_s=ee,sigma_max_used=sm,order_vs_prev=None if po is None else round(po,3)))\n    return out\nif __name__==\"__main__\":\n    res={}; t0=time.time()\n    cases=[(\"PR_lam-1_Texact\",PR(-1),1.0,[10,20,40,80]),\n           (\"PR_lam-1e4_Texact\",PR(-1e4),1.0,[10,20,40,80]),\n           (\"PR_lam-1e4_T0.6lam(W)\",PR(-1e4),0.6,[10,20,40,80]),\n           (\"PR_lam-1_T0.5lam(W)\",PR(-1),0.5,[10,20,40,80]),\n           (\"Riccati_Tfreeze\",RIC,1.0,[10,20,40,80]),\n           (\"Riccati_T0.5J(W)\",RIC,0.5,[10,20,40,80]),\n           (\"VdPmu1_Tfreeze\",VDP,1.0,[10,20,40,80])]\n    for meth in [\"PPSW2-6\",\"mipeer6_BITrecon\"]:\n        for name,prob,Tp,Ns in cases:\n            for mode in [\"uniform\",\"random_h_0.91..1.09\"]:\n                key=f\"{meth}|{name}|{mode}\"; res[key]=table(meth,prob,Ns,\"uniform\" if mode==\"uniform\" else \"random\",Tp)\n                print(key,[ (r['N'],'%.2e'%r['err_maxstages_last_step'],r['order_vs_prev']) for r in res[key]],file=sys.stderr,flush=True)\n    for q in (3,4):\n        key=f\"PPSW2-6|Riccati_Tfreeze|uniform|starter_perturbed_h^{q}\"; res[key]=table(\"PPSW2-6\",RIC,[10,20,40,80],\"uniform\",1.0,starter_pert=(q,M_(1)))\n        print(key,[ (r['N'],'%.2e'%r['err_maxstages_last_step'],r['order_vs_prev']) for r in res[key]],file=sys.stderr,flush=True)\n    res[\"wall_s\"]=time.time()-t0\n    print(json.dumps(res,indent=1))\n",
+   "stdout": {
+    "PPSW2-6|PR_lam-1_Texact|uniform": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 1.3176366971849327e-05,
+      "err_endpoint_stage_s": 4.505487584950279e-06,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 3.032295566874782e-07,
+      "err_endpoint_stage_s": 3.032295566874782e-07,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 5.441
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 1.3051189982237034e-08,
+      "err_endpoint_stage_s": 1.3051189982237034e-08,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 4.538
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 4.417992344001287e-10,
+      "err_endpoint_stage_s": 4.417992344001287e-10,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 4.885
+     }
+    ],
+    "PPSW2-6|PR_lam-1_Texact|random_h_0.91..1.09": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 1.2569895026094775e-05,
+      "err_endpoint_stage_s": 1.4604340129319331e-06,
+      "sigma_max_used": 1.0760604384767845,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 3.249391013893153e-07,
+      "err_endpoint_stage_s": 3.249391013893153e-07,
+      "sigma_max_used": 1.1295634262466936,
+      "order_vs_prev": 5.274
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 1.3895758470922353e-08,
+      "err_endpoint_stage_s": 1.3895758470922353e-08,
+      "sigma_max_used": 1.1672959642189737,
+      "order_vs_prev": 4.547
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 4.669215875219353e-10,
+      "err_endpoint_stage_s": 4.669215875219353e-10,
+      "sigma_max_used": 1.1653510259369673,
+      "order_vs_prev": 4.895
+     }
+    ],
+    "PPSW2-6|PR_lam-1e4_Texact|uniform": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 4.480490203783663e-06,
+      "err_endpoint_stage_s": 4.480490203783663e-06,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 4.7805988778467113e-08,
+      "err_endpoint_stage_s": 4.7805988778467113e-08,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.55
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 6.215282878025343e-10,
+      "err_endpoint_stage_s": 6.215282878025343e-10,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.265
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 9.219806517946953e-12,
+      "err_endpoint_stage_s": 9.219806517946953e-12,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.075
+     }
+    ],
+    "PPSW2-6|PR_lam-1e4_Texact|random_h_0.91..1.09": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 4.001253927445231e-06,
+      "err_endpoint_stage_s": 4.001253927445231e-06,
+      "sigma_max_used": 1.0760604384767845,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 5.365077052928687e-08,
+      "err_endpoint_stage_s": 5.365077052928687e-08,
+      "sigma_max_used": 1.1295634262466936,
+      "order_vs_prev": 6.221
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 7.411859787741946e-10,
+      "err_endpoint_stage_s": 7.411859787741946e-10,
+      "sigma_max_used": 1.1672959642189737,
+      "order_vs_prev": 6.178
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 8.674641107829854e-12,
+      "err_endpoint_stage_s": 8.674641107829854e-12,
+      "sigma_max_used": 1.1653510259369673,
+      "order_vs_prev": 6.417
+     }
+    ],
+    "PPSW2-6|PR_lam-1e4_T0.6lam(W)|uniform": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 0.0001496221589845254,
+      "err_endpoint_stage_s": 3.113070179722208e-05,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 0.00021610400766285316,
+      "err_endpoint_stage_s": 0.00021610400766285316,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": -0.53
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 0.8903814295206238,
+      "err_endpoint_stage_s": 0.8903814295206238,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": -12.008
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 99160708001.1393,
+      "err_endpoint_stage_s": 99160708001.1393,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": -36.697
+     }
+    ],
+    "PPSW2-6|PR_lam-1e4_T0.6lam(W)|random_h_0.91..1.09": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 0.0002483935748270078,
+      "err_endpoint_stage_s": 4.408386442516667e-05,
+      "sigma_max_used": 1.0760604384767845,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 0.0003068644953608705,
+      "err_endpoint_stage_s": 0.0003068644953608705,
+      "sigma_max_used": 1.1295634262466936,
+      "order_vs_prev": -0.305
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 0.8436078490593536,
+      "err_endpoint_stage_s": 0.8436078490593536,
+      "sigma_max_used": 1.1672959642189737,
+      "order_vs_prev": -11.425
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 171135513752.0643,
+      "err_endpoint_stage_s": 171135513752.0643,
+      "sigma_max_used": 1.1653510259369673,
+      "order_vs_prev": -37.562
+     }
+    ],
+    "PPSW2-6|PR_lam-1_T0.5lam(W)|uniform": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 8.2904663371779e-06,
+      "err_endpoint_stage_s": 3.916299155174148e-06,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 3.687112246618286e-07,
+      "err_endpoint_stage_s": 3.687112246618286e-07,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 4.491
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 1.3768489535971317e-08,
+      "err_endpoint_stage_s": 1.3768489535971317e-08,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 4.743
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 4.5117939498157277e-10,
+      "err_endpoint_stage_s": 4.5117939498157277e-10,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 4.932
+     }
+    ],
+    "PPSW2-6|PR_lam-1_T0.5lam(W)|random_h_0.91..1.09": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 7.410675735962181e-06,
+      "err_endpoint_stage_s": 7.410675735962181e-06,
+      "sigma_max_used": 1.0760604384767845,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 3.8815279789125026e-07,
+      "err_endpoint_stage_s": 3.8815279789125026e-07,
+      "sigma_max_used": 1.1295634262466936,
+      "order_vs_prev": 4.255
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 1.4634303504772865e-08,
+      "err_endpoint_stage_s": 1.4634303504772865e-08,
+      "sigma_max_used": 1.1672959642189737,
+      "order_vs_prev": 4.729
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 4.770833371679365e-10,
+      "err_endpoint_stage_s": 4.770833371679365e-10,
+      "sigma_max_used": 1.1653510259369673,
+      "order_vs_prev": 4.939
+     }
+    ],
+    "PPSW2-6|Riccati_Tfreeze|uniform": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 0.0037892845532619362,
+      "err_endpoint_stage_s": 0.0035287881982649432,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 7.740500603736778e-05,
+      "err_endpoint_stage_s": 6.580677797767645e-05,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 5.613
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 1.3837705746102872e-06,
+      "err_endpoint_stage_s": 1.2681324198828819e-06,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 5.806
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 2.962100841211624e-08,
+      "err_endpoint_stage_s": 2.8348888644738575e-08,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 5.546
+     }
+    ],
+    "PPSW2-6|Riccati_Tfreeze|random_h_0.91..1.09": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 0.004070153910526926,
+      "err_endpoint_stage_s": 0.00350017018065622,
+      "sigma_max_used": 1.0760604384767845,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 5.5068706026677296e-05,
+      "err_endpoint_stage_s": 5.1510043582946076e-05,
+      "sigma_max_used": 1.1295634262466936,
+      "order_vs_prev": 6.208
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 1.4614546179507235e-06,
+      "err_endpoint_stage_s": 1.3361198226701919e-06,
+      "sigma_max_used": 1.1672959642189737,
+      "order_vs_prev": 5.236
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 3.0210795514430474e-08,
+      "err_endpoint_stage_s": 2.8883346730565258e-08,
+      "sigma_max_used": 1.1653510259369673,
+      "order_vs_prev": 5.596
+     }
+    ],
+    "PPSW2-6|Riccati_T0.5J(W)|uniform": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 0.003421571860573068,
+      "err_endpoint_stage_s": 0.003157073384007749,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 7.077602541205069e-05,
+      "err_endpoint_stage_s": 6.543818265481282e-05,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 5.595
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 1.3909219852820784e-06,
+      "err_endpoint_stage_s": 1.2933377202345906e-06,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 5.669
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 3.03100286429377e-08,
+      "err_endpoint_stage_s": 2.9012272148774097e-08,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 5.52
+     }
+    ],
+    "PPSW2-6|Riccati_T0.5J(W)|random_h_0.91..1.09": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 0.0037569829001642286,
+      "err_endpoint_stage_s": 0.003018129429035464,
+      "sigma_max_used": 1.0760604384767845,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 8.495876063434682e-05,
+      "err_endpoint_stage_s": 8.495876063434682e-05,
+      "sigma_max_used": 1.1295634262466936,
+      "order_vs_prev": 5.467
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 2.597074343384408e-06,
+      "err_endpoint_stage_s": 2.449418389177174e-06,
+      "sigma_max_used": 1.1672959642189737,
+      "order_vs_prev": 5.032
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 2.9919355593241834e-08,
+      "err_endpoint_stage_s": 2.8768024595324528e-08,
+      "sigma_max_used": 1.1653510259369673,
+      "order_vs_prev": 6.44
+     }
+    ],
+    "PPSW2-6|VdPmu1_Tfreeze|uniform": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 1145.4289439230267,
+      "err_endpoint_stage_s": 1145.4289439230267,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 4.581766496395978,
+      "err_endpoint_stage_s": 4.581766496395978,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 7.966
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 0.026765757287343463,
+      "err_endpoint_stage_s": 0.026765757287343463,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 7.419
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 0.00018917948128055055,
+      "err_endpoint_stage_s": 0.00018917948128055055,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 7.144
+     }
+    ],
+    "PPSW2-6|VdPmu1_Tfreeze|random_h_0.91..1.09": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 2119.40271684311,
+      "err_endpoint_stage_s": 2119.40271684311,
+      "sigma_max_used": 1.0760604384767845,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 6.029275673673315,
+      "err_endpoint_stage_s": 6.029275673673315,
+      "sigma_max_used": 1.1295634262466936,
+      "order_vs_prev": 8.457
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 0.0320721070274203,
+      "err_endpoint_stage_s": 0.0320721070274203,
+      "sigma_max_used": 1.1672959642189737,
+      "order_vs_prev": 7.555
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 0.00021897752817462475,
+      "err_endpoint_stage_s": 0.00021897752817462475,
+      "sigma_max_used": 1.1653510259369673,
+      "order_vs_prev": 7.194
+     }
+    ],
+    "mipeer6_BITrecon|PR_lam-1_Texact|uniform": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 1.323012796569119e-05,
+      "err_endpoint_stage_s": 1.323012796569119e-05,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 1.9761716449724161e-07,
+      "err_endpoint_stage_s": 1.9761716449724161e-07,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.065
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 2.8814488010308915e-09,
+      "err_endpoint_stage_s": 2.8814488010308915e-09,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.1
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 4.257064735154811e-11,
+      "err_endpoint_stage_s": 4.257064735154811e-11,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.081
+     }
+    ],
+    "mipeer6_BITrecon|PR_lam-1_Texact|random_h_0.91..1.09": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 1.3398613793854563e-05,
+      "err_endpoint_stage_s": 1.3398613793854563e-05,
+      "sigma_max_used": 1.0760604384767845,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 2.092059502842266e-07,
+      "err_endpoint_stage_s": 2.092059502842266e-07,
+      "sigma_max_used": 1.1295634262466936,
+      "order_vs_prev": 6.001
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 2.9669414195884824e-09,
+      "err_endpoint_stage_s": 2.9669414195884824e-09,
+      "sigma_max_used": 1.1672959642189737,
+      "order_vs_prev": 6.14
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 5.042764015273078e-11,
+      "err_endpoint_stage_s": 5.042764015273078e-11,
+      "sigma_max_used": 1.1653510259369673,
+      "order_vs_prev": 5.879
+     }
+    ],
+    "mipeer6_BITrecon|PR_lam-1e4_Texact|uniform": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 3.038507524538017e-06,
+      "err_endpoint_stage_s": 3.038507524538017e-06,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 3.4815126504961476e-08,
+      "err_endpoint_stage_s": 3.4815126504961476e-08,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.448
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 4.6413286517731617e-10,
+      "err_endpoint_stage_s": 4.6413286517731617e-10,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.229
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 6.594377858739358e-12,
+      "err_endpoint_stage_s": 6.594377858739358e-12,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.137
+     }
+    ],
+    "mipeer6_BITrecon|PR_lam-1e4_Texact|random_h_0.91..1.09": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 2.742699926504927e-06,
+      "err_endpoint_stage_s": 2.742699926504927e-06,
+      "sigma_max_used": 1.0760604384767845,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 3.9023849281851015e-08,
+      "err_endpoint_stage_s": 3.9023849281851015e-08,
+      "sigma_max_used": 1.1295634262466936,
+      "order_vs_prev": 6.135
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 5.59039599216448e-10,
+      "err_endpoint_stage_s": 5.59039599216448e-10,
+      "sigma_max_used": 1.1672959642189737,
+      "order_vs_prev": 6.125
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 6.20891681787883e-12,
+      "err_endpoint_stage_s": 6.20891681787883e-12,
+      "sigma_max_used": 1.1653510259369673,
+      "order_vs_prev": 6.492
+     }
+    ],
+    "mipeer6_BITrecon|PR_lam-1e4_T0.6lam(W)|uniform": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 0.0009812474359101155,
+      "err_endpoint_stage_s": 0.0009812474359101155,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 0.019335957999915093,
+      "err_endpoint_stage_s": 0.019335957999915093,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": -4.301
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 8684.610065141194,
+      "err_endpoint_stage_s": 8684.610065141194,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": -18.777
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 7.122970894912314e+17,
+      "err_endpoint_stage_s": 7.122970894912314e+17,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": -46.221
+     }
+    ],
+    "mipeer6_BITrecon|PR_lam-1e4_T0.6lam(W)|random_h_0.91..1.09": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 0.0013189311556176112,
+      "err_endpoint_stage_s": 0.0013189311556176112,
+      "sigma_max_used": 1.0760604384767845,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 0.02530594649512994,
+      "err_endpoint_stage_s": 0.02530594649512994,
+      "sigma_max_used": 1.1295634262466936,
+      "order_vs_prev": -4.262
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 13005.778326971144,
+      "err_endpoint_stage_s": 13005.778326971144,
+      "sigma_max_used": 1.1672959642189737,
+      "order_vs_prev": -18.971
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 1.7959892704072128e+18,
+      "err_endpoint_stage_s": 1.7959892704072128e+18,
+      "sigma_max_used": 1.1653510259369673,
+      "order_vs_prev": -46.973
+     }
+    ],
+    "mipeer6_BITrecon|PR_lam-1_T0.5lam(W)|uniform": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 6.7095332250922965e-06,
+      "err_endpoint_stage_s": 6.7095332250922965e-06,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 9.629327155846851e-08,
+      "err_endpoint_stage_s": 9.629327155846851e-08,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.123
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 1.3199173632283597e-09,
+      "err_endpoint_stage_s": 1.3199173632283597e-09,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.189
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 1.851154900850139e-11,
+      "err_endpoint_stage_s": 1.851154900850139e-11,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.156
+     }
+    ],
+    "mipeer6_BITrecon|PR_lam-1_T0.5lam(W)|random_h_0.91..1.09": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 6.453790649111229e-06,
+      "err_endpoint_stage_s": 6.453790649111229e-06,
+      "sigma_max_used": 1.0760604384767845,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 1.0448393721959307e-07,
+      "err_endpoint_stage_s": 1.0448393721959307e-07,
+      "sigma_max_used": 1.1295634262466936,
+      "order_vs_prev": 5.949
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 1.3571080300057843e-09,
+      "err_endpoint_stage_s": 1.3571080300057843e-09,
+      "sigma_max_used": 1.1672959642189737,
+      "order_vs_prev": 6.267
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 2.5496309505235693e-11,
+      "err_endpoint_stage_s": 2.5496309505235693e-11,
+      "sigma_max_used": 1.1653510259369673,
+      "order_vs_prev": 5.734
+     }
+    ],
+    "mipeer6_BITrecon|Riccati_Tfreeze|uniform": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 0.0006942526148961515,
+      "err_endpoint_stage_s": 0.0006942526148961515,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 1.4388742949863624e-05,
+      "err_endpoint_stage_s": 1.3241207391553049e-05,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 5.592
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 1.9563065328643528e-07,
+      "err_endpoint_stage_s": 1.835751944023939e-07,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.201
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 2.679568401409302e-09,
+      "err_endpoint_stage_s": 2.5926611195609144e-09,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.19
+     }
+    ],
+    "mipeer6_BITrecon|Riccati_Tfreeze|random_h_0.91..1.09": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 0.001144747774016407,
+      "err_endpoint_stage_s": 0.001144747774016407,
+      "sigma_max_used": 1.0760604384767845,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 7.171454105661414e-06,
+      "err_endpoint_stage_s": 6.812017557699503e-06,
+      "sigma_max_used": 1.1295634262466936,
+      "order_vs_prev": 7.319
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 4.451832946298017e-08,
+      "err_endpoint_stage_s": 4.219774834984606e-08,
+      "sigma_max_used": 1.1672959642189737,
+      "order_vs_prev": 7.332
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 4.840222954279368e-10,
+      "err_endpoint_stage_s": 4.67725922692161e-10,
+      "sigma_max_used": 1.1653510259369673,
+      "order_vs_prev": 6.523
+     }
+    ],
+    "mipeer6_BITrecon|Riccati_T0.5J(W)|uniform": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 0.0014589683860518545,
+      "err_endpoint_stage_s": 0.0014589683860518545,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 2.8532066483920868e-05,
+      "err_endpoint_stage_s": 2.5754344033814875e-05,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 5.676
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 4.031859689376178e-07,
+      "err_endpoint_stage_s": 3.779988617252759e-07,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.145
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 5.780925451462295e-09,
+      "err_endpoint_stage_s": 5.5937654829617305e-09,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.124
+     }
+    ],
+    "mipeer6_BITrecon|Riccati_T0.5J(W)|random_h_0.91..1.09": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 0.0018633614308828895,
+      "err_endpoint_stage_s": 0.0018633614308828895,
+      "sigma_max_used": 1.0760604384767845,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 1.9881912548547024e-05,
+      "err_endpoint_stage_s": 1.8116230771304624e-05,
+      "sigma_max_used": 1.1295634262466936,
+      "order_vs_prev": 6.55
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 2.7435853826564723e-07,
+      "err_endpoint_stage_s": 2.568343022609908e-07,
+      "sigma_max_used": 1.1672959642189737,
+      "order_vs_prev": 6.179
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 2.5615350823878874e-09,
+      "err_endpoint_stage_s": 2.477423384823726e-09,
+      "sigma_max_used": 1.1653510259369673,
+      "order_vs_prev": 6.743
+     }
+    ],
+    "mipeer6_BITrecon|VdPmu1_Tfreeze|uniform": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 15.864595252851023,
+      "err_endpoint_stage_s": 15.864595252851023,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 0.08744193946205772,
+      "err_endpoint_stage_s": 0.08744193946205772,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 7.503
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 0.0006030160517089829,
+      "err_endpoint_stage_s": 0.0006030160517089829,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 7.18
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 4.799675964654094e-06,
+      "err_endpoint_stage_s": 4.799675964654094e-06,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.973
+     }
+    ],
+    "mipeer6_BITrecon|VdPmu1_Tfreeze|random_h_0.91..1.09": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 27.89503817967675,
+      "err_endpoint_stage_s": 27.89503817967675,
+      "sigma_max_used": 1.0760604384767845,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 0.11333736559033866,
+      "err_endpoint_stage_s": 0.11333736559033866,
+      "sigma_max_used": 1.1295634262466936,
+      "order_vs_prev": 7.943
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 0.0007122392078952069,
+      "err_endpoint_stage_s": 0.0007122392078952069,
+      "sigma_max_used": 1.1672959642189737,
+      "order_vs_prev": 7.314
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 5.412959594288503e-06,
+      "err_endpoint_stage_s": 5.412959594288503e-06,
+      "sigma_max_used": 1.1653510259369673,
+      "order_vs_prev": 7.04
+     }
+    ],
+    "PPSW2-6|Riccati_Tfreeze|uniform|starter_perturbed_h^3": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 0.3052066458026367,
+      "err_endpoint_stage_s": 0.21999910237056672,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 0.02095314976165407,
+      "err_endpoint_stage_s": 0.016929059531721736,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 3.865
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 0.001506596151083966,
+      "err_endpoint_stage_s": 0.0013701547519885835,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 3.798
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 0.00014107816322109505,
+      "err_endpoint_stage_s": 0.00013483310618266577,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 3.417
+     }
+    ],
+    "PPSW2-6|Riccati_Tfreeze|uniform|starter_perturbed_h^4": [
+     {
+      "N": 10,
+      "err_maxstages_last_step": 0.09191048565015363,
+      "err_endpoint_stage_s": 0.07061672873635627,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 20,
+      "err_maxstages_last_step": 0.002439714040938649,
+      "err_endpoint_stage_s": 0.0019732351241827655,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 5.235
+     },
+     {
+      "N": 40,
+      "err_maxstages_last_step": 8.03971620575683e-05,
+      "err_endpoint_stage_s": 7.313943621778189e-05,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 4.923
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 3.6348746308375765e-06,
+      "err_endpoint_stage_s": 3.474041046580635e-06,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 4.467
+     }
+    ],
+    "wall_s": 24.011051416397095
+   }
+  },
+  "z5": {
+   "purpose": "order refine + W-tolerance probe",
+   "cmd": "python3 -I z5.py > z5.out 2> z5.err",
+   "exit": 0,
+   "script_sha256": "a851294f7fb5f3730cc50cbb3315d553f15c9fac01b0f640f9dcbb41d33c48d1",
+   "stdout_sha256": "df1d475109af1a16e7c8c0c86b80a875f684dd300300a4664f2209103c7bc5ed",
+   "stderr_sha256": "e04c015146f7052fa8be9da2726ef66f6b311e516a5e8874f96ed32d79f35c9d",
+   "stderr_bytes": 1024,
+   "script_text": "# PW03B common: PPSW-family coefficient construction (APNUM (3.2),(3.3); route 'tau-solve'), float64 + mpmath.\nimport numpy as np, mpmath as mp\nP26 = dict(c=[\"-1.702\",\"-0.51\",\"-0.195797762\",\"0.155193392\",\"0.755672784\",\"1\"],\n  g0=[\"0.214789562\",\"0.249182503\",\"0.237832565\",\"0.245204742\",\"0.353848357\"],\n  g1=[\"0.566334104\",\"0.496228487\",\"0.518584061\",\"0.498857638\",\"0.502412430\"])\ndef gam_ppsw2(c, g0, g1, sg):   # APNUM (3.8) for i<s, (3.6) for i=s ; works for numpy and mpmath\n    s=len(c); g=[g0[i]/(1+sg*g1[i]) for i in range(s-1)]\n    g.append(1/(sg*sum(1/(1+sg-cj) for cj in c))); return g\ndef coeffs_np(c, g, sg):\n    c=np.asarray(c,float); g=np.asarray(g,float); s=len(c); tau=(c-1)/sg\n    Wt=np.vander(tau,s,increasing=True).T            # Wt[k,j]=tau_j^k\n    Cp=np.array([c**k for k in range(s)])            # Cp[k,i]=c_i^k\n    ThT=np.linalg.solve(Wt,Cp); Th=ThT.T\n    A=g[:,None]*Th\n    Dm=np.zeros((s,s))\n    for k in range(1,s): Dm[k]=k*tau**(k-1)\n    R2=Cp-Dm@A.T\n    B=np.linalg.solve(Wt,R2).T\n    return B,A,-A,Th\ndef coeffs_mp(c, g, sg):\n    mp.mp.dps=mp.mp.dps; s=len(c); tau=[(cj-1)/sg for cj in c]\n    Wt=mp.matrix(s,s); Cp=mp.matrix(s,s); Dm=mp.zeros(s,s)\n    for k in range(s):\n        for j in range(s):\n            Wt[k,j]=tau[j]**k; Cp[k,j]=c[j]**k\n            if k>=1: Dm[k,j]=k*tau[j]**(k-1)\n    Wi=Wt**-1\n    Th=(Wi*Cp).T\n    A=mp.matrix(s,s)\n    for i in range(s):\n        for j in range(s): A[i,j]=g[i]*Th[i,j]\n    B=(Wi*(Cp-Dm*A.T)).T\n    return B,A\ndef quotient(B):\n    s=B.shape[0]; S=np.eye(s); S[:,0]=1.0\n    M=np.linalg.solve(S,B@S); return M[1:,1:], M[0,1:]\ndef alpha_deg(B,g,nphi=361,nr=300,rlo=-5,rhi=9):\n    rs=np.logspace(rlo,rhi,nr); g=np.asarray(g,float)\n    def f(p):\n        z=rs*np.exp(1j*(np.pi-np.radians(p)))\n        M=(1.0/(1.0-z[:,None]*g[None,:]))[:,:,None]*B[None,:,:]\n        return float(np.max(np.abs(np.linalg.eigvals(M))))\n    prev=0.0\n    for p in np.linspace(0,90,nphi):\n        if f(p)>=1-1e-12:\n            lo,hi=prev,p\n            for _ in range(40):\n                m=0.5*(lo+hi)\n                if f(m)>=1-1e-12: hi=m\n                else: lo=m\n            return lo\n        prev=p\n    return 90.0\n# PW03B-3: SYNTHETIC-PROBLEM global-order prototype for reconstructed PPSW2-6 (and BIT mipeer6 as comparator).\n# Method: APNUM (2.1)/(2.2): (I-gamma_i h_m T_m)Y_mi = sum_j (b_ij + h_m gamma_ij T_m) Y_{m-1,j} + h_m sum_j a_ij f(t_{m-1,j},Y_{m-1,j}),\n# coefficients from (3.2),(3.3),(3.6),(3.8) recomputed each step in mpmath (dps=40).  Starter: EXACT (or 1e-13 DOP853) solution at t_0+c_j h_0, c_1<0 => t_0=-c_1 h_0.\n# NOT qualification: synthetic problems, scalar/2D, exact starter, no controller.\nimport mpmath as mp, numpy as np, json, sys, time\nmp.mp.dps=40\nfrom scipy.integrate import solve_ivp\ndef M_(x): return mp.mpf(x)\nc26=[M_(x) for x in P26[\"c\"]]; g0_=[M_(x) for x in P26[\"g0\"]]; g1_=[M_(x) for x in P26[\"g1\"]]\ndef gam26(sg): return gam_ppsw2(c26,g0_,g1_,sg)\n# mipeer6 (BIT 2005): nodes (5.8), gamma_i=g0+g1 c_i, g1=1-1/sigma_sup, g0 from superconvergence (root #0 computed in z3: 0.27978618386094856)\ns6=6; cm=[mp.cos((2*s6+1-2*i)*mp.pi/(2*s6))/mp.cos(mp.pi/(2*s6)) for i in range(1,s6+1)]\nG1m=M_(\"0.24807360130594058\"); G0m=M_(\"0.27978618386094856\")\ndef gam_mip(sg): return [G0m+G1m*x for x in cm]\nMETHODS={\"PPSW2-6\":(c26,gam26),\"mipeer6_BITrecon\":(cm,gam_mip)}\ndef step_coeffs(c,gam,sg):\n    g=gam(sg); B,A=coeffs_mp(c,g,sg); return g,B,A\ndef run(meth,prob,N,mode,Tpert,starter_pert=None,seed=7,T=None):\n    c,gam=METHODS[meth]; s=len(c); n=prob[\"n\"]; T=T or prob[\"T\"]\n    rng=np.random.default_rng(seed+N)\n    r=[M_(1) for _ in range(N)] if mode==\"uniform\" else [M_(1)+M_(\"0.09\")*M_(float(rng.uniform(-1,1))) for _ in range(N)]\n    scale=T/(sum(r)+c[0]*r[0]); h=[scale*x for x in r]       # h_0..h_{N-1}; M=N-1 steps\n    t=[-c[0]*h[0]]\n    for m in range(N): t.append(t[-1]+h[m])                   # t_0..t_N ; t_N = T\n    Y=[prob[\"ex\"](t[0]+c[j]*h[0]) for j in range(s)]\n    if starter_pert: q,kap=starter_pert; Y=[Y[j]+mp.matrix([kap*h[0]**q*(1+j)]*n) for j in range(s)]\n    smax=0\n    for m in range(1,N):\n        sg=h[m]/h[m-1]; smax=max(smax,sg)\n        g,B,A=step_coeffs(c,gam,sg)\n        tp=[t[m-1]+c[j]*h[m-1] for j in range(s)]\n        F=[prob[\"f\"](tp[j],Y[j]) for j in range(s)]\n        T_=prob[\"J\"](tp[s-1],Y[s-1])*Tpert\n        I=mp.eye(n); Tn=[]\n        for i in range(s):\n            rhs=mp.zeros(n,1)\n            for j in range(s):\n                rhs+=B[i,j]*Y[j]-h[m]*A[i,j]*(T_*Y[j])+h[m]*A[i,j]*F[j]    # gamma_ij=-A_ij\n            Tn.append(mp.lu_solve(I-h[m]*g[i]*T_,rhs))\n        Y=Tn\n    tl=t[N-1]; hl=h[N-1]\n    errs=[mp.norm(Y[j]-prob[\"ex\"](tl+c[j]*hl),mp.inf) for j in range(s)]\n    return float(max(errs)), float(errs[-1]), float(smax), float(max(abs(x) for x in map(float,[Y[0][0]]))) \n# --- problems\nlam_cache={}\ndef PR(lam):\n    lam=M_(lam); g=lambda t: mp.cos(t)+mp.sin(2*t)/2; gp=lambda t:-mp.sin(t)+mp.cos(2*t)\n    return dict(n=1,T=M_(1),ex=lambda t: mp.matrix([g(t)]),f=lambda t,y: mp.matrix([lam*(y[0]-g(t))+gp(t)]),J=lambda t,y: mp.matrix([[lam]]))\nRIC=dict(n=1,T=M_(2),ex=lambda t: mp.matrix([1/(1+t)]),f=lambda t,y: mp.matrix([-y[0]**2]),J=lambda t,y: mp.matrix([[-2*y[0]]]))\n# Van der Pol mu=1 (reference DOP853 rtol 1e-13), J frozen from last stage\nmu=1.0\ndef vdp(t,y): return [y[1],mu*(1-y[0]**2)*y[1]-y[0]]\n_sol=solve_ivp(vdp,[0,2.0],[2.0,0.0],method=\"DOP853\",rtol=1e-13,atol=1e-15,dense_output=True)\nVDP=dict(n=2,T=M_(2),ex=lambda t: mp.matrix([float(v) for v in _sol.sol(float(t))]),\n  f=lambda t,y: mp.matrix([y[1],M_(mu)*(1-y[0]**2)*y[1]-y[0]]),\n  J=lambda t,y: mp.matrix([[0,1],[-2*M_(mu)*y[0]*y[1]-1,M_(mu)*(1-y[0]**2)]]))\ndef table(meth,prob,Ns,mode,Tpert,**kw):\n    rows=[]\n    for N in Ns:\n        e_all,e_end,smax,_=run(meth,prob,N,mode,Tpert,**kw); rows.append((N,e_all,e_end,smax))\n    out=[]\n    for k,(N,ea,ee,sm) in enumerate(rows):\n        po=None if k==0 else (np.log(rows[k-1][1]/ea)/np.log(N/rows[k-1][0]) if ea>0 and rows[k-1][1]>0 else None)\n        out.append(dict(N=N,err_maxstages_last_step=ea,err_endpoint_stage_s=ee,sigma_max_used=sm,order_vs_prev=None if po is None else round(po,3)))\n    return out\n\nif __name__==\"__main__\":\n    res={}; t0=time.time()\n    for meth in [\"PPSW2-6\",\"mipeer6_BITrecon\"]:\n        for name,prob,Ns in [(\"Riccati_Tfreeze\",RIC,[80,160,320]),(\"VdPmu1_Tfreeze\",VDP,[80,160,320,640])]:\n            key=f\"{meth}|{name}|uniform|refine\"; res[key]=table(meth,prob,Ns,\"uniform\",1.0)\n            print(key,[(r['N'],'%.2e'%r['err_maxstages_last_step'],r['order_vs_prev']) for r in res[key]],file=sys.stderr,flush=True)\n    # W-tolerance probe: PR lam=-1e4, T=kappa*lambda, N=40 uniform, PPSW2-6\n    for kap in [0.7,0.8,0.9,0.95,1.0,1.05,1.1,1.2,1.5]:\n        e=run(\"PPSW2-6\",PR(-1e4),40,\"uniform\",kap)[0]; res[f\"Wprobe_PPSW2-6_PR-1e4_N40_kappa{kap}\"]=e\n        e=run(\"mipeer6_BITrecon\",PR(-1e4),40,\"uniform\",kap)[0]; res[f\"Wprobe_mipeer6_PR-1e4_N40_kappa{kap}\"]=e\n        print(\"kappa\",kap,res[f\"Wprobe_PPSW2-6_PR-1e4_N40_kappa{kap}\"],res[f\"Wprobe_mipeer6_PR-1e4_N40_kappa{kap}\"],file=sys.stderr,flush=True)\n    res[\"wall_s\"]=time.time()-t0\n    print(json.dumps(res,indent=1))\n",
+   "stdout": {
+    "PPSW2-6|Riccati_Tfreeze|uniform|refine": [
+     {
+      "N": 80,
+      "err_maxstages_last_step": 2.962100841211624e-08,
+      "err_endpoint_stage_s": 2.8348888644738575e-08,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 160,
+      "err_maxstages_last_step": 7.353379461403147e-10,
+      "err_endpoint_stage_s": 7.193993154360635e-10,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 5.332
+     },
+     {
+      "N": 320,
+      "err_maxstages_last_step": 2.017999298127896e-11,
+      "err_endpoint_stage_s": 1.9960372331527052e-11,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 5.187
+     }
+    ],
+    "PPSW2-6|VdPmu1_Tfreeze|uniform|refine": [
+     {
+      "N": 80,
+      "err_maxstages_last_step": 0.00018917948128055055,
+      "err_endpoint_stage_s": 0.00018917948128055055,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 160,
+      "err_maxstages_last_step": 1.5177055712104378e-06,
+      "err_endpoint_stage_s": 1.5177055712104378e-06,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.962
+     },
+     {
+      "N": 320,
+      "err_maxstages_last_step": 1.377494872018731e-08,
+      "err_endpoint_stage_s": 1.377494872018731e-08,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.784
+     },
+     {
+      "N": 640,
+      "err_maxstages_last_step": 1.466269029106269e-10,
+      "err_endpoint_stage_s": 1.466269029106269e-10,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.554
+     }
+    ],
+    "mipeer6_BITrecon|Riccati_Tfreeze|uniform|refine": [
+     {
+      "N": 80,
+      "err_maxstages_last_step": 2.679568401409302e-09,
+      "err_endpoint_stage_s": 2.5926611195609144e-09,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 160,
+      "err_maxstages_last_step": 3.892737532231535e-11,
+      "err_endpoint_stage_s": 3.827539607969713e-11,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.105
+     },
+     {
+      "N": 320,
+      "err_maxstages_last_step": 5.855653194645754e-13,
+      "err_endpoint_stage_s": 5.804363877126394e-13,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.055
+     }
+    ],
+    "mipeer6_BITrecon|VdPmu1_Tfreeze|uniform|refine": [
+     {
+      "N": 80,
+      "err_maxstages_last_step": 4.799675964654094e-06,
+      "err_endpoint_stage_s": 4.799675964654094e-06,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 160,
+      "err_maxstages_last_step": 4.372263715851241e-08,
+      "err_endpoint_stage_s": 4.372263715851241e-08,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.778
+     },
+     {
+      "N": 320,
+      "err_maxstages_last_step": 4.717881960112447e-10,
+      "err_endpoint_stage_s": 4.717881960112447e-10,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.534
+     },
+     {
+      "N": 640,
+      "err_maxstages_last_step": 6.452457405149959e-12,
+      "err_endpoint_stage_s": 6.452457405149959e-12,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.192
+     }
+    ],
+    "Wprobe_PPSW2-6_PR-1e4_N40_kappa0.7": 8.153092869891041e-08,
+    "Wprobe_mipeer6_PR-1e4_N40_kappa0.7": 0.001010523733489571,
+    "Wprobe_PPSW2-6_PR-1e4_N40_kappa0.8": 7.886352629560676e-11,
+    "Wprobe_mipeer6_PR-1e4_N40_kappa0.8": 6.083418483597835e-11,
+    "Wprobe_PPSW2-6_PR-1e4_N40_kappa0.9": 1.0064995928799638e-10,
+    "Wprobe_mipeer6_PR-1e4_N40_kappa0.9": 4.675565925259618e-11,
+    "Wprobe_PPSW2-6_PR-1e4_N40_kappa0.95": 2.973229611507066e-10,
+    "Wprobe_mipeer6_PR-1e4_N40_kappa0.95": 2.0073848354020783e-10,
+    "Wprobe_PPSW2-6_PR-1e4_N40_kappa1.0": 6.215282878025343e-10,
+    "Wprobe_mipeer6_PR-1e4_N40_kappa1.0": 4.6413286517731617e-10,
+    "Wprobe_PPSW2-6_PR-1e4_N40_kappa1.05": 1.1268591875178821e-09,
+    "Wprobe_mipeer6_PR-1e4_N40_kappa1.05": 8.793681797746326e-10,
+    "Wprobe_PPSW2-6_PR-1e4_N40_kappa1.1": 1.884949773297299e-09,
+    "Wprobe_mipeer6_PR-1e4_N40_kappa1.1": 1.491798576209686e-09,
+    "Wprobe_PPSW2-6_PR-1e4_N40_kappa1.2": 4.576238917268942e-09,
+    "Wprobe_mipeer6_PR-1e4_N40_kappa1.2": 3.439661573548321e-09,
+    "Wprobe_PPSW2-6_PR-1e4_N40_kappa1.5": 4.0582232976845696e-08,
+    "Wprobe_mipeer6_PR-1e4_N40_kappa1.5": 1.178031615118094e-08,
+    "wall_s": 25.39394783973694
+   }
+  },
+  "z6": {
+   "purpose": "PR lam=-1 refine to N=640",
+   "cmd": "python3 -I z6.py > z6.out 2> z6.err",
+   "exit": 0,
+   "script_sha256": "90ca2808c817c542cf3d8f713b3ea7504d42ac45aaf340d5c30f4c2fc43f2e2d",
+   "stdout_sha256": "f78ac190a3b5cc54faf366404b53be10dfecdd798d6d830d337fe70f7ac58273",
+   "stderr_sha256": "33d4d700dd5830a983c1ffad82b35050d9133b8cfc4418d55850a63fbdf51ab4",
+   "stderr_bytes": 683,
+   "script_text": "# PW03B common: PPSW-family coefficient construction (APNUM (3.2),(3.3); route 'tau-solve'), float64 + mpmath.\nimport numpy as np, mpmath as mp\nP26 = dict(c=[\"-1.702\",\"-0.51\",\"-0.195797762\",\"0.155193392\",\"0.755672784\",\"1\"],\n  g0=[\"0.214789562\",\"0.249182503\",\"0.237832565\",\"0.245204742\",\"0.353848357\"],\n  g1=[\"0.566334104\",\"0.496228487\",\"0.518584061\",\"0.498857638\",\"0.502412430\"])\ndef gam_ppsw2(c, g0, g1, sg):   # APNUM (3.8) for i<s, (3.6) for i=s ; works for numpy and mpmath\n    s=len(c); g=[g0[i]/(1+sg*g1[i]) for i in range(s-1)]\n    g.append(1/(sg*sum(1/(1+sg-cj) for cj in c))); return g\ndef coeffs_np(c, g, sg):\n    c=np.asarray(c,float); g=np.asarray(g,float); s=len(c); tau=(c-1)/sg\n    Wt=np.vander(tau,s,increasing=True).T            # Wt[k,j]=tau_j^k\n    Cp=np.array([c**k for k in range(s)])            # Cp[k,i]=c_i^k\n    ThT=np.linalg.solve(Wt,Cp); Th=ThT.T\n    A=g[:,None]*Th\n    Dm=np.zeros((s,s))\n    for k in range(1,s): Dm[k]=k*tau**(k-1)\n    R2=Cp-Dm@A.T\n    B=np.linalg.solve(Wt,R2).T\n    return B,A,-A,Th\ndef coeffs_mp(c, g, sg):\n    mp.mp.dps=mp.mp.dps; s=len(c); tau=[(cj-1)/sg for cj in c]\n    Wt=mp.matrix(s,s); Cp=mp.matrix(s,s); Dm=mp.zeros(s,s)\n    for k in range(s):\n        for j in range(s):\n            Wt[k,j]=tau[j]**k; Cp[k,j]=c[j]**k\n            if k>=1: Dm[k,j]=k*tau[j]**(k-1)\n    Wi=Wt**-1\n    Th=(Wi*Cp).T\n    A=mp.matrix(s,s)\n    for i in range(s):\n        for j in range(s): A[i,j]=g[i]*Th[i,j]\n    B=(Wi*(Cp-Dm*A.T)).T\n    return B,A\ndef quotient(B):\n    s=B.shape[0]; S=np.eye(s); S[:,0]=1.0\n    M=np.linalg.solve(S,B@S); return M[1:,1:], M[0,1:]\ndef alpha_deg(B,g,nphi=361,nr=300,rlo=-5,rhi=9):\n    rs=np.logspace(rlo,rhi,nr); g=np.asarray(g,float)\n    def f(p):\n        z=rs*np.exp(1j*(np.pi-np.radians(p)))\n        M=(1.0/(1.0-z[:,None]*g[None,:]))[:,:,None]*B[None,:,:]\n        return float(np.max(np.abs(np.linalg.eigvals(M))))\n    prev=0.0\n    for p in np.linspace(0,90,nphi):\n        if f(p)>=1-1e-12:\n            lo,hi=prev,p\n            for _ in range(40):\n                m=0.5*(lo+hi)\n                if f(m)>=1-1e-12: hi=m\n                else: lo=m\n            return lo\n        prev=p\n    return 90.0\n# PW03B-3: SYNTHETIC-PROBLEM global-order prototype for reconstructed PPSW2-6 (and BIT mipeer6 as comparator).\n# Method: APNUM (2.1)/(2.2): (I-gamma_i h_m T_m)Y_mi = sum_j (b_ij + h_m gamma_ij T_m) Y_{m-1,j} + h_m sum_j a_ij f(t_{m-1,j},Y_{m-1,j}),\n# coefficients from (3.2),(3.3),(3.6),(3.8) recomputed each step in mpmath (dps=40).  Starter: EXACT (or 1e-13 DOP853) solution at t_0+c_j h_0, c_1<0 => t_0=-c_1 h_0.\n# NOT qualification: synthetic problems, scalar/2D, exact starter, no controller.\nimport mpmath as mp, numpy as np, json, sys, time\nmp.mp.dps=40\nfrom scipy.integrate import solve_ivp\ndef M_(x): return mp.mpf(x)\nc26=[M_(x) for x in P26[\"c\"]]; g0_=[M_(x) for x in P26[\"g0\"]]; g1_=[M_(x) for x in P26[\"g1\"]]\ndef gam26(sg): return gam_ppsw2(c26,g0_,g1_,sg)\n# mipeer6 (BIT 2005): nodes (5.8), gamma_i=g0+g1 c_i, g1=1-1/sigma_sup, g0 from superconvergence (root #0 computed in z3: 0.27978618386094856)\ns6=6; cm=[mp.cos((2*s6+1-2*i)*mp.pi/(2*s6))/mp.cos(mp.pi/(2*s6)) for i in range(1,s6+1)]\nG1m=M_(\"0.24807360130594058\"); G0m=M_(\"0.27978618386094856\")\ndef gam_mip(sg): return [G0m+G1m*x for x in cm]\nMETHODS={\"PPSW2-6\":(c26,gam26),\"mipeer6_BITrecon\":(cm,gam_mip)}\ndef step_coeffs(c,gam,sg):\n    g=gam(sg); B,A=coeffs_mp(c,g,sg); return g,B,A\ndef run(meth,prob,N,mode,Tpert,starter_pert=None,seed=7,T=None):\n    c,gam=METHODS[meth]; s=len(c); n=prob[\"n\"]; T=T or prob[\"T\"]\n    rng=np.random.default_rng(seed+N)\n    r=[M_(1) for _ in range(N)] if mode==\"uniform\" else [M_(1)+M_(\"0.09\")*M_(float(rng.uniform(-1,1))) for _ in range(N)]\n    scale=T/(sum(r)+c[0]*r[0]); h=[scale*x for x in r]       # h_0..h_{N-1}; M=N-1 steps\n    t=[-c[0]*h[0]]\n    for m in range(N): t.append(t[-1]+h[m])                   # t_0..t_N ; t_N = T\n    Y=[prob[\"ex\"](t[0]+c[j]*h[0]) for j in range(s)]\n    if starter_pert: q,kap=starter_pert; Y=[Y[j]+mp.matrix([kap*h[0]**q*(1+j)]*n) for j in range(s)]\n    smax=0\n    for m in range(1,N):\n        sg=h[m]/h[m-1]; smax=max(smax,sg)\n        g,B,A=step_coeffs(c,gam,sg)\n        tp=[t[m-1]+c[j]*h[m-1] for j in range(s)]\n        F=[prob[\"f\"](tp[j],Y[j]) for j in range(s)]\n        T_=prob[\"J\"](tp[s-1],Y[s-1])*Tpert\n        I=mp.eye(n); Tn=[]\n        for i in range(s):\n            rhs=mp.zeros(n,1)\n            for j in range(s):\n                rhs+=B[i,j]*Y[j]-h[m]*A[i,j]*(T_*Y[j])+h[m]*A[i,j]*F[j]    # gamma_ij=-A_ij\n            Tn.append(mp.lu_solve(I-h[m]*g[i]*T_,rhs))\n        Y=Tn\n    tl=t[N-1]; hl=h[N-1]\n    errs=[mp.norm(Y[j]-prob[\"ex\"](tl+c[j]*hl),mp.inf) for j in range(s)]\n    return float(max(errs)), float(errs[-1]), float(smax), float(max(abs(x) for x in map(float,[Y[0][0]]))) \n# --- problems\nlam_cache={}\ndef PR(lam):\n    lam=M_(lam); g=lambda t: mp.cos(t)+mp.sin(2*t)/2; gp=lambda t:-mp.sin(t)+mp.cos(2*t)\n    return dict(n=1,T=M_(1),ex=lambda t: mp.matrix([g(t)]),f=lambda t,y: mp.matrix([lam*(y[0]-g(t))+gp(t)]),J=lambda t,y: mp.matrix([[lam]]))\nRIC=dict(n=1,T=M_(2),ex=lambda t: mp.matrix([1/(1+t)]),f=lambda t,y: mp.matrix([-y[0]**2]),J=lambda t,y: mp.matrix([[-2*y[0]]]))\n# Van der Pol mu=1 (reference DOP853 rtol 1e-13), J frozen from last stage\nmu=1.0\ndef vdp(t,y): return [y[1],mu*(1-y[0]**2)*y[1]-y[0]]\n_sol=solve_ivp(vdp,[0,2.0],[2.0,0.0],method=\"DOP853\",rtol=1e-13,atol=1e-15,dense_output=True)\nVDP=dict(n=2,T=M_(2),ex=lambda t: mp.matrix([float(v) for v in _sol.sol(float(t))]),\n  f=lambda t,y: mp.matrix([y[1],M_(mu)*(1-y[0]**2)*y[1]-y[0]]),\n  J=lambda t,y: mp.matrix([[0,1],[-2*M_(mu)*y[0]*y[1]-1,M_(mu)*(1-y[0]**2)]]))\ndef table(meth,prob,Ns,mode,Tpert,**kw):\n    rows=[]\n    for N in Ns:\n        e_all,e_end,smax,_=run(meth,prob,N,mode,Tpert,**kw); rows.append((N,e_all,e_end,smax))\n    out=[]\n    for k,(N,ea,ee,sm) in enumerate(rows):\n        po=None if k==0 else (np.log(rows[k-1][1]/ea)/np.log(N/rows[k-1][0]) if ea>0 and rows[k-1][1]>0 else None)\n        out.append(dict(N=N,err_maxstages_last_step=ea,err_endpoint_stage_s=ee,sigma_max_used=sm,order_vs_prev=None if po is None else round(po,3)))\n    return out\n\n\nif __name__==\"__main__\":\n    res={}; t0=time.time()\n    for meth in [\"PPSW2-6\",\"mipeer6_BITrecon\"]:\n        for mode in [\"uniform\",\"random\"]:\n            key=f\"{meth}|PR_lam-1_Texact|{mode}|refine\"; res[key]=table(meth,PR(-1),[40,80,160,320,640],mode,1.0)\n            print(key,[(r['N'],'%.2e'%r['err_maxstages_last_step'],r['order_vs_prev']) for r in res[key]],file=sys.stderr,flush=True)\n    res[\"wall_s\"]=time.time()-t0\n    print(json.dumps(res,indent=1))\n",
+   "stdout": {
+    "PPSW2-6|PR_lam-1_Texact|uniform|refine": [
+     {
+      "N": 40,
+      "err_maxstages_last_step": 1.3051189982237034e-08,
+      "err_endpoint_stage_s": 1.3051189982237034e-08,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 4.417992344001287e-10,
+      "err_endpoint_stage_s": 4.417992344001287e-10,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 4.885
+     },
+     {
+      "N": 160,
+      "err_maxstages_last_step": 1.4191970393803475e-11,
+      "err_endpoint_stage_s": 1.4191970393803475e-11,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 4.96
+     },
+     {
+      "N": 320,
+      "err_maxstages_last_step": 4.485015731709738e-13,
+      "err_endpoint_stage_s": 4.485015731709738e-13,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 4.984
+     },
+     {
+      "N": 640,
+      "err_maxstages_last_step": 1.4086239822251849e-14,
+      "err_endpoint_stage_s": 1.4086239822251849e-14,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 4.993
+     }
+    ],
+    "PPSW2-6|PR_lam-1_Texact|random|refine": [
+     {
+      "N": 40,
+      "err_maxstages_last_step": 1.3895758470922353e-08,
+      "err_endpoint_stage_s": 1.3895758470922353e-08,
+      "sigma_max_used": 1.1672959642189737,
+      "order_vs_prev": null
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 4.669215875219353e-10,
+      "err_endpoint_stage_s": 4.669215875219353e-10,
+      "sigma_max_used": 1.1653510259369673,
+      "order_vs_prev": 4.895
+     },
+     {
+      "N": 160,
+      "err_maxstages_last_step": 1.415026267798311e-11,
+      "err_endpoint_stage_s": 1.415026267798311e-11,
+      "sigma_max_used": 1.1882189584051037,
+      "order_vs_prev": 5.044
+     },
+     {
+      "N": 320,
+      "err_maxstages_last_step": 4.486740918257285e-13,
+      "err_endpoint_stage_s": 4.486740918257285e-13,
+      "sigma_max_used": 1.1860265302444832,
+      "order_vs_prev": 4.979
+     },
+     {
+      "N": 640,
+      "err_maxstages_last_step": 1.4387228232673523e-14,
+      "err_endpoint_stage_s": 1.4387228232673523e-14,
+      "sigma_max_used": 1.177417532358846,
+      "order_vs_prev": 4.963
+     }
+    ],
+    "mipeer6_BITrecon|PR_lam-1_Texact|uniform|refine": [
+     {
+      "N": 40,
+      "err_maxstages_last_step": 2.8814488010308915e-09,
+      "err_endpoint_stage_s": 2.8814488010308915e-09,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": null
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 4.257064735154811e-11,
+      "err_endpoint_stage_s": 4.257064735154811e-11,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.081
+     },
+     {
+      "N": 160,
+      "err_maxstages_last_step": 6.428618426155011e-13,
+      "err_endpoint_stage_s": 6.428618426155011e-13,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.049
+     },
+     {
+      "N": 320,
+      "err_maxstages_last_step": 9.859251137970451e-15,
+      "err_endpoint_stage_s": 9.859251137970451e-15,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.027
+     },
+     {
+      "N": 640,
+      "err_maxstages_last_step": 1.5256081176841341e-16,
+      "err_endpoint_stage_s": 1.5256081176841341e-16,
+      "sigma_max_used": 1.0,
+      "order_vs_prev": 6.014
+     }
+    ],
+    "mipeer6_BITrecon|PR_lam-1_Texact|random|refine": [
+     {
+      "N": 40,
+      "err_maxstages_last_step": 2.9669414195884824e-09,
+      "err_endpoint_stage_s": 2.9669414195884824e-09,
+      "sigma_max_used": 1.1672959642189737,
+      "order_vs_prev": null
+     },
+     {
+      "N": 80,
+      "err_maxstages_last_step": 5.042764015273078e-11,
+      "err_endpoint_stage_s": 5.042764015273078e-11,
+      "sigma_max_used": 1.1653510259369673,
+      "order_vs_prev": 5.879
+     },
+     {
+      "N": 160,
+      "err_maxstages_last_step": 9.38379497579562e-13,
+      "err_endpoint_stage_s": 9.38379497579562e-13,
+      "sigma_max_used": 1.1882189584051037,
+      "order_vs_prev": 5.748
+     },
+     {
+      "N": 320,
+      "err_maxstages_last_step": 1.951101723495054e-14,
+      "err_endpoint_stage_s": 1.951101723495054e-14,
+      "sigma_max_used": 1.1860265302444832,
+      "order_vs_prev": 5.588
+     },
+     {
+      "N": 640,
+      "err_maxstages_last_step": 4.226766495286286e-16,
+      "err_endpoint_stage_s": 4.226766495286286e-16,
+      "sigma_max_used": 1.177417532358846,
+      "order_vs_prev": 5.529
+     }
+    ],
+    "wall_s": 26.476449489593506
+   }
+  },
+  "z7": {
+   "purpose": "local error and estimator (3.7) scaling",
+   "cmd": "python3 -I z7.py > z7.out 2> z7.err",
+   "exit": 0,
+   "script_sha256": "cc776a7dc3d46e1ea481f698f3e71559ee484a2f21d0c8529971a933a7f3bcab",
+   "stdout_sha256": "1fe9c3fd785c16e650bd5fc66d0d60194646b7ab4551c7bcfebd4ce2dd769f91",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "stderr_bytes": 0,
+   "script_text": "# PW03B common: PPSW-family coefficient construction (APNUM (3.2),(3.3); route 'tau-solve'), float64 + mpmath.\nimport numpy as np, mpmath as mp\nP26 = dict(c=[\"-1.702\",\"-0.51\",\"-0.195797762\",\"0.155193392\",\"0.755672784\",\"1\"],\n  g0=[\"0.214789562\",\"0.249182503\",\"0.237832565\",\"0.245204742\",\"0.353848357\"],\n  g1=[\"0.566334104\",\"0.496228487\",\"0.518584061\",\"0.498857638\",\"0.502412430\"])\ndef gam_ppsw2(c, g0, g1, sg):   # APNUM (3.8) for i<s, (3.6) for i=s ; works for numpy and mpmath\n    s=len(c); g=[g0[i]/(1+sg*g1[i]) for i in range(s-1)]\n    g.append(1/(sg*sum(1/(1+sg-cj) for cj in c))); return g\ndef coeffs_np(c, g, sg):\n    c=np.asarray(c,float); g=np.asarray(g,float); s=len(c); tau=(c-1)/sg\n    Wt=np.vander(tau,s,increasing=True).T            # Wt[k,j]=tau_j^k\n    Cp=np.array([c**k for k in range(s)])            # Cp[k,i]=c_i^k\n    ThT=np.linalg.solve(Wt,Cp); Th=ThT.T\n    A=g[:,None]*Th\n    Dm=np.zeros((s,s))\n    for k in range(1,s): Dm[k]=k*tau**(k-1)\n    R2=Cp-Dm@A.T\n    B=np.linalg.solve(Wt,R2).T\n    return B,A,-A,Th\ndef coeffs_mp(c, g, sg):\n    mp.mp.dps=mp.mp.dps; s=len(c); tau=[(cj-1)/sg for cj in c]\n    Wt=mp.matrix(s,s); Cp=mp.matrix(s,s); Dm=mp.zeros(s,s)\n    for k in range(s):\n        for j in range(s):\n            Wt[k,j]=tau[j]**k; Cp[k,j]=c[j]**k\n            if k>=1: Dm[k,j]=k*tau[j]**(k-1)\n    Wi=Wt**-1\n    Th=(Wi*Cp).T\n    A=mp.matrix(s,s)\n    for i in range(s):\n        for j in range(s): A[i,j]=g[i]*Th[i,j]\n    B=(Wi*(Cp-Dm*A.T)).T\n    return B,A\ndef quotient(B):\n    s=B.shape[0]; S=np.eye(s); S[:,0]=1.0\n    M=np.linalg.solve(S,B@S); return M[1:,1:], M[0,1:]\ndef alpha_deg(B,g,nphi=361,nr=300,rlo=-5,rhi=9):\n    rs=np.logspace(rlo,rhi,nr); g=np.asarray(g,float)\n    def f(p):\n        z=rs*np.exp(1j*(np.pi-np.radians(p)))\n        M=(1.0/(1.0-z[:,None]*g[None,:]))[:,:,None]*B[None,:,:]\n        return float(np.max(np.abs(np.linalg.eigvals(M))))\n    prev=0.0\n    for p in np.linspace(0,90,nphi):\n        if f(p)>=1-1e-12:\n            lo,hi=prev,p\n            for _ in range(40):\n                m=0.5*(lo+hi)\n                if f(m)>=1-1e-12: hi=m\n                else: lo=m\n            return lo\n        prev=p\n    return 90.0\n# PW03B-3: SYNTHETIC-PROBLEM global-order prototype for reconstructed PPSW2-6 (and BIT mipeer6 as comparator).\n# Method: APNUM (2.1)/(2.2): (I-gamma_i h_m T_m)Y_mi = sum_j (b_ij + h_m gamma_ij T_m) Y_{m-1,j} + h_m sum_j a_ij f(t_{m-1,j},Y_{m-1,j}),\n# coefficients from (3.2),(3.3),(3.6),(3.8) recomputed each step in mpmath (dps=40).  Starter: EXACT (or 1e-13 DOP853) solution at t_0+c_j h_0, c_1<0 => t_0=-c_1 h_0.\n# NOT qualification: synthetic problems, scalar/2D, exact starter, no controller.\nimport mpmath as mp, numpy as np, json, sys, time\nmp.mp.dps=40\nfrom scipy.integrate import solve_ivp\ndef M_(x): return mp.mpf(x)\nc26=[M_(x) for x in P26[\"c\"]]; g0_=[M_(x) for x in P26[\"g0\"]]; g1_=[M_(x) for x in P26[\"g1\"]]\ndef gam26(sg): return gam_ppsw2(c26,g0_,g1_,sg)\n# mipeer6 (BIT 2005): nodes (5.8), gamma_i=g0+g1 c_i, g1=1-1/sigma_sup, g0 from superconvergence (root #0 computed in z3: 0.27978618386094856)\ns6=6; cm=[mp.cos((2*s6+1-2*i)*mp.pi/(2*s6))/mp.cos(mp.pi/(2*s6)) for i in range(1,s6+1)]\nG1m=M_(\"0.24807360130594058\"); G0m=M_(\"0.27978618386094856\")\ndef gam_mip(sg): return [G0m+G1m*x for x in cm]\nMETHODS={\"PPSW2-6\":(c26,gam26),\"mipeer6_BITrecon\":(cm,gam_mip)}\ndef step_coeffs(c,gam,sg):\n    g=gam(sg); B,A=coeffs_mp(c,g,sg); return g,B,A\ndef run(meth,prob,N,mode,Tpert,starter_pert=None,seed=7,T=None):\n    c,gam=METHODS[meth]; s=len(c); n=prob[\"n\"]; T=T or prob[\"T\"]\n    rng=np.random.default_rng(seed+N)\n    r=[M_(1) for _ in range(N)] if mode==\"uniform\" else [M_(1)+M_(\"0.09\")*M_(float(rng.uniform(-1,1))) for _ in range(N)]\n    scale=T/(sum(r)+c[0]*r[0]); h=[scale*x for x in r]       # h_0..h_{N-1}; M=N-1 steps\n    t=[-c[0]*h[0]]\n    for m in range(N): t.append(t[-1]+h[m])                   # t_0..t_N ; t_N = T\n    Y=[prob[\"ex\"](t[0]+c[j]*h[0]) for j in range(s)]\n    if starter_pert: q,kap=starter_pert; Y=[Y[j]+mp.matrix([kap*h[0]**q*(1+j)]*n) for j in range(s)]\n    smax=0\n    for m in range(1,N):\n        sg=h[m]/h[m-1]; smax=max(smax,sg)\n        g,B,A=step_coeffs(c,gam,sg)\n        tp=[t[m-1]+c[j]*h[m-1] for j in range(s)]\n        F=[prob[\"f\"](tp[j],Y[j]) for j in range(s)]\n        T_=prob[\"J\"](tp[s-1],Y[s-1])*Tpert\n        I=mp.eye(n); Tn=[]\n        for i in range(s):\n            rhs=mp.zeros(n,1)\n            for j in range(s):\n                rhs+=B[i,j]*Y[j]-h[m]*A[i,j]*(T_*Y[j])+h[m]*A[i,j]*F[j]    # gamma_ij=-A_ij\n            Tn.append(mp.lu_solve(I-h[m]*g[i]*T_,rhs))\n        Y=Tn\n    tl=t[N-1]; hl=h[N-1]\n    errs=[mp.norm(Y[j]-prob[\"ex\"](tl+c[j]*hl),mp.inf) for j in range(s)]\n    return float(max(errs)), float(errs[-1]), float(smax), float(max(abs(x) for x in map(float,[Y[0][0]]))) \n# --- problems\nlam_cache={}\ndef PR(lam):\n    lam=M_(lam); g=lambda t: mp.cos(t)+mp.sin(2*t)/2; gp=lambda t:-mp.sin(t)+mp.cos(2*t)\n    return dict(n=1,T=M_(1),ex=lambda t: mp.matrix([g(t)]),f=lambda t,y: mp.matrix([lam*(y[0]-g(t))+gp(t)]),J=lambda t,y: mp.matrix([[lam]]))\nRIC=dict(n=1,T=M_(2),ex=lambda t: mp.matrix([1/(1+t)]),f=lambda t,y: mp.matrix([-y[0]**2]),J=lambda t,y: mp.matrix([[-2*y[0]]]))\n# Van der Pol mu=1 (reference DOP853 rtol 1e-13), J frozen from last stage\nmu=1.0\ndef vdp(t,y): return [y[1],mu*(1-y[0]**2)*y[1]-y[0]]\n_sol=solve_ivp(vdp,[0,2.0],[2.0,0.0],method=\"DOP853\",rtol=1e-13,atol=1e-15,dense_output=True)\nVDP=dict(n=2,T=M_(2),ex=lambda t: mp.matrix([float(v) for v in _sol.sol(float(t))]),\n  f=lambda t,y: mp.matrix([y[1],M_(mu)*(1-y[0]**2)*y[1]-y[0]]),\n  J=lambda t,y: mp.matrix([[0,1],[-2*M_(mu)*y[0]*y[1]-1,M_(mu)*(1-y[0]**2)]]))\ndef table(meth,prob,Ns,mode,Tpert,**kw):\n    rows=[]\n    for N in Ns:\n        e_all,e_end,smax,_=run(meth,prob,N,mode,Tpert,**kw); rows.append((N,e_all,e_end,smax))\n    out=[]\n    for k,(N,ea,ee,sm) in enumerate(rows):\n        po=None if k==0 else (np.log(rows[k-1][1]/ea)/np.log(N/rows[k-1][0]) if ea>0 and rows[k-1][1]>0 else None)\n        out.append(dict(N=N,err_maxstages_last_step=ea,err_endpoint_stage_s=ee,sigma_max_used=sm,order_vs_prev=None if po is None else round(po,3)))\n    return out\n\n\nif __name__==\"__main__\":\n    # one-step LOCAL analysis with exact previous-step stage values (PPSW2-6, sigma=1): local error of Y_ms and estimator E=Y_ms-sum_j theta_sj Y_{m-1,j}  (APNUM (3.7))\n    c,gam=METHODS[\"PPSW2-6\"]; s=6; prob=RIC; out=[]\n    for sg in [1.0,1.2]:\n      rows=[]\n      for h in [M_(\"0.2\"),M_(\"0.1\"),M_(\"0.05\"),M_(\"0.025\"),M_(\"0.0125\")]:\n        hp=h/sg; t0=M_(\"1.0\")\n        g,B,A=step_coeffs(c,gam,sg)\n        Bq,Aq=B,A\n        tp=[t0+c[j]*hp for j in range(s)]; Yp=[prob[\"ex\"](x) for x in tp]; F=[prob[\"f\"](tp[j],Yp[j]) for j in range(s)]\n        Tm=prob[\"J\"](tp[s-1],Yp[s-1])\n        tn=[t0+hp+c[i]*h for i in range(s)]; Yn=[]\n        for i in range(s):\n            rhs=sum((B[i,j]*Yp[j]-h*A[i,j]*(Tm*Yp[j])+h*A[i,j]*F[j] for j in range(s)),mp.zeros(1,1))\n            Yn.append(mp.lu_solve(mp.eye(1)-h*g[i]*Tm,rhs))\n        # theta from coeffs: Theta=A_i/gamma_i\n        th=[A[s-1,j]/g[s-1] for j in range(s)]\n        E=Yn[s-1]-sum((th[j]*Yp[j] for j in range(s)),mp.zeros(1,1))\n        locerr=[abs(Yn[i][0]-prob[\"ex\"](tn[i])[0]) for i in range(s)]\n        rows.append(dict(h=float(h),loc_err_stage_s=float(locerr[s-1]),max_loc_err=float(max(locerr)),est_E=float(abs(E[0])),\n           est_over_loc=float(abs(E[0])/locerr[s-1])))\n      for k in range(1,len(rows)):\n        for key in (\"loc_err_stage_s\",\"max_loc_err\",\"est_E\"):\n            rows[k][\"ord_\"+key]=round(float(mp.log(rows[k-1][key]/rows[k][key])/mp.log(2)),3)\n      out.append(dict(sigma=sg,rows=rows))\n    print(json.dumps(out,indent=1))\n",
+   "stdout": [
+    {
+     "sigma": 1.0,
+     "rows": [
+      {
+       "h": 0.2,
+       "loc_err_stage_s": 2.468350821408707e-06,
+       "max_loc_err": 2.468350821408707e-06,
+       "est_E": 2.3506440838652036e-05,
+       "est_over_loc": 9.523136109654269
+      },
+      {
+       "h": 0.1,
+       "loc_err_stage_s": 1.9888138555154016e-08,
+       "max_loc_err": 1.9888138555154016e-08,
+       "est_E": 3.6301075440039867e-07,
+       "est_over_loc": 18.25262597571377,
+       "ord_loc_err_stage_s": 6.955,
+       "ord_max_loc_err": 6.955,
+       "ord_est_E": 6.017
+      },
+      {
+       "h": 0.05,
+       "loc_err_stage_s": 1.5945367173879927e-10,
+       "max_loc_err": 1.5945367173879927e-10,
+       "est_E": 5.6810267819243905e-09,
+       "est_over_loc": 35.62807127596578,
+       "ord_loc_err_stage_s": 6.963,
+       "ord_max_loc_err": 6.963,
+       "ord_est_E": 5.998
+      },
+      {
+       "h": 0.025,
+       "loc_err_stage_s": 1.2652699742561913e-12,
+       "max_loc_err": 1.2652699742561913e-12,
+       "est_E": 8.899674021734368e-11,
+       "est_over_loc": 70.33814286920213,
+       "ord_loc_err_stage_s": 6.978,
+       "ord_max_loc_err": 6.978,
+       "ord_est_E": 5.996
+      },
+      {
+       "h": 0.0125,
+       "loc_err_stage_s": 9.968668932765884e-15,
+       "max_loc_err": 1.3502754194479203e-14,
+       "est_E": 1.393001855289012e-12,
+       "est_over_loc": 139.7379995949482,
+       "ord_loc_err_stage_s": 6.988,
+       "ord_max_loc_err": 6.55,
+       "ord_est_E": 5.997
+      }
+     ]
+    },
+    {
+     "sigma": 1.2,
+     "rows": [
+      {
+       "h": 0.2,
+       "loc_err_stage_s": 1.479627779153755e-06,
+       "max_loc_err": 1.479627779153755e-06,
+       "est_E": 1.4955303290222077e-05,
+       "est_over_loc": 10.107476691722752
+      },
+      {
+       "h": 0.1,
+       "loc_err_stage_s": 1.2040470409436541e-08,
+       "max_loc_err": 1.2040470409436541e-08,
+       "est_E": 2.3266709770602913e-07,
+       "est_over_loc": 19.323754786497357,
+       "ord_loc_err_stage_s": 6.941,
+       "ord_max_loc_err": 6.941,
+       "ord_est_E": 6.006
+      },
+      {
+       "h": 0.05,
+       "loc_err_stage_s": 9.67541221171851e-11,
+       "max_loc_err": 9.67541221171851e-11,
+       "est_E": 3.646673386458823e-09,
+       "est_over_loc": 37.69010876913444,
+       "ord_loc_err_stage_s": 6.959,
+       "ord_max_loc_err": 6.959,
+       "ord_est_E": 5.996
+      },
+      {
+       "h": 0.025,
+       "loc_err_stage_s": 7.681259346330439e-13,
+       "max_loc_err": 1.2855708276283416e-12,
+       "est_E": 5.714093681694444e-11,
+       "est_over_loc": 74.39006319223206,
+       "ord_loc_err_stage_s": 6.977,
+       "ord_max_loc_err": 6.234,
+       "ord_est_E": 5.996
+      },
+      {
+       "h": 0.0125,
+       "loc_err_stage_s": 6.052359940251209e-15,
+       "max_loc_err": 1.9995560376799917e-14,
+       "est_E": 8.943791390359664e-13,
+       "est_over_loc": 147.7736201853924,
+       "ord_loc_err_stage_s": 6.988,
+       "ord_max_loc_err": 6.007,
+       "ord_est_E": 5.997
+      }
+     ]
+    }
+   ]
+  },
+  "pdf_text": "pdftotext -layout of the 3 owner PDFs into scratchpad ppsw26/{bit,apnum,sinum}.txt (exit 0)"
+ },
+ "survey": [
+  {
+   "cite": "Schmitt-Weiner SINUM 42 (2004) 265-282",
+   "order": "s-1 (s up to 8; 6b/6c order 5 local; order s const-step superconv)",
+   "parallel": "yes (singly implicit, shared matrix)",
+   "W": "yes",
+   "table": "c (Table 2) and gamma-hat (Table 1) printed; A/B structure per SINUM Thm 3.1 not reconstructed here (my A=gamma*Theta attempt invalid: alpha 0 vs printed)",
+   "access": "owner PDF"
+  },
+  {
+   "cite": "Schmitt-Weiner-Podhaisky BIT 45 (2005) 197-217 (mipeer s)",
+   "order": "s-1 (6 stages -> 5), superconv s const-step",
+   "parallel": "yes",
+   "W": "yes",
+   "table": "parameters printed for s=3,4,5 (Table 7.1); mipeer6 reproducible from (2.14),(2.17),(5.8),(4.7) but results omitted",
+   "access": "owner PDF"
+  },
+  {
+   "cite": "Podhaisky-Weiner-Schmitt APNUM 53 (2005) Rosenbrock-type peer",
+   "order": "s-1 (s=4..8)",
+   "parallel": "NO (sequential coupling)",
+   "W": "yes",
+   "table": "single gamma printed",
+   "access": "preprint (per PW03)"
+  },
+  {
+   "cite": "Lang-Schmitt arXiv:2608.26913 IP4o5",
+   "order": "5 (s=4)",
+   "parallel": "no (lower-triangular)",
+   "W": "unresolved",
+   "table": "yes App A.3",
+   "access": "arXiv (per PW03)"
+  },
+  {
+   "cite": "Beck-Weiner-Podhaisky-Schmitt J.Appl.Math.Comput. 38 (2012) 389-406",
+   "order": "abstract snippet: p=s multi-implicit, s<=5 (UNVERIFIED)",
+   "parallel": "yes (Krylov)",
+   "W": "yes",
+   "table": "unknown",
+   "access": "not read (only mirror seen; not used)"
+  },
+  {
+   "cite": "Kulikov-Weiner JCAM 236 (2011); Jebens-Knoth-Weiner APNUM 62 (2012); Gerisch et al APNUM 59 (2009); Klinge et al JCAM 387 (2021)",
+   "order": "unknown",
+   "parallel": "peer W; Klinge: AMF",
+   "W": "yes",
+   "table": "unknown",
+   "access": "paywalled/not read (Klinge dissertation behind bot check)"
+  },
+  {
+   "cite": "Zaragoza TASE-peer preprints",
+   "order": "2-4 (TASE-peer); RK-TASE up to 5",
+   "parallel": "stages independent (TASE)",
+   "W": "TASE not W",
+   "table": "unknown",
+   "access": "403 / snippet only"
+  },
+  {
+   "cite": "Schmitt peer page index (Marburg)",
+   "note": "lists no linearly implicit method with order>=5 stated; EPPEER order>=5 is explicit"
+  }
+ ],
+ "conclusion": "No other fully stage-parallel variable-step order>=5 linearly implicit/W peer with verified printed tableau found beyond PPSW2-6; mipeer6 (BIT) is a formula-reproducible sibling; Beck 2012 unverified."
+}

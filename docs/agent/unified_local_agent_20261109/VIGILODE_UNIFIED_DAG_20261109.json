@@ -378,8 +378,11 @@
         "No time-parallel march",
         "No accepted state mutation on rejection"
       ],
-      "receipt": "PW01_PW02_READINESS_AUDIT.json",
-      "result_note": "Readiness audit: exact order 3, A(alpha)=81.17deg, not L-stable; G1 verdict NOT_READY (controller constants, startup, derivative class, allowlist, 1.10x vs 1.20x ceiling UNRESOLVED). Owner decision OD-1: accepted-step ceiling <=1.10x."
+      "receipt": [
+        "PW01_PW02_READINESS_AUDIT.json",
+        "PW01_CONTROLLER_CONSTANTS_RECOVERY.json"
+      ],
+      "result_note": "Readiness audit: exact order 3, A(alpha)=81.17deg, not L-stable; G1 verdict NOT_READY (controller constants, startup, derivative class, allowlist, 1.10x vs 1.20x ceiling UNRESOLVED). Owner decision OD-1: accepted-step ceiling <=1.10x. Controller constants recovery (2026-11-11): the 3 supplied primary papers print none (only 'standard way/rules' and sigma_max); certificate values (0.85, [0.5,2], [0.95,1.05]) are SECONDARY_ONLY (Podhaisky 2002 thesis, access blocked); PTSW2C hysteresis UNRESOLVED/OWNER_CHOICE; hysteresis is a heuristic, not needed for order/stability."
     },
     {
       "id": "PW02_PTSW2B_LSTABLE_ORDER2_CONTROL",
@@ -450,9 +453,10 @@
       ],
       "receipt": [
         "PW03_PEERW_P5_LITERATURE_RECOVERY.json",
-        "PW03A_PPSW2_6_DERIVATION.json"
+        "PW03A_PPSW2_6_DERIVATION.json",
+        "PW03B_PPSW2_6_QUALIFICATION_EVIDENCE.json"
       ],
-      "result_note": "PPSW2-6 (s=6, local order exactly 5) matrices derived from printed c,gamma0,gamma1 (APNUM 2004 p.432), 3 independent routes agree ~1e-79, order residuals <=1e-77, B(1) strongly stable, alpha~81.6deg, stiffly accurate, same-step stage independence. NOT qualified for G0: global order 5 not measured, step-ratio domain narrow (alpha=32.7deg at sigma=1.2, 0 at 1.5; sigma_max=1.2 source figures unread), starting values for c<0 nodes UNRESOLVED, coefficient-precision policy is an owner decision; PPSW2-5 (APNUM gamma row) CONTRADICTS_SOURCE (zero-unstable). PW04/PW06 stay gated."
+      "result_note": "PPSW2-6 (s=6, local order exactly 5) matrices derived from printed c,gamma0,gamma1 (APNUM 2004 p.432), 3 independent routes agree ~1e-79, order residuals <=1e-77, B(1) strongly stable, alpha~81.6deg, stiffly accurate, same-step stage independence. NOT qualified for G0: global order 5 not measured, step-ratio domain narrow (alpha=32.7deg at sigma=1.2, 0 at 1.5; sigma_max=1.2 source figures unread), starting values for c<0 nodes UNRESOLVED, coefficient-precision policy is an owner decision; PPSW2-5 (APNUM gamma row) CONTRADICTS_SOURCE (zero-unstable). PW04/PW06 stay gated. PW03B (2026-11-11): CANDIDATE_FOR_PW04 (conditional), all 6 G0 gates NOT_RUN. Variable-step zero-stability: alternating h, r*h diverges for r>=1.19 (r=1.2: two-step rho^(1/2)=1.0105, mpmath 50 digits) => usable sigma_max <= ~1.15 (NUMERICALLY_CHECKED, not proven; no proven interval in literature). Starter for c<0 nodes not printed (ROWMAP/RODAS used in papers). Prototype on synthetic problems with exact starter: Prothero-Robinson lam=-1 observed order 4.89->4.99 (coordinator rerun of z6 reproduced all error values bitwise); starter error h^3 degrades to 3.4-3.9. T=0.6J diverges (W-tolerance is limited; may conflict with the 'fast lane zero explicit-J' target). No other fully parallel p>=5 Peer-W with printed tableau found; BIT 'mipeer6' is a formula-based reconstruction (order 6.01 in prototype; s=5 g0 inconsistent with table)."
     },
     {
       "id": "PW04_PEER_HISTORY_STARTUP_ERROR_AND_SESSION",
