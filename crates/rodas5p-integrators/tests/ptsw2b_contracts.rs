@@ -506,8 +506,8 @@ fn c2_implementation_stiff_limit_matrix_matches_exact_and_is_nilpotent() {
     let mut sq = [[0.0_f64; 3]; 3];
     for i in 0..3 {
         for j in 0..3 {
-            for k in 0..3 {
-                sq[i][j] += got[i][k] * got[k][j];
+            for (k, got_ik) in got[i].iter().enumerate() {
+                sq[i][j] += got_ik * got[k][j];
             }
         }
     }
@@ -539,27 +539,28 @@ fn jac2(_t: f64, y: &[f64]) -> [[f64; 2]; 2] {
     [[-3.0, 2.0 * y[1]], [0.5 * y[1], -2.0 + 0.5 * y[0]]]
 }
 
+type JacobianFn = Arc<dyn Fn(f64, &[f64]) -> CoreResult<DenseMatrix> + Send + Sync>;
+type JvpFn = Arc<dyn Fn(f64, &[f64], &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
+
 fn problem2(with_jacobian: bool) -> OdeProblem {
-    let jacobian: Option<Arc<dyn Fn(f64, &[f64]) -> CoreResult<DenseMatrix> + Send + Sync>> =
-        if with_jacobian {
-            Some(Arc::new(|t: f64, y: &[f64]| {
-                let j = jac2(t, y);
-                DenseMatrix::from_vec_rows(vec![j[0].to_vec(), j[1].to_vec()])
-            }))
-        } else {
-            None
-        };
-    let jvp: Option<Arc<dyn Fn(f64, &[f64], &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>> =
-        if with_jacobian {
-            None
-        } else {
-            Some(Arc::new(|t: f64, y: &[f64], v: &[f64], out: &mut [f64]| {
-                let j = jac2(t, y);
-                out[0] = j[0][0] * v[0] + j[0][1] * v[1];
-                out[1] = j[1][0] * v[0] + j[1][1] * v[1];
-                Ok(())
-            }))
-        };
+    let jacobian: Option<JacobianFn> = if with_jacobian {
+        Some(Arc::new(|t: f64, y: &[f64]| {
+            let j = jac2(t, y);
+            DenseMatrix::from_vec_rows(vec![j[0].to_vec(), j[1].to_vec()])
+        }))
+    } else {
+        None
+    };
+    let jvp: Option<JvpFn> = if with_jacobian {
+        None
+    } else {
+        Some(Arc::new(|t: f64, y: &[f64], v: &[f64], out: &mut [f64]| {
+            let j = jac2(t, y);
+            out[0] = j[0][0] * v[0] + j[0][1] * v[1];
+            out[1] = j[1][0] * v[0] + j[1][1] * v[1];
+            Ok(())
+        }))
+    };
     OdeProblem::new(
         "ptsw2b-contract-nonlinear-2d",
         2,
