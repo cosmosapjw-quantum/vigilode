@@ -380,9 +380,10 @@
       ],
       "receipt": [
         "PW01_PW02_READINESS_AUDIT.json",
-        "PW01_CONTROLLER_CONSTANTS_RECOVERY.json"
+        "PW01_CONTROLLER_CONSTANTS_RECOVERY.json",
+        "PW01_THESIS_PODHAISKY2002_RECOVERY.json"
       ],
-      "result_note": "Readiness audit: exact order 3, A(alpha)=81.17deg, not L-stable; G1 verdict NOT_READY (controller constants, startup, derivative class, allowlist, 1.10x vs 1.20x ceiling UNRESOLVED). Owner decision OD-1: accepted-step ceiling <=1.10x. Controller constants recovery (2026-11-11): the 3 supplied primary papers print none (only 'standard way/rules' and sigma_max); certificate values (0.85, [0.5,2], [0.95,1.05]) are SECONDARY_ONLY (Podhaisky 2002 thesis, access blocked); PTSW2C hysteresis UNRESOLVED/OWNER_CHOICE; hysteresis is a heuristic, not needed for order/stability."
+      "result_note": "Readiness audit: exact order 3, A(alpha)=81.17deg, not L-stable; G1 verdict NOT_READY (controller constants, startup, derivative class, allowlist, 1.10x vs 1.20x ceiling UNRESOLVED). Owner decision OD-1: accepted-step ceiling <=1.10x. Controller constants recovery (2026-11-11): the 3 supplied primary papers print none (only 'standard way/rules' and sigma_max); certificate values (0.85, [0.5,2], [0.95,1.05]) are SECONDARY_ONLY (Podhaisky 2002 thesis, access blocked); PTSW2C hysteresis UNRESOLVED/OWNER_CHOICE; hysteresis is a heuristic, not needed for order/stability. UPDATE 2026-11-11 (Podhaisky 2002 thesis, owner-supplied): controller constants are SOURCE_PRINTED_THESIS on thesis p.41-42 (PDF 45-46): sigma*=min{2,max{0.5,Err^(-1/s)*0.85}}, hysteresis band [0.95,1.05], growth-history rule over j=0..s-1, RMS norm, NaN halves h; one rule shared by all PTSW methods incl. PTSW2C => the earlier PTSW2C hysteresis blocker is CLOSED. PTSW2A/B/C map to repo methods (thesis p.17,28,35,36); tableaux agree with certificates (sympy); embedded order 1; Tabelle 4.1 prints a spurious 3rd PTSW2B node (typesetting error, p.17 gives c=(-0.4641016,1)). PW02 module constants match the thesis. Remaining PW01 blockers: own starter, derivative-class/allowlist approval for PW01, RED tests. Thesis lacks: variable-step stability proof, h0 rule, hmin/hmax, observed-order tables."
     },
     {
       "id": "PW02_PTSW2B_LSTABLE_ORDER2_CONTROL",
