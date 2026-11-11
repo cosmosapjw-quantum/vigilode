@@ -87,6 +87,7 @@ mod policy_redesign_v25;
 pub mod polynomial_resolvent;
 mod problem;
 mod problems;
+pub mod ptsw2b;
 mod radau;
 mod raw_stage_target;
 mod rhs_telemetry;

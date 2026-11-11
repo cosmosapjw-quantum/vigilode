@@ -3,10 +3,68 @@
   "date_kst": "2026-11-10",
   "source": "owner chat instruction (verbatim Korean summary below); recorded by agent, not self-authorized",
   "decisions": [
-    {"id": "OD-1", "topic": "accepted-step ceiling vs protected RODAS5P for PW01/PW02", "value": "<= 1.10x", "resolves": "PW01_PW02_READINESS_AUDIT D2 (1.10x vs 1.20x)", "note": "original G0 target in the handoff text remains 1.2 and is NOT changed; 1.10 is the PW-track preregistered research ceiling"},
-    {"id": "OD-2", "topic": "PW03 source recovery", "value": "option (a): derive PPSW2-6 B/A/G from the three supplied primary papers; papers live in the project root as PDFs, not committed", "files": ["Multi-Implicit Peer Two-Step W-Methods for Parallel Time Integration.pdf", "Parallel 'Peer' two-step W-methods and their application to MOL-systems _ Applied Numerical Mathematics, 2004.pdf", "Parallel Two-Step W-Methods with Peer Variables _ SIAM Journal on Numerical Analysis, 2004.pdf"]},
-    {"id": "OD-3", "topic": "PW02 RED tests", "value": "approved to write RED tests first; project-wide read access approved; all work inside the worktree", "limits": "no protected-path edits; implementation (GREEN) still needs its own allowlist approval"},
-    {"id": "OD-4", "topic": "priority", "value": "PW track first; T03/T04 deferred"}
+    {
+      "id": "OD-1",
+      "topic": "accepted-step ceiling vs protected RODAS5P for PW01/PW02",
+      "value": "<= 1.10x",
+      "resolves": "PW01_PW02_READINESS_AUDIT D2 (1.10x vs 1.20x)",
+      "note": "original G0 target in the handoff text remains 1.2 and is NOT changed; 1.10 is the PW-track preregistered research ceiling"
+    },
+    {
+      "id": "OD-2",
+      "topic": "PW03 source recovery",
+      "value": "option (a): derive PPSW2-6 B/A/G from the three supplied primary papers; papers live in the project root as PDFs, not committed",
+      "files": [
+        "Multi-Implicit Peer Two-Step W-Methods for Parallel Time Integration.pdf",
+        "Parallel 'Peer' two-step W-methods and their application to MOL-systems _ Applied Numerical Mathematics, 2004.pdf",
+        "Parallel Two-Step W-Methods with Peer Variables _ SIAM Journal on Numerical Analysis, 2004.pdf"
+      ]
+    },
+    {
+      "id": "OD-3",
+      "topic": "PW02 RED tests",
+      "value": "approved to write RED tests first; project-wide read access approved; all work inside the worktree",
+      "limits": "no protected-path edits; implementation (GREEN) still needs its own allowlist approval"
+    },
+    {
+      "id": "OD-4",
+      "topic": "priority",
+      "value": "PW track first; T03/T04 deferred"
+    },
+    {
+      "id": "OD-5",
+      "topic": "PW02 derivative class",
+      "value": "ExactJacobianOrJvpFrozenAtStepStart approved",
+      "date_kst": "2026-11-11"
+    },
+    {
+      "id": "OD-6",
+      "topic": "PW02 startup",
+      "value": "S5: self-contained starter inside the ptsw2b module",
+      "date_kst": "2026-11-11"
+    },
+    {
+      "id": "OD-7",
+      "topic": "PW02 reject semantics",
+      "value": "accepted counters unchanged, rejected +1, failed work charged, history/controller untouched",
+      "date_kst": "2026-11-11"
+    },
+    {
+      "id": "OD-8",
+      "topic": "coefficient precision policy",
+      "value": "both: exact algebraic Q(sqrt3) representation as source of truth AND high-precision runtime recomputation certified correctly-rounded",
+      "date_kst": "2026-11-11"
+    },
+    {
+      "id": "OD-9",
+      "topic": "PW02 GREEN allowed paths",
+      "value": "new crates/rodas5p-integrators/src/ptsw2b.rs and one added line `pub mod ptsw2b;` in lib.rs; new docs files",
+      "date_kst": "2026-11-11"
+    }
   ],
-  "not_decided": ["derivative-permission class for PW02", "startup starter", "PTSW2C controller hysteresis constants", "coefficient precision acceptable for production tableau"]
+  "not_decided": [
+    "PTSW2C controller hysteresis constants",
+    "startup/derivative policy for PW01",
+    "lint cleanup of tests/ptsw2b_contracts.rs"
+  ]
 }
