@@ -90,13 +90,38 @@
       "topic": "G0 fast lane vs W-tolerance",
       "value": "G0 targets (zero explicit J / Newton in fast lane) take priority; on problems fall back to the method's W-tolerance limit and state the fallback explicitly (label W-TOLERANCE-FALLBACK)",
       "date_kst": "2026-11-11"
+    },
+    {
+      "id": "OD-15",
+      "topic": "PW04 sigma_max rule for mipeer6",
+      "value": "approved: sigma_max <= 1.10 (agent-proposed own rule, NOT literature; A(alpha)~79deg there)",
+      "date_kst": "2026-11-12"
+    },
+    {
+      "id": "OD-16",
+      "topic": "PW04 common-W / loop-free search",
+      "value": "requested: search for a W-peer variant with common shift (loop-free, no inner stage iteration) and order>=5 BEFORE accepting 6 factorizations; report honestly if none exists",
+      "date_kst": "2026-11-12"
+    },
+    {
+      "id": "OD-17",
+      "topic": "PW04 factorizations per step",
+      "value": "conditional: 6 distinct shifted factorizations per step approved ONLY if OD-16 search finds no common-W alternative",
+      "date_kst": "2026-11-12"
+    },
+    {
+      "id": "OD-18",
+      "topic": "apply decisions",
+      "value": "approved to apply OD-15..17 to the PW04 plan; PW04 code/RED tests still need derivative-class and allowlist approval",
+      "date_kst": "2026-11-12"
     }
   ],
   "not_decided": [
     "PPSW2-6 usable sigma_max (<=~1.15 suggested by numerics) and starter choice for PW04",
     "PW01 (PTSW2C): derivative class, starter, allowlist for RED/GREEN steps",
-    "PW04: sigma_max rule for mipeer6 (proposed <=1.10, own rule) and own-starter design",
     "PW04: define 'critical depth' (do Krylov iterations count?) before G0 comparison",
-    "PW04: accept 6 distinct shifted factorizations per step (no common W) for mipeer6/PPSW2-6"
+    "PW04: critical-depth definition (do Krylov iterations count?)",
+    "PW04: derivative class and file allowlist for mipeer6 RED/GREEN",
+    "PW04: starter for mipeer6 (own starter per OD-6 pattern?)"
   ]
 }
