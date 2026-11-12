@@ -138,6 +138,36 @@
       "topic": "derivative class and allowlist for PPSW1-6b/c",
       "value": "allowed: ExactJacobianOrJvpFrozenAtStepStart and 'new module file + one lib.rs line' pattern (same as OD-9); no other protected path",
       "date_kst": "2026-11-12"
+    },
+    {
+      "id": "OD-23",
+      "topic": "PPSW1-6b starter",
+      "value": "approved design A: t0=t_init+h0 (nodes forward in time), forward 5-stage Radau IIA one step, frozen-T simple Newton, collocation dense output; Newton ONLY in the starter, per-step fast lane stays linear (1 LU + 6 solves)",
+      "date_kst": "2026-11-13"
+    },
+    {
+      "id": "OD-24",
+      "topic": "h0 selection rule",
+      "value": "approved: h0 must resolve the initial transient, h0*|lambda_max| <~ 1 with a documented estimate from the frozen J; user-supplied h0 allowed",
+      "date_kst": "2026-11-13"
+    },
+    {
+      "id": "OD-25",
+      "topic": "PPSW1-6b estimator",
+      "value": "approved: Est = Y_ms - sum w_j(sigma) Y_{m-1,j} (degree-4 predictor, exact Lagrange weights), control exponent 1/5, sigma_max<=1.10, rounding-floor diagnostic",
+      "date_kst": "2026-11-13"
+    },
+    {
+      "id": "OD-26",
+      "topic": "PPSW1-6b controller",
+      "value": "approved as OWNER_CHOICE: thesis PTSW controller with exponent 1/5 (0.85 safety, clip [0.5,sigma_cap], hysteresis [0.95,1.05], growth-history rule); not literature-certified for PPSW1",
+      "date_kst": "2026-11-13"
+    },
+    {
+      "id": "OD-27",
+      "topic": "external audit",
+      "value": "approved: implement PPSW1-6b GREEN, organize all work into an audit package and push to origin branch research/unified-t02-20261110",
+      "date_kst": "2026-11-13"
     }
   ],
   "not_decided": [
@@ -148,10 +178,6 @@
     "PW04: starter for mipeer6 (own starter per OD-6 pattern?)",
     "PW04: sigma_max: owner rule 1.10 applies; paper experiments used 1.5",
     "PPSW1-6b/c: final choice after verification (OD-20)",
-    "PPSW1-6b/c: critical-depth definition still open",
-    "PPSW1-6b starter: adopt design A (shifted start t0=t_init+h0, forward 5-stage Radau IIA, frozen-T simple Newton) given the Newton-in-starter vs G0 fast-lane question",
-    "PPSW1-6b h0 selection rule (must resolve initial transient, h0|lambda|<~1)",
-    "PPSW1-6b estimator: adopt degree-4 predictor Est = Y_ms - sum w_j(sigma) Y_{m-1,j}, control exponent 1/5, sigma_max<=1.10",
-    "PPSW1-6b controller: thesis PTSW controller (exponent 1/5, hysteresis [0.95,1.05]) as OWNER_CHOICE"
+    "PPSW1-6b/c: critical-depth definition still open"
   ]
 }
