@@ -1,0 +1,110 @@
+{
+ "status": "GREEN contract tests 37/37",
+ "files": {
+  "src/ppsw1.rs_sha256": "f2650c79ae86ec4bde476b94fd6372e472cccf0404ad2bf9b5a1c17aa8354a25d",
+  "tests/ppsw1_6b_contracts.rs_sha256": "a4e2f05350d0aac95ebb06650dd082ac96343183481fcbebcc98337ba0bd83a7",
+  "src/lib.rs_sha256": "1764584c0e8afa7d169a455779eeb0d5447ac8dacd9c036c0efbded99d03827f",
+  "lib.rs_blob_sha1_now": "6bb0975eb926f74de889705e895ba50e2d50d076",
+  "lib.rs_blob_sha1_minus_line": "dc734d29ec48470db4a5d25308db43cb9c53d04e"
+ },
+ "commands": [
+  {
+   "cmd": "cargo test --locked --release -p rodas5p-integrators --test ppsw1_6b_contracts",
+   "exit": 0,
+   "result": "37 passed",
+   "stdout_sha256_16": "4c0fb9bf59a81f6a",
+   "stderr_sha256_16": "a5ca896ffff571f7"
+  },
+  {
+   "cmd": "--test ptsw2b_contracts",
+   "exit": 0,
+   "result": "24 passed",
+   "stdout_sha256_16": "f266e8b37c5cbf10",
+   "stderr_sha256_16": "acd5238c0f0436ab"
+  },
+  {
+   "cmd": "--test unified_candidate_contracts",
+   "exit": 0,
+   "result": "13 passed",
+   "stdout_sha256_16": "09d1f577dd6302c1",
+   "stderr_sha256_16": "792792d2f8204b57"
+  },
+  {
+   "cmd": "--lib ppsw1",
+   "exit": 0,
+   "result": "4 passed",
+   "stdout_sha256_16": "fa5a4acf9a70950a",
+   "stderr_sha256_16": "8127045b0efc1eb6"
+  },
+  {
+   "cmd": "cargo fmt -p rodas5p-integrators -- --check",
+   "exit": 0
+  },
+  {
+   "cmd": "cargo clippy --locked -p rodas5p-integrators --all-targets --release --no-deps",
+   "exit": 0,
+   "ppsw1_diagnostics": 0,
+   "preexisting": "source_owned_graph_schur.rs 9"
+  }
+ ],
+ "new_tests": [
+  "h1_estimator_weights_are_exact_lagrange_weights",
+  "h2_estimator_is_zero_on_degree4_polynomials_and_nonzero_on_degree5",
+  "h3_error_norm_and_accept_rule",
+  "h4_controller_formula_hysteresis_and_nan",
+  "h5_h0_rule_and_refusals",
+  "h6_starter_node_values_are_o_h0_to_the_5th_on_a_stiff_problem",
+  "h7_starter_uses_forward_time_only_and_newton_only_in_the_starter",
+  "h8_try_step_rejects_on_estimator_and_commits_on_acceptance",
+  "i1_end_to_end_prothero_robinson_with_real_starter_and_controller",
+  "i2_end_to_end_stiff_linear_system_with_real_starter_and_controller"
+ ],
+ "test_changes": "placeholder #[ignore] test removed; Mutex import added; existing assertions unchanged",
+ "e2e_synthetic_not_qualification": {
+  "PR_lambda_-1_cos10t": {
+   "tols": [
+    0.01,
+    0.001,
+    0.0001,
+    1e-05,
+    1e-06
+   ],
+   "errors": [
+    0.0017733,
+    0.00055626,
+    3.0968e-05,
+    3.2726e-06,
+    2.2343e-07
+   ],
+   "accepted": [
+    61,
+    65,
+    79,
+    116,
+    188
+   ],
+   "fit_order_vs_steps": 7.65
+  },
+  "STIFF3": {
+   "errors": [
+    5.5588e-05,
+    5.5588e-05,
+    5.5588e-05,
+    1.023e-05,
+    1.0982e-06,
+    5.076e-08
+   ],
+   "note": "step counts cap-limited; fitted order not meaningful"
+  }
+ },
+ "owner_choice": "controller and estimator are OWNER_CHOICE, not literature-certified for PPSW1",
+ "unresolved_not_run": [
+  "strong-stiff global order",
+  "W tolerance window 0.8-1.0",
+  "last-step clipping stability",
+  "t_end<2h0, events, matrix-free, mass matrix",
+  "vigilode routing",
+  "full --lib",
+  "independent review"
+ ]
+}

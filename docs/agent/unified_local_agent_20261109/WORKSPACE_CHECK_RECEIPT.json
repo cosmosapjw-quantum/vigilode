@@ -1,0 +1,23 @@
+{
+  "schema_version": "vigilode.execution-receipt.v1",
+  "task": "WORKSPACE_CHECK",
+  "date_kst": "2026-11-13",
+  "base_head": "1e99b1d6620bd0056759b82fe65b43122bf71b1b",
+  "note": "HEAD is the last commit BEFORE the PPSW1-6b GREEN commit; the checked working tree includes the uncommitted ppsw1.rs/test/lib.rs that the next commit adds",
+  "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "commands": [
+    {
+      "command": "CARGO_TARGET_DIR=/mnt/extdrive/vigilode-t02-20261110/target-check cargo check --workspace --all-targets --locked",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "29815ace3d80250c7cf5d624e1f2aea73da17a56f4fa8b89b5bb01ef9dae3ce5",
+      "result": "Finished `dev` profile in 1m 40s; 0 errors"
+    }
+  ],
+  "not_run": [
+    "cargo test --workspace --all-targets --locked (vigilode suite ~10-20 min): NOT_RUN",
+    "cargo clippy --workspace -D warnings: fails on pre-existing source_owned_graph_schur.rs (8 errors, protected blob 5d2c4319...); not attempted workspace-wide",
+    "cargo fmt --all -- --check: only the rodas5p-integrators crate was checked (PASS)"
+  ]
+}
