@@ -1,0 +1,217 @@
+{
+ "title": "PW04 PPSW1-6b RED test",
+ "status": "RED_CONFIRMED; ORACLE_GREEN 27 passed 0 failed 1 ignored",
+ "test_file": "crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs",
+ "test_file_sha256": "291a9247ec801f13cdf5c6f81741085948a05b05ecdb140361dc0b55e6927ba6",
+ "allowlist_for_green": [
+  "crates/rodas5p-integrators/src/ppsw1.rs (new)",
+  "crates/rodas5p-integrators/src/lib.rs (one line: pub mod ppsw1;)"
+ ],
+ "api": {
+  "constants": [
+   "METHOD_ID",
+   "STAGES=6",
+   "FORMAL_ORDER=5",
+   "ACCEPTED_STEP_SIGMA_MAX=1.10",
+   "PAPER_STEP_RATIO_BOUND=1.5"
+  ],
+  "functions": [
+   "gamma",
+   "nodes",
+   "tableau(sigma)->CoreResult<Tableau>",
+   "identity",
+   "stage_inputs(&State,h)->CoreResult<[StageInput;6]>",
+   "solve_stages(&problem,&State,h,&inputs,&exec,&mut counters)->CoreResult<StageSolve>",
+   "advance(&problem,&State,h,&exec,&mut counters)->CoreResult<StepOutput>"
+  ],
+  "types": [
+   "Tableau{gamma,nodes,b_matrix,a_matrix,gamma_matrix,beta}",
+   "State{t,y[6],f[6],h_prev}",
+   "StageInput{t,explicit,transfer}",
+   "StageSolve{y[6]}",
+   "StepOutput{next}",
+   "Config{step_ratio_cap}",
+   "ControllerState{accepted_ratios}",
+   "Attempt{next_state()}",
+   "Session{new,state,controller,counters,attempt,accept,reject}",
+   "Identity",
+   "DerivativeClass::ExactJacobianOrJvpFrozenAtStepStart"
+  ],
+  "sigma_over_cap_policy": "typed CoreError::InvalidInput, no clamp, no work charged, state unchanged; exactly 1.10 allowed",
+  "charges": "solve_stages: jacobian_builds+1 (or jvp_calls+n), direct_factorizations+1, linear_solves+6, direct_solve_calls+6, rhs_calls+0; advance adds rhs_calls+6"
+ },
+ "tests": [
+  {
+   "name": "a1_method_identity_is_distinct_and_opt_in",
+   "encodes": "identity distinct, opt-in, s=6, order 5",
+   "evidence": "owner;PW04 sec2"
+  },
+  {
+   "name": "a2_derivative_class_is_exact_jacobian_or_jvp_frozen_at_step_start",
+   "encodes": "derivative class constant",
+   "evidence": "owner"
+  },
+  {
+   "name": "a3_accepted_step_sigma_cap_is_1_10_and_the_paper_1_5_is_recorded_separately",
+   "encodes": "cap 1.10 vs paper 1.5 separate",
+   "evidence": "owner rule"
+  },
+  {
+   "name": "b1_exact_oracle_reproduces_the_pw04_structure",
+   "encodes": "exact rational: B1=1, Gamma/AB k=0..5 vanish (both gamma parts), k=6 not, beta^6=0, beta^5!=0",
+   "evidence": "PW04 sec1-2"
+  },
+  {
+   "name": "b2_gamma_is_the_root_of_the_printed_degree6_polynomial_to_60_digits",
+   "encodes": "gamma root of Table 1 s=6 polynomial, exact bigint bracket at 60 digits",
+   "evidence": "PW04 sec1"
+  },
+  {
+   "name": "b3_module_tableau_matches_the_high_precision_oracle_within_1e_13",
+   "encodes": "tableau(sigma) vs double-double oracle, sigma 0.5/0.8/1/1.05/1.1",
+   "evidence": "PW04 sec1"
+  },
+  {
+   "name": "b4_oracle_and_module_match_the_printed_pw04_sigma1_matrices",
+   "encodes": "B,A sigma=1 vs PW04 JSON 24-digit values",
+   "evidence": "PW04 json"
+  },
+  {
+   "name": "b5_tableau_is_total_on_positive_finite_sigma_and_typed_error_otherwise",
+   "encodes": "tableau domain",
+   "evidence": "API choice"
+  },
+  {
+   "name": "c1_order5_conditions_vanish_for_module_coefficients_at_variable_step",
+   "encodes": "AB(6)/Gamma(6) k=0..5 scaled residual<=1e-12",
+   "evidence": "PW04 sec2"
+  },
+  {
+   "name": "c2_order6_residual_is_nonzero_so_variable_step_order_is_exactly_5",
+   "encodes": "AB k=6 residual >1",
+   "evidence": "PW04 sec2"
+  },
+  {
+   "name": "c3_one_step_error_with_exact_stage_data_scales_like_h6",
+   "encodes": "local error exponent 5.5-6.6",
+   "evidence": "exact order 5"
+  },
+  {
+   "name": "d1_stage_inputs_use_only_previous_step_data_and_oracle_formulas",
+   "encodes": "stage inputs formulas",
+   "evidence": "stage form"
+  },
+  {
+   "name": "d2_perturbing_one_current_stage_input_changes_no_other_current_stage_output",
+   "encodes": "same-step stage independence (bitwise)",
+   "evidence": "stage independence"
+  },
+  {
+   "name": "d3_six_stages_share_one_factorization_and_satisfy_the_stage_equations",
+   "encodes": "1 factorization, 6 solves, stage equation residual",
+   "evidence": "PW04 sec5"
+  },
+  {
+   "name": "d4_advance_charges_one_factorization_six_solves_and_six_rhs_calls",
+   "encodes": "advance charges 1/6/6",
+   "evidence": "PW04 sec5"
+  },
+  {
+   "name": "d5_serial_and_two_thread_stage_solves_are_bitwise_identical",
+   "encodes": "serial==rayon(2) bitwise",
+   "evidence": "PW02 d4"
+  },
+  {
+   "name": "d6_jvp_only_problem_reproduces_explicit_jacobian_stage_solution",
+   "encodes": "JVP-only == explicit Jacobian",
+   "evidence": "PW02 d5"
+  },
+  {
+   "name": "e1_rejected_attempt_leaves_history_and_controller_untouched_but_charges_work",
+   "encodes": "reject semantics",
+   "evidence": "PW02 approved"
+  },
+  {
+   "name": "e2_accepted_attempt_commits_exactly_the_certified_update",
+   "encodes": "accept commits independent update",
+   "evidence": "lifecycle"
+  },
+  {
+   "name": "e3_stale_attempt_is_refused_without_side_effects",
+   "encodes": "stale attempt typed error",
+   "evidence": "API choice"
+  },
+  {
+   "name": "e4_ratio_above_the_1_10_cap_is_a_typed_error_with_no_side_effects",
+   "encodes": "sigma>1.10 InvalidInput, no work, no mutation; Config cap<=1.10",
+   "evidence": "owner rule"
+  },
+  {
+   "name": "f1_beta_is_nilpotent_so_the_stiff_limit_has_spectral_radius_zero",
+   "encodes": "beta^6=0, beta^5!=0 (module)",
+   "evidence": "thm 3.1"
+  },
+  {
+   "name": "f2_stiff_limit_of_the_stability_matrix_is_minus_beta_over_gamma_with_rho_zero",
+   "encodes": "M(inf)=-beta/gamma nilpotent",
+   "evidence": "PW04 sec3"
+  },
+  {
+   "name": "f3_l_alpha_angle_is_57_54_degrees_within_0_05",
+   "encodes": "L(alpha) scan 57.54+-0.05",
+   "evidence": "PW04 sec3"
+  },
+  {
+   "name": "g1_default_candidate_catalog_is_unchanged_and_peerw_stays_deferred",
+   "encodes": "catalog unchanged",
+   "evidence": "PW02 h1"
+  },
+  {
+   "name": "g2_nothing_is_labelled_derivative_free",
+   "encodes": "no derivative-free label",
+   "evidence": "owner"
+  },
+  {
+   "name": "g3_protected_sources_are_byte_identical",
+   "encodes": "14 sha256 + lib.rs minus one line",
+   "evidence": "owner allowlist"
+  },
+  {
+   "name": "unresolved_items_are_listed_not_tested",
+   "encodes": "#[ignore] placeholder",
+   "evidence": "PW04 unresolved"
+  }
+ ],
+ "red_receipt": {
+  "cmd": "CARGO_TARGET_DIR=/mnt/extdrive/vigilode-t02-20261110/target cargo test --locked --release -p rodas5p-integrators --test ppsw1_6b_contracts",
+  "exit": 101,
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "5fb246dd85de5e96b8fcc5a490927ef1217c87a418adc2445933ba8641a0538b",
+  "only_error": "E0432 unresolved imports rodas5p_integrators::ppsw1",
+  "verdict": "PASS-as-RED",
+  "rustfmt_check_exit": 0,
+  "note": "earlier RED runs also showed 2x E0282 (test inference bugs downstream of the unresolved import); fixed by type annotations only"
+ },
+ "oracle_green": {
+  "where": "scratch copy outside worktree (oracle6b), throwaway src/ppsw1.rs + pub mod ppsw1; only in the copy, not delivered",
+  "exit": 0,
+  "result": "27 passed; 0 failed; 1 ignored",
+  "test_fixes": [
+   "d1 used sigma=1.25 > cap -> sigma 1.05",
+   "f1 beta^5 floor scaled by sigma^10",
+   "b1 Rat add/mul use lcm/cross-cancel to avoid i128 overflow"
+  ],
+  "assertion_weakening": "none",
+  "clippy_no_D": "0 diagnostics for tests/ppsw1_6b_contracts.rs (oracle copy only; worktree is RED); --all-targets not usable in scratch (missing research fixtures for unrelated tests)"
+ },
+ "unresolved": [
+  "starter (own, needs stages before t0; paper gives none)",
+  "error estimator and accept/reject rule, variable-step controller",
+  "strong-stiff global order (PR -1000, LIN3 NOT_CONCLUSIVE)",
+  "W-tolerance window 0.8-1.0 NOT_RUN",
+  "Vandermonde convention (printed c_j^(i-1) inconsistent with B*1=1; node-row used)",
+  "output stage Y^s (c_s=1) assumed",
+  "t_end<t1, events, matrix-free, mass matrix, real-problem benchmarks, vigilode routing NOT_RUN"
+ ],
+ "incident": "one read-only git status was run by mistake (no output, no change)"
+}
