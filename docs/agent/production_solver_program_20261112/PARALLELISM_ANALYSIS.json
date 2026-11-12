@@ -1,0 +1,74 @@
+{
+  "schema": "vigilode.parallelism-analysis.v1",
+  "status": "DERIVED_SCOPED; NOT_RUNTIME_BENCHMARKED",
+  "source_lock": {
+    "coefficient_snapshot_blob": "bc55da4d43549ffbcee3cb25e31be05658507742",
+    "coefficient_transform_blob": "c309a3b9d902f8a3865fbedaaf7fad45e5448ea5",
+    "sequential_integrator_blob": "4153e286a2ac756252978d5d77cf1abe0e6a4e0c"
+  },
+  "rodas5p_original_8_stage": {
+    "equations": "Gamma=(I/gamma-C)^(-1); alpha=A*Gamma; beta=alpha+Gamma. The actual stage RHS uses prior stage outputs and prior stage derivative data.",
+    "stages": 8,
+    "nonzero_strict_lower_predecessors_per_stage": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "dependency_edges": 28,
+    "critical_depth": 8,
+    "maximum_antichain_width": 1,
+    "conclusion": "For the represented generic nonlinear 8-stage tableau, same-step exact stage-task parallelism is unavailable without changing the method. Every stage i>1 depends on all earlier stages.",
+    "caveat": "Exact rational arithmetic replayed the decimal strings represented in the pinned coefficient snapshot. The temporary replay fixture was reconstructed from GitHub readback and is not claimed byte-identical to the pinned Git blob. This does not certify Rust runtime performance."
+  },
+  "peer_w": {
+    "method_id": "ppsw1-6b-schmitt-weiner-singly-implicit-peer-w",
+    "stages": 6,
+    "global_order_claim": "variable-step order 5 by method conditions; implementation qualification remains incomplete",
+    "same_step_stage_graph": "six independent shifted linear systems sharing one W factorization",
+    "time_history": "two-step method; sequential dependency between time steps remains",
+    "current_implementation": "dense Jacobian + dense W + one LU + six RHS solves; ParallelExecution.map_ordered on solves",
+    "current_serial_sections": "stage RHS construction and six new-stage RHS evaluations in advance are serial in current implementation",
+    "derivative_status": "uses dense_jacobian; not matrix-free and not derivative-free",
+    "newton_status": "no Newton iteration in the per-step Peer linear solve, but Radau IIA/Newton is used in startup; do not call the complete solver Newton-free",
+    "open_issues": [
+      "full stiff global order",
+      "W-tolerance window 0.8-1.0",
+      "independent estimator/controller qualification",
+      "starter robustness and h0 transient resolution",
+      "last-step clipping",
+      "events/restarts",
+      "mass matrix",
+      "matrix-free block Krylov",
+      "frontend integration",
+      "matched-achieved-error full-IVP benchmark"
+    ]
+  },
+  "affine_scan": {
+    "composition": "(A2,b2) o (A1,b1) = (A2*A1, A2*b1+b2)",
+    "n8_kogge_stone": "17 joins, depth 3",
+    "n8_blelloch": "14 joins, up/down levels",
+    "serial_recurrence": "7 joins, depth 7",
+    "interpretation": "Lower span costs extra composition work and communication. Dense matrix composition can be more expensive than the serial recurrence; report actual work and wall time.",
+    "applicability": "Only when the stage/update recurrence is genuinely affine or has a validated finite-dimensional associative summary."
+  },
+  "prohibitions": [
+    "Do not call a predictor/corrector or stale-stage approximation 'exact parallel RODAS5P'.",
+    "Do not infer independence from common-W factorization; common factorization reuses setup but does not make RHS dependencies independent.",
+    "Do not count spatial-domain parallelism or IVP ensemble parallelism as temporal stage parallelism.",
+    "Do not present a work-depth improvement as a runtime speedup without measuring task scheduling, reductions, memory and communication."
+  ],
+  "viable_axes": [
+    "RHS vectorization across state components",
+    "JVP/operator application and block reductions",
+    "preconditioner setup/application",
+    "batched independent IVPs",
+    "spatial mesh/spectral coefficient parallelism",
+    "stage-parallel Peer-W methods",
+    "parallel-in-time methods, explicitly treated as different algorithms"
+  ]
+}

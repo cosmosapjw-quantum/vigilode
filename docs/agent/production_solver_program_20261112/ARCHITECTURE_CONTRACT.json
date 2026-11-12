@@ -1,0 +1,138 @@
+{
+  "schema": "vigilode.production-architecture.v1",
+  "principle": "One user-facing API; multiple mathematically distinct kernels; one transactional lifecycle; one capability registry; one complete work/error authority.",
+  "non_goal": "Do not merge DOPRI5, RODAS5P, Peer-W, BDF, Radau, exponential and geometry-specific methods into one tableau or pretend they share history/controller/stability.",
+  "frontend": {
+    "public_types": [
+      "Problem",
+      "SolverConfig",
+      "Solver",
+      "SolverSession",
+      "StepAttempt",
+      "StepDecision",
+      "SolutionOutput",
+      "IntegratorWorkReport",
+      "MethodDescriptor"
+    ],
+    "preserve_existing_vec_f64_api": true,
+    "add_backend_vector_contract_incrementally": true,
+    "selection": "Explicit method selection first. Auto-selection opt-in only among implemented and qualified methods whose capability predicates and permission constraints match.",
+    "no_unverified_auto_switch": true
+  },
+  "model_contract": {
+    "required": [
+      "rhs(t,y)",
+      "state_shape",
+      "time_span",
+      "initial_state",
+      "source_identity",
+      "error_norm_or_metric"
+    ],
+    "optional": [
+      "jacobian",
+      "jvp_or_linear_operator",
+      "mass_matrix",
+      "sparsity",
+      "preconditioner",
+      "events",
+      "dense_output",
+      "discontinuities",
+      "geometry_backend",
+      "domain_boundary_conditions",
+      "conservation_invariants",
+      "thread_safety"
+    ]
+  },
+  "method_descriptor_required": [
+    "method_id_version",
+    "tableau_hash",
+    "family",
+    "global_order",
+    "stage_order",
+    "step_ratio_domain",
+    "stability_region",
+    "stage_dependency_graph",
+    "history_depth",
+    "startup_contract",
+    "estimator_contract",
+    "controller_contract",
+    "derivative_permission",
+    "linear_solver_requirements",
+    "nonlinear_solver_requirements",
+    "mass_matrix_support",
+    "dense_output_support",
+    "event_restart_support",
+    "reproducibility",
+    "work_cost_model",
+    "qualification_receipt_ids"
+  ],
+  "transaction": {
+    "states": [
+      "Committed",
+      "AttemptInProgress",
+      "AcceptedPendingCommit",
+      "RejectedDiscarded"
+    ],
+    "attempt": "Clone/stage all method-specific hidden history, controller, solver caches and event state; candidate result is not committed.",
+    "accept": "Atomically commit time, state, method history, controller, dense output, events and work exactly once.",
+    "reject": "Discard candidate state but retain incurred work and rejection count.",
+    "invalidate": "Model/parameter/source epoch changes invalidate method caches unless a verified reset/transfer is invoked.",
+    "stale_attempt": "Generation mismatch must reject stale attempt."
+  },
+  "derivative_permissions": {
+    "precedence": "User derivative and linear-algebra permissions dominate portfolio preferences.",
+    "classes": [
+      "RHS_ONLY",
+      "JVP_ALLOWED",
+      "FINITE_DIFFERENCE_ALLOWED",
+      "AD_ALLOWED",
+      "EXPLICIT_JACOBIAN_ALLOWED"
+    ],
+    "rule": "A capability mismatch is a typed unsupported route, never a hidden fallback."
+  },
+  "fallback": {
+    "commit_boundary": "Fallback is transactional at a committed time boundary. No partially converged candidate state is exposed.",
+    "complete_work": "Charge all failed speculation, rejected steps, setup, startup, preconditioner and fallback work.",
+    "permission": "Fallback must obey the same user derivative/linear algebra permission contract.",
+    "no_escape": "No allowed fallback means typed failure with original state intact."
+  },
+  "work_ledger": {
+    "reuse_existing": "Extend WorkCounters and fair-ab output authority; do not create competing definitions.",
+    "count": [
+      "rhs",
+      "jvp",
+      "explicit_jacobian",
+      "finite_difference_rhs",
+      "AD_derivative",
+      "operator_apply",
+      "factorization",
+      "linear_solve",
+      "Krylov_matvec",
+      "block_Krylov",
+      "preconditioner_setup",
+      "preconditioner_apply",
+      "nonlinear_iteration",
+      "homotopy_round",
+      "accepted_step",
+      "rejected_step",
+      "fallback",
+      "startup_work",
+      "dense_output",
+      "event_work",
+      "allocation_bytes",
+      "peak_RSS",
+      "setup_ns",
+      "wall_ns",
+      "CPU_ns",
+      "communication_ns",
+      "retained_state_bytes"
+    ],
+    "depth": "Report method-stage DAG depth, inner solver iteration/reduction depth and scheduling/communication separately."
+  },
+  "spatial_contract": {
+    "MOL": "Support M(t) ydot=F(t,y) only for methods that declare mass-matrix capability.",
+    "separation": "Spatial discretization owns geometry, mesh/topology, basis, boundary conditions, mass matrix, conservation fluxes and spatial norm. Temporal solver owns time integration and temporal history.",
+    "geometry_norm": "Do not assume Cartesian Euclidean WRMS on a sphere/surface. Use declared quadrature/volume weights and physical-output metrics.",
+    "parallel_axes": "Spatial row/element/domain decomposition is not temporal stage parallelism."
+  }
+}

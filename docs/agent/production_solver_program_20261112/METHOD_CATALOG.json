@@ -1,0 +1,195 @@
+{
+  "schema": "vigilode.method-catalog.v1",
+  "policy": "Distinct numerical methods retain separate method_id, order, stability, history, startup, error estimator and derivative contracts.",
+  "production_verdict": "HOLD",
+  "methods": [
+    {
+      "id": "dopri5",
+      "family": "explicit RK",
+      "status": "implemented",
+      "jacobian": "none",
+      "stage_graph": "explicit RK stages",
+      "scope": "nonstiff control"
+    },
+    {
+      "id": "rodas5p_dense",
+      "family": "Rosenbrock-W",
+      "status": "implemented/protected",
+      "jacobian": "dense J or configured route",
+      "stage_graph": "8-stage full strict-lower causal",
+      "scope": "baseline stiff solver"
+    },
+    {
+      "id": "rodas5p_jvp_krylov",
+      "family": "Rosenbrock-W matrix-free",
+      "status": "implemented opt-in/source-owned paths",
+      "jacobian": "JVP",
+      "stage_graph": "original causal stage graph",
+      "scope": "large state vectors; source-specific qualification"
+    },
+    {
+      "id": "rodas5p_lagged_lu",
+      "family": "Rosenbrock-W reuse",
+      "status": "implemented opt-in",
+      "jacobian": "lagged/frozen J path",
+      "stage_graph": "original causal graph",
+      "scope": "limited validity; residual/reuse guards required"
+    },
+    {
+      "id": "ptsw2b",
+      "family": "parallel two-step Peer-W",
+      "status": "implemented opt-in",
+      "order": 2,
+      "stages": 2,
+      "jacobian": "dense common W",
+      "stage_graph": "same-step independent",
+      "scope": "damping/control"
+    },
+    {
+      "id": "ppsw1_6b",
+      "family": "singly implicit parallel Peer-W",
+      "status": "implemented opt-in",
+      "order": 5,
+      "stages": 6,
+      "jacobian": "dense common W",
+      "stage_graph": "same-step independent six solves",
+      "scope": "candidate; not G0 qualified"
+    },
+    {
+      "id": "ptsw2c",
+      "family": "parallel Peer-W",
+      "status": "documented/research",
+      "order": 3,
+      "stages": 3,
+      "jacobian": "method-specific",
+      "stage_graph": "stage parallel",
+      "scope": "not identified as integrated Rust solver"
+    },
+    {
+      "id": "mipeer6",
+      "family": "multi-implicit Peer-W",
+      "status": "derived/research only",
+      "order": 5,
+      "stages": 6,
+      "jacobian": "multiple distinct shifted W matrices",
+      "stage_graph": "stage parallel",
+      "scope": "factorization count tradeoff"
+    },
+    {
+      "id": "ppsw2_6",
+      "family": "multi-implicit Peer-W",
+      "status": "derived/research only",
+      "order": 5,
+      "stages": 6,
+      "jacobian": "six shifted systems",
+      "stage_graph": "stage parallel",
+      "scope": "fallback research candidate"
+    },
+    {
+      "id": "bdf",
+      "family": "multistep implicit",
+      "status": "benchmark/control candidate",
+      "order": "variable",
+      "jacobian": "Newton or nonlinear solver",
+      "stage_graph": "not RK stages",
+      "scope": "compare only on matched output error"
+    },
+    {
+      "id": "radau_IIA",
+      "family": "fully implicit RK",
+      "status": "starter/control/benchmark candidate",
+      "order": "method-dependent",
+      "jacobian": "coupled nonlinear block solve",
+      "stage_graph": "coupled stages; stage-parallel solvers exist",
+      "scope": "startup and comparison"
+    },
+    {
+      "id": "exponential_rosenbrock_krylov",
+      "family": "exponential",
+      "status": "partial/source-specific",
+      "jacobian": "phi-function Krylov actions",
+      "stage_graph": "method-specific",
+      "scope": "stiff linear component"
+    },
+    {
+      "id": "rhs_only_homotopy",
+      "family": "nonlinear algebraic correction",
+      "status": "research/source-specific",
+      "order": "unqualified",
+      "jacobian": "RHS-only residual/homotopy path",
+      "stage_graph": "not a standard RK tableau",
+      "scope": "requires original residual and local-error certificate"
+    },
+    {
+      "id": "affine_prefix_scan",
+      "family": "parallel recurrence transform",
+      "status": "theoretical/source-specific",
+      "order": "inherits parent method only if algebraically exact",
+      "jacobian": "depends on parent",
+      "stage_graph": "associative affine summary only",
+      "scope": "not a generic nonlinear stage algorithm"
+    },
+    {
+      "id": "gray_scott_2d",
+      "family": "spatial MOL client",
+      "status": "implemented client",
+      "order": "time-method dependent",
+      "jacobian": "client-defined",
+      "stage_graph": "spatially parallelizable",
+      "scope": "2D periodic reaction-diffusion"
+    },
+    {
+      "id": "sphere_p06",
+      "family": "spherical spatial client",
+      "status": "implemented restricted client",
+      "order": "time-method dependent",
+      "jacobian": "client-defined",
+      "stage_graph": "geometry-specific",
+      "scope": "photon finite-volume client; limited physics scope"
+    },
+    {
+      "id": "polynomial_resolvent",
+      "family": "algebraic support",
+      "status": "partial implemented",
+      "order": "not an integrator",
+      "jacobian": "source-specific",
+      "stage_graph": "not applicable",
+      "scope": "source-owned algebraic actions"
+    },
+    {
+      "id": "singular_geometry",
+      "family": "geometry support",
+      "status": "partial/research",
+      "order": "not an integrator",
+      "jacobian": "not applicable",
+      "stage_graph": "not applicable",
+      "scope": "no general singular geometry backend identified"
+    },
+    {
+      "id": "symbolic_dynamics",
+      "family": "mathematical theory",
+      "status": "not identified as a generic solver module",
+      "order": "not applicable",
+      "jacobian": "not applicable",
+      "stage_graph": "not applicable",
+      "scope": "finite-state controller is not symbolic dynamics"
+    },
+    {
+      "id": "algebraic_topology",
+      "family": "mathematical theory",
+      "status": "not identified as generic integrated module",
+      "order": "not applicable",
+      "jacobian": "not applicable",
+      "stage_graph": "not applicable",
+      "scope": "graph cycle-core analysis is not homology/cohomology"
+    }
+  ],
+  "gaps": [
+    "one public frontend for all methods",
+    "method descriptor/capability registry",
+    "matrix-free common-W Peer block Krylov",
+    "complete error/work accounting",
+    "sphere and 3D general MOL provider",
+    "qualification and independent reproduction"
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "schema": "vigilode.mutation-gates.v1",
+  "defaults": "Fail closed. A plan, receipt, synthetic test or agent claim is not permission to mutate.",
+  "gates": [
+    {
+      "id": "G0_DOCS_ONLY",
+      "scope": [
+        "docs/agent/production_solver_program_20261112/**"
+      ],
+      "allowed": true,
+      "conditions": [
+        "new files only",
+        "strict JSON validation",
+        "DAG acyclic",
+        "source-lock exact",
+        "no code/default/G0 mutation",
+        "push to dedicated research branch"
+      ],
+      "exit": "remote readback verifies each Git blob SHA"
+    },
+    {
+      "id": "G1_OPT_IN_METHOD",
+      "scope": [
+        "one new opt-in method module",
+        "its isolated contract tests",
+        "one explicit module export"
+      ],
+      "allowed": "conditional",
+      "conditions": [
+        "owner-approved exact path allowlist",
+        "RED before implementation",
+        "independent coefficient oracle",
+        "order/stability/consistency proofs",
+        "permission and work accounting tests",
+        "negative controls retained",
+        "no default router change"
+      ],
+      "exit": "module-specific receipts and full IVP qualification"
+    },
+    {
+      "id": "G2_FRONTEND",
+      "scope": [
+        "public API and method registry"
+      ],
+      "allowed": "conditional",
+      "conditions": [
+        "G1 method qualifications complete",
+        "transaction/rollback tests",
+        "hidden state transfer/restart contract",
+        "API compatibility tests",
+        "capability fail-closed tests"
+      ],
+      "exit": "all public frontend contract tests pass"
+    },
+    {
+      "id": "G3_AUTO_PORTFOLIO",
+      "scope": [
+        "automatic routing and switching"
+      ],
+      "allowed": "conditional",
+      "conditions": [
+        "owner explicitly approves",
+        "per-method domain/stability/derivative constraints encoded",
+        "history/state/error certificate transfer proven",
+        "switching hysteresis and rollback tests",
+        "fallback work charged"
+      ],
+      "exit": "holdout routing benchmark and independent review"
+    },
+    {
+      "id": "G4_PRODUCTION",
+      "scope": [
+        "release/default promotion"
+      ],
+      "allowed": "conditional",
+      "conditions": [
+        "all official G0 target metrics pass on pre-registered holdout suite",
+        "independent reviewer reruns evidence",
+        "matched achieved error and full cost counters",
+        "documented failure envelopes",
+        "owner approves release"
+      ],
+      "exit": "separate release decision; never auto-merge"
+    }
+  ],
+  "immutable_without_explicit_owner_approval": [
+    "main",
+    "protected RJF/RODAS5P source and tableau",
+    "official G0 23-node/34-edge graph",
+    "tolerances",
+    "controller constants",
+    "fallback thresholds",
+    "default method routing",
+    "reference artifacts and historical receipts"
+  ],
+  "forbidden": [
+    "force push",
+    "history rewrite",
+    "silent fallback",
+    "suppressed failed runs",
+    "renaming a method to inflate maturity",
+    "claim promotion without receipt"
+  ]
+}

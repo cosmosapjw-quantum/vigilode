@@ -1,0 +1,134 @@
+{
+  "schema": "vigilode.turn-plan.v1",
+  "total_turns": 6,
+  "backup_rule": "Every turn pushes a new dedicated branch from exact previous HEAD, then reads back all changed blobs. No main merge, no force push.",
+  "turns": [
+    {
+      "turn": 1,
+      "title": "Reference/global-error authority",
+      "tasks": [
+        "Replay concrete numerical reference artifact",
+        "Fix common output grid, uncertainty and admissibility",
+        "Pre-register calibration/holdout",
+        "Matched achieved-error and complete cost ledger"
+      ],
+      "outputs": [
+        "REFERENCE_REPLAY_RECEIPT.json",
+        "MATCHED_ERROR_PROTOCOL.json"
+      ],
+      "stop": [
+        "No traceable reference",
+        "reference uncertainty dominates",
+        "output policy dominates"
+      ]
+    },
+    {
+      "turn": 2,
+      "title": "PPSW1-6b independent qualification",
+      "tasks": [
+        "Independent coefficient/order oracle",
+        "Prothero-Robinson/LIN3 strong-stiff and nonnormal cases",
+        "W-tolerance scan 0.8-1.1",
+        "Starter h0 transient order",
+        "Estimator amplification/roundoff",
+        "Reject/clip/events/restart/mass matrix"
+      ],
+      "outputs": [
+        "PPSW1_INDEPENDENT_REVIEW.md",
+        "PPSW1_QUALIFICATION.json"
+      ],
+      "stop": [
+        "Order collapse",
+        "No viable W interval",
+        "Starter/estimator cannot meet declared accuracy contract"
+      ]
+    },
+    {
+      "turn": 3,
+      "title": "Peer stage RHS parallel + matrix-free common W",
+      "tasks": [
+        "Audit callbacks/counters thread safety",
+        "Parallelize independent stage-input and RHS computations only",
+        "Compare dense one-LU, six GMRES, block-GMRES and preconditioned block variants",
+        "Verify every original linear-system residual",
+        "Charge setup/Krylov/orthogonalization/reductions/memory"
+      ],
+      "outputs": [
+        "PEER_STAGE_PARALLEL_RECEIPT.json",
+        "BLOCK_KRYLOV_QUALIFICATION.json"
+      ],
+      "stop": [
+        "No matched-error speedup",
+        "Hidden Jacobian/fallback",
+        "Unsafe callback",
+        "Uncertified residual"
+      ]
+    },
+    {
+      "turn": 4,
+      "title": "Unified solver frontend",
+      "tasks": [
+        "MethodDescriptor capability registry",
+        "Problem/Solver/Session/Attempt/Decision/output/work API",
+        "Adapters preserve method histories and controllers",
+        "Transactional accept/reject and permission-safe fallback",
+        "Explicit method selection; auto portfolio opt-in"
+      ],
+      "outputs": [
+        "FRONTEND_API_SPEC.json",
+        "COMPATIBILITY_MATRIX.json",
+        "TRANSACTION_TEST_RECEIPT.json"
+      ],
+      "stop": [
+        "History conflation",
+        "Permission bypass",
+        "Rollback/restart failure"
+      ]
+    },
+    {
+      "turn": 5,
+      "title": "2D/3D/spherical MOL",
+      "tasks": [
+        "M(t) ydot=F(t,y) contract",
+        "2D Gray-Scott and 3D reaction diffusion",
+        "Sphere DFS/spherical harmonics or surface RBF",
+        "Pole regularity/conservation/quadrature-weighted norms",
+        "Separate spatial/temporal/remap errors"
+      ],
+      "outputs": [
+        "MOL_GEOMETRY_CONTRACT.json",
+        "SPHERE_VALIDATION.json",
+        "3D_MOL_BENCHMARK.json"
+      ],
+      "stop": [
+        "Spatial error masks temporal result",
+        "Pole/conservation failure",
+        "Undefined geometry norm"
+      ]
+    },
+    {
+      "turn": 6,
+      "title": "Novelty and production review",
+      "tasks": [
+        "Independent adversarial theory/code review",
+        "Matched achieved-error holdout full-IVP benchmark",
+        "G0 criteria individually and as a set",
+        "Compare BDF/Radau/Rodas only in overlap domain",
+        "Novelty claim versus closest prior art",
+        "Write production gate decision"
+      ],
+      "outputs": [
+        "INDEPENDENT_REVIEW.md",
+        "HOLDOUT_BENCHMARK.json",
+        "NOVELTY_MATRIX.json",
+        "PRODUCTION_GATE_DECISION.json"
+      ],
+      "stop": [
+        "Any G0 target unmet",
+        "No reproducible benchmark",
+        "Novelty collapses to prior art",
+        "Failure envelope undocumented"
+      ]
+    }
+  ]
+}

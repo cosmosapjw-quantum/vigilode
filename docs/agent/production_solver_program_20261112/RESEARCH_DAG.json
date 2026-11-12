@@ -1,0 +1,152 @@
+{
+  "schema": "vigilode.research-dag.v1",
+  "baseline": "ef04bfab6926fcd4ba5f5fa2bbd8696f5e69d011",
+  "production_verdict": "HOLD",
+  "official_g0_mutated": false,
+  "nodes": [
+    {
+      "id": "P00_SOURCE_LOCK",
+      "turn": 0,
+      "status": "COMPLETE_SCOPED",
+      "evidence": "REMOTE_READBACK",
+      "depends": []
+    },
+    {
+      "id": "P01_HISTORY_LINEAGE",
+      "turn": 0,
+      "status": "COMPLETE_SCOPED",
+      "evidence": "SELECTED_PR_AND_BRANCH_REVIEW",
+      "depends": [
+        "P00_SOURCE_LOCK"
+      ]
+    },
+    {
+      "id": "P02_RODAS_STAGE_GRAPH",
+      "turn": 0,
+      "status": "DERIVED_SCOPED",
+      "evidence": "EXACT_RATIONAL_REPLAY_OF_REPRESENTED_DECIMALS",
+      "depends": [
+        "P00_SOURCE_LOCK"
+      ]
+    },
+    {
+      "id": "P03_PPSW1_CODE_AUDIT",
+      "turn": 0,
+      "status": "COMPLETE_SCOPED",
+      "evidence": "CODE_AND_RECEIPT_READBACK",
+      "depends": [
+        "P00_SOURCE_LOCK",
+        "P01_HISTORY_LINEAGE"
+      ]
+    },
+    {
+      "id": "P04_METHOD_CATALOG",
+      "turn": 0,
+      "status": "COMPLETE_SCOPED",
+      "evidence": "METHOD_IDENTITY_RECONCILIATION",
+      "depends": [
+        "P01_HISTORY_LINEAGE",
+        "P03_PPSW1_CODE_AUDIT"
+      ]
+    },
+    {
+      "id": "P05_PARALLELISM_THEORY",
+      "turn": 0,
+      "status": "LITERATURE_SUPPORTED_DERIVED",
+      "evidence": "PRIMARY_LITERATURE_AND_GRAPH_REPLAY",
+      "depends": [
+        "P02_RODAS_STAGE_GRAPH"
+      ]
+    },
+    {
+      "id": "P06_GEOMETRY_INVENTORY",
+      "turn": 0,
+      "status": "COMPLETE_SCOPED",
+      "evidence": "SOURCE_INVENTORY",
+      "depends": [
+        "P01_HISTORY_LINEAGE"
+      ]
+    },
+    {
+      "id": "P07_NOVELTY_BOUNDARY",
+      "turn": 0,
+      "status": "LITERATURE_SUPPORTED",
+      "evidence": "PRIOR_ART_REVIEW",
+      "depends": [
+        "P04_METHOD_CATALOG",
+        "P05_PARALLELISM_THEORY"
+      ]
+    },
+    {
+      "id": "P08_PROVENANCE_AUDIT",
+      "turn": 0,
+      "status": "COMPLETE_SCOPED",
+      "evidence": "STRICT_JSON_AND_CHRONOLOGY_AUDIT",
+      "depends": [
+        "P00_SOURCE_LOCK"
+      ]
+    },
+    {
+      "id": "T01_GLOBAL_ERROR_AUTHORITY",
+      "turn": 1,
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "depends": [
+        "P00_SOURCE_LOCK",
+        "P03_PPSW1_CODE_AUDIT"
+      ]
+    },
+    {
+      "id": "T02_PPSW1_QUALIFICATION",
+      "turn": 2,
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "depends": [
+        "T01_GLOBAL_ERROR_AUTHORITY",
+        "P03_PPSW1_CODE_AUDIT"
+      ]
+    },
+    {
+      "id": "T03_PEER_MATRIX_FREE_BLOCK_KRYLOV",
+      "turn": 3,
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "depends": [
+        "T02_PPSW1_QUALIFICATION"
+      ]
+    },
+    {
+      "id": "T04_UNIFIED_FRONTEND",
+      "turn": 4,
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "depends": [
+        "T01_GLOBAL_ERROR_AUTHORITY",
+        "T02_PPSW1_QUALIFICATION",
+        "T03_PEER_MATRIX_FREE_BLOCK_KRYLOV"
+      ]
+    },
+    {
+      "id": "T05_GEOMETRY_MOL",
+      "turn": 5,
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "depends": [
+        "T04_UNIFIED_FRONTEND"
+      ]
+    },
+    {
+      "id": "T06_NOVELTY_AND_RELEASE_REVIEW",
+      "turn": 6,
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "depends": [
+        "T01_GLOBAL_ERROR_AUTHORITY",
+        "T02_PPSW1_QUALIFICATION",
+        "T03_PEER_MATRIX_FREE_BLOCK_KRYLOV",
+        "T04_UNIFIED_FRONTEND",
+        "T05_GEOMETRY_MOL"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "schema": "vigilode.source-lock.v1",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "created_at_kst": "2026-11-12",
+  "authority": {
+    "branch": "research/unified-t02-20261110",
+    "head_commit": "ef04bfab6926fcd4ba5f5fa2bbd8696f5e69d011",
+    "head_tree": "9eaa35ee82bdf8a7965bc52ffe885c18c15fb4dc",
+    "pull_request": 188,
+    "pr_state": "open_draft_unmerged",
+    "base_branch": "research/solver-portfolio-shortdag-20261109",
+    "base_commit": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31"
+  },
+  "current_checkpoint": {
+    "branch": "research/production-solver-unification-20261112",
+    "parent_commit": "ef04bfab6926fcd4ba5f5fa2bbd8696f5e69d011",
+    "parent_tree": "9eaa35ee82bdf8a7965bc52ffe885c18c15fb4dc",
+    "scope": "docs_and_research_plan_only",
+    "main_mutated": false,
+    "protected_solver_mutated": false
+  },
+  "main_at_audit": {
+    "sha": "8d0c79184e09efb5bdadc24a6315c60a71a44264",
+    "commit_date": "2026-08-26",
+    "is_current_code_authority": false
+  },
+  "official_g0": {
+    "immutable": true,
+    "source_path": "docs/agent/unified_local_agent_20261109/VIGILODE_UNIFIED_DAG_20261109.json",
+    "source_blob": "ef422f5effab1839cca1f01bb0218c625a54daea",
+    "node_count": 23,
+    "edge_count": 34,
+    "progress": "7/23",
+    "successors": "0/12",
+    "production_verdict": "HOLD",
+    "targets": {
+      "global_order_min": 4.8,
+      "accepted_step_ratio_max_vs_protected_RJF": 1.2,
+      "median_same_achieved_error_speedup_min": 1.15,
+      "fast_lane_explicit_jacobian_builds_max": 0,
+      "fast_lane_newton_iterations_max": 0,
+      "critical_depth_p95_max": 6,
+      "critical_depth_absolute_max": 8,
+      "fallback_fraction_max": 0.1
+    },
+    "targets_demonstrated_as_a_set": false
+  },
+  "critical_source_blobs": {
+    "fixtures/rodas5p_coefficients_snapshot.json": "bc55da4d43549ffbcee3cb25e31be05658507742",
+    "crates/rodas5p-core/src/coefficients.rs": "c309a3b9d902f8a3865fbedaaf7fad45e5448ea5",
+    "crates/rodas5p-integrators/src/sequential.rs": "4153e286a2ac756252978d5d77cf1abe0e6a4e0c",
+    "crates/rodas5p-integrators/src/parallel.rs": "ffdfb1cef258ed43586db0323eb0e7f9de27dd53",
+    "crates/rodas5p-integrators/src/stage_batch.rs": "c2f44c327c53d7c6dfe7ba80b26cd43486d56b43",
+    "crates/rodas5p-integrators/src/ppsw1.rs": "d7386d03b0db085c1116f56c9f2fdc10a52c1e61",
+    "crates/rodas5p-integrators/src/ptsw2b.rs": "f491b0a3f5f351d0fe933b06bf9ea30a0c730922",
+    "crates/rodas5p-integrators/src/candidates.rs": "2a6c7a7179a34932938ee4233d48b31457e38cf1",
+    "crates/rodas5p-krylov/src/block_gmres.rs": "68968fc1e764d2dd355373928ed11406c8dc9c1c",
+    "crates/vigilode/src/lib.rs": "9370f4e50e454dd43472160c8d65e4fdcd030e8a",
+    "crates/vigilode/src/automatic.rs": "ff4f5db411b310039b627d66774b24885eb3cf7d",
+    "crates/vigilode/src/switching.rs": "fb12a401002c0039631a43982cc296a494c366a2",
+    "crates/rodas5p-core/src/work.rs": "76577cf6cb0295f859efcad2606150a01961cae7"
+  },
+  "historic_coverage": {
+    "history_matrix_prs": 187,
+    "branch_refs": 361,
+    "deep_reviewed_lineages": [
+      "COUPLED",
+      "PERFORMANCE",
+      "N01_C9",
+      "RVJ",
+      "COUPLED_BE",
+      "WP_G0",
+      "G0_R5_C5",
+      "APPLIED_REI"
+    ],
+    "caveat": "All 187 PR diffs and all 361 branches were not individually deep-reviewed; selected relevant lineages and source files were read."
+  },
+  "provenance_warnings": [
+    {
+      "id": "FUTURE_DATED_OWNER_DECISIONS",
+      "path": "docs/agent/unified_local_agent_20261109/OWNER_DECISIONS_20261110.json",
+      "recorded_date": "2026-11-13",
+      "audit_date": "2026-11-12",
+      "status": "PROVENANCE_CONFLICT",
+      "instruction": "Do not rely on OD-23..27 as approvals as-of 2026-11-12 without owner reconfirmation and chronology correction."
+    },
+    {
+      "id": "NON_STRICT_JSON_HISTORICAL_ARTIFACT",
+      "path": "docs/agent/unified_local_agent_20261109/PW04_PPSW1_6BC_VERIFICATION.json",
+      "status": "CONFIRMED_INVALID_RFC8259_JSON",
+      "cause": "Bare NaN and Infinity tokens",
+      "instruction": "Preserve historical evidence byte-for-byte; all new JSON must be strict RFC 8259."
+    }
+  ]
+}
