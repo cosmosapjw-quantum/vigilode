@@ -1,0 +1,2191 @@
+{
+ "title": "PW04 PPSW1-6b starter/estimator literature+replay",
+ "scripts": {
+  "s1_weights.py": "# S3: explicit predictor weights for PPSW1-6b estimator: p in Pi_4 through (c_j, Y_{m-1,j}), j=2..6, evaluated at x=1+sigma\n# (t_m + c_s h_m = t_{m-1} + h_{m-1}(1+sigma), c_s=1). Exact rational/symbolic via sympy.\nimport sympy as sp, json\nsig=sp.symbols('sigma')\nc=[sp.Rational(-1),sp.Rational(-1,2),0,sp.Rational(2,5),sp.Rational(4,5),sp.Integer(1)]\nnodes=c[1:]; x=1+sig\nW=[]\nfor j,cj in enumerate(nodes):\n    w=1\n    for k,ck in enumerate(nodes):\n        if k!=j: w*=(x-ck)/(cj-ck)\n    W.append(sp.factor(sp.simplify(w)))\nout={'weights_sigma':[str(w) for w in W],'sum_simplified':str(sp.simplify(sum(W)))}\nout['sigma1']=[str(w.subs(sig,1)) for w in W]\nfor s_ in [sp.Rational(1,2),sp.Rational(1),sp.Rational(11,10),sp.Rational(3,2)]:\n    ws=[w.subs(sig,s_) for w in W]\n    out['sigma=%s'%s_]={'w':[str(v) for v in ws],'sum_abs':float(sum(abs(v) for v in ws))}\n# leading error: y(x)-p(x) = y^(5)(.)/5! * prod (x-c_k) * h^5\nout['err_const']=str(sp.factor(sp.expand(sp.prod([x-ck for ck in nodes]))/120))\nout['err_const_sigma1']=str((sp.prod([x-ck for ck in nodes])/120).subs(sig,1))\nprint(json.dumps(out,indent=1))\n",
+  "s2_starter.py": "# Candidate B: linearly implicit Euler extrapolation (harmonic sequence, Neville), T=J0 frozen at t_init, forward-only.\n# Nodes tau+c_i*h0 with tau=t_init+h0*(-c_min)=t_init+h0 -> offsets from t_init: h0*(1+c_i) = 0,0.5,1,1.4,1.8,2 (all >=0).\nimport numpy as np, math, scipy.linalg as sla, json, sys\nC=np.array([-1.0,-0.5,0.0,0.4,0.8,1.0])\ndef limex_macro(f,T,t,y,H,k):\n    n=y.size; ns=list(range(1,k+1)); Tab=[]; cost=dict(lu=0,f=0)\n    for nj in ns:\n        h=H/nj; lu=sla.lu_factor(np.eye(n)-h*T); cost['lu']+=1; z=y.copy(); tt=t\n        for _ in range(nj):\n            d=sla.lu_solve(lu,h*f(tt,z)); cost['f']+=1; z=z+d; tt+=h\n        Tab.append([z])\n        for l in range(1,len(Tab)):\n            prev=Tab[-1][l-1]; old=Tab[-2][l-1]\n            Tab[-1].append(prev+(prev-old)/(ns[len(Tab)-1]/ns[len(Tab)-1-l]-1))\n    return Tab[-1][-1],cost\ndef starter(f,J,t_init,y0,h0,k):\n    T=J(t_init,y0); offs=h0*(1+C); order=np.argsort(offs)   # offs already ascending\n    Y=np.zeros((6,y0.size)); t=t_init; y=y0.copy(); cost=dict(lu=0,f=0,jac=1)\n    for i in range(6):\n        H=t_init+offs[i]-t\n        if H>1e-15:\n            y,cc=limex_macro(f,T,t,y,H,k); t+=H; cost['lu']+=cc['lu']; cost['f']+=cc['f']\n        Y[i]=y\n    return Y,cost\ndef make_PR(lam,amp):\n    f=lambda t,y: lam*(y-math.sin(t))+math.cos(t)\n    yex=lambda t: np.array([math.sin(t)+amp*math.exp(lam*t)])\n    return f,(lambda t,y: np.array([[lam]])),yex\ndef make_LIN3():\n    rs=np.random.RandomState(3); Q,_=np.linalg.qr(rs.randn(3,3)); A=Q@np.diag([-1.,-50.,-1000.])@Q.T\n    y0=np.array([1.,-2.,.5]); return (lambda t,y:A@y),(lambda t,y:A),(lambda t: sla.expm(A*t)@y0),y0\ndef fit(h,e):\n    p=np.polyfit(np.log10(h),np.log10(e),1); return float(p[0])\nif __name__=='__main__':\n    res=[]\n    probs={'PR_lam-1(amp1)':(*make_PR(-1.,1.),),'PR_lam-1000(amp0)':(*make_PR(-1000.,0.),),'PR_lam-1000(amp1)':(*make_PR(-1000.,1.),),'LIN3(-1,-50,-1000)':None}\n    for name in ['PR_lam-1(amp1)','PR_lam-1000(amp0)','PR_lam-1000(amp1)','LIN3(-1,-50,-1000)']:\n        if name.startswith('LIN3'):\n            f,J,yex,y0=make_LIN3()\n        else:\n            f,J,yex=probs[name]; y0=yex(0.0)\n        hs=[0.2,0.1,0.05,0.025,0.0125,0.00625] if name!='PR_lam-1(amp1)' else [0.4,0.2,0.1,0.05,0.025]\n        for k in [4,5,6]:\n            errs=[]\n            per_node=[]\n            for h0 in hs:\n                Y,cost=starter(f,J,0.0,y0,h0,k)\n                ex=np.array([yex(h0*(1+c)) for c in C])\n                e=np.abs(Y-ex).max(axis=1); per_node.append(e.tolist()); errs.append(e.max())\n            pn=[]\n            for i in range(1,6):\n                col=np.array([r[i] for r in per_node]); ok=col>1e-14\n                pn.append(fit(np.array(hs)[ok],col[ok]) if ok.sum()>=3 else None)\n            # local slopes between consecutive h\n            loc=[math.log2(errs[i]/errs[i+1]) if errs[i+1]>0 and errs[i]>0 else None for i in range(len(hs)-1)]\n            res.append(dict(problem=name,cols=k,h0=hs,maxerr=errs,fit_order_max=fit(np.array(hs)[np.array(errs)>1e-14],np.array(errs)[np.array(errs)>1e-14]) if sum(np.array(errs)>1e-14)>=3 else None,local_slopes_log2=loc,per_node_fit_nodes2_6=pn,cost=cost))\n            print(name,'k=',k,'h0lam=',None,'maxerr',['%.2e'%e for e in errs],'slopes',[None if l is None else round(l,2) for l in loc],'cost',cost)\n    json.dump(res,open(sys.argv[1],'w'),indent=1)\n",
+  "s3_radau_start.py": "# Candidate A (constructive): ONE forward Radau IIA collocation step (sr stages, built from collocation nodes/integrals, no copied tableau)\n# over [t_init, t_init+2*h0], simplified Newton with frozen T=J(t_init,y0) (+f only), dense output = collocation polynomial (degree sr).\n# Node values at t_init+h0*(1+c_i)= 0,.5,1,1.4,1.8,2 *h0. No backward time.\nimport numpy as np, math, scipy.linalg as sla, json, sys\nfrom numpy.polynomial import polynomial as Pl\nsys.path.insert(0,'.')\nC=np.array([-1.0,-0.5,0.0,0.4,0.8,1.0])\ndef radau_nodes(sr):\n    p=Pl.polyder(Pl.polymul(Pl.polypow([0,1],sr-1),Pl.polypow([-1,1],sr)),sr-1)\n    r=np.sort(np.real(Pl.polyroots(p))); return r\ndef lag_int(c):\n    s=len(c); out=[]\n    for j in range(s):\n        poly=np.array([1.0])\n        for k in range(s):\n            if k!=j: poly=Pl.polymul(poly,[-c[k],1.0])/(c[j]-c[k])\n        out.append(Pl.polyint(poly))     # integral from 0\n    return out\ndef dense_start(f,J,t0,y0,h0,sr,tol=1e-14,maxit=50):\n    n=y0.size; c=radau_nodes(sr); I=lag_int(c); Hh=2*h0\n    A=np.array([[Pl.polyval(ci,I[j]) for j in range(sr)] for ci in c])\n    T=J(t0,y0); M=np.eye(sr*n)-Hh*np.kron(A,T); lu=sla.lu_factor(M)\n    Z=np.tile(y0,(sr,1)); cost=dict(lu=1,f=0,newton=0)\n    for it in range(maxit):\n        F=np.array([f(t0+c[i]*Hh,Z[i]) for i in range(sr)]); cost['f']+=sr\n        # residual G = Z - y0 - H A F ; Newton with M approx I - H A (x) T\n        G=(Z-y0-Hh*(A@F)).reshape(-1)\n        d=sla.lu_solve(lu,-G+0.0)  # linear model: M dz = -G\n        Z=Z+d.reshape(sr,n); cost['newton']+=1\n        if np.max(np.abs(d))<tol*(1+np.max(np.abs(Z))): break\n    F=np.array([f(t0+c[i]*Hh,Z[i]) for i in range(sr)]); cost['f']+=sr\n    Y=[]\n    for ci in C:\n        th=(1+ci)*h0/Hh\n        Y.append(y0+Hh*sum(Pl.polyval(th,I[j])*F[j] for j in range(sr)))\n    return np.array(Y),cost\nif __name__=='__main__':\n    from importlib.machinery import SourceFileLoader\n    m=SourceFileLoader('s2',sys.argv[2]).load_module()\n    res=[]\n    probs=[('PR_lam-1(amp1)',)+m.make_PR(-1.,1.),('PR_lam-1000(amp0)',)+m.make_PR(-1000.,0.),('PR_lam-1000(amp1)',)+m.make_PR(-1000.,1.),('LIN3(-1,-50,-1000)',)+tuple(m.make_LIN3()[:3])]\n    for pr in probs:\n        name,f,J,yex=pr[:4]; y0=yex(0.0)\n        hs=[0.2,0.1,0.05,0.025,0.0125,0.00625]\n        for sr in [3,4,5,6]:\n            errs=[];nodeerr=[]\n            for h0 in hs:\n                Y,cost=dense_start(f,J,0.0,y0,h0,sr)\n                ex=np.array([yex(h0*(1+cc)) for cc in C]); e=np.abs(Y-ex).max(axis=1); nodeerr.append(e.tolist()); errs.append(e.max())\n            loc=[round(math.log2(errs[i]/errs[i+1]),2) if errs[i+1]>0 and errs[i]>0 else None for i in range(len(hs)-1)]\n            res.append(dict(problem=name,sr=sr,h0=hs,maxerr=errs,local_slopes_log2=loc,cost=cost))\n            print(name,'sr=',sr,['%.1e'%e for e in errs],loc,cost)\n    json.dump(res,open(sys.argv[1],'w'),indent=1)\n",
+  "s4_transient.py": "# Resolved-transient regime: h0*|lam_max| from ~2 down to 0.06 (initial data NOT on slow manifold). Compare Radau-dense (A, sr=4,5) and limex (B,k=5,6).\nimport sys, math, numpy as np, json\nfrom importlib.machinery import SourceFileLoader\nm2=SourceFileLoader('s2',sys.argv[2]).load_module(); m3=SourceFileLoader('s3',sys.argv[3]).load_module()\nC=m2.C; res=[]\nprobs=[('PR_lam-1000(amp1)',)+m2.make_PR(-1000.,1.),('LIN3(-1,-50,-1000)',)+tuple(m2.make_LIN3()[:3])]\nhs=[2e-3,1e-3,5e-4,2.5e-4,1.25e-4,6.25e-5]\nfor name,f,J,yex in probs:\n    y0=yex(0.0)\n    for lab,fn in [('A_radau_sr4',lambda h:m3.dense_start(f,J,0.0,y0,h,4)[0]),('A_radau_sr5',lambda h:m3.dense_start(f,J,0.0,y0,h,5)[0]),('B_limex_k5',lambda h:m2.starter(f,J,0.0,y0,h,5)[0]),('B_limex_k6',lambda h:m2.starter(f,J,0.0,y0,h,6)[0])]:\n        errs=[np.abs(fn(h)-np.array([yex(h*(1+c)) for c in C])).max() for h in hs]\n        loc=[round(math.log2(errs[i]/errs[i+1]),2) if errs[i+1]>0 else None for i in range(len(hs)-1)]\n        res.append(dict(problem=name,starter=lab,h0=hs,maxerr=errs,slopes=loc)); print(name,lab,['%.1e'%e for e in errs],loc)\njson.dump(res,open(sys.argv[1],'w'),indent=1)\n",
+  "s5_ppsw.py": "# PPSW1-6b prototype (coefficients: closed form route2 from PW04_PPSW1_6BC_VERIFICATION.json ppsw_core.py, node-row V convention; same as s05_global.py)\n# with starter variants; grid: t_init=0, tau=h0 (shifted start), nodes of Y_0 = tau + c_i h0. Also estimator exponent test.\nimport sys, math, random, numpy as np, scipy.linalg as sla, json\nfrom importlib.machinery import SourceFileLoader\nm2=SourceFileLoader('s2',sys.argv[2]).load_module(); m3=SourceFileLoader('s3',sys.argv[3]).load_module()\nG=0.619411975066250516310763374003; C=m2.C; s=6\nVn=np.array([[C[i]**j for j in range(s)] for i in range(s)]); Vi=np.linalg.inv(Vn)\nPm=np.array([[math.comb(j,i) for j in range(s)] for i in range(s)],float); Dm=np.diag(np.arange(1,s+1).astype(float))\nF0=np.zeros((s,s)); \nfor i in range(1,s): F0[i,i-1]=1\ndef coeffs(sig):\n    S=np.diag(sig**np.arange(s)); Th=Vn@S@Pm@Vi; Gam=-G*Th; E=-Vn@Dm@F0.T@Vi\n    beta=Vn@F0@S@np.linalg.inv(Dm)@Vi; B=(np.eye(s)+G*E)@Th+sig*(beta@E); return B,beta-Gam,Gam\ndef pred_w(sig):  # S3 weights, nodes c_2..c_6 at x=1+sig\n    x=1+sig; nd=C[1:]; w=[]\n    for j in range(5):\n        v=1.0\n        for k in range(5):\n            if k!=j: v*=(x-nd[k])/(nd[j]-nd[k])\n        w.append(v)\n    return np.array(w)\ndef run(f,J,yex,start,N,rseq=None,Tend=1.0):\n    w=np.ones(N) if rseq is None else np.exp(np.concatenate([[0.],np.cumsum(np.log(rseq[:N-1]))]))\n    h=w*(Tend/np.sum(w)); h0=h[0]; tau=h0\n    t=np.concatenate([[tau],tau+np.cumsum(h)])\n    y0=yex(0.0)\n    if start=='exact': Yp=np.array([yex(tau+h0*c) for c in C])\n    elif start.startswith('radau'): Yp,_=m3.dense_start(f,J,0.0,y0,h0,int(start[5:]))\n    elif start.startswith('limex'): Yp,_=m2.starter(f,J,0.0,y0,h0,int(start[5:]))\n    Fp=np.array([f(t[0]+h0*C[j],Yp[j]) for j in range(s)]); est=[]\n    for m in range(1,N):\n        hm=h[m]; sig=hm/h[m-1]; B,A,Gam=coeffs(sig); Tm=J(t[m],Yp[-1]); n=Tm.shape[0]\n        lu=sla.lu_factor(np.eye(n)-G*hm*Tm)\n        R=B@Yp+hm*(Gam@(Yp@Tm.T))+hm*(A@Fp)\n        Yn=np.array([sla.lu_solve(lu,R[i]) for i in range(s)])\n        est.append((m,float(np.max(np.abs(Yn[-1]-pred_w(sig)@Yp[1:]))),float(np.max(np.abs(Yn[-1]-yex(t[m]+hm))))))\n        Yp=Yn; Fp=np.array([f(t[m]+hm*C[i],Yp[i]) for i in range(s)])\n    return float(np.max(np.abs(Yp[-1]-yex(t[N])))),est,float(np.max(h))\ndef fit(H,e):\n    ok=np.array(e)>1e-15\n    return float(np.polyfit(np.log10(np.array(H)[ok]),np.log10(np.array(e)[ok]),1)[0]) if ok.sum()>=3 else None\ndef ratio_seq(seed,lo,hi,L):\n    r=random.Random(seed); l=0.; o=[]\n    for _ in range(L):\n        for _t in range(1000):\n            sg=r.uniform(lo,hi)\n            if abs(l+math.log(sg))<=0.5: break\n        else: sg=1.\n        l+=math.log(sg); o.append(sg)\n    return np.array(o)\ndef PRvec(lams):\n    rs=np.random.RandomState(5); Q,_=np.linalg.qr(rs.randn(len(lams),len(lams))); A=Q@np.diag(lams)@Q.T\n    g=lambda t: np.array([math.sin(t),math.cos(2*t)][:len(lams)]); gp=lambda t: np.array([math.cos(t),-2*math.sin(2*t)][:len(lams)])\n    return (lambda t,y:A@(y-g(t))+gp(t)),(lambda t,y:A),g\nif __name__=='__main__':\n    Ns=[16,32,64,128,256]; out=[]\n    probs={'PR_lam-1(amp1)':m2.make_PR(-1.,1.),'PR_lam-1000(amp0)':m2.make_PR(-1000.,0.),'PRvec2_(-1,-1000)_smooth':PRvec([-1.,-1000.])}\n    for pn,(f,J,yex) in probs.items():\n        for sname,rs in [('uniform',None),('rand0.5-1.10',ratio_seq(11,.5,1.1,256))]:\n            for st in ['exact','radau5','radau3','limex5']:\n                errs=[];Hs=[];ests=None\n                for N in Ns:\n                    e,est,H=run(f,J,yex,st,N,rs); errs.append(e); Hs.append(H)\n                    if rs is None and N==64: ests=est\n                row=dict(problem=pn,sigma=sname,start=st,N=Ns,H=Hs,err=errs,order_fit=fit(Hs,errs),local_slopes=[round(math.log2(errs[i]/errs[i+1]),2) if errs[i+1]>0 else None for i in range(len(Ns)-1)])\n                out.append(row); print(pn,sname,st,'fit',None if row['order_fit'] is None else round(row['order_fit'],2),['%.1e'%e for e in errs],row['local_slopes'])\n    # estimator exponent: uniform grid, exact start, PR lam=-1 (y^(5)!=0), mid-run value m=N//2\n    f,J,yex=probs['PR_lam-1(amp1)']; er=[]\n    Ns2=[16,32,64,128]; Hs=[];E=[];T=[]\n    for N in Ns2:\n        e,est,H=run(f,J,yex,'exact',N,None); k=len(est)//2; Hs.append(H); E.append(est[k][1]); T.append(est[k][2])\n    er=dict(N=Ns2,H=Hs,est=E,true_err_Yms=T,est_fit=fit(Hs,E),trueerr_fit=fit(Hs,T)); out.append(dict(estimator=er)); print('ESTIMATOR',er)\n    json.dump(out,open(sys.argv[1],'w'),indent=1)\n"
+ },
+ "receipts": [
+  {
+   "script": "s1_weights",
+   "cmd": "python3 -I scripts/s1_weights.py",
+   "exit": 0,
+   "stdout_sha256": "5a0e13081a968a62694faecadf28d99f864a399fe3c7edfa6bc2314005d4aafe",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "stderr_bytes": 0
+  },
+  {
+   "script": "s2_starter",
+   "cmd": "python3 -I scripts/s2_starter.py out/r_s2.json",
+   "exit": 0,
+   "stdout_sha256": "e8b383fc531b5231647beaecc51d4c83aa6691b4d82a4e9963d84e22cd6e03c2",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "stderr_bytes": 0
+  },
+  {
+   "script": "s3_radau_start",
+   "cmd": "python3 -I scripts/s3_radau_start.py out/r_s3.json scripts/s2_starter.py",
+   "exit": 0,
+   "stdout_sha256": "082ab324f065067f034c1034ea9ce11504ea7b133dec839cf40c6ec9c43a7d30",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "stderr_bytes": 0
+  },
+  {
+   "script": "s4_transient",
+   "cmd": "python3 -I scripts/s4_transient.py out/r_s4.json scripts/s2_starter.py scripts/s3_radau_start.py",
+   "exit": 0,
+   "stdout_sha256": "d98cc2a206e7f5bee5ff19c0b7dc891d89ef71df57f66c85c8f70ac759f5babb",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "stderr_bytes": 0
+  },
+  {
+   "script": "s5_ppsw",
+   "cmd": "python3 -I scripts/s5_ppsw.py out/r_s5.json scripts/s2_starter.py scripts/s3_radau_start.py",
+   "exit": 0,
+   "stdout_sha256": "5f3165372ecc6b67af19bba2d0f0e7fc6b4672bb696b8126710148d4555b2006",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "stderr_bytes": 0
+  }
+ ],
+ "results": {
+  "s2": [
+   {
+    "problem": "PR_lam-1(amp1)",
+    "cols": 4,
+    "h0": [
+     0.4,
+     0.2,
+     0.1,
+     0.05,
+     0.025
+    ],
+    "maxerr": [
+     1.1747990504851202e-06,
+     5.4187722309251285e-08,
+     1.952637607161023e-09,
+     6.456679635391538e-11,
+     2.0605739337042905e-12
+    ],
+    "fit_order_max": 4.7954830536700825,
+    "local_slopes_log2": [
+     4.438304187399812,
+     4.794469879792444,
+     4.9184879661109875,
+     4.969674312095459
+    ],
+    "per_node_fit_nodes2_6": [
+     4.849573724566504,
+     4.853361287096683,
+     4.826837460360427,
+     4.7954830536700825,
+     4.770173063539
+    ],
+    "cost": {
+     "lu": 20,
+     "f": 50,
+     "jac": 1
+    }
+   },
+   {
+    "problem": "PR_lam-1(amp1)",
+    "cols": 5,
+    "h0": [
+     0.4,
+     0.2,
+     0.1,
+     0.05,
+     0.025
+    ],
+    "maxerr": [
+     3.180749041931108e-08,
+     7.322749073779278e-10,
+     1.323097187366784e-11,
+     2.240430063693566e-13,
+     2.7977620220553945e-14
+    ],
+    "fit_order_max": 5.1907717685362655,
+    "local_slopes_log2": [
+     5.4408373785447965,
+     5.790394417351403,
+     5.883999535001992,
+     3.0014305356064406
+    ],
+    "per_node_fit_nodes2_6": [
+     5.227929873355061,
+     5.291011737924905,
+     5.267821685915178,
+     5.3291473094638,
+     5.168524650304668
+    ],
+    "cost": {
+     "lu": 25,
+     "f": 75,
+     "jac": 1
+    }
+   },
+   {
+    "problem": "PR_lam-1(amp1)",
+    "cols": 6,
+    "h0": [
+     0.4,
+     0.2,
+     0.1,
+     0.05,
+     0.025
+    ],
+    "maxerr": [
+     7.38840544300956e-10,
+     8.54494253132998e-12,
+     1.1368683772161603e-13,
+     4.418687638008123e-14,
+     5.1514348342607263e-14
+    ],
+    "fit_order_max": 3.5211311216381747,
+    "local_slopes_log2": [
+     6.434048437843623,
+     6.231933650497766,
+     1.3633753794563512,
+     -0.22135637458392335
+    ],
+    "per_node_fit_nodes2_6": [
+     3.5203227044582817,
+     3.585225960052085,
+     3.874431518768276,
+     4.832000605389099,
+     3.5100367273800086
+    ],
+    "cost": {
+     "lu": 30,
+     "f": 105,
+     "jac": 1
+    }
+   },
+   {
+    "problem": "PR_lam-1000(amp0)",
+    "cols": 4,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     9.855193535276974e-05,
+     5.229463886798069e-05,
+     2.861236241107068e-05,
+     2.8740567809520945e-05,
+     1.8010632415338575e-05,
+     1.3186354469261335e-06
+    ],
+    "fit_order_max": 1.0207378667781501,
+    "local_slopes_log2": [
+     0.9142211509315017,
+     0.8700244318356608,
+     -0.0064499442287302925,
+     0.6742397243797458,
+     3.7717311661826094
+    ],
+    "per_node_fit_nodes2_6": [
+     0.8638455899665359,
+     0.8615620379116661,
+     1.03966399571497,
+     1.004162832630157,
+     1.312941883346769
+    ],
+    "cost": {
+     "lu": 20,
+     "f": 50,
+     "jac": 1
+    }
+   },
+   {
+    "problem": "PR_lam-1000(amp0)",
+    "cols": 5,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     1.3277209835849124e-05,
+     1.4130234796100316e-05,
+     1.5055888983008664e-05,
+     3.303348806802525e-06,
+     3.7317595540965753e-06,
+     8.875836063305595e-07
+    ],
+    "fit_order_max": 0.7847292863743044,
+    "local_slopes_log2": [
+     -0.08983343783834817,
+     -0.09154245675626313,
+     2.188326675619604,
+     -0.17592671845953856,
+     2.0719011066884705
+    ],
+    "per_node_fit_nodes2_6": [
+     0.5358380701863558,
+     0.5301390094181683,
+     0.5175116886268721,
+     0.5349002365930814,
+     1.593537854060833
+    ],
+    "cost": {
+     "lu": 25,
+     "f": 75,
+     "jac": 1
+    }
+   },
+   {
+    "problem": "PR_lam-1000(amp0)",
+    "cols": 6,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     5.309813656484419e-06,
+     4.777723428328606e-06,
+     2.1466656498353442e-06,
+     2.5775063226714245e-06,
+     4.883575709900556e-07,
+     2.2700926136792754e-07
+    ],
+    "fit_order_max": 0.9241786602328736,
+    "local_slopes_log2": [
+     0.1523378898915109,
+     1.1542258375939436,
+     -0.2638784623117992,
+     2.3999661985077427,
+     1.1051867061371436
+    ],
+    "per_node_fit_nodes2_6": [
+     0.9488383310911347,
+     0.9386026962343615,
+     1.073379589355312,
+     1.0918123348676878,
+     1.491632135785542
+    ],
+    "cost": {
+     "lu": 30,
+     "f": 105,
+     "jac": 1
+    }
+   },
+   {
+    "problem": "PR_lam-1000(amp1)",
+    "cols": 4,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     0.0005209363477461093,
+     0.000469792180838563,
+     0.002793866293507287,
+     0.0027382847963641262,
+     0.0029832519117727434,
+     0.0018876913038981397
+    ],
+    "fit_order_max": -0.4931029250381437,
+    "local_slopes_log2": [
+     0.1490844015031059,
+     -2.572168372489604,
+     0.028990476666773696,
+     -0.12361330442652135,
+     0.6602629482954916
+    ],
+    "per_node_fit_nodes2_6": [
+     -0.4931029250381437,
+     -0.015459373468017106,
+     0.45927378984963396,
+     0.8421564922140379,
+     1.2625711956851886
+    ],
+    "cost": {
+     "lu": 20,
+     "f": 50,
+     "jac": 1
+    }
+   },
+   {
+    "problem": "PR_lam-1000(amp1)",
+    "cols": 5,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     0.0001949314970655508,
+     0.0005891553567243107,
+     0.00023199187519619066,
+     0.0013870120707554483,
+     1.7736517545675554e-05,
+     0.0005267544073757208
+    ],
+    "fit_order_max": 0.15459742430357223,
+    "local_slopes_log2": [
+     -1.595680893879721,
+     1.3445738339596855,
+     -2.5798341576822166,
+     6.289113759545802,
+     -4.892335801776069
+    ],
+    "per_node_fit_nodes2_6": [
+     0.15459742430357223,
+     -0.24268372811788597,
+     -0.02213206548259155,
+     0.6355391935881993,
+     1.269536907566322
+    ],
+    "cost": {
+     "lu": 25,
+     "f": 75,
+     "jac": 1
+    }
+   },
+   {
+    "problem": "PR_lam-1000(amp1)",
+    "cols": 6,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     9.1519619119379e-05,
+     4.775159203995738e-06,
+     0.00036378984039462867,
+     0.0001506443671164693,
+     0.00020585281255188978,
+     0.00010982803386444528
+    ],
+    "fit_order_max": -0.4666648577965017,
+    "local_slopes_log2": [
+     4.260460309438612,
+     -6.251412609538252,
+     1.2719585244332978,
+     -0.4504664314405625,
+     0.9063668075720361
+    ],
+    "per_node_fit_nodes2_6": [
+     -0.9787692927886925,
+     -0.025582737115475918,
+     0.6391894828141335,
+     1.6919888311055113,
+     1.6628220189003209
+    ],
+    "cost": {
+     "lu": 30,
+     "f": 105,
+     "jac": 1
+    }
+   },
+   {
+    "problem": "LIN3(-1,-50,-1000)",
+    "cols": 4,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     0.002450443309302601,
+     0.0005156191678869267,
+     0.0011067729122899994,
+     0.001046401254787721,
+     0.0011492543995534898,
+     0.000723614546420448
+    ],
+    "fit_order_max": 0.1545916908142601,
+    "local_slopes_log2": [
+     2.2486649692836815,
+     -1.1019814389755969,
+     0.08092306430611415,
+     -0.13526201311113215,
+     0.6674048740039009
+    ],
+    "per_node_fit_nodes2_6": [
+     0.1545916908142601,
+     0.11185979846293384,
+     -0.4590606712181815,
+     -0.48389767096921504,
+     -0.572602604605548
+    ],
+    "cost": {
+     "lu": 20,
+     "f": 50,
+     "jac": 1
+    }
+   },
+   {
+    "problem": "LIN3(-1,-50,-1000)",
+    "cols": 5,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     0.00037935489618479146,
+     0.0002422267975432657,
+     7.932264107468612e-05,
+     0.0005333492800452255,
+     8.19121575501569e-06,
+     0.00020215433701453733
+    ],
+    "fit_order_max": 0.46998829193699376,
+    "local_slopes_log2": [
+     0.6471896789711942,
+     1.610553860662141,
+     -2.7492760168300863,
+     6.024859229954349,
+     -4.625235750104473
+    ],
+    "per_node_fit_nodes2_6": [
+     0.46998829193699376,
+     0.3233562355633277,
+     -0.21516399090706226,
+     -0.7121156772105364,
+     -0.5935220562987847
+    ],
+    "cost": {
+     "lu": 25,
+     "f": 75,
+     "jac": 1
+    }
+   },
+   {
+    "problem": "LIN3(-1,-50,-1000)",
+    "cols": 6,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     3.223677545438619e-05,
+     3.841453892958549e-05,
+     0.00013880111907504933,
+     5.875289244272608e-05,
+     7.878444974229737e-05,
+     4.216461952855077e-05
+    ],
+    "fit_order_max": -0.1087175841809418,
+    "local_slopes_log2": [
+     -0.2529449950866317,
+     -1.853294856669358,
+     1.240287416254115,
+     -0.42325102437452794,
+     0.9018779662328463
+    ],
+    "per_node_fit_nodes2_6": [
+     -0.1087175841809418,
+     -0.29557507762007124,
+     -0.2713785747485486,
+     -0.7432313280731595,
+     -0.9231126478392246
+    ],
+    "cost": {
+     "lu": 30,
+     "f": 105,
+     "jac": 1
+    }
+   }
+  ],
+  "s3": [
+   {
+    "problem": "PR_lam-1(amp1)",
+    "sr": 3,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     2.1688196991442865e-05,
+     1.309346772560005e-06,
+     8.453616939796404e-08,
+     5.385887957842783e-09,
+     3.399305281703846e-10,
+     2.135092103117131e-11
+    ],
+    "local_slopes_log2": [
+     4.05,
+     3.95,
+     3.97,
+     3.99,
+     3.99
+    ],
+    "cost": {
+     "lu": 1,
+     "f": 9,
+     "newton": 2
+    }
+   },
+   {
+    "problem": "PR_lam-1(amp1)",
+    "sr": 4,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     6.035220256883633e-08,
+     1.1078862272029255e-09,
+     1.8681944879972434e-11,
+     3.0309088572266774e-13,
+     4.884981308350689e-15,
+     2.220446049250313e-16
+    ],
+    "local_slopes_log2": [
+     5.77,
+     5.89,
+     5.95,
+     5.96,
+     4.46
+    ],
+    "cost": {
+     "lu": 1,
+     "f": 12,
+     "newton": 2
+    }
+   },
+   {
+    "problem": "PR_lam-1(amp1)",
+    "sr": 5,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     4.718149870797106e-09,
+     9.648126741979013e-11,
+     1.695088513997689e-12,
+     2.7977620220553945e-14,
+     4.440892098500626e-16,
+     2.220446049250313e-16
+    ],
+    "local_slopes_log2": [
+     5.61,
+     5.83,
+     5.92,
+     5.98,
+     1.0
+    ],
+    "cost": {
+     "lu": 1,
+     "f": 15,
+     "newton": 2
+    }
+   },
+   {
+    "problem": "PR_lam-1(amp1)",
+    "sr": 6,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     1.3846257473915102e-10,
+     1.1735057370287905e-12,
+     9.325873406851315e-15,
+     2.220446049250313e-16,
+     2.220446049250313e-16,
+     2.220446049250313e-16
+    ],
+    "local_slopes_log2": [
+     6.88,
+     6.98,
+     5.39,
+     0.0,
+     0.0
+    ],
+    "cost": {
+     "lu": 1,
+     "f": 18,
+     "newton": 2
+    }
+   },
+   {
+    "problem": "PR_lam-1000(amp0)",
+    "sr": 3,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     3.95584980478203e-06,
+     1.2613730399069212e-07,
+     4.037333939388432e-09,
+     1.3042123631068492e-10,
+     4.204626230519537e-12,
+     1.286106637854445e-13
+    ],
+    "local_slopes_log2": [
+     4.97,
+     4.97,
+     4.95,
+     4.96,
+     5.03
+    ],
+    "cost": {
+     "lu": 1,
+     "f": 9,
+     "newton": 2
+    }
+   },
+   {
+    "problem": "PR_lam-1000(amp0)",
+    "sr": 4,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     3.329130932039348e-07,
+     1.0509773717970461e-08,
+     3.2286301410167084e-10,
+     9.96396715136072e-12,
+     3.4443628504909896e-13,
+     1.1862039128729407e-14
+    ],
+    "local_slopes_log2": [
+     4.99,
+     5.02,
+     5.02,
+     4.85,
+     4.86
+    ],
+    "cost": {
+     "lu": 1,
+     "f": 12,
+     "newton": 2
+    }
+   },
+   {
+    "problem": "PR_lam-1000(amp0)",
+    "sr": 5,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     1.1900879171022893e-09,
+     9.301920345095027e-12,
+     7.166489623955385e-14,
+     4.85722573273506e-16,
+     2.0816681711721685e-17,
+     2.42861286636753e-17
+    ],
+    "local_slopes_log2": [
+     7.0,
+     7.02,
+     7.2,
+     4.54,
+     -0.22
+    ],
+    "cost": {
+     "lu": 1,
+     "f": 15,
+     "newton": 2
+    }
+   },
+   {
+    "problem": "PR_lam-1000(amp0)",
+    "sr": 6,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     5.228750765695622e-11,
+     4.0084602304091277e-13,
+     2.9282132274488504e-15,
+     2.706168622523819e-16,
+     1.8041124150158794e-16,
+     1.2663481374630692e-16
+    ],
+    "local_slopes_log2": [
+     7.03,
+     7.1,
+     3.44,
+     0.58,
+     0.51
+    ],
+    "cost": {
+     "lu": 1,
+     "f": 18,
+     "newton": 2
+    }
+   },
+   {
+    "problem": "PR_lam-1000(amp1)",
+    "sr": 3,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     0.2702889756597821,
+     0.259432635363249,
+     0.24170217691580073,
+     0.23192287101505404,
+     0.20863722508025812,
+     0.15380414174738266
+    ],
+    "local_slopes_log2": [
+     0.06,
+     0.1,
+     0.06,
+     0.15,
+     0.44
+    ],
+    "cost": {
+     "lu": 1,
+     "f": 9,
+     "newton": 2
+    }
+   },
+   {
+    "problem": "PR_lam-1000(amp1)",
+    "sr": 4,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     0.35174519114296515,
+     0.34026557972610894,
+     0.3174895800719799,
+     0.2727761996601061,
+     0.18926296260414477,
+     0.07928217657759809
+    ],
+    "local_slopes_log2": [
+     0.05,
+     0.1,
+     0.22,
+     0.53,
+     1.26
+    ],
+    "cost": {
+     "lu": 1,
+     "f": 12,
+     "newton": 2
+    }
+   },
+   {
+    "problem": "PR_lam-1000(amp1)",
+    "sr": 5,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     0.18046696053832811,
+     0.17344624619413246,
+     0.15953222843773499,
+     0.13276998849559685,
+     0.08673099421394008,
+     0.03361168540112605
+    ],
+    "local_slopes_log2": [
+     0.06,
+     0.12,
+     0.26,
+     0.61,
+     1.37
+    ],
+    "cost": {
+     "lu": 1,
+     "f": 15,
+     "newton": 2
+    }
+   },
+   {
+    "problem": "PR_lam-1000(amp1)",
+    "sr": 6,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     0.18210088318772527,
+     0.15986489309521126,
+     0.12148513630303849,
+     0.06571780036296342,
+     0.019306583684954654,
+     0.007098374334746901
+    ],
+    "local_slopes_log2": [
+     0.19,
+     0.4,
+     0.89,
+     1.77,
+     1.44
+    ],
+    "cost": {
+     "lu": 1,
+     "f": 18,
+     "newton": 2
+    }
+   },
+   {
+    "problem": "LIN3(-1,-50,-1000)",
+    "sr": 3,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     0.11149419038324515,
+     0.10483936208388211,
+     0.09642952017945228,
+     0.0895539053900054,
+     0.08001401379945494,
+     0.0589367699095702
+    ],
+    "local_slopes_log2": [
+     0.09,
+     0.12,
+     0.11,
+     0.16,
+     0.44
+    ],
+    "cost": {
+     "lu": 1,
+     "f": 9,
+     "newton": 2
+    }
+   },
+   {
+    "problem": "LIN3(-1,-50,-1000)",
+    "sr": 4,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     0.1475110009643552,
+     0.13462627474333888,
+     0.1222945044915722,
+     0.10456403992527452,
+     0.072519515967292,
+     0.030377549617853328
+    ],
+    "local_slopes_log2": [
+     0.13,
+     0.14,
+     0.23,
+     0.53,
+     1.26
+    ],
+    "cost": {
+     "lu": 1,
+     "f": 12,
+     "newton": 2
+    }
+   },
+   {
+    "problem": "LIN3(-1,-50,-1000)",
+    "sr": 5,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     0.07482502041643335,
+     0.06806136848930078,
+     0.06129444082020741,
+     0.05087918644282108,
+     0.033231730496404044,
+     0.012878537847853533
+    ],
+    "local_slopes_log2": [
+     0.14,
+     0.15,
+     0.27,
+     0.61,
+     1.37
+    ],
+    "cost": {
+     "lu": 1,
+     "f": 15,
+     "newton": 2
+    }
+   },
+   {
+    "problem": "LIN3(-1,-50,-1000)",
+    "sr": 6,
+    "h0": [
+     0.2,
+     0.1,
+     0.05,
+     0.025,
+     0.0125,
+     0.00625
+    ],
+    "maxerr": [
+     0.07015691316654782,
+     0.06112239390908303,
+     0.04653162587570758,
+     0.02517965198415073,
+     0.007397444789268182,
+     0.0027197873983570986
+    ],
+    "local_slopes_log2": [
+     0.2,
+     0.39,
+     0.89,
+     1.77,
+     1.44
+    ],
+    "cost": {
+     "lu": 1,
+     "f": 18,
+     "newton": 2
+    }
+   }
+  ],
+  "s4": [
+   {
+    "problem": "PR_lam-1000(amp1)",
+    "starter": "A_radau_sr4",
+    "h0": [
+     0.002,
+     0.001,
+     0.0005,
+     0.00025,
+     0.000125,
+     6.25e-05
+    ],
+    "maxerr": [
+     0.004253024623104465,
+     0.0003051837456994333,
+     1.899190206355872e-05,
+     8.336530942232301e-07,
+     3.0801108441558256e-08,
+     1.0457198440505522e-09
+    ],
+    "slopes": [
+     3.8,
+     4.01,
+     4.51,
+     4.76,
+     4.88
+    ]
+   },
+   {
+    "problem": "PR_lam-1000(amp1)",
+    "starter": "A_radau_sr5",
+    "h0": [
+     0.002,
+     0.001,
+     0.0005,
+     0.00025,
+     0.000125,
+     6.25e-05
+    ],
+    "maxerr": [
+     0.0010120597644808216,
+     4.2258248042936764e-05,
+     1.1095909068226106e-06,
+     2.259474018995178e-08,
+     4.034282907738884e-10,
+     6.739719893289475e-12
+    ],
+    "slopes": [
+     4.58,
+     5.25,
+     5.62,
+     5.81,
+     5.9
+    ]
+   },
+   {
+    "problem": "PR_lam-1000(amp1)",
+    "starter": "B_limex_k5",
+    "h0": [
+     0.002,
+     0.001,
+     0.0005,
+     0.00025,
+     0.000125,
+     6.25e-05
+    ],
+    "maxerr": [
+     3.2504250366161e-05,
+     3.887874911678857e-06,
+     1.9808754292416353e-07,
+     5.959388427179135e-09,
+     1.3910073093370556e-10,
+     2.6606494785141876e-12
+    ],
+    "slopes": [
+     3.06,
+     4.29,
+     5.05,
+     5.42,
+     5.71
+    ]
+   },
+   {
+    "problem": "PR_lam-1000(amp1)",
+    "starter": "B_limex_k6",
+    "h0": [
+     0.002,
+     0.001,
+     0.0005,
+     0.00025,
+     0.000125,
+     6.25e-05
+    ],
+    "maxerr": [
+     2.9947878218417046e-06,
+     2.298248204524178e-07,
+     6.4582978964722315e-09,
+     9.769174358353894e-11,
+     1.1516343434436749e-12,
+     1.0880185641326534e-14
+    ],
+    "slopes": [
+     3.7,
+     5.15,
+     6.05,
+     6.41,
+     6.73
+    ]
+   },
+   {
+    "problem": "LIN3(-1,-50,-1000)",
+    "starter": "A_radau_sr4",
+    "h0": [
+     0.002,
+     0.001,
+     0.0005,
+     0.00025,
+     0.000125,
+     6.25e-05
+    ],
+    "maxerr": [
+     0.0016295738825315986,
+     0.00011693312318916682,
+     7.27686906953906e-06,
+     3.19419517946784e-07,
+     1.1801641663922169e-08,
+     4.006743825613057e-10
+    ],
+    "slopes": [
+     3.8,
+     4.01,
+     4.51,
+     4.76,
+     4.88
+    ]
+   },
+   {
+    "problem": "LIN3(-1,-50,-1000)",
+    "starter": "A_radau_sr5",
+    "h0": [
+     0.002,
+     0.001,
+     0.0005,
+     0.00025,
+     0.000125,
+     6.25e-05
+    ],
+    "maxerr": [
+     0.0003877771483489223,
+     1.619151681042652e-05,
+     4.251468195271002e-07,
+     8.657318417704118e-09,
+     1.5457612967395562e-10,
+     2.582378755278114e-12
+    ],
+    "slopes": [
+     4.58,
+     5.25,
+     5.62,
+     5.81,
+     5.9
+    ]
+   },
+   {
+    "problem": "LIN3(-1,-50,-1000)",
+    "starter": "B_limex_k5",
+    "h0": [
+     0.002,
+     0.001,
+     0.0005,
+     0.00025,
+     0.000125,
+     6.25e-05
+    ],
+    "maxerr": [
+     1.24761750135427e-05,
+     1.492420521165272e-06,
+     7.601003826351871e-08,
+     2.286589584343801e-09,
+     5.334177544114027e-11,
+     1.0242917625191694e-12
+    ],
+    "slopes": [
+     3.06,
+     4.3,
+     5.05,
+     5.42,
+     5.7
+    ]
+   },
+   {
+    "problem": "LIN3(-1,-50,-1000)",
+    "starter": "B_limex_k6",
+    "h0": [
+     0.002,
+     0.001,
+     0.0005,
+     0.00025,
+     0.000125,
+     6.25e-05
+    ],
+    "maxerr": [
+     1.149359805552308e-06,
+     8.821386598967251e-08,
+     2.478083960255617e-09,
+     3.744560217455728e-11,
+     4.53859172466764e-13,
+     1.0347278589506459e-13
+    ],
+    "slopes": [
+     3.7,
+     5.15,
+     6.05,
+     6.37,
+     2.13
+    ]
+   }
+  ],
+  "s5": [
+   {
+    "problem": "PR_lam-1(amp1)",
+    "sigma": "uniform",
+    "start": "exact",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.0625,
+     0.03125,
+     0.015625,
+     0.0078125,
+     0.00390625
+    ],
+    "err": [
+     5.474384279224864e-09,
+     9.23863208157627e-11,
+     5.971445560248867e-12,
+     3.042366358840809e-11,
+     6.124811768870586e-11
+    ],
+    "order_fit": 1.4566260147663819,
+    "local_slopes": [
+     5.89,
+     3.95,
+     -2.35,
+     -1.01
+    ]
+   },
+   {
+    "problem": "PR_lam-1(amp1)",
+    "sigma": "uniform",
+    "start": "radau5",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.0625,
+     0.03125,
+     0.015625,
+     0.0078125,
+     0.00390625
+    ],
+    "err": [
+     5.50403100874064e-09,
+     9.154721425375101e-11,
+     1.3324674696946204e-11,
+     3.042366358840809e-11,
+     6.124811768870586e-11
+    ],
+    "order_fit": 1.4568680655840134,
+    "local_slopes": [
+     5.91,
+     2.78,
+     -1.19,
+     -1.01
+    ]
+   },
+   {
+    "problem": "PR_lam-1(amp1)",
+    "sigma": "uniform",
+    "start": "radau3",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.0625,
+     0.03125,
+     0.015625,
+     0.0078125,
+     0.00390625
+    ],
+    "err": [
+     7.636054464299491e-07,
+     4.722425628322924e-08,
+     2.9535724976881284e-09,
+     2.102775731316342e-10,
+     8.219491753891361e-11
+    ],
+    "order_fit": 3.4174070443871956,
+    "local_slopes": [
+     4.02,
+     4.0,
+     3.81,
+     1.36
+    ]
+   },
+   {
+    "problem": "PR_lam-1(amp1)",
+    "sigma": "uniform",
+    "start": "limex5",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.0625,
+     0.03125,
+     0.015625,
+     0.0078125,
+     0.00390625
+    ],
+    "err": [
+     5.476261666359505e-09,
+     9.361866837309663e-11,
+     1.3967271783599244e-11,
+     1.3465006887258824e-11,
+     4.9259707424198496e-11
+    ],
+    "order_fit": 1.6390860304075914,
+    "local_slopes": [
+     5.87,
+     2.74,
+     0.05,
+     -1.87
+    ]
+   },
+   {
+    "problem": "PR_lam-1(amp1)",
+    "sigma": "rand0.5-1.10",
+    "start": "exact",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.08801741564525521,
+     0.04402135781921825,
+     0.022765250386463137,
+     0.011561134821263001,
+     0.0058072341931787565
+    ],
+    "err": [
+     3.6468801312139476e-09,
+     7.493361486865524e-11,
+     2.5449642393482463e-11,
+     6.500155969035859e-11,
+     5.651434875630912e-11
+    ],
+    "order_fit": 1.2531988191081984,
+    "local_slopes": [
+     5.6,
+     1.56,
+     -1.35,
+     0.2
+    ]
+   },
+   {
+    "problem": "PR_lam-1(amp1)",
+    "sigma": "rand0.5-1.10",
+    "start": "radau5",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.08801741564525521,
+     0.04402135781921825,
+     0.022765250386463137,
+     0.011561134821263001,
+     0.0058072341931787565
+    ],
+    "err": [
+     3.7544898301433705e-09,
+     7.638600862946987e-11,
+     2.7999824681046448e-11,
+     3.8095082643962996e-11,
+     5.651434875630912e-11
+    ],
+    "order_fit": 1.3428820010741853,
+    "local_slopes": [
+     5.62,
+     1.45,
+     -0.44,
+     -0.57
+    ]
+   },
+   {
+    "problem": "PR_lam-1(amp1)",
+    "sigma": "rand0.5-1.10",
+    "start": "radau3",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.08801741564525521,
+     0.04402135781921825,
+     0.022765250386463137,
+     0.011561134821263001,
+     0.0058072341931787565
+    ],
+    "err": [
+     1.86059114981596e-06,
+     1.1174872205366171e-07,
+     7.808287350030696e-09,
+     4.46780390461754e-10,
+     2.478039995423842e-11
+    ],
+    "order_fit": 4.129874869375913,
+    "local_slopes": [
+     4.06,
+     3.84,
+     4.13,
+     4.17
+    ]
+   },
+   {
+    "problem": "PR_lam-1(amp1)",
+    "sigma": "rand0.5-1.10",
+    "start": "limex5",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.08801741564525521,
+     0.04402135781921825,
+     0.022765250386463137,
+     0.011561134821263001,
+     0.0058072341931787565
+    ],
+    "err": [
+     3.656597025170072e-09,
+     7.459854955982337e-11,
+     1.7086110304376234e-11,
+     6.092726323458919e-11,
+     7.827716252961636e-11
+    ],
+    "order_fit": 1.165720847013121,
+    "local_slopes": [
+     5.62,
+     2.13,
+     -1.83,
+     -0.36
+    ]
+   },
+   {
+    "problem": "PR_lam-1000(amp0)",
+    "sigma": "uniform",
+    "start": "exact",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.0625,
+     0.03125,
+     0.015625,
+     0.0078125,
+     0.00390625
+    ],
+    "err": [
+     1.3341545646028408e-09,
+     1.8725687667142665e-11,
+     9.403589018575076e-14,
+     2.1438406605511773e-13,
+     4.3853809472693683e-14
+    ],
+    "order_fit": 3.623440544411891,
+    "local_slopes": [
+     6.15,
+     7.64,
+     -1.19,
+     2.29
+    ]
+   },
+   {
+    "problem": "PR_lam-1000(amp0)",
+    "sigma": "uniform",
+    "start": "radau5",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.0625,
+     0.03125,
+     0.015625,
+     0.0078125,
+     0.00390625
+    ],
+    "err": [
+     1.3341525662013964e-09,
+     1.8699264359156587e-11,
+     2.2926105458509483e-13,
+     8.071321389024888e-14,
+     1.3133938381315602e-13
+    ],
+    "order_fit": 3.4476633801296566,
+    "local_slopes": [
+     6.16,
+     6.35,
+     1.51,
+     -0.7
+    ]
+   },
+   {
+    "problem": "PR_lam-1000(amp0)",
+    "sigma": "uniform",
+    "start": "radau3",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.0625,
+     0.03125,
+     0.015625,
+     0.0078125,
+     0.00390625
+    ],
+    "err": [
+     1.3362178030718042e-09,
+     1.8601786777594498e-11,
+     2.688960165642129e-13,
+     1.2279066652354231e-13,
+     2.8677060726067793e-13
+    ],
+    "order_fit": 3.161503729814944,
+    "local_slopes": [
+     6.17,
+     6.11,
+     1.13,
+     -1.22
+    ]
+   },
+   {
+    "problem": "PR_lam-1000(amp0)",
+    "sigma": "uniform",
+    "start": "limex5",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.0625,
+     0.03125,
+     0.015625,
+     0.0078125,
+     0.00390625
+    ],
+    "err": [
+     4.0366855413864755e-09,
+     1.6013745884890795e-11,
+     1.2934098236883074e-13,
+     1.928457393773897e-13,
+     4.809486142676178e-13
+    ],
+    "order_fit": 3.244572138226504,
+    "local_slopes": [
+     7.98,
+     6.95,
+     -0.58,
+     -1.32
+    ]
+   },
+   {
+    "problem": "PR_lam-1000(amp0)",
+    "sigma": "rand0.5-1.10",
+    "start": "exact",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.08801741564525521,
+     0.04402135781921825,
+     0.022765250386463137,
+     0.011561134821263001,
+     0.0058072341931787565
+    ],
+    "err": [
+     8.470001366944757e-10,
+     1.3826051414866924e-11,
+     8.282263763703668e-14,
+     2.0539125955565396e-14,
+     1.3300471835009375e-13
+    ],
+    "order_fit": 3.539871702957147,
+    "local_slopes": [
+     5.94,
+     7.38,
+     2.01,
+     -2.7
+    ]
+   },
+   {
+    "problem": "PR_lam-1000(amp0)",
+    "sigma": "rand0.5-1.10",
+    "start": "radau5",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.08801741564525521,
+     0.04402135781921825,
+     0.022765250386463137,
+     0.011561134821263001,
+     0.0058072341931787565
+    ],
+    "err": [
+     8.470399937010598e-10,
+     1.3805512288911359e-11,
+     8.393286066166183e-14,
+     2.1316282072803006e-14,
+     1.942890293094024e-14
+    ],
+    "order_fit": 4.104255764652322,
+    "local_slopes": [
+     5.94,
+     7.36,
+     1.98,
+     0.13
+    ]
+   },
+   {
+    "problem": "PR_lam-1000(amp0)",
+    "sigma": "rand0.5-1.10",
+    "start": "radau3",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.08801741564525521,
+     0.04402135781921825,
+     0.022765250386463137,
+     0.011561134821263001,
+     0.0058072341931787565
+    ],
+    "err": [
+     8.504603687953249e-10,
+     1.3781975560789306e-11,
+     2.942091015256665e-14,
+     1.2168044349891716e-13,
+     1.6042722705833512e-13
+    ],
+    "order_fit": 3.223408318016405,
+    "local_slopes": [
+     5.95,
+     8.87,
+     -2.05,
+     -0.4
+    ]
+   },
+   {
+    "problem": "PR_lam-1000(amp0)",
+    "sigma": "rand0.5-1.10",
+    "start": "limex5",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.08801741564525521,
+     0.04402135781921825,
+     0.022765250386463137,
+     0.011561134821263001,
+     0.0058072341931787565
+    ],
+    "err": [
+     4.236091588616375e-09,
+     1.3854584146599791e-11,
+     7.649436639667329e-14,
+     4.233280392895722e-13,
+     3.481659405224491e-13
+    ],
+    "order_fit": 3.288953401977109,
+    "local_slopes": [
+     8.26,
+     7.5,
+     -2.47,
+     0.28
+    ]
+   },
+   {
+    "problem": "PRvec2_(-1,-1000)_smooth",
+    "sigma": "uniform",
+    "start": "exact",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.0625,
+     0.03125,
+     0.015625,
+     0.0078125,
+     0.00390625
+    ],
+    "err": [
+     1.8052441030924626e-07,
+     3.79894576907347e-09,
+     7.19908577195838e-11,
+     1.360389578763943e-11,
+     1.7112589123513544e-11
+    ],
+    "order_fit": 3.4855131956236787,
+    "local_slopes": [
+     5.57,
+     5.72,
+     2.4,
+     -0.33
+    ]
+   },
+   {
+    "problem": "PRvec2_(-1,-1000)_smooth",
+    "sigma": "uniform",
+    "start": "radau5",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.0625,
+     0.03125,
+     0.015625,
+     0.0078125,
+     0.00390625
+    ],
+    "err": [
+     1.8261028178478966e-07,
+     3.832101358458573e-09,
+     7.707223748099068e-11,
+     1.5301482303442526e-11,
+     2.205702287483291e-11
+    ],
+    "order_fit": 3.3998805091644644,
+    "local_slopes": [
+     5.57,
+     5.64,
+     2.33,
+     -0.53
+    ]
+   },
+   {
+    "problem": "PRvec2_(-1,-1000)_smooth",
+    "sigma": "uniform",
+    "start": "radau3",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.0625,
+     0.03125,
+     0.015625,
+     0.0078125,
+     0.00390625
+    ],
+    "err": [
+     1.1826756553201534e-05,
+     7.328569157083464e-07,
+     4.548711624030588e-08,
+     2.8415501618361816e-09,
+     1.9008716822810356e-10
+    ],
+    "order_fit": 3.9860777161086967,
+    "local_slopes": [
+     4.01,
+     4.01,
+     4.0,
+     3.9
+    ]
+   },
+   {
+    "problem": "PRvec2_(-1,-1000)_smooth",
+    "sigma": "uniform",
+    "start": "limex5",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.0625,
+     0.03125,
+     0.015625,
+     0.0078125,
+     0.00390625
+    ],
+    "err": [
+     1.8005272395260619e-07,
+     3.8001742863613686e-09,
+     7.196970797096469e-11,
+     1.2079837130585247e-11,
+     1.98543403939766e-11
+    ],
+    "order_fit": 3.4590675518847345,
+    "local_slopes": [
+     5.57,
+     5.72,
+     2.57,
+     -0.72
+    ]
+   },
+   {
+    "problem": "PRvec2_(-1,-1000)_smooth",
+    "sigma": "rand0.5-1.10",
+    "start": "exact",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.08801741564525521,
+     0.04402135781921825,
+     0.022765250386463137,
+     0.011561134821263001,
+     0.0058072341931787565
+    ],
+    "err": [
+     7.656064393568585e-08,
+     2.3838424567657057e-09,
+     1.9733548128897382e-11,
+     1.6105616840178527e-11,
+     3.906081014193319e-11
+    ],
+    "order_fit": 2.9697573210148764,
+    "local_slopes": [
+     5.01,
+     6.92,
+     0.29,
+     -1.28
+    ]
+   },
+   {
+    "problem": "PRvec2_(-1,-1000)_smooth",
+    "sigma": "rand0.5-1.10",
+    "start": "radau5",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.08801741564525521,
+     0.04402135781921825,
+     0.022765250386463137,
+     0.011561134821263001,
+     0.0058072341931787565
+    ],
+    "err": [
+     8.541384977078792e-08,
+     2.531196918731382e-09,
+     1.793726278620511e-11,
+     1.5228707184178347e-11,
+     3.397759851253568e-11
+    ],
+    "order_fit": 3.060227436486086,
+    "local_slopes": [
+     5.08,
+     7.14,
+     0.24,
+     -1.16
+    ]
+   },
+   {
+    "problem": "PRvec2_(-1,-1000)_smooth",
+    "sigma": "rand0.5-1.10",
+    "start": "radau3",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.08801741564525521,
+     0.04402135781921825,
+     0.022765250386463137,
+     0.011561134821263001,
+     0.0058072341931787565
+    ],
+    "err": [
+     2.7612055477965747e-05,
+     1.7148406142308836e-06,
+     1.2124860349072009e-07,
+     7.988329331354294e-09,
+     4.669862274653269e-10
+    ],
+    "order_fit": 4.03675605420223,
+    "local_slopes": [
+     4.01,
+     3.82,
+     3.92,
+     4.1
+    ]
+   },
+   {
+    "problem": "PRvec2_(-1,-1000)_smooth",
+    "sigma": "rand0.5-1.10",
+    "start": "limex5",
+    "N": [
+     16,
+     32,
+     64,
+     128,
+     256
+    ],
+    "H": [
+     0.08801741564525521,
+     0.04402135781921825,
+     0.022765250386463137,
+     0.011561134821263001,
+     0.0058072341931787565
+    ],
+    "err": [
+     7.595562157014513e-08,
+     2.396794096526378e-09,
+     1.4966083927703266e-11,
+     1.537925342631752e-11,
+     4.044536927594322e-11
+    ],
+    "order_fit": 2.964237578389178,
+    "local_slopes": [
+     4.99,
+     7.32,
+     -0.04,
+     -1.39
+    ]
+   },
+   {
+    "estimator": {
+     "N": [
+      16,
+      32,
+      64,
+      128
+     ],
+     "H": [
+      0.0625,
+      0.03125,
+      0.015625,
+      0.0078125
+     ],
+     "est": [
+      1.3592825753860893e-08,
+      5.68413982549032e-10,
+      2.14475104343137e-11,
+      3.7703173916270316e-13
+     ],
+     "true_err_Yms": [
+      7.41458894282232e-10,
+      1.3394174658287739e-11,
+      1.900035684343493e-12,
+      1.6951551273791665e-11
+     ],
+     "est_fit": 5.014145964639606,
+     "trueerr_fit": 1.91701397807922
+    }
+   }
+  ],
+  "s1": {
+   "weights_sigma": [
+    "16*sigma*(sigma + 1)*(5*sigma + 1)*(5*sigma + 3)/351",
+    "-sigma*(2*sigma + 3)*(5*sigma + 1)*(5*sigma + 3)/8",
+    "125*sigma*(sigma + 1)*(2*sigma + 3)*(5*sigma + 1)/108",
+    "-125*sigma*(sigma + 1)*(2*sigma + 3)*(5*sigma + 3)/104",
+    "(sigma + 1)*(2*sigma + 3)*(5*sigma + 1)*(5*sigma + 3)/9"
+   ],
+   "sum_simplified": "1",
+   "sigma1": [
+    "512/117",
+    "-30",
+    "625/9",
+    "-1250/13",
+    "160/3"
+   ],
+   "sigma=1/2": {
+    "w": [
+     "77/117",
+     "-77/16",
+     "875/72",
+     "-4125/208",
+     "77/6"
+    ],
+    "sum_abs": 50.28846153846154
+   },
+   "sigma=1": {
+    "w": [
+     "512/117",
+     "-30",
+     "625/9",
+     "-1250/13",
+     "160/3"
+    ],
+    "sum_abs": 253.30769230769232
+   },
+   "sigma=11/10": {
+    "w": [
+     "1309/225",
+     "-31603/800",
+     "13013/144",
+     "-3927/32",
+     "20111/300"
+    ],
+    "sum_abs": 325.445
+   },
+   "sigma=3/2": {
+    "w": [
+     "595/39",
+     "-3213/32",
+     "10625/48",
+     "-118125/416",
+     "595/4"
+    ],
+    "sum_abs": 769.7211538461538
+   },
+   "err_const": "sigma*(sigma + 1)*(2*sigma + 3)*(5*sigma + 1)*(5*sigma + 3)/6000",
+   "err_const_sigma1": "2/25"
+  }
+ },
+ "urls": [
+  {
+   "url": "https://arxiv.org/pdf/1902.01161",
+   "title": "Super-Convergent IMEX Peer Methods with Variable Step Sizes (authors not verified)",
+   "status": "OPEN_ACCESS_READ (pdftotext Sec 2.5 'Starting procedure')",
+   "finding": "w0,i ~ u(t1-(1-c_i)dt0) from an integrator with continuous output on [t0,t0+tau]; shifted so that t1-(1-cmin)dt0 = t0 (shifted start, forward only)"
+  },
+  {
+   "url": "https://arxiv.org/html/2608.26913",
+   "title": "Stiff Norm Estimates for Variable-Stepsize Peer Two-Step Methods",
+   "status": "OPEN_ACCESS_READ (first 100k chars of 197k only)",
+   "finding": "Runge-Kutta-type starting methods, local order s+1, block-Gauss-Seidel Newton; stage nodes of starter in (0,1]; negative-node issue not discussed in the read part"
+  },
+  {
+   "url": "https://link.springer.com/article/10.1007/s11075-009-9267-2",
+   "title": "Schmitt, Weiner: Parallel start for explicit parallel two-step peer methods (Numer Algorithms 2009)",
+   "status": "NOT_ACCESSED (paywall/redirect; only search snippet: parallel Euler steps on initial interval, order s after s-2 steps via special coefficient sets) - explicit methods, not PPSW1"
+  },
+  {
+   "url": "https://www.mathematik.uni-marburg.de/~schmitt/peer/man_epp.pdf",
+   "title": "Manual for explicit parallel peer code EPPEER",
+   "status": "SEARCH_HIT_ONLY (not read)"
+  },
+  {
+   "url": "https://www.semanticscholar.org/paper/Parallel-start-for-explicit-parallel-two-step-peer-Schmitt-Weiner/b819d32129d12b2d6d4c1c409bf587e2c53864f6",
+   "title": "same as Numer Algorithms 2009",
+   "status": "SEARCH_HIT_ONLY"
+  },
+  {
+   "url": "Montijano 2019 'starting values' peer",
+   "title": "",
+   "status": "NOT_FOUND by search (no specific 2019 paper identified); no claim made"
+  }
+ ],
+ "unresolved": [
+  "Printed meaning of 'predictor of order s-2' (degree s-2=4 through 5 points assumed; only reading consistent with interpolating Y_{m-1,i}, i=2..6)",
+  "Error norm and weights/scaling of the SINUM controller NOT printed; sigma_min, safety factor, hysteresis for PPSW NOT printed",
+  "SINUM 'RODAS was also used to compute the starting values Y1': tolerance, h0, where integrated NOT printed; 'Y1' index ambiguous (may mean the starting stage set); ANM states ROWMAP",
+  "Whether the c_i<0 nodes were obtained backward in time by the authors: NOT printed (Y0i-y(t0+ci h0) formulation of ANM Thm 2.1 implies nodes t0-h0..t0+h0 with t0 = grid base, not necessarily t_init)",
+  "Stiff transient regime (h0*|lambda|>>1, data off slow manifold): no starter can be O(h0^5); policy for h0 needed (owner)",
+  "Nonlinear problem with frozen J (W-type starter Newton) NOT_RUN; Fisher/MOL NOT_RUN for starters; mpmath global-order replay NOT_RUN (double roundoff floor ~1e-11 limits global-order window)",
+  "Design C (self bootstrapping, order ramp-up) and D (Schmitt-Weiner 2009 parallel start) NOT_RUN / not read"
+ ],
+ "verdicts": {
+  "S1": "DERIVED from SOURCE_PRINTED (ANM Thm 2.1: Y0i - y(t0+c_i h0)=O(h0^p); SINUM (2) t_mi=t_m+h_m c_i, Thm 3.3; Y_0s is at t0+h0, c=0 node equals t0)",
+  "S2": "PARTIALLY SOURCE_PRINTED: SINUM p.277 RODAS (tol/h0 NOT_PRINTED), ANM Sec 4 ROWMAP, thesis Alg 4.1 (printed p.36, PDF p.41) forward-in-time shifted start t1 := t0 - h0*T1 'avoid unstable negative-time integration' - for PTSW; transfer to PPSW is DERIVED",
+  "S3": "DERIVED (weights) + SOURCE_PRINTED (verbal definition SINUM p.277, BIT Sec.7, ANM Sec.4 'embedded solution of order O(h^{s-2})'); reliability validation NOT printed beyond performance plots",
+  "S4": "SOURCE_PRINTED only: sigma_max=1.5 (SINUM; ANM 1.2 for non-Super methods), no lower bound (ANM), tolerances 1e-2..1e-9; remainder NOT_IN_LITERATURE -> OWNER_CHOICE; thesis controller = PTSW-only"
+ }
+}
