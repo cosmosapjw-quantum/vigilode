@@ -1,0 +1,37 @@
+{
+  "task": "PW02_LINT_CLEANUP",
+  "file": "crates/rodas5p-integrators/tests/ptsw2b_contracts.rs",
+  "sha256_before": "33ad24e9a1bd03c20df8af29f79e3b907bbb5b475e55bfa5b3eb117cb6cc2016",
+  "sha256_after": "89ca2fae065d88addf5dab0623e1d96cfed2ccdb727f291a847b58c3e0bf1d1d",
+  "commands": [
+    {
+      "cmd": "rustfmt --edition 2024 --check crates/rodas5p-integrators/tests/ptsw2b_contracts.rs",
+      "exit": 0
+    },
+    {
+      "cmd": "cargo test --locked --release -p rodas5p-integrators --test ptsw2b_contracts",
+      "exit": 0,
+      "result": "24 passed; 0 failed",
+      "stdout_sha256": "85d167d3720efd9fc654e0864300d11cb5f7a23db08e895133b17302411aecd2",
+      "stderr_sha256": "ce590904a0b36414881fa4cd2ce2efe2edbb15c77554c70238e232b3514219e2"
+    },
+    {
+      "cmd": "cargo clippy --locked -p rodas5p-integrators --all-targets --release --no-deps --message-format=short",
+      "exit": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "14728ecd5a9e19e2a7c778fca84f33a7eac3e5e9f25abef4da4bed95f973162f",
+      "ptsw2b_diagnostics": 0,
+      "note": "8 pre-existing warnings in source_owned_graph_schur.rs only"
+    }
+  ],
+  "test_attr_count": "24",
+  "tests_passed": 24,
+  "changed_lines_classification": [
+    "L509-510 loop-iteration refactor (for k in 0..3 -> iter().enumerate(), same operands/order)",
+    "type aliases JacobianFn/JvpFn added",
+    "let jacobian/jvp annotations use aliases; if/else re-indented by rustfmt only"
+  ],
+  "assertions_changed": false,
+  "allow_attrs_added": false,
+  "diff": "--- /dev/fd/63\t2026-11-11 16:11:57.359030528 +0900\n+++ crates/rodas5p-integrators/tests/ptsw2b_contracts.rs\t2026-11-11 16:10:26.664872900 +0900\n@@ -506,8 +506,8 @@\n     let mut sq = [[0.0_f64; 3]; 3];\n     for i in 0..3 {\n         for j in 0..3 {\n-            for k in 0..3 {\n-                sq[i][j] += got[i][k] * got[k][j];\n+            for (k, got_ik) in got[i].iter().enumerate() {\n+                sq[i][j] += got_ik * got[k][j];\n             }\n         }\n     }\n@@ -539,27 +539,28 @@\n     [[-3.0, 2.0 * y[1]], [0.5 * y[1], -2.0 + 0.5 * y[0]]]\n }\n \n+type JacobianFn = Arc<dyn Fn(f64, &[f64]) -> CoreResult<DenseMatrix> + Send + Sync>;\n+type JvpFn = Arc<dyn Fn(f64, &[f64], &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;\n+\n fn problem2(with_jacobian: bool) -> OdeProblem {\n-    let jacobian: Option<Arc<dyn Fn(f64, &[f64]) -> CoreResult<DenseMatrix> + Send + Sync>> =\n-        if with_jacobian {\n-            Some(Arc::new(|t: f64, y: &[f64]| {\n-                let j = jac2(t, y);\n-                DenseMatrix::from_vec_rows(vec![j[0].to_vec(), j[1].to_vec()])\n-            }))\n-        } else {\n-            None\n-        };\n-    let jvp: Option<Arc<dyn Fn(f64, &[f64], &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>> =\n-        if with_jacobian {\n-            None\n-        } else {\n-            Some(Arc::new(|t: f64, y: &[f64], v: &[f64], out: &mut [f64]| {\n-                let j = jac2(t, y);\n-                out[0] = j[0][0] * v[0] + j[0][1] * v[1];\n-                out[1] = j[1][0] * v[0] + j[1][1] * v[1];\n-                Ok(())\n-            }))\n-        };\n+    let jacobian: Option<JacobianFn> = if with_jacobian {\n+        Some(Arc::new(|t: f64, y: &[f64]| {\n+            let j = jac2(t, y);\n+            DenseMatrix::from_vec_rows(vec![j[0].to_vec(), j[1].to_vec()])\n+        }))\n+    } else {\n+        None\n+    };\n+    let jvp: Option<JvpFn> = if with_jacobian {\n+        None\n+    } else {\n+        Some(Arc::new(|t: f64, y: &[f64], v: &[f64], out: &mut [f64]| {\n+            let j = jac2(t, y);\n+            out[0] = j[0][0] * v[0] + j[0][1] * v[1];\n+            out[1] = j[1][0] * v[0] + j[1][1] * v[1];\n+            Ok(())\n+        }))\n+    };\n     OdeProblem::new(\n         \"ptsw2b-contract-nonlinear-2d\",\n         2,\n"
+}

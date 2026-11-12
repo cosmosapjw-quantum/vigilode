@@ -1,0 +1,775 @@
+{
+ "schema": "vigilode.pw01_pw02_readiness_audit.v1",
+ "date": "2026-11-10",
+ "worktree": "/media/cosmosapjw/5CAA5033AA500BC0/vigilode-unified-t02-20261110",
+ "task_nodes": [
+  "PW01_PTSW2C_ORDER3_FIRST_PEER_IMPLEMENTATION",
+  "PW02_PTSW2B_LSTABLE_ORDER2_CONTROL"
+ ],
+ "mode": "DOCUMENTATION_REPLAY_ONLY",
+ "environment": {
+  "python": "3.12.3",
+  "sympy": "1.12",
+  "numpy": "1.26.4",
+  "scipy": "1.11.4",
+  "mpmath": "(sympy dependency)"
+ },
+ "static_read_of_verify_scripts": {
+  "verify_ptsw2b.py": "imports sympy only; prints only; no file/network IO; side-effect free -> RUN",
+  "verify_ptsw2c_stability.py": "imports numpy, scipy.optimize, sympy (NOT stdlib/sympy-only; scipy+numpy present locally); prints only; no file/network IO; side-effect free -> RUN"
+ },
+ "receipts": [
+  {
+   "id": "R1_verify_ptsw2b",
+   "command": "python3 -I verify_ptsw2b.py",
+   "cwd": "/media/cosmosapjw/5CAA5033AA500BC0/vigilode-unified-t02-20261110/docs/agent/solver_consolidation_20261108",
+   "exit_code": 0,
+   "script_sha256": "cb52ed5b39ffa91987c11f3fd8a2f4cbda38732a727cd1a982f6e8a44c5c51e0",
+   "stdout_sha256": "80c254377c533433ec36a2b25b0660a2598daa043208e166a8dc0fd602ea9943",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "stdout_bytes": 388,
+   "stderr_bytes": 0,
+   "status": "EXECUTED",
+   "stdout_text": "PASS: C(2), Gamma(2), B(2) vanish identically in sigma.\nPASS: det(lambda I - M(infinity)) = lambda^3.\nPASS: M(infinity)^3 = 0 and M(infinity)^2 != 0 (nilpotency index 3).\nPASS: C3 = 23/12 - 5*sqrt(3)/4; |C3| = 0.24839684279443.\nPASS: embedded b_e and v_e(sigma) match the source construction.\nLIMIT: symbolic algebra only; no full sector proof, IVP integration, or runtime qualification.\n"
+  },
+  {
+   "id": "R2_verify_ptsw2c_stability",
+   "command": "python3 -I verify_ptsw2c_stability.py",
+   "cwd": "/media/cosmosapjw/5CAA5033AA500BC0/vigilode-unified-t02-20261110/docs/agent/solver_consolidation_20261108",
+   "exit_code": 0,
+   "script_sha256": "18f760b76fdf32bc3b40f4c50011229a255de30ab0f099ee128b5b2ac2848580",
+   "stdout_sha256": "ffb6d42adfccefc794ef87ef2364251c5a80e2150a9f1ce41aa3ad748f32dced",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "stdout_bytes": 708,
+   "stderr_bytes": 0,
+   "status": "EXECUTED",
+   "stdout_text": "PASS: exact amplification characteristic polynomial constructed.\nPASS: stiff-limit eigenvalues=[(0.5571972165127336+0j), (-0.6304504601082186+0.25369658975149406j), (-0.6304504601082186-0.25369658975149406j)]; rho_inf=0.6795805635.\nPASS: unit-circle root-locus minimum sector angle=81.16974941 deg.\nPASS: boundary z=-0.4373064246+2.8149962319i, w=exp(i*1.7885465625).\nPASS: boundary characteristic residual=2.196e-11, rho(M(z*))=1.000000000000.\nPASS: coarse polar scan max rho inside 81.1-deg sector=0.999999845290.\nPASS: 82-deg outside-sector witness z=-0.39487634+2.80969117i has rho=1.0105069736>1.\nLIMITATION: this is floating-point root-locus and polar sampling, not an interval-certified sector proof.\n"
+  },
+  {
+   "id": "R3_pw_check",
+   "command": "python3 -I <scratchpad>/pw_check.py",
+   "cwd": "/",
+   "exit_code": 0,
+   "script_sha256": "8931c0cf93de8bf12c3406964b403726b60194cfa85c50b886f81434293de55c",
+   "stdout_sha256": "f5ff2b99a274cc0202fa70d87c6f57ed4e28698855598ddf6f09935a215060af",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "stdout_bytes": 6416,
+   "stderr_bytes": 0,
+   "status": "EXECUTED",
+   "stdout_text": "(see results.exact_check_output; same bytes, sha256 above)"
+  },
+  {
+   "id": "R4_pw_check2",
+   "command": "python3 -I <scratchpad>/pw_check2.py",
+   "cwd": "/",
+   "exit_code": 0,
+   "script_sha256": "d5f5c3f6fdef1b0ce28866cf190c5d7ccc984fbe294bc70802526a77bcfd9b4f",
+   "stdout_sha256": "fb3f84a59135671cca34987c46b9f6cd288f4866b786d2a9ea4c023859162fd0",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "stdout_bytes": 158,
+   "stderr_bytes": 0,
+   "status": "EXECUTED",
+   "stdout_text": "{\"b_e_equals_(19/560,513/560)\": true, \"V1inv_equals_doc\": true, \"v_e_computed\": [\"-27*sigma/560 - 1/70\", \"27*sigma/560 + 9/140\"], \"v_e_equals_doc_(7)\": true}\n"
+  }
+ ],
+ "results": {
+  "summary_verdicts": {
+   "a_order_PTSW2C": {
+    "verdict": "PASS_EXACT",
+    "detail": "C(1),C(2),G(1),G(2),B(1..3) residuals = 0 identically in sigma; B(4) residual = -13 sigma^3/108 != 0 (order exactly 3, not 4); C(3) != 0 (stage order exactly 2); A,Gamma re-derived uniquely from C(2),G(2) equal certificate (3),(4). Theorem step p*=min(q+1,p)=3 is CITED from source, not re-proved."
+   },
+   "a_order_PTSW2B": {
+    "verdict": "PASS_EXACT",
+    "detail": "C(1),C(2),G(1),G(2),B(1),B(2) = 0 identically in sigma; B(3) residual sigma(-3sqrt3 sigma+7 sigma-30+18 sqrt3)/6 != 0 (order exactly 2); A,Gamma re-derived equal certificate (2.1),(2.2); v = e2^T(A+Gamma) (stiff accuracy), c2=1, b=gamma e2; C3=23/12-5sqrt3/4; RHS transform (2.5) identity exact."
+   },
+   "b_PTSW2B_stiff_limit": {
+    "verdict": "PASS_EXACT",
+    "detail": "M_inf equals certificate (3.1); charpoly = lambda^3; M_inf^2 equals certificate and !=0; M_inf^3=0 -> nilpotent index 3, rho=0 (constant step sigma=1). gamma root of -g^2+3g-3/2 and phi*(c,g)=0 at c1,c2. L(90) sector: NOT proven here (numeric left-half-plane grid sample max rho=1+1.6e-15 at tiny |z|, imaginary axis; SOURCE_REPORTED only)."
+   },
+   "c_PTSW2C_stability": {
+    "verdict": "PASS_NUMERIC_CORROBORATION_ONLY",
+    "detail": "charpoly numerator == certificate (2) (ratio 1); M_inf charpoly lam^3+19/27 lam^2-13/54 lam-667/2592 (equal to charpoly of certificate matrix (3)); det=667/2592 != 0 -> NOT nilpotent, rho_inf=0.6795805635 -> NOT L-stable (exact). Boundary-locus angle (own 40001-pt scan + 40-digit golden refine) = 81.1697494054 deg, matches 81.16974941; polar scan inside 81.1 deg max rho 0.99999984529; 82 deg witness rho=1.01049>1. Floating point; NOT interval proof; variable-step/W-perturbation UNRESOLVED."
+   },
+   "d_stage_dependency": {
+    "verdict": "PASS_STRUCTURAL",
+    "detail": "For both tableau forms the current-step residual Jacobian dF_i/dk_j (j!=i) is identically 0; diagonal = W_m=1-h*gamma*T_m for both stages. Both stages depend only on u_m, k_{m-1,1}, k_{m-1,2}, sigma_m, h_m, T_m. Previous-step dependency matrix is dense 2x2 (generic sigma) for A and Gamma."
+   }
+  },
+  "exact_check_output": {
+   "a_PTSW2B": {
+    "conditions_checked": "C(1),C(2),G(1),G(2),B(1),B(2) identically in sigma",
+    "all_zero": true,
+    "B3_residual_(order3_would_need_0)": "sigma*(-3*sqrt(3)*sigma + 7*sigma - 30 + 18*sqrt(3))/6",
+    "C3_stage_order_note": "q=2 only checked; C(3) not claimed",
+    "gamma": "3/2 - sqrt(3)/2",
+    "c": [
+     "3 - 2*sqrt(3)",
+     "1"
+    ],
+    "claimed_order": 2,
+    "verdict": "PASS",
+    "A_rederived_equals_table": true,
+    "Gamma_rederived_equals_table": true,
+    "stiff_accuracy_v_equals_row2_of_A_plus_Gamma": true,
+    "stiff_accuracy_c2_eq_1_and_b_eq_gamma_e2": true,
+    "leading_error_C3": {
+     "formula_2g^2-7/2g+7/6": "23/12 - 5*sqrt(3)/4",
+     "doc_value_23/12-5sqrt3/4_equal": true,
+     "numeric": -0.24839684279442995
+    },
+    "rhs_transform_2_5_identity_W_p": true
+   },
+   "a_PTSW2C": {
+    "conditions_checked": "C(1),C(2),G(1),G(2),B(1),B(2),B(3) identically in sigma",
+    "all_zero": true,
+    "B4_residual_(order4_would_need_0)": "-13*sigma**3/108",
+    "claimed_order": 3,
+    "verdict": "PASS",
+    "A_rederived_equals_table": true,
+    "Gamma_rederived_equals_table": true,
+    "C3_residual_(nonzero_means_stage_order_exactly_2)": [
+     "sigma**2/3 - 11*sigma/9 + 8/9",
+     "-125*sigma**2/2187 - 275*sigma/729 - 40/81"
+    ],
+    "embedded_B1_residual": "0",
+    "embedded_B2_residual": "sigma/20"
+   },
+   "b_PTSW2B_stiff_limit": {
+    "M_inf_equals_doc_(3.1)": true,
+    "charpoly": "lam**3",
+    "charpoly_is_lambda^3": true,
+    "M2_equals_doc": true,
+    "M2_nonzero": true,
+    "M3_zero": true,
+    "nilpotency_index": 3,
+    "rho_inf_exact": 0,
+    "gamma_root_of_pi(g)=-g^2+3g-3/2": true,
+    "phi*(c,g)=c^2+(2-4g)c-3+4g_zero_at_c1_and_c2": [
+     true,
+     true
+    ],
+    "verdict": "PASS",
+    "NUMERIC_SAMPLE_constant_step_max_rho_on_left_half_plane_grid": {
+     "max_rho": 1.0000000000000016,
+     "at_(radius,theta)": [
+      1.837443724610725e-05,
+      1.5707963267948966
+     ],
+     "status": "NUMERIC_SAMPLE_ONLY_not_proof_of_L(90)",
+     "stable_on_grid": true
+    },
+    "L90_stability_claim": "SOURCE_REPORTED (Podhaisky 2002); full sector NOT independently proven here -> UNRESOLVED as theorem"
+   },
+   "c_PTSW2C_stability": {
+    "charpoly_numerator_proportional_to_doc_(2)_constant_ratio": "1",
+    "M_inf_charpoly(this_script)": "lam**3 + 19*lam**2/27 - 13*lam/54 - 667/2592",
+    "M_inf_charpoly(doc_matrix_(3))": "lam**3 + 19*lam**2/27 - 13*lam/54 - 667/2592",
+    "charpolys_equal": true,
+    "M_inf_eigs": [
+     [
+      0.5571972165127345,
+      0.0
+     ],
+     [
+      -0.6304504601082181,
+      0.25369658975149395
+     ],
+     [
+      -0.6304504601082181,
+      -0.25369658975149395
+     ]
+    ],
+    "rho_inf_numeric": 0.6795805635112012,
+    "doc_rho_inf": 0.6795805635,
+    "rho_inf_matches_doc_1e-9": true,
+    "det_M_inf_exact": "667/2592",
+    "charpoly_is_lambda^3": false,
+    "L_stable_verdict": "NOT_L_STABLE (exact: char poly of M_inf != lambda^3; rho_inf=0.67958>0)",
+    "boundary_phi_star": 1.7885465676849839,
+    "boundary_z_star": [
+     -0.4373064277063873,
+     2.8149962521399226
+    ],
+    "alpha_star_deg_(own_scan+mp_refine)": 81.1697494053554,
+    "doc_alpha_deg": 81.16974941,
+    "alpha_matches_doc_1e-6_deg": true,
+    "source_claim_81.1_consistent": true,
+    "rho_at_boundary_point_mp": 1.0,
+    "interior_rho_samples": {
+     "rho(M(-1))": 0.4519281065620188,
+     "rho(M(-100))": 0.6695863538889677,
+     "rho(M(-1e6))": 0.6795795487232641
+    },
+    "polar_scan_max_rho_inside_81.1deg_sector": 0.9999998452896263,
+    "outside_witness_82deg_|z|=|z*|": {
+     "z": [
+      -0.39647094076473743,
+      2.821037327722598
+     ],
+     "rho": 1.010492286544606
+    },
+    "evidence_class": "NUMERIC (floating point scan + mp refinement); NOT interval-certified sector proof",
+    "verdict": "PASS_NUMERIC_CORROBORATION_ONLY"
+   },
+   "d_stage_dependency": {
+    "PTSW2B": {
+     "current_stage_Jacobian_dF_i/dk_j_offdiag_all_zero": true,
+     "diagonal_dF_i/dk_i": [
+      "-Tm*gam*hh + 1",
+      "-Tm*gam*hh + 1"
+     ],
+     "prev_step_dependency_matrix_(rows=current stage i, cols=previous k'_j; True=generic sigma nonzero)": [
+      [
+       true,
+       true
+      ],
+      [
+       true,
+       true
+      ]
+     ],
+     "depends_on_u_m(via f(Y_i))": [
+      true,
+      true
+     ],
+     "structural_nonzero_old_coeffs_(sigma-dependence_of_entries_can_vanish_at_special_sigma)": true,
+     "A_entry_zero_at_sigma": {
+      "(1,1)": [],
+      "(1,2)": [
+       "4*sqrt(3)/3 + 4"
+      ],
+      "(2,1)": [],
+      "(2,2)": []
+     },
+     "Gamma_entry_zero_at_sigma": {
+      "(1,1)": [],
+      "(1,2)": [
+       "2*sqrt(3)/3 + 2"
+      ],
+      "(2,1)": [],
+      "(2,2)": []
+     },
+     "output_u_{m+1}_dependence": {
+      "on_current_k_m,j via b": [
+       "0",
+       "3/2 - sqrt(3)/2"
+      ],
+      "on_previous_k_{m-1,j} via v(sigma)": [
+       "sigma*(-1 + sqrt(3))/8",
+       "(1 - sqrt(3))*(sigma - 4)/8"
+      ],
+      "note": "b_1=0: current k_{m,1} does not enter u_{m+1} directly; it enters only the next step through history"
+     }
+    },
+    "PTSW2C": {
+     "current_stage_Jacobian_dF_i/dk_j_offdiag_all_zero": true,
+     "diagonal_dF_i/dk_i": [
+      "-Tm*gam*hh + 1",
+      "-Tm*gam*hh + 1"
+     ],
+     "prev_step_dependency_matrix_(rows=current stage i, cols=previous k'_j; True=generic sigma nonzero)": [
+      [
+       true,
+       true
+      ],
+      [
+       true,
+       true
+      ]
+     ],
+     "depends_on_u_m(via f(Y_i))": [
+      true,
+      true
+     ],
+     "structural_nonzero_old_coeffs_(sigma-dependence_of_entries_can_vanish_at_special_sigma)": true,
+     "A_entry_zero_at_sigma": {
+      "(1,1)": [
+       "8/9"
+      ],
+      "(1,2)": [
+       "4"
+      ],
+      "(2,1)": [],
+      "(2,2)": []
+     },
+     "Gamma_entry_zero_at_sigma": {
+      "(1,1)": [
+       "4/9"
+      ],
+      "(1,2)": [
+       "2"
+      ],
+      "(2,1)": [],
+      "(2,2)": []
+     },
+     "output_u_{m+1}_dependence": {
+      "on_current_k_m,j via b": [
+       "1/28",
+       "27/28"
+      ],
+      "on_previous_k_{m-1,j} via v": [
+       "0",
+       "0"
+      ],
+      "note": "v=0"
+     }
+    },
+    "current_step_stage_dependency_matrix_(i<-j, same step)": [
+     [
+      "W only (diag)",
+      "0"
+     ],
+     [
+      "0",
+      "W only (diag)"
+     ]
+    ],
+    "stages_independent_within_step": true,
+    "couples_to_previous_step_only": [
+     "u_m",
+     "k_{m-1,1}",
+     "k_{m-1,2}",
+     "sigma_m=h_m/h_{m-1}",
+     "h_m",
+     "T_m (declared at step m, independent of stage values; shared by both stages)"
+    ],
+    "coupling_across_steps": "step m+1 needs u_{m+1} (all stage solves incl. both k_{m,i}) -> time marching stays sequential",
+    "verdict": "PASS",
+    "scope_note": "Structural (equation-form) check for the tableau forms in the certificates: no k_{m,j} appears in stage i's Y_i or RHS for j != i; shared W diag."
+   }
+  },
+  "embedded_ptsw2c_check_output": {
+   "b_e_equals_(19/560,513/560)": true,
+   "V1inv_equals_doc": true,
+   "v_e_computed": [
+    "-27*sigma/560 - 1/70",
+    "27*sigma/560 + 9/140"
+   ],
+   "v_e_equals_doc_(7)": true
+  }
+ },
+ "not_run": [
+  "cargo build/test/clippy (forbidden by task)",
+  "git commands (forbidden by task)",
+  "any Rust RED test (none exist yet; no Rust written)",
+  "interval-certified A(alpha) sector proof",
+  "L(90) full sector proof for PTSW2B",
+  "variable-step product-stability proof for either method",
+  "startup order test with a real starter",
+  "W-perturbation (T!=J) robustness",
+  "matched-error/benchmark performance"
+ ],
+ "discrepancies": [
+  {
+   "id": "D1",
+   "sev": "LOW",
+   "text": "SOURCE_LOCK_20261109.json audit_addendum TESTS blob '2ddca4c399d632540334f43964ccdffe457151cd2' has 41 hex chars (typo). Worktree git blob of crates/rodas5p-fair-ab/tests/global_error_contracts.rs is 2ddca4c399d632540334f43964ccdffe457151cd = the 40-char prefix. Lock-file defect, not tree drift. Not modified."
+  },
+  {
+   "id": "D2",
+   "sev": "MED",
+   "text": "Accepted-step ceiling is stated as <=1.10x (PTSW2B certificate sec.6) vs <=1.20x (PEERW plan sec.2, original G0 restored from PR #176). UNRESOLVED which applies to PW01/PW02; do not choose silently (owner-approval class: thresholds)."
+  },
+  {
+   "id": "D3",
+   "sev": "MED",
+   "text": "PTSW2B certificate calls PTSW2B 'the first source-certified candidate'; PEER_W certificates sec.9 and the DAG name PTSW2C as first implementation (PW01 priority 9, PW02 priority 10). DAG order governs; tension recorded."
+  },
+  {
+   "id": "D4",
+   "sev": "MED",
+   "text": "PTSW2C embedded estimator v_e(sigma) (7) is not covered by verify_ptsw2c_stability.py or verify_ptsw2b.py. This audit (R4) shows equality with the generic construction transferred from PTSW2B (v_e=([1,1+eps]S D^-1 - b_e V0 S)V1^-1, eps=1/10, b_e=0.95 b); it does NOT confirm Podhaisky eq (4.7) itself (source PDF not read) -> estimator 'EXACT_BY_TRANSFERRED_CONSTRUCTION', source confirmation UNRESOLVED."
+  },
+  {
+   "id": "D5",
+   "sev": "MED",
+   "text": "PTSW2C controller hysteresis constants are not transcribed in PEER_W_TABLEAU_CERTIFICATES sec.2.3 ('additional history/hysteresis'); PTSW2B certificate sec.5 gives them (keep h when sigma*>1.05 and any of last s ratios >1; keep when sigma* in [0.95,1.05]). Whether the same rule applies to PTSW2C is UNRESOLVED -> must be transcribed from source before PW01 controller code."
+  },
+  {
+   "id": "D6",
+   "sev": "LOW",
+   "text": "PTSW2B certificate sec.2.1 has garbled LaTeX (lost backslashes, e.g. 'rac', 'ag{2.5}', 'Gamma_{ij}' text); equations were reconstructed by the verified identity, not by reading the rendered formula."
+  },
+  {
+   "id": "D7",
+   "sev": "LOW",
+   "text": "verify_ptsw2c_stability.py needs numpy+scipy (task assumed stdlib/sympy-only). Read statically: no file writes/network; executed. Reproducibility on a machine without scipy is not guaranteed."
+  },
+  {
+   "id": "D8",
+   "sev": "INFO",
+   "text": "SOURCE_LOCK absence_check says no PTSW/peer path; a deferred stub exists: crates/rodas5p-integrators/src/candidates.rs CandidateFamily::PeerW / CandidateSpec::deferred(PeerW,'peer-w',DEFERRED_REASON) and tests/unified_candidate_contracts.rs line 32. These two files are NOT in the source lock; their worktree blobs are recorded here."
+  },
+  {
+   "id": "D9",
+   "sev": "INFO",
+   "text": "PTSW2C startup needs a forward integration to t1=t0+2h0 (derivative at t0+14/9 h0); PTSW2B to t1=t0+(2sqrt3-2)h0 ~ t0+1.4641h0. Behaviour when t_end < t1, when events lie inside the startup window, and cost charging are UNRESOLVED."
+  }
+ ],
+ "readiness_checklist": [
+  {
+   "item": "method_identity",
+   "status": "RESOLVED_ON_PAPER",
+   "content": "Two separate opt-in methods. PTSW2C: s=2, gamma=12/25, c=(-1,5/9), b=(1/28,27/28), v=0, A(sigma),Gamma(sigma) per cert (3),(4), p=3,q=2, A(81.1deg) source-reported (numerically corroborated 81.1697deg), NOT L-stable (rho_inf=0.67958). PTSW2B: s=2, gamma=(3-sqrt3)/2, c=(3-2sqrt3,1), b=(0,gamma), v=(sqrt3-1)(sigma,4-sigma)/8, p=2, q=2, stiffly accurate, rho(M_inf)=0 nilpotent index 3, L(90) source-reported. Separate tableau/startup/estimator/controller/identity per method; never share coefficients; claim ceilings from DAG: PW01 ORDER3_CANDIDATE_A(81.1_DEGREE)_NOT_L_STABLE_NOT_G0_QUALIFIED, PW02 ORDER2_L_STABLE_CONTROL_NOT_G0_QUALIFIED. Neither is a G0 (order>=4.8) candidate."
+  },
+  {
+   "item": "startup_requirement",
+   "status": "PARTIAL_UNRESOLVED",
+   "content": "Forward-only startup per Podhaisky Alg. 4.1 (cert). PTSW2C: T={-2,-4/9,0}, t1=t0+2h0, k0,1=f(t0,u0), k0,2=f(t0+14/9 h0,u(.)), need u1 error O(H^3), k0,i error O(H^2). PTSW2B: t1=t0+(2sqrt3-2)h0, k0,1=f(t0,u0), k0,2=f(t1,u1), u1 O(H^2). h1=h0 (sigma=1). UNRESOLVED: starter choice (DOPRI5 vs implicit/stiff starter; source used RADAU/ROWMAP; DOPRI5 on stiff problems unverified), starter dense-output accuracy, t_end<t1, events in window, startup cost ledger charging, whether startup ratio sigma_1 may differ."
+  },
+  {
+   "item": "estimator_source",
+   "status": "RESOLVED_ON_PAPER_WITH_GAPS",
+   "content": "Own method-specific embedded estimator only (never RODAS/DOPRI embedded pair or controller; do not call sequential.rs/rodas5p_* estimator/controller). PTSW2C: b_e=(19/560,513/560)=0.95 b, v_e(sigma)=(-(8+27 sigma)/560, 9(4+3 sigma)/560) [equal to transferred generic construction: R4]. PTSW2B: b_e=(0,19 gamma/20), v_e=((8sqrt3-11)sigma/80, (11-8sqrt3)sigma/80+(19sqrt3-17)/40) [verified by verify_ptsw2b.py R1]. Err_emb=scaled RMS(ATOL+RTOL|u|); sigma*=min{2,max{0.5,0.85 Err^{-1/s}}}, s=2; accept if Err<=1. UNRESOLVED: PTSW2C hysteresis constants (D5), source confirmation of eq (4.7) (D4), exponent 1/s with s=2 for the p=3 method, asymptotic estimator-vs-achieved-error test. Estimator is a step-control indicator, not a global-error enclosure."
+  },
+  {
+   "item": "history_rollback",
+   "status": "DESIGN_ONLY_NOT_RUN",
+   "content": "Committed state = {u_m, K_{m-1} (2 x n peer derivatives), h_{m-1}, last-s ratio history, controller state, (model,provider,norm,tolerance) epochs, T_m/W-factor generation}. Stages compute into scratch; commit (u_{m+1},K_m,h_m,ratio history) atomically only on accept. Reject: discard all scratch incl. stage solves, factor/preconditioner generation for the old h, restore committed state bit-exactly, recompute sigma-dependent A,Gamma,v,v_e for the new h. Event/discontinuity/epoch change => invalidate history and re-run startup. Existing crates/vigilode/src/session.rs checkpoint/epoch design is DOPRI5-specific (NativeSessionMethod::Dopri5): no peer history exists; new identity needed (UNRESOLVED how, since session.rs is a protected path)."
+  },
+  {
+   "item": "derivative_permission_class",
+   "status": "UNRESOLVED",
+   "content": "Linearly implicit W-method: no Newton, but NOT derivative-free (plan sec.3/6, anti_drift: 'JVP is derivative action'). T_m must be a declared source: (i) explicit Jacobian Dense/Banded (explicit Jacobian build counted), (ii) Jacobian::Jvp matrix-free (Jacobian-free, not derivative-free; Krylov per stage; no shared-Krylov-iteration claim from common W), (iii) default forward-difference Jacobian = approximate derivative action with extra RHS calls, (iv) source-owned exact rank-r collective operator (Woodbury) only if it is exactly T_m. Strict 'derivative-free/zero-Jacobian fast lane' label NOT granted. UNRESOLVED: mapping to Problem Jacobian enum / DerivativeFallback in switching.rs, T_m refresh/freeze policy across steps, stability robustness when T_m != J (listed unresolved in PTSW2C audit), permission wording requiring owner approval."
+  },
+  {
+   "item": "stage_graph",
+   "status": "PASS_STRUCTURAL",
+   "content": "Current-step stage coupling matrix: diag only (W_m), zero off-diagonal for both methods. Both stages couple to previous step only via u_m, K_{m-1}, sigma_m, h_m. PTSW2B b_1=0 so k_{m,1} reaches u_{m+1} only through the next step's A,Gamma,v. Next step requires u_{m+1}: time marching remains sequential. Do not prune coefficient entries by value (A12 zero at sigma=4 for PTSW2C; Gamma11 zero at sigma=4/9; A11 zero at 8/9)."
+  },
+  {
+   "item": "admissible_sigma_domain",
+   "status": "UNRESOLVED",
+   "content": "Source controller clips sigma to [0.5,2]; A,Gamma,v affine in sigma (bounded there). No proof of stability for arbitrary variable-step sequences; constant-step stability slice only. Controller must enforce the domain; the proof of variable-step stability is UNRESOLVED."
+  }
+ ],
+ "red_tests_proposed": [
+  "ptsw2c_tableau_exact_residuals_c2_g2_b3 (exact rational in sigma; also asserts B(4)!=0)",
+  "ptsw2b_tableau_exact_residuals_c2_g2_b2 (exact algebraic; B(3)!=0)",
+  "ptsw2b_stiff_limit_nilpotent_index3_and_ptsw2c_not_l_stable (M_inf charpoly)",
+  "ptsw2c_embedded_coefficients_exact_and_ptsw2b_embedded_exact",
+  "ptsw2b_rhs_transform_p_x_exact_parity (W x = f + p; k = x - p)",
+  "stage_graph_zero_same_step_dependency (perturb k_{m,j} -> no change in stage i inputs/RHS, j!=i)",
+  "shared_W_factor_reused_for_both_stage_rhs (factor count 1 per step; two solves)",
+  "serial_vs_parallel_bitwise_or_tolerance_parity (ParallelExecution::sequential vs rayon)",
+  "startup_forward_only_order (u1 O(H^3)/O(H^2) for PTSW2C; O(H^2) PTSW2B; k0 O(H^2)); no backward integration",
+  "step_ratio_recompute_after_reject (A,Gamma,v,v_e at new sigma)",
+  "reject_rollback_atomicity (u,K,h,ratio-history,controller,epochs,factor gen bit-identical after reject)",
+  "event_or_epoch_change_invalidates_history_and_restarts",
+  "estimator_not_rodas (compile-time/identity assertion; weights not inherited)",
+  "controller_clip_0.5_2_and_hysteresis (PTSW2B constants; PTSW2C once transcribed)",
+  "observed_order_p3_and_p2_on_scalar_linear/nonlinear with matched startup (fixed and variable ratio)",
+  "work_ledger_counts_startup_rejected_factor_solve_work (complete ledger, failed work included)",
+  "protected_paths_byte_identical_gate (blob compare of protected list)",
+  "no_default_selector_wiring (ProductionMethod/selection unchanged)"
+ ],
+ "integration_points": [
+  {
+   "path": "crates/rodas5p-integrators/src/parallel.rs",
+   "blob": "ffdfb1cef258ed43586db0323eb0e7f9de27dd53",
+   "use": "READ-ONLY reuse: ParallelExecution::{sequential,rayon,map_ordered,try_for_each_ordered_mut}; no second pool"
+  },
+  {
+   "path": "crates/rodas5p-integrators/src/stage_batch.rs",
+   "blob": "c2f44c327c53d7c6dfe7ba80b26cd43486d56b43",
+   "use": "READ-ONLY reference for stage-batch instrumentation; RODAS-specific; not a Peer stepper"
+  },
+  {
+   "path": "crates/rodas5p-integrators/src/common_w_gate.rs",
+   "blob": "NOT_IN_SOURCE_LOCK",
+   "use": "READ-ONLY reference for shared-W/multi-RHS Krylov gate (block_gmres usage); blob not locked -> UNRESOLVED provenance"
+  },
+  {
+   "path": "crates/rodas5p-core (LinearOperator, LinearSolverConfig, LinearSolveReport, WorkCounters)",
+   "blob": "NOT_IN_SOURCE_LOCK",
+   "use": "reuse for stage solves and work accounting; exact API UNRESOLVED (not read in this audit)"
+  },
+  {
+   "path": "crates/rodas5p-krylov (gmres, block_gmres, workspace)",
+   "blob": "NOT_IN_SOURCE_LOCK",
+   "use": "reuse independent per-stage GMRES; block-GMRES only after separate proof/measure"
+  },
+  {
+   "path": "crates/rodas5p-integrators/src/dopri5.rs (+ dopri5_dense.rs)",
+   "blob": "NOT_IN_SOURCE_LOCK",
+   "use": "candidate startup starter, read-only; accuracy for startup UNRESOLVED"
+  },
+  {
+   "path": "crates/rodas5p-integrators/src/candidates.rs",
+   "blob": "2a6c7a7179a34932938ee4233d48b31457e38cf1 (worktree, not in lock)",
+   "use": "deferred PeerW stub exists (CandidateFamily::PeerW); any edit is an allowlist/owner decision -> UNRESOLVED"
+  },
+  {
+   "path": "crates/rodas5p-integrators/src/lib.rs",
+   "blob": "9d42738178cb7c198668dde0a9aac3e1adb86963 (worktree, not in lock)",
+   "use": "would need one `mod`/`pub mod` line for a NEW module file; whether this single-line edit is allowed by the PW01/PW02 allowlist is UNRESOLVED"
+  },
+  {
+   "path": "crates/vigilode/src/problem.rs",
+   "blob": "f1b5ef43ec66d11585193b6be9d0ee0ce271f2ec",
+   "use": "READ-ONLY: Jacobian enum (Dense/Banded/Jvp/FD default) for T_m source"
+  },
+  {
+   "path": "crates/vigilode/src/session.rs",
+   "blob": "ce30e5703a8d47a6e258a6df829b19a553fe79f9",
+   "use": "READ-ONLY reference for checkpoint/epoch semantics; DOPRI5 only"
+  },
+  {
+   "path": "crates/rodas5p-fair-ab/src/{global_error,adaptive_global_error,numerical_reference,output_accuracy}.rs",
+   "blob": "see lock_check",
+   "use": "READ-ONLY reporting/authority for later matched-error comparison (not PW01/PW02 acceptance)"
+  },
+  {
+   "path": "NEW module file(s) in crates/rodas5p-integrators/src/ (names UNRESOLVED) + NEW test file(s)",
+   "blob": "n/a",
+   "use": "all PTSW tableau/startup/history/estimator code; DAG mutation class ISOLATED_OPT_IN_WORKTREE_NEW_MODULE_ONLY (PW01) / SEPARATE_METHOD (PW02)"
+  }
+ ],
+ "paths_must_remain_unchanged": [
+  "crates/rodas5p-integrators/src/sequential.rs",
+  "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+  "crates/rodas5p-integrators/src/collective_rodas5p.rs",
+  "crates/rodas5p-integrators/src/rodas5p_fast*.rs and rodas5p_lagged.rs (RODAS5P family)",
+  "RODAS5P tableau/coefficients (rodas5p-core load_rodas5p_coefficients, embedded weights), tolerances, controller constants",
+  "crates/vigilode/src/{selection,automatic,switching,production,lib}.rs (default selection/ProductionMethod/switching); crates/vigilode/src/session.rs; problem.rs",
+  "crates/rodas5p-integrators/src/{bdf,radau,exponential,dopri5*}.rs (reference-only)",
+  "crates/rodas5p-integrators/src/{homotopy,actual_k_homotopy,source_owned_graph_schur,...}.rs and all other source-lock blobs (33 locked blobs byte-identical as checked)",
+  "crates/rodas5p-fair-ab/** (authority; T02 replay)",
+  "research/LEDGER.jsonl (append-only), negative-evidence files, official G0 DAG, VIGILODE_UNIFIED_DAG_20261109.json, SOURCE_LOCK_20261109.json",
+  "existing tests (never weaken/delete); CLAUDE.md/.claude/settings.json/.agent/STATE.json rules where they apply"
+ ],
+ "g1_prerequisites": [
+  "G1 mutation gate (LOCAL_AGENT_DEVELOPMENT_SPEC_KO sec.10): task-specific prerequisites, own worktree, explicit file allowlist, RED test first, opt-in module/API, unchanged protected path, rollback tests, exact hashes, receipt; never wire default selector.",
+  "DAG dependency PW00_PEER_W_SOURCE_AND_API_AUDIT: status of PW00 in DAG not re-checked here -> UNRESOLVED (PW00 receipt exists in solver_consolidation_20261108/PEERW_EXECUTION_RECEIPT_PW00.json; not audited).",
+  "Owner approval (G3) needed for: tableau/estimator/controller changes, thresholds (D2), default behaviour."
+ ],
+ "overall": {
+  "PW01_readiness": "NOT_READY_FOR_G1 (math/tableau READY; UNRESOLVED: D5 PTSW2C controller constants, starter/startup contract, derivative permission class, file allowlist, step ceiling D2)",
+  "PW02_readiness": "CONDITIONALLY_READY_FOR_RED_TESTS (tableau/embedded/controller constants all transcribed and verified; UNRESOLVED: starter, derivative class, allowlist, ceiling, L(90) sector proof only source-reported)",
+  "note": "READY refers to documentation/arithmetic only. No Rust/RED test executed. Not a qualification."
+ },
+ "source_lock_check": {
+  "method": "git blob sha1 computed in Python (sha1('blob N\\0'+bytes)); no git command run",
+  "matched": 33,
+  "total": 34,
+  "details": {
+   "crates/rodas5p-integrators/src/parallel.rs": {
+    "lock_blob": "ffdfb1cef258ed43586db0323eb0e7f9de27dd53",
+    "worktree_git_blob_sha1": "ffdfb1cef258ed43586db0323eb0e7f9de27dd53",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/src/stage_batch.rs": {
+    "lock_blob": "c2f44c327c53d7c6dfe7ba80b26cd43486d56b43",
+    "worktree_git_blob_sha1": "c2f44c327c53d7c6dfe7ba80b26cd43486d56b43",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/src/sequential.rs": {
+    "lock_blob": "4153e286a2ac756252978d5d77cf1abe0e6a4e0c",
+    "worktree_git_blob_sha1": "4153e286a2ac756252978d5d77cf1abe0e6a4e0c",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs": {
+    "lock_blob": "d68239d53977e36f98b186b627aa0c4c5c7de7cb",
+    "worktree_git_blob_sha1": "d68239d53977e36f98b186b627aa0c4c5c7de7cb",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/src/homotopy.rs": {
+    "lock_blob": "771304cbd1e24b0b3a301f0e0325c89085a543de",
+    "worktree_git_blob_sha1": "771304cbd1e24b0b3a301f0e0325c89085a543de",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/src/actual_k_homotopy.rs": {
+    "lock_blob": "32f0c397645b10ac7e707c4c74526166b196d485",
+    "worktree_git_blob_sha1": "32f0c397645b10ac7e707c4c74526166b196d485",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/src/collective_rodas5p.rs": {
+    "lock_blob": "45300fc235e56faa45938fa94143c1cafc96ded3",
+    "worktree_git_blob_sha1": "45300fc235e56faa45938fa94143c1cafc96ded3",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/src/source_owned_graph_schur.rs": {
+    "lock_blob": "5d2c4319143e60117a7804c1f4524b269df358ea",
+    "worktree_git_blob_sha1": "5d2c4319143e60117a7804c1f4524b269df358ea",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/src/affine_transport.rs": {
+    "lock_blob": "1c7024c2e1c567b337f82b0ba4530a1747022f51",
+    "worktree_git_blob_sha1": "1c7024c2e1c567b337f82b0ba4530a1747022f51",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/src/quotient_flow.rs": {
+    "lock_blob": "7b76f3bd2d352504fa4c02e0fcaa2733ab1c2dce",
+    "worktree_git_blob_sha1": "7b76f3bd2d352504fa4c02e0fcaa2733ab1c2dce",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/src/polynomial_resolvent.rs": {
+    "lock_blob": "f8e0ef1dc8780fda12dc18483a816be5163996e2",
+    "worktree_git_blob_sha1": "f8e0ef1dc8780fda12dc18483a816be5163996e2",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/src/conditioned_polynomial.rs": {
+    "lock_blob": "df466c69b4b1cfadc1c62fb0c6ae10f3cb935767",
+    "worktree_git_blob_sha1": "df466c69b4b1cfadc1c62fb0c6ae10f3cb935767",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/src/quadratic_branch.rs": {
+    "lock_blob": "708c03698ff7f5ca03a46b9d7c7f14454cb75984",
+    "worktree_git_blob_sha1": "708c03698ff7f5ca03a46b9d7c7f14454cb75984",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/src/gray_scott.rs": {
+    "lock_blob": "40bd15f65acefcbf1f0abb63f1b223f6f5c003d7",
+    "worktree_git_blob_sha1": "40bd15f65acefcbf1f0abb63f1b223f6f5c003d7",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/src/gray_scott_verified.rs": {
+    "lock_blob": "5e84ce711b53ccbc1f9457542703dd0c111aa4ff",
+    "worktree_git_blob_sha1": "5e84ce711b53ccbc1f9457542703dd0c111aa4ff",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/examples/sphere_photon_fv_run.rs": {
+    "lock_blob": "aedad4f65200cc4b199be368a3c2b0150d3b8af7",
+    "worktree_git_blob_sha1": "aedad4f65200cc4b199be368a3c2b0150d3b8af7",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/examples/sphere_photon_fv_support/mod.rs": {
+    "lock_blob": "a610f6414e9bdd17a14f15bec7d28d53cdddd209",
+    "worktree_git_blob_sha1": "a610f6414e9bdd17a14f15bec7d28d53cdddd209",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/tests/sphere_photon_fv_contracts.rs": {
+    "lock_blob": "f15ee2c0c797ee33f8a21b5dd2692c1727122fb5",
+    "worktree_git_blob_sha1": "f15ee2c0c797ee33f8a21b5dd2692c1727122fb5",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/vigilode/src/lib.rs": {
+    "lock_blob": "9370f4e50e454dd43472160c8d65e4fdcd030e8a",
+    "worktree_git_blob_sha1": "9370f4e50e454dd43472160c8d65e4fdcd030e8a",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/vigilode/src/problem.rs": {
+    "lock_blob": "f1b5ef43ec66d11585193b6be9d0ee0ce271f2ec",
+    "worktree_git_blob_sha1": "f1b5ef43ec66d11585193b6be9d0ee0ce271f2ec",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/vigilode/src/session.rs": {
+    "lock_blob": "ce30e5703a8d47a6e258a6df829b19a553fe79f9",
+    "worktree_git_blob_sha1": "ce30e5703a8d47a6e258a6df829b19a553fe79f9",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/vigilode/src/production.rs": {
+    "lock_blob": "6747a9b30460dc8bf61cb3e63bf6ec43da95d97d",
+    "worktree_git_blob_sha1": "6747a9b30460dc8bf61cb3e63bf6ec43da95d97d",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/vigilode/src/selection.rs": {
+    "lock_blob": "380f156458d06aec18c577a5f28ebf3e31200513",
+    "worktree_git_blob_sha1": "380f156458d06aec18c577a5f28ebf3e31200513",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/vigilode/src/automatic.rs": {
+    "lock_blob": "ff4f5db411b310039b627d66774b24885eb3cf7d",
+    "worktree_git_blob_sha1": "ff4f5db411b310039b627d66774b24885eb3cf7d",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/vigilode/src/switching.rs": {
+    "lock_blob": "fb12a401002c0039631a43982cc296a494c366a2",
+    "worktree_git_blob_sha1": "fb12a401002c0039631a43982cc296a494c366a2",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/src/bdf.rs": {
+    "lock_blob": "8484695daed6e508f157439ce0704c7c54e59c8c",
+    "worktree_git_blob_sha1": "8484695daed6e508f157439ce0704c7c54e59c8c",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/src/radau.rs": {
+    "lock_blob": "cb694ce56cc301967f5458a5bff260480088bd49",
+    "worktree_git_blob_sha1": "cb694ce56cc301967f5458a5bff260480088bd49",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-integrators/src/exponential.rs": {
+    "lock_blob": "2a6a438e1a54b95da1c7e8437f522e4a1591bba2",
+    "worktree_git_blob_sha1": "2a6a438e1a54b95da1c7e8437f522e4a1591bba2",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-fair-ab/src/global_error.rs": {
+    "lock_blob": "c62f996fa18f9815f1f329766abe8fe2c25ca22b",
+    "worktree_git_blob_sha1": "c62f996fa18f9815f1f329766abe8fe2c25ca22b",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-fair-ab/src/adaptive_global_error.rs": {
+    "lock_blob": "ccae16353ed1dcc90c6511befea8b42f7d3ad9cd",
+    "worktree_git_blob_sha1": "ccae16353ed1dcc90c6511befea8b42f7d3ad9cd",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-fair-ab/src/lib.rs": {
+    "lock_blob": "6dd776caa740f82aaaac5e7b05feef764fa30072",
+    "worktree_git_blob_sha1": "6dd776caa740f82aaaac5e7b05feef764fa30072",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-fair-ab/tests/global_error_contracts.rs": {
+    "lock_blob": "2ddca4c399d632540334f43964ccdffe457151cd2",
+    "worktree_git_blob_sha1": "2ddca4c399d632540334f43964ccdffe457151cd",
+    "match": false,
+    "lock_blob_len": 41
+   },
+   "crates/rodas5p-fair-ab/src/numerical_reference.rs": {
+    "lock_blob": "b8adbdae154eaa243310136f78ec2eaa4d7073d9",
+    "worktree_git_blob_sha1": "b8adbdae154eaa243310136f78ec2eaa4d7073d9",
+    "match": true,
+    "lock_blob_len": 40
+   },
+   "crates/rodas5p-fair-ab/src/output_accuracy.rs": {
+    "lock_blob": "57401289d7484f5927693b0b47333660f1f2644d",
+    "worktree_git_blob_sha1": "57401289d7484f5927693b0b47333660f1f2644d",
+    "match": true,
+    "lock_blob_len": 40
+   }
+  },
+  "unlocked_files_relevant": {
+   "crates/rodas5p-integrators/src/candidates.rs": "2a6c7a7179a34932938ee4233d48b31457e38cf1",
+   "crates/rodas5p-integrators/tests/unified_candidate_contracts.rs": "e4fbd30633809a1c774f6f134f86bc71b02dd03a",
+   "crates/rodas5p-integrators/src/lib.rs": "9d42738178cb7c198668dde0a9aac3e1adb86963"
+  }
+ },
+ "check_script_texts": {
+  "pw_check.py": "#!/usr/bin/env python3\n\"\"\"Independent exact-arithmetic audit for PTSW2B / PTSW2C (read-only, no file writes, no network).\nCoefficients are transcribed from the markdown certificates (NOT from verify_*.py) and are never modified.\nConvention (certificate): Y_i=u+h*sum a_ij k'_j ; (I-h*gamma*T)k_i=f(Y_i)+h*T*sum Gamma_ij k'_j ;\nu+=h*(b.k+v.k'); k' = previous-step peer derivatives.\nOrder conditions used (variable step, sigma=h_m/h_{m-1}):\n C(q):  sum_j a_ij (c_j-1)^(l-1) = sigma^(l-1) c_i^l / l\n G(q):  sum_j Gam_ij (c_j-1)^(l-1) = -gamma sigma^(l-1) c_i^(l-1)\n B(p):  sum_j b_j sigma^(l-1) c_j^(l-1) + sum_j v_j (c_j-1)^(l-1) = sigma^(l-1)/l\n l=1..q (C,G) and l=1..p (B).  Order p*=min(q+1,p) by the PTSW convergence theorem (cited, not re-proved).\n\"\"\"\nimport json, math, sys\nimport sympy as sp\nimport mpmath as mp\nimport numpy as np\n\nR = sp.Rational\nsg = sp.symbols(\"sigma\", positive=True)\nr3 = sp.sqrt(3)\nOUT = {}\n\ndef z0(e):\n    return sp.simplify(sp.radsimp(sp.expand(e))) == 0\n\ndef conds(A, G, b, v, c, gamma, qmax, pmax):\n    s = len(c); one = sp.ones(s, 1)\n    res = {\"C\": {}, \"G\": {}, \"B\": {}}\n    for l in range(1, qmax + 1):\n        old = sp.Matrix([(cj - 1) ** (l - 1) for cj in c])\n        ci = sp.Matrix([ci ** l / sp.Integer(l) for ci in c])\n        cl = sp.Matrix([ci_ ** (l - 1) for ci_ in c])\n        rc = (A * old - sg ** (l - 1) * ci).applyfunc(lambda e: sp.simplify(sp.radsimp(sp.expand(e))))\n        rg = (G * old + gamma * sg ** (l - 1) * cl).applyfunc(lambda e: sp.simplify(sp.radsimp(sp.expand(e))))\n        res[\"C\"][l] = [str(x) for x in rc]\n        res[\"G\"][l] = [str(x) for x in rg]\n    for l in range(1, pmax + 1):\n        rb = sum(b[j] * sg ** (l - 1) * c[j] ** (l - 1) + v[j] * (c[j] - 1) ** (l - 1) for j in range(s)) - sg ** (l - 1) / sp.Integer(l)\n        res[\"B\"][l] = str(sp.simplify(sp.radsimp(sp.expand(rb))))\n    return res\n\ndef allzero(res, qs, ps):\n    ok = all(all(x == \"0\" for x in res[\"C\"][l]) and all(x == \"0\" for x in res[\"G\"][l]) for l in qs)\n    ok = ok and all(res[\"B\"][l] == \"0\" for l in ps)\n    return ok\n\ndef solve_unique(c, gamma, b, v_unknown_stiff=None):\n    \"\"\"Re-derive A, Gamma from C(2),G(2) (V0 invertible => unique), independent of the tabulated matrices.\"\"\"\n    s = 2\n    V1 = sp.Matrix([[1, c[j] - 1] for j in range(s)])  # columns (c_j-1)^0,(c_j-1)^1 stacked as rows over j\n    # rows: for each i: sum_j a_ij * [1, (c_j-1)] -> A * V1 = [c_i, sigma c_i^2/2]\n    Rhs_C = sp.Matrix([[c[i], sg * c[i] ** 2 / 2] for i in range(s)])\n    Rhs_G = sp.Matrix([[-gamma, -gamma * sg * c[i]] for i in range(s)])\n    Vinv = V1.inv()\n    A = (Rhs_C * Vinv).applyfunc(lambda e: sp.simplify(sp.radsimp(sp.expand(e))))\n    G = (Rhs_G * Vinv).applyfunc(lambda e: sp.simplify(sp.radsimp(sp.expand(e))))\n    return A, G\n\n# ------------------------------------------------------------------ PTSW2B\ngB = (3 - r3) / 2\ncB = [3 - 2 * r3, sp.Integer(1)]\nbB = [sp.Integer(0), gB]\nAB = sp.Matrix([[3 * (5 - 3 * r3) * sg / 8, (24 - 16 * r3 + 3 * (-5 + 3 * r3) * sg) / 8],\n                [-(1 + r3) * sg / 8, (8 + (1 + r3) * sg) / 8]])\nGB = sp.Matrix([[3 * (r3 - 2) * sg / 4, (-6 + 2 * r3 + 6 * sg - 3 * r3 * sg) / 4],\n                [r3 * sg / 4, (-6 + 2 * r3 - r3 * sg) / 4]])\nvB = [(r3 - 1) * sg / 8, (r3 - 1) * (4 - sg) / 8]\nresB = conds(AB, GB, bB, vB, cB, gB, 2, 3)\nokB2 = allzero(resB, [1, 2], [1, 2])\nOUT[\"a_PTSW2B\"] = {\n    \"conditions_checked\": \"C(1),C(2),G(1),G(2),B(1),B(2) identically in sigma\",\n    \"all_zero\": okB2,\n    \"B3_residual_(order3_would_need_0)\": resB[\"B\"][3],\n    \"C3_stage_order_note\": \"q=2 only checked; C(3) not claimed\",\n    \"gamma\": str(gB), \"c\": [str(x) for x in cB],\n    \"claimed_order\": 2,\n    \"verdict\": \"PASS\" if okB2 and resB[\"B\"][3] != \"0\" else \"FAIL\",\n}\n# uniqueness: re-derive A,Gamma from C(2),G(2), compare with tabulated\nAu, Gu = solve_unique(cB, gB, bB)\nOUT[\"a_PTSW2B\"][\"A_rederived_equals_table\"] = all(z0(x) for x in (Au - AB))\nOUT[\"a_PTSW2B\"][\"Gamma_rederived_equals_table\"] = all(z0(x) for x in (Gu - GB))\n# v unique from stiff accuracy v^T = e2^T (A+Gamma) and B(2)\nbeta = (AB + GB).applyfunc(lambda e: sp.simplify(sp.radsimp(sp.expand(e))))\nOUT[\"a_PTSW2B\"][\"stiff_accuracy_v_equals_row2_of_A_plus_Gamma\"] = all(z0(vB[j] - beta[1, j]) for j in range(2))\nOUT[\"a_PTSW2B\"][\"stiff_accuracy_c2_eq_1_and_b_eq_gamma_e2\"] = (cB[1] == 1 and bB[0] == 0 and z0(bB[1] - gB))\nOUT[\"a_PTSW2B\"][\"leading_error_C3\"] = {\n    \"formula_2g^2-7/2g+7/6\": str(sp.simplify(sp.radsimp(sp.expand(2 * gB ** 2 - R(7, 2) * gB + R(7, 6))))),\n    \"doc_value_23/12-5sqrt3/4_equal\": z0(2 * gB ** 2 - R(7, 2) * gB + R(7, 6) - (R(23, 12) - 5 * r3 / 4)),\n    \"numeric\": float(sp.N(R(23, 12) - 5 * r3 / 4, 15)),\n}\n# source RHS transformation identity (2.5): W p = p - h T sum Gamma k'  with p = Gamma k'/gamma, W = I - h gamma T\nh, T = sp.symbols(\"h T\")\nkp = sp.symbols(\"kp1 kp2\")\np = [sum(GB[i, j] * kp[j] for j in range(2)) / gB for i in range(2)]\nWm = 1 - h * gB * T\nchk = [z0(Wm * p[i] - (p[i] - h * T * sum(GB[i, j] * kp[j] for j in range(2)))) for i in range(2)]\nOUT[\"a_PTSW2B\"][\"rhs_transform_2_5_identity_W_p\"] = all(chk)\n\n# ------------------------------------------------------------------ PTSW2C\ngC = R(12, 25)\ncC = [sp.Integer(-1), R(5, 9)]\nbC = [R(1, 28), R(27, 28)]\nvC = [sp.Integer(0), sp.Integer(0)]\nAC = sp.Matrix([[(8 - 9 * sg) / 28, 9 * (sg - 4) / 28],\n                [-5 * (8 + 5 * sg) / 252, 5 * (36 + 5 * sg) / 252]])\nGC = sp.Matrix([[24 - 54 * sg, 54 * (sg - 2)], [24 + 30 * sg, -108 - 30 * sg]]) / 175\nresC = conds(AC, GC, bC, vC, cC, gC, 2, 4)\nokC3 = allzero(resC, [1, 2], [1, 2, 3])\nOUT[\"a_PTSW2C\"] = {\n    \"conditions_checked\": \"C(1),C(2),G(1),G(2),B(1),B(2),B(3) identically in sigma\",\n    \"all_zero\": okC3,\n    \"B4_residual_(order4_would_need_0)\": resC[\"B\"][4],\n    \"claimed_order\": 3,\n    \"verdict\": \"PASS\" if okC3 and resC[\"B\"][4] != \"0\" else \"FAIL\",\n}\nAu, Gu = solve_unique(cC, gC, bC)\nOUT[\"a_PTSW2C\"][\"A_rederived_equals_table\"] = all(z0(x) for x in (Au - AC))\nOUT[\"a_PTSW2C\"][\"Gamma_rederived_equals_table\"] = all(z0(x) for x in (Gu - GC))\n# stage-order 3 is not claimed: C(3) residual (should be nonzero if q=2 exactly)\nl = 3\noldC = sp.Matrix([(cj - 1) ** (l - 1) for cj in cC])\nrc3 = (AC * oldC - sg ** (l - 1) * sp.Matrix([ci ** l / sp.Integer(l) for ci in cC])).applyfunc(sp.simplify)\nOUT[\"a_PTSW2C\"][\"C3_residual_(nonzero_means_stage_order_exactly_2)\"] = [str(x) for x in rc3]\n# embedded pair identity: v_e(sigma) PTSW2C, b_e=(19/560,513/560) (b_e = 0.95*b? check) -- statement only, formula check:\nbe = [R(19, 560), R(513, 560)]\nve = [-(8 + 27 * sg) / 560, 9 * (4 + 3 * sg) / 560]\n# eps=1/10 embedded: order-2 (s-1=... ) consistency: B(1) and B(2) for embedded must hold; B(1) as sanity\nemb_B1 = sp.simplify(sum(be[j] + ve[j] for j in range(2)) - 1)\nemb_B2 = sp.simplify(sum(be[j] * sg * cC[j] + ve[j] * (cC[j] - 1) for j in range(2)) - sg / 2)\nOUT[\"a_PTSW2C\"][\"embedded_B1_residual\"] = str(emb_B1)\nOUT[\"a_PTSW2C\"][\"embedded_B2_residual\"] = str(emb_B2)\n\n# ------------------------------------------------------------------ (b) PTSW2B stiff limit\nM1 = lambda A_, G_, b_, v_, g_: None\ndef Minf(A_, G_, b_, v_, g_):\n    s = 2\n    be_ = (A_ + G_).subs(sg, 1)\n    bT = sp.Matrix([b_]); vT = sp.Matrix([v_]).subs(sg, 1)\n    w = -1 / g_\n    one = sp.ones(s, 1)\n    top = sp.Matrix.hstack(w * be_, w * one)\n    bot = sp.Matrix.hstack(bT * w * be_ + vT, sp.Matrix([[1 + (bT * w * one)[0]]]))\n    return sp.Matrix.vstack(top, bot).applyfunc(lambda e: sp.simplify(sp.radsimp(sp.expand(e))))\nlam = sp.symbols(\"lam\")\nMB = Minf(AB, GB, bB, vB, gB)\ndoc_MB = sp.Matrix([[r3 / 4, 3 * r3 / 4, -1 - r3 / 3], [-r3 / 12, -r3 / 4, -1 - r3 / 3], [0, 0, 0]])\ncpB = sp.factor(sp.expand(MB.charpoly(lam).as_expr()), extension=[r3])\nMB2 = (MB ** 2).applyfunc(lambda e: sp.simplify(sp.radsimp(sp.expand(e))))\nMB3 = (MB ** 3).applyfunc(lambda e: sp.simplify(sp.radsimp(sp.expand(e))))\ndoc_MB2 = sp.Matrix([[0, 0, -1 - r3], [0, 0, (1 + r3) / 3], [0, 0, 0]])\nOUT[\"b_PTSW2B_stiff_limit\"] = {\n    \"M_inf_equals_doc_(3.1)\": all(z0(x) for x in (MB - doc_MB)),\n    \"charpoly\": str(cpB),\n    \"charpoly_is_lambda^3\": z0(MB.charpoly(lam).as_expr() - lam ** 3),\n    \"M2_equals_doc\": all(z0(x) for x in (MB2 - doc_MB2)),\n    \"M2_nonzero\": any(not z0(x) for x in MB2),\n    \"M3_zero\": all(z0(x) for x in MB3),\n    \"nilpotency_index\": 3 if (all(z0(x) for x in MB3) and any(not z0(x) for x in MB2)) else \"FAIL\",\n    \"rho_inf_exact\": 0,\n    \"gamma_root_of_pi(g)=-g^2+3g-3/2\": z0(-gB ** 2 + 3 * gB - R(3, 2)),\n    \"phi*(c,g)=c^2+(2-4g)c-3+4g_zero_at_c1_and_c2\": [z0(ci ** 2 + (2 - 4 * gB) * ci - 3 + 4 * gB) for ci in cB],\n}\nOUT[\"b_PTSW2B_stiff_limit\"][\"verdict\"] = \"PASS\" if (OUT[\"b_PTSW2B_stiff_limit\"][\"M_inf_equals_doc_(3.1)\"] and OUT[\"b_PTSW2B_stiff_limit\"][\"charpoly_is_lambda^3\"] and OUT[\"b_PTSW2B_stiff_limit\"][\"nilpotency_index\"] == 3) else \"FAIL\"\n\n# NUMERIC (not proof): spectral radius samples of M(z) for PTSW2B, left half-plane\ndef Mz_num(Anum, Gnum, bnum, vnum, g, z):\n    s = 2\n    r = z / (1 - g * z)\n    H = r * (Anum + Gnum)\n    M = np.zeros((3, 3), dtype=complex)\n    M[0, 0] = 1 + r * sum(bnum); M[0, 1:] = np.array(bnum) @ H\n    M[1:, 0] = r; M[1:, 1:] = H\n    M[0, 1:] += np.array(vnum)  # v enters old-peer coefficient of u_{m+1}: u+ = u + b.q_m + v.q_{m-1}\n    return M\n# careful: for constant step the doc form is M = [[w*beta, w*1],[b w beta + v, 1 + b w 1]] in ordering (q_m ; u_{m+1}); use that ordering explicitly\ndef Mz_doc(Anum, Gnum, bnum, vnum, g, z):\n    r = z / (1 - g * z)\n    be_ = Anum + Gnum\n    b_ = np.array(bnum).reshape(1, 2); v_ = np.array(vnum).reshape(1, 2)\n    top = np.hstack([r * be_, r * np.ones((2, 1))])\n    bot = np.hstack([b_ @ (r * be_) + v_, np.array([[1 + (b_ @ (r * np.ones((2, 1))))[0, 0]]])])\n    return np.vstack([top, bot])\ndef rho(M):\n    return float(np.max(np.abs(np.linalg.eigvals(M))))\nAB1 = np.array(AB.subs(sg, 1).evalf(30).tolist(), dtype=float); GB1 = np.array(GB.subs(sg, 1).evalf(30).tolist(), dtype=float)\nbBn = [float(x) for x in bB]; vBn = [float(x.subs(sg, 1)) for x in vB]; gBn = float(gB)\nmx = 0.0; arg = None\nfor rad in np.logspace(-6, 8, 300):\n    for th in np.linspace(math.pi / 2, math.pi, 91):  # closed left half-plane\n        z = rad * np.exp(1j * th)\n        rr = rho(Mz_doc(AB1, GB1, bBn, vBn, gBn, z))\n        if rr > mx: mx, arg = rr, (rad, th)\nOUT[\"b_PTSW2B_stiff_limit\"][\"NUMERIC_SAMPLE_constant_step_max_rho_on_left_half_plane_grid\"] = {\n    \"max_rho\": mx, \"at_(radius,theta)\": [float(arg[0]), float(arg[1])],\n    \"status\": \"NUMERIC_SAMPLE_ONLY_not_proof_of_L(90)\", \"stable_on_grid\": mx < 1.0 + 1e-12}\nOUT[\"b_PTSW2B_stiff_limit\"][\"L90_stability_claim\"] = \"SOURCE_REPORTED (Podhaisky 2002); full sector NOT independently proven here -> UNRESOLVED as theorem\"\n\n# ------------------------------------------------------------------ (c) PTSW2C stability\nzz, ww = sp.symbols(\"z w\")\nAC1 = AC.subs(sg, 1); GC1 = GC.subs(sg, 1)\nbe1 = AC1 + GC1\nrr_ = zz / (1 - gC * zz)\nbT = sp.Matrix([bC])\ntop = sp.Matrix.hstack(rr_ * be1, rr_ * sp.ones(2, 1))\nbot = sp.Matrix.hstack(bT * rr_ * be1, sp.Matrix([[1 + (bT * rr_ * sp.ones(2, 1))[0]]]))\nMC = sp.Matrix.vstack(top, bot)  # ordering (q_m ; u_{m+1}); same spectrum as doc ordering\nchi = sp.factor(sp.cancel(MC.charpoly(ww).as_expr()))\nnum_chi = sp.fraction(sp.cancel(MC.charpoly(ww).as_expr()))[0]\nexpected = (2592 * ww**3 * zz**2 - 10800 * ww**3 * zz + 11250 * ww**3 + 1824 * ww**2 * zz**2 + 1600 * ww**2 * zz\n            - 11250 * ww**2 - 624 * ww * zz**2 - 2050 * ww * zz - 667 * zz**2)\nratio = sp.simplify(num_chi / expected)\nMCinf = MC.applyfunc(lambda e: sp.limit(e, zz, sp.oo))\ndoc_MCinf = sp.Matrix([[R(-13, 12), R(-29, 336), R(5, 112)], [R(-25, 12), R(145, 336), R(297, 112)], [R(-25, 12), R(-319, 3024), R(-157, 3024)]])\ncp_inf = sp.expand(MCinf.charpoly(lam).as_expr())\n# doc ordering (u first) is similar via permutation => same charpoly; compare charpoly of doc M_inf\ncp_doc = sp.expand(doc_MCinf.charpoly(lam).as_expr())\nroots = np.roots([float(sp.Poly(cp_inf, lam).coeff_monomial(lam ** k)) for k in (3, 2, 1, 0)])\nrho_inf = float(max(abs(roots)))\nOUT[\"c_PTSW2C_stability\"] = {\n    \"charpoly_numerator_proportional_to_doc_(2)_constant_ratio\": str(ratio),\n    \"M_inf_charpoly(this_script)\": str(cp_inf),\n    \"M_inf_charpoly(doc_matrix_(3))\": str(cp_doc),\n    \"charpolys_equal\": z0(cp_inf - cp_doc),\n    \"M_inf_eigs\": [complex(x) for x in roots] and [[float(x.real), float(x.imag)] for x in roots],\n    \"rho_inf_numeric\": rho_inf,\n    \"doc_rho_inf\": 0.6795805635,\n    \"rho_inf_matches_doc_1e-9\": abs(rho_inf - 0.6795805635) < 1e-9,\n    \"det_M_inf_exact\": str(sp.simplify(MCinf.det())),\n    \"charpoly_is_lambda^3\": z0(cp_inf - lam ** 3),\n    \"L_stable_verdict\": \"NOT_L_STABLE (exact: char poly of M_inf != lambda^3; rho_inf=0.67958>0)\",\n}\n# own angle computation: boundary locus, mpmath refine\na2 = lambda w: 2592*w**3 + 1824*w**2 - 624*w - 667\na1 = lambda w: -10800*w**3 + 1600*w**2 - 2050*w\na0 = lambda w: 11250*w**3 - 11250*w**2\ndef cands(phi):\n    w = np.exp(1j * phi)\n    out = []\n    for z in np.roots([a2(w), a1(w), a0(w)]):\n        if z.real < 0 and z.imag >= 0:\n            out.append(complex(z))\n    return out\ndef ang(phi):\n    cs = cands(phi)\n    return min((abs(math.atan2(z.imag, -z.real)) for z in cs), default=float(\"inf\"))\nphis = np.linspace(1e-5, math.pi - 1e-5, 40001)\nvals = [ang(float(p)) for p in phis]\ni0 = int(np.argmin(vals)); phi0 = float(phis[i0])\n# golden-section refine in mp precision using mp.polyroots\nmp.mp.dps = 40\ndef ang_mp(phi):\n    w = mp.e ** (1j * phi)\n    c2 = 2592*w**3 + 1824*w**2 - 624*w - 667\n    c1 = -10800*w**3 + 1600*w**2 - 2050*w\n    c0 = 11250*w**3 - 11250*w**2\n    disc = mp.sqrt(c1**2 - 4*c2*c0)\n    best = None\n    for z in ((-c1 + disc) / (2*c2), (-c1 - disc) / (2*c2)):\n        if z.real < 0 and z.imag >= 0:\n            a = abs(mp.atan2(z.imag, -z.real))\n            if best is None or a < best[0]: best = (a, z)\n    return best\nlo, hi = phi0 - 0.01, phi0 + 0.01\ngr = (mp.sqrt(5) - 1) / 2\nx1 = hi - gr * (hi - lo); x2 = lo + gr * (hi - lo)\nf1 = ang_mp(x1)[0]; f2 = ang_mp(x2)[0]\nfor _ in range(120):\n    if f1 < f2:\n        hi, x2, f2 = x2, x1, f1; x1 = hi - gr * (hi - lo); f1 = ang_mp(x1)[0]\n    else:\n        lo, x1, f1 = x1, x2, f2; x2 = lo + gr * (hi - lo); f2 = ang_mp(x2)[0]\nphis_ = (lo + hi) / 2\na_star, z_star = ang_mp(phis_)\nalpha_deg = float(mp.degrees(a_star))\n# check that spectral radius at z* is 1 via exact-ish mp eigen of MC numeric\nf = sp.lambdify(zz, MC, \"mpmath\")\nMn = mp.matrix(f(mp.mpc(z_star)))\nev = mp.eig(Mn, left=False, right=False)\nrho_star = max(abs(e) for e in ev)\n# interior sanity: rho at negative real axis points and stiff limit\ndef rho_c(z):\n    return max(abs(e) for e in mp.eig(mp.matrix(f(mp.mpc(z))), left=False, right=False))\ninterior = {\"rho(M(-1))\": float(rho_c(-1)), \"rho(M(-100))\": float(rho_c(-100)), \"rho(M(-1e6))\": float(rho_c(-1e6))}\n# ray scans at alpha=81.1 deg (inside) and 82.0 (outside witness) with numpy\nAC1n = np.array(AC1.evalf(30).tolist(), dtype=float); GC1n = np.array(GC1.evalf(30).tolist(), dtype=float)\nbCn = [float(x) for x in bC]; vCn = [0.0, 0.0]; gCn = float(gC)\ndef rho_num(z): return rho(Mz_doc(AC1n, GC1n, bCn, vCn, gCn, z))\ninside_max = 0.0\nfor adeg in np.linspace(0.0, 81.1, 82):\n    for rad in np.logspace(-6, 8, 400):\n        z = rad * np.exp(1j * (math.pi - math.radians(adeg)))\n        inside_max = max(inside_max, rho_num(z))\n# outside witness: z* scaled along ray at 82 degrees through |z*|\nzo = abs(complex(z_star)) * np.exp(1j * (math.pi - math.radians(82.0)))\nOUT[\"c_PTSW2C_stability\"].update({\n    \"boundary_phi_star\": float(phis_), \"boundary_z_star\": [float(z_star.real), float(z_star.imag)],\n    \"alpha_star_deg_(own_scan+mp_refine)\": alpha_deg,\n    \"doc_alpha_deg\": 81.16974941,\n    \"alpha_matches_doc_1e-6_deg\": abs(alpha_deg - 81.16974941) < 1e-6,\n    \"source_claim_81.1_consistent\": alpha_deg > 81.1,\n    \"rho_at_boundary_point_mp\": float(rho_star),\n    \"interior_rho_samples\": interior,\n    \"polar_scan_max_rho_inside_81.1deg_sector\": inside_max,\n    \"outside_witness_82deg_|z|=|z*|\": {\"z\": [float(zo.real), float(zo.imag)], \"rho\": rho_num(zo)},\n    \"evidence_class\": \"NUMERIC (floating point scan + mp refinement); NOT interval-certified sector proof\",\n})\nsector_ok = (inside_max < 1.0) and abs(alpha_deg - 81.16974941) < 1e-6 and rho_num(zo) > 1.0\nOUT[\"c_PTSW2C_stability\"][\"verdict\"] = \"PASS_NUMERIC_CORROBORATION_ONLY\" if (sector_ok and not OUT[\"c_PTSW2C_stability\"][\"charpoly_is_lambda^3\"]) else \"FAIL\"\n\n# ------------------------------------------------------------------ (d) stage dependency matrix\ndef dep(Amat, Gmat, name):\n    s = 2\n    t, hh, Tm, um = sp.symbols(\"t hh Tm um\")\n    f = sp.Function(\"f\")\n    kcur = sp.symbols(\"k1 k2\"); kold = sp.symbols(\"kp1 kp2\")\n    gam = sp.symbols(\"gam\")\n    Y = [um + hh * sum(Amat[i, j] * kold[j] for j in range(s)) for i in range(s)]\n    # stage residual F_i(k_cur; u_m, k_old) = (1 - hh*gam*Tm) k_i - f(Y_i) - hh*Tm*sum Gamma_ij k_old_j\n    F = [(1 - hh * gam * Tm) * kcur[i] - f(Y[i]) - hh * Tm * sum(Gmat[i, j] * kold[j] for j in range(s)) for i in range(s)]\n    cur = [[0 if sp.simplify(sp.diff(F[i], kcur[j])) == 0 else (1 if i != j else \"W\") for j in range(s)] for i in range(s)]\n    # structurally: off-diagonal current coupling\n    offdiag_cur = [sp.simplify(sp.diff(F[i], kcur[j])) for i in range(s) for j in range(s) if i != j]\n    old = [[sp.simplify(sp.diff(F[i], kold[j])) != 0 for j in range(s)] for i in range(s)]\n    u_dep = [sp.simplify(sp.diff(F[i], um)) != 0 for i in range(s)]\n    return {\n        \"current_stage_Jacobian_dF_i/dk_j_offdiag_all_zero\": all(e == 0 for e in offdiag_cur),\n        \"diagonal_dF_i/dk_i\": [str(sp.simplify(sp.diff(F[i], kcur[i]))) for i in range(s)],\n        \"prev_step_dependency_matrix_(rows=current stage i, cols=previous k'_j; True=generic sigma nonzero)\": [[bool(x) for x in r] for r in old],\n        \"depends_on_u_m(via f(Y_i))\": [bool(x) for x in u_dep],\n        \"structural_nonzero_old_coeffs_(sigma-dependence_of_entries_can_vanish_at_special_sigma)\": True,\n    }\nDEPB = dep(AB, GB, \"B\"); DEPC = dep(AC, GC, \"C\")\n# special sigma where an old-coupling entry vanishes\ndef zero_sigmas(M_):\n    out = {}\n    for i in range(2):\n        for j in range(2):\n            sol = sp.solve(M_[i, j], sg)\n            out[f\"({i+1},{j+1})\"] = [str(sp.nsimplify(x)) for x in sol]\n    return out\nDEPB[\"A_entry_zero_at_sigma\"] = zero_sigmas(AB); DEPB[\"Gamma_entry_zero_at_sigma\"] = zero_sigmas(GB)\nDEPC[\"A_entry_zero_at_sigma\"] = zero_sigmas(AC); DEPC[\"Gamma_entry_zero_at_sigma\"] = zero_sigmas(GC)\nDEPB[\"output_u_{m+1}_dependence\"] = {\"on_current_k_m,j via b\": [str(x) for x in bB], \"on_previous_k_{m-1,j} via v(sigma)\": [str(sp.simplify(x)) for x in vB],\n    \"note\": \"b_1=0: current k_{m,1} does not enter u_{m+1} directly; it enters only the next step through history\"}\nDEPC[\"output_u_{m+1}_dependence\"] = {\"on_current_k_m,j via b\": [str(x) for x in bC], \"on_previous_k_{m-1,j} via v\": [\"0\", \"0\"], \"note\": \"v=0\"}\nOUT[\"d_stage_dependency\"] = {\n    \"PTSW2B\": DEPB, \"PTSW2C\": DEPC,\n    \"current_step_stage_dependency_matrix_(i<-j, same step)\": [[\"W only (diag)\", \"0\"], [\"0\", \"W only (diag)\"]],\n    \"stages_independent_within_step\": DEPB[\"current_stage_Jacobian_dF_i/dk_j_offdiag_all_zero\"] and DEPC[\"current_stage_Jacobian_dF_i/dk_j_offdiag_all_zero\"],\n    \"couples_to_previous_step_only\": [\"u_m\", \"k_{m-1,1}\", \"k_{m-1,2}\", \"sigma_m=h_m/h_{m-1}\", \"h_m\",\n                                       \"T_m (declared at step m, independent of stage values; shared by both stages)\"],\n    \"coupling_across_steps\": \"step m+1 needs u_{m+1} (all stage solves incl. both k_{m,i}) -> time marching stays sequential\",\n    \"verdict\": \"PASS\" if (DEPB[\"current_stage_Jacobian_dF_i/dk_j_offdiag_all_zero\"] and DEPC[\"current_stage_Jacobian_dF_i/dk_j_offdiag_all_zero\"]) else \"FAIL\",\n    \"scope_note\": \"Structural (equation-form) check for the tableau forms in the certificates: no k_{m,j} appears in stage i's Y_i or RHS for j != i; shared W diag.\",\n}\n\nprint(json.dumps(OUT, indent=1, default=str, ensure_ascii=False))\n",
+  "pw_check2.py": "#!/usr/bin/env python3\n\"\"\"Supplementary exact check: PTSW2C embedded v_e(sigma) via the same generic construction that verify_ptsw2b.py\nuses for PTSW2B (v_e=([1,1+eps] S D^-1 - b_e V0 S) V1^-1, eps=1/10, b_e=0.95 b). Transfers construction; does NOT confirm source eq (4.7).\"\"\"\nimport json, sympy as sp\nsg=sp.symbols(\"sigma\",positive=True); R=sp.Rational\nc=[sp.Integer(-1),R(5,9)]; b=sp.Matrix([[R(1,28),R(27,28)]]); eps=R(1,10)\nV0=sp.Matrix([[1,ci] for ci in c]); V1=sp.Matrix([[1,ci-1] for ci in c])\nS=sp.diag(1,sg); D=sp.diag(1,2); be=R(19,20)*b\nve=sp.simplify((sp.Matrix([[1,1+eps]])*S*D.inv()-be*V0*S)*V1.inv())\ndoc=sp.Matrix([[-(8+27*sg)/560, 9*(4+3*sg)/560]])\nprint(json.dumps({\"b_e_equals_(19/560,513/560)\": be==sp.Matrix([[R(19,560),R(513,560)]]),\n \"V1inv_equals_doc\": V1.inv()==sp.Matrix([[R(-2,7),R(9,7)],[R(-9,14),R(9,14)]]),\n \"v_e_computed\":[str(x) for x in ve],\"v_e_equals_doc_(7)\": all(sp.simplify(x)==0 for x in (ve-doc))}))\n"
+ },
+ "files_written_by_this_audit": [
+  "PW01_PW02_READINESS_AUDIT_KO.md",
+  "PW01_PW02_READINESS_AUDIT.json"
+ ]
+}

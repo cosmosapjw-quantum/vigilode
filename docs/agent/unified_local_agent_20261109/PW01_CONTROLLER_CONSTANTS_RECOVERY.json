@@ -1,0 +1,70 @@
+{
+  "schema": "pw01_controller_constants_recovery.v1",
+  "date": "2026-11-11",
+  "mode": "LITERATURE_AND_DOCUMENTATION_ONLY",
+  "executed_checks": "none (no scripts run; pdftotext extraction + grep + WebFetch/WebSearch only)",
+  "headline": {
+    "constants_printed_in_supplied_pdfs": false,
+    "sole_known_source": "Podhaisky 2002 dissertation 'Parallele Zweischritt-W-Methoden', DOI 10.25673/3017; read access BLOCKED by Anubis bot-check, not bypassed",
+    "ptsw2c_hysteresis_transcribed_anywhere_readable": false,
+    "hysteresis_needed_for_correctness": false,
+    "hysteresis_classification": "heuristic",
+    "pw01_status_effect": "blocker D5 not removable from literature; can proceed only with explicit OWNER_CHOICE labelled non-literature hysteresis and insensitivity test"
+  },
+  "pdf_findings": [
+    {"file": "Parallel Peer two-step W-methods and their application to MOL-systems (ANM 48 (2004) 425-439)", "location": "Sec.4 p.434", "facts": ["new step-size computed by standard rules, see [6] (Podhaisky-Schmitt-Weiner ANM 42 (2002) 381-395)", "sigma_max=1.5 for Super2,PPSW2-3,4; 1.2 for others; no lower bound enforced", "Krylov stop residual <= rktol*atol, rktol=0.1 (order 2,3), 0.001 (order 4,5)"], "applies_to_PTSW": false},
+    {"file": "Parallel Two-Step W-Methods with Peer Variables (SIAM J. Numer. Anal. 42(1) (2004) 265-282)", "location": "Sec.4 p.277", "facts": ["standard manner cf. [16]", "sigma_max=1.5 for all PPSW-methods", "estimator: superconsistent stage K_ms (4a) or order s-2 polynomial predictor (s>=5)", "on rejection f(Y_{m-1}) and T_m may be reused"], "applies_to_PTSW": false},
+    {"file": "Multi-Implicit Peer Two-Step W-Methods for Parallel Time Integration (BIT 45 (2005) 197-217)", "location": "Sec.7 p.212-214", "facts": ["stepsize control in a standard way with atol and rtol", "Krylov stop residual <= rktol*atol (7.1), Table 7.1 gives method-specific sigma_bar and rktol", "f(Y_{m-1}) reusable after rejection (6.1)"], "applies_to_PTSW": false},
+    {"grep_negative": "no occurrence of hysteresis/dead band/0.95-1.05 band/safety factor in controller context in any of the three PDFs"}
+  ],
+  "constants": [
+    {"id": "C1", "name": "safety factor", "ptsw2b": 0.85, "ptsw2c": 0.85, "verdict": "SECONDARY_ONLY", "source": "PTSW2B cert sec.5; PEER_W cert sec.2.3 line 110; original = Podhaisky 2002 (unread)", "cross_reference_other_methods": {"Klinge_IMEX_peer_arXiv_1902.01161_eq75": 0.9, "EPPEER_ivpepp.f90": 0.95}, "recommended_owner_choice": 0.85, "label": "SECONDARY_non_primary"},
+    {"id": "C2", "name": "ratio clip", "ptsw2b": [0.5, 2], "ptsw2c": [0.5, 2], "verdict": "SECONDARY_ONLY", "cross_reference_other_methods": {"Klinge_IMEX_peer": [0.8, 1.2], "EPPEER": "[0.2, sigx], sigx 1.4-1.8", "PPSW_ANM_SIAM_pdf": "sigma_max 1.5 or 1.2, no lower bound"}, "recommended_owner_choice": [0.5, 2], "label": "SECONDARY_non_primary"},
+    {"id": "C3", "name": "hysteresis band", "ptsw2b": [0.95, 1.05], "ptsw2c": null, "verdict_ptsw2b": "SECONDARY_ONLY", "verdict_ptsw2c": "UNRESOLVED", "recommended_owner_choice": "configurable; default [0.95,1.05] copied from PTSW2B, or OFF", "label": "OWNER_CHOICE_NON_LITERATURE_FOR_PTSW2C"},
+    {"id": "C4", "name": "ratio history", "ptsw2b": "keep h if sigma*>1.05 and any of last s=2 ratios > 1", "ptsw2c": null, "verdict_ptsw2b": "SECONDARY_ONLY", "verdict_ptsw2c": "UNRESOLVED", "ambiguity": "attempted vs accepted steps in 'last s ratios'; precedence between band and growth rule", "label": "OWNER_CHOICE_NON_LITERATURE_FOR_PTSW2C"},
+    {"id": "C5", "name": "error norm", "value": "RMS over components of (u-u_tilde)/(ATOL+RTOL|u_{m+1}|)", "verdict": "SECONDARY_ONLY", "cross_reference_other_methods": {"Klinge": "max-norm", "EPPEER": "max-norm"}, "label": "SECONDARY_non_primary"},
+    {"id": "C6", "name": "tolerance scaling", "value": "ATOL+RTOL*|u_{m+1,i}|", "verdict": "SECONDARY_ONLY; pdfs say only 'atol and rtol' (BIT p.212)"},
+    {"id": "C7", "name": "estimator order exponent", "value": "1/s with s=2", "verdict": "PTSW2B SECONDARY_ONLY; theory: DERIVED_FROM_THEORY 1/(p_e+1), p_e = order of embedded solution", "ptsw2c_p_e_computed": false, "status": "UNRESOLVED for PTSW2C (embedded order not computed; if p_e=2 theory gives 1/3)", "temporary_owner_choice": 0.5},
+    {"id": "C8", "name": "reject handling / reject factor", "verdict": "SECONDARY_ONLY", "detail": "no separate reject factor; reuse sigma* formula with Err>1 (gives sigma*<0.85); retry from last committed history; recompute A,Gamma,v,v_e for new sigma; f(Y_{m-1}) and T_m reusable (SIAM p.277, BIT p.212)"},
+    {"id": "C9", "name": "initial step", "verdict": "NOT_IN_LITERATURE (within read sources)", "cross_reference": "EPPEER uses Hairer-Wanner style inisteps (via fetch summary)", "label": "OWNER_CHOICE: caller supplied h0"},
+    {"id": "C10", "name": "accepted-step ceiling vs RODAS5P", "verdict": "UNRESOLVED (D2: 1.10 vs 1.20; owner threshold decision)"}
+  ],
+  "hysteresis_analysis": {
+    "needed_for_order": false,
+    "needed_for_stability_claim": false,
+    "reasoning": "order conditions C(2),Gamma(2),B(3) hold identically in sigma (audit EXACT); stability evidence is constant-step only; variable-step product stability unproven with or without hysteresis; no hysteresis in EPPEER or Klinge controllers",
+    "claim_rule": "accuracy claims only at matched achieved global error, never from hysteresis or tolerance",
+    "insensitivity_tests_proposed_NOT_RUN": [
+      "fixed-step observed order p=3 (PTSW2C) / 2 (PTSW2B) without controller",
+      "controller sweep band in {none,[0.95,1.05],[0.9,1.1]} x history in {none,s=2} x >=4 tolerance decades x (scalar linear, scalar nonlinear, stiff linear, Prothero-Robinson, one MOL); record achieved error, accepted/rejected steps, factorizations, RHS calls; thresholds preregistered by owner",
+      "rejection test: sigma*<0.85 never inside [0.95,1.05]; coefficients recomputed on retry"
+    ]
+  },
+  "other_literature": [
+    {"item": "EPPEER ivpepp.f90", "values": {"safety": 0.95, "sigma_min": 0.2, "sigx_by_method": {"EPP3f4": 1.8, "EPP4y3": 1.6, "EPP5f3_6j1_7f4": 1.5, "EPP8d_9f2": 1.4}, "exponent": "1/order", "norm": "max", "hysteresis": "none", "hmin": 1e-10, "default_tol": 1e-5}, "note": "explicit peer; values from WebFetch model summary, re-verify against file"},
+    {"item": "Klinge IMEX peer arXiv:1902.01161 sec.2.5 eq.(71),(75),(76)", "values": {"safety": 0.9, "clip": [0.8, 1.2], "exponent": "-1/s", "norm": "max", "hysteresis": "none"}, "note": "different method; WebFetch summary"}
+  ],
+  "unresolved": [
+    "Podhaisky 2002 dissertation chapter on step-size control (C1-C4,C7) unread: bot-check blocked",
+    "PTSW2C hysteresis rule (C3,C4)",
+    "PTSW2C embedded solution order p_e -> exponent",
+    "ANM 42 (2002) 381-395, Kulikov-Weiner JCAM 2012, Jebens-Knoth-Weiner 2011, Rosenbrock-type peer 2005 full text unread",
+    "EPPEER man_epp.pdf not extracted; arXiv:2002.12028 not extracted",
+    "meaning of 'last s ratios' and rule precedence",
+    "variable-step product stability; ceiling 1.10 vs 1.20"
+  ],
+  "urls_visited": [
+    {"url": "https://doi.org/10.25673/3017", "status": "302 redirect to opendata.uni-halle.de handle 1981185920/9802 (resolved, not fetched further)"},
+    {"url": "https://opendata.uni-halle.de/bitstream/1981185920/9802/1/prom.pdf", "status": "BLOCKED_ANUBIS_BOT_CHECK (WebFetch returned interstitial; one curl attempt received HTML not PDF; no bypass attempted)"},
+    {"url": "https://opendata.uni-halle.de/bitstream/1981185920/41452/1/Dissertation_Marcel_Klinge_Druckversion.pdf", "status": "BLOCKED_ANUBIS_BOT_CHECK"},
+    {"url": "https://repo.bibliothek.uni-halle.de/bitstream/1981185920/7572/1/Exponential%20Peer%20Methods%20Thesis.pdf", "status": "BLOCKED_ANUBIS_BOT_CHECK"},
+    {"url": "https://www.mathematik.uni-marburg.de/~schmitt/peer/index.html", "status": "OK"},
+    {"url": "https://www.mathematik.uni-marburg.de/~schmitt/peer/ivpepp.f90", "status": "OK (summary)"},
+    {"url": "https://www.mathematik.uni-marburg.de/~schmitt/peer/man_epp.pdf", "status": "FETCHED_BUT_UNREADABLE_COMPRESSED"},
+    {"url": "https://ar5iv.arxiv.org/html/1902.01161", "status": "OK (summary)"},
+    {"url": "https://arxiv.org/pdf/2002.12028", "status": "FETCHED_BUT_UNREADABLE_COMPRESSED"},
+    {"url": "web search: Kulikov-Weiner JCAM 2011/2012", "status": "abstract/bibliographic only; full text not accessed"},
+    {"url": "web search: Podhaisky-Schmitt-Weiner ANM 42 (2002)", "status": "abstract only"},
+    {"url": "web search: peer step size safety factor", "status": "no constants found beyond items above"}
+  ]
+}

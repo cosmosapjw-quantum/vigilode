@@ -14,7 +14,9 @@
   "main_candidate": {
     "id": "V11-19-PEER-W",
     "priority": 0,
-    "status": "SOURCE_CERTIFIED_PTSW2B_AND_PTSW2C_AVAILABLE; IMPLEMENTATION_BLOCKED_PENDING_DEVICE_AND_RUNTIME_TESTS",
+    "status": "BLOCKED",
+    "status_detail": "SOURCE_CERTIFIED_PTSW2B_AND_PTSW2C_AVAILABLE; IMPLEMENTATION_BLOCKED_PENDING_DEVICE_AND_RUNTIME_TESTS",
+    "gpu": "FORBIDDEN",
     "method": "Parallel two-step Rosenbrock-W methods: distinguish common-shift parallel two-step W from multi-implicit peer two-step W; compare both to sequential high-stage-order peer controls.",
     "rationale": "A new method can make current stages independent by using previous-step peer data; this is preferable to claiming that the lower-triangular stages of original RODAS5P are independent.",
     "candidates": [
@@ -160,6 +162,7 @@
     "id": "V11-20-ALGEBRAIC-LIFT",
     "priority": 1,
     "status": "PLANNED",
+    "gpu": "FORBIDDEN",
     "method": "Finite resonant Poincare-Dulac normal-form lift to a linear parent system on an invariant algebraic manifold.",
     "scope": "Local analytic/polynomial flow near a stable hyperbolic equilibrium only.",
     "construction": [
@@ -210,6 +213,7 @@
     "id": "V11-21-FOURIER-INVOLUTION",
     "priority": 1,
     "status": "PLANNED",
+    "gpu": "FORBIDDEN",
     "existing_code": [
       "crates/rodas5p-integrators/src/fourier_path_certificate.rs",
       "crates/rodas5p-integrators/src/fourier_path_candidate.rs",
@@ -243,6 +247,7 @@
       "id": "V11-22-STAGE-INTERNAL-CPU",
       "priority": 2,
       "status": "PLANNED",
+      "gpu": "FORBIDDEN",
       "purpose": "RHS rows/components, JVP/operator application, preconditioners, Krylov reductions, factorization and multiple-RHS solves.",
       "invariant": "Original one-step RODAS5P stage order remains sequential; only work with available inputs is parallelized.",
       "acceptance": [
@@ -268,6 +273,7 @@
       "id": "V11-23-ENSEMBLE-CPU",
       "priority": 2,
       "status": "PLANNED",
+      "gpu": "FORBIDDEN",
       "purpose": "Method-agnostic independent IVP/parameter ensembles, extending the DOPRI-only Dopri5Ensemble foundation.",
       "invariant": "Each member owns controller, norm, history, partial result, failure and work ledger; no pooled norm/step size.",
       "acceptance": [
@@ -293,6 +299,7 @@
       "id": "V11-24-SPATIAL-MOL-CPU",
       "priority": 2,
       "status": "PLANNED",
+      "gpu": "FORBIDDEN",
       "purpose": "Sphere/2D/3D MOL CPU row/cell/mode parallelism with geometry-specific norms and conservation.",
       "required": [
         "Sphere harmonics/spin harmonics or FV/cubed sphere; area measure; pole/chart overlap; Laplace-Beltrami modes",

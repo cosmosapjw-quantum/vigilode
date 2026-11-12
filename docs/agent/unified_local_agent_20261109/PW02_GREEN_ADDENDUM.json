@@ -1,0 +1,55 @@
+{
+  "schema_version": "vigilode.receipt-addendum.v1",
+  "task": "PW02_PTSW2B_LSTABLE_ORDER2_CONTROL",
+  "addendum_to": "PW02_GREEN_RECEIPT.json",
+  "author": "coordinator (independent re-checks)",
+  "checks": [
+    {
+      "id": "C1",
+      "what": "git diff HEAD --stat",
+      "result": "only crates/rodas5p-integrators/src/lib.rs changed (+1 line: `pub mod ptsw2b;`); new untracked ptsw2b.rs",
+      "status": "PASS"
+    },
+    {
+      "id": "C2",
+      "what": "static scan of ptsw2b.rs outside `mod tests` (starts line 870/1013)",
+      "result": "unsafe 0, unwrap( 0, expect( 0, panic! 0, assert! 0, todo!/unimplemented!/unreachable! 0; one .unwrap_or",
+      "status": "PASS"
+    },
+    {
+      "id": "C3",
+      "what": "clippy -D warnings (agent run d.exit=101)",
+      "result": "8 lib errors, all in untouched source_owned_graph_schur.rs (blob 5d2c4319143e60117a7804c1f4524b269df358ea == HEAD == pinned C5 blob); pre-existing, so the -D gate cannot pass on this base independent of PW02",
+      "status": "FAIL_PRE_EXISTING"
+    },
+    {
+      "id": "C4",
+      "what": "clippy without -D, --all-targets, --message-format=short (coordinator rerun, exit 0)",
+      "result": "0 diagnostics for src/ptsw2b.rs or lib.rs; 3 warnings in tests/ptsw2b_contracts.rs (L509 needless_range_loop-style, L543 and L552 type_complexity); 9 diagnostics in source_owned_graph_schur.rs",
+      "stdout_sha256": "cce533fd0d0b4a34b7f57eacf375aa1f9f711360128192311119e277cb725a9c",
+      "status": "CONCERN"
+    }
+  ],
+  "findings": [
+    {
+      "id": "PW02-G1",
+      "severity": "CONCERN",
+      "text": "The new test file has 3 clippy warnings; they would fail -D warnings once the pre-existing graph_schur errors are fixed. Not changed here (assertions must not be touched without owner approval); a lint-only cleanup of tests/ptsw2b_contracts.rs is proposed."
+    },
+    {
+      "id": "PW02-G2",
+      "severity": "CONCERN",
+      "text": "The workspace-wide cargo test --all-targets compile failure caused by the RED test is now resolved by the GREEN module on this branch."
+    },
+    {
+      "id": "PW02-G3",
+      "severity": "INFO",
+      "text": "full `cargo test --lib` for rodas5p-integrators NOT_RUN; only `--lib ptsw2b` (5 passed) was run."
+    }
+  ],
+  "scope_limits": [
+    "derivative class, startup S5, reject semantics, coefficient policy per owner decisions OD-5..OD-9 (2026-11-11)",
+    "no real-problem benchmark; sigma domain, L(90) sector, t_end<t1, startup events UNRESOLVED",
+    "test and implementation have the same author lineage; independent adversarial review (T09) still required"
+  ]
+}

@@ -1,0 +1,318 @@
+{
+ "schema": "PW03_PEERW_P5_LITERATURE_RECOVERY/v1",
+ "date": "2026-11-10",
+ "node": "PW03_G0_ORDER5_PEER_W_TABLEAU_SOURCE_RECOVERY",
+ "scope": "literature only; no repo file edited; no git; no free-LLM offload",
+ "overall_verdict": "PARTIAL_SOURCE_PARAMETERS_READ_NOT_FULL_TABLEAU",
+ "overall_verdict_text": "Only one p>=5 (variable-step) fully stage-parallel Peer-W parameter set was found in readable primary text: PPSW2-6 (s=6, p=s-1=5) in the Halle preprint of Weiner-Schmitt-Podhaisky (APNUM 48, 2004). Its printed data are nodes c and gamma0/gamma1 (<=9 decimals), NOT the B/A/G matrices; matrices must be derived via eqs (3.9),(3.10),(4.3),(4.5). Journal version not read. Zero-stability interval [sigma_a,sigma_b] not printed numerically (UNRESOLVED). No complete tableau in explicit matrix form was found. The only fully printed p=5 variable-step table (IP4o5, Lang-Schmitt 2026) is NOT stage-parallel and NOT Peer-W.",
+ "candidates": [
+  {
+   "id": "C2_WSP2004_PPSW2",
+   "biblio": "R. Weiner, B.A. Schmitt, H. Podhaisky, Parallel 'peer' two-step W-methods and their application to MOL-systems, Appl. Numer. Math. 48 (2004) 425-439",
+   "doi": "10.1016/j.apnum.2003.10.005",
+   "read_source": "Halle preprint 'Two-step W-methods and their application to MOL-systems' (Report 03-02), https://sim.mathematik.uni-halle.de/reports/sources/2003/03-02report.ps (resolved via www2.mathematik.uni-halle.de), 17 pp, read in full (text layer + page images pp.10-11). Journal version NOT read.",
+   "access": "FULL_TEXT_OF_PREPRINT",
+   "order": {
+    "PPSW2-s": "p=s-1 variable step (Thm 4.2 + ansatz 4.5); Super2-4: p=s with all s superconsistency conditions (4.2)",
+    "PPSW1": "p=s-1 variable step, p=s only constant step"
+   },
+   "stages": "s=3..6 (PPSW2), s=4,5 (PPSW1), s=2..4 (Super)",
+   "stage_parallel": {
+    "value": true,
+    "quote": "Obviously, with s processors all s values Y_mi can be computed in parallel. (Sec 3, after eq 3.1)",
+    "form": "(I - gamma_i h_m T_m) Y_mi = sum_j (b_ij I + h_m d_ij T_m) Y_{m-1,j} + h_m sum_j a_ij f(t_{m-1,j}, Y_{m-1,j})"
+   },
+   "w_property": "T_m 'should be an approximation to the Jacobian f_y for stability reasons only. In fact, the accuracy of these methods is derived for arbitrary T_m in the sense of W-methods.' (Sec 3)",
+   "stability": {
+    "PPSW2-5": "L(alpha), alpha=86 deg",
+    "PPSW2-6": "L(alpha), alpha=81 deg",
+    "stiffly_accurate": "yes by Def 3.3 for PPSW2 (symbol lost in text layer; UNRESOLVED exact wording)"
+   },
+   "step_ratio_domain": "Thm 4.2: exists [sigma_a,sigma_b], sigma_a<1<sigma_b, for strongly stable methods; numeric values NOT printed; implementation limits sigma<=sigma_max=1.5 (PPSW2-3,4,Super2) and 1.2 for the others incl. PPSW2-5, PPSW2-6 (Sec 5). 'For larger s the bounds can be rather close to one.' Fig 4.2 bnorm vs sigma_max (curve values not read)",
+   "zero_stability": "'strongly stable' (Def 3.4: eigenvalues of B(1): lambda_1=1,|lambda_i|<1) asserted for the listed PPSW2 methods ('Some fairly good strongly stable methods have been found'); eigenvalues of B(1) NOT printed -> UNRESOLVED, must be recomputed",
+   "startup": "starting values computed with ROWMAP in the tests; Thm 3.1 requires ||Y_0i - y(t0+c_i h0)||=O(h0^p)",
+   "error_estimator": "(4.4): Y_ms - sum_j theta_sj Y_{m-1,j}; one superconsistent stage (gamma_s fixed by 4.3) gives higher-order local error estimate. PPSW1 uses embedded O(h^{s-2}) solution",
+   "coefficients_printed": "Only parameters: nodes c, gamma0, gamma1 with gamma_i=gamma0_i/(1+sigma*gamma1_i) (4.5), gamma_s from (4.3). B,A,G,Theta must be built from (3.8)-(3.10),(4.1)-(4.3). B(sigma)=Theta-sigma G Theta V D F0^T V^-1 (Thm 4.2 proof).",
+   "p_ge_5_table": {
+    "method": "PPSW2-6",
+    "location": "report p.11 (first item on page), parameter list right after eq (4.5) on p.10-11",
+    "printed_precision": "c: 3 to 9 decimals; gamma0, gamma1: 9 decimals; alpha integer degrees",
+    "could_read_numbers": true,
+    "pass_A_visual": {
+     "s": 6,
+     "c": [
+      -1.702,
+      -0.51,
+      -0.195797762,
+      0.155193392,
+      0.755672784,
+      1.0
+     ],
+     "gamma0": [
+      0.214789562,
+      0.249182503,
+      0.237832565,
+      0.245204742,
+      0.353848357
+     ],
+     "gamma1": [
+      0.566334104,
+      0.496228487,
+      0.518584061,
+      0.498857638,
+      0.50241243
+     ],
+     "alpha_deg": 81
+    },
+    "pass_B_textlayer_digits_plus_300dpi_signs": {
+     "c": [
+      -1.702,
+      -0.51,
+      -0.195797762,
+      0.155193392,
+      0.755672784,
+      1.0
+     ],
+     "gamma0": [
+      0.214789562,
+      0.249182503,
+      0.237832565,
+      0.245204742,
+      0.353848357
+     ],
+     "gamma1": [
+      0.566334104,
+      0.496228487,
+      0.518584061,
+      0.498857638,
+      0.50241243
+     ]
+    },
+    "digit_by_digit_agreement": {
+     "c": true,
+     "gamma0": true,
+     "gamma1": true
+    },
+    "independence_caveat": "Pass B digits come from the PS text layer (independent of rendering); signs only visible in rendered images, so sign agreement is two visual reads of the same render at different DPI.",
+    "also_readable_p4_for_reference": {
+     "PPSW2-5": {
+      "pass_A": {
+       "s": 5,
+       "c": [
+        -1.09,
+        -0.229,
+        0.51,
+        0.63,
+        1.0
+       ],
+       "gamma0": [
+        0.214789562,
+        0.249182503,
+        0.237832565,
+        0.245204742
+       ],
+       "gamma1": [
+        0.566334104,
+        0.496228487,
+        0.518584061,
+        0.498857638
+       ],
+       "alpha_deg": 86
+      },
+      "agreement": {
+       "c": true,
+       "gamma0": true,
+       "gamma1": true
+      }
+     }
+    }
+   },
+   "other_listed": {
+    "PPSW1-5": {
+     "s": 5,
+     "gamma": 0.722499,
+     "alpha_deg": 79,
+     "note": "nodes c_{s-i+1}=cos((2i-1)pi/(2s))/cos(pi/(2s)); order 4 variable step, order 5 constant steps; not stiffly accurate; printed 6 digits"
+    },
+    "PPSW1-4": {
+     "s": 4,
+     "gamma": 0.468147,
+     "alpha_deg": 52
+    }
+   },
+   "verdict": "SOURCE_FOUND_TABLE_NOT_READABLE",
+   "verdict_note": "Parameter set for PPSW2-6 (p=5) READ (passes agree), but full B/A/G tableau is not printed; derivation required and unverified. Strictly: SOURCE_AVAILABLE_PARAMETERS_READ_MATRICES_NOT_PRINTED."
+  },
+  {
+   "id": "C1_SW2004_SINUM",
+   "biblio": "B.A. Schmitt, R. Weiner, Parallel two-step W-methods with peer variables, SIAM J. Numer. Anal. 42 (2004) 265-282",
+   "doi": "10.1137/S0036142902411057",
+   "read_source": "Abstract via Crossref only. Author preprint URL http://www.mathematik.uni-marburg.de/~schmitt/ea/bfm092.ps returned HTTP 404; publisher full text paywalled (an attempted access to a paywalled mirror was blocked by the permission system and was NOT pursued).",
+   "access": "ABSTRACT_ONLY",
+   "abstract_quote": "The main work lies in the solution of s independent linear stage equations which may be solved in parallel. Convergence of order s-1 and stability for general stepsize sequences are proved. Conditions for order s and stronger stability criteria are addressed as well. Promising methods up to order 7 are identified by numerical tests",
+   "order": "s-1 variable step; s under extra conditions; 'methods up to order 7' (s up to 7 or 8 -- UNRESOLVED which)",
+   "stage_parallel": {
+    "value": true,
+    "quote": "s independent linear stage equations which may be solved in parallel (abstract)"
+   },
+   "w_property": "UNRESOLVED (full text not read; per C2 the class is 'in the sense of W-methods')",
+   "stability": "UNRESOLVED",
+   "step_ratio_domain": "UNRESOLVED",
+   "zero_stability": "'stability for general stepsize sequences are proved' (abstract)",
+   "startup": "UNRESOLVED",
+   "error_estimator": "UNRESOLVED",
+   "p_ge_5_table": null,
+   "verdict": "SOURCE_FOUND_TABLE_NOT_READABLE",
+   "verdict_note": "Likely holds PPSW1 (G=I) data for s=6..8 (secondary: C2 cites it for PPSW1 results); not read."
+  },
+  {
+   "id": "C3_PWS2005_ROSENBROCK_PEER",
+   "biblio": "H. Podhaisky, R. Weiner, B.A. Schmitt, Rosenbrock-type 'peer' two-step methods, Appl. Numer. Math. 53 (2005) 409-420",
+   "doi": "10.1016/j.apnum.2004.08.021",
+   "read_source": "Auckland report 504 (Preprint submitted 8 Dec 2003), https://www.math.auckland.ac.nz/Research/Reports/Series/504.ps, 13 pp, read via text layer; Table 1 read as text only.",
+   "access": "FULL_TEXT_OF_PREPRINT",
+   "order": "s stages; order s-1 variable steps, order s constant steps (effective order); s=4..8",
+   "stage_parallel": {
+    "value": false,
+    "quote": "an additional sequential coupling between the stages is allowed, i.e. g_ij != 0 for i > j ... one LU-decomposition per step (Intro)"
+   },
+   "w_property": "'T is supposed to be an approximation to the Jacobian ... the order conditions are derived independent of the matrix T in the sense of W-methods'; old Jacobians/LU may be reused 'without any order reductions' (Sec 4)",
+   "stability": "L-stable for gamma in listed intervals, s=4..8 (Table 1); e.g. s=6 gamma=0.19942255252118767 alpha=85.4 deg; s=5 gamma=0.26036881402181763 alpha=89.3 deg; s=7 gamma=0.24256912841054176 alpha=89.4 deg",
+   "step_ratio_domain": "'unconditionally stable, i.e. stable for all stepsize patterns'; tests use sigma in [0,1.5]",
+   "zero_stability": "unconditional (Sec 3, condition (11)); UNRESOLVED independent check",
+   "startup": "starting values via RADAU, Y_0 = y(t0 + c h)+O(h^{s+1})",
+   "error_estimator": "embedded method of order s-2",
+   "coefficients_printed": "Fully defined by eq (8), nodes (17) (stretched Chebyshev), condition (11) and one gamma from Table 1; formulas not transcribed (equation text layer garbled).",
+   "p_ge_5_table": {
+    "method": "s=6, p=5 variable step; s=7 p=6",
+    "location": "Table 1 (preprint p.10)",
+    "could_read_numbers": "gamma only; matrices not printed",
+    "note": "fails the 'fully stage-parallel' criterion"
+   },
+   "verdict": "NO_P5_SOURCE_FOUND",
+   "verdict_note": "p>=5 exists but NOT stage-parallel; excluded by the criterion. Useful as a W-tolerant sequential comparator."
+  },
+  {
+   "id": "C4_SWP2005_BIT",
+   "biblio": "B.A. Schmitt, R. Weiner, H. Podhaisky, Multi-implicit peer two-step W-methods for parallel time integration, BIT 45 (2005) 197-217",
+   "doi": "10.1007/s10543-005-2635-y",
+   "read_source": "Not read. Author link bfm04-4.pdf returned 404; only aggregator snippet (partial abstract) seen.",
+   "access": "NOT_ACCESSIBLE",
+   "p_ge_5_table": null,
+   "order": "UNRESOLVED (the Halle preprint C2 states 'By numerical search we construct special methods up to order 5')",
+   "stage_parallel": {
+    "value": "UNRESOLVED"
+   },
+   "verdict": "SOURCE_FOUND_TABLE_NOT_READABLE",
+   "verdict_note": "Probable home of the full multi-implicit coefficients; unread."
+  },
+  {
+   "id": "C5_PSW2002_PARALLEL_TSW",
+   "biblio": "H. Podhaisky, B.A. Schmitt, R. Weiner, Design, analysis and testing of some parallel two-step W-methods for stiff systems, Appl. Numer. Math. 42 (2002) 381-395",
+   "doi": null,
+   "read_source": "Not read; claims known only from C2 Sec 2: A~=Gamma~=0 gives parallel stages; order=stage order=s exists up to s=8; weakness: M(-inf) depends on sigma^(s-1).",
+   "access": "SECONDARY_ONLY",
+   "p_ge_5_table": null,
+   "verdict": "SOURCE_FOUND_TABLE_NOT_READABLE",
+   "verdict_note": "Not Peer (distinguished u_m); critical step-ratio dependence."
+  },
+  {
+   "id": "C6_GLPW2009",
+   "biblio": "A. Gerisch, J. Lang, H. Podhaisky, R. Weiner, High-order linearly implicit two-step peer - finite element methods for time-dependent PDEs, Appl. Numer. Math. 59 (2009) 624-638",
+   "doi": "10.1016/j.apnum.2008.03.017",
+   "read_source": "Not read. Halle preprint exists (Report 2006/13, epflicht.bibliothek.uni-halle.de, urn:nbn:de:gbv:3-2-263) but the bitstream URL returned HTML, not a PDF, in this session.",
+   "access": "NOT_ACCESSIBLE",
+   "p_ge_5_table": null,
+   "order": "UNRESOLVED",
+   "stage_parallel": {
+    "value": "UNRESOLVED"
+   },
+   "verdict": "SOURCE_FOUND_TABLE_NOT_READABLE",
+   "verdict_note": "Probably builds on C3 (sequential Rosenbrock-type); UNRESOLVED."
+  },
+  {
+   "id": "C7_JKW2012",
+   "biblio": "S. Jebens, O. Knoth, R. Weiner, Linearly implicit peer methods for the compressible Euler equations, Appl. Numer. Math. 62 (2012) 1380-1392 (task text said 2011; Crossref says 2012)",
+   "doi": "10.1016/j.apnum.2012.06.013",
+   "read_source": "Not read.",
+   "access": "NOT_ACCESSIBLE",
+   "p_ge_5_table": null,
+   "verdict": "SOURCE_FOUND_TABLE_NOT_READABLE",
+   "verdict_note": "UNRESOLVED order/parallelism."
+  },
+  {
+   "id": "C8_KW2011",
+   "biblio": "G.Yu. Kulikov, R. Weiner, Global error estimation and control in linearly-implicit parallel two-step peer W-methods, J. Comput. Appl. Math. 236 (2011) 1226-1239",
+   "doi": "10.1016/j.cam.2011.08.006",
+   "read_source": "Not read (Unpaywall lists OA copy; sciencedirect fetch returned 403).",
+   "access": "NOT_ACCESSIBLE",
+   "p_ge_5_table": null,
+   "verdict": "SOURCE_FOUND_TABLE_NOT_READABLE",
+   "verdict_note": "Fixed-step doubly quasi-consistent, likely low order; UNRESOLVED."
+  },
+  {
+   "id": "C9_JPW2004",
+   "biblio": "Z. Jackiewicz, H. Podhaisky, R. Weiner, Construction of highly stable two-step W-methods for ordinary differential equations, J. Comput. Appl. Math. 167 (2004) 389-403",
+   "doi": "10.1016/S0377-0427(03)00928-2",
+   "read_source": "Not read (403). Not a Peer method.",
+   "access": "NOT_ACCESSIBLE",
+   "p_ge_5_table": null,
+   "verdict": "SOURCE_FOUND_TABLE_NOT_READABLE",
+   "verdict_note": "Out of scope (distinguished solution variable)."
+  },
+  {
+   "id": "C10_LS2026_IP4o5",
+   "biblio": "J. Lang, B.A. Schmitt, Stiff Norm Estimates for Variable-Stepsize Peer Two-Step Methods, arXiv:2608.26913v1 (27 Aug 2026)",
+   "doi": "10.48550/arXiv.2608.26913",
+   "read_source": "Full 36-page PDF read (text layer), Appendix A.3 p.34.",
+   "access": "FULL_TEXT",
+   "order": "IP4o5: s=4, order 5, adjoint order 0, stage order q=s",
+   "stage_parallel": {
+    "value": false,
+    "quote": "A_n in R^{sxs} is a nonsingular lower triangular matrix (Intro, eq (2)); K lower triangular -> sequential diagonally implicit stages"
+   },
+   "w_property": "Not a W-method; Newton-type diagonally implicit iteration with Jacobian (Sec 3); Jacobian tolerance UNRESOLVED",
+   "stability": "L(alpha), alpha=71.2 deg; norm bound in sector aperture 36.8 deg (nu=0), 26.5 deg with damping 1/280",
+   "step_ratio_domain": "sigma in {20/21,1,21/20} (sigma_bar=1.05) for the proven norm bounds; Table 1",
+   "zero_stability": "a-priori norm estimate; grid-independent left eigenvector assumption",
+   "startup": "Runge-Kutta-type starting step A0 (local order s+1); A0 printed but matrix extraction garbled",
+   "error_estimator": "RK-based, A-stable embedded (Sec 6) -- details not transcribed",
+   "p_ge_5_table": {
+    "location": "Appendix A.3, p.34",
+    "printed_precision": "~15-16 significant digits",
+    "could_read_numbers": true,
+    "pass_A_layout_extraction_vs_pass_B_raw_extraction": "all 39 decimals of A.3 identical in both text extractions (sorted multiset compare)",
+    "transcribed": {
+     "K_const": {
+      "K21": 0.103448275862069,
+      "K32": 0.1333333333333333,
+      "K31": 0.103448275862069,
+      "K42": 0.6016742910832833,
+      "K43": 0.1153508771929825,
+      "K41": -0.1357417458163727,
+      "kappa41": 0.418716577540107
+     },
+     "c": [
+      0.16666666666666666,
+      0.42857142857142855,
+      0.62,
+      1.0
+     ],
+     "alpha_deg": 71.2
+    },
+    "note": "K(sigma) entries k11,k21,k31 are rational functions of sigma divided by q(sigma); not transcribed here, see paper A.3"
+   },
+   "verdict": "NO_P5_SOURCE_FOUND",
+   "verdict_note": "Table readable and p=5, but fails stage-parallel and Peer-W criteria; only a sequential comparator."
+  }
+ ],
+ "unresolved": [
+  "Journal-version coefficients of PPSW2-6 vs preprint (parameters may differ).",
+  "Matrices B(sigma),A(sigma),G(sigma) of PPSW2-6 never printed; derivation from (3.9)(3.10)(4.3)(4.5) untested; sign/positivity of gamma_s for negative nodes (Lemma 4.1 does not cover c<0).",
+  "sigma_a, sigma_b zero-stability interval for PPSW2-6; eigenvalues of B(1).",
+  "Observed global order of PPSW2-6 (Fig 5.3-5.6 curves unread); constant 4.8 target needs measurement.",
+  "Contents of SINUM 2004, BIT 2005, APNUM 2009/2012, JCAM 2011 full texts."
+ ],
+ "preprint_vs_journal_note": "The Halle preprint's title ('Two-step W-methods and their application to MOL-systems') differs from the journal title; treat as a preprint.",
+ "environment_note": "A request to fetch a paywalled publisher mirror was refused by the permission classifier; no workaround was attempted."
+}

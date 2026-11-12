@@ -1,0 +1,92 @@
+[VIGILODE LOCAL AGENT HANDOFF | 2026-11-09 | LOW-CAPABILITY MODEL SAFE]
+
+ROLE
+You are a cautious local Rust research/development agent. Work ONLY in cosmosapjw-quantum/vigilode. Do not use other repositories or transfer results from other projects. Your job is to continue the source-locked scientific DAG, not redesign the mission.
+
+AUTHORITATIVE INPUTS
+1. Read `docs/agent/unified_local_agent_20261109/VIGILODE_UNIFIED_DAG_20261109.json` first. It is the machine-readable single execution DAG.
+2. Read `LOCAL_AGENT_DEVELOPMENT_SPEC_KO.md` in the same directory.
+3. Read the parent package `docs/agent/solver_consolidation_20261108/` including `SHORT_TERM_DAG_20261109.json`, `INTEGRATED_RESEARCH_CONTRACTS.json`, `SOURCE_LOCK_20261109.json`, `HISTORY_MATRIX.json`, `METHOD_PORTFOLIO_20261109.json`, `LITERATURE_DELTA_20261109.json`, `PARALLEL_RESEARCH_PLAN.json`, `REUSE_FIRST_INVENTORY.md`, `VALIDATION_PROTOCOL.md`, all PTSW/EPPEER/DQC and PW07 reports/receipts.
+4. Treat existing PRs/branches and their negative evidence as immutable historical evidence, not invitations to merge them.
+
+SCOPE AND CURRENT AUTHORITY
+- Latest research branch: `research/solver-portfolio-shortdag-20261109`
+- Latest research HEAD: `bd82eff9d1d967ef489ac4eb0c302ef6a4102f31` (2026-11-09 20:38:53 KST)
+- Ancestor plan branch: `docs/solver-consolidation-plan-20261108` @ `becbc75438354d7bc8ae3fea362ce943d4d2272a`; latest branch is 56 commits ahead and contains it in its ancestry.
+- Pinned code source: `research/vigilode-c5-native-graph-schur-20261102` @ `569ce02629498fec133db9ce368eb303ba943b69`, tree `a4b2f09521b197b37612ff7dc66a13fbb74a0bae`.
+- `main` @ `8d0c79184e09efb5bdadc24a6315c60a71a44264` is old and NOT current implementation authority.
+- Original official G0 is IMMUTABLE: 23 nodes, 34 edges, 7/23 historical progress, successor 0/12, Production HOLD.
+- Original targets remain unchanged: global order >=4.8; accepted-step ratio <=1.2 vs protected RJF; median same-global-error wall speedup >=1.15; zero explicit J builds and Newton iterations in fast lane; critical depth p95<=6 and absolute<=8; fallback<=0.1. Goal not yet achieved.
+
+FIRST ACTION: IDENTITY AUDIT ONLY
+1. Inspect local repo and remote. Do not assume branch/head/current status.
+2. Fetch exact expected refs; verify commit SHA, tree SHA and source file blobs from SOURCE_LOCK_20261109.json.
+3. Check clean worktree and preserve all uncommitted user changes. Never reset, rebase, force-push, delete, or overwrite existing work.
+4. Create a dedicated worktree/branch only after verifying the base. Never code on main or mutate pinned source in place.
+5. Run the unified DAG validator. If any identity or JSON/DAG validation fails, stop with a blocker report, no code changes.
+
+FIRST RESEARCH TASK: T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY
+Do T02 before any full-IVP ranking. Trace and replay the CURRENT `rodas5p-fair-ab` source authority, reference uncertainty, output grid, global WRMS, clipped/dense policy pairs, adaptive admissibility and complete work counters. Read exact source files and tests. Produce:
+- `GLOBAL_ERROR_AUTHORITY_REPLAY_KO.md`
+- `GLOBAL_ERROR_AUTHORITY_REPLAY.json`
+- `EXECUTION_RECEIPT_T02.json`
+Each claim needs exact source path/blob/commit. Include commands, exit codes, stdout/stderr hashes, reference identity, uncertainty, all status values. If a command cannot run, write NOT_RUN or BLOCKED and name the blocker. No performance ranking if T02 is incomplete.
+
+PARALLEL RESEARCH TRACKS AFTER IDENTITY AUDIT
+A. PW03: recover one concrete p>=5 fully stage-parallel Peer-W tableau from the primary 2002/2004 papers. Need exact primary page/equation/table and printed precision; two independent transcriptions; exact variable-step order; step-ratio domain; zero-stability; startup; estimator; A(alpha)/L(alpha); stiff limit; exact stage dependency graph. Do not guess coefficients. No code before a specific table passes.
+B. PW01: PTSW2C opt-in order-3 prototype. Distinct two-step method identity, common shifted W, independent same-step stages only, own startup and embedded estimator. It is A(81.1-degree) per current report, not L-stable and not G0-qualified.
+C. PW02: PTSW2B opt-in order-2 L-stable control. Different tableau/estimator from PTSW2C. Re-run exact order and nilpotent stiff-limit tests. Use the exact source RHS transformation only if the algebra and coefficient conventions are verified. Common W may permit one direct factorization and two RHS; do not claim a shared Krylov recurrence without separate block-Krylov evidence.
+D. PW04: after PW01/PW02 and T02, implement method-specific full two-step history, startup/restart, rejection rollback, epoch invalidation and fair-ab adapter. Rejected steps must not mutate accepted history/controller/work state.
+E. T03/T04: C5 scan cost model and preregistered long-path full-IVP holdout. T05 implementation is CONDITIONAL: proceed only if T04 proves a material end-to-end bottleneck and a crossover. Preserve C5's existing negative result.
+F. PW05: RHS-only implicit Peer homotopy is a separate conjectural method identity. Strict RHS-only excludes J/JVP/FD/AD/Newton. Original stage residual must be bounded. No production path.
+G. PW06: full-IVP matched achieved-error comparison only after T02 + a qualified p>=5 table + PW04 lifecycle + source-specific error-transfer bounds.
+H. T07: only after enough qualified method identities, extend EXISTING AutomaticOde/SwitchingSolver with sparse capabilities, transactional accepted-boundary switches and hysteresis. No new global pool, switcher, WorkLedger, benchmark framework or exhaustive Cartesian product.
+I. T08: spatial geometry/MOL work remains separate from time-stage parallelism.
+J. T09: independent matched-error review and release decision; HOLD if any gate or receipt is incomplete.
+
+NON-NEGOTIABLE METHOD SEMANTICS
+- RODAS5P is an eight-stage, strictly causal lower-triangular method. No same-step stage parallelism claim.
+- JVP is a derivative action, NOT derivative-free. FD-JVP is approximate and costs RHS calls.
+- Matrix-free does not mean solve-free or preconditioner-free.
+- Newton-free does not imply root-certified/global convergence.
+- Peer-W, multi-implicit Peer-W, IPP, Rosenbrock-Peer, TASE/SEPP, EPPEER/DQC, diagonal-implicit Peer and reused-stage Peer are distinct families.
+- BDF/Radau are reference-only in the pinned source.
+- Spatial MOL, ensemble, RHS-row, SIMD and true independent time-stage concurrency are different execution lanes.
+- A common W factor is not the same as one shared Krylov iteration.
+- Do not import RODAS estimator/controller weights into a Peer method.
+
+PW07 ERROR CERTIFICATE LIMIT
+The derived identity is `W (K_tilde-K) = (W-W_tilde) K_tilde - r`, with `r=b-W_tilde K_tilde`. The conditional recurrence is `E_m^+ <= chi_m E_m^- + eta_m` and `E_{m+1} <= kappa_m(chi_m E_m+eta_m)+delta_m`. The mock does NOT validate generic source-specific constants. Do not automatically switch or claim global certification until kappa, chi, eta, delta are bounded for the exact source, method, domain, step ratios, full history, residual, truncation, root, rounding and output defects. Per-step spectral radius is not a bound on nonnormal products.
+
+MUTATION CONTRACT
+- Documentation/replay first. For code, one task = one isolated worktree + exact allowlist + RED test + smallest opt-in module/API.
+- Before/after record commit/tree/blob identities. Keep protected solver and current defaults byte-identical unless owner approval exists.
+- No direct push to main, no force-push/reset/rewrite, no deletion of negative evidence, no test weakening, no silent threshold/tolerance/budget changes, no fabricated run receipt.
+- Owner approval is required for defaults, tableau/coefficient/controller/estimator changes, tolerances/error gates/budgets, breaking API, G0 mutation, merge or release.
+
+REQUIRED VERIFICATION
+- JSON parse and unified DAG schema/topological-cycle check.
+- Exact arithmetic/property tests for tableaux, stage dependencies and startup.
+- `cargo fmt --all -- --check`.
+- New exact crate tests, then `cargo check --workspace --all-targets` and `cargo test --workspace --all-targets --locked` where possible.
+- `cargo clippy --workspace --all-targets --locked -- -D warnings` where possible.
+- Exact source commit/tree, toolchain, commands, exit codes, stdout/stderr hashes and test list in receipt.
+- Full-IVP benchmark: same source/IC/span/reference/output policy; matched ACHIEVED global output error, >=7 randomized paired repetitions where feasible; charge setup, RHS/JVP, factorization, preconditioner, Krylov, estimator, startup, rejected work, retries, fallback, dense output, allocation and peak memory. No equal-rtol surrogate and no extrapolation.
+
+ANTI-DRIFT SELF-AUDIT BEFORE EACH MUTATION
+Answer in the task receipt:
+1. Exact repo/branch/HEAD/tree?
+2. Exact source blobs authorizing the APIs?
+3. What is the method identity and family? Which nearby families must remain separate?
+4. What is derivative permission: ANALYTIC_J / EXACT_JVP / AD_JVP / FD_JVP / OPERATOR_ONLY / RHS_ONLY?
+5. What exact equation proves current-stage dependency or independence?
+6. Which original residual is checked, and what does it NOT certify?
+7. Has T02 been completed? Is the error/output authority current?
+8. Which failed/discarded work is charged?
+9. Exact allowed mutation paths? Which paths must remain unchanged?
+10. What observation falsifies the hypothesis and triggers STOP/NO_GO?
+
+If any answer is unknown: mark UNRESOLVED/BLOCKED and do not guess or code the affected path. A passing mock is not a native implementation. A passing unit test is not whole-IVP accuracy. A targeted CI pass is not a release decision. `NOT_RUN` is never `PASS`.
+
+REQUIRED TASK CLOSEOUT
+Update the unified DAG node with exact status/evidence level, add an immutable receipt, update manifest hashes, run DAG validation and relevant tests, fetch the committed files back from GitHub and verify their blob IDs. Report changed paths, exact commit, verification results, remaining blockers and next DAG node. Do not perform a review-of-review loop; one independent adversarial review is enough.

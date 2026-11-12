@@ -1,0 +1,357 @@
+{
+ "schema": "pw01_thesis_podhaisky2002_recovery/v1",
+ "date": "2026-11-11",
+ "mode": "LITERATURE_DOCUMENTATION_ONLY",
+ "source": {
+  "path": "/home/cosmosapjw/vigilode/Podhaisky_2002.pdf",
+  "sha256": "4a3cfa7f03a3f004ab7303b05fb053be300d22acd7ff06c3389152e7dbc8edf0",
+  "pages": 76,
+  "printed_to_pdf_page_offset": 4,
+  "title": "Parallele Zweischritt-W-Methoden (Halle 2002)"
+ },
+ "image_verified_pages": [
+  {
+   "printed": 36,
+   "pdf": 40,
+   "content": "Tabelle 4.1",
+   "png_sha256": "0d5c6ecef87a30816d0861fc21a82019c4ce543503e0c1adf507b1136ef7a4ed"
+  },
+  {
+   "printed": 41,
+   "pdf": 45,
+   "content": "eq 4.7 embedded weights",
+   "png_sha256": "f469d3d702eca1131e52a15d7550137e65c24e64995ddc28d9c63dd63bbac358"
+  },
+  {
+   "printed": 42,
+   "pdf": 46,
+   "content": "Err_emb, sigma*, h*, NaN rule",
+   "png_sha256": "02f3ab7cfbe7ea243b8466cb1aa749e3c5a7c8ee324c0ebf469163d3caed467f"
+  }
+ ],
+ "text_only_pages": "all other pages read via pdftotext -layout only (no image check)",
+ "method_mapping": {
+  "status": "RESOLVED",
+  "PTSW2A": "s=2 L(90) B*(s+1) gamma=4/5 c=(23/9,1) rho=0.8799 (p.36)",
+  "PTSW2B": "s=2 L(90) rho(M_inf)=0 gamma=0.63397459 c=(-0.4641016,1) (p.17 and p.22); Tabelle 4.1 prints a spurious 3rd node 0.63397459",
+  "PTSW2C": "s=2 A(81.1) B(s+1) v=0 gamma=0.48 c=(-1,5/9) rho=0.6796 (p.28,p.36)",
+  "naming_rule": "p.35: A=L(alpha) 0<rho<1; B=rho(M_inf)=0 via Satz 3.1; C=A(alpha),B(s+1),v=0 for s=2,3"
+ },
+ "controller": {
+  "embedded_order": "s-1 (p.41)",
+  "b_e": "0.95*b",
+  "v_e": "((1^T+eps e_s^T) S D^-1 - b_e^T V0 S) V1^-1, eps=0.1 (4.7, p.41)",
+  "norm": "RMS sqrt(1/n sum((u-u~)/(ATOL+RTOL|u_{m+1}|))^2) (p.42)",
+  "sigma_star": "min{2,max{0.5,Err^(-1/s)*0.85}} (p.42), s=#stages",
+  "h_star": "h_m if sigma*>1.05 and exists j in {0..s-1} sigma_{m-j}>1; h_m if sigma* in [0.95,1.05]; else h_m*sigma*",
+  "accept": "Err<=1; reject: repeat with h_m:=h*, sigma_m:=h_m/h_{m-1}",
+  "nan_rule": "Err!=Err -> h_m:=h_m/2, reject (Bem 4.6)",
+  "experiment_tolerances": "ATOL=RTOL=10^-i, i=2..8",
+  "applies_to": "all PTSW methods incl. PTSW2B and PTSW2C (single rule)"
+ },
+ "constants": [
+  {
+   "id": "C1_safety",
+   "value": 0.85,
+   "verdict": "SOURCE_PRINTED_THESIS",
+   "thesis_page_printed": 42,
+   "pdf_page": 46,
+   "code_value": 0.85,
+   "matches_code": true,
+   "note": ""
+  },
+  {
+   "id": "C2_ratio_clip",
+   "value": [
+    0.5,
+    2.0
+   ],
+   "verdict": "SOURCE_PRINTED_THESIS",
+   "thesis_page_printed": 42,
+   "pdf_page": 46,
+   "code_value": [
+    0.5,
+    2.0
+   ],
+   "matches_code": true,
+   "note": ""
+  },
+  {
+   "id": "C3_hysteresis_band",
+   "value": [
+    0.95,
+    1.05
+   ],
+   "verdict": "SOURCE_PRINTED_THESIS",
+   "thesis_page_printed": 42,
+   "pdf_page": 46,
+   "code_value": [
+    0.95,
+    1.05
+   ],
+   "matches_code": true,
+   "note": "closed interval; common to all PTSW methods incl PTSW2C"
+  },
+  {
+   "id": "C4_growth_history",
+   "value": 2,
+   "verdict": "SOURCE_PRINTED_THESIS",
+   "thesis_page_printed": 42,
+   "pdf_page": 46,
+   "code_value": 2,
+   "matches_code": true,
+   "note": "j in 0..s-1 includes current sigma_m"
+  },
+  {
+   "id": "C5_norm",
+   "value": "RMS",
+   "verdict": "SOURCE_PRINTED_THESIS",
+   "thesis_page_printed": 42,
+   "pdf_page": 46,
+   "code_value": "RMS",
+   "matches_code": true,
+   "note": ""
+  },
+  {
+   "id": "C6_tol_scaling",
+   "value": "ATOL+RTOL*|u_{m+1}|",
+   "verdict": "SOURCE_PRINTED_THESIS",
+   "thesis_page_printed": 42,
+   "pdf_page": 46,
+   "code_value": "same",
+   "matches_code": true,
+   "note": ""
+  },
+  {
+   "id": "C7_exponent",
+   "value": "-1/s (s=2 -> -1/2)",
+   "verdict": "SOURCE_PRINTED_THESIS_AND_DERIVED",
+   "thesis_page_printed": 42,
+   "pdf_page": 46,
+   "code_value": -0.5,
+   "matches_code": true,
+   "note": "p_e=s-1 verified by sympy: embedded B(1)=0,B(2)=sigma/20 for PTSW2B and PTSW2C"
+  },
+  {
+   "id": "C8_accept",
+   "value": "Err<=1",
+   "verdict": "SOURCE_PRINTED_THESIS",
+   "thesis_page_printed": 42,
+   "pdf_page": 46,
+   "code_value": "err<=1",
+   "matches_code": true,
+   "note": ""
+  },
+  {
+   "id": "C8_nan",
+   "value": "h:=h/2 reject",
+   "verdict": "SOURCE_PRINTED_THESIS",
+   "thesis_page_printed": 42,
+   "pdf_page": 46,
+   "code_value": "NaN->0.5 and reject",
+   "matches_code": true,
+   "note": ""
+  },
+  {
+   "id": "C8_err_zero",
+   "value": "clip 2 (limit)",
+   "verdict": "DERIVED",
+   "thesis_page_printed": null,
+   "pdf_page": null,
+   "code_value": "err<=0 -> 2.0",
+   "matches_code": true,
+   "note": ""
+  },
+  {
+   "id": "C9_h0",
+   "value": "user input",
+   "verdict": "NOT_IN_THESIS(OWNER_CHOICE)",
+   "thesis_page_printed": 37,
+   "pdf_page": 41,
+   "code_value": "caller supplied",
+   "matches_code": true,
+   "note": ""
+  },
+  {
+   "id": "C10_starter",
+   "value": "any integrator (RADAU/ROWMAP used)",
+   "verdict": "SOURCE_PRINTED_THESIS_PERMISSIVE",
+   "thesis_page_printed": 37,
+   "pdf_page": 41,
+   "code_value": "ROS2 1-step owner S5",
+   "matches_code": null,
+   "note": "not a mismatch; accuracy requirement only via Satz 2.1 p.9"
+  },
+  {
+   "id": "C11_ceiling_vs_RODAS5P",
+   "value": 1.1,
+   "verdict": "NOT_IN_THESIS(OWNER_CHOICE)",
+   "thesis_page_printed": null,
+   "pdf_page": null,
+   "code_value": 1.1,
+   "matches_code": null,
+   "note": ""
+  },
+  {
+   "id": "C12_hmin_hmax_reject_cap",
+   "value": "none",
+   "verdict": "NOT_IN_THESIS(OWNER_CHOICE)",
+   "thesis_page_printed": null,
+   "pdf_page": null,
+   "code_value": null,
+   "matches_code": null,
+   "note": ""
+  },
+  {
+   "id": "C13_embedded_b_e_v_e",
+   "value": "0.95 b; v_e from (4.7)",
+   "verdict": "DERIVED_FROM_PRINTED_FORMULA",
+   "thesis_page_printed": 41,
+   "pdf_page": 45,
+   "code_value": "cert 5.1 values",
+   "matches_code": true,
+   "note": "Rust values not re-verified (Rust not run)"
+  }
+ ],
+ "tableau_comparison": {
+  "tool": "python3 -I sympy 1.12 exact algebra",
+  "scratch_script": "<scratchpad>/verify_thesis.py",
+  "script_sha256": "dc2bffbd36cb0d22783b6f4f9e62fdd07768c8f0d3972c3eb2fd491294ec45cf",
+  "PTSW2B": {
+   "gamma": "(3-sqrt3)/2=0.6339745962 vs printed 0.63397459 (truncated)",
+   "c": "(3-2sqrt3,1)=(-0.4641016151,1) vs printed -0.46410161,1",
+   "A_diff": 0,
+   "Gamma_diff": 0,
+   "v_diff": 0,
+   "v_e_diff": 0,
+   "b": "(0,gamma) matches",
+   "C3": "-0.24839 vs printed 0.2483/0.25",
+   "embedded_order": 1
+  },
+  "PTSW2C": {
+   "gamma": "12/25=0.48",
+   "c": "(-1,5/9)",
+   "A_diff": 0,
+   "Gamma_diff": 0,
+   "v_e_diff": 0,
+   "b": "(1/28,27/28) DERIVED from B(3), v=0",
+   "b_e": "(19/560,513/560)",
+   "embedded_order": 1
+  },
+  "PTSW2A_selfcheck": "matches thesis appendix A.5 Fortran block (p.69)",
+  "disagreements": [],
+  "printed_in_thesis": [
+   "gamma",
+   "c",
+   "rho(M_inf)",
+   "alpha",
+   "C_{p+1}"
+  ],
+  "not_printed_in_thesis": [
+   "A",
+   "Gamma",
+   "v",
+   "b_e",
+   "v_e for PTSW2B and PTSW2C (only PTSW2A Fortran in A.5)"
+  ]
+ },
+ "startup": {
+  "algorithm": "Algorithmus 4.1 p.37",
+  "times": "t1=t0-h0*T1, T={c_i-1}U{0}",
+  "starter": "arbitrary; RADAU (LU) / ROWMAP (Krylov)",
+  "order_requirement": "not stated in 4.3; Satz 2.1 needs eps0=O(h^p), nu0=O(h^q)",
+  "cost": "called negligible (Bem 4.2) no numbers",
+  "h1": "h0",
+  "alternatives": [
+   "tiny h0 + crude k0=u0',u1=u0 (discouraged)",
+   "dense-output starter",
+   "self-start via order control"
+  ],
+  "PTSW2B": "t1=t0+(2sqrt3-2)h0 (matches cert)"
+ },
+ "stability": {
+  "constant_step": "A/L(alpha) via rho(M(z))<1 (Def 2.1 p.12); PTSW2B L(90) rho=0; PTSW2C A(81.1) rho=0.6796",
+  "zero_stability": "Bem 3.2 p.15 (constant step eigenvalue expansion)",
+  "variable_step": "coefficients bounded if sigma_m<sigma_max (p.8); no stability proof; s=4 methods sensitive (p.56)",
+  "Satz_3.3": "stiffly accurate cannot have B(s+1) for variable steps (p.21); v=0 keeps it (Bem 3.5)",
+  "sigma_bounds": "only controller clip [0.5,2]"
+ },
+ "experiments": {
+  "pages": "47-56",
+  "hardware": "HP/Convex SPP2000 PA8000",
+  "error_measure": "(5.1) weighted RMS at t_e, reference RADAU/VODPK tol 1e-12",
+  "tolerances": "ATOL=RTOL=10^-i i=2..8",
+  "LU_problems": [
+   "PLATE n=80",
+   "MEDAKZO n=400",
+   "CUSP n=96",
+   "FEKETE n=160 DAE idx2"
+  ],
+  "Krylov_problems": [
+   "NILIDI n=10000",
+   "DIFFU2 n=10000",
+   "BRUSSELATOR n=20000"
+  ],
+  "codes": [
+   "RADAU",
+   "RODAS",
+   "ROWMAP",
+   "VODPK"
+  ],
+  "observed_order_tables": "none in thesis",
+  "data_form": "time-error figures only; figures not image-checked, no numbers extracted"
+ },
+ "mismatches_vs_PW02_ptsw2b_rs": {
+  "constants": [],
+  "non_constant_notes": [
+   "starter ROS2 vs thesis arbitrary integrator (owner S5)",
+   "ceiling 1.10 owner choice",
+   "PW02_SCAN_AND_RED_TEST_KO.md does not restate SAFETY/CLIP/BAND values (only constant names), provenance is CERT sec 5 = thesis p.42",
+   "previous PW01 recovery doc SECONDARY_ONLY labels for C1-C7 and PTSW2C C3/C4 are superseded"
+  ]
+ },
+ "table_anomalies": [
+  {
+   "where": "Tabelle 4.1 PTSW2B node column p.36 (image verified)",
+   "issue": "3 values printed for s=2: -0.46410161, 0.63397459, 1",
+   "judgement": "typesetting error (DERIVED): p.17 gives c1=-0.4641016,c2=1; roots of phi* are exactly these"
+  },
+  {
+   "where": "PTSW2C node order",
+   "issue": "Tabelle 4.1 (-1,5/9) vs 3.3.6 c1=5/9,c2=-1",
+   "judgement": "permutation invariance (Bem 3.1 p.15); harmless"
+  }
+ ],
+ "unresolved": [
+  "variable-step product stability and sigma interval theorem",
+  "h0 selection, hmin/hmax, consecutive-reject cap",
+  "observed-order and work-precision numbers (figures only)",
+  "full-sector proof of A(alpha)/L(alpha) (not recomputed here)",
+  "starter accuracy requirement beyond Satz 2.1; Rust starter order not run",
+  "Table 4.1 PTSW2B third node judgement pending author confirmation",
+  "report [37] and external literature not read"
+ ],
+ "receipts": [
+  {
+   "cmd": "pdftotext -layout",
+   "result": "3850 lines, 76 pages"
+  },
+  {
+   "cmd": "pdftoppm -r 300 -f 40/45/46",
+   "result": "3 PNG read visually"
+  },
+  {
+   "cmd": "python3 -I verify_thesis.py",
+   "result": "all diffs 0; embedded order 1; PTSW2A matches A.5"
+  },
+  {
+   "not_run": [
+    "Rust build/test",
+    "rho/alpha recomputation",
+    "figure data extraction",
+    "external sources"
+   ]
+  }
+ ],
+ "pass_claims": "only sympy identity checks listed above; nothing else marked PASS"
+}

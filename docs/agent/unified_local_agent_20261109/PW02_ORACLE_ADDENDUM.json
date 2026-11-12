@@ -1,0 +1,46 @@
+{
+  "schema_version": "vigilode.receipt-addendum.v1",
+  "task": "PW02_PTSW2B_LSTABLE_ORDER2_CONTROL",
+  "addendum_to": "PW02_SCAN_AND_RED_TEST.json (agent-written; its 'oracle NOT_RUN' lines are superseded by this addendum)",
+  "oracle_green_check": {
+    "scope": "scratch copy OUTSIDE the worktree with a throwaway ptsw2b implementation written by the same agent that wrote the tests",
+    "command": "cargo test --release -p rodas5p-integrators --test ptsw2b_contracts (target dir /mnt/extdrive/vigilode-t02-20261110/target-oracle)",
+    "exit_code": 0,
+    "result_line": "24 passed; 0 failed; 0 ignored",
+    "tests_passed": [
+      "a1_certified_data_is_internally_consistent_in_exact_arithmetic",
+      "a2_implementation_coefficients_equal_certified_values",
+      "b1_exact_order2_conditions_vanish_identically_in_sigma",
+      "b3_implementation_residuals_vanish_for_order2_and_not_for_order3",
+      "b2_exact_order3_condition_fails_so_order_is_exactly_two",
+      "c1_exact_stiff_limit_matrix_is_nilpotent_of_index_three_with_rho_zero",
+      "c2_implementation_stiff_limit_matrix_matches_exact_and_is_nilpotent",
+      "d1_stage_inputs_use_only_previous_step_data_and_certified_formulas",
+      "d3_both_stages_share_one_w_factor_and_satisfy_the_certified_stage_equations",
+      "d2_perturbing_one_current_stage_input_changes_no_other_current_stage_output",
+      "d5_jvp_only_problem_reproduces_explicit_jacobian_stage_solution",
+      "e2_error_norm_is_componentwise_scaled_rms_of_the_embedded_difference",
+      "d4_serial_and_two_thread_stage_solves_are_bitwise_identical",
+      "e1_embedded_estimator_uses_its_own_exact_weights_and_is_order_one",
+      "e3_controller_uses_certified_constants_clip_and_hysteresis",
+      "f1_rejected_attempt_does_not_mutate_history_or_controller_but_charges_work",
+      "f2_accepted_attempt_commits_exactly_the_certified_update",
+      "g1_accepted_step_ceiling_is_the_owner_decided_1_10",
+      "g2_method_identity_is_distinct_opt_in_control_with_the_declared_derivative_class",
+      "i1_startup_plan_is_forward_only_with_certified_times",
+      "h1_default_candidate_catalog_is_unchanged_and_peerw_stays_deferred",
+      "j2_l_stable_damping_on_stiff_prothero_robinson",
+      "j1_observed_global_order_is_two_with_exact_startup",
+      "h2_protected_sources_are_byte_identical"
+    ],
+    "stdout_sha256": "303a93d69ce6480cbea33c63be65bd129e65455556f656223f8f8cd6d5f1e141",
+    "test_file_sha256_identical_to_worktree": "33ad24e9a1bd03c20df8af29f79e3b907bbb5b475e55bfa5b3eb117cb6cc2016",
+    "assertions_weakened": false
+  },
+  "limits": [
+    "shows the tests are satisfiable and mutually consistent; NOT independent validation (same author for tests and oracle)",
+    "oracle implementation is not delivered and not committed",
+    "RED form is a compile error (unresolved import rodas5p_integrators::ptsw2b): committing the test file makes `cargo test --workspace --all-targets` fail to compile on this branch until a GREEN implementation is approved"
+  ],
+  "red_receipt_ref": "PW02_SCAN_AND_RED_TEST.json: exit 101, stderr sha256 c13e247572f4b7bc997c07b442e8961eccca9415195692f5903a82b1ff49f7b9, only error E0432"
+}

@@ -1,0 +1,361 @@
+{
+  "schema_version": "vigilode.execution-receipt.v1",
+  "task": "T02_CURRENT_GLOBAL_ERROR_AUTHORITY_REPLAY",
+  "date_kst": "2026-11-10",
+  "mutation_gate": "G0_DOCS",
+  "base": {
+    "branch": "research/unified-t02-20261110",
+    "head": "bd82eff9d1d967ef489ac4eb0c302ef6a4102f31",
+    "tree": "a032d2f9fa615d776e0b31af9d672e62a998fbc2",
+    "pinned_code_source": "569ce02629498fec133db9ce368eb303ba943b69",
+    "crates_tree_equals_C5": true
+  },
+  "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "commands": [
+    {
+      "command": "CARGO_TARGET_DIR=/mnt/extdrive/vigilode-t02-20261110/target cargo test --locked --release -p rodas5p-fair-ab --test global_error_contracts",
+      "cwd": "/media/cosmosapjw/5CAA5033AA500BC0/vigilode-unified-t02-20261110",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_log": "/mnt/extdrive/vigilode-t02-20261110/logs/global_error_contracts.out",
+      "stdout_sha256": "4c8ed57a0741e6783ba4dc88943fd17baa905c9d57442577503e8d642da6e2d4",
+      "stderr_log": "/mnt/extdrive/vigilode-t02-20261110/logs/global_error_contracts.err",
+      "stderr_sha256": "baa326535daa9549f22434c7318d6d06c59450838f1d4ef1474969fbc876e453",
+      "result_line": "ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s"
+    },
+    {
+      "command": "CARGO_TARGET_DIR=/mnt/extdrive/vigilode-t02-20261110/target cargo test --locked --release -p rodas5p-fair-ab --test adaptive_global_error_contracts",
+      "cwd": "/media/cosmosapjw/5CAA5033AA500BC0/vigilode-unified-t02-20261110",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_log": "/mnt/extdrive/vigilode-t02-20261110/logs/adaptive_global_error_contracts.out",
+      "stdout_sha256": "5a57d94f128675e790f913376626518308af52b91c99d16385aa92ad913008ac",
+      "stderr_log": "/mnt/extdrive/vigilode-t02-20261110/logs/adaptive_global_error_contracts.err",
+      "stderr_sha256": "99cd64732cb4b90bdd93fe00b0c202f669e85cd1f47a18d6b4b4d55f0d848ceb",
+      "result_line": "ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s"
+    },
+    {
+      "command": "CARGO_TARGET_DIR=/mnt/extdrive/vigilode-t02-20261110/target cargo test --locked --release -p rodas5p-fair-ab --test numerical_reference_contracts",
+      "cwd": "/media/cosmosapjw/5CAA5033AA500BC0/vigilode-unified-t02-20261110",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_log": "/mnt/extdrive/vigilode-t02-20261110/logs/numerical_reference_contracts.out",
+      "stdout_sha256": "370a28967a97566853be9ec4b3e6fff66b9dc682d6ed10b9ec46ce57c074e80d",
+      "stderr_log": "/mnt/extdrive/vigilode-t02-20261110/logs/numerical_reference_contracts.err",
+      "stderr_sha256": "710b30da2c1eac7db8c4fda51a541eb6a95ed64c71790ea1074d01f0d9f07110",
+      "result_line": "ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s"
+    },
+    {
+      "command": "CARGO_TARGET_DIR=/mnt/extdrive/vigilode-t02-20261110/target cargo test --locked --release -p rodas5p-fair-ab --test numerical_reference_v2_contracts",
+      "cwd": "/media/cosmosapjw/5CAA5033AA500BC0/vigilode-unified-t02-20261110",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_log": "/mnt/extdrive/vigilode-t02-20261110/logs/numerical_reference_v2_contracts.out",
+      "stdout_sha256": "e210a11a3d90686a90780f13061f40b2da27a4ccc7440e1db9b64e277d5551da",
+      "stderr_log": "/mnt/extdrive/vigilode-t02-20261110/logs/numerical_reference_v2_contracts.err",
+      "stderr_sha256": "4542859d30fc0f9ac9660ca49d2495b45090d66c612967dc379a73a3a366bff2",
+      "result_line": "ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s"
+    },
+    {
+      "command": "CARGO_TARGET_DIR=/mnt/extdrive/vigilode-t02-20261110/target cargo test --locked --release -p rodas5p-fair-ab --test output_accuracy_assessment_contracts",
+      "cwd": "/media/cosmosapjw/5CAA5033AA500BC0/vigilode-unified-t02-20261110",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_log": "/mnt/extdrive/vigilode-t02-20261110/logs/output_accuracy_assessment_contracts.out",
+      "stdout_sha256": "f0e37ea9b7d28f7ae3cdb187f5c5c14743cb9778b54084fbc6fb9da38eeab482",
+      "stderr_log": "/mnt/extdrive/vigilode-t02-20261110/logs/output_accuracy_assessment_contracts.err",
+      "stderr_sha256": "fa0d7c5090306fb5565851b57accd555dabf8970bfa0285dec61bd74fc1b571d",
+      "result_line": "ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+    },
+    {
+      "command": "CARGO_TARGET_DIR=/mnt/extdrive/vigilode-t02-20261110/target cargo test --locked --release -p rodas5p-fair-ab --test two_arm_admissibility_contracts",
+      "cwd": "/media/cosmosapjw/5CAA5033AA500BC0/vigilode-unified-t02-20261110",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_log": "/mnt/extdrive/vigilode-t02-20261110/logs/two_arm_admissibility_contracts.out",
+      "stdout_sha256": "c2ca0b128a6f686a4b1eb24d6788a163dad6824f37ace1a9c83f213807f42bfa",
+      "stderr_log": "/mnt/extdrive/vigilode-t02-20261110/logs/two_arm_admissibility_contracts.err",
+      "stderr_sha256": "69e67ce9c657ee7660a88c6fcb759ce0bc4e4a94e684ac09ae36fcbdbfdadf30",
+      "result_line": "ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s"
+    },
+    {
+      "command": "python3 -I docs/agent/unified_local_agent_20261109/validate_unified_dag.py",
+      "cwd": "/media/cosmosapjw/5CAA5033AA500BC0/vigilode-unified-t02-20261110",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_sha256": "3c730d4c77f03459f9667fec8e37aa2cad49eb21b207e3f26f725c5ad281aa38",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result_line": "PASS: 30 tasks, 48 edges, acyclic DAG; G0 immutable; mutation/evidence contract valid\nNOTE: this validates package structure only; it does not run Rust/Cargo or certify scientific claims."
+    },
+    {
+      "command": "python3 -I docs/agent/solver_consolidation_20261108/validate_package.py",
+      "cwd": "/media/cosmosapjw/5CAA5033AA500BC0/vigilode-unified-t02-20261110",
+      "exit_code": 1,
+      "status": "FAIL",
+      "stdout_sha256": "d0cddbabf713a5c510f9942d77ab2f344599b2ce30d0e1a6424cd73a909b26fb",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result_line": "FAIL: invalid status for node V11-19-PEER-W"
+    }
+  ],
+  "test_list": [
+    {
+      "test_binary": "global_error_contracts",
+      "tests": [
+        {
+          "name": "common_grid_rejects_missing_output_times_instead_of_interpolating",
+          "outcome": "ok"
+        },
+        {
+          "name": "exact_and_known_perturbed_trajectories_have_expected_external_errors",
+          "outcome": "ok"
+        },
+        {
+          "name": "output_policy_dominance_is_strict_at_ten_percent_and_excludes_only_the_policy_row",
+          "outcome": "ok"
+        },
+        {
+          "name": "output_policy_gap_uses_the_tight_reference_weight_table",
+          "outcome": "ok"
+        },
+        {
+          "name": "pareto_and_target_selection_preserve_failures_and_choose_true_nondominated_points",
+          "outcome": "ok"
+        },
+        {
+          "name": "every_fixed_anchor_comparator_row_serializes_comparator_fidelity",
+          "outcome": "ok"
+        },
+        {
+          "name": "fixed_anchor_screen_is_thread_deterministic_and_exposes_all_five_candidates",
+          "outcome": "ok"
+        },
+        {
+          "name": "operator_application_cost_axis_counts_vectors_without_double_counting_block_calls",
+          "outcome": "ok"
+        },
+        {
+          "name": "pareto_screen_stores_only_common_outputs_and_retains_paired_output_policy_evidence",
+          "outcome": "ok"
+        }
+      ]
+    },
+    {
+      "test_binary": "adaptive_global_error_contracts",
+      "tests": [
+        {
+          "name": "g1_adaptive_screen_is_limited_to_the_transactional_decision_set",
+          "outcome": "ok"
+        },
+        {
+          "name": "adaptive_screen_covers_every_current_family_and_preserves_every_run_row",
+          "outcome": "ok"
+        },
+        {
+          "name": "every_adaptive_comparator_row_serializes_comparator_fidelity",
+          "outcome": "ok"
+        },
+        {
+          "name": "adaptive_screen_is_scientifically_identical_in_one_and_four_threads",
+          "outcome": "ok"
+        }
+      ]
+    },
+    {
+      "test_binary": "numerical_reference_contracts",
+      "tests": [
+        {
+          "name": "legacy_analytic_provenance_deserializes_without_changing_its_wire_shape",
+          "outcome": "ok"
+        },
+        {
+          "name": "numerical_reference_and_reference_dominated_wire_spellings_are_stable",
+          "outcome": "ok"
+        },
+        {
+          "name": "pinned_numerical_reference_manifest_is_present_for_fair_ab_consumption",
+          "outcome": "ok"
+        },
+        {
+          "name": "reference_dominance_is_strict_at_ten_percent_and_excludes_pareto_success",
+          "outcome": "ok"
+        },
+        {
+          "name": "checked_in_artifacts_load_for_each_holdout_and_preserve_numerical_provenance",
+          "outcome": "ok"
+        },
+        {
+          "name": "loader_rejects_bad_q_nonfinite_convergence_runtime_pin_grid_checksum_and_canonical_source",
+          "outcome": "ok"
+        }
+      ]
+    },
+    {
+      "test_binary": "numerical_reference_v2_contracts",
+      "tests": [
+        {
+          "name": "every_v2_comparison_uses_the_tight_reference_state_as_the_only_wrms_anchor",
+          "outcome": "ok"
+        },
+        {
+          "name": "v2_grid_and_state_payload_checksums_remain_v1_compatible",
+          "outcome": "ok"
+        },
+        {
+          "name": "checked_in_python_not_run_manifest_is_bit_for_bit_semantically_equal_to_the_rust_layout",
+          "outcome": "ok"
+        },
+        {
+          "name": "v2_layout_is_exactly_twenty_two_physical_artifacts_and_sixty_six_case_bindings",
+          "outcome": "ok"
+        },
+        {
+          "name": "historical_v1_manifest_and_artifact_bytes_remain_pinned",
+          "outcome": "ok"
+        },
+        {
+          "name": "v2_manifest_rejects_missing_extra_duplicate_unreferenced_misbound_and_v1_shapes",
+          "outcome": "ok"
+        },
+        {
+          "name": "v1_loader_remains_live_while_v2_loader_dispatches_by_exact_case_id_and_is_lazy",
+          "outcome": "ok"
+        }
+      ]
+    },
+    {
+      "test_binary": "output_accuracy_assessment_contracts",
+      "tests": [
+        {
+          "name": "accurate_but_policy_sensitive_is_not_accuracy_failure",
+          "outcome": "ok"
+        },
+        {
+          "name": "boundary_and_lower_bound_are_distinct",
+          "outcome": "ok"
+        },
+        {
+          "name": "missing_budget_is_not_pass",
+          "outcome": "ok"
+        },
+        {
+          "name": "equal_bad_trajectories_do_not_certify_accuracy",
+          "outcome": "ok"
+        },
+        {
+          "name": "nonfinite_negative_and_overflow_rejected",
+          "outcome": "ok"
+        },
+        {
+          "name": "scalar_error_gap_is_not_trajectory_distance",
+          "outcome": "ok"
+        },
+        {
+          "name": "paired_assessment_preserves_evidence_and_legacy_sensitivity",
+          "outcome": "ok"
+        },
+        {
+          "name": "signed_zero_zero_budget_is_well_defined",
+          "outcome": "ok"
+        },
+        {
+          "name": "uncertain_reference_does_not_pass_boundary",
+          "outcome": "ok"
+        }
+      ]
+    },
+    {
+      "test_binary": "two_arm_admissibility_contracts",
+      "tests": [
+        {
+          "name": "arm_budget_bands_are_decided_on_the_exact_sum_and_difference",
+          "outcome": "ok"
+        },
+        {
+          "name": "arm_budget_has_three_bands_with_reference_uncertainty",
+          "outcome": "ok"
+        },
+        {
+          "name": "case_tolerance_uncertainty_is_rounded_upward",
+          "outcome": "ok"
+        },
+        {
+          "name": "case_tolerance_basis_scales_exactly_when_weights_are_proportional",
+          "outcome": "ok"
+        },
+        {
+          "name": "gap_triangle_is_an_integrity_assertion",
+          "outcome": "ok"
+        },
+        {
+          "name": "protocol_id_declares_budget_and_interpolant_limit_before_any_run",
+          "outcome": "ok"
+        },
+        {
+          "name": "row_status_order_is_reference_then_budget_then_interpolant",
+          "outcome": "ok"
+        },
+        {
+          "name": "two_arm_classification_holds_the_triangle_on_random_trajectories",
+          "outcome": "ok"
+        },
+        {
+          "name": "audit_records_classify_as_predeclared_under_the_new_protocol",
+          "outcome": "ok"
+        }
+      ]
+    }
+  ],
+  "self_audit": {
+    "1_repo_branch_head_tree": "cosmosapjw-quantum/vigilode research/unified-t02-20261110 bd82eff9d1d967ef489ac4eb0c302ef6a4102f31 tree a032d2f9fa615d776e0b31af9d672e62a998fbc2",
+    "2_source_blobs": {
+      "global_error": "c62f996fa18f9815f1f329766abe8fe2c25ca22b",
+      "adaptive_global_error": "ccae16353ed1dcc90c6511befea8b42f7d3ad9cd",
+      "numerical_reference": "b8adbdae154eaa243310136f78ec2eaa4d7073d9",
+      "output_accuracy": "57401289d7484f5927693b0b47333660f1f2644d",
+      "output_admissibility": "b1f084aad4c50770dcbae141e7ab1741f6ec37a8",
+      "work_counters": "76577cf6cb0295f859efcad2606150a01961cae7"
+    },
+    "3_method_identity": "N/A (documentation replay of fair-ab error authority; no solver method touched)",
+    "4_derivative_permission": "NOT_APPLICABLE",
+    "5_stage_dependency_equation": "NOT_APPLICABLE",
+    "6_original_residual": "NOT_APPLICABLE; this replay does NOT certify any solver accuracy",
+    "7_T02_complete": "PARTIAL_SCOPED: source authority current and traced; concrete reference replay NOT_RUN",
+    "8_failed_work_charged": "WorkCounters has accepted/rejected/fallback counters; setup/startup/peak memory not in ledger (T02-F2)",
+    "9_mutation_paths": "added docs/agent/unified_local_agent_20261109/** only; Rust source, defaults, tolerances unchanged",
+    "10_falsifier": "any blob mismatch or failing contract test => STOP; none observed"
+  },
+  "evidence_status": "NUMERICALLY_CHECKED",
+  "execution_status": "CONCERN",
+  "findings": [
+    {
+      "id": "T02-F1",
+      "severity": "CONCERN",
+      "text": "Two different admissibility regimes coexist: (a) per-pair 10% rules (reference dominance, output-policy dominance) and (b) two-arm v3 fixed absolute budget B=10 WRMS. B is a pass/fail budget, not a matched-achieved-error comparison; PW06/T09 must not treat equal-rtol or B-pass as matched achieved error."
+    },
+    {
+      "id": "T02-F2",
+      "severity": "CONCERN",
+      "text": "stored_state_bytes is retained output size, not peak RSS. WorkCounters has no explicit allocation, peak-memory, setup or startup-work field; the handoff requires these to be charged in PW06/T09, so they must be measured outside this ledger or added with owner approval."
+    },
+    {
+      "id": "T02-F3",
+      "severity": "INFO",
+      "text": "Analytic reference problems carry reference_uncertainty_wrms = 0.0 (offload digest cited adaptive_global_error.rs L343; not independently re-read here); numerical references derive uncertainty only from Richardson + method disagreement."
+    },
+    {
+      "id": "T02-F4",
+      "severity": "CONCERN",
+      "text": "Parent package validator validate_package.py FAILS on this immutable commit: 'invalid status for node V11-19-PEER-W' (PARALLEL_RESEARCH_PLAN.json status string is outside the validator's allowed set). Documentation-tooling mismatch; not repaired (no silent change to historical evidence)."
+    }
+  ],
+  "not_run": [
+    "Concrete end-to-end replay of a specific numerical reference artifact + candidate run (reference identity/uncertainty of a real case): NOT_RUN",
+    "Independent re-read of analytic_reference_problem uncertainty (adaptive_global_error.rs ~L317-343): taken from offload digest only",
+    "cargo fmt/clippy/workspace-wide tests: NOT_RUN (docs-only mutation, no Rust change)",
+    "GitHub readback of committed files: NOT_RUN (no push performed; push needs owner approval)",
+    "Performance ranking: NOT_RUN by design (T02 gate)"
+  ],
+  "worktree": "/media/cosmosapjw/5CAA5033AA500BC0/vigilode-unified-t02-20261110",
+  "external_target_dir": "/mnt/extdrive/vigilode-t02-20261110/target",
+  "offload": "first-pass digest by free LLM (openrouter nvidia/nemotron-3.5-super-vl:free) on blob-verified source copies; every cited claim was re-read from source except where listed in not_run"
+}

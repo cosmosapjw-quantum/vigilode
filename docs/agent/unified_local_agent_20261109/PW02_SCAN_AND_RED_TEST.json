@@ -1,0 +1,269 @@
+{
+ "task": "PW02_PTSW2B_LSTABLE_ORDER2_CONTROL",
+ "step": "scan + RED tests",
+ "status": "RED_ACCEPTED_ORACLE_GREEN",
+ "test_file": "crates/rodas5p-integrators/tests/ptsw2b_contracts.rs",
+ "test_file_sha256": "33ad24e9a1bd03c20df8af29f79e3b907bbb5b475e55bfa5b3eb117cb6cc2016",
+ "red_receipt": {
+  "run1": {
+   "exit": 101,
+   "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "stderr_sha256": "156f1ab186f2ba13a60528f27449d8b2be7d0f004859b5b2bb11fc6579e924bf",
+   "errors": "E0432 unresolved ptsw2b (intended RED) + 6x E0689 powi ambiguous float (test bug, fixed afterwards by 0.5_f64)"
+  },
+  "run2_after_fix": {
+   "exit": 101,
+   "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "stderr_sha256": "c13e247572f4b7bc997c07b442e8961eccca9415195692f5903a82b1ff49f7b9",
+   "errors": "sole error: E0432 unresolved imports rodas5p_integrators::ptsw2b",
+   "verdict": "PASS-as-RED"
+  }
+ },
+ "oracle_green_check": {
+  "result": "24 passed; 0 failed",
+  "exit": 0,
+  "out_sha256": "303a93d69ce6480cbea33c63be65bd129e65455556f656223f8f8cd6d5f1e141",
+  "scope": "scratch copy outside worktree with throwaway src/ptsw2b.rs + pub mod line; NOT delivered",
+  "test_changes": "none beyond the 0.5_f64 type annotation; no assertion weakened",
+  "limits": "validates test oracle consistency only; not an implementation"
+ },
+ "proposed_api": "rodas5p_integrators::ptsw2b (pub mod, not re-exported at crate root): consts METHOD_ID,STAGES,FORMAL_ORDER,ACCEPTED_STEP_CEILING_VS_RODAS5P=1.10,SAFETY,RATIO_CLIP,HYSTERESIS_BAND,HYSTERESIS_HISTORY; fns gamma,nodes,b,a_matrix,gamma_matrix,v,b_embedded,v_embedded,stiff_limit_matrix,startup_plan,stage_inputs,solve_stages,embedded_error_vector,error_norm,accepts,propose_ratio,advance,identity; types State,StageInput,StageSolve,StepOutput,Config,ControllerState,Attempt,Session,Identity,DerivativeClass,StartupPlan",
+ "derivative_class_proposal": {
+  "name": "ExactJacobianOrJvpFrozenAtStepStart",
+  "owner_decision": "PENDING",
+  "detail": "T_m=J(t_m,u_m) via OdeProblem::dense_jacobian (analytic J or exact JVP, n JVP calls charged); dense LU shared by both stages; not derivative-free; no shared-Krylov claim; matrix-free route not in v1"
+ },
+ "startup_options_owner_decision_pending": {
+  "S1": "caller-supplied startup State (used by tests)",
+  "S2": "DOPRI5 forward starter (nonstiff only, accuracy untested)",
+  "S3": "protected RODAS5P called read-only",
+  "S4": "crate radau/bdf (reference-only labelled)",
+  "S5": "own starter inside ptsw2b module",
+  "excluded": "u1=u0,k0=u0' (discouraged by CERT 4)"
+ },
+ "allowlist_for_implementation": [
+  "crates/rodas5p-integrators/src/ptsw2b.rs (new)",
+  "crates/rodas5p-integrators/src/lib.rs (ONE line: pub mod ptsw2b; owner decision)",
+  "crates/rodas5p-integrators/tests/ptsw2b_contracts.rs (this step)"
+ ],
+ "protected_byte_identical": [
+  "crates/rodas5p-integrators/src/{sequential,rodas5p_*,collective_rodas5p,candidates,problem,parallel,adaptive,integrate,dopri5*,exponential,bdf,radau}.rs",
+  "crates/rodas5p-integrators/tests/unified_candidate_contracts.rs",
+  "crates/rodas5p-core/src/{coefficients,norms,work,operator,matrix}.rs",
+  "crates/vigilode/src/*",
+  "Cargo.toml",
+  "Cargo.lock",
+  "crates/rodas5p-integrators/Cargo.toml"
+ ],
+ "blob_sha1_at_start": {
+  "Cargo.toml": "2eedb77e5cdd4e856e263ea604055d33341c4377",
+  "Cargo.lock": "9bc1afe66b0ff77dc08f76ef9d0532fae81b0df5",
+  "rust-toolchain.toml": "857955b9997d05c97f71b5356bb2c307eafd6945",
+  "crates/rodas5p-integrators/Cargo.toml": "0969722ec251aff75952173559c442b47af00e43",
+  "crates/rodas5p-integrators/src/lib.rs": "9d42738178cb7c198668dde0a9aac3e1adb86963",
+  "crates/rodas5p-integrators/src/candidates.rs": "2a6c7a7179a34932938ee4233d48b31457e38cf1",
+  "crates/rodas5p-integrators/src/problem.rs": "cbb0bf22480541ee4c92eca32bbe41574e0eee7e",
+  "crates/rodas5p-integrators/src/sequential.rs": "4153e286a2ac756252978d5d77cf1abe0e6a4e0c",
+  "crates/rodas5p-integrators/src/adaptive.rs": "9513f707aaecdc7727df9576f938deae1934b727",
+  "crates/rodas5p-integrators/src/integrate.rs": "02282136fb16376406a92de360596a36a965d6ce",
+  "crates/rodas5p-integrators/src/output.rs": "cfb454df5b98eab15a66feb7e6493ecf1e67c95f",
+  "crates/rodas5p-integrators/src/parallel.rs": "ffdfb1cef258ed43586db0323eb0e7f9de27dd53",
+  "crates/rodas5p-integrators/src/dopri5.rs": "9298ddd6ac5b4147ab95d3d9aa03bef9537c224f",
+  "crates/rodas5p-integrators/src/exponential.rs": "2a6a438e1a54b95da1c7e8437f522e4a1591bba2",
+  "crates/rodas5p-integrators/src/stage_batch.rs": "c2f44c327c53d7c6dfe7ba80b26cd43486d56b43",
+  "crates/rodas5p-integrators/tests/unified_candidate_contracts.rs": "e4fbd30633809a1c774f6f134f86bc71b02dd03a",
+  "crates/rodas5p-integrators/tests/dopri5_contracts.rs": "9dd98df6c367af48e72328a394a5ad866f5e948a",
+  "crates/rodas5p-integrators/tests/exponential_contracts.rs": "92063801d731111ee37284102d0ab5063ab1dda6",
+  "crates/rodas5p-core/src/work.rs": "76577cf6cb0295f859efcad2606150a01961cae7",
+  "crates/rodas5p-core/src/coefficients.rs": "c309a3b9d902f8a3865fbedaaf7fad45e5448ea5",
+  "crates/rodas5p-core/src/norms.rs": "1e8b3c844d7ccbc7bbde221fa7379ee1d79a4aa5",
+  "crates/rodas5p-core/src/operator.rs": "b7afac86b0776af36c13ae3394afb088b177aae8",
+  "crates/rodas5p-core/src/matrix.rs": "d377e7e5b97cd20c48df2c705336fcbc0932c6e5",
+  "crates/vigilode/src/problem.rs": "f1b5ef43ec66d11585193b6be9d0ee0ce271f2ec",
+  "crates/vigilode/src/automatic.rs": "ff4f5db411b310039b627d66774b24885eb3cf7d",
+  "crates/vigilode/src/session.rs": "ce30e5703a8d47a6e258a6df829b19a553fe79f9",
+  "crates/vigilode/src/switching.rs": "fb12a401002c0039631a43982cc296a494c366a2",
+  "crates/vigilode/src/selection.rs": "380f156458d06aec18c577a5f28ebf3e31200513",
+  "crates/vigilode/src/production.rs": "6747a9b30460dc8bf61cb3e63bf6ec43da95d97d",
+  "crates/vigilode/src/lib.rs": "9370f4e50e454dd43472160c8d65e4fdcd030e8a"
+ },
+ "tests": [
+  {
+   "name": "a1_certified_data_is_internally_consistent_in_exact_arithmetic",
+   "asserts": "(a) CERT 2/3.3 identities in Q(sqrt3)",
+   "green_requires": "oracle only; GREEN once module compiles",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "a2_implementation_coefficients_equal_certified_values",
+   "asserts": "(a) impl gamma,c,b,A,Gamma,v,b_e,v_e == certified (1e-14)",
+   "green_requires": "ptsw2b::{gamma,nodes,b,a_matrix,gamma_matrix,v,b_embedded,v_embedded}",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "b1_exact_order2_conditions_vanish_identically_in_sigma",
+   "asserts": "(b) C(2),Gamma(2),B(2)=0 exact",
+   "green_requires": "oracle only",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "b2_exact_order3_condition_fails_so_order_is_exactly_two",
+   "asserts": "(b) B(3)!=0 closed form; C(3),Gamma(3)!=0",
+   "green_requires": "oracle only",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "b3_implementation_residuals_vanish_for_order2_and_not_for_order3",
+   "asserts": "(b) same on impl f64",
+   "green_requires": "coefficient functions",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "c1_exact_stiff_limit_matrix_is_nilpotent_of_index_three_with_rho_zero",
+   "asserts": "(c) M_inf == CERT 3.1, M^2!=0, M^3=0",
+   "green_requires": "oracle only",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "c2_implementation_stiff_limit_matrix_matches_exact_and_is_nilpotent",
+   "asserts": "(c) impl",
+   "green_requires": "ptsw2b::stiff_limit_matrix",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "d1_stage_inputs_use_only_previous_step_data_and_certified_formulas",
+   "asserts": "(d) Y_i,p_i,t_i from previous-step data",
+   "green_requires": "ptsw2b::stage_inputs",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "d2_perturbing_one_current_stage_input_changes_no_other_current_stage_output",
+   "asserts": "(d) bitwise independence",
+   "green_requires": "ptsw2b::solve_stages",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "d3_both_stages_share_one_w_factor_and_satisfy_the_certified_stage_equations",
+   "asserts": "(d) 1 jacobian,1 factorization,2 solves,2 rhs; W x=f+p residuals",
+   "green_requires": "solve_stages + counters",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "d4_serial_and_two_thread_stage_solves_are_bitwise_identical",
+   "asserts": "(d) ParallelExecution parity",
+   "green_requires": "solve_stages with exec",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "d5_jvp_only_problem_reproduces_explicit_jacobian_stage_solution",
+   "asserts": "derivative class: JVP-only works, jvp_calls==n",
+   "green_requires": "dense_jacobian via OdeProblem",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "e1_embedded_estimator_uses_its_own_exact_weights_and_is_order_one",
+   "asserts": "(e) own weights, not RODAS",
+   "green_requires": "embedded_error_vector, identity flags",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "e2_error_norm_is_componentwise_scaled_rms_of_the_embedded_difference",
+   "asserts": "(e)",
+   "green_requires": "ptsw2b::error_norm",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "e3_controller_uses_certified_constants_clip_and_hysteresis",
+   "asserts": "(e) constants, clip, hysteresis, accept",
+   "green_requires": "propose_ratio, accepts, consts",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "f1_rejected_attempt_does_not_mutate_history_or_controller_but_charges_work",
+   "asserts": "(f)",
+   "green_requires": "Session::attempt",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "f2_accepted_attempt_commits_exactly_the_certified_update",
+   "asserts": "(f)",
+   "green_requires": "Session::attempt",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "g1_accepted_step_ceiling_is_the_owner_decided_1_10",
+   "asserts": "(g)",
+   "green_requires": "ACCEPTED_STEP_CEILING_VS_RODAS5P=1.10",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "g2_method_identity_is_distinct_opt_in_control_with_the_declared_derivative_class",
+   "asserts": "(g)/(h) identity",
+   "green_requires": "identity()",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "h1_default_candidate_catalog_is_unchanged_and_peerw_stays_deferred",
+   "asserts": "(h) guard, passes w/o impl",
+   "green_requires": "none",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "h2_protected_sources_are_byte_identical",
+   "asserts": "(h) sha256 guard, passes w/o impl",
+   "green_requires": "none",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "i1_startup_plan_is_forward_only_with_certified_times",
+   "asserts": "CERT 4",
+   "green_requires": "startup_plan",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "j1_observed_global_order_is_two_with_exact_startup",
+   "asserts": "order 2 observed",
+   "green_requires": "advance",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  },
+  {
+   "name": "j2_l_stable_damping_on_stiff_prothero_robinson",
+   "asserts": "L-stable smoke",
+   "green_requires": "advance",
+   "executed": "RED(compile error) only",
+   "executed_oracle": "PASS"
+  }
+ ],
+ "unresolved": [
+  "sigma admissible domain beyond clip [0.5,2]",
+  "L(90) sector proof only source-reported",
+  "t_end<t1 and events in startup window, startup cost charging",
+  "meaning of 'work state unchanged' on reject (test: accepted unchanged, rejected+1, failed work charged)",
+  "vigilode-level default routing unchanged: NOT_RUN (only one test file allowed)",
+  "lib.rs one-line edit permission",
+  "Cargo lock contention blocked RED rerun"
+ ]
+}

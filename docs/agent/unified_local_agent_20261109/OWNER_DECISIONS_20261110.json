@@ -1,0 +1,180 @@
+{
+  "schema_version": "vigilode.owner-decisions.v1",
+  "date_kst": "2026-11-10",
+  "source": "owner chat instruction (verbatim Korean summary below); recorded by agent, not self-authorized",
+  "decisions": [
+    {
+      "id": "OD-1",
+      "topic": "accepted-step ceiling vs protected RODAS5P for PW01/PW02",
+      "value": "<= 1.10x",
+      "resolves": "PW01_PW02_READINESS_AUDIT D2 (1.10x vs 1.20x)",
+      "note": "original G0 target in the handoff text remains 1.2 and is NOT changed; 1.10 is the PW-track preregistered research ceiling"
+    },
+    {
+      "id": "OD-2",
+      "topic": "PW03 source recovery",
+      "value": "option (a): derive PPSW2-6 B/A/G from the three supplied primary papers; papers live in the project root as PDFs, not committed",
+      "files": [
+        "Multi-Implicit Peer Two-Step W-Methods for Parallel Time Integration.pdf",
+        "Parallel 'Peer' two-step W-methods and their application to MOL-systems _ Applied Numerical Mathematics, 2004.pdf",
+        "Parallel Two-Step W-Methods with Peer Variables _ SIAM Journal on Numerical Analysis, 2004.pdf"
+      ]
+    },
+    {
+      "id": "OD-3",
+      "topic": "PW02 RED tests",
+      "value": "approved to write RED tests first; project-wide read access approved; all work inside the worktree",
+      "limits": "no protected-path edits; implementation (GREEN) still needs its own allowlist approval"
+    },
+    {
+      "id": "OD-4",
+      "topic": "priority",
+      "value": "PW track first; T03/T04 deferred"
+    },
+    {
+      "id": "OD-5",
+      "topic": "PW02 derivative class",
+      "value": "ExactJacobianOrJvpFrozenAtStepStart approved",
+      "date_kst": "2026-11-11"
+    },
+    {
+      "id": "OD-6",
+      "topic": "PW02 startup",
+      "value": "S5: self-contained starter inside the ptsw2b module",
+      "date_kst": "2026-11-11"
+    },
+    {
+      "id": "OD-7",
+      "topic": "PW02 reject semantics",
+      "value": "accepted counters unchanged, rejected +1, failed work charged, history/controller untouched",
+      "date_kst": "2026-11-11"
+    },
+    {
+      "id": "OD-8",
+      "topic": "coefficient precision policy",
+      "value": "both: exact algebraic Q(sqrt3) representation as source of truth AND high-precision runtime recomputation certified correctly-rounded",
+      "date_kst": "2026-11-11"
+    },
+    {
+      "id": "OD-9",
+      "topic": "PW02 GREEN allowed paths",
+      "value": "new crates/rodas5p-integrators/src/ptsw2b.rs and one added line `pub mod ptsw2b;` in lib.rs; new docs files",
+      "date_kst": "2026-11-11"
+    },
+    {
+      "id": "OD-10",
+      "topic": "lint cleanup of tests/ptsw2b_contracts.rs",
+      "value": "approved (done, f56e9fd8)",
+      "date_kst": "2026-11-11"
+    },
+    {
+      "id": "OD-11",
+      "topic": "PW03/PW01 literature recovery with internet search",
+      "value": "approved (done: PW03B, PW01 controller-constants recovery)",
+      "date_kst": "2026-11-11"
+    },
+    {
+      "id": "OD-12",
+      "topic": "Podhaisky_2002.pdf (German thesis) supplied in project root",
+      "value": "provided by owner; not committed",
+      "date_kst": "2026-11-11"
+    },
+    {
+      "id": "OD-13",
+      "topic": "PW04 candidate order",
+      "value": "approved: check BIT multi-implicit mipeer6 first; fallback PPSW2-6 with sigma_max<=~1.15 and an own starter",
+      "date_kst": "2026-11-11"
+    },
+    {
+      "id": "OD-14",
+      "topic": "G0 fast lane vs W-tolerance",
+      "value": "G0 targets (zero explicit J / Newton in fast lane) take priority; on problems fall back to the method's W-tolerance limit and state the fallback explicitly (label W-TOLERANCE-FALLBACK)",
+      "date_kst": "2026-11-11"
+    },
+    {
+      "id": "OD-15",
+      "topic": "PW04 sigma_max rule for mipeer6",
+      "value": "approved: sigma_max <= 1.10 (agent-proposed own rule, NOT literature; A(alpha)~79deg there)",
+      "date_kst": "2026-11-12"
+    },
+    {
+      "id": "OD-16",
+      "topic": "PW04 common-W / loop-free search",
+      "value": "requested: search for a W-peer variant with common shift (loop-free, no inner stage iteration) and order>=5 BEFORE accepting 6 factorizations; report honestly if none exists",
+      "date_kst": "2026-11-12"
+    },
+    {
+      "id": "OD-17",
+      "topic": "PW04 factorizations per step",
+      "value": "conditional: 6 distinct shifted factorizations per step approved ONLY if OD-16 search finds no common-W alternative",
+      "date_kst": "2026-11-12"
+    },
+    {
+      "id": "OD-18",
+      "topic": "apply decisions",
+      "value": "approved to apply OD-15..17 to the PW04 plan; PW04 code/RED tests still need derivative-class and allowlist approval",
+      "date_kst": "2026-11-12"
+    },
+    {
+      "id": "OD-19",
+      "topic": "OD-16 search result",
+      "value": "COMMON_W_ORDER5_CANDIDATE_FOUND: PPSW1-6b (gamma=0.619411975066, L(alpha) 57.5 deg) and PPSW1-6c (gamma=1.087080240637, L(alpha) 87.9 deg), Schmitt-Weiner SINUM 2004, singly implicit => one factorization per step. Under OD-17 the 6-factorization mipeer6 fallback is NOT needed. Coordinator verified: Table 2 knots, printed gamma roots (eq. at SINUM p.~271), singly-implicit statement, M(inf)=-gamma1*beta with rho(beta)=0 (L(alpha) framework). Stability is L(alpha), not A-stable.",
+      "date_kst": "2026-11-12"
+    },
+    {
+      "id": "OD-20",
+      "topic": "PPSW1-6b vs 6c",
+      "value": "both to be experimentally run and verified before any choice (no pre-selection)",
+      "date_kst": "2026-11-12"
+    },
+    {
+      "id": "OD-21",
+      "topic": "own order-5 starter direction",
+      "value": "approved (self-contained starter inside the new module, never RODAS/protected solver); exact design still to be verified",
+      "date_kst": "2026-11-12"
+    },
+    {
+      "id": "OD-22",
+      "topic": "derivative class and allowlist for PPSW1-6b/c",
+      "value": "allowed: ExactJacobianOrJvpFrozenAtStepStart and 'new module file + one lib.rs line' pattern (same as OD-9); no other protected path",
+      "date_kst": "2026-11-12"
+    },
+    {
+      "id": "OD-23",
+      "topic": "PPSW1-6b starter",
+      "value": "approved design A: t0=t_init+h0 (nodes forward in time), forward 5-stage Radau IIA one step, frozen-T simple Newton, collocation dense output; Newton ONLY in the starter, per-step fast lane stays linear (1 LU + 6 solves)",
+      "date_kst": "2026-11-13"
+    },
+    {
+      "id": "OD-24",
+      "topic": "h0 selection rule",
+      "value": "approved: h0 must resolve the initial transient, h0*|lambda_max| <~ 1 with a documented estimate from the frozen J; user-supplied h0 allowed",
+      "date_kst": "2026-11-13"
+    },
+    {
+      "id": "OD-25",
+      "topic": "PPSW1-6b estimator",
+      "value": "approved: Est = Y_ms - sum w_j(sigma) Y_{m-1,j} (degree-4 predictor, exact Lagrange weights), control exponent 1/5, sigma_max<=1.10, rounding-floor diagnostic",
+      "date_kst": "2026-11-13"
+    },
+    {
+      "id": "OD-26",
+      "topic": "PPSW1-6b controller",
+      "value": "approved as OWNER_CHOICE: thesis PTSW controller with exponent 1/5 (0.85 safety, clip [0.5,sigma_cap], hysteresis [0.95,1.05], growth-history rule); not literature-certified for PPSW1",
+      "date_kst": "2026-11-13"
+    },
+    {
+      "id": "OD-27",
+      "topic": "external audit",
+      "value": "approved: implement PPSW1-6b GREEN, organize all work into an audit package and push to origin branch research/unified-t02-20261110",
+      "date_kst": "2026-11-13"
+    }
+  ],
+  "not_decided": [
+    "PTSW2C (PW01): derivative class/starter/allowlist for RED and GREEN steps (controller constants are known: thesis p.41-42)",
+    "Critical-depth definition for the G0 comparison (do Krylov/inner iterations count?)",
+    "PPSW1-6c / mipeer6 / PPSW2-6: kept as documented alternatives, no implementation decision",
+    "Strong-stiff global order and W-tolerance window 0.8-1.0 follow-up experiments",
+    "PW06 matched-error full-IVP benchmark protocol and T09 independent review scheduling"
+  ]
+}
