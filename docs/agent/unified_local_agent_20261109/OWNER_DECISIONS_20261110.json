@@ -120,6 +120,24 @@
       "topic": "OD-16 search result",
       "value": "COMMON_W_ORDER5_CANDIDATE_FOUND: PPSW1-6b (gamma=0.619411975066, L(alpha) 57.5 deg) and PPSW1-6c (gamma=1.087080240637, L(alpha) 87.9 deg), Schmitt-Weiner SINUM 2004, singly implicit => one factorization per step. Under OD-17 the 6-factorization mipeer6 fallback is NOT needed. Coordinator verified: Table 2 knots, printed gamma roots (eq. at SINUM p.~271), singly-implicit statement, M(inf)=-gamma1*beta with rho(beta)=0 (L(alpha) framework). Stability is L(alpha), not A-stable.",
       "date_kst": "2026-11-12"
+    },
+    {
+      "id": "OD-20",
+      "topic": "PPSW1-6b vs 6c",
+      "value": "both to be experimentally run and verified before any choice (no pre-selection)",
+      "date_kst": "2026-11-12"
+    },
+    {
+      "id": "OD-21",
+      "topic": "own order-5 starter direction",
+      "value": "approved (self-contained starter inside the new module, never RODAS/protected solver); exact design still to be verified",
+      "date_kst": "2026-11-12"
+    },
+    {
+      "id": "OD-22",
+      "topic": "derivative class and allowlist for PPSW1-6b/c",
+      "value": "allowed: ExactJacobianOrJvpFrozenAtStepStart and 'new module file + one lib.rs line' pattern (same as OD-9); no other protected path",
+      "date_kst": "2026-11-12"
     }
   ],
   "not_decided": [
@@ -127,11 +145,9 @@
     "PW01 (PTSW2C): derivative class, starter, allowlist for RED/GREEN steps",
     "PW04: define 'critical depth' (do Krylov iterations count?) before G0 comparison",
     "PW04: critical-depth definition (do Krylov iterations count?)",
-    "PW04: derivative class and file allowlist for mipeer6 RED/GREEN",
     "PW04: starter for mipeer6 (own starter per OD-6 pattern?)",
-    "PW04 (PPSW1-6b): choose 6b (smaller gamma, L(alpha) 57.5) or 6c (L(alpha) 87.9, larger error per paper)",
-    "PW04 (PPSW1-6b): own order-5 starter (Thm 3.3 needs starting error O(h^5)); RODAS is protected and paper used it",
-    "PW04 (PPSW1-6b): derivative class and file allowlist (same pattern as PW02?)",
-    "PW04: sigma_max: owner rule 1.10 applies; paper experiments used 1.5"
+    "PW04: sigma_max: owner rule 1.10 applies; paper experiments used 1.5",
+    "PPSW1-6b/c: final choice after verification (OD-20)",
+    "PPSW1-6b/c: critical-depth definition still open"
   ]
 }
