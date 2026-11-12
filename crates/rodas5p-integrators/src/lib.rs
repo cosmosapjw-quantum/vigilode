@@ -85,6 +85,7 @@ mod parallel;
 mod path_controller;
 mod policy_redesign_v25;
 pub mod polynomial_resolvent;
+pub mod ppsw1;
 mod problem;
 mod problems;
 pub mod ptsw2b;

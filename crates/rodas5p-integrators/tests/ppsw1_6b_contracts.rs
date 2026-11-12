@@ -23,7 +23,7 @@
 #![allow(clippy::needless_range_loop, clippy::type_complexity)]
 
 use std::cmp::Ordering;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use rodas5p_core::{CoreError, CoreResult, DenseMatrix, WorkCounters};
 use rodas5p_integrators::ppsw1::{self, Config, DerivativeClass, Session, StageInput, State};
@@ -1730,16 +1730,460 @@ fn g3_protected_sources_are_byte_identical() {
 }
 
 // ---------------------------------------------------------------------------------------
-// UNRESOLVED: recorded, deliberately not pinned
+// (h) OD-25 estimator, OD-26 controller, OD-24 h0 rule, OD-23 starter  (OWNER_CHOICE)
 // ---------------------------------------------------------------------------------------
 
+/// Exact Lagrange weights through c = -1/2, 0, 2/5, 4/5, 1 at x = 1 + sigma, in rationals.
+fn exact_estimator_weights(sigma: Rat) -> [Rat; 5] {
+    let c = [r(-1, 2), r(0, 1), r(2, 5), r(4, 5), r(1, 1)];
+    let x = Rat::one() + sigma;
+    let mut w = [Rat::zero(); 5];
+    for j in 0..5 {
+        let mut v = Rat::one();
+        for k in 0..5 {
+            if k != j {
+                v = v * ((x - c[k]) / (c[j] - c[k]));
+            }
+        }
+        w[j] = v;
+    }
+    w
+}
+
 #[test]
-#[ignore = "UNRESOLVED (owner decision pending): starter, error estimator, strong-stiff global order, W-tolerance window 0.8-1.0, Vandermonde convention"]
-fn unresolved_items_are_listed_not_tested() {
-    // 1. Starter: Y_0 needs stages at t0 + h0 c_i with c_1 = -1 < t0; the paper gives none.
-    // 2. Estimator: the paper describes it in prose only (no coefficients).
-    // 3. Strong-stiff global order: PR(-1000) and LIN3 were NOT_CONCLUSIVE in PW04.
-    // 4. W tolerance: T = c*J converged for c in {1.0, 1.2}, diverged for 0.8; 0.8-1.0 NOT_RUN.
-    // 5. Vandermonde convention: printed V is inconsistent with B*1 = 1; node-row V is used.
-    unimplemented!("UNRESOLVED items are not testable yet");
+fn h1_estimator_weights_are_exact_lagrange_weights() {
+    // Coordinator-verified values at sigma = 1: [512/117, -30, 625/9, -1250/13, 160/3].
+    let w1 = exact_estimator_weights(r(1, 1));
+    assert_eq!(
+        w1,
+        [r(512, 117), r(-30, 1), r(625, 9), r(-1250, 13), r(160, 3)]
+    );
+    for (sigma, sf) in sigma_cases() {
+        let exact_w = exact_estimator_weights(sigma);
+        let got = ppsw1::estimator_weights(sf);
+        for j in 0..5 {
+            let want = dd_to_f64(dd_from_rat(exact_w[j]));
+            assert!(approx(got[j], want, 1e-12), "w[{j}] sigma {sf}");
+        }
+        // Weights reproduce constants (partition of unity).
+        assert!(approx(got.iter().sum::<f64>(), 1.0, 1e-12));
+    }
+}
+
+#[test]
+fn h2_estimator_is_zero_on_degree4_polynomials_and_nonzero_on_degree5() {
+    let c = ppsw1::nodes();
+    let h_prev = 0.3;
+    for sigma in [0.6_f64, 1.0, 1.1] {
+        let make = |p: &dyn Fn(f64) -> f64| -> (State, f64) {
+            let y: [Vec<f64>; 6] = std::array::from_fn(|j| vec![p((c[j] - 1.0) * h_prev)]);
+            let st = State {
+                t: 0.0,
+                y,
+                f: std::array::from_fn(|_| vec![0.0]),
+                h_prev,
+            };
+            (st, p(sigma * h_prev))
+        };
+        let deg4 = |t: f64| 1.0 - 2.0 * t + 3.0 * t.powi(2) - 0.5 * t.powi(3) + 4.0 * t.powi(4);
+        let (st, y_new) = make(&deg4);
+        let e = ppsw1::estimator_vector(&st, &[y_new], sigma);
+        assert!(
+            e[0].abs() < 1e-12,
+            "degree-4 data must give 0, got {}",
+            e[0]
+        );
+        let deg5 = |t: f64| t.powi(5);
+        let (st, y_new) = make(&deg5);
+        let e = ppsw1::estimator_vector(&st, &[y_new], sigma);
+        assert!(
+            e[0].abs() > 1e-6,
+            "degree-5 data must give a nonzero estimate"
+        );
+    }
+}
+
+#[test]
+fn h3_error_norm_and_accept_rule() {
+    let want = (((1.0e-6_f64 / 2.0e-6).powi(2) + (4.0e-6_f64 / 3.0e-6).powi(2)) / 2.0).sqrt();
+    assert!(approx(
+        ppsw1::error_norm(&[1.0, -2.0], &[1.0e-6, 4.0e-6], 1.0e-6, 1.0e-6),
+        want,
+        1e-12
+    ));
+    assert!(ppsw1::error_norm(&[], &[], 1e-6, 1e-6).is_nan());
+    assert!(ppsw1::accepts(1.0) && !ppsw1::accepts(1.0 + 1e-12) && !ppsw1::accepts(f64::NAN));
+    assert_eq!(ppsw1::CONTROL_EXPONENT, 0.2);
+}
+
+#[test]
+fn h4_controller_formula_hysteresis_and_nan() {
+    let p = |e: f64, last: &[f64]| ppsw1::propose_ratio(e, last, 1.10);
+    assert_eq!(ppsw1::SAFETY, 0.85);
+    assert_eq!(ppsw1::HYSTERESIS_BAND, (0.95, 1.05));
+    assert_eq!(ppsw1::HYSTERESIS_HISTORY, 6);
+    assert_eq!(p(0.0, &[]), 1.10, "growth is capped at sigma_max = 1.10");
+    assert_eq!(p(1.0e-3, &[]), 1.10);
+    assert_eq!(p(1.0e-3, &[1.0; 6]), 1.10, "no past growth, growth allowed");
+    // 0.85 * 0.5^(-1/5) = 0.9764 lies in the keep band.
+    assert_eq!(p(0.5, &[]), 1.0);
+    assert!(approx(p(1.0, &[]), 0.85, 1e-12));
+    assert!(approx(p(2.0, &[]), 0.85 * 2.0_f64.powf(-0.2), 1e-12));
+    assert_eq!(p(1.0e6, &[]), 0.5, "lower clip");
+    // Growth-history rule over the last s = 6 ratios.
+    let mut hist = vec![1.0; 6];
+    hist[0] = 1.05; // oldest of the last six
+    assert_eq!(p(1.0e-3, &hist), 1.0);
+    let hist7 = [1.05, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]; // growth is 7 steps old
+    assert_eq!(p(1.0e-3, &hist7), 1.10);
+    // NaN halves; the cap can only be tightened.
+    assert_eq!(p(f64::NAN, &[]), 0.5);
+    assert_eq!(ppsw1::propose_ratio(0.0, &[], 1.5), 1.10);
+    assert_eq!(ppsw1::propose_ratio(0.0, &[], 1.06), 1.06);
+}
+
+#[test]
+fn h5_h0_rule_and_refusals() {
+    assert_eq!(ppsw1::H0_LAMBDA_PRODUCT, 1.0);
+    assert_eq!(ppsw1::select_h0(100.0, 1.0).unwrap(), 0.01);
+    assert_eq!(ppsw1::select_h0(0.5, 1.0).unwrap(), 1.0);
+    assert_eq!(ppsw1::select_h0(0.0, 0.3).unwrap(), 0.3);
+    for (b, hm) in [
+        (f64::NAN, 1.0),
+        (-1.0, 1.0),
+        (f64::INFINITY, 1.0),
+        (1.0, 0.0),
+        (1.0, -1.0),
+        (1.0, f64::NAN),
+    ] {
+        assert!(matches!(
+            ppsw1::select_h0(b, hm),
+            Err(CoreError::InvalidInput(_))
+        ));
+    }
+    // Norm bound of the frozen Jacobian: infinity norm, 5.0 for jac2 at (1,1)... = max row sum.
+    let problem = problem2(true);
+    let mut w = WorkCounters::default();
+    let bound = ppsw1::jacobian_norm_bound(&problem, 0.0, &[1.0, 1.0], &mut w).unwrap();
+    let j = jac2(0.0, &[1.0, 1.0]);
+    let want = (j[0][0].abs() + j[0][1].abs()).max(j[1][0].abs() + j[1][1].abs());
+    assert!(approx(bound, want, 1e-14));
+    assert_eq!(w.jacobian_builds, 1);
+    // start() refuses a bad h0 with a typed error.
+    for h0 in [0.0, -0.1, f64::NAN, f64::INFINITY] {
+        let mut w = WorkCounters::default();
+        assert!(matches!(
+            ppsw1::start(&problem, 0.0, &[1.0, 1.0], h0, &mut w),
+            Err(CoreError::InvalidInput(_))
+        ));
+    }
+}
+
+/// y' = lambda (y - cos t) - sin t, exact solution y = cos t (y(0) = 1); records callback times.
+fn pr_problem(lambda: f64, times: Arc<Mutex<Vec<f64>>>) -> OdeProblem {
+    let rec = times.clone();
+    OdeProblem::new(
+        "ppsw1-contract-pr",
+        1,
+        Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
+            if let Ok(mut g) = rec.lock() {
+                g.push(t);
+            }
+            out[0] = lambda * (y[0] - t.cos()) - t.sin();
+            Ok(())
+        }),
+        None,
+        Some(Arc::new(move |t: f64, _y: &[f64]| {
+            if let Ok(mut g) = times.lock() {
+                g.push(t);
+            }
+            DenseMatrix::from_vec_rows(vec![vec![lambda]])
+        })),
+        None,
+        None,
+        false,
+        None,
+        None,
+    )
+    .unwrap()
+}
+
+#[test]
+fn h6_starter_node_values_are_o_h0_to_the_5th_on_a_stiff_problem() {
+    let lambda = -50.0;
+    let c = ppsw1::nodes();
+    let mut errs = Vec::new();
+    for h0 in [0.04_f64, 0.02, 0.01] {
+        let problem = pr_problem(lambda, Arc::new(Mutex::new(Vec::new())));
+        let mut w = WorkCounters::default();
+        let st = ppsw1::start(&problem, 0.0, &[1.0], h0, &mut w).unwrap();
+        assert!(approx(st.t, 2.0 * h0, 1e-15), "state sits at t_init + 2 h0");
+        assert_eq!(st.h_prev, h0);
+        let mut e = 0.0_f64;
+        for j in 0..6 {
+            let tj = h0 * (1.0 + c[j]); // t0 + h0 c_j with t0 = t_init + h0
+            e = e.max((st.y[j][0] - tj.cos()).abs());
+            let fj = lambda * (st.y[j][0] - tj.cos()) - tj.sin();
+            assert!(approx(st.f[j][0], fj, 1e-12), "derivative data f_j");
+        }
+        errs.push(e);
+    }
+    for pair in errs.windows(2) {
+        let order = (pair[0] / pair[1]).log2();
+        assert!(order > 4.5, "starter node order {order}, errors {errs:?}");
+    }
+    assert!(errs[2] < 1e-9, "{errs:?}");
+}
+
+#[test]
+fn h7_starter_uses_forward_time_only_and_newton_only_in_the_starter() {
+    let times = Arc::new(Mutex::new(Vec::new()));
+    let problem = pr_problem(-50.0, times.clone());
+    let t_init = 0.25;
+    let h0 = 0.02;
+    let mut w = WorkCounters::default();
+    let st = ppsw1::start(&problem, t_init, &[t_init.cos()], h0, &mut w).unwrap();
+    let recorded = times.lock().unwrap().clone();
+    assert!(!recorded.is_empty());
+    assert!(
+        recorded.iter().all(|&t| t >= t_init),
+        "starter evaluated a callback before t_init: {recorded:?}"
+    );
+    // Work: one Jacobian, one factorization (of the 5n Newton matrix), Newton counted.
+    assert_eq!(w.jacobian_builds, 1);
+    assert_eq!(w.direct_factorizations, 1);
+    assert_eq!(w.nonlinear_solves, 1);
+    assert!(w.nonlinear_iterations >= 1 && w.nonlinear_failures == 0);
+    assert_eq!(w.linear_solves, w.nonlinear_iterations);
+    assert_eq!(w.direct_solve_calls, w.nonlinear_iterations);
+    assert_eq!(w.rhs_calls, 5 * w.nonlinear_iterations + 6);
+    // The per-step fast lane is linear: no Newton, one factorization, six solves.
+    let mut ws = WorkCounters::default();
+    ppsw1::advance(&problem, &st, h0, &ParallelExecution::sequential(), &mut ws).unwrap();
+    assert_eq!(
+        (
+            ws.nonlinear_solves,
+            ws.nonlinear_iterations,
+            ws.nonlinear_failures
+        ),
+        (0, 0, 0)
+    );
+    assert_eq!((ws.direct_factorizations, ws.linear_solves), (1, 6));
+}
+
+#[test]
+fn h8_try_step_rejects_on_estimator_and_commits_on_acceptance() {
+    // Smooth data: tight tolerance rejects a big step, loose tolerance accepts.
+    let problem = problem2(true);
+    let st = demo_state(0.02);
+    let tight = ppsw1::Tolerances {
+        atol: 1e-14,
+        rtol: 1e-14,
+    };
+    let loose = ppsw1::Tolerances {
+        atol: 1e3,
+        rtol: 1e3,
+    };
+    let mut s = session_for(&problem, st.clone());
+    let d = s.try_step(0.02, &tight).unwrap();
+    match d {
+        ppsw1::Decision::Rejected {
+            error_norm,
+            next_ratio,
+            ..
+        } => {
+            assert!(error_norm > 1.0 && (0.5..=0.85).contains(&next_ratio));
+        }
+        ppsw1::Decision::Accepted { .. } => panic!("tight tolerance must reject"),
+    }
+    assert_eq!(*s.state(), st);
+    assert_eq!(s.counters().rejected_steps, 1);
+    let d = s.try_step(0.02, &loose).unwrap();
+    assert!(matches!(d, ppsw1::Decision::Accepted { .. }));
+    assert_eq!(s.counters().accepted_steps, 1);
+    assert!(matches!(
+        s.try_step(
+            0.02,
+            &ppsw1::Tolerances {
+                atol: 0.0,
+                rtol: 0.0
+            }
+        ),
+        Err(CoreError::InvalidInput(_))
+    ));
+}
+
+// ---------------------------------------------------------------------------------------
+// (i) end-to-end, SYNTHETIC (not qualification): real starter + estimator + controller
+// ---------------------------------------------------------------------------------------
+
+/// Run the method over [0, t_end]; returns (end error inf-norm, accepted, rejected, counters).
+fn integrate(
+    problem: &OdeProblem,
+    y0: &[f64],
+    exact_end: &[f64],
+    t_end: f64,
+    tol: f64,
+) -> (f64, u64, u64, WorkCounters) {
+    let mut w0 = WorkCounters::default();
+    let bound = ppsw1::jacobian_norm_bound(problem, 0.0, y0, &mut w0).unwrap();
+    let h0 = ppsw1::select_h0(bound, 0.01 * t_end).unwrap();
+    let st = ppsw1::start(problem, 0.0, y0, h0, &mut w0).unwrap();
+    let mut s = ppsw1::Session::new(
+        problem,
+        st,
+        Config::default(),
+        ParallelExecution::sequential(),
+    )
+    .unwrap();
+    let tolr = ppsw1::Tolerances {
+        atol: tol,
+        rtol: tol,
+    };
+    let mut h = h0;
+    let mut guard = 0;
+    while s.state().t < t_end - 1e-14 && guard < 200_000 {
+        guard += 1;
+        h = h.min(t_end - s.state().t);
+        match s.try_step(h, &tolr).unwrap() {
+            ppsw1::Decision::Accepted { next_ratio, .. } => h *= next_ratio,
+            ppsw1::Decision::Rejected { next_ratio, .. } => h *= next_ratio,
+        }
+    }
+    assert!(s.state().t >= t_end - 1e-12, "did not reach t_end");
+    let end = &s.state().y[5];
+    let err = end
+        .iter()
+        .zip(exact_end)
+        .map(|(a, b)| (a - b).abs())
+        .fold(0.0_f64, f64::max);
+    let mut c = s.counters();
+    c.jacobian_builds += w0.jacobian_builds;
+    (err, c.accepted_steps, c.rejected_steps, c)
+}
+
+/// y' = lambda (y - cos(omega t)) - omega sin(omega t), exact solution cos(omega t).
+fn pr_omega_problem(lambda: f64, omega: f64) -> OdeProblem {
+    OdeProblem::new(
+        "ppsw1-contract-pr-omega",
+        1,
+        Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
+            out[0] = lambda * (y[0] - (omega * t).cos()) - omega * (omega * t).sin();
+            Ok(())
+        }),
+        None,
+        Some(Arc::new(move |_t: f64, _y: &[f64]| {
+            DenseMatrix::from_vec_rows(vec![vec![lambda]])
+        })),
+        None,
+        None,
+        false,
+        None,
+        None,
+    )
+    .unwrap()
+}
+
+/// Least-squares slope of log(err) against log(1/steps): observed global order.
+fn observed_order(runs: &[(f64, u64)]) -> f64 {
+    let xs: Vec<f64> = runs.iter().map(|r| (r.1 as f64).ln()).collect();
+    let ys: Vec<f64> = runs.iter().map(|r| r.0.ln()).collect();
+    let n = xs.len() as f64;
+    let (mx, my) = (xs.iter().sum::<f64>() / n, ys.iter().sum::<f64>() / n);
+    let num: f64 = xs.iter().zip(&ys).map(|(x, y)| (x - mx) * (y - my)).sum();
+    let den: f64 = xs.iter().map(|x| (x - mx).powi(2)).sum();
+    -(num / den)
+}
+
+#[test]
+fn i1_end_to_end_prothero_robinson_with_real_starter_and_controller() {
+    let t_end = 2.0_f64;
+    let problem = pr_omega_problem(-1.0, 10.0);
+    let mut runs = Vec::new();
+    for tol in [1e-2, 1e-3, 1e-4, 1e-5, 1e-6] {
+        let (err, acc, rej, w) = integrate(&problem, &[1.0], &[(10.0 * t_end).cos()], t_end, tol);
+        eprintln!(
+            "PR lambda=-1 tol={tol:e}: err={err:e} accepted={acc} rejected={rej} lu={} nl_iters={}",
+            w.direct_factorizations, w.nonlinear_iterations
+        );
+        assert!(err < 100.0 * tol, "global error {err} vs tol {tol}");
+        assert_eq!(
+            w.direct_factorizations,
+            acc + rej,
+            "exactly one LU per attempted step in the session (starter work is separate)"
+        );
+        runs.push((err, acc));
+    }
+    let order = observed_order(&runs);
+    eprintln!("PR observed global order (error vs steps): {order}");
+    assert!(order > 3.0, "observed global order {order}");
+}
+
+#[test]
+fn i2_end_to_end_stiff_linear_system_with_real_starter_and_controller() {
+    // y' = A (y - g(t)) + g'(t),  g = (cos t, sin t, cos 2t), exact y = g,
+    // A = Q diag(-1, -50, -1000) Q^T with Q a product of two Givens rotations.
+    let (ca, sa, cb, sb) = (0.8_f64, 0.6_f64, 0.6_f64, 0.8_f64);
+    let q = [
+        [ca, -sa * cb, sa * sb],
+        [sa, ca * cb, -ca * sb],
+        [0.0, sb, cb],
+    ];
+    let lam = [-1.0, -50.0, -1000.0];
+    let mut a = [[0.0_f64; 3]; 3];
+    for i in 0..3 {
+        for j in 0..3 {
+            a[i][j] = (0..3).map(|k| q[i][k] * lam[k] * q[j][k]).sum();
+        }
+    }
+    let g = |t: f64| [(10.0 * t).cos(), (7.0 * t).sin(), (12.0 * t).cos()];
+    let gp = |t: f64| {
+        [
+            -10.0 * (10.0 * t).sin(),
+            7.0 * (7.0 * t).cos(),
+            -12.0 * (12.0 * t).sin(),
+        ]
+    };
+    let problem = OdeProblem::new(
+        "ppsw1-contract-stiff3",
+        3,
+        Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
+            let (gv, gd) = (g(t), gp(t));
+            for i in 0..3 {
+                out[i] = gd[i] + (0..3).map(|j| a[i][j] * (y[j] - gv[j])).sum::<f64>();
+            }
+            Ok(())
+        }),
+        None,
+        Some(Arc::new(move |_t: f64, _y: &[f64]| {
+            DenseMatrix::from_vec_rows(a.iter().map(|r| r.to_vec()).collect())
+        })),
+        None,
+        None,
+        false,
+        None,
+        None,
+    )
+    .unwrap();
+    let t_end = 2.0_f64;
+    let mut runs = Vec::new();
+    for tol in [1e-2, 1e-3, 1e-4, 1e-5, 1e-6] {
+        let (err, acc, rej, w) = integrate(&problem, &g(0.0), &g(t_end), t_end, tol);
+        eprintln!(
+            "STIFF3 tol={tol:e}: err={err:e} accepted={acc} rejected={rej} lu={}",
+            w.direct_factorizations
+        );
+        assert!(err < 1000.0 * tol, "global error {err} vs tol {tol}");
+        runs.push((err, acc));
+    }
+    let order = observed_order(&runs);
+    eprintln!("STIFF3 observed global order (error vs steps): {order}");
+    // The step count here is limited by the 1.10 growth cap from a stiff h0 ~ 1/|lambda|, so the
+    // fitted order is informational only; require monotone error decrease with the tolerance.
+    for pair in runs.windows(2) {
+        assert!(
+            pair[1].0 <= pair[0].0 * 1.0000001,
+            "error must not grow when tol shrinks: {runs:?}"
+        );
+    }
 }
