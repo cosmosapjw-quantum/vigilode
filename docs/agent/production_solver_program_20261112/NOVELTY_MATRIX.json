@@ -1,0 +1,112 @@
+{
+  "schema": "vigilode.novelty-matrix.v1",
+  "verdict": "NOVELTY_NOT_ESTABLISHED",
+  "candidates": [
+    {
+      "id": "N1",
+      "candidate": "RHS-only stage-parallel implicit Peer with original-residual-to-local-error theorem",
+      "closest_prior_art": [
+        "parallel two-step W/Peer",
+        "implicit parallel Peer",
+        "global error control for Peer-W"
+      ],
+      "potential_difference": "A nonlinear RHS-only stage-root algorithm with computable bound from original residual/operator perturbation to step/global error.",
+      "required_proof": [
+        "independent stage equations",
+        "safeguarded existence/uniqueness domain",
+        "original residual-to-local-error theorem",
+        "variable-step stability/startup theorem"
+      ],
+      "required_evidence": [
+        "independent derivation",
+        "counterexample search",
+        "matched-error full-IVP holdout"
+      ],
+      "status": "CONJECTURAL"
+    },
+    {
+      "id": "N2",
+      "candidate": "Matrix-free common-W Peer using block-Krylov and stage-local fused RHS",
+      "closest_prior_art": [
+        "Peer-W independent stage solves",
+        "block GMRES",
+        "JFNK",
+        "parallel Peer-W"
+      ],
+      "potential_difference": "Permission-aware fused solver whose advantage survives true residual, orthogonalization, reductions, preconditioner, setup and memory costs.",
+      "required_proof": [
+        "operator identity/true residual",
+        "inexact solve error budget",
+        "thread-safe deterministic work reduction"
+      ],
+      "required_evidence": [
+        "matched-error strong/weak scaling holdout"
+      ],
+      "status": "RESEARCH_CANDIDATE_NOT_NOVEL_YET"
+    },
+    {
+      "id": "N3",
+      "candidate": "Transactional heterogeneous portfolio with method-history/error-transfer certificates",
+      "closest_prior_art": [
+        "adaptive solver switching",
+        "Peer global error control",
+        "general linear method error propagation",
+        "affine prefix scans"
+      ],
+      "potential_difference": "Per-switch transfer bound for history, nonnormal propagation, estimator bias, events, restart, residual/truncation/roundoff.",
+      "required_proof": [
+        "propagation gains",
+        "history transfer gains",
+        "switch defect",
+        "nonnormal product bounds",
+        "rollback correctness"
+      ],
+      "required_evidence": [
+        "independent proof review",
+        "source-matched holdout"
+      ],
+      "status": "CONJECTURAL"
+    },
+    {
+      "id": "N4",
+      "candidate": "Geometry-aware 2D/3D/spherical MOL clients under one temporal frontend",
+      "closest_prior_art": [
+        "Gray-Scott MOL",
+        "DFS sphere IMEX",
+        "surface RBF MOL",
+        "SUNDIALS ARKODE"
+      ],
+      "potential_difference": "Significance requires a new geometry-operator invariant, conservative remap, structure or matched-error gain.",
+      "required_proof": [
+        "geometry norms/operators",
+        "conservation/pole regularity",
+        "separate spatial-temporal-remap convergence"
+      ],
+      "required_evidence": [
+        "independent benchmark"
+      ],
+      "status": "INTEGRATION_ONLY_UNLESS_NEW_RESULT"
+    },
+    {
+      "id": "N5",
+      "candidate": "Algebraic/singular geometry, symbolic dynamics and algebraic topology integration",
+      "closest_prior_art": [
+        "polynomial resolvent/chart kernels",
+        "source-specific singular geometry",
+        "finite-state controllers",
+        "graph cycle-core/Schur"
+      ],
+      "potential_difference": "A mathematically precise map from declared invariant to solver construction, complexity or error certificate.",
+      "required_proof": [
+        "defined algebraic objects and map",
+        "invariant preservation",
+        "nontrivial solver consequence"
+      ],
+      "required_evidence": [
+        "worked example",
+        "independent math review"
+      ],
+      "status": "UNRESOLVED_NO_GENERAL_MODULE_IDENTIFIED"
+    }
+  ]
+}

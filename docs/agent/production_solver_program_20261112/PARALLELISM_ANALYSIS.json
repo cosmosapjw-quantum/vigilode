@@ -23,7 +23,15 @@
     "critical_depth": 8,
     "maximum_antichain_width": 1,
     "conclusion": "For the represented generic nonlinear 8-stage tableau, same-step exact stage-task parallelism is unavailable without changing the method. Every stage i>1 depends on all earlier stages.",
-    "caveat": "Exact rational arithmetic replayed the decimal strings represented in the pinned coefficient snapshot. The temporary replay fixture was reconstructed from GitHub readback and is not claimed byte-identical to the pinned Git blob. This does not certify Rust runtime performance."
+    "caveat": "Exact rational arithmetic replayed the decimal strings represented in the pinned coefficient snapshot. The temporary replay fixture was reconstructed from GitHub readback and is not claimed byte-identical to the pinned Git blob. This does not certify Rust runtime performance.",
+    "formal_graph": [
+      "stage_1 has no earlier stage predecessor",
+      "stage_i depends on all stage_j for 1<=j<i",
+      "edge_count=sum(i=0..7)i=28",
+      "critical_depth=8 stage levels",
+      "maximum_antichain_width=1 for the original stage DAG"
+    ],
+    "exactness_boundary": "Exact structural conclusion for the represented generic nonlinear tableau when every lower-triangular coefficient is nonzero. It does not exclude component-wise, linear-algebra, ensemble, spatial or parallel-in-time algorithms, and is not a runtime lower bound."
   },
   "peer_w": {
     "method_id": "ppsw1-6b-schmitt-weiner-singly-implicit-peer-w",
@@ -54,7 +62,23 @@
     "n8_blelloch": "14 joins, up/down levels",
     "serial_recurrence": "7 joins, depth 7",
     "interpretation": "Lower span costs extra composition work and communication. Dense matrix composition can be more expensive than the serial recurrence; report actual work and wall time.",
-    "applicability": "Only when the stage/update recurrence is genuinely affine or has a validated finite-dimensional associative summary."
+    "applicability": "Only when the stage/update recurrence is genuinely affine or has a validated finite-dimensional associative summary.",
+    "work_span": {
+      "n": 8,
+      "serial": {
+        "composition_joins": 7,
+        "depth": 7
+      },
+      "kogge_stone": {
+        "composition_joins": 17,
+        "depth": 3
+      },
+      "blelloch": {
+        "composition_joins": 14,
+        "upsweep_downsweep_depth": "log2(n) levels each"
+      },
+      "cost_note": "Dense affine-map composition can require O(N^3) work per join; structured alternatives may be cheaper. Reduced span does not imply reduced work, memory traffic, communication or wall time."
+    }
   },
   "prohibitions": [
     "Do not call a predictor/corrector or stale-stage approximation 'exact parallel RODAS5P'.",
@@ -70,5 +94,25 @@
     "spatial mesh/spectral coefficient parallelism",
     "stage-parallel Peer-W methods",
     "parallel-in-time methods, explicitly treated as different algorithms"
+  ],
+  "peer_w_parallel_research": [
+    {
+      "id": "PW-RHS-01",
+      "status": "IMPLEMENTATION_INSPECTION",
+      "claim": "Current PPSW1-6b parallelizes six linear solves after constructing a common dense W factorization.",
+      "next": "Audit callback/thread safety; parallelize stage-local work only after independence and counter-reduction are verified."
+    },
+    {
+      "id": "PW-RHS-02",
+      "status": "IMPLEMENTATION_GAP",
+      "claim": "Stage-input construction and six new-stage RHS evaluations in advance() are serial.",
+      "next": "Use ordered parallel mapping with per-task local counters and deterministic reduction; preserve source callback contracts."
+    },
+    {
+      "id": "PW-KRYLOV-01",
+      "status": "RESEARCH_REQUIRED",
+      "claim": "A common W permits factorization reuse but does not imply a shared Krylov recurrence.",
+      "next": "Compare six independent GMRES, block-GMRES, flexible/block variants and preconditioned variants; verify each true original-system residual."
+    }
   ]
 }

@@ -8,11 +8,16 @@ Read every file in docs/agent/production_solver_program_20261112/ in this order:
 README.md, SOURCE_LOCK.json, AUDIT_KO.md, PARALLELISM_ANALYSIS.json, METHOD_CATALOG.json, ARCHITECTURE_CONTRACT.json, RESEARCH_DAG.json, TURN_PLAN.json, MUTATION_GATES.json, REFERENCES.json, validate_program.py.
 Then inspect the exact source commit/branch recorded in SOURCE_LOCK.json. Re-read the current GitHub branch head before editing. If the branch head differs, stop and reconcile.
 
+RESEARCH LOOP SCOPE
+- Previous checkpoint: scoped R2/R4/R6/R8/R9/R10 and C2/C3/C4/C10 completed.
+- Native subagent dispatch was unavailable (NOT_RUN); do not claim parallel agent execution.
+- C5/C6/C7/C8/C9 remain unexecuted. Next concrete task is Turn 1 in TURN_PLAN.json.
+
 AUTHORITY
 Repository: cosmosapjw-quantum/vigilode
 Research base: research/unified-t02-20261110
 Base HEAD: ef04bfab6926fcd4ba5f5fa2bbd8696f5e69d011
-New plan branch: research/production-solver-unification-20261112
+New plan branch: research/production-solver-unification-20261112 (additive descendants of checkpoint 071c1c37fae1c8911031d40921105f95110acbb0; inspect live HEAD and ancestry before edits)
 Do not work on main. Do not force-push. Never rewrite history.
 Official G0 remains immutable: 23 nodes / 34 edges. It is not satisfied. Verdict is PRODUCTION HOLD. G0 target metrics are frozen in SOURCE_LOCK.json. Do not change their meaning, thresholds, tolerances or baseline.
 

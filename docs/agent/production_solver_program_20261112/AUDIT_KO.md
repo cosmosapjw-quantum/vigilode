@@ -46,3 +46,14 @@ Parallel Peer-W, Peer-W global error control, JFNK/JVP, prefix scans, spherical 
 ## G. 다음 단계
 
 6-turn plan은 `TURN_PLAN.json`에 있다. 다음은 코드 추가가 아니라 T01 fair-ab reference replay 및 matched achieved-error authority 확립이다. 이후 PPSW1 qualification, Peer stage/block Krylov, 통합 frontend, 2D/3D/spherical MOL, independent novelty/production review 순서다. 매 턴 별도 branch, immutable backup, remote readback을 수행한다.
+
+
+## H. Research-loop 실행 경계
+
+이번 호출에서 완료한 범위는 PhysMath Research Loop 기준 R2/R4/R6/R8/R9/R10 및 C2/C3/C4/C10의 scoped work다. R2는 Peer-W, Peer-W global-error control, stage-parallel Radau 및 sphere/MOL 원전을 대조했다. R4는 원 RODAS stage parallelism과 독립 Peer-W/affine-prefix 대안을 분리했다. R6/R8은 코드·수학·증거를 비판 심사하여 Production HOLD를 판정했다. C2/C3/C4는 source map, 공통 frontend 계약, 병렬화 DAG를 만들었고 C10은 재개 패키지를 작성했다.
+
+**C5 Rust 구현, C6 전체 빌드/테스트, C7 물리 검증, C8 매칭오차 성능 qualification, C9 독립 코드 심사는 이 checkpoint에서 수행하지 않았다.** 현 호스트에는 repository-local worktree/cargo 실행 도구가 노출되지 않아 GitHub 원격 소스에 문서만 추가했다. Native subagent dispatch도 노출되지 않아 `native_subagents=NOT_RUN`; serial fallback을 사용했으며 다중 에이전트 실행으로 표현하지 않는다.
+
+## I. 통합 패키지 원칙
+
+하나의 사용자 frontend와 transactional lifecycle을 제공하되, 각 수치법의 tableau, history, startup, estimator, controller, stability, derivative permission 및 fallback은 독립적으로 보존한다. Auto portfolio는 capability와 qualification receipt가 problem contract에 맞을 때만 opt-in으로 활성화한다. API/패키지 통합 자체를 numerical-method novelty로 주장하지 않는다.

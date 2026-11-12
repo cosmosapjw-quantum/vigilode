@@ -1,0 +1,118 @@
+{
+  "schema": "vigilode.physmath-loop-execution.v1",
+  "date_kst": "2026-11-12",
+  "skill_version": "PhysMath Research Loop 1.3.0",
+  "selected_theory_stages": [
+    {
+      "id": "R2",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "Peer-W, global-error, stage-parallel IRK and sphere/MOL literature checked."
+    },
+    {
+      "id": "R4",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "Exact RODAS graph versus alternative Peer-W/affine scan paths distinguished."
+    },
+    {
+      "id": "R6",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "Code and mathematical-claim audit; findings and provenance issues recorded."
+    },
+    {
+      "id": "R8",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "Production HOLD verdict and novelty boundaries recorded."
+    },
+    {
+      "id": "R9",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "Machine-readable architecture, method and mutation contracts prepared."
+    },
+    {
+      "id": "R10",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "Remote checkpoint and durable next-turn handoff prepared."
+    }
+  ],
+  "selected_coding_stages": [
+    {
+      "id": "C2",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "Source blobs, frontend and candidate paths inspected."
+    },
+    {
+      "id": "C3",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "Method identity/capability/transaction design authored."
+    },
+    {
+      "id": "C4",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "Six-turn implementation DAG and per-turn backup rules authored."
+    },
+    {
+      "id": "C10",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "Low-capability local-agent resume prompt authored."
+    }
+  ],
+  "not_completed": [
+    {
+      "id": "C5",
+      "status": "NOT_RUN",
+      "reason": "No repository-local runtime/worktree/cargo execution tool in active host; this checkpoint delivered audit and programme files."
+    },
+    {
+      "id": "C6",
+      "status": "NOT_RUN",
+      "reason": "No Rust build or workspace tests executed."
+    },
+    {
+      "id": "C7",
+      "status": "NOT_RUN",
+      "reason": "No production physical workload executed."
+    },
+    {
+      "id": "C8",
+      "status": "NOT_RUN",
+      "reason": "No matched-achieved-error performance campaign executed."
+    },
+    {
+      "id": "C9",
+      "status": "NOT_RUN",
+      "reason": "No independently dispatched reviewer available."
+    }
+  ],
+  "native_subagents": {
+    "status": "NOT_RUN",
+    "reason": "No native spawn/wait/collect delegation tools were exposed.",
+    "serial_fallback_used": true
+  },
+  "external_research": {
+    "tools": [
+      "SciSpace",
+      "Exa",
+      "Parallel web research",
+      "Wolfram"
+    ],
+    "topics": [
+      "parallel Peer-W",
+      "global error control for Peer-W",
+      "stage-parallel fully implicit Radau",
+      "prefix scans",
+      "spherical MOL"
+    ]
+  },
+  "computation": {
+    "status": "DERIVED_SCOPED",
+    "claim": "RODAS5P represented 8-stage dependency graph: 28 edges, depth 8, width 1.",
+    "limitation": "No runtime benchmark; current commit records the coefficient source identities."
+  },
+  "backup": {
+    "branch": "research/production-solver-unification-20261112",
+    "base_checkpoint": "071c1c37fae1c8911031d40921105f95110acbb0",
+    "main_mutated": false,
+    "force_push": false,
+    "remote_readback_required": true
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "schema": "vigilode.package-layout-plan.v1",
+  "target": "one public VigilODE solver package/frontend with separate method kernels",
+  "principles": [
+    "One public Problem/Solver/Session API.",
+    "Method kernels retain separate state, coefficients and controller semantics.",
+    "One capability registry, transactional lifecycle and complete work/error authority.",
+    "No duplicate thread pools, controllers or work ledgers.",
+    "Explicit method selection first; automatic portfolio opt-in only after qualification."
+  ],
+  "modules": [
+    {
+      "path": "crates/vigilode/src/api/",
+      "responsibility": "Problem, SolverConfig, Solver, SolverSession, StepAttempt, StepDecision, SolutionOutput"
+    },
+    {
+      "path": "crates/vigilode/src/capability/",
+      "responsibility": "MethodDescriptor registry and derivative/mass-matrix/event/dense-output capability predicates"
+    },
+    {
+      "path": "crates/vigilode/src/transaction/",
+      "responsibility": "attempt/accept/reject, generation tokens, epoch invalidation, atomic hidden-state commit"
+    },
+    {
+      "path": "crates/vigilode/src/work_report/",
+      "responsibility": "typed complete work/memory/time report; adapter over existing WorkCounters and fair-ab"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/",
+      "responsibility": "retain existing DOPRI/RODAS/Peer kernels; no initial movement of protected sources"
+    },
+    {
+      "path": "crates/rodas5p-krylov/src/",
+      "responsibility": "linear operators, independent/block Krylov, workspaces"
+    },
+    {
+      "path": "crates/vigilode/src/spatial/",
+      "responsibility": "2D/3D/sphere MOL adapters, geometry norms and mesh/model contracts"
+    },
+    {
+      "path": "crates/vigilode/src/legacy_adapter/",
+      "responsibility": "backward-compatible f64 slice Problem adapter"
+    }
+  ],
+  "sequence": [
+    "Add typed descriptors and capability registry without route changes.",
+    "Wrap a qualified method with method-owned opaque state.",
+    "Add transactional lifecycle and rollback tests.",
+    "Expose explicit method selection and legacy adapter.",
+    "Add opt-in portfolio only after history/error transfer certificate."
+  ],
+  "forbidden_shortcuts": [
+    "Merge tableaux/controllers.",
+    "Flatten all method histories into indistinguishable shared state.",
+    "Route defaults to opt-in methods before qualification.",
+    "Fallback into forbidden derivative classes.",
+    "Duplicate executor, controller or WorkLedger."
+  ]
+}

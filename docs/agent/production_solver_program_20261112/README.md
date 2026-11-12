@@ -14,3 +14,7 @@ Read in this order:
 9. `validate_program.py`: strict JSON, DAG, method identity and immutable-G0 checks.
 
 Do not merge into `main`. Do not change protected solver sources, coefficients, thresholds, defaults or the official G0 graph from this documentation branch.
+
+
+## Execution scope
+The initial checkpoint completed scoped literature reuse, divergent algorithm design, code-path audit, dependency-graph reasoning, architecture/DAG design and handoff. Native subagents were unavailable (NOT_RUN); serial work was used. Rust implementation and runtime tests remain NOT_RUN. See LOOP_EXECUTION_RECORD.json and EVIDENCE_LEDGER.json.

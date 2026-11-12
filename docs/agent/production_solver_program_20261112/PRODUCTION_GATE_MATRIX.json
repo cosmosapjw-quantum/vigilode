@@ -1,0 +1,55 @@
+{
+  "schema": "vigilode.production-gate-matrix.v1",
+  "verdict": "HOLD",
+  "metrics": [
+    {
+      "id": "G0_GLOBAL_ORDER",
+      "target": "global order >= 4.8",
+      "status": "NOT_QUALIFIED",
+      "reason": "PPSW1 formal variable-step order is five, but strong-stiff whole-IVP global qualification is incomplete."
+    },
+    {
+      "id": "G0_STEPS",
+      "target": "accepted steps <= 1.20x protected RJF",
+      "status": "NOT_RUN",
+      "reason": "No matched achieved-error holdout."
+    },
+    {
+      "id": "G0_SPEED",
+      "target": "median speedup >= 1.15x at identical achieved global error",
+      "status": "NOT_RUN",
+      "reason": "No matched-error runtime experiment in this checkpoint."
+    },
+    {
+      "id": "G0_JACOBIAN",
+      "target": "fast-lane explicit Jacobian builds = 0",
+      "status": "NOT_MET_BY_PPSW1_CURRENT_ROUTE",
+      "reason": "PPSW1 currently calls dense_jacobian; a JVP route is derivative-based, not derivative-free."
+    },
+    {
+      "id": "G0_NEWTON",
+      "target": "fast-lane Newton iterations = 0",
+      "status": "PARTIAL_ONLY",
+      "reason": "Peer per-step solve is linear, but current startup uses Radau IIA/Newton."
+    },
+    {
+      "id": "G0_DEPTH_P95",
+      "target": "critical depth P95 <= 6",
+      "status": "NOT_RUN",
+      "reason": "Inner Krylov/reduction critical-depth definition awaits owner decision; original RODAS stage depth is eight."
+    },
+    {
+      "id": "G0_DEPTH_ABS",
+      "target": "critical depth absolute <= 8",
+      "status": "DERIVED_FOR_RODAS_ONLY",
+      "reason": "Original stage DAG depth eight; portfolio inner execution metrics unmeasured."
+    },
+    {
+      "id": "G0_FALLBACK",
+      "target": "fallback fraction <= 0.10",
+      "status": "NOT_RUN",
+      "reason": "No full-IVP portfolio/fallback run."
+    }
+  ],
+  "qualification_required": "All target metrics must pass on pre-registered holdouts with independent reproduction; no partial aggregate promotion."
+}

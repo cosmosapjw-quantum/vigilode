@@ -1,0 +1,134 @@
+{
+  "schema": "vigilode.evidence-ledger.v1",
+  "records": [
+    {
+      "id": "EV-001",
+      "claim": "PR188 is open, draft and unmerged; main is stale relative to research HEAD.",
+      "status": "SOURCE_CONFIRMED",
+      "evidence": [
+        "PR #188 metadata",
+        "SOURCE_LOCK.json"
+      ],
+      "scope": "2026-11-12 snapshot"
+    },
+    {
+      "id": "EV-002",
+      "claim": "Official G0 is 23 nodes/34 edges, 7/23, successors 0/12; production targets not met as a set.",
+      "status": "SOURCE_CONFIRMED",
+      "evidence": [
+        "VIGILODE_UNIFIED_DAG_20261109.json blob ef422f5effab1839cca1f01bb0218c625a54daea"
+      ],
+      "scope": "immutable baseline"
+    },
+    {
+      "id": "EV-003",
+      "claim": "Represented generic nonlinear RODAS5P graph has 28 strict-lower dependencies, depth 8, antichain width 1.",
+      "status": "DERIVED_SCOPED",
+      "evidence": [
+        "coefficient snapshot blob bc55da4d43549ffbcee3cb25e31be05658507742",
+        "coefficient transform blob c309a3b9d902f8a3865fbedaaf7fad45e5448ea5",
+        "PARALLELISM_ANALYSIS.json"
+      ],
+      "scope": "represented tableau; no runtime claim"
+    },
+    {
+      "id": "EV-004",
+      "claim": "PPSW1-6b is an opt-in six-stage variable-step order-5 Peer-W with same-step independent stage linear solves.",
+      "status": "SOURCE_AND_CONTRACT_CONFIRMED",
+      "evidence": [
+        "ppsw1.rs blob d7386d03b0db085c1116f56c9f2fdc10a52c1e61",
+        "ppsw1_6b_contracts.rs",
+        "PW04_PPSW1_6B_GREEN_RECEIPT.json"
+      ],
+      "scope": "contract implementation; full-IVP qualification incomplete"
+    },
+    {
+      "id": "EV-005",
+      "claim": "PPSW1-6b currently uses dense Jacobian/dense W/LU; solve calls are parallel but stage input and new-stage RHS evaluation are serial.",
+      "status": "IMPLEMENTATION_INSPECTED",
+      "evidence": [
+        "ppsw1.rs blob d7386d03b0db085c1116f56c9f2fdc10a52c1e61"
+      ],
+      "scope": "current opt-in method"
+    },
+    {
+      "id": "EV-006",
+      "claim": "Current public frontend selects DOPRI5/RODAS5P only; Peer two-step history is not integrated into it.",
+      "status": "SOURCE_CONFIRMED",
+      "evidence": [
+        "METHOD_PORTFOLIO_20261109.json blob 85c7dd823fd28dc001344dd46f7c1f9cfc92ebda",
+        "automatic.rs blob ff4f5db411b310039b627d66774b24885eb3cf7d"
+      ],
+      "scope": "public facade"
+    },
+    {
+      "id": "EV-007",
+      "claim": "Parallel Peer-W, Peer-W global error control, stage-parallel Radau preconditioning, prefix scans and sphere DFS are prior art.",
+      "status": "LITERATURE_SUPPORTED",
+      "evidence": [
+        "REFERENCES.json",
+        "SIAM DOI 10.1137/S0036142902411057",
+        "SIAM DOI 10.1016/j.cam.2011.08.006",
+        "SIAM DOI 10.1137/22M1503270",
+        "SIAM DOI 10.1137/17M1112728"
+      ],
+      "scope": "novelty boundary"
+    },
+    {
+      "id": "EV-008",
+      "claim": "PPSW1 starter/estimator/controller include owner/derived choices; synthetic runs are not production qualification.",
+      "status": "SOURCE_CONFIRMED",
+      "evidence": [
+        "PW04_PPSW1_STARTER_ESTIMATOR_LITERATURE_KO.md blob 3aa9904fe28912df2af2779229bd92de41eae521",
+        "PW04_PPSW1_6B_GREEN_RECEIPT.json blob fe0a284fd87ebc20069b3b9badd0f8a5ac450d6b"
+      ],
+      "scope": "qualification boundary"
+    },
+    {
+      "id": "EV-009",
+      "claim": "History metadata indexes 187 PRs and 361 branch refs; not every diff or branch was deeply reviewed.",
+      "status": "SOURCE_CONFIRMED_WITH_COVERAGE_LIMIT",
+      "evidence": [
+        "HISTORY_MATRIX.json blob 23002e40890dc0577628fd3cb2609fb790477d3e"
+      ],
+      "scope": "selected lineages"
+    },
+    {
+      "id": "EV-010",
+      "claim": "Gray-Scott 2D exists; Sphere P06 is a restricted photon FV client; no generic 3D/sphere backend identified.",
+      "status": "SOURCE_INVENTORY",
+      "evidence": [
+        "METHOD_PORTFOLIO_20261109.json blob 85c7dd823fd28dc001344dd46f7c1f9cfc92ebda"
+      ],
+      "scope": "geometry inventory"
+    },
+    {
+      "id": "EV-011",
+      "claim": "OD-23..27 are dated 2026-11-13, later than this audit's 2026-11-12 date.",
+      "status": "PROVENANCE_CONFLICT",
+      "evidence": [
+        "OWNER_DECISIONS_20261110.json",
+        "AUDIT_INDEX_KO.md"
+      ],
+      "scope": "approval not relied on without reconfirmation"
+    },
+    {
+      "id": "EV-012",
+      "claim": "PW04_PPSW1_6BC_VERIFICATION.json contains bare NaN/Infinity and is not strict RFC8259 JSON.",
+      "status": "PACKAGING_INVALIDITY_CONFIRMED",
+      "evidence": [
+        "PW04_PPSW1_6BC_VERIFICATION.json blob 747904178296d5b5e697dba31d74e234bf77f08d"
+      ],
+      "scope": "preserve original unchanged"
+    },
+    {
+      "id": "EV-013",
+      "claim": "No Rust production implementation or matched-error runtime benchmark was executed in this checkpoint.",
+      "status": "NOT_RUN",
+      "evidence": [
+        "LOOP_EXECUTION_RECORD.json"
+      ],
+      "scope": "C5-C9 incomplete"
+    }
+  ]
+}
