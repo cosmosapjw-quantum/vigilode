@@ -8,17 +8,18 @@
   "scope_completed": [
     "U01_PEER_RHS_PARALLEL",
     "U02_PEER_TRANSACTION_IDENTITY",
-    "U05_SEMILINEAR_PARALLEL_SDC"
+    "U05_SEMILINEAR_PARALLEL_SDC",
+    "U03_PEER_INDEPENDENT_QUALIFICATION"
   ],
   "overall_user_goal": "PARTIAL_CONTINUATION",
   "production_verdict": "HOLD",
   "novelty_verdict": "NOT_ESTABLISHED",
   "official_g0_changed": false,
   "implemented_source_sha256": {
-    "crates/rodas5p-integrators/src/ppsw1.rs": "ffffd9b40e7105c5869c84f7628bd09807f62a1500ee50bf842fb70406410f7d",
+    "crates/rodas5p-integrators/src/ppsw1.rs": "758f712ce1786a192f05dbcee2a94c6bd91ae6a2bc3ea760293966cbb3e424bc",
     "crates/rodas5p-integrators/tests/ppsw1_parallel_rhs_contracts.rs": "b172a2b84aee926cd9bbb41e71f84ae3af6fe882c72f2121854eb3581b4d871d",
     "crates/rodas5p-integrators/tests/ppsw1_session_boundary_contracts.rs": "11631f2f1e14e813fb241dcfcbe47382de1cba51c1a911e70f0fd2b733b0576a",
-    "crates/rodas5p-integrators/tests/ppsw1_independent_qualification.rs": "905f51703c5012de8d76f3fe6656d1b1951be1fe1c3957c052a900d67fc3ae3f"
+    "crates/rodas5p-integrators/tests/ppsw1_independent_qualification.rs": "e5bdcbfc119ef794f3349d84735a62dd8210178dd7bc6d9a8969f61fd847db26"
   },
   "protected_blob_sha1": {
     "fixtures/rodas5p_coefficients_snapshot.json": "bc55da4d43549ffbcee3cb25e31be05658507742",
@@ -72,25 +73,34 @@
     "research/production_unification_20261115/lineage.json": "8c5cf94ff68e6682e1995eb3c6fa3f65d9c563bfbe2bb63bc6459378fe59828b",
     "research/production_unification_20261115/HISTORY_RECOVERY.json": "b08bf3d401e97e031b5bd3d35438082996e46cd42e0dcdb1ead5049df52ce9b4",
     "research/production_unification_20261115/ARCHIVE_RECOVERY_CONTRACT.json": "a1d00f4b8b558d0d45a55cfcbe4ed7aa446050502052235f0631c933213d81f7",
-    "research/production_unification_20261115/peer_qualification/CHANGE_CONTRACT.json": "99b5674b356d7e08025de34fcb416565d9c651afc38bc496603737d55adb6268",
-    "research/production_unification_20261115/peer_qualification/QUALIFICATION_KO.md": "0038864fbb74fba24314cfbe038cc6b8622eb243bcb647f29bb342dab95aac95",
-    "research/production_unification_20261115/peer_qualification/RESULTS.json": "1e96236c40ce64602c46f149c126267b3e1c4c646a632535357ffa6799795ef6",
+    "research/production_unification_20261115/peer_qualification/CHANGE_CONTRACT.json": "a15f9bf31e283ab84edb656530e10f9d5e3ec60866c45c64b8075ddf848cb62c",
+    "research/production_unification_20261115/peer_qualification/QUALIFICATION_KO.md": "ac1b86f415a11217d8beb6c3d9831880ce855cbf6ed2eac6ede2281d2cb6d204",
+    "research/production_unification_20261115/peer_qualification/RESULTS.json": "35911b07c38809d9230731936baf19fea41294e2f2e21cd9301191ad93f8ee02",
     "research/production_unification_20261115/peer_qualification/coefficients_oracle.txt": "252e4fd838ce9e6a355e822ae5310a534e242e15e69350a8d93aad9ce2962258",
     "research/production_unification_20261115/peer_qualification/coefficients_oracle_summary.json": "ec7830d863b304673c0d224a457bb280900f2a42cce238a84f5547489cf33095",
-    "research/production_unification_20261115/peer_qualification/logs/u03_clippy_diagnostic.log": "6943fccc310fe1226491e315e1726d41b223cd2724e3da6cc1392dea19445e31",
+    "research/production_unification_20261115/peer_qualification/logs/u03_clippy_diagnostic.log": "42d96db9d52f89d6b6fd4c81410dd41fd6b6e52e49d1ddf5dc77dd3f92aa0ac1",
     "research/production_unification_20261115/peer_qualification/logs/u03_fmt.log": "1b5d8d6341069801a016b6c550c9e2fb6912797d3e814d44ff0961d7a67cfee6",
     "research/production_unification_20261115/peer_qualification/logs/u03_green.exit": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061",
-    "research/production_unification_20261115/peer_qualification/logs/u03_green.log": "4e5a317b365a11b0b0045bd01be05589d8bb4ea8a5a36ceeafc4caae68de4517",
+    "research/production_unification_20261115/peer_qualification/logs/u03_green.log": "4bf4c8f3811c0db509caa9e5eb7b3514e1517bbaf26875a4c3fd92682981ac07",
     "research/production_unification_20261115/peer_qualification/logs/u03_red.log": "55246ba936e2c453de67d16a4eed50169fe2f669b8d87e4ad7bbc5c9abd03a28",
     "research/production_unification_20261115/peer_qualification/logs/u03_red2.log": "3f5fff30f608917b5473225b7ccff6ba2a7a200f5270c5a6ead23ff9c8423c0e",
-    "research/production_unification_20261115/peer_qualification/logs/u03_regression.log": "1645217ce407672b08722bfdda98f246294bf8597caf52f62345f69645091d12",
+    "research/production_unification_20261115/peer_qualification/logs/u03_regression.log": "1621b8aa7685abf0e5fd5fb50fb67687c3256f72eed1c80e6e03b8a7297f42dd",
     "research/production_unification_20261115/peer_qualification/oracle_coefficients.log": "ec7830d863b304673c0d224a457bb280900f2a42cce238a84f5547489cf33095",
     "research/production_unification_20261115/peer_qualification/oracle_coefficients.py": "9341105b1d7b9308b6fad24900e74a78c2d76a60d3ded304c661394de5576ea8",
     "research/production_unification_20261115/peer_qualification/summarize.py": "08184a335f684efc036a766e43908d540d341823862c66b8e38bcb50393a8fbb",
     "research/production_unification_20261115/peer_qualification/theta_oracle.exit": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061",
     "research/production_unification_20261115/peer_qualification/theta_oracle.log": "48235597e1655258b44faea46f53ead5b896fad1ac2fb78cc9483a830eb562ec",
     "research/production_unification_20261115/peer_qualification/theta_oracle.py": "9338bb462fad71c29fe0f58a301befcfa71e280b62d1c1f9ad4e0e22b8e6b7c7",
-    "research/production_unification_20261115/peer_qualification/theta_oracle_results.json": "650165ae2bf4ee31bbae7346cf91e7269533bf0f5dd4e41f07a2dd4564e2cb6e"
+    "research/production_unification_20261115/peer_qualification/theta_oracle_results.json": "650165ae2bf4ee31bbae7346cf91e7269533bf0f5dd4e41f07a2dd4564e2cb6e",
+    "research/production_unification_20261115/peer_qualification/BACKUP_READBACK.json": "353dda38fad0c0e582485d4408e264a5ee722ce1ba85fb72377117f3a8c86e27",
+    "research/production_unification_20261115/peer_qualification/NONLINEAR_RESULTS.json": "f994e28a69ac2dc6816f07f7252214aaecdcd3db09500da0facbac6da5ab70cf",
+    "research/production_unification_20261115/peer_qualification/logs/u03_nonlinear_red.log": "66e19916b9162621e79e1a90d146d3e7fe5dcc2f43efd1df9c92fe913761248f",
+    "research/production_unification_20261115/peer_qualification/logs/u03_nonlinear_try1.log": "024fe58eb62c505405a4593325334c2d77cc8b5f459829008e548a3b23a285ab",
+    "research/production_unification_20261115/peer_qualification/nonlinear_reference.exit": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061",
+    "research/production_unification_20261115/peer_qualification/nonlinear_reference.json": "63407681dfc91e8e4b7f3ba1f572251461b662e8ab3d78e9a6eac4fbde61e017",
+    "research/production_unification_20261115/peer_qualification/nonlinear_reference.log": "1ca7d2d213b3a2302dd8025a75cf23bda87c48a98730595f8db1144ddbcb5a96",
+    "research/production_unification_20261115/peer_qualification/nonlinear_reference.py": "b605a3ff78908341c682ac82b7f33622e6913448246da13e19af79124df12c40",
+    "research/production_unification_20261115/peer_qualification/summarize_nonlinear.py": "406bec7bd2edaed0c123b5f93c095323f940350aeb72cf82bac223d0b3552dc2"
   },
   "checks": {
     "baseline_facade_tests": {
@@ -127,15 +137,18 @@
       "result": "not_run"
     },
     "matched_error_timing": {
-      "result": "not_run"
+      "result": "counter_based_diagnostic",
+      "note": "total RHS/LU and modelled critical path at matched achieved error vs RODAS5P; wall time single-run diagnostic_only; paired timing NOT_RUN",
+      "receipt": "peer_qualification/NONLINEAR_RESULTS.json"
     },
     "u03_qualification": {
-      "passed": 13,
+      "passed": 18,
       "failed": 0,
       "receipt": "peer_qualification/logs/u03_green.log",
       "red_receipts": [
         "peer_qualification/logs/u03_red.log",
-        "peer_qualification/logs/u03_red2.log"
+        "peer_qualification/logs/u03_red2.log",
+        "peer_qualification/logs/u03_nonlinear_red.log"
       ]
     },
     "u03_regression": {
@@ -158,7 +171,7 @@
     }
   },
   "remaining_obligations": [
-    "PPSW1 nonlinear/Jacobian-staleness qualification, T01 matched-error coupling, F1 tolerance-blind h0, F2 growth limitation, F3 estimator floor (U03 PARTIAL; see peer_qualification/QUALIFICATION_KO.md)",
+    "PPSW1 rejected regimes F1-F6 and theta<=0.9 (U03 COMPLETE_SCOPED with failure envelope; see peer_qualification/QUALIFICATION_KO.md); multi-point grid interpolant and paired timing belong to U11",
     "Callback panic/unwind accounting contract (ordinary Result solve/RHS failure accounting done: U01 + U03 C1)",
     "Pure capability registry and existing frontend adapter expansion",
     "Matrix-free per-step and permission-compatible startup distinction",
@@ -167,7 +180,7 @@
     "Frozen-G0 matched achieved-error holdout conjunction"
   ],
   "next_tasks": [
-    "U03_PEER_INDEPENDENT_QUALIFICATION (nonlinear + matched-error remainder)",
+    "U04_COMMON_W_MATRIX_FREE",
     "U06_UNIFIED_CAPABILITY_REGISTRY",
     "U08_STRUCTURE_CERTIFICATES"
   ],
@@ -182,13 +195,12 @@
     "changed_blobs_verified": 57,
     "note": "This receipt-only descendant records the successful substantive checkpoint. It changes no tested source."
   },
-  "scope_partial": [
-    "U03_PEER_INDEPENDENT_QUALIFICATION"
-  ],
+  "scope_partial": [],
   "u03_turn": {
     "date_kst": "2026-11-15",
     "parent_commit": "655d0188bc0767400946c16c9bcf6ed9fabadec1",
     "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25), --locked --offline",
-    "report": "peer_qualification/QUALIFICATION_KO.md"
+    "report": "peer_qualification/QUALIFICATION_KO.md",
+    "nonlinear_turn_parent": "d441ed222477cc720516ef675b41f12de80d9e4b"
   }
 }

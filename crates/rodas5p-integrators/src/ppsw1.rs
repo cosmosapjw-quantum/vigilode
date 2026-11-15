@@ -357,7 +357,11 @@ fn check_sigma(h: f64, h_prev: f64, cap: f64) -> CoreResult<f64> {
     check_positive("previous step size", h_prev)?;
     let sigma = h / h_prev;
     check_positive("step ratio", sigma)?;
-    if sigma > cap.min(ACCEPTED_STEP_SIGMA_MAX) {
+    // Compare in the multiplicative form a driver uses to build `h = h_prev * ratio`: rounding
+    // is monotone, so every fl(h_prev * r) with r <= cap is admitted, and anything above
+    // fl(cap * h_prev) is refused. The division form could refuse the controller's own cap
+    // proposal when fl(fl(h_prev * cap) / h_prev) rounds above cap.
+    if h > cap.min(ACCEPTED_STEP_SIGMA_MAX) * h_prev {
         return Err(CoreError::InvalidInput(format!(
             "step ratio {sigma} exceeds the PPSW1 cap {cap}"
         )));
@@ -1090,11 +1094,18 @@ pub fn start(
     let mut y: Vec<Vec<f64>> = (0..5).map(|_| y0.to_vec()).collect();
     let mut f: Vec<Vec<f64>> = Vec::new();
     let mut converged = false;
+    // An error raised by a callback or solve inside the Newton loop is a failed nonlinear
+    // solve: charge it once before returning (the explicit branches below charge their own).
+    let charge = |counters: &mut WorkCounters, e: CoreError| {
+        counters.nonlinear_failures += 1;
+        e
+    };
     for _ in 0..STARTER_MAX_NEWTON {
         counters.nonlinear_iterations += 1;
         f.clear();
         for i in 0..5 {
-            f.push(problem.eval_rhs(t_init + rc[i] * big_h, &y[i], counters)?);
+            let fi = problem.eval_rhs(t_init + rc[i] * big_h, &y[i], counters);
+            f.push(fi.map_err(|e| charge(counters, e))?);
         }
         let mut g = vec![0.0; dim];
         for i in 0..5 {
@@ -1105,7 +1116,7 @@ pub fn start(
         }
         counters.linear_solves += 1;
         counters.direct_solve_calls += 1;
-        let delta = lu.solve(&g)?;
+        let delta = lu.solve(&g).map_err(|e| charge(counters, e))?;
         let mut dmax = 0.0_f64;
         let mut ymax = 0.0_f64;
         for i in 0..5 {

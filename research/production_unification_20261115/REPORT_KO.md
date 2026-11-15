@@ -46,3 +46,10 @@ Library의 관련 제목 검색은 반환된 페이지 끝까지 조사했다.75
 - 수정 C1: `solve_stages`가 실패 가능한 LU solve 전에 6회를 선부과하던 회계를 실행 기준으로 고쳤다(RED 재현 후 GREEN, 기존 171개 통과).
 - 열린 결함: F1 h0 규칙이 tolerance를 무시해 starter가 구간 전체를 덮을 수 있음(tol 1e-9에서 74배 초과), F2 cap+hysteresis 성장 제한으로 tol과 무관한 step 수, F3 추정기 잡음 바닥이 경고 모델보다 커서 tol 1e-12에서 h가 1e-19로 붕괴 후 typed 오류. 비선형·matched-error·시간/RSS는 NOT_RUN이다.
 - capability: per-step Newton-free지만 Jacobian-free/derivative-free/matrix-free가 아니다. startup은 simplified Newton과 dense 5n×5n LU를 쓴다. fallback은 없다.
+
+## 2026-11-15 후속 2: U03 비선형 qualification (COMPLETE_SCOPED)
+
+상세는 `peer_qualification/QUALIFICATION_KO.md` §8, 근거는 `NONLINEAR_RESULTS.json`이다. Van der Pol(eps 0.1, 1e-3), Robertson, Fisher MOL N=20을 독립 참조(Radau와 DOP853/LSODA로 불확실성 산정)로 평가했다.
+- 동일 달성오차에서 production RODAS5P 대비 PPSW1의 총 RHS/LU 작업은 모든 겹침 구간에서 1.4–9.2배 많다. 이상적 6-way 병렬을 가정한 임계경로 *모델*만 VdP에서 0.47–0.89배다. 측정된 속도 이득이 아니다. Robertson은 비교 불가다.
+- 수정: C2(제어기 자신의 1.10 제안이 반올림으로 거부되던 cap 검사), C3(starter Newton 실패 회계). RED 재현 후 GREEN, 기존 171개와 신규 18개 통과.
+- 거부 영역: F1–F6(tol 무시 h0, 성장 제한, 추정기 바닥, ~1e-11 정확도 바닥, Robertson starter 실패, tol을 조일수록 오차가 커지는 VdP 1e-3)과 theta≤0.9. 후보는 opt-in으로 유지한다. T02 부모와 production은 승격하지 않는다(HOLD).

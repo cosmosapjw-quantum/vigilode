@@ -45,5 +45,60 @@
     "no tolerance, controller, estimator, starter or coefficient tuning",
     "no default routing, no G0 promotion, no production verdict change",
     "no frontend capability activation"
-  ]
+  ],
+  "turn2_nonlinear": {
+    "date_kst": "2026-11-15",
+    "parent_commit": "d441ed222477cc720516ef675b41f12de80d9e4b",
+    "recorded_before_mutation": true,
+    "source_changes": "C2 and C3 below (recorded after first nonlinear run exposed them, before editing ppsw1.rs)",
+    "write_allowlist": [
+      "crates/rodas5p-integrators/tests/ppsw1_independent_qualification.rs",
+      "research/production_unification_20261115/peer_qualification/**",
+      "research/production_unification_20261115/CHECKPOINT.json",
+      "research/production_unification_20261115/REPORT_KO.md",
+      "docs/agent/production_solver_program_20261112/**",
+      "crates/rodas5p-integrators/src/ppsw1.rs"
+    ],
+    "problems": {
+      "vdp_eps_1e-1": "scaled Van der Pol y1'=y2, y2'=((1-y1^2)y2-y1)/eps, y0=(2,-0.66), t in [0,0.5]",
+      "vdp_eps_1e-3": "same, eps=1e-3 (initial layer + slow manifold)",
+      "robertson": "classic Robertson, y0=(1,0,0), t in [0,40]",
+      "fisher_mol_n20": "u_t=u_xx+u(1-u), Dirichlet 0, N=20 interior, dx=1/21, u0=sin(pi x), t in [0,1]"
+    },
+    "reference": "nonlinear_reference.py: scipy Radau rtol 1e-13 and 1e-12, LSODA rtol 1e-13, analytic Jacobians; U_ref = |Radau13-Radau12| + |Radau13-LSODA13| in the error norm",
+    "error_norm": "endpoint WRMS with fixed problem weights |y_ref|+floor (floor 1e-6; Robertson 1e-10), independent of solver tolerance; output grid = {t_end} (single-point frozen grid; PPSW1 has no library dense output)",
+    "checks": [
+      "n1 fixed-step order with real starter on nonlinear problems",
+      "n2 Jacobian staleness (J refreshed every k calls, k=1,2,4,8) = nonlinear W-approximation axis",
+      "n3 matched achieved error PPSW1 (test-local driver, h0 rule h_max=t_end/100 fixed, no tuning) vs production RODAS5P integrate_adaptive Sequential/Direct, tol 1e-3..1e-9, startup/accepted/rejected buckets, single-run wall time diagnostic_only"
+    ],
+    "comparative_reading": "PPSW1 arm is an opt-in candidate (not production fidelity): matched-error result is diagnostic, not a ranking or promotion claim",
+    "changes": [
+      {
+        "id": "C2_CAP_CHECK_ROUNDING_CONSISTENCY",
+        "file": "crates/rodas5p-integrators/src/ppsw1.rs",
+        "function": "check_sigma",
+        "defect": "propose_ratio returns exactly the cap (1.10) for growth; a caller forming h = h_prev * ratio gets fl(h_prev*1.1), and the division check fl(h/h_prev) can round above 1.10, so try_step refuses the controller's own proposal with InvalidInput (observed: vdp_eps_1e-3 tol 1e-9 driver terminated at t=3.48e-2).",
+        "behavior_after": "Refuse iff h > fl(min(cap,1.10) * h_prev). Every h = fl(h_prev * r) with r <= cap is admitted (rounding is monotone); anything above fl(cap*h_prev) is still refused. The cap value, controller and coefficients are unchanged; sigma passed to the tableau remains h/h_prev.",
+        "red_reproduction": "n5_controller_cap_proposal_is_admissible_after_rounding: search h_prev with fl(fl(h_prev*1.1)/h_prev) > 1.1, Session::attempt(fl(h_prev*1.1)) returns InvalidInput on baseline",
+        "green_checks": [
+          "n5 admits fl(h_prev*cap) and refuses next_up(fl(h_prev*cap))",
+          "existing ppsw1_6b a3 cap tests",
+          "full ppsw1 regression"
+        ]
+      },
+      {
+        "id": "C3_STARTER_FAILURE_ACCOUNTING",
+        "file": "crates/rodas5p-integrators/src/ppsw1.rs",
+        "function": "start",
+        "defect": "A starter Newton iterate that makes the RHS callback fail (NonFinite/Err) returns through `?` without counting nonlinear_failures; only the explicit divergence/non-convergence branches count it (observed: Robertson h0=0.4, NonFinite with nonlinear_failures=0).",
+        "behavior_after": "Any error raised inside the starter Newton loop (RHS or linear solve) increments nonlinear_failures exactly once before it is returned; error kind/message unchanged; successful starts unchanged.",
+        "red_reproduction": "n4_robertson_starter_h0_scan: start(h0=0.4) Err with nonlinear_failures == 1 expected, baseline 0",
+        "green_checks": [
+          "n4",
+          "existing starter contracts"
+        ]
+      }
+    ]
+  }
 }

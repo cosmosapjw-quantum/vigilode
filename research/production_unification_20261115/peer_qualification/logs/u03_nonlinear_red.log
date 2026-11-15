@@ -1,0 +1,27 @@
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-unif-20261115/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 18.31s
+     Running tests/ppsw1_independent_qualification.rs (target/release/deps/ppsw1_independent_qualification-c858fd8441aab48d)
+
+running 2 tests
+test n4_robertson_starter_h0_scan_and_caller_h0_runs ... 
+thread 'n4_robertson_starter_h0_scan_and_caller_h0_runs' (857972) panicked at crates/rodas5p-integrators/tests/ppsw1_independent_qualification.rs:1202:13:
+assertion `left == right` failed: h0=0.4: starter failure must be charged once
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test n5_controller_cap_proposal_is_admissible_after_rounding ... QUAL {"data":{"h":0.0019532700000000004,"h_over_h_prev":1.1000000000000003,"h_prev":0.0017757,"outcome":"InvalidInput(\"step ratio 1.1000000000000003 exceeds the PPSW1 cap 1.1\")"},"test":"n5_cap_rounding"}
+
+thread 'n5_controller_cap_proposal_is_admissible_after_rounding' (857973) panicked at crates/rodas5p-integrators/tests/ppsw1_independent_qualification.rs:1254:5:
+controller proposal h_prev*cap refused: Some(InvalidInput("step ratio 1.1000000000000003 exceeds the PPSW1 cap 1.1"))
+FAILED
+
+failures:
+
+failures:
+    n4_robertson_starter_h0_scan_and_caller_h0_runs
+    n5_controller_cap_proposal_is_admissible_after_rounding
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 16 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test ppsw1_independent_qualification`

@@ -1,6 +1,6 @@
 # U03 PPSW1-6b 독립 qualification — 2026-11-15
 
-판정: **U03 PARTIAL**, production **HOLD**, G0 변경 없음. 아래는 선형 calibration 문제에 한정된 scoped 근거다. 원시 근거는 `logs/u03_green.log`(QUAL 행), `RESULTS.json`, `theta_oracle_results.json`, `coefficients_oracle_summary.json`이다.
+판정(후속 갱신): **U03 COMPLETE_SCOPED** — 계약의 완료 조건(독립 계수 비교, 원시 실패를 포함한 참조 기반 오차 곡선)을 선형·비선형 calibration에서 충족했고 거부 영역을 기록했다. 후보의 경쟁력·production 자격은 아니다. production **HOLD**, G0 변경 없음. §1–7은 선형, §8은 비선형이다. 원시 근거는 `logs/u03_green.log`(QUAL 행), `RESULTS.json`, `theta_oracle_results.json`, `coefficients_oracle_summary.json`이다.
 
 ## 1. 변경 (C1, `CHANGE_CONTRACT.json`에 사전 기록)
 `solve_stages`는 fallible `LuFactorization::solve` 전에 `linear_solves/direct_solve_calls += 6`을 선부과했다. 순차 실행은 첫 실패에서 멈추므로 1회 진입에 6회가 부과됐고, Rayon `collect::<Result>`는 형제 job 취소가 비결정적이었다.
@@ -47,3 +47,44 @@ FD/AD 경로 없음. JVP는 model-supplied 도함수이며 추정이 아니다. 
 
 ## 7. NOT_RUN / 열린 의무
 비선형 문제(Fisher/Van der Pol 등)와 J 노후화 연동, T01 matched-error 출력격자·참조 불확실성 결합, RSS/CPU/wall time, F1–F3 교정(별도 근거 필요: h0의 tol 결합, 최소 tol fail-closed, 경고 모델 보정 등), theta 0.9 비단조 해석, 이벤트/dense output, callback panic/unwind 계약. 범위 제한 통과를 production 자격·신규성으로 승격하지 않는다.
+
+## 8. 비선형 qualification (후속 턴)
+사전 계약: `CHANGE_CONTRACT.json#turn2_nonlinear`. 원시 근거: `logs/u03_green.log`(n1–n5), `NONLINEAR_RESULTS.json`, `nonlinear_reference.json`.
+
+### 8.1 참조와 오차 정의
+- 문제: scaled Van der Pol eps=1e-1, 1e-3 (t∈[0,0.5]), Robertson (t∈[0,40]), Fisher MOL N=20 (t∈[0,1]).
+- 참조: scipy Radau rtol 1e-13; U_ref = |Radau13−Radau12| + |Radau13−M2_13|. M2는 Fisher/VdP 0.1은 DOP853, VdP 1e-3/Robertson은 LSODA(보수적). Rust 실행 전 참조 진단에서 Fisher의 LSODA/BDF가 Radau·DOP853(서로 1e-10 일치)과 5e-8 다른 이상치여서 이렇게 선언했고, 모든 방법 간 차이를 기록했다. U_ref WRMS: 4.6e-14, 1.8e-11, 4.2e-12, 2.1e-10.
+- E = 끝점 WRMS(가중치 |y_ref|+floor, solver tol과 무관) + U_ref. U_ref ≤ 0.1E인 점만 admissible. 출력 격자는 {t_end} 한 점이다(PPSW1에 library dense output 없음) — T01 protocol의 다점 격자·interpolant gate는 충족하지 않은 제한이다.
+
+### 8.2 고정 보폭 차수 (n1, 실제 starter, h0=h/16)
+- Fisher: 5.80/5.97/6.26 (깨끗한 asymptotic 6차 근접).
+- VdP eps=0.1: 5.88 후 5e-11–9e-11 바닥. 선형 PR 바닥(3e-11)과 같은 크기로, 큰 B 계수(|B| 최대 134)에 의한 반올림 누적으로 분류한다(**F4 정확도 바닥**, 가설; 별도 증명 없음).
+- VdP eps=1e-3: −0.07/4.35/2.34, preasymptotic stiff envelope, 차수 판정 불가.
+- Robertson: 모든 N에서 starter 실패(아래 F5).
+
+### 8.3 Jacobian 노후화 축 (n2, J를 k번째 호출마다 갱신, N=128)
+k=1..32에서 VdP·Fisher 모두 발산 없음. VdP eps=1e-3은 k=4에서 오차 14배(8.5e-9 대 6.1e-10)로 비단조 악화. 선형 theta 축(§5)의 불안정은 이 비선형 문제들에서는 재현되지 않았다. 일반화하지 않는다.
+
+### 8.4 결함 수정 (RED → GREEN)
+- **C2 cap 반올림**: 제어기는 성장 시 정확히 cap(1.10)을 제안하는데, 호출자가 h=h_prev·1.1을 만들면 fl(h/h_prev)=1.1000000000000003이 되어 try_step이 자기 제안을 InvalidInput으로 거부했다(VdP 1e-3, tol 1e-9 driver가 t=3.48e-2에서 중단). 검사를 h > fl(cap·h_prev)로 바꿨다: r≤cap인 모든 fl(h_prev·r)는 허용, next_up은 계속 거부. cap 값·제어기·계수 불변. RED `logs/u03_nonlinear_red.log`, n5 GREEN.
+- **C3 starter 실패 회계**: starter Newton 중 RHS/solve 오류가 `?`로 빠져 nonlinear_failures가 0이었다. 이제 1회 부과한다. 오류 종류·성공 경로 불변. n4 GREEN.
+- 회귀: library 123(+1 ignored)/Peer 37/병렬 5/경계 6 = 171 통과, 신규 18/18. fmt 통과, 진단 clippy 경고는 기존 8개뿐.
+
+### 8.5 적응 실행과 매칭 오차 (n3/n4, PPSW1 test-local driver vs production RODAS5P Sequential/Direct)
+같은 문제·y0·끝점·atol/rtol·h0(PPSW1 규칙, h_max=t_end/100 고정)로 tol 1e-3..1e-9 7점을 돌렸다. wall time은 단일 실행 diagnostic_only.
+- **F2 재확인**: PPSW1은 VdP 0.1에서 tol 1e-3..1e-7 동일 61 step, Fisher 1e-3..1e-5 동일 234 step. tol에 둔감하다.
+- **F6 (VdP eps=1e-3)**: tol을 조일수록 PPSW1 오차가 커진다(3.1e-10 → 1.1e-9, 거절 0→11). 원인 미해결.
+- **F5 (Robertson)**: 문서화된 h0 규칙은 ||J(y0)||=0.08이라 h0=0.4를 주고, J(y0) 고정 simplified Newton이 발산한다(NonFinite). h0≥1e-2 실패, ≤1e-3 성공. RODAS5P는 같은 h0로 성공한다. 호출자가 h0=1e-6을 주면 모든 tol에서 968 step, E≈3.1e-10(과잉 정확).
+- 매칭 오차(겹침 구간에서만, log-log 보간, 외삽 없음):
+
+| 문제 | 겹침 E 구간 | RHS 비 (PPSW1/RODAS5P) | LU 비 | 임계경로 모델 비 |
+|---|---|---|---|---|
+| VdP eps=0.1 | 3.5e-10–1.6e-9 | 1.9–2.6 | 3.0–4.2 | 0.66–0.89 |
+| VdP eps=1e-3 | 5.1e-10–1.1e-9 | 1.4–2.5 | 2.3–4.1 | 0.47–0.85 |
+| Fisher N=20 | 2.0e-8–9.4e-7 | 3.3–5.6 | 5.4–9.2 | 1.1–1.9 |
+| Robertson | 겹침 없음 | NOT_COMPARABLE | – | – |
+
+  총 작업(RHS, LU)은 모든 겹침에서 PPSW1이 1.4–9.2배 많다. 임계경로 모델은 이상적 6-way stage 병렬을 가정한 계산값이며 측정이 아니다. LU 비용 차이, thread overhead, 메모리는 넣지 않았다. VdP에서만 모델상 0.47–0.89배다. 이것은 속도 주장이 아니다. 후보 arm은 opt-in이라 comparative reading은 diagnostic이다.
+
+### 8.6 종합과 남은 의무
+U03 계약의 완료 조건은 scoped로 충족됐다. 거부 영역은 F1(tol 무시 h0), F2(성장 제한), F3(추정기 바닥), F4(정확도 바닥 ~1e-11 상대), F5(Robertson류 starter 실패), F6(VdP 1e-3에서 tol을 조일수록 오차 증가), theta≤0.9이다. 다음은 U11/T02로 넘긴다: 다점 출력 격자 interpolant, paired wall-time protocol(≥2 warmup, ≥7 반복), RSS, 큰 MOL 문제, F1–F6 교정(근거 필요). 기본 라우팅·G0·허용오차는 바꾸지 않았다.

@@ -811,3 +811,459 @@ fn q10_singular_w_linear_solve_error_preserves_state_and_counts_entered_solve() 
         );
     }
 }
+
+// ===========================================================================================
+// n-series: nonlinear qualification (turn 2). Formulas match nonlinear_reference.py exactly.
+// Error E = endpoint WRMS with fixed weights |y_ref| + floor, plus the reference uncertainty
+// U_ref (Radau 1e-13 vs 1e-12 + declared second method). Output grid = {t_end}.
+// ===========================================================================================
+
+const NL_REF: &str = include_str!(
+    "../../../research/production_unification_20261115/peer_qualification/nonlinear_reference.json"
+);
+
+type RhsCl = Arc<dyn Fn(f64, &[f64], &mut [f64]) + Send + Sync>;
+type JacCl = Arc<dyn Fn(f64, &[f64]) -> Vec<Vec<f64>> + Send + Sync>;
+
+#[derive(Clone)]
+struct Nl {
+    name: &'static str,
+    n: usize,
+    f: RhsCl,
+    j: JacCl,
+    y0: Vec<f64>,
+    t_end: f64,
+    /// absolute tolerance = rtol * atol_factor (same for every solver arm)
+    atol_factor: f64,
+}
+
+fn vdp(name: &'static str, eps: f64) -> Nl {
+    Nl {
+        name,
+        n: 2,
+        f: Arc::new(move |_t, y, o| {
+            o[0] = y[1];
+            o[1] = ((1.0 - y[0] * y[0]) * y[1] - y[0]) / eps;
+        }),
+        j: Arc::new(move |_t, y| {
+            vec![
+                vec![0.0, 1.0],
+                vec![(-2.0 * y[0] * y[1] - 1.0) / eps, (1.0 - y[0] * y[0]) / eps],
+            ]
+        }),
+        y0: vec![2.0, -0.66],
+        t_end: 0.5,
+        atol_factor: 1.0,
+    }
+}
+
+fn robertson() -> Nl {
+    Nl {
+        name: "robertson",
+        n: 3,
+        f: Arc::new(|_t, y, o| {
+            o[0] = -0.04 * y[0] + 1e4 * y[1] * y[2];
+            o[1] = 0.04 * y[0] - 1e4 * y[1] * y[2] - 3e7 * y[1] * y[1];
+            o[2] = 3e7 * y[1] * y[1];
+        }),
+        j: Arc::new(|_t, y| {
+            vec![
+                vec![-0.04, 1e4 * y[2], 1e4 * y[1]],
+                vec![0.04, -1e4 * y[2] - 6e7 * y[1], -1e4 * y[1]],
+                vec![0.0, 6e7 * y[1], 0.0],
+            ]
+        }),
+        y0: vec![1.0, 0.0, 0.0],
+        t_end: 40.0,
+        atol_factor: 1e-6,
+    }
+}
+
+fn fisher() -> Nl {
+    const N: usize = 20;
+    let dx = 1.0 / (N as f64 + 1.0);
+    let inv = 1.0 / (dx * dx);
+    Nl {
+        name: "fisher_mol_n20",
+        n: N,
+        f: Arc::new(move |_t, u, o| {
+            for i in 0..N {
+                let left = if i > 0 { u[i - 1] } else { 0.0 };
+                let right = if i < N - 1 { u[i + 1] } else { 0.0 };
+                o[i] = (left - 2.0 * u[i] + right) * inv + u[i] * (1.0 - u[i]);
+            }
+        }),
+        j: Arc::new(move |_t, u| {
+            let mut j = vec![vec![0.0; N]; N];
+            for i in 0..N {
+                j[i][i] = -2.0 * inv + 1.0 - 2.0 * u[i];
+                if i > 0 {
+                    j[i][i - 1] = inv;
+                }
+                if i < N - 1 {
+                    j[i][i + 1] = inv;
+                }
+            }
+            j
+        }),
+        y0: (0..N)
+            .map(|i| (std::f64::consts::PI * (i as f64 + 1.0) * dx).sin())
+            .collect(),
+        t_end: 1.0,
+        atol_factor: 1e-4,
+    }
+}
+
+fn nl_problems() -> Vec<Nl> {
+    vec![
+        vdp("vdp_eps_1e-1", 1e-1),
+        vdp("vdp_eps_1e-3", 1e-3),
+        robertson(),
+        fisher(),
+    ]
+}
+
+/// (callback count, cached Jacobian rows)
+type StaleJacobian = (usize, Option<Vec<Vec<f64>>>);
+
+/// `stale_every = k`: the Jacobian callback recomputes J only on every k-th call and otherwise
+/// returns the cached (stale) matrix. k = 1 is the exact-J contract.
+fn nl_problem(p: &Nl, stale_every: usize) -> OdeProblem {
+    let f = p.f.clone();
+    let j = p.j.clone();
+    let cache: Arc<std::sync::Mutex<StaleJacobian>> = Default::default();
+    OdeProblem::new(
+        p.name,
+        p.n,
+        Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
+            f(t, y, out);
+            Ok(())
+        }),
+        None,
+        Some(Arc::new(move |t: f64, y: &[f64]| {
+            let mut c = cache.lock().unwrap();
+            if c.0.is_multiple_of(stale_every) || c.1.is_none() {
+                c.1 = Some(j(t, y));
+            }
+            c.0 += 1;
+            DenseMatrix::from_vec_rows(c.1.clone().unwrap())
+        })),
+        None,
+        None,
+        false,
+        None,
+        None,
+    )
+    .unwrap()
+}
+
+struct NlRef {
+    y: Vec<f64>,
+    floor: f64,
+    u_wrms: f64,
+}
+
+fn nl_ref(name: &str) -> NlRef {
+    let v: Value = serde_json::from_str(NL_REF).unwrap();
+    let p = &v["problems"][name];
+    let arr = |k: &str| -> Vec<f64> {
+        p[k].as_array()
+            .unwrap()
+            .iter()
+            .map(|x| x.as_f64().unwrap())
+            .collect()
+    };
+    NlRef {
+        y: arr("y_ref"),
+        floor: p["weight_floor"].as_f64().unwrap(),
+        u_wrms: p["u_ref_wrms"].as_f64().unwrap(),
+    }
+}
+
+fn nl_wrms(y: &[f64], r: &NlRef) -> f64 {
+    if y.len() != r.y.len() || !y.iter().all(|v| v.is_finite()) {
+        return f64::INFINITY;
+    }
+    let s: f64 = y
+        .iter()
+        .zip(&r.y)
+        .map(|(a, b)| ((a - b) / (b.abs() + r.floor)).powi(2))
+        .sum();
+    (s / y.len() as f64).sqrt()
+}
+
+fn counters_json(c: &WorkCounters) -> Value {
+    json!({"rhs_calls": c.rhs_calls, "jacobian_builds": c.jacobian_builds,
+           "lu": c.direct_factorizations, "linear_solves": c.linear_solves,
+           "newton_iterations": c.nonlinear_iterations, "accepted": c.accepted_steps,
+           "rejected": c.rejected_steps})
+}
+
+/// Fixed schedule after the real starter: h0 = h/16, growth by SIG_HI to h, final clip.
+fn nl_fixed(p: &Nl, n_steps: usize, stale_every: usize) -> Value {
+    let prob = nl_problem(p, stale_every);
+    let h = p.t_end / n_steps as f64;
+    let h0 = h / 16.0;
+    let mut w = WorkCounters::default();
+    let s0 = match ppsw1::start(&prob, 0.0, &p.y0, h0, &mut w) {
+        Ok(s) => s,
+        Err(e) => return json!({"status": format!("starter: {e:?}"), "error_wrms": null}),
+    };
+    let exec = ParallelExecution::sequential();
+    let mut st = s0;
+    let mut steps = 0usize;
+    let mut status = "ok".to_string();
+    while st.t < p.t_end {
+        let rem = p.t_end - st.t;
+        let mut hn = (st.h_prev * SIG_HI).min(h);
+        if rem - hn < 0.01 * h {
+            hn = rem;
+        }
+        match ppsw1::advance(&prob, &st, hn, &exec, &mut w) {
+            Ok(o) => st = o.next,
+            Err(e) => {
+                status = format!("step {steps} t={:.4e}: {e:?}", st.t);
+                break;
+            }
+        }
+        steps += 1;
+    }
+    let r = nl_ref(p.name);
+    let e = nl_wrms(&st.y[5], &r);
+    json!({"status": status, "N": n_steps, "steps": steps, "t_final": st.t,
+           "error_wrms": if status == "ok" { json!(e) } else { Value::Null },
+           "counters": counters_json(&w)})
+}
+
+#[test]
+fn n1_nonlinear_fixed_step_order_with_real_starter() {
+    let mut rows = Vec::new();
+    for p in nl_problems() {
+        let r = nl_ref(p.name);
+        let runs: Vec<Value> = [32usize, 64, 128, 256]
+            .iter()
+            .map(|&n| nl_fixed(&p, n, 1))
+            .collect();
+        let errs: Vec<f64> = runs
+            .iter()
+            .map(|x| x["error_wrms"].as_f64().unwrap_or(f64::NAN))
+            .collect();
+        rows.push(
+            json!({"problem": p.name, "u_ref_wrms": r.u_wrms, "runs": runs,
+                         "observed_orders": orders(&errs)}),
+        );
+    }
+    qual("n1_nonlinear_fixed_order", json!(rows));
+    // the nonstiff-ish VdP must converge on every grid (pins the stepping path, not stiff scope)
+    let v = &rows[0]["runs"];
+    for k in 0..4 {
+        assert_eq!(v[k]["status"], "ok", "{}", rows[0]);
+    }
+}
+
+#[test]
+fn n2_jacobian_staleness_axis() {
+    let mut rows = Vec::new();
+    for p in nl_problems() {
+        for k in [1usize, 2, 4, 8, 32] {
+            let mut r = nl_fixed(&p, 128, k);
+            r["problem"] = json!(p.name);
+            r["jacobian_refresh_every"] = json!(k);
+            rows.push(r);
+        }
+    }
+    qual("n2_jacobian_staleness", json!(rows));
+}
+
+fn ppsw1_adaptive_nl(p: &Nl, tol: f64, h_max: f64, h0_override: Option<f64>) -> Value {
+    let prob = nl_problem(p, 1);
+    let (atol, rtol) = (tol * p.atol_factor, tol);
+    let clock = std::time::Instant::now();
+    let mut sw = WorkCounters::default();
+    let bound = ppsw1::jacobian_norm_bound(&prob, 0.0, &p.y0, &mut sw).unwrap();
+    let h0 = h0_override.unwrap_or_else(|| ppsw1::select_h0(bound, h_max).unwrap());
+    let s0 = match ppsw1::start(&prob, 0.0, &p.y0, h0, &mut sw) {
+        Ok(s) => s,
+        Err(e) => {
+            return json!({"solver": "ppsw1", "status": format!("starter: {e:?}"), "h0": h0,
+                          "startup": counters_json(&sw)});
+        }
+    };
+    let mut sess = Session::new(
+        &prob,
+        s0,
+        Config::default(),
+        ParallelExecution::sequential(),
+    )
+    .unwrap();
+    let tols = Tolerances { atol, rtol };
+    let mut h = h0;
+    let mut status = "ok".to_string();
+    let mut iters = 0usize;
+    while sess.state().t < p.t_end {
+        iters += 1;
+        if iters > 500_000 {
+            status = "step_limit".into();
+            break;
+        }
+        let rem = p.t_end - sess.state().t;
+        let hh = h.min(rem);
+        match sess.try_step(hh, &tols) {
+            Ok(Decision::Accepted { next_ratio, .. })
+            | Ok(Decision::Rejected { next_ratio, .. }) => h = hh * next_ratio,
+            Err(e) => {
+                status = format!("t={:.4e}: {e:?}", sess.state().t);
+                break;
+            }
+        }
+    }
+    let wall = clock.elapsed().as_secs_f64();
+    let r = nl_ref(p.name);
+    let e = nl_wrms(&sess.state().y[5], &r);
+    json!({"solver": "ppsw1", "status": status, "h0": h0, "t_final": sess.state().t,
+           "error_wrms": if status == "ok" { json!(e) } else { Value::Null },
+           "startup": counters_json(&sw), "steps": counters_json(&sess.counters()),
+           "wall_seconds": wall, "timing_authority": "diagnostic_only"})
+}
+
+fn rodas5p_adaptive_nl(p: &Nl, tol: f64, h0: f64) -> Value {
+    let prob = nl_problem(p, 1);
+    let clock = std::time::Instant::now();
+    let res = rodas5p_integrators::integrate_adaptive(
+        &prob,
+        (0.0, p.t_end),
+        &p.y0,
+        h0,
+        rodas5p_integrators::IntegrationMethod::Sequential,
+        None,
+        None,
+        tol * p.atol_factor,
+        tol,
+        1_000_000,
+        p.t_end,
+    );
+    let wall = clock.elapsed().as_secs_f64();
+    let r = nl_ref(p.name);
+    match res {
+        Ok(res) => {
+            let e = nl_wrms(res.y.last().unwrap(), &r);
+            let ok = res.success && (res.t.last().unwrap() - p.t_end).abs() <= 1e-12 * p.t_end;
+            json!({"solver": "rodas5p_sequential_direct", "status": if ok { "ok".to_string() } else { res.message.clone() },
+                   "h0": h0, "t_final": res.t.last(), "error_wrms": if ok { json!(e) } else { Value::Null },
+                   "steps": counters_json(&res.counters), "attempts": res.attempts,
+                   "wall_seconds": wall, "timing_authority": "diagnostic_only"})
+        }
+        Err(e) => json!({"solver": "rodas5p_sequential_direct", "status": format!("{e:?}"),
+                         "h0": h0, "error_wrms": null}),
+    }
+}
+
+#[test]
+fn n3_matched_error_sweep_ppsw1_vs_production_rodas5p() {
+    let mut rows = Vec::new();
+    for p in nl_problems() {
+        let r = nl_ref(p.name);
+        for tol in [1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9] {
+            let h_max = p.t_end / 100.0;
+            let mut a = ppsw1_adaptive_nl(&p, tol, h_max, None);
+            let h0 = a["h0"].as_f64().unwrap();
+            let mut b = rodas5p_adaptive_nl(&p, tol, h0);
+            for x in [&mut a, &mut b] {
+                x["problem"] = json!(p.name);
+                x["tol"] = json!(tol);
+                x["u_ref_wrms"] = json!(r.u_wrms);
+                if let Some(e) = x["error_wrms"].as_f64() {
+                    let cons = e + r.u_wrms;
+                    x["conservative_error"] = json!(cons);
+                    x["reference_admissible"] = json!(r.u_wrms <= 0.1 * cons);
+                }
+            }
+            rows.push(a);
+            rows.push(b);
+        }
+    }
+    qual("n3_matched_error_sweep", json!(rows));
+    // production comparator must complete on the calibration set (sanity of the harness)
+    let fails: Vec<&Value> = rows
+        .iter()
+        .filter(|x| x["solver"] == "rodas5p_sequential_direct" && x["status"] != "ok")
+        .collect();
+    assert!(fails.len() <= 2, "comparator failures: {fails:?}");
+}
+
+#[test]
+fn n4_robertson_starter_h0_scan_and_caller_h0_runs() {
+    let p = robertson();
+    let prob = nl_problem(&p, 1);
+    let mut rows = Vec::new();
+    for h0 in [0.4, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6] {
+        let mut w = WorkCounters::default();
+        let r = ppsw1::start(&prob, 0.0, &p.y0, h0, &mut w);
+        rows.push(json!({"h0": h0, "outcome": match &r { Ok(_) => "ok".to_string(), Err(e) => format!("{e:?}") },
+                         "counters": counters_json(&w), "nonlinear_failures": w.nonlinear_failures}));
+        if r.is_err() {
+            assert_eq!(
+                w.nonlinear_failures, 1,
+                "h0={h0}: starter failure must be charged once"
+            );
+        }
+    }
+    // caller-chosen small h0 (outside the documented h0 rule) to separate starter from stepping
+    let reference = nl_ref(p.name);
+    let mut runs = Vec::new();
+    for tol in [1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9] {
+        let mut a = ppsw1_adaptive_nl(&p, tol, p.t_end / 100.0, Some(1e-6));
+        a["problem"] = json!(p.name);
+        a["tol"] = json!(tol);
+        a["variant"] = json!("caller_h0_1e-6");
+        if let Some(e) = a["error_wrms"].as_f64() {
+            let cons = e + reference.u_wrms;
+            a["conservative_error"] = json!(cons);
+            a["reference_admissible"] = json!(reference.u_wrms <= 0.1 * cons);
+        }
+        runs.push(a);
+    }
+    qual(
+        "n4_robertson_starter",
+        json!({"starter_scan": rows, "caller_h0_runs": runs}),
+    );
+}
+
+#[test]
+fn n5_controller_cap_proposal_is_admissible_after_rounding() {
+    let cap = ppsw1::ACCEPTED_STEP_SIGMA_MAX;
+    // a previous step for which fl(fl(h_prev * cap) / h_prev) > cap
+    let h_prev = (0..100_000)
+        .map(|k| 1e-3 * (1.0 + k as f64 * 1e-5))
+        .find(|&hp| (hp * cap) / hp > cap)
+        .expect("rounding witness");
+    let h = h_prev * cap;
+    let pr = scalar_pr(-1.0);
+    let p = problem(&pr, None);
+    let s = exact_state(&pr, 0.3, h_prev);
+    let mut sess = Session::new(
+        &p,
+        s.clone(),
+        Config::default(),
+        ParallelExecution::sequential(),
+    )
+    .unwrap();
+    let ok = sess.attempt(h);
+    qual(
+        "n5_cap_rounding",
+        json!({"h_prev": h_prev, "h": h, "h_over_h_prev": h / h_prev,
+               "outcome": match &ok { Ok(_) => "ok".to_string(), Err(e) => format!("{e:?}") }}),
+    );
+    assert!(
+        ok.is_ok(),
+        "controller proposal h_prev*cap refused: {:?}",
+        ok.err()
+    );
+    let mut sess2 =
+        Session::new(&p, s, Config::default(), ParallelExecution::sequential()).unwrap();
+    assert!(matches!(
+        sess2.attempt(h.next_up()),
+        Err(CoreError::InvalidInput(_))
+    ));
+    assert_eq!(sess2.counters(), WorkCounters::default());
+}
