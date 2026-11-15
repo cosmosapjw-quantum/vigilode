@@ -53,3 +53,7 @@ Library의 관련 제목 검색은 반환된 페이지 끝까지 조사했다.75
 - 동일 달성오차에서 production RODAS5P 대비 PPSW1의 총 RHS/LU 작업은 모든 겹침 구간에서 1.4–9.2배 많다. 이상적 6-way 병렬을 가정한 임계경로 *모델*만 VdP에서 0.47–0.89배다. 측정된 속도 이득이 아니다. Robertson은 비교 불가다.
 - 수정: C2(제어기 자신의 1.10 제안이 반올림으로 거부되던 cap 검사), C3(starter Newton 실패 회계). RED 재현 후 GREEN, 기존 171개와 신규 18개 통과.
 - 거부 영역: F1–F6(tol 무시 h0, 성장 제한, 추정기 바닥, ~1e-11 정확도 바닥, Robertson starter 실패, tol을 조일수록 오차가 커지는 VdP 1e-3)과 theta≤0.9. 후보는 opt-in으로 유지한다. T02 부모와 production은 승격하지 않는다(HOLD).
+
+## 2026-11-15 후속 3: U04 matrix-free common-W (PARTIAL)
+
+상세는 `matrix_free_w/REPORT_KO.md`다. 기존 JVP 선형화, `ShiftedOperator`, production GMRES/block GMRES를 재사용해 PPSW1 stage 선형계의 opt-in matrix-free backend를 만들었다. dense와의 차이는 ≤4.3e-14이고, 원 잔차를 직접 재검사하며, 실패는 typed error로 반환하고 작업량을 계수한다. 권한 거부(JVP 없음, starter dense/Newton 금지)는 callback 전에 일어난다. 잔차→step 오차 예산 가드(선형 rtol ≤ 1e-2·step rtol)를 넣었다. Fisher MOL에서 paired interleaved timing을 측정했고, n ≤ 400에서 **crossover가 없었다**(최선 0.85배). n=800에서는 preconditioner가 없어 GMRES가 실패했다. restart 10에서 가드를 통과해도 controller 거동이 바뀌는 문제(B1)가 열려 있다. per-step만 matrix-free/Newton-free이고 전체 실행은 아니다. production HOLD.

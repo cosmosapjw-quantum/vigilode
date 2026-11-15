@@ -171,7 +171,7 @@
         "U01_PEER_RHS_PARALLEL",
         "U03_PEER_INDEPENDENT_QUALIFICATION"
       ],
-      "status": "PLANNED",
+      "status": "PARTIAL",
       "purpose": "Replace dense common-W algebra only in a new explicit JVP-permitted backend.",
       "write_allowlist": [
         "crates/rodas5p-integrators/src/ppsw1_linear_backend.rs",
@@ -205,7 +205,36 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_unification_20261115/matrix_free_w/REPORT_KO.md",
+        "research/production_unification_20261115/matrix_free_w/RESULTS.json",
+        "research/production_unification_20261115/matrix_free_w/BUDGET_KO.md",
+        "research/production_unification_20261115/matrix_free_w/CHANGE_CONTRACT.json",
+        "research/production_unification_20261115/matrix_free_w/logs/u04_green.log",
+        "research/production_unification_20261115/matrix_free_w/logs/u04_crossover.log",
+        "research/production_unification_20261115/matrix_free_w/logs/u04_regression.log",
+        "research/production_unification_20261115/matrix_free_w/logs/u04_try1.log"
+      ],
+      "progress_20261115": {
+        "done": [
+          "ppsw1::linear_backend: frozen-JVP W via ShiftedOperator, independent (stage-parallel) and block GMRES, charged transfer JVPs, backend original-residual check, admission/strict-starter refusals before callbacks",
+          "contract tests: dense parity (diagonal, nonnormal, rank-1 RHS), typed failures with charged work, permission refusals, residual-to-step-error budget, budget guard (M4, ratio 1e-2)",
+          "measured crossover on Fisher MOL n=25..800, paired interleaved timing (2 warmups, 7 reps): NO crossover for n<=400 (best 0.85x at n=200); all MF arms fail with LinearSolve at n=800 (unpreconditioned)"
+        ],
+        "findings_open": [
+          "B1: budget guard derived at n=40 does not preserve controller behavior for restart-10 at n=200/400 (569->894, 670->9647 steps) even at ratio 1e-3",
+          "B2: production solve_gmres checks the threshold only between restart cycles",
+          "B3: no preconditioner; n=800 Krylov exhaustion"
+        ],
+        "not_run": [
+          "preconditioned backend and preconditioner-failure contract",
+          "CPU time and isolated-process RSS",
+          "independent-reference matched error (only Dense difference)",
+          "other stiff/nonnormal full-IVP problems",
+          "matrix-free starter"
+        ],
+        "status_reason": "Implementation, contracts, budget and a measured (negative) crossover exist; preconditioning, memory/CPU and budget generalisation (B1) remain, so PARTIAL. No speed claim."
+      }
     },
     {
       "id": "U05_SEMILINEAR_PARALLEL_SDC",

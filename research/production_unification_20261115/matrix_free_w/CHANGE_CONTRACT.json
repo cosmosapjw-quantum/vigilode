@@ -1,0 +1,64 @@
+{
+  "schema": "vigilode.change-contract.v1",
+  "task": "U04_COMMON_W_MATRIX_FREE",
+  "date_kst": "2026-11-15",
+  "base_commit": "0caa3ed21fcbd5c3fdb19f873734d86ffeba5853",
+  "recorded_before_mutation": true,
+  "write_allowlist": [
+    "crates/rodas5p-integrators/src/ppsw1_linear_backend.rs",
+    "crates/rodas5p-integrators/src/ppsw1.rs",
+    "crates/rodas5p-integrators/tests/ppsw1_linear_backend_contracts.rs",
+    "research/production_unification_20261115/matrix_free_w/**",
+    "research/production_unification_20261115/CHECKPOINT.json",
+    "research/production_unification_20261115/REPORT_KO.md",
+    "docs/agent/production_solver_program_20261112/**"
+  ],
+  "reuse_not_duplicate": [
+    "OdeProblem::linearize_matrix_free (frozen JVP operator at t_m, y_m)",
+    "rodas5p_core::ShiftedOperator::new_counted_jvp (W = I - gamma h J)",
+    "rodas5p_krylov::solve_gmres and solve_block_gmres (existing true-residual exits, rank deflation)",
+    "rodas5p_core::IdentityPreconditioner",
+    "ParallelExecution::map_ordered with per-job WorkCounters (U01 pattern)",
+    "ppsw1 private validators via child-module visibility"
+  ],
+  "module_placement": "ppsw1_linear_backend.rs is declared inside ppsw1.rs with #[path] as ppsw1::linear_backend, so crates/rodas5p-integrators/src/lib.rs is not edited",
+  "changes": [
+    {
+      "id": "M1_BACKEND",
+      "behavior": "LinearBackend::{Dense, MatrixFree(MatrixFreeConfig)}; Dense calls the unchanged ppsw1::solve_stages. MatrixFree: refuse before callbacks if mass matrix or no JVP; per stage rhs_i = explicit_i + h J transfer_i (one charged JVP), solve W x_i = rhs_i by independent GMRES (stage-parallel, all jobs joined, first error in stage order) or one block GMRES over six RHS; then backend true residual ||rhs_i - W x_i|| <= slack * max(atol, rtol ||rhs_i||) with one charged W application per stage (optional, default on). Identity preconditioner only.",
+      "numerical_equations_changed": false
+    },
+    {
+      "id": "M2_ADVANCE_AND_SESSION",
+      "behavior": "advance_with_backend and Session::with_linear_backend (builder; default Dense). Existing advance/Session/try_step behavior and counters unchanged for Dense. Session keeps the last LinearReport.",
+      "numerical_equations_changed": false
+    },
+    {
+      "id": "M3_STARTER_POLICY",
+      "behavior": "start_with_policy(StarterPolicy{allow_dense_matrix, allow_newton}): the only starter needs a dense 5n LU and simplified Newton; any prohibition returns InvalidInput before any callback. No matrix-free starter is claimed.",
+      "numerical_equations_changed": false
+    },
+    {
+      "id": "M4_LINEAR_BUDGET_GUARD",
+      "recorded_after": "first U04 run (logs/u04_try1.log), before editing",
+      "evidence": "Fisher N=40, block GMRES with linear rtol >= step rtol: tol 1e-8 took 1.13e6 accepted steps and moved the endpoint 58 tol units; tol 1e-5 with linear rtol 1e-4 took 10.7x steps (0.20 tol units). Linear rtol <= 1e-2 * step rtol kept the endpoint within 1.1e-3 tol units of Dense in every row.",
+      "behavior": "Session::try_step refuses with InvalidInput, before any callback, when the matrix-free linear rtol exceeds LINEAR_BUDGET_RATIO (1e-2) times the step rtol, or (step rtol == 0) the linear atol exceeds LINEAR_BUDGET_RATIO times the step atol. attempt/advance carry no step tolerance and are not guarded (documented).",
+      "observation_not_changed": "production solve_gmres tests its threshold only between restart cycles (no in-cycle exit), so restart >= n solves to Krylov exhaustion regardless of rtol; documented and measured with restart 10 arms, Krylov source unchanged",
+      "numerical_equations_changed": false
+    }
+  ],
+  "acceptance": [
+    "dense parity (diagonal, stiff nonnormal, rank-deficient six-RHS) with true residuals",
+    "stagnation/breakdown typed failures, NaN JVP, state preservation and charged work",
+    "permission refusals before callbacks (no JVP, mass, strict starter)",
+    "full-IVP: endpoint deviation vs Dense as a function of linear tolerance (residual-to-step-error budget)",
+    "measured crossover: paired interleaved wall time (2 warmups, 7 repetitions) Dense vs MF on Fisher MOL N scan; counters for JVP, reductions, startup, rejected work"
+  ],
+  "preconditioner": "identity only; preconditioner-failure contract NOT_APPLICABLE until a preconditioner is admitted",
+  "non_goals": [
+    "no derivative-free or whole-run matrix-free/Newton-free claim",
+    "no default routing",
+    "no RODAS5P or Krylov source change",
+    "no tolerance/controller/coefficient change"
+  ]
+}

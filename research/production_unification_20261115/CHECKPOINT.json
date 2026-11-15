@@ -16,10 +16,12 @@
   "novelty_verdict": "NOT_ESTABLISHED",
   "official_g0_changed": false,
   "implemented_source_sha256": {
-    "crates/rodas5p-integrators/src/ppsw1.rs": "758f712ce1786a192f05dbcee2a94c6bd91ae6a2bc3ea760293966cbb3e424bc",
+    "crates/rodas5p-integrators/src/ppsw1.rs": "d2b27044d1ae75cfda80ff6cd93dc80884ceae09bba2b56c513e50e32297e20d",
     "crates/rodas5p-integrators/tests/ppsw1_parallel_rhs_contracts.rs": "b172a2b84aee926cd9bbb41e71f84ae3af6fe882c72f2121854eb3581b4d871d",
     "crates/rodas5p-integrators/tests/ppsw1_session_boundary_contracts.rs": "11631f2f1e14e813fb241dcfcbe47382de1cba51c1a911e70f0fd2b733b0576a",
-    "crates/rodas5p-integrators/tests/ppsw1_independent_qualification.rs": "e5bdcbfc119ef794f3349d84735a62dd8210178dd7bc6d9a8969f61fd847db26"
+    "crates/rodas5p-integrators/tests/ppsw1_independent_qualification.rs": "e5bdcbfc119ef794f3349d84735a62dd8210178dd7bc6d9a8969f61fd847db26",
+    "crates/rodas5p-integrators/src/ppsw1_linear_backend.rs": "0b2410895ee6581eecb981c8910e6dbe1b867ce38248495973fe9c763cbd3978",
+    "crates/rodas5p-integrators/tests/ppsw1_linear_backend_contracts.rs": "fbbeeb1a4ca01ca4c2aa80a22cb5638c6e53fe070282adeb0cb914022b96b727"
   },
   "protected_blob_sha1": {
     "fixtures/rodas5p_coefficients_snapshot.json": "bc55da4d43549ffbcee3cb25e31be05658507742",
@@ -100,7 +102,21 @@
     "research/production_unification_20261115/peer_qualification/nonlinear_reference.json": "63407681dfc91e8e4b7f3ba1f572251461b662e8ab3d78e9a6eac4fbde61e017",
     "research/production_unification_20261115/peer_qualification/nonlinear_reference.log": "1ca7d2d213b3a2302dd8025a75cf23bda87c48a98730595f8db1144ddbcb5a96",
     "research/production_unification_20261115/peer_qualification/nonlinear_reference.py": "b605a3ff78908341c682ac82b7f33622e6913448246da13e19af79124df12c40",
-    "research/production_unification_20261115/peer_qualification/summarize_nonlinear.py": "406bec7bd2edaed0c123b5f93c095323f940350aeb72cf82bac223d0b3552dc2"
+    "research/production_unification_20261115/peer_qualification/summarize_nonlinear.py": "406bec7bd2edaed0c123b5f93c095323f940350aeb72cf82bac223d0b3552dc2",
+    "research/production_unification_20261115/matrix_free_w/BUDGET_KO.md": "cef978e41824b2be21434c1028da66b8ce2f59c0a0653e4ae9b633bef4375b37",
+    "research/production_unification_20261115/matrix_free_w/CHANGE_CONTRACT.json": "1f4c113ffca057aeb5a0a5ee1c86db94ae7a49d2b870de893ce484da990f5cd2",
+    "research/production_unification_20261115/matrix_free_w/REPORT_KO.md": "d7bb3043e8b3721793dd4dd8e4b25047d51a2b087b741dee9e99024fba22bd83",
+    "research/production_unification_20261115/matrix_free_w/RESULTS.json": "ddca7dcc677c00e1213571de920a773e96c58f1ff09f01f11a20b4dc5b12749e",
+    "research/production_unification_20261115/matrix_free_w/logs/u04_clippy_diagnostic.log": "4dfd6373171afedf29e664d0343d7bd724ff05c580360029acad620f891044a1",
+    "research/production_unification_20261115/matrix_free_w/logs/u04_crossover.exit": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061",
+    "research/production_unification_20261115/matrix_free_w/logs/u04_crossover.log": "d9f66dd50084ec667b4c8c4c3914c78bed3249f7f974878d748515d7d0a0e44e",
+    "research/production_unification_20261115/matrix_free_w/logs/u04_crossover_host.txt": "cdcd3338f50b4a2960c2cdcd68fd344ba8753161c6a0f50a9e11eaad60eb5736",
+    "research/production_unification_20261115/matrix_free_w/logs/u04_fmt.log": "83a67cc655ecceee255c9c04d427f78d1d78df47106d27c50f0fd609f414ac4d",
+    "research/production_unification_20261115/matrix_free_w/logs/u04_green.exit": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061",
+    "research/production_unification_20261115/matrix_free_w/logs/u04_green.log": "2dc35f19d8b765704cbb60ee68d1359aa3c162b3bd587db7b92decf2b88d120c",
+    "research/production_unification_20261115/matrix_free_w/logs/u04_regression.log": "08f84fb410e9fb230347b20e9c8b3854f811869cac7ea8e73fcd8d2de22e729f",
+    "research/production_unification_20261115/matrix_free_w/logs/u04_try1.log": "39f9c4cb7f46cd7b7c5f2a5ad3a40f8fbc4aad828b21ca32f46a8ea104918096",
+    "research/production_unification_20261115/matrix_free_w/summarize_u04.py": "52111f57d339fa974acb0c7f9750964b04ad04c6b12ee60ba32e54ce85d4cc2a"
   },
   "checks": {
     "baseline_facade_tests": {
@@ -168,19 +184,37 @@
     "u03_format": {
       "result": "pass_scoped",
       "receipt": "peer_qualification/logs/u03_fmt.log"
+    },
+    "u04_contracts": {
+      "passed": 5,
+      "failed": 0,
+      "ignored": 1,
+      "receipt": "matrix_free_w/logs/u04_green.log"
+    },
+    "u04_regression": {
+      "passed": 189,
+      "failed": 0,
+      "ignored": 1,
+      "receipt": "matrix_free_w/logs/u04_regression.log"
+    },
+    "u04_crossover": {
+      "result": "NO_CROSSOVER_MEASURED for n<=400; MF LinearSolve failure at n=800",
+      "protocol": "paired interleaved, 2 warmups, 7 reps, shared host load 5.5-6.6",
+      "receipt": "matrix_free_w/logs/u04_crossover.log",
+      "source_note": "timing ran before a boolean-equivalent clippy refactor of MatrixFreeConfig::validate; contracts and regression re-ran on the final bytes"
     }
   },
   "remaining_obligations": [
     "PPSW1 rejected regimes F1-F6 and theta<=0.9 (U03 COMPLETE_SCOPED with failure envelope; see peer_qualification/QUALIFICATION_KO.md); multi-point grid interpolant and paired timing belong to U11",
     "Callback panic/unwind accounting contract (ordinary Result solve/RHS failure accounting done: U01 + U03 C1)",
-    "Pure capability registry and existing frontend adapter expansion",
+    "Matrix-free: preconditioner, B1 budget generalisation, CPU/RSS, matrix-free starter (U04 PARTIAL); permission-compatible startup distinction implemented as start_with_policy refusal",
     "Matrix-free per-step and permission-compatible startup distinction",
     "2D/3D/sphere weighted operator clients",
     "Certified structure/switch error transport and novelty comparison",
     "Frozen-G0 matched achieved-error holdout conjunction"
   ],
   "next_tasks": [
-    "U04_COMMON_W_MATRIX_FREE",
+    "U04_COMMON_W_MATRIX_FREE (preconditioner + B1)",
     "U06_UNIFIED_CAPABILITY_REGISTRY",
     "U08_STRUCTURE_CERTIFICATES"
   ],
@@ -195,12 +229,19 @@
     "changed_blobs_verified": 57,
     "note": "This receipt-only descendant records the successful substantive checkpoint. It changes no tested source."
   },
-  "scope_partial": [],
+  "scope_partial": [
+    "U04_COMMON_W_MATRIX_FREE"
+  ],
   "u03_turn": {
     "date_kst": "2026-11-15",
     "parent_commit": "655d0188bc0767400946c16c9bcf6ed9fabadec1",
     "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25), --locked --offline",
     "report": "peer_qualification/QUALIFICATION_KO.md",
     "nonlinear_turn_parent": "d441ed222477cc720516ef675b41f12de80d9e4b"
+  },
+  "u04_turn": {
+    "date_kst": "2026-11-15",
+    "parent_commit": "0caa3ed21fcbd5c3fdb19f873734d86ffeba5853",
+    "report": "matrix_free_w/REPORT_KO.md"
   }
 }

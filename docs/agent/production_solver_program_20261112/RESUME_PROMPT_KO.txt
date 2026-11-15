@@ -30,8 +30,11 @@ Production HOLD. T01 reference replay는 완료 범위와 실패를 재사용한
 U03 상태(2026-11-15 후속 2)
 U03은 COMPLETE_SCOPED다(선형+비선형 calibration, 독립 계수 경로, 매칭 오차 diagnostic, 수정 C1–C3). 권위는 peer_qualification/QUALIFICATION_KO.md, RESULTS.json, NONLINEAR_RESULTS.json, 해시는 CHECKPOINT.json이다. 거부 영역 F1–F6과 theta≤0.9를 근거 없이 상수/허용오차 조정으로 바꾸지 않는다. 동일 달성오차에서 총 작업은 RODAS5P보다 많고, 병렬 임계경로 이득은 모델뿐이다. T02 부모는 PARTIAL이다.
 
+U04 상태(2026-11-15 후속 3)
+U04는 PARTIAL이다. ppsw1::linear_backend(재사용 부품, 원 잔차 검사, 권한 거부, 예산 가드 1e-2)와 계약 테스트가 있다. Fisher MOL n≤400에서 crossover 없음, n=800에서는 unpreconditioned 실패. 권위: research/production_unification_20261115/matrix_free_w/REPORT_KO.md, RESULTS.json, BUDGET_KO.md. 속도 주장 금지.
+
 다음 실행
-TASK_CONTRACTS의 status/dependencies를 확인한다. U03은 scoped 완료다. 다음은 U04 matrix-free common-W(U01+U03 의존), U06 capability registry, U08 구조 이식이다. 다점 출력 interpolant, paired timing, RSS는 U11에서 다룬다. U06 순수 capability registry와 U08 구조 이식은 독립 진행할 수 있다. U04 matrix-free common-W, U07 frontend adapters, U09 geometry, U10 novelty/error-transfer, U11 holdout은 DAG를 따른다. U 노드는 기존 T 목표를 구체화한다. U scoped 완료만으로 T/G0를 완료로 올리지 않는다.
+TASK_CONTRACTS의 status/dependencies를 확인한다. U03은 scoped 완료다. 다음은 U04 잔여(preconditioner, B1 예산 일반화, CPU/RSS), U06 capability registry, U08 구조 이식이다. 다점 출력 interpolant, paired timing, RSS는 U11에서 다룬다. U06 순수 capability registry와 U08 구조 이식은 독립 진행할 수 있다. U04 matrix-free common-W, U07 frontend adapters, U09 geometry, U10 novelty/error-transfer, U11 holdout은 DAG를 따른다. U 노드는 기존 T 목표를 구체화한다. U scoped 완료만으로 T/G0를 완료로 올리지 않는다.
 
 PPSW1 qualification
 논문/표에서 계수를 독립 재구성한다. 구현에서 추출한 계수로 구현을 검증하지 않는다. step ratio sigma=h/h_prev와 approximate-J factor theta(T=theta*J)는 별개 축이다. sigma는0.5..1.1 및 작은 final-clipping 비율, theta는 독립 oracle에서0.8..1.1 및 비가환 perturbation을 검사한다. stiff/nonnormal Prothero–Robinson, LIN3, startup h0, estimator cancellation, rejection/clipping, endpoint/events/mass refusal를 실행한다. 새 근거 없이 tolerance/controller/constants를 조정하지 않는다.

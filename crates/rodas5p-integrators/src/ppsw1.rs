@@ -45,6 +45,12 @@ use std::sync::Arc;
 
 use crate::{OdeProblem, ParallelExecution};
 
+/// Opt-in stage linear-algebra backends (dense LU, JVP matrix-free Krylov); U04.
+#[path = "ppsw1_linear_backend.rs"]
+pub mod linear_backend;
+
+use linear_backend::{LinearBackend, LinearReport};
+
 pub const METHOD_ID: &str = "ppsw1-6b-schmitt-weiner-singly-implicit-peer-w";
 pub const STAGES: usize = 6;
 pub const FORMAL_ORDER: usize = 5;
@@ -521,6 +527,28 @@ pub fn advance(
     advance_capped(problem, state, h, ACCEPTED_STEP_SIGMA_MAX, exec, counters)
 }
 
+/// [`advance`] with an explicit stage linear-algebra backend (U04). `LinearBackend::Dense`
+/// is identical to [`advance`]. The backend is admitted before any callback.
+pub fn advance_with_backend(
+    problem: &OdeProblem,
+    state: &State,
+    h: f64,
+    backend: &LinearBackend,
+    exec: &ParallelExecution,
+    counters: &mut WorkCounters,
+) -> CoreResult<(StepOutput, LinearReport)> {
+    backend.admit(problem)?;
+    advance_capped_with(
+        problem,
+        state,
+        h,
+        ACCEPTED_STEP_SIGMA_MAX,
+        backend,
+        exec,
+        counters,
+    )
+}
+
 fn advance_capped(
     problem: &OdeProblem,
     state: &State,
@@ -529,10 +557,33 @@ fn advance_capped(
     exec: &ParallelExecution,
     counters: &mut WorkCounters,
 ) -> CoreResult<StepOutput> {
+    advance_capped_with(
+        problem,
+        state,
+        h,
+        cap,
+        &LinearBackend::Dense,
+        exec,
+        counters,
+    )
+    .map(|(out, _)| out)
+}
+
+fn advance_capped_with(
+    problem: &OdeProblem,
+    state: &State,
+    h: f64,
+    cap: f64,
+    backend: &LinearBackend,
+    exec: &ParallelExecution,
+    counters: &mut WorkCounters,
+) -> CoreResult<(StepOutput, LinearReport)> {
     validate_state(state, problem.dimension)?;
     let sigma = check_sigma(h, state.h_prev, cap)?;
     let inputs = stage_inputs_unchecked(state, h, sigma)?;
-    let sol = solve_stages(problem, state, h, &inputs, exec, counters)?;
+    let (sol, report) = linear_backend::solve_stages_with_backend(
+        problem, state, h, &inputs, backend, exec, counters,
+    )?;
     let f_new: Vec<Vec<f64>> = if exec.threads() == 1 {
         let mut rows = Vec::with_capacity(STAGES);
         for (inp, yi) in inputs.iter().zip(&sol.y) {
@@ -564,14 +615,17 @@ fn advance_capped(
         return Err(CoreError::NonFinite("PPSW1 step produced NaN/Inf".into()));
     }
     let f = to_six(f_new)?;
-    Ok(StepOutput {
-        next: State {
-            t: state.t + h,
-            y: sol.y,
-            f,
-            h_prev: h,
+    Ok((
+        StepOutput {
+            next: State {
+                t: state.t + h,
+                y: sol.y,
+                f,
+                h_prev: h,
+            },
         },
-    })
+        report,
+    ))
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -617,9 +671,22 @@ pub struct Session<'a> {
     counters: WorkCounters,
     generation: u64,
     owner: Arc<()>,
+    backend: LinearBackend,
+    last_linear_report: Option<LinearReport>,
 }
 
 impl<'a> Session<'a> {
+    /// Select the stage linear-algebra backend (default [`LinearBackend::Dense`]). Refused
+    /// before any callback when the problem cannot support it (no JVP, mass matrix).
+    pub fn with_linear_backend(mut self, backend: LinearBackend) -> CoreResult<Self> {
+        backend.admit(self.problem)?;
+        self.backend = backend;
+        Ok(self)
+    }
+    /// Report of the most recent attempt that reached the stage solves successfully.
+    pub fn last_linear_report(&self) -> Option<&LinearReport> {
+        self.last_linear_report.as_ref()
+    }
     pub fn new(
         problem: &'a OdeProblem,
         state: State,
@@ -646,6 +713,8 @@ impl<'a> Session<'a> {
             counters: WorkCounters::default(),
             generation: 0,
             owner: Arc::new(()),
+            backend: LinearBackend::Dense,
+            last_linear_report: None,
         })
     }
     pub fn state(&self) -> &State {
@@ -660,17 +729,20 @@ impl<'a> Session<'a> {
     pub fn attempt(&mut self, h: f64) -> CoreResult<Attempt> {
         let sigma = check_sigma(h, self.state.h_prev, self.config.step_ratio_cap)?;
         let mut work = self.counters;
-        let r = advance_capped(
+        let r = advance_capped_with(
             self.problem,
             &self.state,
             h,
             self.config.step_ratio_cap,
+            &self.backend,
             &self.exec,
             &mut work,
         );
         self.counters = work;
+        let (out, report) = r?;
+        self.last_linear_report = Some(report);
         Ok(Attempt {
-            next: r?.next,
+            next: out.next,
             sigma,
             generation: self.generation,
             owner: Arc::clone(&self.owner),
@@ -708,6 +780,7 @@ impl<'a> Session<'a> {
     /// cap are refused with `CoreError::InvalidInput` and no side effects.
     pub fn try_step(&mut self, h: f64, tol: &Tolerances) -> CoreResult<Decision> {
         tol.validate()?;
+        self.backend.check_budget(tol.rtol, tol.atol)?;
         let attempt = match self.attempt(h) {
             Ok(a) => a,
             Err(CoreError::NonFinite(_)) => {
