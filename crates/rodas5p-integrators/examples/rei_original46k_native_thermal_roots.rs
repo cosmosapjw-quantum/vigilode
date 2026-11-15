@@ -255,6 +255,12 @@ impl Row {
     }
 }
 fn root(c: &Context) -> R<Row> {
+    root_n(c, 5)
+}
+fn root_n(c: &Context, newton_steps: usize) -> R<Row> {
+    if !(1..=5).contains(&newton_steps) {
+        return Err("INVALID_ORIGINAL_F05_NEWTON_CONTRACTION_COUNT".into());
+    }
     let mut lo = (c.owner_ln_t.lo - 0.008).max(0.0_f64.next_up());
     let mut hi = (c.owner_ln_t.hi + 0.008).min((1.0e5_f64).ln() - 1e-9);
     if lo >= hi {
@@ -284,7 +290,7 @@ fn root(c: &Context) -> R<Row> {
     if derivative.lo <= 0.0 {
         return Err("SOURCE_THERMAL_UNIQUE_ROOT_UNPROVED".into());
     }
-    for _ in 0..5 {
+    for _ in 0..newton_steps {
         let mid = x.lo * 0.5 + x.hi * 0.5;
         let fm = eval(c, p(mid)?)?.f;
         derivative = eval(c, x)?.df;
@@ -343,6 +349,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     {
         return Err("ORIGINAL_THERMAL_CONTEXT_BINARY_SCHEMA_DRIFT".into());
     }
+    let newton_steps: usize = match env::var("REI_F05_NEWTON_STEPS") {
+        Ok(n) => n.parse()?,
+        Err(env::VarError::NotPresent) => 5,
+        Err(err) => return Err(Box::new(err)),
+    };
+    if newton_steps != 3 && newton_steps != 5 {
+        return Err("REI_F05_NEWTON_STEPS_MUST_BE_3_OR_5".into());
+    }
     let now = Instant::now();
     let mut result = Vec::with_capacity(24 + ROOTS * N * 41);
     result.extend_from_slice(RESULT_MAGIC);
@@ -365,7 +379,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .map(|i| {
                 let start = head + RECORD_HEADER + i * COLS * 8;
                 let c = Context::new(&bytes[start..start + COLS * 8], dt, weight);
-                match c.and_then(|ctx| root(&ctx)) {
+                match c.and_then(|ctx| root_n(&ctx, newton_steps)) {
                     Ok(x) => (x, None),
                     Err(e) => (Row::blocked(), Some((i, e))),
                 }
@@ -416,6 +430,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
        "original_14_set_ledgers":"OWNER_PASS_NOT_NATIVE",
        "source_OTS_and_26_event_interval_IVP":"NOT_ESTABLISHED",
        "original_v1_tick161":"NOT_ACCEPTED","canonical_delta":0,"production":"HOLD",
+       "newton_contraction_iterations":newton_steps,
        "elapsed_seconds_native_root_only":now.elapsed().as_secs_f64()});
     println!("{}", serde_json::to_string_pretty(&out)?);
     Ok(())

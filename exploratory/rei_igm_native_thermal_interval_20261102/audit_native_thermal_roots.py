@@ -129,6 +129,12 @@ def audit(srcfile,rustfile,rustreceipt,owner_manifest,outfile):
        "native_success_by_root","source_owner_root_overlap_by_root",
        "source_owner_rhs_overlap_by_root","all_mp80_source_point_samples_bracketed",
        "first_discrepancies")},sort_keys=True))
+    if not (result["all_original_roots_verified_by_native"]
+            and result["all_successful_root_intervals_overlap_owner"]
+            and result["all_successful_rhs_intervals_overlap_owner"]
+            and result["all_mp80_source_point_samples_bracketed"]
+            and result["invalid_native_output_rows"]==0):
+        raise ArithmeticError("ORIGINAL_SOURCE_NATIVE_THERMAL_CERTIFICATION_FAILED")
     return result
 if __name__=="__main__":
     ap=argparse.ArgumentParser()
