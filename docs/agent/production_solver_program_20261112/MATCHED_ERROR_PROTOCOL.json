@@ -1,0 +1,171 @@
+{
+  "schema_version": "vigilode-t01-matched-error-protocol-v1",
+  "frozen_by_turn": "T01_GLOBAL_ERROR_AUTHORITY",
+  "applies_to_turns": [
+    "T02_PPSW1_6B_QUALIFICATION",
+    "T03_PEER_STAGE_MATRIX_FREE",
+    "T04_UNIFIED_FRONTEND",
+    "T05_SPATIAL_MOL_3D_SPHERE",
+    "T06_ADVERSARIAL_RELEASE_GATE"
+  ],
+  "immutable_g0_note": "Does not alter official G0 (23 nodes / 34 edges), tolerances, thresholds, or solver defaults.",
+  "empirical_disproof_of_proxy_matching": {
+    "why_equal_rtol_fails": {
+      "evidence": "NUMERICALLY_CHECKED",
+      "examples": [
+        {
+          "case": "robertson-ramped-n96-rtol-1e-4-v2.1 (Clipped vs Dense at identical rtol=1e-4, atol=1e-6)",
+          "clipped_max_grid_wrms": 16.294937745652753,
+          "dense_max_grid_wrms": 4664.677624671785,
+          "error_ratio_dense_over_clipped": 286.27,
+          "clipped_jvp_vectors": 33641,
+          "dense_jvp_vectors": 4690
+        },
+        {
+          "case": "Adaptive scalar-linear--2 (sequential-rodas5p-direct vs radau-iia3, Dense arm)",
+          "at_rtol_1e_4": {
+            "rodas5p_l2": 1.157e-07,
+            "radau_iia3_l2": 6.499e-06,
+            "ratio": "rodas5p ~56x more accurate"
+          },
+          "at_rtol_1e_6": {
+            "rodas5p_l2": 1.157e-07,
+            "radau_iia3_l2": 1.028e-07,
+            "ratio": "radau_iia3 slightly more accurate; rank reverses"
+          }
+        }
+      ]
+    },
+    "why_equal_step_size_fails": {
+      "evidence": "NUMERICALLY_CHECKED",
+      "example": "Fixed Pareto PR-l-20-m1 at identical step_size h=0.04 (5 steps): bdf1 max_grid_l2=1.394e-4 (rhs=19), bdf2 max_grid_l2=2.619e-5 (rhs=18), radau-iia3 max_grid_l2=6.625e-11 (rhs=90), sequential-rodas5p-direct max_grid_l2=2.796e-11 (rhs=40). Errors span 6.7 orders of magnitude at identical step count."
+    },
+    "why_budget_pass_alone_fails": {
+      "evidence": "NUMERICALLY_CHECKED",
+      "example": {
+        "hires-ramped-n96": [
+          {
+            "case_id": "hires-ramped-n96-rtol-1e-4-v2.1",
+            "rtol": 0.0001,
+            "v3_status": "pass",
+            "clipped_max_grid_wrms": 0.36446244749482803,
+            "dense_max_grid_wrms": 3922.1197833999613,
+            "dense_case_wrms": 0.392211978339996,
+            "dense_internal_steps": 14,
+            "dense_jvp_vectors": 4964,
+            "clipped_jvp_vectors": 38961
+          },
+          {
+            "case_id": "hires-ramped-n96-rtol-1e-6-v2.1",
+            "rtol": 1e-06,
+            "v3_status": "pass",
+            "clipped_max_grid_wrms": 0.36459008578359037,
+            "dense_max_grid_wrms": 91.61739619292402,
+            "dense_case_wrms": 0.9161739619292403,
+            "dense_internal_steps": 29,
+            "dense_jvp_vectors": 9671,
+            "clipped_jvp_vectors": 31916
+          },
+          {
+            "case_id": "hires-ramped-n96-rtol-1e-8-v2.1",
+            "rtol": 1e-08,
+            "v3_status": "pass",
+            "clipped_max_grid_wrms": 0.36437369063138014,
+            "dense_max_grid_wrms": 0.40929425808387077,
+            "dense_case_wrms": 0.40929425808387077,
+            "dense_internal_steps": 75,
+            "dense_jvp_vectors": 22518,
+            "clipped_jvp_vectors": 34770
+          }
+        ],
+        "van-der-pol-ramped-n96": [
+          {
+            "case_id": "van-der-pol-ramped-n96-rtol-1e-4-v2.1",
+            "rtol": 0.0001,
+            "v3_status": "pass",
+            "clipped_max_grid_wrms": 1318.9224018550226,
+            "dense_max_grid_wrms": 8113.571749072609,
+            "dense_case_wrms": 0.8113571749072608,
+            "dense_internal_steps": 29,
+            "dense_jvp_vectors": 11309,
+            "clipped_jvp_vectors": 31309
+          },
+          {
+            "case_id": "van-der-pol-ramped-n96-rtol-1e-6-v2.1",
+            "rtol": 1e-06,
+            "v3_status": "pass",
+            "clipped_max_grid_wrms": 25.847757359164643,
+            "dense_max_grid_wrms": 255.11615504703713,
+            "dense_case_wrms": 2.5511615504703715,
+            "dense_internal_steps": 87,
+            "dense_jvp_vectors": 26884,
+            "clipped_jvp_vectors": 45404
+          },
+          {
+            "case_id": "van-der-pol-ramped-n96-rtol-1e-8-v2.1",
+            "rtol": 1e-08,
+            "v3_status": "pass",
+            "clipped_max_grid_wrms": 0.18468266136679642,
+            "dense_max_grid_wrms": 0.5103137528276404,
+            "dense_case_wrms": 0.5103137528276404,
+            "dense_internal_steps": 253,
+            "dense_jvp_vectors": 74074,
+            "clipped_jvp_vectors": 91717
+          }
+        ]
+      },
+      "summary": "On hires-ramped-n96 Dense arm, both rtol=1e-4 and rtol=1e-8 PASS v3 B=10.0 (dense_case_wrms=0.3922 and 0.4093), yet their actual anchor-scale achieved WRMS errors are 3922.1 vs 0.4093 (9583x apart) with dense JVP cost 4964 vs 22518 (4.54x)."
+    }
+  },
+  "frozen_admissibility_order": [
+    "1. GridAndInitialConditionIdentity: bit-identical requested_times (grid_sha256) and identical y0, t_span, breakpoints.",
+    "2. ReferenceAuthorityGate: reference_uncertainty_wrms = richardson + method_disagreement <= 0.1 * E_achieved (ReferenceDominance::Admissible). ReferenceDominated points are inadmissible for ranking tighter targets.",
+    "3. OutputPolicyAndInterpolantGate: primary ranking uses dense output on natural macro-steps (no forced output-grid step clipping); requires same-step interpolant_delta <= 2.0 (two-arm-output-admissibility-v3) and records legacy v2 gap for continuity.",
+    "4. ComparatorFidelityGate: cross-method performance ranking requires comparator_fidelity == 'production' on all compared arms; any participation by 'reference-implementation-only' comparators forces comparative_reading = 'forbidden'.",
+    "5. DerivativePermissionAndTransactionGate: derivative class (RHS-only, JVP, explicit Jacobian, FD) must be declared and enforced fail-closed; rejected attempts must leave accepted state bit-identical and charge 100% of speculative work."
+  ],
+  "matched_achieved_error_protocol": {
+    "target_quantity": "Achieved global output error E on the frozen common output grid: conservative_max_wrms = max_grid_wrms + reference_uncertainty_wrms (or problem-family exact max_grid_l2 where exact analytic solution exists).",
+    "sweep_requirement": "Evaluate >= 4 tolerance settings (or fixed step sizes where method is fixed-step) per solver to map its monotone Pareto error-cost frontier (E_k, W_k).",
+    "overlapping_interval_rule": "Given two admissible frontiers A and B, define achieved-error ranges [E_min^A, E_max^A] and [E_min^B, E_max^B]. Matched-error comparisons are strictly confined to I_{A,B} = [max(E_min^A, E_min^B), min(E_max^A, E_max^B)]. If max > min, report NOT_COMPARABLE_NO_OVERLAP; extrapolation outside empirical range is forbidden.",
+    "cost_evaluation_at_target_E_star": [
+      "Discrete attainment (repository select_cheapest_below_target): minimum cost among admissible runs satisfying E <= E*.",
+      "Log-log continuous interpolation: for adjacent Pareto frontier points (E_0, C_0) and (E_1, C_1) bracketing E_0 <= E* <= E_1 inside I_{A,B}, compute C(E*) = exp(log(C_0) + (log(E*) - log(E_0)) / (log(E_1) - log(E_0)) * (log(C_1) - log(C_0)))."
+    ],
+    "empirical_fixed_pareto_illustration_PR_l_20_m1": {
+      "note": "Fixed-step demonstration only; comparative reading remains 'forbidden' because radau-iia3-fixed carries comparator_fidelity='reference-implementation-only'.",
+      "rodas5p_error_range_max_l2": [
+        2.4646951146678475e-14,
+        2.796113340863826e-11
+      ],
+      "radau_iia3_error_range_max_l2": [
+        5.728750807065808e-14,
+        6.624725767956363e-11
+      ],
+      "bdf1_error_range_max_l2": [
+        3.684083352395451e-05,
+        0.0001393694024673653
+      ],
+      "rodas5p_vs_bdf1_overlap": "NONE (2.796e-11 << 3.684e-5 => NOT_COMPARABLE_NO_OVERLAP)",
+      "rodas5p_vs_radau3_overlap": [
+        5.728750807065808e-14,
+        2.796113340863826e-11
+      ],
+      "matched_target_E_star": 1e-12,
+      "rodas5p_interpolated_rhs_at_E_star": 77.2175803392541,
+      "radau_iia3_interpolated_rhs_at_E_star": 165.84511036281444
+    }
+  },
+  "complete_work_and_memory_accounting": {
+    "required_separate_buckets": [
+      "setup_work (pre-integration operator/bound/tableau setup time and calls)",
+      "startup_work (starter Newton solves/iterations/LU/RHS before step 1, e.g. ppsw1::start Radau IIA vs zero-Newton stepping)",
+      "accepted_step_work (RHS, batch RHS, ft, Jacobian builds, direct LU, direct solves, JVP calls/vectors)",
+      "rejected_step_work (charged into WorkCounters and also exposed independently via rejected_steps / failure counters)",
+      "fallback_step_work (fallback_steps and all fallback linear/direct calls)",
+      "krylov_and_preconditioner_work (linear_iterations, linear_matvec_vectors, preconditioner_vectors, orthogonalization_inner_products, block_*)",
+      "memory_footprint (stored_state_bytes on output grid vs actual Linux process peak RSS VmHWM in KiB per isolated run)"
+    ],
+    "wall_time_authority_rule": "Unpaired/single-run wall times MUST carry timing_authority='diagnostic_only'. Authoritative wall-time ratios require paired randomized interleaved TimingProtocol (>=2 warmups, >=7 repetitions) on identical hardware."
+  }
+}

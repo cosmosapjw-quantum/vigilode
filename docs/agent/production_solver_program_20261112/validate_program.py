@@ -94,6 +94,27 @@ assert len(turn_plan["turns"]) == 6
 loop = docs["LOOP_EXECUTION_RECORD.json"]
 assert loop["native_subagents"]["status"] == "NOT_RUN"
 assert all(item["status"] == "NOT_RUN" for item in loop["not_completed"])
+t1_exec = loop["turn_1_execution"]
+assert t1_exec["turn_id"] == "T01_GLOBAL_ERROR_AUTHORITY"
+assert t1_exec["status"] == "COMPLETE_SCOPED"
+assert t1_exec["holdout_touched"] is False
+assert t1_exec["crates_mutated"] is False
+
+receipt = docs["REFERENCE_REPLAY_RECEIPT.json"]
+assert receipt["contract_test_suite"]["total_passed"] == 59
+assert receipt["contract_test_suite"]["total_failed"] == 0
+assert receipt["cal96_replay"]["case_count"] == 18
+assert receipt["official_g0"]["verdict"] == "HOLD"
+assert receipt["official_g0"]["modified_in_turn_1"] is False
+
+protocol = docs["MATCHED_ERROR_PROTOCOL.json"]
+assert protocol["frozen_by_turn"] == "T01_GLOBAL_ERROR_AUTHORITY"
+
+t01_nodes = [n for n in docs["RESEARCH_DAG.json"]["nodes"] if n["id"] == "T01_GLOBAL_ERROR_AUTHORITY"]
+assert len(t01_nodes) == 1
+assert t01_nodes[0]["status"] == "COMPLETE_SCOPED"
+assert t01_nodes[0]["evidence"] == "NUMERICALLY_CHECKED"
+
 gate = docs["PRODUCTION_GATE_MATRIX.json"]
 assert gate["verdict"] == "HOLD"
 
@@ -107,4 +128,5 @@ print("PASS PTSW2C identity: 2 stages/order 3")
 print("PASS PPSW1-6b identity: 6 stages/order 5")
 print("PASS immutable G0: 23 nodes/34 edges")
 print("PASS six-turn plan and evidence-state invariants")
+print("PASS Turn 1 replay receipt and matched-error protocol invariants")
 print("PRODUCTION HOLD; structural checks are not numerical/runtime qualification.")

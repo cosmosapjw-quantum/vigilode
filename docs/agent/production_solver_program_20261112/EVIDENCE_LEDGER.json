@@ -129,6 +129,45 @@
         "LOOP_EXECUTION_RECORD.json"
       ],
       "scope": "C5-C9 incomplete"
+    },
+    {
+      "id": "EV-014",
+      "claim": "All 11 rodas5p-fair-ab release contract test binaries (59 tests) passed with 0 failures and 0 ignored on live checkpoint HEAD 92bf561e.",
+      "status": "IMPLEMENTATION_VERIFIED",
+      "evidence": [
+        "REFERENCE_REPLAY_RECEIPT.json#contract_test_suite"
+      ],
+      "scope": "rodas5p-fair-ab unit/contract suite under --locked --release"
+    },
+    {
+      "id": "EV-015",
+      "claim": "Concrete ScientificCorpusV2.1 calibration n=96 numerical references (6 families, Radau L2 + tight-LSODA) validated source equations, numpy/scipy/OpenBLAS pins, and replayed through rodas5p-fair-ab v2/v3 (18 cases: v2 18/18 output-policy-dominated; v3 14 pass, 1 interpolant-dominated on robertson-ramped-n96-rtol-1e-6-v2.1 with delta=3.3069, 3 global-error-exceeds-budget on semilinear-advection-diffusion-ramped-n96-grid8x12). Host /usr/bin/python3.12 binary SHA-256 differs from pinned hash (UNRESOLVED host patch drift).",
+      "status": "NUMERICALLY_CHECKED",
+      "evidence": [
+        "REFERENCE_REPLAY_RECEIPT.json#cal96_reference_generation",
+        "REFERENCE_REPLAY_RECEIPT.json#cal96_replay"
+      ],
+      "scope": "cal96 only; n=384, n=1536, and 4 holdouts remain NOT_RUN and unopened"
+    },
+    {
+      "id": "EV-016",
+      "claim": "Empirical replay confirms equal rtol, equal step size, and B=10.0 budget pass alone are not matched achieved error (e.g. hires-ramped Dense passes B=10 at rtol=1e-4 and 1e-8 while anchor WRMS error differs 9583x; robertson rtol=1e-4 Clipped=16.295 vs Dense=4664.68; PR-l-20-m1 h=0.04 L2 error spans 1.394e-4 to 2.796e-11).",
+      "status": "NUMERICALLY_CHECKED",
+      "evidence": [
+        "MATCHED_ERROR_PROTOCOL.json#empirical_disproof_of_proxy_matching",
+        "REFERENCE_REPLAY_RECEIPT.json#pareto_smoke_replay"
+      ],
+      "scope": "cal96 + adaptive & fixed Pareto smoke screens"
+    },
+    {
+      "id": "EV-017",
+      "claim": "Separate measurement shows ppsw1::start incurs startup Newton + 5n x 5n LU + RHS work (nonlinear_solves=1, nonlinear_iterations=2..3, direct_factorizations=1) whereas Peer-W Session steps incur nonlinear_solves=0, and cal96 process peak VmHWM (11,172 KiB) is ~147x larger than stored_state_bytes (77,568 B).",
+      "status": "IMPLEMENTATION_VERIFIED",
+      "evidence": [
+        "REFERENCE_REPLAY_RECEIPT.json#ppsw1_counter_separation_replay",
+        "REFERENCE_REPLAY_RECEIPT.json#cal96_replay"
+      ],
+      "scope": "PR-l-1000-m{0,1} 5-step trace and cal96 VmHWM snapshot"
     }
   ]
 }
