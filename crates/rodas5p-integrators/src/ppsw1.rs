@@ -41,6 +41,7 @@
 //! Mass matrices are not supported.
 
 use rodas5p_core::{CoreError, CoreResult, DenseMatrix, LuFactorization, WorkCounters};
+use std::sync::Arc;
 
 use crate::{OdeProblem, ParallelExecution};
 
@@ -355,6 +356,7 @@ fn check_sigma(h: f64, h_prev: f64, cap: f64) -> CoreResult<f64> {
     check_positive("step size", h)?;
     check_positive("previous step size", h_prev)?;
     let sigma = h / h_prev;
+    check_positive("step ratio", sigma)?;
     if sigma > cap.min(ACCEPTED_STEP_SIGMA_MAX) {
         return Err(CoreError::InvalidInput(format!(
             "step ratio {sigma} exceeds the PPSW1 cap {cap}"
@@ -363,12 +365,36 @@ fn check_sigma(h: f64, h_prev: f64, cap: f64) -> CoreResult<f64> {
     Ok(sigma)
 }
 
+fn validate_state(state: &State, dimension: usize) -> CoreResult<()> {
+    check_positive("previous step size", state.h_prev)?;
+    if dimension == 0 || state.y.iter().chain(&state.f).any(|v| v.len() != dimension) {
+        return Err(CoreError::Dimension("PPSW1 state shape mismatch".into()));
+    }
+    if !state.t.is_finite() || state.y.iter().chain(&state.f).any(|v| !all_finite(v)) {
+        return Err(CoreError::InvalidInput("PPSW1 state must be finite".into()));
+    }
+    Ok(())
+}
+
+fn advancing_time(t: f64, h: f64) -> CoreResult<f64> {
+    check_positive("step size", h)?;
+    let next = t + h;
+    if !t.is_finite() || !next.is_finite() || next <= t {
+        return Err(CoreError::InvalidInput(
+            "PPSW1 requires a finite, representably advancing time".into(),
+        ));
+    }
+    Ok(next)
+}
+
 pub fn stage_inputs(state: &State, h: f64) -> CoreResult<[StageInput; 6]> {
+    validate_state(state, state.y[5].len())?;
     let sigma = check_sigma(h, state.h_prev, ACCEPTED_STEP_SIGMA_MAX)?;
     stage_inputs_unchecked(state, h, sigma)
 }
 
 fn stage_inputs_unchecked(state: &State, h: f64, sigma: f64) -> CoreResult<[StageInput; 6]> {
+    advancing_time(state.t, h)?;
     let tab = tableau(sigma)?;
     let n = state.y[5].len();
     if state.y.iter().any(|v| v.len() != n) || state.f.iter().any(|v| v.len() != n) {
@@ -389,7 +415,15 @@ fn stage_inputs_unchecked(state: &State, h: f64, sigma: f64) -> CoreResult<[Stag
             .map(|r| (0..6).map(|j| tab.gamma_matrix[i][j] * state.y[j][r]).sum())
             .collect(),
     };
-    Ok(std::array::from_fn(build))
+    let inputs: [StageInput; 6] = std::array::from_fn(build);
+    if inputs.iter().any(|input| {
+        !input.t.is_finite() || !all_finite(&input.explicit) || !all_finite(&input.transfer)
+    }) {
+        return Err(CoreError::InvalidInput(
+            "PPSW1 stage inputs must be finite".into(),
+        ));
+    }
+    Ok(inputs)
 }
 
 pub fn solve_stages(
@@ -405,12 +439,21 @@ pub fn solve_stages(
     }
     check_positive("step size", h)?;
     let n = problem.dimension;
+    validate_state(state, n)?;
+    advancing_time(state.t, h)?;
     if state.y[5].len() != n
         || inputs
             .iter()
             .any(|s| s.explicit.len() != n || s.transfer.len() != n)
     {
         return Err(CoreError::Dimension("PPSW1 stage shape mismatch".into()));
+    }
+    if inputs.iter().any(|input| {
+        !input.t.is_finite() || !all_finite(&input.explicit) || !all_finite(&input.transfer)
+    }) {
+        return Err(CoreError::InvalidInput(
+            "PPSW1 stage inputs must be finite".into(),
+        ));
     }
     let jac = problem.dense_jacobian(state.t, &state.y[5], counters)?;
     let shift = h * gamma();
@@ -444,6 +487,11 @@ pub struct StepOutput {
     pub next: State,
 }
 
+/// Advance with the chosen bounded execution context. Multi-thread execution
+/// evaluates the six independent new-stage RHS callbacks concurrently; callbacks
+/// must give the same values regardless of invocation order. Every scheduled RHS
+/// job is joined and charged before returning the first error in stage order.
+/// Sequential execution retains its prefix-only early-error behavior.
 pub fn advance(
     problem: &OdeProblem,
     state: &State,
@@ -462,13 +510,32 @@ fn advance_capped(
     exec: &ParallelExecution,
     counters: &mut WorkCounters,
 ) -> CoreResult<StepOutput> {
+    validate_state(state, problem.dimension)?;
     let sigma = check_sigma(h, state.h_prev, cap)?;
     let inputs = stage_inputs_unchecked(state, h, sigma)?;
     let sol = solve_stages(problem, state, h, &inputs, exec, counters)?;
-    let mut f_new: Vec<Vec<f64>> = Vec::with_capacity(6);
-    for (inp, yi) in inputs.iter().zip(&sol.y) {
-        f_new.push(problem.eval_rhs(inp.t, yi, counters)?);
-    }
+    let f_new: Vec<Vec<f64>> = if exec.threads() == 1 {
+        let mut rows = Vec::with_capacity(STAGES);
+        for (inp, yi) in inputs.iter().zip(&sol.y) {
+            rows.push(problem.eval_rhs(inp.t, yi, counters)?);
+        }
+        rows
+    } else {
+        let indices = [0usize, 1, 2, 3, 4, 5];
+        // Keep callback errors inside the successful job envelope: Rayon must
+        // join every stage so no executed work is lost to early cancellation.
+        let jobs = exec.map_ordered(&indices, |&i| {
+            let mut work = WorkCounters::default();
+            let result = problem.eval_rhs(inputs[i].t, &sol.y[i], &mut work);
+            Ok((result, work))
+        })?;
+        for (_, work) in &jobs {
+            counters.accumulate(*work);
+        }
+        jobs.into_iter()
+            .map(|(result, _)| result)
+            .collect::<CoreResult<Vec<_>>>()?
+    };
     if sol
         .y
         .iter()
@@ -505,10 +572,13 @@ pub struct ControllerState {
     pub accepted_ratios: Vec<f64>,
 }
 
+/// A proposal owned by one session and transaction generation. Accepting or
+/// rejecting any proposal closes that generation and invalidates its siblings.
 pub struct Attempt {
     next: State,
     sigma: f64,
     generation: u64,
+    owner: Arc<()>,
 }
 impl Attempt {
     pub fn next_state(&self) -> &State {
@@ -527,6 +597,7 @@ pub struct Session<'a> {
     controller: ControllerState,
     counters: WorkCounters,
     generation: u64,
+    owner: Arc<()>,
 }
 
 impl<'a> Session<'a> {
@@ -536,6 +607,7 @@ impl<'a> Session<'a> {
         config: Config,
         exec: ParallelExecution,
     ) -> CoreResult<Self> {
+        validate_state(&state, problem.dimension)?;
         if !(config.step_ratio_cap.is_finite()
             && config.step_ratio_cap > 0.0
             && config.step_ratio_cap <= ACCEPTED_STEP_SIGMA_MAX)
@@ -554,6 +626,7 @@ impl<'a> Session<'a> {
             },
             counters: WorkCounters::default(),
             generation: 0,
+            owner: Arc::new(()),
         })
     }
     pub fn state(&self) -> &State {
@@ -581,10 +654,11 @@ impl<'a> Session<'a> {
             next: r?.next,
             sigma,
             generation: self.generation,
+            owner: Arc::clone(&self.owner),
         })
     }
     pub fn accept(&mut self, attempt: Attempt) -> CoreResult<()> {
-        if attempt.generation != self.generation {
+        if !Arc::ptr_eq(&attempt.owner, &self.owner) || attempt.generation != self.generation {
             return Err(CoreError::InvalidInput("stale attempt".into()));
         }
         self.controller.accepted_ratios.push(attempt.sigma);
@@ -600,10 +674,12 @@ impl<'a> Session<'a> {
         Ok(())
     }
     pub fn reject(&mut self, attempt: Attempt) -> CoreResult<()> {
-        if attempt.generation != self.generation {
+        if !Arc::ptr_eq(&attempt.owner, &self.owner) || attempt.generation != self.generation {
             return Err(CoreError::InvalidInput("stale attempt".into()));
         }
         self.counters.rejected_steps += 1;
+        // Discard closes this transaction generation, including sibling attempts.
+        self.generation += 1;
         Ok(())
     }
 
@@ -617,6 +693,7 @@ impl<'a> Session<'a> {
             Ok(a) => a,
             Err(CoreError::NonFinite(_)) => {
                 self.counters.rejected_steps += 1;
+                self.generation += 1;
                 return Ok(Decision::Rejected {
                     error_norm: f64::NAN,
                     next_ratio: RATIO_CLIP.0,
@@ -975,6 +1052,9 @@ pub fn start(
     let rc = radau_nodes()?;
     let li = lagrange_integrals(&rc);
     let big_h = 2.0 * h0;
+    let middle = advancing_time(t_init, h0)?;
+    advancing_time(middle, h0)?;
+    advancing_time(t_init, big_h)?;
     let a_at = |i: usize, j: usize| eval_poly6(&li[j], rc[i]);
     let jac = problem.dense_jacobian(t_init, y0, counters)?;
     let dim = 5 * n;

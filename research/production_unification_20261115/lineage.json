@@ -1,0 +1,698 @@
+{
+  "schema": "vigilode.lineage-audit.v1",
+  "date": "2026-11-15",
+  "research_base": "bee5563c51264a7da19c519295bdda2fb317caef",
+  "default_main": "8d0c79184e09efb5bdadc24a6315c60a71a44264",
+  "coverage": {
+    "remote_branch_heads": 364,
+    "reachable_commits": 2603,
+    "pull_requests": 188,
+    "all_pr_metadata_and_public_bodies_fetched": true,
+    "all_pr_diffs_deep_reviewed": false,
+    "all_branch_source_trees_deep_reviewed": false,
+    "pr_state_counts": {
+      "open": 158,
+      "merged": 24,
+      "closed_unmerged": 6
+    },
+    "limitations": [
+      "Unreachable/deleted Git objects are excluded.",
+      "PR titles/body statements are historical reports, not fresh numerical verification.",
+      "Selected native source and theory inspected; native tests were not rerun by the lineage worker.",
+      "New drafts added after this retrieval require a delta refresh."
+    ]
+  },
+  "tracks": [
+    {
+      "id": "L01",
+      "topic": "Protected RODAS5P and existing public facade",
+      "pr_numbers": [
+        19,
+        74,
+        104
+      ],
+      "state": "implemented_scoped",
+      "evidence_basis": [
+        "source-inspected",
+        "historical-record-read"
+      ],
+      "new_native_execution": "not_run_by_lineage_worker",
+      "sources": [
+        {
+          "path": "crates/vigilode/src/lib.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "9370f4e50e454dd43472160c8d65e4fdcd030e8a",
+          "sha256": "288d14c142da8a33979db972b49fba098bc970ef80ca20f7bfb0f9af6d0b0dae",
+          "bytes": 10319,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/vigilode/src/lib.rs"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/sequential.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "4153e286a2ac756252978d5d77cf1abe0e6a4e0c",
+          "sha256": "9256587e04625eecaf21b053f4b94f907b8d8e2f7afdb2b8854f32e240bd5a0d",
+          "bytes": 41777,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/src/sequential.rs"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "d68239d53977e36f98b186b627aa0c4c5c7de7cb",
+          "sha256": "8425652310c29d8b3f8e649ea477040fa48c35bb391dcaf6f3073b83e1aae185",
+          "bytes": 145516,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs"
+        }
+      ],
+      "reuse": "Extend Problem/Options/Solution and protected driver adapters; retain sequential original-stage reference.",
+      "remaining_obligation": "Expose a common method descriptor and lifecycle without implying all methods share dense output/events/history semantics.",
+      "mathematical_scope": "Finite-difference JVP is Jacobian-assembly-free but derivative-using; JVP-only is matrix-free at state dimension, with projected small dense algebra permitted only when declared."
+    },
+    {
+      "id": "L02",
+      "topic": "Native BDF/Radau and explicit/exponential integrators",
+      "pr_numbers": [],
+      "state": "implemented_scoped",
+      "evidence_basis": [
+        "source-inspected",
+        "historical-record-read"
+      ],
+      "new_native_execution": "not_run_by_lineage_worker",
+      "sources": [
+        {
+          "path": "crates/rodas5p-integrators/src/bdf.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "8484695daed6e508f157439ce0704c7c54e59c8c",
+          "sha256": "9c8d121fac92c7a99591ebd2620b34f11e34d8ea0ec7c275cf57676401a94522",
+          "bytes": 38270,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/src/bdf.rs"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/radau.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "cb694ce56cc301967f5458a5bff260480088bd49",
+          "sha256": "6894cdacb1738ae18e93e4272819efc071a07f01113b252c72b6bbd391fc1337",
+          "bytes": 34081,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/src/radau.rs"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/dopri5.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "9298ddd6ac5b4147ab95d3d9aa03bef9537c224f",
+          "sha256": "c84a0d629c26b1b7d51957ea513d0aaa593b13fc5d7e3fd63a7dbdc23e04d4b5",
+          "bytes": 41643,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/src/dopri5.rs"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/exponential.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "2a6a438e1a54b95da1c7e8437f522e4a1591bba2",
+          "sha256": "da84a475c085d76d1275fea88b8099c807754a38a93afa1e2d02848c69df7f80",
+          "bytes": 130202,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/src/exponential.rs"
+        }
+      ],
+      "reuse": "Native fixed/adaptive BDF and Radau are public exports; reuse as explicit-permission comparison/fallback adapters.",
+      "remaining_obligation": "Audit their order, startup, error semantics independently and compare external high-fidelity implementations too.",
+      "mathematical_scope": "BDF and Radau are real code, not only design entries. Their nonlinear Newton work is incompatible with strict Newton-free mode unless the user opts into such a fallback."
+    },
+    {
+      "id": "L03",
+      "topic": "Coupled common-W homotopy and shared Krylov",
+      "pr_numbers": [
+        74,
+        75,
+        77
+      ],
+      "state": "implemented_research",
+      "evidence_basis": [
+        "source-inspected",
+        "historical-record-read"
+      ],
+      "new_native_execution": "not_run_by_lineage_worker",
+      "sources": [
+        {
+          "path": "crates/vigilode-coupled/src/solver.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "1f67fed8abb2ae904d432eb3eaa5c97f3d126576",
+          "sha256": "165987a6f5c73e7359c1ca7a27d392699dd02a4c85dd35b17f396eac6eb89088",
+          "bytes": 21589,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/vigilode-coupled/src/solver.rs"
+        },
+        {
+          "path": "crates/vigilode-coupled/src/algebra.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "e48fd7af4539877ed3931956b5b1fd854a699cc7",
+          "sha256": "f4f9304db487bb249fd1d00fe8c43458ee2cccc386562a8e9068a7434b78e558",
+          "bytes": 11887,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/vigilode-coupled/src/algebra.rs"
+        },
+        {
+          "path": "crates/vigilode-coupled/src/residual_first.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "95818cdc77b9baff8f301eb7f251c1a2149c52cb",
+          "sha256": "cb6012a98bbb5d98cb89bf9707e843d03e61216dad9d923c15a82e6dc7cf3c81",
+          "bytes": 7327,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/vigilode-coupled/src/residual_first.rs"
+        },
+        {
+          "path": "crates/vigilode-coupled/src/causal.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "a83b17a067c109cbd65d92db66fb6cc09f505764",
+          "sha256": "fc297cd8b42c49f95d999078726186c3f09d15818a9355b2c369640aeef04b41",
+          "bytes": 15425,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/vigilode-coupled/src/causal.rs"
+        }
+      ],
+      "reuse": "Reuse bounded shared basis, fixed-order compensated projections, source epochs and residual-first correction work counters.",
+      "remaining_obligation": "Whole-IVP achieved-error qualification and generic original-residual-to-LTE composition remain; parallel speedup over own serial arm is not dominance over protected baseline.",
+      "mathematical_scope": "JVP-only coupled correction is not derivative-free. Small projected LU is present. Changed stage corrections need their own method/error contract."
+    },
+    {
+      "id": "L04",
+      "topic": "RHS-only homotopy and nonlinear source inversion",
+      "pr_numbers": [
+        91,
+        92,
+        117,
+        119,
+        150,
+        152,
+        154,
+        156,
+        177
+      ],
+      "state": "implemented_source_specific",
+      "evidence_basis": [
+        "source-inspected",
+        "historical-record-read"
+      ],
+      "new_native_execution": "not_run_by_lineage_worker",
+      "sources": [
+        {
+          "path": "crates/vigilode-coupled/src/rhs_homotopy.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "990103d9ab5d59b7c40f3ccd323f6ad52e504324",
+          "sha256": "4b0653d27d7da1df83d5faeb5626a6845f9f5eb164ee02b09f182bb1f01d993d",
+          "bytes": 42724,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/vigilode-coupled/src/rhs_homotopy.rs"
+        },
+        {
+          "path": "crates/vigilode-coupled/src/n01_derivative_free.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "7c2cd365bb830b778910e98fb29be4c36f4cfd8e",
+          "sha256": "40e54d5e36603117d0197177f6059372d8de4984d41103ef2f48bc88583f05f5",
+          "bytes": 10494,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/vigilode-coupled/src/n01_derivative_free.rs"
+        },
+        {
+          "path": "crates/vigilode-coupled/src/certified_fastfirst.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "f53f27dfb993ded7d07bda595bfbd0eda368b998",
+          "sha256": "a3ed78664b7657a11e681053abced631e27ecd7ee098a33c0727167c7345cd5e",
+          "bytes": 20150,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/vigilode-coupled/src/certified_fastfirst.rs"
+        },
+        {
+          "path": "crates/vigilode-coupled/src/coupled_inverse_be.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "d78c5c5f6f476f2a5b1ea88628ed25daa6cfc482",
+          "sha256": "c2f9701371b1cb49f61f460e26e3fd9c655eae4b659f15e8565f9dcb16389455",
+          "bytes": 21716,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/vigilode-coupled/src/coupled_inverse_be.rs"
+        }
+      ],
+      "reuse": "Reuse direct value-map interface, domain/epoch guards, original-map residual screen, charged rejected extrapolations, contraction residual/(1-q) theorem.",
+      "remaining_obligation": "Construct an invariant-domain contraction/source monotonicity witness for each port and prove same target; preserve BE versus original RODAS stage distinction.",
+      "mathematical_scope": "The module requests no JVP/AD/FD/Newton, but opaque callbacks can hide them. A monotone BE/root solve is not the eight-stage RODAS method."
+    },
+    {
+      "id": "L05",
+      "topic": "Polynomial resolvents and conditioned algebraic charts",
+      "pr_numbers": [
+        93,
+        184
+      ],
+      "state": "implemented_source_specific",
+      "evidence_basis": [
+        "source-inspected",
+        "historical-record-read"
+      ],
+      "new_native_execution": "not_run_by_lineage_worker",
+      "sources": [
+        {
+          "path": "crates/rodas5p-integrators/src/polynomial_resolvent.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "f8e0ef1dc8780fda12dc18483a816be5163996e2",
+          "sha256": "3f4c21c978a49984ea6b5cccea4242294b551fc1b1b3f5cb16cf3c587d06dfd0",
+          "bytes": 36763,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/src/polynomial_resolvent.rs"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "df466c69b4b1cfadc1c62fb0c6ae10f3cb935767",
+          "sha256": "364640f9d91635c2dc46981233cb587d6cd671e89c138105e886060a150e9d3f",
+          "bytes": 18694,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/src/conditioned_polynomial.rs"
+        },
+        {
+          "path": "crates/rodas5p-core/src/polynomial_action.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "a91696acaff4563e183cfba37cc9a8bd6109530d",
+          "sha256": "656d494fd74783090676e1d3a18aaaa5dbd5df99c0541745979aeb6e26394a48",
+          "bytes": 126217,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-core/src/polynomial_action.rs"
+        },
+        {
+          "path": "crates/rodas5p-core/src/leja_action.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "8e9922411c69cb049b791e48c75adf61057e8cf0",
+          "sha256": "b42b152013c6130b65348e9a02ffeb81d26c783c003c56d495d203bf8ce807f2",
+          "bytes": 122458,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-core/src/leja_action.rs"
+        }
+      ],
+      "reuse": "Use (I-B)p(B)=I-q(B)/q(1), full-space relation witnesses and original-space residual guards; retain conditioned B=center I+scale C evaluation.",
+      "remaining_obligation": "Add source-authenticated operator declarations and total error/cost composition; compare against Krylov on nonnormal matrices and near denominator cancellation.",
+      "mathematical_scope": "Declared polynomial identity is not inferred from a few probes. Unconditioned resolvent report is a conditional floating-point estimate; conditioned path includes outward stored-polynomial defect accounting."
+    },
+    {
+      "id": "L06",
+      "topic": "Singular geometry / multiplicity-preserving quotient trace",
+      "pr_numbers": [
+        97,
+        98
+      ],
+      "state": "implemented_fixed_model",
+      "evidence_basis": [
+        "source-inspected",
+        "historical-record-read"
+      ],
+      "new_native_execution": "not_run_by_lineage_worker",
+      "sources": [
+        {
+          "path": "crates/vigilode-coupled/src/trace_quotient.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "1bfed5b06093a041d1cf9d5b192cabe11b71ee2b",
+          "sha256": "b1f116d88d073ad22db6a9cca38e0ab44840f10604d57f5e401a72996a28ee43",
+          "bytes": 32324,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/vigilode-coupled/src/trace_quotient.rs"
+        },
+        {
+          "path": "research/production_rvj_nag_20261028/theory/TRACE.md",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "5183dbaf281f0d1030727945cf2d8d899f158e96",
+          "sha256": "f22804969ac4c8135efc8bdc14e5bc8b1e4e365ca30619accf73837a45438979",
+          "bytes": 28762,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/research/production_rvj_nag_20261028/theory/TRACE.md"
+        }
+      ],
+      "reuse": "Exact monic quartic quotient: z^4-2az^2+z+a^2-b; Newton sums retain triple-root multiplicity at a=b=3/4; native interval point/box observables avoid root finding.",
+      "remaining_obligation": "Generalize only after fixing query semantics and a flat finite quotient basis; selected-real closure needs branch/continuation contracts and cannot use aggregate trace as fallback.",
+      "mathematical_scope": "Trace is sum over all complex roots with algebraic multiplicity. Native code explicitly refuses selected-real and real-only queries. This is substantive singular-geometry reuse, not a generic singular solver."
+    },
+    {
+      "id": "L07",
+      "topic": "Cyclic algebraic closure and continuous certificates",
+      "pr_numbers": [
+        97,
+        98
+      ],
+      "state": "implemented_fixed_model",
+      "evidence_basis": [
+        "source-inspected",
+        "historical-record-read"
+      ],
+      "new_native_execution": "not_run_by_lineage_worker",
+      "sources": [
+        {
+          "path": "crates/vigilode-coupled/src/cyclic_closure.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "90b970896e315b62b76aa13809cd21a54bf84ad1",
+          "sha256": "0f35a4b21096ef07ee1eade35659cc60e5804d8638fcac9c447b1803e9fc2a65",
+          "bytes": 34310,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/vigilode-coupled/src/cyclic_closure.rs"
+        },
+        {
+          "path": "research/production_rvj_nag_20261028/theory/CLOSURE.md",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "59e634cf4d4b19e7b1ddad517689da4bf70d4bf5",
+          "sha256": "8601f15fad974195d4c4b6068f59b2731376c53e19a7c7eec36b12da7c20d73c",
+          "bytes": 22651,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/research/production_rvj_nag_20261028/theory/CLOSURE.md"
+        }
+      ],
+      "reuse": "Reuse prepared endpoint identity, exact rational physical cap, original slow/algebraic-coordinate slab certificate and Bernstein path bounds.",
+      "remaining_obligation": "Port new closure only with an original-equation residual and branch proof; incoming-error continuity and clock/state identity must hold.",
+      "mathematical_scope": "Original target is cyclic-small-real-zero for a fixed model and [0,1] RK4 candidate. Aggregate trace and selected branch remain separate."
+    },
+    {
+      "id": "L08",
+      "topic": "ODE dynamics, log norms and physical error transport",
+      "pr_numbers": [
+        98,
+        100,
+        102,
+        103,
+        105,
+        108
+      ],
+      "state": "implemented_and_derived_scoped",
+      "evidence_basis": [
+        "source-inspected",
+        "historical-record-read"
+      ],
+      "new_native_execution": "not_run_by_lineage_worker",
+      "sources": [
+        {
+          "path": "research/dynamics_symbolic_validation_20261028/theory/DYNAMICS.md",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "d2997f8e0a97253ca2daf5e4845c2626c514ff1b",
+          "sha256": "b1f38922422ac4393f07f871ccea62f505335fcfda0b8ac24297a41a5eacabf2",
+          "bytes": 13829,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/research/dynamics_symbolic_validation_20261028/theory/DYNAMICS.md"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/affine_error.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "95efe19477aba8efe378a1f5e083c09b2cdffb69",
+          "sha256": "569cc7094b19d65a432b7e55251642927d1df8346b2b10a558fefdec29d5ea8b",
+          "bytes": 9316,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/src/affine_error.rs"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/affine_transport.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "1c7024c2e1c567b337f82b0ba4530a1747022f51",
+          "sha256": "4d8687c8c536850d7f5616192a864c839c63ab8e0ddc778678ffd6eba1a9e178",
+          "bytes": 6404,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/src/affine_transport.rs"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/gray_scott.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "40bd15f65acefcbf1f0abb63f1b223f6f5c003d7",
+          "sha256": "366a20843c7931238f458b62760f146ecf34068ba306fc43acd39258390653ad",
+          "bytes": 12070,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/src/gray_scott.rs"
+        }
+      ],
+      "reuse": "Signed logarithmic-norm error transport E=exp(mu h)E0+delta*h*phi1(mu h); retain damping sign and max(E0,E(h)) for whole slab.",
+      "remaining_obligation": "General nonlinear tubes need source-owned field/residual bounds, weight-transition factors and method-switch error transport; local affine cases do not establish global generality.",
+      "mathematical_scope": "Stable eigenvalues do not rule out transient growth. Weighted norm must stay fixed on a certified slab or incur a norm-conversion factor."
+    },
+    {
+      "id": "L09",
+      "topic": "Guarded symbolic dynamics / router refinement",
+      "pr_numbers": [
+        98
+      ],
+      "state": "implemented_protocol_refinement",
+      "evidence_basis": [
+        "source-inspected",
+        "historical-record-read"
+      ],
+      "new_native_execution": "not_run_by_lineage_worker",
+      "sources": [
+        {
+          "path": "crates/vigilode-coupled/src/switching.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "5215a4fbbb52ed88e23e0346789430ed0a0d665b",
+          "sha256": "195355a811654e7690bcb0cbcaad849902cb31c8ebe1bd9b7ff5d5bda9401a69",
+          "bytes": 52728,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/vigilode-coupled/src/switching.rs"
+        },
+        {
+          "path": "research/dynamics_symbolic_validation_20261028/theory/DYNAMICS.md",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "d2997f8e0a97253ca2daf5e4845c2626c514ff1b",
+          "sha256": "b1f38922422ac4393f07f871ccea62f505335fcfda0b8ac24297a41a5eacabf2",
+          "bytes": 13829,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/research/dynamics_symbolic_validation_20261028/theory/DYNAMICS.md"
+        }
+      ],
+      "reuse": "Existing buffer-swap refinement preserves legal outcome words and removes n copied coordinates per protected-reference promotion.",
+      "remaining_obligation": "Physical phase-space symbolic abstraction requires incremental stability/quantization or numerical error-transfer Lyapunov/dwell-time bounds; current word equivalence is a software protocol theorem.",
+      "mathematical_scope": "This is a guarded data-bearing transducer refinement, not topological conjugacy or an approximately bisimilar generic ODE model.",
+      "branch_sources": [
+        {
+          "path": "research/vigilode_dynamical_symbolic_router_20261102/R4_CANDIDATES_AND_ROUTER.md",
+          "commit": "3336d682139fb2096316e301dd635c6b91b0935e",
+          "blob": "32882a2839f94ec9de93a8f96727b3216b0c583e",
+          "sha256": "d150f0992790067db53cf5c55527ac60024d56670001b4075f207c60398dd0ea",
+          "bytes": 6907,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3336d682139fb2096316e301dd635c6b91b0935e/research/vigilode_dynamical_symbolic_router_20261102/R4_CANDIDATES_AND_ROUTER.md"
+        },
+        {
+          "path": "research/vigilode_dynamical_symbolic_router_20261102/RESEARCH_DAG.json",
+          "commit": "3336d682139fb2096316e301dd635c6b91b0935e",
+          "blob": "94df9d8ae751d6cc9e1ea9914db36d756feeec5f",
+          "sha256": "8038e490d436cfc44a728fdffeb29d7b1a475ed26090fa74705a0e5a62906828",
+          "bytes": 793,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3336d682139fb2096316e301dd635c6b91b0935e/research/vigilode_dynamical_symbolic_router_20261102/RESEARCH_DAG.json"
+        }
+      ]
+    },
+    {
+      "id": "L10",
+      "topic": "Damped packets, rank-two Volterra and affine recurrences",
+      "pr_numbers": [
+        135,
+        136,
+        137,
+        139,
+        140,
+        142,
+        144,
+        146,
+        147
+      ],
+      "state": "implemented_source_specific",
+      "evidence_basis": [
+        "source-inspected",
+        "historical-record-read"
+      ],
+      "new_native_execution": "not_run_by_lineage_worker",
+      "sources": [
+        {
+          "path": "crates/rodas5p-integrators/src/damped_packet.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "3836036e456cff7adaa271d2340b0d39d7f47c6e",
+          "sha256": "a26ba94036207c45cbbdde358e6231c7ed0c0db842efec2f105ff39272981e5c",
+          "bytes": 23541,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/src/damped_packet.rs"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/packet_window.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "4ac22a54f78c4eeaef47d24ffa374636410c5d01",
+          "sha256": "0eb7359dafc437436e0589a12ffc5bea2097a5bd176c422cdbeb0c6495696c80",
+          "bytes": 80754,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/src/packet_window.rs"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/packet_verified_trajectory.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "627b34281a95dd5ceda456d916de2124f17b2152",
+          "sha256": "72189a94cc28fd5bd2ebd0245de9f8a9fe7f4d51792ea8973e4654867253e1a0",
+          "bytes": 27980,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/src/packet_verified_trajectory.rs"
+        }
+      ],
+      "reuse": "Reuse causal convolution, represented-clock guards, source-owned floating-error inheritance and rank-two damping structure.",
+      "remaining_obligation": "Demonstrate closure on each new spatial mode family and charge setup, rejected windows, observers and inherited floating error.",
+      "mathematical_scope": "Packet/Volterra certificates depend on the represented source family; generic nonlinear RODAS stage independence does not follow."
+    },
+    {
+      "id": "L11",
+      "topic": "Graph cycle-core Schur and affine path scan",
+      "pr_numbers": [
+        179,
+        184,
+        185,
+        186,
+        187
+      ],
+      "state": "implemented_with_negative_benchmark",
+      "evidence_basis": [
+        "source-inspected",
+        "historical-record-read"
+      ],
+      "new_native_execution": "not_run_by_lineage_worker",
+      "sources": [
+        {
+          "path": "crates/rodas5p-integrators/src/source_owned_graph_schur.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "5d2c4319143e60117a7804c1f4524b269df358ea",
+          "sha256": "fb059aef14e57276f62fd31cad794abe5caa8d9a6e06f9d7d3047d51774025b8",
+          "bytes": 26365,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/src/source_owned_graph_schur.rs"
+        },
+        {
+          "path": "crates/rodas5p-integrators/tests/c5_source_owned_graph_contract.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "9e41a0224ecadbc28648f0215ba0ea5f55daecd1",
+          "sha256": "582753046b41cb4423a975bcd2a99d72236e37448e53c29444605cbc40903655",
+          "bytes": 9783,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/tests/c5_source_owned_graph_contract.rs"
+        }
+      ],
+      "reuse": "Reuse source-positive cooperative cubic owner, path-forest validation, feedback core <=3, original-W residual check and charged BandedStageLu fallback.",
+      "remaining_obligation": "Test O(n) work Blelloch or parallel-across-chains against present O(n log n) scan including allocation and original residual cost; require a real crossover before routing.",
+      "mathematical_scope": "Affine scan reduces within-W path span, not outer eight-stage causal depth. Historical PR187 full-IVP median wall ratio 2.242032452 is slower and remains negative evidence."
+    },
+    {
+      "id": "L12",
+      "topic": "Parallel Peer-W alternative",
+      "pr_numbers": [
+        188
+      ],
+      "state": "implemented_opt_in_unqualified",
+      "evidence_basis": [
+        "source-inspected",
+        "historical-record-read"
+      ],
+      "new_native_execution": "not_run_by_lineage_worker",
+      "sources": [
+        {
+          "path": "crates/rodas5p-integrators/src/ppsw1.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "d7386d03b0db085c1116f56c9f2fdc10a52c1e61",
+          "sha256": "f2650c79e86ec4bde476b94fd6372e472cccf0404ad2bf9b5a1c17aa8354a25d",
+          "bytes": 35579,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/src/ppsw1.rs"
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/ptsw2b.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "f491b0a3f5f351d0fe933b06bf9ea30a0c730922",
+          "sha256": "49fcccf7ac9670717640a7479aa96fa1a072b5c79cf92c981f852319c9578202",
+          "bytes": 35402,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/src/ptsw2b.rs"
+        },
+        {
+          "path": "crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "efe42fdcc2f3155fc8f07556700218fd951ad6fa",
+          "sha256": "a4e2f05350d0aac95ebb06650dd082ac96343183481fcbebcc98337ba0bd83a7",
+          "bytes": 76832,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs"
+        }
+      ],
+      "reuse": "Reuse PPSW1-6b common-shift six independent stage solves and PTSW2B control; preserve distinct method IDs.",
+      "remaining_obligation": "Matrix-free block actions, all RHS-stage parallelism, starter capability, stiff global order, variable-step history and achieved-error qualification remain.",
+      "mathematical_scope": "PPSW1 is order-five two-step Peer-W, not RODAS5P; current dense common W and Radau/Newton starter prevent whole-solver derivative-free/Newton-free claims."
+    },
+    {
+      "id": "L13",
+      "topic": "2D periodic Gray-Scott and spherical photon phase-space clients",
+      "pr_numbers": [],
+      "state": "implemented_restricted_clients",
+      "evidence_basis": [
+        "source-inspected",
+        "historical-record-read"
+      ],
+      "new_native_execution": "not_run_by_lineage_worker",
+      "sources": [
+        {
+          "path": "crates/rodas5p-integrators/src/gray_scott.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "40bd15f65acefcbf1f0abb63f1b223f6f5c003d7",
+          "sha256": "366a20843c7931238f458b62760f146ecf34068ba306fc43acd39258390653ad",
+          "bytes": 12070,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/src/gray_scott.rs"
+        },
+        {
+          "path": "crates/rodas5p-integrators/examples/sphere_photon_fv_support/mod.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "a610f6414e9bdd17a14f15bec7d28d53cdddd209",
+          "sha256": "a7b15cd41bf8c9f8582fe899496a6e24581d2be7cdea370996b9f170df5a1486",
+          "bytes": 38494,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/examples/sphere_photon_fv_support/mod.rs"
+        },
+        {
+          "path": "crates/rodas5p-integrators/tests/sphere_photon_fv_contracts.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "f15ee2c0c797ee33f8a21b5dd2692c1727122fb5",
+          "sha256": "383a9ef2ceda9d97b0b626a4fb21e40675cb6a45a54296690cf5942ea0098b60",
+          "bytes": 77858,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/tests/sphere_photon_fv_contracts.rs"
+        }
+      ],
+      "reuse": "Reuse periodic stencil/JVP structure and signed Gray-Scott lognorm; sphere adapter conserves cell-plus-ledger photon number with exact nonautonomous f_t.",
+      "remaining_obligation": "Add generic Cartesian 3D MOL provider and sphere surface operators with manufactured convergence, boundary flux and mass/error separation; preserve phase-space semantics.",
+      "mathematical_scope": "Sphere Layout3 is (log-energy q, mu, phi), not a Cartesian 3D spatial mesh. General spherical PDE support is not established."
+    },
+    {
+      "id": "L14",
+      "topic": "Algebraic topology",
+      "pr_numbers": [
+        185,
+        186
+      ],
+      "state": "not_identified_as_general_native_backend",
+      "sources": [
+        {
+          "path": "crates/rodas5p-integrators/src/source_owned_graph_schur.rs",
+          "commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+          "blob": "5d2c4319143e60117a7804c1f4524b269df358ea",
+          "sha256": "fb059aef14e57276f62fd31cad794abe5caa8d9a6e06f9d7d3047d51774025b8",
+          "bytes": 26365,
+          "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/bee5563c51264a7da19c519295bdda2fb317caef/crates/rodas5p-integrators/src/source_owned_graph_schur.rs"
+        }
+      ],
+      "evidence_basis": [
+        "targeted-source-search"
+      ],
+      "reuse": "Graph cycle-core/path monoid provides graph-algorithm structure; reuse without relabeling it as homology.",
+      "remaining_obligation": "For surface/3D clients, first build oriented cell-face incidence and boundary maps, verify boundary-of-boundary=0 and closed-domain pairwise flux cancellation, identify harmonic/null modes only if needed for preconditioning. Benchmark the resulting operator; topology alone supplies no solver speedup.",
+      "mathematical_scope": "No general chain-complex/homology/cohomology native solver module found in inspected code/history; this is an inventory result, not a proof of absence across deleted history.",
+      "new_native_execution": "not_run_by_lineage_worker"
+    }
+  ],
+  "current_inventory_corrections": [
+    "main is not latest research code; bee5563c descends from PR188 ef04bfab.",
+    "Native BDF and Radau methods exist and are public exports, not only benchmark plans.",
+    "The vigilode facade already exists; extend public Problem/Options/Solution instead of duplicating them.",
+    "Singular quotient trace and guarded symbolic refinement have substantive native reuse, while general physical symbolic abstraction/topology remain open.",
+    "The dynamical-symbolic c8 branch 3336d682 contains unmerged design-only four-file work; its C8 node is pending.",
+    "Sphere Layout3 is energy-angle phase-space and does not establish general Cartesian 3D MOL."
+  ],
+  "recommended_ports": [
+    {
+      "id": "PORT_TRACE",
+      "depends": [
+        "L06",
+        "L07"
+      ],
+      "first_action": "Add explicit aggregate-versus-selected-branch capability enum to unified provider adapter. Reject semantic mismatch before callback.",
+      "acceptance": "Triple-root multiplicity fixture, selected-real rejection, same-original-equation residual and propagated time-error test."
+    },
+    {
+      "id": "PORT_SYMBOLIC",
+      "depends": [
+        "L08",
+        "L09"
+      ],
+      "first_action": "Represent method-history transitions as guarded words with explicit state conversion and weighted error-transfer matrices.",
+      "acceptance": "Generate legal/illegal transition words; prove or bound product norms under admitted dwell rules; charge detector/transition work."
+    },
+    {
+      "id": "PORT_SCAN",
+      "depends": [
+        "L11"
+      ],
+      "first_action": "Use order-preserving O(n)-work parallel scan or chain-level parallelism with source-epoch guard.",
+      "acceptance": "Same W residual, noncommutative composition tests, candidate+fallback whole-IVP crossover benchmark."
+    },
+    {
+      "id": "PORT_TOPOLOGY",
+      "depends": [
+        "L13",
+        "L14"
+      ],
+      "first_action": "Prototype oriented mesh incidence and matrix-free Laplace/surface diffusion with exact discrete identities.",
+      "acceptance": "Boundary-of-boundary zero, closed-domain mass balance, manufactured spatial order and stiff temporal order separately."
+    }
+  ]
+}

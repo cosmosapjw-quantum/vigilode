@@ -1,0 +1,284 @@
+{
+  "schema": "vigilode.production-audit.v1",
+  "audit_date": "2026-11-15",
+  "source_revision": "bee5563c51264a7da19c519295bdda2fb317caef",
+  "verdict": "HOLD_NOT_QUALIFIED_FOR_REQUESTED_UNIFIED_PRODUCTION_SCOPE",
+  "baseline_finding_status_semantics": "Findings describe the immutable source revision; later fixes require linked new evidence. They do not automatically characterize a newer working tree.",
+  "provenance": {
+    "remote_worktree": "/home/cosmosapjw/worktrees/vigilode-production-solver-unification-20261112",
+    "remote_initial_git_status": "clean",
+    "remote_rustc": "1.94.1 (e408947bf 2026-03-25)",
+    "cloud_rust_execution": "blocked: rustc and cargo absent from PATH",
+    "source_inputs": [
+      {
+        "path": "crates/rodas5p-integrators/src/ppsw1.rs",
+        "sha256": "f2650c79e86ec4bde476b94fd6372e472cccf0404ad2bf9b5a1c17aa8354a25d",
+        "revision": "bee5563c51264a7da19c519295bdda2fb317caef"
+      },
+      {
+        "path": "crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs",
+        "sha256": "a4e2f05350d0aac95ebb06650dd082ac96343183481fcbebcc98337ba0bd83a7",
+        "revision": "bee5563c51264a7da19c519295bdda2fb317caef"
+      },
+      {
+        "path": "crates/vigilode/src/production.rs",
+        "sha256": "f46d917cb8205799840b38a5ae8b310b0e785969b5c482b478adfc557a89888c",
+        "revision": "bee5563c51264a7da19c519295bdda2fb317caef"
+      },
+      {
+        "path": "crates/vigilode/src/switching.rs",
+        "sha256": "119f2a70d5d8be82816e9c236f4b06644faffe2df545a93b824deeb6ce356bbf",
+        "revision": "bee5563c51264a7da19c519295bdda2fb317caef"
+      },
+      {
+        "path": "crates/vigilode/src/selection.rs",
+        "sha256": "802d485721ddb0ec7902c3d31aa4eedcca6cb78323274d6a95e5cb170693df7f",
+        "revision": "bee5563c51264a7da19c519295bdda2fb317caef"
+      },
+      {
+        "path": "crates/vigilode/src/lib.rs",
+        "sha256": "288d14c142da8a33979db972b49fba098bc970ef80ca20f7bfb0f9af6d0b0dae",
+        "revision": "bee5563c51264a7da19c519295bdda2fb317caef"
+      },
+      {
+        "path": "docs/agent/production_solver_program_20261112/PRODUCTION_GATE_MATRIX.json",
+        "sha256": "8ee05f3eba87b9f06708b515ccfa70d2c8b41967cce2cbc49ebe8f7733d2ad16",
+        "revision": "bee5563c51264a7da19c519295bdda2fb317caef"
+      },
+      {
+        "path": "docs/agent/production_solver_program_20261112/TURN_01_REPORT_KO.md",
+        "sha256": "336102f5c1718a8e8069b0a9dfa88387714d11de7f3983b7aeca01973d426983",
+        "revision": "bee5563c51264a7da19c519295bdda2fb317caef"
+      },
+      {
+        "path": "Cargo.lock",
+        "sha256": "efb379071fa42c2b6bdbe969163ac2f41cf318c262c5c67d0910450298333351",
+        "revision": "bee5563c51264a7da19c519295bdda2fb317caef"
+      },
+      {
+        "path": "rust-toolchain.toml",
+        "sha256": "f53198ae4fdecfd87da36fe431c771b54c51e975d01c0e99f653bc14d5d48211",
+        "revision": "bee5563c51264a7da19c519295bdda2fb317caef"
+      }
+    ]
+  },
+  "executions": [
+    {
+      "id": "RUN-01",
+      "command": "cargo test -p vigilode --test production_rhs_contracts --test production_setup_contracts --test production_selection_contracts --test production_session_contracts --locked",
+      "status": "completed",
+      "exit_code": 0,
+      "assertion_tested": "23 existing facade/provider/selection/session/setup contracts",
+      "passed": 23,
+      "failed": 0,
+      "ignored": 0,
+      "profile": "debug",
+      "log": "evidence/audit_production_contracts_remote.log"
+    },
+    {
+      "id": "RUN-02",
+      "command": "cargo test -p rodas5p-integrators --test ppsw1_6b_contracts --locked",
+      "status": "completed",
+      "exit_code": 0,
+      "assertion_tested": "37 existing PPSW1 coefficient/order/stage/counter/stability-angle/synthetic end-to-end contracts",
+      "passed": 37,
+      "failed": 0,
+      "ignored": 0,
+      "profile": "debug",
+      "log": "evidence/audit_ppsw_contracts_remote.log"
+    },
+    {
+      "id": "RUN-03",
+      "command_file": "evidence/audit_ppsw_boundary_command.sh",
+      "status": "completed",
+      "exit_code": 0,
+      "assertion_tested": "Foreign-session accept, invalid-time accept, stagnant advance/start at bee baseline",
+      "scientific_result": "implementation defects reproduced",
+      "log": "evidence/audit_ppsw_boundary_repro.log",
+      "warning": "Probe intentionally asserts historical defective behavior. Do not use as acceptance tests on fixed code."
+    },
+    {
+      "id": "RUN-04",
+      "command_file": "evidence/audit_legacy_boundary_command.sh",
+      "status": "failed",
+      "exit_code": null,
+      "assertion_tested": "Hypothesis that legacy integrate_fixed accepts NaN initial time",
+      "scientific_result": "hypothesis falsified: FixedGrid::new rejects nonfinite time; following empty-state branch not reached",
+      "log": "evidence/audit_legacy_boundary_repro.log",
+      "failure_class": "audit_hypothesis_rejected",
+      "note": "Tool did not report numeric exit code; Rust panic visible. No legacy NaN finding is admitted."
+    }
+  ],
+  "findings": [
+    {
+      "id": "AUD-01",
+      "severity": "high",
+      "class": "implementation",
+      "subject": "PPSW1 cross-session attempt commit",
+      "basis": [
+        "implementation-verified"
+      ],
+      "status_at_baseline": "defect_reproduced",
+      "source": "crates/rodas5p-integrators/src/ppsw1.rs:584",
+      "mechanism": "Attempt carries only generation. Distinct sessions start at generation 0; Session A accepts an Attempt computed by Session B. A physical state is replaced while its work counters show no producing callback/linear solve.",
+      "observed": "foreign_attempt_accepted=true; A y becomes 1.9999999999999716 from 1; A rhs=0 and linear_solves=0",
+      "minimum_fix": "Bind Attempt to an unforgeable session identity plus generation; validate identity before any mutation. Test same-generation foreign accept and reject.",
+      "evidence": [
+        "evidence/audit_ppsw_boundary_repro.rs",
+        "evidence/audit_ppsw_boundary_repro.log"
+      ]
+    },
+    {
+      "id": "AUD-02",
+      "severity": "high",
+      "class": "implementation",
+      "subject": "PPSW1 invalid time/state acceptance",
+      "basis": [
+        "implementation-verified"
+      ],
+      "status_at_baseline": "defect_reproduced",
+      "source": "crates/rodas5p-integrators/src/ppsw1.rs:532",
+      "mechanism": "Session::new validates Config but not State. advance_capped validates step ratio but not State.t or representable forward progress. start validates finite t_init and positive h0 separately but not its resulting endpoint.",
+      "observed": "NaN time accepted by Session::new and try_step. t=1e16,h=.01 accepted without progress; starter likewise reports identical endpoint after 11 RHS calls.",
+      "minimum_fix": "Validate all six y/f dimensions and finiteness, finite time and positive history step at session construction; require finite strictly increasing representable endpoint before callbacks/allocation for advance/start. Retain incurred work on numerical failures.",
+      "evidence": [
+        "evidence/audit_ppsw_boundary_repro.rs",
+        "evidence/audit_ppsw_boundary_repro.log"
+      ]
+    },
+    {
+      "id": "AUD-03",
+      "severity": "medium",
+      "class": "implementation",
+      "subject": "PPSW1 serial stage RHS despite independent stage data",
+      "basis": [
+        "derived"
+      ],
+      "status_at_baseline": "confirmed_source",
+      "source": "crates/rodas5p-integrators/src/ppsw1.rs:467",
+      "mechanism": "Six stage linear solves use ParallelExecution::map_ordered; subsequent six independent eval_rhs calls run in a serial loop. RHS assembly also remains serial.",
+      "minimum_fix": "Use bounded ordered parallel per-row evaluation with explicit replay/thread-safety assumptions and exact attempted-work accounting. Verify bitwise serial/parallel state and callback failure ledger. Benchmark cost sufficiently above task overhead; do not claim an 8x RODAS speedup.",
+      "evidence": [
+        "crates/rodas5p-integrators/src/ppsw1.rs",
+        "crates/rodas5p-integrators/src/problem.rs",
+        "crates/rodas5p-integrators/src/parallel.rs"
+      ]
+    },
+    {
+      "id": "AUD-04",
+      "severity": "qualification_blocker",
+      "class": "numerics",
+      "subject": "Whole-IVP stiff accuracy and performance qualification remains open",
+      "basis": [
+        "unresolved"
+      ],
+      "status_at_baseline": "hold",
+      "source": "docs/agent/production_solver_program_20261112/PRODUCTION_GATE_MATRIX.json",
+      "mechanism": "Passing formal order, synthetic trajectory and contract tests does not establish strong-stiff order, matched achieved-error speed, step count, fallback fraction or new release reliability. T01 also retained cases exceeding global-error budget and incomplete reference authority.",
+      "minimum_fix": "Execute T02 variable-ratio/nonnormal/short-span/startup/estimator qualification using frozen T01 common-grid oracle; calibrate before blind holdout. Charge startup, rejected, speculative and fallback work.",
+      "evidence": [
+        "docs/agent/production_solver_program_20261112/TURN_01_REPORT_KO.md",
+        "docs/agent/production_solver_program_20261112/PRODUCTION_GATE_MATRIX.json"
+      ]
+    },
+    {
+      "id": "AUD-05",
+      "severity": "capability_gap",
+      "class": "implementation",
+      "subject": "Current Peer-W path does not satisfy full derivative/matrix/Newton-free mission",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "status_at_baseline": "scoped_capability_only",
+      "source": "crates/rodas5p-integrators/src/ppsw1.rs:415",
+      "mechanism": "solve_stages materializes dense J and factors dense common W. JVP-only fallback reconstructs J by basis columns. Startup factors a 5n-by-5n matrix and performs Newton. Per-step solves are linear and six-way independent.",
+      "minimum_fix": "Implement an opt-in common-W operator + independent/block Krylov path with original-residual checks and a separately qualified starter; label supplied JVP as derivative-based. RHS-only new methods require their own consistency/stability proof.",
+      "evidence": [
+        "crates/rodas5p-integrators/src/ppsw1.rs",
+        "crates/rodas5p-integrators/src/problem.rs",
+        "evidence/audit_ppsw_contracts_remote.log"
+      ]
+    },
+    {
+      "id": "AUD-06",
+      "severity": "capability_gap",
+      "class": "implementation",
+      "subject": "Frontend unification exists partially; full portfolio not integrated",
+      "basis": [
+        "implementation-verified",
+        "derived"
+      ],
+      "status_at_baseline": "partial",
+      "source": "crates/vigilode/src/lib.rs",
+      "mechanism": "vigilode already offers Problem/Options/Rodas5p, GeneralOde and ProductionSolver. ProductionSolver supports RHS-only explicit or selective supplied-JVP switching for smooth forward identity-mass endpoint IVPs. Peer-W and geometry-specific kernels remain separate; terminal events on legacy facade are postprocessed.",
+      "minimum_fix": "Reuse existing public types and capability queries. Add method descriptors and adapters incrementally; preserve refusal semantics, partial states, error/work authority and permission-safe fallback. Do not introduce a competing frontend or silently enable unqualified kernels.",
+      "evidence": [
+        "crates/vigilode/src/production.rs",
+        "crates/vigilode/src/selection.rs",
+        "crates/vigilode/src/lib.rs",
+        "evidence/audit_production_contracts_remote.log"
+      ]
+    }
+  ],
+  "not_executed": [
+    "full workspace all-targets test",
+    "whole-IVP matched achieved-error runtime comparison",
+    "blind holdout",
+    "release build/package distribution",
+    "GPU/MPI/scaling experiments",
+    "new mathematical novelty proof"
+  ],
+  "preserved_existing_evidence": [
+    "T01 reference and achieved-error authority reused as historical scoped record, not independently rerun",
+    "Existing formal coefficient tests rerun successfully; global-order and speed qualification not inferred"
+  ],
+  "coverage": "Read/source trace of core PPSW1, existing facade/selection/switching provider validation, active production program; not every public function or branch.",
+  "next_actions": [
+    "Fix AUD-01/AUD-02 and independently rerun regression contracts",
+    "Implement and validate AUD-03 without changing numerical coefficients or defaults",
+    "Continue T02 qualification and separate common-W operator implementation before production promotion"
+  ],
+  "artifacts": [
+    {
+      "path": "evidence/audit_legacy_boundary_command.sh",
+      "sha256": "d83843ab82ac56938f34ab577eedcbf4f600f5e51dc0b4e096c3413e9025a519",
+      "bytes": 1269
+    },
+    {
+      "path": "evidence/audit_legacy_boundary_repro.log",
+      "sha256": "7df3aa6032618a354216bfae2db427a716084c0330b6f32bf2b41a0d5b1f78af",
+      "bytes": 615
+    },
+    {
+      "path": "evidence/audit_legacy_boundary_repro.rs",
+      "sha256": "310913831008154391403bf6f5e85faa848e689f61aea4662fc0dce7b4c7b347",
+      "bytes": 842
+    },
+    {
+      "path": "evidence/audit_ppsw_boundary_command.sh",
+      "sha256": "c61fbdc7b7299132f3fed2333a43e612813cfd7987af9f559e5d13aab92dabf4",
+      "bytes": 3042
+    },
+    {
+      "path": "evidence/audit_ppsw_boundary_repro.log",
+      "sha256": "72a6ae192c57ab8410074af54f1bebf0dafd922df5865281d4fbae2ea919c127",
+      "bytes": 568
+    },
+    {
+      "path": "evidence/audit_ppsw_boundary_repro.rs",
+      "sha256": "03745f902767e84eb6c07332d97e158e5c0f0811773c48d186568db661af5e81",
+      "bytes": 2514
+    },
+    {
+      "path": "evidence/audit_ppsw_contracts_remote.log",
+      "sha256": "06c7da3ca3f6715d229ab6728e0bf0683d77f78024bd472c68d06549bb4f93fb",
+      "bytes": 3117
+    },
+    {
+      "path": "evidence/audit_production_contracts_remote.log",
+      "sha256": "90b490042f9bc9b2a35fd228d816d49f7720586a774a3b46d84deca2860e480a",
+      "bytes": 5599
+    }
+  ]
+}

@@ -1,0 +1,173 @@
+{
+  "schema": "vigilode.parallel-stage-research-contract.v1",
+  "base_commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+  "method_id": "research-two-node-radau-diagonal-sdc-semilinear",
+  "status": "research_only",
+  "relationship_to_original_rodas5p": "distinct_method_not_tableau_parallelization",
+  "capabilities": {
+    "explicit_jacobian_required": false,
+    "jvp_required": false,
+    "newton_required": false,
+    "declared_linear_operator_required": true,
+    "shifted_linear_solver_required": true,
+    "macro_step_causal": true,
+    "strict_internal_time_causal": false,
+    "production_routing": false
+  },
+  "theorem": {
+    "status": "derived_independently_reviewed",
+    "claim": "endpoint_algebraic_error_to_collocation <= 2*weighted_original_residual_norm/(1-h*q*ell)",
+    "assumptions": [
+      "finite-dimensional physical state",
+      "fixed SPD metric H",
+      "H L = transpose(L) H negative semidefinite",
+      "constant L over the attempted step",
+      "global Lip(g)<=ell in H norm",
+      "h>0",
+      "h*q*ell<1"
+    ],
+    "q": "sqrt((4+sqrt(7))/18)",
+    "stage_weights": [
+      "3/4",
+      "1/4"
+    ],
+    "does_not_bound": [
+      "temporal truncation",
+      "global trajectory error",
+      "spatial/remap error",
+      "roundoff without residual evaluation certificate"
+    ]
+  },
+  "validation": {
+    "command": "python research/production_unification_20261115/stage_research/experiment.py",
+    "results": "research/production_unification_20261115/stage_research/RESULTS.json",
+    "observed_exit_code": 0,
+    "exact_symbolic_checks": true,
+    "full_ivp_rows": 20,
+    "one_step_bound_comparisons": 10,
+    "invalid_budget_rejections": 5,
+    "bounded_failure": "SweepBudgetExceeded",
+    "independent_review": "research/production_unification_20261115/stage_research/INDEPENDENT_REVIEW.md"
+  },
+  "decision": {
+    "fixed_two_sweeps": "fails strong-stiff forced-accuracy discriminator",
+    "residual_stopping": "recovers accuracy on stated cases but needs mean 8 to 12.24 rounds for kappa1000",
+    "production_promotion": false,
+    "speedup_established": false,
+    "novelty_established": false,
+    "no_go_adopted": false
+  },
+  "future_node": {
+    "id": "PA-SDC-RESIDUAL-01",
+    "depends_on": [
+      "same-step residual theorem",
+      "qualified weighted self-adjoint MOL operator",
+      "matched-achieved-error reference authority"
+    ],
+    "first_action": "Implement opt-in operator + shifted-solver research adapter with original residual and bounded sweep failure; use 2D/3D/spherical self-adjoint diffusion only after discrete metric proof.",
+    "inputs": [
+      "L apply callback",
+      "g RHS callback",
+      "shifted solve callback with true residual",
+      "fixed physical metric/quadrature weights",
+      "global or self-consistent local Lipschitz bound",
+      "algebraic budget",
+      "max sweeps",
+      "explicit fallback permission"
+    ],
+    "outputs": [
+      "candidate endpoint",
+      "original stage residual",
+      "endpoint algebraic bound",
+      "true shifted solve residuals",
+      "rounds",
+      "total RHS/operator/shifted actions",
+      "typed failure",
+      "method identity"
+    ],
+    "mutation_gates": [
+      "no default router mutation",
+      "do not treat two sweeps as a sufficient error certificate",
+      "no tolerance relaxation to recover speedup",
+      "do not import scalar stability as nonlinear/uniform stiff order",
+      "preserve accepted state on sweep failure",
+      "fallback only to caller-permitted method with separately qualified error/history transfer",
+      "do not use spectral negativity alone to infer resolvent contraction",
+      "never conceal dense solves or derivatives in shifted-solver adapter"
+    ],
+    "acceptance": [
+      "reproduce scalar rational oracle",
+      "manufactured nonlinear forced and nonnormal negative controls",
+      "separate temporal and spatial errors",
+      "matched achieved-error full-IVP costs vs qualified Peer-W and Rodas/BDF",
+      "actual parallel timing with setup and all reductions charged"
+    ],
+    "stop": [
+      "cannot certify applicability of residual theorem",
+      "fixed sweep budget exceeded",
+      "invalid residual or nonfinite stage",
+      "no full-IVP accuracy advantage or no net speedup at fixed accuracy"
+    ],
+    "alternatives": [
+      "qualify current PPSW1-6b and parallelize independent RHS first",
+      "problem-structured original-Rodas affine/polynomial operator action"
+    ]
+  },
+  "sources": [
+    {
+      "id": "SDC2025",
+      "url": "https://arxiv.org/abs/2403.18641",
+      "full_text": "https://arxiv.org/html/2403.18641v2",
+      "doi": "10.1137/24M1649800",
+      "status": "primary_abstract_and_fulltext_excerpts_read",
+      "supports": "diagonal preconditioner coefficients, finite-sweep order and stability research already exists"
+    },
+    {
+      "id": "EXTRAP2022",
+      "url": "https://arxiv.org/abs/2207.08135",
+      "status": "primary_fulltext_excerpts_read",
+      "supports": "parallel implicit extrapolation rows and measured problem-dependent threading gains"
+    },
+    {
+      "id": "ROK2013",
+      "url": "https://arxiv.org/abs/1305.5481",
+      "status": "primary_fulltext_equations_read",
+      "supports": "Krylov approximation tied to order conditions; one shared Krylov basis"
+    },
+    {
+      "id": "PTW2001",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1002/zamm.200108115148",
+      "status": "primary_publisher_abstract_read",
+      "supports": "parallel stage W-method prior art"
+    },
+    {
+      "id": "PEER2004",
+      "url": "https://doi.org/10.1137/S0036142902411057",
+      "status": "repo_source_lock_reused_scispace_abstract_crosschecked",
+      "supports": "parallel two-step Peer-W prior art; no fresh complete theorem audit"
+    },
+    {
+      "id": "ADAPTSDC2024",
+      "url": "https://link.springer.com/article/10.1007/s11075-024-01964-z",
+      "status": "primary_article_excerpts_read",
+      "supports": "adaptive sweeps and residual adaptivity limitations"
+    },
+    {
+      "id": "EXPLICIT2014",
+      "url": "https://msp.org/camcos/2014/9-2/camcos-v9-n2-p01-s.pdf",
+      "status": "primary_paper_excerpts_read",
+      "supports": "work/span distinctions; explicit-only paper not stiff stability proof"
+    }
+  ],
+  "search_date": "2026-11-15",
+  "provenance": {
+    "experiment_sha256": "ab8bce3ac99097bb53ec18d3f2011cf969678519e4d9185893d5da6d909c88cf",
+    "results_sha256": "5ecb1263c7902d85e1b31858818a91cd3fe48c9fd1a84f40c1200b121d8de9af"
+  },
+  "policy_correction": {
+    "target": "docs/agent/production_solver_program_20261112/PARALLELISM_ANALYSIS.json",
+    "old_scope": "same-step exact stage-task parallelism unavailable without changing the method",
+    "replacement_scope": "the unchanged black-box stage-task DAG has depth eight; equivalent algebraic reformulations and special operator structure require their own proof/work/span assessment",
+    "reason": "avoids excluding known method-preserving affine structured reformulations already in project"
+  }
+}

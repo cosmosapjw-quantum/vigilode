@@ -88,20 +88,22 @@
     {
       "id": "bdf",
       "family": "multistep implicit",
-      "status": "benchmark/control candidate",
-      "order": "variable",
+      "status": "implemented native fixed/adaptive research comparator; not external production BDF parity",
+      "order": "BDF1/BDF2",
       "jacobian": "Newton or nonlinear solver",
       "stage_graph": "not RK stages",
-      "scope": "compare only on matched output error"
+      "scope": "compare only on matched output error",
+      "source": "crates/rodas5p-integrators/src/bdf.rs"
     },
     {
       "id": "radau_IIA",
       "family": "fully implicit RK",
-      "status": "starter/control/benchmark candidate",
+      "status": "implemented native fixed/adaptive research comparator and starter",
       "order": "method-dependent",
       "jacobian": "coupled nonlinear block solve",
       "stage_graph": "coupled stages; stage-parallel solvers exist",
-      "scope": "startup and comparison"
+      "scope": "startup and comparison",
+      "source": "crates/rodas5p-integrators/src/radau.rs"
     },
     {
       "id": "exponential_rosenbrock_krylov",
@@ -145,7 +147,7 @@
       "order": "time-method dependent",
       "jacobian": "client-defined",
       "stage_graph": "geometry-specific",
-      "scope": "photon finite-volume client; limited physics scope"
+      "scope": "photon angular finite-volume client on (log-energy,mu,phi), not general 3D Cartesian spatial solver"
     },
     {
       "id": "polynomial_resolvent",
@@ -168,11 +170,12 @@
     {
       "id": "symbolic_dynamics",
       "family": "mathematical theory",
-      "status": "not identified as a generic solver module",
+      "status": "source-specific guarded symbolic itinerary and word-preserving bisimulation implemented/proved in historical scope",
       "order": "not applicable",
       "jacobian": "not applicable",
       "stage_graph": "not applicable",
-      "scope": "finite-state controller is not symbolic dynamics"
+      "scope": "see lineage.json; no generic arbitrary-system symbolic dynamics classifier",
+      "source": "research/dynamics_symbolic_validation_20261028/theory/DYNAMICS.md"
     },
     {
       "id": "algebraic_topology",

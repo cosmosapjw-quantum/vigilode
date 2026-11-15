@@ -1,0 +1,134 @@
+{
+  "schema": "vigilode.research-checkpoint.v1",
+  "date_kst": "2026-11-15",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "branch": "research/production-unification-20261115",
+  "base_commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+  "base_tree": "d05b58b0382750e043a20600559189623b7ee6a5",
+  "scope_completed": [
+    "U01_PEER_RHS_PARALLEL",
+    "U02_PEER_TRANSACTION_IDENTITY",
+    "U05_SEMILINEAR_PARALLEL_SDC"
+  ],
+  "overall_user_goal": "PARTIAL_CONTINUATION",
+  "production_verdict": "HOLD",
+  "novelty_verdict": "NOT_ESTABLISHED",
+  "official_g0_changed": false,
+  "implemented_source_sha256": {
+    "crates/rodas5p-integrators/src/ppsw1.rs": "d37624d65ef2799b6008d86dc159ea6e4b1ea0024576110b4f187603a853c760",
+    "crates/rodas5p-integrators/tests/ppsw1_parallel_rhs_contracts.rs": "b172a2b84aee926cd9bbb41e71f84ae3af6fe882c72f2121854eb3581b4d871d",
+    "crates/rodas5p-integrators/tests/ppsw1_session_boundary_contracts.rs": "11631f2f1e14e813fb241dcfcbe47382de1cba51c1a911e70f0fd2b733b0576a"
+  },
+  "protected_blob_sha1": {
+    "fixtures/rodas5p_coefficients_snapshot.json": "bc55da4d43549ffbcee3cb25e31be05658507742",
+    "crates/rodas5p-core/src/coefficients.rs": "c309a3b9d902f8a3865fbedaaf7fad45e5448ea5",
+    "crates/rodas5p-integrators/src/sequential.rs": "4153e286a2ac756252978d5d77cf1abe0e6a4e0c",
+    "crates/rodas5p-integrators/src/parallel.rs": "ffdfb1cef258ed43586db0323eb0e7f9de27dd53",
+    "crates/rodas5p-integrators/src/stage_batch.rs": "c2f44c327c53d7c6dfe7ba80b26cd43486d56b43",
+    "crates/rodas5p-integrators/src/ptsw2b.rs": "f491b0a3f5f351d0fe933b06bf9ea30a0c730922",
+    "crates/rodas5p-integrators/src/candidates.rs": "2a6c7a7179a34932938ee4233d48b31457e38cf1",
+    "crates/rodas5p-krylov/src/block_gmres.rs": "68968fc1e764d2dd355373928ed11406c8dc9c1c",
+    "crates/vigilode/src/lib.rs": "9370f4e50e454dd43472160c8d65e4fdcd030e8a",
+    "crates/vigilode/src/automatic.rs": "ff4f5db411b310039b627d66774b24885eb3cf7d",
+    "crates/vigilode/src/switching.rs": "fb12a401002c0039631a43982cc296a494c366a2",
+    "crates/rodas5p-core/src/work.rs": "76577cf6cb0295f859efcad2606150a01961cae7",
+    "docs/agent/unified_local_agent_20261109/VIGILODE_UNIFIED_DAG_20261109.json": "ef422f5effab1839cca1f01bb0218c625a54daea",
+    "Cargo.toml": "2eedb77e5cdd4e856e263ea604055d33341c4377",
+    "Cargo.lock": "9bc1afe66b0ff77dc08f76ef9d0532fae81b0df5",
+    "rust-toolchain.toml": "857955b9997d05c97f71b5356bb2c307eafd6945",
+    "crates/rodas5p-integrators/src/source_owned_graph_schur.rs": "5d2c4319143e60117a7804c1f4524b269df358ea"
+  },
+  "evidence_sha256": {
+    "research/production_unification_20261115/evidence/audit_legacy_boundary_command.sh": "d83843ab82ac56938f34ab577eedcbf4f600f5e51dc0b4e096c3413e9025a519",
+    "research/production_unification_20261115/evidence/audit_legacy_boundary_repro.log": "7df3aa6032618a354216bfae2db427a716084c0330b6f32bf2b41a0d5b1f78af",
+    "research/production_unification_20261115/evidence/audit_legacy_boundary_repro.rs": "310913831008154391403bf6f5e85faa848e689f61aea4662fc0dce7b4c7b347",
+    "research/production_unification_20261115/evidence/audit_ppsw_boundary_command.sh": "c61fbdc7b7299132f3fed2333a43e612813cfd7987af9f559e5d13aab92dabf4",
+    "research/production_unification_20261115/evidence/audit_ppsw_boundary_repro.log": "72a6ae192c57ab8410074af54f1bebf0dafd922df5865281d4fbae2ea919c127",
+    "research/production_unification_20261115/evidence/audit_ppsw_boundary_repro.rs": "03745f902767e84eb6c07332d97e158e5c0f0811773c48d186568db661af5e81",
+    "research/production_unification_20261115/evidence/audit_ppsw_contracts_remote.log": "06c7da3ca3f6715d229ab6728e0bf0683d77f78024bd472c68d06549bb4f93fb",
+    "research/production_unification_20261115/evidence/audit_production_contracts_remote.log": "90b490042f9bc9b2a35fd228d816d49f7720586a774a3b46d84deca2860e480a",
+    "research/production_unification_20261115/evidence/peer_boundary-green.log": "4c43e2273ef5d5f7a72570a1cee3f7914d461c2f61c88d7993376ee4e2e4975d",
+    "research/production_unification_20261115/evidence/peer_boundary-green_tool_result.json": "f52ae95f7371d572f77d31e4ee52073c52336d14d12e7addd63f991de52dbf1d",
+    "research/production_unification_20261115/evidence/peer_boundary-red.log": "f6259b4d025e70c719b178d750f221041ece6a893869a0276fc4cef19747eabc",
+    "research/production_unification_20261115/evidence/peer_boundary-red_tool_result.json": "6c5b4bc204b69215dbd61e0eec293772ce2ed2d43aa396f18e2792ce0ea2a9f5",
+    "research/production_unification_20261115/evidence/peer_clippy-diagnostic.log": "be7c2fd9cf45ab734001cba9bfa9eb71e681e4d29117cd2862f5e032efcb4352",
+    "research/production_unification_20261115/evidence/peer_clippy.log": "6cc8f0a34eabfc2e0f748948d0eb8033b7f21f3ba45acce99c42ba71dbcf5090",
+    "research/production_unification_20261115/evidence/peer_execution_receipt.json": "a610f3316e756db8220c9e9952051e79b14c370e7e46d6c1f8cee16631f2dff7",
+    "research/production_unification_20261115/evidence/peer_final-green.log": "607029a6cabbf985bfc7891cbe70897b58b12bb8978ae68726f3a6299d3af55f",
+    "research/production_unification_20261115/evidence/peer_green.log": "ce3f8139d8aa834f1a2b356bd41485ed1c7fbecbe1e9bf2c994895e52be0740f",
+    "research/production_unification_20261115/evidence/peer_green_tool_result.json": "0d13967cceed012fce1f97d096e581ad2dc360a148527505ffa943eea4fe46ac",
+    "research/production_unification_20261115/evidence/peer_initial_sources.json": "4fae0e6679d3c4c30ea3af2f65a8ce5dca327edcc3da564f1eb53a35603d7df6",
+    "research/production_unification_20261115/evidence/peer_nonfinite-red.log": "720d7770faeb7f571225e8ad4364ae9af107748d95f94cde7c55c6745a505fb3",
+    "research/production_unification_20261115/evidence/peer_red.log": "d97043b7734dad99e54771438b7690ea41565395c6ef384c13ab0b993bca1852",
+    "research/production_unification_20261115/evidence/peer_red_tool_result.json": "055f8bd2a446f6aafe73daf487913c2347f2c99c57304f1db4e4dc8d7125594f",
+    "research/production_unification_20261115/stage_research/CONTRACT.json": "59928891b44655972f6982f39ea7704d58af0f146e91634038fff54e7072812f",
+    "research/production_unification_20261115/stage_research/INDEPENDENT_REVIEW.md": "2dc6fcb3aeb993a14327f131f05f033cba298f7b63053c762bf7dd459545b6cd",
+    "research/production_unification_20261115/stage_research/RESULTS.json": "5ecb1263c7902d85e1b31858818a91cd3fe48c9fd1a84f40c1200b121d8de9af",
+    "research/production_unification_20261115/stage_research/THEORY_AND_DECISION.md": "d2b221d2c4a2a7eca45b69aba3bc7851e2ed18de50e6728a1bcae4cc5281c9e7",
+    "research/production_unification_20261115/stage_research/experiment.py": "ab8bce3ac99097bb53ec18d3f2011cf969678519e4d9185893d5da6d909c88cf",
+    "research/production_unification_20261115/INDEPENDENT_INTEGRATION_REVIEW.md": "effdcbd0715ea02a8474e34d8c87d8e89ea3e3abb5ed36f018ef0b9bbeea59f9",
+    "research/production_unification_20261115/production_audit.json": "e49b6893fa65337fe8a3429877b49369cb78085a7eccc3ba34c772f590625130",
+    "research/production_unification_20261115/lineage.json": "8c5cf94ff68e6682e1995eb3c6fa3f65d9c563bfbe2bb63bc6459378fe59828b",
+    "research/production_unification_20261115/HISTORY_RECOVERY.json": "b08bf3d401e97e031b5bd3d35438082996e46cd42e0dcdb1ead5049df52ce9b4",
+    "research/production_unification_20261115/ARCHIVE_RECOVERY_CONTRACT.json": "a1d00f4b8b558d0d45a55cfcbe4ed7aa446050502052235f0631c933213d81f7"
+  },
+  "checks": {
+    "baseline_facade_tests": {
+      "passed": 23,
+      "receipt": "evidence/audit_production_contracts_remote.log"
+    },
+    "final_rust": {
+      "passed": 171,
+      "failed": 0,
+      "ignored": 1,
+      "receipt": "evidence/peer_execution_receipt.json"
+    },
+    "strict_clippy": {
+      "result": "fail",
+      "cause": "8 pre-existing lints in unchanged source_owned_graph_schur.rs",
+      "receipt": "evidence/peer_clippy.log"
+    },
+    "diagnostic_clippy": {
+      "exit_code": 0,
+      "warnings": 8,
+      "new_source_warnings": 0
+    },
+    "format": {
+      "result": "pass_scoped",
+      "source": "peer_execution_receipt"
+    },
+    "sdc": {
+      "ivp_rows": 20,
+      "bound_checks": 10,
+      "invalid_budget_rejections": 5,
+      "result": "numerically_checked_scoped"
+    },
+    "workspace_all_targets": {
+      "result": "not_run"
+    },
+    "matched_error_timing": {
+      "result": "not_run"
+    }
+  },
+  "remaining_obligations": [
+    "PPSW1 stiff/variable-step/approximate-W/estimator/startup qualification",
+    "Executed versus scheduled stage-linear-solve failure accounting",
+    "Pure capability registry and existing frontend adapter expansion",
+    "Matrix-free per-step and permission-compatible startup distinction",
+    "2D/3D/sphere weighted operator clients",
+    "Certified structure/switch error transport and novelty comparison",
+    "Frozen-G0 matched achieved-error holdout conjunction"
+  ],
+  "next_tasks": [
+    "U03_PEER_INDEPENDENT_QUALIFICATION",
+    "U06_UNIFIED_CAPABILITY_REGISTRY",
+    "U08_STRUCTURE_CERTIFICATES"
+  ],
+  "backup": {
+    "status": "PENDING_REMOTE_PUSH",
+    "branch": "research/production-unification-20261115",
+    "force_push": false,
+    "main_merge": false,
+    "readback_receipt": "GITHUB_BACKUP.json"
+  }
+}

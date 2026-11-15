@@ -1,0 +1,130 @@
+[Reading 125 lines from line 1 (total: 126 lines, 0 remaining)]
+
+rustc 1.94.1 (e408947bf 2026-03-25)
+   Compiling version_check v0.9.5
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling autocfg v1.5.1
+   Compiling quote v1.0.47
+   Compiling bytemuck v1.25.2
+   Compiling nano-gemm-codegen v0.2.1
+   Compiling libm v0.2.16
+   Compiling bitflags v2.13.1
+   Compiling paste v1.0.15
+   Compiling cfg-if v1.0.4
+   Compiling reborrow v0.5.5
+   Compiling pulp-wasm-simd-flag v0.1.1
+   Compiling dyn-stack-macros v0.1.3
+   Compiling syn v1.0.109
+   Compiling once_cell v1.21.4
+   Compiling seq-macro v0.3.6
+   Compiling nano-gemm-core v0.2.1
+   Compiling typenum v1.20.1
+   Compiling libc v0.2.189
+   Compiling serde_core v1.0.229
+   Compiling defer v0.2.1
+   Compiling crossbeam-utils v0.8.22
+   Compiling zmij v1.0.23
+   Compiling crossbeam-epoch v0.9.20
+   Compiling thiserror v2.0.19
+   Compiling crossbeam-deque v0.8.7
+   Compiling equator-macro v0.6.0
+   Compiling serde v1.0.229
+   Compiling serde_json v1.0.151
+   Compiling raw-cpuid v11.6.0
+   Compiling generativity v1.2.1
+   Compiling itoa v1.0.18
+   Compiling cpufeatures v0.2.17
+   Compiling dyn-stack v0.13.2
+   Compiling pulp v0.22.3
+   Compiling generic-array v0.14.7
+   Compiling memchr v2.8.3
+   Compiling rayon-core v1.13.0
+   Compiling hex v0.4.3
+   Compiling either v1.17.0
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-production-solver-unification-20261112/crates/rodas5p-integrators)
+   Compiling num-traits v0.2.19
+   Compiling equator v0.6.0
+   Compiling nano-gemm-f32 v0.2.1
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling nano-gemm-f64 v0.2.1
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling syn v3.0.3
+   Compiling syn v2.0.119
+   Compiling num-complex v0.4.6
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling num_cpus v1.17.0
+   Compiling digest v0.10.7
+   Compiling rayon v1.12.0
+   Compiling sha2 v0.10.9
+   Compiling thiserror-impl v2.0.19
+   Compiling serde_derive v1.0.229
+   Compiling interpol v0.2.1
+   Compiling equator-macro v0.2.1
+   Compiling private-gemm-x86 v0.1.20
+   Compiling equator v0.2.2
+   Compiling gemm-common v0.19.0
+   Compiling qd v0.8.0
+   Compiling faer-traits v0.24.0
+   Compiling gemm-f64 v0.19.0
+   Compiling gemm-f32 v0.19.0
+   Compiling gemm-c32 v0.19.0
+   Compiling gemm-c64 v0.19.0
+   Compiling gemm v0.19.0
+   Compiling nano-gemm v0.2.2
+   Compiling faer v0.24.4
+   Compiling rodas5p-core v0.1.0 (/home/cosmosapjw/worktrees/vigilode-production-solver-unification-20261112/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/home/cosmosapjw/worktrees/vigilode-production-solver-unification-20261112/crates/rodas5p-krylov)
+   Compiling vigilode v0.1.0 (/home/cosmosapjw/worktrees/vigilode-production-solver-unification-20261112/crates/vigilode)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 41.51s
+     Running tests/production_rhs_contracts.rs (target/debug/deps/production_rhs_contracts-4bde58a4a83d0478)
+
+running 3 tests
+test incomplete_time_derivative_is_terminal ... ok
+test sparse_jacobian_writes_remain_supported ... ok
+test incomplete_rhs_stops_once_on_dense_and_finite_difference_routes ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/production_selection_contracts.rs (target/debug/deps/production_selection_contracts-d3e0221ef7b96f09)
+
+running 6 tests
+test matrix_free_is_an_explicit_permission_and_inherits_atol_refusal ... ok
+test resource_ceiling_includes_dense_callbacks_with_declared_band ... ok
+test unsupported_requests_and_permissions_fail_without_callbacks ... ok
+test default_is_rhs_only_even_with_provided_derivatives ... ok
+test failure_preserves_partial_state_and_typed_error ... ok
+test selected_implicit_method_matches_direct_method_and_fd_is_opt_in ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/production_session_contracts.rs (target/debug/deps/production_session_contracts-13fb5826ee0d7a61)
+
+running 9 tests
+test early_driver_return_preserves_the_last_unscheduled_accepted_checkpoint ... ok
+test a_global_attempt_budget_is_not_reset_by_each_advance ... ok
+test fatal_callback_stops_once_and_the_session_cannot_retry_it ... ok
+test malformed_callback_output_is_fatal_even_after_an_accepted_checkpoint ... ok
+test unsupported_requests_never_enter_the_driver_or_user_callbacks ... ok
+test recoverable_failure_and_rejected_work_survive_a_pause ... ok
+test zero_length_session_is_complete_without_callback_work ... ok
+test pausing_between_trials_and_observations_preserves_the_one_shot_path ... ok
+test zero_quota_and_bad_targets_or_epochs_do_not_change_state_or_work ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/production_setup_contracts.rs (target/debug/deps/production_setup_contracts-99af5c56a0f384bf)
+
+running 5 tests
+test invalid_provider_policy_is_refused_before_any_callback ... ok
+test fatal_rhs_preserves_accepted_prefix_and_all_entered_work ... ok
+test complete_json_roundtrip_preserves_permissions_and_refuses_unknown_controls ... ok
+test rhs_only_preserves_native_states_work_and_derivative_prohibition ... ok
+test supplied_jvp_profile_has_complete_cost_and_common_grid_accuracy ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+✅ Process completed with exit code 0 (runtime: 41.70s)
+
+[executed on device: cosmosapjw (edd1b263-56a0-4391-8a2a-677dd00eabf5)]

@@ -1,0 +1,51 @@
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-cloud-peer-20261115/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.52s
+     Running tests/ppsw1_session_boundary_contracts.rs (/tmp/vigilode-peer-20261115/target/debug/deps/ppsw1_session_boundary_contracts-b1294f93a6ce91e8)
+
+running 5 tests
+test malformed_history_is_refused_before_any_callbacks ... FAILED
+test nonadvancing_and_overflowing_step_times_are_refused_before_work ... FAILED
+test foreign_session_attempt_cannot_commit_or_reject ... FAILED
+test rejected_attempt_invalidates_other_attempts_from_that_generation ... FAILED
+test starter_requires_two_finite_representably_advancing_intervals ... FAILED
+
+failures:
+
+---- malformed_history_is_refused_before_any_callbacks stdout ----
+
+thread 'malformed_history_is_refused_before_any_callbacks' (671830) panicked at crates/rodas5p-integrators/tests/ppsw1_session_boundary_contracts.rs:60:9:
+case 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- nonadvancing_and_overflowing_step_times_are_refused_before_work stdout ----
+
+thread 'nonadvancing_and_overflowing_step_times_are_refused_before_work' (671831) panicked at crates/rodas5p-integrators/tests/ppsw1_session_boundary_contracts.rs:75:9:
+assertion failed: ppsw1::advance(&p, &s, h, &ParallelExecution::sequential(),
+        &mut work).is_err()
+
+---- foreign_session_attempt_cannot_commit_or_reject stdout ----
+
+thread 'foreign_session_attempt_cannot_commit_or_reject' (671829) panicked at crates/rodas5p-integrators/tests/ppsw1_session_boundary_contracts.rs:18:5:
+assertion failed: a.accept(foreign).is_err()
+
+---- rejected_attempt_invalidates_other_attempts_from_that_generation stdout ----
+
+thread 'rejected_attempt_invalidates_other_attempts_from_that_generation' (671832) panicked at crates/rodas5p-integrators/tests/ppsw1_session_boundary_contracts.rs:35:5:
+assertion failed: a.accept(sibling).is_err()
+
+---- starter_requires_two_finite_representably_advancing_intervals stdout ----
+
+thread 'starter_requires_two_finite_representably_advancing_intervals' (671833) panicked at crates/rodas5p-integrators/tests/ppsw1_session_boundary_contracts.rs:86:9:
+assertion failed: ppsw1::start(&p, t, &[0.0], h, &mut work).is_err()
+
+
+failures:
+    foreign_session_attempt_cannot_commit_or_reject
+    malformed_history_is_refused_before_any_callbacks
+    nonadvancing_and_overflowing_step_times_are_refused_before_work
+    rejected_attempt_invalidates_other_attempts_from_that_generation
+    starter_requires_two_finite_representably_advancing_intervals
+
+test result: FAILED. 0 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test ppsw1_session_boundary_contracts`

@@ -1,0 +1,148 @@
+{
+  "schema": "vigilode.peer-execution-receipt.v1",
+  "base_commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+  "scope": [
+    "bounded parallel new-stage RHS callbacks",
+    "session-owned attempts",
+    "finite state/history/time boundary validation"
+  ],
+  "status": "implementation-verified",
+  "production_status": "HOLD",
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/ppsw1.rs": "d37624d65ef2799b6008d86dc159ea6e4b1ea0024576110b4f187603a853c760",
+    "crates/rodas5p-integrators/tests/ppsw1_parallel_rhs_contracts.rs": "b172a2b84aee926cd9bbb41e71f84ae3af6fe882c72f2121854eb3581b4d871d",
+    "crates/rodas5p-integrators/tests/ppsw1_session_boundary_contracts.rs": "11631f2f1e14e813fb241dcfcbe47382de1cba51c1a911e70f0fd2b733b0576a"
+  },
+  "cloud_remote_source_bytes_match": true,
+  "environment": {
+    "remote_worktree": "/home/cosmosapjw/worktrees/vigilode-cloud-peer-20261115",
+    "remote_base": "bee5563c51264a7da19c519295bdda2fb317caef",
+    "rustc": "1.94.1 (e408947bf 2026-03-25)",
+    "cargo": "1.94.1 (29ea6fb6a 2026-03-24)",
+    "cargo_target_dir": "/tmp/vigilode-peer-20261115/target",
+    "build_jobs": 3,
+    "network": "--offline",
+    "dependency_lock": "Cargo.lock",
+    "profile": "test (unoptimized + debuginfo)"
+  },
+  "executions": [
+    {
+      "id": "rhs-red",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test ppsw1_parallel_rhs_contracts",
+      "exit_code": 101,
+      "passed": 2,
+      "failed": 3,
+      "log": "evidence/peer_red.log",
+      "source_state": "baseline solver + new tests"
+    },
+    {
+      "id": "rhs-green",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test ppsw1_parallel_rhs_contracts --test ppsw1_6b_contracts",
+      "exit_code": 0,
+      "passed": 42,
+      "failed": 0,
+      "log": "evidence/peer_green.log",
+      "source_state": "RHS parallelization before boundary guards"
+    },
+    {
+      "id": "boundary-red",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test ppsw1_session_boundary_contracts",
+      "exit_code": 101,
+      "passed": 0,
+      "failed": 5,
+      "log": "evidence/peer_boundary-red.log",
+      "source_state": "RHS parallelization only + boundary tests"
+    },
+    {
+      "id": "boundary-green",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test ppsw1_session_boundary_contracts --test ppsw1_parallel_rhs_contracts --test ppsw1_6b_contracts",
+      "exit_code": 0,
+      "passed": 47,
+      "failed": 0,
+      "log": "evidence/peer_boundary-green.log",
+      "source_state": "boundary guards before nonfinite-rejection sibling fix"
+    },
+    {
+      "id": "nonfinite-red",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test ppsw1_session_boundary_contracts nonfinite_try_step_rejection",
+      "exit_code": 101,
+      "passed": 0,
+      "failed": 1,
+      "filtered_out": 5,
+      "log": "evidence/peer_nonfinite-red.log",
+      "source_state": "boundary guards + sixth test, before nonfinite-rejection sibling fix"
+    },
+    {
+      "id": "final-green",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --lib --test ppsw1_session_boundary_contracts --test ppsw1_parallel_rhs_contracts --test ppsw1_6b_contracts",
+      "exit_code": 0,
+      "passed": 171,
+      "failed": 0,
+      "ignored": 1,
+      "log": "evidence/peer_final-green.log",
+      "source_state": "source_sha256 above",
+      "breakdown": {
+        "lib": {
+          "passed": 123,
+          "ignored": 1
+        },
+        "ppsw1_6b_contracts": 37,
+        "ppsw1_parallel_rhs_contracts": 5,
+        "ppsw1_session_boundary_contracts": 6
+      }
+    },
+    {
+      "id": "strict-clippy",
+      "command": "cargo clippy --locked --offline -p rodas5p-integrators --lib --test ppsw1_6b_contracts --test ppsw1_parallel_rhs_contracts --test ppsw1_session_boundary_contracts -- -D warnings",
+      "exit_code": 101,
+      "result": "fail",
+      "reason": "8 lints in unchanged source_owned_graph_schur.rs",
+      "log": "evidence/peer_clippy.log"
+    },
+    {
+      "id": "diagnostic-clippy-final",
+      "command": "cargo clippy --locked --offline -p rodas5p-integrators --lib --test ppsw1_6b_contracts --test ppsw1_parallel_rhs_contracts --test ppsw1_session_boundary_contracts",
+      "exit_code": 0,
+      "warnings": 8,
+      "all_warning_sources": [
+        "crates/rodas5p-integrators/src/source_owned_graph_schur.rs"
+      ],
+      "log": "evidence/peer_clippy-diagnostic.log"
+    },
+    {
+      "id": "format",
+      "command": "rustfmt --check --edition 2024 crates/rodas5p-integrators/src/ppsw1.rs crates/rodas5p-integrators/tests/ppsw1_parallel_rhs_contracts.rs crates/rodas5p-integrators/tests/ppsw1_session_boundary_contracts.rs",
+      "exit_code": 0,
+      "result": "pass_scoped"
+    }
+  ],
+  "log_sha256": {
+    "evidence/peer_boundary-green.log": "4c43e2273ef5d5f7a72570a1cee3f7914d461c2f61c88d7993376ee4e2e4975d",
+    "evidence/peer_boundary-red.log": "f6259b4d025e70c719b178d750f221041ece6a893869a0276fc4cef19747eabc",
+    "evidence/peer_clippy-diagnostic.log": "be7c2fd9cf45ab734001cba9bfa9eb71e681e4d29117cd2862f5e032efcb4352",
+    "evidence/peer_clippy.log": "6cc8f0a34eabfc2e0f748948d0eb8033b7f21f3ba45acce99c42ba71dbcf5090",
+    "evidence/peer_final-green.log": "607029a6cabbf985bfc7891cbe70897b58b12bb8978ae68726f3a6299d3af55f",
+    "evidence/peer_green.log": "ce3f8139d8aa834f1a2b356bd41485ed1c7fbecbe1e9bf2c994895e52be0740f",
+    "evidence/peer_nonfinite-red.log": "720d7770faeb7f571225e8ad4364ae9af107748d95f94cde7c55c6745a505fb3",
+    "evidence/peer_red.log": "d97043b7734dad99e54771438b7690ea41565395c6ef384c13ab0b993bca1852"
+  },
+  "contracts": {
+    "parallelism": "six mutually independent post-solve RHS callbacks within existing bounded local Rayon pool; coefficients/stage solves unchanged",
+    "serial": "original first-error prefix execution retained",
+    "parallel_error": "all six callback jobs joined, local work accumulated for all jobs, then first error in stage-index order returned",
+    "purity": "callbacks must produce equal values independent of invocation order; Send+Sync is enforced by existing OdeProblem API",
+    "transaction": "private Arc owner token + generation; accept, reject, and try_step NonFinite rejection invalidate sibling proposals",
+    "state": "all history y/f rows finite, nonempty and equal problem dimension; finite t and finite positive h_prev",
+    "time": "finite strictly advancing endpoint before callbacks; all represented stage times finite; startup both h0 intervals plus 2h0 endpoint strictly advance",
+    "limits": [
+      "no matched-achieved-error timing benchmark run",
+      "no whole-solver derivative-free or Newton-free promotion",
+      "Rodas8-stage graph unchanged",
+      "panic-unwind work accounting not covered",
+      "existing solve_stages six-solve precharge on failure unchanged",
+      "workspace-wide all-target validation not run"
+    ]
+  },
+  "protected_source_owned_schur_sha256": "fb059aef14e57276f62fd31cad794abe5caa8d9a6e06f9d7d3047d51774025b8",
+  "protected_source_owned_schur_unchanged": true
+}

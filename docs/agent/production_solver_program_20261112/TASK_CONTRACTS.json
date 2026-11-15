@@ -1,0 +1,465 @@
+{
+  "schema": "vigilode.executable-task-contracts.v1",
+  "base_commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+  "date_kst": "2026-11-15",
+  "tasks": [
+    {
+      "id": "U01_PEER_RHS_PARALLEL",
+      "depends": [],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Execute the six independent post-solve Peer RHS rows concurrently with honest work accounting.",
+      "write_allowlist": [
+        "crates/rodas5p-integrators/src/ppsw1.rs",
+        "crates/rodas5p-integrators/tests/ppsw1_parallel_rhs_contracts.rs"
+      ],
+      "equations_and_design": [
+        "After all six Y_i are solved, F_i=f(t_m+c_i*h,Y_i) has no dependence on any other new F_j.",
+        "Use existing ParallelExecution; serial mode retains early stop. Parallel jobs own WorkCounters; join all results, accumulate all executed work, then return lowest-stage-index error.",
+        "Keep arithmetic within each stage ordered; no shared mutable counters, no new thread pool, no changed tableau.",
+        "Callback Sync enables race safety, but semantic purity/replay safety must be caller-declared; order-sensitive side effects cannot promise serial equivalence."
+      ],
+      "acceptance_checks": [
+        "RED actual overlap test before edit; GREEN bounded overlap afterward.",
+        "Bitwise state parity and exact counters for pure nonlinear nonautonomous RHS.",
+        "All launched failed work charged, deterministic first error, no state/controller commit on error.",
+        "Run existing 37 PPSW1 contracts and targeted clippy; record exact source hashes."
+      ],
+      "completion_requires": [
+        "new tests pass on pinned Rust toolchain",
+        "independent diff review"
+      ],
+      "failure_action": "Keep opt-in route experimental on a failing invariant; preserve failure log. No speed promotion from overlap alone.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_unification_20261115/evidence/peer_execution_receipt.json",
+        "research/production_unification_20261115/INDEPENDENT_INTEGRATION_REVIEW.md"
+      ],
+      "scope_completed": "Bounded source behavior and regression contracts, not full method/production qualification."
+    },
+    {
+      "id": "U02_PEER_TRANSACTION_IDENTITY",
+      "depends": [],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Close ownership, invalid-state and representable-time holes before qualification.",
+      "write_allowlist": [
+        "crates/rodas5p-integrators/src/ppsw1.rs",
+        "crates/rodas5p-integrators/tests/ppsw1_session_boundary_contracts.rs"
+      ],
+      "equations_and_design": [
+        "An Attempt belongs to exactly one Session and generation; both are checked by accept/reject.",
+        "Rejecting or accepting consumes the pending attempt. Advancing generation on discard prevents reuse through duplicate attempts.",
+        "Validate state dimension, all six state/RHS rows, all finite values, h_prev>0 and finite t before callbacks.",
+        "Require all evaluated stage times finite. Require strict representable forward progress only for committed endpoint t+h and startup overall endpoint t_init+2*h0; Peer negative nodes may precede the current time. Do not change h automatically.",
+        "Startup creates two h0 intervals; both intermediate t_init+h0 and final t_init+2*h0 must advance representably and remain finite, so duplicated starter grids are refused."
+      ],
+      "acceptance_checks": [
+        "Two sessions at generation zero cannot exchange attempts.",
+        "Reject NaN/Inf/ragged/empty state before callbacks.",
+        "Reject overflow and t+h==t; preserve counters/state on precondition refusal.",
+        "Same-session accepted/rejected workflows retain documented accounting."
+      ],
+      "completion_requires": [
+        "adversarial RED reproduction",
+        "targeted GREEN tests",
+        "37 existing contracts pass"
+      ],
+      "failure_action": "Return InvalidInput with original state intact; do not repair invalid user state silently.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_unification_20261115/evidence/peer_execution_receipt.json",
+        "research/production_unification_20261115/INDEPENDENT_INTEGRATION_REVIEW.md"
+      ],
+      "scope_completed": "Bounded source behavior and regression contracts, not full method/production qualification."
+    },
+    {
+      "id": "U03_PEER_INDEPENDENT_QUALIFICATION",
+      "depends": [
+        "U02_PEER_TRANSACTION_IDENTITY"
+      ],
+      "status": "PLANNED",
+      "purpose": "Finish T02 independently of the source-derived coefficient implementation.",
+      "write_allowlist": [
+        "crates/rodas5p-integrators/tests/ppsw1_independent_qualification.rs",
+        "research/production_unification_20261115/peer_qualification/**",
+        "crates/rodas5p-integrators/src/ppsw1.rs"
+      ],
+      "equations_and_design": [
+        "Reconstruct paper table and variable-step identities with rational/high-precision independent code; never import implementation coefficients as the oracle.",
+        "Separate formal order from stiff order reduction and from owner-chosen interpolation estimator/controller.",
+        "Use an independent oracle backend to scan approximate-J factor theta in [0.8,1.1] with T=theta*J and selected bounded noncommuting perturbations DeltaT. This W-approximation axis is independent of step ratio sigma; keep production exact-J implementation unchanged during the oracle study.",
+        "Use calibration problems only; freeze matched achieved-error output grid and reference uncertainty from T01.",
+        "Scan sigma in [0.5,1.1] plus positive smaller final-clipping ratios, stiffness, nonnormality, startup h0 and roundoff. Current code permits any positive reduction: report unvalidated extreme ratios or add a separately justified fail-closed capability restriction; never expand the upper cap.",
+        "Before measured qualification, repair or precisely classify existing solve_stages precharge of six direct solves before a fallible map. Count actual executed attempts on serial/parallel failure; this is separate from the completed RHS accounting fix. Limit source edits in this task to failure accounting or justified boundary correctness, not method constants."
+      ],
+      "acceptance_checks": [
+        "Smooth manufactured polynomial/exponential solutions, Prothero-Robinson stiff forcing, LIN3/nonnormal matrices.",
+        "Starter endpoint 2h0 versus requested final time; mass/events unsupported contracts; rejection and clipping.",
+        "Distinguish asymptotic observed order, preasymptotic stiff envelope, and unresolved regime.",
+        "Overflow/nonfinite linear RHS and early solve failure: scheduled versus executed direct/linear solve counters, deterministic error and preserved state. Ordinary Result errors are covered; callback panic/unwind is a separate contract."
+      ],
+      "completion_requires": [
+        "independent coefficient source comparison",
+        "reference-qualified error curves with raw failures"
+      ],
+      "failure_action": "Record rejected regimes. Keep candidate available explicitly within supported scope; no G0 promotion.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "U04_COMMON_W_MATRIX_FREE",
+      "depends": [
+        "U01_PEER_RHS_PARALLEL",
+        "U03_PEER_INDEPENDENT_QUALIFICATION"
+      ],
+      "status": "PLANNED",
+      "purpose": "Replace dense common-W algebra only in a new explicit JVP-permitted backend.",
+      "write_allowlist": [
+        "crates/rodas5p-integrators/src/ppsw1_linear_backend.rs",
+        "crates/rodas5p-integrators/src/ppsw1.rs",
+        "crates/rodas5p-integrators/tests/ppsw1_linear_backend_contracts.rs"
+      ],
+      "equations_and_design": [
+        "Wv=v-gamma*h*Jv; construction uses frozen t_m,y_m, never a stage-dependent J.",
+        "Existing step RHS includes h*J*sum_j Gamma_ij*Yprev_j: account these actions too, not only W solves.",
+        "Compare six independent GMRES with existing block GMRES. Deflate dependent RHS columns with explicit rank/pivot mapping; restore six outputs.",
+        "Check each original residual r_i=b_i-W*x_i. A projected residual alone is insufficient.",
+        "Matrix-free is derivative-based when using JVP; do not label this derivative-free. Explicit Jacobian or finite differences require separate permissions.",
+        "Per-step matrix-free is not whole-run matrix-free: existing start() builds a dense 5n-by-5n Radau/Newton problem. Under strict dense/Newton prohibition, refuse before startup or provide a separately qualified compatible starter. U04 alone cannot promote whole-run matrix-free/Newton-free capability."
+      ],
+      "acceptance_checks": [
+        "Dense reference parity for diagonal, stiff nonnormal and rank-deficient six-RHS cases.",
+        "True residual stagnation/breakdown and preconditioner failure; finite-value checks.",
+        "Matched-error full-IVP calibration: wall/CPU, memory, setup, JVP, reductions, all rejected/startup work.",
+        "Verify strict no-dense/no-Newton requests fail before startup callbacks unless a separately qualified compatible starter is explicitly selected."
+      ],
+      "completion_requires": [
+        "residual-to-step-error budget",
+        "contract tests",
+        "measured crossover, not guaranteed speedup"
+      ],
+      "failure_action": "Return typed linear failure or allowed transactional dense fallback; do not violate derivative or matrix permission.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "U05_SEMILINEAR_PARALLEL_SDC",
+      "depends": [],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Evaluate a genuinely stage-parallel RHS-only nonlinear correction route for a declared dissipative linear split.",
+      "write_allowlist": [
+        "research/production_unification_20261115/stage_research/**"
+      ],
+      "equations_and_design": [
+        "The residual theorem is finite-dimensional, with a fixed SPD spatial metric H and constant linear operator L during the step. Unbounded operators or time-varying metrics need new domain arguments.",
+        "Model ydot=L*y+g(t,y). L and shifted solve are explicit model-supplied capabilities, not inferred derivatives.",
+        "Radau nodes c=(1/3,1), Q=((5/12,-1/12),(3/4,1/4)), B=diag(3/4,1/4).",
+        "Fixed two diagonal sweeps with D1=diag(1/3,1), D2=diag(1/6,1/2) are a distinct low-order method; scalar L-stability does not establish stiff forced accuracy.",
+        "For L self-adjoint nonpositive in declared spatial H norm, BQ+Q^T B positive definite implies resolvent norm <=1 in B tensor H.",
+        "For global Lipschitz ell of g and q=h*||Q||_B*ell<1, endpoint algebraic error <=2*||r||_(B,H)/(1-q). This compares to collocation, not exact ODE.",
+        "Budget collocation truncation separately; stop by original collocation residual and bounded sweeps, else typed refusal/fallback."
+      ],
+      "acceptance_checks": [
+        "Exact rational scalar stability identity and imaginary-axis inequality.",
+        "Stiff forced manufactured example exposing two-sweep order reduction.",
+        "Adaptive residual stopping: compare fully solved collocation, exact solution and finite work separately.",
+        "Negative controls: nonsymmetric L, invalid dissipativity claim, q>=1, exhausted sweep budget."
+      ],
+      "completion_requires": [
+        "reproducible scripts/results",
+        "independent theorem review",
+        "no novelty priority claim"
+      ],
+      "failure_action": "Preserve reduced-order/stagnation results; restriction is the stated split/domain, not a generic stiff-solver claim.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_unification_20261115/stage_research/CONTRACT.json",
+        "research/production_unification_20261115/stage_research/INDEPENDENT_REVIEW.md"
+      ],
+      "remaining_obligations": [
+        "native weighted spatial operator adapter",
+        "roundoff enclosure",
+        "full-IVP matched-error cost comparison"
+      ],
+      "scope_completed": "discriminating theory and scalar experiment only; no integration or production qualification"
+    },
+    {
+      "id": "U06_UNIFIED_CAPABILITY_REGISTRY",
+      "depends": [],
+      "status": "PLANNED",
+      "purpose": "Extend existing vigilode facade with truthful explicit method capabilities.",
+      "write_allowlist": [
+        "crates/vigilode/src/capabilities.rs",
+        "crates/vigilode/src/selection.rs",
+        "crates/vigilode/src/lib.rs",
+        "crates/vigilode/tests/unified_method_capabilities.rs"
+      ],
+      "equations_and_design": [
+        "Reuse Problem, Options, Solution, existing capabilities.rs and ProductionConfig; do not introduce competing top-level public types.",
+        "Descriptor contains method/version/tableau identity, history/startup, derivative permissions, mass/events/dense-output support and qualification scope.",
+        "Permissions form a set: provided JVP, finite difference, AD, explicit Jacobian, dense matrix and Newton are independent flags, including startup and fallback.",
+        "Query is pure and must not call user callbacks. Unknown capability is unsupported; implemented is distinct from qualified.",
+        "Existing ProductionSolver RHS-only path uses explicit stepping; the name does not certify a derivative-free stiff implicit solver."
+      ],
+      "acceptance_checks": [
+        "Exhaustive capability/request combinations with zero callback count.",
+        "Serialization unknown/missing fields, round trip, legacy API compilation.",
+        "Descriptor routes must reference real exports; unsupported Peer mass/events rejected before work."
+      ],
+      "completion_requires": [
+        "registry tests",
+        "public compatibility examples"
+      ],
+      "failure_action": "Do not change default router. A method adapter can remain unavailable pending qualification.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "U07_TRANSACTIONAL_KERNEL_ADAPTERS",
+      "depends": [
+        "U02_PEER_TRANSACTION_IDENTITY",
+        "U03_PEER_INDEPENDENT_QUALIFICATION",
+        "U06_UNIFIED_CAPABILITY_REGISTRY"
+      ],
+      "status": "PLANNED",
+      "purpose": "Expose distinct kernels under existing frontend explicit selection.",
+      "write_allowlist": [
+        "crates/vigilode/src/session.rs",
+        "crates/vigilode/src/selection.rs",
+        "crates/vigilode/src/solution.rs",
+        "crates/vigilode/tests/unified_method_sessions.rs"
+      ],
+      "equations_and_design": [
+        "Method-owned state enum holds Peer six-stage history, BDF order/history, Radau state separately; no shared pseudo-history.",
+        "Route existing bdf/radau observed drivers before designing replacements. No native BDF1/2 result may stand in for production CVODE BDF(1..5).",
+        "Commit is atomic over time/state/history/controller/cache/source epoch; rejected work remains charged.",
+        "Switch only at accepted boundaries with a typed restart/transfer certificate; fallback must obey every original permission.",
+        "Known terminal event postprocessing semantics of Rodas5p facade must be retained or explicitly versioned; do not imply immediate termination."
+      ],
+      "acceptance_checks": [
+        "Foreign/stale attempt, event restart, parameter/source epoch change, partially failed startup.",
+        "Endpoint/grid consistency and method-specific error semantics.",
+        "Permission-preserving fallback and complete rejected-work totals."
+      ],
+      "completion_requires": [
+        "explicit solver end-to-end tests",
+        "no default change",
+        "independent review"
+      ],
+      "failure_action": "Typed unsupported route or retain accepted prefix; do not coerce an incompatible history.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "U08_STRUCTURE_CERTIFICATES",
+      "depends": [],
+      "status": "PLANNED",
+      "purpose": "Port useful existing geometry/dynamics mechanisms through one typed source-owned certificate boundary.",
+      "write_allowlist": [
+        "research/production_unification_20261115/structure_port/**",
+        "crates/vigilode-coupled/tests/structure_certificate_transfer.rs"
+      ],
+      "equations_and_design": [
+        "Reuse quotient trace/cyclic closure preserving root multiplicity, cofactor/blowup charts, guarded symbolic itinerary and Schur/affine-scan contracts from lineage.json.",
+        "A certificate must identify source function/parameter epoch, validity domain, represented invariant, original residual and reconstruction map.",
+        "For exact quotient q=P*y, exhibit f equivariance and reconstruct all transverse degrees of freedom; a low-dimensional invariant alone is insufficient.",
+        "For topology port start with oriented incidence D0,D1 and verify D1*D0=0; map exact/coexact/harmonic subspaces to operator blocks/preconditioner. A graph cycle count alone is not a homology solver.",
+        "For symbolic port prove itinerary guards cover whole accepted slab and switching language respects transfer; reuse existing word-preserving bisimulation.",
+        "Recovered RVJ archive has4573 hashed files and82 selected scientific code members; only3 are byte-identical to current tracked code. Byte mismatch is not semantic absence. Compare21 key member algorithms against current descendants before porting. Loop11 shift_jet uses dense J/LU and18 recurrence levels: preserve this classification."
+      ],
+      "acceptance_checks": [
+        "Tiny exact rational examples and counterexamples losing transverse state/multiplicity.",
+        "Perturb source epoch/guard boundary so stale certificate is rejected.",
+        "Measure actual removed work and reconstruction/error cost on the source-matched domain."
+      ],
+      "completion_requires": [
+        "source-to-target dictionary",
+        "one native port with original-equation oracle per claimed mechanism"
+      ],
+      "failure_action": "Disable only invalid structure route and preserve raw failure; never infer generic geometry support from a named module.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [],
+      "inputs": [
+        "research/production_unification_20261115/lineage.json",
+        "research/production_unification_20261115/HISTORY_RECOVERY.json",
+        "research/production_unification_20261115/ARCHIVE_RECOVERY_CONTRACT.json"
+      ]
+    },
+    {
+      "id": "U09_GEOMETRY_MOL",
+      "depends": [
+        "U06_UNIFIED_CAPABILITY_REGISTRY"
+      ],
+      "status": "PLANNED",
+      "purpose": "Provide separate 2D/3D/sphere spatial clients with exact norms and split operators.",
+      "write_allowlist": [
+        "research/production_unification_20261115/geometry_mol/**",
+        "crates/vigilode/examples/geometry_mol.rs",
+        "crates/vigilode/tests/geometry_mol_contracts.rs"
+      ],
+      "equations_and_design": [
+        "Reuse Gray-Scott 2D before extending; current Layout3 is (log-energy,mu,phi), not 3D Cartesian space.",
+        "Periodic Cartesian diffusion: L*u=D*sum_d (u_{i+e_d}-2u_i+u_{i-e_d})/dx_d^2; D has units length^2/time.",
+        "Sphere radius R: Delta_S Y_lm=-l(l+1)/R^2 Y_lm; weights integrate physical area and constant mode must remain invariant.",
+        "Weighted inner product H=diag(cell volumes/quadrature areas); test H*L=L^T*H and x^T H L x<=0 for the SDC certified route.",
+        "Boundary type, orientation, nullspace, geometry/source identity and physical units must be explicit; mass support cannot be inferred.",
+        "Use exact manufactured Fourier/spherical modes; refine time and space separately, include nonlinear reaction and anisotropic diffusion only after base tests."
+      ],
+      "acceptance_checks": [
+        "Constant mode conservation; Fourier/spherical eigenvalue and pole regularity.",
+        "2D/3D spatial second-order convergence independent of temporal error; sphere harmonic exactness within declared bandlimit.",
+        "Nonsymmetric advection is refused by self-adjoint certificate until a weighted dissipativity/resolvent proof exists."
+      ],
+      "completion_requires": [
+        "reproducible geometry fixtures",
+        "separate spatial/time error curves",
+        "mass/event capability checks"
+      ],
+      "failure_action": "Preserve geometry domain refusal; do not tune temporal tolerances to conceal spatial error.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "U10_SWITCH_ERROR_AND_NOVELTY",
+      "depends": [
+        "U07_TRANSACTIONAL_KERNEL_ADAPTERS",
+        "U08_STRUCTURE_CERTIFICATES"
+      ],
+      "status": "PLANNED",
+      "purpose": "Test a source-owned certified structure/parallel portfolio as the substantive novelty candidate.",
+      "write_allowlist": [
+        "research/production_unification_20261115/switch_error/**"
+      ],
+      "equations_and_design": [
+        "Extend existing WP4/WP7 error transport instead of renaming it. Extended history error obeys e_(n+1)<=G_n*e_n+d_n with G_n nonnegative majorant and d_n containing truncation, algebraic, transfer, output and roundoff defects.",
+        "At a switch use explicit history map T and bound its defect/gain; product of majorants, not eigenvalues alone, controls nonnormal amplification.",
+        "Compare against Peer-W, MIN-SR/parallel SDC, JFNK and established switching; parallel stages/geometry names alone have no novelty.",
+        "Candidate contribution is a proven certified domain and measured complete-cost crossover/fallback mechanism using reusable project structure."
+      ],
+      "acceptance_checks": [
+        "Independent derivation from raw assumptions; failed bounds and q>=1 cases retained.",
+        "Ablate each structure/certificate/scheduler component at matched achieved global output error.",
+        "Do not retune on holdout. Charge certificate construction and rejected probes."
+      ],
+      "completion_requires": [
+        "exact difference from closest prior art",
+        "theorem or algorithm contribution",
+        "independent evidence"
+      ],
+      "failure_action": "Report integration significance if novel theorem/algorithm claim is not supported; keep successful scoped engineering result.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "U11_PRODUCTION_HOLDOUT",
+      "depends": [
+        "U03_PEER_INDEPENDENT_QUALIFICATION",
+        "U04_COMMON_W_MATRIX_FREE",
+        "U07_TRANSACTIONAL_KERNEL_ADAPTERS",
+        "U09_GEOMETRY_MOL",
+        "U10_SWITCH_ERROR_AND_NOVELTY"
+      ],
+      "status": "PLANNED",
+      "purpose": "Evaluate frozen G0 goals as a set with honest external comparators.",
+      "write_allowlist": [
+        "research/production_unification_20261115/production_holdout/**"
+      ],
+      "equations_and_design": [
+        "Use frozen T01 common output grid/reference uncertainty and achieved error overlap, never equal rtol as equivalence.",
+        "Pin external CVODE BDF / SciPy BDF and Radau / reference Rodas5P versions and compare only overlapping features.",
+        "Include setup, startup, event/output, fallback, failed attempts, true-residual checks, memory and CPU/wall time.",
+        "Original G0 metrics unchanged: order>=4.8, steps<=1.2x, median speed>=1.15x, fast explicit-J=0, fast Newton=0, depth p95<=6/max<=8, fallback<=0.1."
+      ],
+      "acceptance_checks": [
+        "Independent runner from clean commit with exact hardware/build identity.",
+        "Pre-registered holdout, confidence intervals/repetitions, failures and out-of-domain cases.",
+        "Each criterion separately and conjunction reported; method-stage depth separated from inner-solver span."
+      ],
+      "completion_requires": [
+        "independent full-IVP benchmark",
+        "release decision requires owner approval"
+      ],
+      "failure_action": "Remain HOLD if any required target lacks evidence; no release/default mutation in this research task.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": []
+    }
+  ],
+  "execution_policy": "Resume ready bounded tasks; research/implementation may overlap only with disjoint writes. Qualification dependencies restrict promotion, not safe opt-in refactoring.",
+  "status_vocabulary": [
+    "PLANNED",
+    "IN_PROGRESS",
+    "PARTIAL",
+    "COMPLETE_SCOPED",
+    "BLOCKED"
+  ],
+  "next_priority": [
+    "U03_PEER_INDEPENDENT_QUALIFICATION",
+    "U06_UNIFIED_CAPABILITY_REGISTRY",
+    "U08_STRUCTURE_CERTIFICATES"
+  ]
+}

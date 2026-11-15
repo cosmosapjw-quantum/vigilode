@@ -10,36 +10,44 @@
   ],
   "modules": [
     {
-      "path": "crates/vigilode/src/api/",
-      "responsibility": "Problem, SolverConfig, Solver, SolverSession, StepAttempt, StepDecision, SolutionOutput"
+      "path": "crates/vigilode/src/problem.rs",
+      "responsibility": "Extend existing Problem; spatial metadata via optional adapter"
     },
     {
-      "path": "crates/vigilode/src/capability/",
-      "responsibility": "MethodDescriptor registry and derivative/mass-matrix/event/dense-output capability predicates"
+      "path": "crates/vigilode/src/options.rs",
+      "responsibility": "Preserve Options compatibility; explicit method configuration"
     },
     {
-      "path": "crates/vigilode/src/transaction/",
-      "responsibility": "attempt/accept/reject, generation tokens, epoch invalidation, atomic hidden-state commit"
+      "path": "crates/vigilode/src/production.rs",
+      "responsibility": "Retain existing strict deployment schema and permissions"
     },
     {
-      "path": "crates/vigilode/src/work_report/",
-      "responsibility": "typed complete work/memory/time report; adapter over existing WorkCounters and fair-ab"
+      "path": "crates/vigilode/src/capabilities.rs",
+      "responsibility": "Extend pure query to typed per-method capabilities"
+    },
+    {
+      "path": "crates/vigilode/src/selection.rs",
+      "responsibility": "Explicit selection; no default route change"
+    },
+    {
+      "path": "crates/vigilode/src/session.rs",
+      "responsibility": "Method-owned history, ownership/generation/transaction adapter"
+    },
+    {
+      "path": "crates/vigilode/src/solution.rs",
+      "responsibility": "Existing output and complete work representation"
     },
     {
       "path": "crates/rodas5p-integrators/src/",
-      "responsibility": "retain existing DOPRI/RODAS/Peer kernels; no initial movement of protected sources"
+      "responsibility": "Existing distinct temporal kernels, including BDF/Radau/Peer"
     },
     {
       "path": "crates/rodas5p-krylov/src/",
-      "responsibility": "linear operators, independent/block Krylov, workspaces"
+      "responsibility": "Existing linear operators, GMRES/block-GMRES/workspaces"
     },
     {
-      "path": "crates/vigilode/src/spatial/",
-      "responsibility": "2D/3D/sphere MOL adapters, geometry norms and mesh/model contracts"
-    },
-    {
-      "path": "crates/vigilode/src/legacy_adapter/",
-      "responsibility": "backward-compatible f64 slice Problem adapter"
+      "path": "research/production_unification_20261115/geometry_mol/",
+      "responsibility": "PLANNED calibration clients before any new public spatial module"
     }
   ],
   "sequence": [
@@ -55,5 +63,10 @@
     "Route defaults to opt-in methods before qualification.",
     "Fallback into forbidden derivative classes.",
     "Duplicate executor, controller or WorkLedger."
+  ],
+  "reconciliation_20261115": "Proposed directories are conceptual only. Extend existing files first; no wholesale movement or duplicate facade. See ARCHITECTURE_CONTRACT existing_authority and TASK_CONTRACTS exact write allowlists.",
+  "implemented_integrators_previously_understated": [
+    "crates/rodas5p-integrators/src/bdf.rs",
+    "crates/rodas5p-integrators/src/radau.rs"
   ]
 }

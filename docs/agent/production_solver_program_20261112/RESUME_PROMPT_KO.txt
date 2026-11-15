@@ -1,95 +1,56 @@
-[VIGILODE LOCAL CODING AGENT RESUME PROMPT | 2026-11-12 | LOW-CAPABILITY-MODEL SAFE]
+[VigilODE local coding agent resume | 2026-11-15]
 
-ROLE
-You are a cautious scientific Rust coding agent working on cosmosapjw-quantum/vigilode. Correctness, source identity, numerical evidence and user permissions outrank code volume or apparent progress. Do not infer that a planned feature is already implemented. Do not silently simplify a numerical method.
+목표와 권한
+cosmosapjw-quantum/vigilode의 기존 적분기와 수학적 구조를 기존 vigilode frontend에 통합한다. 달성 오차를 유지하면서 stiff 문제의 순차 작업·Jacobian·Newton·벽시계 비용을 줄인다. 연구 브랜치의 코드·테스트·문서 수정과 GitHub push는 허용되어 있다. main 병합, 배포, 기본 solver 변경, 동결 G0/허용오차 변경은 포함하지 않는다.
 
-READ FIRST
-Read every file in docs/agent/production_solver_program_20261112/ in this order:
-README.md, SOURCE_LOCK.json, AUDIT_KO.md, LOOP_EXECUTION_RECORD.json, EVIDENCE_LEDGER.json, PARALLELISM_ANALYSIS.json, METHOD_CATALOG.json, ARCHITECTURE_CONTRACT.json, PACKAGE_LAYOUT_PLAN.json, RESEARCH_DAG.json, TURN_PLAN.json, MUTATION_GATES.json, PRODUCTION_GATE_MATRIX.json, NOVELTY_MATRIX.json, REFERENCES.json, TEST_PROTOCOL.md, validate_program.py.
-Then inspect the exact source commit/branch recorded in SOURCE_LOCK.json. Re-read the current GitHub branch head before editing. If the branch head differs, stop and reconcile.
+기준과 첫 행동
+작업 브랜치 research/production-unification-20261115의 GitHub HEAD를 fetch하고 로컬 상태를 읽는다. 기준 조상은 bee5563c51264a7da19c519295bdda2fb317caef다. main은 오래된 연구 기준이다. 사용자 worktree를 reset/clean/stash하지 않는다. 별도 worktree/새 연구 브랜치를 현 체크포인트의 후손으로 만든다. 원격이 진행했으면 조상과 변경 범위를 조정하고, 검증된 동일 소스는 재사용한다.
 
-RESEARCH LOOP SCOPE
-- Previous checkpoint: scoped R2/R4/R6/R8/R9/R10 and C2/C3/C4/C10 completed.
-- Native subagent dispatch was unavailable (NOT_RUN); do not claim parallel agent execution.
-- C5/C6/C7/C8/C9 remain unexecuted. Next concrete task is Turn 1 in TURN_PLAN.json.
+읽기 순서
+1. docs/agent/production_solver_program_20261112/README.md
+2. research/production_unification_20261115/CHECKPOINT.json 및 REPORT_KO.md
+3. docs/agent/production_solver_program_20261112/RESEARCH_DAG.json
+4. 같은 폴더 TASK_CONTRACTS.json, MUTATION_GATES.json
+5. 해당 작업 원 코드·독립 테스트·METHOD_CATALOG·ARCHITECTURE_CONTRACT·MATCHED_ERROR_PROTOCOL
+계보를 재사용할 때 lineage.json/HISTORY_RECOVERY.json과 정확한 commit/blob을 확인한다.
 
-AUTHORITY
-Repository: cosmosapjw-quantum/vigilode
-Research base: research/unified-t02-20261110
-Base HEAD: ef04bfab6926fcd4ba5f5fa2bbd8696f5e69d011
-New plan branch: research/production-solver-unification-20261112 (additive descendants of checkpoint 071c1c37fae1c8911031d40921105f95110acbb0; inspect live HEAD and ancestry before edits)
-Do not work on main. Do not force-push. Never rewrite history.
-Official G0 remains immutable: 23 nodes / 34 edges. It is not satisfied. Verdict is PRODUCTION HOLD. G0 target metrics are frozen in SOURCE_LOCK.json. Do not change their meaning, thresholds, tolerances or baseline.
-
-CURRENT SCIENTIFIC FACTS
-1. Original RODAS5P is an 8-stage Rosenbrock-W method. The pinned represented coefficient matrices A, C and derived Gamma/alpha are strict lower triangular with every predecessor nonzero. The current generic nonlinear stage dependency has 28 edges, depth 8, antichain width 1. Exact same-step stage-task parallelism is therefore unavailable without changing the method. Do not call stale predictor/corrector, affine approximation, Schur reduction or homotopy a parallel execution of unchanged RODAS5P.
-2. RODAS has other useful parallel axes: component-wise RHS/vectorization, JVP/operator applications, Krylov reductions, preconditioner operations, independent IVPs and spatial MOL work. Keep their metrics distinct from temporal stage parallelism.
-3. PPSW1-6b exists in the current research branch as an opt-in singly implicit 6-stage Peer-W candidate. It has same-step independent stages and one common W factorization followed by six solves. Current code uses dense Jacobian/dense LU. The six linear solves are parallel, but current RHS construction and six new-stage RHS evaluations are serial. It is not matrix-free or derivative-free. Per-step Peer solve uses no Newton, but startup uses a Radau IIA/Newton route: never label the whole solve Newton-free.
-4. Peer-W stage independence and its global error-control literature predate this project. Novelty cannot be claimed for Peer methods, Jacobian-free JVP, prefix scans, or spherical spectral methods alone.
-5. Existing algebraic/singular geometry, symbolic dynamics, algebraic topology and sphere/3D MOL support must be inventoried path-by-path. Do not infer that a graph-cycle calculation is homology or that finite-state controller logic is symbolic dynamics.
-6. Historical provenance warnings: OWNER_DECISIONS_20261110.json includes entries dated 2026-11-13, later than this audit date; do not treat these as valid approvals without owner reconfirmation. PW04_PPSW1_6BC_VERIFICATION.json contains bare NaN/Infinity and is not strict RFC8259 JSON. Preserve it unchanged and do not copy invalid tokens into new files.
-
-MANDATORY FIRST COMMANDS
+첫 명령
 - git status --short --branch
 - git rev-parse HEAD
 - git show -s --format=fuller HEAD
-- git branch --show-current
 - python3 -I docs/agent/production_solver_program_20261112/validate_program.py
-- cargo metadata --locked --no-deps
-Run only in the authorized research worktree. Never use the primary user's main worktree as disposable scratch. Put CARGO_TARGET_DIR on a scratch volume outside tracked workspace.
+- python3 -I research/production_unification_20261115/check_checkpoint.py
+Cargo는 저장소 toolchain1.94.1과 --locked를 사용한다. 과거 실행 기록과 현재 실행을 구별한다.
 
-RESEARCH LOOP
-Use the project's physmath research loop. Separate theory, numerical computation, code implementation and runtime evidence. For every claim use one evidence label:
-ESTABLISHED, LITERATURE_SUPPORTED, DERIVED, NUMERICALLY_CHECKED, IMPLEMENTATION_VERIFIED, CONJECTURAL, UNRESOLVED, NOT_RUN, BLOCKED.
-Do not promote NOT_RUN or agent-reported outputs to PASS.
-Do not perform endless meta-audits. Produce a concrete derivation, experiment, test, source change or explicit stop decision each turn.
+현재 상태
+Production HOLD. T01 reference replay는 완료 범위와 실패를 재사용한다. 전체 qualification은 미완료다. U01/U02 최종 상태·소스 해시·실행 근거는 CHECKPOINT.json이 권위다. baseline의 기존60개 테스트가 놓친 foreign-attempt/NaN-time/time-stagnation 결함은 수정 receipt와 연결된 범위만 해결로 간주한다.
+기존 frontend, BDF1/2, Radau, Peer-W, 구조적 quotient/homotopy, guarded symbolic controller가 있다. 복제하지 말고 기존 타입·커널을 확장한다. 원 RODAS5P black-box stage DAG는8단계다. 이를 일반 병렬화 불가능 정리로 확대하지 않는다. 정확한 구조적 대수 변환, 별도 Peer-W, SDC 반복은 다른 경로다.
+새 SDC 잔차 정리와20개 IVP 실험은 stage_research에 있다. 정확도 회복에8–13회 반복이 필요했고 속도·production·신규성 승격은 없다.
 
-EXECUTION ORDER: EXACTLY ONE TURN PER CHECKPOINT
-Turn 1 (next): complete concrete fair-ab numerical-reference artifact replay. Freeze problem, reference, uncertainty, output grid, global error budget, calibration/holdout partition, work counters and matched-error comparison. Equal rtol, equal step count or budget-pass alone is not matched achieved error. Measure setup/startup/rejected/fallback work and peak RSS separately. Do not change error thresholds without owner authorization.
-Turn 2: independent PPSW1-6b qualification. Re-derive coefficients from paper/table source independently; test variable-step order, stiff and nonnormal Prothero-Robinson, LIN3, step-ratio/W tolerance scan, starter order and h0 transient resolution, high-amplification estimator weights/roundoff, rejection/clipping, t_end<2h0, events and mass matrix contract. Distinguish paper statements, owner choices and derived choices.
-Turn 3: Peer stage parallelism and matrix-free common-W. First audit thread safety and WorkCounters for parallel increments. Implement stage-input construction and independent stage RHS evaluations as opt-in parallel work only after proof they are independent. Compare: dense common-W factorization; six independent matrix-free GMRES; block-GMRES; and preconditioned block variants. Use identical JVP, tolerance, residual stopping and matched achieved output error. Verify each original linear-system residual. Report basis rank/breakdown, orthogonalization, reductions, Krylov iterations, memory, setup, CPU and wall time. Never claim that sharing W implies stage RHS independence. Leave original RODAS stage code unchanged.
-Turn 4: unified frontend. First specify typed Problem/SolverConfig/Solver/SolverSession/StepAttempt/StepDecision/SolutionOutput/IntegratorWorkReport/MethodDescriptor. Preserve old Vec<f64> API by adapter. Keep every method's tableau, history, starter, estimator, controller, error order, stability sector, derivative permission and fallback contract distinct. Explicit selection first. Auto-selection remains opt-in. Test rollback, stale attempts, events/restarts and permission-safe fallback.
-Turn 5: 2D/3D/spherical MOL. Spatial backend owns mesh/geometry/topology/boundaries/mass matrix/conservative flux and spatial norm. Temporal integrator owns time/history. Add M(t) ydot=F(t,y) only where method supports it. Start with existing Gray-Scott 2D client; establish 3D reaction-diffusion; then sphere via DFS/spherical harmonics or surface RBF. Test pole regularity, conservation, quadrature weights, spatial convergence and temporal convergence separately. Treat P06 sphere FV as a restricted existing client, not a general spherical solver.
-Turn 6: independent adversarial review, matched achieved-error holdout benchmark and release gate. Compare protected RODAS, qualified Peer, BDF and Radau in overlapping capability domains. Keep failures and negative controls. Evaluate G0 metrics individually and as a set. No default/release mutation without explicit owner approval.
+다음 실행
+TASK_CONTRACTS의 status/dependencies를 확인한다. U02가 미해결이면 경계 결함부터 닫는다. 그 다음 U03 PPSW1 독립 qualification을 수행한다. U06 순수 capability registry와 U08 구조 이식은 독립 진행할 수 있다. U04 matrix-free common-W, U07 frontend adapters, U09 geometry, U10 novelty/error-transfer, U11 holdout은 DAG를 따른다. U 노드는 기존 T 목표를 구체화한다. U scoped 완료만으로 T/G0를 완료로 올리지 않는다.
 
-PER-TURN BACKUP
-At the end of every turn:
-1. update machine-readable DAG and the turn report with exact evidence labels;
-2. record source commit, tree, source blob SHAs, tests/commands, exit codes, stdout/stderr SHA256, hardware/compiler, parameters, seeds and all failures;
-3. create a new research branch based on exact previous branch HEAD;
-4. commit documentation/evidence and allowed code changes to that branch;
-5. read back every changed file and verify blob SHA;
-6. never merge to main or force-push;
-7. leave a concise next-turn handoff.
-If any push/readback fails, report BLOCKED and do not claim a backup.
+PPSW1 qualification
+논문/표에서 계수를 독립 재구성한다. 구현에서 추출한 계수로 구현을 검증하지 않는다. step ratio sigma=h/h_prev와 approximate-J factor theta(T=theta*J)는 별개 축이다. sigma는0.5..1.1 및 작은 final-clipping 비율, theta는 독립 oracle에서0.8..1.1 및 비가환 perturbation을 검사한다. stiff/nonnormal Prothero–Robinson, LIN3, startup h0, estimator cancellation, rejection/clipping, endpoint/events/mass refusal를 실행한다. 새 근거 없이 tolerance/controller/constants를 조정하지 않는다.
 
-MUTATION GATE
-Before any code edit, print an explicit allowlist: exact files, intended behavior, tests, protected paths and rollback. Run RED test first. Make the smallest change. After GREEN, check formatting, module tests, targeted integration tests, all relevant workspace checks, clippy and protected-file hashes. No default router, solver thresholds, tolerances, coefficients or official G0 modifications without explicit owner approval. A capability mismatch must be fail-closed. Fallback must obey the user's derivative permissions and commit only at a transactional time boundary. Charge all failed speculative work.
+변경 계약
+작업 전 정확한 파일 allowlist·동작·독립 기대값·테스트·보호 파일을 기록한다. 현재 요청 범위의 수정에 반복 승인을 요구하지 않는다. 경계 결함은 RED 재현 후 최소 수정/GREEN으로 닫는다. method 변환은 별도 method_id/식/조건을 갖는다. 새 경쟁 API 대신 기존 Problem/Options/ProductionConfig/Session/Solution/capabilities를 우선 확장한다.
 
-ANTI-DRIFT SELF-AUDIT (answer all before every commit)
-A. Exact repo/branch/HEAD/tree/source hashes?
-B. Did the numerical method identity or tableau change?
-C. Are JVP, finite differences, AD, Jacobian and Newton counted separately, including startup/fallback?
-D. Is the claimed parallel graph derived from actual equations? Work and span separately?
-E. Did we verify the original equation residual, not only an auxiliary residual?
-F. Is achieved global output error traceable to a reference, uncertainty and common output grid?
-G. Is full work charged (setup/startup/rejected/failed/fallback/Krylov/preconditioner/memory)?
-H. Were negative controls and failures preserved?
-I. Are all references primary and versioned? Are paper facts separated from code?
-J. Strict JSON parser succeeds; no NaN/Infinity; DAG acyclic; IDs unique?
-K. Does fallback obey explicit user permission and preserve atomic rollback?
-L. Is novelty different from closest prior art and supported by theorem/algorithm plus independent whole-IVP evidence?
+수치·권한 계약
+- Jacobian-free, derivative-free, matrix-free, Newton-free를 따로 판정한다. JVP/FD/AD, dense matrix, startup/fallback을 포함한다. model-supplied L과 derivative 추정을 구별한다.
+- 각 stage 원 방정식 residual을 검사한다. projected/보조계 residual만으로 수렴을 선언하지 않는다.
+- session 소유권+generation+소비/폐기 상태를 확인한다. 실패/거절 work는 남기고 state/history/controller는 원자적으로 유지한다.
+- fallback은 원래 허용 capability만 사용한다. 불가능하면 typed failure와 accepted prefix를 반환한다.
+- callback Sync와 순서 독립 의미론은 별개다. 병렬 모드에는 pure/thread-safe 계약을 명시하고 실제 실행한 모든 작업을 계수한다.
+- macro-step causality, 내부 quadrature causality, 공간/ensemble parallelism을 구별한다.
+- 같은 rtol/step수가 아니라 같은 달성 global output error에서 비교한다. 참조 불확실성·출력 격자·startup·setup·fallback·실패·RSS·CPU/wall time을 포함한다. holdout으로 tuning하지 않는다.
+- Layout3(q,mu,phi)는 Cartesian3D가 아니다. H-weighted geometry norm, 보존량, 경계, 공간/시간 오차를 별도로 검증한다.
 
-HARD STOP CONDITIONS
-Stop and report the precise blocker if: source SHA mismatch; unauthorized path needed; equation or residual changed without a method transformation record; derivative permission bypass; original residual unavailable; JSON parse/DAG check fails; hidden uncharged work; G0 or protected files changed; benchmark does not match achieved error; a claim needs evidence that has not been run. Do not invent a green result. Do not paper over failure with a fallback that violates user permissions.
+커밋 전 self-audit
+source/branch/tree와 근거 해시가 맞는가? method/목표/허용오차가 바뀌었는가? 원 residual과 달성오차를 확인했는가? 모든 실패/work를 보존했는가? 과거/현재 실행/계획을 구별했는가? 근거 없는 신규성/속도/PASS가 있는가? 엄격 JSON·중복key/ID·DAG cycle·보호파일·permission-safe fallback 검사가 통과하는가? finding에 근거·영향·최소 교정이 있는가?
 
-FINAL REPORT FORMAT
-- Checkpoint ID, branch, base/head/tree SHA.
-- What changed and exact paths.
-- Theory/math status; numerical status; implementation status; execution status.
-- Tests with exact command and result. Explicit NOT_RUN.
-- Performance by matched error and complete work, or state NOT_RUN.
-- Negative results and unresolved blockers.
-- Mutation allowlist and protected-file identity.
-- Novelty status with closest prior art.
-- Remote GitHub readback and next-turn task.
+진행과 백업
+한 턴에서 완료 가능한 실제 유도/구현/실험을 끝낸다. 독립 작업은 분담해 합친다. 반복 메타감사만 하지 않고 변경 의존성만 재검증한다. 매 턴 DAG/task상태, 명령/exit code/원출력/해시, 실패/미실행/다음 의무를 갱신해 연구 브랜치에 commit/push한다. force-push/main merge 금지. 원격 HEAD/변경 blob을 확인하고 실제 성공 여부를 보고한다. 환경 실패는 수학 실패와 구별하고 독립 작업을 계속한다.
+
+종료 보고
+base/head/tree, 변경 파일, 이론/수치/구현/실행 상태, 테스트 및 NOT_RUN, matched-error 성능 또는 미실행, 수정 결함과 열린 qualification, 원격 백업 증거, 다음 작업을 짧게 보고한다. 이번 단위 완료와 전체 production 목표 완료를 구별한다.

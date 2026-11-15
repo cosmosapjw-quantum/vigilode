@@ -133,5 +133,133 @@
     ],
     "holdout_touched": false,
     "crates_mutated": false
+  },
+  "historical_field_scope": "Top-level selected stages, not_completed and native_subagents describe 2026-11-12 only; current continuation below supersedes availability/execution assumptions.",
+  "continuation_20261115": {
+    "workflow_version": "1.0.0",
+    "base_commit": "bee5563c51264a7da19c519295bdda2fb317caef",
+    "scope": "U01,U02 implementation and U05 theory/discriminator; T02/T03 overall still partial",
+    "native_subagents": {
+      "status": "EXECUTED",
+      "owners": [
+        "repo_lineage",
+        "production_audit",
+        "parallel_stage_research",
+        "historical_context",
+        "peer_parallel_implementation",
+        "sdc_proof_review"
+      ]
+    },
+    "theory": [
+      {
+        "id": "R1",
+        "status": "COMPLETE_SCOPED",
+        "evidence": "TASK_CONTRACTS.json"
+      },
+      {
+        "id": "R2",
+        "status": "COMPLETE_SCOPED",
+        "evidence": "research/production_unification_20261115/lineage.json"
+      },
+      {
+        "id": "R3",
+        "status": "COMPLETE_SCOPED",
+        "evidence": "research/production_unification_20261115/stage_research/CONTRACT.json"
+      },
+      {
+        "id": "R4",
+        "status": "COMPLETE_SCOPED",
+        "evidence": "research/production_unification_20261115/stage_research/THEORY_AND_DECISION.md"
+      },
+      {
+        "id": "R5",
+        "status": "COMPLETE_SCOPED",
+        "evidence": "research/production_unification_20261115/stage_research/THEORY_AND_DECISION.md"
+      },
+      {
+        "id": "R6",
+        "status": "COMPLETE_SCOPED",
+        "evidence": "research/production_unification_20261115/stage_research/INDEPENDENT_REVIEW.md"
+      },
+      {
+        "id": "R7",
+        "status": "COMPLETE_SCOPED",
+        "evidence": "research/production_unification_20261115/stage_research/RESULTS.json"
+      },
+      {
+        "id": "R8",
+        "status": "COMPLETE_SCOPED",
+        "evidence": "research/production_unification_20261115/stage_research/CONTRACT.json"
+      },
+      {
+        "id": "R9",
+        "status": "COMPLETE_SCOPED",
+        "evidence": "TASK_CONTRACTS.json"
+      },
+      {
+        "id": "R10",
+        "status": "IN_PROGRESS",
+        "evidence": "research/production_unification_20261115/CHECKPOINT.json"
+      }
+    ],
+    "coding": [
+      {
+        "id": "C1",
+        "status": "COMPLETE_SCOPED",
+        "evidence": "SOURCE_LOCK.json"
+      },
+      {
+        "id": "C2",
+        "status": "COMPLETE_SCOPED",
+        "evidence": "research/production_unification_20261115/production_audit.json"
+      },
+      {
+        "id": "C3",
+        "status": "COMPLETE_SCOPED",
+        "evidence": "TASK_CONTRACTS.json"
+      },
+      {
+        "id": "C4",
+        "status": "COMPLETE_SCOPED",
+        "evidence": "RESEARCH_DAG.json"
+      },
+      {
+        "id": "C5",
+        "status": "COMPLETE_SCOPED",
+        "evidence": "research/production_unification_20261115/evidence/peer_execution_receipt.json"
+      },
+      {
+        "id": "C6",
+        "status": "COMPLETE_SCOPED",
+        "evidence": "research/production_unification_20261115/evidence/peer_execution_receipt.json"
+      },
+      {
+        "id": "C7",
+        "status": "COMPLETE_SCOPED",
+        "evidence": "research/production_unification_20261115/stage_research/RESULTS.json"
+      },
+      {
+        "id": "C8",
+        "status": "COMPLETE_SCOPED",
+        "evidence": "research/production_unification_20261115/evidence/peer_execution_receipt.json"
+      },
+      {
+        "id": "C9",
+        "status": "COMPLETE_SCOPED",
+        "evidence": "research/production_unification_20261115/INDEPENDENT_INTEGRATION_REVIEW.md"
+      },
+      {
+        "id": "C10",
+        "status": "IN_PROGRESS",
+        "evidence": "research/production_unification_20261115/CHECKPOINT.json"
+      }
+    ],
+    "limits": [
+      "Scoped C8 verifies reproducibility and bitwise parallel parity only; matched-error speed benchmark NOT_RUN",
+      "Production physical workloads/whole-frontend qualification NOT_RUN",
+      "Strict clippy failed on unchanged file",
+      "No new strong no-go adopted"
+    ],
+    "backup_status": "PENDING_REMOTE_PUSH"
   }
 }

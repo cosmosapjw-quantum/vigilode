@@ -99,8 +99,8 @@
     {
       "id": "T02_PPSW1_QUALIFICATION",
       "turn": 2,
-      "status": "PLANNED",
-      "evidence": "NOT_RUN",
+      "status": "PARTIAL",
+      "evidence": "research/production_unification_20261115/production_audit.json",
       "depends": [
         "T01_GLOBAL_ERROR_AUTHORITY",
         "P03_PPSW1_CODE_AUDIT"
@@ -109,8 +109,8 @@
     {
       "id": "T03_PEER_MATRIX_FREE_BLOCK_KRYLOV",
       "turn": 3,
-      "status": "PLANNED",
-      "evidence": "NOT_RUN",
+      "status": "PARTIAL",
+      "evidence": "TASK_CONTRACTS.json#U01_PEER_RHS_PARALLEL",
       "depends": [
         "T02_PPSW1_QUALIFICATION"
       ]
@@ -147,6 +147,128 @@
         "T04_UNIFIED_FRONTEND",
         "T05_GEOMETRY_MOL"
       ]
+    },
+    {
+      "id": "U01_PEER_RHS_PARALLEL",
+      "turn": "20261115-continuation",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_unification_20261115/evidence/peer_execution_receipt.json",
+      "depends": []
+    },
+    {
+      "id": "U02_PEER_TRANSACTION_IDENTITY",
+      "turn": "20261115-continuation",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_unification_20261115/evidence/peer_execution_receipt.json",
+      "depends": []
+    },
+    {
+      "id": "U03_PEER_INDEPENDENT_QUALIFICATION",
+      "turn": "20261115-continuation",
+      "status": "PLANNED",
+      "evidence": "TASK_CONTRACTS.json#U03_PEER_INDEPENDENT_QUALIFICATION",
+      "depends": [
+        "U02_PEER_TRANSACTION_IDENTITY"
+      ]
+    },
+    {
+      "id": "U04_COMMON_W_MATRIX_FREE",
+      "turn": "20261115-continuation",
+      "status": "PLANNED",
+      "evidence": "TASK_CONTRACTS.json#U04_COMMON_W_MATRIX_FREE",
+      "depends": [
+        "U01_PEER_RHS_PARALLEL",
+        "U03_PEER_INDEPENDENT_QUALIFICATION"
+      ]
+    },
+    {
+      "id": "U05_SEMILINEAR_PARALLEL_SDC",
+      "turn": "20261115-continuation",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_unification_20261115/stage_research/CONTRACT.json",
+      "depends": []
+    },
+    {
+      "id": "U06_UNIFIED_CAPABILITY_REGISTRY",
+      "turn": "20261115-continuation",
+      "status": "PLANNED",
+      "evidence": "TASK_CONTRACTS.json#U06_UNIFIED_CAPABILITY_REGISTRY",
+      "depends": []
+    },
+    {
+      "id": "U07_TRANSACTIONAL_KERNEL_ADAPTERS",
+      "turn": "20261115-continuation",
+      "status": "PLANNED",
+      "evidence": "TASK_CONTRACTS.json#U07_TRANSACTIONAL_KERNEL_ADAPTERS",
+      "depends": [
+        "U02_PEER_TRANSACTION_IDENTITY",
+        "U03_PEER_INDEPENDENT_QUALIFICATION",
+        "U06_UNIFIED_CAPABILITY_REGISTRY"
+      ]
+    },
+    {
+      "id": "U08_STRUCTURE_CERTIFICATES",
+      "turn": "20261115-continuation",
+      "status": "PLANNED",
+      "evidence": "TASK_CONTRACTS.json#U08_STRUCTURE_CERTIFICATES",
+      "depends": []
+    },
+    {
+      "id": "U09_GEOMETRY_MOL",
+      "turn": "20261115-continuation",
+      "status": "PLANNED",
+      "evidence": "TASK_CONTRACTS.json#U09_GEOMETRY_MOL",
+      "depends": [
+        "U06_UNIFIED_CAPABILITY_REGISTRY"
+      ]
+    },
+    {
+      "id": "U10_SWITCH_ERROR_AND_NOVELTY",
+      "turn": "20261115-continuation",
+      "status": "PLANNED",
+      "evidence": "TASK_CONTRACTS.json#U10_SWITCH_ERROR_AND_NOVELTY",
+      "depends": [
+        "U07_TRANSACTIONAL_KERNEL_ADAPTERS",
+        "U08_STRUCTURE_CERTIFICATES"
+      ]
+    },
+    {
+      "id": "U11_PRODUCTION_HOLDOUT",
+      "turn": "20261115-continuation",
+      "status": "PLANNED",
+      "evidence": "TASK_CONTRACTS.json#U11_PRODUCTION_HOLDOUT",
+      "depends": [
+        "U03_PEER_INDEPENDENT_QUALIFICATION",
+        "U04_COMMON_W_MATRIX_FREE",
+        "U07_TRANSACTIONAL_KERNEL_ADAPTERS",
+        "U09_GEOMETRY_MOL",
+        "U10_SWITCH_ERROR_AND_NOVELTY"
+      ]
     }
-  ]
+  ],
+  "continuation_base": "bee5563c51264a7da19c519295bdda2fb317caef",
+  "continuation_contract": "TASK_CONTRACTS.json",
+  "continuation_checkpoint": "20261115",
+  "realization_map": {
+    "T02_PPSW1_QUALIFICATION": [
+      "U02_PEER_TRANSACTION_IDENTITY",
+      "U03_PEER_INDEPENDENT_QUALIFICATION"
+    ],
+    "T03_PEER_MATRIX_FREE_BLOCK_KRYLOV": [
+      "U01_PEER_RHS_PARALLEL",
+      "U04_COMMON_W_MATRIX_FREE"
+    ],
+    "T04_UNIFIED_FRONTEND": [
+      "U06_UNIFIED_CAPABILITY_REGISTRY",
+      "U07_TRANSACTIONAL_KERNEL_ADAPTERS"
+    ],
+    "T05_GEOMETRY_MOL": [
+      "U09_GEOMETRY_MOL"
+    ],
+    "T06_NOVELTY_AND_RELEASE_REVIEW": [
+      "U10_SWITCH_ERROR_AND_NOVELTY",
+      "U11_PRODUCTION_HOLDOUT"
+    ]
+  },
+  "aggregation_rule": "T nodes are coarse objectives; U nodes are their concrete work units. A scoped U completion never automatically qualifies the parent or changes G0. Parent completion requires all its stated scientific acceptance evidence."
 }

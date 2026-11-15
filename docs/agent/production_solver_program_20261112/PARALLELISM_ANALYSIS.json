@@ -22,7 +22,7 @@
     "dependency_edges": 28,
     "critical_depth": 8,
     "maximum_antichain_width": 1,
-    "conclusion": "For the represented generic nonlinear 8-stage tableau, same-step exact stage-task parallelism is unavailable without changing the method. Every stage i>1 depends on all earlier stages.",
+    "conclusion": "The unchanged black-box stage-task DAG has depth eight and width one. Every stage i>1 depends on earlier stages. Method-preserving equivalent algebraic reformulations and restricted source structure require their own proof and cost assessment.",
     "caveat": "Exact rational arithmetic replayed the decimal strings represented in the pinned coefficient snapshot. The temporary replay fixture was reconstructed from GitHub readback and is not claimed byte-identical to the pinned Git blob. This does not certify Rust runtime performance.",
     "formal_graph": [
       "stage_1 has no earlier stage predecessor",
@@ -39,8 +39,8 @@
     "global_order_claim": "variable-step order 5 by method conditions; implementation qualification remains incomplete",
     "same_step_stage_graph": "six independent shifted linear systems sharing one W factorization",
     "time_history": "two-step method; sequential dependency between time steps remains",
-    "current_implementation": "dense Jacobian + dense W + one LU + six RHS solves; ParallelExecution.map_ordered on solves",
-    "current_serial_sections": "stage RHS construction and six new-stage RHS evaluations in advance are serial in current implementation",
+    "current_implementation": "Dense Jacobian + dense W + one LU + six solves; bounded ordered solve map and separately bounded ordered RHS refresh map.",
+    "current_serial_sections": "Stage-input construction remains serial. Six post-solve new-stage RHS evaluations now use explicit bounded parallel execution; serial mode unchanged.",
     "derivative_status": "uses dense_jacobian; not matrix-free and not derivative-free",
     "newton_status": "no Newton iteration in the per-step Peer linear solve, but Radau IIA/Newton is used in startup; do not call the complete solver Newton-free",
     "open_issues": [
@@ -104,9 +104,10 @@
     },
     {
       "id": "PW-RHS-02",
-      "status": "IMPLEMENTATION_GAP",
-      "claim": "Stage-input construction and six new-stage RHS evaluations in advance() are serial.",
-      "next": "Use ordered parallel mapping with per-task local counters and deterministic reduction; preserve source callback contracts."
+      "status": "IMPLEMENTATION_VERIFIED_SCOPED",
+      "claim": "Six new-stage RHS evaluations are now parallel with local work ledgers; stage-input construction remains serial.",
+      "next": "Qualify actual full-IVP cost at matched achieved error; implement matrix-free backend separately.",
+      "evidence": "research/production_unification_20261115/evidence/peer_execution_receipt.json"
     },
     {
       "id": "PW-KRYLOV-01",
@@ -114,5 +115,10 @@
       "claim": "A common W permits factorization reuse but does not imply a shared Krylov recurrence.",
       "next": "Compare six independent GMRES, block-GMRES, flexible/block variants and preconditioned variants; verify each true original-system residual."
     }
-  ]
+  ],
+  "scope_correction_20261115": {
+    "priority": "This clarification governs interpretation of older prose below/above.",
+    "statement": "The unchanged black-box Rodas5P stage-task DAG has depth eight. Equivalent algebraic reformulations and special operator structure may preserve the method and require separate proof/work/span analysis. The DAG is not a universal parallelization impossibility theorem.",
+    "evidence": "research/production_unification_20261115/stage_research/THEORY_AND_DECISION.md"
+  }
 }
