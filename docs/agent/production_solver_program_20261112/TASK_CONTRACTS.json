@@ -88,7 +88,7 @@
       "depends": [
         "U02_PEER_TRANSACTION_IDENTITY"
       ],
-      "status": "PLANNED",
+      "status": "PARTIAL",
       "purpose": "Finish T02 independently of the source-derived coefficient implementation.",
       "write_allowlist": [
         "crates/rodas5p-integrators/tests/ppsw1_independent_qualification.rs",
@@ -121,7 +121,40 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_unification_20261115/peer_qualification/QUALIFICATION_KO.md",
+        "research/production_unification_20261115/peer_qualification/RESULTS.json",
+        "research/production_unification_20261115/peer_qualification/CHANGE_CONTRACT.json",
+        "research/production_unification_20261115/peer_qualification/logs/u03_green.log",
+        "research/production_unification_20261115/peer_qualification/logs/u03_regression.log",
+        "research/production_unification_20261115/peer_qualification/logs/u03_red.log",
+        "research/production_unification_20261115/peer_qualification/logs/u03_red2.log",
+        "research/production_unification_20261115/peer_qualification/theta_oracle_results.json",
+        "research/production_unification_20261115/peer_qualification/coefficients_oracle_summary.json"
+      ],
+      "progress_20261115": {
+        "done": [
+          "independent coefficient comparison: paper route R1 (eqs. 14/15/23/4, mpmath 60 digits) vs ppsw1::tableau at 15 sigma values 1e-9..1.1, max diff <=1.4e-16 scale-eps",
+          "W-method polynomial exactness through stepping code (degree 5 exact, degree 6 not)",
+          "Prothero-Robinson lambda -1..-1e6, LIN3 nonnormal (cross-backend agreement), sigma patterns 0.5..1.1, final clipping 0.3..1e-12, starter h0, estimator vs true local error, adaptive driver tol 1e-3..1e-12 with full work counters",
+          "approximate-J theta 0.8..1.1 with noncommuting DeltaT on independent numpy backend; scalar stability scan",
+          "C1 executed-solve accounting fix in solve_stages (RED/GREEN), 171 existing contracts unchanged"
+        ],
+        "findings_open": [
+          "F1: h0 rule min(h_max,1/||J||) ignores tolerance; starter can span the interval (tol 1e-9 missed by 74x when h_max=t_end/2)",
+          "F2: 1.10 cap + 6-step hysteresis limits growth to ~1.1^(1/7)/step; identical step counts across tol 1e-3..1e-9 on stiff PR",
+          "F3: estimator floor exceeds rounding_floor_warning model; tol 1e-12 collapses h to 1e-19 and ends in typed InvalidInput with 0 warnings",
+          "theta<=0.9 unstable or non-monotone on nonnormal stiff PR; supported window theta 0.95..1.1 with ||DeltaT||<=1e-2||J|| (this problem only)"
+        ],
+        "not_run": [
+          "nonlinear problems and Jacobian staleness",
+          "T01 matched-error output grid/reference uncertainty",
+          "RSS/CPU/wall time",
+          "callback panic/unwind contract",
+          "events/dense output (unsupported)"
+        ],
+        "status_reason": "Calibration-scope evidence complete for linear problems; nonlinear, matched-error and F1-F3 corrections remain, so PARTIAL."
+      }
     },
     {
       "id": "U04_COMMON_W_MATRIX_FREE",

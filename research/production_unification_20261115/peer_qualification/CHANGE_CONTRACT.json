@@ -1,0 +1,49 @@
+{
+  "schema": "vigilode.change-contract.v1",
+  "task": "U03_PEER_INDEPENDENT_QUALIFICATION",
+  "date_kst": "2026-11-15",
+  "base_commit": "655d0188bc0767400946c16c9bcf6ed9fabadec1",
+  "recorded_before_mutation": true,
+  "write_allowlist": [
+    "crates/rodas5p-integrators/src/ppsw1.rs",
+    "crates/rodas5p-integrators/tests/ppsw1_independent_qualification.rs",
+    "research/production_unification_20261115/peer_qualification/**",
+    "research/production_unification_20261115/CHECKPOINT.json",
+    "research/production_unification_20261115/check_checkpoint.py",
+    "research/production_unification_20261115/REPORT_KO.md",
+    "docs/agent/production_solver_program_20261112/**"
+  ],
+  "protected_unchanged": [
+    "original RODAS5P tableau/drivers (crates/rodas5p-core/src/coefficients.rs, sequential.rs, parallel.rs, stage_batch.rs)",
+    "PPSW1 tableau/gamma/nodes/estimator/controller constants and formulas in ppsw1.rs",
+    "official G0 graph, tolerances, controller constants, fallback thresholds, default routing",
+    "reference/holdout bytes and historical receipts",
+    "existing ppsw1_6b_contracts.rs, ppsw1_parallel_rhs_contracts.rs, ppsw1_session_boundary_contracts.rs"
+  ],
+  "changes": [
+    {
+      "id": "C1_SOLVE_STAGES_EXECUTED_ACCOUNTING",
+      "file": "crates/rodas5p-integrators/src/ppsw1.rs",
+      "function": "solve_stages",
+      "defect": "linear_solves and direct_solve_calls are charged +6 before a fallible exec.map_ordered over LuFactorization::solve. LuFactorization::solve fails on non-finite RHS (NonFinite) or non-finite output (LinearSolve). Sequential map stops at the first failure, so 6 are charged while 1..6 were entered; Rayon collect into Result may cancel unspecified siblings, so the executed set is nondeterministic while the charge is 6.",
+      "behavior_after": "Sequential: charge each solve immediately before entering LuFactorization::solve and stop at the first error (prefix-only, matching the RHS policy). Parallel: every one of the six solve jobs is joined inside an Ok envelope, all six are charged, and the first error in stage order is returned. Success path: unchanged values and counters (6 solves, 6 direct_solve_calls, 1 factorization).",
+      "red_reproduction": "ppsw1_independent_qualification::q10_failed_stage_solve_charges_only_entered_sequential_solves: NaN-valued explicit Jacobian -> stage-0 RHS non-finite -> sequential run must report linear_solves == 1 and direct_solve_calls == 1; baseline reports 6.",
+      "green_checks": [
+        "q10 sequential and parallel accounting, deterministic error kind, state/controller/generation preserved",
+        "existing ppsw1_6b_contracts, ppsw1_parallel_rhs_contracts, ppsw1_session_boundary_contracts unchanged and passing",
+        "library unit tests"
+      ],
+      "numerical_equations_changed": false
+    }
+  ],
+  "qualification_artifacts": {
+    "coefficient_oracle": "peer_qualification/oracle_coefficients.py (paper route R1: Gamma from Gamma(6) eq. (14), beta from eq. (23), A = beta - Gamma (eq. (4)), B from AB(6) eq. (15); closed forms (16)/(21) are NOT used) -> coefficients_oracle.txt consumed by the Rust test",
+    "theta_oracle": "peer_qualification/theta_oracle.py (independent numpy/mpmath backend with oracle coefficients; T = theta*J + DeltaT; production exact-J code untouched)",
+    "rust_measurements": "crates/rodas5p-integrators/tests/ppsw1_independent_qualification.rs (manufactured polynomial, Prothero-Robinson, LIN3 nonnormal, sigma and final-clipping scans, startup h0, estimator, rejection, refusal, failure accounting)"
+  },
+  "non_goals": [
+    "no tolerance, controller, estimator, starter or coefficient tuning",
+    "no default routing, no G0 promotion, no production verdict change",
+    "no frontend capability activation"
+  ]
+}

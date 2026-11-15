@@ -1,0 +1,198 @@
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-unif-20261115/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 52.22s
+     Running unittests src/lib.rs (target/release/deps/rodas5p_integrators-c9b5df039d56d83f)
+
+running 124 tests
+test adaptive::method_metadata_tests::rodas_controller_order_comes_from_method_estimator_metadata ... ok
+test adaptive::predictive_controller_tests::clipped_samples_update_the_history_only_when_informative ... ok
+test adaptive::predictive_controller_tests::first_acceptance_is_the_integral_factor ... ok
+test adaptive::predictive_controller_tests::history_free_proposal_of_the_predictive_kinds_is_the_integral_factor ... ok
+test adaptive::predictive_controller_tests::predictive_factor_on_hand_computed_cases ... ok
+test adaptive::predictive_controller_tests::integral_and_pi_are_unchanged_bit_for_bit ... ok
+test adaptive::predictive_controller_tests::predictive_kinds_serialize_like_the_production_state ... ok
+test adaptive::predictive_controller_tests::rejections_failures_and_zero_error_follow_the_production_rule ... ok
+test adaptive::predictive_controller_tests::the_cap_holds_the_first_acceptance_after_a_rejection_or_failure ... ok
+test adaptive_output::tests::adaptive_output_session_large_clock_uses_represented_steps_and_strict_cap ... ok
+test adaptive_output::tests::adaptive_output_session_refusals_preserve_the_issued_transaction ... ok
+test adaptive_output::tests::adaptive_output_session_rejected_represented_trial_must_shrink ... ok
+test adaptive_output::tests::rejected_final_landing_cannot_be_restored_by_rounding_residue ... ok
+test adaptive_output::tests::rejected_interior_landing_cannot_be_restored_by_rounding_residue ... ok
+test bound_pr101::tests::fallible_final_outward_add_is_charged_before_refusal ... ok
+test bound_pr101::tests::point_jvp_matches_scalar_jacobian_without_materializing_matrix ... ok
+test comparator_fidelity::tests::only_production_arms_admit_a_relative_reading ... ok
+test conservative_remap::tests::arithmetic_refusals_are_atomic_and_workspace_remains_reusable ... ok
+test conservative_remap::tests::crossing_grid_has_hand_computed_projection_and_l1_change ... ok
+test conservative_remap::tests::floating_mass_guard_refuses_before_commit ... ok
+test conservative_remap::tests::invalid_inputs_and_capacity_leave_output_unchanged ... ok
+test conservative_remap::tests::nonuniform_refine_coarsen_preserves_integral_and_positivity ... ok
+test conservative_remap::tests::repeated_dimension_changes_reuse_backing_storage ... ok
+test conservative_remap::tests::weighted_l1_contracts_for_two_densities ... ok
+test conservative_remap::tests::zero_mass_and_invalid_tolerance_are_explicit ... ok
+test controller_telemetry::tests::the_events_follow_the_registered_definitions ... ok
+test dense_output_v2::dense_segment_tests::curve_derivative_enclosure_falsifies_endpoint_midpoint_only_sampling ... ok
+test dense_output_v2::dense_segment_tests::scalar_quartic_accessor_counts_exact_attempted_interval_calls ... ok
+test dopri5_dense::tests::failed_dense_preparation_never_publishes_partial_interval ... ok
+test exponential::continuation_budget_guard_tests::continuation_cap_admits_exactly_eighty_scalars_and_denies_jvp_81_before_call ... ok
+test dense_output_v2::failure_preservation_tests::post_work_dense_interpolation_error_preserves_work_diagnostics_and_prefix ... ok
+test exponential::continuation_budget_guard_tests::over_cap_row_batch_is_denied_atomically_without_partial_execution ... ok
+test exponential::continuation_budget_guard_tests::invalid_row_shape_is_rejected_before_budget_reservation ... ok
+test fourier_path_certificate::tests::primitive_derivative_roundtrip ... ok
+test fourier_path_certificate::tests::rotation_encloses_library_values ... ok
+test fourier_path_candidate::tests::roundtrip_and_conjugation_order ... ok
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::one_pair_wall_protocol_is_self_describing_and_identity_checked ... ignored, optimized all-six wall-contract check; run explicitly with --profile measurement
+test g4_s5b0_regime_atlas::analytic_partial_t_tests::analytic_partial_t_matches_independent_centered_difference_without_rhs_calls ... ok
+test g4_s5b0_regime_atlas::reference_safety_label_tests::self_estimate_and_reference_label_are_independent_fields ... ok
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::production_shadow_wall_protocol_is_frozen_and_alternating ... ok
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::stage_trajectory_shape_matches_power_law_and_rejects_nonpositive_inputs ... ok
+test g4_s5b0_regime_atlas::live_rodas_step_tests::live_atlas_step_uses_wrms_inner_forcing ... ok
+test exponential::continuation_budget_guard_tests::zero_continuation_budget_invokes_no_underlying_jvp ... ok
+test n01_mass_action_client::tests::callback_sources_match_and_stale_epoch_refused ... ok
+test g4_s5b0_regime_atlas::causal_k1_policy_tests::causal_k1_comparator_fires_only_on_observed_feature ... ok
+test n01_mass_action_client::tests::callbacks_do_not_commit_partially_on_bad_state ... ok
+test nonlinear_homotopy::tests::inward_projection_proves_represented_membership ... ok
+test output::transactional_dense_output_tests::late_preparation_refusal_invalidates_earlier_staged_rows ... ok
+test output::transactional_dense_output_tests::ordinary_collector_has_no_verified_radius_prefix ... ok
+test output::transactional_dense_output_tests::prepared_dense_interval_refusal_keeps_committed_prefix ... ok
+test output::transactional_dense_output_tests::verified_radius_mode_cannot_be_reentered_after_preparation ... ok
+test output::transactional_dense_output_tests::prepared_dense_interval_rejects_nonfinite_radius_without_commit ... ok
+test g4_s5b0_regime_atlas::trajectory_work_accounting_tests::trajectory_totals_charge_every_attempt ... ok
+test packet_window::packet_curve::degree_tests::maximum_degree_guard_checks_binary64_integer_domain_without_allocation ... ok
+test packet_window::outward_scalar_tests::rp_greater_than_energy_radius_controls_nonlinear_tail ... ok
+test packet_window::outward_scalar_tests::output_precharge_survives_test_refusal_boundary ... ok
+test ppsw1::tests::gamma_is_a_root_of_the_defining_polynomial_to_double_precision ... ok
+test pr101_verified::tests::refused_final_add_keeps_both_attempted_products ... ok
+test pr101_verified::tests::refused_transport_stops_ledger_before_unexecuted_integral ... ok
+test pr101_verified::tests::signed_zero_and_expansion_transport_are_finite ... ok
+test ppsw1::tests::radau_tableau_rows_integrate_polynomials_exactly ... ok
+test problem::time_fd_workspace_tests::reused_scratch_matches_public_arithmetic_and_work ... ok
+test rodas5p_fast::banded_exact_tests::cache_hits_only_after_success_and_invalidates_on_changed_matrix ... ok
+test ppsw1::tests::estimator_weights_at_sigma_one_match_exact_values ... ok
+test rodas5p_fast::banded_exact_tests::cache_storage_is_only_allocated_for_opt_in_kernel ... ok
+test rodas5p_fast::banded_exact_tests::failed_factorization_cannot_leave_a_live_key ... ok
+test problem::time_fd_workspace_tests::shape_and_either_rhs_refusal_preserve_attempted_work ... ok
+test ptsw2b::tests::bad_input_gives_typed_errors_not_panics ... ok
+test common_w_gate::tests::smoke_matrix_free_solutions_match_offline_materialized_direct_oracle ... ok
+test ptsw2b::tests::every_runtime_constant_is_certified_correctly_rounded ... ok
+test ptsw2b::tests::isqrt_is_floor_sqrt ... ok
+test packet_trajectory::verified_transaction_private_tests::endpoint_admission_refusal_preserves_transaction_and_full_work ... ok
+test ptsw2b::tests::runtime_tableau_equals_the_correctly_rounded_exact_values ... ok
+test ptsw2b::tests::starter_has_local_order_three_hence_u1_error_is_o_h_squared ... ok
+test rodas5p_fast::banded_exact_tests::other_bandwidths_fall_back_without_changing_bits ... ok
+test ppsw1::tests::radau_nodes_match_known_values_and_end_at_one ... ok
+test rodas5p_fast::exact_band_cache::tests::changed_entry_misses ... ok
+test radau::tests::real_eigenvector_matches_the_scipy_transform_column ... ok
+test rodas5p_fast::exact_band_cache::tests::changed_shift_misses ... ok
+test rodas5p_fast::exact_band_cache::tests::explicit_invalidation_misses ... ok
+test radau::tests::stage_lu_estimator_drops_exactly_one_factorization_per_trial ... ok
+test rodas5p_fast::exact_band_cache::tests::failed_record_invalidates ... ok
+test packet_trajectory::verified_transaction_private_tests::txn_fail_first_and_second_preserve_all_accepted_bits ... ok
+test rodas5p_fast::exact_band_cache::tests::identical_matrix_hits ... ok
+test rodas5p_fast::exact_band_cache::tests::nonfinite_shift_misses ... ok
+test rodas5p_fast::exact_band_cache::tests::shape_change_misses ... ok
+test rodas5p_fast::exact_band_cache::tests::signed_zero_is_conservative ... ok
+test rodas5p_fast::session_terminal_gate_tests::injected_clock_output_and_controller_refusals_are_sticky_at_the_accepted_prefix ... ok
+test rodas5p_fast::tests::fast_error_norm_refuses_overflowed_scalar_and_vector_scales ... ok
+test rodas5p_fast::tests::in_place_lu_solves_pivoted_and_banded_systems ... ok
+test rodas5p_fast_dense::tests::stage_rows_match_sequential_stages ... ok
+test rodas5p_fast_small::tests::every_small_option_set_has_its_own_driver_id ... ok
+test rodas5p_fast_small::tests::the_construction_check_refuses_a_table_off_by_one_bit ... ok
+test rodas5p_fast_small::tests::the_indexed_solve_equals_the_slice_solve_bitwise ... ok
+test rodas5p_lagged::stage_target_policy::n05_tests::outward_assessment_covers_independent_actual_stage_perturbation ... ok
+test nonlinear_homotopy::tests::complex_prefix_preserves_causal_order_and_tree_shape ... ok
+test rodas5p_lagged::stage_target_policy::n05_tests::scope_checks_and_rotation_counterexample_do_not_grant_real_spectrum ... ok
+test routing::tests::routing_rules_in_order ... ok
+test rodas5p_matrix_free_fast::directional_quadratic_integration_tests::directional_quadratic_option_refuses_incompatible_configuration ... ok
+test routing::tests::seeded_vectors_are_deterministic_and_in_range ... ok
+test rodas5p_lagged::stage_target_policy::n05_tests::normalized_stage_and_returned_center_errors_are_charged_without_budget_inflation ... ok
+test routing::tests::verification_uses_the_jvp_when_present_and_charges_it ... ok
+test routing::tests::a_band_narrower_than_the_jacobian_is_rejected ... ok
+test sequential::forcing_resolution_tests::the_last_pass_is_judged_against_the_limit_of_its_own_estimate ... ok
+test source_owned_graph_schur::c5_source_scoped_tests::actually_falls_back_to_original_full_band_w_on_residual_failure ... ok
+test rodas5p_matrix_free_fast::directional_quadratic_integration_tests::directional_quadratic_full_ivp_preserves_accuracy_and_reports_clone_storage ... ok
+test source_owned_graph_schur::c5_source_scoped_tests::exact_original_unscaled_w_candidate_and_work_count ... ok
+test source_owned_graph_schur::c5_source_scoped_tests::fails_closed_for_changed_source_epoch ... ok
+test source_owned_graph_schur::c5_source_scoped_tests::refuses_non_cooperative_or_missing_feedback_fvs ... ok
+test source_owned_graph_schur::c5_source_scoped_tests::refuses_rhs_callback_divergence_even_with_same_owner_name ... ok
+test source_owned_graph_schur::c5_source_scoped_tests::source_dimension_and_full_integer_feedback_guard ... ok
+test rodas5p_lagged::stage_target_policy::n05_tests::spectral_bound_is_tighter_and_dominates_independent_forward_values ... ok
+test unified_gates::qualification_tests::every_above_roundoff_order_must_meet_the_floor ... ok
+test transactional_q1_q2::tests::multi_row_failure_retains_later_row_shifted_work ... ok
+test unified_gates::qualification_tests::qualification_order_ignores_a_roundoff_contaminated_finest_pair ... ok
+test unified_gates::qualification_tests::qualification_order_keeps_the_finest_pair_when_it_is_above_roundoff ... ok
+test unified_gates::qualification_tests::gate_against_a_reference_only_comparator_is_not_evaluated ... ok
+test packet_trajectory::verified_transaction_private_tests::inherited_and_stationary_seeds_use_same_center_displacement_and_fixed_energy ... ok
+test rodas5p_fast::banded_exact_tests::exact_fixed_width_parity_including_pivot_swaps ... ok
+test rodas5p_matrix_free_fast::directional_quadratic_integration_tests::directional_quadratic_refusal_preserves_previous_start_fallback ... ok
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::v37_zero_cap_runner_emits_charged_exhaustions_without_endpoint_labels ... ok
+test unified_gates::qualification_tests::iterative_sequential_order_rows_survive_roundoff_level_refinement ... ok
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::v37_outcome_semantics_reject_crossed_labels_flags_and_endpoint_evidence ... ok
+test output::spd01_landing_property::fused_landing_equals_the_legacy_composition ... ok
+
+test result: ok. 123 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+     Running tests/ppsw1_6b_contracts.rs (target/release/deps/ppsw1_6b_contracts-bb15e8ac6d7c3de8)
+
+running 37 tests
+test a1_method_identity_is_distinct_and_opt_in ... ok
+test a2_derivative_class_is_exact_jacobian_or_jvp_frozen_at_step_start ... ok
+test a3_accepted_step_sigma_cap_is_1_10_and_the_paper_1_5_is_recorded_separately ... ok
+test b2_gamma_is_the_root_of_the_printed_degree6_polynomial_to_60_digits ... ok
+test b5_tableau_is_total_on_positive_finite_sigma_and_typed_error_otherwise ... ok
+test c1_order5_conditions_vanish_for_module_coefficients_at_variable_step ... ok
+test c2_order6_residual_is_nonzero_so_variable_step_order_is_exactly_5 ... ok
+test d3_six_stages_share_one_factorization_and_satisfy_the_stage_equations ... ok
+test d2_perturbing_one_current_stage_input_changes_no_other_current_stage_output ... ok
+test c3_one_step_error_with_exact_stage_data_scales_like_h6 ... ok
+test d4_advance_charges_one_factorization_six_solves_and_six_rhs_calls ... ok
+test b4_oracle_and_module_match_the_printed_pw04_sigma1_matrices ... ok
+test d6_jvp_only_problem_reproduces_explicit_jacobian_stage_solution ... ok
+test e1_rejected_attempt_leaves_history_and_controller_untouched_but_charges_work ... ok
+test e3_stale_attempt_is_refused_without_side_effects ... ok
+test d5_serial_and_two_thread_stage_solves_are_bitwise_identical ... ok
+test d1_stage_inputs_use_only_previous_step_data_and_oracle_formulas ... ok
+test e4_ratio_above_the_1_10_cap_is_a_typed_error_with_no_side_effects ... ok
+test f2_stiff_limit_of_the_stability_matrix_is_minus_beta_over_gamma_with_rho_zero ... ok
+test g2_nothing_is_labelled_derivative_free ... ok
+test f1_beta_is_nilpotent_so_the_stiff_limit_has_spectral_radius_zero ... ok
+test g1_default_candidate_catalog_is_unchanged_and_peerw_stays_deferred ... ok
+test h2_estimator_is_zero_on_degree4_polynomials_and_nonzero_on_degree5 ... ok
+test h1_estimator_weights_are_exact_lagrange_weights ... ok
+test h3_error_norm_and_accept_rule ... ok
+test e2_accepted_attempt_commits_exactly_the_certified_update ... ok
+test h4_controller_formula_hysteresis_and_nan ... ok
+test h5_h0_rule_and_refusals ... ok
+test h8_try_step_rejects_on_estimator_and_commits_on_acceptance ... ok
+test h7_starter_uses_forward_time_only_and_newton_only_in_the_starter ... ok
+test h6_starter_node_values_are_o_h0_to_the_5th_on_a_stiff_problem ... ok
+test b3_module_tableau_matches_the_high_precision_oracle_within_1e_13 ... ok
+test g3_protected_sources_are_byte_identical ... ok
+test b1_exact_oracle_reproduces_the_pw04_structure ... ok
+test i1_end_to_end_prothero_robinson_with_real_starter_and_controller ... ok
+test i2_end_to_end_stiff_linear_system_with_real_starter_and_controller ... ok
+test f3_l_alpha_angle_is_57_54_degrees_within_0_05 ... ok
+
+test result: ok. 37 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.54s
+
+     Running tests/ppsw1_parallel_rhs_contracts.rs (target/release/deps/ppsw1_parallel_rhs_contracts-071e82bcb5b595b2)
+
+running 5 tests
+test serial_failure_keeps_original_prefix_only_execution_semantics ... ok
+test nonfinite_parallel_output_charges_all_executed_callbacks ... ok
+test nonlinear_nonautonomous_steps_preserve_bits_and_every_work_counter ... ok
+test failed_parallel_attempt_joins_charges_all_jobs_and_leaves_session_unchanged ... ok
+test parallel_rhs_callbacks_overlap_within_explicit_thread_bound ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/ppsw1_session_boundary_contracts.rs (target/release/deps/ppsw1_session_boundary_contracts-13ffd8c668951263)
+
+running 6 tests
+test foreign_session_attempt_cannot_commit_or_reject ... ok
+test malformed_history_is_refused_before_any_callbacks ... ok
+test nonadvancing_and_overflowing_step_times_are_refused_before_work ... ok
+test nonfinite_try_step_rejection_invalidates_pending_sibling_attempt ... ok
+test rejected_attempt_invalidates_other_attempts_from_that_generation ... ok
+test starter_requires_two_finite_representably_advancing_intervals ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

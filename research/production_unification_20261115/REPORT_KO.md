@@ -35,3 +35,14 @@ Library의 관련 제목 검색은 반환된 페이지 끝까지 조사했다.75
 우선 U03 독립 Peer qualification을 진행한다. step ratio sigma와 approximate-J theta는 별도 축이다. 실제 linear solve 실패 시 기존 six-solve precharge도 먼저 검사·교정해야 한다. U06 capability registry와 U08 구조 이식은 독립 진행 가능하다. 이후 common-W matrix-free, 기존 frontend의 명시적 method adapter, geometry, error-transfer/novelty, matched-error holdout으로 이어간다.
 
 신규성은 미확립이다. 후보 기여는 source-owned 구조 인증·잔차/전역오차 전달·권한을 보존하는 병렬 portfolio와 실제 비용 우위의 결합이다. Peer-W/SDC/scan/구면 기법 자체는 선행 연구다. 현재 scope의 구현 검증과 전체 production 자격을 구별한다.
+
+## 2026-11-15 후속: U03 PPSW1 독립 qualification (PARTIAL)
+
+상세는 `peer_qualification/QUALIFICATION_KO.md`, 원시 근거는 `peer_qualification/logs/u03_green.log`와 `RESULTS.json`이다. production은 계속 **HOLD**다.
+
+- 계수: 논문 식 (14)/(15)/(23)/(4)를 직접 푸는 독립 경로 R1(mpmath 60자리)로 `ppsw1::tableau`를 sigma 1e-9..1.1의 15점에서 비교했다. 최대 차이 1.4e-16 scale-eps다. 기존 계약 테스트의 oracle은 구현과 같은 닫힌형이어서 독립 비교가 아니었다.
+- 실행: 다항식 5차 정확성, Prothero–Robinson lambda -1..-1e6(균일 보폭 관측 차수 약 6), LIN3 비정규(독립 numpy와 0.988–1.0003배 일치), sigma 0.5..1.1 패턴, final clipping 1e-12까지 오차 증가 없음, 시작 h0, 추정기, 적응 driver(tol 1e-3..1e-12, 전체 작업 counter)를 실제 구현으로 실행했다.
+- theta 축(독립 backend): theta≠1은 L-안정성을 잃는다. 비정규 stiff 문제에서 theta 0.8/0.85 발산, 0.9 비단조, 0.95..1.1과 비가환 perturbation 1e-2 이하만 수렴했다.
+- 수정 C1: `solve_stages`가 실패 가능한 LU solve 전에 6회를 선부과하던 회계를 실행 기준으로 고쳤다(RED 재현 후 GREEN, 기존 171개 통과).
+- 열린 결함: F1 h0 규칙이 tolerance를 무시해 starter가 구간 전체를 덮을 수 있음(tol 1e-9에서 74배 초과), F2 cap+hysteresis 성장 제한으로 tol과 무관한 step 수, F3 추정기 잡음 바닥이 경고 모델보다 커서 tol 1e-12에서 h가 1e-19로 붕괴 후 typed 오류. 비선형·matched-error·시간/RSS는 NOT_RUN이다.
+- capability: per-step Newton-free지만 Jacobian-free/derivative-free/matrix-free가 아니다. startup은 simplified Newton과 dense 5n×5n LU를 쓴다. fallback은 없다.

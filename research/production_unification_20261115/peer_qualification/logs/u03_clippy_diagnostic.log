@@ -1,0 +1,156 @@
+    Checking bytemuck v1.25.2
+    Checking bitflags v2.13.1
+    Checking cfg-if v1.0.4
+    Checking reborrow v0.5.5
+    Checking pulp-wasm-simd-flag v0.1.1
+    Checking libm v0.2.16
+    Checking once_cell v1.21.4
+    Checking num-traits v0.2.19
+    Checking nano-gemm-core v0.2.1
+    Checking typenum v1.20.1
+    Checking libc v0.2.189
+    Checking equator v0.2.2
+    Checking serde_core v1.0.229
+    Checking crossbeam-utils v0.8.22
+    Checking generativity v1.2.1
+    Checking zmij v1.0.23
+    Checking equator v0.6.0
+    Checking nano-gemm-f32 v0.2.1
+    Checking nano-gemm-f64 v0.2.1
+    Checking raw-cpuid v11.6.0
+    Checking dyn-stack v0.13.2
+    Checking cpufeatures v0.2.17
+    Checking itoa v1.0.18
+    Checking memchr v2.8.3
+    Checking thiserror v2.0.19
+    Checking hex v0.4.3
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-unif-20261115/crates/rodas5p-integrators)
+    Checking crossbeam-epoch v0.9.20
+    Checking either v1.17.0
+    Checking num-complex v0.4.6
+    Checking crossbeam-deque v0.8.7
+    Checking num_cpus v1.17.0
+    Checking rayon-core v1.13.0
+    Checking nano-gemm-c64 v0.2.1
+    Checking nano-gemm-c32 v0.2.1
+    Checking generic-array v0.14.7
+    Checking rayon v1.12.0
+    Checking block-buffer v0.10.4
+    Checking crypto-common v0.1.7
+    Checking digest v0.10.7
+    Checking sha2 v0.10.9
+    Checking pulp v0.22.3
+    Checking private-gemm-x86 v0.1.20
+    Checking serde v1.0.229
+    Checking serde_json v1.0.151
+    Checking gemm-common v0.19.0
+    Checking qd v0.8.0
+    Checking faer-traits v0.24.0
+    Checking gemm-f64 v0.19.0
+    Checking gemm-c32 v0.19.0
+    Checking gemm-f32 v0.19.0
+    Checking gemm-c64 v0.19.0
+    Checking gemm v0.19.0
+    Checking nano-gemm v0.2.2
+    Checking faer v0.24.4
+    Checking rodas5p-core v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-unif-20261115/crates/rodas5p-core)
+    Checking rodas5p-krylov v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-unif-20261115/crates/rodas5p-krylov)
+warning: the use of negated comparison operators on partially ordered types produces code that is hard to read and refactor, please consider using the `partial_cmp` method instead, to make it clear that the two values could be incomparable
+   --> crates/rodas5p-integrators/src/source_owned_graph_schur.rs:321:12
+    |
+321 |         if !(max_q < 1.) {
+    |            ^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#neg_cmp_op_on_partial_ord
+    = note: `#[warn(clippy::neg_cmp_op_on_partial_ord)]` on by default
+
+warning: the loop variable `i` is used to index `z`
+   --> crates/rodas5p-integrators/src/source_owned_graph_schur.rs:329:22
+    |
+329 |             for i in 0..n {
+    |                      ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+    = note: `#[warn(clippy::needless_range_loop)]` on by default
+help: consider using an iterator and enumerate()
+    |
+329 -             for i in 0..n {
+329 +             for (i, <item>) in z.iter_mut().enumerate().take(n) {
+    |
+
+warning: the use of negated comparison operators on partially ordered types produces code that is hard to read and refactor, please consider using the `partial_cmp` method instead, to make it clear that the two values could be incomparable
+   --> crates/rodas5p-integrators/src/source_owned_graph_schur.rs:353:16
+    |
+353 |             if !(row_z < 1.) {
+    |                ^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#neg_cmp_op_on_partial_ord
+
+warning: the loop variable `i` is used to index `rb`
+   --> crates/rodas5p-integrators/src/source_owned_graph_schur.rs:377:18
+    |
+377 |         for i in 0..k {
+    |                  ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+377 -         for i in 0..k {
+377 +         for (i, <item>) in rb.iter_mut().enumerate().take(k) {
+    |
+
+warning: the loop variable `i` is used to index `ub`
+   --> crates/rodas5p-integrators/src/source_owned_graph_schur.rs:385:18
+    |
+385 |         for i in 0..k {
+    |                  ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+385 -         for i in 0..k {
+385 +         for (i, <item>) in ub.iter_mut().enumerate().take(k) {
+    |
+
+warning: the loop variable `j` is used to index `rb`
+   --> crates/rodas5p-integrators/src/source_owned_graph_schur.rs:386:22
+    |
+386 |             for j in 0..k {
+    |                      ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+386 -             for j in 0..k {
+386 +             for (j, <item>) in rb.iter().enumerate().take(k) {
+    |
+
+warning: the loop variable `j` is used to index `ub`
+   --> crates/rodas5p-integrators/src/source_owned_graph_schur.rs:395:22
+    |
+395 |             for j in 0..k {
+    |                      ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+395 -             for j in 0..k {
+395 +             for (j, <item>) in ub.iter().enumerate().take(k) {
+    |
+
+warning: the loop variable `j` is used to index `out`
+   --> crates/rodas5p-integrators/src/source_owned_graph_schur.rs:411:22
+    |
+411 |             for j in 0..n {
+    |                      ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+411 -             for j in 0..n {
+411 +             for (j, <item>) in out.iter().enumerate().take(n) {
+    |
+
+warning: `rodas5p-integrators` (lib) generated 8 warnings
+warning: `rodas5p-integrators` (lib) generated 8 warnings (8 duplicates)
+    Finished `release` profile [optimized] target(s) in 45.26s

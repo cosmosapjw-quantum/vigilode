@@ -475,10 +475,25 @@ pub fn solve_stages(
                 .collect()
         })
         .collect();
-    counters.linear_solves += 6;
-    counters.direct_solve_calls += 6;
-    let idx = [0usize, 1, 2, 3, 4, 5];
-    let xs = exec.map_ordered(&idx, |&i| lu.solve(&rhs[i]))?;
+    // Charge executed solves only. `LuFactorization::solve` is fallible (non-finite RHS or
+    // output). Sequential execution charges each solve before entering it and stops at the
+    // first error; multi-thread execution joins all six jobs (no Rayon early cancellation),
+    // charges all six and returns the first error in stage order.
+    let xs: Vec<Vec<f64>> = if exec.threads() == 1 {
+        let mut out = Vec::with_capacity(STAGES);
+        for r in &rhs {
+            counters.linear_solves += 1;
+            counters.direct_solve_calls += 1;
+            out.push(lu.solve(r)?);
+        }
+        out
+    } else {
+        let idx = [0usize, 1, 2, 3, 4, 5];
+        let jobs = exec.map_ordered(&idx, |&i| Ok(lu.solve(&rhs[i])))?;
+        counters.linear_solves += 6;
+        counters.direct_solve_calls += 6;
+        jobs.into_iter().collect::<CoreResult<Vec<_>>>()?
+    };
     Ok(StageSolve { y: to_six(xs)? })
 }
 
