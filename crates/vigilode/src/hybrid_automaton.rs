@@ -12,8 +12,8 @@
 //!   dwell/hysteresis constraints, epoch validation, and speculative work accounting invariants.
 //!   It serves as the contract and offline verification oracle.
 //! - **Live Operational Route Controller**: Runtime adaptive dispatch within [`crate::SwitchingSolver`]
-//!   is driven directly by `DriveState` in [`crate::switching`], which manages live method selection
-//!   ([`crate::switching::SwitchingMethod`]), window progression, step proposals, adaptive pilot trials,
+//!   is driven directly by `DriveState` in the private `switching` module, which manages live method selection
+//!   ([`crate::SwitchingMethod`]), window progression, step proposals, adaptive pilot trials,
 //!   and recheck sentinels during active numerical integration.
 
 use core::fmt;

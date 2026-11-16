@@ -1,0 +1,98 @@
+# PR #190 hosted CI 결과 분류 (2026-11-17)
+
+- 대상: loop 브랜치 head `04430258` (draft PR #190, 병합용 아님).
+- 비교 기준: `ef04bfab` (프로그램 baseline `research/unified-t02-20261110`, 2026-11-12 실행). 통합 브랜치 `074a5699` 자체는 PR CI 실행 기록이 없다.
+- 기계 판독 기록: `PR190_CI.json`. `collect.py`가 `raw/`의 GitHub API 출력과 job 로그에서만 값을 읽어 만든다.
+- 로컬 검증 로그: `raw/local_probe_staged_solve_telemetry.log`.
+
+## 1. 요약
+
+| | 성공 | 실패 | skip |
+|---|---|---|---|
+| head `04430258` | 5 | 8 | 3 |
+| baseline `ef04bfab` | 4 | 9 | 3 |
+
+- 실패한 5개 workflow는 2026-11-01 이후 조회한 모든 연구 브랜치 PR 실행(workflow당 최근 12회)에서 한 번도 성공하지 못했다. hosted CI는 이 loop 이전부터 green이 아니었다.
+- baseline 대비: 3개 job이 새로 통과(`clippy`, `audit2-feature-and-usage`, `fresh-clone-build`), 2개 job이 새로 실패(`docs`, `semver`). 새 실패 2건은 모두 switcher 계보 채택에서 들어왔다.
+- `docs`는 이번 commit에서 고쳤다. 나머지 7건은 원인별로 아래에 적는다.
+
+## 2. job별 분류
+
+| job | head | base | head 실패 원인 | 분류 |
+|---|---|---|---|---|
+| `docs` | 실패 | 성공 | `crates/vigilode/src/hybrid_automaton.rs:15`의 문서가 private module `crate::switching`에 link (`-D warnings`) | 채택 회귀. **수정함** |
+| `semver` | 실패 | 성공 | `cargo semver-checks` major 5건 (아래 3.2) | 채택 회귀. 버전 정책 결정 필요 |
+| `bench` | 실패 | 실패 | `vigilode-bench` manifest가 `rust-version = "1.99.0"`, CI toolchain은 1.94.1 | 채택으로 원인이 바뀜. base 원인(`mpi.h` 없음)도 남아 있음 |
+| `test` | 실패 | 실패 | `s1_nine_native_cases_match_anchor` (`staged_solve_telemetry.rs:233`, columns 3 대 5) | host 의존 bit anchor. base의 실패 test는 head에서 통과 |
+| `a2-a3-gmres-candidate` | 실패 | 실패 | 위와 같은 test | 위와 같음 |
+| `a1-inner-tolerance-parity` | 실패 | 실패 | `test_r_parity_on_off_and_alg06_anchor` (`stage_residual_telemetry.rs:498`) | 기존 실패, base와 서명 동일 |
+| `ignored-tests` | 실패 | 실패 | `prothero_robinson_wfiltered_enforce_kill_gate` | 기존 실패. 설계상 항상 실패 |
+| `research-process` | 실패 | 실패 | `research/qualification/` 2건 + stall rule 5건 | 채택으로 원인이 바뀜 (base의 247건은 해소) |
+| `clippy`, `audit2-feature-and-usage`, `fresh-clone-build` | 성공 | 실패 | | 개선 |
+| `fmt`, `mode-and-authority` | 성공 | 성공 | | 변화 없음 |
+
+## 3. 원인 상세
+
+### 3.1 docs (수정함)
+
+- 공개 문서가 private module을 intra-doc link로 가리켰다. link 두 개를 고쳤다(`crate::switching` → 일반 텍스트, `crate::switching::SwitchingMethod` → 공개 재수출 `crate::SwitchingMethod`). 동작 변경 없음.
+- 로컬에서 docs job의 세 단계를 실행했다: `RUSTDOCFLAGS="-D warnings" cargo doc -p vigilode -p vigilode-coupled --no-deps --locked` exit 0, doctest 3개 통과, `cargo build -p vigilode --examples --locked` exit 0. 예제 실행 단계는 로컬에서 실행하지 않았다.
+- 채택 검증(A-gate)에 `cargo doc`이 없어서 놓쳤다.
+
+### 3.2 semver (소유자 결정 필요)
+
+PR base(`074a5699`) 대비 `vigilode` 공개 API가 깨졌다. 전부 switcher 계보의 변경이다.
+
+- `SwitchingConfig`에 pub field 10개 추가, `EntryProbeAdaptation`에 1개 추가 (struct literal을 쓰는 사용자 코드가 깨짐).
+- `SwitchingEvidence`에 variant `ExplicitStabilityLimited` 추가, 뒤 variant 9개의 판별값 이동.
+- `CostUnit`, `CostEvidenceKind`에 `#[non_exhaustive]` 추가, `CostEvidenceKind` 판별값 2개 변경, `CostUnit`에 non-unit variant 추가.
+
+채택을 유지하면 다음 배포 버전은 0.1.0이 될 수 없다(0.x 규칙으로 0.2.0). 버전 변경은 릴리스 결정이라 이 loop에서 하지 않는다.
+
+### 3.3 bench
+
+- head: `crates/vigilode-bench/Cargo.toml`과 `crates/vigilode-hybrid/Cargo.toml`이 `rust-version = "1.99.0"`을 선언한다. 두 crate는 workspace 밖이라 시험 병합의 `cargo check --workspace`가 잡지 못했다.
+- base: build script가 CVODE bridge를 컴파일할 때 `mpi.h`가 없어 실패했다. runner의 `libsundials-dev`가 MPI header를 요구한다.
+- green이 되려면 둘 다 고쳐야 한다: manifest를 1.94.1로 맞추고(1.94.1에서 실제로 빌드되는지 확인 필요, V11에서 수행), workflow의 `apt-get`에 MPI 개발 패키지를 추가한다(workflow 수정, 소유자 결정).
+
+### 3.4 test, a2-a3-gmres-candidate
+
+- 실패: `report.columns == expected_columns`에서 3 대 5. GMRES 열 수를 bit 단위 anchor와 비교하는 test다.
+- 로컬 재현 시도(Ryzen 5900X): debug profile 통과, release profile 통과, 같은 debug binary를 glibc 2.39(ubuntu:24.04)와 glibc 2.43(ubuntu:26.04) container에서 실행해도 통과. 따라서 build profile과 libm 버전은 원인이 아니다.
+- 남은 가설: runner CPU에 따른 연산 순서 차이(`gmres_staged`가 쓰는 faer의 runtime SIMD dispatch). 확인하지 못했다. runner의 CPU 모델은 로그에 없다.
+- baseline에서는 `test` job이 `low_rank_bordered_allocation`(할당 2 대 0)에서, `a2-a3` job이 `givens_production_differential_contracts`에서 먼저 실패해 이 test까지 가지 못했다. 두 test는 head에서 통과한다.
+- `test` job은 `--no-fail-fast` 없이 실행하므로 첫 실패 binary 뒤의 결과는 알 수 없다. `rodas5p-integrators` 단계는 실행되지 않았다.
+
+### 3.5 a1-inner-tolerance-parity
+
+- bit anchor 3개가 hosted 값과 다르다. hosted 값은 base와 head에서 bit 단위로 같다. 채택이 이 경로의 hosted 수치를 바꾸지 않았다는 근거가 된다.
+- anchor는 개발 머신 값이다. 원인은 3.4와 같은 종류로 보이나 확인하지 않았다.
+
+### 3.6 ignored-tests
+
+- 해당 test는 2026-10-21에 기록된 kill gate 실패를 재현하도록 일부러 `#[ignore]`로 남긴 것이다(주석: 임계값을 완화하지 말 것). workflow가 `-- --ignored`로 전부 실행하므로 항상 실패한다.
+- 고치려면 workflow가 문서화된 kill gate test를 제외해야 한다(workflow 수정, 소유자 결정).
+
+### 3.7 research-process
+
+- `research/qualification/`: 사전등록 파일과 ledger 행이 없다(채택 때 보고한 미해결 항목). 사후에 사전등록을 만들 수는 없다.
+- stall rule 5건: switcher node `L-0210`..`L-0214`. 이 loop가 INVALID 대체 행(`L-0308`..`L-0312`)을 추가했지만 규칙은 원래 행을 본다.
+- base의 "missing commit" 247건은 head에서 사라졌다.
+
+## 4. 릴리스 게이트 영향
+
+- R4 재현성: NOT_MET 유지. 근거가 구체화됐다: hosted CI 8개 job 실패, bit anchor가 host에 의존, `test` job이 첫 실패에서 멈춤.
+- R3 API: NOT_MET 유지. 채택된 계보가 semver major 변경을 포함한다.
+- R6 패키징: NOT_MET 유지. workspace 밖 crate 2개가 고정 toolchain으로 빌드되지 않는다.
+- R7 증거 거버넌스: NOT_MET 유지. `research/qualification/`과 stall rule.
+
+## 5. 조치
+
+| 조치 | 상태 |
+|---|---|
+| docs link 수정 | 완료 (이 commit) |
+| `vigilode-bench`, `vigilode-hybrid`를 1.94.1에서 빌드·시험하고 `rust-version` 정렬 | V11(기하 battery)에서 수행 |
+| host 의존 anchor의 원인 확정(CPU feature별 실행) | 미수행. 다음 loop 후보 |
+| workflow 수정: `test`에 `--no-fail-fast`, `bench`에 MPI header, `ignored-tests`에서 kill gate 제외 | 소유자 결정 필요 |
+| semver: 버전 0.2.0 또는 API 호환 유지 | 소유자 결정 필요 |
+| `research/qualification/` 처리(삭제, INVALID 행, 또는 사후 기록 명시) | 소유자 결정 필요 |
