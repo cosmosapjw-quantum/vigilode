@@ -1,0 +1,206 @@
+{
+  "schema": "vigilode.loop-l1.v06.predeclared.v1",
+  "node": "V06_SHARED_KRYLOV_BASIS",
+  "written": "2026-11-17 (KST), before any measurement run and before any client code existed",
+  "base_commit": "0443025895dabf350f46fd3f0cdd0cf1d7fbcf85",
+  "frozen_discriminator_verbatim": {
+    "source": "research/production_loop_20261116/PREREGISTRATION.md, table 'Frozen discriminators', row V06",
+    "pass": "stage a: JVP ratio >= 1.5 at step ratio <= 1.05 on >= 2 of 3 families against a per-stage GMRES client with identical stopping test; final: at matched error JVP <= 0.5x and instructions <= 0.8x of per-stage GMRES with the same preconditioner on 3 of 4 families",
+    "kill_or_fallback": "stage a median JVP ratio < 1.2 cancels v2; no family improves instructions, or a residual check fails"
+  },
+  "stopping_test": {
+    "statement": "Accept the iterate x of a stage system iff the 2-norm of its TRUE residual (formed with one fresh Jacobian-vector product, or the right-hand side itself for x = 0) is at most max(atol_scaled, rtol_lin * ||rhs||_2). No weighting. The budget is 200 Arnoldi vectors per stage solve; exhausting it is a LinearSolve error that rejects the attempt.",
+    "protected_source_lines": [
+      "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2785 (operator I - h gamma J of the scaled U form)",
+      "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2787-2791 (linear_atol = raw_absolute_residual_budget(config.atol, gamma) = gamma * atol)",
+      "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2924-2929 (GmresConfig: restart, max_arnoldi = max(maxiter, restart), rtol, atol = linear_atol)",
+      "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:3016-3031 (solve_gmres_into_with_accounting, residual_scale = None, i.e. the 2-norm)",
+      "crates/rodas5p-krylov/src/gmres_into.rs:268-269 (threshold from the right-hand side norm)",
+      "crates/rodas5p-krylov/src/common.rs:40-41 (threshold = max(atol, rtol * ||rhs||))",
+      "crates/rodas5p-krylov/src/gmres_into.rs:278-306 (true residual at the top of every restart pass; the loop leaves only when it meets the threshold)",
+      "crates/rodas5p-krylov/src/gmres_into.rs:307-312 (budget exhaustion is CoreError::LinearSolve)",
+      "crates/rodas5p-krylov/src/gmres_into.rs:467-474 (a restart pass runs all its columns; only a happy breakdown ends it early)",
+      "crates/rodas5p-krylov/src/gmres_into.rs:372-390 (final diagnostic true residual under the default accounting)"
+    ],
+    "parameters_source": "crates/rodas5p-integrators/src/routing.rs:233-251 (RoutingOptions::default().matrix_free, the configuration of the routed production matrix-free path, called at routing.rs:501-506)",
+    "parameters": {
+      "method": "GMRES",
+      "restart": 40,
+      "maxiter": 200,
+      "rtol_lin": 1e-10,
+      "atol_lin": 1e-14,
+      "preconditioner": "none",
+      "initial_guess": "zero"
+    },
+    "client_form": "The client driver hands the unscaled system W x = b with W = I/(h gamma) - J and b = rhs/(h gamma). Dividing the protected inequality by h gamma gives the same test: ||b - W x||_2 <= max(atol_lin * gamma / (h gamma), rtol_lin * ||b||_2). Clients B and C evaluate it in this form; the equivalence is exact in real arithmetic and differs only by rounding of the last bits.",
+    "cadence": {
+      "A": "as shipped: the true residual is tested after every full restart pass of 40 columns and once more after the loop (diagnostic)",
+      "B_and_C": "the solver's own residual estimate is tested after every new Krylov vector (B: Givens projected residual of the Arnoldi relation; C: the kernel's explicit residual from its stored images). When the estimate meets the threshold, the iterate is accepted only if the true residual computed with one fresh JVP meets the threshold; otherwise the solver continues. That confirming JVP is charged to the arm."
+    },
+    "why_B_is_not_given_the_shipped_cadence": "The merged kernel tests after every basis vector and cannot do otherwise (shared_basis.rs:319). A per-stage baseline that may stop only every 40 columns would hand the shared basis an advantage that has nothing to do with sharing. The shipped cadence is measured separately as control arm B0."
+  },
+  "arms": {
+    "A": {
+      "role": "reference for step counts and error; protected driver as shipped",
+      "entry": "rodas5p_integrators::integrate_rodas5p_mf_fast_observed_gmres_into with RoutingOptions::default().matrix_free",
+      "preconditioner": "none (the driver refuses any other, rodas5p_matrix_free_fast.rs:1355-1366)"
+    },
+    "B0": {
+      "role": "control only: per-stage GMRES client with the shipped cadence (no in-cycle exit, final diagnostic residual). Shows that the client driver reproduces arm A.",
+      "restart": 40,
+      "max_arnoldi": 200
+    },
+    "B": {
+      "role": "per-stage GMRES client, the baseline of the frozen discriminator",
+      "entry": "integrate_rodas5p_fast_client_observed_with_atol with the per-stage client of stage_clients/krylov.rs",
+      "restart": 40,
+      "max_arnoldi": 200,
+      "initial_guess": "zero",
+      "orthogonalisation": "two-pass modified Gram-Schmidt, as the protected kernel"
+    },
+    "C": {
+      "role": "shared-basis client",
+      "entry": "the same driver with the shared-basis client of stage_clients/krylov.rs, which calls rodas5p_krylov::shared_basis::SharedBasis::solve_shifted",
+      "basis_scope": "one basis per attempt: reset in factor(), reused by the eight stage solves (as the merged hook, rodas5p_matrix_free_fast.rs:2841-2846)",
+      "max_dim": 200,
+      "max_dim_reason": "equal to the Arnoldi budget of one protected stage solve (max_arnoldi = 200); the merged default of 60 is run as exploratory arm C60",
+      "kernel_theta": 1.0,
+      "threshold_encoding": "uniform weights w = sqrt(n) / (h gamma * tau) make the kernel's test h_gamma * ||r||_w <= theta identical to ||r||_2 <= tau",
+      "fallback": "when the kernel reports no convergence (full basis, breakdown, failed factorisation), the stage is solved by the per-stage GMRES of arm B from a zero start, as the merged hook falls through to GMRES (rodas5p_matrix_free_fast.rs:2903-2906)",
+      "confirmation_retries": "if the confirming true residual exceeds the threshold, the kernel is called again with its internal target halved, at most 4 times, then the fallback"
+    },
+    "preconditioner_options": {
+      "none": "primary; the only option arm A admits",
+      "jacobi": "secondary: right preconditioning by diag(W) = 1/(h gamma) - diag(J) with diag(J) supplied analytically by the problem; identical in B and C. For C the kernel is given the operator W D^-1 through its JVP closure; the residual of right preconditioning is the original residual."
+    }
+  },
+  "definitions": {
+    "jvp_of_an_arm": "the run's WorkCounters.jvp_calls: every user JVP callback charged to the arm (Krylov vectors and stopping-test residuals). The JVPs of the independent residual audit are counted in separate counters and are not included.",
+    "jvp_ratio": "JVP(B) / JVP(C) on the same family, tolerance and preconditioner option",
+    "step_ratio": "attempts(C) / attempts(B), attempts = accepted + rejected",
+    "secondary_ratio_reported": "the same ratio over Krylov vectors only (stopping-test residual JVPs removed); exploratory, never used for a verdict",
+    "family_level": "A family passes stage a iff BOTH of its tolerances satisfy jvp_ratio >= 1.5 and step_ratio <= 1.05 with preconditioner 'none', both runs completed, and no residual audit failed. The family-level JVP ratio for the median rule is the SMALLER of its two per-tolerance ratios.",
+    "stage_a_verdict": "PASS iff at least 2 of the 3 stage-a families pass. If the median of the three family-level JVP ratios is below 1.2, v2 is cancelled. v2 is built only on PASS.",
+    "final_verdict_if_reached": "per family and tolerance, with the same preconditioner option in both arms: JVP(Cv2) <= 0.5 * JVP(B) and instructions(Cv2) <= 0.8 * instructions(B), with the achieved error of Cv2 at most 1.25 times that of B (error metric below). A family passes iff both tolerances pass under 'none'. PASS iff 3 of the 4 families pass. KILL iff no family has instructions(Cv2) < instructions(B) at both tolerances, or any residual audit fails."
+  },
+  "residual_audit": {
+    "what": "A wrapper client saves b before every stage solve of arms B and C, lets the client solve, then forms r = b - W x with its own JVP operator (its own linearisation copy, its own WorkCounters) and tests ||r||_2 <= max(atol_lin * gamma / (h gamma), rtol_lin * ||b||_2).",
+    "arithmetic": "the same residual function the clients use for their confirming residual, applied to the saved b and the returned x",
+    "failure": "A solve whose audit fails is counted and reported with its ratio ||r||/tau; the run continues. Any failed audit in arm B or C makes the cell fail.",
+    "counting": "audit JVPs are reported per run as audit_jvp_calls and are not part of the arm's JVP"
+  },
+  "families_stage_a": [
+    {
+      "id": "bruss1d",
+      "description": "1D Brusselator, method of lines: u_t = 1 + u^2 v - 4 u + alpha u_xx, v_t = 3 u - u^2 v + alpha v_xx, Dirichlet u = 1, v = 3",
+      "cells": 512,
+      "n": 1024,
+      "layout": "interleaved (u_i, v_i), x_i = (i + 1) dx, dx = L / (cells + 1)",
+      "alpha": 0.02,
+      "length": 8.0,
+      "initial_state": "u = 1 + sin(2 pi x), v = 3",
+      "t_span": [0.0, 10.0],
+      "atol_over_rtol": 1.0,
+      "a_priori_stiffness_note": "alpha/dx^2 = 82.24, spectral radius about 340; with h about 0.1 the shift number h gamma rho(J) is about 7"
+    },
+    {
+      "id": "grayscott2d",
+      "description": "2D Gray-Scott on the periodic unit square as built by rodas5p_integrators::gray_scott::gray_scott_2d(32) (crate-provided, JVP only): D_u = 2e-3, D_v = 1e-3, F = 0.04, k = 0.06",
+      "grid": 32,
+      "n": 2048,
+      "layout": "u block then v block, cell centres ((i + 0.5) dx, (j + 0.5) dx), dx = 1/32, index i + 32 j",
+      "initial_state": "u = 1 - 0.25 exp(-100 r^2), v = 0.25 exp(-100 r^2), r = distance to (0.5, 0.5)",
+      "t_span": [0.0, 20.0],
+      "atol_over_rtol": 1.0,
+      "a_priori_stiffness_note": "8 D_u / dx^2 = 16.4; with h about 0.5 the shift number is about 2"
+    },
+    {
+      "id": "adr2d",
+      "description": "2D advection-diffusion-reaction, scalar, nonnormal Jacobian: u_t = eps (u_xx + u_yy) - a (u_x + u_y) + g u (u - 1/2)(1 - u); first-order upwind advection, second-order diffusion, zero-gradient boundaries by mirrored ghost cells",
+      "grid": 32,
+      "n": 1024,
+      "layout": "cell centres ((i + 0.5) dx, (j + 0.5) dx), dx = 1/32, index i + 32 j",
+      "eps": 0.01,
+      "a": 10.0,
+      "g": 100.0,
+      "initial_state": "u = 256 (x y (1 - x)(1 - y))^2 + 0.3",
+      "t_span": [0.0, 0.1],
+      "atol_over_rtol": 1.0,
+      "a_priori_stiffness_note": "upwind advection 4 a / dx = 1280, diffusion 8 eps / dx^2 = 82, reaction up to 50; with h about 0.002 to 0.01 the shift number is about 0.6 to 3"
+    }
+  ],
+  "family_final_only": {
+    "id": "robertson_rd1d",
+    "description": "stiff kinetics network: Robertson kinetics in every cell with weak diffusion, y1' = -0.04 y1 + 1e4 y2 y3, y2' = 0.04 y1 - 1e4 y2 y3 - 3e7 y2^2, y3' = 3e7 y2^2, plus D y_xx on every species, zero-gradient boundaries",
+    "cells": 342,
+    "n": 1026,
+    "layout": "interleaved (y1, y2, y3) per cell, x_i = (i + 0.5) dx, dx = 1/342",
+    "diffusion": 1e-5,
+    "initial_state": "y1 = 1 - 0.5 sin^2(pi x), y2 = 0, y3 = 0.5 sin^2(pi x)",
+    "t_span": [0.0, 40.0],
+    "atol_over_rtol": 1e-4,
+    "used": "only in the final test, and only if stage a passes"
+  },
+  "regime_statement": "The stage-a families are sized so that the shift number h gamma rho(J) at accuracy-limited steps is of order 1 to 10 (a priori estimates above, not measured). Two reasons, both fixed before any run: (1) the shipped route (unpreconditioned GMRES(40), 200 vectors, residual 1e-10) is expected to complete there without exhausting its budget, so arm A is a usable reference; (2) the merged kernel refactors its n x k matrix from scratch after every new vector (shared_basis.rs:212-268, O(n k^2) per vector), which makes a basis of several hundred vectors at n >= 1e3 infeasible to run. Consequence: stage a says nothing about strongly stiff problems, where the shipped route is limited by its Krylov budget. One such problem is run as exploratory cell 'bruss1d_stiff' with the merged default basis size.",
+  "tolerances": {
+    "rtol": [1e-4, 1e-6],
+    "atol": "rtol * atol_over_rtol of the family, the same scalar for every component"
+  },
+  "integrator_configuration": {
+    "initial_step": 1e-6,
+    "min_step": 1e-14,
+    "max_step": "t1 - t0",
+    "max_attempts": 1000000,
+    "controller": "AdaptiveStepConfig::default() otherwise (safety 0.9, factors 0.2 to 5, integral controller)",
+    "output": "OutputSchedule [t0, t1]"
+  },
+  "reference": {
+    "method": "scipy.integrate.solve_ivp, method DOP853, rtol 1e-13, atol 1e-16, on an independent numpy implementation of each right-hand side (research/production_loop_20261116/shared_krylov/reference/make_reference.py); explicit, so independent of every linear solver",
+    "cross_check": "scipy Radau, rtol 1e-10, atol 1e-13, on the same numpy right-hand side with a finite-difference sparse Jacobian",
+    "uncertainty": "the maximum over components of |DOP853 - Radau| at t1, stated per family in absolute value and in units of atol + rtol |y| for both tolerances",
+    "family_final_only": "robertson_rd1d: the same pair; if DOP853 does not finish within one hour, Radau at rtol 1e-12 is the reference and BDF at rtol 1e-10 the cross-check (recorded in the reference log)"
+  },
+  "error_metric": {
+    "primary": "max_i |y_i(t1) - ref_i| / (atol + rtol |ref_i|)",
+    "also_reported": ["max_i |y_i - ref_i|", "sqrt(mean((y_i - ref_i)^2))"],
+    "computed_by": "the parser from the final state printed by the run (hex bit patterns) and the reference file"
+  },
+  "runs_per_cell": {
+    "cell": "family x rtol",
+    "list": [
+      "SETUP: problem and client construction only (instruction baseline)",
+      "A, none",
+      "B0, none",
+      "B, none, audit on",
+      "B, none, audit off",
+      "C, none, audit on",
+      "C, none, audit off",
+      "B, jacobi, audit on",
+      "C, jacobi, audit on"
+    ],
+    "determinism": "the audit-on and audit-off runs of B and C must agree in every arm counter and in every bit of the final state; the parser checks it",
+    "instructions": "perf stat -e instructions:u over the whole process; reported for the audit-off runs, raw and net of the SETUP run of the same family",
+    "repetitions": "one execution per run: counters are deterministic. Wall time is recorded with the load average before and after and is labelled diagnostic_only (no pinned core, no interleaving, no 2 + 7 repetitions).",
+    "cpu": "taskset -c 0-9,12-21",
+    "time_limit": "a run that has not finished after 3 hours is stopped and recorded as NOT_COMPLETED; its cell cannot pass"
+  },
+  "reported_per_run": [
+    "attempts, accepted, rejected, linear-solve failures, local-error failures",
+    "JVP total; Krylov vectors; stopping-test residual JVPs; audit JVPs",
+    "per stage index 1..8: Krylov vectors",
+    "B: largest and mean number of Arnoldi columns of a solve, restart passes",
+    "C: basis dimension at the end of an attempt (largest, mean), fallbacks and their JVPs, confirmation failures",
+    "memory of the Krylov storage in bytes",
+    "achieved error against the reference"
+  ],
+  "exclusions": "none. Every declared run is executed and kept, including failed and negative ones. A cell whose arm B does not complete is NOT_DECIDABLE and counts as not passed.",
+  "exploratory_not_counted": [
+    "C60: arm C with the merged default max_dim = 60, same cells",
+    "Ckeep: arm C that keeps the basis across an attempt rejected by the error estimate (same Jacobian, new h), same cells",
+    "bruss1d_stiff: the standard Brusselator (length 1, alpha = 1/50, 512 cells), rtol 1e-4, arms A, B and C60",
+    "ratios over Krylov vectors only",
+    "any further run added after the declared runs, labelled exploratory in the log name and in RESULTS.json"
+  ],
+  "development_runs": "Client development and the contract tests use small instances only (Brusselator with 32 cells on the unit interval as consumed in U11, a 1D heat equation, the family generators at grid sizes below the declared ones). No declared cell is executed before the commit of this file.",
+  "amendments": []
+}
