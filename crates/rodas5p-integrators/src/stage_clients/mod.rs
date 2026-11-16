@@ -7,6 +7,7 @@
 
 pub mod assembly;
 pub mod dense_lu;
+pub mod dense_lu_reuse;
 pub mod krylov;
 pub mod sparse_lu;
 pub mod speculative;
