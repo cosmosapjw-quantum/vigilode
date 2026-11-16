@@ -1,0 +1,40 @@
+{
+  "schema": "vigilode.u11-preregistration.v1",
+  "date_kst": "2026-11-16",
+  "registered_before_any_holdout_run": true,
+  "code_commit_under_test": "b49f2160a874b06fa2699a92c11cea6409cd412c",
+  "candidate": "PPSW1-6b explicit API (Dense backend) via vigilode::PeerOde at 1 and 6 threads; h0 rule with h_max = t_span/100; no tuning",
+  "production_comparator": "vigilode::Rodas5p::solve (protected RODAS5P, dense explicit Jacobian route, default options except rtol/atol)",
+  "external_comparators": {
+    "scipy": "BDF and Radau (solve_ivp, analytic Jacobian), counts only (nfev, njev, nlu); runtime is Python and is not compared with Rust wall time",
+    "cvode": "NOT_RUN: SUNDIALS/CVODE not installed (known blocker); reference RODAS5P (Julia) NOT_RUN"
+  },
+  "holdout_problems": {
+    "hires": "8-dim HIRES (Hairer-Wanner), y0=(1,0,0,0,0,0,0,0.0057), t in [0, 321.8122]",
+    "oregonator": "3-dim Oregonator (Field-Noyes, Hairer-Wanner scaling), y0=(1,2,3), t in [0, 360]",
+    "brusselator_mol32": "1D Brusselator MOL, A=1, B=3, alpha=1/50, N=32 interior, Dirichlet u=1, v=3, u0=1+sin(2 pi x), v0=3, t in [0,10]"
+  },
+  "not_used_for_tuning": "none of these problems appeared in U03/U04 calibration; no parameter of either solver is changed after seeing holdout results",
+  "tolerances": [
+    0.0001,
+    1e-05,
+    1e-06,
+    1e-07,
+    1e-08
+  ],
+  "atol_rule": "atol = rtol * 1e-2 for every arm",
+  "reference": "scipy Radau rtol 1e-13 at t_end; U_ref = |Radau13-Radau12| + |Radau13-DOP853_13| (LSODA when DOP853 fails); admissible iff U_ref <= 0.1 E",
+  "error": "endpoint WRMS with weights |y_ref| + 1e-6 (output grid {t_end}); conservative E = WRMS + U_ref",
+  "timing": "paired interleaved: 2 warmups + 7 repetitions per (problem, tol, arm), median wall, rotation of arm order; host identity recorded; diagnostic unless conditions are met",
+  "g0_criteria_unchanged": {
+    "order": ">= 4.8 observed (endpoint error vs tol sweep slope converted to order via steps)",
+    "steps": "candidate steps <= 1.2 x production at matched E",
+    "median_speed": ">= 1.15 x production wall at matched E (median over problems)",
+    "fast_explicit_jacobian": "= 0 explicit Jacobian evaluations on the fast path",
+    "fast_newton": "= 0 Newton iterations on the fast path",
+    "depth": "method-stage depth p95 <= 6, max <= 8 (inner solver span reported separately)",
+    "fallback": "fallback fraction <= 0.1"
+  },
+  "decision_rule": "each criterion reported separately and as a conjunction; any criterion without evidence -> HOLD; release requires owner approval regardless",
+  "runner": "independent Cargo project research/production_unification_20261115/production_holdout/runner built from a clean git worktree of code_commit_under_test with its own target dir"
+}
