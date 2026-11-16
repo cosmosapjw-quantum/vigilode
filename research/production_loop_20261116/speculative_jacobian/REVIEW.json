@@ -1,0 +1,419 @@
+{
+ "schema": "vigilode.loop.node-review.v1",
+ "node": "V07_SPECULATIVE_JACOBIAN",
+ "workflow_run": "wf_4529fa64-b63",
+ "source": "structured final answers of the builder agent and of the independent reviewer agent, copied verbatim from the workflow journal",
+ "journal_sha256": "ebfed821c2c608157f5c508ab407b4720add6bdb873cdea893135cc67de77865",
+ "builder_branch": "research/production-loop-20261116-w2-v07",
+ "builder_report": {
+  "status": "done",
+  "summary": "Stage a is built, tested and measured (no threads, no timing); protected files untouched, nothing pushed. Client: stage_clients/speculative.rs (a StageLinearSystem wrapper plus a recording RHS wrapper; modes Exact, G8, G7, LaggedOneStep). Exact is bit-identical to the protected dense driver; call k after factor is stage k+1 (bitwise); zero allocations per step. On 33 adaptive cells (11 stiff problems x 3 rtol) G8/G7 pass the step criterion (median 1.000/1.000, max 1.039/1.044, no cell above 1.10, no KILL) and the order criterion (4.862/4.842 and 4.977/4.964 against exact 4.863 and 4.976; the three stiff order problems are non-discriminating because the exact arm itself reaches only 2.0-3.3). Both FAIL the error-ratio criterion in the per-cell reading I predeclared (G8 3 cells, all e5; G7 6 cells; median ratios 1.000/0.982), so both mode verdicts are FAIL. Caveat: the protected method rerun with rtol x1.02 or /1.02 fails the same rule in 6 and 5 cells, and on e5 its own end-point error is 430 to 31550 tolerance units, so this criterion does not isolate the Jacobian. A Jacobian lagged one full step (exploratory) breaks as theory S4 predicts: step ratio median 3.02, max 11.3, order 3.02.",
+  "branch": "research/production-loop-20261116-w2-v07",
+  "head_commit": "0c82dd1c7d1504b9ff1b4626a69e4e72f17ad3df",
+  "predeclared_commit": "16cd264df12b10c9ff73a205f24175f060f9b2b1",
+  "checks": [
+   {
+    "name": "tests_speculative",
+    "command": "taskset -c 0-9,12-21 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_speculative_contracts --test stage_clients_speculative_alloc --test stage_clients_speculative_problems --test stage_clients_speculative_measure",
+    "exit_code": 0,
+    "result": "contracts 17 passed, alloc 1 passed (own binary), measure 3 ignored (measurement programs), problems 0 tests (shared model library)"
+   },
+   {
+    "name": "tests_sentinels",
+    "command": "taskset -c 0-9,12-21 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test ppsw1_6b_contracts --test ptsw2b_contracts",
+    "exit_code": 0,
+    "result": "37 passed and 24 passed"
+   },
+   {
+    "name": "tests_client_kit",
+    "command": "taskset -c 0-9,12-21 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_dense_identity --test stage_clients_alloc",
+    "exit_code": 0,
+    "result": "8 passed (2 ignored) and 1 passed; extra check that the V15 kit is unaffected"
+   },
+   {
+    "name": "clippy",
+    "command": "taskset -c 0-9,12-21 cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --test stage_clients_speculative_contracts --test stage_clients_speculative_alloc --test stage_clients_speculative_problems --test stage_clients_speculative_measure --no-deps -- -D warnings",
+    "exit_code": 0,
+    "result": "no warnings"
+   },
+   {
+    "name": "rustfmt",
+    "command": "rustfmt +1.94.1 --check --edition 2024 <speculative.rs and the four stage_clients_speculative_*.rs test files>",
+    "exit_code": 0,
+    "result": "formatted"
+   },
+   {
+    "name": "loop_checker",
+    "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+    "exit_code": 0,
+    "result": "PASS, also re-run at the final head 0c82dd1c"
+   },
+   {
+    "name": "strict_json",
+    "command": "strict load (duplicate keys and non-finite constants refused) of every *.json under speculative_jacobian/ and of every record line in logs/",
+    "exit_code": 0,
+    "result": "PREDECLARED.json, RESULTS.json, reference/reference.json and 981 log record lines load strictly"
+   },
+   {
+    "name": "allowed_paths",
+    "command": "git diff --name-only 04430258 HEAD against the task allowlist",
+    "exit_code": 0,
+    "result": "all changed paths are speculative.rs, tests/stage_clients_speculative_*.rs or speculative_jacobian/**; none outside"
+   },
+   {
+    "name": "measurement_reproducible",
+    "command": "SPECJ_LOG_DIR=<tmp> bash speculative_jacobian/run_measurements.sh, then cmp of the SPECJ record lines with the committed logs",
+    "exit_code": 0,
+    "result": "49, 347 and 481 records byte-identical on a second run"
+   },
+   {
+    "name": "model_agreement",
+    "command": "python3 -I reference/check_models.py logs/measure_model_probes.log",
+    "exit_code": 0,
+    "result": "Rust and Python right-hand sides and Jacobians identical bit for bit on 48 probes"
+   },
+   {
+    "name": "all_checks_log",
+    "command": "bash research/production_loop_20261116/speculative_jacobian/run_checks.sh",
+    "exit_code": 0,
+    "result": "nine checks exit 0 at 6827e66a; log in speculative_jacobian/logs/checks.log (the final head adds only that log)"
+   }
+  ],
+  "discriminators": [
+   {
+    "name": "G8 step ratio (attempts speculative / protected, 33 cells)",
+    "measured": "median 1.000, max 1.039 (e5, rtol 1e-4: 161 vs 155 attempts), 22 cells exactly 1, 0 cells above 1.05",
+    "frozen_threshold": "median <= 1.02 and max <= 1.05",
+    "verdict": "PASS"
+   },
+   {
+    "name": "G7 step ratio (33 cells)",
+    "measured": "median 1.000, max 1.044 (robertson, rtol 1e-6: 47 vs 45 attempts), min 0.948, 0 cells above 1.05",
+    "frozen_threshold": "median <= 1.02 and max <= 1.05",
+    "verdict": "PASS"
+   },
+   {
+    "name": "G7 kill rule",
+    "measured": "no cell above 1.10 (largest 1.044); kill not triggered",
+    "frozen_threshold": "KILL if any step ratio > 1.10 with g7",
+    "verdict": "PASS"
+   },
+   {
+    "name": "G8 end-point error ratio, predeclared per-cell reading",
+    "measured": "29 cells PASS, 3 FAIL (all e5: 0.106, 1.848, 0.135), 1 not decidable (oregonator rtol 1e-8, reference uncertainty); median 1.000",
+    "frozen_threshold": "error ratio within [0.67, 1.5] (every cell, as predeclared)",
+    "verdict": "FAIL"
+   },
+   {
+    "name": "G7 end-point error ratio, predeclared per-cell reading",
+    "measured": "26 cells PASS, 6 FAIL (e5: 0.239, 3.895, 0.544; pr-nonlinear: 0.667 and 0.661; nldiff-100 rtol 1e-6: 1.514), 1 not decidable; median 0.982",
+    "frozen_threshold": "error ratio within [0.67, 1.5] (every cell, as predeclared)",
+    "verdict": "FAIL"
+   },
+   {
+    "name": "G8 observed order (fixed step, least squares over 6 step sizes)",
+    "measured": "kaps-eps1 4.862 (exact 4.863), logistic-pair 4.977 (exact 4.976); kaps-eps1e-6, pr-linear, pr-nonlinear non-discriminating (exact 2.02, 2.94, 3.28; G8 equal within 0.001)",
+    "frozen_threshold": ">= 4.8 on problems where the exact arm reaches 4.8",
+    "verdict": "PASS"
+   },
+   {
+    "name": "G7 observed order",
+    "measured": "kaps-eps1 4.842 (exact 4.863), logistic-pair 4.964 (exact 4.976); the three stiff problems non-discriminating (G7 equal to exact within 0.030)",
+    "frozen_threshold": ">= 4.8 on problems where the exact arm reaches 4.8",
+    "verdict": "PASS"
+   },
+   {
+    "name": "G8 stage a verdict",
+    "measured": "step PASS, order PASS, error ratio FAIL",
+    "frozen_threshold": "all three criteria",
+    "verdict": "FAIL"
+   },
+   {
+    "name": "G7 stage a verdict",
+    "measured": "step PASS, order PASS, no kill, error ratio FAIL",
+    "frozen_threshold": "all three criteria and no kill",
+    "verdict": "FAIL"
+   }
+  ],
+  "key_numbers": [
+   "Exact arm equals the protected dense driver bit for bit in all 33 adaptive cells and all 80 fixed-step runs; every G8/G7 run used the speculative point at every linearization but the first (12490 of 12523 for G8, 12482 of 12515 for G7), with no error-type failure",
+   "Total attempts over the 33 cells: G8 1.0007x, G7 0.9997x of protected; Jacobian builds 1.0003x and 0.9997x",
+   "Tolerance-jitter control (protected method, rtol and atol x1.02 or /1.02, exploratory): step ratio max 1.028 and 1.024; error ratio outside [0.67, 1.5] in 6 and 5 of 33 cells, range 0.534 to 3.116",
+   "e5: protected end-point error is 430 to 31550 tolerance units (reference end value 8.9e-23); the control fails 5 of its 6 e5 cells",
+   "Matched-error step ratio (exploratory, log-log interpolation, e5 not evaluable): G8 median 1.000, range 0.969 to 1.096; G7 median 1.000, range 0.927 to 1.073",
+   "Lagged one full step (exploratory): step ratio median 3.02, max 11.32, 32 of 33 cells above 1.10; observed order 3.02 and 3.63 on the two non-stiff problems",
+   "Jacobian difference slopes against h on non-stiff problems (predicted 4, 5, 1): g7 3.78 and 4.05, g8 4.77 and 5.31, lagged 0.97 and 1.00",
+   "Distance of the speculative point from the accepted state, per-cell medians in tolerance units: g8 0.05 to 0.72, g7 0.84 to 55",
+   "Reference: SciPy Radau 1e-13 against Radau 1e-11 and Julia Rodas5P agrees to 1.6e-14 to 4.2e-11 (e5 excluded); Julia RadauIIA5 differs 6 to 3308 times more and sets the predeclared uncertainty",
+   "Theory S6 bound for overlapping one stage is 9/8 = 1.125, below the stage-b pass threshold 1.15: only G7 (two stages, bound 1.25) can reach it"
+  ],
+  "open_issues": [
+   "Owner ruling needed on the error-ratio criterion: the frozen row names no aggregate; I predeclared the per-cell reading and both modes fail it, but so does the protected method against itself under a 2 percent tolerance change, so the failure cannot be attributed to the speculative Jacobian and the criterion as read does not show it is harmless either. I did not re-read the threshold.",
+   "e5 (t_end 1e13, atol 1.7e-24): the protected RODAS5P misses its tolerance by 430 to 31550 times at the end point. Cause not investigated; the linear invariant y3 - y2 + y4 drifts by 1e-19 to 1.5e-21, the size of the error, which points to floating-point drift in ill-conditioned solves (unverified).",
+   "Order evidence rests on two non-stiff problems; on the three stiff ones, including both Prothero-Robinson types, the protected method's own observed order is 2.0 to 3.3, so the 4.8 threshold could not discriminate there.",
+   "One cell per mode (oregonator, rtol 1e-8) is not decidable because the predeclared uncertainty takes the larger of two Julia runs and RadauIIA5 is far less accurate than requested; without it the cell passes (exploratory).",
+   "Stage b was not built. It additionally needs: G7 rather than G8, a step-size prediction before any factorization can overlap (otherwise only the Jacobian evaluation overlaps), a signal when g7 is ready, discarding of work from rejected attempts (protected rejection rate 0 to 39 percent per cell), a second Jacobian buffer, a concurrency contract for user callbacks, and V04's regime condition. Step-size hit rate was not measured.",
+   "Scope: n <= 200, dense storage, analytic Jacobians only; banded or sparse inner clients and finite-difference Jacobians were not measured.",
+   "The client is reachable only as rodas5p_integrators::stage_clients::speculative::*; no re-export was added because stage_clients/mod.rs is protected."
+  ],
+  "rulings": [
+   "Error-ratio criterion read strictly per cell (every valid cell in [0.67, 1.5]); a cell whose interval under the reference uncertainty straddles a bound is not decidable; declared before any run.",
+   "Order fit range fixed by a rule applied to the exact arm only (largest h downward until its error drops below 1e-11, then the six smallest h); a problem whose exact arm is below 4.8 is reported and non-discriminating.",
+   "Constant steps enforced with initial_step = max_step = h (all dyadic, h = 1.5/N) and rtol = atol = 1e10, verified per run (accepted = N, no rejection, smallest and largest accepted step equal h bit for bit).",
+   "Reference value SciPy Radau rtol 1e-13; uncertainty |ref - Radau 1e-11| + max(|ref - Julia RadauIIA5|, |ref - Julia Rodas5P|); closed forms for pr-nonlinear and the order set.",
+   "Exact Jacobian is used at the first linearization, at the retry after an error-type failure (recognised by an unchanged linearization time) and when no complete recorded attempt ends at the linearization time; after a local-error rejection the driver keeps the linearization, so the speculative Jacobian is kept.",
+   "The speculative Jacobian uses the recorded stage time t_n + c_i h, which is the accepted time bit for bit (c_7 = c_8 = 1, checked); the time derivative and f(t, y) are evaluated by the driver at the accepted state and are exact in every mode.",
+   "The trait was sufficient: no separate research driver. Because OdeProblem keeps its callbacks private and problem.rs is protected, the recording wrapper is applied to the right-hand-side callback before the problem is built.",
+   "HIRES, Oregonator and Brusselator N=32 are used as development problems and are not called holdout.",
+   "Deviations from the predeclaration are listed in REPORT_KO.md section 7 (protected arm's accepted steps read from controller telemetry in the fixed-step runs; exploratory details fixed after the measurement; contract tests run between predeclaration and measurement)."
+  ],
+  "files_written": [
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/crates/rodas5p-integrators/src/stage_clients/speculative.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/crates/rodas5p-integrators/tests/stage_clients_speculative_problems.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/crates/rodas5p-integrators/tests/stage_clients_speculative_contracts.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/crates/rodas5p-integrators/tests/stage_clients_speculative_alloc.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/crates/rodas5p-integrators/tests/stage_clients_speculative_measure.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/PREDECLARED.json",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/RESULTS.json",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/REPORT_KO.md",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/build_results.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/build_report.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/run_measurements.sh",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/run_checks.sh",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/reference/models.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/reference/pilot_pde.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/reference/reference.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/reference/reference.jl",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/reference/check_models.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/reference/build_reference.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/reference/reference.json",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/logs/pilot_pde.log",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/logs/measure_model_probes.log",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/logs/measure_adaptive.log",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/logs/measure_fixed_step.log",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/logs/check_models.log",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/logs/reference_scipy.log",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/logs/reference_julia.log",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian/logs/checks.log"
+  ]
+ },
+ "review": {
+  "node": "V07_SPECULATIVE_JACOBIAN",
+  "verdict": "accept_with_corrections",
+  "summary": "accept_with_corrections. Scope, protection and commit order are clean: 27 changed paths, all allowed; protected blobs equal the base; PREDECLARED.json is the first commit, its blob never changed, and the first build artifact of the node's tests is 16 minutes younger. Re-run here: 4 node test targets (17 + 1 pass), sentinels, client kit, clippy, rustfmt, loop checker; the 3 measurement programs (348/482/50 record lines byte-identical to the committed logs); both reference scripts (33 SciPy and 22 Julia records identical). reference.json, RESULTS.json and REPORT_KO.md regenerate identically from the raw logs. My own recomputation gives the builder's verdicts: G8 step PASS (median 1, max 161/155), error FAIL (29/3/1 cells), order PASS (4.862, 4.977); G7 step PASS (max 47/45), no KILL, error FAIL (26/6/1), order PASS (4.842, 4.964). Exact mode equals the protected driver in 33 + 80 runs. Corrections concern the record, not the code: G8 fails on e5 only, where the error is round-off drift, and without e5 it is NOT_DECIDABLE, not PASS; the order PASS depends on the pre-declared fit window; frozen text and pre-declared readings must be recorded apart.",
+  "scope_ok": true,
+  "protected_ok": true,
+  "predeclared_before_results": true,
+  "discriminator_checks": [
+   {
+    "name": "G8 step ratio: median <= 1.02 and max <= 1.05 (attempts speculative / protected, 33 cells)",
+    "builder_value": "median 1.000, max 1.039 (e5 rtol 1e-4, 161 vs 155), 22 cells exactly 1, PASS",
+    "reviewer_value": "median 1.000000, max 1.038710 (161/155), min 0.995098, 22 cells = 1, 0 cells > 1.05; accepted-step ratio as a sensitivity check: max 1.0397",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "G7 step ratio: median <= 1.02 and max <= 1.05 (33 cells)",
+    "builder_value": "median 1.000, max 1.044 (robertson rtol 1e-6, 47 vs 45), min 0.948, PASS",
+    "reviewer_value": "median 1.000000, max 1.044444 (47/45), min 0.948276 (nldiff-100 rtol 1e-6, 165/174), 0 cells > 1.05; accepted-step ratio max 1.0265",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "G7 kill rule: any step ratio > 1.10",
+    "builder_value": "no cell above 1.10 (largest 1.044); not triggered (reported as PASS)",
+    "reviewer_value": "0 of 33 cells above 1.10 in integer arithmetic, largest 47/45 = 1.0444; KILL not triggered (PASS here means no KILL)",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "G8 error ratio in [0.67, 1.5] (pre-declared reading: every cell, interval under reference uncertainty)",
+    "builder_value": "29 PASS, 3 FAIL (e5: 0.106, 1.848, 0.135), 1 not decidable (oregonator rtol 1e-8); median 1.000; FAIL",
+    "reviewer_value": "29 PASS / 3 FAIL (e5: 0.1055, 1.8479, 0.1354) / 1 NOT_DECIDABLE; median 0.99979; FAIL. Same rule on the 30 cells without e5: 29 PASS + 1 NOT_DECIDABLE, i.e. NOT_DECIDABLE, not PASS",
+    "reviewer_verdict": "FAIL",
+    "agrees": true
+   },
+   {
+    "name": "G7 error ratio in [0.67, 1.5] (pre-declared reading)",
+    "builder_value": "26 PASS, 6 FAIL (e5: 0.239, 3.895, 0.544; pr-nonlinear 0.667, 0.661; nldiff-100 rtol 1e-6 1.514), 1 not decidable; median 0.982; FAIL",
+    "reviewer_value": "26 / 6 / 1 with the same six cells (0.2387, 3.8949, 0.5437, 0.6674, 0.6609, 1.5142); median 0.98230; the nldiff-100 value is reproduced with my own explicit DOP853 reference; without e5 still 3 FAIL cells",
+    "reviewer_verdict": "FAIL",
+    "agrees": true
+   },
+   {
+    "name": "G8 observed order >= 4.8 (pre-declared: least squares over the six smallest h above the 1e-11 guard, problems where the exact arm reaches 4.8)",
+    "builder_value": "kaps-eps1 4.862 (exact 4.863), logistic-pair 4.977 (exact 4.976); three stiff problems non-discriminating; PASS",
+    "reviewer_value": "4.8617 and 4.9766 (exact 4.8630 and 4.9761), slopes equal to RESULTS.json within 1e-12; PASS",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "G7 observed order >= 4.8 (same rule)",
+    "builder_value": "kaps-eps1 4.842, logistic-pair 4.964; PASS",
+    "reviewer_value": "4.8418 and 4.9639; PASS under the pre-declared window. Sensitivity: all 8 contiguous kaps-eps1 points give exact 4.811 and G7 4.769",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "G8 stage a verdict (all three criteria)",
+    "builder_value": "step PASS, order PASS, error ratio FAIL: FAIL",
+    "reviewer_value": "step PASS, order PASS, error FAIL: FAIL by the pre-declared mode rule",
+    "reviewer_verdict": "FAIL",
+    "agrees": true
+   },
+   {
+    "name": "G7 stage a verdict (all three criteria and no kill)",
+    "builder_value": "step PASS, order PASS, no kill, error ratio FAIL: FAIL",
+    "reviewer_value": "step PASS, order PASS, no KILL, error FAIL: FAIL (not KILL)",
+    "reviewer_verdict": "FAIL",
+    "agrees": true
+   },
+   {
+    "name": "Exact mode bit-identical to the protected dense driver",
+    "builder_value": "identical in all 33 adaptive cells and all 80 fixed-step runs; identity tests pass",
+    "reviewer_value": "33 of 33 and 80 of 80 by my own comparison of the raw record fields (attempts, accepted, rejected, reuses, every counter, t and y bits); six identity tests pass on re-run; G8 and G7 end states differ from protected in 33 of 33 cells, so the comparison can fail",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   }
+  ],
+  "findings": [
+   {
+    "id": "R1-g8-fail-is-e5-only",
+    "severity": "major",
+    "claim": "G8 fails the error-ratio criterion in 3 cells, all e5; G8 stage a verdict FAIL.",
+    "evidence": "Reproduced: 29 PASS / 3 FAIL / 1 NOT_DECIDABLE, failing ratios 0.1055, 1.8479, 0.1354 (e5 at rtol 1e-4, 1e-6, 1e-8). On e5 the protected arm ends at y = (3.66e-46, -6.82e-33, 1.079e-19, 3.84e-61) for rtol 1e-4 while the reference is (about 0, 8.837e-23, 8.885e-23, about 0). Its error (31546 tolerance units; 3360 and 430 at the tighter tolerances) equals the residual of the linear invariant y3 - y2 + y4 (1.08e-19), so these cells compare round-off drift. The 1.02 tolerance-jitter controls of the protected method fail 5 of their 6 e5 cells. The ratios do not move when literature end values replace the builder's reference (they differ by 3.0e-25, inside the stated uncertainty). The same pre-declared rule on the 30 cells without e5 gives 29 PASS + 1 NOT_DECIDABLE (oregonator rtol 1e-8: e_prot 0.167, U 0.157, U set by Julia RadauIIA5), so the criterion would be NOT_DECIDABLE, not PASS. G7 without e5 keeps 3 FAIL cells.",
+    "correction": "Record G8 as FAIL under the pre-declared every-cell reading, with the note that the failure carries no information about J(g8). A ruling that sets e5 aside does not make G8 pass: the reference-uncertainty rule (run B) must be ruled on as well, or that cell re-referenced. This FAIL should not be used as a kill of the lever."
+   },
+   {
+    "id": "R2-order-window",
+    "severity": "minor",
+    "claim": "Order criterion PASS: G8 4.862 / 4.977 and G7 4.842 / 4.964 against exact 4.863 / 4.976.",
+    "evidence": "Reproduced with the pre-declared rule (kaps-eps1 N = 12..64, logistic-pair N = 16..96). The margin over 4.8 on kaps-eps1 is 0.062 (G8) and 0.042 (G7) because the protected method itself is pre-asymptotic there (4.863). With all 8 contiguous points (N = 6..64) the slopes are exact 4.811, G8 4.807, G7 4.769. The raw errors show no loss: the G7 error is at or below the exact error at every N of the window (8.09e-8 against 8.45e-8 at N = 12, 2.46e-11 against 2.47e-11 at N = 64). pr-nonlinear is non-discriminating only because the pre-declared window lies on its error floor (3.28); on N = 6..32 the slopes are exact 5.955, G8 5.957, G7 5.978. The lagged arm (3.02, 3.63) shows the test can detect a Jacobian error.",
+    "correction": "Keep PASS. Record that it holds for the pre-declared fit window and that 3 of 5 order problems are excluded by the pre-declared discriminating rule."
+   },
+   {
+    "id": "R3-frozen-vs-predeclared-labels",
+    "severity": "minor",
+    "claim": "Report rows give as frozen threshold '>= 4.8 on problems where the exact arm reaches 4.8' and 'within [0.67, 1.5] (every cell)'; the G7 kill rule is given the verdict PASS.",
+    "evidence": "PREREGISTRATION.md row V07 and the contract entry say only: step ratio <= 1.02 median and <= 1.05 max, error ratio in [0.67, 1.5], observed order >= 4.8, KILL any step ratio > 1.10 with g7. build_results.py uses exactly 102/100, 105/100, 110/100, (0.67, 1.5) and 4.8. Three readings are the builder's: step ratio = attempts ratio at equal tolerance, error ratio = end-point WRMS ratio in every cell, order only on problems where the exact arm reaches 4.8. All three are in PREDECLARED.json (blob 37dd6266, unchanged since commit 16cd264d). No threshold was moved and no adaptive cell was excluded (33 of 33 valid, no failed arm).",
+    "correction": "In the ledger keep the frozen text verbatim and list the three readings as pre-declared protocol; write the kill rule as 'not triggered' instead of PASS."
+   },
+   {
+    "id": "R4-g7-against-control",
+    "severity": "minor",
+    "claim": "The error-ratio failures cannot be attributed to the speculative Jacobian because the protected method fails the same rule under a 2 percent tolerance change.",
+    "evidence": "Controls reproduced: 6 and 5 failing cells, range 0.534 to 3.116. The statement holds for the set, but G7 is not inside the control cell by cell: it deviates more than both controls in 10 of 33 cells (G8 in 5), its median |ln ratio| is 0.063 against 0.040 for the controls (G8 0.012), and in nldiff-100 at rtol 1e-6 it takes 165 instead of 174 attempts with an error ratio of 1.5142 (controls 1.178 and 0.893). My own DOP853 reference for that problem differs 1.8e-13 from the builder's and gives 1.514222. Exploratory matched-error step ratios reach 1.096 for G8 (hires, rtol 1e-6) and 1.073 for G7 (pollution, rtol 1e-4), both above 1.05.",
+    "correction": "Word the record as 'the criterion does not isolate the Jacobian', not as 'no effect'; for G7 mention the larger spread and the matched-error maxima, labelled exploratory."
+   },
+   {
+    "id": "R5-combustion-also-misses-tolerance",
+    "severity": "minor",
+    "claim": "On e5 the protected method's end-point error is 430 to 31550 tolerance units.",
+    "evidence": "True, and e5 is not the only such problem: on combustion-100 the protected end-point error is 17.7, 77.0 and 144.7 tolerance units (rtol 1e-4, 1e-6, 1e-8). The table of REPORT_KO.md shows it, the final summary does not. All arms stay inside the band there.",
+    "correction": "If the owner restricts the criterion to cells where the protected arm meets its tolerance, 6 cells drop (e5 and combustion-100); G7 still has 3 failing cells and G8 is NOT_DECIDABLE."
+   },
+   {
+    "id": "R6-hygiene",
+    "severity": "minor",
+    "claim": "strict_json and measurement_reproducible checks pass; the worktree is clean.",
+    "evidence": "git status --short is empty. Three ignored leftovers remain in the evidence directory (.mypy_cache, reference/.mypy_cache, reference/__pycache__), and the builder's strict-JSON check also walked 696 mypy cache files. libtest prints the header record on the line 'test measure_x ... SPECJ {...}', so grep '^SPECJ ' and build_results.py never see it: the builder compares 347/481/49 lines; with the header 348/482/50 lines are byte-identical in my run. The evidence adds 6.2 MB, of which 3.75 MB is logs/measure_model_probes.log. The SciPy jacobian_check line for pollution reports 5.8e-3, which is difference-quotient rounding: the Rust test with a rounding-aware tolerance and the corpus JVP comparison pass.",
+    "correction": "No change to results. Do not carry the cache directories; print the header on its own line in a later revision."
+   },
+   {
+    "id": "R7-confirmed-scope-and-timing",
+    "severity": "minor",
+    "claim": "CONFIRMED: allowed paths only, protected files untouched, pre-declaration before measurement, nothing pushed.",
+    "evidence": "git diff --name-only base..HEAD lists 27 paths: speculative.rs (a reserved one-line file at base), 4 tests/stage_clients_speculative_*.rs and 22 files under speculative_jacobian/. 23 protected or forbidden blobs are equal at base, HEAD and in the worktree (among them Cargo.lock, rodas5p_fast.rs, client_stage.rs, stage_clients/mod.rs, PREREGISTRATION.md, LEDGER.jsonl); the loop checker prints PASS. Commit order: 16cd264d PREDECLARED.json (15:48:17Z), pilot log, code 94960932 (16:08:42Z), measurement logs 54790624; the reflog is linear with no amend. File and build timestamps agree: speculative.rs created 15:50:26Z, first build artifact of any speculative test target 16:04:07Z, measurement logs written 16:09:40Z to 16:09:48Z at commit 94960932 with 0 uncommitted crate changes. The final code matches the pre-declared problems, spans, tolerances and step counts. No remote-tracking ref contains the branch. Not provable from here: that no arm was run from another directory before the pre-declaration. The SciPy-only PDE pilot and the Julia smoke runs made before it are disclosed, as are the contract tests that printed attempt counts of three rtol 1e-6 cells between pre-declaration and measurement."
+   },
+   {
+    "id": "R8-confirmed-method-audit",
+    "severity": "minor",
+    "claim": "CONFIRMED: Exact mode identity, stage mapping, accepted-attempt rule, reference independence, fit rule and kill rule.",
+    "evidence": "Identity: the tests compare integrate_rodas5p_fast_observed_with_atol on the plain problem with the client driver in mode Exact (attempts, every counter, 11 output states, linearization points; in-place and faer LU; rejections exercised). Mapping: a mirror of Workspace::attempt reproduces the accepted state bit for bit and call k after factor equals the argument of stage k+1 bit for bit; an independent k-form step agrees to 1.3e-15 with gaps of at least 9.5e-8 between g7, g8 and the new state. Rejection: the driver calls linearize only on a fresh state, so the retry after a local-error rejection keeps the Jacobian of the last accepted attempt. In all 132 client runs linearizations = accepted steps = Jacobian builds and reuses = rejections (1501 rejected attempts in the G8 and G7 runs); the retry after an error-type failure uses the exact Jacobian (9 trap cases in the test); exact_no_point is 0 in every run. Reference: SciPy Radau 1e-13 for the value, uncertainty from Radau 1e-11, Julia RadauIIA5 and Rodas5P; the closed forms recomputed with mpmath are bit-equal. The fixed-step fit uses the pre-declared window and all 400 fixed-step runs pass the pre-declared constant-step check. The kill rule is an integer comparison over all 33 cells."
+   },
+   {
+    "id": "R9-confirmed-numbers",
+    "severity": "minor",
+    "claim": "CONFIRMED: reported numbers are parsed from executed runs.",
+    "evidence": "In a scratch copy reference.json and REPORT_KO.md regenerate byte-identically and RESULTS.json equally (apart from the recorded git head) from the committed raw logs; build_report.py holds no result literal. Traced to raw record lines: 161 against 155 attempts (e5, rtol 1e-4), 47 against 45 (robertson, rtol 1e-6), speculative linearizations 12490 of 12523 and 12482 of 12515, lagged median 3.0235 and maximum 1166/103, error ratios and slopes from y_end_bits, distance medians 0.049 to 0.72 and 0.84 to 55, matched-error ranges 0.969 to 1.096 and 0.927 to 1.073, invariant residuals 1.08e-19, -1.15e-20, -1.55e-21, Jacobian-difference slopes 3.78/4.05, 4.77/5.31, 0.97/1.00. A second harness (the contract test) prints the same attempt counts for 12 mode cells. The 9/8 bound for one overlapped stage is statement S6 of theory/THEORY.md."
+   }
+  ],
+  "reran": [
+   {
+    "command": "taskset -c 0-9,12-21 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_speculative_contracts --test stage_clients_speculative_alloc --test stage_clients_speculative_problems --test stage_clients_speculative_measure",
+    "exit_code": 0,
+    "result": "contracts 17 passed, alloc 1 passed, measure 3 ignored, problems 0 tests; no rebuild was needed"
+   },
+   {
+    "command": "taskset -c 0-9,12-21 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test ppsw1_6b_contracts --test ptsw2b_contracts --test stage_clients_dense_identity --test stage_clients_alloc",
+    "exit_code": 0,
+    "result": "37 passed, 24 passed, 8 passed (2 ignored), 1 passed"
+   },
+   {
+    "command": "taskset -c 0-9,12-21 cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --test stage_clients_speculative_contracts --test stage_clients_speculative_alloc --test stage_clients_speculative_problems --test stage_clients_speculative_measure --no-deps -- -D warnings",
+    "exit_code": 0,
+    "result": "no warnings"
+   },
+   {
+    "command": "rustfmt +1.94.1 --check --edition 2024 <speculative.rs and the four stage_clients_speculative_*.rs test files>",
+    "exit_code": 0,
+    "result": "formatted"
+   },
+   {
+    "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+    "exit_code": 0,
+    "result": "PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities"
+   },
+   {
+    "command": "taskset -c 0-9,12-21 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_speculative_measure -- --ignored --exact measure_adaptive --nocapture --test-threads=1",
+    "exit_code": 0,
+    "result": "348 SPECJ lines (header included) byte-identical to logs/measure_adaptive.log: all 33 cells and 7 arms"
+   },
+   {
+    "command": "the same with --exact measure_fixed_step and with --exact measure_model_probes",
+    "exit_code": 0,
+    "result": "482 and 50 SPECJ lines byte-identical to the committed logs"
+   },
+   {
+    "command": "python3 -I -B reference/check_models.py <re-run probe log>",
+    "exit_code": 0,
+    "result": "48 probes, right-hand sides and Jacobians of Rust and Python bit-identical"
+   },
+   {
+    "command": "taskset -c 0-9,12-21 python3 -I -B reference.py (scratch copy of reference.py and models.py)",
+    "exit_code": 0,
+    "result": "33 REFPY records identical to logs/reference_scipy.log apart from wall seconds"
+   },
+   {
+    "command": "JULIA_PKG_OFFLINE=true JULIA_NUM_THREADS=1 taskset -c 0-9,12-21 julia --startup-file=no --project=<worktree>/tools/benchmarks/component_julia reference.jl (scratch copy)",
+    "exit_code": 0,
+    "result": "22 REFJL records identical to logs/reference_julia.log apart from wall seconds; worktree still clean"
+   },
+   {
+    "command": "python3 -I -B reference/build_reference.py; python3 -I -B build_results.py; python3 -I -B build_report.py (scratch copy of scripts, raw logs and PREDECLARED.json)",
+    "exit_code": 0,
+    "result": "reference.json and REPORT_KO.md byte-identical to the committed files; RESULTS.json equal apart from built_at_git_head"
+   },
+   {
+    "command": "python3 -I -B review_recompute.py (my own code, from raw logs and raw reference logs)",
+    "exit_code": 0,
+    "result": "reference rebuilt equal for 10 problems; attempts and error verdicts equal in 33 cells x 5 arms; slopes equal within 1e-12; 0 mismatches with RESULTS.json"
+   },
+   {
+    "command": "python3 -I -B review_from_results.py (my own code, from RESULTS.json alone)",
+    "exit_code": 0,
+    "result": "G8: step PASS, error FAIL, order PASS, mode FAIL; G7: step PASS, no KILL, error FAIL, order PASS, mode FAIL; equal to the verdicts block"
+   },
+   {
+    "command": "taskset -c 0-9,12-21 python3 -I -B review_reference_nldiff.py (own right-hand side, explicit DOP853 at rtol 1e-13)",
+    "exit_code": 0,
+    "result": "differs 1.8e-13 from the builder's nldiff-100 reference; G7 ratio 1.514222 at rtol 1e-6 reproduced; pr-nonlinear closed form equal"
+   },
+   {
+    "command": "taskset -c 0-9,12-21 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_speculative_contracts -- --nocapture --test-threads=1",
+    "exit_code": 0,
+    "result": "17 passed; attempt counts of 12 mode cells equal those of the measurement log. All review scripts and outputs are in /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v07/review-scratch/"
+   }
+  ]
+ }
+}

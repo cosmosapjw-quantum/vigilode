@@ -853,7 +853,7 @@
       "depends": [
         "V15_STAGE_CLIENT_KIT"
       ],
-      "status": "PLANNED",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Per-phase cost of a RODAS5P step across regimes, to bound every lever before it is built.",
       "write_allowlist": [
         "research/production_loop_20261116/cost_anatomy/**"
@@ -879,7 +879,14 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_loop_20261116/cost_anatomy/RESULTS.json",
+        "research/production_loop_20261116/cost_anatomy/AMDAHL.json",
+        "research/production_loop_20261116/cost_anatomy/REVIEW.json",
+        "research/production_loop_20261116/cost_anatomy/REVIEW_OVERLAY.json",
+        "research/production_loop_20261116/cost_anatomy/REPORT_KO.md"
+      ],
+      "scope_completed": "59 of 60 pre-declared cells timed, bit identity in 526 of 526 run pairs. 16 rows are authoritative after the review overlay (builder: 29); the others are diagnostic_only. Runs are attempt-budget limited and use one tolerance per problem. The chain of eight stages dominates in 1D banded, expensive-RHS and matrix-free regimes and not in dense n >= 128, 2D/3D banded direct or finite-difference Jacobian regimes."
     },
     {
       "id": "V06_SHARED_KRYLOV_BASIS",
@@ -887,7 +894,7 @@
         "V15_STAGE_CLIENT_KIT",
         "V02_TRIAL_MERGE"
       ],
-      "status": "PLANNED",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Real measurement of one Krylov basis shared by the eight stage solves (same W), then removal of the per-stage re-factorisation.",
       "write_allowlist": [
         "crates/rodas5p-integrators/src/stage_clients/**",
@@ -917,7 +924,12 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_loop_20261116/shared_krylov/RESULTS.json",
+        "research/production_loop_20261116/shared_krylov/REVIEW.json",
+        "research/production_loop_20261116/shared_krylov/REPORT_KO.md"
+      ],
+      "scope_completed": "Stage a executed: FAIL as frozen (1 of 3 nonlinear families; JVP ratios 1.12-1.78 at step ratio 1.000). The v2 kernel was not built and the final discriminator is NOT_RUN. Clients for per-stage GMRES and for the merged shared basis exist as opt-in stage clients. Linear families, strong preconditioners and strongly stiff problems were not measured."
     },
     {
       "id": "V07_SPECULATIVE_JACOBIAN",
@@ -926,7 +938,7 @@
         "V05_STAGE_THEORY",
         "V04_STAGE_COST_ANATOMY"
       ],
-      "status": "PLANNED",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Evaluate the next step Jacobian at the stage-7 or stage-8 argument, overlapped with the tail stages.",
       "write_allowlist": [
         "crates/rodas5p-integrators/src/stage_clients/**",
@@ -955,7 +967,12 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_loop_20261116/speculative_jacobian/RESULTS.json",
+        "research/production_loop_20261116/speculative_jacobian/REVIEW.json",
+        "research/production_loop_20261116/speculative_jacobian/REPORT_KO.md"
+      ],
+      "scope_completed": "Stage a executed: FAIL as frozen for g8 and g7 under the pre-declared per-cell reading of the error-ratio criterion (step ratio and observed order pass; the criterion does not isolate the Jacobian). Stage b was not started: stage a did not pass and the bound of the gain is 1.19 in the two authoritative regimes of V04. Scope: n <= 200, dense storage, analytic Jacobians."
     },
     {
       "id": "V08_JACOBIAN_ASSEMBLY",

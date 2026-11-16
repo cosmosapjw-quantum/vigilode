@@ -1,0 +1,334 @@
+{
+ "schema": "vigilode.loop.node-review.v1",
+ "node": "V06_SHARED_KRYLOV_BASIS",
+ "workflow_run": "wf_4529fa64-b63",
+ "source": "structured final answers of the builder agent and of the independent reviewer agent, copied verbatim from the workflow journal",
+ "journal_sha256": "ebfed821c2c608157f5c508ab407b4720add6bdb873cdea893135cc67de77865",
+ "builder_branch": "research/production-loop-20261116-w2-v06",
+ "builder_report": {
+  "status": "done",
+  "summary": "Stage a ran as predeclared: FAIL, 1 of 3 families. JVP ratio B/C at rtol 1e-4 / 1e-6: grayscott2d 1.783 / 1.700 (pass), adr2d 1.454 / 1.496 (miss), bruss1d 1.122 / 1.276 (miss); step ratio 1.000 and equal achieved error in all six cells. Median family ratio 1.454, so the \"<1.2 cancels v2\" rule did not fire; v2 was not built because stage a did not pass, and the final discriminator is NOT_RUN. Client B0 (shipped cadence) matches protected arm A counter for counter in 6/6 cells. Residual audit: 0 failures in 8,704 declared solves (42,022 with exploratory); audit-on and audit-off runs are bit-identical; 0 allocations per step. Instructions C/B are 64-376x (merged kernel refactors per vector). The adr2d verdict depends on my predeclared choice to count the confirming residual JVP: Krylov vectors alone give 1.504 / 1.577 (2 of 3 families). Exploratory, not counted: a 300-vector basis leaves bruss1d at 1.20 / 1.29; linear rtol 1e-6 instead of 1e-10 cuts per-stage GMRES JVPs to 0.52-0.64x at unchanged error; the merged hook accepts residuals 5e4 times the protected threshold. Recommendation: do not keep the basis across steps.",
+  "branch": "research/production-loop-20261116-w2-v06",
+  "head_commit": "6f11d5e755cc535789491b6224a0f951de232668",
+  "predeclared_commit": "c563cb85bd91a0840766026b554f63f09f41c738",
+  "checks": [
+   {
+    "name": "krylov client tests (contracts, alloc, measure)",
+    "command": "taskset -c 0-9,12-21 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_krylov_contracts --test stage_clients_krylov_alloc --test stage_clients_krylov_measure",
+    "exit_code": 0,
+    "result": "contracts 9 passed, 1 ignored (fails by design: merged hook stopping test); alloc 1 passed; measure 1 ignored (measurement program). Log: shared_krylov/logs/verify_tests.log"
+   },
+   {
+    "name": "source-pinning sentinels",
+    "command": "taskset -c 0-9,12-21 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test ppsw1_6b_contracts --test ptsw2b_contracts",
+    "exit_code": 0,
+    "result": "ppsw1_6b_contracts 37 passed, ptsw2b_contracts 24 passed. Log: shared_krylov/logs/verify_sentinels.log"
+   },
+   {
+    "name": "clippy",
+    "command": "taskset -c 0-9,12-21 cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --test stage_clients_krylov_problems --test stage_clients_krylov_contracts --test stage_clients_krylov_alloc --test stage_clients_krylov_measure --no-deps -- -D warnings",
+    "exit_code": 0,
+    "result": "zero warnings. Log: shared_krylov/logs/verify_clippy.log"
+   },
+   {
+    "name": "rustfmt",
+    "command": "rustfmt +1.94.1 --check --edition 2024 crates/rodas5p-integrators/src/stage_clients/krylov.rs crates/rodas5p-integrators/tests/stage_clients_krylov_{problems,contracts,alloc,measure}.rs",
+    "exit_code": 0,
+    "result": "no diff. Log: shared_krylov/logs/verify_rustfmt.log"
+   },
+   {
+    "name": "loop checker",
+    "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+    "exit_code": 0,
+    "result": "PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities. No path outside the allowlist (v2 not built, so crates/rodas5p-krylov/src/lib.rs is untouched)."
+   },
+   {
+    "name": "strict JSON load of every JSON written",
+    "command": "python3 -I (object_pairs_hook rejecting duplicate keys, parse_constant rejecting NaN/Infinity) over shared_krylov/**/*.json",
+    "exit_code": 0,
+    "result": "7 files load: PREDECLARED.json, RESULTS.json, reference/{adr2d,bruss1d,bruss1d_stiff,grayscott2d,robertson_rd1d}.json"
+   },
+   {
+    "name": "allocation test with records",
+    "command": "stage_clients_krylov_alloc --nocapture (own binary)",
+    "exit_code": 0,
+    "result": "9 client configurations, 54 runs, 1,728 steady accepted steps, max 0 allocations per step, 6 runs with fallback solves; small development problems (n = 64 to 128). Log: shared_krylov/logs/alloc_test.log"
+   },
+   {
+    "name": "failing test proving the merged hook's stopping test differs",
+    "command": "cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_krylov_contracts -- --ignored --exact merged_hook_solution_meets_the_protected_threshold",
+    "exit_code": 101,
+    "result": "fails by design: hook accepted residual 1.03e-4, protected threshold 1.99e-9 (5.2e4 times smaller). Passing counterpart: the_merged_hook_accepts_residuals_far_above_the_protected_threshold. Log: shared_krylov/logs/merged_hook_failing_test.log"
+   },
+   {
+    "name": "declared measurement runs",
+    "command": "research/production_loop_20261116/shared_krylov/run_measurements.sh stage_a",
+    "exit_code": 0,
+    "result": "54 runs, all exit 0 and integrated to t1; executed from commit 552b0b60 with a clean tree, after the predeclaration commit c563cb85; later binary reproduces two declared runs bit for bit"
+   }
+  ],
+  "discriminators": [
+   {
+    "name": "V06 stage a (pass rule)",
+    "frozen_threshold": "JVP ratio >= 1.5 at step ratio <= 1.05 on >= 2 of 3 families against a per-stage GMRES client with identical stopping test",
+    "measured": "1 of 3 families. JVP ratio (rtol 1e-4 / 1e-6): grayscott2d 1.783 / 1.700; adr2d 1.454 / 1.496; bruss1d 1.122 / 1.276. Step ratio 1.000 in all six cells. Family passes only if both tolerances pass (predeclared).",
+    "verdict": "FAIL"
+   },
+   {
+    "name": "V06 stage a cancel rule (median JVP ratio < 1.2 cancels v2)",
+    "frozen_threshold": "stage a median JVP ratio < 1.2 cancels v2",
+    "measured": "median of the three family-level ratios (smaller of the two tolerances) = 1.454; rule NOT triggered. v2 was skipped only because stage a did not pass.",
+    "verdict": "PASS"
+   },
+   {
+    "name": "V06 final",
+    "frozen_threshold": "at matched error JVP <= 0.5x and instructions <= 0.8x of per-stage GMRES with the same preconditioner on 3 of 4 families",
+    "measured": "not measured: v2 kernel not built because stage a failed. Inference only: best stage-a ratio is 1.868 even counting Krylov vectors alone, below the 2.0 that JVP <= 0.5x needs.",
+    "verdict": "NOT_RUN"
+   },
+   {
+    "name": "V06 kill rule",
+    "frozen_threshold": "no family improves instructions, or a residual check fails",
+    "measured": "residual checks: 0 failures in 42,022 audited solves (8,704 declared). Instructions of v2 not measured; with the merged kernel C costs 64 to 376 times B.",
+    "verdict": "NOT_RUN"
+   }
+  ],
+  "open_issues": [
+   "adr2d misses 1.5 by 0.3% to 3% (1.496, 1.454) and the outcome depends on a protocol choice I predeclared: the confirming true-residual JVP (one per solve, both arms) is counted. Counting Krylov vectors only gives 1.504 / 1.577, i.e. 2 of 3 families. The verdict stays FAIL as predeclared; the owner may want to rule on the counting.",
+   "Regime limit: the three stage-a families are mildly stiff by design (explicit DOP853 finishes them in 905, 1,673 and 10,625 RHS calls). Strongly stiff problems are covered by one exploratory cell only (standard Brusselator: arm A has 428 linear-solve failures in 865 attempts, B/C60 JVP ratio 0.947).",
+   "grayscott2d and adr2d have few attempts (14, 18 and 21, 45), including the ramp from initial step 1e-6.",
+   "Basis limit 200 was reached on bruss1d (73 and 6 fallback solves). Exploratory C300 gives 1.201 / 1.294, so the limit did not decide the verdict.",
+   "Exploratory finding worth an owner decision: the linear stopping test, not sharing, drives JVP counts. At linear rtol 1e-6, per-stage GMRES needs 0.52 to 0.64 of its 1e-10 JVPs at unchanged error; the merged hook with its own WRMS test uses 2.3 to 11.7 times fewer JVPs than B at similar error. Changing the protected tolerance is outside this node.",
+   "Exploratory finding: at loose linear tolerances the shared basis gives larger integration error than per-stage GMRES at the same residual bound (error ratio C/B up to 2.4 at 1e-6 and 40.6 at 1e-4). The correlated-residual explanation in the report is unverified.",
+   "Jacobi is the only preconditioner measured and does not help these families (B needs 1.01 to 1.36 times the JVPs); sharing under a strong preconditioner is unmeasured.",
+   "Wall time is diagnostic_only (shared host, load 3.9 to 6.2, no pinned core, single run).",
+   "Two exploratory groups started with 2 tracked files modified (parse_results.py and the contracts test); neither is in the measurement binary and the binary sha256 is the same as in the clean-tree groups.",
+   "robertson_rd1d (the fourth, final-only family) has a reference but no run.",
+   "Keeping the basis across steps was neither implemented nor measured; the recommendation against it is an inference from the per-stage breakdown."
+  ],
+  "key_numbers": [
+   "stage a: 1 of 3 families pass; median family JVP ratio 1.454",
+   "JVP ratio B/C (rtol 1e-4, 1e-6): grayscott2d 1.783, 1.700; adr2d 1.454, 1.496; bruss1d 1.122, 1.276",
+   "Krylov-vector-only ratio (exploratory): grayscott2d 1.868, 1.786; adr2d 1.504, 1.577; bruss1d 1.121, 1.293",
+   "step ratio C/B = 1.000 in 6/6 cells; error ratio C/B 0.999997 to 1.000005",
+   "B0 vs A: attempts, JVPs, Arnoldi iterations, matvecs, RHS calls identical in 6/6 cells",
+   "JVP B/A: 0.257 to 0.602 at equal attempts",
+   "residual audit: 0 failures / 8,704 declared solves; 0 / 42,022 including exploratory; max residual/threshold 0.999997",
+   "instructions:u C/B: 64 to 376 (merged kernel)",
+   "Krylov storage B 0.38 to 0.75 MB, C 4.96 to 9.91 MB",
+   "B vectors per solve mean 9.7 to 30.8; C basis dimension at attempt end mean 49 to 156, max 200",
+   "stage 2-8 new vectors in C: 33% to 99% of B's",
+   "Jacobi secondary ratio: 1.073 to 1.616",
+   "exploratory C60: 0.968 to 1.414; C300 bruss1d: 1.201, 1.294; Ckeep saves 1.9% and 3.2% on bruss1d",
+   "exploratory linear rtol 1e-6: B JVP 0.52 to 0.64 of 1e-10, B/C ratio 1.53 to 2.00, error C/B up to 2.36",
+   "exploratory merged hook: JVP A/hook 3.9 to 30.9, B/hook 2.3 to 11.7, error hook/A 0.98 to 1.24",
+   "runs: 54 declared, 80 exploratory, all completed",
+   "allocation: 0 per step over 1,728 steady steps"
+  ],
+  "files_written": [
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v06/crates/rodas5p-integrators/src/stage_clients/krylov.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v06/crates/rodas5p-integrators/tests/stage_clients_krylov_problems.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v06/crates/rodas5p-integrators/tests/stage_clients_krylov_contracts.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v06/crates/rodas5p-integrators/tests/stage_clients_krylov_alloc.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v06/crates/rodas5p-integrators/tests/stage_clients_krylov_measure.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v06/research/production_loop_20261116/shared_krylov/PREDECLARED.json",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v06/research/production_loop_20261116/shared_krylov/RESULTS.json",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v06/research/production_loop_20261116/shared_krylov/REPORT_KO.md",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v06/research/production_loop_20261116/shared_krylov/run_measurements.sh",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v06/research/production_loop_20261116/shared_krylov/parse_results.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v06/research/production_loop_20261116/shared_krylov/make_report.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v06/research/production_loop_20261116/shared_krylov/reference/make_reference.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v06/research/production_loop_20261116/shared_krylov/reference/ (5 reference JSON files)",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v06/research/production_loop_20261116/shared_krylov/logs/ (293 files: per-run .log and .perf, environment, build, reference, verification, allocation and failing-test logs)"
+  ],
+  "rulings": [
+   "Stopping test taken from the protected driver: true-residual 2-norm <= max(gamma*atol, rtol*||rhs||), rtol 1e-10, atol 1e-14, restart 40, 200 vectors (rodas5p_matrix_free_fast.rs:2785-2791, 2924-2929, 3016-3031; gmres_into.rs:268-312, 467-474; common.rs:40-41; routing.rs:233-251).",
+   "Baseline B tests after every Arnoldi column and confirms on a true residual; the shipped once-per-40-columns cadence is measured separately as control arm B0, because the merged kernel can only test per vector.",
+   "JVP of an arm = every JVP charged to it, including the one confirming residual per solve; audit JVPs are counted separately and excluded.",
+   "A family passes only if both tolerances pass; family-level ratio for the median rule is the smaller of the two.",
+   "Shared basis: one per attempt, max_dim 200 (the Arnoldi budget of one protected stage solve), cold per-stage GMRES fallback as in the merged hook.",
+   "Primary preconditioner option is none (the only one arm A admits); right Jacobi is secondary.",
+   "Families were sized a priori to the mildly stiff regime where the shipped route completes without exhausting its budget; stated in PREDECLARED.json before any run.",
+   "No amendment to PREDECLARED.json. Every group added after stage a is labelled exploratory and enters no verdict.",
+   "v2 skipped per the task because stage a did not pass; shared_basis.rs untouched, crates/rodas5p-krylov unchanged.",
+   "Merged kernel worked around inside the client only: the protected threshold is encoded in its uniform weights with theta = 1, and Jacobi is passed as I - J_k with unit shift to avoid cancellation.",
+   "Nothing pushed; LEDGER, PREREGISTRATION, PROGRESS, CHECKPOINT and docs/agent untouched."
+  ]
+ },
+ "review": {
+  "node": "V06_SHARED_KRYLOV_BASIS",
+  "verdict": "accept_with_corrections",
+  "summary": "accept_with_corrections. Scope, protected files and commit order are clean; PREDECLARED (c563cb85, 00:37:03) precedes the first build of the measurement target (00:46:59) and the first declared run (00:57:42). Every frozen verdict reproduces: stage a FAIL, 1 of 3 (bruss1d 1.122/1.276, grayscott2d 1.783/1.700, adr2d 1.454/1.496, step ratio 1.000); cancel rule not triggered (median 1.454); final and kill NOT_RUN. I re-executed all six cells (36 arm runs): counters, states and audits are bit-identical, instructions within 2.5e-5. RESULTS.json and REPORT_KO.md regenerate byte-identically. My own JVP callback counter equals jvp_calls in 28 runs; my own residual arithmetic finds 0 failures in 7,312 solves. Corrections: (1) major, scope: the three families are all nonlinear; my exploratory linear counterpart of adr2d (reaction removed) gives JVP ratio 3.86/3.08 at equal error, so the FAIL holds for nonlinear families only; (2) the Krylov-only '2 of 3' needs the 1e-6 start ramp: with initial step 1e-3 adr2d gives 1.463/1.552; (3) labels: cancel rule is 'not triggered', the 5e4 hook factor is one development solve, the audit shares the clients' residual routine.",
+  "scope_ok": true,
+  "protected_ok": true,
+  "predeclared_before_results": true,
+  "discriminator_checks": [
+   {
+    "name": "V06 stage a (pass rule)",
+    "builder_value": "FAIL; 1 of 3 families. JVP ratio (rtol 1e-4 / 1e-6): grayscott2d 1.783 / 1.700, adr2d 1.454 / 1.496, bruss1d 1.122 / 1.276; step ratio 1.000 in six cells",
+    "reviewer_value": "FAIL; 1 of 3. Recomputed from RESULTS.json and, separately, from the raw logs: bruss1d 16412/14631 = 1.1217 and 17472/13698 = 1.2755; grayscott2d 1719/964 = 1.7832 and 2065/1215 = 1.6996; adr2d 2461/1693 = 1.4536 and 3851/2574 = 1.4961; step ratio 1.000 and clean audits in six cells. The outcome is the same if a family may pass on either tolerance. All six cells re-executed with bit-identical counters and states.",
+    "reviewer_verdict": "FAIL",
+    "agrees": true
+   },
+   {
+    "name": "V06 stage a cancel rule (median JVP ratio < 1.2 cancels v2)",
+    "builder_value": "PASS (median of the three family minima 1.454; rule not triggered)",
+    "reviewer_value": "Not triggered: median of the family minima 1.4536, median of the six cells 1.4749, 1 of 6 cells below 1.2. The label should read NOT_TRIGGERED; v2 was not built for the other reason (stage a not passed).",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "V06 final",
+    "builder_value": "NOT_RUN (v2 kernel not built because stage a failed)",
+    "reviewer_value": "NOT_RUN: no shared_basis_v2 file in the diff and no v2 or final run in RESULTS.json; the builder's task allowed v2 only after a stage-a pass. The inference that the JVP clause could not be met (largest ratio 1.868 < 2.0) holds for the three declared families and is not a measurement.",
+    "reviewer_verdict": "NOT_RUN",
+    "agrees": true
+   },
+   {
+    "name": "V06 kill rule",
+    "builder_value": "NOT_RUN (0 residual failures in 42,022 audited solves; v2 instructions not measured; merged kernel C/B 64 to 376)",
+    "reviewer_value": "Residual clause evaluated and not triggered (builder audit 0 of 42,022, 0 of 8,704 declared; reviewer's separate arithmetic 0 of 7,312). Instruction clause NOT_RUN for v2, as bound to v2 in PREDECLARED.json before any run; on the stage-a client with the merged kernel 0 of 3 families improve instructions (C/B 64.0 to 375.7), which a reading that ignores the stage would call KILL.",
+    "reviewer_verdict": "NOT_RUN",
+    "agrees": true
+   }
+  ],
+  "findings": [
+   {
+    "id": "R1",
+    "severity": "major",
+    "claim": "Stage a FAIL (1 of 3) with the conclusion that sharing one basis saves few JVPs; the stated regime limit is mild stiffness only.",
+    "evidence": "All three predeclared families are nonlinear (PREDECLARED.json families_stage_a: u^2 v, u v^2, cubic reaction). REPORT_KO.md line 149 says no linear problem of n >= 1e3 was measured, but neither its limits section nor the builder's summary carries that limit. Reviewer's exploratory run (not predeclared, chosen after seeing the data): the linear counterpart of adr2d, i.e. the same 32x32 grid, stencil, eps, a, start, span and integrator configuration with the reaction term removed, run with the node's own clients B and C. JVP 1990/516 = 3.86 (rtol 1e-4) and 2338/758 = 3.08 (rtol 1e-6); step ratio 1.000 (14 and 24 attempts); achieved error equal in both arms (0.1177 and 0.1861 tolerance units against exp(tL)y0, reference cross-checked with DOP853 to 5e-14); B needs 16.8 and 11.2 vectors per solve, comparable to the declared cells; 0 of 1,056 residual checks fail. With initial step 1e-3: 4.06 and 3.10. Files: /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/review-scratch/wscopy/crates/rodas5p-integrators/tests/review_v06_probe.rs (test review_linear_counterpart), probe_linear.log, analyze_linear.py.",
+    "correction": "Keep the frozen verdict (FAIL under the predeclared family set) but record it as 'FAIL on three nonlinear families'. Add to the summary and the limits that no linear family was declared and that an exploratory linear counterpart exceeds the stage-a threshold by a factor of 2 or more. Do not record 'sharing does not reduce JVPs' as a general result: the 2-of-3 outcome depends on the predeclared family set. Whether a linear or weakly nonlinear family belongs in a new predeclaration is an owner decision. Instructions and wall time of the linear case were not measured."
+   },
+   {
+    "id": "R2",
+    "severity": "minor",
+    "claim": "Open issue 1: counting Krylov vectors only gives adr2d 1.504 / 1.577, i.e. 2 of 3 families; the owner may want to rule on the counting.",
+    "evidence": "The numbers are right (2296/1527 and 3494/2216 in the raw logs). Reviewer per-step data (review-scratch/probe_run.log, analyze_probe.py): the first five steps of the ramp from the declared initial step 1e-6 have B/C ratios 2.30, 2.00, 2.06, 1.88, 1.52, so the ramp raises the ratio; without the growth-capped leading steps the declared-count ratios are 1.438 and 1.482. With the driver's default initial step 1e-3 (adaptive.rs:166) adr2d gives 2301/1613 = 1.427 and 3718/2513 = 1.480, Krylov vectors only 1.463 and 1.552; grayscott2d still passes (1.753 and 1.661).",
+    "correction": "Add to open issue 1 that the Krylov-only pass of adr2d at rtol 1e-4 rests on the start-up ramp: with initial step 1e-3 it is 1.463, so adr2d fails under either count. The predeclared FAIL is robust to the initial step."
+   },
+   {
+    "id": "R3",
+    "severity": "minor",
+    "claim": "Discriminator labels: cancel rule 'PASS', kill rule 'NOT_RUN'.",
+    "evidence": "Cancel rule: median 1.4536, not triggered; 'PASS' here means 'v2 not cancelled by this rule'. Kill rule: the residual clause was evaluated and did not fire; the instruction clause was bound to the v2 kernel in PREDECLARED.json (definitions.final_verdict_if_reached) before any run, in line with PLAN_KO.md line 85. On the only shared-basis client that exists no family improves instructions (C/B 64.0 to 375.7, the same net of setup).",
+    "correction": "Record the cancel rule as 'NOT_TRIGGERED (median 1.454)' and the kill rule as 'residual clause not triggered; instruction clause NOT_RUN for v2 (merged kernel: 0 of 3 families improve)', so that neither reading is lost."
+   },
+   {
+    "id": "R4",
+    "severity": "minor",
+    "claim": "The residual audit is an independent check of the original stage residual.",
+    "evidence": "ResidualAuditClient has its own JVP operator (krylov.rs:1212), its own saved right-hand side (1223-1225) and its own counters (1110, 1161), and it checked every successful solve (78 audited runs: checks == solves - failed_solves, audit JVPs == checks). It calls the same stage_true_residual (krylov.rs:313-327, also used by the clients at 448 and 695) and the same StageStoppingRule::threshold (121-136) as the code it audits, so an error common to that formula would pass. Reviewer check with separate arithmetic (raw problem JVP callback at the linearization state; threshold max(1e-14 gamma/(h gamma), 1e-10 ||b||_2) written out): 0 failures in 7,312 solves over B0, B, C and C60 on the three families, including the 73 and 6 fallback solves of bruss1d; the largest residual/threshold values agree with the builder's audit to six digits (adr2d 1e-4: B 0.996607, C 0.996889). Files: review-scratch/probe_residual.log, probe_residual_bruss.log.",
+    "correction": "Describe the audit as 'own operator, own counters, saved right-hand side, shared residual routine'. No result changes."
+   },
+   {
+    "id": "R5",
+    "severity": "minor",
+    "claim": "Arms B and C differ only in sharing the basis.",
+    "evidence": "B restarts every 40 columns (PerStageGmresOptions::baseline, krylov.rs:173-180; pass length at 478); C keeps one unrestarted basis of up to 200 vectors (219-225). B's largest solves use 83 and 53 vectors on bruss1d and 47 on grayscott2d at rtol 1e-4, i.e. more than one pass, so part of C's advantage there is the absence of restarts. The asymmetry favours C and does not change the outcome: grayscott2d also passes at rtol 1e-6, where B never restarts (largest solve 34, ratio 1.700); bruss1d fails regardless; adr2d has no restarts (25 and 14).",
+    "correction": "State the asymmetry next to the grayscott2d 1e-4 and bruss1d numbers. For any later comparison declare a baseline with the same Krylov budget per solve."
+   },
+   {
+    "id": "R6",
+    "severity": "minor",
+    "claim": "The 54 declared runs were executed from commit 552b0b60 with a clean tree.",
+    "evidence": "Clean at the start (logs/environment_stage_a_20261117T005742.log: git_dirty_tracked=0). While the group ran (last run ended 01:07:56) RESULTS.json was first written (file birth 00:59:58) and stage_clients_krylov_measure.rs was edited (mtime 01:03:14), so the exploratory options were designed with partial declared results visible. The stage-a binary (sha256 7ed0b9bf...) was overwritten at 01:09:50 and no longer exists. Checked: all 54 stage-a logs lack the linear_rtol field that the later binary prints (79 of 80 exploratory logs have it), so no declared run used the later binary; the later binary (7b93186b...) reproduces all 36 runs of A, B0, B and C bit for bit.",
+    "correction": "Word it as 'clean tree at the start of the group'. Keep a copy of the measuring binary with the logs in later nodes."
+   },
+   {
+    "id": "R7",
+    "severity": "minor",
+    "claim": "The merged hook accepts residuals 5e4 times the protected threshold.",
+    "evidence": "The figure comes from one stage-1 solve of the development problem dev_bruss1d (n = 64, h gamma = 0.05 * 0.2119, tolerances 1e-4): residual 1.0325e-4 against threshold 1.9888e-9 (stage_clients_krylov_contracts.rs:604-628; re-run, exit 101, same numbers). The factor depends on the system. At the declared sizes the evidence is indirect: arm H needs 2.3 to 11.7 times fewer JVPs than B at similar error (confirmed from the logs).",
+    "correction": "Say 'on one development stage solve the hook accepted a residual 5.2e4 times the protected threshold'."
+   },
+   {
+    "id": "R8",
+    "severity": "minor",
+    "claim": "The worktree has no uncommitted leftovers.",
+    "evidence": "True for the builder: git status --short --ignored was empty at HEAD 6f11d5e7. Side effect of this review: opening parse_results.py and reference/make_reference.py with the Read tool made a session hook run mypy, which created shared_krylov/.mypy_cache (01:32:51) and shared_krylov/reference/.mypy_cache (01:51:54), both git-ignored. I moved both to review-scratch/hook_created_mypy_cache_*; the worktree is clean again including ignored files, HEAD is unchanged and no tracked file was touched. My probe added one test binary (review_v06_probe-1d83e814de9efe7f) to the builder's CARGO_TARGET_DIR; the sha256 of the measurement binary is unchanged.",
+    "correction": "None for the builder. For the orchestrator: reading .py files with the Read tool writes a type-checker cache next to them."
+   },
+   {
+    "id": "CHECK1_SCOPE",
+    "severity": "minor",
+    "claim": "VERIFIED, no defect: scope, protection, leftovers, commit order.",
+    "evidence": "git diff --name-only 0443025..HEAD: crates/rodas5p-integrators/src/stage_clients/krylov.rs (a one-line reserved stub at base; stage_clients/mod.rs already declares it), tests/stage_clients_krylov_{alloc,contracts,measure,problems}.rs, and files under research/production_loop_20261116/shared_krylov/. 0 paths outside the allowlist, 0 protected paths, no Cargo.toml or Cargo.lock, no shared_basis_v2 file. Loop checker prints PASS. Commit order: c563cb85 (00:37:03, PREDECLARED.json only), 0692461e code (00:53:20), 552b0b60 references, driver and parser (00:57:19, first log file), e33afe83 stage-a logs (01:08:17), then 2ea52c2c, 5451a787, 057eb810, 6f11d5e7. History is linear and the reflog shows no amend or reset. PREDECLARED.json was touched by one commit; its sha256 29b17919... equals the hash in the stage-a environment log; amendments is empty. File and fingerprint birth times: krylov.rs written 00:42:57, measurement target first compiled 00:46:59, references generated 00:54:55 to 00:56:04, first declared run 00:57:42. No upstream and no remote branch contains HEAD; all 8 commits carry the trailer. The statement 'before any client code existed' cannot be verified and is not needed for the rule."
+   },
+   {
+    "id": "CHECK2_FROZEN",
+    "severity": "minor",
+    "claim": "VERIFIED, no defect: thresholds, exclusions, typed-in numbers.",
+    "evidence": "parse_results.py:22-28 holds 1.5, 1.05, 2, 1.2, 0.5, 0.8, 3, equal to PREREGISTRATION.md line 30 and the contract's acceptance_checks. Choices fixed in PREDECLARED.json before data: a family passes only if both tolerances pass (stricter, no effect on the outcome), JVP means every charged callback including the confirming residual (decides adr2d, disclosed), the median is taken over family minima, the kill rule is bound to v2. No exclusions: 54 of 54 declared runs present with exit 0 (48 integrated to t1, 6 SETUP). No typed-in numbers: run from a scratch copy, parse_results.py reproduces RESULTS.json and make_report.py reproduces REPORT_KO.md byte for byte. Traced to raw lines: a_adr2d_1e-4_B_none_audit1.log jvp_calls 2461; a_adr2d_1e-4_C_none_audit1.log jvp_calls 1693; a_grayscott2d_1e-6 B and C 2065 and 1215; a_bruss1d_1e-4 A and B0 both 27285; a_adr2d_1e-6_{B,C}_none_audit0.perf 783482748 and 50155534331 (64.0); a_bruss1d_1e-4 5083555653 and 1909840704264 (375.7); audit checks sum to 8,704 declared and 42,022 in all; reference nfev 905, 1673, 10625. The summary's exploratory numbers also match the logs (C300 1.201 and 1.294; linear rtol 1e-6 gives B 0.52 to 0.64 of its JVPs; stiff Brusselator 428 failures in 865 attempts, B/C60 0.947; Jacobi 1.009 to 1.358)."
+   },
+   {
+    "id": "CHECK4_METHOD",
+    "severity": "minor",
+    "claim": "VERIFIED, no defect beyond R4 and R5: stopping test, residual check, JVP counting, preconditioner, baseline, families.",
+    "evidence": "Stopping test: both modes take tau once at krylov.rs:914-915 and accept only on stage_true_residual <= tau (B at 443-465, C at 694-708); the zero iterate is accepted on ||b|| <= tau in both (443-445 with 463; 919-923); C's fallback is B's gmres_solve (929-938). The kernel's test h_gamma*||r||_w <= theta (shared_basis.rs:310-319) is turned into ||r||_2 <= tau by uniform weights (krylov.rs:655) and theta = 1 (788-791). threshold() (121-136) is the protected inequality divided by h gamma: gmres_into.rs:268-269 and 278-306, common.rs:40-41, rodas5p_matrix_free_fast.rs:2785-2791 and 2924-2929, routing.rs:233-251. Evidence in the data: B0 equals A in attempts, jvp_calls, linear_iterations, linear_matvecs, diagnostic_matvecs and rhs_calls in 6 of 6 cells. JVP counting: every operator application goes through apply_counted (krylov.rs:322, 340, 663, 670; operator.rs:329-359), including basis vectors, confirming residuals and fallback solves; the audit uses separate counters. Reviewer's own atomic counter around the problem callbacks equals jvp_calls (plus audit JVPs when the audit is on) in 28 runs, including runs with 19 to 51 fallback solves, and reproduces the logged counts and state hashes in the 20 runs at the declared start. Preconditioner: one KrylovPreconditioner value is given to both arms (stage_clients_krylov_problems.rs:501-505); Jacobi is secondary only. Baseline: B has the same attempts as A and 0.257 to 0.602 of its JVPs, so it is the stronger baseline. Families and the 2-of-3 rule were declared before any run and applied as frozen."
+   }
+  ],
+  "reran": [
+   {
+    "command": "taskset -c 0-9,12-21 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_krylov_contracts --test stage_clients_krylov_alloc --test stage_clients_krylov_measure",
+    "exit_code": 0,
+    "result": "contracts 9 passed, 1 ignored; alloc 1 passed; measure 1 ignored. Same as reported. No rebuild was needed."
+   },
+   {
+    "command": "taskset -c 0-9,12-21 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test ppsw1_6b_contracts --test ptsw2b_contracts",
+    "exit_code": 0,
+    "result": "37 passed and 24 passed."
+   },
+   {
+    "command": "taskset -c 0-9,12-21 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_krylov_contracts -- --ignored --exact merged_hook_solution_meets_the_protected_threshold",
+    "exit_code": 101,
+    "result": "Fails by design: residual 1.0325e-4, protected threshold 1.9888e-9 (5.2e4 times smaller). Same as reported."
+   },
+   {
+    "command": "taskset -c 0-9,12-21 cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --test stage_clients_krylov_problems --test stage_clients_krylov_contracts --test stage_clients_krylov_alloc --test stage_clients_krylov_measure --no-deps -- -D warnings",
+    "exit_code": 0,
+    "result": "Zero warnings."
+   },
+   {
+    "command": "rustfmt +1.94.1 --check --edition 2024 on krylov.rs and the four stage_clients_krylov_*.rs test files",
+    "exit_code": 0,
+    "result": "No diff."
+   },
+   {
+    "command": "python3 -I research/production_loop_20261116/check_checkpoint.py (worktree root)",
+    "exit_code": 0,
+    "result": "PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities."
+   },
+   {
+    "command": "review-scratch/rerun_cells.sh adr2d:1e-4 adr2d:1e-6 grayscott2d:1e-4 grayscott2d:1e-6 bruss1d:1e-4 bruss1d:1e-6 (the builder's measurement binary run directly under taskset and perf stat -e instructions:u, output to review-scratch/rerun/; arms SETUP, A, B0, B and C with audit on and off)",
+    "exit_code": 0,
+    "result": "36 arm runs: counters, final state bits, step counts, client statistics and audit reports identical to the committed logs in 36 of 36. instructions:u within 2.5e-5 (arm A) and 2.5e-6 (client arms); SETUP within 0.42%. Wall time (diagnostic only): 32 of 36 within 5%; the largest difference is +38% on bruss1d 1e-6 C while other review jobs loaded the host."
+   },
+   {
+    "command": "stage_clients_krylov_alloc-87c28bf5882bcd95 --nocapture",
+    "exit_code": 0,
+    "result": "54 runs, 9 client configurations, 1,728 steady steps, 0 allocations, 6 runs with fallback solves; records identical to logs/alloc_test.log."
+   },
+   {
+    "command": "python3 -I parse_results.py and python3 -I make_report.py, run from a scratch copy with links to logs/ and reference/",
+    "exit_code": 0,
+    "result": "RESULTS.json and REPORT_KO.md regenerated byte-identical to the committed files; 134 runs parsed."
+   },
+   {
+    "command": "python3 -I reference/make_reference.py --family adr2d (and grayscott2d) --out review-scratch/ref/...",
+    "exit_code": 0,
+    "result": "state_hex identical to the committed references; nfev 1673 and 905."
+   },
+   {
+    "command": "python3 -I review-scratch/recompute_from_logs.py and review-scratch/verdict_from_results.py",
+    "exit_code": 0,
+    "result": "Stage a FAIL (1 of 3); median 1.4536; cancel rule not triggered; no v2 run; audit 0/8,704 declared and 0/42,022 in all; instructions C/B 64.0 to 375.7."
+   },
+   {
+    "command": "Reviewer probe, exploratory: cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test review_v06_probe --no-run in a scratch copy of the tracked sources (same CARGO_TARGET_DIR, library reused), then the tests review_probe, review_independent_residual and review_linear_counterpart",
+    "exit_code": 0,
+    "result": "Callback-level JVP count equals jvp_calls in 28 runs. Separate residual arithmetic: 0 failures in 7,312 solves. Initial step 1e-3: adr2d 1.427 / 1.480 (Krylov only 1.463 / 1.552), grayscott2d 1.753 / 1.661. Linear counterpart of adr2d: 3.86 / 3.08. Logs: review-scratch/probe_run.log, probe_residual.log, probe_residual_bruss.log, probe_linear.log."
+   }
+  ]
+ }
+}
