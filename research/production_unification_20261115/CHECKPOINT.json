@@ -27,7 +27,8 @@
     "crates/vigilode/src/selection.rs": "2af29ddb7a41d8299b3cea3a9ae18ff6268a01b84da952d32439b29e7af5ec54",
     "crates/vigilode/tests/unified_method_capabilities.rs": "34ec431b49d5ebfebae833d1416a69730f85da4a97fc7aaa9830ec688e6b02c5",
     "crates/vigilode-coupled/tests/structure_certificate_transfer.rs": "690a16b5680e7148f1302981642c81ee2ce5c3dbf5638d0d272d8cf7fabf855b",
-    "crates/vigilode/tests/unified_method_sessions.rs": "abaf2c1b4703c1dc2a296d07e2820b3a19d44ec7618bb6fec36daaa7e572d157"
+    "crates/vigilode/tests/unified_method_sessions.rs": "abaf2c1b4703c1dc2a296d07e2820b3a19d44ec7618bb6fec36daaa7e572d157",
+    "crates/vigilode/tests/geometry_mol_contracts.rs": "ad9b9e9e00e9c09f849472734561a065a91526424b2e38bbc4239708aa34aab4"
   },
   "protected_blob_sha1": {
     "fixtures/rodas5p_coefficients_snapshot.json": "bc55da4d43549ffbcee3cb25e31be05658507742",
@@ -157,7 +158,13 @@
     "research/production_unification_20261115/method_adapters/logs/u07_green.log": "565ec237953434253ca1330c7f0909a955f78cfd2c9f29ab72207ca7eed4df53",
     "research/production_unification_20261115/method_adapters/logs/u07_try1.log": "565ec237953434253ca1330c7f0909a955f78cfd2c9f29ab72207ca7eed4df53",
     "research/production_unification_20261115/method_adapters/logs/u07_vigilode_suite.exit": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061",
-    "research/production_unification_20261115/method_adapters/logs/u07_vigilode_suite.log": "38d6dafddb32c05d4e06f96639bd9b7cfdf6f1e6a026fae9d39cb64e2d2f88db"
+    "research/production_unification_20261115/method_adapters/logs/u07_vigilode_suite.log": "38d6dafddb32c05d4e06f96639bd9b7cfdf6f1e6a026fae9d39cb64e2d2f88db",
+    "research/production_unification_20261115/geometry_mol/CHANGE_CONTRACT.json": "d13c2da7c2549cc0b31c1b49596cdd8c38bb3333aa8b939afa996ffad4ea0716",
+    "research/production_unification_20261115/geometry_mol/REPORT_KO.md": "1a9297bae86387c88a4e770a97d50c18e4579a88099c9b0834518fa5ce6229be",
+    "research/production_unification_20261115/geometry_mol/logs/u09_clippy_strict.log": "c745d4c845dcb93bd33f3717483cbc27fe577ea986892174d583547c3d738376",
+    "research/production_unification_20261115/geometry_mol/logs/u09_fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "research/production_unification_20261115/geometry_mol/logs/u09_green.log": "b2929e69da5991fe6e30fea6eaf1d6247dd6f559535838989d4f58dae4d1816b",
+    "research/production_unification_20261115/geometry_mol/logs/u09_try1.log": "b2929e69da5991fe6e30fea6eaf1d6247dd6f559535838989d4f58dae4d1816b"
   },
   "checks": {
     "baseline_facade_tests": {
@@ -264,6 +271,11 @@
       "passed": 4,
       "failed": 0,
       "receipt": "structure_port/logs/u08_green.log"
+    },
+    "u09_geometry": {
+      "passed": 5,
+      "failed": 0,
+      "receipt": "geometry_mol/logs/u09_green.log"
     }
   },
   "remaining_obligations": [
@@ -276,11 +288,9 @@
     "Frozen-G0 matched achieved-error holdout conjunction"
   ],
   "next_tasks": [
-    "U07_TRANSACTIONAL_KERNEL_ADAPTERS",
-    "U09_GEOMETRY_MOL",
-    "U08_STRUCTURE_CERTIFICATES (remaining ports)",
     "U10_SWITCH_ERROR_AND_NOVELTY",
-    "U11_PRODUCTION_HOLDOUT"
+    "U11_PRODUCTION_HOLDOUT",
+    "U07/U08/U09 remaining items"
   ],
   "backup": {
     "status": "VERIFIED_SUBSTANTIVE_CHECKPOINT",
@@ -295,7 +305,8 @@
   },
   "scope_partial": [
     "U07_TRANSACTIONAL_KERNEL_ADAPTERS",
-    "U08_STRUCTURE_CERTIFICATES"
+    "U08_STRUCTURE_CERTIFICATES",
+    "U09_GEOMETRY_MOL"
   ],
   "u03_turn": {
     "date_kst": "2026-11-15",

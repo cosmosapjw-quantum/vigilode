@@ -70,3 +70,7 @@ U08: native quotient trace(중복도 보존)를 test 수준 인증 경계로 이
 ## 2026-11-16 후속 6: U07 PPSW1 명시 adapter (PARTIAL)
 
 `method_adapters/REPORT_KO.md`. `PeerOde::solve`는 registry admission(callback 전 typed 거절), facade 문제의 Peer 부분집합 하강, 끝점 상한 starter, 접두 보존, startup/step 작업 분리를 갖는다. vigilode 331 통과. 독립 review는 NOT_RUN, 전환은 typed 거부다.
+
+## 2026-11-16 후속 7: U09 geometry/MOL (PARTIAL)
+
+`geometry_mol/REPORT_KO.md`. 기존 Gray–Scott 2D Laplacian을 재사용했고, 3D 비등방 주기와 위경도 FV 구면을 test에 추가했다. 공간 2차 수렴을 확인했고, 시간 오차를 공간 오차와 분리했다(이 격자에서는 공간 오차가 지배). 가중 대칭·질량 균형, 이류 거부, registry mass/event 확인. 구면 Y11 극 고리는 1차이고, spectral bandlimit 정확성은 NOT_RUN이다.

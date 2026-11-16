@@ -1,0 +1,32 @@
+{
+  "schema": "vigilode.change-contract.v1",
+  "task": "U09_GEOMETRY_MOL",
+  "date_kst": "2026-11-16",
+  "recorded_before_mutation": true,
+  "base_commit": "5a6d9650",
+  "write_allowlist": [
+    "crates/vigilode/tests/geometry_mol_contracts.rs",
+    "research/production_unification_20261115/geometry_mol/**",
+    "research/production_unification_20261115/CHECKPOINT.json",
+    "research/production_unification_20261115/REPORT_KO.md",
+    "docs/agent/production_solver_program_20261112/**"
+  ],
+  "reuse": "rodas5p_integrators::gray_scott_2d periodic Laplacian (u-component with v=0 minus the reaction term) for 2D; vigilode Rodas5p facade for time integration; U06 MethodRegistry for mass/event capability",
+  "new_in_test_only": [
+    "3D anisotropic periodic Cartesian Laplacian",
+    "latitude-longitude finite-volume sphere Laplacian with area weights and zero polar flux",
+    "weighted self-adjoint/dissipativity certificate"
+  ],
+  "not_layout3": "Layout3 (log-energy, mu, phi) is not Cartesian 3D and is not used",
+  "checks": [
+    "Fourier eigenvector exactness and constant mode (2D reuse, 3D)",
+    "second-order spatial eigenvalue convergence (2D, 3D) separate from temporal error of RODAS5P on the semi-discrete mode",
+    "sphere: area sum 4 pi R^2, constants annihilated, weighted symmetry, weighted mass balance, Y10/Y20/Y11 convergence and pole-ring error recorded (FV, not spectral: no bandlimit exactness claimed)",
+    "central and upwind advection refused by the self-adjoint certificate",
+    "registry: only RODAS5P supports mass + events + dense output"
+  ],
+  "non_goals": [
+    "no library change",
+    "no temporal tolerance tuning to hide spatial error"
+  ]
+}

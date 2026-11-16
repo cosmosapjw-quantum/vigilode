@@ -455,7 +455,7 @@
       "depends": [
         "U06_UNIFIED_CAPABILITY_REGISTRY"
       ],
-      "status": "PLANNED",
+      "status": "PARTIAL",
       "purpose": "Provide separate 2D/3D/sphere spatial clients with exact norms and split operators.",
       "write_allowlist": [
         "research/production_unification_20261115/geometry_mol/**",
@@ -488,7 +488,25 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_unification_20261115/geometry_mol/REPORT_KO.md",
+        "research/production_unification_20261115/geometry_mol/CHANGE_CONTRACT.json",
+        "research/production_unification_20261115/geometry_mol/logs/u09_green.log",
+        "research/production_unification_20261115/geometry_mol/logs/u09_clippy_strict.log"
+      ],
+      "progress_20261116": {
+        "done": [
+          "2D reuse of Gray-Scott Laplacian; 3D anisotropic periodic; lat-lon FV sphere; weighted self-adjoint certificate; advection refusal; registry mass/event check; temporal vs spatial error separated"
+        ],
+        "findings": [
+          "Y11 pole-ring error first order on the lat-lon FV sphere"
+        ],
+        "not_run": [
+          "spectral sphere bandlimit exactness",
+          "coupled nonlinear reaction / anisotropic IVP refinement curves",
+          "example crates/vigilode/examples/geometry_mol.rs"
+        ]
+      }
     },
     {
       "id": "U10_SWITCH_ERROR_AND_NOVELTY",
