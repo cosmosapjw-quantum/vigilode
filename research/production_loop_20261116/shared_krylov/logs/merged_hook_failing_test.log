@@ -1,0 +1,30 @@
+V06_META purpose=the test that fails by design: the merged hook accepts a stage solution the protected stopping test rejects
+V06_META command=cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_krylov_contracts -- --ignored --exact merged_hook_solution_meets_the_protected_threshold
+V06_META binary=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_krylov_contracts-2efc932698875c1e binary_sha256=cbf3ce55cb23c5c5b78909d60492c7da111611d7660243918650f35ef6185637 date=2026-11-17T01:15:24+09:00
+
+running 1 test
+test merged_hook_solution_meets_the_protected_threshold ... FAILED
+
+failures:
+
+---- merged_hook_solution_meets_the_protected_threshold stdout ----
+
+thread 'merged_hook_solution_meets_the_protected_threshold' (2230166) panicked at crates/rodas5p-integrators/tests/stage_clients_krylov_contracts.rs:655:5:
+the merged hook accepted a stage solution with residual 1.032519640099976e-4; the protected driver's threshold for this system is 1.9887688296747326e-9 (5.2e4 times smaller)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    merged_hook_solution_meets_the_protected_threshold
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.00s
+
+V06_META exit_status=101
+V06_META passing_counterpart=the_merged_hook_accepts_residuals_far_above_the_protected_threshold
+
+running 1 test
+test the_merged_hook_accepts_residuals_far_above_the_protected_threshold ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.00s
+
+V06_META exit_status=0

@@ -1,0 +1,33 @@
+V06_VERIFY command=taskset -c 0-9,12-21 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_krylov_contracts --test stage_clients_krylov_alloc --test stage_clients_krylov_measure
+    Finished `release` profile [optimized] target(s) in 0.05s
+     Running tests/stage_clients_krylov_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_krylov_alloc-87c28bf5882bcd95)
+
+running 1 test
+test krylov_clients_allocate_nothing_per_accepted_step ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.50s
+
+     Running tests/stage_clients_krylov_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_krylov_contracts-2efc932698875c1e)
+
+running 10 tests
+test merged_hook_solution_meets_the_protected_threshold ... ignored, fails by design: the merged hook's stopping test is not the protected driver's
+test an_exhausted_budget_and_a_missing_setup_are_typed_errors ... ok
+test the_merged_hook_accepts_residuals_far_above_the_protected_threshold ... ok
+test family_jvps_and_diagonals_are_the_derivative_of_the_right_hand_side ... ok
+test single_solves_meet_the_rule_and_the_shared_basis_is_reused ... ok
+test the_audit_reports_solves_that_miss_the_threshold ... ok
+test the_shipped_cadence_client_reproduces_the_protected_driver ... ok
+test every_jvp_is_accounted_for ... ok
+test every_arm_reproduces_itself_bit_for_bit ... ok
+test the_audit_checks_every_solve_and_leaves_the_run_unchanged ... ok
+
+test result: ok. 9 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 5.09s
+
+     Running tests/stage_clients_krylov_measure.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_krylov_measure-3eb5530fc6d70da8)
+
+running 1 test
+test v06_run ... ignored, measurement program: run with --ignored --nocapture and the V06_* variables
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+V06_VERIFY tests_exit=0

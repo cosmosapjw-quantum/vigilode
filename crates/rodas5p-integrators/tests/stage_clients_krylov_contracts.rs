@@ -18,6 +18,7 @@ use rodas5p_integrators::stage_clients::krylov::{
 use rodas5p_integrators::{
     OdeProblem, OutputSchedule, StageLinearSystem, integrate_rodas5p_fast_client_observed_with_atol,
 };
+use rodas5p_krylov::shared_basis::{SharedBasis, SharedBasisConfig};
 
 const DEV_FAMILIES: [&str; 5] = [
     "dev_bruss1d",
@@ -591,5 +592,70 @@ fn an_exhausted_budget_and_a_missing_setup_are_typed_errors() {
             KrylovPreconditioner::None
         )
         .is_err()
+    );
+}
+
+/// One stage-1 solve with the merged kernel exactly as the hook of the
+/// protected driver calls it (`rodas5p_matrix_free_fast.rs`, the hook in
+/// `attempt_inner`: weights `1/(atol + rtol |y_i|)`, right-hand side
+/// `rhs/(h gamma)`, the default `theta = 1e-3` and 60 vectors). Returns
+/// whether the kernel reported convergence, the 2-norm of the original
+/// residual and the protected driver's threshold for that system.
+fn merged_hook_stage_solve() -> (bool, f64, f64) {
+    let family = declared("dev_bruss1d").unwrap();
+    let n = family.problem.dimension;
+    let y = &family.y0;
+    let (rtol, atol) = (1.0e-4, 1.0e-4);
+    let h_gamma = 0.05 * 0.21193756319429014;
+    let b = rhs(&family.problem, y);
+    let weights: Vec<f64> = y
+        .iter()
+        .map(|value| 1.0 / (atol + rtol * value.abs()))
+        .collect();
+    let mut basis = SharedBasis::new(n, SharedBasisConfig::default()).unwrap();
+    let mut x = vec![0.0; n];
+    let callback = family.problem.jvp_callback().expect("JVP").clone();
+    let mut product = |v: &[f64], out: &mut [f64]| -> CoreResult<()> { callback(0.0, y, v, out) };
+    let stats = basis
+        .solve_shifted(h_gamma, &b, &weights, &mut product, &mut x)
+        .unwrap();
+    let rule = StageStoppingRule::protected_production().unwrap();
+    (
+        stats.converged,
+        residual_norm(&family, y, 1.0 / h_gamma, &b, &x),
+        rule.threshold(1.0 / h_gamma, safe_l2(&b)).unwrap(),
+    )
+}
+
+/// The merged hook accepts a stage solution on the kernel's own test
+/// (`h gamma ||r||_WRMS <= 1e-3` in the step controller's weights), which
+/// is not the stopping test of the driver it is hooked into: the accepted
+/// residual is orders of magnitude above the driver's threshold. A JVP
+/// count of the hook is therefore no measurement against the driver's
+/// GMRES. The clients of this node encode the driver's threshold in the
+/// kernel's weights and confirm every accepted iterate instead.
+#[test]
+fn the_merged_hook_accepts_residuals_far_above_the_protected_threshold() {
+    let (converged, residual, threshold) = merged_hook_stage_solve();
+    assert!(converged);
+    assert!(
+        residual > 1.0e3 * threshold,
+        "residual {residual:e}, protected threshold {threshold:e}"
+    );
+}
+
+/// The same fact as a failing test: run it with `--ignored` to see the
+/// numbers. It asserts what a fair comparison with the driver's GMRES
+/// would need and the merged hook does not provide.
+#[test]
+#[ignore = "fails by design: the merged hook's stopping test is not the protected driver's"]
+fn merged_hook_solution_meets_the_protected_threshold() {
+    let (converged, residual, threshold) = merged_hook_stage_solve();
+    assert!(converged);
+    assert!(
+        residual <= threshold,
+        "the merged hook accepted a stage solution with residual {residual:e}; the protected \
+         driver's threshold for this system is {threshold:e} ({:.1e} times smaller)",
+        residual / threshold
     );
 }
