@@ -25,3 +25,7 @@ Loop L1, branch research/production-loop-20261116, base 074a5699. One line per e
 - Ledger: L-0307..L-0312 supersede L-0209..L-0214 as INVALID; L-0313 records the adoption verification (FAIL because one test failed).
 - Expected and left as is: check-research-node --base 074a5699 fails (five stall reports for the invalidated nodes, research/qualification without pre-registration and ledger row). Later checks use the adoption commit as base.
 - Ruling: after adoption the loop checkpoint starts a second epoch (base = adoption content commit, protected blobs = post-merge bytes) — the first epoch's allowlist cannot describe 289 merged paths — cost if wrong: the epoch boundary hides nothing because the merge commit and its evidence stay in history.
+- Adoption pushed: c63171dc (records) and 03c03ab0 (checkpoint epoch 2) on origin/research/production-loop-20261116. Loop checker PASS; check-research-node relative to c63171dc PASS.
+- Draft PR #190 (loop -> research/production-unification-20261115) opened under OD-L1-7 for hosted CI; not for merge.
+- Inline fix: leja_setup_work_contract tests serialised with a static mutex (test-only; library unchanged). RED: failures in 2 to 25 of 200 runs before; GREEN: 0 of 1500 after (adoption/FLAKE_FIX.json). Lead kept: setup-work attribution is not exactly-once under concurrent first use of the process-global tables.
+- Stage client stubs assembly, krylov, sparse_lu, speculative pre-seeded in stage_clients/mod.rs so that wave-2 builders do not edit mod.rs.

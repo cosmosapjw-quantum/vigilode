@@ -5,7 +5,11 @@
 //! and output; a client owns linearisation, factorisation and the stage solves. Nothing in this
 //! module is selected by default.
 
+pub mod assembly;
 pub mod dense_lu;
+pub mod krylov;
+pub mod sparse_lu;
+pub mod speculative;
 pub mod timed;
 
 pub use dense_lu::{DenseLuMode, DenseLuStageClient};

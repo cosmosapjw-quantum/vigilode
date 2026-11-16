@@ -10,8 +10,20 @@ use rodas5p_core::{
     CertifiedLejaWorkspace, DenseMatrix, WorkCounters, leja_phi_action_certified_with_setup_work,
 };
 
+/// The counted setup work attributes the initialisation of process-global tables to the call
+/// that performs it. Tests of this binary share those tables, so they run one at a time; a
+/// concurrent first use made `initialized_here` and the charged units disagree (loop L1 audit).
+static TEST_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+fn serial() -> std::sync::MutexGuard<'static, ()> {
+    TEST_MUTEX
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
 #[test]
 fn counted_cache_cold_warm_and_refusal_retain_separate_work() {
+    let _serial = serial();
     let mut cache = CertifiedLejaCoeffCache::new();
     let mut cold = LejaSetupWork::new();
     cache
@@ -90,6 +102,7 @@ fn counted_cache_cold_warm_and_refusal_retain_separate_work() {
 
 #[test]
 fn setup_receipt_serialization_is_versioned_and_immutable() {
+    let _serial = serial();
     let receipt = LejaSetupWork::new().snapshot();
     let json = serde_json::to_value(receipt).unwrap();
     assert_eq!(json["schema"], LEJA_SETUP_RECEIPT_SCHEMA_V1);
@@ -102,6 +115,7 @@ fn setup_receipt_serialization_is_versioned_and_immutable() {
 
 #[test]
 fn counted_action_records_cold_coefficient_table_without_changing_authority() {
+    let _serial = serial();
     let op = SymmetricNonpositiveOperator::gershgorin(
         DenseMatrix::from_rows(&[&[-1.0, 0.0], &[0.0, -2.0]]).unwrap(),
     )
@@ -190,6 +204,7 @@ fn counted_action_records_cold_coefficient_table_without_changing_authority() {
 
 #[test]
 fn counted_cache_history_inherits_legacy_static_dependency_coverage() {
+    let _serial = serial();
     // Run this test alone in a fresh test process: the legacy accessor makes
     // the process-global point table preexisting and unattributed.
     rodas5p_core::leja_action::leja_points();
@@ -226,6 +241,7 @@ fn counted_cache_history_inherits_legacy_static_dependency_coverage() {
 
 #[test]
 fn counted_and_legacy_success_preserve_report_and_work_counter_identity() {
+    let _serial = serial();
     let op = SymmetricNonpositiveOperator::gershgorin(
         DenseMatrix::from_rows(&[&[-1.0, 0.0], &[0.0, -2.0]]).unwrap(),
     )
