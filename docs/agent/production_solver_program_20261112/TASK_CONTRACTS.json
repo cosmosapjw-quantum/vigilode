@@ -1127,6 +1127,44 @@
       "scope_completed": "Screen executed: 17 PASS / 31 FAIL / 12 KILL of 60 configurations; passes only at a diffusion length of about one cell. No native prototype."
     },
     {
+      "id": "V16_LEVEL_TABLEAU_SEARCH",
+      "depends": [
+        "V05_STAGE_THEORY"
+      ],
+      "status": "PLANNED",
+      "purpose": "Search for an order-5(4), stiffly accurate Rosenbrock-Wanner tableau whose stage graph has depth 5 or 6 on two processors, as a candidate successor of the depth-8 RODAS5P chain. Prototype only.",
+      "write_allowlist": [
+        "research/production_loop_20261116/level_tableau/**"
+      ],
+      "equations_and_design": [
+        "Layouts of theory S9: 1-2-2-2-1 (8 stages, depth 5, gamma pinned to the A-stable root 0.2780538411) and 1-2-2-2-2-1 (10 stages, depth 6, gamma in [0.18391465, 0.33414237]).",
+        "Order conditions generated from rooted trees for Rosenbrock methods and validated on the protected RODAS5P coefficients before any search result counts; nonlinear least squares with multi-start, refinement in multiprecision.",
+        "Python prototype of the method with exact Jacobian and the controller formula of the protected driver, applied to both the new tableau and the RODAS5P coefficients. No Rust code, no change to protected sources.",
+        "Literature check of parallel and level-structured Rosenbrock methods from primary sources; no novelty claim."
+      ],
+      "acceptance_checks": [
+        "Tool validation: every generated condition of order <= 5 vanishes on the RODAS5P coefficients to <= 1e-12.",
+        "FOUND per layout: residual <= 1e-12 in double precision and <= 1e-25 after refinement on the 17 order-5 conditions; stiff accuracy; R(infinity) = 0; A-stability; embedded weights of order 4; sum b_i gamma_i = 0; every coefficient of magnitude <= 100.",
+        "Observed order >= 4.8 on three smooth problems at fixed step with exact Jacobian.",
+        "Pay-off screen at matched achieved error on three stiff problems, attempts of the new method over attempts of RODAS5P: depth 5 passes at <= 1.25 on at least 2 of 3; depth 6 passes at <= 1.10 on at least 2 of 3.",
+        "KILL: not found within the declared budget (at least 2000 starts per layout) for both layouts, or found with an attempt ratio >= the depth gain (1.6 for depth 5, 1.33 for depth 6) on all three problems."
+      ],
+      "completion_requires": [
+        "coefficient file with residuals",
+        "RESULTS.json from executed runs",
+        "report"
+      ],
+      "failure_action": "A found tableau is a new method with its own id; it is not routed and needs its own qualification. Not found within the budget is reported as not found, not as impossible.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": []
+    },
+    {
       "id": "V03_UNIFIED_FRONTEND",
       "depends": [
         "V02_TRIAL_MERGE",

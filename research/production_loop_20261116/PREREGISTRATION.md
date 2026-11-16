@@ -56,3 +56,13 @@ The V07 band follows from the overlap window of two of eight stages: the saving 
 - Verification on the adopted tree (`adoption/ADOPTION_VERIFICATION.json`): workspace check and clippy pass; integrator, sentinel and client-kit suites pass; facade, core and krylov suites have one failure, `leja_setup_work_contract`, a thread-raced accounting test (`adoption/FLAKE_PROBE.json`).
 - V15 is merged; its identity and allocation tests pass on the adopted tree.
 - Not changed: merged gate hooks, `unified/` router labels, `research/qualification/` without ledger row.
+
+## Addendum A1 (2026-11-17): node V16, frozen by this commit before any V16 run
+
+Reason: V05 (theory S9) closed the go/no-go question with "no-go for depth 4, conditional go for depth 5, go for depth 6" on two processors. The search itself was not a node of the approved plan; it is added as V16 because the owner asked for research on parallelising the eight sequential stages and the depth of the RODAS5P chain is exactly 8 (S1). The frozen part above is unchanged. Contract: `V16_LEVEL_TABLEAU_SEARCH` in `TASK_CONTRACTS.json`.
+
+| node | pass | kill / fallback |
+|---|---|---|
+| V16 level-structured tableau search | tool validation first: every generated order condition of order <= 5 vanishes on the protected RODAS5P coefficients to <= 1e-12. Per layout (1-2-2-2-1 with 8 stages and depth 5; 1-2-2-2-2-1 with 10 stages and depth 6): FOUND if a real tableau has residual <= 1e-12 in double precision and <= 1e-25 after multiprecision refinement on the 17 order-5 conditions, is stiffly accurate with R(infinity) = 0 and A-stable, has embedded weights of order 4, satisfies sum b_i gamma_i = 0, and has no coefficient above 100 in magnitude; observed order >= 4.8 on three smooth problems at fixed step with exact Jacobian; pay-off screen at matched achieved error on three stiff problems (attempts of the new method / attempts of RODAS5P, same controller formula, same prototype code): depth 5 passes at <= 1.25 on at least 2 of 3, depth 6 at <= 1.10 on at least 2 of 3 | not found within the declared budget (at least 2000 starts per layout) for both layouts; or found with an attempt ratio >= the depth gain (1.6 for depth 5, 1.33 for depth 6) on all three problems. Not found is reported as not found, not as impossible. A found tableau is a new method outside the protected path: no routing, no Rust port in this node |
+
+The ratio thresholds leave a modelled gain of at least 1.28 (depth 5) and 1.21 (depth 6) on the stage chain; the gain on the whole step is that factor diluted by the chain share measured in V04.
