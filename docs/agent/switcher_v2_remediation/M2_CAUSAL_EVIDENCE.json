@@ -1,0 +1,113 @@
+{
+  "evidence_id": "EV-M2-CAUSAL-001",
+  "task_id": "M2-CAUSAL",
+  "claim_support": [
+    "established",
+    "derived",
+    "numerically-checked",
+    "implementation-verified"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "worktree_head": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "tree_sha": "8a236871948798cb2a40c8a5ea65112a045bf16d",
+    "input_hashes": [
+      {
+        "path": "crates/rodas5p-integrators/tests/causal_depth_stage_residual_contracts.rs",
+        "sha256": "5c606b1169ad44cc0d2282e899dbfe1cc94a87f1167a8123659be90d63862588"
+      },
+      {
+        "path": "research/vigilode_r6_eightstage_causal_frontier_20261101/THEORY_R6.md",
+        "sha256": "85a46221cf6ff7e506466835cf45841c840bd4dd34cffda1595e9de94f91dc1b"
+      },
+      {
+        "path": "fixtures/rodas5p_coefficients_snapshot.json",
+        "sha256": "211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6"
+      }
+    ],
+    "identity_relation": "BYTE_IDENTITY"
+  },
+  "command_records": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "causal_depth_stage_residual_contracts"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-M2-CAUSAL-20261106_v2",
+      "rustc": "rustc 1.99.0",
+      "cargo": "cargo 1.99.0",
+      "exit_code": 0,
+      "stdout_artifact": "5 passed; 0 failed; 0 ignored; finished in 0.16s",
+      "stderr_artifact": null
+    },
+    {
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-M2-CAUSAL-20261106_v2",
+      "rustc": "rustc 1.99.0",
+      "cargo": "cargo 1.99.0",
+      "exit_code": 0,
+      "stdout_artifact": "clean",
+      "stderr_artifact": null
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-M2-CAUSAL-20261106_v2",
+      "rustc": null,
+      "cargo": null,
+      "exit_code": 0,
+      "stdout_artifact": "clean",
+      "stderr_artifact": null
+    }
+  ],
+  "result": "All 5 contract tests in causal_depth_stage_residual_contracts PASS. Verified that the strictly lower triangular coupling matrix L has L^8 = 0, meaning (I - L)^(-1) terminates unconditionally after 8 sweeps without requiring global contraction. In simultaneous 8-sweep recurrence, each sweep q produces exact stages for all i < q down to <= 1e-14, and terminal sweep 8 achieves all 8 stages exact. Raw stage residuals under direct solve are bounded by 1e-13. Stiff order reduction is strictly separated: Prothero-Robinson slopes are in the reduced band [2.7, 3.6] while semilinear advection-diffusion achieves classical order 5 (slope >= 4.8). Ill-conditioned/rejected step properly fails closed and preserves all WorkCounters (direct_factorizations, linear_solves, rejected_steps).",
+  "limitations": [
+    "Stiff order reduction on Prothero-Robinson is a fundamental property of Rosenbrock methods, not a solver defect.",
+    "Higher precision rational checks are bounded by floating-point binary64 representation (~1e-16 leakage above diagonal in raw native tables)."
+  ],
+  "math_review": {
+    "definitions": "W U_i = H_i(U_{<i}) where W = I - h gamma J, H_i(U_{<i}) = tau f(y_n + sum_{j<i} A_{ij} U_j) + gamma sum_{j<i} C_{ij} U_j. Simultaneous sweep: U_i^{(q+1)} = W^{-1} H_i(U_{<i}^{(q)}).",
+    "assumptions": [
+      "W is invertible and well-conditioned.",
+      "A and C are strictly lower triangular matrices (A_{ij} = 0, C_{ij} = 0 for j >= i)."
+    ],
+    "derivation": "Because H_i depends only on U_j for j < i, stage 0 is independent of prior stages and becomes exact on sweep 1. By induction, if stages 0..q-1 are exact on sweep q, stage q evaluates H_q on exact inputs and becomes exact on sweep q+1. At sweep 8, all 8 blocks are exact. The coupling operator is nilpotent of index 8: L^8 = 0.",
+    "roundoff_model": "IEEE-754 binary64 directed bounds with standard unit roundoff u <= 2^{-53} ~ 1.11e-16.",
+    "counterexamples": [
+      "Simultaneous recurrence with an implicit diagonal term H_i(..., U_i, ...) would lose finite-sweep exactness and require contractive Lipschitz bounds.",
+      "Singular W (e.g. tau lambda = 1) prevents forward solve and must be rejected by error control without corrupting work accounting."
+    ]
+  },
+  "work_accounting": {
+    "rhs": 8,
+    "jvp": 0,
+    "jacobian": 1,
+    "linear_iterations": 0,
+    "factorizations": 1,
+    "rejected_steps": 1,
+    "speculative_work": 0,
+    "refused_work": 0,
+    "failed_attempts": 1,
+    "unknown_counters": []
+  },
+  "decision_rationale": "M2-CAUSAL mathematical contracts and implementation acceptance criteria are fully met. The finite depth recurrence, raw U-stage residuals, and stiff order reduction separation are independently verified by new test suite causal_depth_stage_residual_contracts."
+}
+

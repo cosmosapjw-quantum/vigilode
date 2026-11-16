@@ -1,0 +1,97 @@
+{
+  "schema": "vigilode.mutation_policy.v2",
+  "default": "READ_ONLY",
+  "hard_denies": [
+    ".env and credentials/tokens/private keys",
+    "Git history rewrite",
+    "official DAG/ledger without task-specific authority",
+    "threshold/global tolerance/default changes without authority"
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "merge",
+    "rebase",
+    "tag",
+    "publish",
+    "release",
+    "overwrite previous package",
+    "delete existing worktrees or untracked files"
+  ],
+  "gates": [
+    {
+      "gate": "G0_PREFLIGHT",
+      "required": [
+        "validate package hashes",
+        "verify branch/HEAD/tree/remote/status",
+        "preserve untracked files",
+        "read authoritative task/spec",
+        "verify exact allowlist"
+      ],
+      "mutation": "NONE"
+    },
+    {
+      "gate": "G1_OWNER_APPROVAL",
+      "required": [
+        "owner approves task ID, base SHA, exact write_allowlist and acceptance"
+      ],
+      "mutation": "NONE"
+    },
+    {
+      "gate": "G2_ISOLATION",
+      "required": [
+        "task worktree from exact SHA",
+        "clean state",
+        "before hashes",
+        "single writer per path"
+      ],
+      "mutation": "WORKTREE_ONLY"
+    },
+    {
+      "gate": "G3_RED_TEST",
+      "required": [
+        "minimal falsifying test",
+        "prove RED is intended behavior, not environment/build error"
+      ],
+      "mutation": "ALLOWLIST_ONLY"
+    },
+    {
+      "gate": "G4_PATCH",
+      "required": [
+        "write allowlist only",
+        "preserve compatibility unless approved",
+        "do not weaken tolerances or acceptance"
+      ],
+      "mutation": "ALLOWLIST_ONLY"
+    },
+    {
+      "gate": "G5_VERIFY",
+      "required": [
+        "focused tests",
+        "negative controls",
+        "fmt/lint",
+        "exact commands/environment/exit/logs/hashes"
+      ],
+      "mutation": "ALLOWLIST_ONLY"
+    },
+    {
+      "gate": "G6_REVIEW",
+      "required": [
+        "one fresh-context read-only review",
+        "no review-of-review"
+      ],
+      "mutation": "READ_ONLY"
+    },
+    {
+      "gate": "G7_CLOSE",
+      "required": [
+        "schema-valid evidence",
+        "source hashes",
+        "owner closure approval",
+        "no implicit publication"
+      ],
+      "mutation": "DOCUMENTATION_ONLY"
+    }
+  ],
+  "scope_expansion": "Any path, dependency, API break, default, tolerance, DAG or publication change requires separate explicit owner approval."
+}

@@ -1,13 +1,19 @@
 use std::{
     alloc::{GlobalAlloc, Layout, System},
-    sync::atomic::{AtomicBool, AtomicU64, Ordering},
+    cell::Cell,
+    sync::atomic::{AtomicU64, Ordering},
 };
 
 use rodas5p_core::{DenseMatrix, DenseOperator, IdentityPreconditioner, WorkCounters};
-use rodas5p_krylov::{GmresConfig, GmresWorkspace, solve_gmres, solve_gmres_with_workspace};
+use rodas5p_krylov::{
+    GmresConfig, GmresGivensWorkspace, GmresWorkspace, solve_gmres, solve_gmres_givens,
+    solve_gmres_givens_with_workspace, solve_gmres_with_workspace,
+};
 
 struct CountingAllocator;
-static TRACK: AtomicBool = AtomicBool::new(false);
+thread_local! {
+    static TRACK: Cell<bool> = const { Cell::new(false) };
+}
 static ALLOCATIONS: AtomicU64 = AtomicU64::new(0);
 
 #[global_allocator]
@@ -16,7 +22,7 @@ static ALLOCATOR: CountingAllocator = CountingAllocator;
 unsafe impl GlobalAlloc for CountingAllocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         let pointer = unsafe { System.alloc(layout) };
-        if !pointer.is_null() && TRACK.load(Ordering::Relaxed) {
+        if !pointer.is_null() && TRACK.try_with(|t| t.get()).unwrap_or(false) {
             ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
         }
         pointer
@@ -28,11 +34,11 @@ unsafe impl GlobalAlloc for CountingAllocator {
 }
 
 fn allocation_count<T>(operation: impl FnOnce() -> T) -> (T, u64) {
-    TRACK.store(false, Ordering::SeqCst);
+    let _ = TRACK.try_with(|t| t.set(false));
     ALLOCATIONS.store(0, Ordering::Relaxed);
-    TRACK.store(true, Ordering::SeqCst);
+    let _ = TRACK.try_with(|t| t.set(true));
     let result = operation();
-    TRACK.store(false, Ordering::SeqCst);
+    let _ = TRACK.try_with(|t| t.set(false));
     (result, ALLOCATIONS.load(Ordering::Relaxed))
 }
 
@@ -104,6 +110,57 @@ fn warmed_gmres_workspace_reduces_heap_allocations_without_changing_operator_wor
         workspace_work.diagnostic_matvecs,
         wrapper_work.diagnostic_matvecs
     );
+    assert_eq!(workspace_report.x, wrapper_report.x);
+    assert!(
+        workspace_allocations < wrapper_allocations,
+        "workspace allocations {workspace_allocations} >= wrapper allocations {wrapper_allocations}"
+    );
+}
+
+#[test]
+fn warmed_gmres_givens_workspace_reduces_heap_allocations() {
+    let (operator, preconditioner, rhs) = system(32);
+    let config = GmresConfig {
+        restart: 12,
+        max_arnoldi: 96,
+        rtol: 1e-11,
+        atol: 1e-13,
+    };
+    let mut workspace = GmresGivensWorkspace::default();
+    let mut warm_work = WorkCounters::default();
+    solve_gmres_givens_with_workspace(
+        &operator,
+        &preconditioner,
+        &rhs,
+        None,
+        &config,
+        &mut workspace,
+        &mut warm_work,
+    )
+    .unwrap();
+
+    let ((workspace_report, workspace_work), workspace_allocations) = allocation_count(|| {
+        let mut work = WorkCounters::default();
+        let report = solve_gmres_givens_with_workspace(
+            &operator,
+            &preconditioner,
+            &rhs,
+            None,
+            &config,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+        (report, work)
+    });
+    let ((wrapper_report, wrapper_work), wrapper_allocations) = allocation_count(|| {
+        let mut work = WorkCounters::default();
+        let report =
+            solve_gmres_givens(&operator, &preconditioner, &rhs, None, &config, &mut work).unwrap();
+        (report, work)
+    });
+
+    assert_eq!(workspace_work.linear_matvecs, wrapper_work.linear_matvecs);
     assert_eq!(workspace_report.x, wrapper_report.x);
     assert!(
         workspace_allocations < wrapper_allocations,

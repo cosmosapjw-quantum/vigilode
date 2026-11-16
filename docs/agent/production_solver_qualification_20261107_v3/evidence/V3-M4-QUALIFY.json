@@ -1,0 +1,35 @@
+{
+  "evidence_id": "EV-V3-M4-QUALIFY-20261107",
+  "task_id": "V3-M4-QUALIFY",
+  "claim_support": [
+    "NUMERICALLY_CHECKED",
+    "IMPLEMENTATION_VERIFIED"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "https://github.com/cosmosapjw-quantum/vigilode",
+    "branch": "research/switcher-v2-20261103",
+    "head": "bcf6fcefa8322f7e8d4454ab40498256f4ff1e22",
+    "tree": "076c5d01e8419b1b8f0d88ca2d0de04407e21aa2",
+    "worktree_clean": true
+  },
+  "command_records": [
+    {
+      "argv": [
+        "python3",
+        "docs/agent/production_solver_qualification_20261107_v3/validate_package.py"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "python 3.12",
+      "exit_code": 0,
+      "verdict": "PASS"
+    }
+  ],
+  "result": "Final qualification package consolidated. Created docs/agent/production_solver_qualification_20261107_v3/FINAL_REPORT_KO.md synthesizing evidence across all 13 qualification tasks. Upheld HOLD_NOT_RELEASE_QUALIFIED verdict across all claim axes. Scoped ordinary numerical IVP verified for smooth identity-mass problems with partial result semantics; adaptive switching verified with DriveState as operational router and HybridRouteAutomaton as discrete reference; spatial physics model verified for semi-discrete conservation, linearity, and mesh refinement; zero-allocation hot loop verified for numerical stepper stepping (exact 0 heap allocations across 50 steps); matched work-precision reported 953/953 diagnostic rows with zero unbracketed or disputed speedup claims; validated continuous trajectory enclosure remains open research. Package integrity validated with fail-closed hold guard.",
+  "limitations": [
+    "Overall production verdict remains HOLD_NOT_RELEASE_QUALIFIED pending statistical multi-run timing authority and complete continuous-time validated enclosures."
+  ]
+}
+

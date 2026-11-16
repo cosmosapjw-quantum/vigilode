@@ -1,0 +1,29 @@
+{
+  "schema": "vigilode.model_routing.v1",
+  "strategy": "deterministic_serial",
+  "native_subagents": "NOT_RUN",
+  "reason": "No native child-agent create/spawn/wait/collect facility exposed in current tool inventory.",
+  "roles": [
+    {
+      "stage": "C9",
+      "role": "read-only math/source auditor",
+      "write_access": false
+    },
+    {
+      "stage": "C9",
+      "role": "read-only benchmark/provenance auditor",
+      "write_access": false
+    },
+    {
+      "stage": "C10",
+      "role": "integrator",
+      "write_access": "new package only"
+    },
+    {
+      "stage": "C10",
+      "role": "fresh-context reviewer",
+      "write_access": false
+    }
+  ],
+  "rule": "Role-play and parallel shell processes are not independent subagents."
+}

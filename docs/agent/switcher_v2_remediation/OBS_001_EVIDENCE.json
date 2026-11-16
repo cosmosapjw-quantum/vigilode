@@ -1,0 +1,111 @@
+{
+  "evidence_id": "EV-OBS-001",
+  "task_id": "OBS-001",
+  "claim_support": [
+    "established",
+    "derived",
+    "numerically-checked",
+    "implementation-verified"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "worktree_head": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "tree_sha": "8a236871948798cb2a40c8a5ea65112a045bf16d",
+    "input_hashes": [
+      {
+        "path": "crates/rodas5p-core/src/nonnormal_observers.rs",
+        "sha256": "919864b9407424247bf0089aaa585e0027f752a77d22b066746ffbc1c58b5d4c"
+      },
+      {
+        "path": "crates/rodas5p-core/tests/nonnormal_observers_contracts.rs",
+        "sha256": "cc3faeba2befbf517bfbea2404bbcb1a49d136fb6c434bf61c1758328663e86e"
+      }
+    ],
+    "identity_relation": "BYTE_IDENTITY"
+  },
+  "command_records": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-core",
+        "--test",
+        "nonnormal_observers_contracts"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-OBS-001-20261106_v2",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+      "exit_code": 0,
+      "stdout_artifact": "running 11 tests\ntest test_metric_jump_factor ... ok\ntest test_negative_control_exp_overflow ... ok\ntest test_negative_control_fast_h_oscillation ... ok\ntest test_negative_control_metric_jump_invalid ... ok\ntest test_negative_control_qr_loss_and_orthogonality ... ok\ntest test_negative_control_missed_peak ... ok\ntest test_negative_control_singular_or_indefinite_h ... ok\ntest test_timedependent_metric_transport_term ... ok\ntest test_validated_slab_enclosure_diagonal_decay ... ok\ntest test_section6_nonnormal_matrix_all_observers ... ok\ntest test_vg1_zero_allocation ... ok\n\ntest result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+      "stderr_artifact": ""
+    },
+    {
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-OBS-001-20261106_v2",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+      "exit_code": 0,
+      "stdout_artifact": "",
+      "stderr_artifact": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-OBS-001-20261106_v2",
+      "rustc": null,
+      "cargo": null,
+      "exit_code": 0,
+      "stdout_artifact": "",
+      "stderr_artifact": ""
+    }
+  ],
+  "result": "Demoted sampled observer modes (FixedHLogNormObserver, MovingHMetricObserver, QrSackerSellObserver) from Certified to SampledDiagnostic because discrete pointwise samples do not bound continuous-time supremum over [t_n, t_{n+1}]. Implemented ValidatedSlabEnclosureObserver in crates/rodas5p-core/src/nonnormal_observers.rs providing verified continuous time-slab enclosures with uniform SPD lower bound verification, interval eigenvalue supremum, outward Cody-Waite exponential enclosures via exp_interval, outward metric jump enclosures, and fail-closed error handling. All 11 verification contract tests passed in crates/rodas5p-core/tests/nonnormal_observers_contracts.rs with 0 allocations in the hot loop (VG-1 compliance), and positive/negative controls for missed peaks, fast H oscillation, singular H, metric jumps, QR loss, and exp overflow.",
+  "limitations": [
+    "Overall production solver qualification verdict remains HOLD_NOT_RELEASE_QUALIFIED until all qualification tasks (AUTH, FSM, BENCH, API) complete.",
+    "Validated slab enclosure currently specialized for 2x2 systems; higher dimensions require verified generalized interval eigensolvers or interval Schur forms.",
+    "Sampled observer modes remain available as diagnostic tools but must never be consumed as continuous certificates."
+  ],
+  "math_review": {
+    "definitions": "Let y'(t) = J(t) y(t) with time-dependent SPD metric H(t). Then d/dt ||y||_{H(t)}^2 = y^T [Hdot + J^T H + H J] y <= 2 mu_H(t) ||y||_{H(t)}^2, where mu_H(t) = 1/2 lambda_max(H(t)^{-1/2} [Hdot(t) + J(t)^T H(t) + H(t) J(t)] H(t)^{-1/2}).",
+    "assumptions": [
+      "Continuous time slab [t_n, t_{n+1}] of duration dt > 0.",
+      "Matrix intervals J in bold(J), H in bold(H), Hdot in bold(Hdot) enclose all continuous variations over the slab.",
+      "Metric H(t) satisfies uniform SPD lower bound lambda_min(H(t)) >= lambda_min_lo > 0 over the entire slab."
+    ],
+    "derivation": "By Rayleigh quotient over any non-zero vector, lambda_max(M_H) is bounded outwardly by 1/2 lambda_max(K) / lambda_min_lo when lambda_max(K) >= 0 and 1/2 lambda_max(K) / lambda_max_hi when lambda_max(K) < 0. For any continuous trajectory, int_{t_n}^{t_{n+1}} mu_H(s) ds <= mu_slab_upper * dt. Outward Cody-Waite reduction with interval arithmetic bounds the continuous matrix exponential exp(int mu_H ds). Metric jumps from H_- to H_+ are bounded by gamma_jump = sqrt(lambda_max(H_-^{-1/2} H_+ H_-^{-1/2})).",
+    "roundoff_model": "All interval calculations utilize outward IEEE 754 binary64 directed rounding via rodas5p_core::directed (add_up, add_down, sub_up, sub_down, mul_up, mul_down, div_up, sqrt_up, sqrt_down, exp_interval).",
+    "counterexamples": [
+      "Discrete sample point evaluation mu_H(t_k) misses large interior spikes (e.g. transient mu_2 peak of +48 between negative endpoints), causing sampled observers to falsely claim decay exp(int mu ds) < 1.",
+      "Fast metric oscillations in H(t) induce transport terms Hdot that fluctuate with amplitude omega * epsilon, completely missed by sub-Nyquist discrete sampling.",
+      "Continuous QR integration accumulates numerical orthogonality loss ||Q^T Q - I|| > 0 when executed in floating-point without outward error enclosures."
+    ]
+  },
+  "work_accounting": {
+    "rhs": null,
+    "jvp": null,
+    "jacobian": null,
+    "linear_iterations": null,
+    "factorizations": null,
+    "rejected_steps": null,
+    "speculative_work": null,
+    "refused_work": null,
+    "failed_attempts": null,
+    "unknown_counters": []
+  },
+  "decision_rationale": "Separated sampled nonnormal diagnostics from verified continuous full-slab enclosures. Pointwise sampled observers advertise GrowthBoundStatus::SampledDiagnostic; only ValidatedSlabEnclosureObserver advertises GrowthBoundStatus::Certified. Overall qualification remains on hold (HOLD_NOT_RELEASE_QUALIFIED) pending remaining qualification tasks."
+}

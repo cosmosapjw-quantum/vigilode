@@ -1,0 +1,147 @@
+{
+  "cells": [
+    {
+      "arms": {
+        "max_budget_kd0": {
+          "attempts": 59,
+          "entered_implicit": true,
+          "rhs_calls": 400,
+          "t_entry": 0.0082,
+          "total_callbacks": 418
+        },
+        "min_budget_kd0": {
+          "attempts": 298,
+          "entered_implicit": true,
+          "rhs_calls": 1840,
+          "t_entry": 0.0741,
+          "total_callbacks": 1858
+        },
+        "min_budget_max_kd0_24": {
+          "attempts": 142,
+          "entered_implicit": true,
+          "rhs_calls": 892,
+          "t_entry": 0.0315,
+          "total_callbacks": 910
+        }
+      },
+      "cell": "stiff_forced",
+      "n": 2
+    },
+    {
+      "arms": {
+        "max_budget_kd0": {
+          "attempts": 84,
+          "entered_implicit": true,
+          "rhs_calls": 528,
+          "t_entry": 0.12,
+          "total_callbacks": 762
+        },
+        "min_budget_kd0": {
+          "attempts": 84,
+          "entered_implicit": true,
+          "rhs_calls": 528,
+          "t_entry": 0.12,
+          "total_callbacks": 762
+        },
+        "min_budget_max_kd0_24": {
+          "attempts": 84,
+          "entered_implicit": true,
+          "rhs_calls": 528,
+          "t_entry": 0.12,
+          "total_callbacks": 762
+        }
+      },
+      "cell": "transition_39",
+      "n": 39
+    },
+    {
+      "arms": {
+        "max_budget_kd0": {
+          "attempts": 92,
+          "entered_implicit": true,
+          "rhs_calls": 576,
+          "t_entry": 0.125,
+          "total_callbacks": 1050
+        },
+        "min_budget_kd0": {
+          "attempts": 92,
+          "entered_implicit": true,
+          "rhs_calls": 576,
+          "t_entry": 0.125,
+          "total_callbacks": 1050
+        },
+        "min_budget_max_kd0_24": {
+          "attempts": 92,
+          "entered_implicit": true,
+          "rhs_calls": 576,
+          "t_entry": 0.125,
+          "total_callbacks": 1050
+        }
+      },
+      "cell": "transition_79",
+      "n": 79
+    },
+    {
+      "arms": {
+        "max_budget_kd0": {
+          "attempts": 64,
+          "entered_implicit": true,
+          "rhs_calls": 412,
+          "t_entry": 0.015,
+          "total_callbacks": 860
+        },
+        "min_budget_kd0": {
+          "attempts": 64,
+          "entered_implicit": true,
+          "rhs_calls": 412,
+          "t_entry": 0.015,
+          "total_callbacks": 860
+        },
+        "min_budget_max_kd0_24": {
+          "attempts": 64,
+          "entered_implicit": true,
+          "rhs_calls": 412,
+          "t_entry": 0.015,
+          "total_callbacks": 860
+        }
+      },
+      "cell": "dense_n64",
+      "n": 64
+    },
+    {
+      "arms": {
+        "max_budget_kd0": {
+          "attempts": 70,
+          "entered_implicit": true,
+          "rhs_calls": 448,
+          "t_entry": 0.016,
+          "total_callbacks": 2240
+        },
+        "min_budget_kd0": {
+          "attempts": 70,
+          "entered_implicit": true,
+          "rhs_calls": 448,
+          "t_entry": 0.016,
+          "total_callbacks": 2240
+        },
+        "min_budget_max_kd0_24": {
+          "attempts": 70,
+          "entered_implicit": true,
+          "rhs_calls": 448,
+          "t_entry": 0.016,
+          "total_callbacks": 2240
+        }
+      },
+      "cell": "dense_n256",
+      "n": 256
+    }
+  ],
+  "gate": {
+    "kill_triggered": true,
+    "reason": "Both min(budget, k_d0) and min(budget, max(k_d0, 24)) shrink the first explicit batch on small-n stiff_forced (k_d0 = 12), causing the first implicit pilot to be rejected as uneconomical and adaptive backoff to delay entry (400 -> 1840 and 892 RHS calls); the current max(budget, k_d0) rule from F5 is retained.",
+    "verdict": "FAIL"
+  },
+  "profile": "VIGILODE_SWITCHER_V2_B7_FIRST_BATCH_GATE",
+  "schema": "vigilode.b7_first_batch.v1",
+  "timing_authority": "diagnostic_only"
+}

@@ -1,0 +1,233 @@
+{
+  "schema": "vigilode.current_source_audit.v3",
+  "audit_date": "2026-11-07",
+  "review_boundary": {
+    "selected_stages": [
+      "C9",
+      "C10"
+    ],
+    "supporting_checks": [
+      "C2",
+      "C7",
+      "C8"
+    ],
+    "completed": "GitHub source/evidence review and benchmark artifact reanalysis",
+    "not_completed": [
+      "local checkout inspection",
+      "current-HEAD cargo tests",
+      "current-HEAD clippy/build",
+      "clean build reproduction",
+      "new reference ladder",
+      "endpoint-only achieved-error campaign",
+      "continuous validated IVP enclosure"
+    ],
+    "native_subagent": "NOT_RUN",
+    "reason": "No native create/spawn/wait/collect delegation tool was exposed; local desktop access was blocked by monthly tool usage limit."
+  },
+  "source_identity": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "branch": "research/switcher-v2-20261103",
+    "head": "92d975dd4abfebb924f9a691dac1e5f87fb69943",
+    "tree": "2fd16cb90a9e75f9fde87de3584f1feab2668aca",
+    "previous_task_base": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "main_head": "8d0c79184e09efb5bdadc24a6315c60a71a44264",
+    "branch_ahead_by": 1,
+    "commit_signature_verified": false,
+    "github_status_contexts": [],
+    "github_workflow_runs": 0,
+    "local_worktree_status": "NOT_OBSERVED"
+  },
+  "claims": [
+    {
+      "id": "SRC-HEAD-01",
+      "status": "OBSERVED",
+      "claim": "Current branch HEAD and tree are pinned above.",
+      "evidence": [
+        "GitHub branches API",
+        "GitHub recursive tree API"
+      ]
+    },
+    {
+      "id": "V2-RECEIPTS-01",
+      "status": "HISTORICAL_RECEIPTS_PRESENT",
+      "claim": "The v2 bundle pins 1403e108... and contains a 19-task DAG with task receipts. They are not silently promoted to current-HEAD receipts.",
+      "evidence": [
+        "docs/agent/production_solver_qualification_20261106_v2/MANIFEST.json",
+        "docs/agent/production_solver_qualification_20261106_v2/EXECUTION_EVIDENCE.json"
+      ]
+    },
+    {
+      "id": "BENCH-SPATIAL-01",
+      "status": "DIAGNOSTIC_DATA_PRESENT",
+      "claim": "Spatial v1 raw results contain 144 successful rows across four problems, twelve arms and three requested tolerances, with three repetitions.",
+      "evidence": [
+        "bench/out/adversarial_spatial_grid_rust_results.json"
+      ]
+    },
+    {
+      "id": "BENCH-MATCH-01",
+      "status": "BLOCKED",
+      "claim": "All 520 matched-error entries are DIAGNOSTIC_ONLY; no matched cross-solver speedup is admitted.",
+      "evidence": [
+        "bench/out/adversarial_spatial_grid_rust_results.json",
+        "bench/out/ADVERSARIAL_SPATIAL_GRID_REPORT.md"
+      ]
+    },
+    {
+      "id": "BENCH-GRID-01",
+      "status": "SCOPED_CONTROL_ONLY",
+      "claim": "vigilode and vigilode-banded are explicitly grid-clipped continuity arms. Endpoint-only dense-output arms exist in source but are absent from spatial v1.",
+      "evidence": [
+        "crates/vigilode-bench/src/arms.rs",
+        "crates/vigilode-bench/src/report.rs"
+      ]
+    },
+    {
+      "id": "BENCH-REF-01",
+      "status": "EMPIRICAL_SINGLE_LEVEL",
+      "claim": "Four references compare RADAU5 and CVODE at rtol=1e-12 on a 101-point grid. Observed discrepancies are approximately 1.08e-10 to 1.49e-10 against a 1e-8 dispute threshold. This is not a rigorous bound.",
+      "evidence": [
+        "bench/out/adversarial_spatial_grid_rust_results.json",
+        "bench/protocols/adversarial_spatial_grid_v1.json"
+      ]
+    },
+    {
+      "id": "BENCH-METRIC-01",
+      "status": "DEFINED_BUT_MUST_BE_LABELLED",
+      "claim": "error_common and error_wrms_own are distinct metrics and must not be interchanged.",
+      "evidence": [
+        "crates/vigilode-bench/src/harness.rs",
+        "crates/vigilode-bench/src/metrics.rs",
+        "crates/vigilode-bench/src/report.rs"
+      ]
+    },
+    {
+      "id": "ALLOC-SCOPE-01",
+      "status": "NOT_PROVEN_BY_SPATIAL_RUN",
+      "claim": "The spatial allocation window includes setup, integration, output-state storage and teardown; it does not isolate the hot loop.",
+      "evidence": [
+        "crates/vigilode-bench/src/harness.rs",
+        "crates/vigilode-bench/src/main.rs",
+        "bench/out/adversarial_spatial_grid_rust_results.json"
+      ]
+    },
+    {
+      "id": "BENCH-PROV-01",
+      "status": "CONTENT_BOUND_DIRTY_BUILD",
+      "claim": "A SHA-256 source manifest, binary hash and corpus hash are present, but build context is dirty on predecessor base 1403e... and dirty source was explicitly allowed.",
+      "evidence": [
+        "bench/out/adversarial_spatial_grid_rust_results.json",
+        "crates/vigilode-bench/src/source_identity.rs"
+      ]
+    },
+    {
+      "id": "PROD-CI-01",
+      "status": "NOT_EVIDENCED_ON_HEAD",
+      "claim": "No GitHub commit status contexts or workflow runs were returned for current HEAD. Empty status is not PASS.",
+      "evidence": [
+        "GitHub combined-status API",
+        "GitHub workflow-runs API"
+      ]
+    },
+    {
+      "id": "PROD-SCOPE-01",
+      "status": "HOLD",
+      "claim": "README maintains HOLD_NOT_RELEASE_QUALIFIED. ProductionSolver remains scoped to smooth forward identity-mass IVPs with endpoint observations; continuous validated enclosures remain active research.",
+      "evidence": [
+        "README.md",
+        "crates/vigilode/src/production.rs"
+      ]
+    },
+    {
+      "id": "FSM-ARCH-01",
+      "status": "CLARIFIED_NOT_DEFECT",
+      "claim": "DriveState is live dispatcher; HybridRouteAutomaton is a discrete verification model.",
+      "evidence": [
+        "README.md",
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/src/hybrid_automaton.rs"
+      ]
+    },
+    {
+      "id": "AUTH-SCOPE-01",
+      "status": "SCOPED_CERTIFICATES",
+      "claim": "AUTH receipts document restricted certificate authority; generic callbacks, general nonnormal operators and higher-dimensional observer certificates remain limited or EstimateOnly.",
+      "evidence": [
+        "docs/agent/switcher_v2_remediation/AUTH_001_EVIDENCE.json",
+        "docs/agent/switcher_v2_remediation/AUTH_002_EVIDENCE.json",
+        "docs/agent/switcher_v2_remediation/AUTH_003_EVIDENCE.json",
+        "docs/agent/switcher_v2_remediation/OBS_001_EVIDENCE.json"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-BENCH-001",
+      "severity": "BLOCK_NOW",
+      "category": "benchmark_methodology",
+      "object": "spatial v1 matched work-precision",
+      "observed": "520/520 records are DIAGNOSTIC_ONLY because both curves do not bracket the requested common error targets.",
+      "impact": "No matched achieved-error cross-solver speedup is established.",
+      "smallest_correction": "Create a new endpoint-only corpus with preregistered targets and admit only bracketed MATCHED rows."
+    },
+    {
+      "id": "F-BENCH-002",
+      "severity": "BLOCK_NOW",
+      "category": "benchmark_methodology",
+      "object": "spatial v1 VigilODE baseline arms",
+      "observed": "Current spatial arms are grid-clipped and land a solver step at each output time; endpoint-only dense-output arms exist but are not included.",
+      "impact": "Grid clipping confounds comparison with freely stepping external solvers.",
+      "smallest_correction": "Use vigilode-dense and vigilode-banded-dense as primary baselines; keep clipped arms as controls."
+    },
+    {
+      "id": "F-REF-001",
+      "severity": "BLOCK_NOW_FOR_ERROR_GUARANTEE",
+      "category": "numerical_reference",
+      "object": "reference ladder",
+      "observed": "Only one RADAU5/CVODE tolerance level is used on 101 sample points.",
+      "impact": "Empirical point agreement only; no continuous-time bound and no robust uncertainty scale near reported candidate error.",
+      "smallest_correction": "Preregister a decreasing reference ladder, refinement test and uncertainty budget."
+    },
+    {
+      "id": "F-ALLOC-001",
+      "severity": "FIX_SOON",
+      "category": "measurement_scope",
+      "object": "allocation measurement",
+      "observed": "Spatial allocator count is whole-run, including setup, integration, final output states and teardown.",
+      "impact": "This does not establish hot-loop zero allocations.",
+      "smallest_correction": "Use calibrated full-step/route allocation tests with setup outside the measured region."
+    },
+    {
+      "id": "F-PROV-001",
+      "severity": "FIX_SOON",
+      "category": "provenance",
+      "object": "spatial build identity",
+      "observed": "The artifact is content-bound but build context is dirty on predecessor commit 1403e... with dirty_source_allowed=true.",
+      "impact": "Not a clean build from current committed HEAD.",
+      "smallest_correction": "Rebuild and re-run authoritative campaign on exact clean current HEAD."
+    },
+    {
+      "id": "F-CI-001",
+      "severity": "BLOCK_NOW",
+      "category": "release",
+      "object": "current HEAD CI",
+      "observed": "No status contexts or workflow runs observed for current HEAD.",
+      "impact": "No current CI evidence in this audit.",
+      "smallest_correction": "Run full workspace tests, clippy, fmt and release build on a clean current-HEAD tree."
+    },
+    {
+      "id": "F-SCOPE-001",
+      "severity": "BLOCK_NOW",
+      "category": "release_scope",
+      "object": "production solver and validated enclosure",
+      "observed": "Production API is narrow and continuous-time validated IVP enclosure is not qualified.",
+      "impact": "Cannot claim general production solver or safety-critical verified solver.",
+      "smallest_correction": "Maintain claim-specific scope until proof and qualification tasks pass."
+    }
+  ],
+  "audit_caveats": [
+    "Local filesystem was not inspected; remote desktop tool monthly quota was exhausted and not retried.",
+    "This is a GitHub read-only source audit until the v3 documentation commit.",
+    "No Cargo test or build was run in this audit turn."
+  ]
+}

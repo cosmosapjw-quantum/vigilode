@@ -1,11 +1,15 @@
 use std::alloc::{GlobalAlloc, Layout, System};
+use std::cell::Cell;
 use std::sync::Mutex;
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use vigilode_coupled::trace_certificate::{TraceNode, certify_trace_path};
 
-static ACTIVE: AtomicBool = AtomicBool::new(false);
 static ALLOCATIONS: AtomicUsize = AtomicUsize::new(0);
 static TEST_LOCK: Mutex<()> = Mutex::new(());
+
+thread_local! {
+    static TRACKING_ACTIVE: Cell<bool> = const { Cell::new(false) };
+}
 
 struct CountingAllocator;
 
@@ -14,21 +18,24 @@ static GLOBAL: CountingAllocator = CountingAllocator;
 
 unsafe impl GlobalAlloc for CountingAllocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        if ACTIVE.load(Ordering::Relaxed) {
+        let is_active = TRACKING_ACTIVE.try_with(|flag| flag.get()).unwrap_or(false);
+        if is_active {
             ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
         }
         unsafe { System.alloc(layout) }
     }
 
     unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
-        if ACTIVE.load(Ordering::Relaxed) {
+        let is_active = TRACKING_ACTIVE.try_with(|flag| flag.get()).unwrap_or(false);
+        if is_active {
             ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
         }
         unsafe { System.alloc_zeroed(layout) }
     }
 
     unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
-        if ACTIVE.load(Ordering::Relaxed) {
+        let is_active = TRACKING_ACTIVE.try_with(|flag| flag.get()).unwrap_or(false);
+        if is_active {
             ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
         }
         unsafe { System.realloc(ptr, layout, new_size) }
@@ -53,9 +60,9 @@ fn nodes(slabs: usize) -> Vec<TraceNode> {
 
 fn counted_certification(nodes: &[TraceNode], slabs: usize) -> (usize, &'static str) {
     ALLOCATIONS.store(0, Ordering::Relaxed);
-    ACTIVE.store(true, Ordering::Relaxed);
+    let _ = TRACKING_ACTIVE.try_with(|flag| flag.set(true));
     let result = certify_trace_path(slabs, nodes);
-    ACTIVE.store(false, Ordering::Relaxed);
+    let _ = TRACKING_ACTIVE.try_with(|flag| flag.set(false));
     (ALLOCATIONS.load(Ordering::Relaxed), result.status)
 }
 
@@ -81,9 +88,9 @@ fn rejected_strict_tube_charges_only_pre_and_post_loop_allocations() {
     // margin forces a strict-tube refusal after original-field slab work.
     candidate[1].state = [0.5; 2];
     ALLOCATIONS.store(0, Ordering::Relaxed);
-    ACTIVE.store(true, Ordering::Relaxed);
+    let _ = TRACKING_ACTIVE.try_with(|flag| flag.set(true));
     let result = certify_trace_path(16, &candidate);
-    ACTIVE.store(false, Ordering::Relaxed);
+    let _ = TRACKING_ACTIVE.try_with(|flag| flag.set(false));
     let allocations = ALLOCATIONS.load(Ordering::Relaxed);
 
     assert_eq!(result.status, "rejected");

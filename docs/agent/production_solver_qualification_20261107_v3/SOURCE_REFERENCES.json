@@ -1,0 +1,137 @@
+{
+  "schema": "vigilode.source_references.v3",
+  "repository": {
+    "url": "https://github.com/cosmosapjw-quantum/vigilode",
+    "branch": "research/switcher-v2-20261103",
+    "head": "92d975dd4abfebb924f9a691dac1e5f87fb69943",
+    "tree": "2fd16cb90a9e75f9fde87de3584f1feab2668aca"
+  },
+  "github_sources": [
+    {
+      "path": "README.md",
+      "git_blob_sha1": "a9ddaee1ccaeae246c8c83d6c5d5d482538572a1",
+      "role": "current production claim and benchmark description"
+    },
+    {
+      "path": "bench/protocols/adversarial_spatial_grid_v1.json",
+      "git_blob_sha1": "7fccabd07ec541c13027d39c82c5b5bcc4e7721f",
+      "role": "v1 benchmark protocol"
+    },
+    {
+      "path": "bench/out/adversarial_spatial_grid_rust_results.json",
+      "git_blob_sha1": "cf34d767beb1695b389a33c85fc777d5cb780b3e",
+      "role": "raw 144-row spatial result"
+    },
+    {
+      "path": "bench/out/ADVERSARIAL_SPATIAL_GRID_REPORT.md",
+      "git_blob_sha1": "60bc3fd5db65f9d993a69fd721cdbf4f51229661",
+      "role": "generated spatial benchmark report"
+    },
+    {
+      "path": "bench/build_spatial_grid_comparison.py",
+      "git_blob_sha1": "83c0e2f249c1113174ddcdf47d15f0afdbadcaa7",
+      "role": "comparison/report generator"
+    },
+    {
+      "path": "crates/vigilode-bench/src/model.rs",
+      "git_blob_sha1": "7b20c6aced80749a2b86dfb60e25ed6e6445d5e0",
+      "role": "benchmark RHS/Jacobian model definitions"
+    },
+    {
+      "path": "crates/vigilode-bench/src/arms.rs",
+      "git_blob_sha1": "5d7bb18784bfc79660b543cc1187165b34855f8b",
+      "role": "grid-clipped and endpoint-only arms"
+    },
+    {
+      "path": "crates/vigilode-bench/src/harness.rs",
+      "git_blob_sha1": "8b9394aa0418fc72aa8077e12fcc75981834f27b",
+      "role": "reference and work-precision logic"
+    },
+    {
+      "path": "crates/vigilode-bench/src/metrics.rs",
+      "git_blob_sha1": "91494fd1dbc40c9299d7b64265ae2113e2893258",
+      "role": "WRMS and log interpolation"
+    },
+    {
+      "path": "crates/vigilode-bench/src/report.rs",
+      "git_blob_sha1": "bb2f274a50597ed502f6ac6507b37694dbf5cf17",
+      "role": "clipped vs endpoint-only report logic"
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/sphere_photon_fv_support/mod.rs",
+      "git_blob_sha1": "df0cdc9735475a86efbac55cc81da95b88435f53",
+      "role": "finite-volume sphere model support"
+    },
+    {
+      "path": "crates/vigilode/src/production.rs",
+      "git_blob_sha1": "c0d49c1113494861aa65401626a66a614060de5f",
+      "role": "ProductionSolver and checked outcome semantics"
+    },
+    {
+      "path": "crates/vigilode/src/switching.rs",
+      "git_blob_sha1": "1db70211ccac93087e281fd869b0f6aeffdcb592",
+      "role": "live DriveState dispatcher"
+    },
+    {
+      "path": "crates/vigilode/src/registry.rs",
+      "git_blob_sha1": "dbaf18e3b658d47dddefb1e0f5e8e9c6d182c382",
+      "role": "WP-02 epoch identity"
+    },
+    {
+      "path": "docs/agent/production_solver_qualification_20261106_v2/ACCEPTANCE_MATRIX.json",
+      "git_blob_sha1": "c08313b02e40bfbab5cb5d28878a215d83a43f5e",
+      "role": "legacy gates, carried-forward status"
+    },
+    {
+      "path": "docs/agent/switcher_v2_remediation/EPOCH_001_AUTHORITY_DECISION.md",
+      "git_blob_sha1": "b3cb08a5050b45ba841210a983cf4ac937b1f9f7",
+      "role": "WP-02 authority decision"
+    }
+  ],
+  "literature": [
+    {
+      "kind": "primary_review",
+      "authors": "N. S. Nedialkov, K. R. Jackson, G. F. Corliss",
+      "title": "Validated solutions of initial value problems for ordinary differential equations",
+      "venue": "Applied Mathematics and Computation 105(1), 21–68 (1999)",
+      "doi": "10.1016/S0096-3003(98)10083-8",
+      "url": "https://doi.org/10.1016/S0096-3003(98)10083-8",
+      "relevance": "Validated IVP methods; successful validation produces a unique-solution guarantee and a mathematically justified enclosure."
+    },
+    {
+      "kind": "primary_method",
+      "authors": "M. Neher, K. R. Jackson, N. S. Nedialkov",
+      "title": "On Taylor Model Based Integration of ODEs",
+      "venue": "SIAM Journal on Numerical Analysis 45(1), 236–262 (2007)",
+      "doi": "10.1137/050638448",
+      "url": "https://doi.org/10.1137/050638448",
+      "relevance": "Taylor-model verified ODE integration; dependency and wrapping effects."
+    },
+    {
+      "kind": "official_solver_reference",
+      "authors": "E. Hairer and G. Wanner",
+      "title": "Testset of stiff ODEs and RADAU5/RODAS drivers",
+      "url": "https://www.unige.ch/~hairer/testset/testset.html",
+      "relevance": "Authoritative stiff testset and solver driver source."
+    },
+    {
+      "kind": "official_solver_source",
+      "authors": "E. Hairer and G. Wanner",
+      "title": "RADAU5 source and user documentation",
+      "url": "https://www.unige.ch/~hairer/prog/stiff/radau5.f",
+      "relevance": "Radau IIA order-five method with adaptive step size and continuous output."
+    },
+    {
+      "kind": "official_docs",
+      "authors": "SUNDIALS developers",
+      "title": "CVODE documentation",
+      "url": "https://sundials.readthedocs.io/en/latest/cvode/",
+      "relevance": "Official solver configuration and work-statistics documentation; use version-specific docs for pinned build."
+    }
+  ],
+  "tool_research": {
+    "exa": "Targeted search of validated IVP papers, Taylor-model ODE integration and Hairer solver sources was executed.",
+    "scispace": "Paper search and table retrieval executed for validated IVPs, Taylor models and verification methods.",
+    "wolfram": "Context retrieval and one small hash-function sanity check; no solver proof or benchmark calculation is claimed."
+  }
+}

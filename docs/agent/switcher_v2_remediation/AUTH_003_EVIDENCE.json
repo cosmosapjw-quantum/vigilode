@@ -1,0 +1,131 @@
+{
+  "evidence_id": "EV-AUTH-003-20261106",
+  "task_id": "AUTH-003",
+  "claim_support": [
+    "established",
+    "derived",
+    "numerically-checked",
+    "implementation-verified"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "worktree_head": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "tree_sha": "8a236871948798cb2a40c8a5ea65112a045bf16d",
+    "input_hashes": [
+      {
+        "path": "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+        "sha256_before": "37f6fd72f6abce1e3dd9211137983f8961d0432182a7c5bc2926d7fc4c4c9877",
+        "sha256_after": "8496bab86d803e7163a4fbdff5dcdd6976785ce83a9c5ca8275562f55b5c20ef"
+      },
+      {
+        "path": "crates/rodas5p-integrators/tests/conditioned_polynomial_contracts.rs",
+        "sha256_before": "f6603d961d28ac41d798c8f3719b04fa25fb6c39ce955745090993c2e93383bf",
+        "sha256_after": "ae062bf0403d12226637f8b92cf4da9ff0c344ec4307412166ba54571fff1bd4"
+      }
+    ],
+    "identity_relation": "BYTE_IDENTITY"
+  },
+  "command_records": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "conditioned_polynomial_contracts"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-AUTH-003-20261106_v2",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+      "exit_code": 0,
+      "stdout_artifact": "18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "stderr_artifact": ""
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-integrators",
+        "--lib",
+        "conditioned_polynomial"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-AUTH-003-20261106_v2",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+      "exit_code": 0,
+      "stdout_artifact": "8 passed; 0 failed; 0 ignored; 0 measured; 125 filtered out; finished in 0.01s",
+      "stderr_artifact": ""
+    },
+    {
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-AUTH-003-20261106_v2",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+      "exit_code": 0,
+      "stdout_artifact": "",
+      "stderr_artifact": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-AUTH-003-20261106_v2",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+      "exit_code": 0,
+      "stdout_artifact": "",
+      "stderr_artifact": ""
+    }
+  ],
+  "result": "AUTH-003 fully resolved: Gershgorin spectral certification in crates/rodas5p-integrators is sealed to a private VerifiedSpectralEnclosure bound to source matrix digest and operator identity metadata. Row radii are outwardly rounded via sum_up, endpoints are outwardly enclosed via sub_down/add_up, and operator norm fallback uses directed upward row sums. Matrix symmetry is validated with strict equality rejecting 1-ulp defects. Caller-supplied arbitrary intervals and unverified projections cannot mint Certified and remain EstimateOnly. All 18 contract tests and 8 unit tests pass.",
+  "limitations": [
+    "Overall solver qualification verdict remains HOLD_NOT_RELEASE_QUALIFIED pending remaining qualification gates (OBS-001, FSM-001, API-001, Q-LINT).",
+    "Certified real spectral enclosure is restricted to strictly symmetric matrices whose Gershgorin discs lie strictly in (-inf, 0); general nonsymmetric operators remain uncertified EstimateOnly/RitzEstimate.",
+    "Do not commit or push changes from this task worktree."
+  ],
+  "math_review": {
+    "definitions": "Gershgorin disc theorem for real symmetric matrices: eigenvalues lie in \\cup_i [A_ii - r_i, A_ii + r_i] where r_i = \\sum_{j \\ne i} |A_ij|. Outward enclosure uses directed rounding: r_i <= sum_up(|A_ij|), a_i = sub_down(A_ii, r_out), b_i = add_up(A_ii, r_out).",
+    "assumptions": [
+      "Matrix must be strictly symmetric in IEEE-754 binary64 (any 1-ulp defect rejects certification).",
+      "All entries must be finite (NaN, +inf, -inf fail closed).",
+      "Spectrum must be strictly negative (b_i < 0.0 for all merged intervals; zero-crossing discs fail closed)."
+    ],
+    "derivation": "For real symmetric A, spectrum is purely real: sigma(A) subset R. By Gershgorin theorem, every eigenvalue lambda in sigma(A) satisfies lambda in [A_ii - r_i, A_ii + r_i] for some i. By outward rounding via directed floating-point arithmetic, sub_down(A_ii, r_out) <= A_ii - r_i and add_up(A_ii, r_out) >= A_ii + r_i. Therefore, [a_i, b_i] rigorously encloses the i-th Gershgorin disc.",
+    "roundoff_model": "IEEE-754 directed rounding modes implemented in rodas5p_core::directed::{add_up, sub_down, mul_up, sum_up}.",
+    "counterexamples": [
+      "1-ulp symmetry defect (A[0,1] = 0.5, A[1,0] = 0.5.next_up()) is rejected by is_matrix_symmetric and fails certification.",
+      "Caller-selected SpectralSource::GershgorinCertified with arbitrary intervals is rejected to CertificateStatus::EstimateOnly and SpectralSource::RitzEstimate.",
+      "Positive scalar matrix [2.0] and zero-crossing disc [-1, 2; 2, -1] fail closed (empty intervals).",
+      "Non-finite inputs (NaN, Inf) fail closed."
+    ]
+  },
+  "work_accounting": {
+    "rhs": null,
+    "jvp": null,
+    "jacobian": null,
+    "linear_iterations": null,
+    "factorizations": null,
+    "rejected_steps": null,
+    "speculative_work": null,
+    "refused_work": null,
+    "failed_attempts": null,
+    "unknown_counters": []
+  },
+  "decision_rationale": "Finding AUTH-003 remediated in accordance with mathematical contract and zero-allocation requirements. Sealing certification to VerifiedSpectralEnclosure prevents arbitrary caller intervals or source enums from minting Certified. Overall status remains HOLD_NOT_RELEASE_QUALIFIED."
+}

@@ -56,6 +56,10 @@ pub enum ControllerKind {
     /// same "factor <= 1" policy, not "no step increase after the actual
     /// trial". Opt-in.
     PredictiveCapped2,
+    /// Ringing-resistant digital-filter step-size controller H211b (Söderlind 2003).
+    /// Uses b1 = b2 = 1/(4k), a2 = 1/4 with Jury-certified damping (WP-05). Opt-in.
+    #[serde(rename = "h211b")]
+    H211b,
 }
 
 impl ControllerKind {
@@ -281,6 +285,9 @@ impl AdaptiveStepConfig {
 #[derive(Clone, Debug, Default, PartialEq, Serialize)]
 pub struct AdaptiveControllerState {
     previous_accepted_error: Option<f64>,
+    /// Step ratio h_n / h_{n-1} of consecutive accepted steps for digital filter controllers (H211b).
+    #[serde(skip)]
+    pub previous_step_ratio: Option<f64>,
     /// The represented trial step of the last attempt when it was rejected
     /// (re-audit R4, TIME-DEV-02): the next attempt from the same time must
     /// be strictly shorter, see [`crate::output::adaptive_end_step`].
@@ -370,9 +377,22 @@ impl AdaptiveControllerState {
             });
         }
         let order = estimator_order as f64;
-        let raw = match (config.controller, accepted, self.previous_accepted_error) {
-            (ControllerKind::Pi, true, Some(previous)) if previous > 0.0 => {
+        let raw = match (
+            config.controller,
+            accepted,
+            self.previous_accepted_error,
+            self.previous_step_ratio,
+        ) {
+            (ControllerKind::Pi, true, Some(previous), _) if previous > 0.0 => {
                 config.safety * error.powf(-0.7 / order) * previous.powf(0.4 / order)
+            }
+            (ControllerKind::H211b, true, Some(previous), Some(ratio))
+                if previous > 0.0 && ratio > 0.0 =>
+            {
+                let b1 = 1.0 / (4.0 * order);
+                let b2 = 1.0 / (4.0 * order);
+                let a2 = 0.25;
+                config.safety * error.powf(-b1) * previous.powf(-b2) * ratio.powf(-a2)
             }
             _ => config.safety * error.powf(-1.0 / order),
         };
@@ -450,6 +470,7 @@ impl AdaptiveControllerState {
                 "rejected adaptive error must be finite and nonnegative".into(),
             ));
         }
+        self.previous_step_ratio = None;
         Ok(())
     }
 }
@@ -657,7 +678,12 @@ fn next_step_after_attempt_impl(
         };
         if !forced_output_clipped {
             controller.record_acceptance(error)?;
-            if predictive {
+            if predictive || config.controller == ControllerKind::H211b {
+                if let Some(prev_h) = controller.last_accepted_step
+                    && prev_h > 0.0
+                {
+                    controller.previous_step_ratio = Some(trial_h / prev_h);
+                }
                 controller.last_accepted_step = Some(trial_h);
             }
             if pending_kind {
@@ -671,7 +697,12 @@ fn next_step_after_attempt_impl(
             return Ok(requested_h);
         }
         controller.record_acceptance(error)?;
-        if predictive {
+        if predictive || config.controller == ControllerKind::H211b {
+            if let Some(prev_h) = controller.last_accepted_step
+                && prev_h > 0.0
+            {
+                controller.previous_step_ratio = Some(trial_h / prev_h);
+            }
             controller.last_accepted_step = Some(trial_h);
         }
         if pending_kind {
@@ -1351,4 +1382,30 @@ mod predictive_controller_tests {
             }
         }
     }
+
+    #[test]
+    fn test_jury_stability_h211b() {
+        let k = 5.0;
+        let b1 = 1.0 / (4.0 * k);
+        let b2 = 1.0 / (4.0 * k);
+        let a2 = 0.25;
+        assert!(jury_filter_is_stable(b1, b2, a2, k));
+    }
+
+    #[test]
+    fn test_jury_stability_unstable_rejected() {
+        let k = 5.0;
+        let b1 = 1.0 / k;
+        let b2 = 0.0;
+        let a2 = 1.5;
+        assert!(!jury_filter_is_stable(b1, b2, a2, k));
+    }
+}
+
+/// Validate the Jury stability criterion for a 2-step digital controller filter.
+#[allow(dead_code)]
+pub fn jury_filter_is_stable(b1: f64, b2: f64, a2: f64, k: f64) -> bool {
+    let c1 = a2 - 1.0 + k * b1;
+    let c0 = -a2 + k * b2;
+    c0.abs() < 1.0 && (1.0 + c1 + c0) > 0.0 && (1.0 - c1 + c0) > 0.0
 }

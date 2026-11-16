@@ -275,7 +275,8 @@ fn run() -> Result<(), String> {
         return Err("each option requires a value".into());
     }
     let mut seen = std::collections::HashSet::new();
-    for pair in args[1..].chunks_exact(2) {
+    let (pairs, _) = args[1..].as_chunks::<2>();
+    for pair in pairs {
         if !flags.contains(&pair[0].as_str()) || !seen.insert(pair[0].as_str()) {
             return Err(format!("unknown or duplicate option {}", pair[0]));
         }

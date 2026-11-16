@@ -1,0 +1,35 @@
+{
+  "checks": [
+    "Replay: all F1–F9 edits and tests, and the X4, X6 and X8 modules, applied to 4339facc in task order with every find-text at its stated count; the replayed files equal the tree that was tested.",
+    "`switching_v2_remediation_contracts`: 15 passed (skeleton plus 14 task tests).",
+    "`cargo test -p vigilode --release --lib`: passed (includes the F2 cap tests, the F7 FNV tests and the X6/X8 module tests).",
+    "`cargo test -p vigilode --release --no-fail-fast`: 44 test binaries, 374 passed, 0 failed, 0 ignored.",
+    "`cargo clippy -p vigilode --all-targets --release --no-deps -- -D warnings`: clean. `cargo fmt -p vigilode -- --check`: clean (after the formatting corrections that are already in the task code).",
+    "After the formatting corrections: lib unit tests 52 passed; clippy (vigilode, --no-deps) clean; `switching_economy_contracts` 13 passed and `switcher_v2_admission_contracts` 6 passed with the listed updates.",
+    "`cargo test -p rodas5p-integrators --release --lib dopri5_stiffness`: 4 passed; `cargo fmt -p rodas5p-integrators -- --check`: clean. `cargo clippy -p rodas5p-integrators --no-deps -D warnings` under stable 1.97 reports 10 errors, all in the pre-existing `source_owned_graph_schur.rs`, none in `dopri5_stiffness.rs`.",
+    "Red check on base: every test listed as red failed on 4339facc (F4 and F8 by compile error on the missing symbol); the non-red guards `f4_progress_screen_preserves_entry_decisions`, `f5_...` and `f9_switcher_route_selection_...` passed on base, as intended.",
+    "X4, X6 and X8 modules were also built and tested as a stand-alone crate (13 tests, clippy and rustfmt clean) before being placed in the workspace."
+  ],
+  "existing_test_updates": [
+    "F1: `switching_economy_contracts.rs::b1_loss_margin_backoff_contracts` — one assertion inverted (it pinned the A-4 behaviour).",
+    "F3: `switcher_v2_admission_contracts.rs::route_registry_factory_defaults_contract` — `WorkModelVersion::V2` becomes `V1`.",
+    "F4: `switching_economy_contracts.rs::b8_progress_bound_contracts` — `min_work_per_attempt` 16 and 17 become 7.",
+    "The first dry-run suite was run without `--no-fail-fast` and reported only the F3 failure; the two F1/F4 failures appeared only once the flag was added (erratum E-5)."
+  ],
+  "mutation": [
+    "A first cargo-mutants run (26 mutants of the F2 caps and the F6 audit, two jobs) was stopped after 13 mutants when the two workspace copies (14 GB each) exhausted the disk: 11 caught, 2 missed.",
+    "Missed 1: `delete field work_model from struct Self expression in SwitchingConfig::route_registry` — an equivalent mutant (the struct-update base also yields V1); recorded as a pre-reviewed waiver on F3.",
+    "Missed 2: `delete field entry_seed ...` on an unchanged neighbouring line, generated only because the diff had context lines; the gate now writes `--unified=0` diffs.",
+    "Analysis of the F6 mutant list showed that the JVP accounting lines had no test (the first F6 test uses a dense Jacobian); the two F6 JVP tests were added before the run reached those mutants."
+  ],
+  "e2e": [
+    "The gate itself was exercised end to end in a throwaway clone (stable 1.97): the design bundle committed on 4339facc, then G0 and F1 executed the way an executor would.",
+    "Refusals before any task: `pre-edit` blocked an edit with no current task (exit 2); `start F1` refused (G0 not done); `start G1` refused.",
+    "G0: `check` and `finish` passed; `finish` re-ran validate, contracts, the full suite, clippy and fmt (about 10 minutes).",
+    "F1: `pre-edit` blocked `registry.rs` (outside scope) and `DESIGN.md` (forbidden path) and allowed `switching.rs` and `.agent/STATE.json`; `red F1` built the task base in a temporary worktree and reported the new test as failing there.",
+    "F1 negative checks: `stop` exited 2 while the self-audit was empty (9 itemised findings); `check` caught an injected `dbg!` line; `stop` caught a fabricated symbol (`pub fn adaptive_evidence_v2(` at a wrong line) as a hallucinated reference.",
+    "A hand-edited `\"status\": \"done\"` for F2 showed up as `done?NO-RECEIPT` in `status` and did not unlock F3.",
+    "F1 `finish`: all commands re-run, red record ok, mutation gate 2 caught / 0 missed (about 20 minutes in total); F2 became READY.",
+    "The run found one gate defect, now fixed: `finish` required tests that already existed at the task base (G0's skeleton test) to be listed in `tests_added`; the gate now asks only for tests that are new in the task."
+  ]
+}

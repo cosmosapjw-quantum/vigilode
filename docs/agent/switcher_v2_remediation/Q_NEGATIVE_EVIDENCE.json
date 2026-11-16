@@ -1,0 +1,96 @@
+{
+  "evidence_id": "EV-Q-NEGATIVE-001",
+  "task_id": "Q-NEGATIVE",
+  "claim_support": [
+    "established",
+    "derived",
+    "numerically-checked",
+    "implementation-verified"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "worktree_head": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "tree_sha": "8a236871948798cb2a40c8a5ea65112a045bf16d",
+    "input_hashes": [
+      {
+        "path": "tools/check_ignored_tests_in_ci.py",
+        "sha256": "df090c8a306a4666f81e33c69c6cf003efca77ffc4d32a488c0356ae2ce6cf3f"
+      },
+      {
+        "path": "research/qualification/negative_controls/negative_fixture_manifest.json",
+        "sha256": "82f7d98305c48834f8a846c483a97f6c77bb859a8c08ecba301bb2f43ce557ea"
+      },
+      {
+        "path": "crates/rodas5p-integrators/tests/dense_wfiltered_contracts.rs",
+        "sha256": "5c93c4e107f9c2d14cb80ca238a2e1281dbce35b91cf8caeb968e7ec2be49856"
+      }
+    ],
+    "identity_relation": "BYTE_IDENTITY"
+  },
+  "command_records": [
+    {
+      "argv": [
+        "python3",
+        "tools/check_ignored_tests_in_ci.py"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-Q-NEGATIVE-20261106_v2",
+      "rustc": null,
+      "cargo": null,
+      "exit_code": 0,
+      "stdout_artifact": "85 ignored tests, all reachable from CI",
+      "stderr_artifact": null
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "dense_wfiltered_contracts",
+        "--",
+        "prothero_robinson_wfiltered_enforce_kill_gate",
+        "--ignored"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-Q-NEGATIVE-20261106_v2",
+      "rustc": "rustc 1.99.0",
+      "cargo": "cargo 1.99.0",
+      "exit_code": 101,
+      "stdout_artifact": "KILL GATE: 2.143x the Off accepted-step count > 1.3x",
+      "stderr_artifact": null
+    }
+  ],
+  "result": "Preserved negative controls, verified all 85 registered ignored tests are reachable from CI without omissions, confirmed that the historical Prothero-Robinson 15/7 = 2.143x > 1.3x kill-gate test fails closed with exit code 101 for the exact mathematical reason without threshold softening, and verified all 14 authoritative fixtures in fixtures/ remain bit-for-bit identical.",
+  "limitations": [
+    "Ignored tests are deliberate negative controls or long-running calibration fixtures; they must not be counted as passing unexecuted."
+  ],
+  "math_review": {
+    "definitions": "Negative control: an algorithmic verification scenario designed to trigger an explicit mathematical or budgetary kill-gate when an invalid property or efficiency degradation occurs.",
+    "assumptions": [
+      "Falsification thresholds must remain immutable and never be widened to force artificial passes."
+    ],
+    "derivation": "Under Prothero-Robinson with lambda = -1e6, W-filtering causes accepted step count to increase from 7 to 15 (ratio 2.143x), which strictly exceeds the 1.3x efficiency ceiling, triggering panic at the registered kill-gate.",
+    "roundoff_model": "Integer step counting arithmetic: 15 / 7 = 2.142857... > 1.3.",
+    "counterexamples": [
+      "Weakening the 1.3x threshold to >= 2.2x would mask algorithmic degradation and constitute an unauthorized governance violation."
+    ]
+  },
+  "work_accounting": {
+    "rhs": 15,
+    "jvp": 0,
+    "jacobian": 15,
+    "linear_iterations": 0,
+    "factorizations": 15,
+    "rejected_steps": 0,
+    "speculative_work": 0,
+    "refused_work": 0,
+    "failed_attempts": 1,
+    "unknown_counters": []
+  },
+  "decision_rationale": "Q-NEGATIVE requirements are fully satisfied. Negative controls fail closed deterministically, CI coverage of ignored tests is verified 100%, and all test fixture hashes are intact."
+}
+

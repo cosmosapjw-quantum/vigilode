@@ -396,7 +396,9 @@ impl ExchangeCollisionProvider {
         if x.len() != self.dimension || out.len() != self.dimension {
             return Err(PolynomialResolventError::InvalidInput);
         }
-        for (input, output) in x.chunks_exact(2).zip(out.chunks_exact_mut(2)) {
+        let (inputs, _) = x.as_chunks::<2>();
+        let (outputs, _) = out.as_chunks_mut::<2>();
+        for (input, output) in inputs.iter().zip(outputs.iter_mut()) {
             let transfer = (-self.a).mul_add(input[0], self.b * input[1]);
             let transfer = step * transfer;
             if !transfer.is_finite() {
@@ -439,7 +441,8 @@ impl ExchangeCollisionProvider {
                     (ha * pair[0] + (1.0 + ha) * pair[1]) / denominator,
                 ]
             };
-            for pair in rhs.chunks_exact(2) {
+            let (rhs_chunks, _) = rhs.as_chunks::<2>();
+            for pair in rhs_chunks {
                 work.direct_block_formula_evaluations =
                     work.direct_block_formula_evaluations.saturating_add(1);
                 if solve(pair).iter().any(|x| !x.is_finite()) {
@@ -447,7 +450,8 @@ impl ExchangeCollisionProvider {
                 }
                 work.direct_blocks_solved = work.direct_blocks_solved.saturating_add(1);
             }
-            for (pair, out) in rhs.chunks_exact(2).zip(output.chunks_exact_mut(2)) {
+            let (outputs, _) = output.as_chunks_mut::<2>();
+            for (pair, out) in rhs_chunks.iter().zip(outputs.iter_mut()) {
                 work.direct_block_formula_evaluations =
                     work.direct_block_formula_evaluations.saturating_add(1);
                 out.copy_from_slice(&solve(pair));

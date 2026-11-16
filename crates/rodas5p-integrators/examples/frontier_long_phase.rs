@@ -19,7 +19,9 @@ fn run() -> Result<Value, String> {
     let args: Vec<String> = std::env::args().skip(1).collect();
     if args.len() != 6
         || args
-            .chunks_exact(2)
+            .as_chunks::<2>()
+            .0
+            .iter()
             .any(|x| !["--case", "--method", "--tolerance-index"].contains(&x[0].as_str()))
     {
         return Err("exactly --case, --method and --tolerance-index are required".into());

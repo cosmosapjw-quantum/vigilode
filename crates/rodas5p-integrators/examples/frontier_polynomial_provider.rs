@@ -46,7 +46,9 @@ fn main() {
     // Explicitly validate the direct candidate in the original stage system.
     // This is one additional full-space action, implemented as local arithmetic.
     let mut direct_residual = 0.0_f64;
-    for (x, rhs) in direct.chunks_exact(2).zip(initial.chunks_exact(2)) {
+    let (direct_chunks, _) = direct.as_chunks::<2>();
+    let (initial_chunks, _) = initial.as_chunks::<2>();
+    for (x, rhs) in direct_chunks.iter().zip(initial_chunks.iter()) {
         let transfer = h * (-a * x[0] + b * x[1]);
         direct_residual = direct_residual
             .max((rhs[0] - x[0] + transfer).abs())
@@ -61,7 +63,8 @@ fn main() {
     let mut accepted = false;
     for _ in 0..128 {
         actions += 1;
-        for (x, rhs) in iterative.chunks_exact_mut(2).zip(initial.chunks_exact(2)) {
+        let (iterative_mut, _) = iterative.as_chunks_mut::<2>();
+        for (x, rhs) in iterative_mut.iter_mut().zip(initial_chunks.iter()) {
             let transfer = h * (-a * x[0] + b * x[1]);
             let next = [rhs[0] + transfer, rhs[1] - transfer];
             x.copy_from_slice(&next);
@@ -69,7 +72,8 @@ fn main() {
         // Always evaluate the residual of the actual candidate that is returned.
         actions += 1;
         residual = 0.0;
-        for (x, rhs) in iterative.chunks_exact(2).zip(initial.chunks_exact(2)) {
+        let (iterative_chunks, _) = iterative.as_chunks::<2>();
+        for (x, rhs) in iterative_chunks.iter().zip(initial_chunks.iter()) {
             let transfer = h * (-a * x[0] + b * x[1]);
             residual = residual
                 .max((rhs[0] - x[0] + transfer).abs())

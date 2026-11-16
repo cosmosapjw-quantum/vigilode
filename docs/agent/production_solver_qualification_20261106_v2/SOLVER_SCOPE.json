@@ -1,0 +1,38 @@
+{
+  "schema": "vigilode.solver_scope.v2",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "commit": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+  "api": {
+    "name": "ProductionSolver",
+    "scope": "smooth forward identity-mass IVPs with endpoint observations",
+    "limitations": [
+      "events refused",
+      "dense output refused",
+      "provider permissions restrict route",
+      "Ok may contain success=false"
+    ]
+  },
+  "dispatcher": {
+    "live": "DriveState in switching.rs",
+    "HybridRouteAutomaton": "exported but not found in live SwitchingSolver call path"
+  },
+  "accuracy": {
+    "kind": "adaptive floating-point local error control",
+    "global_validated_enclosure": false
+  },
+  "certification": "critical authority findings open",
+  "benchmark": {
+    "status": "diagnostic_only",
+    "matched_rows": 900
+  },
+  "unverified": [
+    "DAE/mass-matrix generality",
+    "events",
+    "dense output",
+    "backward integration",
+    "rigorous global enclosure",
+    "class-wide stiff order/stability",
+    "cross-platform determinism",
+    "parallel scaling"
+  ]
+}
