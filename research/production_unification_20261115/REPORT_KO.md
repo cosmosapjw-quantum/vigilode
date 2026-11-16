@@ -66,3 +66,7 @@ Library의 관련 제목 검색은 반환된 페이지 끝까지 조사했다.75
 
 U04: 격리 프로세스에서 CPU와 peak RSS를 측정했다. peak RSS는 모든 backend가 같다(n=400에서 134 MB, dense starter가 지배). 병렬 matrix-free는 CPU를 7.5배 더 쓴다. 완료 조건은 채웠지만 결과는 음성(crossover 없음, 메모리 이득 없음)이다. 열린 항목은 T03 부모로 넘겼다.
 U08: native quotient trace(중복도 보존)를 test 수준 인증 경계로 이식했다. 원 방정식에서 유도한 독립 근 oracle, 반례, epoch 거절, 제거된 작업(근 열거·Newton 0)을 확인했다. 나머지 기제는 `structure_port/DICTIONARY.json`에 미이식으로 기록했다. topology는 prototype뿐이다.
+
+## 2026-11-16 후속 6: U07 PPSW1 명시 adapter (PARTIAL)
+
+`method_adapters/REPORT_KO.md`. `PeerOde::solve`는 registry admission(callback 전 typed 거절), facade 문제의 Peer 부분집합 하강, 끝점 상한 starter, 접두 보존, startup/step 작업 분리를 갖는다. vigilode 331 통과. 독립 review는 NOT_RUN, 전환은 typed 거부다.

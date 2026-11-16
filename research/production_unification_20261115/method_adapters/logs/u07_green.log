@@ -1,0 +1,17 @@
+   Compiling vigilode v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-unif-20261115/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 12.77s
+     Running tests/unified_method_sessions.rs (target/release/deps/unified_method_sessions-065927b900e7fcbf)
+
+running 6 tests
+test e1_end_to_end_dense_and_jvp_reach_the_endpoint_accurately ... QUAL {"data":[{"accepted":143,"error":2.85467205429768e-11,"h0":0.0025,"jacobian":"dense","rejected":0,"startup_jacobian":2,"startup_rhs":16,"step_jacobian":143,"step_jvp":0,"step_rhs":858,"threads":1},{"accepted":143,"error":2.85467205429768e-11,"h0":0.0025,"jacobian":"dense","rejected":0,"startup_jacobian":2,"startup_rhs":16,"step_jacobian":143,"step_jvp":0,"step_rhs":858,"threads":4},{"accepted":143,"error":2.85467205429768e-11,"h0":0.0025,"jacobian":"jvp","rejected":0,"startup_jacobian":2,"startup_rhs":16,"step_jacobian":143,"step_jvp":286,"step_rhs":858,"threads":1},{"accepted":143,"error":2.85467205429768e-11,"h0":0.0025,"jacobian":"jvp","rejected":0,"startup_jacobian":2,"startup_rhs":16,"step_jacobian":143,"step_jvp":286,"step_rhs":858,"threads":4}],"test":"e1_end_to_end"}
+ok
+test e2_refusals_happen_before_any_callback ... QUAL {"data":[{"case":"mass","outcome":"Some(Refused([MassUnsupported]))"},{"case":"events","outcome":"Some(Refused([EventsUnsupported]))"},{"case":"no_newton","outcome":"Some(Refused([Permission { variant: \"explicit-jacobian-dense\", phase: Startup }, Permission { variant: \"jvp-columns-dense\", phase: PerStep }, Permission { variant: \"jvp-columns-dense\", phase: Startup }]))"},{"case":"no_dense","outcome":"Some(Refused([Permission { variant: \"explicit-jacobian-dense\", phase: PerStep }, Permission { variant: \"explicit-jacobian-dense\", phase: Startup }, Permission { variant: \"jvp-columns-dense\", phase: PerStep }, Permission { variant: \"jvp-columns-dense\", phase: Startup }]))"},{"case":"finite_difference_only","outcome":"Some(UnsupportedJacobian)"},{"case":"banded","outcome":"Some(UnsupportedJacobian)"}],"test":"e2_refusals"}
+ok
+test e3_short_span_caps_the_starter_at_the_endpoint ... ok
+test e4_fatal_callback_keeps_the_accepted_prefix_and_charged_work ... QUAL {"data":{"accepted":94,"failure":"t=0.49854970044983377: InvalidInput(\"fatal callback error: model left its domain\")","last_t":0.49854970044983377,"rhs_calls":568},"test":"e4_fatal_prefix"}
+ok
+test e5_recoverable_callback_rejects_then_recovers ... ok
+test e6_no_switching_and_no_default_routing_change ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

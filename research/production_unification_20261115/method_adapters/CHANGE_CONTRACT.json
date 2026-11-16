@@ -1,0 +1,29 @@
+{
+  "schema": "vigilode.change-contract.v1",
+  "task": "U07_TRANSACTIONAL_KERNEL_ADAPTERS",
+  "date_kst": "2026-11-16",
+  "recorded_before_mutation": true,
+  "base_commit": "24067d2455b0",
+  "write_allowlist": [
+    "crates/vigilode/src/selection.rs",
+    "crates/vigilode/tests/unified_method_sessions.rs",
+    "research/production_unification_20261115/method_adapters/**",
+    "research/production_unification_20261115/CHECKPOINT.json",
+    "research/production_unification_20261115/REPORT_KO.md",
+    "docs/agent/production_solver_program_20261112/**"
+  ],
+  "scope": [
+    "PeerOde::solve: explicit (never default-routed) end-to-end PPSW1-6b solve from the facade Problem",
+    "admission through MethodRegistry (U06) before any callback: mass, events, unqualified, per-step/startup permission refusals are typed",
+    "minimal lowering of the facade Problem for the Peer subset only (Jacobian::Dense or Jacobian::Jvp, identity mass, no events); solve.rs::build is private and outside the allowlist, so finite-difference and banded problems are refused, not lowered",
+    "endpoint consistency: h0 = min(rule/user h0, (t_end - t0)/2) so the starter never passes t_end; final step clipped to t_end exactly",
+    "transactional loop over ppsw1::Session::try_step; accepted prefix (t, y) retained on typed failure; startup and step work buckets separate; rejected work stays charged",
+    "method-owned state: the Peer six-stage history lives only inside PeerOde; no switching API (typed MethodSwitchUnsupported) because no history transfer certificate exists"
+  ],
+  "not_in_scope": [
+    "BDF/Radau facade adapters (existing observed drivers stay on their exports)",
+    "events/dense output for Peer",
+    "default routing"
+  ],
+  "independent_review": "required by the contract; not performed by the implementing agent (NOT_RUN)"
+}

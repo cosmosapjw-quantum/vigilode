@@ -24,9 +24,10 @@
     "crates/rodas5p-integrators/tests/ppsw1_independent_qualification.rs": "e5bdcbfc119ef794f3349d84735a62dd8210178dd7bc6d9a8969f61fd847db26",
     "crates/rodas5p-integrators/src/ppsw1_linear_backend.rs": "0b2410895ee6581eecb981c8910e6dbe1b867ce38248495973fe9c763cbd3978",
     "crates/rodas5p-integrators/tests/ppsw1_linear_backend_contracts.rs": "8b0ea7f8a89370cd6a0f5209705159c4ac48f0d5de7893d6f70250c61276281c",
-    "crates/vigilode/src/selection.rs": "b2203ffa63538a5e9292e254ed64a8b987960f0f2400c1cf24f06c9adade3e16",
+    "crates/vigilode/src/selection.rs": "2af29ddb7a41d8299b3cea3a9ae18ff6268a01b84da952d32439b29e7af5ec54",
     "crates/vigilode/tests/unified_method_capabilities.rs": "34ec431b49d5ebfebae833d1416a69730f85da4a97fc7aaa9830ec688e6b02c5",
-    "crates/vigilode-coupled/tests/structure_certificate_transfer.rs": "690a16b5680e7148f1302981642c81ee2ce5c3dbf5638d0d272d8cf7fabf855b"
+    "crates/vigilode-coupled/tests/structure_certificate_transfer.rs": "690a16b5680e7148f1302981642c81ee2ce5c3dbf5638d0d272d8cf7fabf855b",
+    "crates/vigilode/tests/unified_method_sessions.rs": "abaf2c1b4703c1dc2a296d07e2820b3a19d44ec7618bb6fec36daaa7e572d157"
   },
   "protected_blob_sha1": {
     "fixtures/rodas5p_coefficients_snapshot.json": "bc55da4d43549ffbcee3cb25e31be05658507742",
@@ -146,7 +147,17 @@
     "research/production_unification_20261115/structure_port/logs/u08_clippy_diagnostic.log": "c7f1e8406e3e8fed65e3981fc5cee1795fc554ec4d51c133a05492f97a0555b7",
     "research/production_unification_20261115/structure_port/logs/u08_fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "research/production_unification_20261115/structure_port/logs/u08_green.log": "8d0c03c0dccca1ccd38270f2545e76b9b5942d2f1fbfc96c929d2eb81fac0fe5",
-    "research/production_unification_20261115/structure_port/logs/u08_try1.log": "8225ffddba1c6f138f493516ac8d1d9e6e7c9ac73b54e48916f67e0a5eb7cf62"
+    "research/production_unification_20261115/structure_port/logs/u08_try1.log": "8225ffddba1c6f138f493516ac8d1d9e6e7c9ac73b54e48916f67e0a5eb7cf62",
+    "research/production_unification_20261115/method_adapters/CHANGE_CONTRACT.json": "d18a87d0226c04bd680943d67b057da48a5bc97ab61510a5ad6462ba49c84d8d",
+    "research/production_unification_20261115/method_adapters/REPORT_KO.md": "2d6573e3bc6b8e0cb2e534468378dfe49233e1f77ff10a4621fe5554261fe1e7",
+    "research/production_unification_20261115/method_adapters/logs/u07_clippy_strict.exit": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061",
+    "research/production_unification_20261115/method_adapters/logs/u07_clippy_strict.log": "ed0a689f3e1a8bffb60905583ece054fc4d71375d4d592c824f09384a8c7fb5c",
+    "research/production_unification_20261115/method_adapters/logs/u07_fmt.exit": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061",
+    "research/production_unification_20261115/method_adapters/logs/u07_fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "research/production_unification_20261115/method_adapters/logs/u07_green.log": "565ec237953434253ca1330c7f0909a955f78cfd2c9f29ab72207ca7eed4df53",
+    "research/production_unification_20261115/method_adapters/logs/u07_try1.log": "565ec237953434253ca1330c7f0909a955f78cfd2c9f29ab72207ca7eed4df53",
+    "research/production_unification_20261115/method_adapters/logs/u07_vigilode_suite.exit": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061",
+    "research/production_unification_20261115/method_adapters/logs/u07_vigilode_suite.log": "38d6dafddb32c05d4e06f96639bd9b7cfdf6f1e6a026fae9d39cb64e2d2f88db"
   },
   "checks": {
     "baseline_facade_tests": {
@@ -239,11 +250,11 @@
       "receipt": "capability_registry/logs/u06_green.log"
     },
     "vigilode_suite": {
-      "passed": 325,
+      "passed": 331,
       "failed": 0,
       "strict_clippy": "pass",
       "fmt": "pass",
-      "receipt": "capability_registry/logs/u06_vigilode_suite.log"
+      "receipt": "method_adapters/logs/u07_vigilode_suite.log"
     },
     "u04_process_metrics": {
       "result": "peak RSS equal across backends (dense starter dominates); matrix-free CPU 5.6x-218x dense across n=50..400 arms",
@@ -283,6 +294,7 @@
     "note": "This receipt-only descendant records the successful substantive checkpoint. It changes no tested source."
   },
   "scope_partial": [
+    "U07_TRANSACTIONAL_KERNEL_ADAPTERS",
     "U08_STRUCTURE_CERTIFICATES"
   ],
   "u03_turn": {
