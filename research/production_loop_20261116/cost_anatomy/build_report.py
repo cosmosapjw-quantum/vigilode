@@ -373,7 +373,7 @@ def render(d):
         return ", ".join(f"`{r['cell']}` {r['bound']:.2f}" for r in rows) if rows else "없음"
 
     add("| lever | 가장 큰 상한 (authoritative 행) | 가장 큰 상한 (전체 행) | 권고 |\n|---|---|---|---|\n"
-        f"| (a) level 구조 tableau, L = 5 | {top_auth('a_level_structured_tableau_L5')} | {top('a_level_structured_tableau_L5')} | 사슬이 큰 곳(1D banded, 고비용 RHS, matrix-free)에서만 1.3–1.6. 새 tableau는 새 방법이라 별도 자격 심사가 필요하고 L = 4는 이론상 불가(S9). dense n ≥ 128에서는 1.0x |\n"
+        f"| (a) level 구조 tableau, L = 5 | {top_auth('a_level_structured_tableau_L5')} | {top('a_level_structured_tableau_L5')} | 사슬이 큰 곳(1D banded, 배율 100, matrix-free)에서만 {d.BR(band1 + x100 + mf_x1, 'a_level_structured_tableau', 'L5')}. 새 tableau는 새 방법이라 별도 자격 심사가 필요하고 L = 4는 이론상 불가(S9). dense n ≥ 128(배율 1)에서는 {d.BR(inplace_big + faer_an, 'a_level_structured_tableau', 'L5')} |\n"
         f"| (b) 투기적 J + LU | {top_auth('b_speculative_jacobian_lu')} | {top('b_speculative_jacobian_lu')} | 상한 1.25. T7의 regime에서만 시도. step 크기 예측이 없으면 J만 겹칠 수 있다(`J only` 열) |\n"
         f"| (c) Jacobian 병렬·색칠 조립, P = 6 | {top_auth('c_parallel_jacobian_assembly_P6')} | {top('c_parallel_jacobian_assembly_P6')} | FD Jacobian 영역에서 만들 가치가 있다. 해석 Jacobian에서는 1.0x |\n"
         f"| (d) lagged LU, k = 4 | {top_auth('d_lagged_lu_k4')} | {top('d_lagged_lu_k4')} | dense n ≥ 128과 2D/3D banded에서 상한이 크다. 단 Jacobian 지연은 차수를 3으로 낮추므로(S4) step 수 증가를 V09에서 재야 한다 |\n"
