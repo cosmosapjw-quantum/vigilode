@@ -1,0 +1,99 @@
+{
+  "schema": "vigilode.loop-l1.trial-merge.test-logs.v1",
+  "generator": "research/production_loop_20261116/trial_merge/parse_test_logs.py",
+  "wall_time": "diagnostic_only",
+  "suites": [
+    {
+      "log": "research/production_loop_20261116/trial_merge/logs/t2_d_switcher_modified_integrators.log",
+      "log_sha256": "5ebadc3d9499b045002ba4ef900f4c8b5ead080d4e342ce782729b8cab5e294d",
+      "command": "cargo +1.94.1 test --locked -j 6 --release --no-fail-fast -p rodas5p-integrators --test conditioned_polynomial_contracts --test frontier_polynomial_provider --test int03_banded_fast_contracts --test pexprb_level2_continuation_accounting --test scientific_corpus_v2_contracts",
+      "head": "e23cf30abd4b9d8fe38c0a680364361a7610a299",
+      "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+      "start": "2026-11-16T17:57:54+09:00",
+      "end": "2026-11-16T17:58:05+09:00",
+      "exit_code": 0,
+      "test_binaries": 5,
+      "passed": 41,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 0,
+      "failed_tests": [],
+      "failed_binaries": [],
+      "binaries": [
+        {
+          "binary": "conditioned_polynomial_contracts:tests/conditioned_polynomial_contracts.rs",
+          "status": "ok",
+          "passed": 18,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "frontier_polynomial_provider:tests/frontier_polynomial_provider.rs",
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "int03_banded_fast_contracts:tests/int03_banded_fast_contracts.rs",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "pexprb_level2_continuation_accounting:tests/pexprb_level2_continuation_accounting.rs",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "scientific_corpus_v2_contracts:tests/scientific_corpus_v2_contracts.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        }
+      ]
+    },
+    {
+      "log": "research/production_loop_20261116/trial_merge/logs/t2_sp02_single_thread.log",
+      "log_sha256": "ff5e72b196dc8fdedee43dc28e37a400661858823c55feeab6d76c191d26e0fc",
+      "command": "cargo +1.94.1 test --locked -j 6 --release -p rodas5p-krylov --test sp02_workspace_charge -- --test-threads=1",
+      "head": "763b80ff2e7cca8e4dfd9d7f835398d4170c22cd",
+      "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+      "start": "2026-11-16T18:01:45+09:00",
+      "end": "2026-11-16T18:01:45+09:00",
+      "exit_code": 0,
+      "test_binaries": 1,
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 0,
+      "failed_tests": [],
+      "failed_binaries": [],
+      "binaries": [
+        {
+          "binary": "sp02_workspace_charge:tests/sp02_workspace_charge.rs",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        }
+      ]
+    }
+  ]
+}

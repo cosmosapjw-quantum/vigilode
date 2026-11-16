@@ -1,0 +1,1589 @@
+{
+  "schema": "vigilode.loop-l1.trial-merge.test-logs.v1",
+  "generator": "research/production_loop_20261116/trial_merge/parse_test_logs.py",
+  "wall_time": "diagnostic_only",
+  "suites": [
+    {
+      "log": "research/production_loop_20261116/trial_merge/logs/t2_a_facade_core_krylov.log",
+      "log_sha256": "f887f596f0f5be53fabc5a17250917298d5a08c10b9f30f9670d176f0193f7d9",
+      "command": "cargo +1.94.1 test --locked -j 6 --release --no-fail-fast -p vigilode -p rodas5p-core -p rodas5p-krylov",
+      "head": "e23cf30abd4b9d8fe38c0a680364361a7610a299",
+      "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+      "start": "2026-11-16T17:47:13+09:00",
+      "end": "2026-11-16T17:56:32+09:00",
+      "exit_code": 0,
+      "test_binaries": 152,
+      "passed": 948,
+      "failed": 0,
+      "ignored": 21,
+      "filtered_out": 0,
+      "failed_tests": [],
+      "failed_binaries": [],
+      "binaries": [
+        {
+          "binary": "rodas5p_core:src/lib.rs",
+          "status": "ok",
+          "passed": 62,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "allocation_contracts:tests/allocation_contracts.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "bordered_allocation_contract:tests/bordered_allocation_contract.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "bordered_schur_contracts:tests/bordered_schur_contracts.rs",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "core_contracts:tests/core_contracts.rs",
+          "status": "ok",
+          "passed": 14,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "damped_forcing_moment_consumer:tests/damped_forcing_moment_consumer.rs",
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "damped_moment_contracts:tests/damped_moment_contracts.rs",
+          "status": "ok",
+          "passed": 7,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "damped_moment_enclosure_regressions:tests/damped_moment_enclosure_regressions.rs",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "fused_normalization_contract:tests/fused_normalization_contract.rs",
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "fused_phi_contracts:tests/fused_phi_contracts.rs",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "guarded_polynomial_router:tests/guarded_polynomial_router.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "int05_nonnormal_contracts:tests/int05_nonnormal_contracts.rs",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "int05_nonnormal_metric_bound:tests/int05_nonnormal_metric_bound.rs",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "invariant_module_contracts:tests/invariant_module_contracts.rs",
+          "status": "ok",
+          "passed": 15,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "laguerre_adjoint_holdout:tests/laguerre_adjoint_holdout.rs",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "laguerre_component_export:tests/laguerre_component_export.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "leja_enclosed_contract:tests/leja_enclosed_contract.rs",
+          "status": "ok",
+          "passed": 7,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "leja_setup_work_contract:tests/leja_setup_work_contract.rs",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "leja_total_contract:tests/leja_total_contract.rs",
+          "status": "ok",
+          "passed": 21,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "leja_total_holdout:tests/leja_total_holdout.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "low_rank_bordered_allocation:tests/low_rank_bordered_allocation.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "low_rank_bordered_contracts:tests/low_rank_bordered_contracts.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "lu_workspace_contracts:tests/lu_workspace_contracts.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "matrix_function_contracts:tests/matrix_function_contracts.rs",
+          "status": "ok",
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "native_reaudit_laguerre_contracts:tests/native_reaudit_laguerre_contracts.rs",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "nonnormal_observers_contracts:tests/nonnormal_observers_contracts.rs",
+          "status": "ok",
+          "passed": 11,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "polynomial_single_backend_router:tests/polynomial_single_backend_router.rs",
+          "status": "ok",
+          "passed": 7,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "pp03_rhs_compression:tests/pp03_rhs_compression.rs",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "pp04_shared_shift_policy:tests/pp04_shared_shift_policy.rs",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "pp08_laguerre_router_contracts:tests/pp08_laguerre_router_contracts.rs",
+          "status": "ok",
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "pp08_laguerre_router_study:tests/pp08_laguerre_router_study.rs",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "pp10_leja_contracts:tests/pp10_leja_contracts.rs",
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "pp10_leja_study:tests/pp10_leja_study.rs",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "pp11_taylor_fused_total_contracts:tests/pp11_taylor_fused_total_contracts.rs",
+          "status": "ok",
+          "passed": 7,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "pp11_taylor_fused_total_study:tests/pp11_taylor_fused_total_study.rs",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "pp12_lognorm_decay:tests/pp12_lognorm_decay.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "pp12b_chain_symmetrizer:tests/pp12b_chain_symmetrizer.rs",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "pp16_complex_shift_contracts:tests/pp16_complex_shift_contracts.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "pp16_complex_shift_study:tests/pp16_complex_shift_study.rs",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "production_audit_leja_arithmetic_oracle:tests/production_audit_leja_arithmetic_oracle.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "production_audit_scalar_rate:tests/production_audit_scalar_rate.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "production_audit_sparse:tests/production_audit_sparse.rs",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "r3_polynomial_action_contracts:tests/r3_polynomial_action_contracts.rs",
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "r4_polynomial_contracts:tests/r4_polynomial_contracts.rs",
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "r4_taylor_phi_contracts:tests/r4_taylor_phi_contracts.rs",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "r4_transform_bound_contracts:tests/r4_transform_bound_contracts.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "residual_gain_contract:tests/residual_gain_contract.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "rev02_nonnormal_contracts:tests/rev02_nonnormal_contracts.rs",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "rev02_nonnormal_stepping:tests/rev02_nonnormal_stepping.rs",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "rnext04_laguerre_admission:tests/rnext04_laguerre_admission.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "safe_enclosure_exp_floor:tests/safe_enclosure_exp_floor.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "safe_enclosure_probes:tests/safe_enclosure_probes.rs",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "shared_shift_jet_contracts:tests/shared_shift_jet_contracts.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "shifted_operator_nonfinite:tests/shifted_operator_nonfinite.rs",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "sparse_direct_contract:tests/sparse_direct_contract.rs",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "storage_runtime:tests/storage_runtime.rs",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "thread_transfer_laguerre_adjoint:tests/thread_transfer_laguerre_adjoint.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "thread_transfer_laguerre_cache:tests/thread_transfer_laguerre_cache.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "transform_bound_contracts:tests/transform_bound_contracts.rs",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "work_counter_contracts:tests/work_counter_contracts.rs",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "work_unit_contracts:tests/work_unit_contracts.rs",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "rodas5p_krylov:src/lib.rs",
+          "status": "ok",
+          "passed": 24,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "alg04_alg06_staged_contracts:tests/alg04_alg06_staged_contracts.rs",
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "alg04_dup_fix_contracts:tests/alg04_dup_fix_contracts.rs",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "basis_only_workspace_contracts:tests/basis_only_workspace_contracts.rs",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "block_gmres_contracts:tests/block_gmres_contracts.rs",
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "bordered_preconditioner_contracts:tests/bordered_preconditioner_contracts.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "dupfix_promotion_contract:tests/dupfix_promotion_contract.rs",
+          "status": "ok",
+          "passed": 10,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "gcrodr_state_validity_contracts:tests/gcrodr_state_validity_contracts.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "givens_gmres_contracts:tests/givens_gmres_contracts.rs",
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "givens_ls_contracts:tests/givens_ls_contracts.rs",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "givens_production_differential_contracts:tests/givens_production_differential_contracts.rs",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "int01_gcrodr_policy_contracts:tests/int01_gcrodr_policy_contracts.rs",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "krylov_contracts:tests/krylov_contracts.rs",
+          "status": "ok",
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "low_rank_bordered_preconditioner:tests/low_rank_bordered_preconditioner.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "nonfinite_operator_contracts:tests/nonfinite_operator_contracts.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "prefix_contracts:tests/prefix_contracts.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "reaudit_monitored_progress:tests/reaudit_monitored_progress.rs",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "rev01_gcrodr_options_contracts:tests/rev01_gcrodr_options_contracts.rs",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "rev01b_gcrodr_reorthogonalization_contracts:tests/rev01b_gcrodr_reorthogonalization_contracts.rs",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "rev01c_gcrodr_refresh_contracts:tests/rev01c_gcrodr_refresh_contracts.rs",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "rev04_lgmres_into_contracts:tests/rev04_lgmres_into_contracts.rs",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "rnext02_gmres_into_contracts:tests/rnext02_gmres_into_contracts.rs",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "rnext03_gcrodr_trace_contracts:tests/rnext03_gcrodr_trace_contracts.rs",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "secant_preconditioner_contracts:tests/secant_preconditioner_contracts.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "shared_basis_contracts:tests/shared_basis_contracts.rs",
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "sp02_workspace_charge:tests/sp02_workspace_charge.rs",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "spd04_ls_workspace:tests/spd04_ls_workspace.rs",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "spd05_lgmres_ls_once_contracts:tests/spd05_lgmres_ls_once_contracts.rs",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "staged_solve_telemetry:tests/staged_solve_telemetry.rs",
+          "status": "ok",
+          "passed": 7,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "tolerance_validation_contracts:tests/tolerance_validation_contracts.rs",
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "weighted_residual_contracts:tests/weighted_residual_contracts.rs",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "workspace_allocation_contracts:tests/workspace_allocation_contracts.rs",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "workspace_contracts:tests/workspace_contracts.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "vigilode:src/lib.rs",
+          "status": "ok",
+          "passed": 60,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "adaptive_entry_contracts:tests/adaptive_entry_contracts.rs",
+          "status": "ok",
+          "passed": 10,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "automatic_adapter_contracts:tests/automatic_adapter_contracts.rs",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "automatic_availability_contracts:tests/automatic_availability_contracts.rs",
+          "status": "ok",
+          "passed": 10,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "capabilities_contracts:tests/capabilities_contracts.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "causal_budget_contracts:tests/causal_budget_contracts.rs",
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "cofactor_chart_contracts:tests/cofactor_chart_contracts.rs",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "comparator_dominance_contracts:tests/comparator_dominance_contracts.rs",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "entry_checkpoint_seed_contracts:tests/entry_checkpoint_seed_contracts.rs",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "events_contracts:tests/events_contracts.rs",
+          "status": "ok",
+          "passed": 15,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "evidence_switch_contracts:tests/evidence_switch_contracts.rs",
+          "status": "ok",
+          "passed": 7,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "execution_identity_drift:tests/execution_identity_drift.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "execution_policy_contracts:tests/execution_policy_contracts.rs",
+          "status": "ok",
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "explicit_contracts:tests/explicit_contracts.rs",
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "explicit_ensemble_contracts:tests/explicit_ensemble_contracts.rs",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "explicit_hardening_contracts:tests/explicit_hardening_contracts.rs",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "facade_contracts:tests/facade_contracts.rs",
+          "status": "ok",
+          "passed": 20,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "fd_allocation_contracts:tests/fd_allocation_contracts.rs",
+          "status": "ok",
+          "passed": 15,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "fd_chebyshev_contracts:tests/fd_chebyshev_contracts.rs",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "frontier_affine_facade:tests/frontier_affine_facade.rs",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "frontier_fatal_session_contracts:tests/frontier_fatal_session_contracts.rs",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "frontier_switch_contracts:tests/frontier_switch_contracts.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "geometry_mol_contracts:tests/geometry_mol_contracts.rs",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "hermite_splice_contracts:tests/hermite_splice_contracts.rs",
+          "status": "ok",
+          "passed": 7,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "holdout_and_global_order_contracts:tests/holdout_and_global_order_contracts.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "hybrid_automaton_contracts:tests/hybrid_automaton_contracts.rs",
+          "status": "ok",
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "lawson_contracts:tests/lawson_contracts.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "local_bottleneck_models:tests/local_bottleneck_models.rs",
+          "status": "ok",
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "oscillatory_chart_contracts:tests/oscillatory_chart_contracts.rs",
+          "status": "ok",
+          "passed": 10,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "p0_api_contracts:tests/p0_api_contracts.rs",
+          "status": "ok",
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "p0_contracts:tests/p0_contracts.rs",
+          "status": "ok",
+          "passed": 24,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "production_contracts:tests/production_contracts.rs",
+          "status": "ok",
+          "passed": 7,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "production_hotloop_allocation_contracts:tests/production_hotloop_allocation_contracts.rs",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "production_rhs_contracts:tests/production_rhs_contracts.rs",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "production_selection_contracts:tests/production_selection_contracts.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "production_session_contracts:tests/production_session_contracts.rs",
+          "status": "ok",
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "production_setup_contracts:tests/production_setup_contracts.rs",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "records_contracts:tests/records_contracts.rs",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "registry_contracts:tests/registry_contracts.rs",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "return_sentinel_contracts:tests/return_sentinel_contracts.rs",
+          "status": "ok",
+          "passed": 7,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "selection_evidence_contracts:tests/selection_evidence_contracts.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "sparse_jvp_contracts:tests/sparse_jvp_contracts.rs",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "strict_return_work_contracts:tests/strict_return_work_contracts.rs",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "switcher_v2_admission_contracts:tests/switcher_v2_admission_contracts.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "switching_contracts:tests/switching_contracts.rs",
+          "status": "ok",
+          "passed": 19,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "switching_economy_contracts:tests/switching_economy_contracts.rs",
+          "status": "ok",
+          "passed": 13,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "switching_integration_contracts:tests/switching_integration_contracts.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "switching_persistent_explicit:tests/switching_persistent_explicit.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "switching_v2_remediation_contracts:tests/switching_v2_remediation_contracts.rs",
+          "status": "ok",
+          "passed": 17,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "unified_method_capabilities:tests/unified_method_capabilities.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "unified_method_sessions:tests/unified_method_sessions.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "unified_production_solver_contracts:tests/unified_production_solver_contracts.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "work_model_contracts:tests/work_model_contracts.rs",
+          "status": "ok",
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "doc-tests rodas5p_core",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "doc-tests rodas5p_core",
+          "status": "ok",
+          "passed": 18,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "doc-tests rodas5p_krylov",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "doc-tests vigilode",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "doc-tests vigilode",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        }
+      ]
+    },
+    {
+      "log": "research/production_loop_20261116/trial_merge/logs/t2_b_integrators_peer.log",
+      "log_sha256": "04f436f0c0ece9d4dab908c05311631a01b843980cef21f23891ad23405249dd",
+      "command": "cargo +1.94.1 test --locked -j 6 --release --no-fail-fast -p rodas5p-integrators --lib --test ppsw1_6b_contracts --test ppsw1_independent_qualification --test ppsw1_parallel_rhs_contracts --test ppsw1_session_boundary_contracts --test ppsw1_linear_backend_contracts --test ptsw2b_contracts",
+      "head": "e23cf30abd4b9d8fe38c0a680364361a7610a299",
+      "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+      "start": "2026-11-16T17:56:32+09:00",
+      "end": "2026-11-16T17:57:33+09:00",
+      "exit_code": 101,
+      "test_binaries": 7,
+      "passed": 234,
+      "failed": 2,
+      "ignored": 3,
+      "filtered_out": 0,
+      "failed_tests": [
+        {
+          "binary": "ppsw1_6b_contracts:tests/ppsw1_6b_contracts.rs",
+          "test": "g3_protected_sources_are_byte_identical"
+        },
+        {
+          "binary": "ptsw2b_contracts:tests/ptsw2b_contracts.rs",
+          "test": "h2_protected_sources_are_byte_identical"
+        }
+      ],
+      "failed_binaries": [
+        "-p rodas5p-integrators --test ppsw1_6b_contracts",
+        "-p rodas5p-integrators --test ptsw2b_contracts"
+      ],
+      "binaries": [
+        {
+          "binary": "rodas5p_integrators:src/lib.rs",
+          "status": "ok",
+          "passed": 141,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "ppsw1_6b_contracts:tests/ppsw1_6b_contracts.rs",
+          "status": "FAILED",
+          "passed": 36,
+          "failed": 1,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "ppsw1_independent_qualification:tests/ppsw1_independent_qualification.rs",
+          "status": "ok",
+          "passed": 18,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "ppsw1_linear_backend_contracts:tests/ppsw1_linear_backend_contracts.rs",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 2,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "ppsw1_parallel_rhs_contracts:tests/ppsw1_parallel_rhs_contracts.rs",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "ppsw1_session_boundary_contracts:tests/ppsw1_session_boundary_contracts.rs",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "ptsw2b_contracts:tests/ptsw2b_contracts.rs",
+          "status": "FAILED",
+          "passed": 23,
+          "failed": 1,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        }
+      ]
+    },
+    {
+      "log": "research/production_loop_20261116/trial_merge/logs/t2_c_switcher_added_integrators.log",
+      "log_sha256": "2fbf268cd90f84d6633718b38571663ca7b99c7dc7c99e508430a3946d0b3824",
+      "command": "cargo +1.94.1 test --locked -j 6 --release --no-fail-fast -p rodas5p-integrators --test causal_depth_stage_residual_contracts --test dopri5_stiffness_guards --test real_collective_client_contracts --test shared_basis_mf_contracts",
+      "head": "e23cf30abd4b9d8fe38c0a680364361a7610a299",
+      "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+      "start": "2026-11-16T17:57:33+09:00",
+      "end": "2026-11-16T17:57:53+09:00",
+      "exit_code": 0,
+      "test_binaries": 4,
+      "passed": 17,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 0,
+      "failed_tests": [],
+      "failed_binaries": [],
+      "binaries": [
+        {
+          "binary": "causal_depth_stage_residual_contracts:tests/causal_depth_stage_residual_contracts.rs",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "dopri5_stiffness_guards:tests/dopri5_stiffness_guards.rs",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "real_collective_client_contracts:tests/real_collective_client_contracts.rs",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "shared_basis_mf_contracts:tests/shared_basis_mf_contracts.rs",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        }
+      ]
+    },
+    {
+      "log": "research/production_loop_20261116/trial_merge/logs/t2_c_switcher_added_krylov.log",
+      "log_sha256": "bce43bfec8425db2d61327c22cdae80f212c10a7f22a1a2baff0bfa5ac61c0f1",
+      "command": "cargo +1.94.1 test --locked -j 6 --release --no-fail-fast -p rodas5p-krylov --test givens_ls_contracts --test secant_preconditioner_contracts --test shared_basis_contracts",
+      "head": "e23cf30abd4b9d8fe38c0a680364361a7610a299",
+      "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+      "start": "2026-11-16T17:57:54+09:00",
+      "end": "2026-11-16T17:57:54+09:00",
+      "exit_code": 0,
+      "test_binaries": 3,
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 0,
+      "failed_tests": [],
+      "failed_binaries": [],
+      "binaries": [
+        {
+          "binary": "givens_ls_contracts:tests/givens_ls_contracts.rs",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "secant_preconditioner_contracts:tests/secant_preconditioner_contracts.rs",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "binary": "shared_basis_contracts:tests/shared_basis_contracts.rs",
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        }
+      ]
+    }
+  ]
+}

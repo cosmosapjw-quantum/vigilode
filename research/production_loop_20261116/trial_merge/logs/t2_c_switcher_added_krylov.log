@@ -1,0 +1,36 @@
+# cmd: cargo +1.94.1 test --locked -j 6 --release --no-fail-fast -p rodas5p-krylov --test givens_ls_contracts --test secant_preconditioner_contracts --test shared_basis_contracts
+# head: e23cf30abd4b9d8fe38c0a680364361a7610a299
+# toolchain: rustc 1.94.1 (e408947bf 2026-03-25)
+# start: 2026-11-16T17:57:54+09:00
+    Finished `release` profile [optimized] target(s) in 0.10s
+     Running tests/givens_ls_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/trial/release/deps/givens_ls_contracts-14b937652b9bc9cd)
+
+running 2 tests
+test upper_hessenberg_givens_reduction_direct_agreement ... ok
+test givens_ls_reduction_agrees_with_faer_qr_within_epsilon ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/secant_preconditioner_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/trial/release/deps/secant_preconditioner_contracts-5b2167bb89dca039)
+
+running 1 test
+test secant_apply_into_is_zero_allocation_hot_loop ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/shared_basis_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/trial/release/deps/shared_basis_contracts-b9e474b613d27c99)
+
+running 8 tests
+test shared_basis_config_and_stats_traits ... ok
+test shared_basis_dim_and_reset_invariants ... ok
+test shared_basis_jvp_error_propagates ... ok
+test shared_basis_max_dim_reached_reports_failure ... ok
+test shared_basis_refuses_invalid_input ... ok
+test shared_basis_meets_budget_on_shifted_diagonal ... ok
+test shared_basis_zero_rhs_converges_immediately ... ok
+test shared_basis_reuses_directions_across_stages ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+# exit_code: 0
+# end: 2026-11-16T17:57:54+09:00
