@@ -61,3 +61,8 @@ Library의 관련 제목 검색은 반환된 페이지 끝까지 조사했다.75
 ## 2026-11-16 후속 4: U06 capability registry (COMPLETE_SCOPED)
 
 `capability_registry/REPORT_KO.md`. `selection.rs`에 순수 registry를 추가했다(독립 권한 집합, 단계별 per-step/startup/fallback 요구, 자격과 접근 경로, 실제 export route). 1024 조합 독립 표 일치, callback 0회, serde 엄격성, route 컴파일 확인. vigilode 전체 325 통과, strict clippy 통과. 기본 라우팅은 바꾸지 않았다.
+
+## 2026-11-16 후속 5: U04 종결(COMPLETE_SCOPED, 음성)과 U08(PARTIAL)
+
+U04: 격리 프로세스에서 CPU와 peak RSS를 측정했다. peak RSS는 모든 backend가 같다(n=400에서 134 MB, dense starter가 지배). 병렬 matrix-free는 CPU를 7.5배 더 쓴다. 완료 조건은 채웠지만 결과는 음성(crossover 없음, 메모리 이득 없음)이다. 열린 항목은 T03 부모로 넘겼다.
+U08: native quotient trace(중복도 보존)를 test 수준 인증 경계로 이식했다. 원 방정식에서 유도한 독립 근 oracle, 반례, epoch 거절, 제거된 작업(근 열거·Newton 0)을 확인했다. 나머지 기제는 `structure_port/DICTIONARY.json`에 미이식으로 기록했다. topology는 prototype뿐이다.

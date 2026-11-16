@@ -1,0 +1,61 @@
+{
+  "schema": "vigilode.structure-dictionary.v1",
+  "date_kst": "2026-11-16",
+  "entries": [
+    {
+      "lineage": "L06/L07",
+      "mechanism": "multiplicity-preserving quotient trace (all complex roots with algebraic multiplicity)",
+      "native": "crates/vigilode-coupled/src/trace_quotient.rs (TRACE_TARGET_ID)",
+      "status": "PORTED_SCOPED (test-level certificate boundary; independent original-equation oracle)",
+      "evidence": "logs/u08_green.log s1-s3"
+    },
+    {
+      "lineage": "L07",
+      "mechanism": "continuous whole-slab trace certificate",
+      "native": "crates/vigilode-coupled/src/trace_certificate.rs::certify_trace_path",
+      "status": "NOT_PORTED (fixed manufactured F6 trace; propagated time-error test NOT_RUN)"
+    },
+    {
+      "lineage": "L07",
+      "mechanism": "cyclic algebraic closure",
+      "native": "crates/vigilode-coupled/src/cyclic_closure.rs",
+      "status": "NOT_PORTED"
+    },
+    {
+      "lineage": "L08/L09",
+      "mechanism": "guarded symbolic itinerary / word-preserving refinement",
+      "native": "vigilode-coupled switching/causal modules (router refinement)",
+      "status": "NOT_PORTED (PORT_SYMBOLIC: guarded transition words and product-norm bounds remain)"
+    },
+    {
+      "lineage": "L05",
+      "mechanism": "cofactor / blow-up charts",
+      "native": "crates/vigilode/src/cofactor_chart.rs",
+      "status": "NOT_PORTED (existing facade module; no certificate boundary added)"
+    },
+    {
+      "lineage": "L04",
+      "mechanism": "source-owned RHS homotopy",
+      "native": "crates/vigilode-coupled/src/rhs_homotopy.rs",
+      "status": "NOT_PORTED"
+    },
+    {
+      "lineage": "L11",
+      "mechanism": "graph cycle-core Schur / affine path scan",
+      "native": "crates/rodas5p-integrators/src/source_owned_graph_schur.rs (protected)",
+      "status": "NOT_PORTED (PORT_SCAN; prior negative benchmark)"
+    },
+    {
+      "lineage": "L13/L14",
+      "mechanism": "oriented incidence topology (D0, D1, Hodge)",
+      "native": "none (not a general native backend)",
+      "status": "PROTOTYPE_ONLY in test t1 (sphere and torus Betti numbers, D1 D0 = 0, L0 nullspace, harmonic dimension = b1); not a solver backend"
+    },
+    {
+      "lineage": "archive",
+      "mechanism": "RVJ archive members (82 selected, 21 key)",
+      "native": "ARCHIVE_RECOVERY_CONTRACT.json",
+      "status": "NOT_COMPARED this turn (21 key member comparison remains)"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "schema": "vigilode.change-contract.v1",
+  "task": "U08_STRUCTURE_CERTIFICATES",
+  "date_kst": "2026-11-16",
+  "recorded_before_mutation": true,
+  "base_commit": "1b8cff8278db",
+  "write_allowlist": [
+    "research/production_unification_20261115/structure_port/**",
+    "crates/vigilode-coupled/tests/structure_certificate_transfer.rs",
+    "research/production_unification_20261115/CHECKPOINT.json",
+    "research/production_unification_20261115/REPORT_KO.md",
+    "docs/agent/production_solver_program_20261112/**"
+  ],
+  "library_source_changes": "none (allowlist has no library file); the typed certificate boundary is a test-level prototype over native APIs",
+  "claimed_port": {
+    "mechanism": "PORT_TRACE (lineage L06/L07): vigilode_coupled::trace_quotient all-complex-roots-with-algebraic-multiplicity observables",
+    "certificate_fields": [
+      "source id (TRACE_TARGET_ID)",
+      "parameter epoch (exact a,b bits)",
+      "validity domain (parameter point/box)",
+      "represented invariant (QuarticInvariant)",
+      "original-equation residual of an independent root oracle",
+      "reconstruction map (q2 = a - q1^2 restores the transverse coordinate)"
+    ],
+    "oracle": "independent Durand-Kerner roots of the eliminant derived in the test from q1^2+q2=a, q2^2+q1=b; every root checked in both original equations; sums with multiplicity compared with the native enclosure",
+    "checks": [
+      "triple-root fixture a=b=3/4 counted three times",
+      "SelectedReal/RealOnly refused before evaluation and charged as semantic rejection",
+      "distinct-root and real-only aggregates differ (counterexamples losing multiplicity/transverse state)",
+      "stale epoch (changed a or b) refused by the certificate",
+      "removed work: native counters show zero root enumeration, Jacobian, JVP, AD and Newton versus oracle iterations"
+    ]
+  },
+  "prototype_not_claimed": {
+    "mechanism": "PORT_TOPOLOGY (L13/L14): oriented incidence D0, D1 on closed triangulations (octahedron sphere, 3x3 torus), D1 D0 = 0, Betti numbers by rank, Hodge orthogonality and harmonic dimension = b1, L0 nullspace = constants",
+    "status": "research prototype in the test file only; not a native port"
+  },
+  "dictionary_only": [
+    "PORT_SYMBOLIC (L08/L09)",
+    "PORT_SCAN (L11)",
+    "cofactor/blowup charts (vigilode::cofactor_chart)",
+    "source-owned homotopy (L04)"
+  ]
+}

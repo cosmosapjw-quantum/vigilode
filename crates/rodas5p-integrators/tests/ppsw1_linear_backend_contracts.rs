@@ -642,3 +642,49 @@ fn c6_linear_budget_guard_refuses_before_any_callback() {
     );
     qual("c6_budget_guard", json!(rows));
 }
+
+fn proc_status_kb(key: &str) -> Option<u64> {
+    let s = std::fs::read_to_string("/proc/self/status").ok()?;
+    s.lines()
+        .find(|l| l.starts_with(key))
+        .and_then(|l| l.split_whitespace().nth(1))
+        .and_then(|v| v.parse().ok())
+}
+
+fn proc_cpu_ticks() -> Option<(u64, u64)> {
+    let s = std::fs::read_to_string("/proc/self/stat").ok()?;
+    // fields after the parenthesised command name; utime = 14th, stime = 15th overall
+    let rest = &s[s.rfind(')')? + 2..];
+    let f: Vec<&str> = rest.split_whitespace().collect();
+    Some((f.get(11)?.parse().ok()?, f.get(12)?.parse().ok()?))
+}
+
+/// One (n, arm) integration per process for isolated peak memory and CPU time.
+/// Run by `research/production_unification_20261115/matrix_free_w/process_metrics.py`.
+#[test]
+#[ignore = "process metrics: one arm per process, driven by process_metrics.py"]
+fn c7_single_arm_process_metrics() {
+    let n: usize = std::env::var("U04_N").map_or(50, |v| v.parse().unwrap());
+    let arm = std::env::var("U04_ARM").unwrap_or_else(|_| "dense".into());
+    let (backend, threads) = match arm.as_str() {
+        "dense" => (LinearBackend::Dense, 1),
+        "mf_independent_seq" => (indep(1e-9, 1e-300), 1),
+        "mf_independent_r10_par6" => (indep_r(10, 1e-9, 1e-300), 6),
+        "mf_block" => (block(1e-9, 1e-300), 1),
+        other => panic!("unknown arm {other}"),
+    };
+    let (p, y0) = fisher(n);
+    let base_hwm = proc_status_kb("VmHWM:");
+    let t0 = proc_cpu_ticks().unwrap();
+    let r = run(&p, &y0, 1.0, 1e-6, &backend, threads);
+    let t1 = proc_cpu_ticks().unwrap();
+    qual(
+        "c7_process_metrics",
+        json!({"n": n, "arm": arm, "threads": threads, "status": r.status,
+               "wall_seconds": r.seconds,
+               "cpu_user_ticks": t1.0 - t0.0, "cpu_system_ticks": t1.1 - t0.1,
+               "vm_hwm_kb_before": base_hwm, "vm_hwm_kb_after": proc_status_kb("VmHWM:"),
+               "vm_rss_kb_after": proc_status_kb("VmRSS:"),
+               "steps": work_json(&r.steps), "startup": work_json(&r.startup)}),
+    );
+}

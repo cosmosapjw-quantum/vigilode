@@ -171,7 +171,7 @@
         "U01_PEER_RHS_PARALLEL",
         "U03_PEER_INDEPENDENT_QUALIFICATION"
       ],
-      "status": "PARTIAL",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Replace dense common-W algebra only in a new explicit JVP-permitted backend.",
       "write_allowlist": [
         "crates/rodas5p-integrators/src/ppsw1_linear_backend.rs",
@@ -213,7 +213,9 @@
         "research/production_unification_20261115/matrix_free_w/logs/u04_green.log",
         "research/production_unification_20261115/matrix_free_w/logs/u04_crossover.log",
         "research/production_unification_20261115/matrix_free_w/logs/u04_regression.log",
-        "research/production_unification_20261115/matrix_free_w/logs/u04_try1.log"
+        "research/production_unification_20261115/matrix_free_w/logs/u04_try1.log",
+        "research/production_unification_20261115/matrix_free_w/process_metrics_summary.json",
+        "research/production_unification_20261115/matrix_free_w/logs/u04_process_metrics.jsonl"
       ],
       "progress_20261115": {
         "done": [
@@ -224,16 +226,16 @@
         "findings_open": [
           "B1: budget guard derived at n=40 does not preserve controller behavior for restart-10 at n=200/400 (569->894, 670->9647 steps) even at ratio 1e-3",
           "B2: production solve_gmres checks the threshold only between restart cycles",
-          "B3: no preconditioner; n=800 Krylov exhaustion"
+          "B3: no preconditioner; n=800 Krylov exhaustion",
+          "B4: peak RSS identical for all backends (134 MB at n=400): dense starter and h0-rule Jacobian dominate; per-step matrix-free gives no memory benefit"
         ],
         "not_run": [
           "preconditioned backend and preconditioner-failure contract",
-          "CPU time and isolated-process RSS",
           "independent-reference matched error (only Dense difference)",
           "other stiff/nonnormal full-IVP problems",
           "matrix-free starter"
         ],
-        "status_reason": "Implementation, contracts, budget and a measured (negative) crossover exist; preconditioning, memory/CPU and budget generalisation (B1) remain, so PARTIAL. No speed claim."
+        "status_reason": "Completion requirements met (budget, contracts, measured crossover) plus isolated-process CPU/RSS; the outcome is negative (no crossover, no memory benefit). Open items B1-B4 move to parent T03; no speed claim."
       }
     },
     {
@@ -373,7 +375,7 @@
     {
       "id": "U08_STRUCTURE_CERTIFICATES",
       "depends": [],
-      "status": "PLANNED",
+      "status": "PARTIAL",
       "purpose": "Port useful existing geometry/dynamics mechanisms through one typed source-owned certificate boundary.",
       "write_allowlist": [
         "research/production_unification_20261115/structure_port/**",
@@ -404,12 +406,31 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": [],
+      "evidence": [
+        "research/production_unification_20261115/structure_port/REPORT_KO.md",
+        "research/production_unification_20261115/structure_port/DICTIONARY.json",
+        "research/production_unification_20261115/structure_port/CHANGE_CONTRACT.json",
+        "research/production_unification_20261115/structure_port/logs/u08_green.log",
+        "research/production_unification_20261115/structure_port/logs/u08_try1.log"
+      ],
       "inputs": [
         "research/production_unification_20261115/lineage.json",
         "research/production_unification_20261115/HISTORY_RECOVERY.json",
         "research/production_unification_20261115/ARCHIVE_RECOVERY_CONTRACT.json"
-      ]
+      ],
+      "progress_20261116": {
+        "done": [
+          "PORT_TRACE scoped: test-level certificate boundary over native trace_quotient with independent original-equation oracle, multiplicity/transverse counterexamples, stale-epoch refusal, zero root/Jacobian/JVP/AD/Newton work",
+          "topology incidence prototype (not a port)",
+          "source-to-target dictionary"
+        ],
+        "not_run": [
+          "library certificate type (allowlist has no library file)",
+          "propagated time-error through trace_certificate",
+          "PORT_SYMBOLIC, PORT_SCAN, homotopy and cofactor ports",
+          "21 key RVJ archive member comparison"
+        ]
+      }
     },
     {
       "id": "U09_GEOMETRY_MOL",

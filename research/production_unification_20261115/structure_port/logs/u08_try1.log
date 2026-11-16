@@ -1,0 +1,28 @@
+   Compiling vigilode-coupled v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-unif-20261115/crates/vigilode-coupled)
+    Finished `release` profile [optimized] target(s) in 14.14s
+     Running tests/structure_certificate_transfer.rs (target/release/deps/structure_certificate_transfer-3a73011d0c2502a0)
+
+running 4 tests
+test s1_native_trace_matches_independent_root_oracle_with_multiplicity ... 
+thread 's1_native_trace_matches_independent_root_oracle_with_multiplicity' (2666273) panicked at crates/vigilode-coupled/tests/structure_certificate_transfer.rs:201:13:
+Q1 aggregate must be real: C { re: -7.607669569864584e-7, im: 1.7044424569402663e-6 }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test s2_counterexamples_losing_multiplicity_or_transverse_state_differ ... 
+thread 's2_counterexamples_losing_multiplicity_or_transverse_state_differ' (2666274) panicked at crates/vigilode-coupled/tests/structure_certificate_transfer.rs:256:5:
+assertion failed: (q2a.0 - q2b.0).abs() > 1.0
+FAILED
+test s3_certificate_boundary_refuses_stale_epoch_and_records_identity ... QUAL {"data":{"enclosure":[3.0,3.0],"epoch_bits":[4604930618986332160,4604930618986332160],"invariant":"Q1SquaredPlusQ2","oracle_residual":1.049579700766485e-18,"provider_work":{"ad_evaluations":0,"interval_additions":0,"interval_multiplications":1,"invariant_queries":1,"jacobian_evaluations":0,"jvp_evaluations":0,"moment_batches":0,"newton_updates":0,"polynomial_queries":0,"requests_attempted":1,"requests_completed":1,"requests_rejected":0,"root_enumerations":0,"scalar_additions":0,"scalar_multiplications":0,"semantics_rejections":0,"shared_field_batches":0},"reconstruction":"q2 = a - q1^2","source_id":"rvj-quartic-all-complex-multiplicity-v1"},"test":"s3_certificate"}
+ok
+test t1_prototype_boundary_of_boundary_betti_and_laplacian_nullspace ... QUAL {"data":[{"E":12,"F":8,"V":6,"betti":[1,0,1],"complex":"octahedron_sphere","euler":2,"harmonic_dim":0,"rank_d0":5,"rank_d1":7},{"E":27,"F":18,"V":9,"betti":[1,2,1],"complex":"torus_3x3","euler":0,"harmonic_dim":2,"rank_d0":8,"rank_d1":17}],"test":"t1_topology_prototype"}
+ok
+
+failures:
+
+failures:
+    s1_native_trace_matches_independent_root_oracle_with_multiplicity
+    s2_counterexamples_losing_multiplicity_or_transverse_state_differ
+
+test result: FAILED. 2 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p vigilode-coupled --test structure_certificate_transfer`

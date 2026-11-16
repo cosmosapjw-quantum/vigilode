@@ -45,6 +45,13 @@
       "behavior": "Session::try_step refuses with InvalidInput, before any callback, when the matrix-free linear rtol exceeds LINEAR_BUDGET_RATIO (1e-2) times the step rtol, or (step rtol == 0) the linear atol exceeds LINEAR_BUDGET_RATIO times the step atol. attempt/advance carry no step tolerance and are not guarded (documented).",
       "observation_not_changed": "production solve_gmres tests its threshold only between restart cycles (no in-cycle exit), so restart >= n solves to Krylov exhaustion regardless of rtol; documented and measured with restart 10 arms, Krylov source unchanged",
       "numerical_equations_changed": false
+    },
+    {
+      "id": "M5_ISOLATED_PROCESS_METRICS",
+      "date_kst": "2026-11-16",
+      "recorded_before_mutation": true,
+      "behavior": "test-only: c7_single_arm_process_metrics (#[ignore]) runs one (n, arm) Fisher MOL integration per process, selected by env U04_N/U04_ARM, and prints VmHWM/VmRSS (kB, /proc/self/status) and user/system CPU seconds (/proc/self/stat, CLK_TCK from getconf) with wall time; driver research/.../matrix_free_w/process_metrics.py launches each arm in a fresh process (3 repetitions).",
+      "source_changes": "none (test file only)"
     }
   ],
   "acceptance": [

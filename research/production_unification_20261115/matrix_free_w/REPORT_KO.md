@@ -1,6 +1,6 @@
 # U04 PPSW1 matrix-free common-W — 2026-11-15
 
-판정: **U04 PARTIAL**. 구현·계약·잔차 예산·측정은 했지만, 측정 범위에서 **crossover가 없었다**(matrix-free가 dense보다 빠른 n 없음). production **HOLD**, 기본 라우팅·G0·허용오차·계수 불변. 사전 계약은 `CHANGE_CONTRACT.json`(M1–M4), 근거는 `RESULTS.json`과 `logs/`다.
+판정(2026-11-16 갱신): **U04 COMPLETE_SCOPED, 결과는 음성**. 계약의 완료 조건(잔차→step 오차 예산, 계약 테스트, 측정된 crossover)과 CPU·메모리 측정을 모두 채웠다. 측정 범위에서 **crossover가 없었다**(matrix-free가 dense보다 빠른 n 없음). 속도 주장은 없다. production **HOLD**, 기본 라우팅·G0·허용오차·계수 불변. 사전 계약은 `CHANGE_CONTRACT.json`(M1–M4), 근거는 `RESULTS.json`과 `logs/`다.
 
 ## 구현 (기존 부품 재사용)
 - `ppsw1::linear_backend` (`src/ppsw1_linear_backend.rs`를 `ppsw1.rs`에서 `#[path]`로 선언, `lib.rs` 무변경).
@@ -48,5 +48,22 @@
 
 fallback은 없다. 실패는 typed error 또는 Rejected다.
 
-## 남은 의무
-SPD/대각 preconditioner와 그 실패 계약, B1 원인 분석과 n·restart 의존 예산, CPU time·isolated-process RSS, 다른 문제(비정규·비선형 stiff), 독립 matched-error 참조(현재는 Dense와의 차이만), matrix-free starter(별도 qualification 필요). 범위 제한 결과를 속도·production 주장으로 승격하지 않는다.
+## 남은 의무 (T03 부모로 이관)
+SPD/대각 preconditioner와 그 실패 계약(권한상 JVP 전용에서는 W 성분을 얻을 수 없어 별도 provider 필요), B1 원인 분석과 n·restart 의존 예산, matrix-free starter와 h0 규칙(B4), 다른 문제(비정규·비선형 stiff), 독립 matched-error 참조(현재는 Dense와의 차이만). 범위 제한 결과를 속도·production 주장으로 승격하지 않는다.
+
+## 추가 측정: 격리 프로세스 CPU·peak RSS (2026-11-16, M5)
+`process_metrics.py`가 (n, arm)마다 새 프로세스로 `c7_single_arm_process_metrics`를 3회 실행했다. CPU는 `/proc/self/stat` utime+stime, peak RSS는 VmHWM이다. 원자료는 `logs/u04_process_metrics.jsonl`, 요약은 `process_metrics_summary.json`. 3회 반복의 진단값이다.
+
+| n | arm | median wall s | median CPU s | median peak RSS kB |
+|---|---|---|---|---|
+| 50 | dense | 0.020 | 0.010 | 6 136 |
+| 50 | 독립 restart10 6thr | 0.047 | 0.240 | 6 200 |
+| 200 | dense | 0.298 | 0.290 | 36 808 |
+| 200 | 독립 restart10 6thr | 0.352 | 1.610 | 36 744 |
+| 400 | dense | 1.716 | 1.710 | 134 248 |
+| 400 | 독립 restart10 6thr | 2.788 | 12.78 | 134 468 |
+| 400 | 독립 restart60 순차 | 18.71 | 18.66 | 134 360 |
+| 400 | block | 40.62 | 40.55 | 133 964 |
+
+- **B4 메모리**: peak RSS는 모든 backend가 같다(n=400에서 134 MB). starter의 dense 5n×5n Newton 행렬과 h0 규칙의 dense J가 최대값을 정하므로, step 단위 matrix-free는 peak 메모리를 줄이지 않는다. 메모리 이득에는 matrix-free starter와 h0 규칙이 먼저 필요하다.
+- **CPU**: 병렬 restart-10은 n=400에서 dense보다 CPU를 7.5배 쓴다. wall time도 dense보다 느리다.
