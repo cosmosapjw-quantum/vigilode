@@ -51,6 +51,7 @@
 | `adr2d` | 1024 | [0, 0.1] | 2D advection-diffusion-reaction, scalar, nonnormal Jacobian | 2.20e-15 | 1,673 |
 
 - 기준해: 각 family를 numpy로 다시 구현해 scipy DOP853(rtol 1e-13)으로 적분했다. 불확도는 scipy Radau(rtol 1e-10) 결과와의 성분별 최대 차이다. Rust 코드와 선형 solver를 공유하지 않는다.
+- 최종 시험용으로 선언한 네 번째 family `robertson_rd1d`는 기준해만 만들어 두었고 실행하지 않았다(최종 시험이 NOT_RUN).
 - 실행 수: 선언 실행 54개, 탐색 실행 80개. 실행 하나가 프로세스 하나이고 `perf stat -e instructions:u` 아래에서 돌았다. counter는 결정적이므로 반복은 1회, wall time은 `diagnostic_only`.
 - 모든 실행이 끝까지 적분했다.
 
@@ -90,6 +91,7 @@
 
 - Krylov 벡터만 세면 1.5 이상을 두 tolerance에서 넘는 family가 2개가 된다. `adr2d`는 사전등록 계수로 1.454, 1.496이고 Krylov 벡터만 세면 1.504, 1.577이다. 판정은 사전등록대로 FAIL이지만, `adr2d`의 통과 여부는 이 계수 선택에 달려 있다는 점을 밝힌다.
 - 어느 계수로도 최종 판별식의 JVP 조건(B의 0.5배 이하, 즉 비 2.0 이상)에 닿는 family는 없다. v2는 벡터 하나의 비용을 줄이는 것이지 벡터 수를 줄이지 않으므로(기각 후 재시도 제외, 8.2절), stage a를 통과로 읽더라도 최종 PASS는 이 자료로는 기대할 수 없다. 이것은 측정이 아니라 추론이다.
+- 최종 판별식의 instructions 조건(B의 0.8배 이하)도 같은 방향이다. V05의 비용 모형(`theory/THEORY.md` S7)에서 basis 하나의 직교화 작업은 basis 여덟 개의 `8*theta^2`배이고, `theta`는 C와 B의 Krylov 벡터 수의 비다. 측정된 `theta`는 0.535~0.892로 모두 `1/sqrt(8) = 0.354`보다 크므로 모형상 직교화 작업은 2.3~6.4배가 된다. 이 family들은 JVP가 stencil 한 번이라 싸다. 모형에 측정값을 넣은 추론이며 v2의 instructions를 잰 것이 아니다.
 
 ## 4. B는 A의 공정한 대역인가
 
@@ -157,7 +159,7 @@ attempt당 새 Krylov 벡터 수를 solve 순서(stage 1~8)별로 평균한 값�
 | `adr2d` | 1e-4 | 3,343 | 2,306 | 1.450 | 1.000 | 예 / 예 |
 | `adr2d` | 1e-6 | 4,923 | 3,640 | 1.352 | 1.000 | 예 / 예 |
 
-- B와 C에 같은 right Jacobi(`diag(W)`)를 걸었다. A는 preconditioner를 받지 않으므로 A 대조는 없다.
+- B와 C에 같은 right Jacobi(`diag(W)`)를 걸었다. A는 preconditioner를 받지 않으므로 A 대조는 없다. 코드의 `JacobiPreconditioner`는 dense 행렬에서만 만들 수 있어서, client가 문제의 해석적 Jacobian 대각으로 같은 대각 scaling을 한다.
 - 이 family들에서 Jacobi는 B를 돕지 못한다: B의 JVP가 무전처리 대비 1.009~1.358배다. 공유 이득도 무전처리보다 작다. right preconditioning에서는 stage 해 `U_j = D^-1 u_j`가 `W D^-1`의 Krylov 공간 밖으로 나가기 때문이다(계약 테스트 `single_solves_meet_the_rule_and_the_shared_basis_is_reused`).
 
 ## 8. 탐색 실행 (어느 판정에도 넣지 않음)
