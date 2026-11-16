@@ -1,0 +1,39 @@
+    Finished `release` profile [optimized] target(s) in 0.11s
+     Running tests/default_path_golden.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v03g/release/deps/default_path_golden-ffa1f3e7a79e95a9)
+
+running 11 tests
+test format_helpers_are_bit_faithful ... ok
+test golden_directory_is_exactly_the_listed_files ... ok
+test dopri5 ... ok
+test rodas5p_contracts ... ok
+test production_automatic ... ok
+test rodas5p_robertson ... ok
+test rodas5p_vanderpol ... ok
+test rodas5p_hires ... ok
+test general_ode ... ok
+test rodas5p_brusselator ... ok
+test decision_grid ... FAILED
+
+failures:
+
+---- decision_grid stdout ----
+
+thread 'decision_grid' (384783) panicked at crates/vigilode/tests/default_path_golden.rs:354:5:
+golden decision_grid: the run differs from /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v03g/crates/vigilode/tests/golden/default_path/decision_grid.json
+changed: 1
+  /select/rows/jacobian=banded autonomous=0 time_derivative=0 mass=0 events=0 declared_band=0/dense_output=0 interior_error=enforce atol=scalar: golden "0hhhmmmmffffgggglllleeee22227777bbbbhhhhmmmmffffgggglllleeee22227777bbbbhhhhmmmmffffgggglllleee... (146 bytes) / run "hhhhmmmmffffgggglllleeee22227777bbbbhhhhmmmmffffgggglllleeee22227777bbbbhhhhmmmmffffgggglllleee... (146 bytes)
+removed: 0
+added: 0
+decoded select decisions that differ (of 221184 golden, 221184 run): 1
+  jacobian=banded autonomous=0 time_derivative=0 mass=0 events=0 declared_band=0 | dense_output=0 interior_error=enforce atol=scalar | column 0: golden {"refused":"dense-dimension-limit"} / run {"selected":{"derivatives":"forbidden","implicit_route":null,"method":"dopri5","regime":"unknown"}}
+decoded capabilities decisions that differ (of 12288 golden, 12288 run): 0
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    decision_grid
+
+test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.28s
+
+error: test failed, to rerun pass `-p vigilode --test default_path_golden`
