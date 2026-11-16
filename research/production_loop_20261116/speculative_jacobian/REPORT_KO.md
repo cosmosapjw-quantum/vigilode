@@ -1,5 +1,7 @@
 # V07 투기적 Jacobian, 단계 a (순차 모사) 결과 보고
 
+> 검토 후 정정 (2026-11-17, orchestrator가 추가): 이 본문은 독립 검토 전 상태다. 정정 사항: (1) g8의 오차비 실패 3건은 전부 E5이고, 거기서는 보호 방법 자체의 종점 오차가 허용오차의 430-31550배다. E5를 빼도 g8은 PASS가 아니라 판정 불가다(기준 불확실성 때문에 1칸이 남는다). (2) 차수 PASS는 사전선언한 fit 구간에서만 성립한다(kaps-eps1의 연속 8점 전체로는 exact 4.811, g7 4.769). (3) kill rule은 PASS가 아니라 "발동 안 됨"이다. (4) 오차비 기준은 Jacobian의 영향을 분리하지 못한다. "영향 없음"이 아니라 "이 기준으로는 알 수 없음"이다. 동결 판정은 FAIL이고 stage b는 시작하지 않는다(`../PROGRESS.md`의 ruling). 전체 검토: `REVIEW.json`. 정정된 결과 요약: `../PREREGISTRATION.md`의 "Results, wave 2".
+
 - 노드: `V07_SPECULATIVE_JACOBIAN`, 단계 a만 수행 (thread 없음, wall time 주장 없음). 단계 b는 만들지 않았다.
 - 브랜치 `research/production-loop-20261116-w2-v07`. 사전선언 `PREDECLARED.json`은 첫 commit(`16cd264d`)이고, 측정 로그는 코드 commit `94960932`에서 만들었다(로그 머리말에 기록).
 - 이 보고서의 수치는 전부 `RESULTS.json`에서 `build_report.py`가 찍은 것이다. `RESULTS.json`은 `build_results.py`가 raw 로그(`logs/`)와 `reference/reference.json`만 읽어 만든다.

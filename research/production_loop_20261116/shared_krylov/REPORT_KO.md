@@ -1,5 +1,7 @@
 # V06 공유 Krylov basis: 실측 보고
 
+> 검토 후 정정 (2026-11-17, orchestrator가 추가): 이 본문은 독립 검토 전 상태다. 정정 사항: (1) stage a FAIL은 세 개의 비선형 family에 대한 판정이다. 검토자가 돌린 선형 family(ADR에서 반응항 제거)는 JVP 비 3.86, 3.08이 나왔다(탐색, 판정 아님). (2) Krylov vector만 세면 2/3이라는 서술은 초기 step 1e-6의 시작 구간에 의존한다. 초기 step 1e-3에서는 ADR이 1.463으로 어느 방식으로 세어도 미달이다. (3) cancel rule은 PASS가 아니라 "발동 안 됨"이다. (4) 병합된 hook이 보호 임계값의 5.2e4배 residual을 받아들인 것은 개발 중 solve 1건의 관찰이다. 전체 검토: `REVIEW.json`. 정정된 결과 요약: `../PREREGISTRATION.md`의 "Results, wave 2".
+
 - node `V06_SHARED_KRYLOV_BASIS`, loop L1 wave 2, 2026-11-17 (KST)
 - 사전등록: `PREDECLARED.json` (sha256 `29b17919f670c3a0947605ef647e0d1fe76813500858c4ae3677abf849b80b93`), 첫 측정 전에 commit
 - stage a 측정 commit `552b0b60dec8381fd349013e43708b20f43f1a8b` (추적 파일 변경 0건), binary sha256 `7ed0b9bf43331c35b78dda02086bfa5a731caf51e3d1ef729dcbf545182d725f`

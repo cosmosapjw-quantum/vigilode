@@ -1,5 +1,7 @@
 # V04 — RODAS5P step의 phase별 비용 해부 (loop L1, wave 2)
 
+> 검토 후 정정 (2026-11-17, orchestrator가 추가): 이 본문은 독립 검토 전 상태다. 정정 사항: (1) authoritative 행은 29개가 아니라 16개다(`REVIEW_OVERLAY.json`: 1분 부하 8 이하, arm 내 편차 10% 이하, faer 행의 계측/비계측 비 0.96 이상). (2) "보호 faer 경로가 client보다 18-34% 느리다"는 서술은 철회한다. faer 인수분해가 매번 할당하고, heap 배치에 따라 어느 arm이든 n=512에서 attempt당 page fault 500-780회를 받는다. (3) V07 stage b 조건을 만족하는 authoritative 영역은 3개가 아니라 2개다. (4) lagged LU 3.76, 병렬 LU 5.42는 dense로 저장한 band-2 Jacobian 행의 값이다. dense faer 행(n=2048)에서는 2.84, 3.56이다. 전체 검토: `REVIEW.json`. 정정된 결과 요약: `../PREREGISTRATION.md`의 "Results, wave 2".
+
 작성 2026-11-17. 노드 `V04_STAGE_COST_ANATOMY`, 브랜치 `research/production-loop-20261116-w2-v04`. 이 문서는 `build_report.py`가 `RESULTS.json`·`AMDAHL.json`에서 만든다. 본문의 수치는 렌더링할 때 두 파일에서 읽어 넣으며, 사람이 입력한 측정값은 없다.
 
 ## 0. 요약
