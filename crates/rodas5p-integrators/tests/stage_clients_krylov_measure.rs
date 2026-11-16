@@ -14,10 +14,12 @@
 //! ```
 //!
 //! Variables: `V06_FAMILY` (an id of `problems::declared`), `V06_RTOL`,
-//! `V06_ARM` (`SETUP`, `A`, `B0`, `B`, `C`), `V06_PRECOND` (`none`,
+//! `V06_ARM` (`SETUP`, `A`, `B0`, `B`, `C`, and the exploratory `H`: the
+//! protected driver with its merged hook), `V06_PRECOND` (`none`,
 //! `jacobi`), `V06_AUDIT` (`0`, `1`), `V06_MAX_DIM` (shared basis, default
 //! 200), `V06_KEEP` (`0`, `1`: keep the basis across a rejected attempt),
-//! `V06_LABEL` (free text copied into the record).
+//! `V06_LINEAR_RTOL` (exploratory: a relative linear tolerance other than
+//! the protected 1e-10), `V06_LABEL` (free text copied into the record).
 
 #[path = "stage_clients_krylov_problems.rs"]
 mod problems;
@@ -117,7 +119,7 @@ fn v06_run() {
         return;
     }
 
-    let arm = Arm::parse(&arm_label).expect("V06_ARM is SETUP, A, B0, B or C");
+    let arm = Arm::parse(&arm_label).expect("V06_ARM is SETUP, A, B0, B, C or H");
     let mut options = ArmOptions::new(arm);
     options.jacobi = precond == "jacobi";
     options.audit = flag("V06_AUDIT");
@@ -125,10 +127,12 @@ fn v06_run() {
     if let Some(max_dim) = variable("V06_MAX_DIM") {
         options.max_dim = max_dim.parse().expect("V06_MAX_DIM is an integer");
     }
-    if arm == Arm::Protected {
+    options.linear_rtol =
+        variable("V06_LINEAR_RTOL").map(|rtol| rtol.parse().expect("V06_LINEAR_RTOL is a number"));
+    if matches!(arm, Arm::Protected | Arm::Hook) {
         assert!(
             !options.jacobi && !options.audit,
-            "arm A has no preconditioner and no audit"
+            "arms A and H have no preconditioner and no audit"
         );
     } else {
         // Constructible before the clock starts (the run builds its own).
@@ -136,8 +140,12 @@ fn v06_run() {
     }
     fields.insert("audit".into(), json!(options.audit));
     fields.insert(
+        "linear_rtol".into(),
+        json!(options.rule().expect("rule").rtol()),
+    );
+    fields.insert(
         "shared_max_dim".into(),
-        if arm == Arm::Shared {
+        if matches!(arm, Arm::Shared | Arm::Hook) {
             json!(options.max_dim)
         } else {
             Value::Null

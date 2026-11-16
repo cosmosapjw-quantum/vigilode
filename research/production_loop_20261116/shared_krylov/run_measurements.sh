@@ -4,8 +4,15 @@
 # logs/. Nothing is judged here; parse_results.py reads the logs.
 #
 # usage: run_measurements.sh <group> [family ...]
-#   group  stage_a      the declared runs of the stage-a families
-#          exploratory  C60, Ckeep and the stiff Brusselator (not counted)
+#   group  stage_a                the declared runs of the stage-a families
+#          exploratory            C60, Ckeep and the stiff Brusselator (declared
+#                                 as exploratory in PREDECLARED.json)
+#          exploratory_tolerance  A, B and C with one looser linear tolerance
+#          exploratory_hook       the protected driver with its merged hook
+#          exploratory_capacity   C with a basis of 300 vectors (bruss1d)
+#          exploratory_recheck    two declared runs repeated with the later binary
+#          Every exploratory group was added after the stage-a runs and is
+#          not part of any verdict.
 #   family restricts the group to the named families (default: all of it)
 #
 # One log per run: logs/<name>.log (V06_META lines, the program's
@@ -22,7 +29,7 @@ CPUS="0-9,12-21"
 TIME_LIMIT_SECONDS=10800
 mkdir -p "$LOGS"
 
-group="${1:?group: stage_a or exploratory}"
+group="${1:?group: stage_a, exploratory, exploratory_tolerance, exploratory_hook, exploratory_capacity or exploratory_recheck}"
 shift
 families=("$@")
 
@@ -62,10 +69,10 @@ fi
     echo "V06_ENV loadavg=$(cut -d' ' -f1-3 /proc/loadavg)"
 } >"$LOGS/environment_${group}_$(date +%Y%m%dT%H%M%S).log"
 
-# run_one <name> <family> <rtol> <arm> <precond> <audit> [max_dim] [keep]
+# run_one <name> <family> <rtol> <arm> <precond> <audit> [max_dim] [keep] [linear_rtol]
 run_one() {
     local name="$1" family="$2" rtol="$3" arm="$4" precond="$5" audit="$6"
-    local max_dim="${7:-200}" keep="${8:-0}"
+    local max_dim="${7:-200}" keep="${8:-0}" linear_rtol="${9:-}"
     local log="$LOGS/$name.log"
     if [ -e "$log" ]; then
         echo "skip $name (log exists)"
@@ -73,10 +80,11 @@ run_one() {
     fi
     echo "run  $name  $(date +%H:%M:%S)"
     {
-        echo "V06_META name=$name family=$family rtol=$rtol arm=$arm precond=$precond audit=$audit max_dim=$max_dim keep=$keep"
+        echo "V06_META name=$name family=$family rtol=$rtol arm=$arm precond=$precond audit=$audit max_dim=$max_dim keep=$keep linear_rtol=${linear_rtol:-protected}"
         echo "V06_META start=$(date -Is) loadavg_before=$(cut -d' ' -f1-3 /proc/loadavg)"
         V06_LABEL="$name" V06_FAMILY="$family" V06_RTOL="$rtol" V06_ARM="$arm" \
             V06_PRECOND="$precond" V06_AUDIT="$audit" V06_MAX_DIM="$max_dim" V06_KEEP="$keep" \
+            V06_LINEAR_RTOL="$linear_rtol" \
             timeout "$TIME_LIMIT_SECONDS" taskset -c "$CPUS" \
             perf stat -x, -e instructions:u -o "$LOGS/$name.perf" -- \
             "$BIN" --ignored --nocapture --exact v06_run
@@ -129,6 +137,38 @@ exploratory)
         run_one "${p}_B_none_audit1" bruss1d_stiff 1e-4 B none 1
         run_one "${p}_C60_none_audit1" bruss1d_stiff 1e-4 C none 1 60 0
     fi
+    ;;
+exploratory_tolerance)
+    for family in adr2d grayscott2d bruss1d; do
+        selected "$family" || continue
+        for rtol in 1e-4 1e-6; do
+            for linear in 1e-4 1e-6 1e-8; do
+                p="x_${family}_${rtol}_lin${linear}"
+                run_one "${p}_A_none" "$family" "$rtol" A none 0 200 0 "$linear"
+                run_one "${p}_B_none_audit1" "$family" "$rtol" B none 1 200 0 "$linear"
+                run_one "${p}_C_none_audit1" "$family" "$rtol" C none 1 200 0 "$linear"
+            done
+        done
+    done
+    ;;
+exploratory_hook)
+    for family in adr2d grayscott2d bruss1d; do
+        selected "$family" || continue
+        for rtol in 1e-4 1e-6; do
+            run_one "x_${family}_${rtol}_H60_none" "$family" "$rtol" H none 0 60 0
+        done
+    done
+    ;;
+exploratory_recheck)
+    # The declared arms again with the binary of the exploratory groups: the
+    # parser compares them with the stage-a runs bit for bit.
+    run_one "x_recheck_adr2d_1e-4_B_none_audit1" adr2d 1e-4 B none 1
+    run_one "x_recheck_adr2d_1e-4_C_none_audit1" adr2d 1e-4 C none 1
+    ;;
+exploratory_capacity)
+    for rtol in 1e-6 1e-4; do
+        run_one "x_bruss1d_${rtol}_C300_none_audit1" bruss1d "$rtol" C none 1 300 0
+    done
     ;;
 *)
     echo "unknown group $group" >&2

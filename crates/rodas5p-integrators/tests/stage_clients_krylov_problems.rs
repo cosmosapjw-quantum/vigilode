@@ -21,10 +21,11 @@ use rodas5p_integrators::stage_clients::krylov::{
     SharedBasisOptions, StageStoppingRule,
 };
 use rodas5p_integrators::{
-    AdaptiveStepConfig, OdeProblem, OutputSchedule, RoutingOptions, StageLinearSystem,
-    integrate_rodas5p_fast_client_observed_with_atol,
+    AdaptiveStepConfig, OdeProblem, OutputSchedule, Rodas5pMfFastWorkspace, RoutingOptions,
+    StageLinearSystem, integrate_rodas5p_fast_client_observed_with_atol,
     integrate_rodas5p_mf_fast_observed_gmres_into,
 };
+use rodas5p_krylov::shared_basis::SharedBasisConfig;
 
 /// A problem with its start, span, tolerance ratio and Jacobian diagonal.
 pub struct Family {
@@ -390,6 +391,10 @@ pub enum Arm {
     PerStage,
     /// C: shared-basis client.
     Shared,
+    /// H (exploratory): the protected driver with its merged shared-basis
+    /// hook as shipped, i.e. with the hook's own stopping test
+    /// `h gamma ||r||_WRMS <= 1e-3` instead of the driver's.
+    Hook,
 }
 
 impl Arm {
@@ -399,6 +404,7 @@ impl Arm {
             Self::PerStageShipped => "B0",
             Self::PerStage => "B",
             Self::Shared => "C",
+            Self::Hook => "H",
         }
     }
 
@@ -408,6 +414,7 @@ impl Arm {
             Self::PerStageShipped,
             Self::PerStage,
             Self::Shared,
+            Self::Hook,
         ]
         .into_iter()
         .find(|arm| arm.label() == label)
@@ -415,7 +422,7 @@ impl Arm {
 }
 
 /// One arm's configuration; [`ArmOptions::new`] gives the declared one.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ArmOptions {
     pub arm: Arm,
     /// Right Jacobi instead of no preconditioner (client arms only).
@@ -426,6 +433,9 @@ pub struct ArmOptions {
     pub max_dim: usize,
     /// Shared basis: keep it across an attempt rejected by the estimate.
     pub keep: bool,
+    /// Exploratory: a relative linear tolerance other than the protected
+    /// `1e-10` (the same in every arm it is given to).
+    pub linear_rtol: Option<f64>,
 }
 
 impl ArmOptions {
@@ -436,6 +446,15 @@ impl ArmOptions {
             audit: false,
             max_dim: SharedBasisOptions::baseline().max_dim,
             keep: false,
+            linear_rtol: None,
+        }
+    }
+
+    /// The stopping test of this configuration.
+    pub fn rule(&self) -> CoreResult<StageStoppingRule> {
+        match self.linear_rtol {
+            None => StageStoppingRule::protected_production(),
+            Some(rtol) => StageStoppingRule::new(rtol, StageStoppingRule::PRODUCTION_ATOL),
         }
     }
 }
@@ -478,16 +497,16 @@ pub fn build_client(
     Option<ResidualAuditHandle>,
 )> {
     let n = family.problem.dimension;
-    let rule = StageStoppingRule::protected_production()?;
+    let rule = options.rule()?;
     let preconditioner = if options.jacobi {
         KrylovPreconditioner::RightJacobi(Arc::clone(&family.diagonal))
     } else {
         KrylovPreconditioner::None
     };
     let client = match options.arm {
-        Arm::Protected => {
+        Arm::Protected | Arm::Hook => {
             return Err(CoreError::InvalidInput(
-                "arm A is the protected driver, not a client".into(),
+                "arms A and H are the protected driver, not a client".into(),
             ));
         }
         Arm::PerStageShipped => KrylovStageClient::per_stage(
@@ -525,16 +544,29 @@ pub fn build_client(
 pub fn run_arm(family: &Family, rtol: f64, options: &ArmOptions) -> CoreResult<ArmRun> {
     let config = adaptive(family, rtol);
     let output = OutputSchedule::new(vec![family.span.0, family.span.1])?;
-    if options.arm == Arm::Protected {
-        let linear = RoutingOptions::default().matrix_free;
-        let run = integrate_rodas5p_mf_fast_observed_gmres_into(
-            &family.problem,
-            family.span,
-            &family.y0,
-            &linear,
-            &config,
-            &output,
-        )?;
+    if matches!(options.arm, Arm::Protected | Arm::Hook) {
+        let mut linear = RoutingOptions::default().matrix_free;
+        if let Some(rtol) = options.linear_rtol {
+            linear.rtol = rtol;
+        }
+        let run = if options.arm == Arm::Protected {
+            integrate_rodas5p_mf_fast_observed_gmres_into(
+                &family.problem,
+                family.span,
+                &family.y0,
+                &linear,
+                &config,
+                &output,
+            )?
+        } else {
+            let mut work = Rodas5pMfFastWorkspace::new(&family.problem, &linear)?;
+            work.set_gmres_into(true);
+            work.set_shared_basis(Some(SharedBasisConfig {
+                max_dim: options.max_dim,
+                ..SharedBasisConfig::default()
+            }))?;
+            work.integrate_observed(&family.problem, family.span, &family.y0, &config, &output)?
+        };
         return Ok(ArmRun {
             success: run.observed.success,
             attempts: run.attempts,

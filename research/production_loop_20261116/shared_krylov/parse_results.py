@@ -13,7 +13,6 @@ import json
 import math
 import statistics
 import struct
-import sys
 from pathlib import Path
 
 NODE = Path(__file__).resolve().parent
@@ -132,8 +131,9 @@ def load_runs(references):
             "arm": meta.get("arm"),
             "precond": meta.get("precond"),
             "audit": meta.get("audit") == "1",
-            "max_dim": int(meta["max_dim"]) if meta.get("arm") in ("C", "C2") and "max_dim" in meta else None,
+            "max_dim": int(meta["max_dim"]) if meta.get("arm") in ("C", "H") and "max_dim" in meta else None,
             "keep": meta.get("keep") == "1",
+            "linear_rtol": (run or {}).get("linear_rtol"),
             "exit_status": int(meta["exit_status"]) if "exit_status" in meta else None,
             "start": meta.get("start"),
             "end": meta.get("end"),
@@ -422,36 +422,141 @@ def stage_a(runs, states, predeclared):
     return {"cells": cells, "verdict": verdict}
 
 
+def brief(run):
+    """Step counts, JVPs and achieved error of one run."""
+    if run is None:
+        return None
+    if run["status"] != "OK":
+        return {"status": run["status"], "run": run["name"], "error_message": run.get("error")}
+    out = {
+        "status": "OK",
+        "run": run["name"],
+        "attempts": run["attempts"],
+        "rejected": run["rejected"],
+        "linear_solve_failures": run["counters"]["linear_solve_failures"],
+        "jvp": run["jvp_calls"],
+        "error_max_tolerance_units": (run.get("error") or {}).get("max_tolerance_units"),
+        "wall_seconds_diagnostic_only": run["wall_seconds_diagnostic_only"],
+    }
+    client = run.get("client")
+    if client:
+        out["krylov_vectors"] = client["krylov_vectors"]
+        out["krylov_vectors_per_solve_mean"] = ratio(client["krylov_vectors"], client["solves"])
+        if client["shared_storage_bytes"]:
+            out["basis_dim_max"] = client["basis_dim_max"]
+            out["basis_dim_mean_at_attempt_end"] = ratio(client["basis_dim_sum"], client["basis_dim_attempts"])
+            out["fallback_solves"] = client["fallback_solves"]
+            out["basis_kept"] = client["basis_kept"]
+    if "residual_audit" in run:
+        out["residual_audit_failures"] = run["residual_audit"]["failures"]
+    return out
+
+
+def pair(baseline, candidate):
+    """JVP and step ratio of a candidate run against a baseline run."""
+    if baseline is None or candidate is None or baseline["status"] != "OK" or candidate["status"] != "OK":
+        return {}
+    return {
+        "jvp_ratio_baseline_over_candidate": ratio(baseline["jvp_calls"], candidate["jvp_calls"]),
+        "step_ratio_candidate_over_baseline": ratio(candidate["attempts"], baseline["attempts"]),
+        "error_ratio_candidate_over_baseline": ratio(
+            (candidate.get("error") or {}).get("max_tolerance_units"),
+            (baseline.get("error") or {}).get("max_tolerance_units"),
+        ),
+    }
+
+
 def exploratory(runs, states, predeclared):
-    out = {"label": "exploratory: not part of any frozen verdict", "cells": []}
-    for family in [family["id"] for family in predeclared["families_stage_a"]]:
-        for rtol in ["1e-4", "1e-6"]:
+    families = [family["id"] for family in predeclared["families_stage_a"]]
+    tolerances = ["1e-4", "1e-6"]
+    out = {"label": "exploratory: not part of any frozen verdict"}
+
+    variants = []
+    for family in families:
+        for rtol in tolerances:
             baseline = runs.get(f"a_{family}_{rtol}_B_none_audit1")
             declared = runs.get(f"a_{family}_{rtol}_C_none_audit1")
             row = {"family": family, "rtol": float(rtol)}
-            for tag in ("C60", "Ckeep"):
+            for tag in ("C60", "C300", "Ckeep"):
                 run = runs.get(f"x_{family}_{rtol}_{tag}_none_audit1")
                 if run is None:
                     continue
-                entry = client_summary(run, None)
-                if run["status"] == "OK" and baseline is not None and baseline["status"] == "OK":
-                    entry["jvp_ratio_B_over_this"] = ratio(baseline["jvp_calls"], run["jvp_calls"])
-                    entry["step_ratio_this_over_B"] = ratio(run["attempts"], baseline["attempts"])
+                entry = brief(run)
+                entry["against_B"] = pair(baseline, run)
                 if run["status"] == "OK" and declared is not None and declared["status"] == "OK":
                     entry["jvp_ratio_declared_C_over_this"] = ratio(declared["jvp_calls"], run["jvp_calls"])
                 row[tag] = entry
             if len(row) > 2:
-                out["cells"].append(row)
+                variants.append(row)
+    out["shared_basis_variants"] = variants
+
+    # The same looser stopping test in every arm.
+    sweep = []
+    for family in families:
+        for rtol in tolerances:
+            rows = []
+            reference_b = runs.get(f"a_{family}_{rtol}_B_none_audit1")
+            for linear in ("1e-4", "1e-6", "1e-8"):
+                prefix = f"x_{family}_{rtol}_lin{linear}"
+                a, b, c = (runs.get(f"{prefix}_{tag}") for tag in ("A_none", "B_none_audit1", "C_none_audit1"))
+                if a is None and b is None and c is None:
+                    continue
+                rows.append(
+                    {
+                        "linear_rtol": float(linear),
+                        "A": brief(a),
+                        "B": brief(b),
+                        "C": brief(c),
+                        "B_vs_C": pair(b, c),
+                        "B_at_this_tolerance_against_B_at_1e-10": pair(reference_b, b),
+                    }
+                )
+            if rows:
+                declared_c = runs.get(f"a_{family}_{rtol}_C_none_audit1")
+                rows.append(
+                    {
+                        "linear_rtol": 1e-10,
+                        "note": "the declared stage-a runs",
+                        "A": brief(runs.get(f"a_{family}_{rtol}_A_none")),
+                        "B": brief(reference_b),
+                        "C": brief(declared_c),
+                        "B_vs_C": pair(reference_b, declared_c),
+                    }
+                )
+                sweep.append({"family": family, "rtol": float(rtol), "by_linear_rtol": rows})
+    out["linear_tolerance_sweep"] = sweep
+
+    # The merged hook of the protected driver with its own stopping test.
+    hook = []
+    for family in families:
+        for rtol in tolerances:
+            run = runs.get(f"x_{family}_{rtol}_H60_none")
+            if run is None:
+                continue
+            a = runs.get(f"a_{family}_{rtol}_A_none")
+            b = runs.get(f"a_{family}_{rtol}_B_none_audit1")
+            hook.append(
+                {
+                    "family": family,
+                    "rtol": float(rtol),
+                    "hook_as_merged": brief(run),
+                    "A_as_shipped": brief(a),
+                    "A_vs_hook": pair(a, run),
+                    "B_vs_hook": pair(b, run),
+                }
+            )
+    out["merged_hook_with_its_own_stopping_test"] = hook
+
     stiff = {}
     for tag in ("A_none", "B_none_audit1", "C60_none_audit1"):
         run = runs.get(f"x_bruss1d_stiff_1e-4_{tag}")
         if run is not None:
-            stiff[tag] = client_summary(run, runs.get("x_bruss1d_stiff_1e-4_SETUP"))
+            stiff[tag] = brief(run)
     if stiff:
-        b, c = runs.get("x_bruss1d_stiff_1e-4_B_none_audit1"), runs.get("x_bruss1d_stiff_1e-4_C60_none_audit1")
-        if b and c and b["status"] == "OK" and c["status"] == "OK":
-            stiff["jvp_ratio_B_over_C60"] = ratio(b["jvp_calls"], c["jvp_calls"])
-            stiff["step_ratio_C60_over_B"] = ratio(c["attempts"], b["attempts"])
+        stiff["B_vs_C60"] = pair(
+            runs.get("x_bruss1d_stiff_1e-4_B_none_audit1"), runs.get("x_bruss1d_stiff_1e-4_C60_none_audit1")
+        )
+        stiff["A_vs_B"] = pair(runs.get("x_bruss1d_stiff_1e-4_A_none"), runs.get("x_bruss1d_stiff_1e-4_B_none_audit1"))
         out["bruss1d_stiff_1e-4"] = stiff
     return out
 
@@ -504,11 +609,11 @@ def main():
             name: {key: value for key, value in run.items() if key != "counters_all"} for name, run in runs.items()
         },
     }
-    extension = NODE / "parse_final.py"
-    if extension.exists():
-        namespace = {}
-        exec(compile(extension.read_text(), str(extension), "exec"), namespace)
-        results["final"] = namespace["final"](runs, states, predeclared, sys.modules[__name__])
+    results["final"] = {
+        "verdict": "NOT_RUN",
+        "reason": "the final discriminator is defined for the v2 kernel, which is built only if stage a passes",
+        "stage_a_verdict": results["stage_a"]["verdict"]["verdict"],
+    }
     text = json.dumps(results, indent=1, allow_nan=False, sort_keys=False)
     (NODE / "RESULTS.json").write_text(text + "\n")
 
