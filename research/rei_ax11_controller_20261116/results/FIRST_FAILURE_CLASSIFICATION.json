@@ -1,0 +1,10 @@
+{
+  "actual_test_executed": false,
+  "cause": "runner incorrectly applied native 8MiB scientific per-file limit to rustc incremental dep-graph; observed signal25 and exact8388608-byte file",
+  "extra_test_processes": 1,
+  "first_failed_test_receipt_sha256": "9166ba3f95af52c906c0435ffdd69e3c27d09e75aa8aa5d1adf9f66c669ff3cf",
+  "native_process_count_and_physics_caps": "UNCHANGED",
+  "no_automatic_retry": true,
+  "old_EXPECTED_RED_receipt_label": "INCORRECT_PRESERVED_NOT_ACCEPTED_AS_TDD_RED",
+  "repair": "use declared128MiB build total as build per-file upper bound; native8MiB remains; disable incremental/debug metadata for subsequent finite test builds"
+}
