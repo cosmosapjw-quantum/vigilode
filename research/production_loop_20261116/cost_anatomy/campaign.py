@@ -455,7 +455,7 @@ def cmd_identity(args):
         print("identity", cell["id"], "exit", code, flush=True)
 
 
-def cmd_measure(args):
+def cmd_measure(args, subdir="measure"):
     sizing = strict_load(HERE / "SIZING.json")
     wanted = set(args.cell or [])
     for entry in sizing["cells"]:
@@ -463,7 +463,7 @@ def cmd_measure(args):
             continue
         if entry["protocol"] not in ("full", "reduced"):
             continue
-        log = HERE / "logs" / "measure" / (entry["cell"] + ".jsonl")
+        log = HERE / "logs" / subdir / (entry["cell"] + ".jsonl")
         attempt = 1
         if log.exists() and not Path(str(log) + ".meta.json").exists():
             # The campaign process was stopped from outside while this cell ran (no exit code
@@ -480,7 +480,7 @@ def cmd_measure(args):
                 print("skip (done)", entry["cell"])
                 continue
             # Keep the failed log; the single allowed rerun goes to <cell>.retry.jsonl.
-            retry = HERE / "logs" / "measure" / (entry["cell"] + ".retry.jsonl")
+            retry = HERE / "logs" / subdir / (entry["cell"] + ".retry.jsonl")
             if retry.exists() and not args.force:
                 print("skip (retry exists)", entry["cell"])
                 continue
@@ -498,6 +498,14 @@ def cmd_measure(args):
 # ------------------------------------------------------------------------------------------------
 # callgrind, perf stat
 # ------------------------------------------------------------------------------------------------
+
+def cmd_repeat(args):
+    """Exploratory second run of the wall protocol for named cells -> logs/measure_repeat/.
+    RESULTS.json keeps the first run as the cell's result and shows the repeat next to it."""
+    if not args.cell:
+        raise SystemExit("repeat needs --cell")
+    cmd_measure(args, subdir="measure_repeat")
+
 
 def callgrind_plan():
     pre = strict_load(HERE / "PREDECLARED.json")
@@ -571,7 +579,8 @@ def cmd_perfstat(args):
             stat = out_dir / f"{entry['cell']}.{arm}.perf.csv"
             if stat.exists() and not args.force:
                 continue
-            cmd = ["perf", "stat", "-x,", "-e", "instructions:u", "-o", str(stat),
+            cmd = ["perf", "stat", "-x,", "-e", "instructions:u,cycles:u,page-faults",
+                   "-o", str(stat),
                    str(BIN), "single", "--cell", entry["cell"], "--arm", arm,
                    "--attempts", str(budget)]
             code = run_logged(cmd, out_dir / f"{entry['cell']}.{arm}.stdout.jsonl",
@@ -586,7 +595,8 @@ def main():
     sub = parser.add_subparsers(dest="command", required=True)
     for name, fn in [("predeclare", cmd_predeclare), ("environment", cmd_environment),
                      ("pilot", cmd_pilot), ("size", cmd_size), ("identity", cmd_identity),
-                     ("measure", cmd_measure), ("callgrind", cmd_callgrind),
+                     ("measure", cmd_measure), ("repeat", cmd_repeat),
+                     ("callgrind", cmd_callgrind),
                      ("perfstat", cmd_perfstat)]:
         p = sub.add_parser(name)
         p.add_argument("--cell", action="append", help="restrict to this cell (repeatable)")

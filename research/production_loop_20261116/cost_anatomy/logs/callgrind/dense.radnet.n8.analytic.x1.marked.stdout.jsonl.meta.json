@@ -1,0 +1,37 @@
+{
+ "command": [
+  "taskset",
+  "-c",
+  "0-5,12-17",
+  "valgrind",
+  "--tool=callgrind",
+  "--callgrind-out-file=/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v04/research/production_loop_20261116/cost_anatomy/logs/callgrind/dense.radnet.n8.analytic.x1.marked.callgrind.out",
+  "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v04/release/v04-cost-anatomy-runner",
+  "single",
+  "--cell",
+  "dense.radnet.n8.analytic.x1",
+  "--arm",
+  "marked",
+  "--attempts",
+  "1000"
+ ],
+ "exit_code": 0,
+ "loadavg_before": [
+  3.24,
+  3.18,
+  3.44
+ ],
+ "loadavg_after": [
+  3.24,
+  3.18,
+  3.44
+ ],
+ "started_unix": 1794844257.0405073,
+ "wall_seconds": 0.3705921173095703,
+ "log": "logs/callgrind/dense.radnet.n8.analytic.x1.marked.stdout.jsonl",
+ "log_sha256": "db435ef36102c9490626ba79e880df9359eecd8876b39c639ff7ab8a4ee79129",
+ "binary_sha256": "6c8024535a7f53a68c20033ec062b57645aa6ceb6325ed9e86002d19ab1769ec",
+ "role": "required_n_below_128",
+ "attempt_budget": 1000,
+ "arm": "marked"
+}

@@ -275,9 +275,8 @@ def tables(results, regimes):
          for r in gate]) if gate else "(none)")
 
     near = [r for r in regimes if not r["b_speculative_jacobian_lu"]["gates_V07_stage_b"]
-            and (r["b_speculative_jacobian_lu"]["r_in_0.15_0.92"]
-                 or r["b_speculative_jacobian_lu"]["plain_wall_per_accepted_step_ge_500us"])]
-    parts.append("\n## T8. Regimes that meet only one of the two V07 conditions\n")
+            and r["b_speculative_jacobian_lu"]["r_in_0.15_0.92"]]
+    parts.append("\n## T8. Regimes with r in [0.15, 0.92] whose accepted step is shorter than 500 us (not in the gate list)\n")
     parts.append(table(
         ["cell", "r", "r in band", "plain us/accepted step", ">= 500 us", "label"],
         [[r["cell"], num(r["b_speculative_jacobian_lu"]["r"], 3),

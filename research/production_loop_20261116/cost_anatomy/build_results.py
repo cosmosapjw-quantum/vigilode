@@ -261,6 +261,16 @@ def summarize_measure(cell, size, log, meta, notes):
         "script_before": meta["loadavg_before"],
         "script_after": meta["loadavg_after"],
     }
+    # Disclosure, not a criterion: non-timing jobs of this node (callgrind, identity sweep,
+    # perf stat; they ran on the other core complex) whose interval overlaps this cell's.
+    begin, end = meta["started_unix"], meta["started_unix"] + meta["wall_seconds"]
+    overlapping = []
+    for kind in ("callgrind", "identity", "perfstat"):
+        for other in sorted((HERE / "logs" / kind).glob("*.meta.json")):
+            job = strict_load(other)
+            if job["started_unix"] < end and job["started_unix"] + job["wall_seconds"] > begin:
+                overlapping.append(f"{kind}/{other.name[:-len('.meta.json')]}")
+    out["own_non_timing_jobs_running_during_this_cell"] = overlapping
     out["cpus_allowed_list"] = header["cpus_allowed_list"]
     out["dense_lu_mode_of_client"] = header["dense_lu_mode"]
     return out, header
@@ -348,25 +358,34 @@ def summarize_perfstat(cell):
         path = base / f"{cell['id']}.{arm}.perf.csv"
         if not path.exists():
             return None
-        value = None
+        events = {}
         for line in path.read_text().splitlines():
             parts = line.split(",")
-            if len(parts) > 2 and parts[2].startswith("instructions"):
-                try:
-                    value = int(parts[0])
-                except ValueError:
-                    value = None
-        if value is None:
+            if len(parts) > 2 and parts[0].strip().isdigit():
+                events[parts[2].split(":")[0]] = int(parts[0])
+        if "instructions" not in events:
             return {"error": f"no instruction count for arm {arm}"}
-        counts[arm] = value
+        counts[arm] = events
     meta = strict_load(str(base / f"{cell['id']}.plain.stdout.jsonl") + ".meta.json")
-    denominator = counts["plain"] - counts["none"]
+
+    def net(event, arm):
+        if event not in counts[arm] or event not in counts["none"]:
+            return None
+        return counts[arm][event] - counts["none"][event]
+
+    def ratio(event):
+        top, bottom = net(event, "instrumented"), net(event, "plain")
+        return top / bottom if top is not None and bottom else None
+
+    budget = meta["attempt_budget"]
     return {
-        "label": "exploratory: perf stat -e instructions:u of single runs",
-        "attempt_budget": meta["attempt_budget"],
-        "instructions_user": counts,
-        "instrumented_over_plain_net_of_setup": (
-            (counts["instrumented"] - counts["none"]) / denominator if denominator > 0 else None),
+        "label": "exploratory: perf stat of single runs (one process per arm; `none` is the set-up alone)",
+        "attempt_budget": budget,
+        "events": counts,
+        "instructions_user_instrumented_over_plain_net_of_setup": ratio("instructions"),
+        "cycles_user_instrumented_over_plain_net_of_setup": ratio("cycles"),
+        "page_faults_net_of_setup": {arm: net("page-faults", arm)
+                                     for arm in ("plain", "instrumented")},
     }
 
 
@@ -469,6 +488,25 @@ def main():
             entry["admissibility_with_solve_intervals_extension"] = (
                 "authoritative" if all(extended.values()) and size["protocol"] == "full"
                 else "diagnostic_only")
+        repeat_log = HERE / "logs" / "measure_repeat" / (cell["id"] + ".jsonl")
+        if repeat_log.exists() and Path(str(repeat_log) + ".meta.json").exists():
+            repeat_meta = strict_load(str(repeat_log) + ".meta.json")
+            if repeat_meta["exit_code"] == 0:
+                again, _ = summarize_measure(cell, size, repeat_log, repeat_meta, [])
+                _, again_reasons, again_criteria = label(cell, size, again)
+                entry["repeat_measurement"] = {
+                    "role": "exploratory repeat of the wall protocol; the cell's result above is the first run",
+                    "log": again["log"],
+                    "instrumented_over_plain": again["wall"]["instrumented_over_plain"],
+                    "plain_ns_per_attempt": again["wall"]["plain_ns_per_attempt"],
+                    "phase_fractions": again["phase_fractions"],
+                    "sum_check": again["sum_check"],
+                    "identity": again["identity"],
+                    "load_average": again["load_average"],
+                    "criteria": again_criteria,
+                    "own_non_timing_jobs_running_during_this_cell":
+                        again["own_non_timing_jobs_running_during_this_cell"],
+                }
         instruction = summarize_callgrind(cell)
         if instruction is not None:
             entry["instruction_counts"] = instruction
