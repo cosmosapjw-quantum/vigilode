@@ -547,6 +547,21 @@ def exploratory(runs, states, predeclared):
             )
     out["merged_hook_with_its_own_stopping_test"] = hook
 
+    # Two declared runs repeated with the binary of the exploratory groups.
+    recheck = []
+    for tag in ("B_none_audit1", "C_none_audit1"):
+        again = runs.get(f"x_recheck_adr2d_1e-4_{tag}")
+        first = runs.get(f"a_adr2d_1e-4_{tag}")
+        if again is not None:
+            recheck.append(
+                {
+                    "declared_run": f"a_adr2d_1e-4_{tag}",
+                    "repeated_run": again["name"],
+                    "identical_counters_statistics_and_state": same_run(first, again),
+                }
+            )
+    out["declared_runs_repeated_with_the_later_binary"] = recheck
+
     stiff = {}
     for tag in ("A_none", "B_none_audit1", "C60_none_audit1"):
         run = runs.get(f"x_bruss1d_stiff_1e-4_{tag}")
@@ -558,6 +573,50 @@ def exploratory(runs, states, predeclared):
         )
         stiff["A_vs_B"] = pair(runs.get("x_bruss1d_stiff_1e-4_A_none"), runs.get("x_bruss1d_stiff_1e-4_B_none_audit1"))
         out["bruss1d_stiff_1e-4"] = stiff
+    return out
+
+
+def verification():
+    """Exit codes and test summaries of the verification logs, and the allocation records."""
+    out = {}
+    for name in ("rustfmt", "tests", "sentinels", "clippy"):
+        path = LOGS / f"verify_{name}.log"
+        if not path.exists():
+            continue
+        entry = {"log": f"logs/{path.name}", "test_results": []}
+        for line in path.read_text(errors="replace").splitlines():
+            if line.startswith("V06_VERIFY command="):
+                entry["command"] = line[len("V06_VERIFY command=") :]
+            elif line.startswith("V06_VERIFY ") and "_exit=" in line:
+                entry["exit_code"] = int(line.rsplit("=", 1)[1])
+            elif line.startswith("test result:"):
+                entry["test_results"].append(line)
+        out[name] = entry
+    path = LOGS / "alloc_test.log"
+    if path.exists():
+        rows = [
+            json.loads(line.split(" ", 1)[1])
+            for line in path.read_text().splitlines()
+            if line.startswith("STAGE_CLIENTS_KRYLOV_ALLOC_JSON ")
+        ]
+        out["allocation"] = {
+            "log": "logs/alloc_test.log",
+            "runs": len(rows),
+            "clients": sorted({row["client"] for row in rows}),
+            "families": sorted({row["family"] for row in rows}),
+            "steady_steps_measured": sum(row["steady_steps_measured"] for row in rows),
+            "steady_allocations_total": sum(row["steady_allocations_total"] for row in rows),
+            "steady_allocations_max_per_step": max((row["steady_allocations_max_per_step"] for row in rows), default=None),
+            "runs_with_fallback_solves": sum(1 for row in rows if row["fallback_solves"] > 0),
+        }
+    path = LOGS / "merged_hook_failing_test.log"
+    if path.exists():
+        lines = path.read_text(errors="replace").splitlines()
+        out["merged_hook_failing_test"] = {
+            "log": "logs/merged_hook_failing_test.log",
+            "exit_codes": [int(line.rsplit("=", 1)[1]) for line in lines if line.startswith("V06_META exit_status=")],
+            "message": next((line for line in lines if line.startswith("the merged hook accepted")), None),
+        }
     return out
 
 
@@ -605,6 +664,7 @@ def main():
         },
         "stage_a": stage_a(runs, states, predeclared),
         "exploratory": exploratory(runs, states, predeclared),
+        "verification": verification(),
         "runs": {
             name: {key: value for key, value in run.items() if key != "counters_all"} for name, run in runs.items()
         },
