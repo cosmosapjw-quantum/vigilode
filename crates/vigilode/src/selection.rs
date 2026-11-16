@@ -7,7 +7,7 @@ use crate::{
     DerivativeFallback, Dopri5, ExplicitSolution, ExplicitSolveError, FacadeRoute, Jacobian,
     Options, Problem, Rodas5p, Solution, SolveError, Unsupported,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 /// User knowledge of the requested integration regime.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
@@ -246,5 +246,503 @@ impl GeneralOde {
             }
         };
         Ok(GeneralSolution { selection, result })
+    }
+}
+
+// ------------------------------------------------------------------------------------------
+// Unified method capability registry (U06). Pure: no callback, allocation of numerical
+// workspaces or solver attempt. Implemented is distinct from qualified; nothing here changes
+// `GeneralOde::select` or any default routing.
+// ------------------------------------------------------------------------------------------
+
+/// Independent derivative and linear-algebra capabilities. In a [`MethodRequest`] they are
+/// permissions; in a [`RequirementVariant`] they are needs. Flags are a set, not a ladder:
+/// a JVP permission does not imply dense matrices, Newton or finite differences.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CapabilitySet {
+    /// Model-supplied Jacobian-vector products.
+    pub provided_jvp: bool,
+    /// Finite-difference derivative estimates from the RHS.
+    pub finite_difference: bool,
+    /// Automatic differentiation (no method in this repository uses it).
+    pub automatic_differentiation: bool,
+    /// A model-supplied explicit (dense or banded) Jacobian.
+    pub explicit_jacobian: bool,
+    /// Materialising and factorising dense matrices.
+    pub dense_matrix: bool,
+    /// Newton or simplified-Newton nonlinear iterations.
+    pub newton: bool,
+}
+
+impl CapabilitySet {
+    /// The empty set (RHS evaluations only).
+    pub const NONE: Self = Self {
+        provided_jvp: false,
+        finite_difference: false,
+        automatic_differentiation: false,
+        explicit_jacobian: false,
+        dense_matrix: false,
+        newton: false,
+    };
+
+    /// Every flag of `self` is also set in `allowed`.
+    pub fn is_subset_of(&self, allowed: &Self) -> bool {
+        (!self.provided_jvp || allowed.provided_jvp)
+            && (!self.finite_difference || allowed.finite_difference)
+            && (!self.automatic_differentiation || allowed.automatic_differentiation)
+            && (!self.explicit_jacobian || allowed.explicit_jacobian)
+            && (!self.dense_matrix || allowed.dense_matrix)
+            && (!self.newton || allowed.newton)
+    }
+
+    /// Permissions implied by a facade problem and the existing [`GeneralOdePolicy`], without
+    /// calling user code. A supplied derivative is usable only if the policy permits supplied
+    /// derivatives; dense matrices only up to `max_dense_dimension`; Newton is never implied
+    /// (the policy has no Newton permission), so Newton-based methods stay refused.
+    pub fn from_problem_and_policy(problem: &Problem, policy: &GeneralOdePolicy) -> Self {
+        let supplied = !matches!(policy.derivatives, DerivativeFallback::Forbidden);
+        let mut s = Self::NONE;
+        match problem.jacobian {
+            Jacobian::Dense(_) | Jacobian::Banded { .. } => s.explicit_jacobian = supplied,
+            Jacobian::Jvp(_) => s.provided_jvp = supplied && policy.allow_matrix_free,
+            Jacobian::FiniteDifference => {}
+        }
+        s.finite_difference = matches!(
+            policy.derivatives,
+            DerivativeFallback::AllowFiniteDifference
+        );
+        s.dense_matrix = problem.dimension <= policy.max_dense_dimension;
+        s
+    }
+}
+
+/// One admissible way to run a method: what each phase needs and which features it supports.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct RequirementVariant {
+    /// Short label of the variant.
+    pub label: &'static str,
+    /// Needs of every accepted or rejected step.
+    pub per_step: CapabilitySet,
+    /// Needs of the starting procedure.
+    pub startup: CapabilitySet,
+    /// Needs of an automatic fallback, if the method has one (none currently do).
+    pub fallback: Option<CapabilitySet>,
+    /// Non-identity mass matrices.
+    pub supports_mass: bool,
+    /// Event location.
+    pub supports_events: bool,
+    /// Continuous (dense) output.
+    pub supports_dense_output: bool,
+}
+
+/// Evidence level of a method; implemented is not qualified.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum MethodQualification {
+    /// Production method of the facade.
+    Production,
+    /// Qualified on calibration problems with recorded failure envelopes (not production).
+    ScopedCalibration,
+    /// Implemented and contract-tested, without method qualification.
+    ImplementedUnqualified,
+    /// Reference implementation used as a comparator only.
+    ReferenceImplementationOnly,
+}
+
+/// How a caller reaches the method.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum MethodAccess {
+    /// May be chosen by [`GeneralOde::select`].
+    GeneralOdeSelectable,
+    /// Only through its explicit API path; never selected automatically.
+    ExplicitApiOnly,
+}
+
+/// Descriptor of one method family in the registry.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct MethodDescriptor {
+    /// Stable method identifier.
+    pub method_id: &'static str,
+    /// Registry entry version.
+    pub version: &'static str,
+    /// Coefficient/tableau identity or citation.
+    pub tableau_identity: &'static str,
+    /// Stages per step.
+    pub stages: usize,
+    /// Formal (variable-step) order.
+    pub order: usize,
+    /// Number of steps of history the step map uses (1: one-step).
+    pub history_steps: usize,
+    /// Starting procedure.
+    pub startup: &'static str,
+    /// Admissible requirement variants, in preference order.
+    pub variants: Vec<RequirementVariant>,
+    /// Evidence level.
+    pub qualification: MethodQualification,
+    /// Access path.
+    pub access: MethodAccess,
+    /// Real exported entry point.
+    pub route: &'static str,
+    /// Where the qualification evidence lives.
+    pub evidence: &'static str,
+}
+
+/// A declarative request; no callbacks are attached.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MethodRequest {
+    /// Permitted capabilities, for every phase including startup and fallback.
+    pub allowed: CapabilitySet,
+    /// A non-identity mass matrix is required.
+    pub needs_mass: bool,
+    /// Event location is required.
+    pub needs_events: bool,
+    /// Continuous output is required.
+    pub needs_dense_output: bool,
+    /// Admit methods that are only implemented or reference implementations.
+    pub admit_unqualified: bool,
+}
+
+/// Phase whose needs exceed the permitted set.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum MethodPhase {
+    /// Per-step work.
+    PerStep,
+    /// Starting procedure.
+    Startup,
+    /// Automatic fallback.
+    Fallback,
+}
+
+/// Why a method was not admitted for a request.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum RegistryRefusal {
+    /// The qualification is below the request's admission level.
+    Unqualified,
+    /// No variant supports a non-identity mass matrix.
+    MassUnsupported,
+    /// No variant supports events.
+    EventsUnsupported,
+    /// No variant supports continuous output.
+    DenseOutputUnsupported,
+    /// No single variant supports the requested combination of features.
+    FeatureCombinationUnsupported,
+    /// A variant needs capabilities outside the permitted set in this phase.
+    Permission {
+        /// Variant label.
+        variant: &'static str,
+        /// Phase that needs more.
+        phase: MethodPhase,
+    },
+}
+
+/// Outcome for one method.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum MethodAdmission {
+    /// Admitted with the first satisfying variant.
+    Admitted {
+        /// Method identifier.
+        method_id: &'static str,
+        /// Variant label.
+        variant: &'static str,
+        /// Evidence level.
+        qualification: MethodQualification,
+        /// Access path.
+        access: MethodAccess,
+    },
+    /// Not admitted, with every reason found.
+    Refused {
+        /// Method identifier.
+        method_id: &'static str,
+        /// Reasons.
+        reasons: Vec<RegistryRefusal>,
+    },
+}
+
+const fn caps(jvp: bool, explicit: bool, fd: bool, dense: bool, newton: bool) -> CapabilitySet {
+    CapabilitySet {
+        provided_jvp: jvp,
+        finite_difference: fd,
+        automatic_differentiation: false,
+        explicit_jacobian: explicit,
+        dense_matrix: dense,
+        newton,
+    }
+}
+
+fn variant(
+    label: &'static str,
+    per_step: CapabilitySet,
+    startup: CapabilitySet,
+    features: (bool, bool, bool),
+) -> RequirementVariant {
+    RequirementVariant {
+        label,
+        per_step,
+        startup,
+        fallback: None,
+        supports_mass: features.0,
+        supports_events: features.1,
+        supports_dense_output: features.2,
+    }
+}
+
+/// Registry of the methods present in this repository.
+pub struct MethodRegistry;
+
+/// Version of the registry entries.
+pub const METHOD_REGISTRY_VERSION: &str = "u06-2026-11-15";
+
+impl MethodRegistry {
+    /// All descriptors. Requirements were read from the implementations: RODAS5P per
+    /// `capabilities.rs`; PPSW1 per `ppsw1.rs`/`ppsw1_linear_backend.rs` (dense J or `n`
+    /// JVP columns, dense starter with simplified Newton); BDF and Radau assemble a dense
+    /// Jacobian (explicit or from `n` JVPs) and run Newton.
+    pub fn descriptors() -> Vec<MethodDescriptor> {
+        let none = CapabilitySet::NONE;
+        let v = METHOD_REGISTRY_VERSION;
+        vec![
+            MethodDescriptor {
+                method_id: "dopri5",
+                version: v,
+                tableau_identity: "Dormand-Prince 5(4), FSAL",
+                stages: 7,
+                order: 5,
+                history_steps: 1,
+                startup: "none",
+                variants: vec![variant("rhs-only", none, none, (false, false, false))],
+                qualification: MethodQualification::Production,
+                access: MethodAccess::GeneralOdeSelectable,
+                route: "vigilode::Dopri5::solve",
+                evidence: "vigilode explicit contracts",
+            },
+            MethodDescriptor {
+                method_id: "rodas5p",
+                version: v,
+                tableau_identity: "RODAS5P, fixtures/rodas5p_coefficients_snapshot.json",
+                stages: 8,
+                order: 5,
+                history_steps: 1,
+                startup: "none",
+                variants: vec![
+                    variant(
+                        "explicit-jacobian-dense",
+                        caps(false, true, false, true, false),
+                        none,
+                        (true, true, true),
+                    ),
+                    variant(
+                        "finite-difference-dense",
+                        caps(false, false, true, true, false),
+                        none,
+                        (true, true, true),
+                    ),
+                    variant(
+                        "jvp-matrix-free",
+                        caps(true, false, false, false, false),
+                        none,
+                        (false, false, false),
+                    ),
+                ],
+                qualification: MethodQualification::Production,
+                access: MethodAccess::GeneralOdeSelectable,
+                route: "vigilode::Rodas5p::solve",
+                evidence: "vigilode facade and capabilities contracts",
+            },
+            MethodDescriptor {
+                method_id: rodas5p_integrators::ppsw1::METHOD_ID,
+                version: v,
+                tableau_identity: "Schmitt-Weiner SINUM 42(1) 2004, method 6b; route-R1 oracle",
+                stages: rodas5p_integrators::ppsw1::STAGES,
+                order: rodas5p_integrators::ppsw1::FORMAL_ORDER,
+                history_steps: 2,
+                startup: "Radau IIA (5 stages) over 2 h0, dense 5n LU, simplified Newton",
+                variants: vec![
+                    variant(
+                        "explicit-jacobian-dense",
+                        caps(false, true, false, true, false),
+                        caps(false, true, false, true, true),
+                        (false, false, false),
+                    ),
+                    variant(
+                        "jvp-columns-dense",
+                        caps(true, false, false, true, false),
+                        caps(true, false, false, true, true),
+                        (false, false, false),
+                    ),
+                ],
+                qualification: MethodQualification::ScopedCalibration,
+                access: MethodAccess::ExplicitApiOnly,
+                route: "rodas5p_integrators::ppsw1::Session",
+                evidence: "research/production_unification_20261115/peer_qualification",
+            },
+            MethodDescriptor {
+                method_id: "ppsw1-6b-matrix-free-common-w",
+                version: v,
+                tableau_identity: "as ppsw1-6b; JVP W = I - gamma h J(t_m, y_m), GMRES",
+                stages: rodas5p_integrators::ppsw1::STAGES,
+                order: rodas5p_integrators::ppsw1::FORMAL_ORDER,
+                history_steps: 2,
+                startup: "dense PPSW1 starter (no matrix-free starter)",
+                variants: vec![
+                    variant(
+                        "jvp-steps-explicit-jacobian-startup",
+                        caps(true, false, false, false, false),
+                        caps(false, true, false, true, true),
+                        (false, false, false),
+                    ),
+                    variant(
+                        "jvp-steps-jvp-columns-startup",
+                        caps(true, false, false, false, false),
+                        caps(true, false, false, true, true),
+                        (false, false, false),
+                    ),
+                ],
+                qualification: MethodQualification::ImplementedUnqualified,
+                access: MethodAccess::ExplicitApiOnly,
+                route: "rodas5p_integrators::ppsw1::linear_backend::LinearBackend",
+                evidence: "research/production_unification_20261115/matrix_free_w",
+            },
+            MethodDescriptor {
+                method_id: "bdf1-bdf2-variable",
+                version: v,
+                tableau_identity: "variable-step BDF1/BDF2 (bdf.rs)",
+                stages: 1,
+                order: 2,
+                history_steps: 2,
+                startup: "BDF1 steps",
+                variants: vec![
+                    variant(
+                        "explicit-jacobian-dense-newton",
+                        caps(false, true, false, true, true),
+                        caps(false, true, false, true, true),
+                        (false, false, false),
+                    ),
+                    variant(
+                        "jvp-columns-dense-newton",
+                        caps(true, false, false, true, true),
+                        caps(true, false, false, true, true),
+                        (false, false, false),
+                    ),
+                ],
+                qualification: MethodQualification::ImplementedUnqualified,
+                access: MethodAccess::ExplicitApiOnly,
+                route: "rodas5p_integrators::integrate_bdf_adaptive_observed",
+                evidence: "crates/rodas5p-integrators/src/bdf.rs contracts",
+            },
+            MethodDescriptor {
+                method_id: "radau-iia3",
+                version: v,
+                tableau_identity: "Radau IIA order 3 (radau.rs)",
+                stages: 2,
+                order: 3,
+                history_steps: 1,
+                startup: "none",
+                variants: vec![
+                    variant(
+                        "explicit-jacobian-dense-newton",
+                        caps(false, true, false, true, true),
+                        none,
+                        (false, false, false),
+                    ),
+                    variant(
+                        "jvp-columns-dense-newton",
+                        caps(true, false, false, true, true),
+                        none,
+                        (false, false, false),
+                    ),
+                ],
+                qualification: MethodQualification::ReferenceImplementationOnly,
+                access: MethodAccess::ExplicitApiOnly,
+                route: "rodas5p_integrators::integrate_radau_adaptive_observed",
+                evidence: "CLI comparator fidelity: reference-implementation-only",
+            },
+        ]
+    }
+
+    /// Admission of every registered method for `request`. Pure.
+    pub fn query(request: &MethodRequest) -> Vec<MethodAdmission> {
+        Self::descriptors()
+            .iter()
+            .map(|d| Self::admit(d, request))
+            .collect()
+    }
+
+    /// Admission of one descriptor. Pure.
+    pub fn admit(d: &MethodDescriptor, request: &MethodRequest) -> MethodAdmission {
+        let mut reasons = Vec::new();
+        let qualified = matches!(
+            d.qualification,
+            MethodQualification::Production | MethodQualification::ScopedCalibration
+        );
+        if !qualified && !request.admit_unqualified {
+            reasons.push(RegistryRefusal::Unqualified);
+        }
+        let feature_ok = |v: &RequirementVariant| {
+            (!request.needs_mass || v.supports_mass)
+                && (!request.needs_events || v.supports_events)
+                && (!request.needs_dense_output || v.supports_dense_output)
+        };
+        if request.needs_mass && !d.variants.iter().any(|v| v.supports_mass) {
+            reasons.push(RegistryRefusal::MassUnsupported);
+        }
+        if request.needs_events && !d.variants.iter().any(|v| v.supports_events) {
+            reasons.push(RegistryRefusal::EventsUnsupported);
+        }
+        if request.needs_dense_output && !d.variants.iter().any(|v| v.supports_dense_output) {
+            reasons.push(RegistryRefusal::DenseOutputUnsupported);
+        }
+        let mut chosen = None;
+        for v in d.variants.iter().filter(|v| feature_ok(v)) {
+            let mut ok = true;
+            for (phase, need) in [
+                (MethodPhase::PerStep, Some(v.per_step)),
+                (MethodPhase::Startup, Some(v.startup)),
+                (MethodPhase::Fallback, v.fallback),
+            ] {
+                if let Some(need) = need
+                    && !need.is_subset_of(&request.allowed)
+                {
+                    ok = false;
+                    reasons.push(RegistryRefusal::Permission {
+                        variant: v.label,
+                        phase,
+                    });
+                }
+            }
+            if ok && chosen.is_none() {
+                chosen = Some(v.label);
+            }
+        }
+        match chosen {
+            Some(label)
+                if reasons
+                    .iter()
+                    .all(|r| matches!(r, RegistryRefusal::Permission { .. })) =>
+            {
+                MethodAdmission::Admitted {
+                    method_id: d.method_id,
+                    variant: label,
+                    qualification: d.qualification,
+                    access: d.access,
+                }
+            }
+            _ => {
+                if reasons.is_empty() {
+                    // each requested feature exists in some variant, but no single variant
+                    // offers the requested combination
+                    reasons.push(RegistryRefusal::FeatureCombinationUnsupported);
+                }
+                MethodAdmission::Refused {
+                    method_id: d.method_id,
+                    reasons,
+                }
+            }
+        }
     }
 }

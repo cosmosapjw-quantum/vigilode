@@ -9,7 +9,8 @@
     "U01_PEER_RHS_PARALLEL",
     "U02_PEER_TRANSACTION_IDENTITY",
     "U05_SEMILINEAR_PARALLEL_SDC",
-    "U03_PEER_INDEPENDENT_QUALIFICATION"
+    "U03_PEER_INDEPENDENT_QUALIFICATION",
+    "U06_UNIFIED_CAPABILITY_REGISTRY"
   ],
   "overall_user_goal": "PARTIAL_CONTINUATION",
   "production_verdict": "HOLD",
@@ -21,7 +22,9 @@
     "crates/rodas5p-integrators/tests/ppsw1_session_boundary_contracts.rs": "11631f2f1e14e813fb241dcfcbe47382de1cba51c1a911e70f0fd2b733b0576a",
     "crates/rodas5p-integrators/tests/ppsw1_independent_qualification.rs": "e5bdcbfc119ef794f3349d84735a62dd8210178dd7bc6d9a8969f61fd847db26",
     "crates/rodas5p-integrators/src/ppsw1_linear_backend.rs": "0b2410895ee6581eecb981c8910e6dbe1b867ce38248495973fe9c763cbd3978",
-    "crates/rodas5p-integrators/tests/ppsw1_linear_backend_contracts.rs": "fbbeeb1a4ca01ca4c2aa80a22cb5638c6e53fe070282adeb0cb914022b96b727"
+    "crates/rodas5p-integrators/tests/ppsw1_linear_backend_contracts.rs": "fbbeeb1a4ca01ca4c2aa80a22cb5638c6e53fe070282adeb0cb914022b96b727",
+    "crates/vigilode/src/selection.rs": "b2203ffa63538a5e9292e254ed64a8b987960f0f2400c1cf24f06c9adade3e16",
+    "crates/vigilode/tests/unified_method_capabilities.rs": "34ec431b49d5ebfebae833d1416a69730f85da4a97fc7aaa9830ec688e6b02c5"
   },
   "protected_blob_sha1": {
     "fixtures/rodas5p_coefficients_snapshot.json": "bc55da4d43549ffbcee3cb25e31be05658507742",
@@ -116,7 +119,18 @@
     "research/production_unification_20261115/matrix_free_w/logs/u04_green.log": "2dc35f19d8b765704cbb60ee68d1359aa3c162b3bd587db7b92decf2b88d120c",
     "research/production_unification_20261115/matrix_free_w/logs/u04_regression.log": "08f84fb410e9fb230347b20e9c8b3854f811869cac7ea8e73fcd8d2de22e729f",
     "research/production_unification_20261115/matrix_free_w/logs/u04_try1.log": "39f9c4cb7f46cd7b7c5f2a5ad3a40f8fbc4aad828b21ca32f46a8ea104918096",
-    "research/production_unification_20261115/matrix_free_w/summarize_u04.py": "52111f57d339fa974acb0c7f9750964b04ad04c6b12ee60ba32e54ce85d4cc2a"
+    "research/production_unification_20261115/matrix_free_w/summarize_u04.py": "52111f57d339fa974acb0c7f9750964b04ad04c6b12ee60ba32e54ce85d4cc2a",
+    "research/production_unification_20261115/capability_registry/CHANGE_CONTRACT.json": "9c3062575757a3a226f0e175332bdba5310c5b493dc21946eea702843643cfd5",
+    "research/production_unification_20261115/capability_registry/DESCRIPTORS.json": "b3c262f90015d540cd70a5b235abe1e118506a964510ef1f7929b04288f19b1e",
+    "research/production_unification_20261115/capability_registry/REPORT_KO.md": "3930db274cb0e2b93a82e7bfcff5485ebc3a48bcede6db11a794d08427db361b",
+    "research/production_unification_20261115/capability_registry/logs/u06_clippy_strict.exit": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061",
+    "research/production_unification_20261115/capability_registry/logs/u06_clippy_strict.log": "b725c1cbd286d247d59ed3f958395b790f4b3c91c29b68ed19207c4de0f6b6bf",
+    "research/production_unification_20261115/capability_registry/logs/u06_fmt.exit": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061",
+    "research/production_unification_20261115/capability_registry/logs/u06_fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "research/production_unification_20261115/capability_registry/logs/u06_green.log": "8689ffb4bd4be93ba73ec686a549d611b6598f91d3f4ae7cf3285ec6043b9218",
+    "research/production_unification_20261115/capability_registry/logs/u06_try1.log": "ae06f85a382345e1a44cd003f8580f5c7c11bdd11b03e2f1d546544067fbeaee",
+    "research/production_unification_20261115/capability_registry/logs/u06_vigilode_suite.exit": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061",
+    "research/production_unification_20261115/capability_registry/logs/u06_vigilode_suite.log": "35b1486d1a5243671f9b074921a17fcd53849a19ae0eed12e52285babeae05ab"
   },
   "checks": {
     "baseline_facade_tests": {
@@ -202,6 +216,18 @@
       "protocol": "paired interleaved, 2 warmups, 7 reps, shared host load 5.5-6.6",
       "receipt": "matrix_free_w/logs/u04_crossover.log",
       "source_note": "timing ran before a boolean-equivalent clippy refactor of MatrixFreeConfig::validate; contracts and regression re-ran on the final bytes"
+    },
+    "u06_registry": {
+      "passed": 6,
+      "failed": 0,
+      "receipt": "capability_registry/logs/u06_green.log"
+    },
+    "vigilode_suite": {
+      "passed": 325,
+      "failed": 0,
+      "strict_clippy": "pass",
+      "fmt": "pass",
+      "receipt": "capability_registry/logs/u06_vigilode_suite.log"
     }
   },
   "remaining_obligations": [
@@ -215,8 +241,9 @@
   ],
   "next_tasks": [
     "U04_COMMON_W_MATRIX_FREE (preconditioner + B1)",
-    "U06_UNIFIED_CAPABILITY_REGISTRY",
-    "U08_STRUCTURE_CERTIFICATES"
+    "U08_STRUCTURE_CERTIFICATES",
+    "U07_TRANSACTIONAL_KERNEL_ADAPTERS",
+    "U09_GEOMETRY_MOL"
   ],
   "backup": {
     "status": "VERIFIED_SUBSTANTIVE_CHECKPOINT",

@@ -57,3 +57,7 @@ Library의 관련 제목 검색은 반환된 페이지 끝까지 조사했다.75
 ## 2026-11-15 후속 3: U04 matrix-free common-W (PARTIAL)
 
 상세는 `matrix_free_w/REPORT_KO.md`다. 기존 JVP 선형화, `ShiftedOperator`, production GMRES/block GMRES를 재사용해 PPSW1 stage 선형계의 opt-in matrix-free backend를 만들었다. dense와의 차이는 ≤4.3e-14이고, 원 잔차를 직접 재검사하며, 실패는 typed error로 반환하고 작업량을 계수한다. 권한 거부(JVP 없음, starter dense/Newton 금지)는 callback 전에 일어난다. 잔차→step 오차 예산 가드(선형 rtol ≤ 1e-2·step rtol)를 넣었다. Fisher MOL에서 paired interleaved timing을 측정했고, n ≤ 400에서 **crossover가 없었다**(최선 0.85배). n=800에서는 preconditioner가 없어 GMRES가 실패했다. restart 10에서 가드를 통과해도 controller 거동이 바뀌는 문제(B1)가 열려 있다. per-step만 matrix-free/Newton-free이고 전체 실행은 아니다. production HOLD.
+
+## 2026-11-16 후속 4: U06 capability registry (COMPLETE_SCOPED)
+
+`capability_registry/REPORT_KO.md`. `selection.rs`에 순수 registry를 추가했다(독립 권한 집합, 단계별 per-step/startup/fallback 요구, 자격과 접근 경로, 실제 export route). 1024 조합 독립 표 일치, callback 0회, serde 엄격성, route 컴파일 확인. vigilode 전체 325 통과, strict clippy 통과. 기본 라우팅은 바꾸지 않았다.

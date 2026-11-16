@@ -33,6 +33,9 @@ U03은 COMPLETE_SCOPED다(선형+비선형 calibration, 독립 계수 경로, �
 U04 상태(2026-11-15 후속 3)
 U04는 PARTIAL이다. ppsw1::linear_backend(재사용 부품, 원 잔차 검사, 권한 거부, 예산 가드 1e-2)와 계약 테스트가 있다. Fisher MOL n≤400에서 crossover 없음, n=800에서는 unpreconditioned 실패. 권위: research/production_unification_20261115/matrix_free_w/REPORT_KO.md, RESULTS.json, BUDGET_KO.md. 속도 주장 금지.
 
+U06 상태(2026-11-16)
+U06은 COMPLETE_SCOPED다. vigilode::{CapabilitySet, MethodRegistry, MethodRequest, MethodDescriptor}가 selection.rs에 있다(lib.rs 무변경). 권위: research/production_unification_20261115/capability_registry/REPORT_KO.md. U07 adapter는 이 registry를 소비해야 한다.
+
 다음 실행
 TASK_CONTRACTS의 status/dependencies를 확인한다. U03은 scoped 완료다. 다음은 U04 잔여(preconditioner, B1 예산 일반화, CPU/RSS), U06 capability registry, U08 구조 이식이다. 다점 출력 interpolant, paired timing, RSS는 U11에서 다룬다. U06 순수 capability registry와 U08 구조 이식은 독립 진행할 수 있다. U04 matrix-free common-W, U07 frontend adapters, U09 geometry, U10 novelty/error-transfer, U11 holdout은 DAG를 따른다. U 노드는 기존 T 목표를 구체화한다. U scoped 완료만으로 T/G0를 완료로 올리지 않는다.
 

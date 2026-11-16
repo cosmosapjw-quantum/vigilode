@@ -286,7 +286,7 @@
     {
       "id": "U06_UNIFIED_CAPABILITY_REGISTRY",
       "depends": [],
-      "status": "PLANNED",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Extend existing vigilode facade with truthful explicit method capabilities.",
       "write_allowlist": [
         "crates/vigilode/src/capabilities.rs",
@@ -318,7 +318,15 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_unification_20261115/capability_registry/REPORT_KO.md",
+        "research/production_unification_20261115/capability_registry/CHANGE_CONTRACT.json",
+        "research/production_unification_20261115/capability_registry/DESCRIPTORS.json",
+        "research/production_unification_20261115/capability_registry/logs/u06_green.log",
+        "research/production_unification_20261115/capability_registry/logs/u06_vigilode_suite.log",
+        "research/production_unification_20261115/capability_registry/logs/u06_clippy_strict.log"
+      ],
+      "scope_completed": "Pure registry and contracts; no routing change; descriptors are declarations, not accuracy certificates."
     },
     {
       "id": "U07_TRANSACTIONAL_KERNEL_ADAPTERS",

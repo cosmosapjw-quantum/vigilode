@@ -1,0 +1,47 @@
+{
+  "schema": "vigilode.change-contract.v1",
+  "task": "U06_UNIFIED_CAPABILITY_REGISTRY",
+  "date_kst": "2026-11-15",
+  "base_commit": "569e491d224e2f09db5fb19aff54f1a23cf86b96",
+  "recorded_before_mutation": true,
+  "write_allowlist": [
+    "crates/vigilode/src/selection.rs",
+    "crates/vigilode/tests/unified_method_capabilities.rs",
+    "research/production_unification_20261115/capability_registry/**",
+    "research/production_unification_20261115/CHECKPOINT.json",
+    "research/production_unification_20261115/REPORT_KO.md",
+    "docs/agent/production_solver_program_20261112/**"
+  ],
+  "not_edited": [
+    "crates/vigilode/src/lib.rs (checkpoint-protected; selection.rs is already glob-exported)",
+    "crates/vigilode/src/capabilities.rs (existing Rodas5p::capabilities unchanged)",
+    "GeneralOde::select routing (default router unchanged)"
+  ],
+  "design": [
+    "Append a pure registry to selection.rs: CapabilitySet (provided_jvp, finite_difference, automatic_differentiation, explicit_jacobian, dense_matrix, newton) used both as permissions and as per-phase requirements",
+    "MethodDescriptor with method id/version/tableau identity, history steps, startup description, requirement variants (per_step, startup, optional fallback; per-variant mass/events/dense-output support), qualification (Production, ScopedCalibration, ImplementedUnqualified, ReferenceImplementationOnly), access (GeneralOdeSelectable vs ExplicitApiOnly), route string naming a real export",
+    "MethodRegistry::query(&MethodRequest) is pure: admitted iff some variant has per_step, startup and fallback subsets of the allowed set and supports the requested features, and the qualification is Production or ScopedCalibration unless admit_unqualified; refusals list typed reasons",
+    "CapabilitySet::from_problem_and_policy maps the existing Problem Jacobian variant and GeneralOdePolicy (DerivativeFallback, max_dense_dimension) without callbacks; Newton is never implied (fail closed)",
+    "MethodRequest/CapabilitySet are serde with deny_unknown_fields and no defaults: unknown and missing fields are refused"
+  ],
+  "descriptors_verified_against_code": {
+    "dopri5": "vigilode::Dopri5::solve",
+    "rodas5p": "vigilode::Rodas5p::solve (dense, banded, FD, JVP routes per capabilities.rs)",
+    "ppsw1-6b dense": "rodas5p_integrators::ppsw1::Session (dense J or n JVP columns, dense LU; starter dense 5n LU + simplified Newton)",
+    "ppsw1-6b matrix-free": "rodas5p_integrators::ppsw1::linear_backend (U04 PARTIAL)",
+    "bdf": "rodas5p_integrators::integrate_bdf_adaptive_observed (dense_jacobian + Newton)",
+    "radau-iia3": "rodas5p_integrators::integrate_radau_adaptive_observed (dense_jacobian, LU, Newton; reference-implementation-only per CLI comparator fidelity)"
+  },
+  "acceptance": [
+    "exhaustive 2^6 permissions x 2^3 features x admit flag against an independent table",
+    "zero callbacks during request construction and query",
+    "serde round trip, unknown and missing field refusal",
+    "every route string resolves to a compiled export in the test",
+    "Peer mass/events refused before work",
+    "existing vigilode capability/selection contracts unchanged"
+  ],
+  "non_goals": [
+    "no default routing change",
+    "no activation of unqualified methods in GeneralOde"
+  ]
+}
