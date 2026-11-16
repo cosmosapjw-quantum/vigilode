@@ -1,0 +1,2997 @@
+{
+ "schema": "vigilode.loop_l1.v15_client_kit_receipt.v1",
+ "node": "V15_STAGE_CLIENT_KIT",
+ "generated_by": "research/production_loop_20261116/client_kit/make_receipt.py",
+ "generated_utc": "2026-11-16T08:28:12Z",
+ "evidence_policy": "Every number is parsed from the logs of this run. Wall time is diagnostic_only on this shared host; bit identity, work counters, allocation counts and user-space instruction counts are primary.",
+ "environment": {
+  "worktree": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+  "branch": "research/production-loop-20261116-v15",
+  "code_commit": "292690ff29d0f873cbc0272d3c598716d63b55d0",
+  "base_commit": "2dc9a2c5778ac5b3ac960b0f6741aa5916122384",
+  "base_is_ancestor_of_head_exit_code": 0,
+  "code_files_uncommitted_changes": "",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "cargo": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+  "cargo_target_dir": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15",
+  "uname": "Linux 7.0.0-43-generic x86_64",
+  "logical_cpus": 24,
+  "loadavg_start": [
+   34.13,
+   33.93,
+   28.09
+  ],
+  "loadavg_end": [
+   36.74,
+   34.55,
+   28.89
+  ]
+ },
+ "code_files": [
+  {
+   "path": "crates/rodas5p-integrators/src/stage_clients/mod.rs",
+   "sha256": "1ea3034c1e77e24daea7cfe0547e44dd027b79287e37c03756ea693a2396ca4d"
+  },
+  {
+   "path": "crates/rodas5p-integrators/src/stage_clients/dense_lu.rs",
+   "sha256": "e38ac77f206911b3a89d95fbd111d0bbc3976d435591b3f963ae2fed449f4568"
+  },
+  {
+   "path": "crates/rodas5p-integrators/src/stage_clients/timed.rs",
+   "sha256": "bfe575492d5e4f9fa9e83f6f38cb005e7ceec0a95b085218aa15c38e91f2554c"
+  },
+  {
+   "path": "crates/rodas5p-integrators/tests/stage_clients_dense_identity.rs",
+   "sha256": "7769e739736f67690bd38b6e5d1e01e29bdc97e29a5bf3ed91292376fad2ad74"
+  },
+  {
+   "path": "crates/rodas5p-integrators/tests/stage_clients_alloc.rs",
+   "sha256": "4f23f72ed4ed763dd2c892d9567c4e368a4812bb72293113a8b61e25daa12036"
+  }
+ ],
+ "protected_files_changed_vs_base": [],
+ "commands": [
+  {
+   "name": "01_test",
+   "command": "cargo +1.94.1 test --locked -j 6 --release -p rodas5p-integrators --test stage_clients_dense_identity --test stage_clients_alloc",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/01_test.log",
+   "log_sha256": "230b87e1afb432440b4ae5ab9290efcd771335d6b1608df7ac5ca89f14e974be",
+   "wall_seconds_diagnostic_only": 2.068,
+   "loadavg_before": [
+    34.13,
+    33.93,
+    28.09
+   ],
+   "loadavg_after": [
+    34.13,
+    33.93,
+    28.09
+   ],
+   "test_results": [
+    {
+     "target": "tests/stage_clients_alloc.rs",
+     "status": "ok",
+     "passed": 1,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "target": "tests/stage_clients_dense_identity.rs",
+     "status": "ok",
+     "passed": 8,
+     "failed": 0,
+     "ignored": 2,
+     "filtered_out": 0
+    }
+   ]
+  },
+  {
+   "name": "02_test_nocapture",
+   "command": "cargo +1.94.1 test --locked -j 6 --release -p rodas5p-integrators --test stage_clients_dense_identity --test stage_clients_alloc -- --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/02_test_nocapture.log",
+   "log_sha256": "d1b057bb39cbb62cd461f806d7cd5964964e97e7d024de03f529b9b44e7c084a",
+   "wall_seconds_diagnostic_only": 2.786,
+   "loadavg_before": [
+    34.13,
+    33.93,
+    28.09
+   ],
+   "loadavg_after": [
+    34.04,
+    33.91,
+    28.12
+   ],
+   "test_results": [
+    {
+     "target": "tests/stage_clients_alloc.rs",
+     "status": "ok",
+     "passed": 1,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "target": "tests/stage_clients_dense_identity.rs",
+     "status": "ok",
+     "passed": 8,
+     "failed": 0,
+     "ignored": 2,
+     "filtered_out": 0
+    }
+   ]
+  },
+  {
+   "name": "03_wall_diagnostic",
+   "command": "cargo +1.94.1 test --locked -j 6 --release -p rodas5p-integrators --test stage_clients_dense_identity -- --ignored --exact diagnostic_wall_ratio_client_over_protected --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/03_wall_diagnostic.log",
+   "log_sha256": "e933bff5685b0aef52134ea04ad574f104d40a22900efc1f2248596fbc503687",
+   "wall_seconds_diagnostic_only": 12.773,
+   "loadavg_before": [
+    34.04,
+    33.91,
+    28.12
+   ],
+   "loadavg_after": [
+    34.64,
+    34.05,
+    28.23
+   ],
+   "test_results": [
+    {
+     "target": "tests/stage_clients_dense_identity.rs",
+     "status": "ok",
+     "passed": 1,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 9
+    }
+   ]
+  },
+  {
+   "name": "04_test_binary_path",
+   "command": "cargo +1.94.1 test --locked -j 6 --release -p rodas5p-integrators --test stage_clients_dense_identity --no-run",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_test_binary_path.log",
+   "log_sha256": "7cfa06eaeb0c077e26cbbee161b6c658c50ee6a865a222e3998859e89d5d3777",
+   "wall_seconds_diagnostic_only": 0.188,
+   "loadavg_before": [
+    34.64,
+    34.05,
+    28.23
+   ],
+   "loadavg_after": [
+    34.64,
+    34.05,
+    28.23
+   ]
+  },
+  {
+   "name": "04_perf_brusselator-n32_protected_runs0",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n32_protected_runs0.log",
+   "log_sha256": "45d2f8c7f9b5d40700d06cb53ee4dbc50f3e48adc3912edddc8fe2999a9cb9c1",
+   "wall_seconds_diagnostic_only": 0.072,
+   "loadavg_before": [
+    34.64,
+    34.05,
+    28.23
+   ],
+   "loadavg_after": [
+    34.64,
+    34.05,
+    28.23
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "protected",
+    "STAGE_CLIENTS_CASE": "brusselator-n32",
+    "STAGE_CLIENTS_RUNS": "0"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n32_protected_runs20_r0",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n32_protected_runs20_r0.log",
+   "log_sha256": "dd773722a8456dbeb72882b229f64f13dacdbf15c2dad7c733899e020b4a1eb8",
+   "wall_seconds_diagnostic_only": 0.225,
+   "loadavg_before": [
+    34.64,
+    34.05,
+    28.23
+   ],
+   "loadavg_after": [
+    34.64,
+    34.05,
+    28.23
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "protected",
+    "STAGE_CLIENTS_CASE": "brusselator-n32",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n32_protected_runs20_r1",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n32_protected_runs20_r1.log",
+   "log_sha256": "c11cc0627fe6592d81bcd87e8ffde83d8656c3cb81bc59f06031103dc5e82eda",
+   "wall_seconds_diagnostic_only": 0.167,
+   "loadavg_before": [
+    34.64,
+    34.05,
+    28.23
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "protected",
+    "STAGE_CLIENTS_CASE": "brusselator-n32",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n32_protected_runs20_r2",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n32_protected_runs20_r2.log",
+   "log_sha256": "59e4124da4113c2a1f5107cc28e4ae9f796965440b002491951e721923ee8802",
+   "wall_seconds_diagnostic_only": 0.164,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "protected",
+    "STAGE_CLIENTS_CASE": "brusselator-n32",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n32_client_runs0",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n32_client_runs0.log",
+   "log_sha256": "44f657e323f152d8804e3d1ea9605c7a9dcb169b05bb344f43dc068498da56e7",
+   "wall_seconds_diagnostic_only": 0.07,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "client",
+    "STAGE_CLIENTS_CASE": "brusselator-n32",
+    "STAGE_CLIENTS_RUNS": "0"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n32_client_runs20_r0",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n32_client_runs20_r0.log",
+   "log_sha256": "a8940a8349b013da498baa29e95adaeef641f9922206226f93f451f24cf53aec",
+   "wall_seconds_diagnostic_only": 0.166,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "client",
+    "STAGE_CLIENTS_CASE": "brusselator-n32",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n32_client_runs20_r1",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n32_client_runs20_r1.log",
+   "log_sha256": "8321431eeb4a5d72784d808ab3164d6c056e4c8fa4d628dc1ae401823763f891",
+   "wall_seconds_diagnostic_only": 0.157,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "client",
+    "STAGE_CLIENTS_CASE": "brusselator-n32",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n32_client_runs20_r2",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n32_client_runs20_r2.log",
+   "log_sha256": "3e466ca070277fd4bb06fb77ffccd71542d62e4203a1fc995805e5898bd6b0f8",
+   "wall_seconds_diagnostic_only": 0.161,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "client",
+    "STAGE_CLIENTS_CASE": "brusselator-n32",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n32_timed_runs0",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n32_timed_runs0.log",
+   "log_sha256": "f98fe6d289f2f7a9be85b0d5dbbf3ddbc1ac8102b99fb2c2e056d74f0672132f",
+   "wall_seconds_diagnostic_only": 0.116,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "timed",
+    "STAGE_CLIENTS_CASE": "brusselator-n32",
+    "STAGE_CLIENTS_RUNS": "0"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n32_timed_runs20_r0",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n32_timed_runs20_r0.log",
+   "log_sha256": "416a3cc0f33be80de008bd8886e181bb868f5f0b003b34f4edead8aed15731cd",
+   "wall_seconds_diagnostic_only": 0.226,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "timed",
+    "STAGE_CLIENTS_CASE": "brusselator-n32",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n32_timed_runs20_r1",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n32_timed_runs20_r1.log",
+   "log_sha256": "26baf044a6e0c56970603045681b2f52d1de0db7a9b9af2ab6a81d0aa7e96168",
+   "wall_seconds_diagnostic_only": 0.17,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "timed",
+    "STAGE_CLIENTS_CASE": "brusselator-n32",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n32_timed_runs20_r2",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n32_timed_runs20_r2.log",
+   "log_sha256": "8ceadd12635c289a2d48bb7fefa8db9f7d97cf36d825ecc55ce0516549054173",
+   "wall_seconds_diagnostic_only": 0.169,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "timed",
+    "STAGE_CLIENTS_CASE": "brusselator-n32",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n100_protected_runs0",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n100_protected_runs0.log",
+   "log_sha256": "f71f7583b8d092c18096ca3586e820ad894cd8847b78295f5b2f0e249d139b42",
+   "wall_seconds_diagnostic_only": 0.085,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "protected",
+    "STAGE_CLIENTS_CASE": "brusselator-n100",
+    "STAGE_CLIENTS_RUNS": "0"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n100_protected_runs20_r0",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n100_protected_runs20_r0.log",
+   "log_sha256": "2ad073b71cf68ce25bcbd8f80a3c6f08a9c43751a810a0df38fc75839e72ca0c",
+   "wall_seconds_diagnostic_only": 0.413,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "protected",
+    "STAGE_CLIENTS_CASE": "brusselator-n100",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n100_protected_runs20_r1",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n100_protected_runs20_r1.log",
+   "log_sha256": "884e97a3a1657ab4916ff26759dd06e1b2d628cc17c471e4532cac9860fb7468",
+   "wall_seconds_diagnostic_only": 0.526,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "protected",
+    "STAGE_CLIENTS_CASE": "brusselator-n100",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n100_protected_runs20_r2",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n100_protected_runs20_r2.log",
+   "log_sha256": "832e60b185381f95faa716e0038f7701cd72bd446e461b1e7f6c285c4fb75c92",
+   "wall_seconds_diagnostic_only": 0.5,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "protected",
+    "STAGE_CLIENTS_CASE": "brusselator-n100",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n100_client_runs0",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n100_client_runs0.log",
+   "log_sha256": "6ef57d959ec8743a12c08b48b489a5913f0c8ae5e4b1122bb32707ae33c5c494",
+   "wall_seconds_diagnostic_only": 0.089,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "client",
+    "STAGE_CLIENTS_CASE": "brusselator-n100",
+    "STAGE_CLIENTS_RUNS": "0"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n100_client_runs20_r0",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n100_client_runs20_r0.log",
+   "log_sha256": "798daae4264beb6770ce4ff9799653fc02203654f8804596ba8c416d336ce627",
+   "wall_seconds_diagnostic_only": 0.313,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "client",
+    "STAGE_CLIENTS_CASE": "brusselator-n100",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n100_client_runs20_r1",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n100_client_runs20_r1.log",
+   "log_sha256": "1e749ba1b740190721428a2f0b27879c673fd80815f72548a545210e2ea3e2de",
+   "wall_seconds_diagnostic_only": 0.34,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "client",
+    "STAGE_CLIENTS_CASE": "brusselator-n100",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n100_client_runs20_r2",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n100_client_runs20_r2.log",
+   "log_sha256": "894bd3a60eb3c0d7bf4f891fd495be0202b7a2ad7bf2806f6aff83ec2607f519",
+   "wall_seconds_diagnostic_only": 0.426,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "client",
+    "STAGE_CLIENTS_CASE": "brusselator-n100",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n100_timed_runs0",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n100_timed_runs0.log",
+   "log_sha256": "2892703202509be2f222fa6cdde5c46980f78e2984536559d13cedd548daf306",
+   "wall_seconds_diagnostic_only": 0.1,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "timed",
+    "STAGE_CLIENTS_CASE": "brusselator-n100",
+    "STAGE_CLIENTS_RUNS": "0"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n100_timed_runs20_r0",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n100_timed_runs20_r0.log",
+   "log_sha256": "77b691b80e7a093335146d53bb5374a1248536e4609d64f5f0f25fd29daebb08",
+   "wall_seconds_diagnostic_only": 0.334,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "timed",
+    "STAGE_CLIENTS_CASE": "brusselator-n100",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n100_timed_runs20_r1",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n100_timed_runs20_r1.log",
+   "log_sha256": "623685a9d9826b2ed5ed0daa539f0402c5f6693a23bc92bca6f35fe4e12c5104",
+   "wall_seconds_diagnostic_only": 0.361,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "timed",
+    "STAGE_CLIENTS_CASE": "brusselator-n100",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_brusselator-n100_timed_runs20_r2",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_brusselator-n100_timed_runs20_r2.log",
+   "log_sha256": "d672e47599fd4664350bd2290ba553f44bc6499a56893d930a4cfa641ef859e1",
+   "wall_seconds_diagnostic_only": 0.401,
+   "loadavg_before": [
+    34.75,
+    34.08,
+    28.27
+   ],
+   "loadavg_after": [
+    34.13,
+    33.96,
+    28.26
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "timed",
+    "STAGE_CLIENTS_CASE": "brusselator-n100",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_meanfield-n100_protected_runs0",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_meanfield-n100_protected_runs0.log",
+   "log_sha256": "d0fa455ffec1cddcd2fee39e673f3161c021904d1ca9af5817b63b5492e17a5e",
+   "wall_seconds_diagnostic_only": 0.08,
+   "loadavg_before": [
+    34.13,
+    33.96,
+    28.26
+   ],
+   "loadavg_after": [
+    34.13,
+    33.96,
+    28.26
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "protected",
+    "STAGE_CLIENTS_CASE": "meanfield-n100",
+    "STAGE_CLIENTS_RUNS": "0"
+   }
+  },
+  {
+   "name": "04_perf_meanfield-n100_protected_runs20_r0",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_meanfield-n100_protected_runs20_r0.log",
+   "log_sha256": "00700231cb97103e38a2eae90df932979bf8e7c140fcd7e77e3999b6b9135079",
+   "wall_seconds_diagnostic_only": 2.037,
+   "loadavg_before": [
+    34.13,
+    33.96,
+    28.26
+   ],
+   "loadavg_after": [
+    34.13,
+    33.96,
+    28.26
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "protected",
+    "STAGE_CLIENTS_CASE": "meanfield-n100",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_meanfield-n100_protected_runs20_r1",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_meanfield-n100_protected_runs20_r1.log",
+   "log_sha256": "30825090f8f1daa9c7ba2335bf5a8426fffc083d830f0b23111e3dfd0c7fa942",
+   "wall_seconds_diagnostic_only": 2.979,
+   "loadavg_before": [
+    34.13,
+    33.96,
+    28.26
+   ],
+   "loadavg_after": [
+    33.88,
+    33.91,
+    28.28
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "protected",
+    "STAGE_CLIENTS_CASE": "meanfield-n100",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_meanfield-n100_protected_runs20_r2",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_meanfield-n100_protected_runs20_r2.log",
+   "log_sha256": "a41fe469e5cb46503d7380560a5d54feae0dbbecc29365fdd9d0df9b985a3385",
+   "wall_seconds_diagnostic_only": 2.43,
+   "loadavg_before": [
+    33.88,
+    33.91,
+    28.28
+   ],
+   "loadavg_after": [
+    33.88,
+    33.91,
+    28.28
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "protected",
+    "STAGE_CLIENTS_CASE": "meanfield-n100",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_meanfield-n100_client_runs0",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_meanfield-n100_client_runs0.log",
+   "log_sha256": "a8d078555548bc9fad674accd3557e31f2b6f623beaf3a44d04a10dc6a5cf9ee",
+   "wall_seconds_diagnostic_only": 0.123,
+   "loadavg_before": [
+    33.88,
+    33.91,
+    28.28
+   ],
+   "loadavg_after": [
+    33.88,
+    33.91,
+    28.28
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "client",
+    "STAGE_CLIENTS_CASE": "meanfield-n100",
+    "STAGE_CLIENTS_RUNS": "0"
+   }
+  },
+  {
+   "name": "04_perf_meanfield-n100_client_runs20_r0",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_meanfield-n100_client_runs20_r0.log",
+   "log_sha256": "4f7c53c32a42f5d9cf66e19ca2696c6d2b0d5f2449e26cff213e4dfd36c5e449",
+   "wall_seconds_diagnostic_only": 1.925,
+   "loadavg_before": [
+    33.88,
+    33.91,
+    28.28
+   ],
+   "loadavg_after": [
+    33.88,
+    33.91,
+    28.28
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "client",
+    "STAGE_CLIENTS_CASE": "meanfield-n100",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_meanfield-n100_client_runs20_r1",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_meanfield-n100_client_runs20_r1.log",
+   "log_sha256": "f6b875950f0d5d602d53f04b207c6a1a9cf462b292c7eb11e534666351c3cf62",
+   "wall_seconds_diagnostic_only": 1.749,
+   "loadavg_before": [
+    33.88,
+    33.91,
+    28.28
+   ],
+   "loadavg_after": [
+    32.93,
+    33.72,
+    28.24
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "client",
+    "STAGE_CLIENTS_CASE": "meanfield-n100",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_meanfield-n100_client_runs20_r2",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_meanfield-n100_client_runs20_r2.log",
+   "log_sha256": "84bdc4b09bdf45cf6e92c584f1ef93df3fa17da308c6a527bdfac2370e5ec7b5",
+   "wall_seconds_diagnostic_only": 1.589,
+   "loadavg_before": [
+    32.93,
+    33.72,
+    28.24
+   ],
+   "loadavg_after": [
+    32.93,
+    33.72,
+    28.24
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "client",
+    "STAGE_CLIENTS_CASE": "meanfield-n100",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_meanfield-n100_timed_runs0",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_meanfield-n100_timed_runs0.log",
+   "log_sha256": "abeb85961b95f98ee3a8f618f4584bd0008c9d5fedfc955e1551446fcb11de1f",
+   "wall_seconds_diagnostic_only": 0.104,
+   "loadavg_before": [
+    32.93,
+    33.72,
+    28.24
+   ],
+   "loadavg_after": [
+    32.93,
+    33.72,
+    28.24
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "timed",
+    "STAGE_CLIENTS_CASE": "meanfield-n100",
+    "STAGE_CLIENTS_RUNS": "0"
+   }
+  },
+  {
+   "name": "04_perf_meanfield-n100_timed_runs20_r0",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_meanfield-n100_timed_runs20_r0.log",
+   "log_sha256": "6f124d0cd0e180703023779f570ef427b5e3fe06afa512e8d10600b7fe4f1ffd",
+   "wall_seconds_diagnostic_only": 2.08,
+   "loadavg_before": [
+    32.93,
+    33.72,
+    28.24
+   ],
+   "loadavg_after": [
+    34.05,
+    33.94,
+    28.34
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "timed",
+    "STAGE_CLIENTS_CASE": "meanfield-n100",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_meanfield-n100_timed_runs20_r1",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_meanfield-n100_timed_runs20_r1.log",
+   "log_sha256": "c9ba9d754f508c5c9d18ad33f706a15b2cd0d655f0fa17dfbff0ff24c665a8b1",
+   "wall_seconds_diagnostic_only": 1.935,
+   "loadavg_before": [
+    34.05,
+    33.94,
+    28.34
+   ],
+   "loadavg_after": [
+    34.05,
+    33.94,
+    28.34
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "timed",
+    "STAGE_CLIENTS_CASE": "meanfield-n100",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "04_perf_meanfield-n100_timed_runs20_r2",
+   "command": "/usr/bin/perf stat -x, -e instructions:u /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a --ignored --exact diagnostic_single_arm_for_instruction_count --nocapture --test-threads=1",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/04_perf_meanfield-n100_timed_runs20_r2.log",
+   "log_sha256": "35928967cd17a41bfa027c3fead893a4a15841d3f00829056e1ec7e8b8e198e2",
+   "wall_seconds_diagnostic_only": 2.277,
+   "loadavg_before": [
+    34.05,
+    33.94,
+    28.34
+   ],
+   "loadavg_after": [
+    34.05,
+    33.94,
+    28.34
+   ],
+   "env": {
+    "STAGE_CLIENTS_ARM": "timed",
+    "STAGE_CLIENTS_CASE": "meanfield-n100",
+    "STAGE_CLIENTS_RUNS": "20"
+   }
+  },
+  {
+   "name": "05_clippy",
+   "command": "cargo +1.94.1 clippy --locked -j 6 --release -p rodas5p-integrators --lib --test stage_clients_dense_identity --test stage_clients_alloc --no-deps",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/05_clippy.log",
+   "log_sha256": "987f749e6eb0e1651ebf9c9ce1909b2396fd1c97c1a81c31eeb3e5d44794236c",
+   "wall_seconds_diagnostic_only": 56.88,
+   "loadavg_before": [
+    34.05,
+    33.94,
+    28.34
+   ],
+   "loadavg_after": [
+    36.74,
+    34.55,
+    28.89
+   ]
+  },
+  {
+   "name": "06_rustfmt_check",
+   "command": "rustfmt +1.94.1 --check --edition 2024 crates/rodas5p-integrators/src/stage_clients/mod.rs crates/rodas5p-integrators/src/stage_clients/dense_lu.rs crates/rodas5p-integrators/src/stage_clients/timed.rs crates/rodas5p-integrators/tests/stage_clients_dense_identity.rs crates/rodas5p-integrators/tests/stage_clients_alloc.rs",
+   "cwd": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15",
+   "exit_code": 0,
+   "log": "logs/06_rustfmt_check.log",
+   "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "wall_seconds_diagnostic_only": 0.101,
+   "loadavg_before": [
+    36.74,
+    34.55,
+    28.89
+   ],
+   "loadavg_after": [
+    36.74,
+    34.55,
+    28.89
+   ]
+  }
+ ],
+ "tests": {
+  "exit_code": 0,
+  "per_target": [
+   {
+    "target": "tests/stage_clients_alloc.rs",
+    "status": "ok",
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "filtered_out": 0
+   },
+   {
+    "target": "tests/stage_clients_dense_identity.rs",
+    "status": "ok",
+    "passed": 8,
+    "failed": 0,
+    "ignored": 2,
+    "filtered_out": 0
+   }
+  ],
+  "passed": 9,
+  "failed": 0,
+  "ignored": 2
+ },
+ "bit_identity": {
+  "reference": "integrate_rodas5p_fast_observed_with_atol (default options)",
+  "client_entry": "integrate_rodas5p_fast_client_observed_with_atol[_and_control]",
+  "compared": "attempts, accepted and rejected steps, Jacobian reuses, internal and clipped steps, the whole WorkCounters, every output time and state, every accepted (t, y) (Jacobian-callback trace of both drivers and the client driver's accept control), all as f64 bits",
+  "source_exit_code": 0,
+  "rows": [
+   {
+    "accepted_states_compared": 48,
+    "accepted_steps": 47,
+    "accepted_trajectory_fnv1a64": "ef507e470cd82b1a",
+    "atol": 0.0001,
+    "attempts": 55,
+    "bit_identical": true,
+    "case": "brusselator-1d-100 (n = 200)",
+    "client_mode": "InPlace",
+    "direct_factorizations": 55,
+    "direct_solve_calls": 440,
+    "jacobian_builds": 47,
+    "jacobian_reuses": 8,
+    "linear_solves": 440,
+    "n": 200,
+    "output_states_compared": 11,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rejected_steps": 8,
+    "rhs_calls": 432,
+    "rtol": 0.0001
+   },
+   {
+    "accepted_states_compared": 88,
+    "accepted_steps": 87,
+    "accepted_trajectory_fnv1a64": "67e6cec588ae2489",
+    "atol": 1e-06,
+    "attempts": 97,
+    "bit_identical": true,
+    "case": "brusselator-1d-100 (n = 200)",
+    "client_mode": "InPlace",
+    "direct_factorizations": 97,
+    "direct_solve_calls": 776,
+    "jacobian_builds": 87,
+    "jacobian_reuses": 10,
+    "linear_solves": 776,
+    "n": 200,
+    "output_states_compared": 11,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rejected_steps": 10,
+    "rhs_calls": 766,
+    "rtol": 1e-06
+   },
+   {
+    "accepted_states_compared": 196,
+    "accepted_steps": 195,
+    "accepted_trajectory_fnv1a64": "5f13ffdad9d3daa9",
+    "atol": 1e-08,
+    "attempts": 198,
+    "bit_identical": true,
+    "case": "brusselator-1d-100 (n = 200)",
+    "client_mode": "InPlace",
+    "direct_factorizations": 198,
+    "direct_solve_calls": 1584,
+    "jacobian_builds": 195,
+    "jacobian_reuses": 3,
+    "linear_solves": 1584,
+    "n": 200,
+    "output_states_compared": 11,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rejected_steps": 3,
+    "rhs_calls": 1581,
+    "rtol": 1e-08
+   },
+   {
+    "accepted_states_compared": 48,
+    "accepted_steps": 47,
+    "accepted_trajectory_fnv1a64": "20756323461ae6b7",
+    "atol": 0.0001,
+    "attempts": 55,
+    "bit_identical": true,
+    "case": "brusselator-1d-32 (n = 64)",
+    "client_mode": "InPlace",
+    "direct_factorizations": 55,
+    "direct_solve_calls": 440,
+    "jacobian_builds": 47,
+    "jacobian_reuses": 8,
+    "linear_solves": 440,
+    "n": 64,
+    "output_states_compared": 11,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rejected_steps": 8,
+    "rhs_calls": 432,
+    "rtol": 0.0001
+   },
+   {
+    "accepted_states_compared": 88,
+    "accepted_steps": 87,
+    "accepted_trajectory_fnv1a64": "6343cb44172568ae",
+    "atol": 1e-06,
+    "attempts": 98,
+    "bit_identical": true,
+    "case": "brusselator-1d-32 (n = 64)",
+    "client_mode": "InPlace",
+    "direct_factorizations": 98,
+    "direct_solve_calls": 784,
+    "jacobian_builds": 87,
+    "jacobian_reuses": 11,
+    "linear_solves": 784,
+    "n": 64,
+    "output_states_compared": 11,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rejected_steps": 11,
+    "rhs_calls": 773,
+    "rtol": 1e-06
+   },
+   {
+    "accepted_states_compared": 196,
+    "accepted_steps": 195,
+    "accepted_trajectory_fnv1a64": "f62f1e61c1f92e12",
+    "atol": 1e-08,
+    "attempts": 198,
+    "bit_identical": true,
+    "case": "brusselator-1d-32 (n = 64)",
+    "client_mode": "InPlace",
+    "direct_factorizations": 198,
+    "direct_solve_calls": 1584,
+    "jacobian_builds": 195,
+    "jacobian_reuses": 3,
+    "linear_solves": 1584,
+    "n": 64,
+    "output_states_compared": 11,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rejected_steps": 3,
+    "rhs_calls": 1581,
+    "rtol": 1e-08
+   },
+   {
+    "accepted_states_compared": 63,
+    "accepted_steps": 62,
+    "accepted_trajectory_fnv1a64": "566fcff7d5e3a04c",
+    "atol": 1e-08,
+    "attempts": 83,
+    "bit_identical": true,
+    "case": "hires",
+    "client_mode": "InPlace",
+    "direct_factorizations": 83,
+    "direct_solve_calls": 664,
+    "jacobian_builds": 62,
+    "jacobian_reuses": 21,
+    "linear_solves": 664,
+    "n": 8,
+    "output_states_compared": 11,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rejected_steps": 21,
+    "rhs_calls": 643,
+    "rtol": 0.0001
+   },
+   {
+    "accepted_states_compared": 212,
+    "accepted_steps": 211,
+    "accepted_trajectory_fnv1a64": "b37823bf2d403935",
+    "atol": 1e-10,
+    "attempts": 215,
+    "bit_identical": true,
+    "case": "hires",
+    "client_mode": "InPlace",
+    "direct_factorizations": 215,
+    "direct_solve_calls": 1720,
+    "jacobian_builds": 211,
+    "jacobian_reuses": 4,
+    "linear_solves": 1720,
+    "n": 8,
+    "output_states_compared": 11,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rejected_steps": 4,
+    "rhs_calls": 1716,
+    "rtol": 1e-06
+   },
+   {
+    "accepted_states_compared": 786,
+    "accepted_steps": 785,
+    "accepted_trajectory_fnv1a64": "cce8fd3cf8de2ec8",
+    "atol": 1e-12,
+    "attempts": 790,
+    "bit_identical": true,
+    "case": "hires",
+    "client_mode": "InPlace",
+    "direct_factorizations": 790,
+    "direct_solve_calls": 6320,
+    "jacobian_builds": 785,
+    "jacobian_reuses": 5,
+    "linear_solves": 6320,
+    "n": 8,
+    "output_states_compared": 11,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rejected_steps": 5,
+    "rhs_calls": 6315,
+    "rtol": 1e-08
+   },
+   {
+    "accepted_states_compared": 46,
+    "accepted_steps": 45,
+    "accepted_trajectory_fnv1a64": "9c8e422ea8bb307d",
+    "atol": 0.0001,
+    "attempts": 52,
+    "bit_identical": true,
+    "case": "brusselator-1d-100-meanfield (n = 200, dense Jacobian)",
+    "client_mode": "Faer",
+    "direct_factorizations": 52,
+    "direct_solve_calls": 416,
+    "jacobian_builds": 45,
+    "jacobian_reuses": 7,
+    "linear_solves": 416,
+    "n": 200,
+    "output_states_compared": 11,
+    "protected_lu": "Faer",
+    "rejected_steps": 7,
+    "rhs_calls": 409,
+    "rtol": 0.0001
+   },
+   {
+    "accepted_states_compared": 86,
+    "accepted_steps": 85,
+    "accepted_trajectory_fnv1a64": "9d7e1a17db5ea275",
+    "atol": 1e-06,
+    "attempts": 95,
+    "bit_identical": true,
+    "case": "brusselator-1d-100-meanfield (n = 200, dense Jacobian)",
+    "client_mode": "Faer",
+    "direct_factorizations": 95,
+    "direct_solve_calls": 760,
+    "jacobian_builds": 85,
+    "jacobian_reuses": 10,
+    "linear_solves": 760,
+    "n": 200,
+    "output_states_compared": 11,
+    "protected_lu": "Faer",
+    "rejected_steps": 10,
+    "rhs_calls": 750,
+    "rtol": 1e-06
+   },
+   {
+    "accepted_states_compared": 190,
+    "accepted_steps": 189,
+    "accepted_trajectory_fnv1a64": "13f1ee2ebadfa164",
+    "atol": 1e-08,
+    "attempts": 194,
+    "bit_identical": true,
+    "case": "brusselator-1d-100-meanfield (n = 200, dense Jacobian)",
+    "client_mode": "Faer",
+    "direct_factorizations": 194,
+    "direct_solve_calls": 1552,
+    "jacobian_builds": 189,
+    "jacobian_reuses": 5,
+    "linear_solves": 1552,
+    "n": 200,
+    "output_states_compared": 11,
+    "protected_lu": "Faer",
+    "rejected_steps": 5,
+    "rhs_calls": 1547,
+    "rtol": 1e-08
+   },
+   {
+    "accepted_states_compared": 31,
+    "accepted_steps": 30,
+    "accepted_trajectory_fnv1a64": "1c7a2b669b214028",
+    "atol": 1e-08,
+    "attempts": 31,
+    "bit_identical": true,
+    "case": "robertson",
+    "client_mode": "InPlace",
+    "direct_factorizations": 31,
+    "direct_solve_calls": 248,
+    "jacobian_builds": 30,
+    "jacobian_reuses": 1,
+    "linear_solves": 248,
+    "n": 3,
+    "output_states_compared": 11,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rejected_steps": 1,
+    "rhs_calls": 247,
+    "rtol": 0.0001
+   },
+   {
+    "accepted_states_compared": 48,
+    "accepted_steps": 47,
+    "accepted_trajectory_fnv1a64": "294fe235795acd7b",
+    "atol": 1e-10,
+    "attempts": 49,
+    "bit_identical": true,
+    "case": "robertson",
+    "client_mode": "InPlace",
+    "direct_factorizations": 49,
+    "direct_solve_calls": 392,
+    "jacobian_builds": 47,
+    "jacobian_reuses": 2,
+    "linear_solves": 392,
+    "n": 3,
+    "output_states_compared": 11,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rejected_steps": 2,
+    "rhs_calls": 390,
+    "rtol": 1e-06
+   },
+   {
+    "accepted_states_compared": 105,
+    "accepted_steps": 104,
+    "accepted_trajectory_fnv1a64": "fe8de33ab20f04d1",
+    "atol": 1e-12,
+    "attempts": 108,
+    "bit_identical": true,
+    "case": "robertson",
+    "client_mode": "InPlace",
+    "direct_factorizations": 108,
+    "direct_solve_calls": 864,
+    "jacobian_builds": 104,
+    "jacobian_reuses": 4,
+    "linear_solves": 864,
+    "n": 3,
+    "output_states_compared": 11,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rejected_steps": 4,
+    "rhs_calls": 860,
+    "rtol": 1e-08
+   }
+  ],
+  "rows_count": 15,
+  "rows_bit_identical": 15,
+  "modes": [
+   "Faer",
+   "InPlace"
+  ],
+  "cases": [
+   "brusselator-1d-100 (n = 200)",
+   "brusselator-1d-100-meanfield (n = 200, dense Jacobian)",
+   "brusselator-1d-32 (n = 64)",
+   "hires",
+   "robertson"
+  ],
+  "rtols": [
+   1e-08,
+   1e-06,
+   0.0001
+  ],
+  "accepted_states_compared_total": 2231,
+  "rejected_steps_total": 102,
+  "jacobian_reuses_total": 102
+ },
+ "timed_wrapper": {
+  "rows": [
+   {
+    "accepted_steps": 30,
+    "attempts": 31,
+    "case": "robertson",
+    "client_mode": "InPlace",
+    "factor_calls": 31,
+    "linearize_calls": 30,
+    "n": 3,
+    "result_neutral": true,
+    "rtol": 0.0001,
+    "solve_calls": 248
+   },
+   {
+    "accepted_steps": 47,
+    "attempts": 49,
+    "case": "robertson",
+    "client_mode": "InPlace",
+    "factor_calls": 49,
+    "linearize_calls": 47,
+    "n": 3,
+    "result_neutral": true,
+    "rtol": 1e-06,
+    "solve_calls": 392
+   },
+   {
+    "accepted_steps": 104,
+    "attempts": 108,
+    "case": "robertson",
+    "client_mode": "InPlace",
+    "factor_calls": 108,
+    "linearize_calls": 104,
+    "n": 3,
+    "result_neutral": true,
+    "rtol": 1e-08,
+    "solve_calls": 864
+   },
+   {
+    "accepted_steps": 62,
+    "attempts": 83,
+    "case": "hires",
+    "client_mode": "InPlace",
+    "factor_calls": 83,
+    "linearize_calls": 62,
+    "n": 8,
+    "result_neutral": true,
+    "rtol": 0.0001,
+    "solve_calls": 664
+   },
+   {
+    "accepted_steps": 211,
+    "attempts": 215,
+    "case": "hires",
+    "client_mode": "InPlace",
+    "factor_calls": 215,
+    "linearize_calls": 211,
+    "n": 8,
+    "result_neutral": true,
+    "rtol": 1e-06,
+    "solve_calls": 1720
+   },
+   {
+    "accepted_steps": 785,
+    "attempts": 790,
+    "case": "hires",
+    "client_mode": "InPlace",
+    "factor_calls": 790,
+    "linearize_calls": 785,
+    "n": 8,
+    "result_neutral": true,
+    "rtol": 1e-08,
+    "solve_calls": 6320
+   },
+   {
+    "accepted_steps": 47,
+    "attempts": 55,
+    "case": "brusselator-1d-32 (n = 64)",
+    "client_mode": "InPlace",
+    "factor_calls": 55,
+    "linearize_calls": 47,
+    "n": 64,
+    "result_neutral": true,
+    "rtol": 0.0001,
+    "solve_calls": 440
+   },
+   {
+    "accepted_steps": 87,
+    "attempts": 98,
+    "case": "brusselator-1d-32 (n = 64)",
+    "client_mode": "InPlace",
+    "factor_calls": 98,
+    "linearize_calls": 87,
+    "n": 64,
+    "result_neutral": true,
+    "rtol": 1e-06,
+    "solve_calls": 784
+   },
+   {
+    "accepted_steps": 195,
+    "attempts": 198,
+    "case": "brusselator-1d-32 (n = 64)",
+    "client_mode": "InPlace",
+    "factor_calls": 198,
+    "linearize_calls": 195,
+    "n": 64,
+    "result_neutral": true,
+    "rtol": 1e-08,
+    "solve_calls": 1584
+   },
+   {
+    "accepted_steps": 47,
+    "attempts": 55,
+    "case": "brusselator-1d-100 (n = 200)",
+    "client_mode": "InPlace",
+    "factor_calls": 55,
+    "linearize_calls": 47,
+    "n": 200,
+    "result_neutral": true,
+    "rtol": 0.0001,
+    "solve_calls": 440
+   },
+   {
+    "accepted_steps": 87,
+    "attempts": 97,
+    "case": "brusselator-1d-100 (n = 200)",
+    "client_mode": "InPlace",
+    "factor_calls": 97,
+    "linearize_calls": 87,
+    "n": 200,
+    "result_neutral": true,
+    "rtol": 1e-06,
+    "solve_calls": 776
+   },
+   {
+    "accepted_steps": 195,
+    "attempts": 198,
+    "case": "brusselator-1d-100 (n = 200)",
+    "client_mode": "InPlace",
+    "factor_calls": 198,
+    "linearize_calls": 195,
+    "n": 200,
+    "result_neutral": true,
+    "rtol": 1e-08,
+    "solve_calls": 1584
+   },
+   {
+    "accepted_steps": 45,
+    "attempts": 52,
+    "case": "brusselator-1d-100-meanfield (n = 200, dense Jacobian)",
+    "client_mode": "Faer",
+    "factor_calls": 52,
+    "linearize_calls": 45,
+    "n": 200,
+    "result_neutral": true,
+    "rtol": 0.0001,
+    "solve_calls": 416
+   },
+   {
+    "accepted_steps": 85,
+    "attempts": 95,
+    "case": "brusselator-1d-100-meanfield (n = 200, dense Jacobian)",
+    "client_mode": "Faer",
+    "factor_calls": 95,
+    "linearize_calls": 85,
+    "n": 200,
+    "result_neutral": true,
+    "rtol": 1e-06,
+    "solve_calls": 760
+   },
+   {
+    "accepted_steps": 189,
+    "attempts": 194,
+    "case": "brusselator-1d-100-meanfield (n = 200, dense Jacobian)",
+    "client_mode": "Faer",
+    "factor_calls": 194,
+    "linearize_calls": 189,
+    "n": 200,
+    "result_neutral": true,
+    "rtol": 1e-08,
+    "solve_calls": 1552
+   }
+  ],
+  "rows_count": 15,
+  "rows_result_neutral": 15,
+  "rows_one_factor_per_attempt": 15,
+  "rows_eight_solves_per_attempt": 15,
+  "rows_one_linearize_per_accepted_step": 15
+ },
+ "off_policy_faer": {
+  "note": "The faer mode on problems where the protected policy picks the in-place LU: a valid solver, not a bit-identical one.",
+  "rows": [
+   {
+    "attempts_client": 31,
+    "attempts_protected": 31,
+    "case": "robertson",
+    "client_mode": "Faer",
+    "endpoint_bit_identical": false,
+    "endpoint_difference_tolerance_units": 3.7218029461493384e-11,
+    "n": 3,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rtol": 0.0001
+   },
+   {
+    "attempts_client": 49,
+    "attempts_protected": 49,
+    "case": "robertson",
+    "client_mode": "Faer",
+    "endpoint_bit_identical": false,
+    "endpoint_difference_tolerance_units": 1.1716822244151226e-09,
+    "n": 3,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rtol": 1e-06
+   },
+   {
+    "attempts_client": 108,
+    "attempts_protected": 108,
+    "case": "robertson",
+    "client_mode": "Faer",
+    "endpoint_bit_identical": false,
+    "endpoint_difference_tolerance_units": 9.764022281926476e-08,
+    "n": 3,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rtol": 1e-08
+   },
+   {
+    "attempts_client": 83,
+    "attempts_protected": 83,
+    "case": "hires",
+    "client_mode": "Faer",
+    "endpoint_bit_identical": false,
+    "endpoint_difference_tolerance_units": 7.303488258419286e-09,
+    "n": 8,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rtol": 0.0001
+   },
+   {
+    "attempts_client": 215,
+    "attempts_protected": 215,
+    "case": "hires",
+    "client_mode": "Faer",
+    "endpoint_bit_identical": false,
+    "endpoint_difference_tolerance_units": 1.5858608811105165e-07,
+    "n": 8,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rtol": 1e-06
+   },
+   {
+    "attempts_client": 790,
+    "attempts_protected": 790,
+    "case": "hires",
+    "client_mode": "Faer",
+    "endpoint_bit_identical": false,
+    "endpoint_difference_tolerance_units": 7.867731461444485e-06,
+    "n": 8,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rtol": 1e-08
+   },
+   {
+    "attempts_client": 55,
+    "attempts_protected": 55,
+    "case": "brusselator-1d-32 (n = 64)",
+    "client_mode": "Faer",
+    "endpoint_bit_identical": false,
+    "endpoint_difference_tolerance_units": 8.131639853944695e-12,
+    "n": 64,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rtol": 0.0001
+   },
+   {
+    "attempts_client": 98,
+    "attempts_protected": 98,
+    "case": "brusselator-1d-32 (n = 64)",
+    "client_mode": "Faer",
+    "endpoint_bit_identical": false,
+    "endpoint_difference_tolerance_units": 2.7556089664880847e-09,
+    "n": 64,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rtol": 1e-06
+   },
+   {
+    "attempts_client": 198,
+    "attempts_protected": 198,
+    "case": "brusselator-1d-32 (n = 64)",
+    "client_mode": "Faer",
+    "endpoint_bit_identical": false,
+    "endpoint_difference_tolerance_units": 5.8067185823122765e-08,
+    "n": 64,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rtol": 1e-08
+   },
+   {
+    "attempts_client": 55,
+    "attempts_protected": 55,
+    "case": "brusselator-1d-100 (n = 200)",
+    "client_mode": "Faer",
+    "endpoint_bit_identical": false,
+    "endpoint_difference_tolerance_units": 2.7484979597021252e-11,
+    "n": 200,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rtol": 0.0001
+   },
+   {
+    "attempts_client": 97,
+    "attempts_protected": 97,
+    "case": "brusselator-1d-100 (n = 200)",
+    "client_mode": "Faer",
+    "endpoint_bit_identical": false,
+    "endpoint_difference_tolerance_units": 8.247383536589663e-10,
+    "n": 200,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rtol": 1e-06
+   },
+   {
+    "attempts_client": 198,
+    "attempts_protected": 198,
+    "case": "brusselator-1d-100 (n = 200)",
+    "client_mode": "Faer",
+    "endpoint_bit_identical": false,
+    "endpoint_difference_tolerance_units": 1.0857398968271539e-07,
+    "n": 200,
+    "protected_lu": "InPlaceZeroSkipping",
+    "rtol": 1e-08
+   }
+  ],
+  "rows_count": 12,
+  "rows_endpoint_bit_identical": 0,
+  "rows_same_attempts": 12,
+  "max_endpoint_difference_tolerance_units": 7.867731461444485e-06
+ },
+ "allocations": {
+  "counter": "process-global counting allocator, one test in its own binary",
+  "in_place_and_timed_rows": [
+   {
+    "accepted_steps": 25,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 47,
+    "attempts": 26,
+    "case": "robertson",
+    "client": "DenseLuStageClient(InPlace)",
+    "n": 3,
+    "rejected_steps": 1,
+    "rtol": 0.0001,
+    "run_total_allocations": 51,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 23,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 43,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 47,
+    "attempts": 45,
+    "case": "robertson",
+    "client": "DenseLuStageClient(InPlace)",
+    "n": 3,
+    "rejected_steps": 2,
+    "rtol": 1e-06,
+    "run_total_allocations": 51,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 41,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 99,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 47,
+    "attempts": 103,
+    "case": "robertson",
+    "client": "DenseLuStageClient(InPlace)",
+    "n": 3,
+    "rejected_steps": 4,
+    "rtol": 1e-08,
+    "run_total_allocations": 51,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 97,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 25,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 48,
+    "attempts": 26,
+    "case": "robertson",
+    "client": "TimedStageClient(DenseLuStageClient(InPlace))",
+    "n": 3,
+    "rejected_steps": 1,
+    "rtol": 0.0001,
+    "run_total_allocations": 52,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 23,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 43,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 48,
+    "attempts": 45,
+    "case": "robertson",
+    "client": "TimedStageClient(DenseLuStageClient(InPlace))",
+    "n": 3,
+    "rejected_steps": 2,
+    "rtol": 1e-06,
+    "run_total_allocations": 52,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 41,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 99,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 48,
+    "attempts": 103,
+    "case": "robertson",
+    "client": "TimedStageClient(DenseLuStageClient(InPlace))",
+    "n": 3,
+    "rejected_steps": 4,
+    "rtol": 1e-08,
+    "run_total_allocations": 52,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 97,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 58,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 47,
+    "attempts": 82,
+    "case": "hires",
+    "client": "DenseLuStageClient(InPlace)",
+    "n": 8,
+    "rejected_steps": 24,
+    "rtol": 0.0001,
+    "run_total_allocations": 51,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 56,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 204,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 47,
+    "attempts": 210,
+    "case": "hires",
+    "client": "DenseLuStageClient(InPlace)",
+    "n": 8,
+    "rejected_steps": 6,
+    "rtol": 1e-06,
+    "run_total_allocations": 51,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 202,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 778,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 47,
+    "attempts": 784,
+    "case": "hires",
+    "client": "DenseLuStageClient(InPlace)",
+    "n": 8,
+    "rejected_steps": 6,
+    "rtol": 1e-08,
+    "run_total_allocations": 51,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 776,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 58,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 48,
+    "attempts": 82,
+    "case": "hires",
+    "client": "TimedStageClient(DenseLuStageClient(InPlace))",
+    "n": 8,
+    "rejected_steps": 24,
+    "rtol": 0.0001,
+    "run_total_allocations": 52,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 56,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 204,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 48,
+    "attempts": 210,
+    "case": "hires",
+    "client": "TimedStageClient(DenseLuStageClient(InPlace))",
+    "n": 8,
+    "rejected_steps": 6,
+    "rtol": 1e-06,
+    "run_total_allocations": 52,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 202,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 778,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 48,
+    "attempts": 784,
+    "case": "hires",
+    "client": "TimedStageClient(DenseLuStageClient(InPlace))",
+    "n": 8,
+    "rejected_steps": 6,
+    "rtol": 1e-08,
+    "run_total_allocations": 52,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 776,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 42,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 47,
+    "attempts": 51,
+    "case": "brusselator-1d-32 (n = 64)",
+    "client": "DenseLuStageClient(InPlace)",
+    "n": 64,
+    "rejected_steps": 9,
+    "rtol": 0.0001,
+    "run_total_allocations": 51,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 40,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 82,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 47,
+    "attempts": 93,
+    "case": "brusselator-1d-32 (n = 64)",
+    "client": "DenseLuStageClient(InPlace)",
+    "n": 64,
+    "rejected_steps": 11,
+    "rtol": 1e-06,
+    "run_total_allocations": 51,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 80,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 189,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 47,
+    "attempts": 192,
+    "case": "brusselator-1d-32 (n = 64)",
+    "client": "DenseLuStageClient(InPlace)",
+    "n": 64,
+    "rejected_steps": 3,
+    "rtol": 1e-08,
+    "run_total_allocations": 51,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 187,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 42,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 48,
+    "attempts": 51,
+    "case": "brusselator-1d-32 (n = 64)",
+    "client": "TimedStageClient(DenseLuStageClient(InPlace))",
+    "n": 64,
+    "rejected_steps": 9,
+    "rtol": 0.0001,
+    "run_total_allocations": 52,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 40,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 82,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 48,
+    "attempts": 93,
+    "case": "brusselator-1d-32 (n = 64)",
+    "client": "TimedStageClient(DenseLuStageClient(InPlace))",
+    "n": 64,
+    "rejected_steps": 11,
+    "rtol": 1e-06,
+    "run_total_allocations": 52,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 80,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 189,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 48,
+    "attempts": 192,
+    "case": "brusselator-1d-32 (n = 64)",
+    "client": "TimedStageClient(DenseLuStageClient(InPlace))",
+    "n": 64,
+    "rejected_steps": 3,
+    "rtol": 1e-08,
+    "run_total_allocations": 52,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 187,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 42,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 47,
+    "attempts": 52,
+    "case": "brusselator-1d-100 (n = 200)",
+    "client": "DenseLuStageClient(InPlace)",
+    "n": 200,
+    "rejected_steps": 10,
+    "rtol": 0.0001,
+    "run_total_allocations": 51,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 40,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 82,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 47,
+    "attempts": 92,
+    "case": "brusselator-1d-100 (n = 200)",
+    "client": "DenseLuStageClient(InPlace)",
+    "n": 200,
+    "rejected_steps": 10,
+    "rtol": 1e-06,
+    "run_total_allocations": 51,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 80,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 189,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 47,
+    "attempts": 192,
+    "case": "brusselator-1d-100 (n = 200)",
+    "client": "DenseLuStageClient(InPlace)",
+    "n": 200,
+    "rejected_steps": 3,
+    "rtol": 1e-08,
+    "run_total_allocations": 51,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 187,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 42,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 48,
+    "attempts": 52,
+    "case": "brusselator-1d-100 (n = 200)",
+    "client": "TimedStageClient(DenseLuStageClient(InPlace))",
+    "n": 200,
+    "rejected_steps": 10,
+    "rtol": 0.0001,
+    "run_total_allocations": 52,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 40,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 82,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 48,
+    "attempts": 92,
+    "case": "brusselator-1d-100 (n = 200)",
+    "client": "TimedStageClient(DenseLuStageClient(InPlace))",
+    "n": 200,
+    "rejected_steps": 10,
+    "rtol": 1e-06,
+    "run_total_allocations": 52,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 80,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 189,
+    "allocations_in_last_step_to_tf": 3,
+    "allocations_to_first_accepted_step": 48,
+    "attempts": 192,
+    "case": "brusselator-1d-100 (n = 200)",
+    "client": "TimedStageClient(DenseLuStageClient(InPlace))",
+    "n": 200,
+    "rejected_steps": 3,
+    "rtol": 1e-08,
+    "run_total_allocations": 52,
+    "steady_allocations_max_per_step": 0,
+    "steady_allocations_total": 0,
+    "steady_steps_measured": 187,
+    "warm_up_steps": 1
+   }
+  ],
+  "in_place_and_timed_rows_count": 24,
+  "in_place_steady_steps_measured_total": 3618,
+  "in_place_steady_allocations_total": 0,
+  "in_place_run_totals": [
+   51,
+   52
+  ],
+  "faer_rows_reported_not_asserted": [
+   {
+    "accepted_steps": 41,
+    "asserted_zero": false,
+    "attempts": 50,
+    "case": "brusselator-1d-100-meanfield (n = 200, dense Jacobian)",
+    "client": "DenseLuStageClient(Faer)",
+    "n": 200,
+    "rejected_steps": 9,
+    "rtol": 0.0001,
+    "run_total_allocations": 350,
+    "steady_allocations_max_per_step": 12,
+    "steady_allocations_min_per_step": 6,
+    "steady_allocations_total": 288,
+    "steady_steps_measured": 39,
+    "warm_up_steps": 1
+   },
+   {
+    "accepted_steps": 80,
+    "asserted_zero": false,
+    "attempts": 89,
+    "case": "brusselator-1d-100-meanfield (n = 200, dense Jacobian)",
+    "client": "DenseLuStageClient(Faer)",
+    "n": 200,
+    "rejected_steps": 9,
+    "rtol": 1e-06,
+    "run_total_allocations": 584,
+    "steady_allocations_max_per_step": 12,
+    "steady_allocations_min_per_step": 6,
+    "steady_allocations_total": 522,
+    "steady_steps_measured": 78,
+    "warm_up_steps": 1
+   }
+  ]
+ },
+ "wall_diagnostic": {
+  "diagnostic_only": true,
+  "note": "Seven interleaved repetitions per case, arm order rotating; each repetition is the mean of runs_per_repetition runs. The host is shared and loaded (see loadavg): these ratios are not a verdict.",
+  "loadavg_before": [
+   34.04,
+   33.91,
+   28.12
+  ],
+  "loadavg_after": [
+   34.64,
+   34.05,
+   28.23
+  ],
+  "rows": [
+   {
+    "accepted_steps": 87,
+    "attempts": 98,
+    "case": "brusselator-1d-32 (n = 64)",
+    "client_median_ns": 2593356.8,
+    "client_min_ns": 2333343.6,
+    "client_minor_page_faults_per_run": [
+     0.2,
+     0.2,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.2
+    ],
+    "client_mode": "InPlace",
+    "client_ns_per_run": [
+     2593356.8,
+     2333343.6,
+     2524947.6,
+     2338821.8,
+     2620194.6,
+     3117745.4,
+     2879097.8
+    ],
+    "client_over_protected_median_of_ratios": 0.9617916627665608,
+    "client_over_protected_ratio_of_medians": 0.9224923487777785,
+    "client_over_protected_ratio_of_minima": 0.9836272314258413,
+    "client_over_protected_ratios": [
+     0.9224923487777785,
+     0.7993729563406566,
+     0.8004295844153094,
+     0.9859365812786435,
+     0.9617916627665608,
+     1.1520315914484045,
+     0.9930193696007052
+    ],
+    "diagnostic_only": true,
+    "interleaved": true,
+    "last_timed_run": {
+     "factor_calls": 98,
+     "factor_ns": 1052988,
+     "linearize_calls": 87,
+     "linearize_ns": 22066,
+     "phases_over_wall": 0.7500958701268685,
+     "solve_calls": 784,
+     "solve_ns": 800770,
+     "wall_ns": 2500779.0
+    },
+    "n": 64,
+    "protected_median_ns": 2811250.2,
+    "protected_min_ns": 2372182.8,
+    "protected_minor_page_faults_per_run": [
+     0.2,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "protected_ns_per_run": [
+     2811250.2,
+     2918967.4,
+     3154490.6,
+     2372182.8,
+     2724285.0,
+     2706302.0,
+     2899337.0
+    ],
+    "repetitions": 7,
+    "rtol": 1e-06,
+    "runs_per_repetition": 5,
+    "timed_client_median_ns": 2889231.2,
+    "timed_client_min_ns": 2468077.4,
+    "timed_client_ns_per_run": [
+     2468077.4,
+     3164911.2,
+     3077675.6,
+     2904843.8,
+     2754926.4,
+     2796519.2,
+     2889231.2
+    ],
+    "timed_over_protected_median_of_ratios": 1.0112475016380444,
+    "timed_over_protected_ratio_of_medians": 1.0277389042071032,
+    "timed_over_protected_ratio_of_minima": 1.0404246249488025,
+    "timed_over_protected_ratios": [
+     0.8779287592402838,
+     1.0842571246256467,
+     0.9756490001903952,
+     1.2245446683113965,
+     1.0112475016380444,
+     1.0333359691564357,
+     0.9965144445092102
+    ]
+   },
+   {
+    "accepted_steps": 87,
+    "attempts": 97,
+    "case": "brusselator-1d-100 (n = 200)",
+    "client_median_ns": 11877362.0,
+    "client_min_ns": 10195882.0,
+    "client_minor_page_faults_per_run": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "client_mode": "InPlace",
+    "client_ns_per_run": [
+     13843728.4,
+     12998792.6,
+     11877362.0,
+     12139231.6,
+     11185721.2,
+     10959988.6,
+     10195882.0
+    ],
+    "client_over_protected_median_of_ratios": 0.9268003924094278,
+    "client_over_protected_ratio_of_medians": 0.9813299345998275,
+    "client_over_protected_ratio_of_minima": 1.1299893580723923,
+    "client_over_protected_ratios": [
+     0.9031358884108183,
+     0.8262187448487627,
+     0.9678930873613053,
+     1.007483754292057,
+     1.2396912712764574,
+     0.9055348229727153,
+     0.9268003924094278
+    ],
+    "diagnostic_only": true,
+    "interleaved": true,
+    "last_timed_run": {
+     "factor_calls": 97,
+     "factor_ns": 7831938,
+     "linearize_calls": 87,
+     "linearize_ns": 54143,
+     "phases_over_wall": 0.8820214412162766,
+     "solve_calls": 776,
+     "solve_ns": 2214713,
+     "wall_ns": 11451869.0
+    },
+    "n": 200,
+    "protected_median_ns": 12103332.0,
+    "protected_min_ns": 9022989.4,
+    "protected_minor_page_faults_per_run": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "protected_ns_per_run": [
+     15328511.0,
+     15732870.6,
+     12271357.4,
+     12049059.4,
+     9022989.4,
+     12103332.0,
+     11001162.8
+    ],
+    "repetitions": 7,
+    "rtol": 1e-06,
+    "runs_per_repetition": 5,
+    "timed_client_median_ns": 12872207.6,
+    "timed_client_min_ns": 11590525.8,
+    "timed_client_ns_per_run": [
+     14303626.0,
+     12712662.8,
+     13401270.8,
+     11590525.8,
+     12383299.8,
+     12872207.6,
+     15325666.0
+    ],
+    "timed_over_protected_median_of_ratios": 1.0635259447563696,
+    "timed_over_protected_ratio_of_medians": 1.0635259447563696,
+    "timed_over_protected_ratio_of_minima": 1.2845549613523872,
+    "timed_over_protected_ratios": [
+     0.9331386460172159,
+     0.8080319938562261,
+     1.0920772953772824,
+     0.9619444485434274,
+     1.372416529714642,
+     1.0635259447563696,
+     1.393095100819706
+    ]
+   },
+   {
+    "accepted_steps": 85,
+    "attempts": 95,
+    "case": "brusselator-1d-100-meanfield (n = 200, dense Jacobian)",
+    "client_median_ns": 89309420.4,
+    "client_min_ns": 71555309.6,
+    "client_minor_page_faults_per_run": [
+     8579.2,
+     3444.4,
+     3903.4,
+     3901.0,
+     3901.0,
+     8503.8,
+     8578.0
+    ],
+    "client_mode": "Faer",
+    "client_ns_per_run": [
+     89309420.4,
+     91498869.6,
+     71555309.6,
+     78015065.2,
+     102333163.8,
+     88919212.4,
+     100804884.4
+    ],
+    "client_over_protected_median_of_ratios": 1.0237390203927625,
+    "client_over_protected_ratio_of_medians": 0.9069951232654894,
+    "client_over_protected_ratio_of_minima": 0.94169027707989,
+    "client_over_protected_ratios": [
+     0.8372437451050665,
+     1.2000452040972782,
+     0.6829442730554903,
+     1.026702683214911,
+     1.272733881381576,
+     0.7061691734790478,
+     1.0237390203927625
+    ],
+    "diagnostic_only": true,
+    "interleaved": true,
+    "last_timed_run": {
+     "factor_calls": 95,
+     "factor_ns": 80096949,
+     "linearize_calls": 85,
+     "linearize_ns": 3045126,
+     "phases_over_wall": 0.9684247650855489,
+     "solve_calls": 760,
+     "solve_ns": 13987860,
+     "wall_ns": 100296831.0
+    },
+    "n": 200,
+    "protected_median_ns": 98467365.6,
+    "protected_min_ns": 75986034.2,
+    "protected_minor_page_faults_per_run": [
+     8879.0,
+     8456.6,
+     8456.6,
+     6681.2,
+     8877.0,
+     8878.2,
+     8878.0
+    ],
+    "protected_ns_per_run": [
+     106670752.6,
+     76246185.8,
+     104774741.4,
+     75986034.2,
+     80404211.2,
+     125917720.2,
+     98467365.6
+    ],
+    "repetitions": 7,
+    "rtol": 1e-06,
+    "runs_per_repetition": 5,
+    "timed_client_median_ns": 88465141.2,
+    "timed_client_min_ns": 63276049.0,
+    "timed_client_ns_per_run": [
+     151632975.4,
+     132010780.4,
+     88264129.2,
+     63276049.0,
+     91723130.8,
+     88465141.2,
+     86107937.8
+    ],
+    "timed_over_protected_median_of_ratios": 0.8744819897974401,
+    "timed_over_protected_ratio_of_medians": 0.8984209200779106,
+    "timed_over_protected_ratio_of_minima": 0.8327326154889657,
+    "timed_over_protected_ratios": [
+     1.421504692749304,
+     1.731375530656381,
+     0.842418010491983,
+     0.8327326154889657,
+     1.1407752085502705,
+     0.702563078965275,
+     0.8744819897974401
+    ]
+   }
+  ],
+  "summary": [
+   {
+    "case": "brusselator-1d-32 (n = 64)",
+    "n": 64,
+    "client_mode": "InPlace",
+    "repetitions": 7,
+    "client_over_protected_ratio_of_medians": 0.9224923487777785,
+    "client_over_protected_median_of_ratios": 0.9617916627665608,
+    "client_over_protected_ratio_of_minima": 0.9836272314258413,
+    "timed_over_protected_ratio_of_medians": 1.0277389042071032,
+    "timed_over_protected_ratio_of_minima": 1.0404246249488025,
+    "timed_phases_over_wall": 0.7500958701268685
+   },
+   {
+    "case": "brusselator-1d-100 (n = 200)",
+    "n": 200,
+    "client_mode": "InPlace",
+    "repetitions": 7,
+    "client_over_protected_ratio_of_medians": 0.9813299345998275,
+    "client_over_protected_median_of_ratios": 0.9268003924094278,
+    "client_over_protected_ratio_of_minima": 1.1299893580723923,
+    "timed_over_protected_ratio_of_medians": 1.0635259447563696,
+    "timed_over_protected_ratio_of_minima": 1.2845549613523872,
+    "timed_phases_over_wall": 0.8820214412162766
+   },
+   {
+    "case": "brusselator-1d-100-meanfield (n = 200, dense Jacobian)",
+    "n": 200,
+    "client_mode": "Faer",
+    "repetitions": 7,
+    "client_over_protected_ratio_of_medians": 0.9069951232654894,
+    "client_over_protected_median_of_ratios": 1.0237390203927625,
+    "client_over_protected_ratio_of_minima": 0.94169027707989,
+    "timed_over_protected_ratio_of_medians": 0.8984209200779106,
+    "timed_over_protected_ratio_of_minima": 0.8327326154889657,
+    "timed_phases_over_wall": 0.9684247650855489
+   }
+  ]
+ },
+ "instruction_counts": {
+  "counter": "perf stat -e instructions:u (user space, child threads included)",
+  "binary": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v15/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a",
+  "runs": 20,
+  "repeats": 3,
+  "per_run": "(instructions(runs) - instructions(0 runs)) / runs",
+  "rows": [
+   {
+    "case_key": "brusselator-n32",
+    "arms": {
+     "protected": {
+      "exit_codes": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "setup_instructions": 798816,
+      "instructions": [
+       426883138,
+       426883295,
+       426883140
+      ],
+      "instructions_per_run": [
+       21304216.1,
+       21304223.95,
+       21304216.2
+      ],
+      "instructions_per_run_median": 21304216.2,
+      "instructions_per_run_spread_relative": 3.684716642034841e-07,
+      "arm_report": {
+       "accepted_steps_per_run": 87,
+       "arm": "protected",
+       "attempts_per_run": 98,
+       "case": "brusselator-1d-32 (n = 64)",
+       "case_key": "brusselator-n32",
+       "client_mode": "InPlace",
+       "n": 64,
+       "rtol": 1e-06,
+       "runs": 20
+      }
+     },
+     "client": {
+      "exit_codes": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "setup_instructions": 800014,
+      "instructions": [
+       426392373,
+       426392933,
+       426393808
+      ],
+      "instructions_per_run": [
+       21279617.95,
+       21279645.95,
+       21279689.7
+      ],
+      "instructions_per_run_median": 21279645.95,
+      "instructions_per_run_spread_relative": 3.371766624716799e-06,
+      "arm_report": {
+       "accepted_steps_per_run": 87,
+       "arm": "client",
+       "attempts_per_run": 98,
+       "case": "brusselator-1d-32 (n = 64)",
+       "case_key": "brusselator-n32",
+       "client_mode": "InPlace",
+       "n": 64,
+       "rtol": 1e-06,
+       "runs": 20
+      }
+     },
+     "timed": {
+      "exit_codes": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "setup_instructions": 799001,
+      "instructions": [
+       432335576,
+       432335318,
+       432335092
+      ],
+      "instructions_per_run": [
+       21576828.75,
+       21576815.85,
+       21576804.55
+      ],
+      "instructions_per_run_median": 21576815.85,
+      "instructions_per_run_spread_relative": 1.1215742011004345e-06,
+      "arm_report": {
+       "accepted_steps_per_run": 87,
+       "arm": "timed",
+       "attempts_per_run": 98,
+       "case": "brusselator-1d-32 (n = 64)",
+       "case_key": "brusselator-n32",
+       "client_mode": "InPlace",
+       "n": 64,
+       "rtol": 1e-06,
+       "runs": 20
+      }
+     }
+    },
+    "client_over_protected_instructions": 0.9988466954254811,
+    "timed_over_protected_instructions": 1.0127955728312596
+   },
+   {
+    "case_key": "brusselator-n100",
+    "arms": {
+     "protected": {
+      "exit_codes": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "setup_instructions": 807079,
+      "instructions": [
+       2255193905,
+       2255193421,
+       2255194147
+      ],
+      "instructions_per_run": [
+       112719341.3,
+       112719317.1,
+       112719353.4
+      ],
+      "instructions_per_run_median": 112719341.3,
+      "instructions_per_run_spread_relative": 3.2203878760530805e-07,
+      "arm_report": {
+       "accepted_steps_per_run": 87,
+       "arm": "protected",
+       "attempts_per_run": 97,
+       "case": "brusselator-1d-100 (n = 200)",
+       "case_key": "brusselator-n100",
+       "client_mode": "InPlace",
+       "n": 200,
+       "rtol": 1e-06,
+       "runs": 20
+      }
+     },
+     "client": {
+      "exit_codes": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "setup_instructions": 806531,
+      "instructions": [
+       2251701734,
+       2251701622,
+       2251702037
+      ],
+      "instructions_per_run": [
+       112544760.15,
+       112544754.55,
+       112544775.3
+      ],
+      "instructions_per_run_median": 112544760.15,
+      "instructions_per_run_spread_relative": 1.8437108908797118e-07,
+      "arm_report": {
+       "accepted_steps_per_run": 87,
+       "arm": "client",
+       "attempts_per_run": 97,
+       "case": "brusselator-1d-100 (n = 200)",
+       "case_key": "brusselator-n100",
+       "client_mode": "InPlace",
+       "n": 200,
+       "rtol": 1e-06,
+       "runs": 20
+      }
+     },
+     "timed": {
+      "exit_codes": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "setup_instructions": 805730,
+      "instructions": [
+       2257559127,
+       2257559380,
+       2257559173
+      ],
+      "instructions_per_run": [
+       112837669.85,
+       112837682.5,
+       112837672.15
+      ],
+      "instructions_per_run_median": 112837672.15,
+      "instructions_per_run_spread_relative": 1.1210794910005119e-07,
+      "arm_report": {
+       "accepted_steps_per_run": 87,
+       "arm": "timed",
+       "attempts_per_run": 97,
+       "case": "brusselator-1d-100 (n = 200)",
+       "case_key": "brusselator-n100",
+       "client_mode": "InPlace",
+       "n": 200,
+       "rtol": 1e-06,
+       "runs": 20
+      }
+     }
+    },
+    "client_over_protected_instructions": 0.9984511872764111,
+    "timed_over_protected_instructions": 1.0010497830153662
+   },
+   {
+    "case_key": "meanfield-n100",
+    "arms": {
+     "protected": {
+      "exit_codes": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "setup_instructions": 807858,
+      "instructions": [
+       8365284102,
+       8365286703,
+       8365284450
+      ],
+      "instructions_per_run": [
+       418223812.2,
+       418223942.25,
+       418223829.6
+      ],
+      "instructions_per_run_median": 418223829.6,
+      "instructions_per_run_spread_relative": 3.1095789098460523e-07,
+      "arm_report": {
+       "accepted_steps_per_run": 85,
+       "arm": "protected",
+       "attempts_per_run": 95,
+       "case": "brusselator-1d-100-meanfield (n = 200, dense Jacobian)",
+       "case_key": "meanfield-n100",
+       "client_mode": "Faer",
+       "n": 200,
+       "rtol": 1e-06,
+       "runs": 20
+      }
+     },
+     "client": {
+      "exit_codes": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "setup_instructions": 806424,
+      "instructions": [
+       8363596303,
+       8363596259,
+       8363596217
+      ],
+      "instructions_per_run": [
+       418139493.95,
+       418139491.75,
+       418139489.65
+      ],
+      "instructions_per_run_median": 418139491.75,
+      "instructions_per_run_spread_relative": 1.0283649587664016e-08,
+      "arm_report": {
+       "accepted_steps_per_run": 85,
+       "arm": "client",
+       "attempts_per_run": 95,
+       "case": "brusselator-1d-100-meanfield (n = 200, dense Jacobian)",
+       "case_key": "meanfield-n100",
+       "client_mode": "Faer",
+       "n": 200,
+       "rtol": 1e-06,
+       "runs": 20
+      }
+     },
+     "timed": {
+      "exit_codes": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "setup_instructions": 806738,
+      "instructions": [
+       8369560048,
+       8369558798,
+       8369559588
+      ],
+      "instructions_per_run": [
+       418437665.5,
+       418437603.0,
+       418437642.5
+      ],
+      "instructions_per_run_median": 418437642.5,
+      "instructions_per_run_spread_relative": 1.493651470421904e-07,
+      "arm_report": {
+       "accepted_steps_per_run": 85,
+       "arm": "timed",
+       "attempts_per_run": 95,
+       "case": "brusselator-1d-100-meanfield (n = 200, dense Jacobian)",
+       "case_key": "meanfield-n100",
+       "client_mode": "Faer",
+       "n": 200,
+       "rtol": 1e-06,
+       "runs": 20
+      }
+     }
+    },
+    "client_over_protected_instructions": 0.9997983427915127,
+    "timed_over_protected_instructions": 1.0005112403571181
+   }
+  ],
+  "available": true
+ },
+ "clippy": {
+  "exit_code": 0,
+  "unique_warnings": 8,
+  "baseline_file": "crates/rodas5p-integrators/src/source_owned_graph_schur.rs",
+  "baseline_warnings_expected": 8,
+  "baseline_warnings_found": 8,
+  "new_warnings": [],
+  "new_warnings_count": 0
+ },
+ "rustfmt": {
+  "exit_code": 0,
+  "files": [
+   "crates/rodas5p-integrators/src/stage_clients/mod.rs",
+   "crates/rodas5p-integrators/src/stage_clients/dense_lu.rs",
+   "crates/rodas5p-integrators/src/stage_clients/timed.rs",
+   "crates/rodas5p-integrators/tests/stage_clients_dense_identity.rs",
+   "crates/rodas5p-integrators/tests/stage_clients_alloc.rs"
+  ]
+ },
+ "exploratory_logs_pre_commit": [
+  {
+   "log": "logs/exploratory/01_first_test_run_nocapture.log",
+   "log_sha256": "eefd54199f3271af3ba686977de8658e02ce742d9009392988070a8ba80570d5",
+   "test_results": [
+    {
+     "target": "tests/stage_clients_alloc.rs",
+     "status": "ok",
+     "passed": 1,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "target": "tests/stage_clients_dense_identity.rs",
+     "status": "ok",
+     "passed": 8,
+     "failed": 0,
+     "ignored": 1,
+     "filtered_out": 0
+    }
+   ],
+   "wall_client_over_protected_ratio_of_medians": {}
+  },
+  {
+   "log": "logs/exploratory/02_wall_faer_factors_dropped_before_rebuild.log",
+   "log_sha256": "6462e0353341b56578e3a891a2384e7fe2a09a13f776356c89200c57921e90a5",
+   "test_results": [
+    {
+     "target": "tests/stage_clients_dense_identity.rs",
+     "status": "ok",
+     "passed": 1,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 8
+    }
+   ],
+   "wall_client_over_protected_ratio_of_medians": {
+    "brusselator-1d-32 (n = 64)": 1.0198545571385547,
+    "brusselator-1d-100 (n = 200)": 0.9471724138996126,
+    "brusselator-1d-100-meanfield (n = 200, dense Jacobian)": 1.4324074436903957
+   }
+  },
+  {
+   "log": "logs/exploratory/03_wall_faer_protected_drop_order.log",
+   "log_sha256": "c24111b3f465385487f2e97b07ec4cfcc386807dea9ee2e081f2ac8c1da725ba",
+   "test_results": [
+    {
+     "target": "tests/stage_clients_dense_identity.rs",
+     "status": "ok",
+     "passed": 1,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 8
+    }
+   ],
+   "wall_client_over_protected_ratio_of_medians": {
+    "brusselator-1d-32 (n = 64)": 0.9584378102700445,
+    "brusselator-1d-100 (n = 200)": 1.058736332814261,
+    "brusselator-1d-100-meanfield (n = 200, dense Jacobian)": 1.6512887769762319
+   }
+  },
+  {
+   "log": "logs/exploratory/04_wall_with_page_faults.log",
+   "log_sha256": "919b6856567a6f7c3adbf91a115dd3bb5ec7845a3d627fd923c61b153f5a1c56",
+   "test_results": [
+    {
+     "target": "tests/stage_clients_dense_identity.rs",
+     "status": "ok",
+     "passed": 1,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 8
+    }
+   ],
+   "wall_client_over_protected_ratio_of_medians": {
+    "brusselator-1d-32 (n = 64)": 1.0535753899253633,
+    "brusselator-1d-100 (n = 200)": 1.1042957918389524,
+    "brusselator-1d-100-meanfield (n = 200, dense Jacobian)": 0.9281033475600131
+   }
+  },
+  {
+   "log": "logs/exploratory/05_clippy_before_commit.log",
+   "log_sha256": "ced853abddcb95c4c9e0c2c54cfdb8f1d971a2b9d94dff9a0e0c04b9a1ec2a39",
+   "test_results": [],
+   "wall_client_over_protected_ratio_of_medians": {}
+  }
+ ],
+ "verdicts": {
+  "bit_identity_through_the_trait": "PASS",
+  "timed_wrapper_neutral_and_counts": "PASS",
+  "zero_allocations_per_step_in_place": "PASS",
+  "zero_allocations_per_step_faer": "NOT_MET_BY_DESIGN: every faer factorization allocates inside LuFactorization::new, in the protected driver as well; see allocations.faer_rows_reported_not_asserted",
+  "wall_at_most_1_05x_at_n_ge_64": "DIAGNOSTIC_ONLY: see wall_diagnostic.summary",
+  "client_over_protected_instructions_max": 0.9997983427915127,
+  "client_over_protected_instructions_at_most_1_05": "PASS",
+  "clippy_new_warnings": 0,
+  "rustfmt_check": "PASS",
+  "protected_files_changed": 0
+ },
+ "notes": [
+  "Faer identity is shown on the mean-field Brusselator (n = 200, half-full Jacobian): the protected policy picks faer only above order 64 with more than 10 % nonzeros, which Robertson, HIRES and the banded 1D Brusselator (N = 32, N = 100) never reach. On those the protected LU is in place; the faer client there is reported under off_policy_faer.",
+  "Accepted states are compared through a recording Jacobian callback (one call per accepted state in either driver) and, for the client driver, through its accept control.",
+  "exploratory/02 was run with a pre-commit variant of the faer factorization that dropped the old factors before building the new ones; the committed code builds first, as the protected driver does. Every exploratory wall ratio was taken on a loaded host and is not evidence for or against that variant.",
+  "The faer path takes thousands of minor page faults per run in both drivers (wall_diagnostic.rows[*].*_minor_page_faults_per_run); the cause was not investigated in this node.",
+  "TimedStageClient times the three trait phases only. RHS evaluations and the stage vector work belong to the driver, so the phases do not sum to the wall time (wall_diagnostic.summary[*].timed_phases_over_wall)."
+ ]
+}
