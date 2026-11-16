@@ -74,3 +74,7 @@ U08: native quotient trace(중복도 보존)를 test 수준 인증 경계로 이
 ## 2026-11-16 후속 7: U09 geometry/MOL (PARTIAL)
 
 `geometry_mol/REPORT_KO.md`. 기존 Gray–Scott 2D Laplacian을 재사용했고, 3D 비등방 주기와 위경도 FV 구면을 test에 추가했다. 공간 2차 수렴을 확인했고, 시간 오차를 공간 오차와 분리했다(이 격자에서는 공간 오차가 지배). 가중 대칭·질량 균형, 이류 거부, registry mass/event 확인. 구면 Y11 극 고리는 1차이고, spectral bandlimit 정확성은 NOT_RUN이다.
+
+## 2026-11-16 후속 8: U10 전환 오차·신규성 (COMPLETE_SCOPED, 신규성 미성립)
+
+`switch_error/REPORT_KO.md`. Peer↔one-step 전환에서 성분별 majorant 전달은 위반 없이 유효하지만 1e15–1e176배 느슨하다(q ≥ 1). 창 majorant은 stiff mode에서만 수축한다(s−1 창). 선행연구와 측정 비용을 비교한 결과 신규성은 성립하지 않는다. 범위가 제한된 공학 결과만 남긴다.

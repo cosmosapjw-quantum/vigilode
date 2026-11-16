@@ -11,11 +11,12 @@
     "U05_SEMILINEAR_PARALLEL_SDC",
     "U03_PEER_INDEPENDENT_QUALIFICATION",
     "U06_UNIFIED_CAPABILITY_REGISTRY",
-    "U04_COMMON_W_MATRIX_FREE"
+    "U04_COMMON_W_MATRIX_FREE",
+    "U10_SWITCH_ERROR_AND_NOVELTY"
   ],
   "overall_user_goal": "PARTIAL_CONTINUATION",
   "production_verdict": "HOLD",
-  "novelty_verdict": "NOT_ESTABLISHED",
+  "novelty_verdict": "NOT_SUPPORTED (U10)",
   "official_g0_changed": false,
   "implemented_source_sha256": {
     "crates/rodas5p-integrators/src/ppsw1.rs": "d2b27044d1ae75cfda80ff6cd93dc80884ceae09bba2b56c513e50e32297e20d",
@@ -164,7 +165,13 @@
     "research/production_unification_20261115/geometry_mol/logs/u09_clippy_strict.log": "c745d4c845dcb93bd33f3717483cbc27fe577ea986892174d583547c3d738376",
     "research/production_unification_20261115/geometry_mol/logs/u09_fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "research/production_unification_20261115/geometry_mol/logs/u09_green.log": "b2929e69da5991fe6e30fea6eaf1d6247dd6f559535838989d4f58dae4d1816b",
-    "research/production_unification_20261115/geometry_mol/logs/u09_try1.log": "b2929e69da5991fe6e30fea6eaf1d6247dd6f559535838989d4f58dae4d1816b"
+    "research/production_unification_20261115/geometry_mol/logs/u09_try1.log": "b2929e69da5991fe6e30fea6eaf1d6247dd6f559535838989d4f58dae4d1816b",
+    "research/production_unification_20261115/switch_error/CHANGE_CONTRACT.json": "e417b4c8d05e2aa736600569e49a64be07ea005c975f0a311d84383abb1faf5d",
+    "research/production_unification_20261115/switch_error/REPORT_KO.md": "ab7718c73dccdae60f697c9c904551242278763e3c1bb8227a3f495bcc302ab0",
+    "research/production_unification_20261115/switch_error/transport.exit": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061",
+    "research/production_unification_20261115/switch_error/transport.log": "003fe64cb1db1345343d752f40e7a68e13068200b76b6bdde74950024d2717be",
+    "research/production_unification_20261115/switch_error/transport.py": "17352fbd3f4985e181fc57edbde337c7474d08329f265f9be5c9dddba653d65a",
+    "research/production_unification_20261115/switch_error/transport_results.json": "d803e80fd22f2427ffb00dc487f8753933447afcc5529605a594eaad5d114958"
   },
   "checks": {
     "baseline_facade_tests": {
@@ -288,9 +295,8 @@
     "Frozen-G0 matched achieved-error holdout conjunction"
   ],
   "next_tasks": [
-    "U10_SWITCH_ERROR_AND_NOVELTY",
     "U11_PRODUCTION_HOLDOUT",
-    "U07/U08/U09 remaining items"
+    "remaining items of U07/U08/U09 and parent T nodes"
   ],
   "backup": {
     "status": "VERIFIED_SUBSTANTIVE_CHECKPOINT",

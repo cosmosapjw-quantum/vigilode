@@ -1,0 +1,26 @@
+{
+  "schema": "vigilode.change-contract.v1",
+  "task": "U10_SWITCH_ERROR_AND_NOVELTY",
+  "date_kst": "2026-11-16",
+  "recorded_before_mutation": true,
+  "base_commit": "61e743ac",
+  "write_allowlist": [
+    "research/production_unification_20261115/switch_error/**",
+    "research/production_unification_20261115/CHECKPOINT.json",
+    "research/production_unification_20261115/REPORT_KO.md",
+    "docs/agent/production_solver_program_20261112/**"
+  ],
+  "extends": "WP7 defect envelope + positive (Metzler) propagation (research/vigilode_wp7_degree_elevation_20261101): componentwise majorant recurrence, not a new name",
+  "plan": [
+    "transport.py (python -I, independent of Rust): PPSW1 route-R1 coefficients; linear PR test problem; Peer stage-history error e_n in R^6",
+    "recurrence e_{n+1} <= |M_n| e_n + |delta_n| (triangle inequality, componentwise; G_n = |M_n| nonnegative majorant) with delta_n the defect from exact history",
+    "switch maps: T_PR (Peer -> one-step Radau IIA(2)) selects stage 6 (gain 1, defect 0 at the output); T_RP (one-step -> Peer) is the PPSW1 Radau IIA(5) starter over 2 h0 (affine in y_n: gain and defect measured from exact data)",
+    "compare bound with actual global error over a Peer -> one-step -> Peer schedule; retain any violation and every step with ||G_n||_inf >= 1",
+    "nonnormal transient: rho(M) versus max_k ||M^k|| and versus products of majorants for variable sigma sequences",
+    "novelty comparison against Peer-W (Schmitt-Weiner 2004, Podhaisky), parallel SDC/MIN-SR, JFNK, LSODA-type switching; verdict uses U03/U04/U07 measured costs; no holdout tuning"
+  ],
+  "non_goals": [
+    "no source change",
+    "no claim beyond the linear test problems"
+  ]
+}
