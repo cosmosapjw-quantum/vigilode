@@ -49,3 +49,10 @@ The V07 band follows from the overlap window of two of eight stages: the saving 
 - V05: PASS. Two independent scripts agree on 1040 values. Corrections to the plan-stage facts: the k-variable sweep matrix is not the one R6 iterates (U-form norms are larger, nilpotency 8); a lagged Jacobian lowers the classical order to 3; a factorisation cannot be speculated without a predicted step size. Evidence: `theory/`.
 - V14: screen criteria met in 17 of 60 configurations, FAIL 31, KILL 12. Passes only for Gray-Scott (diffusion length about one cell); no configuration passes for heat or Brusselator. No native prototype. Evidence: `schwarz_screen/`.
 - Process: the bootstrap commit added two module lines to `rodas5p-integrators/src/lib.rs`, which violated sentinel g3; reverted in wave 1 (sentinels g3 and h2 pass).
+
+### Adoption of the trial merge (2026-11-16, owner decisions OD-L1-5 and OD-L1-6)
+
+- The trial merge is adopted on the loop branch although gates T2, T3 (strict) and T6 failed. Adjustments: sentinels g3 and h2 re-pinned to the post-merge bytes (`trial_merge/SENTINEL_REPIN.json`); `production_automatic.json` regenerated (0 changed, 0 removed, 600 added keys, checked by an independent diff); ledger rows L-0209..L-0214 superseded by INVALID rows L-0307..L-0312.
+- Verification on the adopted tree (`adoption/ADOPTION_VERIFICATION.json`): workspace check and clippy pass; integrator, sentinel and client-kit suites pass; facade, core and krylov suites have one failure, `leja_setup_work_contract`, a thread-raced accounting test (`adoption/FLAKE_PROBE.json`).
+- V15 is merged; its identity and allocation tests pass on the adopted tree.
+- Not changed: merged gate hooks, `unified/` router labels, `research/qualification/` without ledger row.

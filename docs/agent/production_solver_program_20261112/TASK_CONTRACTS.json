@@ -734,7 +734,7 @@
         "V00_LOOP_BOOTSTRAP",
         "V03G_DEFAULT_PATH_GOLDEN"
       ],
-      "status": "PARTIAL",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Trial merge of the switcher lineage (93392249) on a separate branch and conditional adoption (owner decision OD-L1-1).",
       "write_allowlist": [
         "research/production_loop_20261116/trial_merge/**"
@@ -767,16 +767,17 @@
       "evidence": [
         "research/production_loop_20261116/trial_merge/T_GATES.json",
         "research/production_loop_20261116/trial_merge/MERGE_FACTS.json",
-        "research/production_loop_20261116/trial_merge/BLOB_DELTA.json"
+        "research/production_loop_20261116/trial_merge/SENTINEL_REPIN.json",
+        "research/production_loop_20261116/adoption/ADOPTION_VERIFICATION.json"
       ],
-      "state_note": "Trial executed on branch research/production-loop-20261116-trial (408e3b6c): T1 PASS, T5 PASS, T2 FAIL (source-pinning sentinels g3 and h2), T3 strict FAIL (600 added serde keys, 0 changed values), T6 FAIL. Adoption needs an owner decision."
+      "scope_completed": "Adopted on the loop branch under owner decision OD-L1-5 although gates T2, T3 (strict) and T6 failed: sentinels re-pinned, one golden file regenerated for added keys, six ledger rows superseded as INVALID. Open: unified router defects (V03), merged gate hooks, research/qualification without ledger row, flaky leja_setup_work_contract."
     },
     {
       "id": "V15_STAGE_CLIENT_KIT",
       "depends": [
         "V00_LOOP_BOOTSTRAP"
       ],
-      "status": "PARTIAL",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Reference stage linear-system clients for the protected fast driver, so later levers need no kernel duplication and no protected edit.",
       "write_allowlist": [
         "crates/rodas5p-integrators/src/stage_clients/**",
@@ -805,9 +806,10 @@
         "tolerances/controller constants"
       ],
       "evidence": [
-        "research/production_loop_20261116/client_kit/RECEIPT.json"
+        "research/production_loop_20261116/client_kit/RECEIPT.json",
+        "research/production_loop_20261116/adoption/ADOPTION_VERIFICATION.json"
       ],
-      "state_note": "Code and tests complete on branch research/production-loop-20261116-v15 (eee12b5a): bit identity 15 of 15 rows. Not merged: the module declaration in rodas5p-integrators/src/lib.rs is forbidden by sentinel g3 until the owner decides."
+      "scope_completed": "Merged into the loop branch after owner decision OD-L1-6; identity and allocation tests pass on the adopted tree. The wall discriminator stays undecided on the loaded host."
     },
     {
       "id": "V05_STAGE_THEORY",
