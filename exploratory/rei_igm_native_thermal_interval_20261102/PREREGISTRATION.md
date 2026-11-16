@@ -1,0 +1,14 @@
+# REI F05 original Alexander SDIRK2 native thermal interval root (2026-11-02)
+
+Authority: predecessor VigilODE Draft PR183 c1132ed4d1d9d2490924154150232e57a3bb7c13; source owner REI fcc90939b6b7cc842fae65d5a0ffbb69a3ec3120; source TAR SHA256 a861278201313c55e08ba6323b5c1d2ad97bf5765f429807b4eba0a1c2465d0b; sealed kernel 579df3cc99987dcce9205166752570bdaf4c7cb3640c525be6da260d94b8e644; accepted tick160/131072. Read-only owner wrapper is versioned PR368 f1b20b132e1ecc631c379e2d7ca6960cfdb8daaa.
+
+Objective: real 46,080 source cells on original full/half1/half2 source clocks, original thermal Alexander SDIRK2 predictor/stage/final implicit scalar root. Capture original source-owned *interval* thermal context U0, interval photo heat, nine collisional/recombination cooling factors, expansion and temperature coefficients, SDIRK constant, weight, h, owner roots and original reference RHS from unchanged source. Python ONLY read-only source exporter/owner auditor. Use existing native VigilODE directed interval arithmetic and exact historical native REI interval exp/ln/powf implementation without changing either original owner.
+
+For any original thermal source context theta and x=log T (T in Kelvin):
+F_theta(x) = a_theta exp(x) - U0_theta - h ( C_theta + w R_theta(x) ),
+R_theta(x) = photoheat_theta - Lambda_theta(exp x) - expansion_theta exp x.
+A bracket [L,H] is certified for all admissible theta if outward F(L).hi <= 0 <= F(H).lo and outward derivative interval D([L,H]).lo > 0. Then one and only one root for each theta exists in [L,H], and interval Newton may contract it using a verified D(X) and midpoint F(mid). The original thermal first law is already in total U: do not add 1.5 k_B T dot Ne to R again. Respect nine original cooling terms exactly once.
+
+Acceptance for this scoped run: original source SHA/clock/parent/gate check; native correct root *source contexts* on full/half1/half2 original 46080 cells, rigorous interval sign and derivative check or precisely count blocked rows. True source temperature-domain events are separately checked by owner. Compare certified native root with owner's certified root via set-overlap, and original 14 owner ledgers. Add scientific output only if actually run. No claim original full Rust interval IVP or 14 Rust final set ledgers unless genuinely implemented end-to-end.
+
+Drift watchdog: actual thermo-state interval/root data rather than an additional photon atlas or governance PR. Historical V1 logT failure 2.1245050576368385e-4 > 2e-4, official tick161 NOT_ACCEPTED, V2 separate. No default/core edits, no source-owner mutation, no threshold relaxation, no main merge, no force push. Official DAG remains VigilODE 7/23, successor 0/12, REI central 28/88, working 33/88, fast 4/7; canonical delta 0, production HOLD. Native subagents not exposed; same-author hostile review finite.
