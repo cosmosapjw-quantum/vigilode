@@ -39,13 +39,24 @@
     "research/production_loop_20261116/logs/baseline_facade_core_krylov.log": "ed0c5f161bdb6aec720dd616bfee06dccf71dd6a3e54eb7de90d7c5413bc4287",
     "research/production_loop_20261116/logs/baseline_integrators_peer.log": "9e640c014ac989152463e1a9745da31623391ed63fb008b4e83c74302e619ebe",
     "research/production_loop_20261116/logs/baseline_sp02_flake_probe.log": "d03595d085e964d82e7a3b26cf054d6e72dc9c5fc64768966850e1d4069940a1",
-    "docs/agent/production_solver_program_20261112/OWNER_DECISIONS_20261116.json": "92955f553e9b0562df30c46acdb4b907e2b7dd5ad9f295424ffdd2effdcb3f2b"
+    "docs/agent/production_solver_program_20261112/OWNER_DECISIONS_20261116.json": "92955f553e9b0562df30c46acdb4b907e2b7dd5ad9f295424ffdd2effdcb3f2b",
+    "research/production_loop_20261116/audit/audit_findings.json": "95a21595eaa997a27d68b627a1dadddbad77ec2c545b761b9ad7e0d3fbe6ede4",
+    "research/production_loop_20261116/audit/R_GATE_PROPOSAL.json": "6f6c66030b190dad22a1c2a42f8724cf09857e1b4641596499c5c3a1ce755cbc",
+    "research/production_loop_20261116/theory/RESULTS.json": "4055eb85735c3b7aaef2f8e51c7d1a5836a0e8bfc8442c024709cfb30afd1dc9",
+    "research/production_loop_20261116/schwarz_screen/RESULTS.json": "e3e11fe3d64e08d7c369049b5e4440fae0e2bcaaacaa8b03c511be4796184a5e",
+    "research/production_loop_20261116/golden_oracle/RECEIPT.json": "f634369ebe4be7f88757de63e4d255b2f213f9dfb07c7e7011b2b3f4fc937835",
+    "research/production_loop_20261116/client_kit/RECEIPT.json": "394c52de471effa96d78b8fbf18ee1750d3b19e4f5e41900405c71d137463095",
+    "research/production_loop_20261116/trial_merge/T_GATES.json": "5a43c64f53cdb45d1e98b86663db1896f2c247ba810e2c217e33d909e2e34ee7",
+    "research/production_loop_20261116/trial_merge/BLOB_DELTA.json": "969814f023c9b636cd2d35d3113c109eefdbecf9047062ab63e0b45a696b6c40"
   },
-  "implemented_source_sha256": {},
+  "implemented_source_sha256": {
+    "crates/vigilode/tests/default_path_golden.rs": "9ef2b4b7aff1d92b14c7f28c764e5ff791a2823091ec50cf8ffc1167366863ec"
+  },
   "preregistration_frozen_part_sha256": "0a5c7e061be57d24f382f24594c7d83a1ec68a4365ec6590c316d1d351ba0c85",
   "notes": [
     "The 17 protected blobs of the 2026-11-15 checkpoint plus the fast, matrix-free, dense-output, lagged and client-stage drivers and the adaptive controller.",
     "The 2026-11-15 checker stops passing once selection.rs changes; this checkpoint is the authority for loop L1.",
-    "A passed trial merge (V02) replaces protected_blob_sha1 in a recorded step."
+    "A passed trial merge (V02) replaces protected_blob_sha1 in a recorded step.",
+    "Wave 1: golden oracle merged; trial merge not adopted (gates T2, T3 strict, T6 fail); V15 code stays on its branch."
   ]
 }

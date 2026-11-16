@@ -652,7 +652,7 @@
       "depends": [
         "V00_LOOP_BOOTSTRAP"
       ],
-      "status": "PLANNED",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Adversarially verify the recorded claims of U01-U11 and of the unmerged switcher lineage, and judge release readiness per axis.",
       "write_allowlist": [
         "research/production_loop_20261116/audit/**",
@@ -681,14 +681,20 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_loop_20261116/audit/AUDIT_KO.md",
+        "research/production_loop_20261116/audit/audit_findings.json",
+        "research/production_loop_20261116/audit/R_GATE_PROPOSAL.json",
+        "research/production_loop_20261116/audit/LINEAGE_ADDENDUM.md"
+      ],
+      "scope_completed": "Audit executed: 30 findings, 9 of 9 verified findings confirmed, 12 leads kept as leads. Release gate judged per axis: 6 NOT_MET, 2 PARTIAL, 0 MET."
     },
     {
       "id": "V03G_DEFAULT_PATH_GOLDEN",
       "depends": [
         "V00_LOOP_BOOTSTRAP"
       ],
-      "status": "PLANNED",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Bitwise oracle of the default-facing entry points, used as neutrality test for the trial merge and for frontend work.",
       "write_allowlist": [
         "crates/vigilode/tests/default_path_golden.rs",
@@ -716,7 +722,11 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_loop_20261116/golden_oracle/RECEIPT.json",
+        "crates/vigilode/tests/default_path_golden.rs"
+      ],
+      "scope_completed": "260 cases and a 221184-entry decision grid; debug and release agree bit for bit; merged into the loop branch."
     },
     {
       "id": "V02_TRIAL_MERGE",
@@ -724,7 +734,7 @@
         "V00_LOOP_BOOTSTRAP",
         "V03G_DEFAULT_PATH_GOLDEN"
       ],
-      "status": "PLANNED",
+      "status": "PARTIAL",
       "purpose": "Trial merge of the switcher lineage (93392249) on a separate branch and conditional adoption (owner decision OD-L1-1).",
       "write_allowlist": [
         "research/production_loop_20261116/trial_merge/**"
@@ -754,14 +764,19 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_loop_20261116/trial_merge/T_GATES.json",
+        "research/production_loop_20261116/trial_merge/MERGE_FACTS.json",
+        "research/production_loop_20261116/trial_merge/BLOB_DELTA.json"
+      ],
+      "state_note": "Trial executed on branch research/production-loop-20261116-trial (408e3b6c): T1 PASS, T5 PASS, T2 FAIL (source-pinning sentinels g3 and h2), T3 strict FAIL (600 added serde keys, 0 changed values), T6 FAIL. Adoption needs an owner decision."
     },
     {
       "id": "V15_STAGE_CLIENT_KIT",
       "depends": [
         "V00_LOOP_BOOTSTRAP"
       ],
-      "status": "PLANNED",
+      "status": "PARTIAL",
       "purpose": "Reference stage linear-system clients for the protected fast driver, so later levers need no kernel duplication and no protected edit.",
       "write_allowlist": [
         "crates/rodas5p-integrators/src/stage_clients/**",
@@ -789,14 +804,17 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_loop_20261116/client_kit/RECEIPT.json"
+      ],
+      "state_note": "Code and tests complete on branch research/production-loop-20261116-v15 (eee12b5a): bit identity 15 of 15 rows. Not merged: the module declaration in rodas5p-integrators/src/lib.rs is forbidden by sentinel g3 until the owner decides."
     },
     {
       "id": "V05_STAGE_THEORY",
       "depends": [
         "V00_LOOP_BOOTSTRAP"
       ],
-      "status": "PLANNED",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Machine-checked statements about the Rodas5P stage structure and their consequences for parallel or inexact-Jacobian execution.",
       "write_allowlist": [
         "research/production_loop_20261116/theory/**"
@@ -822,7 +840,11 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_loop_20261116/theory/THEORY.md",
+        "research/production_loop_20261116/theory/RESULTS.json"
+      ],
+      "scope_completed": "Two independent scripts agree on 1040 values. Literature formulas of the Rodas5P paper remain UNVERIFIED; the level-structured tableau count is a counting argument."
     },
     {
       "id": "V04_STAGE_COST_ANATOMY",
@@ -1072,7 +1094,7 @@
       "depends": [
         "V05_STAGE_THEORY"
       ],
-      "status": "PLANNED",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Spatial restricted additive Schwarz on the whole stage system: each subdomain runs the eight-stage chain locally.",
       "write_allowlist": [
         "research/production_loop_20261116/schwarz_screen/**"
@@ -1096,7 +1118,11 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_loop_20261116/schwarz_screen/README.md",
+        "research/production_loop_20261116/schwarz_screen/RESULTS.json"
+      ],
+      "scope_completed": "Screen executed: 17 PASS / 31 FAIL / 12 KILL of 60 configurations; passes only at a diffusion length of about one cell. No native prototype."
     },
     {
       "id": "V03_UNIFIED_FRONTEND",
@@ -1142,7 +1168,7 @@
       "depends": [
         "V02_TRIAL_MERGE"
       ],
-      "status": "PLANNED",
+      "status": "IN_PROGRESS",
       "purpose": "Contract table for mathematics that is not yet ported.",
       "write_allowlist": [
         "research/production_loop_20261116/port_plan/**"
@@ -1165,7 +1191,10 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_loop_20261116/port_plan/port_contracts.json"
+      ],
+      "state_note": "Draft of 20 contracts; final after the V02 decision."
     },
     {
       "id": "V13_CLOSEOUT",

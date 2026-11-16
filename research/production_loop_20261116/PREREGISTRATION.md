@@ -39,3 +39,13 @@
 The V07 band follows from the overlap window of two of eight stages: the saving is min(T_J+LU, T_chain/4), so the speed-up is at most 1.25 and reaches 1.15 only for T_J+LU / T_chain in [0.15, 0.92].
 
 ## Results (appended after runs; nothing above this line changes)
+
+### Wave 1 (2026-11-16)
+
+- V01: 30 findings (1 critical, 19 major, 10 minor); 9 sent to independent verification, 9 confirmed with corrections, 0 refuted; 12 single-auditor leads stay leads. Release gate per axis: NOT_MET R1, R2, R3, R4, R6, R7; PARTIAL R5, R8. Evidence: `audit/`.
+- V03G: PASS. 260 cases, 9 golden files, decision grid of 221184 `GeneralOde::select` entries with zero callbacks; two release runs and one debug run reproduce every file bit for bit; five negative controls detected. Evidence: `golden_oracle/RECEIPT.json`.
+- V02: gates T1 PASS, T2 FAIL, T3 FAIL (strict), T5 PASS, T6 FAIL. T2: 1210 passed / 2 failed / 24 ignored; both failures are the source-pinning sentinels g3 and h2 (the merge changes four pinned files). T3: 8 of 9 golden files byte-identical; `production_automatic` has 0 changed, 0 removed and 600 added keys (ten new `SwitchingConfig` serde fields). T6: `research/qualification/` has no pre-registration and no ledger row. The frozen adoption rule is not met; the trial branch is kept as evidence and the decision goes to the owner. Evidence: `trial_merge/`.
+- V15: PASS on the identity and allocation discriminators (15 of 15 rows bit-identical, 2231 accepted states, zero allocations per step for the in-place mode; instruction ratio client/protected 0.9985 to 0.9998). The wall discriminator is not decidable on the loaded host (diagnostic 0.98 ratio of medians). Code is on branch `research/production-loop-20261116-v15`; not merged because declaring the module in `rodas5p-integrators/src/lib.rs` violates sentinel g3. Evidence: `client_kit/RECEIPT.json`.
+- V05: PASS. Two independent scripts agree on 1040 values. Corrections to the plan-stage facts: the k-variable sweep matrix is not the one R6 iterates (U-form norms are larger, nilpotency 8); a lagged Jacobian lowers the classical order to 3; a factorisation cannot be speculated without a predicted step size. Evidence: `theory/`.
+- V14: screen criteria met in 17 of 60 configurations, FAIL 31, KILL 12. Passes only for Gray-Scott (diffusion length about one cell); no configuration passes for heat or Brusselator. No native prototype. Evidence: `schwarz_screen/`.
+- Process: the bootstrap commit added two module lines to `rodas5p-integrators/src/lib.rs`, which violated sentinel g3; reverted in wave 1 (sentinels g3 and h2 pass).
