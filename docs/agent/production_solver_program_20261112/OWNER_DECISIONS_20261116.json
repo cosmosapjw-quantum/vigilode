@@ -27,6 +27,31 @@
       "topic": "qualification standard",
       "selected": "G0 유지 + 릴리스 게이트 신설 (Recommended)",
       "meaning": "G0 stays unchanged. A separate release-readiness gate (R-gate) for the scoped package with protected RODAS5P as default is defined and judged per axis."
+    },
+    {
+      "id": "OD-L1-5",
+      "topic": "adoption of the trial merge of 93392249 although the frozen rule is formally not met",
+      "selected": "조정 후 채택 (Recommended)",
+      "asked_after": "wave 1 gates: T1 PASS, T5 PASS, T2 1210 passed / 2 failed (source-pinning sentinels g3, h2), T3 strict FAIL by 600 added serde keys with 0 changed values, T6 FAIL",
+      "meaning": "Adopt the merge on the loop branch. Re-pin sentinels g3 and h2 to the post-merge bytes with a record of old and new pins; regenerate the one golden file whose only difference is added keys; add INVALID superseding rows for L-0209..L-0214; the unified router defects are handled in V03 (real dispatch or removal); hook settings are not edited, only reported."
+    },
+    {
+      "id": "OD-L1-6",
+      "topic": "declaration of loop modules in rodas5p-integrators/src/lib.rs",
+      "selected": "g3 허용 줄 확장 (Recommended)",
+      "meaning": "The owner allowlist of sentinel g3 is extended: besides `pub mod ppsw1;` the file may hold the loop L1 module lines; the allowed lines are named in the test."
+    },
+    {
+      "id": "OD-L1-7",
+      "topic": "hosted CI evidence",
+      "selected": "draft PR 생성 (Recommended)",
+      "meaning": "Open a draft pull request from the loop branch to research/production-unification-20261115, titled as not a release, never merged by the agent, to run production.yml."
+    },
+    {
+      "id": "OD-L1-8",
+      "topic": "evidence branches v15 and trial whose push was denied by the permission classifier",
+      "selected": "직접 push하겠음",
+      "meaning": "The owner pushes research/production-loop-20261116-v15 and -trial manually; the agent does not retry."
     }
   ],
   "plan_approval": {
