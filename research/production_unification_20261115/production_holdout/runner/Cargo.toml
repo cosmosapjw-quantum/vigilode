@@ -1,0 +1,15 @@
+[package]
+name = "u11-holdout-runner"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# Independent runner outside the repository workspace (see PREREGISTRATION.json).
+[workspace]
+
+[dependencies]
+vigilode = { path = "../../../../crates/vigilode" }
+serde_json = { version = "1.0.151", features = ["float_roundtrip"] }
+
+[profile.release]
+debug = false
