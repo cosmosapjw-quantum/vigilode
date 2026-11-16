@@ -1,0 +1,40 @@
+{
+ "command": [
+  "taskset",
+  "-c",
+  "0-5,12-17",
+  "perf",
+  "stat",
+  "-x,",
+  "-e",
+  "instructions:u,cycles:u,page-faults",
+  "-o",
+  "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v04/research/production_loop_20261116/cost_anatomy/logs/perfstat/banded_2d.ac2d.g64.analytic.x100.instrumented.perf.csv",
+  "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v04/release/v04-cost-anatomy-runner",
+  "single",
+  "--cell",
+  "banded_2d.ac2d.g64.analytic.x100",
+  "--arm",
+  "instrumented",
+  "--attempts",
+  "20"
+ ],
+ "exit_code": 0,
+ "loadavg_before": [
+  10.95,
+  8.78,
+  7.07
+ ],
+ "loadavg_after": [
+  10.95,
+  8.78,
+  7.07
+ ],
+ "started_unix": 1794849525.5647225,
+ "wall_seconds": 1.120347499847412,
+ "log": "logs/perfstat/banded_2d.ac2d.g64.analytic.x100.instrumented.stdout.jsonl",
+ "log_sha256": "4b74ac7912be1a8e1b5466c3c92b91dadb49b31c08d3054eb5bc5aa3a13f0133",
+ "binary_sha256": "6c8024535a7f53a68c20033ec062b57645aa6ceb6325ed9e86002d19ab1769ec",
+ "attempt_budget": 20,
+ "arm": "instrumented"
+}
