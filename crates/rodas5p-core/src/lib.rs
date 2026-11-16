@@ -19,6 +19,7 @@ pub mod n01_affine_owner;
 pub mod n01_mass_action_owner;
 pub mod n01_source_owner;
 pub mod nonnormal_certificate;
+pub mod nonnormal_observers;
 pub use n01_mass_action_owner::{
     N01MassActionJvpReport, N01MassActionOwner, N01MassActionReport, N01MassActionTrial,
 };
@@ -51,16 +52,18 @@ pub use directed::{
     scale_pow2_nearest_counted, scale_pow2_up,
 };
 pub use error::{CoreError, CoreResult};
-pub use hash::{sha256_f64_slice_bytes, sha256_hex};
+pub use hash::{sha256_bytes, sha256_f64_slice_bytes, sha256_hex};
 pub use leja_action::{
-    CertifiedLejaCoeffCache, CertifiedLejaReport, CertifiedLejaWorkspace, LEJA_CERTIFIED_SCHEMA,
+    CertifiedLejaCoeffCache, CertifiedLejaReport, CertifiedLejaWorkspace,
+    CertifiedNormalityWitness, ComplexLejaConfig, ComplexLejaWorkspace, LEJA_CERTIFIED_SCHEMA,
     LEJA_DEGREE_CAP, LEJA_RANGE_LIMIT, LEJA_SCHEMA, LEJA_TOTAL_NOT_CERTIFIED, LejaReport,
-    leja_divided_differences, leja_divided_differences_certified, leja_node_bounds,
-    leja_node_bounds_with_setup_work, leja_node_polynomial_bound, leja_phi_action,
-    leja_phi_action_capped, leja_phi_action_certified, leja_phi_action_certified_capped,
-    leja_phi_action_certified_with_cache, leja_phi_action_certified_with_cache_and_workspace,
-    leja_phi_action_certified_with_setup_work, leja_points, leja_points_with_setup_work,
-    leja_suffix_bounds_with_setup_work,
+    complex_imaginary_leja_points, complex_leja_divided_differences,
+    complex_leja_phi_action_direct_into, complex_leja_phi_action_into, leja_divided_differences,
+    leja_divided_differences_certified, leja_node_bounds, leja_node_bounds_with_setup_work,
+    leja_node_polynomial_bound, leja_phi_action, leja_phi_action_capped, leja_phi_action_certified,
+    leja_phi_action_certified_capped, leja_phi_action_certified_with_cache,
+    leja_phi_action_certified_with_cache_and_workspace, leja_phi_action_certified_with_setup_work,
+    leja_points, leja_points_with_setup_work, leja_suffix_bounds_with_setup_work,
 };
 pub use leja_setup_work::{
     CoefficientCacheObservation, LEJA_SETUP_RECEIPT_SCHEMA_V1, LejaSetupReceiptV1, LejaSetupWork,
@@ -71,13 +74,18 @@ pub use matrix_functions::{
     DensePhiCombinationReport, dense_fused_phi_action, dense_fused_phi_action_report,
     dense_phi_action, dense_phi_combination, dense_phi_combination_report, matrix_exp_pade13,
 };
+pub use nonnormal_observers::{
+    FixedHLogNormObserver, FixedHMetric, GrowthBoundStatus, MovingHMetricObserver,
+    ObserverWorkCounters, QrSackerSellObserver, ResolventAnalysis,
+    ResolventNumericalAbscissaObserver,
+};
 pub use norms::{error_scale, safe_l2, scaled_error_component, step_error_wrms, wrms};
 pub use operator::{
     ApplyCategory, ClosureOperator, DenseOperator, DirectPreconditioner, ExactDenseMatrixIdentity,
     ExactOperatorIdentity, ExactPreconditionerIdentity, IdentityPreconditioner,
     JacobiPreconditioner, KrylovSystemIdentity, LinearOperator, OperatorApplicationWork,
     Preconditioner, PreconditionerSide, ShiftedOperator, apply_counted, apply_jvp_counted,
-    apply_preconditioner, apply_rows_counted, exact_krylov_system_identity,
+    apply_preconditioner, apply_rows_counted, exact_krylov_system_identity, next_operator_token,
 };
 pub use polynomial_action::{
     ActionPlan, BasisPlanBranch, EnclosureIdentity, LAGUERRE_COMPONENTS_UNSUPPORTED,

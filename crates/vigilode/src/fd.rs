@@ -223,6 +223,221 @@ impl Guard {
     }
 }
 
+/// Accuracy rungs for Jacobian-vector product evaluation (WP-06).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum JvpAccuracyRung {
+    /// Forward difference (1 evaluation, error O(sqrt(u))). Default.
+    #[default]
+    R0Forward,
+    /// Central difference (2 evaluations, error O(u^(2/3))).
+    R1Central,
+    /// 4-node Chebyshev directional derivative (4 evaluations, error O(u^(4/5))).
+    R2Chebyshev4,
+    /// Complex-step derivative (error O(u), requires holomorphic callback).
+    R3ComplexStep,
+}
+
+/// Compute directional derivative via 4-node Chebyshev interpolation (R2, WP-06).
+pub fn jvp_chebyshev4<F>(
+    rhs: &F,
+    t: f64,
+    y: &[f64],
+    v: &[f64],
+    out: &mut [f64],
+    scratch_y: &mut [f64],
+    scratch_f: &mut [f64],
+) -> Result<(), CallbackError>
+where
+    F: Fn(f64, &[f64], &mut [f64]) -> Result<(), CallbackError>,
+{
+    let n = y.len();
+    let norm_y: f64 = y.iter().map(|x| x * x).sum::<f64>().sqrt();
+    let norm_v: f64 = v.iter().map(|x| x * x).sum::<f64>().sqrt().max(1.0e-300);
+    let u = f64::EPSILON;
+    let delta = u.powf(0.2) * (1.0 + norm_y) / norm_v;
+
+    // 4 Gauss-Chebyshev nodes: xi_q = cos((2q + 1) * pi / 8)
+    let nodes: [f64; 4] = [
+        (std::f64::consts::PI * 1.0 / 8.0).cos(),
+        (std::f64::consts::PI * 3.0 / 8.0).cos(),
+        (std::f64::consts::PI * 5.0 / 8.0).cos(),
+        (std::f64::consts::PI * 7.0 / 8.0).cos(),
+    ];
+
+    // Derivative weights for V w = e_1 at delta = 1 (closed-form for Gauss-Chebyshev 4-node)
+    let weights: [f64; 4] = [
+        -0.11208538229199128,
+        1.5771610149494748,
+        -1.5771610149494748,
+        0.11208538229199128,
+    ];
+
+    out.fill(0.0);
+    for q in 0..4 {
+        let step = delta * nodes[q];
+        for i in 0..n {
+            scratch_y[i] = y[i] + step * v[i];
+        }
+        rhs(t, scratch_y, scratch_f)?;
+        let w_q = weights[q] / delta;
+        for i in 0..n {
+            out[i] += w_q * scratch_f[i];
+        }
+    }
+    Ok(())
+}
+
+/// Compute directional derivative via 4-node Chebyshev interpolation with
+/// smoothness and kink guards (WP-06).
+pub fn jvp_chebyshev4_guarded<F>(
+    rhs: &F,
+    t: f64,
+    y: &[f64],
+    v: &[f64],
+    out: &mut [f64],
+    scratch_y: &mut [f64],
+    scratch_f: &mut [f64],
+) -> Result<(), CallbackError>
+where
+    F: Fn(f64, &[f64], &mut [f64]) -> Result<(), CallbackError>,
+{
+    let norm_y: f64 = y.iter().map(|x| x * x).sum::<f64>().sqrt();
+    let norm_v: f64 = v.iter().map(|x| x * x).sum::<f64>().sqrt().max(1.0e-300);
+    let u = f64::EPSILON;
+    let delta = u.powf(0.2) * (1.0 + norm_y) / norm_v;
+    jvp_chebyshev4_guarded_with_delta(rhs, t, y, v, delta, out, scratch_y, scratch_f)
+}
+
+/// Compute directional derivative via 4-node Chebyshev interpolation with an explicit
+/// delta and divided-difference smoothness/kink guards (WP-06).
+///
+/// `scratch_f` must have length at least `4 * n` to store all 4 stage evaluations
+/// for the 3rd-order divided-difference check. Performs zero heap allocations.
+#[allow(clippy::too_many_arguments)]
+pub fn jvp_chebyshev4_guarded_with_delta<F>(
+    rhs: &F,
+    t: f64,
+    y: &[f64],
+    v: &[f64],
+    delta: f64,
+    out: &mut [f64],
+    scratch_y: &mut [f64],
+    scratch_f: &mut [f64],
+) -> Result<(), CallbackError>
+where
+    F: Fn(f64, &[f64], &mut [f64]) -> Result<(), CallbackError>,
+{
+    let n = y.len();
+    assert_eq!(v.len(), n, "v length mismatch");
+    assert_eq!(out.len(), n, "out length mismatch");
+    assert!(scratch_y.len() >= n, "scratch_y must have length >= n");
+    assert!(
+        scratch_f.len() >= 4 * n,
+        "scratch_f must have length >= 4 * n for guarded 4-node evaluation"
+    );
+
+    if !(delta.is_finite() && delta > 0.0) {
+        return Err(CallbackError::Recoverable(
+            "Chebyshev4 non-smoothness or kink detected: non-positive or non-finite delta".into(),
+        ));
+    }
+
+    // 4 Gauss-Chebyshev nodes: xi_q = cos((2q + 1) * pi / 8)
+    let nodes: [f64; 4] = [
+        (std::f64::consts::PI * 1.0 / 8.0).cos(),
+        (std::f64::consts::PI * 3.0 / 8.0).cos(),
+        (std::f64::consts::PI * 5.0 / 8.0).cos(),
+        (std::f64::consts::PI * 7.0 / 8.0).cos(),
+    ];
+
+    // Derivative weights for V w = e_1 at delta = 1 (closed-form for Gauss-Chebyshev 4-node)
+    let weights: [f64; 4] = [
+        -0.11208538229199128,
+        1.5771610149494748,
+        -1.5771610149494748,
+        0.11208538229199128,
+    ];
+
+    // Evaluate 4 Chebyshev nodes into scratch_f
+    for q in 0..4 {
+        let step = delta * nodes[q];
+        for i in 0..n {
+            scratch_y[i] = y[i] + step * v[i];
+        }
+        rhs(t, scratch_y, &mut scratch_f[q * n..(q + 1) * n])?;
+    }
+
+    let s0 = delta * nodes[0];
+    let s1 = delta * nodes[1];
+    let s2 = delta * nodes[2];
+    let s3 = delta * nodes[3];
+
+    let ds01 = s0 - s1;
+    let ds12 = s1 - s2;
+    let ds23 = s2 - s3;
+    let ds02 = s0 - s2;
+    let ds13 = s1 - s3;
+    let ds03 = s0 - s3;
+
+    // Divided-difference smoothness check on sampled f-values
+    for i in 0..n {
+        let f0 = scratch_f[i];
+        let f1 = scratch_f[n + i];
+        let f2 = scratch_f[2 * n + i];
+        let f3 = scratch_f[3 * n + i];
+
+        if !(f0.is_finite() && f1.is_finite() && f2.is_finite() && f3.is_finite()) {
+            return Err(CallbackError::Recoverable(
+                "Chebyshev4 non-smoothness or kink detected: non-finite output".into(),
+            ));
+        }
+
+        // 1st-order divided differences (chord slopes)
+        let d0 = (f0 - f1) / ds01;
+        let d1 = (f1 - f2) / ds12;
+        let d2 = (f2 - f3) / ds23;
+
+        // 2nd-order divided differences (discrete curvature)
+        let d2_0 = (d0 - d1) / ds02;
+        let d2_1 = (d1 - d2) / ds13;
+
+        // 3rd-order divided difference (cubic remainder)
+        let d3 = (d2_0 - d2_1) / ds03;
+
+        let d0_d2_sign_flip = (d0 < 0.0 && d2 > 0.0) || (d0 > 0.0 && d2 < 0.0);
+        let d_mag = d0.abs().max(d2.abs());
+
+        // Kink detection: opposite slopes across stencil with non-negligible magnitude and large discrete curvature
+        let is_kink = (d0_d2_sign_flip
+            && d_mag > 1.0e-4
+            && (delta * d2_0.abs() > 0.25 || delta * d2_1.abs() > 0.25))
+            || ((d0 - d2).abs() > 0.5 * 1.0f64.max(d_mag)
+                && delta * (d2_0.abs() + d2_1.abs()) > 0.25);
+
+        // Step discontinuity / large non-smooth remainder check
+        let remainder_3 = (delta * delta) * d3.abs();
+        let is_discontinuous = remainder_3 > 5.0 * 1.0f64.max(f0.abs().max(f3.abs()))
+            || (delta * d2_0.abs() > 10.0 && delta * d2_1.abs() > 10.0);
+
+        if is_kink || is_discontinuous {
+            return Err(CallbackError::Recoverable(
+                "Chebyshev4 non-smoothness or kink detected".into(),
+            ));
+        }
+    }
+
+    out.fill(0.0);
+    for q in 0..4 {
+        let w_q = weights[q] / delta;
+        for i in 0..n {
+            out[i] += w_q * scratch_f[q * n + i];
+        }
+    }
+
+    Ok(())
+}
+
 /// The forward-difference increment of component `y_j`: the represented
 /// difference `(y_j + sqrt(eps) max(|y_j|, 1)) - y_j`.
 fn increment(yj: f64) -> (f64, f64) {
@@ -800,5 +1015,29 @@ mod tests {
         assert_eq!((work.fatal_errors, work.short_circuited_calls), (1, 1));
         let fatal = guard.fatal().unwrap();
         assert_eq!((fatal.callback, fatal.t), (Callback::Rhs, 1.0));
+    }
+
+    #[test]
+    fn test_jvp_chebyshev4_ver07_accuracy() {
+        // d/dx [sin(x) e^{-x/2} + x^3] at x = 1.2 (VER-07)
+        let f = |_t: f64, y: &[f64], out: &mut [f64]| {
+            let x = y[0];
+            out[0] = x.sin() * (-0.5 * x).exp() + x * x * x;
+            Ok(())
+        };
+
+        let y = [1.2];
+        let v = [1.0];
+        let mut out = [0.0];
+        let mut scratch_y = [0.0];
+        let mut scratch_f = [0.0];
+
+        jvp_chebyshev4(&f, 0.0, &y, &v, &mut out, &mut scratch_y, &mut scratch_f)
+            .expect("chebyshev4 succeeded");
+
+        let x: f64 = 1.2;
+        let exact = x.cos() * (-0.5 * x).exp() - 0.5 * x.sin() * (-0.5 * x).exp() + 3.0 * x * x;
+        let err = (out[0] - exact).abs();
+        assert!(err < 1.0e-12, "Chebyshev4 error {err:e} exceeds 1e-12");
     }
 }

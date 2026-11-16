@@ -1,3 +1,5 @@
+#![allow(clippy::identity_op, clippy::erasing_op)]
+
 use std::sync::{
     Arc,
     atomic::{AtomicU64, Ordering},
@@ -129,6 +131,7 @@ fn stiff_work_pressure_enters_authorized_fallback_from_accepted_state() {
         fallback: DerivativeFallback::ProvidedOnly,
         explicit_attempt_budget: 12,
         pressure_steps: 10,
+        prescreen_initial_stiffness: false,
         ..Default::default()
     };
     let r = SwitchingSolver::solve(&stiff(), (0.0, 1.0), &[1.0], &opts(), &c).unwrap();
@@ -174,6 +177,7 @@ fn fatal_callback_is_not_retried_with_another_method() {
     .time_derivative(|_, _, _| panic!("time derivative after fatal"));
     let c = SwitchingConfig {
         fallback: DerivativeFallback::ProvidedOnly,
+        prescreen_initial_stiffness: false,
         ..Default::default()
     };
     let r = SwitchingSolver::solve(&p, (0.0, 1.0), &[0.0], &opts(), &c).unwrap();
@@ -291,6 +295,7 @@ fn budget_failure_preserves_accepted_state_and_never_forges_success() {
     let c = SwitchingConfig {
         fallback: DerivativeFallback::ProvidedOnly,
         explicit_attempt_budget: 2,
+        prescreen_initial_stiffness: false,
         ..Default::default()
     };
     let r = SwitchingSolver::solve(&stiff(), (0.0, 1.0), &[1.0], &o, &c).unwrap();
@@ -312,6 +317,7 @@ fn malformed_output_stops_before_fallback() {
     .autonomous();
     let c = SwitchingConfig {
         fallback: DerivativeFallback::ProvidedOnly,
+        prescreen_initial_stiffness: false,
         ..Default::default()
     };
     let r = SwitchingSolver::solve(&p, (0.0, 1.0), &[1.0, 1.0], &opts(), &c).unwrap();
@@ -424,4 +430,177 @@ fn serialization_preserves_route_and_original_driver_records() {
     assert_eq!(j["schema"], "vigilode.switching.v1");
     assert_eq!(j["config"]["fallback"], "forbidden");
     assert_eq!(j["stats"]["segments"][0]["driver"]["method"], "dopri5");
+}
+
+fn robertson() -> Problem {
+    Problem::new(3, |_t, y, dy| {
+        dy[0] = -0.04 * y[0] + 1.0e4 * y[1] * y[2];
+        dy[1] = 0.04 * y[0] - 1.0e4 * y[1] * y[2] - 3.0e7 * y[1] * y[1];
+        dy[2] = 3.0e7 * y[1] * y[1];
+        Ok(())
+    })
+    .jacobian(Jacobian::dense(|_t, y, j| {
+        j.fill(0.0);
+        j[0] = -0.04;
+        j[1] = 1.0e4 * y[2];
+        j[2] = 1.0e4 * y[1];
+        j[3] = 0.04;
+        j[4] = -1.0e4 * y[2] - 6.0e7 * y[1];
+        j[5] = -1.0e4 * y[1];
+        j[7] = 6.0e7 * y[1];
+        Ok(())
+    }))
+    .autonomous()
+}
+
+fn autonomous_stiff() -> Problem {
+    Problem::new(1, |_t, y, dy| {
+        dy[0] = -10_000.0 * y[0];
+        Ok(())
+    })
+    .jacobian(Jacobian::dense(|_, _, j| {
+        j[0] = -10_000.0;
+        Ok(())
+    }))
+    .autonomous()
+}
+
+#[test]
+fn prescreen_initial_stiffness_starts_directly_with_rodas5p() {
+    let c = SwitchingConfig {
+        fallback: DerivativeFallback::ProvidedOnly,
+        prescreen_initial_stiffness: true,
+        ..Default::default()
+    };
+    assert!(c.prescreen_initial_stiffness);
+    let r = SwitchingSolver::solve(&autonomous_stiff(), (0.0, 1.0), &[1.0], &opts(), &c).unwrap();
+    assert!(r.success, "{}", r.message);
+    assert_eq!(r.stats.segments[0].method, SwitchingMethod::Rodas5p);
+    assert_eq!(r.stats.switches, 0);
+}
+
+#[test]
+fn prescreen_initial_stiffness_non_autonomous_stays_with_dopri5() {
+    let c = SwitchingConfig {
+        fallback: DerivativeFallback::ProvidedOnly,
+        prescreen_initial_stiffness: true,
+        ..Default::default()
+    };
+    // Non-autonomous forced oscillation `stiff()` must NOT enter Rodas5p at t0;
+    // it must stay with Dopri5 or switch only via observed work pressure.
+    let r = SwitchingSolver::solve(&stiff(), (0.0, 1.0), &[1.0], &opts(), &c).unwrap();
+    assert!(r.success, "{}", r.message);
+    assert_eq!(r.stats.segments[0].method, SwitchingMethod::Dopri5);
+}
+
+#[test]
+fn prescreen_initial_stiffness_micro_probe_detects_robertson_stiffness() {
+    let opts = Options {
+        rtol: 1e-6,
+        atol: Atol::Scalar(1e-10),
+        h0: 1e-4,
+        max_steps: 50_000,
+        ..Default::default()
+    };
+    let c = SwitchingConfig {
+        fallback: DerivativeFallback::ProvidedOnly,
+        window_count: 8,
+        prescreen_initial_stiffness: true,
+        ..Default::default()
+    };
+    let r = SwitchingSolver::solve(&robertson(), (0.0, 40.0), &[1.0, 0.0, 0.0], &opts, &c).unwrap();
+    assert!(r.success, "{}", r.message);
+    assert_eq!(r.stats.segments[0].method, SwitchingMethod::Rodas5p);
+    assert_eq!(r.stats.switches, 0);
+    let y = &r.final_state;
+    let mass_drift = (y[0] + y[1] + y[2] - 1.0).abs();
+    assert!(mass_drift < 1e-10);
+}
+
+#[test]
+fn prescreen_initial_stiffness_disabled_starts_with_dopri5() {
+    let c = SwitchingConfig {
+        fallback: DerivativeFallback::ProvidedOnly,
+        prescreen_initial_stiffness: false,
+        explicit_attempt_budget: 12,
+        pressure_steps: 10,
+        ..Default::default()
+    };
+    let r = SwitchingSolver::solve(&stiff(), (0.0, 1.0), &[1.0], &opts(), &c).unwrap();
+    assert!(r.success, "{}", r.message);
+    assert_eq!(r.stats.segments[0].method, SwitchingMethod::Dopri5);
+    assert!(r.stats.switches > 0);
+}
+
+#[test]
+fn prescreen_initial_stiffness_detects_hires_and_keeps_nonstiff_explicit() {
+    // 1. HIRES should be detected as stiff at t0 (min_diag = -10.03, span = 321.8)
+    let hires = Problem::new(8, |_t, y, out| {
+        out[0] = -1.71 * y[0] + 0.43 * y[1] + 8.32 * y[2] + 0.0007;
+        out[1] = 1.71 * y[0] - 8.75 * y[1];
+        out[2] = -10.03 * y[2] + 0.43 * y[3] + 0.035 * y[4];
+        out[3] = 8.32 * y[1] + 1.71 * y[2] - 1.12 * y[3];
+        out[4] = -1.745 * y[4] + 0.43 * y[5] + 0.43 * y[6];
+        out[5] = -280.0 * y[5] * y[7] + 0.69 * y[3] + 1.71 * y[4] - 0.43 * y[5] + 0.69 * y[6];
+        out[6] = 280.0 * y[5] * y[7] - 1.81 * y[6];
+        out[7] = -280.0 * y[5] * y[7] + 1.81 * y[6];
+        Ok::<(), CallbackError>(())
+    })
+    .jacobian(Jacobian::dense(|_t, y, j| {
+        j.fill(0.0);
+        j[0 * 8 + 0] = -1.71;
+        j[0 * 8 + 1] = 0.43;
+        j[0 * 8 + 2] = 8.32;
+        j[1 * 8 + 0] = 1.71;
+        j[1 * 8 + 1] = -8.75;
+        j[2 * 8 + 2] = -10.03;
+        j[2 * 8 + 3] = 0.43;
+        j[2 * 8 + 4] = 0.035;
+        j[3 * 8 + 1] = 8.32;
+        j[3 * 8 + 2] = 1.71;
+        j[3 * 8 + 3] = -1.12;
+        j[4 * 8 + 4] = -1.745;
+        j[4 * 8 + 5] = 0.43;
+        j[4 * 8 + 6] = 0.43;
+        j[5 * 8 + 3] = 0.69;
+        j[5 * 8 + 4] = 1.71;
+        j[5 * 8 + 5] = -280.0 * y[7] - 0.43;
+        j[5 * 8 + 6] = 0.69;
+        j[5 * 8 + 7] = -280.0 * y[5];
+        j[6 * 8 + 5] = 280.0 * y[7];
+        j[6 * 8 + 6] = -1.81;
+        j[6 * 8 + 7] = 280.0 * y[5];
+        j[7 * 8 + 5] = -280.0 * y[7];
+        j[7 * 8 + 6] = 1.81;
+        j[7 * 8 + 7] = -280.0 * y[5];
+        Ok(())
+    }))
+    .autonomous();
+
+    let c = SwitchingConfig {
+        fallback: DerivativeFallback::ProvidedOnly,
+        prescreen_initial_stiffness: true,
+        ..Default::default()
+    };
+    let y0_hires = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0057];
+    let r_hires = SwitchingSolver::solve(&hires, (0.0, 321.8122), &y0_hires, &opts(), &c).unwrap();
+    assert!(r_hires.success, "{}", r_hires.message);
+    assert_eq!(r_hires.stats.segments[0].method, SwitchingMethod::Rodas5p);
+    assert_eq!(r_hires.stats.switches, 0);
+
+    // 2. Non-stiff harmonic should NOT be classified as stiff and must start with Dopri5
+    let harmonic = Problem::new(2, |_t, y, dy| {
+        dy[0] = y[1];
+        dy[1] = -y[0];
+        Ok::<(), CallbackError>(())
+    })
+    .jacobian(Jacobian::dense(|_t, _y, j| {
+        j.copy_from_slice(&[0.0, 1.0, -1.0, 0.0]);
+        Ok(())
+    }))
+    .autonomous();
+
+    let r_harm = SwitchingSolver::solve(&harmonic, (0.0, 20.0), &[1.0, 0.0], &opts(), &c).unwrap();
+    assert!(r_harm.success, "{}", r_harm.message);
+    assert_eq!(r_harm.stats.segments[0].method, SwitchingMethod::Dopri5);
 }

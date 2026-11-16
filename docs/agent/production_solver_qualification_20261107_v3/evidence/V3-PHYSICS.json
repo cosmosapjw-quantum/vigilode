@@ -1,0 +1,39 @@
+{
+  "evidence_id": "EV-V3-PHYSICS-20261107",
+  "task_id": "V3-PHYSICS",
+  "claim_support": [
+    "NUMERICALLY_CHECKED",
+    "IMPLEMENTATION_VERIFIED"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "continue",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "https://github.com/cosmosapjw-quantum/vigilode",
+    "branch": "research/switcher-v2-20261103",
+    "head": "bcf6fcefa8322f7e8d4454ab40498256f4ff1e22",
+    "tree": "076c5d01e8419b1b8f0d88ca2d0de04407e21aa2",
+    "worktree_clean": true
+  },
+  "command_records": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "crates/vigilode-bench/Cargo.toml",
+        "--test",
+        "qualification_spatial_model_contract"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    }
+  ],
+  "result": "6/6 spatial model contract tests passed. Verified non-tilted triaxial Bianchi-I geometry, unpolarized rank-six Thomson kernel, positive cell measures, solid-angle 4pi enclosure, semi-discrete photon number/absorber ledger closure (sum(dy) == 0 within 1e-13), exact operator linearity (J * y == RHS within 1e-13), Dirichlet boundaries for 2D/3D semilinear advection-diffusion, Jacobian-vs-RHS finite difference consistency within 1e-5, and spatial mesh-refinement convergence order (ratio ~2.0 for first-order upwind advection).",
+  "limitations": [
+    "Physical model validation confirms spatial ODE discretizations, boundary conditions, and invariant conservation; it does not substitute for time-stepping ODE integrator qualification."
+  ]
+}

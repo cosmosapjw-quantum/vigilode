@@ -1,0 +1,106 @@
+{
+  "schema": "vigilode.acceptance_matrix.v3",
+  "claims": [
+    {
+      "claim": "Scoped ordinary numerical IVP",
+      "current": "PARTIAL_SCOPED_RESEARCH_IMPLEMENTATION",
+      "required": [
+        "full API contract",
+        "current HEAD workspace tests/build/lint",
+        "partial result and work-accounting semantics",
+        "live dispatch trace",
+        "clean source reproducibility"
+      ]
+    },
+    {
+      "claim": "Validated IVP enclosure",
+      "current": "NOT_QUALIFIED",
+      "required": [
+        "outward-rounded interval/Taylor arithmetic",
+        "sound interval extension for callbacks",
+        "time-slab inclusion and existence/uniqueness",
+        "global error propagation",
+        "continuous coverage [t0,T]",
+        "independent adversarial validation"
+      ]
+    },
+    {
+      "claim": "Matched achieved-error performance",
+      "current": "NOT_ESTABLISHED_ON_SPATIAL_V1",
+      "required": [
+        "accepted refined references",
+        "clean source/binary/corpus/runner hashes",
+        "endpoint-only arms",
+        "common achieved-error target bracketed by both curves",
+        "complete failures and work accounting",
+        "paired timing uncertainty"
+      ]
+    },
+    {
+      "claim": "Adaptive switching",
+      "current": "HEURISTIC_PARTIAL",
+      "required": [
+        "live call-path evidence",
+        "runtime transition trace",
+        "reentrant regimes",
+        "state/tolerance/accounting invariants"
+      ]
+    },
+    {
+      "claim": "Spatial physics model",
+      "current": "SCOPED_RESEARCH_MODEL",
+      "required": [
+        "equation-to-code map",
+        "boundary and measure checks",
+        "ledger/positivity controls",
+        "mesh refinement or manufactured solution",
+        "independent model oracle"
+      ]
+    },
+    {
+      "claim": "Zero-allocation hot loop",
+      "current": "PARTIAL_EVIDENCE",
+      "required": [
+        "allocator positive control",
+        "setup excluded",
+        "full attempt/route hot-loop measurement",
+        "negative controls",
+        "production code path"
+      ]
+    },
+    {
+      "claim": "Reproducible release",
+      "current": "NOT_EVIDENCED_ON_CURRENT_HEAD",
+      "required": [
+        "clean source identity",
+        "full tests/build/clippy",
+        "CI or independent receipt",
+        "complete provenance",
+        "one bounded independent review"
+      ]
+    }
+  ],
+  "legacy_thresholds": {
+    "status": "CARRIED_FORWARD_NOT_REAUTHORIZED",
+    "values": {
+      "median_speedup_min": 1.15,
+      "accepted_step_ratio_max": 1.2,
+      "fallback_ratio_max": 0.1,
+      "critical_depth_max": 8,
+      "critical_depth_p95_max": 6,
+      "applicable_global_order_min": 4.8,
+      "fast_lane_jacobian_calls": 0,
+      "fast_lane_newton_calls": 0
+    },
+    "rule": "Bind current authority before M4. Never relax or rewrite these values to fit results."
+  },
+  "benchmark_rules": {
+    "matched_only_inside_observed_bracket": true,
+    "extrapolation": false,
+    "full_grid_required": true,
+    "deterministic_repetitions_required": true,
+    "reference_accepted_required": true,
+    "grid_clipped_reported_separately": true,
+    "timing_authority": "diagnostic_only until preregistered multi-run timing protocol is satisfied"
+  }
+}

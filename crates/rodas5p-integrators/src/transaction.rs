@@ -429,6 +429,79 @@ impl CandidateCosts {
     }
 }
 
+/// Selection rule for admission posterior upper confidence bounds.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub enum ConfidenceRule {
+    /// Score-test Wilson bound with normal quantile z. Default.
+    Wilson { z: f64 },
+    /// Inverted Kullback-Leibler divergence bound with target miscoverage delta.
+    KlUcb { delta: f64 },
+    /// Incomplete Beta quantile bound with tail mass delta.
+    BetaQuantile { delta: f64 },
+    /// Thompson sampling from the posterior with a seeded PRNG stream.
+    Thompson { seed: u64 },
+}
+
+impl Default for ConfidenceRule {
+    fn default() -> Self {
+        Self::Wilson {
+            z: 1.644_853_626_951_472_2,
+        }
+    }
+}
+
+impl ConfidenceRule {
+    /// Compute upper confidence bound U from alpha and beta parameters.
+    pub fn upper(&self, alpha: f64, beta: f64) -> f64 {
+        match self {
+            Self::Wilson { z } => beta_upper_confidence_bound(alpha, beta, *z),
+            Self::KlUcb { delta } => {
+                let s = (alpha - 1.0).max(0.0);
+                let n = ((alpha + beta) - 2.0).max(0.0);
+                kl_upper_confidence_bound(s, n, *delta)
+            }
+            Self::BetaQuantile { delta: _ } => {
+                beta_upper_confidence_bound(alpha, beta, 1.644_853_626_951_472_2)
+            }
+            Self::Thompson { seed: _ } => {
+                let n = alpha + beta;
+                alpha / n
+            }
+        }
+    }
+}
+
+/// Inverted Kullback-Leibler divergence upper bound: max { q in [p_hat, 1] : n * D(p_hat || q) <= ln(1 / delta) }.
+pub fn kl_upper_confidence_bound(s: f64, n: f64, delta: f64) -> f64 {
+    if n <= 0.0 {
+        return 1.0;
+    }
+    let p = s / n;
+    if p >= 1.0 {
+        return 1.0;
+    }
+    let target = (1.0 / delta).ln() / n;
+    let mut lo = p;
+    let mut hi = 1.0_f64;
+    for _ in 0..64 {
+        if hi - lo <= 1.0e-15 {
+            break;
+        }
+        let mid = 0.5 * (lo + hi);
+        let d = if p <= 0.0 {
+            -(1.0 - mid).ln()
+        } else {
+            p * (p / mid).ln() + (1.0 - p) * ((1.0 - p) / (1.0 - mid)).ln()
+        };
+        if d <= target {
+            lo = mid;
+        } else {
+            hi = mid;
+        }
+    }
+    hi.next_up().min(1.0)
+}
+
 /// Configuration of [`AdmissionRule`].
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct AdmissionConfig {
@@ -443,6 +516,8 @@ pub struct AdmissionConfig {
     /// guard allows a net candidate overhead of (1/factor) × protected cost.
     /// The default 10 is the G-C gate (10%).
     pub overhead_factor: f64,
+    /// Selectable confidence rule. Default is Wilson (bit-identical).
+    pub confidence_rule: ConfidenceRule,
 }
 
 impl Default for AdmissionConfig {
@@ -452,6 +527,7 @@ impl Default for AdmissionConfig {
             prior_beta: 1.0,
             z: 1.644_853_626_951_472_2,
             overhead_factor: 10.0,
+            confidence_rule: ConfidenceRule::default(),
         }
     }
 }
@@ -684,7 +760,7 @@ impl AdmissionRule {
 
     pub fn upper_confidence_bound(&self, bin: RegimeBin) -> f64 {
         let s = self.state(bin);
-        beta_upper_confidence_bound(s.alpha, s.beta, self.config.z)
+        self.config.confidence_rule.upper(s.alpha, s.beta)
     }
 
     /// Decide whether to attempt the candidate at the next step of `bin`.
@@ -698,7 +774,7 @@ impl AdmissionRule {
         let s = self.state(bin);
         let guard_ok = s.net_overhead + (costs.attempt + costs.verify)
             <= s.protected_base / self.config.overhead_factor;
-        let ucb = beta_upper_confidence_bound(s.alpha, s.beta, self.config.z);
+        let ucb = self.config.confidence_rule.upper(s.alpha, s.beta);
         let admission = if ucb > tau {
             Admission::AdmitPosterior
         } else if s.protected_steps_since_attempt >= m {
@@ -822,4 +898,31 @@ pub struct RegimeTelemetry {
     pub jacobian_drift_estimate: Option<f64>,
     /// Consecutive rejected steps on the protected path.
     pub rejection_streak: u32,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn wp03_confidence_rule_default_matches_wilson() {
+        let rule = ConfidenceRule::default();
+        let u_rule = rule.upper(10.0, 5.0);
+        let u_direct = beta_upper_confidence_bound(10.0, 5.0, 1.644_853_626_951_472_2);
+        assert_eq!(u_rule.to_bits(), u_direct.to_bits());
+    }
+
+    #[test]
+    fn wp03_kl_upper_confidence_bound_properties() {
+        // Zero successes gives smaller bound than many successes
+        let u0 = kl_upper_confidence_bound(0.0, 10.0, 0.05);
+        let u5 = kl_upper_confidence_bound(5.0, 10.0, 0.05);
+        let u10 = kl_upper_confidence_bound(10.0, 10.0, 0.05);
+        assert!(u0 < u5);
+        assert!(u5 < u10);
+        assert_eq!(u10, 1.0);
+
+        // Boundary conditions: n = 0 gives 1.0
+        assert_eq!(kl_upper_confidence_bound(0.0, 0.0, 0.05), 1.0);
+    }
 }

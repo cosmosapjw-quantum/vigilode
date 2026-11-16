@@ -1,0 +1,39 @@
+{
+  "evidence_id": "EV-V3-BENCH-PROTOCOL-20261107",
+  "task_id": "V3-BENCH-PROTOCOL",
+  "claim_support": [
+    "IMPLEMENTATION_VERIFIED",
+    "EMPIRICAL_DIAGNOSTIC"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "continue",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "https://github.com/cosmosapjw-quantum/vigilode",
+    "branch": "research/switcher-v2-20261103",
+    "head": "bcf6fcefa8322f7e8d4454ab40498256f4ff1e22",
+    "tree": "076c5d01e8419b1b8f0d88ca2d0de04407e21aa2",
+    "worktree_clean": true
+  },
+  "command_records": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "crates/vigilode-bench/Cargo.toml",
+        "--test",
+        "qualification_spatial_protocol_contract"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    }
+  ],
+  "result": "4/4 benchmark protocol contracts passed. Created bench/protocols/adversarial_spatial_grid_v2.json including vigilode-dense and vigilode-banded-dense as primary endpoint-only arms while retaining vigilode and vigilode-banded as separate grid-clipped continuity controls. Confirmed endpoint-only arms take output_clipped_steps == 0 on requested observation grids. Enforced clear distinction between dense algebraic Jacobian and continuous-time dense output interpolant. Preserved inherited tolerances, public defaults, and acceptance thresholds.",
+  "limitations": [
+    "Protocol qualification establishes arm definitions and semantic validation of the corpus schema; work-precision speedups remain unadmitted until empirical bracketed runs are executed."
+  ]
+}

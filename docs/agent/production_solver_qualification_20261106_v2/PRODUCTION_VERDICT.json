@@ -1,0 +1,70 @@
+{
+  "schema": "vigilode.production_qualification_verdict.v2",
+  "decision_date": "2026-11-06",
+  "overall": "HOLD_NOT_RELEASE_QUALIFIED",
+  "source": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "branch": "research/switcher-v2-20261103",
+    "head": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "tree": "8a236871948798cb2a40c8a5ea65112a045bf16d",
+    "local_remote_head_equal": true
+  },
+  "claim_axes": {
+    "ordinary_numerical_ivp_solver": {
+      "status": "PARTIAL_SCOPED_RESEARCH_IMPLEMENTATION",
+      "scope": "Smooth forward identity-mass IVPs with endpoint observations, subject to provider restrictions.",
+      "limitations": [
+        "Full workspace verification not run",
+        "Ok may contain success=false",
+        "Live dispatch uses DriveState, not the exported HybridRouteAutomaton",
+        "Full supported-problem and failure-mode qualification remains open"
+      ]
+    },
+    "validated_ivp_enclosure": {
+      "status": "NOT_QUALIFIED",
+      "basis": "No independently verified enclosure of the exact continuous IVP solution over the full interval was demonstrated."
+    },
+    "certificate_authority": {
+      "status": "BLOCKED_CRITICAL",
+      "findings": [
+        "AUTH-001",
+        "AUTH-002",
+        "AUTH-003",
+        "OBS-001"
+      ]
+    },
+    "adaptive_dispatch": {
+      "status": "HEURISTIC_IMPLEMENTATION_PARTIAL",
+      "finding": "FSM-001"
+    },
+    "matched_accuracy_performance": {
+      "status": "NOT_ESTABLISHED",
+      "finding": "BENCH-001",
+      "basis": "All 900 matched rows are DIAGNOSTIC_ONLY/reference-disputed; timing authority is diagnostic_only."
+    },
+    "epoch_identity": {
+      "status": "IMPLEMENTATION_TEST_PASS_AUTHORITY_UNRESOLVED",
+      "finding": "EPOCH-001"
+    },
+    "release_ci": {
+      "status": "NOT_EVIDENCED",
+      "basis": "GitHub status and workflow queries returned no checks or runs."
+    }
+  },
+  "allowed_claims": [
+    "Research implementation of adaptive floating-point IVP integration for documented restricted API scope",
+    "Two targeted contract suites passed on pinned HEAD",
+    "Oregonator analytic Jacobian matches symbolic derivative of implemented RHS",
+    "Adversarial benchmark provides diagnostic robustness observations"
+  ],
+  "prohibited_claims": [
+    "Validated ODE solver with rigorous global enclosure",
+    "General matched-achieved-error speedup or solver superiority established",
+    "HybridRouteAutomaton is the live SwitchingSolver controller",
+    "All production/release gates have passed",
+    "GitHub CI passed this HEAD"
+  ],
+  "source_mutation_authorized": false,
+  "threshold_change_authorized": false,
+  "commit_push_merge_release_authorized": false
+}

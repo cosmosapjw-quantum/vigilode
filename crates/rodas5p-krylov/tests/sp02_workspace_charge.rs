@@ -48,6 +48,7 @@ unsafe impl GlobalAlloc for Counting {
 
 #[global_allocator]
 static GLOBAL: Counting = Counting;
+static TEST_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 fn live_bytes() -> usize {
     LIVE_BYTES.load(Ordering::SeqCst)
@@ -84,6 +85,7 @@ fn test_matrix(m: usize, n: usize) -> DenseMatrix {
 
 #[test]
 fn least_squares_workspace_charge_contract() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut ws = LeastSquaresWorkspace::new();
     let shapes = [(10, 4), (25, 8), (15, 5), (32, 10), (12, 3)];
     let mut out = Vec::new();
@@ -117,6 +119,7 @@ fn least_squares_workspace_charge_contract() {
 
 #[test]
 fn gmres_workspace_charge_contract() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut ws = GmresWorkspace::with_ls_workspace();
     let config = GmresConfig {
         restart: 15,
@@ -172,6 +175,7 @@ fn gmres_workspace_charge_contract() {
 
 #[test]
 fn lgmres_into_workspace_charge_contract() {
+    let _guard = TEST_MUTEX.lock().unwrap();
     let mut ws = LgmresIntoWorkspace::default();
     ws.set_least_squares_once(true);
     ws.set_ls_workspace(true);

@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "evidence_id",
+    "task_id",
+    "claim_support",
+    "test_verdict",
+    "work_decision",
+    "failure_kind",
+    "source_identity",
+    "command_records",
+    "result",
+    "limitations"
+  ],
+  "properties": {
+    "evidence_id": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "claim_support": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "established",
+          "literature-supported",
+          "derived",
+          "numerically-checked",
+          "implementation-verified",
+          "conjectural",
+          "unresolved"
+        ]
+      }
+    },
+    "test_verdict": {
+      "enum": [
+        "PASS",
+        "CONCERN",
+        "FAIL",
+        "NOT_RUN",
+        "NOT_APPLICABLE",
+        "BLOCKED"
+      ]
+    },
+    "work_decision": {
+      "enum": [
+        "continue",
+        "promote_for_specified_use",
+        "hold",
+        "rework",
+        "revert"
+      ]
+    },
+    "failure_kind": {
+      "enum": [
+        "theory",
+        "numerical",
+        "implementation",
+        "runtime_environment",
+        "input_missing",
+        "authorization",
+        "none"
+      ]
+    },
+    "source_identity": {
+      "type": "object"
+    },
+    "command_records": {
+      "type": "array"
+    },
+    "result": {
+      "type": "string"
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

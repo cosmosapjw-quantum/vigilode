@@ -118,6 +118,18 @@ pub struct GmresWorkspace {
     pub(crate) least_squares: Option<Box<LeastSquaresWorkspace>>,
     /// The least-squares solution when `least_squares` is used.
     pub(crate) least_squares_solution: Vec<f64>,
+    /// Which least-squares solver to use (Faer QR by default, Givens opt-in).
+    pub(crate) ls_solver: GmresLeastSquaresSolver,
+}
+
+/// The algorithm used to solve the small Hessenberg least-squares correction in GMRES.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum GmresLeastSquaresSolver {
+    /// Full QR via Faer Householder (bit-identical baseline).
+    #[default]
+    FaerQr,
+    /// Fast in-place Givens rotation of the upper Hessenberg matrix with column-pivot QR fallback (§11, B6).
+    GivensHessenberg,
 }
 
 impl GmresWorkspace {
@@ -182,6 +194,15 @@ impl GmresWorkspace {
         if let Some(ls) = self.least_squares.as_mut() {
             ls.reset_growth_events();
         }
+    }
+
+    /// Turn Givens Hessenberg least-squares reduction on or off (§11, B6).
+    pub fn set_givens_least_squares(&mut self, on: bool) {
+        self.ls_solver = if on {
+            GmresLeastSquaresSolver::GivensHessenberg
+        } else {
+            GmresLeastSquaresSolver::FaerQr
+        };
     }
 }
 

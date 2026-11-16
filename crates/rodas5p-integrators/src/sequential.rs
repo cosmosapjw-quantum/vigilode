@@ -60,9 +60,7 @@ impl KrylovState {
     pub fn invalidate_products(&mut self) {
         match self {
             Self::Lgmres(s) => {
-                for image in &mut s.images {
-                    *image = None;
-                }
+                s.images.fill(None);
                 s.operator_token = None;
                 s.system_identity = None;
                 s.previous_solution = None;

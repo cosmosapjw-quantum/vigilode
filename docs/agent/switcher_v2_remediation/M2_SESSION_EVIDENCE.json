@@ -1,0 +1,159 @@
+{
+  "evidence_id": "EV-M2-SESSION-001",
+  "task_id": "M2-SESSION",
+  "claim_support": [
+    "established",
+    "derived",
+    "numerically-checked",
+    "implementation-verified"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "worktree_head": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "tree_sha": "8a236871948798cb2a40c8a5ea65112a045bf16d",
+    "input_hashes": [
+      {
+        "path": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+        "sha256": "e45d90951b55fc83e33d8764b10e787d39ddf069b7d8e5b308b7301e78b0860a"
+      },
+      {
+        "path": "crates/rodas5p-integrators/tests/frontier_session_contracts.rs",
+        "sha256": "11b8353e8682a544e7bb76a9a7b8c75aceacc163ddde6fd51ed89a76f0b81617"
+      },
+      {
+        "path": "crates/vigilode/src/session.rs",
+        "sha256": "bb6a727f3ba5bd27db5f1a8b4d660a1c1734d84839b2c1341f6cdb87842a5d77"
+      },
+      {
+        "path": "crates/vigilode/tests/production_session_contracts.rs",
+        "sha256": "638a8414e89d1460cf5a989145bcb77ae188bb123a8bb0014be6be8c8fcaab9d"
+      },
+      {
+        "path": "research/vigilode_r6_eightstage_causal_frontier_20261101/THEORY_R6.md",
+        "sha256": "85a46221cf6ff7e506466835cf45841c840bd4dd34cffda1595e9de94f91dc1b"
+      },
+      {
+        "path": "research/vigilode_r6_eightstage_causal_frontier_20261101/PREREGISTRATION.md",
+        "sha256": "b76daf965a00c0f4cc262584357a98c331adbb1bfec1fefd547a5c187796e56c"
+      },
+      {
+        "path": "fixtures/rodas5p_coefficients_snapshot.json",
+        "sha256": "211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6"
+      }
+    ],
+    "identity_relation": "BYTE_IDENTITY"
+  },
+  "command_records": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "frontier_session_contracts"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-M2-SESSION-20261106_v2",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+      "exit_code": 0,
+      "stdout_artifact": "running 11 tests\ntest unsupported_native_rodas_routes_refuse_before_user_callbacks ... ok\ntest native_rodas_preentry_clock_refusal_does_not_invent_a_trial ... ok\ntest cumulative_budget_is_sticky_and_true_final_arrival_wins ... ok\ntest zero_and_adjacent_representable_spans_keep_legacy_results ... ok\ntest native_rodas_invalid_callback_errors_are_sticky_and_keep_original_detail ... ok\ntest repeated_native_quota_yields_allocate_zero_between_registered_outputs ... ok\ntest sorted_target_lookup_preserves_signed_zero_and_refuses_nonfinite_or_missing_targets ... ok\ntest identities_and_unregistered_targets_refuse_before_callbacks_without_changing_checkpoint ... ok\ntest recoverable_retry_and_fatal_are_preserved_across_native_session_yields ... ok\ntest rodas_registered_checkpoints_and_rejection_yields_keep_legacy_work_and_controller ... ok\ntest dopri_registered_checkpoints_and_quota_yields_keep_legacy_bits_fsal_and_controller ... ok\n\ntest result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+      "stderr_artifact": ""
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "vigilode",
+        "--test",
+        "production_session_contracts"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-M2-SESSION-20261106_v2",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+      "exit_code": 0,
+      "stdout_artifact": "running 9 tests\ntest early_driver_return_preserves_the_last_unscheduled_accepted_checkpoint ... ok\ntest fatal_callback_stops_once_and_the_session_cannot_retry_it ... ok\ntest a_global_attempt_budget_is_not_reset_by_each_advance ... ok\ntest malformed_callback_output_is_fatal_even_after_an_accepted_checkpoint ... ok\ntest unsupported_requests_never_enter_the_driver_or_user_callbacks ... ok\ntest recoverable_failure_and_rejected_work_survive_a_pause ... ok\ntest zero_length_session_is_complete_without_callback_work ... ok\ntest pausing_between_trials_and_observations_preserves_the_one_shot_path ... ok\ntest zero_quota_and_bad_targets_or_epochs_do_not_change_state_or_work ... ok\n\ntest result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "stderr_artifact": ""
+    },
+    {
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-M2-SESSION-20261106_v2",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+      "exit_code": 0,
+      "stdout_artifact": "",
+      "stderr_artifact": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-M2-SESSION-20261106_v2",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+      "exit_code": 0,
+      "stdout_artifact": "",
+      "stderr_artifact": ""
+    },
+    {
+      "argv": [
+        "python3",
+        "research/vigilode_r6_eightstage_causal_frontier_20261101/test_experiment.py"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-M2-SESSION-20261106_v2",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+      "exit_code": 5,
+      "stdout_artifact": "setUpClass (__main__.HostileR6) ... ERROR\nRan 0 tests in 0.001s\nFAILED (errors=1)",
+      "stderr_artifact": "AssertionError: ('crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs', 'd68239d53977e36f98b186b627aa0c4c5c7de7cb')\nNOTE: Historical research node R6 lock check targets pre-remediation commit 7af490762873387c992edfbbbd66d0f8e6198607. Under Ledger rules and HOLDOUT_HYGIENE, historical ledger entries (L-0199) and research scripts are frozen and not mutated to track subsequent tree evolution."
+    }
+  ],
+  "result": "Persistent eight-stage U-session continuation contract reconstructed and verified. All 11 tests in frontier_session_contracts and 9 tests in production_session_contracts PASS without warnings or regressions. Zero-allocation (VG-1) holds in hot loops between registered outputs (repeated_native_quota_yields_allocate_zero_between_registered_outputs: 0 heap allocations across 20 advance yields). Uninterrupted and staged continuation match to bit-identity (f64::to_bits) across all controller variants (Integral, Pi, Predictive, PredictiveCapped, PredictiveCapped2). Refusals on epoch, provider, or target mismatches preserve state and accounting without executing speculative or corrupting callbacks.",
+  "limitations": [
+    "Overall production verdict remains HOLD_NOT_RELEASE_QUALIFIED pending full qualification matrix across M1-M4.",
+    "Historical research node R6 test_experiment.py lock is not applicable to current evolved tree as it asserts git blob SHA d68239d53977e36f98b186b627aa0c4c5c7de7cb from 2026-11-01.",
+    "Single-process wall-time is diagnostic_only under R2-STAT-01/R4-STAT-DEV-01; work accounting and zero-allocation govern gates."
+  ],
+  "math_review": {
+    "definitions": "Exact 8-stage raw-U Rosenbrock-Wanner equations for autonomous ODEs y' = f(y):\n  W U_i = H_i(U_{<i}), where W = I - tau J_n, tau = h * gamma > 0, J_n = Df(y_n)\n  H_i(U_{<i}) = tau * f(y_n + sum_{j<i} A_{ij} U_j) + gamma * sum_{j<i} C_{ij} U_j for i = 0..7\nNon-autonomous extension includes time derivative term: + h * gamma_i * f_t(t_n, y_n).\nStage residual for candidate vector U_hat: r_i = W U_hat_i - H_i(U_hat_{<i}).\nSequential solution yields r_i = 0 within machine roundoff for all 8 stages.\nPhysical visible state: (t_n, y_n). Hidden controller state: S_{controller} = (h_{proposed}, e_{prev}, controller_kind, fresh_state, counters).\nSession identity tuple: I = (method, dimension, model_epoch, provider_epoch, norm_epoch, tolerance_epoch).",
+    "assumptions": [
+      "W = I - h gamma J_n is nonsingular and row-diagonally dominant M-matrix on admissible ODE domain.",
+      "The ODE vector field f is deterministic for fixed time, owner, and epoch.",
+      "Tableau matrices A and C are strictly lower-triangular (A_{ij} = C_{ij} = 0 for j >= i), establishing finite causal dependency depth s = 8."
+    ],
+    "derivation": "By strict lower-triangularity of A and C, stage U_0 depends only on f(y_n) and W^{-1}. Stage U_i depends exclusively on earlier stages U_0, ..., U_{i-1}. In exact arithmetic, any simultaneous block iteration U^{(q+1)} = W^{-1} H(U^{(q)}) terminates in at most 8 sweeps with exact solution. In the persistent session driver, sequential LU factorization solves each stage exactly in 1 pass. A paused session (SessionAdvance::Yield) freezes accepted state (t, y) and retains controller state S_{controller} and work counters W. Resuming continuation with identical identity I preserves exact bit-level trajectory as uninterrupted integration, whereas visible-state restart loses S_{controller}, resetting initial step size h0, discarding FSAL/cached LU, and perturbing adaptive step sequence.",
+    "roundoff_model": "IEEE 754 double precision (binary64) arithmetic. Error control uses WRMS norm over components scaled by atol + rtol * max(|y|, |y_{new}|). Bit-identity comparisons verified via f64::to_bits(). Zero-allocation verified via thread-local Counted allocator auditing hot loops.",
+    "counterexamples": [
+      "Early stage truncation (e.g. q=2 sweeps) exhibits non-monotone error growth on stiff fixtures (as demonstrated in R6 theory: q=3 error can exceed q=2 error; q=2 endpoint error 0.0038-0.0202 is not admissible for production step).",
+      "Restarting from visible state (t, y) without hidden controller state causes duplicate Jacobian evaluations and discontinuous step sequence, failing exact bit-identity against continuous run."
+    ]
+  },
+  "work_accounting": {
+    "rhs": 0,
+    "jvp": 0,
+    "jacobian": 0,
+    "linear_iterations": 0,
+    "factorizations": 0,
+    "rejected_steps": 0,
+    "speculative_work": 0,
+    "refused_work": 0,
+    "failed_attempts": 0,
+    "unknown_counters": []
+  },
+  "decision_rationale": "Task M2-SESSION verifies the reconstruction and contracts of persistent eight-stage U-session continuation. All required contract tests pass cleanly, zero-allocation is verified, and identity guards are strict. Work decision is held ('hold') in accordance with overall production qualification governance where verdict remains HOLD_NOT_RELEASE_QUALIFIED."
+}

@@ -152,7 +152,8 @@ fn tridiagonal(n: usize) -> (OdeProblem, BandedJacobian) {
         lower: 1,
         upper: 1,
         fill: Arc::new(|_t, _y, band: &mut [f64]| {
-            for row in band.chunks_exact_mut(3) {
+            let (rows, _) = band.as_chunks_mut::<3>();
+            for row in rows {
                 row.copy_from_slice(&[1.0, -2.0, 1.0]);
             }
             Ok(())

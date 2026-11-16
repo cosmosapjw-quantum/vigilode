@@ -73,6 +73,20 @@
 //! [`Tier::Performance`] is accepted and, in this release, executes exactly
 //! the `Protected` route (no candidate driver is attached yet).
 //!
+//! ## Adaptive Switching & Hybrid Routing Architecture
+//!
+//! VigilODE provides evidence-driven adaptive polyalgorithm switching between explicit
+//! (DOPRI5) and implicit (RODAS5P) integration via [`SwitchingSolver`]:
+//!
+//! - **Live Operational Dispatch**: Real-time integration and route decisions are governed
+//!   by the internal `DriveState` route controller in `switching` (exercised through
+//!   [`SwitchingSolver::solve`]). `DriveState` manages the active stepper, proposal seeding,
+//!   window advancement, and zero-allocation hot transitions.
+//! - **Standalone / Experimental Verification Model**: [`hybrid_automaton::HybridRouteAutomaton`]
+//!   is exported as a standalone discrete verification model and contract reference (Node P8).
+//!   It models the underlying discrete-event FSM, anti-chattering dwell/hysteresis policies,
+//!   route epoch tracking, and speculative work accounting invariants.
+//!
 //! ## What is refused
 //!
 //! Requests that no protected driver implements are refused with
@@ -163,24 +177,32 @@ mod automatic;
 mod capabilities;
 pub mod causal_budget;
 mod cofactor_chart;
+pub mod coloring;
 mod error;
 mod events;
 pub mod execution_policy;
 mod explicit;
 mod explicit_ensemble;
 mod fd;
+pub mod hermite_splice;
+pub mod hybrid_automaton;
 mod lawson;
+pub mod margin;
 mod options;
 mod oscillatory_chart;
+pub mod prelude;
 mod problem;
 mod production;
 mod records;
+pub mod registry;
 mod selection;
 pub mod selection_evidence;
 mod session;
 mod solution;
 mod solve;
 mod switching;
+pub mod unified;
+pub mod work_model;
 
 pub use automatic::*;
 pub use capabilities::{Capabilities, FacadeRoute, OutputAccuracy};
@@ -188,14 +210,23 @@ pub use causal_budget::*;
 pub use cofactor_chart::*;
 pub use error::{CallbackError, SolveError, Unsupported};
 pub use events::{Direction, EventRecord};
+pub use fd::{
+    JvpAccuracyRung, jvp_chebyshev4, jvp_chebyshev4_guarded, jvp_chebyshev4_guarded_with_delta,
+};
+pub use hermite_splice::*;
+pub use hybrid_automaton::*;
 pub use lawson::*;
 pub use options::{Atol, InteriorError, Options, Tier};
 pub use oscillatory_chart::*;
 pub use problem::{
     BandJacobianFn, DenseJacobianFn, Jacobian, JvpFn, Problem, RhsFn, TimeDerivativeFn,
 };
-pub use production::{PRODUCTION_CONFIG_SCHEMA, ProductionConfig, ProductionSolver};
+pub use production::{
+    PRODUCTION_CONFIG_SCHEMA, ProductionConfig, ProductionOutcomeError, ProductionSolveError,
+    ProductionSolver,
+};
 pub use records::*;
+pub use registry::*;
 pub use selection::*;
 pub use session::{ExplicitSession, SessionAdvance, SessionCheckpoint, SessionEpochs};
 pub use solution::{
@@ -205,9 +236,11 @@ pub use solution::{
 };
 pub use solve::Rodas5p;
 pub use switching::*;
+pub use work_model::*;
 
 pub use explicit::*;
 pub use explicit_ensemble::{Dopri5Ensemble, Dopri5EnsembleJob};
+pub use unified::*;
 
 pub use explicit::ExplicitErrorControl;
 /// Sparse affine physical-space embedded-error controller for explicit solves.

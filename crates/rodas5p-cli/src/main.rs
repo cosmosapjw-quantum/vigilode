@@ -2295,7 +2295,7 @@ fn main() -> Result<()> {
                 "schema": "rodas5p-rust-validation-v1",
                 "status": if coefficients.stages() == 8 && coefficients.gamma.is_finite() { "pass" } else { "fail" },
                 "crate_version": env!("CARGO_PKG_VERSION"),
-                "rust_toolchain_lock": "1.94.1",
+                "rust_toolchain_lock": "1.99.0",
                 "linear_algebra_backend": "faer-0.24.4",
                 "stages": coefficients.stages(),
                 "gamma": coefficients.gamma,

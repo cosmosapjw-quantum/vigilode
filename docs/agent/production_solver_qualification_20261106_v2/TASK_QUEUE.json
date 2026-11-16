@@ -1,0 +1,730 @@
+{
+  "schema": "vigilode.production_task_queue.v2",
+  "repository": {
+    "full_name": "cosmosapjw-quantum/vigilode",
+    "branch": "research/switcher-v2-20261103",
+    "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "tree_sha": "8a236871948798cb2a40c8a5ea65112a045bf16d"
+  },
+  "status": "PROPOSED_NOT_AUTHORIZED",
+  "task_count": 19,
+  "execution_rule": "One task at a time. Revalidate current source and obtain explicit owner approval for task ID and exact write_allowlist before source mutation.",
+  "tasks": [
+    {
+      "task_id": "EPOCH-001",
+      "title": "Resolve SHA-256 checkpoint-sensitive epoch authority and persistence contract",
+      "priority": "P0",
+      "depends_on": [],
+      "status": "PROPOSED_NOT_AUTHORIZED",
+      "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+      "read_allowlist": [
+        "crates/vigilode/src/registry.rs",
+        "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+        "docs/agent/production_solver_qualification_20261106/"
+      ],
+      "write_allowlist": [
+        "docs/agent/switcher_v2_remediation/",
+        "crates/vigilode/src/registry.rs",
+        "crates/vigilode/tests/switching_v2_remediation_contracts.rs"
+      ],
+      "math_contract": [
+        "Epoch is an identity digest, not an accuracy bound or numerical certificate.",
+        "Specify exact tuple and serialization: checkpoint index plus start/target IEEE-754 bit patterns; byte length/order, usize-to-u64 conversion/overflow, signed-zero and NaN/infinity policy, SHA-256 truncation and output endianness.",
+        "Specify persisted cache/session invalidation or migration from FNV/index-independent identity."
+      ],
+      "implementation_contract": [
+        "Find owner-approved WP-02 authority or obtain explicit approval for an append-only decision record.",
+        "Do not infer authority from source comments or a passing golden test.",
+        "Rename F7 tests so names match SHA-256/index-sensitive behavior."
+      ],
+      "acceptance": [
+        "Code, tests and owner-approved spec define one versioned serialization contract.",
+        "Golden cases cover checkpoint index, endpoints, serialization bytes, signed zero and non-finite inputs.",
+        "Persisted identity migration/invalidation is explicit and tested."
+      ],
+      "stop_conditions": [
+        "If source authority is not found, do not change identity semantics; report exact missing authority."
+      ],
+      "requires_isolated_worktree": true,
+      "requires_owner_approval": true,
+      "mutation_required": true
+    },
+    {
+      "task_id": "AUTH-001",
+      "title": "Replace caller-forgeable contraction evidence with independently verified map-bound evidence",
+      "priority": "P0",
+      "depends_on": [],
+      "status": "PROPOSED_NOT_AUTHORIZED",
+      "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+      "read_allowlist": [
+        "crates/vigilode-coupled/src/rhs_homotopy.rs",
+        "crates/vigilode-coupled/src/lib.rs",
+        "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs",
+        "docs/agent/x12_contraction_provenance_20261105/"
+      ],
+      "write_allowlist": [
+        "crates/vigilode-coupled/src/rhs_homotopy.rs",
+        "crates/vigilode-coupled/src/lib.rs",
+        "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs"
+      ],
+      "math_contract": [
+        "For T_P(x)=x-PG(x), require invertible P and prove q_hi >= sup_{x in B2(xc,r)} ||I-P DG(x)||_2 with q_hi<1.",
+        "Prove rho_hi >= ||P G(xc)||_2 and rho_hi <= (1-q_hi)r. Every norm and arithmetic operation affecting these bounds must be outwardly enclosed.",
+        "A pointwise Jacobian sample or caller-supplied scalar q does not establish the derivative supremum over the complete closed ball."
+      ],
+      "implementation_contract": [
+        "Bind canonical G/P identities, model digest/epoch, norm, center/radius, arithmetic backend and checker version.",
+        "Only opaque verifier-created evidence can mint Certified; deserialize/caller references cannot do so.",
+        "Callbacks without sound interval extensions remain EstimateOnly."
+      ],
+      "acceptance": [
+        "Forged scalar metadata cannot produce Certified.",
+        "Wrong map, P, epoch, radius or norm is rejected.",
+        "Boundary tests with q near 1 and residual near (1-q)r pass outward checks.",
+        "Positive and negative tests cover the original contract."
+      ],
+      "stop_conditions": [
+        "A metadata-only patch without a replayable derivative enclosure is not a fix."
+      ],
+      "requires_isolated_worktree": true,
+      "requires_owner_approval": true,
+      "mutation_required": true
+    },
+    {
+      "task_id": "AUTH-002",
+      "title": "Bind Leja normality witness to the exact operator at its consumer seam",
+      "priority": "P0",
+      "depends_on": [],
+      "status": "PROPOSED_NOT_AUTHORIZED",
+      "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+      "read_allowlist": [
+        "crates/rodas5p-core/src/leja_action.rs",
+        "crates/rodas5p-core/tests/"
+      ],
+      "write_allowlist": [
+        "crates/rodas5p-core/src/leja_action.rs",
+        "crates/rodas5p-core/tests/"
+      ],
+      "math_contract": [
+        "Normality and spectral bounds apply to the exact operator representation from which they were derived.",
+        "Approximate skew symmetry is not exact normality unless its defect is outwardly bounded and its spectral consequences are proved.",
+        "Gershgorin beta must enclose the same operator, scaling and dimension actually consumed."
+      ],
+      "implementation_contract": [
+        "Bind witness to canonical operator digest, dimension, scaling/basis where relevant and model epoch.",
+        "Validate all identity fields at the actual Leja consumer, not only at construction.",
+        "Fail closed to EstimateOnly when identity or proof scope is missing."
+      ],
+      "acceptance": [
+        "A same-dimension witness for another operator is rejected.",
+        "A stale epoch witness is rejected.",
+        "One-ulp and tolerance-near skew defects are rejected or accompanied by an outward perturbation proof.",
+        "Independent small-matrix controls pass."
+      ],
+      "requires_isolated_worktree": true,
+      "requires_owner_approval": true,
+      "mutation_required": true
+    },
+    {
+      "task_id": "AUTH-003",
+      "title": "Make Gershgorin spectral certification source-bound and outward-rounded",
+      "priority": "P0",
+      "depends_on": [],
+      "status": "PROPOSED_NOT_AUTHORIZED",
+      "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+      "read_allowlist": [
+        "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+        "crates/rodas5p-integrators/tests/"
+      ],
+      "write_allowlist": [
+        "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+        "crates/rodas5p-integrators/tests/"
+      ],
+      "math_contract": [
+        "For each row i, outwardly prove r_i >= sum_{j != i}|A_ij| and outwardly enclose A_ii-r_i and A_ii+r_i.",
+        "The matrix class must justify the claimed real spectral intervals; arbitrary nonsymmetric matrices can have complex eigenvalues.",
+        "The operator norm fallback must also be an outward bound."
+      ],
+      "implementation_contract": [
+        "Only a private VerifiedSpectralEnclosure bound to the source matrix digest and epoch may mint Certified.",
+        "Caller-supplied intervals and Ritz values remain EstimateOnly unless independently verified.",
+        "NaN, infinities, overflow and failed outward arithmetic fail closed."
+      ],
+      "acceptance": [
+        "Arbitrary intervals and a caller-selected source enum cannot mint Certified.",
+        "A one-ulp symmetry defect is rejected or rigorously bounded.",
+        "High-precision small-matrix controls lie inside computed outward enclosures."
+      ],
+      "requires_isolated_worktree": true,
+      "requires_owner_approval": true,
+      "mutation_required": true
+    },
+    {
+      "task_id": "OBS-001",
+      "title": "Separate sampled nonnormal-growth diagnostics from rigorous full-slab enclosures",
+      "priority": "P0",
+      "depends_on": [],
+      "status": "PROPOSED_NOT_AUTHORIZED",
+      "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+      "read_allowlist": [
+        "crates/rodas5p-core/src/nonnormal_observers.rs",
+        "crates/rodas5p-core/tests/"
+      ],
+      "write_allowlist": [
+        "crates/rodas5p-core/src/nonnormal_observers.rs",
+        "crates/rodas5p-core/tests/"
+      ],
+      "math_contract": [
+        "Finite samples of mu_H(t_k) or alpha_max(t_k) do not bound their supremum over a continuous time slab.",
+        "A validated moving-metric bound requires slab enclosures for J,H,Hdot, a positive lower bound for H, an outward eigenvalue maximum, quadrature/remainder, metric jumps, QR defect and roundoff."
+      ],
+      "implementation_contract": [
+        "Current sample-based observers advertise EstimateOnly/SampledDiagnostic.",
+        "A separate validated observer can advertise Certified only after the complete enclosure proof machinery exists."
+      ],
+      "acceptance": [
+        "No sampled-only path reports Certified.",
+        "Negative controls cover missed peaks, fast H oscillation, singular H, metric jumps, QR loss and exp overflow.",
+        "Validated mode encloses independent analytic low-dimensional cases."
+      ],
+      "requires_isolated_worktree": true,
+      "requires_owner_approval": true,
+      "mutation_required": true
+    },
+    {
+      "task_id": "FSM-001",
+      "title": "Resolve exported HybridRouteAutomaton versus live SwitchingSolver dispatch",
+      "priority": "P1",
+      "depends_on": [],
+      "status": "PROPOSED_NOT_AUTHORIZED",
+      "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+      "read_allowlist": [
+        "crates/vigilode/src/hybrid_automaton.rs",
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/src/lib.rs",
+        "README.md",
+        "crates/vigilode/tests/"
+      ],
+      "write_allowlist": [
+        "crates/vigilode/src/hybrid_automaton.rs",
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/src/lib.rs",
+        "README.md",
+        "crates/vigilode/tests/"
+      ],
+      "math_contract": [
+        "A route transition must preserve accepted physical state, time mark, tolerance/error-control invariants and all attempted-work accounting.",
+        "A standalone state-machine unit test is not evidence that the live solver uses that state machine."
+      ],
+      "implementation_contract": [
+        "Either integrate HybridRouteAutomaton into the real dispatch path with explicit state mapping, or label it standalone/experimental and document DriveState as the live route controller."
+      ],
+      "acceptance": [
+        "Actual SwitchingSolver runtime traces show the chosen dispatch implementation.",
+        "Positive/negative routing controls preserve state and work invariants.",
+        "README and public API use the actual runtime controller's name."
+      ],
+      "requires_isolated_worktree": true,
+      "requires_owner_approval": true,
+      "mutation_required": true
+    },
+    {
+      "task_id": "API-001",
+      "title": "Harden partial-prefix and unsuccessful-Ok result semantics",
+      "priority": "P1",
+      "depends_on": [],
+      "status": "PROPOSED_NOT_AUTHORIZED",
+      "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+      "read_allowlist": [
+        "crates/vigilode/src/production.rs",
+        "crates/vigilode/src/solution.rs",
+        "README.md",
+        "crates/vigilode/tests/"
+      ],
+      "write_allowlist": [
+        "crates/vigilode/src/production.rs",
+        "crates/vigilode/src/solution.rs",
+        "README.md",
+        "crates/vigilode/tests/"
+      ],
+      "math_contract": [
+        "An accepted prefix is not a completed solution on [t0,T]. Endpoint success must use the API's declared endpoint semantics."
+      ],
+      "implementation_contract": [
+        "Preserve API compatibility unless a separately authorized breaking release is selected.",
+        "Add a checked outcome helper/type or examples that require inspection of success, final_time, message and accounting_complete."
+      ],
+      "acceptance": [
+        "Tests cover callback failure, max-step termination, no-progress, partial accepted prefix and full endpoint success."
+      ],
+      "requires_isolated_worktree": true,
+      "requires_owner_approval": true,
+      "mutation_required": true
+    },
+    {
+      "task_id": "BENCH-REFERENCE",
+      "title": "Resolve per-problem disputed benchmark reference trajectories",
+      "priority": "P0",
+      "depends_on": [],
+      "status": "PROPOSED_NOT_AUTHORIZED",
+      "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+      "read_allowlist": [
+        "bench/protocols/",
+        "bench/out/",
+        "bench/"
+      ],
+      "write_allowlist": [
+        "bench/protocols/",
+        "bench/out/",
+        "bench/"
+      ],
+      "math_contract": [
+        "Reference uncertainty must be below the scored comparison threshold or the reference must itself be validated.",
+        "Agreement between two numerical solvers is empirical cross-check evidence, not a proof of exact solution enclosure."
+      ],
+      "implementation_contract": [
+        "Investigate each problem's reference-dispute/refinement status.",
+        "Preserve original raw results and add append-only adjudication artifacts.",
+        "Use validated reference or independently justified refinement."
+      ],
+      "acceptance": [
+        "Each problem has a source-hashed reference with complete states and justified uncertainty below the minimum comparison level.",
+        "No admitted matched row is reference-disputed.",
+        "All failed/refused attempts remain in raw evidence."
+      ],
+      "requires_isolated_worktree": true,
+      "requires_owner_approval": true,
+      "mutation_required": true
+    },
+    {
+      "task_id": "BENCH-PROVENANCE",
+      "title": "Pin clean source, binaries, runners and benchmark inputs",
+      "priority": "P0",
+      "depends_on": [],
+      "status": "PROPOSED_NOT_AUTHORIZED",
+      "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+      "read_allowlist": [
+        "bench/",
+        "Cargo.toml",
+        "Cargo.lock",
+        "rust-toolchain.toml",
+        "tools/"
+      ],
+      "write_allowlist": [
+        "bench/out/",
+        "bench/protocols/"
+      ],
+      "math_contract": [
+        "Same-host identity is necessary but insufficient: comparisons need same mathematical problem, input, observable, output grid, achieved error and cost definition."
+      ],
+      "implementation_contract": [
+        "Pin clean commit/tree, binary, runner, dependencies, Julia manifest, native solver versions, reference and corpus hashes.",
+        "Record CPU affinity, thread counts, host load, warmups, repetition count, medians and dispersion.",
+        "A dirty-build context cannot qualify official performance."
+      ],
+      "acceptance": [
+        "All relevant hashes verify.",
+        "All compared arms use same runner/hardware protocol.",
+        "Failures, refusals, setup and speculative work remain accounted."
+      ],
+      "requires_isolated_worktree": true,
+      "requires_owner_approval": true,
+      "mutation_required": true
+    },
+    {
+      "task_id": "BENCH-ACHIEVED",
+      "title": "Admit matched-achieved-error work-precision comparisons",
+      "priority": "P0",
+      "depends_on": [
+        "BENCH-REFERENCE",
+        "BENCH-PROVENANCE"
+      ],
+      "status": "PROPOSED_NOT_AUTHORIZED",
+      "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+      "read_allowlist": [
+        "bench/",
+        "tools/"
+      ],
+      "write_allowlist": [
+        "bench/out/",
+        "bench/protocols/",
+        "tools/"
+      ],
+      "math_contract": [
+        "At common target error E compare cost only for achieved error <=E using the same norm, reference, grid and state scaling.",
+        "Do not interpolate across solver failures or extrapolate beyond observed error bands without preregistration."
+      ],
+      "implementation_contract": [
+        "Produce per-problem work-precision curves and explicit aggregation policy.",
+        "Include failures/refusals/timeouts and every work counter; null is not zero.",
+        "Report paired speed ratios and uncertainty."
+      ],
+      "acceptance": [
+        "Every score row has valid source/reference and matched achieved error.",
+        "No diagnostic-only row is used for promotion.",
+        "Official thresholds are read from authoritative project source without modification."
+      ],
+      "requires_isolated_worktree": true,
+      "requires_owner_approval": true,
+      "mutation_required": true
+    },
+    {
+      "task_id": "M2-SESSION",
+      "title": "Reconstruct and verify persistent eight-stage U-session continuation",
+      "priority": "P1",
+      "depends_on": [],
+      "status": "PROPOSED_NOT_AUTHORIZED",
+      "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+      "read_allowlist": [
+        "research/",
+        "docs/",
+        "crates/vigilode/",
+        "crates/rodas5p-integrators/"
+      ],
+      "write_allowlist": [
+        "research/",
+        "crates/vigilode/",
+        "crates/rodas5p-integrators/"
+      ],
+      "math_contract": [
+        "Write exact U-stage residuals, state variables, epoch dependencies and work accounting before implementation.",
+        "A resumed session preserves accepted state, controller state, tolerance/provider identity and accumulated work; visible-state restart is not equivalent when hidden controller state is omitted."
+      ],
+      "implementation_contract": [
+        "Locate original eight-stage contract and current implementation.",
+        "Compare uninterrupted and staged continuation; invalidate reuse on model/provider/tolerance/window/mesh identity mismatch."
+      ],
+      "acceptance": [
+        "All original eight stages complete on preregistered test set.",
+        "Resumed and uninterrupted observables/work state satisfy declared criteria.",
+        "Stale identity refusals preserve accounting."
+      ],
+      "requires_isolated_worktree": true,
+      "requires_owner_approval": true,
+      "mutation_required": true
+    },
+    {
+      "task_id": "M2-CAUSAL",
+      "title": "Close U-stage residual, causal-depth and stiff-order accuracy evidence",
+      "priority": "P1",
+      "depends_on": [
+        "M2-SESSION"
+      ],
+      "status": "PROPOSED_NOT_AUTHORIZED",
+      "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+      "read_allowlist": [
+        "research/",
+        "crates/rodas5p-integrators/",
+        "crates/rodas5p-core/"
+      ],
+      "write_allowlist": [
+        "research/",
+        "crates/rodas5p-integrators/",
+        "crates/rodas5p-core/"
+      ],
+      "math_contract": [
+        "Derive each stage residual from implemented method coefficients and nonautonomous terms.",
+        "Prove causal-depth recurrence and include linear/nonlinear solve residuals.",
+        "Separate classical order, stiff order reduction and global error propagation."
+      ],
+      "implementation_contract": [
+        "Map coefficients to stage equations and exact/symbolic rational checks.",
+        "Record residual/depth traces on the original corpus."
+      ],
+      "acceptance": [
+        "Applicable order identities independently checked.",
+        "Original residual/causal-depth criteria pass.",
+        "Full-trajectory accuracy and failures reported."
+      ],
+      "requires_isolated_worktree": true,
+      "requires_owner_approval": true,
+      "mutation_required": true
+    },
+    {
+      "task_id": "Q-FAIR-AB",
+      "title": "Close fair A/B and total-work accounting",
+      "priority": "P1",
+      "depends_on": [
+        "BENCH-PROVENANCE"
+      ],
+      "status": "PROPOSED_NOT_AUTHORIZED",
+      "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+      "read_allowlist": [
+        "crates/vigilode/",
+        "crates/rodas5p-integrators/",
+        "bench/",
+        "tools/"
+      ],
+      "write_allowlist": [
+        "crates/vigilode/",
+        "crates/rodas5p-integrators/",
+        "bench/",
+        "tools/"
+      ],
+      "math_contract": [
+        "Count accepted/rejected steps, callbacks, JVP/Jacobian, factorizations, Krylov, setup/teardown, pilots, refusals, speculative work and failed attempts.",
+        "A zero-allocation claim names the allocator instrumentation and exact temporal scope."
+      ],
+      "implementation_contract": [
+        "Reconcile work counters against instrumented call probes.",
+        "Keep full-run allocation and hot-loop allocation separate; null is not zero."
+      ],
+      "acceptance": [
+        "Accounting identity closes on all terminal paths.",
+        "Negative controls for failure, refusal, stale reuse and speculative discard pass."
+      ],
+      "requires_isolated_worktree": true,
+      "requires_owner_approval": true,
+      "mutation_required": true
+    },
+    {
+      "task_id": "Q-GIVENS",
+      "title": "Reproduce and resolve historical Givens/QR true-residual failure",
+      "priority": "P1",
+      "depends_on": [],
+      "status": "PROPOSED_NOT_AUTHORIZED",
+      "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+      "read_allowlist": [
+        "crates/rodas5p-core/",
+        "crates/rodas5p-integrators/",
+        "research/",
+        "docs/"
+      ],
+      "write_allowlist": [
+        "crates/rodas5p-core/",
+        "crates/rodas5p-integrators/",
+        "research/"
+      ],
+      "math_contract": [
+        "State exact orthogonality/residual invariant and norm.",
+        "Distinguish exact-arithmetic identity from finite-precision backward error."
+      ],
+      "implementation_contract": [
+        "Recover original failing fixture and source identity; do not reconstruct from memory.",
+        "Reproduce current behavior and fix only demonstrated cause."
+      ],
+      "acceptance": [
+        "Original failure reproduced or non-applicability justified with identity evidence.",
+        "Independent residual/orthogonality tests cover adversarial scaling and near-degeneracy."
+      ],
+      "requires_isolated_worktree": true,
+      "requires_owner_approval": true,
+      "mutation_required": true
+    },
+    {
+      "task_id": "Q-NEGATIVE",
+      "title": "Preserve negative controls, ignored tests and false-PASS resistance",
+      "priority": "P1",
+      "depends_on": [
+        "AUTH-001",
+        "AUTH-002",
+        "AUTH-003",
+        "OBS-001",
+        "FSM-001",
+        "API-001"
+      ],
+      "status": "PROPOSED_NOT_AUTHORIZED",
+      "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+      "read_allowlist": [
+        "crates/",
+        "tests/",
+        "tools/",
+        "research/"
+      ],
+      "write_allowlist": [
+        "crates/",
+        "tests/",
+        "tools/",
+        "research/"
+      ],
+      "math_contract": [
+        "A negative control must fail for the intended mathematical/authority reason, not only because of an earlier panic or malformed input."
+      ],
+      "implementation_contract": [
+        "Inventory ignored/filtered tests, false-certificate fixtures and refused routes.",
+        "Assert deterministic failure reasons and preserved state/work."
+      ],
+      "acceptance": [
+        "Every critical finding has positive and negative controls.",
+        "Ignored/filtered tests are not counted as executed.",
+        "NOT_RUN/BLOCKED/FAIL/PASS remain separate."
+      ],
+      "requires_isolated_worktree": true,
+      "requires_owner_approval": true,
+      "mutation_required": true
+    },
+    {
+      "task_id": "Q-LINT",
+      "title": "Run full locked workspace verification on pinned compiler and clean worktree",
+      "priority": "P1",
+      "depends_on": [
+        "AUTH-001",
+        "AUTH-002",
+        "AUTH-003",
+        "OBS-001",
+        "FSM-001",
+        "API-001",
+        "EPOCH-001"
+      ],
+      "status": "PROPOSED_NOT_AUTHORIZED",
+      "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+      "read_allowlist": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "rust-toolchain.toml",
+        "crates/",
+        "tools/"
+      ],
+      "write_allowlist": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "rust-toolchain.toml",
+        "crates/",
+        "tools/"
+      ],
+      "math_contract": [
+        "Build/lint is implementation evidence, not numerical correctness proof."
+      ],
+      "implementation_contract": [
+        "Pin exact release compiler or explicitly define rolling-stable policy.",
+        "Run fmt, clippy -D warnings, workspace release tests/build/doc tests; preserve exact logs."
+      ],
+      "acceptance": [
+        "Required commands pass on exact clean source/toolchain.",
+        "No test or tolerance is removed to force PASS."
+      ],
+      "requires_isolated_worktree": true,
+      "requires_owner_approval": true,
+      "mutation_required": true
+    },
+    {
+      "task_id": "M3-REGIME",
+      "title": "Test re-entrant regime switching on adversarial stiff/nonautonomous systems",
+      "priority": "P1",
+      "depends_on": [
+        "FSM-001",
+        "M2-CAUSAL",
+        "BENCH-ACHIEVED"
+      ],
+      "status": "PROPOSED_NOT_AUTHORIZED",
+      "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+      "read_allowlist": [
+        "crates/vigilode/",
+        "crates/rodas5p-integrators/",
+        "bench/",
+        "research/"
+      ],
+      "write_allowlist": [
+        "crates/vigilode/",
+        "crates/rodas5p-integrators/",
+        "bench/",
+        "research/"
+      ],
+      "math_contract": [
+        "Switching must preserve committed state, time, tolerance/error control and work accounting.",
+        "A heuristic stiffness indicator is not a rigorous stability theorem."
+      ],
+      "implementation_contract": [
+        "Test at least two explicit-to-implicit and implicit-to-explicit re-entry cycles plus no-switch control.",
+        "Include nonautonomous forcing, order reduction and transient stiffness bursts."
+      ],
+      "acceptance": [
+        "Transition/error/work traces are complete.",
+        "No chattering or state/work loss within preregistered bounds.",
+        "Performance claim uses BENCH-ACHIEVED evidence only."
+      ],
+      "requires_isolated_worktree": true,
+      "requires_owner_approval": true,
+      "mutation_required": true
+    },
+    {
+      "task_id": "DOC-CLAIMS",
+      "title": "Reconcile README and benchmark report claims to evidence authority",
+      "priority": "P1",
+      "depends_on": [
+        "FSM-001",
+        "BENCH-ACHIEVED",
+        "Q-LINT"
+      ],
+      "status": "PROPOSED_NOT_AUTHORIZED",
+      "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+      "read_allowlist": [
+        "README.md",
+        "bench/out/ADVERSARIAL_CROSS_SOLVER_REPORT.md",
+        "docs/agent/production_solver_qualification_20261106_v2/"
+      ],
+      "write_allowlist": [
+        "README.md",
+        "bench/out/ADVERSARIAL_CROSS_SOLVER_REPORT.md"
+      ],
+      "math_contract": [
+        "Keep local error estimate, observed reference error, global bound, validated enclosure and release status as distinct claim types."
+      ],
+      "implementation_contract": [
+        "Bind every performance number to dataset, runner, corpus and reference hashes.",
+        "Describe actual live dispatcher and API limitations."
+      ],
+      "acceptance": [
+        "Every public claim maps to admissible evidence and declared scope.",
+        "No diagnostic-only artifact is phrased as release-qualified."
+      ],
+      "requires_isolated_worktree": true,
+      "requires_owner_approval": true,
+      "mutation_required": true
+    },
+    {
+      "task_id": "M4-QUALIFY",
+      "title": "Final independent qualification by claim and supported-input scope",
+      "priority": "P0",
+      "depends_on": [
+        "EPOCH-001",
+        "AUTH-001",
+        "AUTH-002",
+        "AUTH-003",
+        "OBS-001",
+        "FSM-001",
+        "API-001",
+        "BENCH-ACHIEVED",
+        "M2-CAUSAL",
+        "Q-FAIR-AB",
+        "Q-GIVENS",
+        "Q-NEGATIVE",
+        "Q-LINT",
+        "M3-REGIME",
+        "DOC-CLAIMS"
+      ],
+      "status": "PROPOSED_NOT_AUTHORIZED",
+      "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+      "read_allowlist": [
+        "docs/agent/production_solver_qualification_20261106_v2/",
+        "research/",
+        "crates/",
+        "bench/",
+        "README.md"
+      ],
+      "write_allowlist": [
+        "docs/agent/production_solver_qualification_20261106_v2/"
+      ],
+      "math_contract": [
+        "No global validated-solver claim without full continuous solution enclosure and existence/uniqueness evidence on every accepted slab.",
+        "No class-wide performance claim without preregistered matched-achieved-error protocol and complete failure accounting."
+      ],
+      "implementation_contract": [
+        "Issue scope-indexed verdict for API, numerical accuracy, validated enclosure, switching, reproducibility, performance and release.",
+        "Use one read-only fresh-context review only; no review-of-review."
+      ],
+      "acceptance": [
+        "Relevant P0/P1 gates close or owner explicitly accepts narrower use scope.",
+        "All evidence hashes bind to exact qualified commit.",
+        "Owner approves exact claim scope and release decision."
+      ],
+      "stop_conditions": [
+        "Open certificate-authority critical finding keeps validated-IVP qualification HOLD.",
+        "Any disputed benchmark reference keeps matched-performance promotion HOLD."
+      ],
+      "requires_isolated_worktree": true,
+      "requires_owner_approval": true,
+      "mutation_required": true
+    }
+  ]
+}

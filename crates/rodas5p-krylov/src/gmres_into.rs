@@ -20,6 +20,7 @@ use crate::{
         validate_residual_scale, validate_system,
     },
     gmres::{GmresConfig, arnoldi_happy_breakdown},
+    gmres_givens::RealGivens,
     kernels::{axpy, linear_combination_into, normalize, two_pass_mgs_into},
     small::least_squares,
     workspace::{ArnoldiWorkspace, GmresWorkspace},
@@ -145,6 +146,53 @@ pub fn solve_gmres_into(
     )
 }
 
+/// Solve GMRES into caller storage optionally preconditioned by a secant preconditioner.
+///
+/// When `secant` is `None`, this is bitwise identical to unpreconditioned
+/// `solve_gmres_into` (G1 bit-identity).
+#[allow(clippy::too_many_arguments)]
+pub fn solve_gmres_into_with_secant(
+    op: &dyn LinearOperator,
+    secant: Option<&crate::SecantPreconditioner>,
+    rhs: &[f64],
+    x0: Option<&[f64]>,
+    config: &GmresConfig,
+    residual_scale: Option<&[f64]>,
+    output: &mut [f64],
+    workspace: &mut GmresWorkspace,
+    capacity: GmresCapacity,
+    counters: &mut WorkCounters,
+) -> CoreResult<GmresIntoReport> {
+    if let Some(pc) = secant {
+        solve_gmres_into(
+            op,
+            pc,
+            rhs,
+            x0,
+            config,
+            residual_scale,
+            output,
+            workspace,
+            capacity,
+            counters,
+        )
+    } else {
+        let identity = rodas5p_core::IdentityPreconditioner::new(rhs.len());
+        solve_gmres_into(
+            op,
+            &identity,
+            rhs,
+            x0,
+            config,
+            residual_scale,
+            output,
+            workspace,
+            capacity,
+            counters,
+        )
+    }
+}
+
 /// [`solve_gmres_into`] with [`GmresIntoOptions`] (and the default
 /// [`ResidualAccounting`]).
 #[allow(clippy::too_many_arguments)]
@@ -215,7 +263,8 @@ pub fn solve_gmres_into_with_accounting(
         )));
     }
     let capacity_before = workspace.capacity_f64();
-    let before = *counters;
+    let matvecs_before = counters.linear_matvecs;
+    let pc_apps_before = counters.preconditioner_apps;
     let right_norm = selected_residual_norm(rhs, residual_scale)?;
     let threshold = residual_threshold("GMRES", config.rtol, config.atol, right_norm)?;
     workspace.common.prepare(n);
@@ -241,7 +290,11 @@ pub fn solve_gmres_into_with_accounting(
             )?;
             true
         };
-        let residual_norm = selected_residual_norm(&workspace.common.residual, residual_scale)?;
+        let residual_norm = if !operator_residual {
+            right_norm
+        } else {
+            selected_residual_norm(&workspace.common.residual, residual_scale)?
+        };
         if initial_residual_norm.is_none() {
             initial_residual_norm = Some(residual_norm);
         }
@@ -262,7 +315,11 @@ pub fn solve_gmres_into_with_accounting(
                 .common
                 .preconditioned
                 .copy_from_slice(&workspace.common.residual);
-            let beta = safe_l2(&workspace.common.preconditioned);
+            let beta = if residual_scale.is_none() {
+                residual_norm
+            } else {
+                safe_l2(&workspace.common.preconditioned)
+            };
             if !(beta > f64::MIN_POSITIVE && beta.is_finite()) {
                 return Err(CoreError::LinearSolve(
                     "GMRES right-preconditioned residual breakdown".into(),
@@ -332,14 +389,15 @@ pub fn solve_gmres_into_with_accounting(
         )));
     }
     counters.linear_solves += 1;
-    let delta = counters.delta(before);
+    let matvecs = counters.linear_matvecs - matvecs_before;
+    let pc_apps = counters.preconditioner_apps - pc_apps_before;
     output.copy_from_slice(&workspace.common.x);
     Ok(GmresIntoReport {
         residual_norm,
         relative_residual: residual_norm / right_norm.max(f64::MIN_POSITIVE),
         iterations: total as u64,
-        matvecs: delta.linear_matvecs,
-        preconditioner_apps: delta.preconditioner_apps,
+        matvecs,
+        preconditioner_apps: pc_apps,
         cycles,
         least_squares_solves: cycles,
         workspace_grew: workspace.capacity_f64() > capacity_before,
@@ -505,6 +563,14 @@ fn least_squares_correction(
     actual: usize,
     beta: f64,
 ) -> CoreResult<()> {
+    if actual == 0 {
+        linear_combination_into(
+            &workspace.arnoldi.basis[..0],
+            &[],
+            &mut workspace.arnoldi.correction,
+        )?;
+        return Ok(());
+    }
     let arnoldi = &mut workspace.arnoldi;
     arnoldi.hessenberg_prefix.resize_zeros(actual + 1, actual)?;
     for row in 0..actual + 1 {
@@ -514,22 +580,125 @@ fn least_squares_correction(
     }
     arnoldi.rhs_small[..actual + 1].fill(0.0);
     arnoldi.rhs_small[0] = beta;
-    match workspace.least_squares.as_deref_mut() {
-        // Research node `research/spd04_ls_workspace_20261007`: the same
-        // faer kernels on reused buffers, bitwise the same solution.
-        Some(small) => {
-            let solution = &mut workspace.least_squares_solution;
-            small.solve_into(
-                &arnoldi.hessenberg_prefix,
-                &arnoldi.rhs_small[..actual + 1],
-                solution,
-            )?;
-            linear_combination_into(&arnoldi.basis[..actual], solution, &mut arnoldi.correction)?;
+
+    if workspace.ls_solver == crate::workspace::GmresLeastSquaresSolver::GivensHessenberg {
+        let mut givens_ok = true;
+        for j in 0..actual {
+            match RealGivens::from_pair(
+                arnoldi.hessenberg_prefix[(j, j)],
+                arnoldi.hessenberg_prefix[(j + 1, j)],
+            ) {
+                Ok((rot, _)) => {
+                    for col in j..actual {
+                        let mut first = arnoldi.hessenberg_prefix[(j, col)];
+                        let mut second = arnoldi.hessenberg_prefix[(j + 1, col)];
+                        rot.apply(&mut first, &mut second);
+                        arnoldi.hessenberg_prefix[(j, col)] = first;
+                        arnoldi.hessenberg_prefix[(j + 1, col)] = second;
+                    }
+                    arnoldi.hessenberg_prefix[(j + 1, j)] = 0.0;
+                    let mut first = arnoldi.rhs_small[j];
+                    let mut second = arnoldi.rhs_small[j + 1];
+                    rot.apply(&mut first, &mut second);
+                    arnoldi.rhs_small[j] = first;
+                    arnoldi.rhs_small[j + 1] = second;
+                }
+                Err(_) => {
+                    givens_ok = false;
+                    break;
+                }
+            }
         }
-        None => {
-            let solution =
-                least_squares(&arnoldi.hessenberg_prefix, &arnoldi.rhs_small[..actual + 1])?;
-            linear_combination_into(&arnoldi.basis[..actual], &solution, &mut arnoldi.correction)?;
+
+        let mut max_diag = 0.0f64;
+        for j in 0..actual {
+            let diag = arnoldi.hessenberg_prefix[(j, j)].abs();
+            if diag > max_diag {
+                max_diag = diag;
+            }
+        }
+        let singular = !givens_ok
+            || !max_diag.is_finite()
+            || max_diag == 0.0
+            || (0..actual).any(|j| {
+                let diag = arnoldi.hessenberg_prefix[(j, j)].abs();
+                !diag.is_finite() || diag <= 100.0 * f64::EPSILON * max_diag
+            });
+
+        if singular {
+            for row in 0..actual + 1 {
+                for column in 0..actual {
+                    arnoldi.hessenberg_prefix[(row, column)] = arnoldi.hessenberg[(row, column)];
+                }
+            }
+            arnoldi.rhs_small[..actual + 1].fill(0.0);
+            arnoldi.rhs_small[0] = beta;
+            match workspace.least_squares.as_deref_mut() {
+                Some(small) => {
+                    let solution = &mut workspace.least_squares_solution;
+                    small.solve_into(
+                        &arnoldi.hessenberg_prefix,
+                        &arnoldi.rhs_small[..actual + 1],
+                        solution,
+                    )?;
+                    linear_combination_into(
+                        &arnoldi.basis[..actual],
+                        solution,
+                        &mut arnoldi.correction,
+                    )?;
+                }
+                None => {
+                    let solution = least_squares(
+                        &arnoldi.hessenberg_prefix,
+                        &arnoldi.rhs_small[..actual + 1],
+                    )?;
+                    linear_combination_into(
+                        &arnoldi.basis[..actual],
+                        &solution,
+                        &mut arnoldi.correction,
+                    )?;
+                }
+            }
+        } else {
+            // Solve R * y = rhs_small[..actual] via backward substitution
+            // in-place into rhs_small, then linear_combination_into.
+            for i in (0..actual).rev() {
+                let mut sum = arnoldi.rhs_small[i];
+                for k in i + 1..actual {
+                    sum -= arnoldi.hessenberg_prefix[(i, k)] * arnoldi.rhs_small[k];
+                }
+                arnoldi.rhs_small[i] = sum / arnoldi.hessenberg_prefix[(i, i)];
+            }
+            linear_combination_into(
+                &arnoldi.basis[..actual],
+                &arnoldi.rhs_small[..actual],
+                &mut arnoldi.correction,
+            )?;
+        }
+    } else {
+        match workspace.least_squares.as_deref_mut() {
+            Some(small) => {
+                let solution = &mut workspace.least_squares_solution;
+                small.solve_into(
+                    &arnoldi.hessenberg_prefix,
+                    &arnoldi.rhs_small[..actual + 1],
+                    solution,
+                )?;
+                linear_combination_into(
+                    &arnoldi.basis[..actual],
+                    solution,
+                    &mut arnoldi.correction,
+                )?;
+            }
+            None => {
+                let solution =
+                    least_squares(&arnoldi.hessenberg_prefix, &arnoldi.rhs_small[..actual + 1])?;
+                linear_combination_into(
+                    &arnoldi.basis[..actual],
+                    &solution,
+                    &mut arnoldi.correction,
+                )?;
+            }
         }
     }
     Ok(())
