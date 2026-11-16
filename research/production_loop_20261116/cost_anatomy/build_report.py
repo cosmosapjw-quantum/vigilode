@@ -151,6 +151,8 @@ def render(d):
 
     # Groups of cells used in the prose.
     hires = ["dense.hires.n8.analytic.x1"]
+    small8 = ["dense.hires.n8.analytic.x1", "dense.radnet.n8.analytic.x1"]
+    small32 = ["dense.bruss1d.n32.analytic.x1", "dense.radnet.n32.analytic.x1"]
     small_an = ["dense.hires.n8.analytic.x1", "dense.radnet.n8.analytic.x1",
                 "dense.bruss1d.n32.analytic.x1", "dense.radnet.n32.analytic.x1"]
     inplace_big = ["dense.bruss1d.n128.analytic.x1", "dense.bruss1d.n512.analytic.x1",
@@ -208,17 +210,19 @@ def render(d):
     add(f"- **8단계 사슬(8 RHS + 8 solve)이 병목인 영역**: 1D banded(사슬 {d.CWR(band1)}, 그 대부분이 solve {d.WR(band1, 'solve')}), "
         f"RHS가 비싼 경우(dense와 1D banded의 배율 100에서 RHS {d.WR(x100, 'rhs')}, 배율 10에서 {d.WR(x10, 'rhs')}), "
         f"matrix-free(8회 Krylov solve 구간 {d.WR(mf_x1, 'solve_intervals')}). "
-        f"소형 dense(n ≤ 32)는 instruction 기준 사슬 {d.CIR(small_an)}이고 나머지(벡터 연산·controller·출력)가 {d.IR(small_an, 'remainder')}로 사슬과 같은 규모다.\n")
+        f"소형 dense(n ≤ 32)는 instruction 기준 사슬이 {d.CIR(small_an)}이다. n = 8에서는 나머지(벡터 연산·controller·출력)가 {d.IR(small8, 'remainder')}로 사슬과 같은 규모이고, "
+        f"n = 32에서는 {d.IR(small32, 'remainder')}다.\n")
     add(f"- **사슬이 병목이 아닌 영역**: dense n ≥ 128은 factorisation이 지배한다(in-place LU {d.WR(inplace_big, 'factor')}, faer LU {d.WR(faer_an, 'factor')}). "
         f"2D/3D banded 직접법도 factorisation {d.WR(band23, 'factor')}이다. FD Jacobian을 쓰면 dense n ≥ 128에서 Jacobian이 {d.WR(dense_fd, 'jacobian')}를 차지한다.\n")
     add(f"- **V07 stage b 착수 조건**((J+LU)/사슬 ∈ [0.15, 0.92]이고 수락 step당 wall ≥ 500 µs)을 만족하는 regime은 {len(gate)}개이고, "
         f"그중 `authoritative` 행은 {len(gate_auth)}개다(표 T7). "
-        + ("조건을 만족하는 regime이 있으므로 stage b를 시작할 근거가 있다." if gate_auth else
-           "`authoritative` 행에는 조건을 만족하는 regime이 없다.") + "\n")
+        + (f"착수 조건은 충족된다. 다만 이 regime들의 상한은 {Data._range([g['bound'] for g in gate], 1.0, 2)}"
+           f"(Jacobian만 겹치면 {Data._range([g['bound_jacobian_only'] for g in gate], 1.0, 2)})로, stage b의 통과 기준 1.15와 거의 같다."
+           if gate_auth else "`authoritative` 행에는 조건을 만족하는 regime이 없다.") + "\n")
     add("- **lever별 결론**(4절): Jacobian 병렬 조립(c)은 FD Jacobian 영역에서, LU lever(d, e)는 dense n ≥ 128과 2D/3D banded에서, "
         "RHS 병렬화(g)는 RHS 배율 10 이상에서만 상한이 의미 있다. level 구조 tableau(a)와 투기적 J/LU(b)는 사슬이 큰 1D banded·고비용 RHS에서만 여지가 있다. "
         "matrix-free의 shared basis(f)는 상한이 가장 크지만, 그 대부분은 보호 driver의 GMRES가 stage solve마다 restart 주기(40열)를 끝까지 돌고 그 열들을 2-pass MGS로 직교화하는 데서 나온다.\n")
-    add("- **측정 중 드러난 사실**(3.6절): (1) 보호 dense driver의 faer 경로는 같은 궤적의 client arm보다 wall이 느렸다(instruction 수는 같음). "
+    add("- **측정 중 드러난 사실**(3.6절): (1) 보호 dense driver의 faer 경로는 n = 128, 512에서 같은 궤적의 client arm보다 wall이 느렸다. instruction 수는 같고, 원인은 factorisation마다의 할당과 page fault다(6.2절). "
         "(2) matrix-free GMRES의 반복 수는 restart 주기(40열) 단위로만 늘고, 주기 안에서는 일찍 멈추지 않는다. (3) FD JVP는 보호 선형 허용오차 1e-10에서 쓸 수 없다.\n")
 
     # ---------------------------------------------------------------------------------------
@@ -283,14 +287,15 @@ def render(d):
     add("### 3.2 dense n ≥ 128\n")
     add(f"- **in-place LU**(band 구조 문제를 dense로 저장한 `bruss1d`): factor가 {d.WR(inplace_big, 'factor')}, 사슬이 {d.CWR(inplace_big)}다. "
         f"n = 2048에서 attempt당 {d.US('dense.bruss1d.n2048.analytic.x1')}인데, 같은 문제를 band로 선언한 n = 1e4 cell은 {d.US('banded_1d.bruss1d.n10000.analytic.x1')}다. "
-        "여기서 factor 시간은 n² 크기의 W 조립과 pivot 탐색의 열 주사가 차지한다. 이 영역의 처방은 LU 병렬화가 아니라 band 선언(라우팅)이다.\n"
+        "코드상 이 경로의 factor는 n × n 크기의 W 조립과, Legacy 정책의 pivot 탐색(열 전체 주사)을 포함한다. band LU 자체보다 이 n² 부분이 지배하는 것으로 보인다(따로 재지는 않았다). 이 영역의 처방은 LU 병렬화가 아니라 band 선언(라우팅)이다.\n"
         f"- **faer LU**(`radnet`): factor {d.WR(faer_an, 'factor')}, solve {d.WR(faer_an, 'solve')}, RHS {d.WR(faer_an, 'rhs')}. "
         f"n이 커질수록 factor 몫이 커진다(n = 2048에서 {d.W('dense.radnet.n2048.analytic.x1', 'factor')}).\n"
         f"- **FD Jacobian**: Jacobian phase가 {d.WR(dense_fd, 'jacobian')}다. RHS 호출이 attempt당 수락 상태마다 n + 1회 더 들어가기 때문이다(표 T4).\n")
     add("### 3.3 1D banded (n = 1e3, 1e4, 1e5)\n")
     add(f"- solve가 {d.WR(band1, 'solve')}, factor {d.WR(band1, 'factor')}, RHS {d.WR(band1, 'rhs')}, 나머지 {d.WR(band1, 'remainder')}다. "
         f"세 크기에서 비율이 거의 같다(n에 선형). 사슬(RHS + solve)이 {d.CWR(band1)}이고, 나머지의 대부분도 stage 사이의 벡터 연산이라 사실상 step 전체가 순차 사슬이다.\n"
-        f"- solve가 factor보다 훨씬 큰 것은 band 폭이 2라서 factor가 싸고, Indexed kernel의 후진 대입이 행마다 나눗셈을 하면서 attempt당 8번 반복되기 때문이다. "
+        f"- solve가 factor보다 훨씬 큰 것은 band 폭이 2라서 factor가 싸고 solve는 attempt당 8번 반복되기 때문이다. Indexed kernel의 후진 대입은 행마다 나눗셈을 한 번 하는데, "
+        f"n = 1000의 instruction 기준 solve 몫은 {d.I('banded_1d.bruss1d.n1000.analytic.x1', 'solve')}로 wall 몫 {d.W('banded_1d.bruss1d.n1000.analytic.x1', 'solve')}보다 작다(느린 instruction이 solve에 몰려 있다는 뜻). "
         "보호 `_with_atol` 진입점은 Indexed kernel만 쓴다(Slices·FixedWidth2는 opt-in이라 재지 않았다).\n"
         f"- FD(묶음 5개 + 1회)는 Jacobian을 {d.WR(band1_fd, 'jacobian')}로 올릴 뿐이다.\n"
         f"- 이 행들은 phase 합이 {Data._range([d.cells[c]['sum_check']['median'] for c in d.measured(band1)], 1.0, 3)}라서 기준 (ii)에 걸려 `diagnostic_only`다. "
@@ -310,11 +315,42 @@ def render(d):
         "- 이 행들은 기준 (ii)(RHS + JVP 합)에 걸려 `diagnostic_only`다. driver에 Krylov 직교화를 감싸는 hook이 없어서 callback clock으로는 잴 수 없다. "
         "solve 구간으로 세면 합은 0.99 이상이다(T2의 `sum (RHS+intervals)` 열).\n")
     add("### 3.6 측정 중 드러난 사실\n")
+    faer_ratios = [d.ratio(c) for c in faer_mid] + [
+        d.cells[c]["repeat_measurement"]["instrumented_over_plain"]["ratio_of_medians"]
+        for c in faer_mid if "repeat_measurement" in d.cells.get(c, {})]
+    faer_extra = Data._range([1.0 / r - 1.0 for r in faer_ratios if r], 100.0, 0, " %")
+
+    def fault_text(cell, arm):
+        f = d.cells.get(cell, {}).get("page_fault_diagnostic")
+        if not f or not f.get("ran"):
+            return "미측정"
+        return f"{f[arm]['minor_faults_per_run']['median']:.0f}회(attempt당 {f[arm]['minor_faults_per_attempt_median']:.0f}회)"
+
+    def repeat_ratio(cell):
+        r = d.cells.get(cell, {}).get("repeat_measurement")
+        return "미측정" if r is None else f"{r['instrumented_over_plain']['ratio_of_medians']:.3f}"
+
+    def perf_line(cell):
+        p = d.cells.get(cell, {}).get("perf_stat")
+        if not p or "events" not in p:
+            return f"`{cell}`: perf stat 없음"
+        pf = p["page_faults_net_of_setup"]
+        ins = p["instructions_user_instrumented_over_plain_net_of_setup"]
+        cyc = p["cycles_user_instrumented_over_plain_net_of_setup"]
+        return (f"`{cell}`(attempt {p['attempt_budget']}회): page fault plain {pf['plain']}회 / instrumented {pf['instrumented']}회, "
+                f"instructions:u 비 {ins:.4f}, cycles:u 비 {cyc:.3f}")
+
     add(f"1. **faer 경로의 arm 간 차이.** `radnet` n = 128, 512(해석 Jacobian, 배율 1)에서 instrumented/plain wall이 {d.RR(faer_mid)}였다. timer를 단 쪽이 더 빠르다. "
-        "두 arm은 bit-동일하고 callgrind의 instruction 수도 같으므로(T5의 marked/plain), 차이는 instruction이 아닌 곳에서 온다. "
-        "보호 driver의 faer 경로는 factorisation마다 n × n 행렬을 새로 할당하는데(`LuFactorization::new`), 그 할당·page fault 비용이 heap 배치에 따라 달라지는 것으로 보인다(6절의 perf stat 값 참조; 원인은 확정하지 않았다). "
-        f"n = 2048(항상 mmap되는 크기)에서는 비가 {d.RATIO('dense.radnet.n2048.analytic.x1')}이다. "
-        "기준 (i)은 상한만 두므로 이 행들은 `authoritative`지만, 분율은 instrumented run의 것이고 보호 driver 자신은 그만큼 더 쓴다는 점을 감안해야 한다.\n")
+        f"반복 측정(6.3절)에서도 n = 128은 {repeat_ratio('dense.radnet.n128.analytic.x1')}, n = 512는 {repeat_ratio('dense.radnet.n512.analytic.x1')}로 다시 나타났다. "
+        "두 arm은 bit-동일하고 callgrind의 instruction 수도 같으므로(T5의 marked/plain), 차이는 사용자 instruction이 아닌 곳에서 온다. "
+        "보호 driver의 faer 경로는 factorisation마다 n × n 행렬을 새로 할당하고 앞의 것을 버린다(`LuFactorization::new`). "
+        "arm을 하나씩 별도 프로세스로 실행한 perf stat(6.1절)에서도 instructions:u는 같고, page fault 수는 arm과 구성에 따라 크게 갈린다. "
+        "그래서 wall protocol과 같은 교차 실행에서 run별 page fault를 직접 셌다(6.2절): "
+        f"n = 512에서 plain arm은 run당 {fault_text('dense.radnet.n512.analytic.x1', 'plain')}, instrumented arm은 {fault_text('dense.radnet.n512.analytic.x1', 'instrumented')}의 minor fault를 냈다. "
+        "즉 보호 driver의 faer 경로가 factorisation마다 새 page를 건드리는 배치에 놓였고, client arm은 같은 블록을 재사용하는 배치에 놓였다. "
+        f"n = 2048에서는 두 arm이 같은 수의 page fault를 내고 wall 비가 {d.RATIO('dense.radnet.n2048.analytic.x1')}이다. "
+        f"기준 (i)은 상한만 두므로 이 행들은 `authoritative`지만, 분율은 instrumented run의 것이고 이 측정에서 보호 driver는 그보다 {faer_extra} 더 썼다는 점을 감안해야 한다. "
+        "factor 저장을 재사용하면 없어질 비용이므로, 격자에 없던 lever 후보로 4절에 적었다.\n")
     add("2. **GMRES 반복 수가 40열 단위**(3.5절). 한 주기로 충분한 solve도 40열을 다 만들고 2-pass MGS로 직교화한다. matrix-free wall의 대부분이 여기서 나오며, shared basis(f)의 상한이 큰 이유이기도 하다.\n")
     fd_cell = d.cells.get("matrix_free_2d.ac2d.g128.jvpfd.x1", {}).get("sizing", {})
     add(f"3. **FD JVP 불가.** 탐색 cell `matrix_free_2d.ac2d.g128.jvpfd.x1`(pilot, attempt {fd_cell.get('pilot_attempts', '?')}회)은 "
@@ -344,6 +380,10 @@ def render(d):
         f"| (e) dense LU 병렬화, P = 6 | {top_auth('e_parallel_dense_lu_P6')} | {top('e_parallel_dense_lu_P6')} | faer 경로(n ≥ 512)에서 가치가 있다. in-place LU 행의 상한은 band 선언으로 대체해야 한다(3.2절) |\n"
         f"| (f) shared Krylov basis | {top_auth('f_shared_krylov_basis')} | {top('f_shared_krylov_basis')} | 상한이 가장 크다. 다만 먼저 GMRES 주기의 조기 종료 부재를 분리해서 봐야 한다(같은 stopping test의 per-stage GMRES가 V06의 대조군) |\n"
         f"| (g) RHS 공간 병렬화, P = 6 | {top_auth('g_parallel_rhs_P6')} | {top('g_parallel_rhs_P6')} | RHS 배율 10 이상에서 의미가 있다. 배율 1에서는 P = 6이어도 최대 {g1_max} |\n")
+    add("### 4.0 격자 밖 후보: faer factor 저장의 재사용\n")
+    add(f"3.6절의 차이는 lever 목록에 없던 여지를 가리킨다. `radnet` n = 128, 512에서 보호 driver는 같은 일을 하는 client arm보다 {faer_extra} 더 걸렸고(첫 측정과 반복 측정의 범위), "
+        "그 원인은 factorisation마다의 할당과 page fault다(6.2절). n = 2048에서는 두 arm이 모두 이 비용을 낸다. "
+        "factor 저장과 작업 행렬을 재사용하면 방법과 궤적을 바꾸지 않고 없앨 수 있는 비용이다. 보호 파일(`rodas5p_fast.rs`, `matrix.rs`)의 일이라 이 노드에서는 측정만 했다.\n")
     add("### 4.1 V07 stage b gate\n")
     gate_bounds = Data._range([g["bound"] for g in gate], 1.0, 2)
     gate_bounds_j = Data._range([g["bound_jacobian_only"] for g in gate], 1.0, 2)
@@ -378,9 +418,10 @@ def render(d):
         add(f"| `{c['cell']}` | 미측정 | {why} |")
     add("")
     add("이유를 종류별로 정리하면 다음과 같다.\n")
-    add("- **(ii) phase 합 < 0.90, 직접법**: 1D banded와 n = 128 in-place 행. driver 안의 stage 벡터 연산·오차 norm·controller가 10 %를 넘는다. client 인터페이스 밖이라 보호 소스를 고치지 않고는 잴 수 없다.\n"
+    add("- **(ii) phase 합 < 0.90, 직접법**: 1D banded 행. driver 안의 stage 벡터 연산·오차 norm·controller가 10 %를 넘는다. client 인터페이스 밖이라 보호 소스를 고치지 않고는 잴 수 없다.\n"
         "- **(ii), matrix-free**: Krylov 직교화가 wall의 대부분인데 callback clock 밖이다. solve 구간 계측(확장)으로는 합이 0.99 이상이다.\n"
-        "- **(i) > 1.02**: timer 비용이 phase에 비해 큰 작은 문제, 그리고 두 arm의 메모리 배치 차이가 2–3 % 수준으로 나타난 행.\n"
+        "- **(i) > 1.02**: timer 비용이 attempt에 비해 큰 작은 문제(n = 128 in-place 행은 반복 측정에서도 같았다), 그리고 FD Jacobian이 지배하는 cell 세 개. "
+        "뒤의 세 cell은 측정 중 host load가 변했거나 내 callgrind 작업과 겹쳤고, 반복한 두 cell은 기준을 통과했다(6.3절). 즉 run이 길고 반복 수가 적은 cell에서는 (i)의 판정이 host 상태에 민감하다.\n"
         "- **reduced protocol**: 단일 run이 60 s를 넘는 cell.\n"
         "- **n < 128**: 규칙상 wall은 진단값이고 instruction 수(T5)를 쓴다.\n")
 
@@ -394,6 +435,14 @@ def render(d):
         f"겹친 cell: {', '.join('`' + c['cell'] + '`' for c in overlap) or '없음'}. 사전등록은 겹침을 금하지 않았지만 의도한 바가 아니었고, 이후의 비-timing 작업(identity sweep, perf stat)은 wall protocol이 끝난 뒤에 실행했다. "
         "`RESULTS.json`의 `own_non_timing_jobs_running_during_this_cell`에 cell별로 기록돼 있다.\n")
     add("- **편차 2 (비-timing core 집합).** 사전등록의 `taskset -c 0-9,12-21` 대신 그 부분집합 `0-5,12-17`을 썼다(timing core와 L3를 공유하지 않는 쪽).\n")
+    groups = R["runner_binary_sha256_by_log_group"]
+    by_binary = {}
+    for group, digests in groups.items():
+        for digest in digests:
+            by_binary.setdefault(digest[:12], []).append(group)
+    listing = "; ".join(f"`{digest}`: {', '.join(names)}" for digest, names in sorted(by_binary.items(), key=lambda kv: -len(kv[1])))
+    add(f"- **편차 4 (측정 뒤의 runner 변경).** 로그 묶음별 runner binary(SHA-256 앞 12자리)는 {listing}이다. "
+        "wall protocol이 끝난 뒤 run별 page fault counter를 넣어 다시 빌드한 binary는 `exploratory_faults`(6.2절)에만 썼다. counter는 timed 구간 밖에서 읽는다.\n")
     add("- **편차 3 (보고서 작성 방식).** 이 세션의 Write 도구가 subagent의 보고서 파일 작성을 거부해서, 보고서는 `build_report.py`가 결과 JSON에서 렌더링한다. 내용상의 차이는 없다.\n")
     add("- **줄인 horizon.** run은 t0에서 시작해 attempt 예산에서 끝난다. 직접법의 phase 비용은 h에 거의 무관하지만, 궤적의 초반(작은 step, 드문 거절)만 본 것이다. matrix-free는 step이 커질수록 주기 수가 늘어나므로, 여기서 본 것(solve당 1–3주기)보다 뒤쪽 구간의 solve가 더 비쌀 수 있다. 직교화가 지배한다는 분율은 주기 수와 무관하게 유지될 것으로 보이지만 재지 않았다.\n"
         "- **허용오차 한 점.** 문제마다 rtol 1e-6 한 가지만 썼다. 직접법의 분율은 허용오차에 둔감하지만 거절 비율(Jacobian 재사용 빈도)은 달라진다.\n"
@@ -404,19 +453,48 @@ def render(d):
     if perf:
         add("### 6.1 perf stat (탐색)\n")
         add("arm별 단일 run을 별도 프로세스로 실행하고 set-up만 하는 run(`none`)을 뺀 값이다. attempt 예산은 min(A, 20).\n")
-        add("| cell | attempts | instructions:u instr/plain | cycles:u instr/plain | page faults plain | page faults instr |\n|---|---|---|---|---|---|")
+        add("이 pass는 고정 core가 아니고 identity sweep과 같이 돌았으므로 cycles는 해석하지 않는다(`RESULTS.json`에는 있다). "
+            "n < 128 행의 instruction 비가 큰 것은 clock 호출의 instruction이 attempt 자체와 같은 규모이기 때문이다.\n")
+        add("| cell | attempts | instructions:u instr/plain | page faults plain | page faults instr |\n|---|---|---|---|---|")
         for c in perf:
             p = c["perf_stat"]
             fmt = lambda v, dgt=4: "-" if v is None else f"{v:.{dgt}f}"
             pf = p["page_faults_net_of_setup"]
             add(f"| `{c['cell']}` | {p['attempt_budget']} | {fmt(p['instructions_user_instrumented_over_plain_net_of_setup'])} | "
-                f"{fmt(p['cycles_user_instrumented_over_plain_net_of_setup'])} | {pf['plain'] if pf['plain'] is not None else '-'} | "
+                f"{pf['plain'] if pf['plain'] is not None else '-'} | "
                 f"{pf['instrumented'] if pf['instrumented'] is not None else '-'} |")
         add("")
 
+    faulted = [c for c in cells if c.get("page_fault_diagnostic", {}).get("ran")]
+    if faulted:
+        add("### 6.2 page fault 진단 (탐색)\n")
+        add("wall protocol이 끝난 뒤 runner에 run별 page fault 수(`/proc/self/stat`, timed 구간 밖에서 읽음)를 추가해 다시 빌드하고, 같은 프로토콜을 다섯 cell에 실행했다. "
+            "측정에 쓴 binary와 다른 binary다(로그 metadata의 digest 참조). 값은 timed 반복의 중앙값이다.\n")
+        add("| cell | attempts | plain: minor fault/run | attempt당 | instrumented: minor fault/run | attempt당 | instr/plain wall | load 전/후 |\n|---|---|---|---|---|---|---|---|")
+        for c in faulted:
+            f = c["page_fault_diagnostic"]
+            la = f["load_average"]
+            add(f"| `{c['cell']}` | {f['attempts']} | {f['plain']['minor_faults_per_run']['median']:.0f} | {f['plain']['minor_faults_per_attempt_median']:.0f} | "
+                f"{f['instrumented']['minor_faults_per_run']['median']:.0f} | {f['instrumented']['minor_faults_per_attempt_median']:.0f} | "
+                f"{f['instrumented_over_plain_ratio_of_medians']:.3f} | {la['runner_before'][0]:.1f}/{la['runner_after'][0]:.1f} |")
+        add("")
+        def per_attempt(cell, arm):
+            f = d.cells.get(cell, {}).get("page_fault_diagnostic")
+            return None if not f or not f.get("ran") else f[arm]["minor_faults_per_attempt_median"]
+
+        big = per_attempt("dense.radnet.n2048.analytic.x1", "plain")
+        mid_plain = per_attempt("dense.radnet.n512.analytic.x1", "plain")
+        mid_instr = per_attempt("dense.radnet.n512.analytic.x1", "instrumented")
+        if big is not None and mid_plain is not None:
+            add(f"읽는 법: faer 경로(`radnet` n ≥ 128)는 factorisation마다 새 메모리를 건드린다. n = 2048에서는 두 arm 모두 attempt당 {big:.0f}번의 page fault를 낸다"
+                f"(4 KiB page로 {big * 4096 / 2**20:.0f} MiB). n = 512에서는 heap 배치에 따라 한 arm만 낸다: 배율 1 구성에서 plain은 attempt당 {mid_plain:.0f}번"
+                f"(n × n 행렬 하나가 512 page), instrumented는 {mid_instr:.0f}번이고, page fault를 내는 arm이 느리다. 배율 100 구성에서는 두 arm이 같이 낸다. "
+                "in-place LU(`bruss1d`)는 step 중 page fault가 없다. 따라서 3.6절의 arm 간 차이는 timer나 client driver가 아니라 faer 경로의 factorisation별 할당에서 온다. "
+                "어느 arm이 내는지는 프로세스의 heap 상태에 달려 있으므로, 사용자 프로그램에서도 같은 비용이 나타날 수 있다.\n")
+
     repeats = [c for c in cells if "repeat_measurement" in c and "wall" in c]
     if repeats:
-        add("### 6.2 반복 측정 (탐색)\n")
+        add("### 6.3 반복 측정 (탐색)\n")
         add("내 callgrind 작업과 겹쳤거나 host load가 높았던 cell을, wall protocol이 끝난 뒤 내 다른 작업이 없는 상태에서 같은 프로토콜로 한 번 더 쟀다. "
             "cell의 결과(2절의 표와 라벨)는 첫 측정이고, 아래는 비교용이다.\n")
         add("| cell | 첫 측정 instr/plain | phase 합 | plain µs/attempt | load 전/후 | 반복 instr/plain | phase 합 | plain µs/attempt | load 전/후 | 반복에서 (i) (ii) (iii) | 분율 차이 최대 (%p) |\n"
@@ -463,6 +541,8 @@ def render(d):
         "python3 -I campaign.py callgrind    # logs/callgrind/\n"
         "python3 -I campaign.py identity     # logs/identity/\n"
         "python3 -I campaign.py perfstat     # logs/perfstat/ (탐색)\n"
+        "python3 -I campaign.py repeat --cell <id> ...   # logs/measure_repeat/ (탐색, 6.3절)\n"
+        "python3 -I campaign.py faults --cell <id> ...   # logs/exploratory_faults/ (탐색, 6.2절)\n"
         "python3 -I build_results.py         # RESULTS.json\n"
         "python3 -I build_amdahl.py          # AMDAHL.json, REPORT_TABLES.md\n"
         "python3 -I build_report.py          # 이 문서\n"

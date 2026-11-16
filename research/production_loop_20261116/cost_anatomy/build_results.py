@@ -366,7 +366,10 @@ def summarize_perfstat(cell):
         if "instructions" not in events:
             return {"error": f"no instruction count for arm {arm}"}
         counts[arm] = events
-    meta = strict_load(str(base / f"{cell['id']}.plain.stdout.jsonl") + ".meta.json")
+    meta_path = Path(str(base / f"{cell['id']}.instrumented.stdout.jsonl") + ".meta.json")
+    if not meta_path.exists():
+        return None
+    meta = strict_load(meta_path)
 
     def net(event, arm):
         if event not in counts[arm] or event not in counts["none"]:
@@ -389,9 +392,49 @@ def summarize_perfstat(cell):
     }
 
 
+def summarize_fault_diagnostic(cell):
+    """Exploratory: the wall protocol rerun by the runner that records page faults per run."""
+    log = HERE / "logs" / "exploratory_faults" / (cell["id"] + ".jsonl")
+    meta_path = Path(str(log) + ".meta.json")
+    if not log.exists() or not meta_path.exists():
+        return None
+    meta = strict_load(meta_path)
+    rows = read_jsonl(log)
+    timed = [r for r in rows if r["type"] == "run" and r["kind"] == "timed"]
+    header = next((r for r in rows if r["type"] == "header"), None)
+    footer = next((r for r in rows if r["type"] == "footer"), None)
+    idents = [r for r in rows if r["type"] == "identity"]
+    if meta["exit_code"] != 0 or not timed or header is None:
+        return {"ran": False, "exit_code": meta["exit_code"]}
+    out = {
+        "ran": True,
+        "role": "exploratory; runner rebuilt after the wall protocol with page-fault counters read outside the timed interval",
+        "log": str(log.relative_to(HERE)),
+        "binary_sha256": meta["binary_sha256"],
+        "attempts": timed[0]["attempts"],
+        "all_pairs_identical": bool(idents) and all(r["identical"] for r in idents),
+        "load_average": {"runner_before": header["loadavg_before"],
+                         "runner_after": footer["loadavg_after"] if footer else None},
+    }
+    walls = {}
+    for arm in ("plain", "instrumented"):
+        runs = [r for r in timed if r["arm"] == arm]
+        faults = [r["minor_faults"] for r in runs]
+        walls[arm] = statistics.median(r["wall_ns"] for r in runs)
+        out[arm] = {
+            "minor_faults_per_run": {"median": statistics.median(faults), "min": min(faults),
+                                     "max": max(faults), "values": faults},
+            "minor_faults_per_attempt_median": statistics.median(faults) / runs[0]["attempts"],
+            "major_faults_total": sum(r["major_faults"] for r in runs),
+            "wall_ns_median": walls[arm],
+        }
+    out["instrumented_over_plain_ratio_of_medians"] = walls["instrumented"] / walls["plain"]
+    return out
+
+
 def summarize_identity_sweep(cell):
     log = HERE / "logs" / "identity" / (cell["id"] + ".jsonl")
-    if not log.exists():
+    if not log.exists() or not Path(str(log) + ".meta.json").exists():
         return None
     meta = strict_load(str(log) + ".meta.json")
     rows = read_jsonl(log)
@@ -507,6 +550,9 @@ def main():
                     "own_non_timing_jobs_running_during_this_cell":
                         again["own_non_timing_jobs_running_during_this_cell"],
                 }
+        faults = summarize_fault_diagnostic(cell)
+        if faults is not None:
+            entry["page_fault_diagnostic"] = faults
         instruction = summarize_callgrind(cell)
         if instruction is not None:
             entry["instruction_counts"] = instruction
@@ -531,6 +577,9 @@ def main():
         "predeclared_sha256": sha256(HERE / "PREDECLARED.json"),
         "sizing_sha256": sha256(HERE / "SIZING.json"),
         "environment": strict_load(env_path) if env_path.exists() else None,
+        "runner_binary_sha256_by_log_group": {
+            group.name: sorted({strict_load(m)["binary_sha256"] for m in group.glob("*.meta.json")})
+            for group in sorted((HERE / "logs").iterdir()) if group.is_dir()},
         "thresholds": {"instrumented_over_plain_max": RATIO_LIMIT,
                        "phase_sum_range": [SUM_LOW, SUM_HIGH], "small_n_below": SMALL_N},
         "units": "times in nanoseconds; fractions are of the instrumented wall of the same run",

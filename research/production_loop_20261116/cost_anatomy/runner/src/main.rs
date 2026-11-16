@@ -812,6 +812,16 @@ fn unix_time() -> f64 {
         .unwrap_or(0.0)
 }
 
+/// Minor and major page faults of this process so far (`/proc/self/stat`, fields 10 and 12).
+/// Added after the wall protocol for the exploratory page-fault diagnostic; the runs of the
+/// wall protocol were made by the binary without it (see the digests in the log metadata).
+fn page_faults() -> Option<(u64, u64)> {
+    let text = std::fs::read_to_string("/proc/self/stat").ok()?;
+    let rest = &text[text.rfind(')')? + 1..];
+    let fields: Vec<&str> = rest.split_whitespace().collect();
+    Some((fields.get(7)?.parse().ok()?, fields.get(9)?.parse().ok()?))
+}
+
 fn cell_json(cell: &Cell, def: &ProblemDef) -> Value {
     json!({
         "id": cell.id,
@@ -993,12 +1003,19 @@ fn command_measure(args: &Args) -> CoreResult<()> {
         };
         let mut outs: Vec<(Arm, RunOut)> = Vec::with_capacity(2);
         for (position, arm) in order.into_iter().enumerate() {
+            // Page-fault counters are read outside the timed interval of the run.
+            let faults_before = page_faults();
             let out = v04_region(&arms, arm, args.attempts)?;
+            let faults_after = page_faults();
             let mut row = run_json(&cell, arm, &out);
             row["type"] = json!("run");
             row["rep"] = json!(rep);
             row["kind"] = json!(kind);
             row["position_in_pair"] = json!(position);
+            if let (Some(before), Some(after)) = (faults_before, faults_after) {
+                row["minor_faults"] = json!(after.0.saturating_sub(before.0));
+                row["major_faults"] = json!(after.1.saturating_sub(before.1));
+            }
             emit(row);
             outs.push((arm, out));
         }

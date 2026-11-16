@@ -507,6 +507,14 @@ def cmd_repeat(args):
     cmd_measure(args, subdir="measure_repeat")
 
 
+def cmd_faults(args):
+    """Exploratory page-fault diagnostic: the wall protocol again for named cells with a runner
+    that also records the page faults of every run -> logs/exploratory_faults/."""
+    if not args.cell:
+        raise SystemExit("faults needs --cell")
+    cmd_measure(args, subdir="exploratory_faults")
+
+
 def callgrind_plan():
     pre = strict_load(HERE / "PREDECLARED.json")
     sizing = {c["cell"]: c for c in strict_load(HERE / "SIZING.json")["cells"]}
@@ -595,7 +603,7 @@ def main():
     sub = parser.add_subparsers(dest="command", required=True)
     for name, fn in [("predeclare", cmd_predeclare), ("environment", cmd_environment),
                      ("pilot", cmd_pilot), ("size", cmd_size), ("identity", cmd_identity),
-                     ("measure", cmd_measure), ("repeat", cmd_repeat),
+                     ("measure", cmd_measure), ("repeat", cmd_repeat), ("faults", cmd_faults),
                      ("callgrind", cmd_callgrind),
                      ("perfstat", cmd_perfstat)]:
         p = sub.add_parser(name)
