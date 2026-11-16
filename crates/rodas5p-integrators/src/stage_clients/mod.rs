@@ -7,3 +7,6 @@
 
 pub mod dense_lu;
 pub mod timed;
+
+pub use dense_lu::{DenseLuMode, DenseLuStageClient};
+pub use timed::{PhaseTimes, PhaseTimesHandle, TimedStageClient};
