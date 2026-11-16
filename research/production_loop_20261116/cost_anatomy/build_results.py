@@ -62,8 +62,14 @@ def choose_measure_log(cell_id):
     base = HERE / "logs" / "measure" / (cell_id + ".jsonl")
     retry = HERE / "logs" / "measure" / (cell_id + ".retry.jsonl")
     notes = []
+    interrupted = sorted(p.name for p in base.parent.glob(cell_id + ".interrupted*.jsonl"))
+    if interrupted:
+        notes.append("the campaign process was stopped from outside during an earlier run of "
+                     "this cell; partial log(s) kept: " + ", ".join(interrupted))
     if not base.exists():
-        return None, None, ["no measurement log"]
+        return None, None, notes + ["no measurement log"]
+    if not Path(str(base) + ".meta.json").exists():
+        return None, None, notes + ["the measurement process did not finish (no exit code)"]
     meta = strict_load(str(base) + ".meta.json")
     if meta["exit_code"] == 0:
         return base, meta, notes

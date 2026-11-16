@@ -354,7 +354,19 @@ def main():
     }
     text = json.dumps(doc, indent=1, ensure_ascii=False, allow_nan=False) + "\n"
     (HERE / "AMDAHL.json").write_text(text)
-    (HERE / "REPORT_TABLES.md").write_text(tables(results, regimes))
+    rendered = tables(results, regimes)
+    (HERE / "REPORT_TABLES.md").write_text(rendered)
+    # The report carries the same tables between two markers; the prose around them is
+    # hand-written and is not touched.
+    report = HERE / "REPORT_KO.md"
+    begin, end = "<!-- BEGIN GENERATED TABLES -->", "<!-- END GENERATED TABLES -->"
+    if report.exists():
+        body = report.read_text()
+        if begin in body and end in body:
+            head, rest = body.split(begin, 1)
+            _, tail = rest.split(end, 1)
+            report.write_text(head + begin + "\n" + rendered + end + tail)
+            print("updated the generated tables of REPORT_KO.md")
     print("wrote AMDAHL.json and REPORT_TABLES.md; V07 stage b gate list:",
           [r["cell"] for r in gate])
 

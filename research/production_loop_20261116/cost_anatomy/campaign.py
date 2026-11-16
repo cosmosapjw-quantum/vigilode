@@ -35,7 +35,10 @@ TARGET = Path(os.environ.get(
     "CARGO_TARGET_DIR", "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v04"))
 BIN = TARGET / "release" / "v04-cost-anatomy-runner"
 TIMING_CPUS = "10"
-OTHER_CPUS = "0-9,12-21"
+# Non-timing runs: a subset of the node's partition 0-9,12-21 that shares no L3 cache with the
+# timing core (cores 0-5 and their SMT siblings are the other core complex of the 5900X), so that
+# callgrind and the identity sweep can run while the wall protocol is running.
+OTHER_CPUS = "0-5,12-17"
 
 PILOT_ATTEMPTS = 12
 TARGET_RUN_SECONDS = 1.5
@@ -462,6 +465,15 @@ def cmd_measure(args):
             continue
         log = HERE / "logs" / "measure" / (entry["cell"] + ".jsonl")
         attempt = 1
+        if log.exists() and not Path(str(log) + ".meta.json").exists():
+            # The campaign process was stopped from outside while this cell ran (no exit code
+            # was recorded): the partial log is kept under another name and the cell is run
+            # again. This is not the rerun allowed after a failure of the cell itself.
+            index = 1
+            while (log.parent / f"{entry['cell']}.interrupted{index}.jsonl").exists():
+                index += 1
+            log.rename(log.parent / f"{entry['cell']}.interrupted{index}.jsonl")
+            print("kept interrupted log of", entry["cell"], flush=True)
         if log.exists():
             meta = strict_load(str(log) + ".meta.json")
             if meta["exit_code"] == 0 and not args.force:
@@ -504,9 +516,21 @@ def callgrind_plan():
     return plan
 
 
+def compress(raw):
+    """Replace the raw callgrind output by a reproducible gzip of it."""
+    raw = Path(raw)
+    with open(raw, "rb") as src, open(str(raw) + ".gz", "wb") as sink:
+        with gzip.GzipFile(filename="", mode="wb", fileobj=sink, mtime=0) as dst:
+            shutil.copyfileobj(src, dst)
+    raw.unlink()
+
+
 def cmd_callgrind(args):
     out_dir = HERE / "logs" / "callgrind"
     out_dir.mkdir(parents=True, exist_ok=True)
+    # A raw output left by an earlier invocation that stopped before compressing it.
+    for leftover in sorted(out_dir.glob("*.callgrind.out")):
+        compress(leftover)
     wanted = set(args.cell or [])
     for cell_id, budget, role in callgrind_plan():
         if wanted and cell_id not in wanted:
@@ -527,9 +551,7 @@ def cmd_callgrind(args):
             annotate = run_capture(
                 ["callgrind_annotate", "--inclusive=yes", "--threshold=100", str(raw)])
             annotate_path.write_text(annotate.stdout)
-            with open(raw, "rb") as src, gzip.open(str(raw) + ".gz", "wb", mtime=0) as dst:
-                shutil.copyfileobj(src, dst)
-            raw.unlink()
+            compress(raw)
             print("callgrind", cell_id, arm, "exit", code, "annotate", annotate.returncode,
                   flush=True)
 
