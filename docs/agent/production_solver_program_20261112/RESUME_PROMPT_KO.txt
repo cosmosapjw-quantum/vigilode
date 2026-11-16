@@ -39,6 +39,9 @@ U06은 COMPLETE_SCOPED다. vigilode::{CapabilitySet, MethodRegistry, MethodReque
 U04/U08 상태(2026-11-16)
 U04는 COMPLETE_SCOPED(음성: crossover 없음, peak RSS 동일, CPU 증가)다. U08은 PARTIAL이다(quotient trace만 test 수준 경계로 이식, 나머지는 structure_port/DICTIONARY.json). 다음: U07 adapter(U06 registry 소비), U09 geometry, U08 잔여, U10, U11.
 
+전체 U 상태(2026-11-16)
+U01–U06, U10은 COMPLETE_SCOPED, U07/U08/U09/U11은 PARTIAL이다(각 TASK_CONTRACTS의 not_run 참조). U11 holdout 결합 판정은 HOLD다(step 1.9–7.1배, 속도 0.002–0.23배). 신규성은 성립하지 않는다(U10). 다음 결정은 PPSW1 트랙의 계속 여부(소유자 결정), CVODE/Julia 비교, U07 독립 review다.
+
 다음 실행
 TASK_CONTRACTS의 status/dependencies를 확인한다. U03은 scoped 완료다. 다음은 U04 잔여(preconditioner, B1 예산 일반화, CPU/RSS), U06 capability registry, U08 구조 이식이다. 다점 출력 interpolant, paired timing, RSS는 U11에서 다룬다. U06 순수 capability registry와 U08 구조 이식은 독립 진행할 수 있다. U04 matrix-free common-W, U07 frontend adapters, U09 geometry, U10 novelty/error-transfer, U11 holdout은 DAG를 따른다. U 노드는 기존 T 목표를 구체화한다. U scoped 완료만으로 T/G0를 완료로 올리지 않는다.
 

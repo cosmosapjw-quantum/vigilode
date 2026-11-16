@@ -560,7 +560,7 @@
         "U09_GEOMETRY_MOL",
         "U10_SWITCH_ERROR_AND_NOVELTY"
       ],
-      "status": "PLANNED",
+      "status": "PARTIAL",
       "purpose": "Evaluate frozen G0 goals as a set with honest external comparators.",
       "write_allowlist": [
         "research/production_unification_20261115/production_holdout/**"
@@ -588,7 +588,24 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_unification_20261115/production_holdout/REPORT_KO.md",
+        "research/production_unification_20261115/production_holdout/PREREGISTRATION.json",
+        "research/production_unification_20261115/production_holdout/EVALUATION.json",
+        "research/production_unification_20261115/production_holdout/reference.json",
+        "research/production_unification_20261115/production_holdout/logs/holdout_runs.jsonl",
+        "research/production_unification_20261115/production_holdout/logs/host_identity.txt",
+        "research/production_unification_20261115/production_holdout/logs/runner_binary.sha256"
+      ],
+      "progress_20261116": {
+        "verdict": "HOLD (conjunction fails: steps 1.9-7.1x, speed 0.002-0.23x, explicit-J and starter Newton nonzero)",
+        "not_run": [
+          "CVODE BDF (SUNDIALS not installed)",
+          "reference RODAS5P (Julia)",
+          "independent human reviewer rerun",
+          "per-arm isolated RSS"
+        ]
+      }
     }
   ],
   "execution_policy": "Resume ready bounded tasks; research/implementation may overlap only with disjoint writes. Qualification dependencies restrict promotion, not safe opt-in refactoring.",

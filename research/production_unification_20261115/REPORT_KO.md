@@ -78,3 +78,7 @@ U08: native quotient trace(중복도 보존)를 test 수준 인증 경계로 이
 ## 2026-11-16 후속 8: U10 전환 오차·신규성 (COMPLETE_SCOPED, 신규성 미성립)
 
 `switch_error/REPORT_KO.md`. Peer↔one-step 전환에서 성분별 majorant 전달은 위반 없이 유효하지만 1e15–1e176배 느슨하다(q ≥ 1). 창 majorant은 stiff mode에서만 수축한다(s−1 창). 선행연구와 측정 비용을 비교한 결과 신규성은 성립하지 않는다. 범위가 제한된 공학 결과만 남긴다.
+
+## 2026-11-16 후속 9: U11 production holdout (HOLD)
+
+`production_holdout/REPORT_KO.md`. holdout 실행보다 먼저 사전등록을 push했고, 깨끗한 worktree에서 독립 runner를 빌드해 실행했다. HIRES/Oregonator/Brusselator에서 PPSW1은 실패 없이 끝났지만 동일 달성오차에서 step 1.9–7.1배, 속도 0.002–0.23배다. explicit-J와 starter Newton도 0이 아니다. G0 결합은 실패이며 HOLD다.

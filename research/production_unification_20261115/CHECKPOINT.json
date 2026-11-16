@@ -171,7 +171,23 @@
     "research/production_unification_20261115/switch_error/transport.exit": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061",
     "research/production_unification_20261115/switch_error/transport.log": "003fe64cb1db1345343d752f40e7a68e13068200b76b6bdde74950024d2717be",
     "research/production_unification_20261115/switch_error/transport.py": "17352fbd3f4985e181fc57edbde337c7474d08329f265f9be5c9dddba653d65a",
-    "research/production_unification_20261115/switch_error/transport_results.json": "d803e80fd22f2427ffb00dc487f8753933447afcc5529605a594eaad5d114958"
+    "research/production_unification_20261115/switch_error/transport_results.json": "d803e80fd22f2427ffb00dc487f8753933447afcc5529605a594eaad5d114958",
+    "research/production_unification_20261115/production_holdout/EVALUATION.json": "0a15ec281ef463e8b5a644546dfe0e94e4b27b69c976ee438b9171bbbd6e74b7",
+    "research/production_unification_20261115/production_holdout/PREREGISTRATION.json": "b4a09b345c65707fa024d040dbde6d15be434501be241bcc2a404ef5ce1bf707",
+    "research/production_unification_20261115/production_holdout/REPORT_KO.md": "c7fbc9d4b2b36f51f6fe24bcee36875e8b329aeaa82a13e6688aec574cd0ccdc",
+    "research/production_unification_20261115/production_holdout/evaluate.py": "3f22ef5a8a7762817482c791a0490d88781221153a9b8256bc2bd739b6def971",
+    "research/production_unification_20261115/production_holdout/logs/build.log": "efd12c68ab6a9509939458a80e06636e8a38b40b2d58bff9fddd6429466723c2",
+    "research/production_unification_20261115/production_holdout/logs/holdout_runs.exit": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061",
+    "research/production_unification_20261115/production_holdout/logs/holdout_runs.jsonl": "b549597aba171350c4085fba9af28bd29a90cdec7c503cb45039f88ab6a108a8",
+    "research/production_unification_20261115/production_holdout/logs/holdout_runs.stderr": "385c98bade34589c76589137a330badfef0fde8cf2cdff1fc81d816ea2300370",
+    "research/production_unification_20261115/production_holdout/logs/host_identity.txt": "94acaf1bc84b3992bd4c5f50a952e71242d42ddb0036828b13986478ef9ea23a",
+    "research/production_unification_20261115/production_holdout/logs/runner_binary.sha256": "62b52ac0aa19f2d33f9ab12bb035e81eeebca58f41be54d9fe79d5d27664944c",
+    "research/production_unification_20261115/production_holdout/reference.json": "0c50b309bf0ee7cee37797329631d99cd4636dae1d578ee029b17f0e8f041eb3",
+    "research/production_unification_20261115/production_holdout/reference.log": "a20e796dfa41bd80ceea98b4acc85128559a6906449ce1472fa4634f8d6f8d8c",
+    "research/production_unification_20261115/production_holdout/reference.py": "b30408ce6f4d524ced956b949916da9f2d40ba24c3cd61e4581719a8634ab80a",
+    "research/production_unification_20261115/production_holdout/runner/Cargo.lock": "6f8b7d5db78a51aa4c5a1af0c93864cf478602faf240360a5799731d95dcfbf1",
+    "research/production_unification_20261115/production_holdout/runner/Cargo.toml": "bcb560333ad0a7500c0288fb876ef422e95380a1ff3b3a1325df0ec2298b0ef1",
+    "research/production_unification_20261115/production_holdout/runner/src/main.rs": "eb9fc7925c188b31132500152d0df21ba152ea271f3a542b49f40ac60b98aa11"
   },
   "checks": {
     "baseline_facade_tests": {
@@ -283,6 +299,11 @@
       "passed": 5,
       "failed": 0,
       "receipt": "geometry_mol/logs/u09_green.log"
+    },
+    "u11_holdout": {
+      "result": "G0 conjunction FAIL -> HOLD",
+      "receipt": "production_holdout/EVALUATION.json",
+      "runner_commit": "891044d76e9826ebf71cc197b73fc3285b154587"
     }
   },
   "remaining_obligations": [
@@ -295,8 +316,9 @@
     "Frozen-G0 matched achieved-error holdout conjunction"
   ],
   "next_tasks": [
-    "U11_PRODUCTION_HOLDOUT",
-    "remaining items of U07/U08/U09 and parent T nodes"
+    "owner decision on PPSW1 track (all U nodes executed; remaining items listed per task)",
+    "CVODE/Julia comparators",
+    "independent review of U07"
   ],
   "backup": {
     "status": "VERIFIED_SUBSTANTIVE_CHECKPOINT",
@@ -312,7 +334,8 @@
   "scope_partial": [
     "U07_TRANSACTIONAL_KERNEL_ADAPTERS",
     "U08_STRUCTURE_CERTIFICATES",
-    "U09_GEOMETRY_MOL"
+    "U09_GEOMETRY_MOL",
+    "U11_PRODUCTION_HOLDOUT"
   ],
   "u03_turn": {
     "date_kst": "2026-11-15",
