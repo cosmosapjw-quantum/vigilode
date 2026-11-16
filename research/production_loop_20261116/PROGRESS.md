@@ -29,3 +29,5 @@ Loop L1, branch research/production-loop-20261116, base 074a5699. One line per e
 - Draft PR #190 (loop -> research/production-unification-20261115) opened under OD-L1-7 for hosted CI; not for merge.
 - Inline fix: leja_setup_work_contract tests serialised with a static mutex (test-only; library unchanged). RED: failures in 2 to 25 of 200 runs before; GREEN: 0 of 1500 after (adoption/FLAKE_FIX.json). Lead kept: setup-work attribution is not exactly-once under concurrent first use of the process-global tables.
 - Stage client stubs assembly, krylov, sparse_lu, speculative pre-seeded in stage_clients/mod.rs so that wave-2 builders do not edit mod.rs.
+- Wave 2 staged, not launched: eight builder worktrees vigilode-prod-loop-20261116-w2-{v04,v06,v07,v03,v08,v09,v11,v10} on branches research/production-loop-20261116-w2-<node>, all at 04430258; cargo targets under ~/.cargo-targets/vigilode-loop-20261116/w2-<node>.
+- Owner instruction 2026-11-16 20:41 KST: resume time moved from 21:11 KST (usage window reset) to 00:00 KST 2026-11-17. Wave-2 launch and collection of the PR #190 hosted CI results wait until then; no loop work in between.
