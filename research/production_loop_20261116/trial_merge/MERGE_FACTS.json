@@ -1,0 +1,364 @@
+{
+  "schema": "vigilode.loop-l1.trial-merge.facts.v1",
+  "generator": "research/production_loop_20261116/trial_merge/make_gates.py",
+  "commits": [
+    {
+      "commit": "763b80ff2e7cca8e4dfd9d7f835398d4170c22cd",
+      "subject": "test(vigilode): bitwise golden oracle of the default-facing entry points (L1 V03G)"
+    },
+    {
+      "commit": "e23cf30abd4b9d8fe38c0a680364361a7610a299",
+      "subject": "fixup(trial)(c): handle Jacobian::SparseJvp in CapabilitySet::from_problem_and_policy"
+    },
+    {
+      "commit": "9ff92bc12c8d708d53638d1c6bd5231bf64819f6",
+      "subject": "fixup(trial)(b): replace AtomicU64::try_update by fetch_update (1.94.1)"
+    },
+    {
+      "commit": "9fe7e7ee6e8ecdd3af8866ee862cc293ae20e919",
+      "subject": "fixup(trial)(a): pin toolchain and rust-version back to 1.94.1"
+    },
+    {
+      "commit": "97385fe4f21368faad8c8535c1475b371e044026",
+      "subject": "merge(trial): switcher lineage 93392249 into loop L1 trial branch (node V02)"
+    }
+  ],
+  "merge_name_status_counts": {
+    "A": 214,
+    "M": 77,
+    "D": 2
+  },
+  "cargo_lock_changed_by_merge": false,
+  "workspace_members": [
+    "crates/rodas5p-core",
+    "crates/rodas5p-krylov",
+    "crates/rodas5p-integrators",
+    "crates/rodas5p-fair-ab",
+    "crates/rodas5p-cli",
+    "crates/vigilode",
+    "crates/vigilode-coupled"
+  ],
+  "rust_version_declarations_at_head": {
+    "Cargo.toml": "1.94.1",
+    "crates/rodas5p-cli/Cargo.toml": "true",
+    "crates/rodas5p-core/Cargo.toml": "true",
+    "crates/rodas5p-fair-ab/Cargo.toml": "true",
+    "crates/rodas5p-integrators/Cargo.toml": "true",
+    "crates/rodas5p-krylov/Cargo.toml": "true",
+    "crates/vigilode-bench/Cargo.toml": "1.99.0",
+    "crates/vigilode-coupled/Cargo.toml": "1.94.1",
+    "crates/vigilode-hybrid/Cargo.toml": "1.99.0",
+    "crates/vigilode/Cargo.toml": "true",
+    "external_audits/vigilode_bassrei_ncp_c1_20261022/harness/diffsol-adapter/Cargo.toml": null,
+    "external_audits/vigilode_ncp_intensive_120m_v1_20261021/harness/diffsol-adapter/Cargo.toml": null,
+    "research/adversarial_audit_20260927/harness/Cargo.toml": "1.94.1",
+    "research/adversarial_reaudit_20260930_r2/output_cert/probe/Cargo.toml": null,
+    "research/adversarial_reaudit_20260930_r2/phi/probe/Cargo.toml": null,
+    "research/adversarial_reaudit_20260930_r2/statistics/probe/Cargo.toml": null,
+    "research/adversarial_reaudit_20261001_r3/arithmetic/probe/Cargo.toml": null,
+    "research/adversarial_reaudit_20261001_r3/statistics/probe/Cargo.toml": null,
+    "research/adversarial_reaudit_20261001_r3/time/probe/Cargo.toml": null,
+    "research/adversarial_reaudit_20261001_r4/homotopy/probe/Cargo.toml": null,
+    "research/adversarial_reaudit_20261001_r4/polynomial/probe/Cargo.toml": null,
+    "research/adversarial_reaudit_20261001_r4/statistics/probe/Cargo.toml": null,
+    "research/adversarial_reaudit_20261001_r4/time/probe/Cargo.toml": null,
+    "research/nonstiff_external_adapters_20261023/adapters/diffsol/Cargo.toml": "1.94.1",
+    "research/prefix01_original_residual_20261029/standalone/Cargo.toml": null,
+    "research/prefix02_preconditioned_20261029/standalone/Cargo.toml": null,
+    "research/production_unification_20261115/production_holdout/runner/Cargo.toml": null,
+    "tools/benchmarks/diffsol/a07/Cargo.toml": "1.94.1",
+    "tools/benchmarks/diffsol/local_frontier_native/Cargo.toml": "1.94.1",
+    "tools/benchmarks/diffsol/triage/Cargo.toml": "1.94.1"
+  },
+  "out_of_workspace_manifests_not_1_94_1": {
+    "crates/vigilode-bench/Cargo.toml": "1.99.0",
+    "crates/vigilode-hybrid/Cargo.toml": "1.99.0"
+  },
+  "ledger": {
+    "rows_at_base": 202,
+    "rows_after_merge": 212,
+    "base_is_prefix": true,
+    "appended_ids": [
+      "L-0205",
+      "L-0206",
+      "L-0207",
+      "L-0208",
+      "L-0209",
+      "L-0210",
+      "L-0211",
+      "L-0212",
+      "L-0213",
+      "L-0214"
+    ],
+    "duplicate_ids": [],
+    "ids_in_file_order_tail": [
+      "L-0202",
+      "L-0203",
+      "L-0204",
+      "L-0300",
+      "L-0205",
+      "L-0206",
+      "L-0207",
+      "L-0208",
+      "L-0209",
+      "L-0210",
+      "L-0211",
+      "L-0212",
+      "L-0213",
+      "L-0214"
+    ]
+  },
+  "test_targets_added_by_merge": [
+    "crates/rodas5p-core/tests/nonnormal_observers_contracts.rs",
+    "crates/rodas5p-integrators/tests/causal_depth_stage_residual_contracts.rs",
+    "crates/rodas5p-integrators/tests/dopri5_stiffness_guards.rs",
+    "crates/rodas5p-integrators/tests/real_collective_client_contracts.rs",
+    "crates/rodas5p-integrators/tests/shared_basis_mf_contracts.rs",
+    "crates/rodas5p-krylov/tests/givens_ls_contracts.rs",
+    "crates/rodas5p-krylov/tests/secant_preconditioner_contracts.rs",
+    "crates/rodas5p-krylov/tests/shared_basis_contracts.rs",
+    "crates/vigilode-bench/tests/qualification_adaptive_grid_contract.rs",
+    "crates/vigilode-bench/tests/qualification_reference_ladder_contract.rs",
+    "crates/vigilode-bench/tests/qualification_spatial_model_contract.rs",
+    "crates/vigilode-bench/tests/qualification_spatial_protocol_contract.rs",
+    "crates/vigilode/tests/default_path_golden.rs",
+    "crates/vigilode/tests/fd_chebyshev_contracts.rs",
+    "crates/vigilode/tests/hermite_splice_contracts.rs",
+    "crates/vigilode/tests/holdout_and_global_order_contracts.rs",
+    "crates/vigilode/tests/hybrid_automaton_contracts.rs",
+    "crates/vigilode/tests/production_contracts.rs",
+    "crates/vigilode/tests/production_hotloop_allocation_contracts.rs",
+    "crates/vigilode/tests/registry_contracts.rs",
+    "crates/vigilode/tests/sparse_jvp_contracts.rs",
+    "crates/vigilode/tests/switcher_v2_admission_contracts.rs",
+    "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+    "crates/vigilode/tests/unified_production_solver_contracts.rs",
+    "crates/vigilode/tests/work_model_contracts.rs"
+  ],
+  "eval_scripts": [
+    {
+      "script": "research/k1_shared_krylov_basis_20261104/eval_k1.py",
+      "sha256": "14db43d119ec3139ecba256611865f114635082e4f816bb4596f6f18f7998200",
+      "lines": 144,
+      "imports_subprocess": false,
+      "calls_os_system_or_popen": false,
+      "mentions_cargo_or_binary": false,
+      "reads_input_file": false,
+      "executes_a_solver": false,
+      "numeric_literals_in_source": 84,
+      "ledger_rows_covering_node": [
+        {
+          "id": "L-0209",
+          "verdict": "FAIL"
+        }
+      ]
+    },
+    {
+      "script": "research/c1_coloured_assembly_20261104/eval_c1.py",
+      "sha256": "6ce23492f61705e12e392b4aa488d4afbfd76e5d033016851573b5348a8a5367",
+      "lines": 185,
+      "imports_subprocess": false,
+      "calls_os_system_or_popen": false,
+      "mentions_cargo_or_binary": false,
+      "reads_input_file": false,
+      "executes_a_solver": false,
+      "numeric_literals_in_source": 83,
+      "ledger_rows_covering_node": [
+        {
+          "id": "L-0214",
+          "verdict": "PASS"
+        }
+      ]
+    },
+    {
+      "script": "research/b7_first_batch_20261104/eval_b7.py",
+      "sha256": "38a6862b5ee5eca1b02709207ecb0d111e45176e81aa6d8af8a62eb4f2c0e352",
+      "lines": 89,
+      "imports_subprocess": false,
+      "calls_os_system_or_popen": false,
+      "mentions_cargo_or_binary": false,
+      "reads_input_file": false,
+      "executes_a_solver": false,
+      "numeric_literals_in_source": 80,
+      "ledger_rows_covering_node": [
+        {
+          "id": "L-0210",
+          "verdict": "FAIL"
+        }
+      ]
+    },
+    {
+      "script": "research/d1_stiffness_gate_20261104/eval_d1.py",
+      "sha256": "1f6a99c3e1ba4e09448177656cf5523d0779cb0c854c081c2b7669feb04205cd",
+      "lines": 156,
+      "imports_subprocess": false,
+      "calls_os_system_or_popen": false,
+      "mentions_cargo_or_binary": false,
+      "reads_input_file": false,
+      "executes_a_solver": false,
+      "numeric_literals_in_source": 80,
+      "ledger_rows_covering_node": [
+        {
+          "id": "L-0213",
+          "verdict": "FAIL"
+        }
+      ]
+    }
+  ],
+  "switching_config_added_fields": [
+    {
+      "line": 270,
+      "field": "audit_replay_safety"
+    },
+    {
+      "line": 273,
+      "field": "work_model"
+    },
+    {
+      "line": 276,
+      "field": "rhs_cost"
+    },
+    {
+      "line": 279,
+      "field": "progress_bound"
+    },
+    {
+      "line": 282,
+      "field": "entry_policy"
+    },
+    {
+      "line": 285,
+      "field": "entry_seed"
+    },
+    {
+      "line": 288,
+      "field": "entry_margin"
+    },
+    {
+      "line": 291,
+      "field": "return_margin"
+    },
+    {
+      "line": 294,
+      "field": "stiffness_gate_fraction"
+    },
+    {
+      "line": 298,
+      "field": "prescreen_initial_stiffness"
+    }
+  ],
+  "review_items": [
+    {
+      "id": "R1",
+      "topic": "T2 sentinel tests pin protected sources",
+      "text": "g3_protected_sources_are_byte_identical (ppsw1_6b_contracts.rs) and h2_protected_sources_are_byte_identical (ptsw2b_contracts.rs) pin the SHA-256 of protected sources and stop at the first mismatch. The merge changes four pinned files of crates/rodas5p-integrators/src: sequential.rs, rodas5p_matrix_free_fast.rs, problem.rs, adaptive.rs. The tests cannot pass with the switcher hunks in place: either those hunks are dropped or the owner re-pins.",
+      "evidence": [
+        "SENTINEL_PINS.json",
+        "logs/t2_b_integrators_peer.log"
+      ]
+    },
+    {
+      "id": "R2",
+      "topic": "g3 lib.rs rule already broken on the loop base",
+      "text": "g3 also requires src/lib.rs minus the single line `pub mod ppsw1;` to hash to a pinned value. The rule holds at the baseline commit 074a5699 and not at the loop base 2dc9a2c5 (bootstrap added `pub mod mol;` and `pub mod stage_clients;`), so g3 is expected to fail on the loop branch without any merge. Computed by check_sentinel_pins.py; the test was not run at 2dc9a2c5.",
+      "evidence": [
+        "SENTINEL_PINS.json"
+      ]
+    },
+    {
+      "id": "R3",
+      "topic": "T3 strict identity fails through added record fields only",
+      "text": "Only production_automatic differs: values changed 0, removed 0, keys added 600. Cause: ten #[serde(default)] fields appended to struct SwitchingConfig in crates/vigilode/src/switching.rs. The hunk cannot be excluded: the fields are read in the switcher source and set in the switcher tests. A serialisation-only alternative (skip_serializing_if at the default value) would restore strict identity; it is outside fix-up classes (a)-(d) and was not tried. With VIGILODE_DEFAULT_PATH_ALLOW_ADDED_KEYS=1 the oracle passes. Never blessed.",
+      "evidence": [
+        "T3_GOLDEN_DIFF.json",
+        "logs/t3_golden_strict_run1.log",
+        "logs/t3_golden_allow_added_keys.log"
+      ]
+    },
+    {
+      "id": "R4",
+      "topic": "Fix-up (c) semantics, decision needs review",
+      "text": "Jacobian::SparseJvp gets the Jvp permissions (provided_jvp = supplied && allow_matrix_free) as instructed. The facade runs a banded SparseJvp through coloured assembly and a banded factorisation, not matrix-free, so allow_matrix_free = false withholds a route that never runs matrix-free and a banded SparseJvp is not counted as explicit_jacobian. Splitting on pattern.is_banded() may fit better.",
+      "evidence": [
+        "logs/t1_control_without_fixup_c.log"
+      ]
+    },
+    {
+      "id": "R5",
+      "topic": "Merged hooks block edits in a fresh worktree",
+      "text": "The merge adds .claude/settings.json, a CLAUDE.md section and tools/agent_gate.py. The gate state .agent/STATE.json is git-ignored and does not travel with the merge, so in a fresh worktree there is no current task and the PreToolUse hook answers BLOCKED for every Edit/Write inside the repository except .agent/* and docs/agent/switcher_v2_remediation/PROGRESS.md. Read from the script; the hook was not run.",
+      "evidence": [
+        "MERGE_FACTS.json#merged_claude_settings"
+      ]
+    },
+    {
+      "id": "R6",
+      "topic": "adaptive.rs gains an opt-in controller",
+      "text": "The merge adds ControllerKind::H211b and the state field previous_step_ratio to crates/rodas5p-integrators/src/adaptive.rs. Existing controller arms are unchanged and the golden oracle shows no value change, but the file holds controller code that the loop treats as immutable, so the hunk needs an owner ruling of its own.",
+      "evidence": [
+        "BLOB_DELTA.json"
+      ]
+    },
+    {
+      "id": "R7",
+      "topic": "Four evaluation scripts execute no solver",
+      "text": "eval_k1.py (L-0209), eval_c1.py (L-0214, the one PASS), eval_b7.py (L-0210) and eval_d1.py (L-0213) import no subprocess, call no binary and read no input file. K1 and C1 are closed-form arithmetic on hard-coded step tables; B7 and D1 are literal tables. No ledger row was appended by this node.",
+      "evidence": [
+        "MERGE_FACTS.json#eval_scripts"
+      ]
+    },
+    {
+      "id": "R8",
+      "topic": "Clippy baseline",
+      "text": "The 8 baseline lints of source_owned_graph_schur.rs are gone because the switcher line puts #[expect(clippy::neg_cmp_op_on_partial_ord, clippy::needless_range_loop)] on the module declaration in lib.rs; the file itself is unchanged. The loop baseline's clippy output was not re-run here; the figure 8 is the one given in the task.",
+      "evidence": [
+        "logs/t5_clippy_integrators_lib_final_head.log"
+      ]
+    },
+    {
+      "id": "R9",
+      "topic": "Limits",
+      "text": "Out-of-workspace crates vigilode-bench and vigilode-hybrid (rust-version 1.99.0) were not built. Only the named integrators test targets were run. The oracle leaves opt-in derivative and switching routes out by design. REPORT.md was not written: the session harness refuses report .md files from subagents; its content is carried by these items.",
+      "evidence": []
+    }
+  ],
+  "merged_claude_settings": {
+    "path": ".claude/settings.json",
+    "added_by_merge": true,
+    "permissions_deny": [
+      "Bash(git push *)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean *)",
+      "Bash(git rebase *)",
+      "Bash(git commit --amend *)",
+      "Bash(python3 tools/agent_gate.py approve *)",
+      "Bash(* agent_gate.py approve *)",
+      "Edit(/docs/agent/switcher_v2_remediation/DESIGN.md)",
+      "Edit(/docs/agent/switcher_v2_remediation/TASKS.json)",
+      "Edit(/tools/agent_gate.py)",
+      "Edit(/CLAUDE.md)",
+      "Edit(/.claude/**)",
+      "Edit(/.github/**)",
+      "Edit(/Cargo.lock)",
+      "Edit(/rust-toolchain.toml)"
+    ],
+    "hooks": {
+      "PreToolUse": [
+        {
+          "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+          "commands": [
+            "python3 \"$CLAUDE_PROJECT_DIR/tools/agent_gate.py\" pre-edit"
+          ]
+        }
+      ],
+      "Stop": [
+        {
+          "matcher": null,
+          "commands": [
+            "python3 \"$CLAUDE_PROJECT_DIR/tools/agent_gate.py\" stop"
+          ]
+        }
+      ]
+    }
+  }
+}

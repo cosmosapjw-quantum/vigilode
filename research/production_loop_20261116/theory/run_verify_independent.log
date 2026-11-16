@@ -1,0 +1,20 @@
+PASS S1                 alpha: 28 nonzero strictly-lower entries, upper part structurally zero, chain length 8
+PASS S2.nilpotency      N with beta21 := 0 has N^7 = 0 and N^6 != 0; represented N^7 is a 1e-21 residual
+PASS S2.stability       R: linear order 6, R(inf) = 0, design numerator A-stable (no positive root of E/s^4); embedded: linear order 4, R(inf) = 0; both |R(iy)|^2 - 1 <= 1e-15 on the grid :: defect7 -1.0153492e-5, grid max 2.50205e-18
+PASS S3.identity        I - M_U(z) = gamma (I - M_k(z)) Gamma^-1 (z = -3/7), and M_U != M_k :: max error 8.0899e-60
+PASS S3.sweeps          truncated sweeps: sup |R_q(iy)| > 1 for q = 1..6 (k-form) and q = 1..7 (U-form); exact after 7 resp. 8 sweeps (R_q(inf) = 0)
+PASS S4.lag             lagged Jacobian (E = O(h)): main perturbation O(h^4), estimate O(h^3) :: orders 3.98256 2.99668
+PASS S4                 W-order: main sum b gamma_i = 0 (residual), embedded -0.0256; one-step experiment (k-form) shows orders 3 / 2 / 2 for main / embedded / estimate :: orders 2.99379 1.99841 1.99354
+PASS S5.spec            speculative Jacobian at g7 / g8: solution perturbation O(h^7) / O(h^8), estimate O(h^6) / O(h^7) :: orders 6.987, 6.0003, 8.0171, 7.057
+PASS S5                 orders: main 5, g8 (embedded) 4, g7 3, g6 1; identities alpha_8 = beta_7, b = beta_8, alpha_7 = beta_6 to working precision :: {'b_main': 5, 'g8_bhat': 4, 'g7': 3, 'g6': 1, 'g2_at_c2': 1, 'g3_at_c3': 1, 'g4_at_c4': 1, 'g5_at_c5': 1}
+PASS S6                 speculation band [3/20, 11/12], maxima 5/4 and 9/8
+PASS S7                 cost model re-typed; crossover sizes are zeros of LU - chain
+PASS S8.rho             rho = m/(m+1) for sigma = m(m+1); rho = exp(-2 asinh(1/(2 ell))) to 50 digits
+PASS S8.grid2d.sigma2   2D (eigen-expansion): y-sums equal the 1D Green's function, axis ratios < rho_1D, diagonal ratios < rho_diag^2
+PASS S8.grid2d.sigma6   2D (eigen-expansion): y-sums equal the 1D Green's function, axis ratios < rho_1D, diagonal ratios < rho_diag^2
+PASS S8.transfer        local 8-stage chain on a long interval (H = 160, sigma = 6) reproduces Phi(d) E0 with Phi from contour-integral Taylor coefficients :: max deviation 1.1996e-46
+PASS S9.L4              L = 4: [z^4] and [z^5] of e^z (1-gz)^4 have no common root in gamma (order 5 with R(inf) = 0 impossible) :: min root distance 0.0151471
+PASS S9.L5              L = 5: five admissible gamma, exactly one A-stable (0.2780538...); L = 4 order 5: none :: ['0.0791089118735', '0.141127125787', '0.278053841136', '0.707512265208', '3.794197856']
+PASS S9.windows         A-stability windows (root-finding test): L6 [0.18391465, 0.33414237], L7 [0.20408345, 0.37886489]; RODAS5P gamma inside both
+keys compared: 1040, missing: 0, mismatches: 0, own failed checks: 0
+max scaled diff: exact-kind 1.69817e-57, numerical-kind 6.63298e-15

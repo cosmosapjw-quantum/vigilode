@@ -1,0 +1,38 @@
+{
+ "order_ge_4_8": {
+  "median": 10.367709444231096,
+  "pass": true
+ },
+ "steps_le_1_2x": {
+  "max": 7.107571520932198,
+  "pass": false
+ },
+ "median_speed_ge_1_15x": {
+  "median": 0.006342650694125094,
+  "pass": false
+ },
+ "fast_explicit_jacobian_eq_0": {
+  "max": 5188,
+  "pass": false
+ },
+ "fast_newton_eq_0": {
+  "max": 7,
+  "pass": false
+ },
+ "depth_p95_le_6_max_le_8": {
+  "candidate_stage_depth": 1,
+  "pass": true,
+  "note": "method-stage depth; inner span = one LU + one solve phase per step"
+ },
+ "fallback_le_0_1": {
+  "fallback_fraction": 0.0,
+  "pass": true
+ }
+}
+conjunction False
+brusselator_mol32 ppsw1_t1 5 5 [6.571450341578971e-09, 1.2376967117437195e-05]  [{'E_star': 6.571450341578971e-09, 'steps_ratio': 1.9108892602828296, 'speed_vs_production': 0.2326396656837527}, {'E_star': 2.8519225934725917e-07, 'steps_ratio': 2.847562043624011, 'speed_vs_production': 0.15416082891853708}, {'E_star': 1.2376967117437195e-05, 'steps_ratio': 5.2414167456905645, 'speed_vs_production': 0.07754220986939298}] []
+brusselator_mol32 ppsw1_t6 5 5 [6.571450341578971e-09, 1.2376967117437195e-05]  [{'E_star': 6.571450341578971e-09, 'steps_ratio': 1.9108892602828296, 'speed_vs_production': 0.14406010140677866}, {'E_star': 2.8519225934725917e-07, 'steps_ratio': 2.847562043624011, 'speed_vs_production': 0.0940436166327475}, {'E_star': 1.2376967117437195e-05, 'steps_ratio': 5.2414167456905645, 'speed_vs_production': 0.048628788146903024}] []
+hires ppsw1_t1 5 5 [2.664100778165992e-08, 3.4122456577250545e-05]  [{'E_star': 2.664100778165992e-08, 'steps_ratio': 3.391883718424714, 'speed_vs_production': 0.021231782106417393}, {'E_star': 9.534446136005407e-07, 'steps_ratio': 4.453800682704725, 'speed_vs_production': 0.015918909459081348}, {'E_star': 3.4122456577250545e-05, 'steps_ratio': 5.753329752805753, 'speed_vs_production': 0.014453060790786877}] []
+hires ppsw1_t6 5 5 [2.664100778165992e-08, 3.4122456577250545e-05]  [{'E_star': 2.664100778165992e-08, 'steps_ratio': 3.391883718424714, 'speed_vs_production': 0.008230971745946862}, {'E_star': 9.534446136005407e-07, 'steps_ratio': 4.453800682704725, 'speed_vs_production': 0.006342650694125094}, {'E_star': 3.4122456577250545e-05, 'steps_ratio': 5.753329752805753, 'speed_vs_production': 0.004921745008386801}] []
+oregonator ppsw1_t1 5 5 [6.146540262296148e-09, 9.24672828721199e-06]  [{'E_star': 6.146540262296148e-09, 'steps_ratio': 2.5340279378256914, 'speed_vs_production': 0.016609040402457156}, {'E_star': 2.3840173596654282e-07, 'steps_ratio': 4.145251689678953, 'speed_vs_production': 0.010067865965905512}, {'E_star': 9.24672828721199e-06, 'steps_ratio': 7.107571520932198, 'speed_vs_production': 0.006200980672862755}] []
+oregonator ppsw1_t6 5 5 [6.146540262296148e-09, 9.24672828721199e-06]  [{'E_star': 6.146540262296148e-09, 'steps_ratio': 2.5340279378256914, 'speed_vs_production': 0.006060578320238407}, {'E_star': 2.3840173596654282e-07, 'steps_ratio': 4.145251689678953, 'speed_vs_production': 0.0035807815144469506}, {'E_star': 9.24672828721199e-06, 'steps_ratio': 7.107571520932198, 'speed_vs_production': 0.002271777566862099}] []

@@ -1,0 +1,177 @@
+{
+ "summary": "U11 HOLD stands on either arm (median speed 0.00634 at 6 threads, 0.0166 at 1; step ratio 1.91-7.11), and a rerun of the pinned binary reproduced all 45 result objects. Its numbers are not method properties: at tol 1e-4..1e-5 the controller takes 91.1-100.0% of the growth steps its 1.10-per-7-steps limiter permits, and 54.0% of main-thread cycles is a per-attempt double-double tableau rebuild. Of 87 evaluations found, none is a stiff matched-error comparison above n = 400, none has an expensive RHS or a preconditioner, and the 9 2D/3D cases (switcher line, n <= 302) are reference-disputed in 7. The switcher unified benchmark is matched-tolerance with grid-clipped VigilODE arms. U04 no-crossover is a regime statement. No recorded verdict is invalidated; every defect limits scope.",
+ "plan": [
+  {
+   "item": "1.2 U11 (a): G0 speed verdict uses the 6-thread arm; 6 threads are 1.6-2.9x slower than 1 thread at n=3/8/64",
+   "verdict": "confirmed",
+   "note": "evaluate.py:88-89 uses ppsw1_t6 only; recomputed t6/t1 wall 1.59-2.94; states bitwise identical; arm not fixed by the preregistration (DSG-07)."
+  },
+  {
+   "item": "1.2 U11 (b): PPSW1 1-thread per-step wall 8-24x RODAS5P (n=3,8), 2.1-2.5x (n=64); fewer solves/RHS so it is implementation maturity; timer includes the starter",
+   "verdict": "corrected",
+   "note": "Ratios recomputed: 7.77-13.9 (n=8), 22.2-24.4 (n=3), 2.12-2.51 (n=64). Fewer RHS/solves holds per attempt (6 vs 8) but totals at equal tolerance are 1.34-6.92x (RHS) and 1.78-8.86x (LU). Dominant cause is the per-attempt double-double tableau rebuild (54.0% of main-thread cycles), not the starter (DSG-02)."
+  },
+  {
+   "item": "1.2 U11 (c): ACCEPTED_STEP_SIGMA_MAX = 1.10 (ppsw1.rs:57) is an agent rule (OD-15/25), paper value 1.5; with 6-step hysteresis it gives tolerance-insensitive step counts; step ratio mixes method and controller",
+   "verdict": "confirmed",
+   "note": "Measured: 0.0774-0.146 of accepted steps at the cap, limiter saturation 0.541-1.0; OD-15 was written for mipeer6 (DSG-01, DSG-09)."
+  },
+  {
+   "item": "1.2: HOLD verdict valid but not a method-level conclusion for the large regime",
+   "verdict": "confirmed",
+   "note": "Recomputed G0 values equal the stored ones (max step ratio 7.108, median speed 0.006343); rerun of the pinned binary reproduced 45/45 result objects."
+  },
+  {
+   "item": "1.2: SUNDIALS is installed although U11 recorded it as not installed",
+   "verdict": "confirmed",
+   "note": "ldconfig -p lists libsundials_* and /usr/include/sundials exists; the switcher bench links CVODE 6.4.1."
+  },
+  {
+   "item": "1.2 regime mismatch: candidate evaluation at n <= 64 (sometimes 1D n <= 400); RHS share 1-11%; no large, expensive-RHS or 2D/3D matched-error evaluation",
+   "verdict": "corrected",
+   "note": "87 evaluations tabulated: 16 have n > 1000 (none a stiff cross-method matched-error run), matched-error maximum n = 400, 9 2D/3D rows exist on the switcher line at n <= 302 with 7 of 9 reference-disputed, expensive RHS 0. RHS share 0.011-0.108 confirmed from L-0113."
+  },
+  {
+   "item": "1.2: synthetic evidence in switcher eval_k1.py etc. (simulate_cell, err = 0.42*rtol)",
+   "verdict": "confirmed",
+   "note": "eval_k1.py:12 and :50 read; K1 cells (1D/2D heat) are therefore excluded from the regime table. Other eval_* scripts not checked in this dimension."
+  },
+  {
+   "item": "1.4: PPSW1 matrix-free W has no crossover (n <= 400)",
+   "verdict": "confirmed",
+   "note": "Recomputed from the raw log; regime statement only (DSG-06)."
+  },
+  {
+   "item": "1.4: R7 transactional q2 4.75x slower; C5 graph-Schur 2.24x slower",
+   "verdict": "confirmed",
+   "note": "RESULTS.json fields give 1/0.2107 = 4.746 and 2.242; scope is three small source models with n <= 3."
+  },
+  {
+   "item": "1.4: lagged LU kill gate (HIRES fails, Brusselator passes); lane batch 0.93x",
+   "verdict": "confirmed",
+   "note": "Ledger rows L-0141 (0.588 > 0.4 on HIRES, 0.244 on Brusselator n = 100) and L-0089 (0.937/0.924) read; raw files not re-parsed."
+  },
+  {
+   "item": "1.5: protected RODAS5P has the same step counts as Julia Rodas5P on small problems (Brusselator 228 = 228, Robertson 164 vs 162) and per-step cost similar to Hairer RODAS",
+   "verdict": "corrected",
+   "note": "True only at rtol 1e-8. At rtol 1e-4 the ratio is 1.44-3.08 because 99 accepted steps per run are grid landings; Julia rows have no error; tables are matched-tolerance (DSG-03)."
+  },
+  {
+   "item": "1.3: 3D and spherical operators exist only in test files; vigilode-bench is not a workspace member",
+   "verdict": "not_checked",
+   "note": "Outside this dimension except that all 2D/3D evaluations found are in the switcher bench crate."
+  }
+ ],
+ "findings": [
+  {
+   "id": "DSG-01",
+   "severity": "major",
+   "is_new": false,
+   "title": "U11 step ratio measures the OD-15/25/26 growth limiter and the OD-24 h0 rule, not the PPSW1-6b method",
+   "claim": "The PPSW1 controller allows one growth of at most 1.10 every 7 accepted steps (mean 1.0137 per step). Step histories regenerated with the U11 problem set (final states bitwise equal to the U11 log in 15/15 runs) show 0.0774-0.146 of accepted steps exactly at the cap (structural maximum 1/7) and the limiter saturated (growth steps taken / growth steps permitted) at 0.911-1.0 for tol 1e-4..1e-5 and 0.541-0.843 at tol 1e-8. With zero local error the rule alone needs 285 steps on HIRES and 195 on Brusselator MOL32 from the logged h0, i.e. 5.7x and 3.98x the RODAS5P attempts at tol 1e-4. Plan item 1.2(c) is confirmed and quantified. The G0 step criterion still fails for the candidate as configured, so HOLD stands; no conclusion about the step efficiency of the method follows.",
+   "evidence": "crates/rodas5p-integrators/src/ppsw1.rs:57 (cap), :841-849 (history 6, band), :935-956 (propose_ratio), :1023-1036 (h0 = min(h_max, 1/||J||inf)); data.step_stats (scratch rebuild at 891044d7, binary sha256 in scratch_artifacts) and data.controller_floor. Fraction of holds that fall within 6 steps after a growth: 0.509-0.843. Same rule with cap 1.5 would need 90 (HIRES) and 68 (Brusselator) steps (arithmetic only, no stability claim).",
+   "impact": "Limits scope: the recorded U11 HOLD is valid; the step ratios 1.9-7.1 are not a property of PPSW1-6b. V10 must separate controller, h0 rule and method.",
+   "minimal_fix": "V10: log accepted (t, h, sigma, err) per step; report limiter saturation next to every step ratio; add arms that vary the cap, the history length and h0 independently.",
+   "reproduce_cmd": "python3 /tmp/claude-1000/dsg-audit/controller_floor.py; cd /tmp/claude-1000/dsg-audit/steprunner && CARGO_TARGET_DIR=/tmp/claude-1000/dsg-audit/target cargo +1.94.1 build --locked --offline -j 6 --release && /tmp/claude-1000/dsg-audit/target/release/u11-holdout-runner > step_histories.jsonl && python3 /tmp/claude-1000/dsg-audit/step_stats.py"
+  },
+  {
+   "id": "DSG-02",
+   "severity": "major",
+   "is_new": true,
+   "title": "More than half of the PPSW1 run time in U11 is a per-attempt double-double rebuild of the sigma tableau",
+   "claim": "A cycle profile of the pinned U11 runner binary (sha256 equal to logs/runner_binary.sha256) attributes 54.0% of main-thread user cycles of the whole holdout to ppsw1::mm + ppsw1::tableau (58.1% with the libm fma calls they make), about 78200 cycles per step attempt and independent of n. stage_inputs_unchecked calls tableau(sigma) on every attempt although sigma equals 1 (within 5e-4) on 0.791-0.847 of accepted steps; mm is called only from tableau (ppsw1.rs:241-263). The per-attempt wall ratios PPSW1(1 thread)/RODAS5P (7.77-13.9 at n=8, 22.2-24.4 at n=3, 2.12-2.51 at n=64) therefore measure this constant. The starter and other fixed costs are small by comparison (intercept of wall against attempts 1.14 ms on Brusselator, 5.55% of the loosest-tolerance run). The plan attributes the ratio to general implementation maturity and the starter; the dominant cause is this one function.",
+   "evidence": "crates/rodas5p-integrators/src/ppsw1.rs:192-260 (tableau in double-double), :408 (the only non-test call site, once per attempt); data.perf_agg (129305 samples, cycles:u); data.extras.wall_linear_fits. Rerun reproduced 45/45 result objects of the original log including counters.",
+   "impact": "Limits scope: U11 wall ratios cannot be extrapolated to any regime. Even without this cost the 1-thread speed (median 0.0166) stays far below 1.15, so HOLD is unaffected.",
+   "minimal_fix": "V10 equal-implementation arm: cache the tableau for the last sigma (or precompute sigma = 1) before any per-step cost comparison; report instructions per attempt with and without the rebuild.",
+   "reproduce_cmd": "perf record -e cycles:u -F 2000 -o perf_u11.data <u11-holdout-runner> > rerun.jsonl && perf script -i perf_u11.data -F comm,period,ip,sym > perf_script.txt && python3 /tmp/claude-1000/dsg-audit/perf_agg.py"
+  },
+  {
+   "id": "DSG-03",
+   "severity": "major",
+   "is_new": true,
+   "title": "Switcher-line UNIFIED_BENCHMARK_REPORT is matched-tolerance, built on grid-clipped VigilODE arms, and Julia rows have no error",
+   "claim": "The report tabulates arms at equal rtol; the achieved error of a comparator divided by that of VigilODE at the same rtol ranges from 0.158 to 1713.0. Both VigilODE arms in the dataset (vigilode, vigilode-banded) land on the 101-point output grid: 98-99 accepted steps of every row are forced landings (10.3-94.3% of the accepted steps); the free-stepping arms have 0 rows in this dataset. All 36 Julia rows carry error_common = null (0 with an error) and Julia runs free with saveat interpolation. VigilODE/Julia Rodas5P accepted-step ratios are 1.44-3.08 at rtol 1e-4 and 0.943-1.01 at rtol 1e-8, so the equality quoted in plan 1.5 (228 = 228, 164 vs 162) holds only at the tightest tolerance. The dataset has the same 102 keys as the E1 corpus of ledger L-0139, (rebound by L-0140), which L-0142 superseded for VigilODE-relative ratios by re-running the corpus with every arm stepping freely. Three table rows were reproduced exactly from the raw JSON.",
+   "evidence": "/home/cosmosapjw/vigilode/crates/vigilode-bench/src/arms.rs:125-127 (is_grid_clipped = Vigilode | VigilodeBanded), :213-214; bench/julia_comparator_bench.jl:311-342 (saveat=grid); bench/build_unified_comparison.py:14-40; data.bench_recompute (vigilode_clipping, vigilode_vs_julia_rodas5p_steps, reproduced_rows, matched_error_recomputed). The raw JSON has its own matched section ({'DIAGNOSTIC_ONLY': 295, 'MATCHED': 80}) that the report does not use; only 3 tolerances per arm.",
+   "impact": "The report cannot support a matched-error statement or a step-parity statement about protected RODAS5P; the plan's provisional R-gate sentence built on it must be re-derived from free-stepping arms. No ledger row cites the report, so no recorded verdict is invalidated.",
+   "minimal_fix": "V11/V13: regenerate with vigilode-dense arms, error for Julia arms on the same grid, at least 5 tolerances, and tables at matched achieved error.",
+   "reproduce_cmd": "python3 /tmp/claude-1000/dsg-audit/bench_recompute.py"
+  },
+  {
+   "id": "DSG-04",
+   "severity": "major",
+   "is_new": false,
+   "title": "Regime coverage: no stiff cross-method matched-error evaluation above n = 400, none with an expensive RHS, none with a preconditioner",
+   "claim": "A table of 87 located evaluations (ledger rows, RESULTS files, U nodes, switcher bench) has 16 with n > 1000, 9 with 2D/3D operators and 0 where the RHS dominates. The n > 1000 rows are banded operation counts with bitwise parity, non-stiff DOPRI5 vectors, separable structural lanes and a controller copy microbenchmark; 0 of them is a stiff cross-method matched-error evaluation. The largest n in a matched-error cross-method comparison is 400. All 2D/3D rows are on the unmerged switcher line with n <= 302; the loop base 074a5699 has 0. Krylov arms with a non-identity preconditioner in an integrator evaluation: 0; preconditioner kernels were verified standalone (L-0117 stage 0 held at the reference, L-0190 synthetic linear solves) and never reached a matched-error or speed run. The plan's wording (all candidate evaluation at n <= 64, sometimes 1D n <= 400) is too narrow as a description of what exists but its conclusion holds.",
+   "evidence": "data.regime_table (rows with source file per row); ledger L-0113: PASS, decision abstain: no screened client carries an ExpensiveClientDeclaration (S1 fails for all); measured callback shares f in [0.011, 0.108] are ",
+   "impact": "Limits scope of every negative result on parallel stages, matrix-free solves and LU reuse to small or 1D problems with cheap RHS.",
+   "minimal_fix": "V04/V11 grids as planned; record n, operator dimension, Jacobian type, backend and measured RHS share in every result row.",
+   "reproduce_cmd": "python3 /tmp/claude-1000/dsg-audit/regime_table.py"
+  },
+  {
+   "id": "DSG-05",
+   "severity": "major",
+   "is_new": true,
+   "title": "PDE battery v3 yields matched-error levels for 2 of 9 problems; the other 7 are reference-disputed, and runs take 6-47 steps",
+   "claim": "In adversarial_spatial_battery_v3_results.json 7 of 9 problems have zero MATCHED levels (allen-cahn-2d, burgers-2d, gray-scott-2d, semilinear-advection-diffusion-2d, semilinear-advection-diffusion-3d, sine-gordon-2d, spherical-diffusion-2d); 1820 comparisons carry reason reference-disputed. Only sphere-photon-2d (52) and sphere-photon-3d (36) produce matched levels. The free-stepping banded VigilODE arm needs 6-47 accepted steps per run on a 101-point output grid, and n is 64-302. The battery and its subsets (spatial grid v1/v2, the first four problems) are the only 2D/3D matched-error evidence in either lineage.",
+   "evidence": "/home/cosmosapjw/vigilode/bench/out/adversarial_spatial_battery_v3_results.json (matched[], rows[]); data.bench_v3.per_problem_matched, non_matched_reasons, vigilode_steps; warmups 1, repetitions 3.",
+   "impact": "Limits scope: no geometry or 2D/3D performance statement can rest on battery v3 beyond the two sphere-photon problems at n <= 302.",
+   "minimal_fix": "V11: fix the reference policy first (independent reference with stated uncertainty below the tightest level), then size problems so that runs take hundreds of steps and n reaches 1e4-1e5.",
+   "reproduce_cmd": "python3 /tmp/claude-1000/dsg-audit/bench_v3.py"
+  },
+  {
+   "id": "DSG-06",
+   "severity": "major",
+   "is_new": true,
+   "title": "U04 no-crossover is a statement about unpreconditioned GMRES against dense LU on a tridiagonal 1D problem",
+   "claim": "No arm has a preconditioner (IdentityPreconditioner only). The single family is 1D Fisher MOL, n = 25..800, one tolerance. The comparator factors the tridiagonal W with dense LU (per-attempt cost exponent in n rising to 2.23 for n = 200..400 and 2.7 for n = 400..800), so neither arm uses the band structure. The arm reported as best admissible at n = 200 and n = 400 took 1.57x and 14.8x the steps of the dense arm (admissibility checks only the endpoint difference, 0.088 tolerance units at n = 400). The step-preserving 6-thread arm rises from 0.0357 to 0.446 of dense speed between n = 50 and n = 400 and is at 1.31 at n = 800 when it stops on the 600-vector Arnoldi limit at t = 0.455. The verdict NO_CROSSOVER_MEASURED for n <= 400 is correct as recorded; it is a regime statement and says nothing about preconditioned or 2D/3D use.",
+   "evidence": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/crates/rodas5p-integrators/src/ppsw1_linear_backend.rs:12,280; tests/ppsw1_linear_backend_contracts.rs:374-425 (fisher, dense Jacobian of a tridiagonal operator); research/production_unification_20261115/matrix_free_w/logs/u04_crossover.log parsed into data.u04_recompute; summarize_u04.py admissibility rule.",
+   "impact": "Limits scope; does not invalidate the U04 verdict. The plan line 'PPSW1 matrix-free W crossover none (n <= 400)' must not be read as a method result.",
+   "minimal_fix": "V06/V10: add a banded direct comparator, a preconditioned arm, an admissibility rule that also bounds the step ratio, and a 2D operator.",
+   "reproduce_cmd": "python3 /tmp/claude-1000/dsg-audit/u04_recompute.py"
+  },
+  {
+   "id": "DSG-07",
+   "severity": "minor",
+   "is_new": false,
+   "title": "U11 speed criterion: the thread arm was not preregistered and the evaluator was committed with the results",
+   "claim": "PREREGISTRATION.json names the candidate 'at 1 and 6 threads' and the criterion 'median over problems' without choosing an arm. evaluate.py (first committed in 074a5699, after the runs) uses only ppsw1_t6 for speed and takes the median over 9 problem x E* points. Recomputed medians: 6-thread 0.00634 (equal to the stored value), 1-thread 0.0166, best single point 0.233. The 6-thread arm is 1.59-2.94x slower than the 1-thread arm with bitwise identical states. A Rayon pool is built inside the timed region on every solve, and the 6-thread arm pays 24.2-40.5 microseconds more per attempt. The best single 1-thread point is 4.94x below 1.15 and the 1-thread median 69.2x below.",
+   "evidence": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/research/production_unification_20261115/production_holdout/PREREGISTRATION.json:6,32; evaluate.py:88-89 (cand == 'ppsw1_t6'); git log -- evaluate.py -> 074a5699 only; crates/vigilode/src/selection.rs:945 and crates/rodas5p-integrators/src/parallel.rs:22-41 (pool per solve); runner/src/main.rs:170-213 (timed region); data.u11_recompute.",
+   "impact": "Does not change the verdict. It is an undisclosed analysis choice in a preregistered evaluation.",
+   "minimal_fix": "Future preregistrations name the arm, the aggregation and the evaluator hash before the run.",
+   "reproduce_cmd": "python3 /tmp/claude-1000/dsg-audit/u11_recompute.py"
+  },
+  {
+   "id": "DSG-08",
+   "severity": "minor",
+   "is_new": true,
+   "title": "Cost model: stage-parallel PPSW1 can reach 1.15x only where Jacobian+LU is a small share and the step ratio is below about 2",
+   "claim": "Both methods build one Jacobian and one LU per attempt, so the LU count ratio equals the step ratio (measured 1.78-8.86 at equal tolerance). With ideal 6-way stage parallelism and zero overhead the speed is at most 1/(rho (f + (1-f)/8)), f being the Jacobian+LU share of a RODAS5P step. For the measured matched-error step ratios rho = 1.91-7.11 this needs f <= 0.377 at the best point and f <= 0.0969 at the median; for f = 0.5 it needs rho <= 1.55. In addition the starter factors a 5n x 5n matrix once, which equals 125 step factorizations in the cubic regime. This is a model, not a measurement.",
+   "evidence": "data.controller_floor.amdahl (computed from data.u11_recompute.matched); crates/rodas5p-integrators/src/ppsw1.rs:468-477 (one J and one LU per attempt), :1151-1165 (5n starter LU); RODAS5P counters in logs/holdout_runs.jsonl (direct_factorizations = attempts).",
+   "impact": "Design input for V10: the preregistered regime must be chain-dominated and large enough for threads; LU-dominated dense problems cannot pass with the current step ratios.",
+   "minimal_fix": "V10 preregistration states f from V04 for each regime before the run.",
+   "reproduce_cmd": "python3 /tmp/claude-1000/dsg-audit/controller_floor.py"
+  },
+  {
+   "id": "DSG-09",
+   "severity": "minor",
+   "is_new": true,
+   "title": "The 1.10 cap was approved for a different method and is hard-wired, so V10 cannot vary sigma through Config",
+   "claim": "OD-15 reads 'PW04 sigma_max rule for mipeer6 ... sigma_max <= 1.10 (agent-proposed own rule, NOT literature; A(alpha)~79deg there)'; it concerns the multi-implicit peer candidate. OD-25 carries 'sigma_max<=1.10' into the PPSW1-6b estimator decision and OD-26 approves the controller as OWNER_CHOICE, 'not literature-certified for PPSW1'. No PPSW1-6b stability analysis of the cap is cited. Session::new rejects step_ratio_cap > 1.10 and check_sigma, propose_ratio and RATIO_CLIP clamp with the same constant, so the V10 arms sigma in {1.2, 1.3, 1.5} need a separate code path.",
+   "evidence": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/docs/agent/unified_local_agent_20261109/OWNER_DECISIONS_20261110.json (OD-15, OD-25, OD-26; file lines 95, 155, 161); crates/rodas5p-integrators/src/ppsw1.rs:57-58, :370, :697-703, :845, :939; docs/agent/unified_local_agent_20261109/PW04_PPSW1_6BC_VERIFICATION_KO.md:24 (stability constant 138 for sigma <= 1.10, 709 for sigma <= 1.5).",
+   "impact": "Provenance only; no verdict changes.",
+   "minimal_fix": "V10 adds an experiment-only sibling controller with its own cap constant and leaves ACCEPTED_STEP_SIGMA_MAX untouched.",
+   "reproduce_cmd": "grep -n 'ACCEPTED_STEP_SIGMA_MAX' crates/rodas5p-integrators/src/ppsw1.rs"
+  },
+  {
+   "id": "DSG-10",
+   "severity": "minor",
+   "is_new": true,
+   "title": "U11 timing binary was built with a profile different from the repository release profile",
+   "claim": "The runner is its own Cargo workspace with [profile.release] debug = false, which gives opt-level 3 without LTO and with 16 codegen units; the repository release profile is fat LTO, one codegen unit, panic = abort. No target-cpu flag is set, so f64::mul_add compiles to libm fma calls (4.07% of main-thread cycles). Both arms share the binary, so the comparison is internally consistent, but absolute per-step costs differ from the profile used by the other timing campaigns.",
+   "evidence": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/research/production_unification_20261115/production_holdout/runner/Cargo.toml (own [workspace], profile); /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/Cargo.toml:35-39; logs/build.log ('release profile [optimized]'); data.perf_agg.fma_libcall_share_of_main_thread.",
+   "impact": "Limits comparability of U11 wall numbers with other campaigns; verdict unaffected.",
+   "minimal_fix": "Timing runners copy the workspace release profile and record RUSTFLAGS and target features.",
+   "reproduce_cmd": "cat research/production_unification_20261115/production_holdout/runner/Cargo.toml; sed -n 35,39p Cargo.toml"
+  }
+ ]
+}

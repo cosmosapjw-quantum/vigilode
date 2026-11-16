@@ -1,0 +1,29 @@
+[    0.0s] self-checks ...
+[    1.0s] self-checks all_passed=True orders=['5.241', '5.157', '5.093']
+[    1.0s] case P2 N=128 tol=0.0001
+[  104.8s]     sample  1/1 t=1.5826 h=0.2667 sigma=436.9 ell=9.62 err=0.227  P2m1g0:7 P2m1g1:6 P2m2g0:4 P2m2g1:4 P2m4g0:1 P2m4g1:1 P4m1g0:7 P4m1g1:7 P4m2g0:5 P4m2g1:4 P4m4g0:3 P4m4g1:3
+[  104.9s]   P=2 m=1 g0: median=7 max=7 unconv=0 halo=10 H=64 -> KILL
+[  104.9s]   P=2 m=1 g1: median=6 max=6 unconv=0 halo=10 H=64 -> KILL
+[  104.9s]   P=2 m=2 g0: median=4 max=4 unconv=0 halo=20 H=64 -> REFERENCE_ONLY
+[  104.9s]   P=2 m=2 g1: median=4 max=4 unconv=0 halo=20 H=64 -> FAIL
+[  104.9s]   P=2 m=4 g0: median=1 max=1 unconv=0 halo=39 H=64 -> REFERENCE_ONLY
+[  104.9s]   P=2 m=4 g1: median=1 max=1 unconv=0 halo=39 H=64 -> FAIL
+[  104.9s]   P=4 m=1 g0: median=7 max=7 unconv=0 halo=10 H=32 -> KILL
+[  104.9s]   P=4 m=1 g1: median=7 max=7 unconv=0 halo=10 H=32 -> KILL
+[  104.9s]   P=4 m=2 g0: median=5 max=5 unconv=0 halo=20 H=32 -> KILL
+[  104.9s]   P=4 m=2 g1: median=4 max=4 unconv=0 halo=20 H=32 -> FAIL
+[  104.9s]   P=4 m=4 g0: median=3 max=3 unconv=0 halo=39 H=32 -> REFERENCE_ONLY
+[  104.9s]   P=4 m=4 g1: median=3 max=3 unconv=0 halo=39 H=32 -> FAIL
+[  104.9s] done status=complete wall=104.9s g1 verdicts={'PASS': 0, 'FAIL': 4, 'KILL': 2}
+| problem | N | tol | sigma med (min-max) | ell cells med | P | H | m | halo cells med | halo/H | work (1+2d/H)^2 | g0 sweeps med/max | g1 sweeps med/max | g1 endpoint/tol after 0, 1, 2 sweeps | g1 contraction/sweep | steps with halo cells <= 4 ell | verdict g1 | g1 strict cells | g0 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| P2_brusselator | 128 | 0.0001 | 437 (437-437) | 9.62 | 2 | 64 | 1 | 10 | 0.156 | 1.72 | 7 / 7 | 6 / 6 | 2.6e+02, 1.1e+02, 36 | 0.21 | 1/1 | KILL | KILL | KILL |
+| P2_brusselator | 128 | 0.0001 | 437 (437-437) | 9.62 | 2 | 64 | 2 | 20 | 0.312 | 2.64 | 4 / 4 | 4 / 4 | 2.6e+02, 56, 5 | 0.029 | 1/1 | FAIL | FAIL | REFERENCE_ONLY |
+| P2_brusselator | 128 | 0.0001 | 437 (437-437) | 9.62 | 2 | 64 | 4 | 39 | 0.609 | 4.92 | 1 / 1 | 1 / 1 | 2.6e+02, 9.5e-13, n/a | n/a | 0/1 | FAIL | FAIL | REFERENCE_ONLY |
+| P2_brusselator | 128 | 0.0001 | 437 (437-437) | 9.62 | 4 | 32 | 1 | 10 | 0.312 | 2.64 | 7 / 7 | 7 / 7 | 2.6e+02, 1.6e+02, 80 | 0.21 | 1/1 | KILL | KILL | KILL |
+| P2_brusselator | 128 | 0.0001 | 437 (437-437) | 9.62 | 4 | 32 | 2 | 20 | 0.625 | 5.06 | 5 / 5 | 4 / 4 | 2.6e+02, 91, 17 | 0.082 | 1/1 | FAIL | FAIL | KILL |
+| P2_brusselator | 128 | 0.0001 | 437 (437-437) | 9.62 | 4 | 32 | 4 | 39 | 1.22 | 11.8 | 3 / 3 | 3 / 3 | 2.6e+02, 21, 0.3 | 0.0064 | 0/1 | FAIL | FAIL | REFERENCE_ONLY |
+
+real	1m45.781s
+user	1m23.193s
+sys	0m3.450s

@@ -1,0 +1,43 @@
+[    0.0s] self-checks ...
+[    1.4s] self-checks all_passed=True orders=['5.241', '5.157', '5.093']
+[    1.4s] case P3 N=64 tol=0.0001
+[    6.8s]     sample  1/2 t=209.4 h=18.22 sigma=3.82 ell=0.9 err=0.597  P2m1g0:3 P2m1g1:2 P2m2g0:2 P2m2g1:2 P2m4g0:2 P2m4g1:1 P4m1g0:4 P4m1g1:3 P4m2g0:3 P4m2g1:2 P4m4g0:2 P4m4g1:1
+[    8.7s]     sample  2/2 t=264.08 h=18.33 sigma=3.844 ell=0.903 err=0.585  P2m1g0:3 P2m1g1:2 P2m2g0:2 P2m2g1:2 P2m4g0:2 P2m4g1:1 P4m1g0:4 P4m1g1:3 P4m2g0:2 P4m2g1:2 P4m4g0:2 P4m4g1:1
+[    8.7s]   P=2 m=1 g0: median=3 max=3 unconv=0 halo=1 H=32 -> REFERENCE_ONLY
+[    8.7s]   P=2 m=1 g1: median=2 max=2 unconv=0 halo=1 H=32 -> PASS
+[    8.7s]   P=2 m=2 g0: median=2 max=2 unconv=0 halo=2 H=32 -> REFERENCE_ONLY
+[    8.7s]   P=2 m=2 g1: median=2 max=2 unconv=0 halo=2 H=32 -> PASS
+[    8.7s]   P=2 m=4 g0: median=2 max=2 unconv=0 halo=4 H=32 -> REFERENCE_ONLY
+[    8.7s]   P=2 m=4 g1: median=1 max=1 unconv=0 halo=4 H=32 -> PASS
+[    8.7s]   P=4 m=1 g0: median=4 max=4 unconv=0 halo=1 H=16 -> REFERENCE_ONLY
+[    8.7s]   P=4 m=1 g1: median=3 max=3 unconv=0 halo=1 H=16 -> FAIL
+[    8.7s]   P=4 m=2 g0: median=2.5 max=3 unconv=0 halo=2 H=16 -> REFERENCE_ONLY
+[    8.7s]   P=4 m=2 g1: median=2 max=2 unconv=0 halo=2 H=16 -> PASS
+[    8.7s]   P=4 m=4 g0: median=2 max=2 unconv=0 halo=4 H=16 -> REFERENCE_ONLY
+[    8.7s]   P=4 m=4 g1: median=1 max=1 unconv=0 halo=4 H=16 -> FAIL
+[    8.7s] done status=complete wall=8.7s g1 verdicts={'PASS': 4, 'FAIL': 2, 'KILL': 0}
+| problem | N | tol | sigma med (min-max) | ell cells med | P | H | m | halo cells med | halo/H | work (1+2d/H)^2 | g0 sweeps med/max | g1 sweeps med/max | g1 endpoint/tol after 0, 1, 2 sweeps | g1 contraction/sweep | steps with halo cells <= 4 ell | verdict g1 | g1 strict cells | g0 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| P3_gray_scott | 64 | 0.0001 | 3.83 (3.82-3.84) | 0.901 | 2 | 32 | 1 | 1 | 0.0312 | 1.13 | 3 / 3 | 2 / 2 | 29, 0.47, 0.021 | 0.045 | 2/2 | PASS | PASS | REFERENCE_ONLY |
+| P3_gray_scott | 64 | 0.0001 | 3.83 (3.82-3.84) | 0.901 | 2 | 32 | 2 | 2 | 0.0625 | 1.27 | 2 / 2 | 2 / 2 | 29, 0.16, 0.0014 | 0.0085 | 2/2 | PASS | PASS | REFERENCE_ONLY |
+| P3_gray_scott | 64 | 0.0001 | 3.83 (3.82-3.84) | 0.901 | 2 | 32 | 4 | 4 | 0.125 | 1.56 | 2 / 2 | 1 / 1 | 29, 0.021, n/a | n/a | 0/2 | PASS | FAIL | REFERENCE_ONLY |
+| P3_gray_scott | 64 | 0.0001 | 3.83 (3.82-3.84) | 0.901 | 4 | 16 | 1 | 1 | 0.0625 | 1.27 | 4 / 4 | 3 / 3 | 29, 3.9, 0.21 | 0.063 | 2/2 | FAIL | FAIL | REFERENCE_ONLY |
+| P3_gray_scott | 64 | 0.0001 | 3.83 (3.82-3.84) | 0.901 | 4 | 16 | 2 | 2 | 0.125 | 1.56 | 2.5 / 3 | 2 / 2 | 29, 1.4, 0.015 | 0.011 | 2/2 | PASS | PASS | REFERENCE_ONLY |
+| P3_gray_scott | 64 | 0.0001 | 3.83 (3.82-3.84) | 0.901 | 4 | 16 | 4 | 4 | 0.25 | 2.25 | 2 / 2 | 1 / 1 | 29, 0.071, n/a | n/a | 0/2 | FAIL | FAIL | REFERENCE_ONLY |
+
+Per-sweep medians are taken over the steps that ran that sweep (the iteration stops at the first sweep with endpoint difference <= 0.1 tolerance units).
+
+| problem | N | tol | P | m | median sweeps <= 2 | median halo <= H/8 | start g0 (tol units) | start g1 | g1 at needed sweep: endpoint/tol | endpoint/err-estimate | max stage residual | error-estimate diff/tol | actual work factor | steps with block = whole domain |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| P3_gray_scott | 64 | 0.0001 | 2 | 1 | yes | yes | 1.2e+02 | 29 | 0.021 | 0.036 | 0.051 | 0.00041 | 1.13 | 0/2 |
+| P3_gray_scott | 64 | 0.0001 | 2 | 2 | yes | yes | 1.2e+02 | 29 | 0.0014 | 0.0024 | 0.0028 | 6.5e-05 | 1.27 | 0/2 |
+| P3_gray_scott | 64 | 0.0001 | 2 | 4 | yes | yes | 1.2e+02 | 29 | 0.021 | 0.036 | 0.053 | 0.00044 | 1.56 | 0/2 |
+| P3_gray_scott | 64 | 0.0001 | 4 | 1 | no | yes | 1.2e+02 | 29 | 0.015 | 0.025 | 0.036 | 0.0009 | 1.27 | 0/2 |
+| P3_gray_scott | 64 | 0.0001 | 4 | 2 | yes | yes | 1.2e+02 | 29 | 0.015 | 0.025 | 0.051 | 0.00052 | 1.56 | 0/2 |
+| P3_gray_scott | 64 | 0.0001 | 4 | 4 | yes | no | 1.2e+02 | 29 | 0.071 | 0.12 | 0.24 | 0.0078 | 2.25 | 0/2 |
+
+Verdict per configuration (predictor g1; `Pp/m` = P x P subdomains, overlap m*ell):
+
+- P3_gray_scott N=64 tol=0.0001: PASS: P2/m1, P2/m2, P2/m4, P4/m2; FAIL: P4/m1, P4/m4; KILL: none; PASS only under the nominal overlap reading (integer halo > 4 ell): P2/m4; g0 killed: none.
+
+Totals over g1 configurations: {'PASS': 4, 'FAIL': 2, 'KILL': 0}; strict-cells reading: {'PASS': 3, 'FAIL': 3, 'KILL': 0}. Run status `complete`, wall 9 s (diagnostic only).
