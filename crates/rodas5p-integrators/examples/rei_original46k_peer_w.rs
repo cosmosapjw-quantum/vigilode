@@ -3,6 +3,8 @@
 #![allow(dead_code)]
 #![recursion_limit = "256"]
 pub use rodas5p_integrators::{OdeProblem, ParallelExecution};
+#[path = "rei_peer_support/centered_inputs.rs"]
+mod centered;
 #[path = "rei_original46k_native_nonphoto.rs"]
 mod chemistry;
 #[path = "rei_peer_support/ppsw1_0caa3ed2.rs"]
@@ -508,6 +510,11 @@ fn peer_run(
         return Err("PEER_AT_LEAST_FOUR_STEPS".into());
     }
     let now = Instant::now();
+    let centered_mode = match env::var("REI_PEER_FORM").as_deref() {
+        Ok("centered") => true,
+        Ok("absolute") | Err(_) => false,
+        Ok(_) => return Err("REI_PEER_FORM_MUST_BE_absolute_OR_centered".into()),
+    };
     let rc0 = m.rhs_calls.load(Ordering::Relaxed);
     let lc0 = m.local_calls.load(Ordering::Relaxed);
     let h = 1.0 / steps as f64;
@@ -519,7 +526,11 @@ fn peer_run(
     let mut facts = 0usize;
     let mut solves = 0usize;
     for _ in 2..steps {
-        let inputs = err(peer::stage_inputs(&state, h))?;
+        let inputs = err(if centered_mode {
+            centered::build(&state, h)
+        } else {
+            peer::stage_inputs(&state, h)
+        })?;
         let j = m.jac(state.t, &state.y[5])?;
         let shift = h * peer::gamma();
         let pre = j.factor(shift)?;
@@ -535,11 +546,34 @@ fn peer_run(
                     .collect::<Vec<_>>()
             })
             .collect::<Vec<_>>();
+        let original_rhs = if centered_mode {
+            Some(
+                err(peer::stage_inputs(&state, h))?
+                    .iter()
+                    .map(|s| {
+                        let jt = j.apply(&s.transfer);
+                        s.explicit
+                            .iter()
+                            .zip(jt)
+                            .map(|(a, b)| a + h * b)
+                            .collect::<Vec<_>>()
+                    })
+                    .collect::<Vec<_>>(),
+            )
+        } else {
+            None
+        };
         let jobs = err(exec.map_ordered(&[0usize, 1, 2, 3, 4, 5], |&i| {
             let mut ws = LowRankApplyWorkspace::new(D, 0, 3)?;
             let mut y = vec![0.0; D];
             pre.apply_with_workspace(&rhs[i], &mut y, &mut ws)?;
-            let r = j.residual(&y, &rhs[i], shift);
+            let mut r = j.residual(&y, &rhs[i], shift);
+            if let Some(original) = &original_rhs {
+                for (value, anchor) in y.iter_mut().zip(&state.y[5]) {
+                    *value += anchor;
+                }
+                r = r.max(j.residual(&y, &original[i], shift));
+            }
             if r > 1e-10 || !r.is_finite() {
                 return Err(CoreError::LinearSolve(format!(
                     "ORIGINAL_FULL_W_RESIDUAL_{r:e}"
@@ -564,7 +598,7 @@ fn peer_run(
         };
         path.push((state.t, state.y[5].clone()));
     }
-    let record = json!({"method":"PPSW1_6b_imported_tableau_plus_original_full_HHe_rank3_W","steps":steps,"threads":threads,"elapsed_including_start_seconds":now.elapsed().as_secs_f64(),"starter_seconds":starter,"starter":"charged_RK4_h_over_8_history_not_generic_dense_Radau","rhs_calls":m.rhs_calls.load(Ordering::Relaxed)-rc0,"local_source_calls":m.local_calls.load(Ordering::Relaxed)-lc0,"W_factorizations":facts,"W_solves":solves,"max_original_W_relative_residual":residual,"endpoint_time_tau":state.t,"observables":m.observables(&state.y[5]),"closure":"source-admissible_point_v_mid_f_0.55","official_tick161":"NOT_ACCEPTED"});
+    let record = json!({"method":"PPSW1_6b_imported_tableau_plus_original_full_HHe_rank3_W","steps":steps,"threads":threads,"elapsed_including_start_seconds":now.elapsed().as_secs_f64(),"centered_increment_form":centered_mode,"starter_seconds":starter,"starter":"charged_RK4_h_over_8_history_not_generic_dense_Radau","rhs_calls":m.rhs_calls.load(Ordering::Relaxed)-rc0,"local_source_calls":m.local_calls.load(Ordering::Relaxed)-lc0,"W_factorizations":facts,"W_solves":solves,"max_original_W_relative_residual":residual,"endpoint_time_tau":state.t,"observables":m.observables(&state.y[5]),"closure":"source-admissible_point_v_mid_f_0.55","official_tick161":"NOT_ACCEPTED"});
     Ok((path, record))
 }
 fn errors(path: &[(f64, Vec<f64>)], reference: &[(f64, Vec<f64>)]) -> R<serde_json::Value> {
@@ -689,6 +723,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         serde_json::to_vec_pretty(&checks)?,
     )?;
     println!("SOURCE_CHECKS_PASS {checks}");
+    if env::var("REI_PEER_BENCH").as_deref() == Ok("paired") {
+        let mut runs = Vec::new();
+        for (rep, threads) in [1usize, 6, 6, 1, 1, 6].into_iter().enumerate() {
+            let (path, mut rec) = peer_run(&m, 8, threads)?;
+            rec["repetition"] = json!(rep);
+            rec["output_sha256"] = json!(save(
+                &out.join(format!("repeat_{rep}_p{threads}.raw")),
+                &path
+            )?);
+            println!("PAIRED {rep} {rec}");
+            runs.push(rec);
+            fs::write(
+                out.join("BENCHMARK.json"),
+                serde_json::to_vec_pretty(&json!({
+               "schema":"REI_FULL_POINT_PEER_ABBAAB_V1","runs":runs,
+               "source_sha256":STATE_SHA,"dimension":D,"production":"HOLD",
+               "official_tick161":"NOT_ACCEPTED","canonical_delta":0}))?,
+            )?;
+        }
+        return Ok(());
+    }
     let mut result = json!({"schema":"VIGILODE_CROSS_BRANCH_ORIGINAL46K_FULL_POINT_PEER_V1","source_state_sha256":STATE_SHA,"source_forcing_sha256":SPEC_SHA,"dimension":D,"cells":N,"peer_coefficient_commit":"0caa3ed21fcbd5c3fdb19f873734d86ffeba5853","runs":[],"production":"HOLD","official_tick161":"NOT_ACCEPTED","native_interval_final14":"NOT_RUN","canonical_delta":0});
     let stamp = Instant::now();
     let ref64 = rk4_path(&m, 64)?;

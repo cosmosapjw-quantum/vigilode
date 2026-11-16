@@ -1,0 +1,13 @@
+# Observed roundoff mechanism and bounded constructive repair
+
+Observed on actual original 46,080-cell full coupled point IVP: absolute-state Peer n=4/8/16 had max lnT error versus independent original-owner DOP853 approximately 6.42e-11 / 1.28e-10 / 1.99e-10, despite W residual ~6.4e-16. This is not observed truncation convergence. Preserve these negative results in run1; do not call all refinement better.
+
+The imported exact algebraic tableau satisfies B*1=1 and Gamma*1=-gamma*1. For anchor a=last previous state and Delta_j=Yprev_j-a,
+ (I-h gamma J)(Y_i-a) = sum_j B_ij Delta_j + h sum_j A_ij Fprev_j + h J sum_j Gamma_ij Delta_j.
+This is algebraically the SAME real Peer equation, obtained by cancelling anchors before rounding. The exact identities follow from E*1=0 and Theta*1=1, with Gamma=-gamma Theta, B=(I+gamma E)Theta+sigma beta E. Imported tableau bytes are never modified. The new computation is not byte-identical to the absolute f64 evaluation, and cannot be called an unchanged finite-precision algorithm.
+
+Concrete falsification: with truly constant history y=(9.75,0.003141592653589793), F=0, the original absolute-state construction then subtraction returned an invented increment [-1.7763568394002505e-15,-8.673617379884035e-19] in the first failing stage. Test red observed exit101, expected-zero assertion. The centered construction evaluates exact zeros from the differences and passed the same test after implementation. New all-stages test plus imported physics/Peer tests 17/17 PASS. This is numerical representation loss, not changed original atomic physics or failed continuous model.
+
+New opt-in REI_PEER_FORM=centered uses compensated sums of original B/A/Gamma contributions to small increments. Default for this exploratory executable remains absolute. Every centered stage checks BOTH the solved incremental W residual and the reconstructed original absolute W residual at unchanged 1e-10 bound. Reconstructed state must also pass the same positive fractions and original v table-cell guard. No tolerance inflation, no changes to the generic production-unification branch or its dirty matrix-free backend. Actual complete 46k physical rerun and independent-source reference comparison required before any benefit claim.
+
+W-source lineage: low_rank_bordered exact represented system inverse and thread-private apply workspaces, frozen local finite-difference Jacobian plus analytic rank3 photon moment correction. The W residual remains a binary64 consistency check, not a directed global ODE error certificate. No formal fifth-order statement is inferred from a rounding-floor-limited one-tick experiment.
