@@ -305,7 +305,9 @@ impl CapabilitySet {
         let mut s = Self::NONE;
         match problem.jacobian {
             Jacobian::Dense(_) | Jacobian::Banded { .. } => s.explicit_jacobian = supplied,
-            Jacobian::Jvp(_) => s.provided_jvp = supplied && policy.allow_matrix_free,
+            Jacobian::Jvp(_) | Jacobian::SparseJvp { .. } => {
+                s.provided_jvp = supplied && policy.allow_matrix_free
+            }
             Jacobian::FiniteDifference => {}
         }
         s.finite_difference = matches!(
