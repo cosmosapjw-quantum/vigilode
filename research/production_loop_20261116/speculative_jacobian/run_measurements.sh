@@ -5,19 +5,21 @@
 #
 # Usage: run_measurements.sh [program ...]
 #   programs: measure_model_probes measure_adaptive measure_fixed_step (default: all)
+#   SPECJ_LOG_DIR=<dir> writes the logs there instead of logs/ (reproducibility check).
 set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(git -C "$HERE" rev-parse --show-toplevel)"
 export CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v07}"
 cd "$ROOT" || exit 2
-mkdir -p "$HERE/logs"
+LOG_DIR="${SPECJ_LOG_DIR:-$HERE/logs}"
+mkdir -p "$LOG_DIR"
 programs=("$@")
 if [ "${#programs[@]}" -eq 0 ]; then
   programs=(measure_model_probes measure_adaptive measure_fixed_step)
 fi
 status=0
 for program in "${programs[@]}"; do
-  log="$HERE/logs/$program.log"
+  log="$LOG_DIR/$program.log"
   cmd=(taskset -c 0-9,12-21 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators
        --test stage_clients_speculative_measure -- --ignored --exact "$program" --nocapture
        --test-threads=1)
