@@ -1,0 +1,36 @@
+    Finished `release` profile [optimized] target(s) in 0.09s
+     Running tests/default_path_golden.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v03g/release/deps/default_path_golden-ffa1f3e7a79e95a9)
+
+running 11 tests
+test format_helpers_are_bit_faithful ... ok
+test golden_directory_is_exactly_the_listed_files ... ok
+test dopri5 ... FAILED
+test rodas5p_contracts ... ok
+test rodas5p_hires ... ok
+test production_automatic ... ok
+test rodas5p_robertson ... ok
+test rodas5p_vanderpol ... ok
+test decision_grid ... ok
+test general_ode ... ok
+test rodas5p_brusselator ... ok
+
+failures:
+
+---- dopri5 stdout ----
+
+thread 'dopri5' (384693) panicked at crates/vigilode/tests/default_path_golden.rs:354:5:
+golden dopri5: the run differs from /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v03g/crates/vigilode/tests/golden/default_path/dopri5.json
+changed: 1
+  /cases/brusselator-n64/rhs-only/rtol=1e-4/record/stats/counters/rhs_calls: golden 194 / run 193
+removed: 0
+added: 0
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    dopri5
+
+test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.48s
+
+error: test failed, to rerun pass `-p vigilode --test default_path_golden`
