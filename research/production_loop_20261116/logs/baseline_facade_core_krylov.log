@@ -1,0 +1,1727 @@
+   Compiling version_check v0.9.5
+   Compiling proc-macro2 v1.0.107
+   Compiling autocfg v1.5.1
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.24
+   Compiling bytemuck v1.25.2
+   Compiling nano-gemm-codegen v0.2.1
+   Compiling libm v0.2.16
+   Compiling bitflags v2.13.1
+   Compiling paste v1.0.15
+   Compiling raw-cpuid v11.6.0
+   Compiling cfg-if v1.0.4
+   Compiling pulp v0.22.3
+   Compiling reborrow v0.5.5
+   Compiling pulp-wasm-simd-flag v0.1.1
+   Compiling num-traits v0.2.19
+   Compiling dyn-stack-macros v0.1.3
+   Compiling syn v1.0.109
+   Compiling seq-macro v0.3.6
+   Compiling once_cell v1.21.4
+   Compiling dyn-stack v0.13.2
+   Compiling generic-array v0.14.7
+   Compiling nano-gemm-core v0.2.1
+   Compiling libc v0.2.189
+   Compiling typenum v1.20.1
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling nano-gemm-f64 v0.2.1
+   Compiling nano-gemm-f32 v0.2.1
+   Compiling serde_core v1.0.229
+   Compiling defer v0.2.1
+   Compiling syn v3.0.3
+   Compiling num-complex v0.4.6
+   Compiling syn v2.0.119
+   Compiling zmij v1.0.23
+   Compiling serde_json v1.0.151
+   Compiling block-buffer v0.10.4
+   Compiling num_cpus v1.17.0
+   Compiling crypto-common v0.1.7
+   Compiling equator-macro v0.6.0
+   Compiling serde v1.0.229
+   Compiling generativity v1.2.1
+   Compiling thiserror v2.0.19
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.19
+   Compiling equator v0.6.0
+   Compiling digest v0.10.7
+   Compiling equator-macro v0.2.1
+   Compiling interpol v0.2.1
+   Compiling cpufeatures v0.2.17
+   Compiling gemm-common v0.19.0
+   Compiling private-gemm-x86 v0.1.20
+   Compiling equator v0.2.2
+   Compiling qd v0.8.0
+   Compiling memchr v2.8.3
+   Compiling gemm-c64 v0.19.0
+   Compiling gemm-f64 v0.19.0
+   Compiling gemm-f32 v0.19.0
+   Compiling gemm-c32 v0.19.0
+   Compiling faer-traits v0.24.0
+   Compiling itoa v1.0.18
+   Compiling gemm v0.19.0
+   Compiling sha2 v0.10.9
+   Compiling hex v0.4.3
+   Compiling crossbeam-utils v0.8.22
+   Compiling crossbeam-epoch v0.9.20
+   Compiling nano-gemm v0.2.2
+   Compiling crossbeam-deque v0.8.7
+   Compiling rayon-core v1.13.0
+   Compiling either v1.17.0
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/crates/rodas5p-integrators)
+   Compiling faer v0.24.4
+   Compiling rayon v1.12.0
+   Compiling rodas5p-core v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/crates/rodas5p-krylov)
+   Compiling vigilode v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 4m 32s
+     Running unittests src/lib.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/rodas5p_core-db0f8db5b9adb878)
+
+running 58 tests
+test coefficients::tests::a_tampered_snapshot_is_rejected_before_parsing ... ok
+test directed::tests::directed_results_bracket_the_exact_value ... ok
+test laguerre_adjoint::tests::a_constant_coefficient_gives_its_magnitude ... ok
+test coefficients::tests::the_cached_tableau_equals_a_fresh_derivation_bit_for_bit ... ok
+test leja_action::production_audit_suffix::certificate_norm_is_outward_at_normal_and_subnormal_scales ... ok
+test leja_action::production_audit_suffix::coefficient_sum_and_output_replay_cover_additive_underflow ... ok
+test leja_action::production_audit_suffix::interval_matvec_replay_covers_underflow_and_cancellation ... ok
+test leja_action::production_audit_suffix::interval_replay_refuses_nonfinite_action_and_checks_normalized_boundary ... ok
+test leja_action::production_audit_suffix::recurrence_interval_replay_covers_subnormal_additive_underflow ... ok
+test leja_action::production_audit_suffix::refused_output_preserves_certificate_work_accounting ... ok
+test leja_action::tests::cloud_taylor_lower_bounds_stay_nonnegative_under_underflow ... ok
+test leja_action::tests::counted_node_prefix_includes_interval_domain_construction ... ok
+test leja_action::tests::divided_differences_match_closed_forms ... ok
+test leja_action::tests::zero_center_scalar_phi_radii_enclose_nonbinary_factorials ... ok
+test leja_action::tests::failed_exponential_does_not_charge_unattempted_result_vectors ... ok
+test leja_setup_work::tests::local_counted_table_initializer_records_cold_and_warm_cost_once ... ok
+test leja_setup_work::tests::local_legacy_once_lock_is_partial_unattributed_without_refusal ... ok
+test n01_affine_owner::tests::actual_rhs_and_jvp_current_time ... ok
+test n01_affine_owner::tests::bad_source_and_nonpositive_resolvent_refused ... ok
+test n01_affine_owner::tests::exact_dt_source_owned_delta_b_delta_j ... ok
+test leja_setup_work::tests::local_once_lock_charges_only_the_initializer_winner ... ok
+test n01_affine_owner::tests::foreign_source_and_norm_rejected ... ok
+test n01_affine_owner::tests::nonfinite_clock_inputs_and_tolerances_fail_closed ... ok
+test n01_affine_owner::tests::output_only_commits_after_both_gates ... ok
+test n01_affine_owner::tests::overflow_in_callback_is_transactional ... ok
+test n01_affine_owner::tests::stale_clock_epoch_rejected_even_when_coefficients_same ... ok
+test n01_mass_action_owner::tests::callback_overflow_refuses_without_writing ... ok
+test n01_mass_action_owner::tests::canonical_robertson_rates_stay_source_owned ... ok
+test n01_mass_action_owner::tests::finite_stage_and_jvp_gap ... ok
+test n01_mass_action_owner::tests::foreign_owner_cannot_reuse_snapshot ... ok
+test n01_mass_action_owner::tests::invalid_weights_rates_and_nonfinite_rejected ... ok
+test n01_mass_action_owner::tests::negative_and_outside_box_state_fail_transactionally ... ok
+test n01_mass_action_owner::tests::nonlinear_mass_conservation_and_jvp ... ok
+test n01_mass_action_owner::tests::nonpositive_margin_refuses_even_generous_budget ... ok
+test n01_mass_action_owner::tests::original_gate_and_physical_gate_both_required ... ok
+test n01_mass_action_owner::tests::public_callbacks_reject_negative_concentrations ... ok
+test n01_mass_action_owner::tests::stale_clock_and_state_refuse_without_output_mutation ... ok
+test n01_source_owner::tests::mutated_norm_rhs_and_jacobian_refuse ... ok
+test n01_source_owner::tests::nonnormal_lognorm_and_conversion ... ok
+test n01_source_owner::tests::rejected_physical_gate_keeps_output ... ok
+test n01_source_owner::tests::rejects_unbounded_and_unverified_callback ... ok
+test n01_source_owner::tests::residual_only_does_not_bypass_physical_gate ... ok
+test n01_source_owner::tests::resolvent_margin_and_no_output_mutation ... ok
+test n01_source_owner::tests::stale_epoch_clock_and_source_refuse_transactionally ... ok
+test norms::tests::zero_scale_rule ... ok
+test operator::terminal_application_work_tests::failed_jvp_charges_callback_once_before_shifted_mass ... ok
+test operator::terminal_application_work_tests::successful_shifted_work_is_unchanged_and_hook_is_additive ... ok
+test polynomial_action::tests::series_enclose_known_values ... ok
+test taylor_phi_total::tests::scalar_case_matches_the_closed_form ... ok
+test laguerre_adjoint::tests::envelopes_cover_the_adjoint_polynomials ... ok
+test leja_action::tests::failed_counted_cache_miss_retains_historical_coefficient_setup_attempt ... ok
+test leja_action::tests::leja_points_start_at_the_ends_and_stay_distinct ... ok
+test leja_action::tests::actual_leja_points_initializer_has_cold_and_warm_receipts ... ok
+test leja_action::tests::cloud_prefix_sweep_matches_separate_prefixes_bitwise ... ok
+test leja_action::production_audit_suffix::suffix_bound_covers_the_actual_suffix_not_a_prefix ... ok
+test leja_action::production_audit_suffix::positive_outward_support_increases_t1_exponential_factor ... ok
+test leja_action::production_audit_suffix::trusted_prewarm_matches_cold_and_encloses_diagonal_exponential ... ok
+test leja_action::production_audit_suffix::interval_matvec_overflow_refusal_preserves_workspace_work ... ok
+
+test result: ok. 58 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/allocation_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/allocation_contracts-4a500f8b24cd35ee)
+
+running 1 test
+test shifted_operator_apply_is_allocation_free_after_construction ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/bordered_allocation_contract.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/bordered_allocation_contract-9db996b1abebb248)
+
+running 1 test
+test successful_refactor_and_apply_allocate_zero_for_variable_active_dimension ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/bordered_schur_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/bordered_schur_contracts-051d769c5b976d3e)
+
+running 3 tests
+test schur_pivoting_and_failure_invalidation ... ok
+test shape_nonfinite_dominance_and_arithmetic_failures_are_explicit ... ok
+test bordered_solves_match_independent_dense_oracle_at_changing_dimensions ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/core_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/core_contracts-3dd6fbc11808b37a)
+
+running 14 tests
+test coefficient_snapshot_is_bit_identical_to_the_authoritative_sciml_literals ... ok
+test coefficient_transform_preserves_rodas5p_structure ... ok
+test coefficient_tableau_is_parsed_and_derived_once_per_process ... ok
+test dense_matrix_matvec_is_row_major_and_exact_for_small_case ... ok
+test direct_solve_agrees_with_known_solution ... ok
+test linear_operator_default_row_application_preserves_order ... ok
+test linear_operator_row_application_rejects_ragged_shapes ... ok
+test coefficient_snapshot_bytes_match_the_digest_verified_at_load ... ok
+test linear_solver_config_rejects_non_finite_tolerances ... ok
+test safe_l2_handles_extreme_scale ... ok
+test safe_l2_propagates_nan_and_infinity ... ok
+test wrms_matches_definition ... ok
+test wrms_stays_strict_on_a_zero_scale_and_matches_the_step_norm_otherwise ... ok
+test zero_scale_follows_the_one_rule ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/damped_forcing_moment_consumer.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/damped_forcing_moment_consumer-c3e998296123a73a)
+
+running 8 tests
+test absolute_width_gate_refuses_narrow_limit_and_keeps_attempted_work ... ok
+test invalid_parameters_and_orders_refuse_before_kernel_and_retain_validation_work ... ok
+test forcing_index_mapping_is_q_rd_to_i_dr ... ok
+test kernel_refusal_retains_attempt_without_claiming_width_check ... ok
+test large_rate_width_refusal_keeps_validation_kernel_and_width_work ... ok
+test rounded_product_branch_boundary_matches_frozen_kernel_interval ... ok
+test subnormal_damping_product_is_not_treated_as_exact_zero ... ok
+test zero_damping_confluent_limit_is_admitted_by_the_consumer ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/damped_moment_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/damped_moment_contracts-00d8bfc93a7db73c)
+
+running 7 tests
+test test_vg2_kappa_zero_reduces_to_exact_beta_weights ... ok
+test test_negative_admission_gates ... ok
+test test_vg3_unscaled_scaling_identity ... ok
+test test_vg3_branch_boundary_continuity_at_z_one ... ok
+test test_vg1_zero_allocation_table_lookup_contract ... ok
+test test_vg2_monotonic_damping_reduction ... ok
+test test_vg3_outward_interval_enclosure_bounds ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/damped_moment_enclosure_regressions.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/damped_moment_enclosure_regressions-5a661fdbd3f740af)
+
+running 4 tests
+test public_config_mutations_are_revalidated ... ok
+test product_overflow_is_refused_and_underflow_is_enclosed ... ok
+test input_product_and_both_branches_enclose_independent_decimal_oracles ... ok
+test zero_damping_encloses_nonrepresentable_beta_seed ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/fused_normalization_contract.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/fused_normalization_contract-7b83ceeccf579b0c)
+
+running 9 tests
+test export_cases ... ignored, export PY04 cases; set PY04_CASES
+test test_extreme_i64_exponents_regression ... ok
+test test_scale_pow2_zero_allocations ... ok
+test test_staged_scaling_at_extreme_exponents ... ok
+test test_range_refusal_l_term_overflow ... ok
+test test_normalization_accounting_l_and_r ... ok
+test test_range_refusal_unsupported ... ok
+test test_exact_homogeneity_s7 ... ok
+test test_taylor_rejection_speculative_work_preserved ... ok
+
+test result: ok. 8 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/fused_phi_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/fused_phi_contracts-b19fe96feea8aef0)
+
+running 2 tests
+test fused_dense_action_handles_only_b0 ... ok
+test fused_dense_action_matches_separate_phi_actions ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/guarded_polynomial_router.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/guarded_polynomial_router-1cab3231d797ada9)
+
+running 6 tests
+test declared_spectrum_abstains_and_malformed_requests_are_errors ... ok
+test unsupported_laguerre_degree_skips_all_matrix_products ... ok
+test each_family_can_be_the_guarded_selected_backend ... ok
+test first_admitted_stops_and_retains_owned_output_across_reuse ... ok
+test identical_fused_request_exact_oracle_export ... ok
+test tight_budget_is_not_relaxed_and_failures_keep_work ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests/int05_nonnormal_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/int05_nonnormal_contracts-8aea4204824b09e3)
+
+running 3 tests
+test a_scalar_decay_is_enclosed_from_both_sides ... ok
+test an_overflowing_growth_factor_is_unbounded_not_a_number ... ok
+test invalid_inputs_are_rejected ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/int05_nonnormal_metric_bound.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/int05_nonnormal_metric_bound-24b6ff5a901159cb)
+
+running 1 test
+test nonnormal_metric_bound_cases ... ignored, case generator of research/int05_nonnormal_metric_bound_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/invariant_module_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/invariant_module_contracts-4804367c011e4772)
+
+running 15 tests
+test approximate_module_still_needs_current_residual ... ok
+test cached_certifier_cannot_accept_missing_or_malformed_columns ... ok
+test invalid_targets_and_nonfinite_rhs_refuse_before_work ... ok
+test cached_full_space_certifier_accepts_an_independent_full_solve ... ok
+test jordan_module_matches_direct_without_diagonalization ... ok
+test leakage_refuses_at_admission ... ok
+test matrix_mutation_before_admission_cannot_forge_evidence ... ok
+test oblique_chart_amplification_is_not_discarded ... ok
+test out_of_module_rhs_is_refused_by_original_residual ... ok
+test rank_change_refuses_at_admission ... ok
+test repeated_actual_shifts_are_counted_once ... ok
+test signed_zero_is_one_shift ... ok
+test stale_epoch_refuses_before_work ... ok
+test storage_and_shift_budgets_refuse_before_work ... ok
+test unproved_full_space_inverse_is_refused ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/laguerre_adjoint_holdout.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/laguerre_adjoint_holdout-21ad49cc92f8b8e8)
+
+running 5 tests
+test plan_only ... ignored
+test vg1_zero_allocation_in_transform_selection_primitives ... ok
+test refusal_contracts ... ok
+test vg3_plan_local_matches_joint_phi_action_degree_and_scale_bitwise ... ok
+test vg2_monotone_degree_and_truncation_bound_with_tightening_budget ... ok
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/laguerre_component_export.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/laguerre_component_export-0df9707501ab6bec)
+
+running 7 tests
+test export_components ... ignored
+test vg1_zero_allocation_in_recurrence_and_directed_primitives ... ok
+test refusal_on_declared_enclosure_and_degree_above_128 ... ok
+test identity_stamping_and_envelope_key_digest ... ok
+test report_and_counter_parity_with_joint_phi_action ... ok
+test vg2_outward_rebuild_and_nonzero_normalization_shift ... ok
+test vg2_degree_budget_sweep_monotone_truncation ... ok
+
+test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.71s
+
+     Running tests/leja_enclosed_contract.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/leja_enclosed_contract-b937c8dd559e315c)
+
+running 7 tests
+test admission_refuses_legacy_initial_workspace_and_invalid_budgets ... ok
+test exact_zero_fused_action_can_be_admitted_at_zero_budget ... ok
+test refused_overflow_attempt_does_not_change_admissible_report ... ok
+test explicit_enclosure_rejects_declared_domain_and_keeps_success_transaction ... ok
+test admitted_fused_output_keeps_bound_budget_and_owner_together ... ok
+test coefficient_cache_reuse_does_not_reuse_another_operators_output ... ok
+test exact_spectral_fixtures_export ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/leja_setup_work_contract.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/leja_setup_work_contract-859d7ab67e0eaeeb)
+
+running 5 tests
+test setup_receipt_serialization_is_versioned_and_immutable ... ok
+test counted_cache_history_inherits_legacy_static_dependency_coverage ... ok
+test counted_cache_cold_warm_and_refusal_retain_separate_work ... ok
+test counted_action_records_cold_coefficient_table_without_changing_authority ... ok
+test counted_and_legacy_success_preserve_report_and_work_counter_identity ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/leja_total_contract.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/leja_total_contract-78466fa96409aeac)
+
+running 19 tests
+test test_a04_failed_dimension_change_preserves_last_successful_report ... ok
+test allocation_tracker_counts_each_thread_independently ... ok
+test test_a04_report_serialization_preserves_exact_schema_and_estimate_status ... ok
+test test_a04_scalar_interval_coefficients_match_reference_at_nonzero_center ... ok
+test test_a04_warmed_scalar_branch_zero_allocation ... ok
+test test_a04_workspace_report_buffers_follow_dimension_growth_and_shrink ... ok
+test test_vg3_refuses_declared_enclosure_and_invalid_inputs ... ok
+test test_vg3_no_false_authority_unaltered_leja_report ... ok
+test test_vg1_zero_allocation_node_polynomial_and_bounds ... ok
+test test_a04_subnormal_domain_keeps_total_authority_on_hold ... ok
+test test_vg3_work_preservation_on_all_error_paths ... ok
+test test_a04_counted_warmed_certified_leja_action_zero_allocation ... ok
+test test_vg3_speculative_work_preservation_on_budget_failure ... ok
+test cloud_scoped_enclosed_warm_call_is_allocation_free ... ok
+test test_vg1_zero_allocation_warmed_certified_leja_action ... ok
+test test_vg2_monotone_truncation_bound ... ok
+test test_vg2_zero_slack_budget_and_enclosure_same_vector ... ok
+test test_vg2_zero_slack_budget_and_enclosure_distinct ... ok
+test test_vg2_dense_eigendecomposition_enclosure ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/leja_total_holdout.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/leja_total_holdout-357a84b69af77438)
+
+running 2 tests
+test export_runs ... ignored, exporter of research/py05_leja_total_certificate_20261011; set PY05_CASES and PY05_RUNS
+test test_leja_holdout_smoke ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/low_rank_bordered_allocation.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/low_rank_bordered_allocation-40e13e4c669be844)
+
+running 1 test
+test refactor_and_both_apply_paths_allocate_zero_across_active_shapes ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/low_rank_bordered_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/low_rank_bordered_contracts-6729db77161f948c)
+
+running 6 tests
+test application_failures_are_atomic_and_do_not_invalidate_factors ... ok
+test bad_refactors_invalidate_previously_good_factors ... ok
+test impossible_capacities_fail_without_arithmetic_panic ... ok
+test rank_zero_is_the_existing_bordered_inverse ... ok
+test original_dimension_matches_independent_dense_solve_for_multiple_shapes ... ok
+test separate_workspaces_support_shared_parallel_factors ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/lu_workspace_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/lu_workspace_contracts-9296c34e22cf6213)
+
+running 1 test
+test pivoted_lu_workspace_contracts ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/matrix_function_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/matrix_function_contracts-8c3afec8f71a98da)
+
+running 9 tests
+test dense_phi_action_accepts_the_largest_finite_vectors ... ok
+test dense_phi_action_is_accurate_for_subnormal_and_power_of_two_vectors ... ok
+test dense_phi_action_is_accurate_for_a_large_vector_on_a_diagonal_matrix ... ok
+test dense_phi_action_reports_a_result_that_really_overflows ... ok
+test dense_phi_action_matches_scalar_values ... ok
+test dense_phi_action_satisfies_matrix_recurrence ... ok
+test pade13_matches_scalar_exponential_across_stiff_scales ... ok
+test dense_phi_action_is_invariant_under_the_physical_scale_of_the_vector ... ok
+test fused_phi_combination_is_accurate_as_the_step_shrinks ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/native_reaudit_laguerre_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/native_reaudit_laguerre_contracts-2204b894a082d838)
+
+running 3 tests
+test a_failed_invalid_input_does_not_enter_the_envelope_cache ... ok
+test reversed_intervals_cannot_be_widened_into_accepted_coefficients ... ok
+test ordered_interval_coefficients_still_work ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/polynomial_single_backend_router.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/polynomial_single_backend_router-04f67a89b9e83fa1)
+
+running 8 tests
+test export_cases ... ignored, export PY03 cases; set PY03_CASES
+test test_boundary_refusals ... ok
+test test_accounting_route_cost_vs_work_counters ... ok
+test test_plan_joint_phi_zero_allocations ... ok
+test test_cache_state_cold_vs_warm ... ok
+test test_bitwise_parity_execute_joint_phi ... ok
+test test_monotone_degree_and_zero_slack_bounds ... ok
+test test_force_laguerre_first_failed_preflight_charged ... ok
+
+test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/pp03_rhs_compression.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/pp03_rhs_compression-ca6ba31b243cbef0)
+
+running 3 tests
+test export_compression_study ... ignored, recorded run of research/pp03_rhs_compression_20261004; release build
+test compression_keeps_every_column_coefficient ... ok
+test full_rank_abstains ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pp04_shared_shift_policy.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/pp04_shared_shift_policy-9675aec6e869fa1b)
+
+running 4 tests
+test export_policy_study ... ignored, recorded run of research/pp04_shared_shift_policy_20261004; release build
+test planner_abstains_typed ... ok
+test hessenberg_reduction_reconstructs_j ... ok
+test every_method_certifies_a_small_family ... ok
+
+test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pp08_laguerre_router_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/pp08_laguerre_router_contracts-4fd55de7f7af34ef)
+
+running 9 tests
+test invalid_total_budget_step_and_input_are_errors_without_work ... ok
+test ties_go_to_chebyshev_and_scalar_branch_routes ... ok
+test unbounded_timing_execution_is_never_admitted ... ok
+test estimate_only_totals_are_never_admitted ... ok
+test admitted_route_meets_the_rule_and_its_budget ... ok
+test declared_enclosure_is_never_admitted_even_at_zero_step ... ok
+test unmet_budget_ends_in_fallback ... ok
+test laguerre_degree_above_the_adjoint_limit_is_never_admitted ... ok
+test caller_counters_equal_the_sum_of_the_attempts ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.37s
+
+     Running tests/pp08_laguerre_router_study.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/pp08_laguerre_router_study-8ea0ac520eb2ea0c)
+
+running 1 test
+test pp08_router_study_export ... ignored, exporter of research/pp08_laguerre_router_20261004; set PP08_CASES
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pp10_leja_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/pp10_leja_contracts-3163507e4de36005)
+
+running 8 tests
+test invalid_inputs_are_errors_without_work ... ok
+test scalar_operator_matches_the_closed_form ... ok
+test zero_input_and_zero_step_charge_no_products ... ok
+test symmetric_operator_agrees_with_the_dense_reference ... ok
+test no_certified_api_admits_a_leja_result ... ok
+test degree_cap_stops_without_convergence ... ok
+test counters_charge_every_operator_product_and_nothing_else ... ok
+test diagonal_operators_meet_the_tolerance_against_closed_forms ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/pp10_leja_study.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/pp10_leja_study-90f7ac340508a483)
+
+running 1 test
+test pp10_leja_study_export ... ignored, exporter of research/pp10_leja_candidate_20261004; set PP10_CASES
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pp11_taylor_fused_total_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/pp11_taylor_fused_total_contracts-0a70f33196f2858a)
+
+running 7 tests
+test invalid_inputs_are_refused ... ok
+test an_overflowing_term_is_unbounded_not_an_error ... ok
+test an_exp_certificate_is_a_different_type_from_a_fused_certificate ... ok
+test the_taylor_output_is_certified_against_the_diagonal_reference ... ok
+test a_wrong_candidate_gets_a_bound_at_least_its_distance ... ok
+test non_power_of_two_h_has_positive_perturbation ... ok
+test power_of_two_h_has_exactly_zero_perturbation ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pp11_taylor_fused_total_study.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/pp11_taylor_fused_total_study-6ed41c98ddea4a73)
+
+running 1 test
+test pp11_taylor_fused_total_cases ... ignored, case exporter of research/pp11_taylor_fused_total_20261004; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pp12_lognorm_decay.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/pp12_lognorm_decay-b05793490189bcf6)
+
+running 2 tests
+test export_lognorm_cases ... ignored, recorded run of research/pp12_lognorm_decay_20261004; release build
+test lognorm_is_negative_for_diffusion ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/pp12b_chain_symmetrizer.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/pp12b_chain_symmetrizer-692ea813bd0e895a)
+
+running 3 tests
+test export_chain_cases ... ignored, recorded run of research/pp12b_chain_symmetrizer_20261004; release build
+test auto3_skips_a_metric_that_cannot_be_built ... ok
+test chain_symmetrizer_makes_pairs_equal ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pp16_complex_shift_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/pp16_complex_shift_contracts-6f18888aa9e2cf05)
+
+running 6 tests
+test gain_one_would_under_bound_complex_shift ... ok
+test complex_jet_candidates_and_work ... ok
+test negative_controls_fail_closed ... ok
+test partial_fraction_contracts ... ok
+test scalar_hand_case_and_gain ... ok
+test real_gamma_reproduces_real_shift_status ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pp16_complex_shift_study.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/pp16_complex_shift_study-8da079ffeed75d87)
+
+running 1 test
+test export_pp16_cases ... ignored, research exporter; run with PP16_PADE and PP16_CASES set
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/production_audit_leja_arithmetic_oracle.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/production_audit_leja_arithmetic_oracle-93ee08013cc73bf9)
+
+running 1 test
+test frozen_arithmetic_fixture_export ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/production_audit_scalar_rate.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/production_audit_scalar_rate-4ca538ad5bdf3d0a)
+
+running 1 test
+test frozen_s01_s10_export ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/production_audit_sparse.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/production_audit_sparse-9e07fb9f7bf8d90e)
+
+running 3 tests
+test malformed_csc_is_rejected_without_panicking ... ok
+test nonfinite_rhs_is_rejected ... ok
+test numeric_state_is_invalidated_until_exact_pattern_refactor_succeeds ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/r3_polynomial_action_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/r3_polynomial_action_contracts-a08ce035e5b0c9fe)
+
+running 8 tests
+test zero_step_zero_operator_and_scalar_matrix_use_the_scalar_branch ... ok
+test unsupported_operators_are_explicit_failures ... ok
+test the_same_vector_path_reuses_one_recurrence ... ok
+test coefficient_tables_are_reused_only_for_the_same_key ... ok
+test coefficient_enclosures_contain_independent_quadrature ... ok
+test the_unbounded_mode_returns_the_same_values_without_a_bound ... ok
+test all_joint_actions_match_the_independent_oracle ... ok
+test the_degree_near_the_budget_never_understates_the_bound ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.61s
+
+     Running tests/r4_polynomial_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/r4_polynomial_contracts-71bdf274c2234304)
+
+running 8 tests
+test an_out_of_range_result_or_budget_is_a_typed_rejection ... ok
+test laguerre_scales_outside_the_cap_are_rejected ... ok
+test scaled_norms_enclose_the_exact_norm_across_the_range ... ok
+test the_continuous_laguerre_scale_minimizes_the_analytic_tail ... ok
+test cancellation_reports_absolute_and_relative_accuracy_separately ... ok
+test truncation_success_is_not_total_error_admission ... ok
+test estimates_and_the_timing_path_never_admit ... ok
+test amplitude_scaled_actions_are_enclosed_or_rejected_never_zero ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/r4_taylor_phi_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/r4_taylor_phi_contracts-625331b66e0dff03)
+
+running 4 tests
+test nilpotent_is_exact_in_two_terms ... ok
+test nonnormal_matches_the_divided_difference_and_reports_conditioning ... ok
+test outside_the_validated_domain_is_a_typed_rejection ... ok
+test diagonal_matches_the_scalar_enclosures ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/r4_transform_bound_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/r4_transform_bound_contracts-83be8fc758edcef4)
+
+running 6 tests
+test signed_stored_weights_and_the_tolerance_domain_fail_closed ... ok
+test the_order_is_total_and_puts_zero_first ... ok
+test the_subunit_nilpotent_witness_keeps_its_norm ... ok
+test reciprocal_factorials_enclose_exactly_and_tightly ... ok
+test every_oracle_case_is_enclosed_including_permutations_and_transposes ... ok
+test every_supported_order_of_the_zero_operator_is_enclosed ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/residual_gain_contract.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/residual_gain_contract-20d03037a3916582)
+
+running 7 tests
+test export_runs ... ignored
+test test_assembly_uncertainty_validation ... ok
+test test_case_c_negatives ... ok
+test test_case_d_positives ... ok
+test test_transport_two_sided_gain_scaling ... ok
+test test_vg1_zero_allocation_hot_path ... ok
+test test_case_a_retained_oracle_and_parity ... ok
+
+test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rev02_nonnormal_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/rev02_nonnormal_contracts-b2177b205296cc08)
+
+running 3 tests
+test osborne_balances_the_vig_a02_matrix ... ok
+test the_stepped_certificate_encloses_a_scalar_decay_and_rejects_bad_input ... ok
+test the_directed_exponential_brackets_the_libm_value_tightly ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rev02_nonnormal_stepping.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/rev02_nonnormal_stepping-5136d22774492007)
+
+running 1 test
+test nonnormal_stepping_cases ... ignored, case generator of research/rev02_nonnormal_stepping_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rnext04_laguerre_admission.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/rnext04_laguerre_admission-bead876f71c67b93)
+
+running 1 test
+test laguerre_admission_cases ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.42s
+
+     Running tests/safe_enclosure_exp_floor.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/safe_enclosure_exp_floor-9b37cab575c2f7a3)
+
+running 2 tests
+test export_exp_floor ... ignored, export of research/safe_enclosure_exp_floor_20261004
+test floor_window_is_enclosed ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/safe_enclosure_probes.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/safe_enclosure_probes-3b8634d0db87a397)
+
+running 3 tests
+test export_probes ... ignored, export of research/safe_enclosure_composition_20261004
+test repaired_midpoint_radius_covers_rounded_midpoint ... ok
+test repaired_decay_uses_lower_time_for_negative_rate ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/shared_shift_jet_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/shared_shift_jet_contracts-7484bcb033fd0e99)
+
+running 6 tests
+test exact_current_target_certificate_rejects_wrong_candidate ... ok
+test independent_columns_and_executed_work_are_preserved ... ok
+test identity_limits_and_extreme_center_scaling ... ok
+test invalid_inputs_unsupported_operators_and_budgets_are_errors ... ok
+test under_resolution_and_too_small_tolerance_fail_closed ... ok
+test large_target_set_budget_includes_coordinate_gamma_and_tolerance_slots ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/shifted_operator_nonfinite.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/shifted_operator_nonfinite-0993fbfdf2a6f3e4)
+
+running 2 tests
+test overflowing_shift_is_a_non_finite_error ... ok
+test finite_shift_is_unchanged ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/sparse_direct_contract.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/sparse_direct_contract-7b40ad631a3e695c)
+
+running 2 tests
+test test_brusselator_1d_agreement_with_dense_lu ... ok
+test test_seeded_sparse_matrices_backward_error ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/storage_runtime.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/storage_runtime-1b6fef3034a63997)
+
+running 1 test
+test export_storage_sweep ... ignored, recorded run of research/storage_runtime_20261004; one test thread
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/thread_transfer_laguerre_adjoint.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/thread_transfer_laguerre_adjoint-0e4255a40409b245)
+
+running 2 tests
+test write_laguerre_cases ... ignored, writes fixtures/thread_transfer_laguerre_cases.json
+test laguerre_adjoint_contract ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/thread_transfer_laguerre_cache.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/thread_transfer_laguerre_cache-8a88d25ca6fa1590)
+
+running 2 tests
+test write_laguerre_cache_cases ... ignored, writes fixtures/thread_transfer_laguerre_cache_cases.json
+test laguerre_envelope_cache_and_cost ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+     Running tests/transform_bound_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/transform_bound_contracts-4a2957b8e16f585f)
+
+running 3 tests
+test every_branch_is_exercised_and_unverified_operators_fail_closed ... ok
+test the_nilpotent_witness_is_bounded_and_rejected_for_both_signs_of_h ... ok
+test the_zero_operator_control_is_bounded_nonzero_and_admitted ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/work_counter_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/work_counter_contracts-8c4408befa175dc9)
+
+running 5 tests
+test checked_delta_rejects_any_negative_component_and_round_trips_exactly ... ok
+test counted_shifted_applications_charge_jvp_mass_and_refresh_at_the_apply_site ... ok
+test shifted_and_total_operator_application_helpers_count_vectors_without_block_call_duplication ... ok
+test shifted_exact_identity_uses_jacobian_mass_and_exact_h_gamma_bits ... ok
+test work_counters_accumulate_componentwise_and_saturate ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/work_unit_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/work_unit_contracts-542ea15abd5feb8e)
+
+running 2 tests
+test cross_lane_operator_work_is_counted_in_state_vectors ... ok
+test unknown_vector_coverage_survives_aggregation ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/rodas5p_krylov-43578eebafc0c73b)
+
+running 17 tests
+test gmres_givens::tests::stable_real_givens_zeroes_the_second_component ... ok
+test gmres_givens::tests::incremental_projected_residual_matches_full_qr_oracle ... ok
+test gmres_givens::tests::triangular_backsolve_reconstructs_the_rotated_system ... ok
+test gmres_givens::tests::triangular_backsolve_rejects_an_identically_zero_factor ... ok
+test gmres_givens::tests::uniformly_scaled_identity_preserves_solution_and_convergence ... ok
+test gmres_staged::tests::converges_in_cycle_and_charges_like_production ... ok
+test gmres_staged::tests::fallback_sees_the_iterate_and_its_true_residual ... ok
+test gmres_staged::tests::nu_guard_tightens_the_threshold_on_a_nonnormal_system ... ok
+test gmres_staged::tests::stall_rule_accepts_the_attainable_floor ... ok
+test gmres_staged::tests::zero_right_hand_side_needs_no_work ... ok
+test gmres_staged::tests::failed_confirmations_continue_the_cycle_with_doubling_gaps ... ok
+test gmres_staged::tests::guard_aborts_a_stagnating_solve_and_classifies_it ... ok
+test gmres_staged::tests::restarted_solve_reaches_the_threshold ... ok
+test small::generalized_eigen_tests::a_complex_pair_of_a_small_pencil_does_not_panic ... ok
+test small::generalized_eigen_tests::real_and_complex_spectra_are_eigenpairs ... ok
+test workspace::basis_only_tests::augmented_solve_reinitializes_directions_after_basis_only_shape_changes ... ok
+test gmres_staged::tests::shadow_classification_is_the_guard_free_outcome ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/alg04_alg06_staged_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/alg04_alg06_staged_contracts-729f98401a44d23d)
+
+running 8 tests
+test exhaustion_runs_a_small_system_to_the_end_of_its_krylov_space ... ok
+test exhaustion_keeps_the_alg01_nu_rule ... ok
+test effective_cycle_length_removes_the_small_system_overrun ... ok
+test guard_test_uses_the_given_cycle_length ... ok
+test classifying_accepted_guard_aborts_changes_nothing_but_the_label ... ok
+test exhaustion_is_inactive_above_the_restart_length ... ok
+test floor_is_inert_where_the_threshold_is_met ... ok
+test floor_accepts_at_a_confirmation_without_a_slow_cycle ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/alg04_dup_fix_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/alg04_dup_fix_contracts-b4682650ac8ba551)
+
+running 2 tests
+test a_right_hand_side_already_within_the_threshold_needs_no_operator ... ok
+test skipping_the_final_residual_changes_only_the_diagnostic_counters ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/basis_only_workspace_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/basis_only_workspace_contracts-8e39b437b152adcf)
+
+running 3 tests
+test cold_into_omits_direction_storage_but_full_reserve_stays_compatible ... ok
+test right_monitored_prefixes_match_full_reserved_storage ... ok
+test mixed_legacy_and_into_reuse_preserves_bits_and_callback_words_after_shape_changes ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/block_gmres_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/block_gmres_contracts-0adef0825955dcd8)
+
+running 8 tests
+test block_gmres_deflates_linearly_dependent_rhs ... ok
+test block_arnoldi_rank_is_uniformly_operator_scale_invariant ... ok
+test block_gmres_rejects_ragged_rhs_without_counting_a_solve ... ok
+test block_gmres_does_not_false_converge_on_small_nonzero_rhs ... ok
+test block_gmres_solves_multiple_rhs_through_block_operator_calls ... ok
+test exhausted_block_gmres_retains_attempted_work_counters ... ok
+test seeded_arnoldi_rank_is_uniformly_operator_scale_invariant ... ok
+test seeded_shared_basis_refines_all_rhs_to_the_same_true_residual_contract ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/bordered_preconditioner_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/bordered_preconditioner_contracts-c56b689c7e166a91)
+
+running 1 test
+test bordered_right_preconditioner_reaches_true_residual_on_exact_and_perturbed_operator ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/dupfix_promotion_contract.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/dupfix_promotion_contract-b31f942092eeb1b9)
+
+running 10 tests
+test a_confirmed_happy_breakdown_reuses_the_residual ... ok
+test accounting_identifiers_are_versioned ... ok
+test zero_right_hand_side_keeps_the_recomputation ... ok
+test a_happy_breakdown_without_confirmation_fails_identically ... ok
+test jacobi_left_preconditioning ... ok
+test the_entry_points_without_accounting_use_the_default ... ok
+test budget_exhaustion_fails_identically ... ok
+test a_nonzero_start_within_the_threshold_keeps_the_recomputation ... ok
+test wrms_residual_scale ... ok
+test a_restart_smaller_than_the_iteration_count ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/gcrodr_state_validity_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/gcrodr_state_validity_contracts-8bd5a4494425804a)
+
+running 6 tests
+test gcrodr_wrong_length_warm_start_under_matching_identity_is_a_typed_error ... ok
+test gcrodr_same_system_keeps_the_warm_start ... ok
+test lgmres_state_reused_across_a_dimension_change_returns_without_panicking ... ok
+test gcrodr_state_reused_across_a_dimension_change_returns_without_panicking ... ok
+test gcrodr_operator_identity_change_clears_the_stale_warm_start ... ok
+test gcrodr_recycle_rank_above_one_keeps_its_invariant_across_system_changes ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/givens_gmres_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/givens_gmres_contracts-c87b44e1f74cfad5)
+
+running 8 tests
+test candidate_preserves_the_jacobi_preconditioner_contract ... ok
+test candidate_rejects_non_finite_tolerances_before_operator_work ... ok
+test candidate_resets_incremental_state_across_restart_cycles ... ok
+test happy_breakdown_rejection_is_fail_closed_without_rebuilding_candidate ... ok
+test nearly_dependent_nonidentity_system_keeps_uniform_scale_parity ... ok
+test projected_residual_trigger_cannot_bypass_true_residual_certification ... ok
+test rejected_projected_triggers_back_off_diagnostics_but_stay_certified ... ok
+test candidate_stops_inside_restart_and_preserves_true_residual_authority ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/givens_production_differential_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/givens_production_differential_contracts-af597ed810075793)
+
+running 2 tests
+test a_corrupted_ok_solution_cannot_certify_itself_with_its_reported_residual - should panic ... ok
+test candidate_and_production_outcomes_are_pinned_on_the_e05_nonnormal_jacobi_rows ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.23s
+
+     Running tests/int01_gcrodr_policy_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/int01_gcrodr_policy_contracts-7b10982c5b7471dc)
+
+running 5 tests
+test a_solve_aborted_inside_a_cycle_keeps_that_cycle_in_its_trace ... ok
+test the_reuse_tolerance_is_validated ... ok
+test a_corrupted_image_is_detected_and_rebuilt ... ok
+test a_healthy_pair_passes_the_check_and_the_solve_is_unchanged ... ok
+test the_default_policy_is_the_plain_and_the_traced_solve ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/krylov_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/krylov_contracts-b62f62f04d737c97)
+
+running 9 tests
+test gcrodr_handles_one_dimensional_recycle_updates_without_panicking ... ok
+test gcrodr_cross_operator_refresh_remains_scale_invariant ... ok
+test gcrodr_arnoldi_breakdown_is_uniformly_operator_scale_invariant ... ok
+test gcrodr_preserves_bu_equals_c_and_refreshes_changed_operator ... ok
+test gmres_uses_the_same_jacobi_preconditioner_contract ... ok
+test lgmres_commits_state_only_after_a_certified_solve ... ok
+test gcrodr_reuses_only_an_exact_operator_preconditioner_system_identity ... ok
+test restarted_gmres_matches_direct_solution_and_certifies_true_residual ... ok
+test lgmres_invalidates_cached_images_on_exact_h_or_preconditioner_change ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/low_rank_bordered_preconditioner.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/low_rank_bordered_preconditioner-de692f6b170246f0)
+
+running 1 test
+test low_rank_adapter_keeps_original_krylov_dimension_and_true_residual ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/nonfinite_operator_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/nonfinite_operator_contracts-f3085709efbddc00)
+
+running 1 test
+test a_nan_operator_output_is_not_a_zero_true_residual ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/prefix_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/prefix_contracts-050f4721a21cf121)
+
+running 1 test
+test gmres_prefix_resume_matches_cold_incremental_path ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/reaudit_monitored_progress.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/reaudit_monitored_progress-67184f3e1e10ab2b)
+
+running 3 tests
+test happy_breakdown_continue_exhausts_without_false_error_or_output_commit ... ok
+test monitor_error_keeps_two_columns_and_next_call_resets_progress ... ok
+test second_column_operator_and_preconditioner_errors_retain_first_column ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rev01_gcrodr_options_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/rev01_gcrodr_options_contracts-c4adf8927be1e865)
+
+running 2 tests
+test with_the_start_projection_recycled_solves_converge_and_charge_their_work ... ok
+test without_the_start_projection_the_options_are_the_policy ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/rev01b_gcrodr_reorthogonalization_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/rev01b_gcrodr_reorthogonalization_contracts-0b203951f8f11ff4)
+
+running 2 tests
+test without_a_recycle_space_the_option_changes_nothing ... ok
+test with_a_recycle_space_solves_converge_and_charge_their_work ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rev01c_gcrodr_refresh_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/rev01c_gcrodr_refresh_contracts-f13a23cd99364d21)
+
+running 2 tests
+test without_a_recycle_space_the_option_changes_nothing ... ok
+test with_a_recycle_space_solves_converge_and_charge_their_work ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rev04_lgmres_into_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/rev04_lgmres_into_contracts-95a0c35203697e06)
+
+running 4 tests
+test a_wrong_output_length_is_rejected ... ok
+test failing_solves_roll_back_alike_and_leave_the_output ... ok
+test a_direction_of_the_wrong_length_is_dropped_alike ... ok
+test successful_solves_match_bit_for_bit ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rnext02_gmres_into_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/rnext02_gmres_into_contracts-429dcfbb97fc22f3)
+
+running 5 tests
+test a_wrong_output_length_is_refused ... ok
+test a_failed_solve_leaves_the_output_unchanged_with_the_same_error ... ok
+test a_refused_capacity_fails_before_any_operator_application ... ok
+test allowed_growth_is_reported_once ... ok
+test results_and_counters_are_bitwise_those_of_the_existing_gmres ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/rnext03_gcrodr_trace_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/rnext03_gcrodr_trace_contracts-e709dc0f81a01335)
+
+running 2 tests
+test the_reset_factor_must_lie_in_the_open_unit_interval ... ok
+test tracing_without_reset_is_the_plain_solve ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/sp02_workspace_charge.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/sp02_workspace_charge-6031d94c4b155b6b)
+
+running 3 tests
+test least_squares_workspace_charge_contract ... ok
+test gmres_workspace_charge_contract ... FAILED
+test lgmres_into_workspace_charge_contract ... FAILED
+
+failures:
+
+---- gmres_workspace_charge_contract stdout ----
+
+thread 'gmres_workspace_charge_contract' (3240224) panicked at crates/rodas5p-krylov/tests/sp02_workspace_charge.rs:166:5:
+charged 20024 - released 14424 = 5600 > 640
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- lgmres_into_workspace_charge_contract stdout ----
+
+thread 'lgmres_into_workspace_charge_contract' (3240226) panicked at crates/rodas5p-krylov/tests/sp02_workspace_charge.rs:221:5:
+charged 20288 < released 4214311
+
+
+failures:
+    gmres_workspace_charge_contract
+    lgmres_into_workspace_charge_contract
+
+test result: FAILED. 1 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-krylov --test sp02_workspace_charge`
+     Running tests/spd04_ls_workspace.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/spd04_ls_workspace-4df6bd3e827e45c5)
+
+running 5 tests
+test gmres_into_with_the_workspace_matches_the_default ... ok
+test shape_errors_and_empty_systems_match ... ok
+test non_finite_input_fails_with_the_same_error ... ok
+test reuse_sequences_grow_only_above_the_previous_maximum ... ok
+test seeded_hessenberg_systems_match_bit_for_bit ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/spd05_lgmres_ls_once_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/spd05_lgmres_ls_once_contracts-fc6bbb0304789441)
+
+running 2 tests
+test failing_solves_roll_back_alike_and_leave_the_output ... ok
+test successful_solves_match_bit_for_bit ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/staged_solve_telemetry.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/staged_solve_telemetry-b4187afa38aa0398)
+
+running 7 tests
+test s1_nine_native_cases_match_anchor ... ok
+test s2_fallback_seam_overflow_fails_and_control_fails ... ok
+test s2_fallback_accepted_above_target_finite_and_homogeneous ... ok
+test s4_raised_target_converged_budget_exceeded ... ok
+test s5_failures ... ok
+test warmed_staged_solve_observed_allocates_zero ... ok
+test s3_guard_and_shadow_telemetry ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/tolerance_validation_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/tolerance_validation_contracts-356d31c6503bcabc)
+
+running 8 tests
+test gcrodr_rejects_a_rank_tolerance_outside_the_unit_interval ... ok
+test infinite_absolute_tolerance_does_not_certify_the_zero_vector ... ok
+test overflowing_residual_threshold_is_rejected ... ok
+test scalar_kernels_reject_non_finite_or_negative_tolerances_before_work ... ok
+test seeded_gmres_certifies_a_zero_rhs_block_with_true_residuals ... ok
+test seeded_gmres_degenerate_seed_reports_true_norms_under_a_loose_atol ... ok
+test seeded_gmres_rejects_a_preconditioner_that_annihilates_a_nonzero_rhs ... ok
+test zero_absolute_tolerance_with_finite_relative_tolerance_still_converges ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/weighted_residual_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/weighted_residual_contracts-55f3d11f40793300)
+
+running 4 tests
+test invalid_wrms_scales_fail_before_work_or_recycle_state_changes ... ok
+test reported_norm_is_raw_wrms_even_with_a_strongly_uneven_preconditioner ... ok
+test wrms_certification_prevents_large_components_from_hiding_small_component_residuals ... ok
+test none_scale_is_bit_identical_to_each_legacy_solver_entry_point ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/workspace_allocation_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/workspace_allocation_contracts-a575646d35db7e18)
+
+running 1 test
+test warmed_gmres_workspace_reduces_heap_allocations_without_changing_operator_work ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/workspace_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/workspace_contracts-ab39ed84293f9698)
+
+running 1 test
+test reusable_workspaces_preserve_all_three_solver_contracts ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/vigilode-c42c1f1a7f6df84a)
+
+running 37 tests
+test fd::tests::a_fatal_error_latches_and_short_circuits ... ok
+test fd::tests::dense_difference_is_accurate_to_the_increment ... ok
+test events::tests::missing_extension_is_an_explicit_failure_without_calling_event ... ok
+test events::tests::missing_interior_does_not_implicate_the_event_callback ... ok
+test fd::tests::dense_into_matches_returned_matrix_bits_and_counters ... ok
+test fd::tests::fd_workspace_preserves_original_dense_bits ... ok
+test fd::tests::concurrent_build_uses_isolated_scratch_without_waiting_on_callback ... ok
+test fd::tests::fatal_fd_error_enters_callback_once_then_short_circuits ... ok
+test fd::tests::finite_boundary_uses_a_signed_representable_increment ... ok
+test fd::tests::grouped_band_equals_the_band_of_the_dense_difference ... ok
+test fd::tests::nonfinite_difference_entries_fail_before_factorization ... ok
+test fd::tests::recoverable_band_failure_restores_group_shift_before_retry ... ok
+test fd::tests::recoverable_fd_failure_restores_shift_and_preserves_charges ... ok
+test fd::tests::vector_callback_detects_stale_output_on_reused_buffer ... ok
+test fd::tests::vector_callback_refuses_invalid_input_without_entering_user_code ... ok
+test solution::tests::at_is_none_beyond_the_last_output ... ok
+test solution::tests::truncate_after_edges ... ok
+test solution::tests::truncate_after_inside_a_step ... ok
+test solution::tests::truncate_after_on_a_step_boundary ... ok
+test solve::tests::failure_reason_follows_the_driver_stop_and_last_rejection ... ok
+test switching::adaptive_return_productive_contract::comparison_memory_renews_on_joint_drift_in_either_direction ... ok
+test switching::adaptive_return_productive_contract::entry_checkpoint_seed_uses_only_valid_start_proposal ... ok
+test switching::adaptive_return_productive_contract::entry_seed_never_reduces_the_requested_initial_proposal ... ok
+test solution::tests::truncate_after_on_both_extension_stores ... ok
+test switching::adaptive_return_productive_contract::implicit_tiny_representable_tail_uses_native_endpoint_clipping ... ok
+test switching::adaptive_return_productive_contract::observed_entry_step_accepts_only_finite_positive_accepted_prefixes ... ok
+test switching::adaptive_return_productive_contract::return_work_ceiling_saturates_for_overflowing_short_interval_rate ... ok
+test switching::adaptive_return_productive_contract::stale_old_rate_cannot_replace_a_cheaper_same_window_implicit_candidate ... ok
+test switching::adaptive_return_productive_contract::unresolved_retry_is_sticky_but_never_rearms_within_one_explicit_tenure ... ok
+test switching::comparator_dominance_arithmetic_contract::ceiling_uses_upper_candidate_cost_and_prefix_lower_bound ... ok
+test switching::comparator_dominance_arithmetic_contract::outward_cost_check_never_promotes_an_inexact_boundary ... ok
+test switching::comparator_dominance_arithmetic_contract::strict_entry_callback_ceiling_is_exact_and_never_truncates_large_costs ... ok
+test switching::comparator_dominance_arithmetic_contract::strict_entry_counts_all_existing_work_categories_with_checked_arithmetic ... ok
+test switching::comparator_dominance_arithmetic_contract::strict_entry_keeps_ties_and_resolves_one_unit_above_float_precision ... ok
+test switching::comparator_dominance_arithmetic_contract::strict_entry_requires_qualified_completion_of_the_same_accepted_prefix ... ok
+test switching::comparator_dominance_arithmetic_contract::strict_return_ceiling_is_candidate_cost_and_checked_overflow_refuses ... ok
+test switching::comparator_dominance_arithmetic_contract::strict_return_requires_same_window_and_resolves_exact_integer_boundary ... ok
+
+test result: ok. 37 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/adaptive_entry_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/adaptive_entry_contracts-ce799ad093569ca9)
+
+running 10 tests
+test adaptive_factory_and_frontdoor_preserve_derivative_permission ... ok
+test adaptive_probes_remain_inside_global_attempt_budget ... ok
+test invalid_adaptation_is_refused_before_callbacks ... ok
+test return_to_explicit_requires_same_checkpoint_comparison ... ok
+test fatal_return_comparator_does_not_publish_the_discarded_probe_state ... ok
+test exhausted_return_comparison_budget_keeps_previous_committed_state ... ok
+test completed_fast_transients_renew_uneconomical_startup_comparisons ... ok
+test adaptive_sentinel_never_exhausts_its_observation_right_in_stable_regime ... ok
+test stable_rotation_reuses_negative_evidence_without_regressing_native_backoff ... ok
+test shifted_smooth_stiffness_onsets_renew_old_negative_evidence ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/automatic_adapter_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/automatic_adapter_contracts-bbb767e3f06e0339)
+
+running 4 tests
+test authorized_trials_require_replay_safe_callback_contract ... ok
+test default_automatic_is_rhs_only_and_returns_actual_selection_history ... ok
+test unavailable_matrix_free_and_dense_routes_preserve_permissions ... ok
+test permitted_competition_keeps_total_attempt_budget ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/automatic_availability_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/automatic_availability_contracts-50ff7084e336779a)
+
+running 10 tests
+test eligible_challenger_still_requires_replay_contract_and_explicit_resource_permission ... ok
+test default_rhs_only_route_matches_one_native_observed_run_exactly ... ok
+test fallback_keeps_failed_partial_run_and_charges_the_attempt_budget ... ok
+test global_feature_requests_are_refused_before_any_callback ... ok
+test ineligible_challenger_does_not_hide_invalid_numerical_input ... ok
+test missing_optional_provider_runs_rhs_once_and_preserves_window_observations ... ok
+test missing_optional_time_derivative_does_not_force_replay_or_call_jacobian ... ok
+test missing_provider_does_not_hide_malformed_derivative_declarations ... ok
+test unsupported_optional_vector_atol_route_keeps_the_original_component_tolerances ... ok
+test unsupported_provider_declaration_is_not_silently_downgraded ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/capabilities_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/capabilities_contracts-a9b8e804e44aa6b0)
+
+running 1 test
+test query_matches_solve_for_all_384_well_formed_combinations_without_callbacks ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/causal_budget_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/causal_budget_contracts-97a0983cae5fb0d7)
+
+running 8 tests
+test adjoint_weighted_allowances_fit_original_budget ... ok
+test all_context_changes_invalidate_before_workspace_write ... ok
+test intermediate_homotopy_root_never_admits_as_original_target ... ok
+test noncontractive_chain_bound_is_finite_and_sharp ... ok
+test overflow_fails_closed_and_invalid_clock_is_refused ... ok
+test reconstruction_and_directed_boundary_are_counted ... ok
+test upper_diagonal_negative_and_nonfinite_entries_refused ... ok
+test zero_influence_and_tiny_allowances_remain_finite ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/cofactor_chart_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/cofactor_chart_contracts-b53f21e0a7a0b7c1)
+
+running 4 tests
+test carrier_has_zero_primitive_and_preserves_initial_value ... ok
+test invalid_carrier_and_reconstruction_are_refused ... ok
+test reduced_dopri_solves_the_published_stiff_case_without_derivatives ... ok
+test reconstructed_velocity_satisfies_the_original_nonlinear_equations ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/comparator_dominance_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/comparator_dominance_contracts-bbacf4f9083feda4)
+
+running 3 tests
+test an_observed_fatal_comparator_precedes_dominance_and_retains_checkpoint ... ok
+test implicit_first_sentinel_is_unchanged_by_ordinary_comparator_optimization ... ok
+test stopped_comparator_preserves_the_entire_accepted_trajectory_and_reduces_work ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/entry_checkpoint_seed_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/entry_checkpoint_seed_contracts-d35ac98b022e2fd9)
+
+running 5 tests
+test checkpoint_seed_is_an_independent_default_false_option ... ok
+test checkpoint_seed_does_not_authorize_a_derivative_callback ... ok
+test strict_entry_admits_only_a_completed_lower_integer_work_replay ... ok
+test each_entry_pilot_uses_its_own_start_checkpoint_and_same_replay_endpoint ... ok
+test original_accuracy_and_complete_charged_work_survive_new_seed ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/events_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/events_contracts-57901551f3c8de28)
+
+running 15 tests
+test events_without_dense_output_refused ... ok
+test events_found_on_a_large_step_are_roots_and_ordered ... ok
+test exponential_decay_half_life ... ok
+test even_crossings_in_a_half_interval_and_tangent_touches_are_missed ... ok
+test nonfinite_event_function_fails_typed ... ok
+test crossing_at_step_endpoint_reported_once ... ok
+test iteration_cap_falls_back_to_bisection ... ok
+test events_do_not_change_integration ... ok
+test terminal_event_charges_work_after_it ... ok
+test terminal_event_truncates ... ok
+test zero_at_t0_is_not_an_event ... ok
+test terminal_index_is_into_events_not_declaration ... ok
+test oscillator_crossings ... ok
+test nonfinite_event_keeps_an_earlier_driver_failure ... ok
+test terminal_event_wins_over_later_driver_failure ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/evidence_switch_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/evidence_switch_contracts-f8ad27d550f85642)
+
+running 7 tests
+test completed_window_carries_post_acceptance_proposal_not_terminal_snapshot ... ok
+test evidence_factory_never_grants_derivative_permission ... ok
+test one_attempt_completed_window_is_success_without_renewing_global_budget ... ok
+test implicit_advance_invalidates_saved_explicit_proposal ... ok
+test entry_pilots_are_separated_bounded_and_fully_charged ... ok
+test native_explicit_step_proposal_is_carried_only_from_committed_state ... ok
+test carry_removes_repeated_startup_work_without_relaxing_tolerance ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/execution_identity_drift.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/execution_identity_drift-bd85c104fd73943d)
+
+running 6 tests
+test consecutive_cost_drift_expires_only_future_choices ... ok
+test every_physical_epoch_invalidates_and_does_not_resurrect ... ok
+test in_envelope_call_resets_streak_and_nested_calls_do_not_contaminate ... ok
+test legacy_path_has_no_dispatch_clock_and_context_dispatch_runs_once ... ok
+test monitored_wrapper_emits_actual_cost_and_keeps_order ... ok
+test stale_pair_cannot_finish_calibration ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/execution_policy_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/execution_policy_contracts-44501397535bfe63)
+
+running 9 tests
+test exact_key_and_nesting_cannot_reuse_unsafe_evidence ... ok
+test expired_calibration_falls_back_and_requests_probe ... ok
+test invalid_or_wrong_output_clears_prior_evidence ... ok
+test actual_dispatch_preserves_order_and_no_implicit_replay ... ok
+test measured_gain_and_overhead_payback ... ok
+test single_item_calibration_never_replays_or_builds_pool ... ok
+test internal_nested_wrapper_is_forced_serial ... ok
+test slow_parallel_stays_serial ... ok
+test real_calibration_and_shape_validation ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/explicit_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/explicit_contracts-cd6f369ca54cdf1d)
+
+running 8 tests
+test explicit_budget_and_zero_span_have_unambiguous_status ... ok
+test explicit_fatal_rhs_stops_once_and_retains_accepted_state ... ok
+test explicit_features_are_refused_before_rhs ... ok
+test explicit_nonautonomous_solution_never_enters_derivative_providers ... ok
+test explicit_invalid_inputs_and_schedules_do_not_enter_rhs ... ok
+test explicit_partial_or_nonfinite_ok_callback_is_fatal ... ok
+test explicit_recoverable_trial_retries_and_counts_failed_user_work ... ok
+test explicit_uniform_vector_atol_reproduces_scalar_and_records_vector ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/explicit_ensemble_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/explicit_ensemble_contracts-cb0669cedc733e9a)
+
+running 4 tests
+test ensemble_requires_positive_workers_and_handles_empty_batches ... ok
+test ensemble_preserves_refusal_partial_failure_and_success_without_cancellation ... ok
+test ensemble_two_workers_really_overlap_rhs_calls ... ok
+test ensemble_order_counters_and_tolerances_match_independent_solves ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/explicit_hardening_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/explicit_hardening_contracts-01b8d2b2a79518ca)
+
+running 5 tests
+test dense_fatal_callback_keeps_only_accepted_outputs_and_partial_state ... ok
+test invalid_physical_dimension_and_schedule_enter_no_callbacks ... ok
+test removed_facade_poison_preserves_malformed_output_detection ... ok
+test physical_norm_is_the_executed_tolerance_and_keeps_reduced_outputs ... ok
+test dense_observations_preserve_trajectory_and_count_actual_work ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/facade_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/facade_contracts-4dd922cc60ae2d20)
+
+running 20 tests
+test an_exhausted_attempt_budget_is_a_typed_failure ... ok
+test a_recoverable_rhs_error_rejects_the_step_and_the_run_succeeds ... ok
+test a_failing_rhs_returns_the_partial_solution_and_a_typed_reason ... ok
+test dense_jacobian_with_declared_band_is_verified_and_routed_to_the_banded_driver ... ok
+test explicit_time_derivative_drives_a_nonautonomous_problem ... ok
+test malformed_input_is_refused_before_any_step ... ok
+test dense_route_records_jacobian_reuses_and_lu ... ok
+test banded_user_jacobian_is_bit_identical_to_the_direct_banded_driver ... ok
+test banded_routes_record_band_work ... ok
+test performance_tier_executes_the_protected_route_bit_for_bit ... ok
+test unsupported_requests_are_refused_not_substituted ... ok
+test robertson_dense_jacobian_is_bit_identical_to_the_direct_fast_driver ... ok
+test stats_serialize_every_option_and_counter ... ok
+test vector_atol_refused_on_mf_sequential_and_declared_band ... ok
+test zero_atol_with_an_identically_zero_component_succeeds_on_dense_and_jvp_routes ... ok
+test vector_atol_accepted_on_fast_routes ... ok
+test banded_finite_difference_uses_grouped_columns_and_the_banded_driver ... ok
+test stiff_example_jvp_is_bit_identical_to_the_direct_matrix_free_driver ... ok
+test finite_difference_robertson_is_within_twice_the_analytic_error ... ok
+test matrix_free_route_records_state_reuses_and_policy_ids ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/fd_allocation_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/fd_allocation_contracts-78b63ea43d6e8455)
+
+running 14 tests
+test fd::tests::a_fatal_error_latches_and_short_circuits ... ok
+test fd::tests::dense_difference_is_accurate_to_the_increment ... ok
+test fd::tests::dense_into_matches_returned_matrix_bits_and_counters ... ok
+test fd::tests::fatal_fd_error_enters_callback_once_then_short_circuits ... ok
+test fd::tests::fd_workspace_preserves_original_dense_bits ... ok
+test fd::tests::finite_boundary_uses_a_signed_representable_increment ... ok
+test fd::tests::grouped_band_equals_the_band_of_the_dense_difference ... ok
+test fd::tests::nonfinite_difference_entries_fail_before_factorization ... ok
+test fd::tests::concurrent_build_uses_isolated_scratch_without_waiting_on_callback ... ok
+test fd::tests::recoverable_band_failure_restores_group_shift_before_retry ... ok
+test fd::tests::recoverable_fd_failure_restores_shift_and_preserves_charges ... ok
+test fd::tests::vector_callback_detects_stale_output_on_reused_buffer ... ok
+test fd::tests::vector_callback_refuses_invalid_input_without_entering_user_code ... ok
+test repeated_fd_builds_reuse_scratch_after_warmup ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/frontier_affine_facade.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/frontier_affine_facade-f8debbbfd5702cc3)
+
+running 3 tests
+test bad_forcing_is_rejected_before_callback ... ok
+test affine_fatal_callback_preserves_initial_state ... ok
+test declared_affine_facade_uses_no_derivatives_and_reports_split ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/frontier_fatal_session_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/frontier_fatal_session_contracts-3ab3181badb9b688)
+
+running 3 tests
+test fatal_on_last_budget_attempt_overrides_budget_and_skips_events ... ok
+test fatal_interior_sink_rejects_candidate_and_keeps_initial_prefix ... ok
+test terminal_callbacks_stop_once_and_preserve_prefix_on_supported_routes ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/frontier_switch_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/frontier_switch_contracts-4659f93cf02f6b96)
+
+running 6 tests
+test derivative_forbidden_ignores_even_configured_implicit_pilots ... ok
+test screening_configuration_is_checked_before_callbacks ... ok
+test implicit_pilot_failure_is_fatal_and_counts_every_callback ... ok
+test pilot_shares_global_budget_and_no_partial_pilot_state_is_committed ... ok
+test rapid_rotation_rejects_uneconomical_jvp_entry_and_retains_accuracy ... ok
+test stiff_decay_pilot_must_finish_the_same_prefix_before_entry ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/geometry_mol_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/geometry_mol_contracts-2b1786b2370ff072)
+
+running 5 tests
+test g4_nonsymmetric_advection_is_refused_by_the_certificate ... ok
+test g5_mass_and_event_capabilities_come_from_the_registry ... ok
+test g3_sphere_area_weights_constants_harmonics_and_poles ... ok
+test g1_reused_gray_scott_laplacian_fourier_constant_and_certificate ... ok
+test g2_cartesian_3d_anisotropic_spatial_and_temporal_errors_are_separate ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+
+     Running tests/lawson_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/lawson_contracts-8e47d75a2d966636)
+
+running 6 tests
+test declared_linear_flow_removes_fast_scale_without_derivatives ... ok
+test fatal_and_malformed_residuals_preserve_partial_states_and_telemetry ... ok
+test facade_records_residual_work_and_method_identity ... ok
+test malformed_requests_are_refused_before_residual_evaluation ... ok
+test nonlinear_radial_residual_has_independent_exact_decay ... ok
+test residual_is_n_not_full_rhs_and_forcing_matches_analytic_solution ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/local_bottleneck_models.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/local_bottleneck_models-759dc9c198c6c741)
+
+running 9 tests
+test analytic_states_satisfy_the_semidiscrete_equations ... ok
+test conservative_semidiscretizations_telescope ... ok
+test false_switching_claims_are_negative_controls ... ok
+test hierarchy_streaming_is_skew_and_scattering_is_dissipative ... ok
+test invalid_or_overflowed_reference_is_unavailable ... ok
+test all_twenty_four_models_have_finite_rhs_and_directional_derivatives ... ok
+test negligible_evolution_certificate_is_scoped_in_time ... ok
+test nonautonomous_partial_time_derivative_matches_independent_difference ... ok
+test data_parallel_rows_preserve_bits_and_thread_pool_budget ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/oscillatory_chart_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/oscillatory_chart_contracts-9ac11df902afe5f4)
+
+running 10 tests
+test constant_frequency_and_small_beta_have_correct_phase_limit ... ok
+test forcing_negative_control_retains_fast_phase ... ok
+test involution_shares_coefficients_but_preserves_independent_amplitudes ... ok
+test malformed_and_nonfinite_inputs_are_rejected ... ok
+test nonlinear_equivariance_removes_carrier_from_residual ... ok
+test phase_does_not_lose_large_frequency_when_beta_dt_underflows ... ok
+test phase_handles_large_relative_growth_without_intermediate_exponential_overflow ... ok
+test physical_chart_roundtrip_preserves_arbitrary_initial_data ... ok
+test physical_error_transport_accounts_for_velocity_amplification ... ok
+test time_dependent_chart_chain_rule_matches_original_chirp ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p0_api_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/p0_api_contracts-ef4617e824708559)
+
+running 9 tests
+test band_declaration_on_jvp_problem ... ok
+test declared_band_on_dense_with_mass_or_dense_output ... ok
+test events_without_dense_output ... ok
+test display_text_is_the_former_message ... ok
+test jvp_with_mass_or_dense_output ... ok
+test vector_atol_on_matrix_free_route ... ok
+test vector_atol_on_sequential_route ... ok
+test vector_atol_with_declared_band_on_dense ... ok
+test stats_json_unchanged ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p0_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/p0_contracts-831ca8aadd451202)
+
+running 24 tests
+test a_fatal_rhs_on_the_banded_route_returns_the_last_accepted_state ... ok
+test a_fatal_rhs_on_the_dense_output_route_keeps_every_accepted_step ... ok
+test a_fatal_rhs_after_several_steps_returns_the_last_accepted_state ... ok
+test at_none_outside_span_and_after_failure ... ok
+test at_without_dense_output_returns_stored_samples_only ... ok
+test a_fatal_jvp_inside_gmres_returns_the_partial_solution ... ok
+test empty_span_dense_output ... ok
+test dense_output_routes_to_fast_dense ... ok
+test dense_output_bit_identical_to_direct_fast_dense ... ok
+test a_recoverable_midpoint_failure_rejects_on_every_facade_dense_route ... ok
+test finite_difference_band_on_the_dense_output_route_runs_and_agrees ... ok
+test enforcing_interior_error_survives_a_zero_error_scale_component ... ok
+test failure_reasons_name_the_drivers_failure_kind ... ok
+test banded_provider_on_the_dense_output_route_matches_the_dense_provider ... ok
+test interior_error_modes_route_with_the_named_control ... ok
+test enforce_and_mass_stay_sequential ... ok
+test mass_matrix_route_is_bit_identical_to_the_direct_dense_driver ... ok
+test mass_and_dense_output_refusals ... ok
+test prothero_robinson_interior_error_is_controlled_through_the_facade ... ok
+test options_without_interior_error_deserialize_to_the_default ... ok
+test uniform_vector_atol_equals_scalar_under_dense_output ... ok
+test mass_route_without_dense_output_is_the_same_run_without_segments ... ok
+test robertson_as_an_index1_dae_with_a_singular_mass_matrix ... ok
+test terminal_event_on_every_dense_store ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/production_rhs_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/production_rhs_contracts-bb441a49dbbb3f50)
+
+running 3 tests
+test incomplete_time_derivative_is_terminal ... ok
+test incomplete_rhs_stops_once_on_dense_and_finite_difference_routes ... ok
+test sparse_jacobian_writes_remain_supported ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/production_selection_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/production_selection_contracts-0dd970ee5bb21945)
+
+running 6 tests
+test default_is_rhs_only_even_with_provided_derivatives ... ok
+test matrix_free_is_an_explicit_permission_and_inherits_atol_refusal ... ok
+test resource_ceiling_includes_dense_callbacks_with_declared_band ... ok
+test failure_preserves_partial_state_and_typed_error ... ok
+test unsupported_requests_and_permissions_fail_without_callbacks ... ok
+test selected_implicit_method_matches_direct_method_and_fd_is_opt_in ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/production_session_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/production_session_contracts-305a0ca47b5e8b06)
+
+running 9 tests
+test a_global_attempt_budget_is_not_reset_by_each_advance ... ok
+test early_driver_return_preserves_the_last_unscheduled_accepted_checkpoint ... ok
+test fatal_callback_stops_once_and_the_session_cannot_retry_it ... ok
+test malformed_callback_output_is_fatal_even_after_an_accepted_checkpoint ... ok
+test pausing_between_trials_and_observations_preserves_the_one_shot_path ... ok
+test recoverable_failure_and_rejected_work_survive_a_pause ... ok
+test unsupported_requests_never_enter_the_driver_or_user_callbacks ... ok
+test zero_length_session_is_complete_without_callback_work ... ok
+test zero_quota_and_bad_targets_or_epochs_do_not_change_state_or_work ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/production_setup_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/production_setup_contracts-148e83c671eb4497)
+
+running 5 tests
+test invalid_provider_policy_is_refused_before_any_callback ... ok
+test complete_json_roundtrip_preserves_permissions_and_refuses_unknown_controls ... ok
+test fatal_rhs_preserves_accepted_prefix_and_all_entered_work ... ok
+test rhs_only_preserves_native_states_work_and_derivative_prohibition ... ok
+test supplied_jvp_profile_has_complete_cost_and_common_grid_accuracy ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/records_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/records_contracts-681daf53fc89a93b)
+
+running 3 tests
+test every_enum_variant_preserves_its_wire_representation ... ok
+test every_record_preserves_all_nonzero_fields_and_json_order ... ok
+test dense_event_stats_match_the_pre_mirror_snapshot ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/return_sentinel_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/return_sentinel_contracts-f95fb64c4bdfec4d)
+
+running 7 tests
+test sentinel_is_opt_in_and_off_in_every_factory ... ok
+test incomplete_implicit_comparator_above_explicit_work_does_not_retain_implicit ... ok
+test losing_sentinel_return_is_bounded_by_current_implicit_work ... ok
+test exhausted_budget_inside_the_sentinel_window_keeps_accepted_state ... ok
+test fatal_sentinel_explicit_trial_keeps_only_the_completed_implicit_window ... ok
+test stale_rate_screen_misses_the_current_explicit_win_that_the_sentinel_recovers ... ok
+test every_second_recheck_is_a_sentinel_and_the_count_restarts_each_tenure ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/selection_evidence_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/selection_evidence_contracts-7182966af43c1b37)
+
+running 5 tests
+test equality_at_rounded_boundary_is_conservative ... ok
+test overlapping_intervals_do_not_invent_a_gain ... ok
+test invalid_numbers_and_zero_horizon_refuse ... ok
+test strict_qualified_gap_and_future_transition ... ok
+test units_outputs_and_scope_are_independent_qualifications ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/strict_return_work_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/strict_return_work_contracts-be045aae4505a285)
+
+running 4 tests
+test exact_return_defaults_off_and_serializes_without_silent_unknown_keys ... ok
+test strict_flags_preserve_forbidden_derivative_policy ... ok
+test strict_sentinel_keeps_all_work_and_same_window_exact_wins ... ok
+test fatal_strict_sentinel_trial_keeps_productive_implicit_window_and_stops ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/switching_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/switching_contracts-d064ac359a7bae6f)
+
+running 14 tests
+test default_is_rhs_only_even_when_derivatives_are_declared ... ok
+test budget_failure_preserves_accepted_state_and_never_forges_success ... ok
+test fatal_callback_is_not_retried_with_another_method ... ok
+test all_attempts_and_discarded_probes_share_one_budget ... ok
+test bounded_probe_can_return_to_the_rhs_only_route ... ok
+test forbidden_persistent_failure_keeps_native_partial_state_and_counts ... ok
+test finite_difference_requires_its_separate_opt_in ... ok
+test forbidden_route_preserves_native_observed_session_bit_for_bit ... ok
+test malformed_output_stops_before_fallback ... ok
+test endpoint_accuracy_for_rotation_is_checked_separately_from_stiffness_routing ... ok
+test request_preflight_rejects_unsupported_and_resource_contracts_without_callbacks ... ok
+test serialization_preserves_route_and_original_driver_records ... ok
+test zero_span_and_representationally_tiny_windows_do_not_loop ... ok
+test stiff_work_pressure_enters_authorized_fallback_from_accepted_state ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/switching_economy_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/switching_economy_contracts-d06c6b65688c5490)
+
+running 9 tests
+test discarded_probes_back_off_and_are_work_bounded_on_a_persistently_stiff_problem ... ok
+test new_policy_controls_are_validated_before_callbacks ... ok
+test economical_pilot_is_never_stopped_by_the_ceiling ... ok
+test implicit_tenure_coalesces_windows_between_probes_and_seeds_its_step ... ok
+test bounded_pilot_on_a_declared_band_is_discarded_not_refused ... ok
+test return_to_explicit_still_happens_after_a_stiff_to_smooth_transition ... ok
+test discarded_pilot_work_is_bounded_by_the_entry_ceiling ... ok
+test explicit_batch_loop_allocation_is_bounded ... ok
+test discarded_pilots_back_off_geometrically_and_rearm_on_a_work_rate_jump ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/switching_integration_contracts.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/switching_integration_contracts-7e097fc9faed174c)
+
+running 6 tests
+test legacy_explicit_tiny_representable_span_uses_native_endpoint_clipping ... ok
+test adaptive_bounded_entry_preserves_fatal_derivative_failure ... ok
+test completed_winning_entry_pilot_can_seed_only_the_next_implicit_proposal ... ok
+test unresolved_entry_retry_is_once_bounded_and_preserves_accepted_explicit_states ... ok
+test adaptive_entry_does_not_stack_legacy_rate_rearm_or_backoff ... ok
+test rejected_entry_pilots_never_supply_a_seed ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/switching_persistent_explicit.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/switching_persistent_explicit-bc0de664716b11a5)
+
+running 6 tests
+test exact_final_time_budget_exhaustion_is_success ... ok
+test accepted_return_probe_at_global_budget_keeps_fully_accounted_checkpoint ... ok
+test zero_span_forbidden_retains_committed_zero_work_driver_record ... ok
+test pure_explicit_tenure_matches_uninterrupted_observed_run ... ok
+test discarded_implicit_pilot_keeps_native_explicit_session_and_charges_work ... ok
+test committed_implicit_route_reconstructs_explicit_fsal_state ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/unified_method_capabilities.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/unified_method_capabilities-5935450206d4fca1)
+
+running 6 tests
+test r2_request_construction_and_query_call_no_user_code ... ok
+test r3_policy_mapping_is_a_set_and_newton_methods_stay_refused ... ok
+test r5_routes_name_real_exports_and_ids_match_the_code ... ok
+test r6_peer_mass_and_events_are_refused_before_work ... ok
+test r4_serde_round_trip_and_unknown_or_missing_fields_are_refused ... ok
+test r1_exhaustive_permission_and_feature_combinations_match_the_spec_table ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/unified_method_sessions.rs (/mnt/extdrive/vigilode-loop-20261116/target/release/deps/unified_method_sessions-065927b900e7fcbf)
+
+running 6 tests
+test e2_refusals_happen_before_any_callback ... ok
+test e3_short_span_caps_the_starter_at_the_endpoint ... ok
+test e6_no_switching_and_no_default_routing_change ... ok
+test e4_fatal_callback_keeps_the_accepted_prefix_and_charged_work ... ok
+test e5_recoverable_callback_rejects_then_recovers ... ok
+test e1_end_to_end_dense_and_jvp_reach_the_endpoint_accurately ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+   Doc-tests rodas5p_core
+
+running 1 test
+test crates/rodas5p-core/src/taylor_phi_total.rs - taylor_phi_total (line 47) ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 18 tests
+test crates/rodas5p-core/src/leja_action.rs - leja_action::CertifiedLejaWorkspace (line 1770) - compile fail ... ok
+test crates/rodas5p-core/src/leja_setup_work.rs - leja_setup_work::LejaSetupReceiptV1 (line 108) - compile fail ... ok
+test crates/rodas5p-core/src/leja_action.rs - leja_action::AdmittedLejaFused (line 1622) - compile fail ... ok
+test crates/rodas5p-core/src/leja_action.rs - leja_action::CertifiedLejaReport (line 1556) - compile fail ... ok
+test crates/rodas5p-core/src/residual_gain.rs - residual_gain::FrozenMetric (line 131) - compile fail ... ok
+test crates/rodas5p-core/src/leja_action.rs - leja_action::CertifiedLejaReport (line 1564) - compile fail ... ok
+test crates/rodas5p-core/src/residual_gain.rs - residual_gain::VerifiedCorrection (line 363) - compile fail ... ok
+test crates/rodas5p-core/src/residual_gain.rs - residual_gain::ResidualGainWitness (line 615) - compile fail ... ok
+test crates/rodas5p-core/src/residual_gain.rs - residual_gain::LinearTargetId (line 208) - compile fail ... ok
+test crates/rodas5p-core/src/residual_gain.rs - residual_gain::VerifiedCorrection (line 359) - compile fail ... ok
+test crates/rodas5p-core/src/polynomial_router.rs - polynomial_router::GuardedPolynomialAction (line 150) - compile fail ... ok
+test crates/rodas5p-core/src/residual_gain.rs - residual_gain::ResidualGainWitness (line 611) - compile fail ... ok
+test crates/rodas5p-core/src/residual_gain.rs - residual_gain::LinearTargetId (line 204) - compile fail ... ok
+test crates/rodas5p-core/src/residual_gain.rs - residual_gain::FrozenMetric (line 127) - compile fail ... ok
+test crates/rodas5p-core/src/leja_action.rs - leja_action::CertifiedLejaCoeffCache::precompute_certified (line 1387) - compile fail ... ok
+test crates/rodas5p-core/src/taylor_phi_total.rs - taylor_phi_total::NormalizedFusedPhiWork (line 541) - compile fail ... ok
+test crates/rodas5p-core/src/taylor_phi_total.rs - taylor_phi_total (line 36) - compile fail ... ok
+test crates/rodas5p-core/src/taylor_phi_total.rs - taylor_phi_total::NormalizedFusedPhiWork (line 531) - compile fail ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.43s
+
+all doctests ran in 4.57s; merged doctests compilation took 4.14s
+   Doc-tests rodas5p_krylov
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests vigilode
+
+running 1 test
+test crates/vigilode/src/lib.rs - (line 7) ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test crates/vigilode/src/lib.rs - (line 144) - compile fail ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+all doctests ran in 6.92s; merged doctests compilation took 6.85s
+error: 1 target failed:
+    `-p rodas5p-krylov --test sp02_workspace_charge`
+exit=101

@@ -113,6 +113,10 @@ mod unified_gates;
 mod unified_screen;
 mod v38d_performance_tournament;
 
+// Loop L1 (2026-11-16) opt-in modules.
+pub mod mol;
+pub mod stage_clients;
+
 #[cfg(feature = "audit2-bateman-authority")]
 pub use audit2_bateman_real_client_research::{
     AUDIT2_BATEMAN_AUTHORITY_MANIFEST_SHA256, AUDIT2_BATEMAN_AUTHORITY_PROOF_SHA256,

@@ -1,0 +1,43 @@
+{
+  "schema": "vigilode.owner-decisions.v1",
+  "date_kst": "2026-11-16",
+  "source": "Owner answers to four multiple-choice questions asked in the planning session of 2026-11-16, followed by owner approval of the plan (research/production_loop_20261116/PLAN_KO.md). The selected option labels are quoted verbatim.",
+  "decisions": [
+    {
+      "id": "OD-L1-1",
+      "topic": "switcher-v2 lineage (93392249) integration",
+      "selected": "시험 병합 후 조건부 채택 (Recommended)",
+      "meaning": "Merge on a separate integration branch; adopt only if the 1.94.1 build, the full tests and bitwise identity of the protected RODAS5P paths pass; otherwise port additive modules only. Ledger rows backed by simulation scripts get superseding INVALID rows; existing rows are kept.",
+      "gate_effect": "Explicit conditional owner approval for the protected-blob changes that the merge brings (MUTATION_GATES immutable list), valid only if the stated conditions hold; the blob delta list is reported in the wave report."
+    },
+    {
+      "id": "OD-L1-2",
+      "topic": "PPSW1 (Peer-W) track",
+      "selected": "결정 실험 1회 후 판정 (Recommended)",
+      "meaning": "One pre-registered decision experiment (sigma_max=1.5 stability with the independent oracle, per-step cost at equal implementation maturity, large-n regime with reference to the REI 46k run); freeze as opt-in comparator if the criteria fail."
+    },
+    {
+      "id": "OD-L1-3",
+      "topic": "automatic routing and fallback (G3)",
+      "selected": "opt-in Auto만 (Recommended)",
+      "meaning": "Registry-based single entry point, explicit method choice, opt-in Auto policy and typed fallback with charged work and preserved prefix. Default routing and protected RODAS5P unchanged; promotion is a separate decision."
+    },
+    {
+      "id": "OD-L1-4",
+      "topic": "qualification standard",
+      "selected": "G0 유지 + 릴리스 게이트 신설 (Recommended)",
+      "meaning": "G0 stays unchanged. A separate release-readiness gate (R-gate) for the scoped package with protected RODAS5P as default is defined and judged per axis."
+    }
+  ],
+  "plan_approval": {
+    "approved": true,
+    "includes": "commit and standalone push of research branches of this loop after each wave"
+  },
+  "not_authorized": [
+    "merge to main",
+    "release or default promotion",
+    "change of G0, tolerances or protected RODAS5P controller constants",
+    "force push or history rewrite",
+    "change of the PPSW1 default sigma cap"
+  ]
+}

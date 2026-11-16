@@ -1,0 +1,59 @@
+{
+  "schema": "vigilode.release-gate-matrix.v1",
+  "date_kst": "2026-11-16",
+  "owner_decision": "OD-L1-4",
+  "relation_to_g0": "G0 (PRODUCTION_GATE_MATRIX.json) is unchanged and remains the research gate for a new fast lane. This matrix judges release readiness of the scoped package with protected RODAS5P as default. Neither gate implies the other.",
+  "verdict": "NOT_MET",
+  "verdict_basis": "Plan-stage audit of 2026-11-16; axes are judged with receipts in node V01_AUDIT_RGATE.",
+  "axes": [
+    {
+      "id": "R1_CORRECTNESS",
+      "criterion": "Order, stiff convergence and agreement with independent references for every exposed method on a stratified battery.",
+      "status": "NOT_EVALUATED",
+      "evidence": []
+    },
+    {
+      "id": "R2_ROBUSTNESS",
+      "criterion": "Typed failures, no silent fallback, session ownership, non-finite input and step-size underflow handling.",
+      "status": "NOT_EVALUATED",
+      "evidence": []
+    },
+    {
+      "id": "R3_API",
+      "criterion": "One documented entry point, consistent options and solution view, capability and refusal semantics, MSRV and feature policy.",
+      "status": "NOT_EVALUATED",
+      "evidence": []
+    },
+    {
+      "id": "R4_REPRODUCIBILITY",
+      "criterion": "Clean-checkout build on the pinned toolchain, locked dependencies, deterministic tests, CI evidence on the judged head, independent rerun.",
+      "status": "NOT_EVALUATED",
+      "evidence": []
+    },
+    {
+      "id": "R5_PERFORMANCE",
+      "criterion": "Matched-achieved-error work-precision against external solvers per regime; documented, not required to win.",
+      "status": "NOT_EVALUATED",
+      "evidence": []
+    },
+    {
+      "id": "R6_PACKAGING",
+      "criterion": "Workspace membership, separation of research code from the production crates, licences, crate metadata.",
+      "status": "NOT_EVALUATED",
+      "evidence": []
+    },
+    {
+      "id": "R7_EVIDENCE_GOVERNANCE",
+      "criterion": "Ledger continuity, no evaluation without executed solver output, pre-registration before runs.",
+      "status": "NOT_EVALUATED",
+      "evidence": []
+    },
+    {
+      "id": "R8_GEOMETRY_SCOPE",
+      "criterion": "2D, 3D and sphere operators with stated limits and executed convergence and conservation contracts.",
+      "status": "NOT_EVALUATED",
+      "evidence": []
+    }
+  ],
+  "promotion_rule": "Every axis needs an executed receipt on the judged head and an independent rerun. A release remains a separate owner decision."
+}

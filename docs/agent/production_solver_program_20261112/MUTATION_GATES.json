@@ -98,14 +98,16 @@
     "claim promotion without receipt"
   ],
   "current_authorization": {
-    "source": "user request 2026-11-15",
-    "scope": "research, coding, audit, plans and push to isolated research branch",
+    "source": "user request 2026-11-16 and owner decisions OWNER_DECISIONS_20261116.json",
+    "scope": "research, coding, audit, plans and push to isolated research branches of loop L1; trial merge of the switcher lineage on a separate branch with conditional adoption; opt-in Auto routing; release gate matrix beside the unchanged G0; one PPSW1 decision experiment",
     "decision": "Exact local allowlists are implementation contracts, not repeated owner-approval requests.",
     "excluded": [
       "merge main",
       "release/default promotion",
       "destructive history rewrite",
-      "changes to frozen G0 or reference thresholds"
+      "changes to frozen G0 or reference thresholds",
+      "change of protected RODAS5P sources outside a passed trial merge",
+      "change of the PPSW1 default sigma cap"
     ]
   },
   "policy_corrections_20261115": [
@@ -133,12 +135,39 @@
     "crates/vigilode/tests/unified_method_capabilities.rs",
     "crates/vigilode-coupled/tests/structure_certificate_transfer.rs",
     "crates/vigilode/tests/unified_method_sessions.rs",
-    "crates/vigilode/tests/geometry_mol_contracts.rs"
+    "crates/vigilode/tests/geometry_mol_contracts.rs",
+    "research/production_loop_20261116/**",
+    "research/LEDGER.jsonl",
+    "crates/rodas5p-integrators/src/lib.rs",
+    "crates/rodas5p-integrators/src/stage_clients/**",
+    "crates/rodas5p-integrators/src/mol/**",
+    "crates/rodas5p-integrators/tests/stage_clients_*.rs",
+    "crates/rodas5p-integrators/tests/mol_*.rs",
+    "crates/vigilode/src/selection/**",
+    "crates/vigilode/src/solve.rs",
+    "crates/vigilode/tests/default_path_golden.rs",
+    "crates/vigilode/tests/golden/default_path/**",
+    "crates/vigilode/tests/unified_frontend_contracts.rs",
+    "crates/rodas5p-krylov/src/shared_basis_v2.rs",
+    "crates/rodas5p-krylov/tests/shared_basis_v2_*.rs"
   ],
   "effective_policy_precedence": [
     "current user request",
     "active_allowlist and current_authorization",
     "effective gates",
     "historical policy_corrections as provenance only"
+  ],
+  "previous_authorizations": [
+    {
+      "source": "user request 2026-11-15",
+      "scope": "research, coding, audit, plans and push to isolated research branch",
+      "decision": "Exact local allowlists are implementation contracts, not repeated owner-approval requests.",
+      "excluded": [
+        "merge main",
+        "release/default promotion",
+        "destructive history rewrite",
+        "changes to frozen G0 or reference thresholds"
+      ]
+    }
   ]
 }
