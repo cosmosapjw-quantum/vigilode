@@ -228,5 +228,102 @@
     "any further run added after the declared runs, labelled exploratory in the log name and in RESULTS.json"
   ],
   "regression_not_a_measurement": "The V06 client must keep its behaviour bit for bit. Besides the V06 test targets, cells of V06 (adr2d and grayscott2d, arms B0, B and C of V06) are re-run with the V17 build through the V06 measurement target and their counters and state hashes are compared with the V06 logs in shared_krylov/logs. These are V06 cells, not V17 measurements.",
-  "amendments": []
+  "families_final": {
+    "set_by": "amendment A1, committed before any run at a declared size",
+    "requirements_check": "Four families, n >= 1000. V06 cells: bruss1d n = 1024, grayscott2d n = 2048, adr2d n = 1024 (run), robertson_rd1d n = 1026 (declared, not run), bruss1d_stiff n = 1024 (exploratory). New families here: fhn3d, cusp1d, burgers2d. Reused family at a new size: bruss1d (700 cells; V06 used 512). Sizes 2000, 1200, 1568, 1400 differ from every V06 size. 3D: fhn3d. Strongly stiff: cusp1d.",
+    "common": {
+      "atol_over_rtol": 1.0,
+      "autonomous": true,
+      "jacobian": "JVP only (analytic), no matrix; the analytic Jacobian diagonal is supplied only for the exploratory Jacobi run"
+    },
+    "list": [
+      {
+        "id": "fhn3d",
+        "new": true,
+        "description": "3D FitzHugh-Nagumo system with a heterogeneous drive on the unit cube, zero-flux boundaries: u_t = Du lap(u) + u - u^3/3 - v + I(x,y,z), v_t = Dv lap(v) + 0.08 (u + 0.7 - 0.8 v), I = 0.5 + 0.4 cos(pi x) cos(2 pi y) cos(pi z); m^3 cell-centred finite volumes, 7-point Laplacian (a neighbour outside the cube is the cell itself)",
+        "m": 10,
+        "n": 2000,
+        "Du": 0.1,
+        "Dv": 0.02,
+        "layout": "u block then v block, index i + m (j + m k), cell centre ((i + 0.5)/m, (j + 0.5)/m, (k + 0.5)/m)",
+        "initial_state": "u = -1.2 + 0.6 cos(pi x) cos(pi y), v = -0.6 + 0.3 cos(pi z)",
+        "t_span": [
+          0.0,
+          40.0
+        ],
+        "a_priori_stiffness_note": "12 Du m^2 = 120, kinetic rates of order 1 (oscillation of period about 36); with h between 0.2 and 1 the shift number h gamma rho(J) is about 5 to 25. The drive keeps the oscillation spatially structured; the solution never reaches an equilibrium."
+      },
+      {
+        "id": "cusp1d",
+        "new": true,
+        "strongly_stiff": true,
+        "description": "CUSP after Hairer and Wanner (Solving ODEs II, section IV.10) with N cells on a periodic ring: y_i' = -(1/eps)(y_i^3 + a_i y_i + b_i) + Dc (y_{i-1} - 2 y_i + y_{i+1}); a_i' = b_i + 0.07 v_i + Dc (a_{i-1} - 2 a_i + a_{i+1}); b_i' = (1 - a_i^2) b_i - a_i - 0.4 y_i + 0.035 v_i + Dc (b_{i-1} - 2 b_i + b_{i+1}); v_i = u_i/(u_i + 0.1), u_i = (y_i - 0.7)(y_i - 1.3)",
+        "N": 400,
+        "n": 1200,
+        "eps": 0.0001,
+        "Dc": "N^2 / 144 = 1111.1...",
+        "layout": "interleaved (y_i, a_i, b_i), i = 1..N stored at 3 (i - 1)",
+        "initial_state": "y_i = 0, a_i = -2 cos(2 pi i / N), b_i = 2 sin(2 pi i / N)",
+        "t_span": [
+          0.0,
+          0.7
+        ],
+        "a_priori_stiffness_note": "kinetic rates (3 y^2 + a)/eps up to about 1.4e5, diffusion 4 Dc = 4444, slow dynamics of order 1: stiffness ratio about 1e5. With h between 1e-4 and 1e-2 the shift number is about 3 to 300; unpreconditioned GMRES(40) with 200 vectors is expected to need several restart passes or to be limited by its budget. The span reaches into the phase in which cells jump between the sheets of the cusp surface (it starts near t = 0.65 on the reduced instances)."
+      },
+      {
+        "id": "burgers2d",
+        "new": true,
+        "description": "2D viscous Burgers system on the periodic unit square: u_t = -(u u_x + v u_y) + nu lap(u), v_t = -(u v_x + v v_y) + nu lap(v); second-order central differences for the first derivatives, 5-point Laplacian; nonnormal, state-dependent Jacobian",
+        "m": 28,
+        "n": 1568,
+        "nu": 0.05,
+        "u_mean": 4.0,
+        "layout": "u block then v block, index i + m j, cell centre ((i + 0.5)/m, (j + 0.5)/m)",
+        "initial_state": "u = sin(2 pi x) cos(2 pi y) + 4.0, v = -cos(2 pi x) sin(2 pi y) + 0.25 sin(2 pi (x + y))",
+        "t_span": [
+          0.0,
+          0.5
+        ],
+        "a_priori_stiffness_note": "8 nu m^2 = 313.6, advection by the mean flow |u| m about 112 to 140 (imaginary part); with h between 0.005 and 0.04 the shift number is about 0.3 to 3. The mean flow carries the pattern across the box twice within the span."
+      },
+      {
+        "id": "bruss1d",
+        "new": false,
+        "description": "1D Brusselator, method of lines, as V06 (generator bruss1d of tests/stage_clients_krylov_problems.rs): u_t = 1 + u^2 v - 4 u + alpha u_xx, v_t = 3 u - u^2 v + alpha v_xx, Dirichlet u = 1, v = 3. V06 used 512 cells (n = 1024).",
+        "cells": 700,
+        "n": 1400,
+        "alpha": 0.02,
+        "length": 8.0,
+        "layout": "interleaved (u_i, v_i), x_i = (i + 1) dx, dx = length / (cells + 1)",
+        "initial_state": "u = 1 + sin(2 pi x), v = 3",
+        "t_span": [
+          0.0,
+          10.0
+        ],
+        "a_priori_stiffness_note": "alpha/dx^2 = 153.6, spectral radius about 620; with h about 0.1 the shift number is about 13 (V06 at 512 cells: about 7)"
+      }
+    ],
+    "development_instances": "fhn3d m <= 6, cusp1d N <= 100, burgers2d m <= 12, bruss1d <= 96 cells (ids dev_* and size_* of tests/stage_clients_krylov_v17_problems.rs). Client development, contract tests, the allocation test and the sizing runs use only these."
+  },
+  "amendments": [
+    {
+      "id": "A1",
+      "date": "2026-11-17 (KST)",
+      "status": "committed before any run at a declared size; no declared cell had been executed and no comparison of arms on a declared cell existed",
+      "what": "The family list and the time spans are replaced by 'families_final'. The original 'families' block is kept unchanged above for the record. ac3d is replaced by fhn3d (3D, new); grayscott2d (grid 40) is replaced by bruss1d with 700 cells (V06 family at a new size); the span of cusp1d is [0, 0.7] instead of [0, 0.1]; burgers2d starts with a mean flow of 4.0 in u instead of 0.5. The time_span_rule of the original block (scaling by powers of two towards a wall window) is withdrawn.",
+      "why": [
+        "ac3d: on the reduced instance (m = 8) the solution reaches the uniform equilibrium u = 1 before t = 0.7 (minimum and maximum of the state at t = 1 both equal 1.0; minimum 0.950 at t = 0.7), with 4 to 26 attempts of arm A at rtol 1e-5 for end times between 0.05 and 0.7. An achieved error at an equilibrium is damped to round-off whatever the tolerance and cannot be matched across tolerances.",
+        "grayscott2d: with the crate's start state the bump dies (on grid 16 the largest v is 0.033 at t = 10, 0.0072 at t = 20 and 1.5e-4 at t = 50) and arm A takes 9 to 13 attempts at rtol 1e-5 for end times 10 to 50: again an end state at the trivial equilibrium and so few attempts that one attempt more is 8 to 11 percent, which would decide the frozen attempts bounds (1.05, 1.10) by granularity.",
+        "cusp1d: on [0, 0.1] the solution only relaxes onto the cusp surface (47 attempts at N = 100, rtol 1e-5). The jumps that make CUSP a stiff test start near t = 0.65 (attempts at N = 100 for end times 0.6, 0.7, 0.8, 0.9, 1.1: 56, 158, 215, 273, 429). [0, 0.7] includes the start of that phase at a cost the timing protocol can carry.",
+        "burgers2d: with a mean flow of 0.5 arm A takes 7, 12 and 27 attempts (rtol 1e-3, 1e-5, 1e-7) on the reduced instance: too few for the attempts bounds. A mean flow of 4.0 (same equations, same grid, same viscosity) gives 12, 27 and 66.",
+        "The withdrawn span rule could only scale a span by the predicted wall and would have kept or lengthened spans that end in an equilibrium."
+      ],
+      "rule_used": "A family is admissible if on its reduced instance (a) the state at t1 is not an equilibrium (the solution is still changing), (b) arm A takes at least 12 attempts at the loosest tolerance, and (c) the wall of arm A predicted for the declared size (reduced wall times n_declared / n_reduced) at rtol 1e-5 is at most about 20 seconds. Only arm A was run for this choice; no arm was compared with another.",
+      "evidence": {
+        "retained_and_new_families": "logs/sizing/*.log (arm A, reduced instances size_fhn3d, size_cusp1d, size_cusp1d_50, size_burgers2d, size_bruss1d at rtol 1e-3, 1e-5, 1e-7 with the final spans)",
+        "dropped_families": "development observations from console output, not kept as logs; reproducible at commit be682cd8 with V17_MODE=RUN V17_ARM=A V17_FAMILY=size_ac3d or size_grayscott2d and V17_T1 (end time) of the measurement target as rebuilt at commit after be682cd8 that adds V17_T1; the quoted numbers are not results of this node",
+        "other_development_runs": "the contract tests ran all four arms on the dev_* instances (n <= 250); one console check compared the counters of the arms on dev_cusp1d (n = 96) to debug a test. None of this is at a declared size."
+      }
+    }
+  ]
 }

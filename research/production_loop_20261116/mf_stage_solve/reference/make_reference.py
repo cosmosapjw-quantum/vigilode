@@ -11,9 +11,9 @@ and integrated to its final time with scipy:
 The stated uncertainty of the reference is the larger of the two largest
 componentwise differences |ref_i - other_i| / (1 + |ref_i|). Nothing here
 reads a Rust result. The time span of a family is read from PREDECLARED.json
-("t_span" when an amendment fixed it, else "t_span_provisional").
+("families_final", amendment A1).
 
-usage: python3 -I make_reference.py --family ac3d --out reference/ac3d.json
+usage: python3 -I make_reference.py --family fhn3d --out reference/fhn3d.json
 """
 import argparse
 import json
@@ -30,40 +30,53 @@ from scipy.sparse import lil_matrix
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
-def ac3d(m):
-    n = m ** 3
-    diff, lam = 0.1, 10.0
-    cd = diff * m * m
+def fhn3d(m):
+    cells = m ** 3
+    n = 2 * cells
+    du, dv = 0.1, 0.02
+    scale = float(m * m)
     centres = (np.arange(m) + 0.5) / m
     zz, yy, xx = np.meshgrid(centres, centres, centres, indexing="ij")  # [k, j, i]
-    y0 = (0.4 * np.cos(2.0 * np.pi * xx) * np.cos(np.pi * yy)
-          + 0.3 * np.cos(3.0 * np.pi * xx) * np.cos(np.pi * zz) + 0.05).ravel()
+    drive = 0.5 + 0.4 * np.cos(np.pi * xx) * np.cos(2.0 * np.pi * yy) * np.cos(np.pi * zz)
+    u0 = -1.2 + 0.6 * np.cos(np.pi * xx) * np.cos(np.pi * yy)
+    v0 = -0.6 + 0.3 * np.cos(np.pi * zz)
+    y0 = np.concatenate((u0.ravel(), v0.ravel()))
 
-    def rhs(_t, y):
-        u = y.reshape(m, m, m)
-        p = np.pad(u, 1, mode="edge")
+    def laplace(w):
+        p = np.pad(w, 1, mode="edge")
         neighbours = (p[1:-1, 1:-1, :-2] + p[1:-1, 1:-1, 2:] + p[1:-1, :-2, 1:-1]
                       + p[1:-1, 2:, 1:-1] + p[:-2, 1:-1, 1:-1] + p[2:, 1:-1, 1:-1])
-        return (cd * (neighbours - 6.0 * u) + lam * (u - u ** 3)).ravel()
+        return scale * (neighbours - 6.0 * w)
+
+    def rhs(_t, y):
+        u = y[:cells].reshape(m, m, m)
+        v = y[cells:].reshape(m, m, m)
+        out_u = du * laplace(u) + u - u ** 3 / 3.0 - v + drive
+        out_v = dv * laplace(v) + 0.08 * (u + 0.7 - 0.8 * v)
+        return np.concatenate((out_u.ravel(), out_v.ravel()))
 
     pattern = lil_matrix((n, n))
     for k in range(m):
         for j in range(m):
             for i in range(m):
                 c = i + m * (j + m * k)
-                pattern[c, c] = 1
+                around = [c]
                 if i > 0:
-                    pattern[c, c - 1] = 1
+                    around.append(c - 1)
                 if i + 1 < m:
-                    pattern[c, c + 1] = 1
+                    around.append(c + 1)
                 if j > 0:
-                    pattern[c, c - m] = 1
+                    around.append(c - m)
                 if j + 1 < m:
-                    pattern[c, c + m] = 1
+                    around.append(c + m)
                 if k > 0:
-                    pattern[c, c - m * m] = 1
+                    around.append(c - m * m)
                 if k + 1 < m:
-                    pattern[c, c + m * m] = 1
+                    around.append(c + m * m)
+                for block in (0, cells):
+                    for q in around:
+                        pattern[block + c, block + q] = 1
+                    pattern[block + c, (cells - block) + c] = 1
     return rhs, y0, pattern
 
 
@@ -101,15 +114,14 @@ def cusp1d(cells):
     return rhs, y0, pattern
 
 
-def burgers2d(m):
+def burgers2d(m, nu=0.05, u_mean=4.0):
     cells = m * m
     n = 2 * cells
-    nu = 0.05
     half_inv_dx = 0.5 * m
     diffusion = nu * m * m
     centres = (np.arange(m) + 0.5) / m
     yy, xx = np.meshgrid(centres, centres, indexing="ij")  # [j, i]
-    u0 = np.sin(2.0 * np.pi * xx) * np.cos(2.0 * np.pi * yy) + 0.5
+    u0 = np.sin(2.0 * np.pi * xx) * np.cos(2.0 * np.pi * yy) + u_mean
     v0 = -np.cos(2.0 * np.pi * xx) * np.sin(2.0 * np.pi * yy) + 0.25 * np.sin(2.0 * np.pi * (xx + yy))
     y0 = np.concatenate((u0.ravel(), v0.ravel()))
 
@@ -142,39 +154,6 @@ def burgers2d(m):
     return rhs, y0, pattern
 
 
-def grayscott2d(grid):
-    cells = grid * grid
-    n = 2 * cells
-    inv_dx2 = float(grid * grid)
-    centres = (np.arange(grid) + 0.5) / grid
-    xx, yy = np.meshgrid(centres, centres)  # [j, i]
-    bump = 0.25 * np.exp(-100.0 * ((xx - 0.5) ** 2 + (yy - 0.5) ** 2))
-    y0 = np.concatenate(((1.0 - bump).ravel(), bump.ravel()))
-
-    def laplace(w):
-        return (np.roll(w, 1, 0) + np.roll(w, -1, 0) + np.roll(w, 1, 1) + np.roll(w, -1, 1) - 4.0 * w) * inv_dx2
-
-    def rhs(_t, y):
-        u = y[:cells].reshape(grid, grid)
-        v = y[cells:].reshape(grid, grid)
-        uv2 = u * v * v
-        du = 2.0e-3 * laplace(u) - uv2 + 0.04 * (1.0 - u)
-        dv = 1.0e-3 * laplace(v) + uv2 - (0.04 + 0.06) * v
-        return np.concatenate((du.ravel(), dv.ravel()))
-
-    pattern = lil_matrix((n, n))
-    for j in range(grid):
-        for i in range(grid):
-            k = i + grid * j
-            around = [k, (i - 1) % grid + grid * j, (i + 1) % grid + grid * j,
-                      i + grid * ((j - 1) % grid), i + grid * ((j + 1) % grid)]
-            for block in (0, cells):
-                for q in around:
-                    pattern[block + k, block + q] = 1
-                pattern[block + k, (cells - block) + k] = 1
-    return rhs, y0, pattern
-
-
 def bruss1d(cells, length):
     n = 2 * cells
     dx = length / (cells + 1)
@@ -203,17 +182,17 @@ def bruss1d(cells, length):
 
 
 BUILDERS = {
-    "ac3d": lambda: ac3d(12),
+    "fhn3d": lambda: fhn3d(10),
     "cusp1d": lambda: cusp1d(400),
     "burgers2d": lambda: burgers2d(28),
-    "grayscott2d": lambda: grayscott2d(40),
+    "bruss1d": lambda: bruss1d(700, 8.0),
     # exploratory, not a declared family
     "bruss1d_stiff600": lambda: bruss1d(600, 1.0),
     # reduced instances used only to test this script against the Rust code
-    "dev_ac3d": lambda: ac3d(5),
+    "dev_fhn3d": lambda: fhn3d(5),
     "dev_cusp1d": lambda: cusp1d(32),
     "dev_burgers2d": lambda: burgers2d(8),
-    "dev_grayscott2d": lambda: grayscott2d(8),
+    "dev_bruss1d": lambda: bruss1d(48, 8.0),
 }
 EXPLORATORY_SPANS = {"bruss1d_stiff600": [0.0, 10.0]}
 
@@ -224,11 +203,9 @@ def declared_span(family):
         return EXPLORATORY_SPANS[base], "exploratory cell"
     with open(os.path.join(HERE, "..", "PREDECLARED.json"), encoding="utf-8") as handle:
         declared = json.load(handle)
-    for entry in declared["families"]["list"]:
+    for entry in declared["families_final"]["list"]:
         if entry["id"] == base:
-            if "t_span" in entry:
-                return entry["t_span"], "PREDECLARED.json t_span"
-            return entry["t_span_provisional"], "PREDECLARED.json t_span_provisional"
+            return entry["t_span"], "PREDECLARED.json families_final (amendment A1)"
     raise SystemExit(f"family {family} is not in PREDECLARED.json")
 
 

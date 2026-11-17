@@ -6,7 +6,7 @@
 //! builds the results from these lines.
 //!
 //! ```text
-//! V17_MODE=RUN V17_FAMILY=ac3d V17_RTOL=1e-5 V17_ARM=B V17_AUDIT=1 \
+//! V17_MODE=RUN V17_FAMILY=fhn3d V17_RTOL=1e-5 V17_ARM=B V17_AUDIT=1 \
 //!   <test binary> --ignored --nocapture --exact v17_run
 //! ```
 //!
@@ -28,7 +28,7 @@
 //! * `RHS0`: prints the start state and `f(t0, y0)` as hex (`V17_RHS0_JSON`).
 //!
 //! `V17_FAMILY` is an id of `problems::declared`; `V17_LABEL` is copied into
-//! every record.
+//! every record. `V17_T1` replaces the end time (development sizing only).
 
 #[path = "stage_clients_krylov_v17_problems.rs"]
 mod problems;
@@ -348,7 +348,13 @@ fn v17_run() {
         return;
     };
     let family_id = variable("V17_FAMILY").expect("V17_FAMILY");
-    let family = declared(&family_id).expect("family");
+    let mut family = declared(&family_id).expect("family");
+    // Development sizing only: another end time. Every record carries its
+    // span, and the parser refuses a declared run whose span is not the
+    // declared one.
+    if let Some(t1) = number::<f64>("V17_T1") {
+        family.span.1 = t1;
+    }
     match mode.as_str() {
         "SETUP" => {
             let mut record = header("SETUP", &family_id, &family);

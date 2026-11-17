@@ -141,7 +141,7 @@ fn v17_clients_allocate_nothing_per_accepted_step() {
     ];
     let mut report = Vec::new();
     let mut policy_bound_solves = 0;
-    for id in ["dev_ac3d", "dev_burgers2d", "dev_grayscott2d"] {
+    for id in ["dev_fhn3d", "dev_burgers2d", "dev_bruss1d"] {
         let family = declared(id).unwrap();
         for (name, options) in &configurations {
             // Warm the coefficient cache and any lazy statics.

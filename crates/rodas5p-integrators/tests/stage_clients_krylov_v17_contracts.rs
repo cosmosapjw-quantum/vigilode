@@ -197,7 +197,7 @@ fn the_routed_configuration_has_the_constants_of_arm_b() {
     assert_eq!(linear.maxiter.max(linear.restart), gmres.max_arnoldi);
     assert!(gmres.in_cycle_exit && !gmres.recompute_final);
     // Arm B and its audit are built with this rule and these options.
-    let family = declared("dev_ac3d").unwrap();
+    let family = declared("dev_fhn3d").unwrap();
     let client = KrylovStageClient::per_stage(
         family.problem.dimension,
         rule,
@@ -591,7 +591,7 @@ fn the_audit_of_arm_c_tests_against_the_threshold_of_arm_c() {
 
 #[test]
 fn the_protected_check_detects_a_mismatched_stage_system() {
-    let family = declared("dev_ac3d").unwrap();
+    let family = declared("dev_fhn3d").unwrap();
     let linear = RoutingOptions::default().matrix_free;
     let config = adaptive(&family, 1.0e-4);
     let output = OutputSchedule::new(vec![family.span.0, family.span.1]).unwrap();

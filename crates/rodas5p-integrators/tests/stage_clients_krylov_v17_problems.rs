@@ -57,20 +57,32 @@ fn jvp_only(
     )
 }
 
-/// 3D Allen-Cahn equation `u_t = D lap(u) + lam (u - u^3)` on the unit cube
-/// with zero-flux boundaries: `m^3` cell-centred finite volumes, 7-point
-/// Laplacian (a neighbour outside the cube is the cell itself), `D = 0.1`,
-/// `lam = 10`, index `i + m (j + m k)`, start
-/// `0.4 cos(2 pi x) cos(pi y) + 0.3 cos(3 pi x) cos(pi z) + 0.05`.
-pub fn ac3d(m: usize) -> CoreResult<Family> {
+/// 3D FitzHugh-Nagumo system with a heterogeneous drive on the unit cube,
+/// zero-flux boundaries:
+///
+/// ```text
+/// u_t = Du lap(u) + u - u^3/3 - v + I(x, y, z)
+/// v_t = Dv lap(v) + 0.08 (u + 0.7 - 0.8 v)
+/// I   = 0.5 + 0.4 cos(pi x) cos(2 pi y) cos(pi z)
+/// ```
+///
+/// `Du = 0.1`, `Dv = 0.02`; `m^3` cell-centred finite volumes with the
+/// 7-point Laplacian (a neighbour outside the cube is the cell itself),
+/// `u` block then `v` block, index `i + m (j + m k)`; start
+/// `u = -1.2 + 0.6 cos(pi x) cos(pi y)`, `v = -0.6 + 0.3 cos(pi z)`. The
+/// drive keeps the oscillation spatially structured.
+pub fn fhn3d(m: usize) -> CoreResult<Family> {
     if m < 2 {
-        return Err(CoreError::InvalidInput("invalid Allen-Cahn grid".into()));
+        return Err(CoreError::InvalidInput(
+            "invalid FitzHugh-Nagumo grid".into(),
+        ));
     }
-    const D: f64 = 0.1;
-    const LAM: f64 = 10.0;
-    let n = m * m * m;
-    let cd = D * (m * m) as f64;
-    // `cd (sum of the neighbours - 6 w)` with mirrored ghost cells.
+    const DU: f64 = 0.1;
+    const DV: f64 = 0.02;
+    let cells = m * m * m;
+    let n = 2 * cells;
+    let scale = (m * m) as f64;
+    // `sum of the neighbours - 6 w` with mirrored ghost cells, times 1/dx^2.
     let laplace = move |w: &[f64], i: usize, j: usize, k: usize| {
         let c = i + m * (j + m * k);
         let centre = w[c];
@@ -80,33 +92,59 @@ pub fn ac3d(m: usize) -> CoreResult<Family> {
         let yp = if j + 1 < m { w[c + m] } else { centre };
         let zm = if k > 0 { w[c - m * m] } else { centre };
         let zp = if k + 1 < m { w[c + m * m] } else { centre };
-        cd * (xm + xp + ym + yp + zm + zp - 6.0 * centre)
+        scale * (xm + xp + ym + yp + zm + zp - 6.0 * centre)
     };
+    let dx = 1.0 / m as f64;
+    let mut drive = vec![0.0; cells];
+    let mut y0 = vec![0.0; n];
+    for k in 0..m {
+        for j in 0..m {
+            for i in 0..m {
+                let (x, y, z) = (
+                    (i as f64 + 0.5) * dx,
+                    (j as f64 + 0.5) * dx,
+                    (k as f64 + 0.5) * dx,
+                );
+                let c = i + m * (j + m * k);
+                drive[c] = 0.5 + 0.4 * (PI * x).cos() * (2.0 * PI * y).cos() * (PI * z).cos();
+                y0[c] = -1.2 + 0.6 * (PI * x).cos() * (PI * y).cos();
+                y0[cells + c] = -0.6 + 0.3 * (PI * z).cos();
+            }
+        }
+    }
     let rhs = move |_t: f64, y: &[f64], out: &mut [f64]| {
+        let (u, v) = y.split_at(cells);
+        let (out_u, out_v) = out.split_at_mut(cells);
         for k in 0..m {
             for j in 0..m {
                 for i in 0..m {
                     let c = i + m * (j + m * k);
-                    let u = y[c];
-                    out[c] = laplace(y, i, j, k) + LAM * (u - u * u * u);
+                    let (uc, vc) = (u[c], v[c]);
+                    out_u[c] = DU * laplace(u, i, j, k) + uc - uc * uc * uc / 3.0 - vc + drive[c];
+                    out_v[c] = DV * laplace(v, i, j, k) + 0.08 * (uc + 0.7 - 0.8 * vc);
                 }
             }
         }
         Ok(())
     };
     let jvp = move |_t: f64, y: &[f64], d: &[f64], out: &mut [f64]| {
+        let u = &y[..cells];
+        let (du, dv) = d.split_at(cells);
+        let (out_u, out_v) = out.split_at_mut(cells);
         for k in 0..m {
             for j in 0..m {
                 for i in 0..m {
                     let c = i + m * (j + m * k);
-                    let u = y[c];
-                    out[c] = laplace(d, i, j, k) + LAM * (1.0 - 3.0 * u * u) * d[c];
+                    out_u[c] = DU * laplace(du, i, j, k) + (1.0 - u[c] * u[c]) * du[c] - dv[c];
+                    out_v[c] = DV * laplace(dv, i, j, k) + 0.08 * (du[c] - 0.8 * dv[c]);
                 }
             }
         }
         Ok(())
     };
     let diagonal: JacobianDiagonalFn = Arc::new(move |_t: f64, y: &[f64], out: &mut [f64]| {
+        let u = &y[..cells];
+        let (out_u, out_v) = out.split_at_mut(cells);
         for k in 0..m {
             for j in 0..m {
                 for i in 0..m {
@@ -119,34 +157,18 @@ pub fn ac3d(m: usize) -> CoreResult<Family> {
                             + u8::from(k > 0)
                             + u8::from(k + 1 < m),
                     );
-                    let u = y[c];
-                    out[c] = -cd * neighbours + LAM * (1.0 - 3.0 * u * u);
+                    out_u[c] = -DU * scale * neighbours + 1.0 - u[c] * u[c];
+                    out_v[c] = -DV * scale * neighbours - 0.064;
                 }
             }
         }
         Ok(())
     });
-    let dx = 1.0 / m as f64;
-    let mut y0 = vec![0.0; n];
-    for k in 0..m {
-        for j in 0..m {
-            for i in 0..m {
-                let (x, y, z) = (
-                    (i as f64 + 0.5) * dx,
-                    (j as f64 + 0.5) * dx,
-                    (k as f64 + 0.5) * dx,
-                );
-                y0[i + m * (j + m * k)] = 0.4 * (2.0 * PI * x).cos() * (PI * y).cos()
-                    + 0.3 * (3.0 * PI * x).cos() * (PI * z).cos()
-                    + 0.05;
-            }
-        }
-    }
     Ok(Family {
-        id: format!("ac3d-{m}"),
-        problem: jvp_only(format!("ac3d-{m}"), n, rhs, jvp)?,
+        id: format!("fhn3d-{m}"),
+        problem: jvp_only(format!("fhn3d-{m}"), n, rhs, jvp)?,
         y0,
-        span: (0.0, 1.0),
+        span: (0.0, 40.0),
         atol_over_rtol: 1.0,
         diagonal,
     })
@@ -222,7 +244,7 @@ pub fn cusp1d(cells: usize) -> CoreResult<Family> {
         id: format!("cusp1d-{cells}"),
         problem: jvp_only(format!("cusp1d-{cells}"), n, rhs, jvp)?,
         y0,
-        span: (0.0, 0.1),
+        span: (0.0, 0.7),
         atol_over_rtol: 1.0,
         diagonal,
     })
@@ -230,19 +252,20 @@ pub fn cusp1d(cells: usize) -> CoreResult<Family> {
 
 /// 2D viscous Burgers system on the periodic unit square,
 /// `u_t = -(u u_x + v u_y) + nu lap(u)`, `v_t = -(u v_x + v v_y) + nu lap(v)`
-/// with `nu = 0.05`: second-order central first derivatives, 5-point
+/// with viscosity `nu`: second-order central first derivatives, 5-point
 /// Laplacian, `u` block then `v` block, index `i + m j`, cell centres
-/// `((i + 1/2)/m, (j + 1/2)/m)`; start `u = sin(2 pi x) cos(2 pi y) + 0.5`,
-/// `v = -cos(2 pi x) sin(2 pi y) + 0.25 sin(2 pi (x + y))`.
-pub fn burgers2d(m: usize) -> CoreResult<Family> {
-    if m < 3 {
-        return Err(CoreError::InvalidInput("invalid Burgers grid".into()));
+/// `((i + 1/2)/m, (j + 1/2)/m)`; start `u = sin(2 pi x) cos(2 pi y) + u_mean`,
+/// `v = -cos(2 pi x) sin(2 pi y) + 0.25 sin(2 pi (x + y))`. The declared
+/// viscosity and mean are [`BURGERS_NU`] and [`BURGERS_U_MEAN`]: the mean
+/// flow carries the pattern across the box four times per unit time.
+pub fn burgers2d(m: usize, nu: f64, u_mean: f64) -> CoreResult<Family> {
+    if m < 3 || !(nu.is_finite() && nu > 0.0) {
+        return Err(CoreError::InvalidInput("invalid Burgers problem".into()));
     }
-    const NU: f64 = 0.05;
     let cells = m * m;
     let n = 2 * cells;
     let half_inv_dx = 0.5 * m as f64;
-    let diffusion = NU * (m * m) as f64;
+    let diffusion = nu * (m * m) as f64;
     // (d/dx, d/dy, nu lap) of the periodic field `w` at cell `(i, j)`.
     let stencil = move |w: &[f64], i: usize, j: usize| {
         let ip = if i + 1 == m { 0 } else { i + 1 };
@@ -307,7 +330,7 @@ pub fn burgers2d(m: usize) -> CoreResult<Family> {
     for j in 0..m {
         for i in 0..m {
             let (x, y) = ((i as f64 + 0.5) * dx, (j as f64 + 0.5) * dx);
-            y0[i + m * j] = (2.0 * PI * x).sin() * (2.0 * PI * y).cos() + 0.5;
+            y0[i + m * j] = (2.0 * PI * x).sin() * (2.0 * PI * y).cos() + u_mean;
             y0[cells + i + m * j] =
                 -(2.0 * PI * x).cos() * (2.0 * PI * y).sin() + 0.25 * (2.0 * PI * (x + y)).sin();
         }
@@ -322,35 +345,42 @@ pub fn burgers2d(m: usize) -> CoreResult<Family> {
     })
 }
 
-/// The time spans of the declared families (`PREDECLARED.json`, families
-/// and amendment A1).
-pub const SPAN_AC3D: (f64, f64) = (0.0, 1.0);
-pub const SPAN_CUSP1D: (f64, f64) = (0.0, 0.1);
+/// The viscosity and the mean of `u` at the start of the declared Burgers
+/// family.
+pub const BURGERS_NU: f64 = 0.05;
+pub const BURGERS_U_MEAN: f64 = 4.0;
+
+/// The time spans of the declared families (`PREDECLARED.json`, amendment
+/// A1).
+pub const SPAN_FHN3D: (f64, f64) = (0.0, 40.0);
+pub const SPAN_CUSP1D: (f64, f64) = (0.0, 0.7);
 pub const SPAN_BURGERS2D: (f64, f64) = (0.0, 0.5);
-pub const SPAN_GRAYSCOTT2D: (f64, f64) = (0.0, 100.0);
+pub const SPAN_BRUSS1D: (f64, f64) = (0.0, 10.0);
 
 /// The declared family ids of the node.
-pub const DECLARED: [&str; 4] = ["ac3d", "cusp1d", "burgers2d", "grayscott2d"];
+pub const DECLARED: [&str; 4] = ["fhn3d", "cusp1d", "burgers2d", "bruss1d"];
 
 /// The development instances (reduced sizes of the declared families).
-pub const DEVELOPMENT: [&str; 4] = ["dev_ac3d", "dev_cusp1d", "dev_burgers2d", "dev_grayscott2d"];
+pub const DEVELOPMENT: [&str; 4] = ["dev_fhn3d", "dev_cusp1d", "dev_burgers2d", "dev_bruss1d"];
 
 /// The instances of `PREDECLARED.json` by id, the reduced development
 /// instances (`dev_*`, `size_*`) and the exploratory stiff Brusselator.
 pub fn declared(id: &str) -> CoreResult<Family> {
     let mut family = match id {
-        "ac3d" => ac3d(12)?,
+        "fhn3d" => fhn3d(10)?,
         "cusp1d" => cusp1d(400)?,
-        "burgers2d" => burgers2d(28)?,
-        "grayscott2d" => v06::grayscott2d(40)?,
-        "dev_ac3d" => ac3d(5)?,
+        "burgers2d" => burgers2d(28, BURGERS_NU, BURGERS_U_MEAN)?,
+        "bruss1d" => v06::bruss1d(700, 8.0)?,
+        "dev_fhn3d" => fhn3d(5)?,
         "dev_cusp1d" => cusp1d(32)?,
-        "dev_burgers2d" => burgers2d(8)?,
-        "dev_grayscott2d" => v06::grayscott2d(8)?,
-        "size_ac3d" => ac3d(8)?,
+        "dev_burgers2d" => burgers2d(8, BURGERS_NU, BURGERS_U_MEAN)?,
+        "dev_bruss1d" => v06::bruss1d(48, 8.0)?,
+        "size_fhn3d" => fhn3d(6)?,
         "size_cusp1d" => cusp1d(100)?,
-        "size_burgers2d" => burgers2d(12)?,
-        "size_grayscott2d" => v06::grayscott2d(16)?,
+        "size_burgers2d" => burgers2d(12, BURGERS_NU, BURGERS_U_MEAN)?,
+        "size_bruss1d" => v06::bruss1d(96, 8.0)?,
+        // Sizing only (amendment A1): a smaller ring.
+        "size_cusp1d_50" => cusp1d(50)?,
         "bruss1d_stiff600" => v06::bruss1d(600, 1.0)?,
         _ => {
             return Err(CoreError::InvalidInput(format!("unknown V17 family {id}")));
@@ -360,11 +390,12 @@ pub fn declared(id: &str) -> CoreResult<Family> {
         .strip_prefix("dev_")
         .or_else(|| id.strip_prefix("size_"))
         .unwrap_or(id);
+    let base = base.strip_suffix("_50").unwrap_or(base);
     family.span = match base {
-        "ac3d" => SPAN_AC3D,
+        "fhn3d" => SPAN_FHN3D,
         "cusp1d" => SPAN_CUSP1D,
         "burgers2d" => SPAN_BURGERS2D,
-        "grayscott2d" => SPAN_GRAYSCOTT2D,
+        "bruss1d" => SPAN_BRUSS1D,
         _ => family.span,
     };
     family.id = id.to_string();
