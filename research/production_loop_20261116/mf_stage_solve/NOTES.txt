@@ -37,3 +37,38 @@ NEXT STEPS
 2. Read the V04/V06 reports + REVIEW.json for the correction notices.
 3. Fix families, sizes, tolerances, reference, interpolation rule -> PREDECLARED.json, commit.
 4. Additive client code + tests, measurement runner, parser, report script.
+
+== 2026-11-17 14:55 KST: pre-declaration committed (a6c66e9b), code written, first build running ==
+READ SINCE THE START
+- crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2198-2428 (integrate_observed_with_observer: the
+  attempt observer gets t, y, h, Option<error> and the workspace after every attempt), :2543 (stage(i)),
+  :1589-1596 (solve log), :2711-3050 (attempt_inner: stage rhs = h gamma f_i + gamma sum C_ij U_j, GmresConfig,
+  solve_gmres_into_with_accounting), :3276-3294 (shipped entry = traced entry with a no-op observer),
+  :699-751 (residual transfer constants).
+- crates/rodas5p-krylov/src/gmres_into.rs:233-312, 372-390, 455-476; common.rs:39-47;
+  crates/rodas5p-integrators/src/routing.rs:233-251; raw_stage_target.rs:292-304 (gamma*atol rounded down).
+- shared_krylov/REPORT_KO.md sections 4, 5, 8.3-8.5 and its correction notice (leads only).
+- crates/rodas5p-integrators/src/adaptive.rs:161-178 (default initial_step 1e-3).
+
+DECISIONS (all in PREDECLARED.json)
+- Arm A audit: observer rebuilds each stage system from the stage equations (own RHS, own JVP), threshold
+  max(raw_absolute_residual_budget(1e-14, gamma), 1e-10 ||rhs||); completed solves of a failed attempt counted
+  with the driver's solve log. Audit-on run must equal the audit-off run bit for bit.
+- Arm C policy: tau_C = max(tau_B, kappa sqrt(n) min_i(atol + rtol |y_i|) / (h gamma)), kappa = 1e-3.
+  Transfer constants recomputed from the snapshot: sum tau_y = 25.17, sum tau_e = 14.19.
+- Families: ac3d (m 12, n 1728, new, 3D), cusp1d (N 400, n 1200, new, strongly stiff), burgers2d (m 28,
+  n 1568, new), grayscott2d (grid 40, n 3200, V06 family at a new size). rtol 1e-3..1e-7, atol = rtol,
+  initial step 1e-3. Time spans provisional until amendment A1 (from reduced instances only).
+- Matched error: E = max |y - ref| / (1 + |ref|); geometric mean of the work ratio over the common error range.
+
+FILES WRITTEN (uncommitted until this commit)
+- crates/rodas5p-integrators/src/stage_clients/krylov/step_tied.rs (StepTiedTolerance)
+- crates/rodas5p-integrators/src/stage_clients/krylov.rs (additive: policy option on the client and on the audit,
+  KrylovStats::policy_bound_solves)
+- crates/rodas5p-integrators/tests/stage_clients_krylov_v17_{problems,contracts,alloc,measure}.rs
+- research/production_loop_20261116/mf_stage_solve/reference/make_reference.py
+
+NEXT STEPS
+1. Finish the build, run the V17 contract and allocation tests and the four V06 targets + sentinels.
+2. Sizing on reduced instances (size_*), amendment A1 (time spans), commit.
+3. References (make_reference.py), run script, parser, measurement, timing last (host load is 30-45 now).

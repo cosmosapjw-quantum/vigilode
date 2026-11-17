@@ -54,6 +54,20 @@
 //! [`ResidualAuditClient`] wraps any client, saves `b` before each solve and
 //! tests the original residual `||b - W x||` afterwards with its own JVP
 //! operator and its own counters.
+//!
+//! # Step-tied tolerance (loop node V17)
+//!
+//! [`KrylovStageClient::with_step_tied_tolerance`] gives a client the
+//! policy of [`StepTiedTolerance`]: every solve is then accepted at the
+//! larger of the protected threshold and
+//! `kappa sqrt(n) min_i (atol + rtol |y_i|) / (h gamma)`, with `y` the state
+//! of the last linearization. Without the call nothing changes.
+//! [`ResidualAuditClient::with_step_tied_tolerance`] makes the audit test
+//! against the same threshold, computed from the state it is linearized at.
+
+mod step_tied;
+
+pub use step_tied::StepTiedTolerance;
 
 use std::sync::{Arc, Mutex, PoisonError};
 
@@ -275,6 +289,9 @@ pub struct KrylovStats {
     pub gmres_storage_bytes: u64,
     /// Bytes of the shared kernel's `Q`, `Z`, scratch matrix and vectors.
     pub shared_storage_bytes: u64,
+    /// Solves whose threshold was the bound of a [`StepTiedTolerance`]
+    /// (larger than the protected one); zero without the policy.
+    pub policy_bound_solves: u64,
 }
 
 /// A reader of a client's [`KrylovStats`] that outlives the client's move
@@ -305,6 +322,7 @@ struct SolveTally {
     fallback: bool,
     fallback_krylov_vectors: u64,
     fallback_residual_jvps: u64,
+    policy_bound: bool,
 }
 
 /// `residual = b - W x`, `W = inv_h_gamma I - J`, with one JVP charged to
@@ -733,6 +751,10 @@ pub struct KrylovStageClient {
     stage: usize,
     stats: KrylovStats,
     published: Arc<Mutex<KrylovStats>>,
+    /// The step-tied tolerance, if the client was given one.
+    policy: Option<StepTiedTolerance>,
+    /// `min_i (atol + rtol |y_i|)` at the last linearization (policy only).
+    weight_floor: f64,
 }
 
 impl KrylovStageClient {
@@ -824,7 +846,22 @@ impl KrylovStageClient {
             stage: 0,
             stats,
             published: Arc::new(Mutex::new(stats)),
+            policy: None,
+            weight_floor: 0.0,
         })
+    }
+
+    /// The same client accepting every solve at the larger of its stopping
+    /// test's threshold and the bound of `policy` (loop node V17). The
+    /// bound follows the state of the last linearization.
+    pub fn with_step_tied_tolerance(mut self, policy: StepTiedTolerance) -> Self {
+        self.policy = Some(policy);
+        self
+    }
+
+    /// The step-tied tolerance, if the client has one.
+    pub fn step_tied_tolerance(&self) -> Option<StepTiedTolerance> {
+        self.policy
     }
 
     /// A reader of the statistics for after the client has been boxed and
@@ -883,6 +920,7 @@ impl KrylovStageClient {
         stats.fallback_solves += u64::from(tally.fallback);
         stats.fallback_krylov_vectors += tally.fallback_krylov_vectors;
         stats.fallback_residual_jvps += tally.fallback_residual_jvps;
+        stats.policy_bound_solves += u64::from(tally.policy_bound);
         if let Some(shared) = &mut self.shared {
             shared.last_dim = shared.basis.dim() as u64;
             stats.basis_dim_max = stats.basis_dim_max.max(shared.last_dim);
@@ -912,7 +950,14 @@ impl KrylovStageClient {
             inv_diag: self.diagonal.as_ref().map(|_| self.inv_diag.as_slice()),
         };
         let b_norm = safe_l2(b);
-        let tau = self.rule.threshold(self.inv, b_norm)?;
+        let mut tau = self.rule.threshold(self.inv, b_norm)?;
+        if let Some(policy) = &self.policy {
+            let bound = policy.bound(self.n, self.weight_floor, self.inv)?;
+            if bound > tau {
+                tau = bound;
+                tally.policy_bound = true;
+            }
+        }
         if let Some(shared) = self.shared.as_mut() {
             // The zero iterate is accepted on the right-hand side itself,
             // as the per-stage loop does before its first pass.
@@ -990,6 +1035,9 @@ impl StageLinearSystem for KrylovStageClient {
         }
         if let Some(shared) = self.shared.as_mut() {
             shared.stale = true;
+        }
+        if let Some(policy) = &self.policy {
+            self.weight_floor = policy.weight_floor(y)?;
         }
         self.linearized = true;
         self.stats.linearizations += 1;
@@ -1110,6 +1158,12 @@ pub struct ResidualAuditClient<C> {
     counters: WorkCounters,
     report: ResidualAuditReport,
     published: Arc<Mutex<ResidualAuditReport>>,
+    /// The step-tied tolerance of the audited arm, if it has one.
+    policy: Option<StepTiedTolerance>,
+    /// The audit's own `min_i (atol + rtol |y_i|)` at the last
+    /// linearization (policy only); NaN when it could not be formed, which
+    /// fails every check until the next linearization.
+    weight_floor: f64,
 }
 
 impl<C: StageLinearSystem> ResidualAuditClient<C> {
@@ -1126,7 +1180,17 @@ impl<C: StageLinearSystem> ResidualAuditClient<C> {
             counters: WorkCounters::default(),
             report: ResidualAuditReport::default(),
             published: Arc::new(Mutex::new(ResidualAuditReport::default())),
+            policy: None,
+            weight_floor: 0.0,
         }
+    }
+
+    /// The same audit checking against the larger of `rule`'s threshold and
+    /// the bound of `policy` (loop node V17), with the weight floor the
+    /// audit computes itself from the state it is linearized at.
+    pub fn with_step_tied_tolerance(mut self, policy: StepTiedTolerance) -> Self {
+        self.policy = Some(policy);
+        self
     }
 
     /// A reader of the report for after the wrapper has been boxed.
@@ -1161,7 +1225,13 @@ impl<C: StageLinearSystem> ResidualAuditClient<C> {
             &mut self.counters,
             ApplyCategory::Diagnostic,
         )?;
-        let tau = self.rule.threshold(self.inv, safe_l2(&self.saved))?;
+        let mut tau = self.rule.threshold(self.inv, safe_l2(&self.saved))?;
+        if let Some(policy) = &self.policy {
+            let bound = policy.bound(self.saved.len(), self.weight_floor, self.inv)?;
+            if bound > tau {
+                tau = bound;
+            }
+        }
         Ok((residual_norm, tau))
     }
 
@@ -1210,6 +1280,9 @@ impl<C: StageLinearSystem> StageLinearSystem for ResidualAuditClient<C> {
     ) -> CoreResult<()> {
         self.inner.linearize(problem, t, y, counters)?;
         drop(problem.linearize_matrix_free_into(t, y, &mut self.jacobian)?);
+        if let Some(policy) = &self.policy {
+            self.weight_floor = policy.weight_floor(y).unwrap_or(f64::NAN);
+        }
         Ok(())
     }
 
