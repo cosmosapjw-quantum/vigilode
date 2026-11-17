@@ -191,7 +191,25 @@ pub struct GeneralOde;
 impl GeneralOde {
     /// Select without calling user code or allocating numerical workspaces.
     /// Numerical input validity is checked by `solve`, not by this feature query.
+    ///
+    /// The decision is derived from the method catalog
+    /// ([`MethodRegistry::general_selection`], phase B of research loop L1 node V03). It
+    /// equals [`GeneralOde::select_reference`], the body this function had before, on
+    /// every combination of the facts either of them reads; the contract test
+    /// `unified_frontend_contracts` and the golden decision grid check that.
     pub fn select(
+        problem: &Problem,
+        options: &Options,
+        policy: &GeneralOdePolicy,
+    ) -> Result<GeneralSelection, SelectionRefusal> {
+        MethodRegistry::general_selection(problem, options, policy)
+    }
+
+    /// The hard-coded selection that was [`GeneralOde::select`] before node V03, kept
+    /// unchanged as the test oracle of the catalog-derived selection (and as its answer
+    /// should the catalog ever fail to describe the general surface).
+    #[doc(hidden)]
+    pub fn select_reference(
         problem: &Problem,
         options: &Options,
         policy: &GeneralOdePolicy,

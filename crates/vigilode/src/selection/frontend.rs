@@ -68,10 +68,10 @@ use super::{
     RegistryRefusal, SelectionRefusal, caps, variant,
 };
 use crate::{
-    Atol, DampedRotationFlow, Dopri5, ExplicitCallbackFailure, ExplicitSolution,
-    ExplicitSolveError, ExplicitUnsupported, FacadeRoute, FailureReason, InteriorError, Jacobian,
-    LawsonDopri5, LawsonSolution, Options, Problem, Rodas5p, Solution, SolveError, Status,
-    Unsupported, WorkRecord,
+    Atol, DampedRotationFlow, DerivativeFallback, Dopri5, ExplicitCallbackFailure,
+    ExplicitSolution, ExplicitSolveError, ExplicitUnsupported, FacadeRoute, FailureReason,
+    InteriorError, Jacobian, LawsonDopri5, LawsonSolution, Options, Problem, Rodas5p, Solution,
+    SolveError, Status, Unsupported, WorkRecord,
     selection_evidence::{CostComparison, CostEvidence, compare_qualified_costs},
 };
 
@@ -951,7 +951,112 @@ fn rank(
     (ranking, order)
 }
 
+/// The selection method of a catalog entry of the general surface.
+fn production_method(entry: &MethodEntry) -> Option<ProductionMethod> {
+    match entry.kind {
+        AdapterKind::Dopri5 => Some(ProductionMethod::Dopri5),
+        AdapterKind::Rodas5p => Some(ProductionMethod::Rodas5p),
+        _ => None,
+    }
+}
+
 impl MethodRegistry {
+    /// The catalog entry that the general surface selects for a declared regime: the
+    /// [`MethodAccess::GeneralOdeSelectable`] entry whose [`MethodEntry::stiff_capable`]
+    /// matches it. One per regime.
+    pub fn general_method(regime: ProblemRegime) -> Option<MethodEntry> {
+        let stiff = regime == ProblemRegime::Stiff;
+        let mut selectable = Self::catalog().into_iter().filter(|entry| {
+            entry.descriptor.access == MethodAccess::GeneralOdeSelectable
+                && entry.stiff_capable == stiff
+                && production_method(entry).is_some()
+        });
+        let entry = selectable.next()?;
+        selectable.next().is_none().then_some(entry)
+    }
+
+    /// The general selection, derived from the catalog (phase B of node V03). It is the
+    /// body of `GeneralOde::select`; `GeneralOde::select_reference` keeps the previous body
+    /// as the oracle, and a contract test compares the two on every combination of the
+    /// facts either of them reads. Pure: no callback, no numerical workspace.
+    ///
+    /// 1. The general surface integrates identity-mass problems to their end point: a
+    ///    mass matrix, events and dense output are refused, in this order.
+    /// 2. The method is [`MethodRegistry::general_method`] of the declared regime.
+    /// 3. A derivative-free method (no provider form in its entry) is selected as it is.
+    /// 4. Otherwise the policy must authorize derivatives; a finite-difference provider and
+    ///    a time derivative taken by differences need the finite-difference permission.
+    /// 5. The method's own admission for the declared facts follows (for RODAS5P the
+    ///    capability query of the facade), then the route permissions of the policy:
+    ///    the matrix-free route, and the dense-dimension ceiling for a route that
+    ///    materializes an n-by-n matrix.
+    pub fn general_selection(
+        problem: &Problem,
+        options: &Options,
+        policy: &GeneralOdePolicy,
+    ) -> Result<GeneralSelection, SelectionRefusal> {
+        let facts = MethodFacts::of(problem, options);
+        for (requested, refusal) in [
+            (facts.mass, SelectionRefusal::MassMatrix),
+            (facts.events, SelectionRefusal::Events),
+            (facts.dense_output, SelectionRefusal::DenseOutput),
+        ] {
+            if requested {
+                return Err(refusal);
+            }
+        }
+        // A catalog without exactly one selectable method for the regime, or an admission
+        // reason this surface cannot name, would be a registry defect: the reference
+        // selection then answers, so the default decision can never change silently.
+        let reference = || {
+            debug_assert!(false, "the catalog does not describe the general surface");
+            GeneralOde::select_reference(problem, options, policy)
+        };
+        let Some(entry) = Self::general_method(policy.regime) else {
+            return reference();
+        };
+        let Some(method) = production_method(&entry) else {
+            return reference();
+        };
+        let selection = |implicit_route| GeneralSelection {
+            method,
+            regime: policy.regime,
+            derivatives: policy.derivatives,
+            implicit_route,
+        };
+        if entry.jacobian_forms.is_empty() {
+            return Ok(selection(None));
+        }
+        let finite_differences = match policy.derivatives {
+            DerivativeFallback::Forbidden => return Err(SelectionRefusal::DerivativesForbidden),
+            DerivativeFallback::ProvidedOnly => false,
+            DerivativeFallback::AllowFiniteDifference => true,
+        };
+        if facts.provider_needs().finite_difference && !finite_differences {
+            return Err(SelectionRefusal::MissingJacobian);
+        }
+        if facts.time_derivative_by_difference() && !finite_differences {
+            return Err(SelectionRefusal::MissingTimeDerivative);
+        }
+        let params = MethodParams::default();
+        let route = match admit(&entry, problem, options, &facts, &params, None, false) {
+            Ok(route) => route,
+            Err(reasons) => match reasons.as_slice() {
+                [MethodRefusalReason::Implicit(unsupported)] => {
+                    return Err(SelectionRefusal::Implicit(*unsupported));
+                }
+                _ => return reference(),
+            },
+        };
+        if route.facade_route == Some(FacadeRoute::MatrixFree) && !policy.allow_matrix_free {
+            return Err(SelectionRefusal::MatrixFreeNotEnabled);
+        }
+        if route.needs.dense_matrix && facts.dimension > policy.max_dense_dimension {
+            return Err(SelectionRefusal::DenseDimensionLimit);
+        }
+        Ok(selection(route.facade_route))
+    }
+
     /// Route a request with default [`MethodParams`]. See [`MethodRegistry::route_with`].
     pub fn route(
         problem: &Problem,

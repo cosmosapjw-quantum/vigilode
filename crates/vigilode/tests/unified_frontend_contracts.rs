@@ -1158,6 +1158,7 @@ fn d1_route_general_equals_select_on_the_golden_decision_grid() {
     let policies = grid_policies();
     let grid_options = GridOptions::all();
     let (mut compared, mut equal_select, mut equal_golden) = (0usize, 0usize, 0usize);
+    let mut equal_reference = 0usize;
     let mut differing = Vec::new();
     for feature in Features::all(&GOLDEN_JACOBIANS) {
         for (dimension_index, &n) in GRID_DIMENSIONS.iter().enumerate() {
@@ -1169,9 +1170,13 @@ fn d1_route_general_equals_select_on_the_golden_decision_grid() {
                     let by_select = outcome(&GeneralOde::select(&problem, &options, policy));
                     let by_route = outcome(&general_via_route(&problem, &options, policy));
                     let by_golden = &golden_row[dimension_index * policies.len() + policy_index];
+                    // the body `select` had before phase B, kept as the oracle
+                    let by_reference =
+                        outcome(&GeneralOde::select_reference(&problem, &options, policy));
                     compared += 1;
                     equal_select += usize::from(by_route == by_select);
                     equal_golden += usize::from(&by_route == by_golden);
+                    equal_reference += usize::from(by_route == by_reference);
                     if (by_route != by_select || &by_route != by_golden) && differing.len() < 20 {
                         differing.push(format!(
                             "{} | {} | n={n} | policy {policy_index}: route {by_route} / select \
@@ -1192,6 +1197,7 @@ fn d1_route_general_equals_select_on_the_golden_decision_grid() {
             "golden_file_entries": golden_entries,
             "equal_to_select": equal_select,
             "equal_to_golden_file": equal_golden,
+            "equal_to_reference_body": equal_reference,
             "callback_entries": callbacks,
             "differing_examples": differing,
         }})
@@ -1200,7 +1206,78 @@ fn d1_route_general_equals_select_on_the_golden_decision_grid() {
     assert_eq!(golden_entries, 221_184);
     assert_eq!(equal_select, compared, "{differing:#?}");
     assert_eq!(equal_golden, compared, "{differing:#?}");
+    assert_eq!(equal_reference, compared, "{differing:#?}");
     assert_eq!(callbacks, 0, "a routing query entered a callback");
+}
+
+/// D1, phase B: the catalog-derived `GeneralOde::select` equals the retained
+/// reference body on every combination of the facts either of them reads (the
+/// golden grid plus the two sparse-JVP provider forms the golden grid does not
+/// enumerate), with zero callbacks.
+#[test]
+fn d1_phase_b_select_equals_the_reference_body_on_the_extension_grid() {
+    let entries = Arc::new(AtomicUsize::new(0));
+    let policies = grid_policies();
+    let (mut compared, mut equal_select, mut equal_derived) = (0usize, 0usize, 0usize);
+    let mut differing = Vec::new();
+    let mut outcomes = BTreeMap::<String, usize>::new();
+    for feature in Features::all(&EXTENSION_JACOBIANS) {
+        for &n in &GRID_DIMENSIONS {
+            let problem = feature.problem(n, &entries);
+            for grid_option in GridOptions::all() {
+                let options = grid_option.options(n);
+                for (policy_index, policy) in policies.iter().enumerate() {
+                    let reference =
+                        outcome(&GeneralOde::select_reference(&problem, &options, policy));
+                    let selected = outcome(&GeneralOde::select(&problem, &options, policy));
+                    let derived = outcome(&MethodRegistry::general_selection(
+                        &problem, &options, policy,
+                    ));
+                    compared += 1;
+                    equal_select += usize::from(selected == reference);
+                    equal_derived += usize::from(derived == reference);
+                    if selected != reference && differing.len() < 20 {
+                        differing.push(format!(
+                            "{} | {} | n={n} | policy {policy_index}: select {selected} / \
+                             reference {reference}",
+                            feature.key(),
+                            grid_option.key()
+                        ));
+                    }
+                    *outcomes.entry(reference).or_default() += 1;
+                }
+            }
+        }
+    }
+    // the catalog names exactly one selectable method per regime
+    for (regime, id) in [
+        (ProblemRegime::Unknown, "dopri5"),
+        (ProblemRegime::Nonstiff, "dopri5"),
+        (ProblemRegime::Stiff, "rodas5p"),
+    ] {
+        assert_eq!(
+            MethodRegistry::general_method(regime).map(|e| e.descriptor.method_id),
+            Some(id)
+        );
+    }
+    let callbacks = entries.load(Ordering::SeqCst);
+    println!(
+        "QUAL {}",
+        json!({"test": "d1_phase_b_extension_grid", "data": {
+            "entries": compared,
+            "select_equal_to_reference": equal_select,
+            "general_selection_equal_to_reference": equal_derived,
+            "distinct_outcomes": outcomes.len(),
+            "outcome_counts": outcomes,
+            "callback_entries": callbacks,
+            "differing_examples": differing,
+        }})
+    );
+    assert_eq!(compared, 6 * 32 * 12 * 4 * 36);
+    assert_eq!(compared, 331_776);
+    assert_eq!(equal_select, compared, "{differing:#?}");
+    assert_eq!(equal_derived, compared);
+    assert_eq!(callbacks, 0, "a selection query entered a callback");
 }
 
 fn full_permission() -> CapabilitySet {
