@@ -1,0 +1,110 @@
+{
+  "schema": "vigilode.loop_l1.v19_banded_solve.predeclared.v1",
+  "node": "V19_BANDED_SOLVE_KERNEL",
+  "stage": "a",
+  "frozen_row": "research/production_loop_20261116/PREREGISTRATION.md, addendum A3, commit 179fabea (pushed before this file)",
+  "written_before_first_run": true,
+  "build": {
+    "toolchain": "1.94.1",
+    "package": "banded_solve/runner (standalone, empty [workspace] table, path dependencies on crates/rodas5p-core and crates/rodas5p-integrators)",
+    "profile": "release as in the repository workspace: opt-level 3, fat LTO, one codegen unit, panic abort",
+    "target_cpu": "default x86-64 of the toolchain (no target-cpu or target-feature flag), as the crates are built",
+    "unsafe_code": "none"
+  },
+  "storage": "Jacobian band in the layout of BandedJacobianFn: row i, column j at i * (lower + upper + 1) + (j + lower - i). W = inv * I - J with inv = 1 / (h gamma). Factors per row: columns i - lower .. i + upper + lower, as in the protected kernel.",
+  "arms": {
+    "A0": "BandedStageLu of rodas5p-integrators (Indexed kernel): linearize once in the set-up, then factor and solve_in_place through the StageLinearSystem trait",
+    "A1": "reference kernel of the measurement program: assembly, pivot search, interchanges, elimination and both substitutions in the operation order of the protected kernel",
+    "B": "sequential: factors as A1 plus the reciprocal of every pivot; forward substitution as A1; back substitution: the terms of the older unknowns are subtracted first, the newest unknown (row i + 1) last, and the row ends with a multiplication by the reciprocal; the newest unknown is carried in a local variable",
+    "C2, C4, C8": "partition into P blocks (rule below); pivoted band LU inside each block as A1 plus reciprocals; spikes = block inverse applied to the coupling columns of both neighbouring separators (2 max(lower, upper) columns per block, full length); dense reduced system on the separators with partial pivoting; factorisation, spike substitutions and both substitutions of a solve run over the P blocks in lockstep (inner loop over the blocks); back substitution as B; correction pass x_block -= spikes * x_separators. Errors: zero or non-finite pivot in a block or in the reduced system",
+    "BV, CV2, CV4, CV8": "B or C(P) with a copy of the right-hand side before the solve and a check after it: error unless max|b - W x| <= 1e-13 * (norm_inf(W) * norm_inf(x) + norm_inf(b)); norm_inf(W) is computed in the factorisation; all of it is inside the measured cost"
+  },
+  "partition_rule": "w = max(lower, upper); separators have exactly w unknowns; m = floor((n - (P - 1) w) / P); blocks 0 .. P - 2 have m unknowns and the last block has m + ((n - (P - 1) w) mod P) unknowns (the frozen row says equal length; a remainder of fewer than P rows goes to the last block, whose extra rows are processed outside the lockstep loop); block p starts at p (m + w); the kernel returns an error when m < w",
+  "random_numbers": "SplitMix64 (state += 0x9E3779B97F4A7C15; z = state; z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9; z = (z ^ (z >> 27)) * 0x94D049BB133111EB; z ^= z >> 31); uniform(-1, 1) = (z >> 11) * 2^-53 * 2 - 1",
+  "eta": "computed by the harness in double precision for every arm: max_i |b_i - (W x)_i| / (norm_inf(W) * norm_inf(x) + norm_inf(b)); a solution with a non-finite entry and no error counts as eta = infinity (written as the string \"inf\")",
+  "suites": {
+    "S1": {
+      "what": "W = inv I - J of the V04 Brusselator band (cost_anatomy/runner/src/problems.rs: 2 uv - 4 - 2c, u^2, 3 - 2uv, -u^2 - 2c, coupling c at distance 2, c = (cells + 1)^2 / 50), lower = upper = 2",
+      "n": [1000, 10000, 100000],
+      "states": {
+        "1": "u = 1 + sin(2 pi x), v = 3, x = (i + 1) / (cells + 1) (the initial state of V04)",
+        "2": "u = 2 + cos(6 pi x), v = 1 + 0.5 sin(10 pi x)"
+      },
+      "inv": [1e6, 1e4, 1e2, 1.0, 1e-2, 1e-4, 1e-6],
+      "rhs": "uniform(-1, 1), seed 1001 + case index (cases in the order n, state, inv)",
+      "cases": 42
+    },
+    "S2": {
+      "what": "random strictly diagonally dominant bands: off-diagonal entries uniform(-1, 1); diagonal = sign * (sum of |off-diagonal entries of the row| + 1 + |uniform|) with a random sign; W is the matrix itself (inv = 0, J = -W)",
+      "lower_upper": [1, 2, 4, 8],
+      "n": [1000, 10007],
+      "seeds_per_combination": 5,
+      "seed": "2000 + 100 * index(lower) + 10 * index(n) + k",
+      "rhs": "b = W x_true with x_true uniform(-1, 1) from the same generator after the matrix",
+      "cases": 40
+    },
+    "S3": {
+      "what": "random bands without dominance: every band entry including the diagonal uniform(-1, 1); W is the matrix itself",
+      "lower_upper": [1, 2, 4],
+      "n": [1000],
+      "seeds_per_combination": 20,
+      "seed": "3000 + 100 * index(lower) + k",
+      "rhs": "b = W x_true as in S2",
+      "cases": 60
+    },
+    "S4": {
+      "what": "for P in {2, 4, 8} and lower = upper in {1, 2}: an S2 matrix (n = 1000, seed 4000 + 10 * index(P) + index(lower)) in which, for every separator of the P-partition, the last row of the block before the separator is changed: its entries on columns of that block are set to 0 and its entry on the first separator column is set to 2. The block interior is then exactly singular (zero row); the matrix as a whole is checked by the forward error of A0 against x_true",
+      "rhs": "b = W x_true as in S2",
+      "cases": 6
+    },
+    "S5_exploratory": "S4 with the diagonal entry of the changed row set to 1e-10 instead of 0 (nearly singular block interior); labelled exploratory, not part of V3"
+  },
+  "validity_rules": {
+    "V1": "the solutions of A1 equal those of A0 bit for bit in every case of S1, S2 and S3 (an error in one must be an error in the other)",
+    "V2": "on S1 the arm returns no error and eta <= 1e-14 in every case",
+    "V3": "on S2, S3 and S4 every case ends either without error and with eta <= 1e-12 or with an error; a case without error and with eta > 1e-12 is a silent failure and makes the arm invalid; a case in which A0 has eta > 1e-12 is reported and excluded for all arms",
+    "reported_in_addition": "forward error against x_true (S2-S5), largest relative difference to the solution of A0, number of error returns per arm and suite"
+  },
+  "cost": {
+    "matrix": "S1, state 1, inv = 100, lower = upper = 2",
+    "n": [1000, 10000, 100000],
+    "deciding_n": [10000, 100000],
+    "patterns_R": {"1000": 20000, "10000": 2000, "100000": 200},
+    "pattern": "one factorisation (assembly of W from the Jacobian band included) and eight solves; before each solve one of eight right-hand sides (uniform(-1, 1), seed 77) is copied into the work vector; the copy is inside the measured cost of every arm",
+    "run_types": ["(patterns 0, solves 0): set-up only", "(patterns R, solves 0): factorisations only", "(patterns R, solves 8): stage pattern"],
+    "per_pattern": "(cycles(R, 8) - cycles(0, 0)) / R",
+    "per_factorisation": "(cycles(R, 0) - cycles(0, 0)) / R",
+    "per_solve": "(cycles(R, 8) - cycles(R, 0)) / (8 R)",
+    "metric": "cycles:u of the process (perf stat); instructions:u and task-clock are recorded with it"
+  },
+  "protocol": {
+    "command_prefix": "flock /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/timing.lock taskset -c 9 perf stat -x, -e cycles:u,instructions:u,task-clock",
+    "order": "for each cell: 2 warm-up rounds and 7 measured rounds; in every round every arm in the fixed order A0, A1, B, BV, C2, C4, C8, CV2, CV4, CV8 and then the exploratory arms, each with its three run types; one process per run",
+    "load": "/proc/loadavg (1-minute value) before the first and after the last run of a cell; the busy fractions of logical CPU 9 and of its sibling 21 over the cell are recorded from /proc/stat as supporting information",
+    "spread": "(max - min) / median of the seven per-pattern costs of an arm",
+    "authoritative": "a cell is authoritative for a comparison only if the load is <= 8 before and after and the spread of every arm in that comparison is <= 10%",
+    "re_measurement": "a cell that is not authoritative may be measured again at most twice (files m2, m3); every measurement is kept; the first authoritative one decides; without one the verdict is NOT_DECIDABLE and the numbers are diagnostic_only"
+  },
+  "verdict_rules": {
+    "comparison_value": "median over the seven measured rounds of the per-pattern cost; ratio = median of the arm / median of the baseline in the same measurement",
+    "valid_arm": "an arm that meets V2 and V3 (and A1 meets V1)",
+    "PASS": "at n = 10000 and at n = 100000 the best valid arm has ratio <= 0.50 to A0 and <= 0.67 to A1",
+    "KILL": "every valid arm has ratio > 0.77 to A1 at n = 10000 and at n = 100000",
+    "FAIL": "neither PASS nor KILL; stage b is not built",
+    "second_question": "partitioning is kept for stage b only if the best valid arm among C2, C4, C8, CV2, CV4, CV8 has ratio <= 0.77 to the best valid arm among B, BV at both deciding sizes",
+    "not_deciding": "n = 1000 and every exploratory arm or cell"
+  },
+  "exploratory": [
+    "B2: B with the rows of U scaled by the reciprocal pivot in the factorisation, so that the back substitution chain is one multiplication and one subtraction (general bandwidth)",
+    "B3: B2 with the forward substitution on carried values (lower = 2 only)",
+    "bandwidths lower = upper in {1, 4, 8} at n = 10000 on S2-type matrices",
+    "n = 1000000 (S1 matrix)",
+    "P = 16",
+    "suite S5"
+  ],
+  "outputs": {
+    "logs": "banded_solve/logs/check_*.log (one CHECK line per case and arm), banded_solve/logs/measure_m<k>_n<n>.jsonl (one JSON line per run)",
+    "results": "banded_solve/RESULTS.json built by banded_solve/build_results.py from the logs only",
+    "report": "banded_solve/REPORT_KO.md rendered by banded_solve/build_report.py from RESULTS.json"
+  }
+}
