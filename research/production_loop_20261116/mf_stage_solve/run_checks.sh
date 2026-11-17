@@ -51,6 +51,26 @@ for check in "${checks[@]}"; do
         ;;
     checker)
         run checker python3 -I research/production_loop_20261116/check_checkpoint.py
+        # The checker stops at its first complaint. This node changes
+        # stage_clients/krylov.rs (allowed by its contract), whose hash the
+        # checkpoint pins, so the checker stops there. The second run is the
+        # same checker with only that one entry taken out of the checkpoint,
+        # to see whether everything after it passes.
+        run checker_without_krylov_pin python3 -I -B -c '
+import importlib.util
+spec = importlib.util.spec_from_file_location("check_checkpoint", "research/production_loop_20261116/check_checkpoint.py")
+checker = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(checker)
+original = checker.strict
+def strict_without_pin(path):
+    data = original(path)
+    if path.name == "CHECKPOINT.json":
+        removed = data["implemented_source_sha256"].pop("crates/rodas5p-integrators/src/stage_clients/krylov.rs", None)
+        print("entry taken out of implemented_source_sha256:", "crates/rodas5p-integrators/src/stage_clients/krylov.rs", removed is not None)
+    return data
+checker.strict = strict_without_pin
+checker.main()
+'
         ;;
     json)
         run json python3 -I -c '

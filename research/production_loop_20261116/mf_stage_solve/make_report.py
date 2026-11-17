@@ -119,8 +119,15 @@ def main():
     }.get(kill["verdict"], ""))
     wall_labels = {fid: families[fid]["wall_label"] for fid in families}
     if any(label != "authoritative" for label in wall_labels.values()):
-        add("- **wall 조건을 문면대로 평가하지 못한 이유**: 측정 시간 내내 다른 프로젝트의 작업으로 host의 1분 load average가 timing 규칙의 한도 "
-            f"{thresholds['timing_load_max']}을 넘었다(4절의 load 열). 규칙대로 20분까지 기다린 뒤 측정했고, 규칙을 못 지킨 cell은 `diagnostic_only`로 표시했다. "
+        poll = results.get("load_poll") or {}
+        poll_text = ""
+        if poll.get("polls"):
+            poll_text = (f"분당 1회 load poll {poll['polls']}회({poll['first']} ~ {poll['last']})에서 1분 load average는 "
+                         f"{num(poll['load_1min_min'])}~{num(poll['load_1min_max'])}였고 한도 이하로 내려간 적이 "
+                         + ("있다" if poll.get("quiet_reached") else "없다") + f". timing 호출은 {poll.get('first_timing_invocation')}부터 {poll.get('last_timing_invocation')}까지 했다. ")
+        add("- **wall 조건을 문면대로 평가하지 못한 이유**: 다른 프로젝트의 작업 때문에 host의 1분 load average가 timing 규칙의 한도 "
+            f"{thresholds['timing_load_max']}을 넘었고, timing용 core 6-11도 그 작업들이 쓰고 있었다(4절의 load와 spread 열). " + poll_text
+            + "규칙에 따라 그대로 측정하고 규칙을 못 지킨 cell은 `diagnostic_only`로 표시했다. "
             "diagnostic wall은 아래에 그대로 싣되 frozen 기준의 wall 조건을 대신하지 않는다. family별 wall 표시: "
             + ", ".join(f"`{fid}` {label}" for fid, label in wall_labels.items()) + ".")
     add("")
@@ -244,6 +251,12 @@ def main():
                f">= {thresholds['cadence_wall_min']}x", "비교한 오차 구간", "family"], rows))
     add("")
     add(f"- 판정 규칙(`PREDECLARED.json`): 3개 이상 family가 PASS면 PASS, 판정된 부분에서 2개 이상이 FAIL이면 FAIL, 그 밖은 NOT_DECIDABLE. 결과: PASS {cadence['pass']}, FAIL {cadence['fail']}, 판정 불가 {cadence['open']} -> **{verdict_ko(cadence['verdict'])}**.")
+    differing = [fid for fid, family in families.items()
+                 if family["cadence"].get("instructions_part_at_worst_grid_point") not in (None, family["cadence"]["instructions_part"])]
+    if differing:
+        add("- 최악 격자점으로 읽으면 instructions 조건의 판정이 달라지는 family: " + ", ".join(f"`{fid}`" for fid in differing) + ".")
+    else:
+        add("- instructions 조건은 기하평균으로 읽어도 최악 격자점으로 읽어도 같은 판정이다.")
     add("")
 
     add("### 3.3 Policy (C)")
@@ -253,12 +266,21 @@ def main():
         p = family["policy"]
         rows.append([f"`{fid}`", num(p["validity"]), ratio(p["instructions_ratio"]), verdict_ko(p["instructions_part"]),
                      p.get("instructions_part_at_worst_grid_point", "-"),
-                     ratio(p["attempts_ratio_matched_error"]), ratio(p["attempts_equal_tolerance_max"]),
-                     verdict_ko(p["attempts_part"]), verdict_ko(p["family"])])
+                     ratio(p["attempts_ratio_matched_error"]), ratio(p.get("attempts_ratio_matched_error_max")),
+                     ratio(p["attempts_equal_tolerance_max"]),
+                     verdict_ko(p["attempts_part"]), p.get("attempts_part_at_worst_grid_point", "-"), verdict_ko(p["family"])])
     add(table(["family", "validity", "instructions C/A (기하평균)", f"<= {thresholds['policy_instructions_max']}", "최악 격자점 기준",
-               "attempts C/A (matched error)", "attempts C/A (같은 tolerance, 최대)", f"<= {thresholds['policy_attempts_max']}", "family"], rows))
+               "attempts C/A (matched error, 기하평균)", "attempts C/A (matched error, 격자 최대)", "attempts C/A (같은 tolerance, 최대)",
+               f"<= {thresholds['policy_attempts_max']}", "attempts: 최악 격자점 기준", "family"], rows))
     add("")
     add(f"- 결과: PASS {policy['pass']}, FAIL {policy['fail']}, 판정 불가 {policy['open']} -> **{verdict_ko(policy['verdict'])}**.")
+    differing = [fid for fid, family in families.items()
+                 if family["policy"].get("attempts_part_at_worst_grid_point") not in (None, family["policy"]["attempts_part"])
+                 or family["policy"].get("instructions_part_at_worst_grid_point") not in (None, family["policy"]["instructions_part"])]
+    if differing:
+        add("- 사전등록한 판정 통계는 비교 구간의 기하평균이다. 최악 격자점으로 읽으면 판정이 달라지는 family: "
+            + ", ".join(f"`{fid}`" for fid in differing)
+            + ". 이 family들에는 tolerance를 조여도 달성 오차가 거의 줄지 않거나 오히려 커지는 구간이 있다(4절의 달성 오차 열). 그런 구간에서는 작은 오차 차이가 큰 일 차이로 환산되고, 곡선이 단조가 아닌 곳에서는 사전등록 규칙이 후보 arm에 큰 쪽 일을, A에 작은 쪽 일을 배정한다. 그래서 일부 격자점에서 matched-error attempt 비가 커진다. 같은 tolerance에서의 attempt 비는 표의 '같은 tolerance, 최대' 열이다.")
     add("")
     add("### 3.4 KILL")
     add("")

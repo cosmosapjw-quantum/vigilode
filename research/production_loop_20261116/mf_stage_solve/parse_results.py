@@ -629,6 +629,10 @@ def main():
         policy["family"] = "FAIL" if "FAIL" in parts else ("NOT_DECIDABLE" if "NOT_DECIDABLE" in parts else "PASS")
         if r is not None:
             policy["instructions_part_at_worst_grid_point"] = "PASS" if me_c["instructions_net"]["max_ratio"] <= POLICY_INSTRUCTIONS_MAX else "FAIL"
+        if ra is not None:
+            policy["attempts_ratio_matched_error_max"] = me_c["attempts"]["max_ratio"]
+            policy["attempts_part_at_worst_grid_point"] = (
+                "PASS" if (me_c["attempts"]["max_ratio"] <= POLICY_ATTEMPTS_MAX and validity["attempts_C_at_most_1_10"]) else "FAIL")
         entry["policy"] = policy
 
         # Exploratory: where the gain comes from.
@@ -802,6 +806,31 @@ def main():
         "rows": regression, "compared": len([row for row in regression if row.get("v06_log_present")]),
         "identical": len([row for row in regression if row.get("identical")]),
     }
+
+    # The bounded load poll before and during the timing block.
+    poll = {"polls": 0}
+    poll_path = os.path.join(LOGS, "timing", "LOAD_WAIT.log")
+    if os.path.exists(poll_path):
+        loads, stamps, quiet = [], [], False
+        with open(poll_path, encoding="utf-8") as handle:
+            for line in handle:
+                fields = line.split()
+                if line.startswith("V17_LOAD_POLL ") and len(fields) >= 4:
+                    stamps.append(fields[1])
+                    loads.append(float(fields[3].split("=")[1]))
+                elif line.startswith("V17_LOAD_QUIET"):
+                    quiet = True
+        if loads:
+            poll = {"polls": len(loads), "first": stamps[0], "last": stamps[-1], "load_1min_min": min(loads),
+                    "load_1min_max": max(loads), "quiet_reached": quiet, "log": os.path.relpath(poll_path, NODE)}
+    starts = []
+    for path in glob.glob(os.path.join(LOGS, "timing", "*.log")):
+        log = read_log(path)
+        if log and log["begin"]:
+            starts.append(log["begin"]["date"])
+    poll["first_timing_invocation"] = min(starts) if starts else None
+    poll["last_timing_invocation"] = max(starts) if starts else None
+    results["load_poll"] = poll
 
     results["log_inventory"] = {
         phase: len(glob.glob(os.path.join(LOGS, phase, "*.log")))
