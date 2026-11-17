@@ -80,19 +80,19 @@ def main():
                  if errs[i] and errs[i + 1] and errs[i] >= FLOOR and errs[i + 1] >= FLOOR]
         emit(kind="order_summary_convenience", arm=tab.name, problem=pid, pair_orders=pairs,
              median=(float(np.median(pairs)) if pairs else None))
-    # exploratory: Prothero-Robinson, lambda = -1e6, exact solution known
-    prob = problems.prothero_robinson()
-    errs = []
-    for n in STEPS:
-        y = proto.fixed(tab, prob, n)
-        e = abs(y[0] - prob.exact(prob.t_end)) if np.all(np.isfinite(y)) else None
-        errs.append(e)
-        emit(kind="pr_point", arm=tab.name, problem=prob.id, lam=-1e6, steps=n, h=prob.t_end / n, error=e,
-             label="exploratory")
-    emit(kind="pr_summary_convenience", arm=tab.name,
-         pair_orders=[(math.log2(errs[i] / errs[i + 1]) if errs[i] and errs[i + 1] else None)
-                      for i in range(len(errs) - 1)], label="exploratory")
-
+    # exploratory: Prothero-Robinson with exact solution, three stiffness values
+    for lam in (-1e2, -1e4, -1e6):
+        prob = problems.prothero_robinson(lam)
+        errs = []
+        for n in STEPS:
+            y = proto.fixed(tab, prob, n)
+            e = abs(y[0] - prob.exact(prob.t_end)) if np.all(np.isfinite(y)) else None
+            errs.append(e)
+            emit(kind="pr_point", arm=tab.name, problem=prob.id, lam=lam, steps=n, h=prob.t_end / n, error=e,
+                 label="exploratory")
+        emit(kind="pr_summary_convenience", arm=tab.name, lam=lam,
+             pair_orders=[(math.log2(errs[i] / errs[i + 1]) if errs[i] and errs[i + 1] else None)
+                          for i in range(len(errs) - 1)], label="exploratory")
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,112 @@
+{
+  "schema": "v16-literature-v1",
+  "retrieved": "2026-11-17",
+  "method": "Owner's PDF copies in the main checkout (read-only, text extracted with pdftotext into the scratch directory) and web search with an automated page reader. Publisher pages of Elsevier, zbMATH and global-sci returned HTTP 403 for full records; what was not readable is tagged.",
+  "no_novelty_claim": true,
+  "entries": [
+    {
+      "key": "SchmittWeiner2004",
+      "citation": "B. A. Schmitt, R. Weiner, Parallel two-step W-methods with peer variables, SIAM J. Numer. Anal. 42(1), 265-282 (2004), doi:10.1137/S0036142902411057",
+      "access": "read: owner's PDF copy, abstract and pages 265-268, 280-282",
+      "class": "two-step peer W-methods (PPSW)",
+      "facts": [
+        "s peer stage values per step; the s linear stage equations are independent and may be solved in parallel, i.e. depth 1 per step on s processors",
+        "convergence of order s-1 is proved, conditions for order s are given, methods up to order 7 (up to eight stages) are identified by tests",
+        "one matrix decomposition of I - gamma h T can be used for all stages",
+        "sequential comparison with the code RODAS: 'RODAS is clearly superior for weak tolerances', attributed to its faster step-size increase; several methods are called competitive with RODAS"
+      ]
+    },
+    {
+      "key": "WeinerSchmittPodhaisky2004",
+      "citation": "R. Weiner, B. A. Schmitt, H. Podhaisky, Parallel 'Peer' two-step W-methods and their application to MOL-systems, Appl. Numer. Math. 48, 425-439 (2004), doi:10.1016/j.apnum.2003.10.005",
+      "access": "read: owner's PDF copy, abstract and introduction",
+      "class": "two-step peer W-methods",
+      "facts": [
+        "order and stage order s-1 or s, optimal damping at infinity, robust under step-size changes",
+        "tests on a shared-memory computer with Krylov techniques for MOL systems"
+      ]
+    },
+    {
+      "key": "SchmittWeinerPodhaisky2005",
+      "citation": "B. A. Schmitt, R. Weiner, H. Podhaisky, Multi-implicit peer two-step W-methods for parallel time integration, BIT Numer. Math. 45, 197-217 (2005), doi:10.1007/s10543-005-2635-y",
+      "access": "read: owner's PDF copy, abstract and introduction",
+      "class": "two-step peer W-methods with a different system parameter per stage",
+      "facts": [
+        "order s-1; optimal damping for stiff problems by different system parameters in different stages (s different matrices per step)",
+        "uniform stability for realistic step-size sequences, a superconvergence property, matrix-free Krylov tests on a shared-memory computer"
+      ]
+    },
+    {
+      "key": "Podhaisky2002",
+      "citation": "H. Podhaisky, Parallele Zweischritt-W-Methoden, Dissertation, Martin-Luther-Universitaet Halle-Wittenberg (2002), urn:nbn:de:gbv:3-000002903",
+      "access": "read: owner's PDF copy, title page and table of contents only",
+      "class": "parallel two-step W-methods (PTSW)",
+      "facts": [
+        "chapters on stiffly accurate methods with a nilpotent stability matrix at infinity and on optimised two-, three- and four-stage L(alpha)- and A(alpha)-stable parameter sets"
+      ]
+    },
+    {
+      "key": "CaoLiLiu2002",
+      "citation": "X.-N. Cao, S.-F. Li, D.-G. Liu, Modified parallel Rosenbrock methods for stiff differential equations, J. Comput. Math. 20(1), 23-34 (2002), doi:10.4208/jcm.v20.n1.p23",
+      "access": "publisher abstract page through an automated reader (short quotes); full text not read",
+      "class": "parallel Rosenbrock methods (MPROW), building on the PRMs of Chen and Liu (1995)",
+      "facts": [
+        "'practically optimal 2-stage 3rd-order and 3-stage 4th-order MPROWs', 'all A-stable and have small error constants'",
+        "how the stages are distributed over processors is not stated in the abstract: UNVERIFIED"
+      ]
+    },
+    {
+      "key": "ChenLiu2000",
+      "citation": "L.-R. Chen, D.-G. Liu, Parallel Rosenbrock methods for solving stiff systems in real-time simulation, J. Comput. Math. (2000)",
+      "access": "search-result snippet only; volume, pages and orders UNVERIFIED",
+      "class": "parallel Rosenbrock methods (PRM)",
+      "facts": ["construction, convergence and stability of PRMs for real-time simulation on parallel computers"]
+    },
+    {
+      "key": "Voss2004",
+      "citation": "D. A. Voss, Fourth-order parallel Rosenbrock formulae for stiff systems, Math. Comput. Modelling 40(11-12), 1193-1198 (2004), doi:10.1016/j.mcm.2005.01.013",
+      "access": "bibliographic records only (MaRDI portal, OpenAlex); abstract and text not reachable (HTTP 403)",
+      "class": "parallel Rosenbrock formulae",
+      "facts": ["order 4 (from the title); keywords: stability, parallel computation, Robertson problem, variable step size; number of stages and processors UNVERIFIED"]
+    },
+    {
+      "key": "VossKhaliq2001",
+      "citation": "D. A. Voss, A. Q. M. Khaliq, Parallel Rosenbrock methods for chemical systems, Computers and Chemistry 25, 101-107 (2001)",
+      "access": "search-result snippet of the abstract only; authors, venue and pages are from memory: UNVERIFIED",
+      "class": "parallel Rosenbrock methods",
+      "facts": ["'Parallelism across the method allows for the solution of the linear algebraic systems in essentially Backward Euler-like solves on concurrent processors'; order UNVERIFIED"]
+    },
+    {
+      "key": "PonnammalPonalagusamy2014",
+      "citation": "K. Ponnammal, R. Ponalagusamy, A parallel fourth order Rosenbrock method: construction, analysis and numerical comparison (2014)",
+      "access": "search-result snippet only: UNVERIFIED",
+      "class": "parallel Rosenbrock method",
+      "facts": ["four stages, order 4, intended for four processors"]
+    },
+    {
+      "key": "LuanOstermann2016",
+      "citation": "V. T. Luan, A. Ostermann, Parallel exponential Rosenbrock methods (2016)",
+      "access": "search-result snippet only: UNVERIFIED",
+      "class": "exponential Rosenbrock integrators (a different class: matrix functions instead of linear solves)",
+      "facts": ["an order-4 parallel integrator at the cost of a two-stage method"]
+    },
+    {
+      "key": "HairerWanner",
+      "citation": "E. Hairer, G. Wanner, Solving Ordinary Differential Equations II, 2nd ed., Springer (1996), sections IV.7 and VI.4",
+      "access": "cited from memory, the book was not consulted; the formulas used were re-derived and validated numerically on RODAS5P",
+      "class": "order conditions of Rosenbrock methods; index-1 trees",
+      "facts": []
+    },
+    {
+      "key": "Steinebach2023",
+      "citation": "G. Steinebach, Construction of Rosenbrock-Wanner method Rodas5P and numerical benchmarks within the Julia Differential Equations package, BIT Numer. Math. 63, 27 (2023), doi:10.1007/s10543-023-00967-x",
+      "access": "as quoted in theory/THEORY.md section S4 (short quotes through an automated reader); not re-read in this node",
+      "class": "sequential ROW method of order 5(4), 8 stages",
+      "facts": ["order conditions of Tables 2-4 including index-1 and Prothero-Robinson conditions"]
+    }
+  ],
+  "reading": [
+    "In the sources reached, one-step Rosenbrock-type formulae with stage parallelism have order 3 or 4 with two to four stages; orders 5 to 7 with full stage parallelism are obtained by two-step peer W-methods, which give up the one-step structure and whose stages are all independent within a step. The repository already contains methods of that family (PPSW1, PTSW2b).",
+    "No stiffly accurate order-5(4) one-step ROW tableau with a level structure for two processors was found in this search. The search was short and several full texts were not reachable; this sentence describes the search, it is not a novelty claim."
+  ]
+}
