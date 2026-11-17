@@ -17,7 +17,8 @@ mkdir -p "$LOGS"
 
 run() {
     # run <log name> <command...>
-    log=$LOGS/$1.log
+    name=$1
+    log=$LOGS/$name.log
     shift
     {
         echo "# command: $*"
@@ -32,7 +33,7 @@ run() {
         echo "# loadavg_after: $(cat /proc/loadavg)"
         echo "# exit_code: $code"
     } >>"$log"
-    echo "$1 -> exit $code ($log)"
+    echo "$name -> exit $code ($log)"
 }
 
 for step in "$@"; do
