@@ -520,8 +520,14 @@ fn peer_baseline_digests_of_the_u07_cases() {
                 threads,
                 ..PeerSolveOptions::default()
             };
-            let s = PeerOde::solve(&pr_problem(kind), (0.0, 1.0), &pr_phi(0.0), &options, allowed)
-                .expect("the U07 case runs");
+            let s = PeerOde::solve(
+                &pr_problem(kind),
+                (0.0, 1.0),
+                &pr_phi(0.0),
+                &options,
+                allowed,
+            )
+            .expect("the U07 case runs");
             assert!(s.success, "{kind}/{threads}: {:?}", s.failure);
             rows.push(json!({
                 "jacobian": kind,
@@ -540,7 +546,10 @@ fn peer_baseline_digests_of_the_u07_cases() {
             }));
         }
     }
-    println!("QUAL {}", json!({"test": "peer_baseline_digests", "data": rows}));
+    println!(
+        "QUAL {}",
+        json!({"test": "peer_baseline_digests", "data": rows})
+    );
 }
 
 // --------------------------------------- part 1b: typed assertions of the fix
@@ -608,7 +617,11 @@ fn peer_recoverable_jacobian_error_on_a_peer_step_is_typed_and_stops() {
         } => {
             assert!(*t > 5.0, "t = {t}");
             assert_eq!(message, "user says shrink");
-            assert_eq!(s.t.last().copied(), Some(*t), "the prefix ends at the Jacobian point");
+            assert_eq!(
+                s.t.last().copied(),
+                Some(*t),
+                "the prefix ends at the Jacobian point"
+            );
         }
         other => panic!("unexpected reason {other:?}"),
     }
@@ -664,9 +677,16 @@ fn peer_fatal_rhs_error_on_a_peer_step_is_typed_with_prefix() {
         ),
         "{reason:?}"
     );
-    assert_eq!(failing_calls.load(Ordering::SeqCst), 1, "no call after the fatal one");
+    assert_eq!(
+        failing_calls.load(Ordering::SeqCst),
+        1,
+        "no call after the fatal one"
+    );
     assert!(!s.t.is_empty() && *s.t.last().unwrap() <= 5.0);
-    assert!(s.step_work.rhs_calls > 6 * s.step_work.accepted_steps, "failed attempt charged");
+    assert!(
+        s.step_work.rhs_calls > 6 * s.step_work.accepted_steps,
+        "failed attempt charged"
+    );
     println!(
         "QUAL {}",
         json!({"test": "peer_typed_fatal_rhs", "data": {
@@ -1253,7 +1273,8 @@ fn d3_route_is_pure_for_every_choice_over_the_extension_grid() {
                 for id in ids.iter().copied().chain(["no-such-method"]) {
                     for params in [&MethodParams::default(), &with_flow] {
                         let choice = MethodChoice::Explicit(id);
-                        let result = MethodRegistry::route_with(&problem, &options, &choice, params);
+                        let result =
+                            MethodRegistry::route_with(&problem, &options, &choice, params);
                         tally(&result);
                         if id == "rodas5p" {
                             // the explicit RODAS5P admission is the facade capability query
@@ -1293,7 +1314,10 @@ fn d3_route_is_pure_for_every_choice_over_the_extension_grid() {
             "callback_entries": callbacks,
         }})
     );
-    assert_eq!(routed, 192 * 4 * 12 * (2 * (ids.len() + 1) + auto_policies.len()));
+    assert_eq!(
+        routed,
+        192 * 4 * 12 * (2 * (ids.len() + 1) + auto_policies.len())
+    );
     assert_eq!(rodas_equal, rodas_checked);
     assert!(plans > 0 && refusals > 0);
     assert_eq!(callbacks, 0, "a routing query entered a callback");
@@ -1353,8 +1377,7 @@ impl Fixture {
     fn direct(&self) -> OdeProblem {
         type CoreRhs = Arc<dyn Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
         type CoreJacobian = Arc<dyn Fn(f64, &[f64]) -> CoreResult<DenseMatrix> + Send + Sync>;
-        type CoreJvp =
-            Arc<dyn Fn(f64, &[f64], &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
+        type CoreJvp = Arc<dyn Fn(f64, &[f64], &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
         let (n, rhs) = (self.n, self.rhs);
         let rhs: CoreRhs = Arc::new(move |t, y, out| {
             rhs(t, y, out);
@@ -1682,7 +1705,11 @@ fn rodas5p_case(
         panic!("{name}: not a RODAS5P result");
     };
     assert_eq!(bits(view.times()), bits(&direct.t), "{name}: times");
-    assert_eq!(row_bits(view.states()), row_bits(&direct.y), "{name}: states");
+    assert_eq!(
+        row_bits(view.states()),
+        row_bits(&direct.y),
+        "{name}: states"
+    );
     assert_eq!(
         serde_json::to_string(native).unwrap(),
         serde_json::to_string(&direct).unwrap(),
@@ -1899,7 +1926,8 @@ fn d2_dopri5_adapter_and_general_plan_are_bitwise_the_direct_calls() {
             },
         ),
     ] {
-        let plan = MethodRegistry::route(problem, &options, &MethodChoice::General(policy)).unwrap();
+        let plan =
+            MethodRegistry::route(problem, &options, &MethodChoice::General(policy)).unwrap();
         let unified =
             MethodRegistry::solve(problem, fixture.span, &fixture.y0, &options, &plan).unwrap();
         let direct =
@@ -1965,9 +1993,15 @@ fn observed_case(method_id: &'static str, fixture: &Fixture, options: &Options) 
     let schedule = OutputSchedule::new(vec![fixture.span.0, fixture.span.1]).unwrap();
     let (span, y0) = (fixture.span, fixture.y0.as_slice());
     let (direct, attempts) = if method_id == "bdf1-bdf2-variable" {
-        let run =
-            integrate_bdf_adaptive_observed(&ode, span, y0, &BdfConfig::default(), &adaptive, &schedule)
-                .expect(&name);
+        let run = integrate_bdf_adaptive_observed(
+            &ode,
+            span,
+            y0,
+            &BdfConfig::default(),
+            &adaptive,
+            &schedule,
+        )
+        .expect(&name);
         (run.observed, run.diagnostics.attempts)
     } else if method_id == "radau-iia3" {
         let run = integrate_radau_adaptive_observed(
@@ -2007,21 +2041,35 @@ fn observed_case(method_id: &'static str, fixture: &Fixture, options: &Options) 
         panic!("{method_id} is not an integrator-crate adapter");
     };
 
-    assert!(direct.success, "{name}: the direct call failed: {}", direct.message);
+    assert!(
+        direct.success,
+        "{name}: the direct call failed: {}",
+        direct.message
+    );
     assert_eq!(bits(&run.t), bits(&direct.t), "{name}: times");
     assert_eq!(row_bits(&run.y), row_bits(&direct.y), "{name}: states");
     assert_eq!(run.success, direct.success, "{name}");
     assert_eq!(run.message, direct.message, "{name}");
-    assert_eq!(run.counters, WorkRecord::from(&direct.counters), "{name}: work counters");
+    assert_eq!(
+        run.counters,
+        WorkRecord::from(&direct.counters),
+        "{name}: work counters"
+    );
     assert!(run.counters_from_driver, "{name}");
     assert_eq!(run.attempts, attempts, "{name}: attempts");
     assert_eq!(
         (run.accepted_steps, run.rejected_steps),
-        (direct.counters.accepted_steps, direct.counters.rejected_steps),
+        (
+            direct.counters.accepted_steps,
+            direct.counters.rejected_steps
+        ),
         "{name}: step counts"
     );
     assert_eq!(run.internal_steps, direct.internal_steps, "{name}");
-    assert_eq!(run.output_clipped_steps, direct.output_clipped_steps, "{name}");
+    assert_eq!(
+        run.output_clipped_steps, direct.output_clipped_steps,
+        "{name}"
+    );
     // the view agrees with the native record
     assert!(view.is_success() && view.failure().is_none());
     assert_eq!(view.work(), run.counters);
@@ -2103,7 +2151,11 @@ fn d2_lagged_rodas5p_adapter_is_bitwise_the_direct_call() {
     let rows = vec![
         observed_case(METHOD_ID_RODAS5P_LAGGED, &robertson(), &options),
         observed_case(METHOD_ID_RODAS5P_LAGGED, &brusselator(), &options),
-        observed_case(METHOD_ID_RODAS5P_LAGGED, &prothero_robinson(false), &options),
+        observed_case(
+            METHOD_ID_RODAS5P_LAGGED,
+            &prothero_robinson(false),
+            &options,
+        ),
     ];
     println!(
         "QUAL {}",
@@ -2116,7 +2168,10 @@ fn d2_lagged_rodas5p_adapter_is_bitwise_the_direct_call() {
 fn d2_ppsw1_adapter_is_bitwise_the_direct_call() {
     let options = Options::default();
     let mut rows = Vec::new();
-    for (jvp, variant) in [(false, "explicit-jacobian-dense"), (true, "jvp-columns-dense")] {
+    for (jvp, variant) in [
+        (false, "explicit-jacobian-dense"),
+        (true, "jvp-columns-dense"),
+    ] {
         let fixture = prothero_robinson(jvp);
         for peer in [
             None,
@@ -2136,9 +2191,13 @@ fn d2_ppsw1_adapter_is_bitwise_the_direct_call() {
             let choice = MethodChoice::Explicit(ppsw1::METHOD_ID);
             let plan = MethodRegistry::route_with(&problem, &options, &choice, &params).unwrap();
             assert_eq!(plan.route.variant, variant);
-            assert_eq!(plan.route.qualification, MethodQualification::ScopedCalibration);
+            assert_eq!(
+                plan.route.qualification,
+                MethodQualification::ScopedCalibration
+            );
             let unified =
-                MethodRegistry::solve(&problem, fixture.span, &fixture.y0, &options, &plan).unwrap();
+                MethodRegistry::solve(&problem, fixture.span, &fixture.y0, &options, &plan)
+                    .unwrap();
             // the direct call: the caller's Peer options, or the shared options lowered
             let direct_options = peer.unwrap_or(PeerSolveOptions {
                 rtol: options.rtol,
@@ -2178,9 +2237,15 @@ fn d2_ppsw1_adapter_is_bitwise_the_direct_call() {
             assert_eq!(view.work(), WorkRecord::from(&total));
             assert_eq!(
                 view.steps(),
-                (direct.step_work.accepted_steps, direct.step_work.rejected_steps)
+                (
+                    direct.step_work.accepted_steps,
+                    direct.step_work.rejected_steps
+                )
             );
-            assert_eq!(view.output_grid(), MethodOutputGrid::AcceptedStepsWithoutInitial);
+            assert_eq!(
+                view.output_grid(),
+                MethodOutputGrid::AcceptedStepsWithoutInitial
+            );
             assert_eq!(view.final_time(), Some(fixture.span.1));
             rows.push(json!({
                 "case": format!("{}/{}", fixture.name, if peer.is_some() { "peer-options" } else { "shared-options" }),
@@ -2239,7 +2304,10 @@ fn d2_lawson_adapter_is_bitwise_the_direct_call_and_needs_its_declaration() {
     );
     assert_eq!(bits(view.times()), bits(&direct.integration.t));
     assert_eq!(row_bits(view.states()), row_bits(&direct.integration.y));
-    assert_eq!(view.work(), WorkRecord::from(&direct.integration.stats.counters));
+    assert_eq!(
+        view.work(),
+        WorkRecord::from(&direct.integration.stats.counters)
+    );
     assert_eq!(view.executed_driver(), direct.integration.stats.method);
     println!(
         "QUAL {}",
@@ -2255,6 +2323,9 @@ fn d2_lawson_adapter_is_bitwise_the_direct_call_and_needs_its_declaration() {
 }
 
 // ------------------------------------------- D3: refusal before any callback
+
+/// One malformed request: its name, span, initial state and options.
+type MalformedInput<'a> = (&'a str, (f64, f64), &'a [f64], &'a Options);
 
 /// D3 (frozen): `solve` refuses malformed input and a foreign plan before any
 /// callback, for every available method.
@@ -2286,7 +2357,7 @@ fn d3_solve_refuses_malformed_input_before_any_callback() {
                 ..options.clone()
             };
             let reversed = (fixture.span.1, fixture.span.0);
-            let cases: [(&str, (f64, f64), &[f64], &Options); 4] = [
+            let cases: [MalformedInput<'_>; 4] = [
                 ("short y0", fixture.span, &short, &options),
                 ("nan y0", fixture.span, &nan, &options),
                 ("reversed span", reversed, &fixture.y0, &options),
@@ -2294,7 +2365,11 @@ fn d3_solve_refuses_malformed_input_before_any_callback() {
             ];
             for (what, span, y0, opts) in cases {
                 let result = MethodRegistry::solve(&problem, span, y0, opts, &plan);
-                assert!(result.is_err(), "{id} on {}: {what} was accepted", fixture.name);
+                assert!(
+                    result.is_err(),
+                    "{id} on {}: {what} was accepted",
+                    fixture.name
+                );
                 rows.push(json!({"method": id, "fixture": fixture.name, "input": what,
                                  "error": result.err().map(|e| e.to_string())}));
             }
@@ -2335,27 +2410,39 @@ fn d3_explicit_refusals_are_typed() {
     let entries = Arc::new(AtomicUsize::new(0));
     let options = tolerances(1e-6, 1e-9);
     let dense = prothero_robinson(false);
-    let refusal = |problem: &Problem, options: &Options, id: &str| {
-        match MethodRegistry::route(problem, options, &MethodChoice::Explicit(id)) {
-            Err(MethodRouteRefusal::Method { reasons, .. }) => reasons,
-            other => panic!("{id}: expected a method refusal, got {other:?}"),
-        }
+    let refusal = |problem: &Problem, options: &Options, id: &str| match MethodRegistry::route(
+        problem,
+        options,
+        &MethodChoice::Explicit(id),
+    ) {
+        Err(MethodRouteRefusal::Method { reasons, .. }) => reasons,
+        other => panic!("{id}: expected a method refusal, got {other:?}"),
     };
     // unknown id
     assert_eq!(
-        MethodRegistry::route(&dense.facade(&entries), &options, &MethodChoice::Explicit("rodas6"))
-            .err(),
+        MethodRegistry::route(
+            &dense.facade(&entries),
+            &options,
+            &MethodChoice::Explicit("rodas6")
+        )
+        .err(),
         Some(MethodRouteRefusal::UnknownMethod {
             method_id: "rodas6".into()
         })
     );
     // no adapter
     assert_eq!(
-        refusal(&dense.facade(&entries), &options, "ppsw1-6b-matrix-free-common-w"),
+        refusal(
+            &dense.facade(&entries),
+            &options,
+            "ppsw1-6b-matrix-free-common-w"
+        ),
         vec![Reason::AdapterUnavailable]
     );
     let mass = dense.facade(&entries).mass(vec![1.0, 0.0, 0.0, 1.0]);
-    let event = dense.facade(&entries).event(|_t, y| y[0] - 1.5, Direction::Up);
+    let event = dense
+        .facade(&entries)
+        .event(|_t, y| y[0] - 1.5, Direction::Up);
     let banded = dense.facade(&entries).banded(1, 1);
     let finite_difference = Problem::new(2, |t, y, dy| {
         pr_rhs(t, y, dy);
@@ -2423,7 +2510,11 @@ fn d3_explicit_refusals_are_typed() {
         ]
     );
     assert_eq!(
-        refusal(&prothero_robinson(true).facade(&entries), &options, METHOD_ID_PEXPRB),
+        refusal(
+            &prothero_robinson(true).facade(&entries),
+            &options,
+            METHOD_ID_PEXPRB
+        ),
         vec![Reason::NonAutonomousUnsupported]
     );
     // the explicit drivers and the RODAS5P facade keep their own typed refusals
@@ -2474,10 +2565,14 @@ fn view_reports_typed_failure_with_accepted_prefix_and_work() {
         view.failure()
     );
     let t_last = view.final_time().unwrap();
-    assert!(view.times()[0] == fixture.span.0 && t_last > fixture.span.0 && t_last < fixture.span.1);
+    assert!(
+        view.times()[0] == fixture.span.0 && t_last > fixture.span.0 && t_last < fixture.span.1
+    );
     assert!(view.work().rhs_calls > 0 && view.steps().0 > 0);
-    rows.push(json!({"method": "dopri5", "failure": view.failure().map(|f| f.to_string()),
-                     "prefix_end": t_last, "rhs_calls": view.work().rhs_calls}));
+    rows.push(
+        json!({"method": "dopri5", "failure": view.failure().map(|f| f.to_string()),
+                     "prefix_end": t_last, "rhs_calls": view.work().rhs_calls}),
+    );
 
     // RODAS5P: attempt budget
     let fixture = robertson();
@@ -2489,7 +2584,9 @@ fn view_reports_typed_failure_with_accepted_prefix_and_work() {
     assert!(
         matches!(
             view.failure(),
-            Some(MethodFailure::Driver(FailureReason::MaxStepsReached { max_steps: 5 }))
+            Some(MethodFailure::Driver(FailureReason::MaxStepsReached {
+                max_steps: 5
+            }))
         ),
         "{:?}",
         view.failure()
@@ -2497,8 +2594,10 @@ fn view_reports_typed_failure_with_accepted_prefix_and_work() {
     let t_last = view.final_time().unwrap();
     assert!(t_last > fixture.span.0 && t_last < fixture.span.1);
     assert!(view.work().rhs_calls > 0);
-    rows.push(json!({"method": "rodas5p", "failure": view.failure().map(|f| f.to_string()),
-                     "prefix_end": t_last, "rhs_calls": view.work().rhs_calls}));
+    rows.push(
+        json!({"method": "rodas5p", "failure": view.failure().map(|f| f.to_string()),
+                     "prefix_end": t_last, "rhs_calls": view.work().rhs_calls}),
+    );
 
     // Radau: attempt budget; the driver exposes the reached output samples only
     let plan = explicit_plan(&problem, &budget, "radau-iia3");
@@ -2508,15 +2607,19 @@ fn view_reports_typed_failure_with_accepted_prefix_and_work() {
     assert!(
         matches!(
             view.failure(),
-            Some(MethodFailure::Driver(FailureReason::MaxStepsReached { max_steps: 5 }))
+            Some(MethodFailure::Driver(FailureReason::MaxStepsReached {
+                max_steps: 5
+            }))
         ),
         "{:?}",
         view.failure()
     );
     assert_eq!(view.times(), &[fixture.span.0]);
     assert!(view.work().rhs_calls > 0 && view.steps().0 > 0);
-    rows.push(json!({"method": "radau-iia3", "failure": view.failure().map(|f| f.to_string()),
-                     "prefix_end": view.final_time(), "rhs_calls": view.work().rhs_calls}));
+    rows.push(
+        json!({"method": "radau-iia3", "failure": view.failure().map(|f| f.to_string()),
+                     "prefix_end": view.final_time(), "rhs_calls": view.work().rhs_calls}),
+    );
 
     // BDF: a fatal right-hand-side error; the driver returns no record, the adapter keeps
     // the typed reason, the initial state and the callback entries
@@ -2553,12 +2656,22 @@ fn view_reports_typed_failure_with_accepted_prefix_and_work() {
     };
     assert!(!run.counters_from_driver && run.driver_error.is_some());
     assert_eq!(run.callbacks_entered.rhs, 31);
-    assert_eq!(rhs_calls.load(Ordering::SeqCst), 31, "no call after the fatal one");
-    assert_eq!(view.work().rhs_calls, 31, "the work of the failed run is kept");
+    assert_eq!(
+        rhs_calls.load(Ordering::SeqCst),
+        31,
+        "no call after the fatal one"
+    );
+    assert_eq!(
+        view.work().rhs_calls,
+        31,
+        "the work of the failed run is kept"
+    );
     assert_eq!(view.times(), &[fixture.span.0]);
     assert_eq!(run.callback_outcomes.fatal_errors, 1);
-    rows.push(json!({"method": "bdf1-bdf2-variable", "failure": view.failure().map(|f| f.to_string()),
-                     "prefix_end": view.final_time(), "rhs_calls": view.work().rhs_calls}));
+    rows.push(
+        json!({"method": "bdf1-bdf2-variable", "failure": view.failure().map(|f| f.to_string()),
+                     "prefix_end": view.final_time(), "rhs_calls": view.work().rhs_calls}),
+    );
 
     // PPSW1: the typed Peer failure passes through the view
     let failing_calls = Arc::new(AtomicUsize::new(0));
@@ -2569,9 +2682,14 @@ fn view_reports_typed_failure_with_accepted_prefix_and_work() {
         failing_calls,
     );
     let plan = explicit_plan(&peer_problem, &Options::default(), ppsw1::METHOD_ID);
-    let solution =
-        MethodRegistry::solve(&peer_problem, (0.0, 10.0), &[1.0], &Options::default(), &plan)
-            .unwrap();
+    let solution = MethodRegistry::solve(
+        &peer_problem,
+        (0.0, 10.0),
+        &[1.0],
+        &Options::default(),
+        &plan,
+    )
+    .unwrap();
     let view = solution.view();
     assert!(
         matches!(
@@ -2587,10 +2705,15 @@ fn view_reports_typed_failure_with_accepted_prefix_and_work() {
         view.failure()
     );
     assert!(view.final_time().unwrap() > 5.0 && view.work().rhs_calls > 0);
-    rows.push(json!({"method": ppsw1::METHOD_ID, "failure": view.failure().map(|f| f.to_string()),
-                     "prefix_end": view.final_time(), "rhs_calls": view.work().rhs_calls}));
+    rows.push(
+        json!({"method": ppsw1::METHOD_ID, "failure": view.failure().map(|f| f.to_string()),
+                     "prefix_end": view.final_time(), "rhs_calls": view.work().rhs_calls}),
+    );
 
-    println!("QUAL {}", json!({"test": "view_typed_failures", "data": rows}));
+    println!(
+        "QUAL {}",
+        json!({"test": "view_typed_failures", "data": rows})
+    );
 }
 
 // ------------------------------------------------ Auto: ranking and fallback
@@ -2635,7 +2758,10 @@ fn auto_ranking_is_transparent_and_refuses_before_any_callback() {
     );
     assert_eq!(plan.route.id(), "rodas5p/dense-fast");
     assert_eq!(
-        plan.fallbacks.iter().map(|r| r.method_id).collect::<Vec<_>>(),
+        plan.fallbacks
+            .iter()
+            .map(|r| r.method_id)
+            .collect::<Vec<_>>(),
         vec![ppsw1::METHOD_ID, "bdf1-bdf2-variable"],
         "max_attempts bounds the fallback chain"
     );
@@ -2647,7 +2773,10 @@ fn auto_ranking_is_transparent_and_refuses_before_any_callback() {
             .map(|c| c.refusals.clone())
             .expect("one row per catalog entry")
     };
-    assert_eq!(reasons_of(&plan, "dopri5"), vec![MethodRefusalReason::RegimeMismatch]);
+    assert_eq!(
+        reasons_of(&plan, "dopri5"),
+        vec![MethodRefusalReason::RegimeMismatch]
+    );
     assert_eq!(
         reasons_of(&plan, METHOD_ID_LAWSON),
         vec![MethodRefusalReason::ExplicitChoiceOnly]
@@ -2658,7 +2787,9 @@ fn auto_ranking_is_transparent_and_refuses_before_any_callback() {
     );
     assert_eq!(
         reasons_of(&plan, METHOD_ID_PEXPRB),
-        vec![MethodRefusalReason::Registry(RegistryRefusal::ProviderFormUnsupported)]
+        vec![MethodRefusalReason::Registry(
+            RegistryRefusal::ProviderFormUnsupported
+        )]
     );
 
     // qualified methods only, and only what the General policy permits (no Newton)
@@ -2668,17 +2799,20 @@ fn auto_ranking_is_transparent_and_refuses_before_any_callback() {
         ..GeneralOdePolicy::default()
     };
     let from_general = MethodAutoPolicy::from_general(&problem, &general);
-    let narrow = MethodRegistry::route(&problem, &options, &MethodChoice::Auto(from_general)).unwrap();
+    let narrow =
+        MethodRegistry::route(&problem, &options, &MethodChoice::Auto(from_general)).unwrap();
     assert_eq!(ranked_ids(&narrow), vec!["rodas5p"]);
     assert!(narrow.fallbacks.is_empty());
     assert!(
-        reasons_of(&narrow, ppsw1::METHOD_ID).iter().any(|r| matches!(
-            r,
-            MethodRefusalReason::Registry(RegistryRefusal::Permission {
-                phase: MethodPhase::Startup,
-                ..
-            })
-        )),
+        reasons_of(&narrow, ppsw1::METHOD_ID)
+            .iter()
+            .any(|r| matches!(
+                r,
+                MethodRefusalReason::Registry(RegistryRefusal::Permission {
+                    phase: MethodPhase::Startup,
+                    ..
+                })
+            )),
         "the PPSW1 starter needs Newton, which the policy does not permit"
     );
     assert_eq!(
@@ -2694,7 +2828,11 @@ fn auto_ranking_is_transparent_and_refuses_before_any_callback() {
     match MethodRegistry::route(&problem, &options, &MethodChoice::Auto(none)) {
         Err(MethodRouteRefusal::NoAdmittedMethod { ranking }) => {
             assert_eq!(ranking.len(), MethodRegistry::catalog().len());
-            assert!(ranking.iter().all(|c| c.rank.is_none() && !c.refusals.is_empty()));
+            assert!(
+                ranking
+                    .iter()
+                    .all(|c| c.rank.is_none() && !c.refusals.is_empty())
+            );
         }
         other => panic!("expected NoAdmittedMethod, got {other:?}"),
     }
@@ -2750,11 +2888,19 @@ fn auto_ranking_is_transparent_and_refuses_before_any_callback() {
             .iter()
             .all(|c| c.moved_by_evidence == (c.method_id == METHOD_ID_RODAS5P_LAGGED))
     );
-    assert_eq!(entries.load(Ordering::SeqCst), 0, "routing entered a callback");
-    let solved = MethodRegistry::solve(&problem, fixture.span, &fixture.y0, &options, &plan_used)
-        .unwrap();
+    assert_eq!(
+        entries.load(Ordering::SeqCst),
+        0,
+        "routing entered a callback"
+    );
+    let solved =
+        MethodRegistry::solve(&problem, fixture.span, &fixture.y0, &options, &plan_used).unwrap();
     assert!(solved.is_success());
-    assert_eq!(solved.evidence_callback_units(), 18, "the evidence is charged");
+    assert_eq!(
+        solved.evidence_callback_units(),
+        18,
+        "the evidence is charged"
+    );
     println!(
         "QUAL {}",
         json!({"test": "auto_ranking", "data": {
@@ -2791,7 +2937,8 @@ fn auto_fallback_is_opt_in_bounded_by_permissions_and_never_silent() {
     let plan = MethodRegistry::route(&problem, &options, &MethodChoice::Auto(no_fallback)).unwrap();
     assert_eq!(plan.route.id(), "dopri5/rhs-only");
     assert!(plan.fallbacks.is_empty());
-    let alone = MethodRegistry::solve(&problem, fixture.span, &fixture.y0, &options, &plan).unwrap();
+    let alone =
+        MethodRegistry::solve(&problem, fixture.span, &fixture.y0, &options, &plan).unwrap();
     assert!(!alone.is_success());
     assert_eq!(alone.attempts().len(), 1);
 
@@ -2831,10 +2978,16 @@ fn auto_fallback_is_opt_in_bounded_by_permissions_and_never_silent() {
     assert_eq!(reported.route_id(), "rodas5p/dense-fast");
     assert_eq!(solution.view().route_id(), "rodas5p/dense-fast");
     // the work of the failed attempt stays in the totals
-    let (failed_work, reported_work, total) =
-        (failed.work_summary(), reported.work_summary(), solution.total_work());
+    let (failed_work, reported_work, total) = (
+        failed.work_summary(),
+        reported.work_summary(),
+        solution.total_work(),
+    );
     assert!(failed_work.rhs_calls > 0 && failed_work.accepted_steps > 0);
-    assert_eq!(total.rhs_calls, failed_work.rhs_calls + reported_work.rhs_calls);
+    assert_eq!(
+        total.rhs_calls,
+        failed_work.rhs_calls + reported_work.rhs_calls
+    );
     assert_eq!(
         total.accepted_steps,
         failed_work.accepted_steps + reported_work.accepted_steps
@@ -2885,7 +3038,10 @@ fn catalog_extends_the_registry_and_states_what_is_unavailable() {
     let descriptors = MethodRegistry::descriptors();
     assert_eq!(catalog.len(), descriptors.len() + 3);
     for (entry, descriptor) in catalog.iter().zip(&descriptors) {
-        assert_eq!(&entry.descriptor, descriptor, "the U06 descriptors are carried unchanged");
+        assert_eq!(
+            &entry.descriptor, descriptor,
+            "the U06 descriptors are carried unchanged"
+        );
     }
     let ids: Vec<&str> = catalog.iter().map(|e| e.descriptor.method_id).collect();
     let unique: std::collections::BTreeSet<&str> = ids.iter().copied().collect();
@@ -2895,7 +3051,10 @@ fn catalog_extends_the_registry_and_states_what_is_unavailable() {
         &[METHOD_ID_PEXPRB, METHOD_ID_RODAS5P_LAGGED, METHOD_ID_LAWSON]
     );
     for id in &ids {
-        assert_eq!(MethodRegistry::entry(id).map(|e| e.descriptor.method_id), Some(*id));
+        assert_eq!(
+            MethodRegistry::entry(id).map(|e| e.descriptor.method_id),
+            Some(*id)
+        );
     }
     assert!(MethodRegistry::entry("no-such-method").is_none());
     let unavailable: Vec<(&str, &str)> = catalog
@@ -2911,9 +3070,15 @@ fn catalog_extends_the_registry_and_states_what_is_unavailable() {
     // descriptor facts that the code states
     let radau = MethodRegistry::entry("radau-iia3").unwrap().descriptor;
     let stages = RadauConfig::default().stages;
-    assert_eq!((radau.stages, radau.order), (stages.count(), stages.order()));
+    assert_eq!(
+        (radau.stages, radau.order),
+        (stages.count(), stages.order())
+    );
     let peer = MethodRegistry::entry(ppsw1::METHOD_ID).unwrap();
-    assert_eq!(peer.jacobian_forms, vec![JacobianForm::Dense, JacobianForm::Jvp]);
+    assert_eq!(
+        peer.jacobian_forms,
+        vec![JacobianForm::Dense, JacobianForm::Jvp]
+    );
     assert!(!peer.declared_band && !peer.vector_atol);
     // every route names a real export
     let _ = rodas5p_integrators::integrate_pexprb54s4_fused_adaptive_observed;
@@ -2981,19 +3146,90 @@ fn cod03_audit_cases_agree_through_route() {
     };
     let identity = vec![1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0];
     let cases: Vec<(&str, Problem, &Options, GeneralOdePolicy)> = vec![
-        ("c01_banded_provider_n1000_stiff_provided", base(1000).jacobian(band()).autonomous(), &plain, policy(Stiff, ProvidedOnly, false)),
-        ("c02_fd_declared_band_n1000_stiff_allowfd", base(1000).banded(1, 1).autonomous(), &plain, policy(Stiff, AllowFiniteDifference, false)),
-        ("c03_jvp_n3_stiff_allowfd_no_matrix_free", base(3).jacobian(jvp()).autonomous(), &plain, policy(Stiff, AllowFiniteDifference, false)),
-        ("c04_dense_n3_nonautonomous_no_ft_stiff_provided", base(3).jacobian(dense()), &plain, policy(Stiff, ProvidedOnly, false)),
-        ("c05_dense_n3_event_stiff_provided", base(3).jacobian(dense()).autonomous().event(|_t, y| y[0], Direction::Either), &plain, policy(Stiff, ProvidedOnly, false)),
-        ("c06_dense_n3_mass_stiff_provided", base(3).jacobian(dense()).autonomous().mass(identity), &plain, policy(Stiff, ProvidedOnly, false)),
-        ("c07_dense_n3_regime_unknown_provided", base(3).jacobian(dense()).autonomous(), &plain, policy(Unknown, ProvidedOnly, false)),
-        ("c08_dense_n3_dense_output_stiff_provided", base(3).jacobian(dense()).autonomous(), &dense_output, policy(Stiff, ProvidedOnly, false)),
-        ("c09_jvp_n3_vector_atol_stiff_provided_matrix_free", base(3).jacobian(jvp()).autonomous(), &vector, policy(Stiff, ProvidedOnly, true)),
-        ("c10_dense_provider_declared_band_n100_control", base(100).jacobian(dense()).banded(1, 1).autonomous(), &plain, policy(Stiff, ProvidedOnly, false)),
-        ("c11_dense_n3_stiff_provided_control", base(3).jacobian(dense()).autonomous(), &plain, policy(Stiff, ProvidedOnly, false)),
-        ("c12_banded_provider_n10_label", base(10).jacobian(band()).autonomous(), &plain, policy(Stiff, ProvidedOnly, false)),
-        ("c13_dense_n3_event_dense_output", base(3).jacobian(dense()).autonomous().event(|_t, y| y[0], Direction::Either), &dense_output, policy(Stiff, ProvidedOnly, false)),
+        (
+            "c01_banded_provider_n1000_stiff_provided",
+            base(1000).jacobian(band()).autonomous(),
+            &plain,
+            policy(Stiff, ProvidedOnly, false),
+        ),
+        (
+            "c02_fd_declared_band_n1000_stiff_allowfd",
+            base(1000).banded(1, 1).autonomous(),
+            &plain,
+            policy(Stiff, AllowFiniteDifference, false),
+        ),
+        (
+            "c03_jvp_n3_stiff_allowfd_no_matrix_free",
+            base(3).jacobian(jvp()).autonomous(),
+            &plain,
+            policy(Stiff, AllowFiniteDifference, false),
+        ),
+        (
+            "c04_dense_n3_nonautonomous_no_ft_stiff_provided",
+            base(3).jacobian(dense()),
+            &plain,
+            policy(Stiff, ProvidedOnly, false),
+        ),
+        (
+            "c05_dense_n3_event_stiff_provided",
+            base(3)
+                .jacobian(dense())
+                .autonomous()
+                .event(|_t, y| y[0], Direction::Either),
+            &plain,
+            policy(Stiff, ProvidedOnly, false),
+        ),
+        (
+            "c06_dense_n3_mass_stiff_provided",
+            base(3).jacobian(dense()).autonomous().mass(identity),
+            &plain,
+            policy(Stiff, ProvidedOnly, false),
+        ),
+        (
+            "c07_dense_n3_regime_unknown_provided",
+            base(3).jacobian(dense()).autonomous(),
+            &plain,
+            policy(Unknown, ProvidedOnly, false),
+        ),
+        (
+            "c08_dense_n3_dense_output_stiff_provided",
+            base(3).jacobian(dense()).autonomous(),
+            &dense_output,
+            policy(Stiff, ProvidedOnly, false),
+        ),
+        (
+            "c09_jvp_n3_vector_atol_stiff_provided_matrix_free",
+            base(3).jacobian(jvp()).autonomous(),
+            &vector,
+            policy(Stiff, ProvidedOnly, true),
+        ),
+        (
+            "c10_dense_provider_declared_band_n100_control",
+            base(100).jacobian(dense()).banded(1, 1).autonomous(),
+            &plain,
+            policy(Stiff, ProvidedOnly, false),
+        ),
+        (
+            "c11_dense_n3_stiff_provided_control",
+            base(3).jacobian(dense()).autonomous(),
+            &plain,
+            policy(Stiff, ProvidedOnly, false),
+        ),
+        (
+            "c12_banded_provider_n10_label",
+            base(10).jacobian(band()).autonomous(),
+            &plain,
+            policy(Stiff, ProvidedOnly, false),
+        ),
+        (
+            "c13_dense_n3_event_dense_output",
+            base(3)
+                .jacobian(dense())
+                .autonomous()
+                .event(|_t, y| y[0], Direction::Either),
+            &dense_output,
+            policy(Stiff, ProvidedOnly, false),
+        ),
     ];
     let mut rows = Vec::new();
     for (name, problem, options, policy) in &cases {
@@ -3011,16 +3247,14 @@ fn cod03_audit_cases_agree_through_route() {
         if let Ok(selection) = &select {
             let expected = match (selection.method, selection.implicit_route) {
                 (ProductionMethod::Dopri5, _) => "dopri5/rhs-only".to_owned(),
-                (ProductionMethod::Rodas5p, Some(route)) => MethodRegistry::route(
-                    problem,
-                    options,
-                    &MethodChoice::Explicit("rodas5p"),
-                )
-                .map(|plan| {
-                    assert_eq!(plan.route.facade_route, Some(route));
-                    plan.route.id()
-                })
-                .unwrap(),
+                (ProductionMethod::Rodas5p, Some(route)) => {
+                    MethodRegistry::route(problem, options, &MethodChoice::Explicit("rodas5p"))
+                        .map(|plan| {
+                            assert_eq!(plan.route.facade_route, Some(route));
+                            plan.route.id()
+                        })
+                        .unwrap()
+                }
                 (ProductionMethod::Rodas5p, None) => unreachable!(),
             };
             assert_eq!(auto_route.as_deref(), Some(expected.as_str()), "{name}");
@@ -3046,5 +3280,8 @@ fn cod03_audit_cases_agree_through_route() {
         }));
     }
     assert_eq!(entries.load(Ordering::SeqCst), 0);
-    println!("QUAL {}", json!({"test": "cod03_audit_cases", "data": rows}));
+    println!(
+        "QUAL {}",
+        json!({"test": "cod03_audit_cases", "data": rows})
+    );
 }

@@ -68,10 +68,10 @@ use super::{
     RegistryRefusal, SelectionRefusal, caps, variant,
 };
 use crate::{
-    Atol, DampedRotationFlow, Dopri5, ExplicitCallbackFailure,
-    ExplicitSolution, ExplicitSolveError, ExplicitUnsupported, FacadeRoute, FailureReason,
-    InteriorError, Jacobian, LawsonDopri5, LawsonSolution, Options, Problem, Rodas5p, Solution,
-    SolveError, Status, Unsupported, WorkRecord,
+    Atol, DampedRotationFlow, Dopri5, ExplicitCallbackFailure, ExplicitSolution,
+    ExplicitSolveError, ExplicitUnsupported, FacadeRoute, FailureReason, InteriorError, Jacobian,
+    LawsonDopri5, LawsonSolution, Options, Problem, Rodas5p, Solution, SolveError, Status,
+    Unsupported, WorkRecord,
     selection_evidence::{CostComparison, CostEvidence, compare_qualified_costs},
 };
 
@@ -232,8 +232,7 @@ pub struct MethodEntry {
 }
 
 const PREFIX_LAST_ACCEPTED: &str = "the outputs reached and the last accepted state";
-const PREFIX_OUTPUT_SAMPLES: &str =
-    "the output samples reached (t0 for the end-point schedule): the driver exposes no last \
+const PREFIX_OUTPUT_SAMPLES: &str = "the output samples reached (t0 for the end-point schedule): the driver exposes no last \
      accepted state";
 
 fn entry(
@@ -253,10 +252,7 @@ fn entry(
         stiff_capable: !matches!(kind, Kind::Dopri5 | Kind::Lawson),
         auto_rankable: kind != Kind::Lawson,
         direct_call,
-        failure_prefix: if matches!(
-            kind,
-            Kind::Bdf | Kind::Radau | Kind::Pexprb | Kind::Lagged
-        ) {
+        failure_prefix: if matches!(kind, Kind::Bdf | Kind::Radau | Kind::Pexprb | Kind::Lagged) {
             PREFIX_OUTPUT_SAMPLES
         } else {
             PREFIX_LAST_ACCEPTED
@@ -1212,9 +1208,7 @@ impl MethodSolution {
     /// Every executed attempt in order. More than one only after a fallback; the earlier
     /// ones failed and keep their typed reason, accepted prefix and work.
     pub fn attempts(&self) -> impl ExactSizeIterator<Item = SolutionView<'_>> {
-        self.attempts
-            .iter()
-            .map(|attempt| SolutionView { attempt })
+        self.attempts.iter().map(|attempt| SolutionView { attempt })
     }
 
     /// Whether the reported attempt reached the end time.
@@ -1370,14 +1364,12 @@ impl<'a> SolutionView<'a> {
     /// Accepted steps and rejected attempts as the method reports them.
     pub fn steps(&self) -> (u64, u64) {
         match &self.attempt.result {
-            MethodResult::Rodas5p(s) => (
-                s.stats.accepted_steps as u64,
-                s.stats.rejected_steps as u64,
-            ),
-            MethodResult::Explicit(s) => (
-                s.stats.accepted_steps as u64,
-                s.stats.rejected_steps as u64,
-            ),
+            MethodResult::Rodas5p(s) => {
+                (s.stats.accepted_steps as u64, s.stats.rejected_steps as u64)
+            }
+            MethodResult::Explicit(s) => {
+                (s.stats.accepted_steps as u64, s.stats.rejected_steps as u64)
+            }
             MethodResult::Lawson(s) => (
                 s.integration.stats.accepted_steps as u64,
                 s.integration.stats.rejected_steps as u64,

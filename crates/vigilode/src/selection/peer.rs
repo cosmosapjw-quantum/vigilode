@@ -619,9 +619,8 @@ impl PeerOde {
         let mut h0 = match options.h0 {
             Some(h) => h.min(endpoint_cap),
             None => {
-                let rule = ppsw1::jacobian_norm_bound(&ode, t0, y0, &mut startup).and_then(|b| {
-                    ppsw1::select_h0(b, options.h0_rule_h_max.min(endpoint_cap))
-                });
+                let rule = ppsw1::jacobian_norm_bound(&ode, t0, y0, &mut startup)
+                    .and_then(|b| ppsw1::select_h0(b, options.h0_rule_h_max.min(endpoint_cap)));
                 match rule {
                     Ok(h) => h,
                     Err(e) => {
