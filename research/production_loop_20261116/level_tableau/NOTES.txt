@@ -120,3 +120,22 @@ NEXT
 - wait for the chain; run D6L phases A and B; refine (D6T, D6L, D5F); verify; dev screen; select; order check;
   pay-off screen; exploratory script (error constants, linear bound, schedule, speed-up model); parser; report;
   literature.
+
+== 2026-11-17, entry 4 (about 16:25 KST) ==
+
+DONE
+- parse_results.py, render_report.py, run_exploratory.py, LITERATURE.json written and tested on partial logs.
+- Exploratory linear bound (smoke test of run_exploratory.py, scratch): step ratio against RODAS5P on a scalar
+  linear problem is 2.2-3.1 for depth 5 and 1.7-2.5 for depth 6 at gamma = 0.33414 (eps 1e-3..1e-10): above the
+  depth gains 1.6 and 1.33. This is a property of R(z) = P(z)/(1 - gamma z)^L, independent of the other coefficients.
+- Literature: owner's four PDF copies (peer methods) read through pdftotext; Voss 2004, Cao-Li-Liu 2002,
+  Chen-Liu 2000 from bibliographic records/abstract pages (several 403).
+- Declared chain: search_D6T complete (2000 starts), polish_D6T running; then continuation_D6T, search_D5F,
+  polish_D5F; a second background chain waits and then runs search_D6L and polish_D6L.
+
+NEXT (in this order)
+1. refine.py + verify_candidate.py for D6T as soon as continuation_D6T has its footer; dev screen
+   (run_payoff.py --label dev) for the D6T candidates.
+2. Same for D5F, then select the depth-5 primary (parse_results.py), order check, pay-off screen.
+3. Same for D6L; select the depth-6 primary among D6T and D6L; order check; pay-off screen.
+4. run_exploratory.py for RODAS5P and the primaries; parse; render; loop checker; strict-JSON check; commit.
