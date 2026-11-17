@@ -210,6 +210,14 @@ def main():
                                      "best_score_by_gamma": [{"gamma": g, "score": best[g]} for g in sorted(best)]}
         search[fid] = entry
     res["search"] = search
+    hp = os.path.join(LOGS, "smoke3_search_D6L_hardPR.jsonl")
+    if os.path.exists(hp):
+        st = [r for r in rows(hp) if r["kind"] == "start"]
+        res["exploratory_hard_pr_smoke"] = {
+            "label": "exploratory, seeds outside the declared range, variant dropped",
+            "log": "logs/smoke3_search_D6L_hardPR.jsonl", "starts": len(st),
+            "passed_double": sum(1 for r in st if r.get("pass_double")),
+            "max_hard": [r.get("max_hard") for r in st]}
 
     # ------------------------------------------------------------------ refinement and verification
     cands = {}
@@ -401,7 +409,7 @@ def main():
     for path in logs("exploratory*.jsonl"):
         for r in rows(path):
             k = r["kind"]
-            if k in ("error_terms", "stability", "code_form", "schedule"):
+            if k in ("error_terms", "stability", "code_form", "schedule", "pr_pole_identity"):
                 m = expl["methods"].setdefault(r["method"], {})
                 m[k] = {a: b for a, b in r.items() if a not in ("kind", "method", "label")}
             elif k == "linear_bound_reference":

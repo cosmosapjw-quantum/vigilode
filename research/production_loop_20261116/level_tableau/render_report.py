@@ -289,6 +289,22 @@ if et:
     w("- E6는 비강성 점근 영역의 주 방법 오차 계수, ehat5는 임베디드 방법의 차수 5 계수(오차 추정의 크기)다. RODAS5P의 지수-1 잔차와 PR q=2, 3 항은 설계상 0이다.")
     w("- c_i가 [0, 1]을 벗어나는 단은 스텝 구간 밖에서 우변을 평가한다. 선언한 목적함수는 이를 제어하지 않았다.")
     w()
+w("### 8.2b Prothero-Robinson 조건과 극의 수 (구조적 사실)")
+w()
+w("N = beta - gamma I, u_2 = beta^2 1 - c^2/2라 하면 강성 정확 레벨 타블로에서 항등식 `b^T N^(L-1) u_2 = gamma^2 * b^T N^(L-1) 1`이 성립한다(N^(L-1)은 레벨 1에서 레벨 L로 가는 경로만 남기고 (u_2)_1 = gamma^2이기 때문). Prothero-Robinson 국소 오차 인자 W_2(z) = sum_k z^(k+1) b^T beta^k u_2가 항등적으로 0이려면 좌변이 0이어야 하고, 그러면 mu_(L-1) = b^T N^(L-1) 1 = 0, 곧 R(z) = P(z)/(1 - gamma z)^(L-1)로 극이 하나 줄어든다. 유도는 `NOTES.txt` 5번 항목, 아래는 수치 확인이다.")
+w()
+pid_rows = [[k, v["pr_pole_identity"]["levels"], g(v["pr_pole_identity"]["mu_last"]), g(v["pr_pole_identity"]["bT_N_u2"]),
+             g(v["pr_pole_identity"]["gamma_squared_times_mu_last"]), g(v["pr_pole_identity"]["identity_defect"])]
+            for k, v in sorted(EX.get("methods", {}).items()) if v.get("pr_pole_identity")]
+if pid_rows:
+    table(["방법", "레벨 수 L", "mu_(L-1)", "b^T N^(L-1) u_2", "gamma^2 mu_(L-1)", "항등식 잔차"], pid_rows)
+w("- RODAS5P는 8단이지만 mu_7 = 0(설계)이라 극이 7개이고 W_2 = W_3 = 0이다(`logs/validation.jsonl`의 pr_terms). 같은 기제다.")
+w("- 두 프로세서, 차수 5, R(무한대)=0에서의 귀결: 깊이 5에서 W_2 = 0을 정확히 요구하면 극이 4개가 되어 불가능하다(이론 S9의 L = 4 불가). 깊이 6에서는 극이 5개가 되어 gamma가 0.27805로 고정되고 선형 차수 5(z^6 결함 5.3e-4)에 묶인다. 주 방법과 임베디드 방법 모두에 정확한 W_2 = 0을 주려면 레벨이 7개 이상 필요하다(깊이 이득 8/7). 이 문단은 유도와 위 수치 확인에 근거하며 기계 증명은 아니다.")
+hp = R.get("exploratory_hard_pr_smoke")
+if hp:
+    w("- 스모크 시험(선언 범위 밖 시드, `%s`): gamma = 0.33414에서 PR 조건(q = 2, 3)을 경성으로 넣은 변형은 %d개 시작점 중 %d개만 실현 가능했다(경성 잔차 %s). 위 항등식과 일치하며 이 변형은 선언 실행 전에 버렸다." % (
+        hp["log"], hp["starts"], hp["passed_double"], ", ".join(g(x) for x in hp["max_hard"])))
+w()
 w("### 8.3 강성 Prothero-Robinson 문제의 고정 스텝 차수")
 w()
 PRX = R.get("prothero_robinson_exploratory", {})
