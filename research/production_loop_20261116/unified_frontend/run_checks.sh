@@ -2,7 +2,7 @@
 # Verification commands of loop L1 node V03 part A. One raw log per command under logs/.
 # Usage (from the worktree root):
 #   sh research/production_loop_20261116/unified_frontend/run_checks.sh <step> [<step> ...]
-# Steps: contracts existing golden1 golden2 suite clippy fmt doc checker diff
+# Steps: contracts existing golden1 golden2 debuggrid suite clippy fmt doc checker diff
 # Every cargo command runs on the build partition (taskset -c 0-5,12-17), never on the
 # timing cores; no wall time of these logs is a measurement.
 set -u
@@ -54,6 +54,12 @@ for step in "$@"; do
     golden2)
         run default_path_golden_run2 $PIN cargo +1.94.1 test --locked -j 4 --release -p vigilode \
             --test default_path_golden -- --nocapture --test-threads 1
+        ;;
+    debuggrid)
+        # debug profile: debug assertions are on, so the fallback of
+        # MethodRegistry::general_selection to the reference body would panic if taken
+        run decision_grid_debug_profile $PIN cargo +1.94.1 test --locked -j 4 -p vigilode \
+            --test unified_frontend_contracts -- d1_ --nocapture --test-threads 1
         ;;
     suite)
         run full_suite $PIN cargo +1.94.1 test --locked -j 4 --release -p vigilode --no-fail-fast
