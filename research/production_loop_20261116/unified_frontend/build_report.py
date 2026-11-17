@@ -250,16 +250,31 @@ def main():
     w("|---|---|---|---|---|---|---|---|---|")
     out.extend(method_rows(catalog))
     w("")
+    rodas = next(e for e in catalog if e["descriptor"]["method_id"] == "rodas5p")
+    w(
+        "RODAS5P 항목의 정확한 경로 variant(`MethodEntry::route_variants`). U06 descriptor에는 권한 variant "
+        "3개만 있고 banded와 sequential이 없었다(COD-03). 계획의 variant 이름과 general 선택의 matrix-free 권한, "
+        "dense 차원 상한 판정이 이 표를 읽는다."
+    )
+    w("")
+    w("| variant | n x n 행렬 저장 | matrix-free | mass | event | dense output |")
+    w("|---|---|---|---|---|---|")
+    for v in rodas["route_variants"]:
+        w(
+            f"| `{v['label']}` | {yes(v['dense_matrix'])} | {yes(v['matrix_free'])} | "
+            f"{yes(v['supports_mass'])} | {yes(v['supports_events'])} | {yes(v['supports_dense_output'])} |"
+        )
+    w("")
     w("adapter가 bit 동일해야 하는 직접 호출과 D2 결과:")
     w("")
     w("| 방법 | 직접 호출 | 사례 | bit 동일 | 판정 |")
     w("|---|---|---|---|---|")
     direct = {e["descriptor"]["method_id"]: e["direct_call"] for e in catalog}
     for a in receipt["adapters"]:
-        call = direct.get(a["method"], "")
+        call = f"`{direct.get(a['method'], '')}`"
         if a["test"].startswith("d2_dopri5"):
-            call += " 및 `GeneralOde::solve`"
-        w(f"| `{a['method']}` | `{call}` | {a['cases']} | {a['cases_bitwise_equal']} | {a['verdict']} |")
+            call += " 및 `vigilode::GeneralOde::solve(problem, span, y0, options, policy)`"
+        w(f"| `{a['method']}` | {call} | {a['cases']} | {a['cases_bitwise_equal']} | {a['verdict']} |")
     w("")
     w(
         "비교한 양: 모든 출력 시각과 상태의 bit, 성공 여부, 수락/거절 step 수, attempts, driver work "
@@ -330,7 +345,11 @@ def main():
     w("")
     for entry in catalog:
         if entry["availability"]["state"] != "available":
-            w(f"- `{entry['descriptor']['method_id']}`: adapter 없음. {entry['availability']['reason']}.")
+            w(
+                f"- `{entry['descriptor']['method_id']}`: adapter 없음. catalog에 적힌 사유: "
+                f"\"{entry['availability']['reason']}\". 즉 matrix-free common-W backend는 "
+                "`ppsw1::Session`의 stage backend일 뿐이고, 끝에서 끝까지 도는 driver와 matrix-free starter가 없다."
+            )
     w(
         "- BDF, Radau: `Jacobian::Dense`와 `Jacobian::Jvp`만 내린다. FD, banded, sparse-JVP, band 선언, "
         "mass, event, dense output, vector atol은 타입이 있는 거부다."
@@ -354,10 +373,11 @@ def main():
     )
     w(
         "- Phase B: COD-03이 요구한 요청 확장을 `MethodFacts`로 넣었다(차원, provider 형태, band 선언, "
-        "autonomy, 시간 미분, mass, event, dense output, interior-error 모드, atol 종류). RODAS5P의 경로는 "
-        "facade의 `Rodas5p::capabilities`가 정하고, catalog의 RODAS5P 항목은 그 6개 경로(banded, "
-        "sequential-dense 포함)를 variant로 갖는다."
+        "autonomy, 시간 미분, mass, event, dense output, interior-error 모드, atol 종류). catalog의 RODAS5P "
+        "항목에는 facade의 driver 계열 6개를 경로 variant로 넣었다(banded-fast, sequential-dense 포함, 3절 표). "
+        "general 선택의 receipt(`implicit_route`)는 이전과 같이 facade의 `Rodas5p::capabilities`가 답한 경로다."
     )
+    m = d1b["measured"]["extension_grid"]
     w(
         f"- 확장 격자는 golden 격자에 sparse-JVP provider 두 형태를 더한 {m['entries']}건이다. 두 구현이 "
         f"읽는 모든 술어의 곱이므로 전수 비교다. 결과 종류 {m['distinct_outcomes']}가지."
@@ -381,6 +401,13 @@ def main():
     w(
         "mass, event, dense output 세 경우는 general surface 자체의 제한이다. 방법(RODAS5P)은 지원하므로 "
         "Auto와 Explicit에서는 admit된다. 나머지 거부는 양쪽이 같다."
+    )
+    w("")
+    w(
+        f"D3 격자에서 `route(Explicit(\"rodas5p\"))`의 계획은 "
+        f"{d3['measured']['rodas5p_plans_equal_to_the_route_that_runs'][0]} / "
+        f"{d3['measured']['rodas5p_plans_equal_to_the_route_that_runs'][1]}건이 실행되는 driver 계열과 같고, "
+        "그 variant 행은 요청한 mass, event, dense output을 지원한다. 거부는 `Rodas5p::capabilities`의 거부와 같다."
     )
     w("")
     w(
@@ -472,9 +499,33 @@ def main():
         "오류만 돌려주므로, adapter가 타입이 있는 사유와 callback 경계에서 센 호출 수를 남긴다. 더 나은 "
         "prefix는 `rodas5p-integrators` 수정이 필요하다(이 노드 범위 밖)."
     )
+    corner = receipt["executed_route_vs_capability_query"]
     w(
-        "- `Rodas5p::capabilities`는 일반 sparse-JVP(matrix-free) 문제의 vector atol을 거부하지 않는다"
-        "(`Jacobian::Jvp`만 검사). 선택 결과는 이전과 같게 유지했고 고치지 않았다."
+        "- 새로 확인한 facade 결함(고치지 않음, `capabilities.rs`와 `solve.rs`의 RODAS5P 경로는 이 노드 범위 밖): "
+        "일반(비 band) sparse-JVP provider에서 `Rodas5p::capabilities`는 항상 `MatrixFree`라고 답하지만, "
+        "`Rodas5p::solve`는 dense output이면 fast dense driver를, vector atol이면 dense fast driver를 실행하고 "
+        "Jacobian을 JVP 열 n개로 조립한다. 실행 결과:"
+    )
+    w("")
+    w("  | 요청 | capability query | 계획한 경로 | 실행된 경로 | entry point | Jacobian build | JVP 호출 |")
+    w("  |---|---|---|---|---|---|---|")
+    for row in corner["requests"]:
+        w(
+            f"  | {row['request']} | {row['capability_query_route']} | `{row['planned_route']}` | "
+            f"`{row['executed_route']}` | `{row['entry_point']}` | {row['jacobian_builds']} | {row['jvp_calls']} |"
+        )
+    w("")
+    w(
+        "  registry의 계획은 실제로 실행되는 driver와 그 dense-matrix 필요를 적는다(view는 실행 기록에서 경로를 "
+        "다시 읽어 확인한다). 그래서 Auto는 dense-matrix 권한 없이 이 driver로 가지 않는다. 격자에서 capability "
+        f"query가 실행되지 않는 driver를 답한 요청은 {d3['measured']['rodas5p_capability_query_names_another_driver_than_runs']}건이다."
+    )
+    g = corner["general_surface_vector_atol"]
+    w(
+        f"- 같은 결함의 기본 경로 쪽 귀결(바꾸지 않음, 기본 라우팅 불변): 일반 sparse-JVP + vector atol에서 "
+        f"`GeneralOde::select`는 `{g['select_implicit_route']}`를 고르고 dense 차원 상한을 적용하지 않는다"
+        f"(예: n = {g['dimension']}, 상한 {g['max_dense_dimension']}). 실제로는 `{g['planned_route_of_route_general']}`가 "
+        "실행되어 n x n 행렬을 만든다. 이전 본문도 같은 결정을 한다. 소유자 결정이 필요하다."
     )
     w(
         "- dense provider에 band를 선언하면 보호 router가 `(t0, y0)`에서 callback으로 band를 검증한다. 그 거부"

@@ -327,6 +327,15 @@ def main():
     head = subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True
     ).stdout.strip()
+    run_commit = contracts["commit"]
+    source_changes = subprocess.run(
+        ["git", "diff", "--name-only", run_commit, "HEAD", "--", "crates"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.split()
+    run_logs = [n for n in names if logs[n]["commit"] == run_commit]
 
     receipt = {
         "schema": "vigilode.loop-l1.v03a.receipt.v1",
@@ -335,6 +344,15 @@ def main():
         "base_commit": "c468478e73123a4625c6d20f7459a9f79cbf33de",
         "head_commit_when_built": head,
         "code_commit_of_the_runs": contracts["commit"],
+        "runs_on_that_commit": {
+            "logs": run_logs,
+            "tracked_files_modified_in_the_worktree_during_a_run": {
+                n: int(logs[n]["worktree_dirty_files"])
+                for n in run_logs
+                if logs[n]["worktree_dirty_files"] not in (None, "0")
+            },
+            "source_paths_changed_between_that_commit_and_head": source_changes,
+        },
         "predeclared": "PREDECLARED.json (commit 00d32764, before any run)",
         "timing": "no wall-time claim; elapsed times in the logs are diagnostic_only",
         "phase_reached": "B" if (d1_pass and phase_b and d4_pass) else "A",
