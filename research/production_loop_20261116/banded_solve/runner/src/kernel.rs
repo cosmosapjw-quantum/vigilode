@@ -358,6 +358,232 @@ impl BlockLu {
         }
     }
 
+    // ---------------------------------------------------------------------------------------
+    // Exploratory arms TA, TD, TS (added after the first timing data, which showed that every
+    // arm above spends about 150 instructions per row and solve): the same algorithms for
+    // lower = upper = 2 written with fixed row offsets, carried values and no index arithmetic
+    // in the loops. The last four rows or columns use the general steps above.
+    // ---------------------------------------------------------------------------------------
+
+    /// `W` on the whole matrix (`row0 = 0`, `m = n`), lower = upper = 2.
+    pub fn assemble_whole2(&mut self, jac: &[f64], inv: f64) {
+        let (rows, _) = self.fac.as_chunks_mut::<7>();
+        let (src, _) = jac.as_chunks::<5>();
+        for (d, s) in rows.iter_mut().zip(src) {
+            d[0] = -s[0];
+            d[1] = -s[1];
+            d[2] = -s[2] + inv;
+            d[3] = -s[3];
+            d[4] = -s[4];
+            d[5] = 0.0;
+            d[6] = 0.0;
+        }
+    }
+
+    /// The factorisation of [`Self::factor`] for lower = upper = 2: the same pivot search,
+    /// interchanges and row updates in the same order.
+    pub fn factor_tight2(&mut self) -> Result<(), usize> {
+        let m = self.m;
+        assert!(self.l == 2 && self.width == 7);
+        if m < 6 {
+            return self.factor();
+        }
+        let (recip, scaled) = (self.recip, self.scaled);
+        {
+            let (rows, _) = self.fac.as_chunks_mut::<7>();
+            for k in 0..m - 4 {
+                let [r0, r1, r2, ..] = &mut rows[k..] else {
+                    unreachable!()
+                };
+                // Column k sits at offset 2 of row k, 1 of row k + 1 and 0 of row k + 2.
+                let mut p = 0usize;
+                let mut max = r0[2].abs();
+                let a1 = r1[1].abs();
+                if a1 > max {
+                    max = a1;
+                    p = 1;
+                }
+                let a2 = r2[0].abs();
+                if a2 > max {
+                    max = a2;
+                    p = 2;
+                }
+                if !(max > 0.0 && max.is_finite()) {
+                    return Err(k);
+                }
+                self.piv[k] = k + p;
+                if p == 1 {
+                    for t in 0..5 {
+                        std::mem::swap(&mut r0[2 + t], &mut r1[1 + t]);
+                    }
+                } else if p == 2 {
+                    for t in 0..5 {
+                        std::mem::swap(&mut r0[2 + t], &mut r2[t]);
+                    }
+                }
+                let pivot = r0[2];
+                if r1[1] != 0.0 {
+                    let mlt = r1[1] / pivot;
+                    r1[1] = mlt;
+                    r1[2] -= mlt * r0[3];
+                    r1[3] -= mlt * r0[4];
+                    r1[4] -= mlt * r0[5];
+                    r1[5] -= mlt * r0[6];
+                }
+                if r2[0] != 0.0 {
+                    let mlt = r2[0] / pivot;
+                    r2[0] = mlt;
+                    r2[1] -= mlt * r0[3];
+                    r2[2] -= mlt * r0[4];
+                    r2[3] -= mlt * r0[5];
+                    r2[4] -= mlt * r0[6];
+                }
+                if recip {
+                    let r = 1.0 / pivot;
+                    self.rdiag[k] = r;
+                    if scaled {
+                        let dst = &mut self.us[k * 4..k * 4 + 4];
+                        dst[0] = r0[3] * r;
+                        dst[1] = r0[4] * r;
+                        dst[2] = r0[5] * r;
+                        dst[3] = r0[6] * r;
+                    }
+                }
+            }
+        }
+        for k in m - 4..m {
+            if !self.factor_step(k) {
+                return Err(k);
+            }
+        }
+        Ok(())
+    }
+
+    /// The forward substitution of the protected kernel for lower = 2 on carried values.
+    fn fwd_tight2(&self, b: &mut [f64]) {
+        let m = self.m;
+        let (rows, _) = self.fac.as_chunks::<7>();
+        let cells = std::cell::Cell::from_mut(&mut b[..m]).as_slice_of_cells();
+        let (mut w0, mut w1, mut w2) = (cells[0].get(), cells[1].get(), cells[2].get());
+        let steps = cells[..m - 3]
+            .iter()
+            .zip(&cells[3..])
+            .zip(rows[1..].windows(2))
+            .zip(&self.piv[..m - 3])
+            .enumerate();
+        for (k, (((out, next), win), &p)) in steps {
+            match p - k {
+                0 => {}
+                1 => std::mem::swap(&mut w0, &mut w1),
+                _ => std::mem::swap(&mut w0, &mut w2),
+            }
+            w1 -= win[0][1] * w0;
+            w2 -= win[1][0] * w0;
+            out.set(w0);
+            w0 = w1;
+            w1 = w2;
+            w2 = next.get();
+        }
+        // k = m - 3
+        match self.piv[m - 3] - (m - 3) {
+            0 => {}
+            1 => std::mem::swap(&mut w0, &mut w1),
+            _ => std::mem::swap(&mut w0, &mut w2),
+        }
+        w1 -= rows[m - 2][1] * w0;
+        w2 -= rows[m - 1][0] * w0;
+        cells[m - 3].set(w0);
+        // k = m - 2
+        if self.piv[m - 2] != m - 2 {
+            std::mem::swap(&mut w1, &mut w2);
+        }
+        w2 -= rows[m - 1][1] * w1;
+        cells[m - 2].set(w1);
+        // k = m - 1
+        cells[m - 1].set(w2);
+    }
+
+    /// Exploratory arm TA: tight loops, operation order of the protected kernel.
+    pub fn solve_tight2_ref(&self, b: &mut [f64]) {
+        let m = self.m;
+        assert!(self.l == 2 && self.width == 7 && m >= 6);
+        self.fwd_tight2(b);
+        for i in (m - 4..m).rev() {
+            self.back_step_ref(b, i);
+        }
+        let (rows, _) = self.fac.as_chunks::<7>();
+        let (mut x1, mut x2, mut x3, mut x4) = (b[m - 4], b[m - 3], b[m - 2], b[m - 1]);
+        for (r, bi) in rows[..m - 4].iter().zip(b[..m - 4].iter_mut()).rev() {
+            let mut s = *bi;
+            s -= r[3] * x1;
+            s -= r[4] * x2;
+            s -= r[5] * x3;
+            s -= r[6] * x4;
+            let x = s / r[2];
+            *bi = x;
+            x4 = x3;
+            x3 = x2;
+            x2 = x1;
+            x1 = x;
+        }
+    }
+
+    /// Exploratory arm TD: tight loops, the older unknowns first, the newest last, division.
+    pub fn solve_tight2_div(&self, b: &mut [f64]) {
+        let m = self.m;
+        assert!(self.l == 2 && self.width == 7 && m >= 6);
+        self.fwd_tight2(b);
+        let mut prev = 0.0;
+        for i in (m - 4..m).rev() {
+            prev = self.back_step_fast_div(b, i, prev);
+        }
+        let (rows, _) = self.fac.as_chunks::<7>();
+        let (mut x1, mut x2, mut x3, mut x4) = (b[m - 4], b[m - 3], b[m - 2], b[m - 1]);
+        for (r, bi) in rows[..m - 4].iter().zip(b[..m - 4].iter_mut()).rev() {
+            let mut s = *bi;
+            s -= r[4] * x2;
+            s -= r[5] * x3;
+            s -= r[6] * x4;
+            s -= r[3] * x1;
+            let x = s / r[2];
+            *bi = x;
+            x4 = x3;
+            x3 = x2;
+            x2 = x1;
+            x1 = x;
+        }
+    }
+
+    /// Exploratory arm TS: tight loops on the scaled rows of `U` (reciprocal pivots).
+    pub fn solve_tight2_scaled(&self, b: &mut [f64]) {
+        let m = self.m;
+        assert!(self.l == 2 && self.width == 7 && m >= 6);
+        self.fwd_tight2(b);
+        let mut prev = 0.0;
+        for i in (m - 4..m).rev() {
+            prev = self.back_step_scaled(b, i, prev);
+        }
+        let (us, _) = self.us.as_chunks::<4>();
+        let (mut x1, mut x2, mut x3, mut x4) = (b[m - 4], b[m - 3], b[m - 2], b[m - 1]);
+        let rows = us[..m - 4]
+            .iter()
+            .zip(&self.rdiag[..m - 4])
+            .zip(b[..m - 4].iter_mut())
+            .rev();
+        for ((u, &r), bi) in rows {
+            let mut s = *bi * r;
+            s -= u[1] * x2;
+            s -= u[2] * x3;
+            s -= u[3] * x4;
+            s -= u[0] * x1;
+            *bi = s;
+            x4 = x3;
+            x3 = x2;
+            x2 = x1;
+            x1 = s;
+        }
+    }
+
     /// Arm A1: both substitutions in the operation order of the protected kernel.
     pub fn solve_ref(&self, b: &mut [f64]) {
         for k in 0..self.m {
@@ -790,6 +1016,12 @@ pub enum SeqMode {
     Scaled,
     /// B3 (exploratory, `l == 2`).
     ScaledCarry2,
+    /// TA (exploratory, `l == u == 2`): tight loops, protected operation order.
+    TightRef,
+    /// TD (exploratory, `l == u == 2`): tight loops, newest unknown last, division.
+    TightDiv,
+    /// TS (exploratory, `l == u == 2`): tight loops, scaled rows of `U`.
+    TightScaled,
 }
 
 pub struct Seq {
@@ -799,8 +1031,14 @@ pub struct Seq {
 
 impl Seq {
     pub fn new(n: usize, l: usize, u: usize, mode: SeqMode) -> Self {
-        let recip = !matches!(mode, SeqMode::Ref | SeqMode::FastDiv);
-        let scaled = matches!(mode, SeqMode::Scaled | SeqMode::ScaledCarry2);
+        let recip = !matches!(
+            mode,
+            SeqMode::Ref | SeqMode::FastDiv | SeqMode::TightRef | SeqMode::TightDiv
+        );
+        let scaled = matches!(
+            mode,
+            SeqMode::Scaled | SeqMode::ScaledCarry2 | SeqMode::TightScaled
+        );
         Self {
             blk: BlockLu::new(n, l, u, recip, scaled),
             mode,
@@ -808,10 +1046,18 @@ impl Seq {
     }
 
     pub fn factor(&mut self, band: &Band, inv: f64) -> Result<(), KernelError> {
-        self.blk.assemble(&band.jac, band.jw(), inv, 0);
-        self.blk
-            .factor()
-            .map_err(|column| KernelError::BlockPivot { block: 0, column })
+        let tight = matches!(
+            self.mode,
+            SeqMode::TightRef | SeqMode::TightDiv | SeqMode::TightScaled
+        );
+        let done = if tight {
+            self.blk.assemble_whole2(&band.jac, inv);
+            self.blk.factor_tight2()
+        } else {
+            self.blk.assemble(&band.jac, band.jw(), inv, 0);
+            self.blk.factor()
+        };
+        done.map_err(|column| KernelError::BlockPivot { block: 0, column })
     }
 
     pub fn solve(&self, b: &mut [f64]) {
@@ -821,6 +1067,9 @@ impl Seq {
             SeqMode::FastDiv => self.blk.solve_fast_div(b),
             SeqMode::Scaled => self.blk.solve_scaled(b),
             SeqMode::ScaledCarry2 => self.blk.solve_scaled_carry2(b),
+            SeqMode::TightRef => self.blk.solve_tight2_ref(b),
+            SeqMode::TightDiv => self.blk.solve_tight2_div(b),
+            SeqMode::TightScaled => self.blk.solve_tight2_scaled(b),
         }
     }
 }

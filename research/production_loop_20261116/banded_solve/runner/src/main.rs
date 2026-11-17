@@ -6,6 +6,10 @@
 //! ```
 
 mod kernel;
+// The problem definitions of node V04, used unchanged by the `drive` mode.
+#[allow(dead_code)]
+#[path = "../../../cost_anatomy/runner/src/problems.rs"]
+mod problems;
 
 use std::f64::consts::PI;
 use std::hint::black_box;
@@ -14,7 +18,9 @@ use std::sync::Arc;
 use kernel::{Band, KernelError, Partition, Seq, SeqMode, layout};
 use rodas5p_core::WorkCounters;
 use rodas5p_integrators::{
-    BandedJacobian, BandedStageLu, OdeProblem, StageLinearSystem, rodas5p_fast_banded_solve,
+    AdaptiveStepConfig, BandedJacobian, BandedKernel, BandedStageLu, OdeProblem, OutputSchedule,
+    StageLinearSystem, integrate_rodas5p_fast_banded_observed_with_kernel,
+    rodas5p_fast_banded_solve,
 };
 
 /// SplitMix64, as declared in PREDECLARED.json.
@@ -282,6 +288,17 @@ impl Arm {
             "B" => (Imp::Seq(Seq::new(n, l, u, SeqMode::Fast)), false),
             "BV" => (Imp::Seq(Seq::new(n, l, u, SeqMode::Fast)), true),
             "BD" => (Imp::Seq(Seq::new(n, l, u, SeqMode::FastDiv)), false),
+            "TA" | "TD" | "TS" => {
+                if l != 2 || u != 2 || n < 6 {
+                    return Err(KernelError::Layout);
+                }
+                let mode = match name {
+                    "TA" => SeqMode::TightRef,
+                    "TD" => SeqMode::TightDiv,
+                    _ => SeqMode::TightScaled,
+                };
+                (Imp::Seq(Seq::new(n, l, u, mode)), false)
+            }
             "B2" => (Imp::Seq(Seq::new(n, l, u, SeqMode::Scaled)), false),
             "B3" => {
                 if l != 2 || n < 3 {
@@ -366,8 +383,9 @@ fn max_rel_diff(x: &[f64], y: &[f64]) -> f64 {
     d / scale
 }
 
-const CHECK_ARMS: [&str; 15] = [
+const CHECK_ARMS: [&str; 18] = [
     "A0", "A1", "B", "BV", "C2", "C4", "C8", "CV2", "CV4", "CV8", "B2", "B3", "C16", "CV16", "BD",
+    "TA", "TD", "TS",
 ];
 
 fn check(name: &str) {
@@ -471,9 +489,94 @@ fn bench(arm_name: &str, n: usize, patterns: usize, solves: usize, lu: Option<us
     );
 }
 
+/// Exploratory: one whole run of the protected banded driver on a V04 problem with one of the
+/// protected kernels (all of them documented as bit-identical), stopped after `budget` attempts.
+fn drive(family: &str, size: usize, kernel_name: &str, budget: usize) {
+    let def = match family {
+        "bruss1d" => problems::bruss1d(size),
+        "ac2d" => problems::allen_cahn(2, size),
+        "ac3d" => problems::allen_cahn(3, size),
+        "bruss2d" => problems::bruss2d(size),
+        other => panic!("unknown family {other}"),
+    };
+    let kernel = match kernel_name {
+        "indexed" => BandedKernel::Indexed,
+        "slices" => BandedKernel::Slices,
+        "fixed2" => BandedKernel::FixedWidth2,
+        other => panic!("unknown kernel {other}"),
+    };
+    let band = def.band.as_ref().expect("banded problem");
+    let banded = BandedJacobian {
+        lower: band.lower,
+        upper: band.upper,
+        fill: band.fill.clone(),
+    };
+    let problem = OdeProblem::new(
+        "v19-drive",
+        def.n,
+        def.rhs.clone(),
+        None,
+        None,
+        def.jvp.clone(),
+        None,
+        true,
+        None,
+        None,
+    )
+    .expect("problem");
+    let adaptive = AdaptiveStepConfig {
+        atol: def.atol,
+        rtol: def.rtol,
+        initial_step: def.initial_step,
+        min_step: 1.0e-14,
+        max_step: def.t_span.1 - def.t_span.0,
+        max_attempts: budget,
+        ..AdaptiveStepConfig::default()
+    };
+    let output = OutputSchedule::new(vec![def.t_span.0, def.t_span.1]).expect("schedule");
+    let out = integrate_rodas5p_fast_banded_observed_with_kernel(
+        &problem, &banded, def.t_span, &def.y0, &adaptive, &output, kernel,
+    )
+    .expect("driver");
+    // FNV-1a over the bits of every state the run returned (outputs and the stop state).
+    let mut hash = 0xcbf2_9ce4_8422_2325u64;
+    let mut eat = |v: f64| {
+        for byte in v.to_bits().to_le_bytes() {
+            hash = (hash ^ u64::from(byte)).wrapping_mul(0x0000_0100_0000_01b3);
+        }
+    };
+    for state in &out.fast.observed.y {
+        state.iter().copied().for_each(&mut eat);
+    }
+    let stop_t = match &out.partial {
+        Some(p) => {
+            p.y.iter().copied().for_each(&mut eat);
+            p.t
+        }
+        None => def.t_span.1,
+    };
+    println!(
+        "DRIVE family={family} size={size} n={} lower={} upper={} kernel={kernel_name} budget={budget} attempts={} accepted={} rejected={} stop_t={stop_t:e} factor_ops={} solve_ops={} state_hash={hash:016x}",
+        def.n,
+        band.lower,
+        band.upper,
+        out.fast.attempts,
+        out.fast.accepted_steps,
+        out.fast.rejected_steps,
+        out.work.factor_operations,
+        out.work.solve_operations,
+    );
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     match args.get(1).map(String::as_str) {
+        Some("drive") => drive(
+            &args[2],
+            args[3].parse().expect("size"),
+            &args[4],
+            args[5].parse().expect("budget"),
+        ),
         Some("check") => check(&args[2]),
         Some("bench") => bench(
             &args[2],
@@ -483,7 +586,9 @@ fn main() {
             args.get(6).map(|s| s.parse().expect("lu")),
         ),
         _ => {
-            eprintln!("usage: runner check <suite> | runner bench <arm> <n> <patterns> <solves> [lu]");
+            eprintln!(
+                "usage: runner check <suite> | runner bench <arm> <n> <patterns> <solves> [lu] | runner drive <family> <size> <kernel> <budget>"
+            );
             std::process::exit(2);
         }
     }

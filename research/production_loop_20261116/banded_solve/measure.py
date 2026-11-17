@@ -2,8 +2,10 @@
 """Timing harness of loop L1 node V19, stage a. Protocol: PREDECLARED.json, key "protocol".
 
 usage: measure.py <runner binary> <n> <measurement index> [--lu LU] [--arms A,B,...] [--patterns R]
+                  [--tag x]
 
-Writes logs/measure_m<index>_n<n>[_lu<LU>].jsonl next to this script: a header line, one line
+Writes logs/measure_<tag><index>_n<n>[_lu<LU>].jsonl next to this script (tag m: the frozen
+measurement series; tag x: exploratory series, never used for a verdict): a header line, one line
 per run and a footer line. Every run is one process under the timing prefix of the loop
 (lock file, one pinned core) and under `perf stat`. Nothing is computed here: build_results.py
 derives every reported number from these lines.
@@ -69,7 +71,7 @@ def one_run(binary, arm, n, patterns, solves, lu):
 def main():
     args = sys.argv[1:]
     binary, n, index = args[0], int(args[1]), int(args[2])
-    lu, arms, patterns = None, list(ARMS), None
+    lu, arms, patterns, tag = None, list(ARMS), None, "m"
     rest = args[3:]
     while rest:
         key = rest.pop(0)
@@ -79,13 +81,15 @@ def main():
             arms = rest.pop(0).split(",")
         elif key == "--patterns":
             patterns = int(rest.pop(0))
+        elif key == "--tag":
+            tag = rest.pop(0)
         else:
             raise SystemExit(f"unknown option {key}")
     if lu is not None and lu != 2:
         arms = [a for a in arms if a != "B3"]
     if patterns is None:
         patterns = PATTERNS[n]
-    name = f"measure_m{index}_n{n}" + (f"_lu{lu}" if lu is not None else "") + ".jsonl"
+    name = f"measure_{tag}{index}_n{n}" + (f"_lu{lu}" if lu is not None else "") + ".jsonl"
     path = os.path.join(HERE, "logs", name)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     if os.path.exists(path):
@@ -95,7 +99,7 @@ def main():
         def emit(obj):
             log.write(json.dumps(obj, sort_keys=True) + "\n")
             log.flush()
-        emit({"type": "header", "n": n, "lu": lu, "index": index, "arms": arms,
+        emit({"type": "header", "n": n, "lu": lu, "index": index, "arms": arms, "tag": tag,
               "patterns": patterns, "warmup": WARMUP, "rounds": ROUNDS, "core": CORE,
               "sibling": SIBLING, "events": EVENTS, "binary": binary,
               "load_before": loadavg(), "time_start": time.time()})

@@ -41,9 +41,9 @@ def jnum(value):
     return value
 
 
-def parse_checks():
+def parse_checks(pattern="check_S*.log"):
     cases, files = {}, []
-    for path in sorted(glob.glob(os.path.join(HERE, "logs", "check_S*.log"))):
+    for path in sorted(glob.glob(os.path.join(HERE, "logs", pattern))):
         files.append(path)
         with open(path) as f:
             for line in f:
@@ -269,12 +269,16 @@ def main():
     if val and not val["V1"]["pass"]:
         valid = {a: False for a in valid}
     measurements = []
-    for path in sorted(glob.glob(os.path.join(HERE, "logs", "measure_m*_n*.jsonl"))):
+    for path in sorted(glob.glob(os.path.join(HERE, "logs", "measure_[mx]*_n*.jsonl"))):
         parsed = parse_measurement(path)
         if parsed:
+            parsed["series"] = "exploratory" if os.path.basename(path).startswith("measure_x") else "frozen"
             measurements.append(parsed)
-    frozen = [m for m in measurements if m["lu"] is None and m["n"] in (1000, 10000, 100000)]
+    frozen = [m for m in measurements if m["series"] == "frozen" and m["lu"] is None
+              and m["n"] in (1000, 10000, 100000)]
     explor = [m for m in measurements if m not in frozen]
+    xcases, xfiles = parse_checks("xcheck_S*.log")
+    xval = validity(xcases) if xcases else None
     result = {
         "schema": "vigilode.loop_l1.v19_banded_solve.results.v1",
         "node": "V19_BANDED_SOLVE_KERNEL",
@@ -286,6 +290,9 @@ def main():
         "measurements": frozen,
         "verdicts": decide(frozen, valid) if frozen else None,
         "exploratory_measurements": explor,
+        "exploratory_check_logs": [{"file": os.path.relpath(p, HERE), "sha256": sha256(p)}
+                                   for p in xfiles],
+        "exploratory_validity_second_binary": xval,
     }
     with open(os.path.join(HERE, "RESULTS.json"), "w") as f:
         json.dump(result, f, indent=2, sort_keys=True, allow_nan=False)
