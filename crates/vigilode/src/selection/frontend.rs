@@ -13,47 +13,6 @@
 //! Nothing here is a default. `GeneralOde`, `Rodas5p` and every other frontend keep their
 //! behaviour; [`MethodChoice::General`] returns the decision of `GeneralOde::select`, and
 //! [`MethodChoice::Auto`] runs only when a caller asks for it.
-//!
-//! ```
-//! use vigilode::{
-//!     CallbackError, DerivativeFallback, GeneralOdePolicy, Jacobian, MethodChoice,
-//!     MethodRegistry, Options, Problem, ProblemRegime,
-//! };
-//!
-//! let problem = Problem::new(2, |_t, y, dy| {
-//!     dy[0] = -1000.0 * y[0] + y[1];
-//!     dy[1] = -y[1];
-//!     Ok::<(), CallbackError>(())
-//! })
-//! .jacobian(Jacobian::dense(|_t, _y, jac| {
-//!     jac.copy_from_slice(&[-1000.0, 1.0, 0.0, -1.0]);
-//!     Ok(())
-//! }))
-//! .autonomous();
-//! let options = Options::default();
-//!
-//! // today's default decision, as a plan (no callback is made)
-//! let policy = GeneralOdePolicy {
-//!     regime: ProblemRegime::Stiff,
-//!     derivatives: DerivativeFallback::ProvidedOnly,
-//!     ..GeneralOdePolicy::default()
-//! };
-//! let plan = MethodRegistry::route(&problem, &options, &MethodChoice::General(policy))?;
-//! assert_eq!(plan.route.id(), "rodas5p/dense-fast");
-//!
-//! // execute it and read the method-independent view
-//! let solution = MethodRegistry::solve(&problem, (0.0, 1.0), &[1.0, 1.0], &options, &plan)?;
-//! let view = solution.view();
-//! assert!(view.is_success());
-//! assert_eq!(view.times(), &[0.0, 1.0]);
-//! assert!(view.work().rhs_calls > 0);
-//!
-//! // any registered method by id; a refusal is typed and precedes every callback
-//! let radau = MethodRegistry::route(&problem, &options, &MethodChoice::Explicit("radau-iia3"))?;
-//! assert_eq!(radau.route.id(), "radau-iia3/explicit-jacobian-dense-newton");
-//! assert!(MethodRegistry::route(&problem, &options, &MethodChoice::Explicit("no-such-method")).is_err());
-//! # Ok::<(), Box<dyn std::error::Error>>(())
-//! ```
 
 use std::fmt;
 
@@ -68,7 +27,7 @@ use super::{
     RegistryRefusal, SelectionRefusal, caps, variant,
 };
 use crate::{
-    Atol, DampedRotationFlow, DerivativeFallback, Dopri5, ExplicitCallbackFailure,
+    Atol, DampedRotationFlow, DerivativeFallback, Dopri5, DriverWork, ExplicitCallbackFailure,
     ExplicitSolution, ExplicitSolveError, ExplicitUnsupported, FacadeRoute, FailureReason,
     InteriorError, Jacobian, LawsonDopri5, LawsonSolution, Options, Problem, Rodas5p, Solution,
     SolveError, Status, Unsupported, WorkRecord,
@@ -417,7 +376,51 @@ impl MethodRegistry {
 
 // ------------------------------------------------------------------------------ choices
 
-/// How the caller chooses the method.
+/// How the caller chooses the method of [`MethodRegistry::route`].
+///
+/// The registry is one entry point over every method of the facade: route a request to a
+/// typed plan without any callback, execute the plan, read the method-independent view.
+///
+/// ```
+/// use vigilode::{
+///     CallbackError, DerivativeFallback, GeneralOdePolicy, Jacobian, MethodChoice,
+///     MethodRegistry, Options, Problem, ProblemRegime,
+/// };
+///
+/// let problem = Problem::new(2, |_t, y, dy| {
+///     dy[0] = -1000.0 * y[0] + y[1];
+///     dy[1] = -y[1];
+///     Ok::<(), CallbackError>(())
+/// })
+/// .jacobian(Jacobian::dense(|_t, _y, jac| {
+///     jac.copy_from_slice(&[-1000.0, 1.0, 0.0, -1.0]);
+///     Ok(())
+/// }))
+/// .autonomous();
+/// let options = Options::default();
+///
+/// // today's default decision, as a plan (no callback is made)
+/// let policy = GeneralOdePolicy {
+///     regime: ProblemRegime::Stiff,
+///     derivatives: DerivativeFallback::ProvidedOnly,
+///     ..GeneralOdePolicy::default()
+/// };
+/// let plan = MethodRegistry::route(&problem, &options, &MethodChoice::General(policy))?;
+/// assert_eq!(plan.route.id(), "rodas5p/dense-fast");
+///
+/// // execute it and read the method-independent view
+/// let solution = MethodRegistry::solve(&problem, (0.0, 1.0), &[1.0, 1.0], &options, &plan)?;
+/// let view = solution.view();
+/// assert!(view.is_success());
+/// assert_eq!(view.times(), &[0.0, 1.0]);
+/// assert!(view.work().rhs_calls > 0);
+///
+/// // any registered method by id; a refusal is typed and precedes every callback
+/// let radau = MethodRegistry::route(&problem, &options, &MethodChoice::Explicit("radau-iia3"))?;
+/// assert_eq!(radau.route.id(), "radau-iia3/explicit-jacobian-dense-newton");
+/// assert!(MethodRegistry::route(&problem, &options, &MethodChoice::Explicit("no-such-method")).is_err());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug)]
 pub enum MethodChoice<'a> {
     /// Today's default decision: exactly `GeneralOde::select` under this policy.
@@ -670,6 +673,18 @@ fn union(a: CapabilitySet, b: CapabilitySet) -> CapabilitySet {
         explicit_jacobian: a.explicit_jacobian || b.explicit_jacobian,
         dense_matrix: a.dense_matrix || b.dense_matrix,
         newton: a.newton || b.newton,
+    }
+}
+
+/// The facade route that a RODAS5P run record says was executed.
+fn executed_facade_route(driver_work: &DriverWork) -> FacadeRoute {
+    match driver_work {
+        DriverWork::Dense { .. } => FacadeRoute::DenseFast,
+        DriverWork::Banded { .. } => FacadeRoute::BandedFast,
+        DriverWork::MatrixFree { .. } => FacadeRoute::MatrixFree,
+        DriverWork::FastDense { banded: false, .. } => FacadeRoute::FastDense,
+        DriverWork::FastDense { banded: true, .. } => FacadeRoute::FastBandedDense,
+        DriverWork::SequentialDense { .. } => FacadeRoute::SequentialDense,
     }
 }
 
@@ -1501,14 +1516,36 @@ impl<'a> SolutionView<'a> {
         }
     }
 
-    /// The route that was executed.
-    pub fn route(&self) -> &'a MethodRoute {
+    /// The route the plan asked this attempt to execute.
+    pub fn planned_route(&self) -> &'a MethodRoute {
         &self.attempt.route
+    }
+
+    /// The route that was executed, read from the native result where it records one: the
+    /// driver family of the RODAS5P run record, and the admitted variant of the PPSW1
+    /// result. For the other methods the adapter is the planned route's only driver.
+    pub fn route(&self) -> MethodRoute {
+        let planned = self.attempt.route;
+        match &self.attempt.result {
+            MethodResult::Rodas5p(s) => {
+                let executed = executed_facade_route(&s.stats.driver_work);
+                MethodRoute {
+                    variant: rodas5p_variant(executed),
+                    facade_route: Some(executed),
+                    ..planned
+                }
+            }
+            MethodResult::Peer(s) => match &s.admission {
+                MethodAdmission::Admitted { variant, .. } => MethodRoute { variant, ..planned },
+                MethodAdmission::Refused { .. } => planned,
+            },
+            _ => planned,
+        }
     }
 
     /// Id of the executed route: `<method id>/<variant>`.
     pub fn route_id(&self) -> String {
-        self.attempt.route.id()
+        self.route().id()
     }
 
     /// The driver that ran, as the native result records it (the driver id of the RODAS5P

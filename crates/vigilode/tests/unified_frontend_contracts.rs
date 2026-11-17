@@ -1803,6 +1803,9 @@ fn rodas5p_case(
         )
     );
     assert_eq!(view.executed_driver(), direct.stats.route.driver_id);
+    // the route read from the run record is the planned one
+    assert_eq!(view.route(), plan.route, "{name}: executed route");
+    assert_eq!(view.planned_route(), &plan.route);
     assert_eq!(unified.attempts().len(), 1);
     if options.dense_output {
         assert_eq!(view.output_grid(), MethodOutputGrid::AcceptedSteps);
@@ -2323,6 +2326,8 @@ fn d2_ppsw1_adapter_is_bitwise_the_direct_call() {
                 view.output_grid(),
                 MethodOutputGrid::AcceptedStepsWithoutInitial
             );
+            // the variant of the native admission is the planned one
+            assert_eq!(view.route(), plan.route);
             assert_eq!(view.final_time(), Some(fixture.span.1));
             rows.push(json!({
                 "case": format!("{}/{}", fixture.name, if peer.is_some() { "peer-options" } else { "shared-options" }),
