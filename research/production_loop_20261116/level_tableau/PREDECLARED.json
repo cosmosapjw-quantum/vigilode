@@ -5,7 +5,25 @@
   "base_commit": "c468478e73123a4625c6d20f7459a9f79cbf33de",
   "frozen_row": "research/production_loop_20261116/PREREGISTRATION.md, addendum A1 (thresholds are taken from there unchanged)",
   "amendment_rule": "A protocol choice that turns out to be unexecutable is amended only by appending an entry to 'amendments' in a commit made before the affected run, with the reason; thresholds of the frozen row are never changed. Everything not declared here is labelled exploratory.",
-  "amendments": [],
+  "amendments": [
+    {
+      "id": "A-1",
+      "date": "2026-11-17, committed before any declared start (start indices 0..1999) was run",
+      "scope": "internals of the search optimiser only",
+      "evidence": "logs/smoke_search_D6T.jsonl and logs/smoke_search_D5F.jsonl: 8 starts each with start indices 1000000..1000007 (seeds outside the declared range), run with the optimiser as first declared; and an interactive test of the polish on the smoke starts 1000002 and 1000004, quoted in NOTES.txt entry 2",
+      "observation": "Every smoke start used all 400 function evaluations without converging. The minimum-norm projection onto the hard conditions raised the norm of the index-1 terms from about 1e-3 to about 1e-1, i.e. it destroyed the soft optimum. The regulariser (weight 1e-3, norm 2e-3 to 8e-3) was the largest term of the objective at the optimum. One polished solution ended on the lower end of the gamma window.",
+      "changes": [
+        "stage 1 of every start: least_squares as declared, but max_nfev = 150 (was 400)",
+        "after stage 1, a polish on the manifold of the hard conditions replaces the plain projection: projected Levenberg-Marquardt on the weighted soft terms, every iterate projected back onto the hard conditions by minimum-norm Gauss-Newton steps; 60 iterations per start (phase A)",
+        "phase B: the 40 best passing starts of a formulation by score get up to 600 further polish iterations",
+        "continuation in gamma (depth 6): from the 5 best phase-B results; each grid solve fixes gamma, projects and runs up to 200 polish iterations (instead of a full least_squares run)",
+        "weight of REG is 1e-5 (was 1e-3)",
+        "gamma of depth 6 is searched in [0.19, 0.33], inside the declared window, to keep a margin from the ends of the A-stability window",
+        "the refinement pool is the 8 best by score among the phase-B and continuation results (distinctness rule unchanged)"
+      ],
+      "unchanged": "hard conditions, 2000 starts per formulation, seeds, start distribution, score definition, every FOUND check, candidate selection rule, order check, pay-off screen, all thresholds"
+    }
+  ],
   "timing": "No wall time is measured in this node. All verdict numbers are deterministic counters (step attempts) and residuals. The modelled speed-up is a model, not a measurement.",
 
   "notation": {

@@ -63,3 +63,31 @@ NEXT STEPS
 3. search.py (multi-start, 2000 starts per layout, continuation in gamma), refine.py (mpmath), verify_candidate.py
    (independent, typed-out conditions), run_order.py, run_payoff.py, parse_results.py, render_report.py.
 4. Literature check (owner PDFs in the main checkout are read-only sources; web for Voss, Cao).
+
+== 2026-11-17, entry 2 (generator validated; smoke test of the search; amendment A-1) ==
+
+DONE
+- PREDECLARED.json committed at 996da358 (before any run). Generator rowtrees.py + run_validation.py committed at
+  238321b5; logs/validation.jsonl: 17 conditions vanish on RODAS5P to 8.9e-15 (binary64) / 5.5e-15 (60 digits);
+  index-1 extension: 60 generated two-coloured trees, 58 vanish on RODAS5P main weights (the two that do not are
+  z-rooted, order 5: {o,{o,{o,[o]}}} 4.7e-2 and {o,{o,{o,{o,o}}}} 2.8e-1), 14 of 16 (order <= 4) on the embedded
+  weights; Prothero-Robinson terms b^T beta^k u_q vanish for q = 2, 3 (all k) on RODAS5P and are about 5e-5 for
+  q = 4; RODAS5P: |E6| = 1.151e-2, embedded |ehat5| = 1.467e-2. Depth-5 gamma = 0.278053841136452324931586...,
+  obstruction value 0.19745 (as derived).
+- layouts.py: 4 formulations (unknowns 58/58/74/93, hard conditions 28/27/27/27 as declared). Vectorised plan
+  agrees with the simple evaluator to 1e-14; complex-step Jacobian agrees to 1e-15 relative.
+- Smoke test (seeds 1000000..1000007, outside the declared range), optimiser as first declared:
+  D6T 3/8 and D5F 5/8 pass the double-precision screen, but every start used all 400 nfev and the plain projection
+  raised |D| from ~1e-3 to ~1e-1.
+- Polish test on smoke starts 1000002 and 1000004 (REG 1e-5, stage 1 with 150 nfev):
+    D6T 1000002: polish 60 -> score 2.07e-3; polish 600 -> score 8.4e-4, D 2.9e-5, Dhat 2.4e-5, PR 5.4e-4,
+                 PRhat 1.2e-3, E6 5.2e-3, max coefficient 3.3, gamma 0.2183, max hard 5e-16
+    D6T 1000004: polish 600 -> score 9.5e-4, D 7.4e-5, PR 5.1e-4, E6 3.1e-3, gamma 0.2008
+    D5F 1000002: polish 600 -> score 1.32e-2, D 1.1e-2, Dhat 7.1e-3, PR 1.7e-3, E6 8.3e-3, max coefficient 9.9
+    D5F 1000004: stage 1 ends in an infeasible local minimum (hard 1.2); kept as failed.
+  With REG 1e-3 one D6T polish ended at gamma = 0.1839 (end of the window).
+- Amendment A-1 written to PREDECLARED.json (optimiser internals only) and committed before the declared starts.
+
+NEXT
+- Launch phase A for D6T and D5F (2000 starts each, 4 workers), then phase B, continuation, refinement.
+- Meanwhile: proto.py, problems.py, verify_candidate.py, refine.py, runners, parser, report.
