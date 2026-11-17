@@ -752,11 +752,16 @@ def main():
     stiff = {}
     stiff_reference = None
     path = os.path.join(NODE, "reference", "bruss1d_stiff600.json")
+    if not os.path.exists(path):
+        # The fallback of PREDECLARED.json (Radau reference).
+        path = os.path.join(NODE, "reference", "bruss1d_stiff600_radau.json")
     if os.path.exists(path):
         with open(path, encoding="utf-8") as handle:
             reference = json.load(handle)
         stiff_reference = unhex(reference["state_hex"])
         stiff["reference_uncertainty"] = reference["uncertainty_max_scaled_1_plus_abs"]
+        stiff["reference_file"] = os.path.relpath(path, NODE)
+        stiff["reference_method"] = f"{reference['reference']['method']} rtol {reference['reference']['rtol']:g}"
     setups = [read_perf(os.path.join(exploratory_directory, f"bruss1d_stiff600__SETUP__r{k}.perf")) for k in (1, 2, 3)]
     setups = [value for value in setups if value is not None]
     stiff_setup = statistics.median(setups) if setups else None

@@ -250,6 +250,8 @@ def main():
     parser.add_argument("--out", required=True)
     parser.add_argument("--reference-rtol", type=float, default=1e-13)
     parser.add_argument("--skip-radau", action="store_true")
+    parser.add_argument("--reference-method", choices=["DOP853", "Radau"], default="DOP853",
+                        help="Radau: the fallback of PREDECLARED.json (reference Radau 1e-12, cross-check Radau 1e-10)")
     args = parser.parse_args()
 
     rhs, y0, pattern = BUILDERS[args.family]()
@@ -257,13 +259,22 @@ def main():
     print(f"family {args.family} n {y0.size} span {span} ({span_source})", flush=True)
     f0 = rhs(span[0], y0)
 
-    reference, info = integrate(rhs, y0, span, "DOP853", args.reference_rtol, args.reference_rtol, pattern)
-    print(f"reference {info}", flush=True)
     checks = []
-    second, second_info = integrate(rhs, y0, span, "DOP853", 1e-11, 1e-11, pattern)
-    second_info["difference"] = difference(reference, second)
-    print(f"cross-check 1 {second_info}", flush=True)
-    checks.append(second_info)
+    if args.reference_method == "Radau":
+        reference, info = integrate(rhs, y0, span, "Radau", 1e-12, 1e-12, pattern)
+        print(f"reference {info}", flush=True)
+        second, second_info = integrate(rhs, y0, span, "Radau", 1e-10, 1e-10, pattern)
+        second_info["difference"] = difference(reference, second)
+        print(f"cross-check 1 {second_info}", flush=True)
+        checks.append(second_info)
+        args.skip_radau = True
+    else:
+        reference, info = integrate(rhs, y0, span, "DOP853", args.reference_rtol, args.reference_rtol, pattern)
+        print(f"reference {info}", flush=True)
+        second, second_info = integrate(rhs, y0, span, "DOP853", 1e-11, 1e-11, pattern)
+        second_info["difference"] = difference(reference, second)
+        print(f"cross-check 1 {second_info}", flush=True)
+        checks.append(second_info)
     if not args.skip_radau:
         third, third_info = integrate(rhs, y0, span, "Radau", 1e-11, 1e-11, pattern)
         third_info["difference"] = difference(reference, third)

@@ -366,12 +366,15 @@ def main():
                     return "-"
                 return f"{100 * block['from_jvp']:.0f}% / {100 * block['from_remainder']:.0f}%"
             eq = family["cells"][label]["equal_tolerance_ratio_to_A"]
+            per_element = " / ".join(num((row.get(arm) or {}).get("remainder_per_orthogonalization_element")) for arm in ("A", "B0", "B", "C"))
             rows.append([f"`{fid}`", label, shares("A"), shares("B"), shares("C"), saving("B"), saving("C"),
                          ratio((eq.get("B") or {}).get("orthogonalization_inner_products")),
-                         ratio((eq.get("C") or {}).get("orthogonalization_inner_products"))])
+                         ratio((eq.get("C") or {}).get("orthogonalization_inner_products")), per_element])
     add(table(["family", "rtol", "A: JVP / RHS / 나머지", "B: JVP / RHS / 나머지", "C: JVP / RHS / 나머지",
-               "A->B 절감의 출처 (JVP / 나머지)", "A->C 절감의 출처 (JVP / 나머지)", "직교화 내적 수 B/A", "직교화 내적 수 C/A"], rows))
+               "A->B 절감의 출처 (JVP / 나머지)", "A->C 절감의 출처 (JVP / 나머지)", "직교화 내적 수 B/A", "직교화 내적 수 C/A",
+               "나머지 / 직교화 원소 연산 A / B0 / B / C"], rows))
     add("")
+    add("- 마지막 열은 '나머지' instructions를 직교화의 원소 연산 수((내적 수 + 벡터 갱신 수) x n)로 나눈 값이다. 이 값이 family와 tolerance에 걸쳐 거의 일정하면 '나머지'가 직교화 일에 비례한다는 뜻이다.")
     add("- '나머지'에는 Arnoldi 직교화(two-pass modified Gram-Schmidt), 벡터 갱신, driver의 일이 들어 있다. 열 j의 직교화 비용은 j에 비례하므로, pass를 일찍 끝내면 JVP 수보다 직교화 일이 더 크게 줄 수 있다. 표의 '직교화 내적 수' 비가 그 크기다.")
     add("")
     add("### 5.2 대조 arm B0 (client driver에 보호 kernel의 검사 주기)")
@@ -430,6 +433,34 @@ def main():
             rows.append([f"`{fid}`", arm] + cells)
     add(table(["family", "arm", "restart 10", "restart 20", "restart 40 (선언 실행)", "restart 80"], rows))
     add("")
+    rows = []
+    cheaper_short = []
+    for fid, family in families.items():
+        block = family["exploratory"]["restart"]
+        base = block.get("A_restart40_declared") or {}
+        cells = []
+        for arm in ("A", "B"):
+            for restart in ("10", "20", "40", "80"):
+                key = f"{arm}_restart{restart}" + ("_declared" if restart == "40" else "")
+                run = block.get(key) or {}
+                if not run.get("completed"):
+                    cells.append("-")
+                    continue
+                cells.append(f"{ratio(_ratio(run.get('instructions_net'), base.get('instructions_net')))} / {ratio(_ratio(run.get('E'), base.get('E')))}")
+        rows.append([f"`{fid}`"] + cells)
+        a10 = (block.get("A_restart10") or {}).get("instructions_net")
+        if a10 is not None and base.get("instructions_net") and a10 < base["instructions_net"]:
+            cheaper_short.append(fid)
+    add("같은 자료를 A(restart 40, 선언 실행) 대비 비로 본 것 (instructions 비 / 달성 오차 비):")
+    add("")
+    add(table(["family", "A r10", "A r20", "A r40", "A r80", "B r10", "B r20", "B r40", "B r80"], rows))
+    add("")
+    add("- restart 길이는 Krylov 한도(200 벡터)를 그대로 두고 pass당 열 수만 바꾼 것이다. A는 pass가 끝날 때만 잔차를 보므로 pass가 짧을수록 헛도는 열이 줄고, 두 arm 모두 pass가 짧을수록 열당 직교화 일이 준다. 대신 restart가 짧으면 수렴이 느려져 Krylov 한도에 걸리는 solve가 늘 수 있다(표의 '실패' 수).")
+    if cheaper_short:
+        add("- 이 자료(rtol 1e-5 한 점)에서 보호 driver를 restart 10으로만 바꿔도 instructions가 선언 설정(restart 40)보다 적은 family: "
+            + ", ".join(f"`{fid}`" for fid in cheaper_short)
+            + ". restart는 `LinearSolverConfig`의 설정값이라 보호 파일을 고치지 않고 호출자가 줄 수 있다. 다만 routed 기본값(40)을 바꾸는 것은 default routing 변경이므로 이 node의 범위 밖이고, 한 tolerance에서 본 탐색 결과일 뿐이다.")
+    add("")
     add("### 5.5 preconditioner 한 가지 (client의 right Jacobi, arm B, rtol 1e-5)")
     add("")
     rows = []
@@ -483,6 +514,12 @@ def main():
         add(table(["arm", "상태", "attempts", "기각", "선형 solve 실패", "JVP", "instructions (net)", "오차 E", "잔차 검사 / 실패"], rows))
         add("")
         add("- 이 영역에서는 무전처리 GMRES(40)이 200벡터 한도 때문에 step을 줄인다. 선언 family가 아니고 timing 규약도 적용하지 않았다.")
+        a_run, c_run = stiff.get("A_audit0") or {}, stiff.get("C_audit0") or {}
+        if a_run.get("E") is not None and c_run.get("E") is not None:
+            add(f"- tolerance가 하나뿐이라 matched error 비교가 아니다. 달성 오차는 A {sci(a_run['E'])}, C {sci(c_run['E'])} (E/rtol: A {num(a_run.get('E_over_rtol'))}, C {num(c_run.get('E_over_rtol'))}). "
+                "A와 B는 선형 solve 실패로 step이 줄어 요청한 tolerance보다 훨씬 정확한 해를 내고 그만큼 일을 더 한다. C는 느슨한 임계값 덕에 한도 안에서 수렴하는 solve가 늘어 attempt 수 자체가 준다.")
+        if stiff.get("reference_method"):
+            add(f"- 이 cell의 기준해: {stiff['reference_method']} (`{stiff['reference_file']}`, 불확도 {sci(stiff.get('reference_uncertainty'))}). DOP853(1e-13)은 13분 안에 끝나지 않아 중단했고(`logs/reference/bruss1d_stiff600.log`), 사전등록의 대체 규칙(Radau 1e-12, 대조 Radau 1e-10)을 썼다.")
     else:
         add("- 실행하지 않았다 (NOT_RUN).")
     add("")
