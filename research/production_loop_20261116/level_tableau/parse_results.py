@@ -339,6 +339,11 @@ def main():
                 m["failed_runs_new"] = int(sum(1 for r in d["runs"][arm] if not r["finished"]))
                 a[pid] = m
         payoff["arms"][arm] = a
+    for arm in payoff["arms"]:
+        layout = cands.get(arm, {}).get("layout")
+        payoff.setdefault("roles", {})[arm] = {
+            "layout": layout,
+            "role": "primary" if layout and selection[layout].get("primary") == arm else "exploratory"}
     res["payoff_screen"] = payoff
 
     # ------------------------------------------------------------------ verdicts
@@ -435,12 +440,17 @@ def main():
             overlay = {r["cell"]: r["overlay_label"] for r in json.load(open(ov_path)).get("rows", [])}
         model = {"formula": "S = 1 / ((1 - f_chain + f_chain * L / 8) * attempt_ratio)",
                  "source": "cost_anatomy/AMDAHL.json (f_chain per regime), REVIEW_OVERLAY.json (labels)",
-                 "regimes": len(am["regimes"]), "layouts": {}}
-        for layout in ("depth5", "depth6"):
+                 "regimes": len(am["regimes"])}
+        model["arms"] = {}
+        for arm, byp in payoff["arms"].items():
+            layout = cands.get(arm, {}).get("layout")
+            if layout not in DEPTH:
+                continue
             L = DEPTH[layout]
-            ratios = verdicts[layout].get("attempt_ratios") or {}
+            role = "primary" if selection[layout].get("primary") == arm else "exploratory"
             per = {}
-            for pid, r in ratios.items():
+            for pid in SCREEN_PROBLEMS:
+                r = byp.get(pid, {}).get("ratio")
                 if r is None:
                     continue
                 vals_all, vals_auth = [], []
@@ -454,7 +464,7 @@ def main():
                             "overlay_authoritative_regimes": quantiles(vals_auth),
                             "regimes_above_1_all": sum(1 for x in vals_all if x > 1.0),
                             "regimes_above_1_authoritative": sum(1 for x in vals_auth if x > 1.0)}
-            model["layouts"][layout] = per
+            model["arms"][arm] = {"layout": layout, "role": role, "problems": per}
         expl["modelled_step_speedup"] = model
     res["exploratory"] = expl
 

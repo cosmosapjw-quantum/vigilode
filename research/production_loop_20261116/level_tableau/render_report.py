@@ -211,16 +211,18 @@ w("## 7. pay-off 스크린 (정합 달성 오차에서의 시도 횟수 비)")
 w()
 PS = R["payoff_screen"]
 rows_ = []
-for layout in ("depth5", "depth6"):
-    v = V[layout]
-    prim = v.get("primary_candidate")
+ROLE_KO = {"primary": "1순위 (판정에 사용)", "exploratory": "탐색적 (판정에 쓰이지 않음)"}
+for arm in sorted(PS["arms"], key=lambda a: (PS["roles"][a]["layout"], PS["roles"][a]["role"] != "primary", a)):
+    role = PS["roles"][arm]
+    v = V[role["layout"]]
     for pid in ("ROBER", "VDPOL", "BURGERS"):
-        m = PS["arms"].get(prim, {}).get(pid) if prim else None
+        m = PS["arms"][arm].get(pid)
         if m:
-            rows_.append([LAYOUT_KO[layout], prim, pid, g(m.get("ratio"), 4), g(m.get("ratio_min"), 4) + " ~ " + g(m.get("ratio_max"), 4),
+            rows_.append([LAYOUT_KO[role["layout"]], arm, ROLE_KO[role["role"]], pid, g(m.get("ratio"), 4),
+                          g(m.get("ratio_min"), 4) + " ~ " + g(m.get("ratio_max"), 4),
                           m["usable_targets"], g(PS["references"][pid]["u_ref"]), m["failed_runs_new"],
                           g(v.get("pass_threshold")), g(v.get("depth_gain_kill_level"))])
-table(["레이아웃", "후보", "문제", "비 (기하평균)", "목표별 최소 ~ 최대", "쓸 수 있는 목표 수", "기준해 불확도 u_ref", "실패 실행",
+table(["레이아웃", "후보", "역할", "문제", "비 (기하평균)", "목표별 최소 ~ 최대", "쓸 수 있는 목표 수", "기준해 불확도 u_ref", "실패 실행",
        "통과 임계", "KILL 수준"], rows_)
 for layout in ("depth5", "depth6"):
     v = V[layout]
@@ -231,12 +233,12 @@ w("- 규칙: 허용오차 사다리 rtol = 10^(-k/2), k = 6..18, atol = a_scale 
 w("- 기준해: scipy Radau (rtol 1e-13). u_ref는 Radau(rtol 1e-11)과의 차이와 RODAS5P 프로토타입(rtol 1e-11)과의 차이 중 큰 값.")
 w("- 벽시계 시간은 재지 않았다. 판정에 쓰인 수는 모두 결정적 계수기(스텝 시도 횟수)다.")
 w()
-for layout in ("depth5", "depth6"):
-    prim = V[layout].get("primary_candidate")
-    arms = PS["arms"].get(prim) if prim else None
+for prim in sorted(PS["arms"], key=lambda a: (PS["roles"][a]["layout"], PS["roles"][a]["role"] != "primary", a)):
+    layout = PS["roles"][prim]["layout"]
+    arms = PS["arms"].get(prim)
     if not arms:
         continue
-    w("### %s, 후보 `%s`: 허용오차별 원자료" % (LAYOUT_KO[layout], prim))
+    w("### %s, 후보 `%s` (%s): 허용오차별 원자료" % (LAYOUT_KO[layout], prim, ROLE_KO[PS["roles"][prim]["role"]]))
     w()
     for pid in ("ROBER", "VDPOL", "BURGERS"):
         m = arms.get(pid)
@@ -334,16 +336,18 @@ if ms:
     w("모형: `%s`. f_chain은 `cost_anatomy/AMDAHL.json`의 영역별 체인 비중(%d개 영역), 표시는 `REVIEW_OVERLAY.json`. 오버헤드 0, 완전한 2-프로세서 확장, 단당 비용 동일을 가정한 상한이며 측정이 아니다." % (ms["formula"], ms["regimes"]))
     w()
     rows_ = []
-    for layout in ("depth5", "depth6"):
-        for pid, e in ms["layouts"].get(layout, {}).items():
+    for arm in sorted(ms["arms"], key=lambda a: (ms["arms"][a]["layout"], ms["arms"][a]["role"] != "primary", a)):
+        ma = ms["arms"][arm]
+        for pid, e in ma["problems"].items():
             qa = e.get("overlay_authoritative_regimes") or {}
             qall = e.get("all_regimes") or {}
-            rows_.append([LAYOUT_KO[layout], pid, g(e["attempt_ratio"], 4), g(e["chain_only_bound"], 3),
+            rows_.append([arm, ROLE_KO[ma["role"]], pid, g(e["attempt_ratio"], 4), g(e["chain_only_bound"], 3),
                           "%s / %s / %s" % (g(qa.get("min"), 3), g(qa.get("median"), 3), g(qa.get("max"), 3)),
                           "%s / %s" % (e["regimes_above_1_authoritative"], qa.get("count")),
                           "%s / %s / %s" % (g(qall.get("min"), 3), g(qall.get("median"), 3), g(qall.get("max"), 3)),
                           "%s / %s" % (e["regimes_above_1_all"], qall.get("count"))])
-    table(["레이아웃", "문제", "시도 비", "체인만의 상한 (8/L)/비", "권위 영역: 최소 / 중앙 / 최대", "1 초과 영역 수 (권위)", "전체 영역: 최소 / 중앙 / 최대", "1 초과 영역 수 (전체)"], rows_)
+    table(["후보", "역할", "문제", "시도 비", "체인만의 상한 (8/L)/비", "권위 영역: 최소 / 중앙 / 최대", "1 초과 영역 수 (권위)",
+           "전체 영역: 최소 / 중앙 / 최대", "1 초과 영역 수 (전체)"], rows_)
     w("1보다 작은 값은 두 프로세서를 써도 RODAS5P 순차 스텝보다 느리다는 뜻이다.")
     w()
 
