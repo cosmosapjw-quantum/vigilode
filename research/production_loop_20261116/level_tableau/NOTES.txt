@@ -1,0 +1,65 @@
+V16_LEVEL_TABLEAU_SEARCH -- working notes (plain text, updated at every milestone)
+Worktree /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v16, branch research/production-loop-20261116-w2-v16,
+base commit c468478e. Scratch: /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v16/
+
+== 2026-11-17, entry 1 (before any run) ==
+
+READ SO FAR (file:line)
+- research/production_loop_20261116/PREREGISTRATION.md:11-18 (rules), :60-66 (addendum A1, frozen row of V16).
+- docs/agent/production_solver_program_20261112/TASK_CONTRACTS.json, entry /tasks/25 (V16 contract).
+- research/production_loop_20261116/theory/THEORY.md:436-503 (S9: layouts, stiff accuracy = "b is the last row of beta",
+  counts 59/51/44 for 1-2-2-2-1 and 93/83/74 for 1-2-2-2-2-1, gamma pinned to 0.2780538411 for depth 5, window
+  [0.18391465, 0.33414237] for depth 6), :36-41 (notation: k-form, U-form, reconstruction Gamma = (I/gamma - C)^-1,
+  alpha = A Gamma, beta = alpha + Gamma, b = Gamma^T b_code), :205-226 (S4: W conditions, gamma_i = row sum of
+  gamma_ij with the diagonal), :273-288 (S5: 17 ROW conditions, branching vertex carries alpha, singly-branched
+  vertex carries beta with the diagonal, right-hand side 1/gamma(t)).
+- research/production_loop_20261116/theory/verify_independent.py:117-134 (loader of the snapshot; bhat = alpha row 8).
+- fixtures/rodas5p_coefficients_snapshot.json (keys gamma, A, C, c, b_code, H; decimal strings).
+- Controller of the protected driver: crates/rodas5p-integrators/src/adaptive.rs:397 (factor = safety * err^(-1/order)),
+  :273-277 (legacy_rodas: safety 0.9, min_factor 0.2, max_factor 5.0, reject_max_factor 0.9, ControllerKind::Integral),
+  :161-177 (Default config: same constants, initial_step 1e-3), :91-97 (estimator order 5), :372-378 (err == 0 ->
+  max_factor on acceptance), :404-408 (clamp [min,max] accepted, [min,reject_max] rejected), :718-732 (rejection:
+  factor from max(err,1e-16); non-finite error -> min_factor);
+  crates/rodas5p-integrators/src/sequential.rs:841-843 (scale and acceptance: err <= 1 and finite);
+  crates/rodas5p-core/src/norms.rs:75 (scale_i = atol + rtol * max(|y0_i|, |y1_i|)), :119 (WRMS);
+  crates/rodas5p-core/src/coefficients.rs:195 (btilde = last row of Gamma: error vector = U_8 = sum_j gamma_8j k_j).
+
+DERIVATIONS DONE ON PAPER (no run yet)
+1. ROW conditions (k-form, beta = alpha + gamma_ij with beta_ii = gamma): Phi_j(leaf) = 1; one child: sum_k beta_jk Phi_k;
+   two or more children: product over children of sum_k alpha_jk Phi_k(child); condition sum_j b_j Phi_j(t) = 1/gamma(t).
+2. Depth 5 (levels {1},{2,3},{4,5},{6,7},{8}), stiffly accurate: R = P/(1-gamma z)^5, deg P <= 4, order 5 pins gamma.
+   NEW OBSTRUCTION for the tie alpha_8 = beta_7 (embedded weights = row 7 of beta): the embedded method then uses only
+   the first four levels and has R_hat(inf) = 0, so R_hat = P_hat/(1-gamma z)^4 with deg P_hat <= 3, and order 4 needs
+   the z^4 coefficient of exp(z)(1-gamma z)^4 to vanish: gamma^4 - 4 gamma^3 + 3 gamma^2 - (2/3) gamma + 1/24 = 0.
+   At gamma = 0.2780538411 the value is about 8.2e-3, not 0. Hence in the 8-stage depth-5 layout the embedded weights
+   cannot be row 7 of beta; they must be free weights b_hat = b - d with d_8 != 0 and then R_hat(inf) = d^T beta^4 1 /
+   gamma^5 != 0 unless the estimator vanishes identically on linear problems. With 8 stages the 8 order-4 conditions
+   on d are homogeneous and square: a non-trivial d needs det[Phi_j(t)] = 0 (one extra condition on the tableau).
+   (To be confirmed by the scripts; it changes the unknown count of S9 for depth 5: 50 tableau entries + 8 for d.)
+3. Depth 6 (levels {1},{2,3},{4,5},{6,7},{8,9},{10}) with the tie alpha_10 = beta_9: the embedded method has five
+   levels, R_hat = trunc_4[exp(z)(1-gamma z)^5]/(1-gamma z)^5, no constraint on gamma; its linear estimator degenerates
+   at gamma = 0.27805 (z^5 defect zero), to be kept away from.
+4. Prothero-Robinson local error of a ROW step started on the manifold (exact J and f_t):
+   W_2(z) = b^T (I - z beta)^-1 (beta 1 - z c^2/2) - 1/2,  W_q(z) = b^T (I - z beta)^-1 (c^(q-1)/(q-1)! - z c^q/q!) - 1/q!.
+   Stiff accuracy with c_s = 1 gives W_q(inf) = 0; the 1/z coefficient vanishes iff (last row of beta^-1) . c^q = q.
+5. Index-1 conditions (two-coloured trees, fat vertex = algebraic solve, >= 2 children, carries omega = beta^-1;
+   order = number of meagre vertices; gamma(fat root) = product of gamma(children)). Derived from the stage equations;
+   will be VALIDATED numerically on RODAS5P and only conditions that vanish on RODAS5P are used (as soft targets).
+
+DESIGN DECISIONS SO FAR
+- Hard set per layout = exactly the frozen FOUND conditions (17 order-5 conditions, embedded order 4 (8 conditions),
+  sum b_i gamma_i = 0, stiff accuracy by structure, gamma A-stable). Quality terms (order-6 error coefficients,
+  index-1 conditions, Prothero-Robinson functions, coefficient size) are soft terms of the least-squares objective.
+- Depth 6: tied formulation D6T (74 unknowns). Depth 5: free-embedded formulation D5F (gamma fixed, 58 unknowns).
+- Candidate selection uses algebraic scores and development problems (HIRES, Oregonator: consumed, development only),
+  never the three pay-off problems.
+- Prototype: k-form, exact Jacobian, autonomous problems (time appended as a state when needed), numpy.
+- Coefficient bound 100 applies to gamma, alpha_ij, gamma_ij, b_i, b_hat_i (k-form, the coefficients counted in S9);
+  the code-form matrices A and C are reported as exploratory (RODAS5P itself has |C| up to 165).
+
+NEXT STEPS
+1. PREDECLARED.json (commit before any run of generator, search or integrator).
+2. rowtrees.py (generator) + validation on RODAS5P; proto.py + order check of RODAS5P.
+3. search.py (multi-start, 2000 starts per layout, continuation in gamma), refine.py (mpmath), verify_candidate.py
+   (independent, typed-out conditions), run_order.py, run_payoff.py, parse_results.py, render_report.py.
+4. Literature check (owner PDFs in the main checkout are read-only sources; web for Voss, Cao).
