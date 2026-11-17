@@ -118,6 +118,22 @@ def main():
              pr_main_norm=nrm(pr), pr_main_by_q={str(q): nrm(pr[i * L:(i + 1) * L]) for i, q in enumerate((2, 3, 4))},
              pr_embedded_norm=nrm(prh), c=[float(x) for x in c],
              c_min=float(min(c)), c_max=float(max(c)))
+        # identity: b^T N^(L-1) u_2 = gamma^2 * b^T N^(L-1) 1, so W_2(z) = 0 identically removes one pole of R
+        Nm = [[t["beta"][i][j] - (t["gamma"] if i == j else 0) for j in range(s)] for i in range(s)]
+        one = [mpf(1)] * s
+        b1 = ops.mv(t["beta"], one)
+        u2 = [x - y * y / 2 for x, y in zip(ops.mv(t["beta"], b1), c)]
+        v1, vu = one, u2
+        for _ in range(L - 1):
+            v1 = ops.mv(Nm, v1)
+            vu = ops.mv(Nm, vu)
+        mu_last = mp.fsum(x * y for x, y in zip(t["b"], v1))
+        lhs = mp.fsum(x * y for x, y in zip(t["b"], vu))
+        emit(kind="pr_pole_identity", method=t["name"], levels=L, mu_last=float(mu_last), bT_N_u2=float(lhs),
+             gamma_squared_times_mu_last=float(t["gamma"] ** 2 * mu_last),
+             identity_defect=float(lhs - t["gamma"] ** 2 * mu_last),
+             statement="b^T N^(L-1) u_2 = gamma^2 b^T N^(L-1) 1; W_2(z) = 0 identically needs the left side to vanish, "
+                       "which makes mu_(L-1) = 0 and R(z) = P(z)/(1 - gamma z)^(L-1)")
         # stability function
         v = [mpf(1)] * s
         defects = []

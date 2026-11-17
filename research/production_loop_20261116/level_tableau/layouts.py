@@ -122,6 +122,11 @@ class Formulation:
         self.alpha_pairs = [p for p in self.pairs if not (self.tied and p[0] == s - 1)]
         self.gam_pairs = list(self.pairs)
         self.has_gamma = fid in ("D6T", "D6F")
+        # Hard Prothero-Robinson conditions were tried for D6L on smoke seeds only (logs/smoke3_search_D6L_hardPR.jsonl)
+        # and are infeasible there: W_2(z) = 0 identically forces b^T N^(L-1) 1 = 0, i.e. one pole less, which pins
+        # gamma (NOTES.txt entry 5). The switch stays off for every declared formulation.
+        self.pr_hard = False
+        self.weights = dict(WEIGHTS)
         self.has_d = not self.tied
         self.n_gamma = 1 if self.has_gamma else 0
         self.n_alpha = len(self.alpha_pairs)
@@ -147,6 +152,8 @@ class Formulation:
             self.hard_names = ["O5"] * 17 + ["E4"] * 8 + ["W", "C"]
         else:
             self.hard_names = ["O5"] * 17 + ["E4"] * 8 + ["W", "N2"]
+        if self.pr_hard:
+            self.hard_names += ["PR"] * (2 * self.L) + ["PRhat"] * (2 * self.L)
         self.m_hard = len(self.hard_names)
         self.plan_h = Plan(self.trees5)
         self.plan_a = Plan(self.trees5 + self.trees6 + self.d_main + self.d_emb)
@@ -239,6 +246,8 @@ class Formulation:
             res.append((d * v).sum(axis=-1) - RHO_HAT * tab["gamma"] ** 5)
         else:
             res.append((d * d).sum(axis=-1) - 1)
+        if self.pr_hard:
+            res += rt.pr_terms(ev.ops, b, c, self.L, (2, 3)) + rt.pr_terms(ev.ops, bhat, c, self.L, (2, 3))
         return np.stack(res, axis=1)
 
     def soft_parts(self, X, tab=None, ev=None):
@@ -280,6 +289,10 @@ class Formulation:
         else:
             extra.append((d * d).sum(axis=-1) - 1)
         res.append(np.stack(extra, axis=1))
+        if self.pr_hard:
+            pr, prh = self._pr_fast(tab)
+            res.append(pr[:, :2 * self.L])
+            res.append(prh)
         return np.concatenate(res, axis=1)
 
     def _pr_fast(self, tab):
@@ -319,7 +332,7 @@ class Formulation:
         PHI = self.plan_a.run(tab["alpha"], tab["beta"])
         h = self._hard_fast(tab, PHI, self.plan_a)
         p = self._soft_fast(tab, PHI, self.plan_a)
-        blocks = [h] + [WEIGHTS[k] * p[k] for k in ("E6", "D", "Dhat", "PR", "PRhat")] + [WEIGHTS["REG"] * X]
+        blocks = [h] + [self.weights[k] * p[k] for k in ("E6", "D", "Dhat", "PR", "PRhat")] + [self.weights["REG"] * X]
         return np.concatenate(blocks, axis=1)
 
     def stacked_reference(self, X):
@@ -327,7 +340,7 @@ class Formulation:
         ev = rt.Evaluator(rt.NumpyOps(tab["alpha"], tab["beta"], np))
         h = self.hard(X, tab, ev)
         p = self.soft_parts(X, tab, ev)
-        blocks = [h] + [WEIGHTS[k] * p[k] for k in ("E6", "D", "Dhat", "PR", "PRhat")] + [WEIGHTS["REG"] * X]
+        blocks = [h] + [self.weights[k] * p[k] for k in ("E6", "D", "Dhat", "PR", "PRhat")] + [self.weights["REG"] * X]
         return np.concatenate(blocks, axis=1)
 
     # ------------------------------------------------------------------------------- complex-step derivatives

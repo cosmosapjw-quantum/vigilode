@@ -139,3 +139,35 @@ NEXT (in this order)
 2. Same for D5F, then select the depth-5 primary (parse_results.py), order check, pay-off screen.
 3. Same for D6L; select the depth-6 primary among D6T and D6L; order check; pay-off screen.
 4. run_exploratory.py for RODAS5P and the primaries; parse; render; loop checker; strict-JSON check; commit.
+
+== 2026-11-17, entry 5 (about 17:15 KST) ==
+
+RESULTS SO FAR
+- D6T (declared): 2000 starts, 551 pass the double screen; phase B 39/40 pass, best score 1.93e-4 (gamma at the
+  lower search bound 0.19); continuation 70/71 pass, best score by gamma 1.41e-4 (0.20) ... 9.4e-4 (0.33).
+  8 refined candidates (candidates/D6T_r01..r08.json), all pass every algebraic check of verify_candidate.py
+  (order-5 residual <= 2.2e-16 binary64, <= 8e-40 exact). Depth 6 is FOUND on the algebraic part.
+- Development screen (logs/payoff_dev_D6T.jsonl): attempt ratio against RODAS5P, geometric mean of HIRES and
+  OREGO: r07 1.42 (gamma 0.19), r01 1.69, r08 1.78, others 2.07-2.14. All above the depth gain 1.33.
+- Order run of D6T_r07 (logs/order_D6T_r07.jsonl): VDP_MU2 4.999, PENDULUM_FORCED 4.984, BRUSS_ODE pairs
+  6.59, 4.97, 3.86, 4.63 (median 4.799; the pair 160->320 has order 4.92 but err(320) = 3.2e-13 is under the
+  guard). By the declared rule BRUSS_ODE is below 4.8 by 0.001. Reported as measured; rule not changed.
+- Exploratory Prothero-Robinson run: D6T_r07 has order 1 at lambda = -1e6 (errors 4.8e-8 .. 1.6e-9), RODAS5P
+  order 3 (5e-12 ..): the soft Prothero-Robinson terms are not small enough.
+
+NEW STRUCTURAL FACT (derived, then checked numerically to 1e-56 by run_exploratory.py, kind pr_pole_identity)
+  b^T N^(L-1) u_2 = gamma^2 * b^T N^(L-1) 1   (N = beta - gamma I, u_2 = beta^2 1 - c^2/2, stiffly accurate b),
+  because N^(L-1) only connects level 1 to level L and (u_2)_1 = gamma^2. Hence W_2(z) = 0 identically (the
+  Prothero-Robinson property that RODAS5P has for q = 2 and 3) forces mu_(L-1) = b^T N^(L-1) 1 = 0, i.e. the
+  stability function loses one pole: R = P/(1 - gamma z)^(L-1).
+  Consequences for two processors and order 5 with R(inf) = 0:
+    depth 5 + exact W_2 = 0  -> 4 poles -> impossible (theory S9, L = 4 no-go);
+    depth 6 + exact W_2 = 0  -> 5 poles -> gamma pinned at 0.27805, linear order 5 (defect 5.3e-4);
+    RODAS5P: 8 stages, 7 poles (theory S2: N^7 = 0) -- the same mechanism (beta_21 = 0).
+  A tried variant "D6L with hard Prothero-Robinson conditions" (smoke seeds only, logs/smoke3_search_D6L_hardPR.jsonl,
+  0 of 4 feasible) is infeasible for this reason and was dropped before any declared start; D6L runs as declared in
+  amendment A-3 (soft Prothero-Robinson terms).
+
+NEXT
+- D5F chain (running, 1093/2000 at 17:15), then D6L (queued). Then refine/verify/dev for both, selection, order,
+  screen, exploratory, parse, render, checks, commit.

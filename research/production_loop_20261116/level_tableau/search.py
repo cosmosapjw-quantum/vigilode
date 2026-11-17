@@ -253,7 +253,7 @@ def main():
     F = formulation(a.fid)
     mode = "continuation" if a.continuation else ("polish" if a.polish_top else "multistart")
     emit({"kind": "header", "script": "search.py", "fid": a.fid, "unknowns": F.n, "hard_conditions": F.m_hard,
-          "hard_names": F.hard_names, "stages": F.s, "levels": F.levels, "weights": layouts.WEIGHTS,
+          "hard_names": F.hard_names, "stages": F.s, "levels": F.levels, "weights": F.weights,
           "soft_counts": {"E6": len(F.trees6), "D": len(F.d_main), "Dhat": len(F.d_emb), "PR": 3 * F.L,
                           "PRhat": 2 * F.L},
           "base_seed": BASE_SEED, "seed_code": layouts.SEED_CODE[a.fid], "numpy": np.__version__,
