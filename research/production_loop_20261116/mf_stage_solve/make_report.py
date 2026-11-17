@@ -138,9 +138,16 @@ def main():
             if block.get("speedup") is None:
                 return "-"
             return f"{block['speedup']:.2f}x ({block['speedup_min']:.2f}~{block['speedup_max']:.2f}) [{block['label']}]"
-        rows.append([f"`{fid}`", family["n"], cell(b["instructions_net"]), wall(b["wall"]), cell(b["jvp_calls"]),
-                     cell(c["instructions_net"]), wall(c["wall"]), cell(c["jvp_calls"]), cell(c["attempts"])])
-    add(table(["family", "n", "B instructions / A", "B wall 배속", "B JVP / A", "C instructions / A", "C wall 배속", "C JVP / A", "C attempts / A"], rows))
+        def cpu(block):
+            if block.get("speedup") is None:
+                return "-"
+            return f"{block['speedup']:.2f}x ({block['speedup_min']:.2f}~{block['speedup_max']:.2f})"
+        rows.append([f"`{fid}`", family["n"], cell(b["instructions_net"]), wall(b["wall"]), cpu(b["thread_cpu"]), cell(b["jvp_calls"]),
+                     cell(c["instructions_net"]), wall(c["wall"]), cpu(c["thread_cpu"]), cell(c["jvp_calls"]), cell(c["attempts"])])
+    add(table(["family", "n", "B instructions / A", "B wall 배속", "B on-CPU 배속 (탐색)", "B JVP / A",
+               "C instructions / A", "C wall 배속", "C on-CPU 배속 (탐색)", "C JVP / A", "C attempts / A"], rows))
+    add("")
+    add("- 'on-CPU 배속'은 timing 실행에서 solver thread가 실제로 CPU 위에 있던 시간(`/proc/thread-self/schedstat`)의 비다. run queue에서 기다린 시간이 빠지므로 host 부하의 영향을 wall보다 덜 받는다. 탐색 수치이고 frozen 기준의 wall 조건을 대신하지 않는다.")
     add("")
 
     # ------------------------------------------------------------ 2. what was measured
@@ -287,18 +294,23 @@ def main():
             timing = family["cells"][label]["timing"]
             used = next((entry for entry in timing["tries"] if entry["try"] == timing.get("used_try")), None)
             if used is None:
-                rows.append([label, "-", "-", "-", "-", "-", "-", timing["label"], "-"])
+                rows.append([label, "-", "-", "-", "-", "-", "-", "-", "-", timing["label"], "-"])
                 continue
             walls = timing["median_wall"]
             spreads = timing["spread"]
             speedups = timing.get("speedup_equal_tolerance") or {}
+            cpus = timing.get("median_thread_cpu") or {}
+            cpu_speedups = timing.get("thread_cpu_speedup_equal_tolerance") or {}
             rows.append([label, " / ".join(num(walls[arm], 4) for arm in ARMS),
                          " / ".join("-" if spreads[arm] is None else f"{100 * spreads[arm]:.1f}%" for arm in ARMS),
                          speed(speedups.get("B")), speed(speedups.get("C")),
+                         " / ".join(num(cpus.get(arm), 4) for arm in ARMS),
+                         f"{speed(cpu_speedups.get('B'))} / {speed(cpu_speedups.get('C'))}",
                          f"{num(used['load_1min_before_first'])} / {num(used['load_1min_after_last'])}",
                          f"{timing['measurements']} (사용: {timing['used_try']}회차" + (", round별 9회 호출" if used["split_long_cell"] else "") + ")",
                          timing["label"], "; ".join(used["misses"]) if used["misses"] else ""])
-        add(table(["rtol", "wall 중앙값 s A / B / C", "spread A / B / C", "배속 B (같은 tol)", "배속 C (같은 tol)", "1분 load 전 / 후", "측정 횟수", "표시", "규칙 미달 사유"], rows))
+        add(table(["rtol", "wall 중앙값 s A / B / C", "spread A / B / C", "배속 B (같은 tol)", "배속 C (같은 tol)",
+                   "on-CPU 중앙값 s A / B / C (탐색)", "on-CPU 배속 B / C (탐색)", "1분 load 전 / 후", "측정 횟수", "표시", "규칙 미달 사유"], rows))
         add("")
 
     # ------------------------------------------------------------ 5. exploratory

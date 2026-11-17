@@ -327,6 +327,12 @@ def collect_timing(family, rtol, plain_states):
                 median = statistics.median(walls)
                 arm_entry.update({"median": median, "min": min(walls), "max": max(walls),
                                   "spread": (max(walls) - min(walls)) / median if median > 0 else None})
+            # Exploratory: on-CPU time of the solver thread (load-robust).
+            cpus = [run.get("thread_cpu_seconds") for run in reps]
+            if cpus and all(value is not None for value in cpus):
+                median_cpu = statistics.median(cpus)
+                arm_entry.update({"thread_cpu_seconds": cpus, "median_thread_cpu": median_cpu,
+                                  "spread_thread_cpu": (max(cpus) - min(cpus)) / median_cpu if median_cpu > 0 else None})
             entry["arms"][arm] = arm_entry
             if len(walls) != REPETITIONS or len(warm) != WARM_UP_ROUNDS:
                 reasons.append(f"arm {arm}: {len(warm)} warm-ups and {len(walls)} repetitions")
@@ -349,6 +355,8 @@ def collect_timing(family, rtol, plain_states):
     if used:
         out["median_wall"] = {arm: used["arms"][arm].get("median") for arm in ARMS}
         out["spread"] = {arm: used["arms"][arm].get("spread") for arm in ARMS}
+        out["median_thread_cpu"] = {arm: used["arms"][arm].get("median_thread_cpu") for arm in ARMS}
+        out["spread_thread_cpu"] = {arm: used["arms"][arm].get("spread_thread_cpu") for arm in ARMS}
     return out
 
 
@@ -493,6 +501,8 @@ def main():
             if cell["timing"].get("median_wall"):
                 walls = cell["timing"]["median_wall"]
                 cell["timing"]["speedup_equal_tolerance"] = {arm: ratio(walls.get("A"), walls.get(arm)) for arm in ("B", "C")}
+                cpus = cell["timing"].get("median_thread_cpu") or {}
+                cell["timing"]["thread_cpu_speedup_equal_tolerance"] = {arm: ratio(cpus.get("A"), cpus.get(arm)) for arm in ("B", "C")}
             entry["cells"][label] = cell
 
         # Matched-error statistics.
@@ -511,6 +521,8 @@ def main():
                     continue
                 if measure == "wall":
                     work = (cell["timing"].get("median_wall") or {}).get(arm)
+                elif measure == "thread_cpu":
+                    work = (cell["timing"].get("median_thread_cpu") or {}).get(arm)
                 else:
                     work = run.get(measure)
                 if work is None:
@@ -521,7 +533,7 @@ def main():
 
         for arm in ("B", "C"):
             block = {}
-            for measure in ("instructions_net", "attempts", "jvp_calls", "wall"):
+            for measure in ("instructions_net", "attempts", "jvp_calls", "wall", "thread_cpu"):
                 points_a, completed_a = points("A", measure)
                 points_x, completed_x = points(arm, measure)
                 block[measure] = matched(points_a, points_x, floor, completed_a, completed_x, needed)
@@ -530,6 +542,11 @@ def main():
                 block["wall"]["speedup_min"] = 1.0 / block["wall"]["max_ratio"]
                 block["wall"]["speedup_max"] = 1.0 / block["wall"]["min_ratio"]
             block["wall"]["label"] = entry["wall_label"]
+            if block["thread_cpu"].get("geometric_mean_ratio"):
+                block["thread_cpu"]["speedup"] = 1.0 / block["thread_cpu"]["geometric_mean_ratio"]
+                block["thread_cpu"]["speedup_min"] = 1.0 / block["thread_cpu"]["max_ratio"]
+                block["thread_cpu"]["speedup_max"] = 1.0 / block["thread_cpu"]["min_ratio"]
+            block["thread_cpu"]["label"] = "exploratory, never used for a verdict"
             entry["matched_error"][arm] = block
 
         # Validity.

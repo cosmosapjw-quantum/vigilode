@@ -22,7 +22,9 @@
 //! * `TIMING`: `V17_ROUNDS` rounds (default 9) of the arms `V17_ARMS`
 //!   (default `A,B,C`), each arm once per round in the order rotated by the
 //!   round index plus `V17_ROUND_OFFSET`. Prints one `V17_TIMING_JSON` per
-//!   run and a `V17_TIMING_META_JSON` with `/proc/loadavg` at start and end.
+//!   run (wall of the solve call, and the on-CPU time of the thread from
+//!   `/proc/thread-self/schedstat` as an exploratory, load-robust figure)
+//!   and a `V17_TIMING_META_JSON` with `/proc/loadavg` at start and end.
 //! * `CALIB_JVP`, `CALIB_RHS`: `V17_CALLS` (default 20000) JVPs or
 //!   right-hand sides at the start state (instructions per call).
 //! * `RHS0`: prints the start state and `f(t0, y0)` as hex (`V17_RHS0_JSON`).
@@ -74,6 +76,15 @@ fn sha256(values: &[f64]) -> String {
         .iter()
         .map(|byte| format!("{byte:02x}"))
         .collect()
+}
+
+/// On-CPU time of the calling thread in seconds, from
+/// `/proc/thread-self/schedstat` (time on a CPU, without the time spent
+/// waiting for one). The solvers run on the calling thread.
+fn thread_cpu_seconds() -> Option<f64> {
+    let text = std::fs::read_to_string("/proc/thread-self/schedstat").ok()?;
+    let nanoseconds: u64 = text.split_whitespace().next()?.parse().ok()?;
+    Some(nanoseconds as f64 * 1.0e-9)
 }
 
 fn loadavg() -> String {
@@ -246,9 +257,13 @@ fn mode_timing(family_id: &str, family: &Family) {
         let global_round = round + offset;
         for position in 0..arms.len() {
             let options = &arms[(global_round + position) % arms.len()];
+            let cpu_start = thread_cpu_seconds();
             let start = Instant::now();
             let outcome = run_arm(family, rtol, options);
             let wall = start.elapsed().as_secs_f64();
+            let cpu = cpu_start
+                .zip(thread_cpu_seconds())
+                .map(|(before, after)| after - before);
             let mut record = header("TIMING", family_id, family);
             merge(
                 &mut record,
@@ -261,6 +276,7 @@ fn mode_timing(family_id: &str, family: &Family) {
                     "round": global_round,
                     "position": position,
                     "wall_seconds": wall,
+                    "thread_cpu_seconds": cpu,
                 }),
             );
             match outcome {
