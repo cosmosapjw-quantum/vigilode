@@ -1,7 +1,7 @@
 {
   "schema": "vigilode.port-contracts.v1",
   "date": "2026-11-16",
-  "status": "DRAFT (V12 completes after the V02 verdict)",
+  "status": "Updated 2026-11-17 after the adoption of the switcher lineage (V02) and wave 2 groups 1-2; fields status_20261117, result_this_loop and next_discriminator are current; rows of nodes still running are updated at the close of the loop.",
   "rule": "A port keeps the original target and error; the discriminating experiment runs before any claim of benefit; evidence must come from executed runs.",
   "items": [
     {
@@ -31,7 +31,10 @@
       "head_tests": [
         "crates/rodas5p-integrators/tests/shared_basis_mf_contracts.rs",
         "crates/rodas5p-integrators/tests/stage_clients_krylov_contracts.rs"
-      ]
+      ],
+      "status_20261117": "PORTED_AND_MEASURED",
+      "result_this_loop": "V06 stage a FAIL on executed runs: JVP ratio of the shared basis to per-stage GMRES 1.12-1.78 on the three nonlinear families against the frozen 0.5 (research/production_loop_20261116/shared_krylov/RESULTS.json, ledger L-0315). The v2 kernel was not built. Leads moved to node V17 (residual test after every Arnoldi column; linear tolerance tied to the step tolerance).",
+      "next_discriminator": "none for the shared basis; see V17 for the two leads"
     },
     {
       "id": "P02",
@@ -60,7 +63,10 @@
       "head_tests": [
         "crates/vigilode/tests/sparse_jvp_contracts.rs",
         "crates/rodas5p-integrators/tests/stage_clients_assembly_contracts.rs"
-      ]
+      ],
+      "status_20261117": "PORTED_NOT_WIRED",
+      "result_this_loop": "the colouring module is at the head and serves Jacobian::sparse_jvp of the facade; the stage client assembly.rs is a stub. Node V08 (group 3 of wave 2) builds and measures the threaded and coloured assembly.",
+      "next_discriminator": "V08 frozen gate (wall >= 1.5x on finite-difference problems, n >= 64, right-hand side >= 50 microseconds; bitwise equal Jacobian)"
     },
     {
       "id": "P03",
@@ -94,7 +100,10 @@
       ],
       "head_tests": [
         "crates/rodas5p-integrators/tests/mol_contracts.rs"
-      ]
+      ],
+      "status_20261117": "PORTED_NOT_WIRED",
+      "result_this_loop": "the PDE models are at the head inside crates/vigilode-bench, which is outside the workspace and declares rust-version 1.99.0 (hosted bench job fails for that reason, ci/TRIAGE_KO.md). Node V11 (group 4) moves operators to crates/rodas5p-integrators/src/mol/ and fixes the manifests.",
+      "next_discriminator": "V11 gate (second-order convergence, conservation <= 1e-12, matched-error table)"
     },
     {
       "id": "P04",
@@ -122,7 +131,10 @@
       ],
       "head_tests": [
         "crates/rodas5p-integrators/tests/mol_complex_contracts.rs"
-      ]
+      ],
+      "status_20261117": "TEST_ONLY",
+      "result_this_loop": "unchanged: one test at the head; no backend. Planned inside V11 (mol/complex.rs).",
+      "next_discriminator": "as written (first 16 Laplace-Beltrami eigenvalues at two refinements)"
     },
     {
       "id": "P05",
@@ -149,7 +161,10 @@
       ],
       "head_tests": [
         "crates/rodas5p-integrators/tests/dopri5_stiffness_guards.rs"
-      ]
+      ],
+      "status_20261117": "PORTED_NOT_MEASURED",
+      "result_this_loop": "module and guard tests are at the head; no executed agreement study exists (ledger L-0213 was a literal count, superseded as INVALID by L-0311).",
+      "next_discriminator": "as written; run on the battery of V11 with labels from a stiff/non-stiff reference solver pair"
     },
     {
       "id": "P06",
@@ -184,7 +199,10 @@
       "head_tests": [
         "crates/rodas5p-core/tests/nonnormal_observers_contracts.rs"
       ],
-      "follow_up_612063db": "superseded at head by an independent implementation: sampled observer modes report SampledDiagnostic or EstimateOnly and only the verified full-slab mode reports Certified (crates/rodas5p-core/src/nonnormal_observers.rs:43-44, 307-310, 502-505, 683-686); a merge of 612063db conflicts in 3 hunks of this file and is not made"
+      "follow_up_612063db": "superseded at head by an independent implementation: sampled observer modes report SampledDiagnostic or EstimateOnly and only the verified full-slab mode reports Certified (crates/rodas5p-core/src/nonnormal_observers.rs:43-44, 307-310, 502-505, 683-686); a merge of 612063db conflicts in 3 hunks of this file and is not made",
+      "status_20261117": "PORTED_NOT_MEASURED",
+      "result_this_loop": "module and contract tests are at the head; the follow-up branch is superseded (field follow_up_612063db). Not an input of any route.",
+      "next_discriminator": "as written"
     },
     {
       "id": "P07",
@@ -213,7 +231,10 @@
       ],
       "head_tests": [
         "crates/vigilode/tests/hybrid_automaton_contracts.rs"
-      ]
+      ],
+      "status_20261117": "PORTED_NOT_WIRED",
+      "result_this_loop": "module and contract tests are at the head (crates/vigilode/src/hybrid_automaton.rs; its documentation link was repaired in this loop). Whether the unified frontend uses it is decided by the V03 nodes.",
+      "next_discriminator": "as written (replay of recorded switching traces)"
     },
     {
       "id": "P08",
@@ -240,7 +261,10 @@
       ],
       "head_tests": [
         "crates/rodas5p-krylov/tests/secant_preconditioner_contracts.rs"
-      ]
+      ],
+      "status_20261117": "PORTED_NOT_MEASURED",
+      "result_this_loop": "module and contract tests are at the head; never combined with a stage client.",
+      "next_discriminator": "as written; the Krylov stage client of V06/V17 is the place to measure it"
     },
     {
       "id": "P09",
@@ -265,7 +289,10 @@
       "head_paths": [
         "crates/rodas5p-krylov/src/gmres_into_triggered.rs"
       ],
-      "head_tests": []
+      "head_tests": [],
+      "status_20261117": "NOT_PORTED",
+      "result_this_loop": "source present on the rei line only (278 lines). A port is a new file plus one module line in crates/rodas5p-krylov/src/lib.rs, which is outside the allowlist of this loop.",
+      "next_discriminator": "as written"
     },
     {
       "id": "P10",
@@ -290,7 +317,10 @@
       "head_paths": [
         "crates/rodas5p-krylov/src/stage_interval_certificate.rs"
       ],
-      "head_tests": []
+      "head_tests": [],
+      "status_20261117": "NOT_PORTED",
+      "result_this_loop": "source present on the rei line only (292 lines).",
+      "next_discriminator": "as written"
     },
     {
       "id": "P11",
@@ -315,7 +345,10 @@
       "head_paths": [
         "crates/rodas5p-integrators/src/affine_event_certificate.rs"
       ],
-      "head_tests": []
+      "head_tests": [],
+      "status_20261117": "NOT_PORTED",
+      "result_this_loop": "source present on the sym02 branch only (705 lines).",
+      "next_discriminator": "as written"
     },
     {
       "id": "P12",
@@ -338,7 +371,10 @@
         }
       ],
       "head_paths": [],
-      "head_tests": []
+      "head_tests": [],
+      "status_20261117": "DESIGN_ONLY",
+      "result_this_loop": "unchanged.",
+      "next_discriminator": "as written"
     },
     {
       "id": "P13",
@@ -378,7 +414,10 @@
         "crates/rodas5p-integrators/tests/conditioned_polynomial_contracts.rs",
         "crates/rodas5p-core/tests/leja_total_contract.rs"
       ],
-      "follow_up_612063db": "superseded at head by an independent implementation: the Leja witness carries the canonical digest of the operator and a mismatch is refused (crates/rodas5p-core/src/leja_action.rs:2920-2946, 3367-3433; test test_auth_002_normality_witness_identity_binding); only VerifiedSpectralEnclosure can mint a certified Gershgorin source (crates/rodas5p-integrators/src/conditioned_polynomial.rs:817-952; test auth_003_negative_control_caller_arbitrary_intervals_cannot_mint_certified); a merge conflicts in 16 hunks of the two files and is not made"
+      "follow_up_612063db": "superseded at head by an independent implementation: the Leja witness carries the canonical digest of the operator and a mismatch is refused (crates/rodas5p-core/src/leja_action.rs:2920-2946, 3367-3433; test test_auth_002_normality_witness_identity_binding); only VerifiedSpectralEnclosure can mint a certified Gershgorin source (crates/rodas5p-integrators/src/conditioned_polynomial.rs:817-952; test auth_003_negative_control_caller_arbitrary_intervals_cannot_mint_certified); a merge conflicts in 16 hunks of the two files and is not made",
+      "status_20261117": "PORTED_NOT_MEASURED",
+      "result_this_loop": "modules and tests are at the head; the follow-up branch is superseded (field follow_up_612063db).",
+      "next_discriminator": "as written"
     },
     {
       "id": "P14",
@@ -414,7 +453,10 @@
       "head_tests": [
         "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs"
       ],
-      "follow_up_612063db": "superseded at head by an independent implementation: tests caller_scalar_evidence_cannot_authorize_contraction_certificate and independent_checker_tamper_suite_rejects_all_corrupted_artifacts (crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs:366, 393); 41 of the 44 items that 52dec17e adds to rhs_homotopy.rs exist at head by name; a merge conflicts in 9 hunks and is not made"
+      "follow_up_612063db": "superseded at head by an independent implementation: tests caller_scalar_evidence_cannot_authorize_contraction_certificate and independent_checker_tamper_suite_rejects_all_corrupted_artifacts (crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs:366, 393); 41 of the 44 items that 52dec17e adds to rhs_homotopy.rs exist at head by name; a merge conflicts in 9 hunks and is not made",
+      "status_20261117": "PORTED_BLOCKED",
+      "result_this_loop": "module at the head; the follow-up branch is superseded (field follow_up_612063db); still blocked on the restricted polynomial lane.",
+      "next_discriminator": "as written"
     },
     {
       "id": "P15",
@@ -438,7 +480,10 @@
         }
       ],
       "head_paths": [],
-      "head_tests": []
+      "head_tests": [],
+      "status_20261117": "NOT_PORTED",
+      "result_this_loop": "both source directories exist on origin/research/rvj-n4b-two-window-20261031 (and on the earlier rvj-n3r, rvj-n4 branches).",
+      "next_discriminator": "as written"
     },
     {
       "id": "P16",
@@ -454,7 +499,10 @@
       "evidence_status": "design only",
       "source_refs": [],
       "head_paths": [],
-      "head_tests": []
+      "head_tests": [],
+      "status_20261117": "DESIGN_ONLY",
+      "result_this_loop": "unchanged.",
+      "next_discriminator": "as written"
     },
     {
       "id": "P17",
@@ -481,7 +529,10 @@
       ],
       "head_tests": [
         "crates/vigilode-coupled/tests/trace_certificate_allocations.rs"
-      ]
+      ],
+      "status_20261117": "PORTED_NOT_MEASURED",
+      "result_this_loop": "module at the head; the slab experiment was not run.",
+      "next_discriminator": "as written"
     },
     {
       "id": "P18",
@@ -508,7 +559,10 @@
         "crates/vigilode-coupled/src/cyclic_closure.rs",
         "crates/vigilode/src/cofactor_chart.rs"
       ],
-      "head_tests": []
+      "head_tests": [],
+      "status_20261117": "PORTED_NOT_WIRED",
+      "result_this_loop": "modules at the head; no certificate boundary.",
+      "next_discriminator": "as written"
     },
     {
       "id": "P19",
@@ -531,7 +585,10 @@
         }
       ],
       "head_paths": [],
-      "head_tests": []
+      "head_tests": [],
+      "status_20261117": "ARCHIVE",
+      "result_this_loop": "unchanged; routes recorded in research/production_unification_20261115/HISTORY_RECOVERY.json.",
+      "next_discriminator": "as written"
     },
     {
       "id": "P20",
@@ -564,8 +621,22 @@
       "head_tests": [
         "crates/rodas5p-integrators/tests/audit2_matrix_free_contracts.rs"
       ],
-      "superseded_at_head": "the eight public items of 981bf1bc (run_audit2_matrix_free_correction, MatrixFree*) do not exist at head by name; head has the renamed successor crates/rodas5p-integrators/src/audit2_matrix_free_research.rs (run_audit2_matrix_free_common_w_correction, Audit2MatrixFreeCorrection*) with tests/audit2_matrix_free_common_w_contracts.rs; 76e59c69 is a pre-registration text only"
+      "superseded_at_head": "the eight public items of 981bf1bc (run_audit2_matrix_free_correction, MatrixFree*) do not exist at head by name; head has the renamed successor crates/rodas5p-integrators/src/audit2_matrix_free_research.rs (run_audit2_matrix_free_common_w_correction, Audit2MatrixFreeCorrection*) with tests/audit2_matrix_free_common_w_contracts.rs; 76e59c69 is a pre-registration text only",
+      "status_20261117": "SUPERSEDED",
+      "result_this_loop": "see field superseded_at_head.",
+      "next_discriminator": "none"
     }
   ],
-  "lineage_check_20261117": "Trial merge of 612063db (7 commits of the switcher follow-up branch, not an ancestor of the loop head) on a scratch branch: conflicts in 8 files and 38 hunks (1777 conflict lines); aborted and removed. The four authority fixes of that branch are present at the head as independent implementations with their own tests (see P06, P13, P14); the branch is not merged."
+  "lineage_check_20261117": "Trial merge of 612063db (7 commits of the switcher follow-up branch, not an ancestor of the loop head) on a scratch branch: conflicts in 8 files and 38 hunks (1777 conflict lines); aborted and removed. The four authority fixes of that branch are present at the head as independent implementations with their own tests (see P06, P13, P14); the branch is not merged.",
+  "status_vocabulary": {
+    "PORTED_AND_MEASURED": "code at the head and an executed discriminating experiment exists",
+    "PORTED_NOT_MEASURED": "code and its own tests at the head, no executed discriminating experiment",
+    "PORTED_NOT_WIRED": "code at the head, not reachable from a stage client or from the facade route it was meant for",
+    "PORTED_BLOCKED": "code at the head, blocked by a stated precondition",
+    "TEST_ONLY": "exists only inside a test",
+    "NOT_PORTED": "source exists on another line only",
+    "DESIGN_ONLY": "no code",
+    "SUPERSEDED": "the head holds a successor",
+    "ARCHIVE": "recorded archive member"
+  }
 }
