@@ -543,7 +543,7 @@ def main():
     w("")
     w("```sh")
     w("sh research/production_loop_20261116/unified_frontend/run_checks.sh \\")
-    w("    contracts existing golden1 golden2 suite clippy fmt doc checker diff")
+    w("    contracts existing golden1 golden2 debuggrid suite clippy fmt doc checker diff")
     w("python3 -I research/production_loop_20261116/unified_frontend/build_receipt.py")
     w("python3 -I research/production_loop_20261116/unified_frontend/build_report.py")
     w("```")

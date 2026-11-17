@@ -1,0 +1,55 @@
+# command: taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_method_capabilities --test unified_method_sessions --test production_selection_contracts --test geometry_mol_contracts
+# commit: b52f79cd8d72c697945dde37b36c2da3c2ec2669
+# worktree_dirty_files: 0
+# date: 2026-11-17T15:34:10+09:00
+# loadavg_before: 17.55 23.63 29.02 5/7873 1163990
+    Finished `release` profile [optimized] target(s) in 0.04s
+     Running tests/geometry_mol_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03/release/deps/geometry_mol_contracts-2b1786b2370ff072)
+
+running 5 tests
+test g5_mass_and_event_capabilities_come_from_the_registry ... ok
+test g4_nonsymmetric_advection_is_refused_by_the_certificate ... ok
+test g3_sphere_area_weights_constants_harmonics_and_poles ... ok
+test g1_reused_gray_scott_laplacian_fourier_constant_and_certificate ... ok
+test g2_cartesian_3d_anisotropic_spatial_and_temporal_errors_are_separate ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+     Running tests/production_selection_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03/release/deps/production_selection_contracts-0dd970ee5bb21945)
+
+running 6 tests
+test matrix_free_is_an_explicit_permission_and_inherits_atol_refusal ... ok
+test default_is_rhs_only_even_with_provided_derivatives ... ok
+test resource_ceiling_includes_dense_callbacks_with_declared_band ... ok
+test unsupported_requests_and_permissions_fail_without_callbacks ... ok
+test failure_preserves_partial_state_and_typed_error ... ok
+test selected_implicit_method_matches_direct_method_and_fd_is_opt_in ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/unified_method_capabilities.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03/release/deps/unified_method_capabilities-5935450206d4fca1)
+
+running 6 tests
+test r2_request_construction_and_query_call_no_user_code ... ok
+test r3_policy_mapping_is_a_set_and_newton_methods_stay_refused ... ok
+test r5_routes_name_real_exports_and_ids_match_the_code ... ok
+test r6_peer_mass_and_events_are_refused_before_work ... ok
+test r4_serde_round_trip_and_unknown_or_missing_fields_are_refused ... ok
+test r1_exhaustive_permission_and_feature_combinations_match_the_spec_table ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/unified_method_sessions.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03/release/deps/unified_method_sessions-065927b900e7fcbf)
+
+running 6 tests
+test e2_refusals_happen_before_any_callback ... ok
+test e6_no_switching_and_no_default_routing_change ... ok
+test e3_short_span_caps_the_starter_at_the_endpoint ... ok
+test e4_fatal_callback_keeps_the_accepted_prefix_and_charged_work ... ok
+test e5_recoverable_callback_rejects_then_recovers ... ok
+test e1_end_to_end_dense_and_jvp_reach_the_endpoint_accurately ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+# loadavg_after: 17.55 23.63 29.02 7/7885 1164231
+# exit_code: 0
