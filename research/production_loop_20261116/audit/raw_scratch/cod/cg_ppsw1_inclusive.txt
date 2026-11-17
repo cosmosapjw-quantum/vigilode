@@ -1,0 +1,70 @@
+--------------------------------------------------------------------------------
+Profile data file 'cg_ppsw1.out' (creator: callgrind-3.22.0)
+--------------------------------------------------------------------------------
+I1 cache: 
+D1 cache: 
+LL cache: 
+Timerange: Basic block 0 - 73133787
+Trigger: Program termination
+Profiled target:  ./target/release/u11-holdout-runner time ppsw1_t1 1 1e-6 (PID 294972, part 1)
+Events recorded:  Ir
+Events shown:     Ir
+Event sort order: Ir
+Thresholds:       99
+Include dirs:     
+User annotated:   
+Auto-annotation:  on
+
+--------------------------------------------------------------------------------
+Ir                   
+--------------------------------------------------------------------------------
+661,860,264 (100.0%)  PROGRAM TOTALS
+
+--------------------------------------------------------------------------------
+Ir                    file:function
+--------------------------------------------------------------------------------
+661,860,264 (100.0%)  ???:0x000000000001f530 [/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2]
+661,427,248 (99.93%)  ???:(below main) [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+661,427,236 (99.93%)  ./csu/../csu/libc-start.c:__libc_start_main@@GLIBC_2.34 [/usr/lib/x86_64-linux-gnu/libc.so.6]
+661,427,053 (99.93%)  ./csu/../sysdeps/nptl/libc_start_call_main.h:(below main) [/usr/lib/x86_64-linux-gnu/libc.so.6]
+661,425,000 (99.93%)  ???:main [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+661,424,989 (99.93%)  ???:std::rt::lang_start_internal [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+661,314,488 (99.92%)  ???:std::rt::lang_start::{{closure}} [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+661,314,482 (99.92%)  ???:std::sys::backtrace::__rust_begin_short_backtrace [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+661,314,478 (99.92%)  ???:u11_holdout_runner::main [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+660,641,991 (99.82%)  ???:vigilode::selection::PeerOde::solve [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+659,410,519 (99.63%)  ???:rodas5p_integrators::ppsw1::Session::try_step [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+650,019,944 (98.21%)  ???:rodas5p_integrators::ppsw1::Session::attempt [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+648,760,393 (98.02%)  ???:rodas5p_integrators::ppsw1::advance_capped_with [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+551,807,415 (83.37%)  ???:rodas5p_integrators::ppsw1::stage_inputs_unchecked [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+528,596,468 (79.87%)  ???:rodas5p_integrators::ppsw1::tableau [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+380,914,092 (57.55%)  ???:rodas5p_integrators::ppsw1::mm [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+ 86,999,793 (13.14%)  ???:fma [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+ 80,964,763 (12.23%)  ???:rodas5p_integrators::ppsw1::linear_backend::solve_stages_with_backend [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+ 80,737,575 (12.20%)  ???:rodas5p_integrators::ppsw1::solve_stages [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+ 46,984,139 ( 7.10%)  ???:rodas5p_core::matrix::LuFactorization::solve [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+ 31,882,746 ( 4.82%)  ???:<alloc::vec::Vec<T> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<T,I>>::from_iter [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+ 31,622,940 ( 4.78%)  ???:faer::linalg::solvers::Solve::solve [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+ 22,418,299 ( 3.39%)  ???:<faer::linalg::solvers::PartialPivLu<T> as faer::linalg::solvers::SolveCore<T>>::solve_in_place_with_conj [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+ 21,749,910 ( 3.29%)  ???:compiler_builtins::math::libm_math::arch::x86::fma::fma_with_fma [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+ 20,156,987 ( 3.05%)  ???:__rustc::__rust_dealloc [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+ 19,953,110 ( 3.01%)  ???:__rustc::__rdl_dealloc [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+ 19,749,743 ( 2.98%)  ./malloc/./malloc/malloc.c:free [/usr/lib/x86_64-linux-gnu/libc.so.6]
+ 19,742,989 ( 2.98%)  ???:<core::ops::try_trait::Wrapped<T,A,F> as core::ops::function::FnMut<(A,)>>::call_mut [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+ 19,307,385 ( 2.92%)  ???:<core::iter::adapters::map::Map<I,F> as core::iter::traits::iterator::Iterator>::fold [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+ 16,040,959 ( 2.42%)  ???:__rustc::__rust_alloc [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+ 15,870,532 ( 2.40%)  ???:__rustc::__rdl_alloc [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+ 15,619,653 ( 2.36%)  ???:faer::linalg::lu::partial_pivoting::solve::solve_in_place_with_conj [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+ 14,448,294 ( 2.18%)  ???:faer::mat::matown::<impl faer::mat::generic::Mat<faer::mat::matown::Own<T,Rows,Cols>>>::from_fn [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+ 13,431,751 ( 2.03%)  ./malloc/./malloc/malloc.c:_int_free [/usr/lib/x86_64-linux-gnu/libc.so.6]
+ 12,720,886 ( 1.92%)  ???:rodas5p_core::matrix::LuFactorization::new [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+  9,423,783 ( 1.42%)  ???:faer::linalg::solvers::PartialPivLu<T>::new_imp [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+  8,876,537 ( 1.34%)  ???:faer::mat::matown::RawMat<T>::try_with_capacity [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+  7,900,443 ( 1.19%)  ???:<alloc::vec::Vec<T> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<T,I>>::from_iter'2 [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+  7,459,487 ( 1.13%)  ???:faer::perm::permute_rows_in_place [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+  7,233,675 ( 1.09%)  ./malloc/./malloc/malloc.c:posix_memalign [/usr/lib/x86_64-linux-gnu/libc.so.6]
+  6,407,009 ( 0.97%)  ???:rodas5p_integrators::problem::OdeProblem::eval_rhs_uncounted [/tmp/claude-1000/cod-audit/target/release/u11-holdout-runner]
+
+--------------------------------------------------------------------------------
+The following files chosen for auto-annotation could not be found:
+--------------------------------------------------------------------------------

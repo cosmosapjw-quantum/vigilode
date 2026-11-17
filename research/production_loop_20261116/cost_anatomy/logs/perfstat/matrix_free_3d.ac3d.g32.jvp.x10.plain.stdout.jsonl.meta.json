@@ -1,0 +1,40 @@
+{
+ "command": [
+  "taskset",
+  "-c",
+  "0-5,12-17",
+  "perf",
+  "stat",
+  "-x,",
+  "-e",
+  "instructions:u,cycles:u,page-faults",
+  "-o",
+  "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v04/research/production_loop_20261116/cost_anatomy/logs/perfstat/matrix_free_3d.ac3d.g32.jvp.x10.plain.perf.csv",
+  "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v04/release/v04-cost-anatomy-runner",
+  "single",
+  "--cell",
+  "matrix_free_3d.ac3d.g32.jvp.x10",
+  "--arm",
+  "plain",
+  "--attempts",
+  "20"
+ ],
+ "exit_code": 0,
+ "loadavg_before": [
+  4.07,
+  6.67,
+  6.62
+ ],
+ "loadavg_after": [
+  4.06,
+  6.58,
+  6.59
+ ],
+ "started_unix": 1794849740.6738367,
+ "wall_seconds": 8.847527265548706,
+ "log": "logs/perfstat/matrix_free_3d.ac3d.g32.jvp.x10.plain.stdout.jsonl",
+ "log_sha256": "01be04994de91bcb8a872cd90070bd18896115ab6220f8afb49fb85e3e799095",
+ "binary_sha256": "6c8024535a7f53a68c20033ec062b57645aa6ceb6325ed9e86002d19ab1769ec",
+ "attempt_budget": 20,
+ "arm": "plain"
+}

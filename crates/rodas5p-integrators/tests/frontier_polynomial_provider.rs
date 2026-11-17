@@ -161,7 +161,8 @@ fn full_space_exchange_relation_and_actual_stage_residual_use_two_actions() {
             ((1.0 + h) * 0.75 + h * 0.25) / det,
             (4.0 * h * 0.75 + (1.0 + 4.0 * h) * 0.25) / det,
         ];
-        for pair in out.chunks_exact(2) {
+        let (pairs, _) = out.as_chunks::<2>();
+        for pair in pairs {
             for j in 0..2 {
                 assert!((pair[j] - expected[j]).abs() < 1e-14);
             }

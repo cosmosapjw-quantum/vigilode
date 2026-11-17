@@ -88,6 +88,7 @@ impl StepCap {
 /// driver's `max_step`): the rounding residue is never used to stretch a
 /// step past `cap`, and the represented step is checked against it
 /// ([`represent`]).
+#[inline]
 pub(crate) fn land_capped(t: f64, proposed: f64, target: f64, cap: StepCap) -> CoreResult<Landing> {
     let mut landing = land_nominal(t, proposed, target, cap)?;
     if landing.step > 0.0 {
@@ -97,6 +98,7 @@ pub(crate) fn land_capped(t: f64, proposed: f64, target: f64, cap: StepCap) -> C
     Ok(landing)
 }
 
+#[inline]
 fn land_nominal(t: f64, proposed: f64, target: f64, cap: StepCap) -> CoreResult<Landing> {
     let to_target = step_to(t, target)?;
     let natural = t + proposed;
@@ -157,21 +159,51 @@ pub(crate) fn end_step_capped(t: f64, proposed: f64, tf: f64, cap: StepCap) -> C
 /// dense output, error estimate and controller history all see the
 /// interval the clock records.
 ///
+#[cold]
+#[inline(never)]
+fn err_non_positive_step(t: f64, step: f64) -> CoreError {
+    CoreError::InvalidInput(format!(
+        "time resolution: step {step:e} at t = {t:e} must be finite and positive"
+    ))
+}
+
+#[cold]
+#[inline(never)]
+fn err_step_does_not_advance(t: f64, step: f64) -> CoreError {
+    CoreError::InvalidInput(format!(
+        "time resolution: step h = {step:e} does not advance the represented time t = {t:e}"
+    ))
+}
+
+#[cold]
+#[inline(never)]
+fn err_next_time_above_max(t: f64, diff: f64, max: f64, policy: MaxStepPolicy) -> CoreError {
+    CoreError::InvalidInput(format!(
+        "time resolution: the next representable time after t = {t:e} is {diff:e} away, \
+         above the maximum step {max:e} ({policy:?})"
+    ))
+}
+
+#[cold]
+#[inline(never)]
+fn err_no_representable_within_max(t: f64, max: f64, policy: MaxStepPolicy) -> CoreError {
+    CoreError::InvalidInput(format!(
+        "time resolution: no representable time after t = {t:e} within the maximum step {max:e} ({policy:?})"
+    ))
+}
+
 /// A represented step above `cap` is replaced by the one ending at the
 /// representable time below `t_end`; when that does not advance `t`, the
 /// time resolution at `t` is coarser than `cap` and the result is a typed
 /// error instead of a silently enlarged step.
+#[inline]
 pub(crate) fn represent(t: f64, step: f64, cap: StepCap) -> CoreResult<f64> {
     if !(t.is_finite() && step.is_finite() && step > 0.0) {
-        return Err(CoreError::InvalidInput(format!(
-            "time resolution: step {step:e} at t = {t:e} must be finite and positive"
-        )));
+        return Err(err_non_positive_step(t, step));
     }
     let t_end = t + step;
     if !(t_end > t && t_end.is_finite()) {
-        return Err(CoreError::InvalidInput(format!(
-            "time resolution: step h = {step:e} does not advance the represented time t = {t:e}"
-        )));
+        return Err(err_step_does_not_advance(t, step));
     }
     let mut h = step_to(t, t_end)?;
     // The represented step may exceed the nominal one by the rounding of
@@ -181,21 +213,12 @@ pub(crate) fn represent(t: f64, step: f64, cap: StepCap) -> CoreResult<f64> {
     if cap.exceeded(h, t_end) {
         let below = t_end.next_down();
         if below <= t {
-            return Err(CoreError::InvalidInput(format!(
-                "time resolution: the next representable time after t = {t:e} is {:e} away, \
-                 above the maximum step {:e} ({:?})",
-                t_end - t,
-                cap.max,
-                cap.policy
-            )));
+            return Err(err_next_time_above_max(t, t_end - t, cap.max, cap.policy));
         }
         h = step_to(t, below)?;
         // Strict: one step below may still be above a sub-ULP cap.
         if cap.exceeded(h, below) {
-            return Err(CoreError::InvalidInput(format!(
-                "time resolution: no representable time after t = {t:e} within the maximum step {:e} ({:?})",
-                cap.max, cap.policy
-            )));
+            return Err(err_no_representable_within_max(t, cap.max, cap.policy));
         }
     }
     check_clock(t, h)?;
@@ -222,7 +245,25 @@ pub(crate) fn below_min_step(t: f64, h: f64, min_step: f64) -> bool {
 /// again, and the drivers used to retry the identical step until
 /// `max_attempts`. The step ends at the representable time below the
 /// rejected end instead, or the run fails with a typed time-resolution
+#[cold]
+#[inline(never)]
+fn err_strict_cap_unreachable(t: f64, max: f64) -> CoreError {
+    CoreError::InvalidInput(format!(
+        "time resolution: no representable time after t = {t:e} within the strict maximum step {max:e}"
+    ))
+}
+
+#[cold]
+#[inline(never)]
+fn err_rejected_step_cannot_be_shortened(t: f64, rejected: f64) -> CoreError {
+    CoreError::InvalidInput(format!(
+        "time resolution: the rejected step {rejected:e} at t = {t:e} is one clock \
+         resolution and cannot be shortened"
+    ))
+}
+
 /// error when there is none after `t`.
+#[inline]
 pub(crate) fn adaptive_end_step(
     t: f64,
     proposed: f64,
@@ -231,10 +272,7 @@ pub(crate) fn adaptive_end_step(
     controller: &crate::AdaptiveControllerState,
 ) -> CoreResult<Option<f64>> {
     if cap.policy == MaxStepPolicy::StrictRepresentedCap && t.next_up() - t > cap.max {
-        return Err(CoreError::InvalidInput(format!(
-            "time resolution: no representable time after t = {t:e} within the strict maximum step {:e}",
-            cap.max
-        )));
+        return Err(err_strict_cap_unreachable(t, cap.max));
     }
     let nominal = proposed.min(cap.max);
     if nominal.is_nan() || nominal <= 0.0 || t + nominal <= t {
@@ -245,10 +283,7 @@ pub(crate) fn adaptive_end_step(
         Some(rejected) if step >= rejected => {
             let below = (t + rejected).next_down();
             if below <= t {
-                return Err(CoreError::InvalidInput(format!(
-                    "time resolution: the rejected step {rejected:e} at t = {t:e} is one clock \
-                     resolution and cannot be shortened"
-                )));
+                return Err(err_rejected_step_cannot_be_shortened(t, rejected));
             }
             let shorter = step_to(t, below)?;
             check_clock(t, shorter)?;
@@ -420,6 +455,7 @@ pub(crate) fn require_progress(t: f64, h: f64) -> CoreResult<()> {
 /// `target` is returned, so a step never overshoots its target. When even
 /// that does not advance `t`, the result is a typed error rather than a
 /// zero-length step. `target == t` gives 0.
+#[inline]
 pub(crate) fn step_to(t: f64, target: f64) -> CoreResult<f64> {
     if !(t.is_finite() && target.is_finite()) || target < t {
         return Err(CoreError::InvalidInput(
@@ -621,6 +657,7 @@ impl HardStopCursor {
 
     /// Return the actual trial size and whether a hard stop shortened an
     /// otherwise requested step.  Output times are deliberately absent here.
+    #[inline]
     pub(crate) fn limit_step(
         &mut self,
         t: f64,
@@ -860,6 +897,7 @@ impl OutputCollector {
         Ok(self)
     }
 
+    #[inline]
     pub(crate) fn limit_step(&self, t: f64, proposed_h: f64, tf: f64) -> CoreResult<(f64, bool)> {
         if !(t.is_finite() && proposed_h.is_finite() && proposed_h > 0.0 && tf.is_finite()) {
             return Err(CoreError::InvalidInput(

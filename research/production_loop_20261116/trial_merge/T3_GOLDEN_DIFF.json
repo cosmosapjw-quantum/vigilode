@@ -1,0 +1,293 @@
+{
+  "schema": "vigilode.loop-l1.trial-merge.golden-diff.v1",
+  "generator": "research/production_loop_20261116/trial_merge/make_gates.py",
+  "source_log": "research/production_loop_20261116/trial_merge/logs/t3_golden_strict_full_report.log",
+  "note": "The source log is a run of an untracked copy of default_path_golden.rs whose only change is REPORTED_PATHS = usize::MAX (the oracle prints 40 paths per kind); the copy was moved out of the tree after the run and is not committed.",
+  "golden_files": 9,
+  "oracle_tests": {
+    "format_helpers_are_bit_faithful": "ok",
+    "golden_directory_is_exactly_the_listed_files": "ok",
+    "rodas5p_contracts": "ok",
+    "dopri5": "ok",
+    "rodas5p_robertson": "ok",
+    "production_automatic": "FAILED",
+    "rodas5p_vanderpol": "ok",
+    "rodas5p_hires": "ok",
+    "decision_grid": "ok",
+    "general_ode": "ok",
+    "rodas5p_brusselator": "ok"
+  },
+  "differing_golden_files": [
+    "production_automatic"
+  ],
+  "values_changed": 0,
+  "values_removed": 0,
+  "keys_added": 600,
+  "listed_added_paths": 600,
+  "cases_in_differing_file": 44,
+  "differing_cases": 41,
+  "added_key_names": {
+    "audit_replay_safety": 60,
+    "entry_margin": 60,
+    "entry_policy": 60,
+    "entry_seed": 60,
+    "prescreen_initial_stiffness": 60,
+    "progress_bound": 60,
+    "return_margin": 60,
+    "rhs_cost": 60,
+    "stiffness_gate_fraction": 60,
+    "work_model": 60
+  },
+  "added_key_parents": {
+    "config/switching": 220,
+    "record/config": 380
+  },
+  "cases": [
+    {
+      "case": "brusselator-n64/automatic-default-policy/rtol=1e-4",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "record/config/audit_replay_safety"
+    },
+    {
+      "case": "brusselator-n64/automatic-default-policy/rtol=1e-6",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "record/config/audit_replay_safety"
+    },
+    {
+      "case": "brusselator-n64/automatic-default-policy/rtol=1e-8",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "record/config/audit_replay_safety"
+    },
+    {
+      "case": "brusselator-n64/production-rhs-only/rtol=1e-4",
+      "kind": "added_keys_only",
+      "added_keys": 20,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "brusselator-n64/production-rhs-only/rtol=1e-6",
+      "kind": "added_keys_only",
+      "added_keys": 20,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "brusselator-n64/production-rhs-only/rtol=1e-8",
+      "kind": "added_keys_only",
+      "added_keys": 20,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "forced-oscillator/automatic-default-policy/rtol=1e-4",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "record/config/audit_replay_safety"
+    },
+    {
+      "case": "forced-oscillator/automatic-default-policy/rtol=1e-6",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "record/config/audit_replay_safety"
+    },
+    {
+      "case": "forced-oscillator/automatic-default-policy/rtol=1e-8",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "record/config/audit_replay_safety"
+    },
+    {
+      "case": "forced-oscillator/production-rhs-only/rtol=1e-4",
+      "kind": "added_keys_only",
+      "added_keys": 20,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "forced-oscillator/production-rhs-only/rtol=1e-6",
+      "kind": "added_keys_only",
+      "added_keys": 20,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "forced-oscillator/production-rhs-only/rtol=1e-8",
+      "kind": "added_keys_only",
+      "added_keys": 20,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "hires/automatic-default-policy/rtol=1e-4",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "record/config/audit_replay_safety"
+    },
+    {
+      "case": "hires/automatic-default-policy/rtol=1e-6",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "record/config/audit_replay_safety"
+    },
+    {
+      "case": "hires/automatic-default-policy/rtol=1e-8",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "record/config/audit_replay_safety"
+    },
+    {
+      "case": "hires/production-rhs-only/rtol=1e-4",
+      "kind": "added_keys_only",
+      "added_keys": 20,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "hires/production-rhs-only/rtol=1e-6",
+      "kind": "added_keys_only",
+      "added_keys": 20,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "hires/production-rhs-only/rtol=1e-8",
+      "kind": "added_keys_only",
+      "added_keys": 20,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "lotka-volterra/automatic-default-policy/attempt-budget/rtol=1e-6",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "record/config/audit_replay_safety"
+    },
+    {
+      "case": "lotka-volterra/automatic-default-policy/rtol=1e-4",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "record/config/audit_replay_safety"
+    },
+    {
+      "case": "lotka-volterra/automatic-default-policy/rtol=1e-6",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "record/config/audit_replay_safety"
+    },
+    {
+      "case": "lotka-volterra/automatic-default-policy/rtol=1e-8",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "record/config/audit_replay_safety"
+    },
+    {
+      "case": "lotka-volterra/production-rhs-only/attempt-budget/rtol=1e-6",
+      "kind": "added_keys_only",
+      "added_keys": 20,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "lotka-volterra/production-rhs-only/refused/dense-output/rtol=1e-6",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "lotka-volterra/production-rhs-only/refused/events/rtol=1e-6",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "lotka-volterra/production-rhs-only/refused/mass/rtol=1e-6",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "lotka-volterra/production-rhs-only/rtol=1e-4",
+      "kind": "added_keys_only",
+      "added_keys": 20,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "lotka-volterra/production-rhs-only/rtol=1e-6",
+      "kind": "added_keys_only",
+      "added_keys": 20,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "lotka-volterra/production-rhs-only/rtol=1e-8",
+      "kind": "added_keys_only",
+      "added_keys": 20,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "robertson/automatic-default-policy/rtol=1e-4",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "record/config/audit_replay_safety"
+    },
+    {
+      "case": "robertson/automatic-default-policy/rtol=1e-6",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "record/config/audit_replay_safety"
+    },
+    {
+      "case": "robertson/automatic-default-policy/rtol=1e-8",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "record/config/audit_replay_safety"
+    },
+    {
+      "case": "robertson/production-rhs-only/rtol=1e-4",
+      "kind": "added_keys_only",
+      "added_keys": 20,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "robertson/production-rhs-only/rtol=1e-6",
+      "kind": "added_keys_only",
+      "added_keys": 20,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "robertson/production-rhs-only/rtol=1e-8",
+      "kind": "added_keys_only",
+      "added_keys": 20,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "rotation/automatic-default-policy/rtol=1e-4",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "record/config/audit_replay_safety"
+    },
+    {
+      "case": "rotation/automatic-default-policy/rtol=1e-6",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "record/config/audit_replay_safety"
+    },
+    {
+      "case": "rotation/automatic-default-policy/rtol=1e-8",
+      "kind": "added_keys_only",
+      "added_keys": 10,
+      "first_differing_field": "record/config/audit_replay_safety"
+    },
+    {
+      "case": "rotation/production-rhs-only/rtol=1e-4",
+      "kind": "added_keys_only",
+      "added_keys": 20,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "rotation/production-rhs-only/rtol=1e-6",
+      "kind": "added_keys_only",
+      "added_keys": 20,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    },
+    {
+      "case": "rotation/production-rhs-only/rtol=1e-8",
+      "kind": "added_keys_only",
+      "added_keys": 20,
+      "first_differing_field": "config/switching/audit_replay_safety"
+    }
+  ]
+}

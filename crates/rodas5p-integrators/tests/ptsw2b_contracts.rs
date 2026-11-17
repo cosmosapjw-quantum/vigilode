@@ -1059,14 +1059,16 @@ fn h1_default_candidate_catalog_is_unchanged_and_peerw_stays_deferred() {
 fn h2_protected_sources_are_byte_identical() {
     // sha256 of the worktree files at the start of T02/PW02 (computed with sha256sum).
     // lib.rs is intentionally absent: it may gain exactly one `pub mod ptsw2b;` line (owner decision).
+    // Re-pinned on 2026-11-16 to the tree after the adopted merge of the switcher lineage (owner
+    // decision OD-L1-5); old and new pins: research/production_loop_20261116/trial_merge/SENTINEL_REPIN.json.
     let pinned: [(&str, &str); 12] = [
         (
             "src/sequential.rs",
-            "9256587e04625eecaf21b053f4b94f907b8d8e2f7afdb2b8854f32e240bd5a0d",
+            "98044965711c2e09e9a6d6b80f09372e48e6a8439f88aa40a52bff2c2100a5e9",
         ),
         (
             "src/rodas5p_matrix_free_fast.rs",
-            "8425652310c29d8b3f8e649ea477040fa48c35bb391dcaf6f3073b83e1aae185",
+            "a6d138f0da89b4506e2d7bae28621c241c5c0653c3020aad6f2a125d5e891139",
         ),
         (
             "src/collective_rodas5p.rs",
@@ -1078,7 +1080,7 @@ fn h2_protected_sources_are_byte_identical() {
         ),
         (
             "src/problem.rs",
-            "f8da89e24e532c208b84711b5bbaa4c0c3a213ff5cdc90c8b9d7c53e6583365d",
+            "095b50eaf7471908bbad78f851170d304287806e1d25e6a075fb0f7597d0d660",
         ),
         (
             "src/parallel.rs",
@@ -1086,7 +1088,7 @@ fn h2_protected_sources_are_byte_identical() {
         ),
         (
             "src/adaptive.rs",
-            "3a04609dc5a7141d6bdfe6ebccec441d1d2c8a9960305ea58873914e10703c40",
+            "ce14696acdc134a45a250b5e4c83806c20914502e71940d044513f4a430eb9e4",
         ),
         (
             "src/integrate.rs",

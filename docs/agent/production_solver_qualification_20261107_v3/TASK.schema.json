@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vigilode-task-v3.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "priority",
+    "status",
+    "depends_on",
+    "worktree_required",
+    "mutation_class",
+    "objective",
+    "read_allowlist",
+    "write_allowlist",
+    "commands",
+    "acceptance",
+    "stop_conditions",
+    "evidence_artifacts"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "priority": {
+      "enum": [
+        "P0",
+        "P1",
+        "P2",
+        "P3"
+      ]
+    },
+    "status": {
+      "enum": [
+        "PENDING",
+        "IN_PROGRESS",
+        "PASS",
+        "FAIL",
+        "BLOCKED",
+        "NOT_RUN",
+        "DEFERRED"
+      ]
+    },
+    "depends_on": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "worktree_required": {
+      "type": "boolean"
+    },
+    "mutation_class": {
+      "enum": [
+        "READ_ONLY",
+        "ALLOWLIST_ONLY",
+        "DOCUMENTATION_ONLY"
+      ]
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 10
+    },
+    "read_allowlist": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "write_allowlist": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "acceptance": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "stop_conditions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

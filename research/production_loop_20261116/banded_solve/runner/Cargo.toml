@@ -1,0 +1,21 @@
+[package]
+name = "v19-banded-solve-runner"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# Standalone measurement program of loop L1 node V19_BANDED_SOLVE_KERNEL, stage a (see
+# ../PREDECLARED.json). It is not a member of the repository workspace and changes no crate source.
+[workspace]
+
+[dependencies]
+rodas5p-core = { path = "../../../../crates/rodas5p-core" }
+rodas5p-integrators = { path = "../../../../crates/rodas5p-integrators" }
+
+# The release profile of the repository workspace (root Cargo.toml), repeated because a standalone
+# package does not inherit it: the protected kernel is measured as the workspace builds it.
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"

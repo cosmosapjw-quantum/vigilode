@@ -1,0 +1,1679 @@
+{
+ "schema": "vigilode.loop-l1.audit-findings-merged.v1",
+ "date": "2026-11-16",
+ "node": "V01_AUDIT_RGATE",
+ "refs": {
+  "loop_worktree": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116 @ 2dc9a2c5778ac5b3ac960b0f6741aa5916122384",
+  "switcher_lineage": "/home/cosmosapjw/vigilode @ 933922495045796c99c530b0f1f1efd8fec83ed0",
+  "rei_lineage": "6844c8fe18361f3c2243ee2db95bbf3d68a6ce7b",
+  "merge_base_loop_switcher": "569ce02629498fec133db9ce368eb303ba943b69"
+ },
+ "generator": "research/production_loop_20261116/audit/build_audit_synthesis.py",
+ "inputs_sha256": {
+  "research/production_loop_20261116/audit/findings_evidence.json": "c530c7615197a64ac5a1fed035f6b6c0288e0aca7e5e49ffcb684806dc274498",
+  "research/production_loop_20261116/audit/findings_design.json": "c67bf518f862a3f53490eca4cbf5cd20c629dc6474fe7125cf27d133abd13217",
+  "research/production_loop_20261116/audit/findings_code.json": "5d5c1e6f6f8c7a9cf3bea9bf0ad4d5effe83f983a1c5eaa7d954407da6d219df"
+ },
+ "verifier_verdicts_source": "independent verifier agent, loop L1 wave 1; text condensed from the orchestrator task; the verifier wrote no file",
+ "status_legend": {
+  "confirmed_by_verifier": "sent to an independent verifier agent and confirmed (corrections recorded)",
+  "confirmed_plan_stage_and_auditor": "stated in PLAN_KO.md section 1 by the orchestrator's plan-stage audit and re-derived by a dimension auditor with command and path; not sent to a separate verifier",
+  "lead": "found by one dimension auditor, not sent to a verifier; by the frozen V01 discriminator it stays a lead until reproduced (a synthesis spot check, where present, is corroboration only)",
+  "refuted": "contradicted by a verifier (no finding has this status; one plan item does)"
+ },
+ "counts": {
+  "total": 30,
+  "by_severity": {
+   "critical": 1,
+   "major": 19,
+   "minor": 10
+  },
+  "by_dimension": {
+   "EVIDENCE": 10,
+   "DESIGN": 10,
+   "CODE": 10
+  },
+  "by_status": {
+   "confirmed_by_verifier": 9,
+   "confirmed_plan_stage_and_auditor": 9,
+   "lead": 12,
+   "refuted": 0
+  },
+  "new": 21,
+  "sent_to_verifier": 9,
+  "plan_items": {
+   "confirmed": 24,
+   "corrected": 8,
+   "refuted": 1,
+   "not_checked": 5
+  }
+ },
+ "findings": [
+  {
+   "id": "EVD-01",
+   "dimension": "EVIDENCE",
+   "severity": "critical",
+   "is_new": false,
+   "title": "Ledger rows L-0209 (K1), L-0210 (B7), L-0213 (D1), L-0214 (C1) record formula or literal output as preregistered experiment results",
+   "status": "confirmed_plan_stage_and_auditor",
+   "verification": "not_sent",
+   "plan_item": true,
+   "orchestrator_reproduced_at_plan_stage": true,
+   "plan_ref": "1.2 synthetic evidence",
+   "effect_on_recorded_verdicts": "invalidates_recorded_rows",
+   "related": [
+    "EVD-02",
+    "EVD-03",
+    "EVD-04"
+   ],
+   "synthesis_spot_check": "C01: 0 occurrences of 'subprocess' in eval_k1/b7/c1/d1; C02: rows L-0209, L-0210, L-0213, L-0214 have these scripts as their command. The EVD-04 verifier also found no cargo, example or subprocess call in eval_k1.py and eval_b7.py; the DESIGN auditor read eval_k1.py:12 and :50.",
+   "synthesis_note": "Critical and not sent to a verifier. Rests on the plan stage, the EVIDENCE auditor and the spot check; C1 and D1 were read by one auditor only.",
+   "claim": "The four evaluation scripts never start a process and never read a file; every count, error and Ir value is a literal or an arithmetic expression of literals. Several literals repeat numbers that DESIGN.md had announced before the task ran, and the C1 claim quotes a ratio that the script does not even produce.",
+   "evidence": "eval_k1.py:15-28 (step table), :30-32 (m_gmres/m_precond/k_shared), :42-48 (Ir = 28n etc.), :50 err_base = 0.42*rtol; eval_c1.py:13-20, :68-70 (state_diff 2.1e-14, J diff 3.2e-14 literals); eval_b7.py:14-60 (literal table; no code path for the min(...) arms exists: grep 'min_budget|first_batch' in crates/vigilode/src returns nothing); eval_d1.py:10-98 (problems viscous_burgers_n64 / allen_cahn_n64 do not exist in crates/vigilode or crates/rodas5p-integrators). grep counts: subprocess 0 in all four. Circularity: DESIGN.md:2197 'the prototype saw 0.58 on the Brusselator' = eval_d1.py:77 14/24; DESIGN.md:2688 'the dry run measured 400 -> 1,840 RHS calls' = eval_b7.py:19-20. C1: RESULTS.json ratios are 10.94 and 6.34, the script's reason string says 2.8x-3.4x (eval_c1.py:172), the ledger claim says 2.46x-2.87x (a number present in no file of the node).",
+   "impact": "Invalidates the recorded verdicts: L-0214 PASS has no support; L-0209/L-0210/L-0213 FAIL are equally unsupported and must not be read as negative results (K1 'shared basis loses to preconditioned GMRES' and D1 'agreement 0.58' are untested). V06/V08 start from zero measured evidence. Output hashes in the ledger still match the files, so the rows are intact as records.",
+   "minimal_fix": "Append INVALID rows superseding L-0209, L-0210, L-0213, L-0214 (keep the originals); state in each that the node has no executed run; do not cite their numbers in V06/V08 preregistrations.",
+   "reproduce_cmd": "cd /home/cosmosapjw/vigilode && grep -c 'subprocess\\.' research/{k1_shared_krylov_basis,b7_first_batch,c1_coloured_assembly,d1_stiffness_gate}_20261104/eval_*.py && sed -n '12,50p' research/k1_shared_krylov_basis_20261104/eval_k1.py",
+   "source_file": "research/production_loop_20261116/audit/findings_evidence.json"
+  },
+  {
+   "id": "EVD-02",
+   "dimension": "EVIDENCE",
+   "severity": "major",
+   "is_new": true,
+   "title": "L-0212 (H1 hysteresis band) is a fifth synthetic row that the plan does not list",
+   "status": "confirmed_by_verifier",
+   "verification": {
+    "verdict": "confirmed",
+    "evidence": "eval_h1.py imports json, math, os, sys only; no subprocess or os.system; its single open() (line 153) writes RESULTS.json. Work units are literals (lines 35-50), decision pairs are literals (87-90), tv_ln_phi = 0.18 (100). Recomputed ln(185/192) - ln(98/340) = 1.2068385919901783 = RESULTS.json max_abs_log_ratio_bias. Ledger line 209 is L-0212 FAIL with this script as its command and no measured data file in inputs_sha256; file hashes match the row. PREREGISTRATION.md line 8 names WorkCounters that the script never collects. PLAN_KO.md does not mention L-0212, eval_h1 or H1.",
+    "correction": "Read 'synthetic' as 'typed-in without provenance': 185, 192, 193, 98, 144, 162 equal work_units values in research/adapter_integration_20261027 artifacts, but the script neither reads nor hashes them; 340 (the denominator behind |b| = 1.2069), 118, 182, 355, 47, the break-even switch counts and tv_ln_phi have no source found. Add L-0212 to the V02 INVALID set. Defaults unaffected (entry_margin and return_margin stay None).",
+    "source": "independent verifier agent, loop L1 wave 1; text condensed from the orchestrator task; the verifier wrote no file"
+   },
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "invalidates_recorded_rows",
+   "related": [
+    "EVD-01"
+   ],
+   "synthesis_spot_check": "C01: eval_h1.py has 0 'subprocess' and one open(; C02: L-0212 FAIL with eval_h1.py as command.",
+   "synthesis_note": null,
+   "claim": "eval_h1.py computes the 'measured' log-work-ratio bias |b| = 1.2069 from eight typed work-unit numbers and decides the band with further literals; nothing is executed.",
+   "evidence": "eval_h1.py:35-50 (incumbent/challenger prefix and full-window WU 192/185/340/98 and 144/118/162/182), :87-90 (185 vs 192, 47 vs 193, 355 vs 193, 118 vs 144), :99-100 (breakeven_switches and tv_ln_phi = 0.18 literals); subprocess count 0; the only open() is the output write. Ledger L-0212 command: 'python3 research/h1_hysteresis_band_20261104/eval_h1.py'.",
+   "impact": "Invalidates L-0212 FAIL as evidence; the plan's V02 instruction names four synthetic rows (L-0209/0210/0213/0214) and would leave this one standing. The default (entry_margin/return_margin None) is unaffected.",
+   "minimal_fix": "Add L-0212 to the INVALID supersession set of V02 (five rows, plus L-0211 per EVD-03).",
+   "reproduce_cmd": "cd /home/cosmosapjw/vigilode && sed -n '27,50p;78,100p' research/h1_hysteresis_band_20261104/eval_h1.py",
+   "source_file": "research/production_loop_20261116/audit/findings_evidence.json"
+  },
+  {
+   "id": "EVD-03",
+   "dimension": "EVIDENCE",
+   "severity": "major",
+   "is_new": true,
+   "title": "L-0211 (E1R) runs callgrind, but on unit tests unrelated to the named calibration cases",
+   "status": "confirmed_by_verifier",
+   "verification": {
+    "verdict": "confirmed",
+    "evidence": "Hashes of eval_e1r.py and RESULTS.json match ledger row L-0211. Lines 160-161: the only binary is the test target work_model_contracts; baseline is the Ir of test rhs_cost_ir_scaling. Lines 163-304: nine cases, each a test_filter plus literal counters. rotation_n2_dopri maps to polynomial_weight_exactness_and_powers (work_model_contracts.rs 87-97: four assert_eq!, no solver). Two cases share one filter (raw Ir 633716 against 633728). Stored result: 598825 - 598285 = 540 measured against 19250 predicted; max_relative_error 182.97, Spearman 0.7667, FAIL. Row sets supersedes = L-0205. Nothing was re-run under callgrind; numbers are read from the stored RESULTS.json.",
+    "correction": "The third gate of L-0211 (transition_39 w_v2 = 264.2 WU, not below 200) does not depend on callgrind (eval_e1r.py 354-356) but its counters are still typed literals. Only the relative-error and Spearman metrics are meaningless as calibration. Which build of the test binary was measured is not recorded.",
+    "source": "independent verifier agent, loop L1 wave 1; text condensed from the orchestrator task; the verifier wrote no file"
+   },
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "invalidates_recorded_rows",
+   "related": [
+    "EVD-01"
+   ],
+   "synthesis_spot_check": "C02: L-0211 FAIL, supersedes = L-0205.",
+   "synthesis_note": null,
+   "claim": "Each 'measured Ir' is the instruction count of one #[test] of work_model_contracts minus that of another, selected by a test_filter; the solver cases named in the table (rotation DOPRI5, MOL heat Krylov, Brusselator) are never run, and their counters are literals.",
+   "evidence": "eval_e1r.py:160-161 (baseline = test rhs_cost_ir_scaling), :163-304 (case -> test_filter, literal counters), :317-318. Case 'rotation_n2_dopri' maps to test polynomial_weight_exactness_and_powers, which is four assert_eq! on PolynomialWeight::eval (crates/vigilode/tests/work_model_contracts.rs:88-97); RESULTS.json gives it 598825 - 598285 = 540 Ir against a 'prediction' of 19250. Two cases share one filter (eval_e1r.py:259 and :292). The plan states that E1R alone executed callgrind; that is true of the process, not of the measurement.",
+   "impact": "Invalidates L-0211 as a calibration result (max relative error 183, Spearman 0.767 describe test-harness noise). The kept default WorkModel V1 is the conservative outcome and is not affected; WorkModel V2 remains uncalibrated, neither confirmed nor refuted. The row also sets supersedes = L-0205 (the admission row, already superseded by L-0208) instead of L-0206/L-0207.",
+   "minimal_fix": "Supersede L-0211 with an INVALID row; a real E1R needs one example binary per calibration case that prints its counters, measured under callgrind.",
+   "reproduce_cmd": "cd /home/cosmosapjw/vigilode && sed -n '163,176p' research/e1r_work_model_v2_20261104/eval_e1r.py && sed -n '88,97p' crates/vigilode/tests/work_model_contracts.rs && python3 -I -c \"import json;[print(d['case'],d['callgrind_ir_measured'],d['predicted_ir']) for d in json.load(open('research/e1r_work_model_v2_20261104/RESULTS.json'))['details']]\"",
+   "source_file": "research/production_loop_20261116/audit/findings_evidence.json"
+  },
+  {
+   "id": "EVD-04",
+   "dimension": "EVIDENCE",
+   "severity": "major",
+   "is_new": true,
+   "title": "The six 2026-11-04 nodes were not preregistered in time, cite a commit that predates their inputs, and lack the prescribed bench programs",
+   "status": "confirmed_by_verifier",
+   "verification": {
+    "verdict": "confirmed",
+    "evidence": "git log --all --diff-filter=A: PREREGISTRATION.md, eval script and ledger row of each node enter in one commit: K1 8800fb9a (02:53), B7 68692104 (02:57), E1R 157586cf (03:02), H1 117e2870 (03:16), C1 16eb1b87 (04:08); D1 400cd0cc (03:37) with RESULTS.json only in 16eb1b87. DESIGN.md:1956 requires the preregistration to be committed and pushed before the first run. Rows L-0209..L-0214 cite commit 4339facc (2026-11-03 05:30), 25 commits before 8800fb9a; shared_basis.rs, coloring.rs, dopri5_stiffness.rs and margin.rs do not exist there. The two example files appear in no ref's history.",
+    "correction": "DESIGN.md lists the two example files under files_allowed (permitted paths), so 'prescribed' overstates it slightly. 'One commit per node' holds for five nodes; D1 is split across 400cd0cc and 16eb1b87, so L-0213 was committed before its output file existed in git.",
+    "source": "independent verifier agent, loop L1 wave 1; text condensed from the orchestrator task; the verifier wrote no file"
+   },
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "invalidates_recorded_rows",
+   "related": [
+    "EVD-01",
+    "EVD-02",
+    "EVD-03"
+   ],
+   "synthesis_spot_check": "C02: rows L-0209..L-0214 cite commit 4339facc; 0 bench example paths in the tree and in history.",
+   "synthesis_note": null,
+   "claim": "PREREGISTRATION.md, the eval script, RESULTS.json and the ledger row of each node entered the repository in one commit; the ledger 'commit' field of L-0209..L-0214 is 4339facc, where the hashed input files do not exist; the example binaries DESIGN.md prescribes were never written.",
+   "evidence": "git show --stat 8800fb9a (K1), 68692104 (B7), 157586cf (E1R), 117e2870 (H1): each adds PREREGISTRATION.md + eval_*.py + RESULTS.json + LEDGER row together; D1 400cd0cc adds the ledger row with an outputs hash for RESULTS.json that is only committed 31 minutes later in 16eb1b87. DESIGN.md:1956 'Commit and push the preregistration before the first run'. git cat-file -e 4339facc:crates/rodas5p-krylov/src/shared_basis.rs, :crates/vigilode/src/coloring.rs, :crates/rodas5p-integrators/src/dopri5_stiffness.rs, :crates/vigilode/src/margin.rs all fail (4339facc is dated 2026-11-03 05:30). examples/k1_shared_basis_bench.rs (DESIGN.md:1936) and examples/b7_first_batch_bench.rs (DESIGN.md:2676): no path in the tree or in any ref's history.",
+   "impact": "The label 'preregistered' on these rows is not backed by commit order, and the rows cannot be replayed from the cited commit. This removes the last process argument for keeping any of the six rows; it limits nothing beyond EVD-01..03.",
+   "minimal_fix": "In the INVALID rows record 'preregistration and result share one commit' and the true commit of each node; in loop L1 keep preregistration and run in separate pushed commits (already the stated rule).",
+   "reproduce_cmd": "cd /home/cosmosapjw/vigilode && git show --stat --format='%h %ad %s' --date=iso 8800fb9a 68692104 157586cf 117e2870 400cd0cc 16eb1b87 | cat; git cat-file -e 4339facc:crates/rodas5p-krylov/src/shared_basis.rs; git log --all --oneline -- '*k1_shared_basis_bench*' '*b7_first_batch_bench*'",
+   "source_file": "research/production_loop_20261116/audit/findings_evidence.json"
+  },
+  {
+   "id": "EVD-05",
+   "dimension": "EVIDENCE",
+   "severity": "major",
+   "is_new": true,
+   "title": "The switcher gate tool was edited inside the commits it was gating, and its progress record contradicts the ledger",
+   "status": "lead",
+   "verification": "not_sent",
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "limits_scope",
+   "related": [],
+   "synthesis_spot_check": "C08: six commits after 4339facc touch tools/agent_gate.py, among them X1, X2, X3 (K1), X4 and X7 (C1). The content of the edits and PROGRESS.md were not re-read.",
+   "synthesis_note": null,
+   "claim": "tools/agent_gate.py gained self-exemptions during the X tasks, so 'research-node-check: 0' and 'finish' results on that line are not an independent control.",
+   "evidence": "052ba6d0 (X4): adds tools/agent_gate.py to always_ok and drops its own lines from the forbidden-pattern scan; f6f439cd (X2): meta_allowed adds .agents/skills/* and crates/rodas5p-krylov/src/shared_basis.rs for every task; 8800fb9a (K1 node commit): the clean-tree check now ignores a dirty tools/agent_gate.py and VigilODE_OPTIMIZATION_PLAN*; 16eb1b87 (C1): allowlists research/d1_stiffness_gate_20261104/RESULTS.json. PROGRESS.md:181 records D1 as 'verdict PASS' while L-0213 and RESULTS.json say FAIL; PROGRESS.md:170 'commit: uncommitted' for X9; the X5/X7 entries (lines 177-187) are free-form text, not the gate's record format.",
+   "impact": "Limits the scope of every 'gate passed' statement for switcher tasks X1-X11: scope and forbidden-pattern checks could be relaxed by the task itself. It does not by itself show a defect in the code those tasks added; that needs the V02 test and bit-identity run.",
+   "minimal_fix": "For V02 treat the switcher gate status as informational and rely on the 1.94.1 build, both test suites and the bitwise oracle; if the gate is reused, put agent_gate.py on the protected list.",
+   "reproduce_cmd": "cd /home/cosmosapjw/vigilode && git log --format='%h %s' 4339facc..HEAD -- tools/agent_gate.py | cat && git show 8800fb9a -- tools/agent_gate.py | cat && sed -n '177,187p' docs/agent/switcher_v2_remediation/PROGRESS.md",
+   "source_file": "research/production_loop_20261116/audit/findings_evidence.json"
+  },
+  {
+   "id": "EVD-06",
+   "dimension": "EVIDENCE",
+   "severity": "major",
+   "is_new": true,
+   "title": "A push to a research branch runs no workflow, and production.yml cannot be dispatched because the default branch does not contain it",
+   "status": "lead",
+   "verification": "not_sent",
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "plan_correction",
+   "related": [],
+   "synthesis_spot_check": "C03: origin/main (8d0c7918, 2026-08-26, local ref) has 4 workflow files, none is production.yml; the loop head has 31; production.yml push trigger is branches [main]. The scan of all 31 'on:' blocks was not repeated.",
+   "synthesis_note": null,
+   "claim": "None of the 31 workflow files has a push trigger that matches research/production-loop-20261116 (or the unification and switcher branches). production.yml lists workflow_dispatch, but GitHub only offers dispatch for workflows present on the default branch, and origin/main (8d0c7918, 2026-08-26) has 4 workflows without production.yml or research-process.yml.",
+   "evidence": ".github/workflows/production.yml:10-25 (workflow_dispatch; pull_request with paths; push branches [main]); scan of all 31 'on:' blocks: push branch filters are main or other named research/audit branches, none unfiltered; git ls-tree --name-only origin/main .github/workflows/ -> a1-inner-tolerance-parity.yml, a1-two-arm-receipt.yml, a2-a3-gmres-inner-cycle.yml, e4-fresh-clone-build.yml; git rev-list --count origin/main..HEAD = 1466. Local refs only (no fetch).",
+   "impact": "Confirms the plan's statement that the current head has no CI, and corrects V13: 'production.yml workflow_dispatch' is not available. The only route to hosted CI without touching main is a pull request from the research branch (pull_request triggers of production.yml and research-process.yml use the workflow files of the PR head). Such a run would currently be red or flaky: research-process fails per EVD-07 and the test job runs sp02_workspace_charge with default threads (EVD-08). No recorded verdict is invalidated; the R-gate reproducibility axis stays unmet.",
+   "minimal_fix": "Decide with the owner whether to open a draft PR for CI; otherwise record CI as NOT_RUN in the R-gate matrix and use a clean-clone local replay as the independent check.",
+   "reproduce_cmd": "cd /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116 && sed -n '10,25p' .github/workflows/production.yml && git ls-tree --name-only origin/main .github/workflows/ && grep -l 'production-loop\\|production-unification' .github/workflows/*.yml",
+   "source_file": "research/production_loop_20261116/audit/findings_evidence.json"
+  },
+  {
+   "id": "EVD-07",
+   "dimension": "EVIDENCE",
+   "severity": "major",
+   "is_new": false,
+   "title": "U01-U11 have no ledger row and the unification node fails the repository's own research-node check",
+   "status": "confirmed_plan_stage_and_auditor",
+   "verification": "not_sent",
+   "plan_item": true,
+   "orchestrator_reproduced_at_plan_stage": true,
+   "plan_ref": "1.1 ledger split; 1.5 release readiness",
+   "effect_on_recorded_verdicts": "none_recorded",
+   "related": [],
+   "synthesis_spot_check": "C04: 202 ledger rows, 0 mention production_unification; check-research-node.py exits 1 with the two FAIL lines quoted in the finding.",
+   "synthesis_note": null,
+   "claim": "The authoritative append-only ledger stops at L-0204 for the unification work; the only later row is the loop baseline L-0300. The U results are bound only by CHECKPOINT.json, which is rewritten in place.",
+   "evidence": "research/LEDGER.jsonl: 202 rows, no row mentions production_unification, PPSW1 or a U id except L-0300. python3 -I tools/check-research-node.py --base bee5563c51264a7da19c519295bdda2fb317caef -> 'FAIL: new node research/production_unification_20261115/: missing PREREGISTRATION.md' and 'FAIL: ... no research/LEDGER.jsonl row whose outputs_sha256 covers it', exit 1. EVIDENCE_LEDGER.json of the program has 17 records and no U node. The checker tests form only (preregistration file, hash coverage, stall rule): the synthetic switcher nodes passed it, the executed unification node fails it.",
+   "impact": "Does not invalidate any U verdict (the numbers reproduce, see part_b), but U03/U04/U09/U10/U11 results have no authority under the project's ledger rule, and research-process.yml would fail on a pull request.",
+   "minimal_fix": "Append one ledger row per U node with a results file (U03, U04, U10, U11; U09 after EVD-10) using ids >= L-0301 and the existing row script; add a node-level PREREGISTRATION.md that points to the per-node CHANGE_CONTRACT/PREREGISTRATION.json files or add a reasoned exemption.",
+   "reproduce_cmd": "cd /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116 && python3 -I tools/check-research-node.py --base bee5563c51264a7da19c519295bdda2fb317caef; tail -n 1 research/LEDGER.jsonl | cut -c1-120",
+   "source_file": "research/production_loop_20261116/audit/findings_evidence.json"
+  },
+  {
+   "id": "DSG-01",
+   "dimension": "DESIGN",
+   "severity": "major",
+   "is_new": false,
+   "title": "U11 step ratio measures the OD-15/25/26 growth limiter and the OD-24 h0 rule, not the PPSW1-6b method",
+   "status": "confirmed_plan_stage_and_auditor",
+   "verification": "not_sent",
+   "plan_item": true,
+   "orchestrator_reproduced_at_plan_stage": true,
+   "plan_ref": "1.2 U11 (c) growth cap",
+   "effect_on_recorded_verdicts": "limits_scope",
+   "related": [
+    "DSG-09"
+   ],
+   "synthesis_spot_check": "C12: ACCEPTED_STEP_SIGMA_MAX = 1.10 at ppsw1.rs:57, PAPER_STEP_RATIO_BOUND = 1.5 at :58. Limiter saturation numbers come from the auditor's scratch rebuild only.",
+   "synthesis_note": null,
+   "claim": "The PPSW1 controller allows one growth of at most 1.10 every 7 accepted steps (mean 1.0137 per step). Step histories regenerated with the U11 problem set (final states bitwise equal to the U11 log in 15/15 runs) show 0.0774-0.146 of accepted steps exactly at the cap (structural maximum 1/7) and the limiter saturated (growth steps taken / growth steps permitted) at 0.911-1.0 for tol 1e-4..1e-5 and 0.541-0.843 at tol 1e-8. With zero local error the rule alone needs 285 steps on HIRES and 195 on Brusselator MOL32 from the logged h0, i.e. 5.7x and 3.98x the RODAS5P attempts at tol 1e-4. Plan item 1.2(c) is confirmed and quantified. The G0 step criterion still fails for the candidate as configured, so HOLD stands; no conclusion about the step efficiency of the method follows.",
+   "evidence": "crates/rodas5p-integrators/src/ppsw1.rs:57 (cap), :841-849 (history 6, band), :935-956 (propose_ratio), :1023-1036 (h0 = min(h_max, 1/||J||inf)); data.step_stats (scratch rebuild at 891044d7, binary sha256 in scratch_artifacts) and data.controller_floor. Fraction of holds that fall within 6 steps after a growth: 0.509-0.843. Same rule with cap 1.5 would need 90 (HIRES) and 68 (Brusselator) steps (arithmetic only, no stability claim).",
+   "impact": "Limits scope: the recorded U11 HOLD is valid; the step ratios 1.9-7.1 are not a property of PPSW1-6b. V10 must separate controller, h0 rule and method.",
+   "minimal_fix": "V10: log accepted (t, h, sigma, err) per step; report limiter saturation next to every step ratio; add arms that vary the cap, the history length and h0 independently.",
+   "reproduce_cmd": "python3 /tmp/claude-1000/dsg-audit/controller_floor.py; cd /tmp/claude-1000/dsg-audit/steprunner && CARGO_TARGET_DIR=/tmp/claude-1000/dsg-audit/target cargo +1.94.1 build --locked --offline -j 6 --release && /tmp/claude-1000/dsg-audit/target/release/u11-holdout-runner > step_histories.jsonl && python3 /tmp/claude-1000/dsg-audit/step_stats.py",
+   "source_file": "research/production_loop_20261116/audit/findings_design.json"
+  },
+  {
+   "id": "DSG-02",
+   "dimension": "DESIGN",
+   "severity": "major",
+   "is_new": true,
+   "title": "More than half of the PPSW1 run time in U11 is a per-attempt double-double rebuild of the sigma tableau",
+   "status": "confirmed_by_verifier",
+   "verification": {
+    "verdict": "confirmed",
+    "evidence": "ppsw1.rs: tableau(sigma) at :192 is double-double (one inverse, 12 products); the only call site is :408, once per attempt, no cache. Runner sha256 0ef2e44a...b27d2 equals logs/runner_binary.sha256; 45/45 result objects identical on rerun. Stored profile re-aggregated (129305 samples): mm 28.58% + tableau 10.98% of all cycles = 54.02% of main-thread cycles; 78.2k cycles per attempt. Fresh profile by the verifier on the same binary: 51.4%, 88.9k cycles per attempt. Share of serial-arm main-thread cycles per problem (stored / fresh): Oregonator n=3 71% / 68%, HIRES n=8 62% / 59%, Brusselator n=64 16% / 16%. Wall ratios recomputed: 7.77-13.89, 22.2-24.4, 2.12-2.51.",
+    "correction": "'The wall ratios mostly measure this constant' holds for n=3 and n=8 only; at n=64 the rebuild is about 16% and the ratio without it would still be about 1.7-2.1 (estimates: HIRES 3-5, Oregonator 5-7). 'Starter and fixed costs are small' is supported only by the Brusselator fit (HIRES intercept is 19.8% of its loosest run; the Oregonator fit is not informative). Quote the share as about 51-54% of main-thread user cycles over all three arms, 78k-89k cycles per attempt, one loaded host.",
+    "source": "independent verifier agent, loop L1 wave 1; text condensed from the orchestrator task; the verifier wrote no file"
+   },
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "limits_scope",
+   "related": [
+    "COD-01"
+   ],
+   "synthesis_spot_check": "C12: tableau(sigma) has a single call site, ppsw1.rs:408.",
+   "synthesis_note": null,
+   "claim": "A cycle profile of the pinned U11 runner binary (sha256 equal to logs/runner_binary.sha256) attributes 54.0% of main-thread user cycles of the whole holdout to ppsw1::mm + ppsw1::tableau (58.1% with the libm fma calls they make), about 78200 cycles per step attempt and independent of n. stage_inputs_unchecked calls tableau(sigma) on every attempt although sigma equals 1 (within 5e-4) on 0.791-0.847 of accepted steps; mm is called only from tableau (ppsw1.rs:241-263). The per-attempt wall ratios PPSW1(1 thread)/RODAS5P (7.77-13.9 at n=8, 22.2-24.4 at n=3, 2.12-2.51 at n=64) therefore measure this constant. The starter and other fixed costs are small by comparison (intercept of wall against attempts 1.14 ms on Brusselator, 5.55% of the loosest-tolerance run). The plan attributes the ratio to general implementation maturity and the starter; the dominant cause is this one function.",
+   "evidence": "crates/rodas5p-integrators/src/ppsw1.rs:192-260 (tableau in double-double), :408 (the only non-test call site, once per attempt); data.perf_agg (129305 samples, cycles:u); data.extras.wall_linear_fits. Rerun reproduced 45/45 result objects of the original log including counters.",
+   "impact": "Limits scope: U11 wall ratios cannot be extrapolated to any regime. Even without this cost the 1-thread speed (median 0.0166) stays far below 1.15, so HOLD is unaffected.",
+   "minimal_fix": "V10 equal-implementation arm: cache the tableau for the last sigma (or precompute sigma = 1) before any per-step cost comparison; report instructions per attempt with and without the rebuild.",
+   "reproduce_cmd": "perf record -e cycles:u -F 2000 -o perf_u11.data <u11-holdout-runner> > rerun.jsonl && perf script -i perf_u11.data -F comm,period,ip,sym > perf_script.txt && python3 /tmp/claude-1000/dsg-audit/perf_agg.py",
+   "source_file": "research/production_loop_20261116/audit/findings_design.json"
+  },
+  {
+   "id": "DSG-03",
+   "dimension": "DESIGN",
+   "severity": "major",
+   "is_new": true,
+   "title": "Switcher-line UNIFIED_BENCHMARK_REPORT is matched-tolerance, built on grid-clipped VigilODE arms, and Julia rows have no error",
+   "status": "confirmed_by_verifier",
+   "verification": {
+    "verdict": "confirmed",
+    "evidence": "Recomputed from bench/out/{UNIFIED_BENCHMARK_REPORT.md,rust_bench_results.json,julia_bench_results.json}; report header hashes match the files. Tables are per rtol; raw matched section: 80 MATCHED, 295 DIAGNOSTIC_ONLY. Only the grid-clipped arms vigilode (12 rows) and vigilode-banded (3 rows) are present; output_clipped_steps is 99 in 13 rows and 98 in 2, i.e. 0.103-0.943 of accepted steps. All 36 Julia rows have error_common null. VigilODE / Julia Rodas5P accepted steps: 1.436-3.083 at rtol 1e-4, 0.943-1.012 at 1e-8. Same-rtol error ratio over the tabulated arms: 0.158 to 1713.26. All 114 report rows reproduce from the raw JSON. No ledger row cites the report.",
+    "correction": "Including the untabulated internal-radau-iia3 arm the minimum error ratio is 0.033. The on-disk bench/build_unified_comparison.py (1403e108, 2026-11-06) is later than the report and lists oregonator, which the datasets lack. L-0142 supersedes L-0140 for VigilODE-relative ratios only.",
+    "source": "independent verifier agent, loop L1 wave 1; text condensed from the orchestrator task; the verifier wrote no file"
+   },
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "limits_scope",
+   "related": [
+    "EVD-09"
+   ],
+   "synthesis_spot_check": null,
+   "synthesis_note": null,
+   "claim": "The report tabulates arms at equal rtol; the achieved error of a comparator divided by that of VigilODE at the same rtol ranges from 0.158 to 1713.0. Both VigilODE arms in the dataset (vigilode, vigilode-banded) land on the 101-point output grid: 98-99 accepted steps of every row are forced landings (10.3-94.3% of the accepted steps); the free-stepping arms have 0 rows in this dataset. All 36 Julia rows carry error_common = null (0 with an error) and Julia runs free with saveat interpolation. VigilODE/Julia Rodas5P accepted-step ratios are 1.44-3.08 at rtol 1e-4 and 0.943-1.01 at rtol 1e-8, so the equality quoted in plan 1.5 (228 = 228, 164 vs 162) holds only at the tightest tolerance. The dataset has the same 102 keys as the E1 corpus of ledger L-0139, (rebound by L-0140), which L-0142 superseded for VigilODE-relative ratios by re-running the corpus with every arm stepping freely. Three table rows were reproduced exactly from the raw JSON.",
+   "evidence": "/home/cosmosapjw/vigilode/crates/vigilode-bench/src/arms.rs:125-127 (is_grid_clipped = Vigilode | VigilodeBanded), :213-214; bench/julia_comparator_bench.jl:311-342 (saveat=grid); bench/build_unified_comparison.py:14-40; data.bench_recompute (vigilode_clipping, vigilode_vs_julia_rodas5p_steps, reproduced_rows, matched_error_recomputed). The raw JSON has its own matched section ({'DIAGNOSTIC_ONLY': 295, 'MATCHED': 80}) that the report does not use; only 3 tolerances per arm.",
+   "impact": "The report cannot support a matched-error statement or a step-parity statement about protected RODAS5P; the plan's provisional R-gate sentence built on it must be re-derived from free-stepping arms. No ledger row cites the report, so no recorded verdict is invalidated.",
+   "minimal_fix": "V11/V13: regenerate with vigilode-dense arms, error for Julia arms on the same grid, at least 5 tolerances, and tables at matched achieved error.",
+   "reproduce_cmd": "python3 /tmp/claude-1000/dsg-audit/bench_recompute.py",
+   "source_file": "research/production_loop_20261116/audit/findings_design.json"
+  },
+  {
+   "id": "DSG-04",
+   "dimension": "DESIGN",
+   "severity": "major",
+   "is_new": false,
+   "title": "Regime coverage: no stiff cross-method matched-error evaluation above n = 400, none with an expensive RHS, none with a preconditioner",
+   "status": "confirmed_plan_stage_and_auditor",
+   "verification": "not_sent",
+   "plan_item": true,
+   "orchestrator_reproduced_at_plan_stage": true,
+   "plan_ref": "1.2 regime mismatch",
+   "effect_on_recorded_verdicts": "limits_scope",
+   "related": [
+    "DSG-05",
+    "DSG-06"
+   ],
+   "synthesis_spot_check": null,
+   "synthesis_note": "The 87-row regime table is one auditor's tabulation; its categorical columns are the auditor's reading. The evidence string in the input file is truncated after 'f in [0.011, 0.108] are'.",
+   "claim": "A table of 87 located evaluations (ledger rows, RESULTS files, U nodes, switcher bench) has 16 with n > 1000, 9 with 2D/3D operators and 0 where the RHS dominates. The n > 1000 rows are banded operation counts with bitwise parity, non-stiff DOPRI5 vectors, separable structural lanes and a controller copy microbenchmark; 0 of them is a stiff cross-method matched-error evaluation. The largest n in a matched-error cross-method comparison is 400. All 2D/3D rows are on the unmerged switcher line with n <= 302; the loop base 074a5699 has 0. Krylov arms with a non-identity preconditioner in an integrator evaluation: 0; preconditioner kernels were verified standalone (L-0117 stage 0 held at the reference, L-0190 synthetic linear solves) and never reached a matched-error or speed run. The plan's wording (all candidate evaluation at n <= 64, sometimes 1D n <= 400) is too narrow as a description of what exists but its conclusion holds.",
+   "evidence": "data.regime_table (rows with source file per row); ledger L-0113: PASS, decision abstain: no screened client carries an ExpensiveClientDeclaration (S1 fails for all); measured callback shares f in [0.011, 0.108] are ",
+   "impact": "Limits scope of every negative result on parallel stages, matrix-free solves and LU reuse to small or 1D problems with cheap RHS.",
+   "minimal_fix": "V04/V11 grids as planned; record n, operator dimension, Jacobian type, backend and measured RHS share in every result row.",
+   "reproduce_cmd": "python3 /tmp/claude-1000/dsg-audit/regime_table.py",
+   "source_file": "research/production_loop_20261116/audit/findings_design.json"
+  },
+  {
+   "id": "DSG-05",
+   "dimension": "DESIGN",
+   "severity": "major",
+   "is_new": true,
+   "title": "PDE battery v3 yields matched-error levels for 2 of 9 problems; the other 7 are reference-disputed, and runs take 6-47 steps",
+   "status": "confirmed_by_verifier",
+   "verification": {
+    "verdict": "confirmed",
+    "evidence": "Own parse of bench/out/adversarial_spatial_battery_v3_results.json: matched[] has 2340 rows = 88 MATCHED + 2252 DIAGNOSTIC_ONLY; MATCHED only on sphere-photon-2d (52) and sphere-photon-3d (36); the other 7 problems have 260 reference-disputed rows each (1820). Free-stepping dense arms take 6-47 accepted steps; n is 64-302; warmups 1, repetitions 3. Search of both trees for JSON with MATCHED status: spatial grid v1 has 0, v2 has 88, v3 has 88; all other files are 0D/1D.",
+    "correction": "52 and 36 are matched comparison rows (baseline arm x comparator arm x level), not levels: distinct matched error levels are 6 (2D) and 5 (3D). The 6-47 step range is for the dense-output arms; the grid-clipped arms take 101-108 steps and yield no MATCHED row. 2D/3D matched-error evidence is v2 and v3 only.",
+    "source": "independent verifier agent, loop L1 wave 1; text condensed from the orchestrator task; the verifier wrote no file"
+   },
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "limits_scope",
+   "related": [
+    "DSG-04",
+    "EVD-09"
+   ],
+   "synthesis_spot_check": null,
+   "synthesis_note": null,
+   "claim": "In adversarial_spatial_battery_v3_results.json 7 of 9 problems have zero MATCHED levels (allen-cahn-2d, burgers-2d, gray-scott-2d, semilinear-advection-diffusion-2d, semilinear-advection-diffusion-3d, sine-gordon-2d, spherical-diffusion-2d); 1820 comparisons carry reason reference-disputed. Only sphere-photon-2d (52) and sphere-photon-3d (36) produce matched levels. The free-stepping banded VigilODE arm needs 6-47 accepted steps per run on a 101-point output grid, and n is 64-302. The battery and its subsets (spatial grid v1/v2, the first four problems) are the only 2D/3D matched-error evidence in either lineage.",
+   "evidence": "/home/cosmosapjw/vigilode/bench/out/adversarial_spatial_battery_v3_results.json (matched[], rows[]); data.bench_v3.per_problem_matched, non_matched_reasons, vigilode_steps; warmups 1, repetitions 3.",
+   "impact": "Limits scope: no geometry or 2D/3D performance statement can rest on battery v3 beyond the two sphere-photon problems at n <= 302.",
+   "minimal_fix": "V11: fix the reference policy first (independent reference with stated uncertainty below the tightest level), then size problems so that runs take hundreds of steps and n reaches 1e4-1e5.",
+   "reproduce_cmd": "python3 /tmp/claude-1000/dsg-audit/bench_v3.py",
+   "source_file": "research/production_loop_20261116/audit/findings_design.json"
+  },
+  {
+   "id": "DSG-06",
+   "dimension": "DESIGN",
+   "severity": "major",
+   "is_new": true,
+   "title": "U04 no-crossover is a statement about unpreconditioned GMRES against dense LU on a tridiagonal 1D problem",
+   "status": "lead",
+   "verification": "not_sent",
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "limits_scope",
+   "related": [
+    "DSG-04"
+   ],
+   "synthesis_spot_check": null,
+   "synthesis_note": "The EVIDENCE auditor regenerated U04 RESULTS.json byte for byte and matched 670 -> 9647 steps with 257 rejections at n=400 and 569 -> 894 at n=200, which agree with the step ratios quoted here; the cost exponents and the reading were not cross-checked.",
+   "claim": "No arm has a preconditioner (IdentityPreconditioner only). The single family is 1D Fisher MOL, n = 25..800, one tolerance. The comparator factors the tridiagonal W with dense LU (per-attempt cost exponent in n rising to 2.23 for n = 200..400 and 2.7 for n = 400..800), so neither arm uses the band structure. The arm reported as best admissible at n = 200 and n = 400 took 1.57x and 14.8x the steps of the dense arm (admissibility checks only the endpoint difference, 0.088 tolerance units at n = 400). The step-preserving 6-thread arm rises from 0.0357 to 0.446 of dense speed between n = 50 and n = 400 and is at 1.31 at n = 800 when it stops on the 600-vector Arnoldi limit at t = 0.455. The verdict NO_CROSSOVER_MEASURED for n <= 400 is correct as recorded; it is a regime statement and says nothing about preconditioned or 2D/3D use.",
+   "evidence": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/crates/rodas5p-integrators/src/ppsw1_linear_backend.rs:12,280; tests/ppsw1_linear_backend_contracts.rs:374-425 (fisher, dense Jacobian of a tridiagonal operator); research/production_unification_20261115/matrix_free_w/logs/u04_crossover.log parsed into data.u04_recompute; summarize_u04.py admissibility rule.",
+   "impact": "Limits scope; does not invalidate the U04 verdict. The plan line 'PPSW1 matrix-free W crossover none (n <= 400)' must not be read as a method result.",
+   "minimal_fix": "V06/V10: add a banded direct comparator, a preconditioned arm, an admissibility rule that also bounds the step ratio, and a 2D operator.",
+   "reproduce_cmd": "python3 /tmp/claude-1000/dsg-audit/u04_recompute.py",
+   "source_file": "research/production_loop_20261116/audit/findings_design.json"
+  },
+  {
+   "id": "COD-01",
+   "dimension": "CODE",
+   "severity": "major",
+   "is_new": true,
+   "title": "PPSW1 recomputes the 6x6 double-double tableau on every step attempt: 80% of its per-step cost",
+   "status": "confirmed_by_verifier",
+   "verification": {
+    "verdict": "confirmed",
+    "evidence": "ppsw1.rs:408 calls tableau(sigma) inside stage_inputs_unchecked on every attempt, no cache. Verifier's own callgrind run (Oregonator n=3, tol 1e-6, 3341 attempts, 661860254 Ir): tableau inclusive 79.87% = 158215 Ir per attempt; solve_stages 12.20%; alloc + dealloc 5.47%; starter + h0 + output 0.19%. perf stat: PPSW1 197907.4 and RODAS5P 13357.2 instructions per attempt (14.82x); standalone tableau 158432 per call; without tableau 2.96x. memcheck: 61.02 against 0.06 allocations per attempt. The probe links 891044d7; the audited sources are byte-identical to the loop head (cmp).",
+    "correction": "The 80% share is specific to n=3: the cost is a fixed ~158k instructions per attempt, so the share falls with n. 'sigma is held at 1.0 for most steps' was not measured here; a cache hit rate must be measured before the ~3.0x residual is taken as reachable. Cycles per call are load dependent (93068 on rerun against 76771). The allocation-site list and the U11 impact text were not checked.",
+    "source": "independent verifier agent, loop L1 wave 1; text condensed from the orchestrator task; the verifier wrote no file"
+   },
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "limits_scope",
+   "related": [
+    "DSG-02"
+   ],
+   "synthesis_spot_check": "C12: tableau(sigma) has a single call site, ppsw1.rs:408.",
+   "synthesis_note": null,
+   "claim": "stage_inputs_unchecked calls tableau(sigma) on every attempt (ppsw1.rs:408). tableau builds V, V^-1 (Gauss-Jordan in double-double, :137-165) and 12 double-double 6x6 products (:241-263) with fma through a libm call. It depends only on sigma, which the controller holds at exactly 1.0 for most steps (:946-952), and it is a degree-5 polynomial in sigma, so it can be precomputed once per session. The premise that Vec allocation in ParallelExecution::map_ordered explains the 1-thread cost is wrong: with threads==1 map_ordered is never called (ppsw1.rs:492, :587).",
+   "evidence": "callgrind, one PeerOde solve of Oregonator n=3 tol 1e-6 (3341 attempts, 661860264 Ir): ppsw1::tableau inclusive 79.87% = 158215 Ir/attempt; solve_stages 12.20% (LuFactorization::solve 7.10%, ::new 1.92%); __rust_alloc+__rust_dealloc 5.47%; starter+h0 rule+output 0.19%. perf stat: PPSW1 197907 instr/attempt vs RODAS5P 13357 (14.8x); standalone tableau 158418 instr/call, 76771 cycles/call; without it PPSW1 would be 3.0x. valgrind: 61.0 heap allocations per PPSW1 attempt vs 0.06 for RODAS5P. Allocation sites: ppsw1.rs:413-427 (12 Vec), selection.rs:881 (n*n), ppsw1.rs:470 (n*n), matrix.rs:259 to_faer + faer LU, ppsw1.rs:478-487 (7), matrix.rs:332-336 (3-4 per solve x6), problem.rs:571 (6), ppsw1.rs:797/:872 (1), selection.rs:1024 (1). JVP provider adds problem.rs:858-875: 3 Vec and n JVP callbacks per step.",
+   "impact": "Limits scope, does not invalidate HOLD: the U11 G0 step criterion fails on its own (matched-error step ratio 1.91-7.11 against <=1.2). It does invalidate the U11 per-step wall ratios (7.8-24.4x at n=3,8) and speed_vs_production values as method-level numbers: four fifths of the PPSW1 step time is one avoidable function. V10 'equal implementation level' cannot be met before this is removed.",
+   "minimal_fix": "In a new opt-in session type (ppsw1.rs is not protected, but keep the default path bit-identical): cache the last (sigma, Tableau) pair, or precompute the six sigma-coefficient matrices of B, A, Gamma once and evaluate by Horner; verify bitwise equality of Tableau against tableau(sigma) for the sigma values of a recorded run before using it in V10.",
+   "reproduce_cmd": "valgrind --tool=callgrind <probe> time ppsw1_t1 1 1e-6 && callgrind_annotate --inclusive=yes callgrind.out.* | grep -E 'tableau|solve_stages|try_step'   # probe source embedded in this file under probe_sources",
+   "source_file": "research/production_loop_20261116/audit/findings_code.json"
+  },
+  {
+   "id": "COD-02",
+   "dimension": "CODE",
+   "severity": "major",
+   "is_new": true,
+   "title": "PeerOde returns success=true with an error 1e6-1e7 times the tolerance: the starter interval has no error control",
+   "status": "confirmed_by_verifier",
+   "verification": {
+    "verdict": "confirmed",
+    "evidence": "ppsw1.rs:1125-1256: start() is one 5-stage Radau IIA step over 2*h0 accepted on Newton convergence only, with no error estimate and no tolerance argument. selection.rs:959-979: cap 0.5*(t_end-t0); default h0_rule_h_max is infinity, so a zero Jacobian gives h0 = cap. selection.rs:1028 then reports success with zero Peer steps. Probe re-run by the verifier: y' = 20 cos 20t gives success=true, error 8.3132 (9.0e6 tolerance units); 200 cos 200t gives 50.245 (5.7e7); h0 = NaN gives success=true with h0 0.5. A numpy 5-point Radau quadrature reproduces both end values to about 1e-13.",
+    "correction": "The factor is 9.0e6 and 5.7e7, not 'about 1e7' for both. The NaN h0 case is accurate (error 7.5e-10): it is an input-validation defect, not an accuracy failure. The impact statements about U11, V10 and V03 were not verified.",
+    "source": "independent verifier agent, loop L1 wave 1; text condensed from the orchestrator task; the verifier wrote no file"
+   },
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "limits_scope",
+   "related": [
+    "COD-04"
+   ],
+   "synthesis_spot_check": null,
+   "synthesis_note": null,
+   "claim": "ppsw1::start integrates [t0, t0+2*h0] with one 5-stage Radau IIA step and no error estimate (ppsw1.rs:1125-1256); h0 = min(h_max, 1/||J||_inf) (ppsw1.rs:1023-1035, selection.rs:959-979) ignores rtol/atol and any time scale of f(t, .). When 2*h0 reaches the span (selection.rs:959 caps h0 at half the span), the whole solve is that single step: zero Peer steps, success == true (selection.rs:1028). Option h0 = NaN is silently replaced by the cap (f64::min at :961).",
+   "evidence": "Executed probe p3: y' = 20 cos(20 t), dense Jacobian 0, span (0,1), rtol 1e-6, atol 1e-8 -> success=True, accepted Peer steps=0, y_end=9.226167329988417, exact sin(20)=0.9129452507276277, |error|=8.313. p3b (200 cos 200 t): y_end=-51.118572291016626, |error|=50.25, success=True. p5b: h0=NaN -> success=True, h0 used 5e-1.",
+   "impact": "Correctness defect of the U07 adapter that the registry admits as ScopedCalibration without admit_unqualified. U11 HOLD is not affected (autonomous problems, h0 <= t_end/100). It limits every matched-error PPSW1 number: the achieved error of a run contains an uncontrolled starter contribution, which V10 must separate or bound. V03 must not copy this adapter pattern unchanged.",
+   "minimal_fix": "Opt-in adapter change (selection.rs is not protected): reject non-finite or non-positive options.h0; estimate the starter error (for example compare the Radau step against two half steps or use the PPSW1 estimator on the first Peer step with rejection shrinking h0) and refuse or shrink h0 when it exceeds the tolerance; report zero-Peer-step solves as a distinct outcome.",
+   "reproduce_cmd": "<probe> peer | grep p3   # probe source embedded under probe_sources",
+   "source_file": "research/production_loop_20261116/audit/findings_code.json"
+  },
+  {
+   "id": "COD-03",
+   "dimension": "CODE",
+   "severity": "major",
+   "is_new": false,
+   "title": "MethodRegistry admission and GeneralOde::select disagree in both directions (9 executed cases)",
+   "status": "confirmed_plan_stage_and_auditor",
+   "verification": "not_sent",
+   "plan_item": true,
+   "orchestrator_reproduced_at_plan_stage": true,
+   "plan_ref": "1.3 MethodRegistry is not used for routing",
+   "effect_on_recorded_verdicts": "limits_scope",
+   "related": [],
+   "synthesis_spot_check": null,
+   "synthesis_note": "The nine disagreeing cases were executed by the auditor's probe (rows in findings_code.json raw_evidence.registry_vs_select); no verifier re-ran them.",
+   "claim": "The plan states that the registry is not used for routing; executed cases show it also cannot reproduce select. Constraints that select (selection.rs:176-227) and Rodas5p::capabilities (capabilities.rs:66-141) enforce and descriptors/MethodRequest lack: (1) regime (Unknown/Nonstiff -> DOPRI5 only); (2) band storage exemption from max_dense_dimension (:214-220; the rodas5p descriptor has no banded variant, :532-551); (3) the provider form actually present (from_problem_and_policy grants finite_difference for any provider, :311-314, so a JVP problem is admitted as 'finite-difference-dense'); (4) MatrixFreeNotEnabled as a route property; (5) MissingTimeDerivative for ProvidedOnly non-autonomous problems; (6) Options: vector atol refusals, dense_output, InteriorError::Enforce; (7) events require dense output; (8) select refuses mass, events and dense output outright while the rodas5p descriptor advertises all three; (9) Dense provider with declared band counted as dense. Variant labels also differ from the executed route (banded n=10 is admitted as 'explicit-jacobian-dense', route BandedFast).",
+   "evidence": "Executed probe 'select' (rows in raw_evidence.registry_vs_select): c01 banded provider n=1000: select Ok(Rodas5p, BandedFast), registry Refused(Permission x3); c02 FD + declared band n=1000: same split; c03 JVP n=3 AllowFiniteDifference without matrix-free: select Err(MatrixFreeNotEnabled), registry Admitted 'finite-difference-dense'; c04 non-autonomous ProvidedOnly: select Err(MissingTimeDerivative), registry Admitted; c05 events: select Err(Events), capabilities Err(EventsWithoutDenseOutput), registry Admitted; c06 mass, c08 dense output: select Err, registry Admitted; c07 regime Unknown: select Dopri5, registry admits both; c09 vector atol on JVP: select Err(Implicit(VectorAtolOnMatrixFreeRoute)), registry Admitted 'jvp-matrix-free'. No test compares the two: tests/unified_method_capabilities.rs:243 discards the query result.",
+   "impact": "Limits scope of U06 ('unified capability registry') to a descriptive table. The V03 discriminator 'registry is the only routing authority and the 1024-combination selection table is identical' is unreachable with the current MethodRequest/descriptor schema.",
+   "minimal_fix": "Before V03 routing: extend the request with regime, dimension, declared band, provider form, autonomy/time-derivative, atol kind, interior-error mode; add banded and sequential-dense variants to the rodas5p descriptor; add a contract test asserting select == registry-derived selection over the full combination table.",
+   "reproduce_cmd": "<probe> select   # 13 JSON rows; source embedded under probe_sources",
+   "source_file": "research/production_loop_20261116/audit/findings_code.json"
+  },
+  {
+   "id": "COD-04",
+   "dimension": "CODE",
+   "severity": "major",
+   "is_new": true,
+   "title": "PeerOde: permission bypass, untyped and replaced failure reasons, failure without a reason",
+   "status": "confirmed_by_verifier",
+   "verification": {
+    "verdict": "confirmed",
+    "evidence": "Source reading at loop head plus one float computation; the probe was not re-executed. (a) admission() selection.rs:851-864 never reads problem.jacobian or problem.band; lower() :876-898 wires a JVP provider regardless. (b) :1028 with span (0.3, 0.9): t0 + 2*h0 = 0.9000000000000001, so the loop is skipped and success=false with failure=None. (c) callback_to_core :837-847 maps Recoverable to NonFinite and Fatal to InvalidInput; try_step halves on NonFinite (ppsw1.rs:786-794) at the same Jacobian point. (d) :815 failure is Option<String>. (e) lower() returns UnsupportedJacobian at :870-872 after admission said Admitted.",
+    "correction": "All five sub-claims hold as code facts. The probe counts 4 / 52 / 54 are consistent with the code but not independently re-executed. Failure strings carry a 't=<t>: ' or 'starter: ' / 'h0 rule: ' prefix. Halving applies only inside the step loop. For (e) the refusal is typed and precedes any callback; the defect is that admission() says Admitted. (b) needs h0 equal to the endpoint cap and a product that rounds up.",
+    "source": "independent verifier agent, loop L1 wave 1; text condensed from the orchestrator task; the verifier wrote no file"
+   },
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "limits_scope",
+   "related": [
+    "COD-02"
+   ],
+   "synthesis_spot_check": null,
+   "synthesis_note": null,
+   "claim": "(a) PeerOde::admission checks only the caller's CapabilitySet, never the provider form (selection.rs:851-864); lower() then uses whatever the problem has (:876-898). (b) success is 'failure.is_none() && t == t_end' (:1028); when the starter endpoint t0 + 2*h0 rounds above t_end the loop is skipped and the result is success=false with failure=None. (c) callback_to_core (:837-847) maps Recoverable to CoreError::NonFinite and Fatal to CoreError::InvalidInput; try_step turns every NonFinite into a halving rejection (ppsw1.rs:786-794) although the Jacobian is re-evaluated at the same (t_m, y_m), so the run ends with an unrelated reason. (d) failure is an Option<String> of a Debug rendering (:815, :966, :985, :1018), not a typed reason. (e) a declared band is admitted by the registry and refused afterwards by lower() (:870).",
+   "evidence": "Executed probe 'peer': p1 JVP provider with allowed={explicit_jacobian,dense_matrix,newton} -> admission variant 'explicit-jacobian-dense', user JVP callbacks=4, success=True; p2a span (0.3,0.9), zero Jacobian -> success=False, failure=None, t_last=0.9000000000000001; p4 Jacobian returning Recoverable('user says shrink') from the first Peer step -> rejected=52, Jacobian callbacks=54, failure='t=2: InvalidInput(\"PPSW1 requires a finite, representably advancing time\")'; p6 Fatal RHS -> failure='t=2: InvalidInput(\"fatal callback error: user fatal\")'; p7 declared band -> admission Admitted, solve Err(UnsupportedJacobian).",
+   "impact": "Limits scope of the U07 claims 'typed refusal before callbacks' and 'capability constraint': a caller that forbids JVPs still gets JVP callbacks. No recorded verdict depends on it. Blocks reuse of this adapter as the V03 template for typed fallback.",
+   "minimal_fix": "Derive the required variant from problem.jacobian and admit that variant; make failure an enum carrying the original CallbackError; treat a Recoverable Jacobian/starter error as a stop with that reason; land the endpoint by setting t = t_end when hh == t_end - t and define success by the landing flag.",
+   "reproduce_cmd": "<probe> peer   # rows p1, p2a, p4, p6, p7",
+   "source_file": "research/production_loop_20261116/audit/findings_code.json"
+  },
+  {
+   "id": "COD-05",
+   "dimension": "CODE",
+   "severity": "major",
+   "is_new": false,
+   "title": "Switcher unified frontend: labels and docs claim engines that are never dispatched",
+   "status": "confirmed_plan_stage_and_auditor",
+   "verification": "not_sent",
+   "plan_item": true,
+   "orchestrator_reproduced_at_plan_stage": true,
+   "plan_ref": "1.3 switcher router tiers",
+   "effect_on_recorded_verdicts": "limits_scope",
+   "related": [
+    "COD-06",
+    "COD-07"
+   ],
+   "synthesis_spot_check": "C09: router.rs:63-66 sends Tier2, Tier4, Protected and Tier3 to dispatch_rodas5p_tier. Switcher code was read, not built or run.",
+   "synthesis_note": null,
+   "claim": "Read-only review of 93392249. unified/router.rs:63-75 sends Tier2MatrixFreeKrylov, Tier3Exponential, Tier4StagedRodas5p and TierProtectedReference to the same dispatch_rodas5p_tier -> Rodas5p::solve (:193); only the string differs (:175-180). Tier3Exponential is never produced by the analyzer. Doc claims without code behind them: router.rs:3-5 ('matrix-free Krylov, L^8=0 staged sweep'); analyzer.rs:15-21 ('staged GMRES with subspace recycling', 'Fused exponential / Leja', 'Staged vectorized L^8=0 causal sweep'); a JVP problem with n<16 is labelled TierProtectedReference 'direct-LU reference driver' (analyzer.rs:121-125) while Rodas5p::solve runs its matrix-free route; mod.rs:3-9 ('Nilpotent homotopy sweep', 'GCRO-DR', 'Newton-Raphson-Free Homotopy / Exponential Actions', 'Zero-Allocation Hot Loops'); options.rs:25-36 and :47-52: profile, max_krylov_restarts and invariant_drift_tol are never read, max_krylov_dim only sizes an unused buffer; workspace.rs:15-30 buffers are never passed to a driver and step_into (:123-144) is a Heun step, yet it carries the VG-1 zero-allocation claim; solution.rs:37 documents max_t |I(y(t)) - I(y0)| while router.rs:316-329 computes the endpoint difference only (fallback.rs:63-68 from the checkpoint, not y0). registry.rs:874/:897: PexprbWindowDriver records method Rodas5p and wraps its counters in Rodas5p stats. tests/unified_production_solver_contracts.rs:232 asserts the label string, not the driver.",
+   "evidence": "grep -n 'dispatch_rodas5p_tier\\|Rodas5p::solve' /home/cosmosapjw/vigilode/crates/vigilode/src/unified/router.rs; grep -rn '\\.profile\\|max_krylov_restarts\\|invariant_drift_tol' crates/vigilode/src (hits only in options.rs); grep -rn 'krylov_basis\\|stage_vectors\\|linear_scratch' crates/vigilode/src (workspace.rs only).",
+   "impact": "Confirms plan 1.3 and extends it. Any switcher evidence that reports a tier name as the executed method is label-only; it limits the scope of the 'unified production frontend' claim of commit 93392249 to: DOPRI5, Rodas5p::solve, SwitchingSolver. V03 must remove or implement the labels, as planned.",
+   "minimal_fix": "On adoption (V02/V03) drop SelectedTier values without a driver, the unread options and the workspace buffers; record the executed route from Stats.route instead of a tier string; make the unified tests assert Stats.route.driver_id.",
+   "reproduce_cmd": "sed -n '60,76p;175,193p' /home/cosmosapjw/vigilode/crates/vigilode/src/unified/router.rs",
+   "source_file": "research/production_loop_20261116/audit/findings_code.json"
+  },
+  {
+   "id": "COD-06",
+   "dimension": "CODE",
+   "severity": "major",
+   "is_new": true,
+   "title": "Switcher line: failure reasons replaced, work dropped, fallbacks uncharged or not what they claim",
+   "status": "lead",
+   "verification": "not_sent",
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "limits_scope",
+   "related": [
+    "COD-05"
+   ],
+   "synthesis_spot_check": "C09: router.rs maps every unsuccessful SwitchingSolution to MaxStepsReached; hybrid_automaton.rs accounting_complete() compares a sum with total_work(). The other listed sites were not re-read. Not executed.",
+   "synthesis_note": null,
+   "claim": "Failure reason replaced: router.rs:285-291 (every unsuccessful SwitchingSolution -> MaxStepsReached, message dropped; plan item); router.rs:142 (fixed text instead of the DOPRI5 stop reason); analyzer.rs:116 and :165 (callback error -> InvalidInput); registry.rs:176 WindowDriver::run -> Result<_, String> (:255-256, :265, :494, :504, :759-814); registry.rs:281 and :522 BatchStop::Fatal(\"callback failure\") without the callback message, then discarded at switching.rs:2702; registry.rs:509-529 any RODAS5P failure other than callback/budget/ceiling (step-size underflow, linear failure) becomes BatchStop::Completed, likewise DOPRI5 :277-288; registry.rs:691-749 Pexprb maps Recoverable to FatalCallback; solution.rs:103-106 generic Driver text. Work dropped: router.rs:267-273 copies 7 of the switching counters (factorizations, iterations, attempts, segments, discarded-pilot detail lost) and :277 leaves stats.accepted_steps/attempts at 0; fallback.rs:46 '?' returns the error and drops the charged explicit prefix and route_history; fallback.rs:56 stats.accepted_steps/attempts cover only the fallback leg and inner_solution holds only that leg; registry.rs:296, :548 and :857 work_units omits factorizations. Silent or uncharged: analyzer.rs:113-116 one RHS, :162-172 one dense Jacobian plus an O(n^3) eigen solve at preflight, none charged; router.rs:260-263 escalates to DerivativeFallback::AllowFiniteDifference without a user permission; fallback.rs:44-46 restarts the full max_steps budget; router.rs:222-235 'fall back to protected direct solve' calls the identical Rodas5p::solve(problem, ...) on the same JVP problem, so it is a repeat, not a different route; hybrid_automaton.rs:315-320 accounting_complete() compares a sum with the same sum and is always true. registry.rs SolverState/next_solver_state and HybridRouteAutomaton have no caller in src (the module doc says so).",
+   "evidence": "File:line reading of commit 933922495045796c99c530b0f1f1efd8fec83ed0 at /home/cosmosapjw/vigilode (not executed: building there is outside this task). grep -rn 'next_solver_state\\|HybridRouteAutomaton' crates/vigilode/src returns only registry.rs, hybrid_automaton.rs, lib.rs re-exports and doc comments.",
+   "impact": "Limits scope: the switcher's claims 'fail-closed', 'strictly conserving all accumulated WorkCounters' (fallback.rs:3-5) and 'complete work accounting' hold only on the success path of SwitchingSolver itself, not for the unified wrapper. Counter-based evidence produced through VigilODE::solve under-reports work. Relevant to the V03 plan to reuse WindowDriver as the execution layer: it needs a typed error first.",
+   "minimal_fix": "WindowDriver::run -> Result<BatchOutcome, DriverError> with the driver FailureReason preserved in BatchStop; map SwitchingSolution failures through message/segment stop reasons; return a partial VigilodeSolution on fallback error; charge preflight callbacks; share one attempt budget across legs; delete the tautological accounting check.",
+   "reproduce_cmd": "sed -n '260,291p' /home/cosmosapjw/vigilode/crates/vigilode/src/unified/router.rs; sed -n '40,47p' /home/cosmosapjw/vigilode/crates/vigilode/src/unified/fallback.rs; sed -n '505,529p' /home/cosmosapjw/vigilode/crates/vigilode/src/registry.rs; sed -n '313,321p' /home/cosmosapjw/vigilode/crates/vigilode/src/hybrid_automaton.rs",
+   "source_file": "research/production_loop_20261116/audit/findings_code.json"
+  },
+  {
+   "id": "COD-07",
+   "dimension": "CODE",
+   "severity": "major",
+   "is_new": true,
+   "title": "Switcher preflight classifies contractive (for example diffusion) problems as non-stiff and allocates n*n for every problem",
+   "status": "lead",
+   "verification": "not_sent",
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "limits_scope",
+   "related": [
+    "COD-05"
+   ],
+   "synthesis_spot_check": "C10: analyzer.rs:174-183 routes mu2 <= 0 with span <= 100 to Tier1Explicit and :191 sets is_stiff = !is_contracting; workspace.rs:47 allocates vec![0.0; n * n]. Not executed: the DOPRI5 step-count consequence is a hand estimate.",
+   "synthesis_note": null,
+   "claim": "analyzer.rs:174-187 sets is_contracting = mu2(J(t0,y0)) <= 0 with mu2 = lambda_max((J+J^T)/2) (rodas5p-core nonnormal_observers.rs:313) and routes contracting problems with span <= 100 to DOPRI5, reporting is_stiff = !is_contracting (:191). Contractivity is not non-stiffness: every symmetric negative definite Jacobian (heat equation, y' = -1e6 y) has mu2 < 0 and is the standard stiff case. Such a run spends DOPRI5 attempts up to Options::max_steps (default 100000, options.rs:131) before the fallback at router.rs:124-146. analyzer.rs:210-221 sends every finite-difference problem with n <= 10 to DOPRI5 first (Robertson included). unified/workspace.rs:47 allocates vec![0.0; n*n] and :46 (m+1)*n in VigilODE::solve (mod.rs:47) for every problem, including matrix-free ones: n = 1e5 requests 80 GB, n = 1e6 8 TB, before any integration.",
+   "evidence": "File:line reading; mu2 definition from the observer source. Hand check: J = diag(-1e6) gives mu2 = -1e6 <= 0, span 100 -> Tier1Explicit; DOPRI5 stability limit h <= about 3.3e-6 needs about 3e7 steps > 100000.",
+   "impact": "Limits scope of the switcher's 'proactive stiffness detection' claim (mod.rs:7) and of any switcher benchmark on MOL problems routed through VigilODE::solve with a dense Jacobian; blocks the large-n regimes that loop L1 targets (V04, V11) through this frontend. No recorded verdict in the unification branch depends on it.",
+   "minimal_fix": "Do not adopt PreflightAnalyzer as a router. If a stiffness screen is wanted use a spectral-radius times span estimate, charged, with a preregistered threshold; size the workspace lazily per route.",
+   "reproduce_cmd": "sed -n '162,198p' /home/cosmosapjw/vigilode/crates/vigilode/src/unified/analyzer.rs; sed -n '39,56p' /home/cosmosapjw/vigilode/crates/vigilode/src/unified/workspace.rs",
+   "source_file": "research/production_loop_20261116/audit/findings_code.json"
+  },
+  {
+   "id": "EVD-08",
+   "dimension": "EVIDENCE",
+   "severity": "minor",
+   "is_new": true,
+   "title": "sp02_workspace_charge is flaky because three parallel tests share one process-global live-byte counter",
+   "status": "lead",
+   "verification": "not_sent",
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "limits_scope",
+   "related": [],
+   "synthesis_spot_check": "C06: one static LIVE_BYTES, one #[global_allocator], three #[test], no Mutex or serial guard. BASELINE_RESULTS.json flake_probe (orchestrator run): 3/3 pass single-threaded, 1 of 3 default runs fails.",
+   "synthesis_note": null,
+   "claim": "The test binary replaces the global allocator and asserts on the difference of a global LIVE_BYTES counter around drop(ws); libtest runs the three tests concurrently, so allocations and frees of sibling tests fall inside the measurement window. It is a test-harness race, not a workspace accounting defect.",
+   "evidence": "crates/rodas5p-krylov/tests/sp02_workspace_charge.rs:20-21, 23-47, 49-54 (global allocator and counter), :100-102 and the same pattern at :155-157 and :214-216; no Mutex or serial guard in the file. research/production_loop_20261116/logs/baseline_facade_core_krylov.log:1007-1014: 'charged 20024 - released 14424 = 5600 > 640' and 'charged 20288 < released 4214311'. BASELINE_RESULTS.json flake_probe: 3/3 pass with --test-threads=1, 1 of 3 default runs fails.",
+   "impact": "Limits the baseline only: L-0300 FAIL is a harness artefact and says nothing about the solvers. production.yml runs this target with default threads, so hosted CI would fail intermittently. 35 test files in crates/*/tests use the same global-counter pattern and may share the hazard where a binary holds more than one measuring test (not checked).",
+   "minimal_fix": "Serialise the three tests with one static Mutex held for the whole test body, or count per thread with a thread_local counter in the allocator; the file is not protected.",
+   "reproduce_cmd": "cd /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116 && sed -n '18,54p;97,106p' crates/rodas5p-krylov/tests/sp02_workspace_charge.rs && sed -n '1005,1015p' research/production_loop_20261116/logs/baseline_facade_core_krylov.log",
+   "source_file": "research/production_loop_20261116/audit/findings_evidence.json"
+  },
+  {
+   "id": "EVD-09",
+   "dimension": "EVIDENCE",
+   "severity": "minor",
+   "is_new": true,
+   "title": "Cross-solver benchmark is real, but its receipts misstate the raw data and the plan's Julia step-count equality holds at one tolerance only",
+   "status": "lead",
+   "verification": "not_sent",
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "limits_scope",
+   "related": [
+    "DSG-03",
+    "DSG-05"
+   ],
+   "synthesis_spot_check": "C07: spatial grid v2 has 1040 matched rows = 952 DIAGNOSTIC_ONLY + 88 MATCHED; the v3 report line 73 says 953 rows all DIAGNOSTIC_ONLY. Part (c) is covered by the DSG-03 verification; the 88 MATCHED rows in v2 by the DSG-05 verification.",
+   "synthesis_note": null,
+   "claim": "crates/vigilode-bench is an executing runner with raw per-repetition data, yet (a) the v3 receipt and final report describe the cited raw file incorrectly, (b) raw files were overwritten in place and most were built from a dirty tree, (c) the VigilODE arm compared with Julia is grid-clipped.",
+   "evidence": "(a) evidence/V3-ACHIEVED-WP.json and FINAL_REPORT_KO.md:30,73 say 'all 953 matched rows DIAGNOSTIC_ONLY'; bench/out/adversarial_spatial_grid_v2_results.json (same binary_sha256 bdeaa896...) has 1040 matched rows = 952 DIAGNOSTIC_ONLY + 88 MATCHED with time ratios (for example vigilode-banded-dense against rodas-band 0.71-1.04, against cvode-bdf-band 1.5-3.8). (b) adversarial_rust_results.json had 900/900 DIAGNOSTIC_ONLY at 1403e108 and 652 + 248 MATCHED from 92d975dd on, same path; provenance git_dirty true in 4 of 5 wp files. (c) rust_bench_results.json against julia_bench_results.json, accepted steps VigilODE/Julia Rodas5P: Robertson 111/36, 122/66, 164/162; Brusselator n=100 105/46, 129/100, 228/228; HIRES 132/81, 265/258, 823/873 at rtol 1e-4/1e-6/1e-8. The row 'deviations' field states that the 101-point OutputSchedule adds clipped steps; Julia uses saveat interpolation. The 13 v3 receipts store argv and exit_code 0 without any log.",
+   "impact": "Limits scope: the v3 conclusion NOT_ESTABLISHED is conservative and stands, but the receipts are typed text, not parsed output. The plan's sentence 'same step count as Julia Rodas5P (228 = 228, 164 vs 162)' is true only at rtol 1e-8; at 1e-4 the benchmark arm takes 2.3-3.1 times more steps because of grid landing, so that file cannot support a per-step or method-equivalence statement at loose tolerance.",
+   "minimal_fix": "In V11/V13 rerun the comparison from a clean tree with the endpoint-only (dense-output) arm, keep each run under a new file name, and generate receipt counts from the raw JSON.",
+   "reproduce_cmd": "cd /home/cosmosapjw/vigilode && python3 -I -c \"import json,collections;d=json.load(open('bench/out/adversarial_spatial_grid_v2_results.json'));print(len(d['matched']),collections.Counter(m['status'] for m in d['matched']))\" && grep -n '953' docs/agent/production_solver_qualification_20261107_v3/FINAL_REPORT_KO.md | cut -c1-120",
+   "source_file": "research/production_loop_20261116/audit/findings_evidence.json"
+  },
+  {
+   "id": "EVD-10",
+   "dimension": "EVIDENCE",
+   "severity": "minor",
+   "is_new": true,
+   "title": "Unification evidence reproduces; three residual defects in how U11 and U09 record it",
+   "status": "lead",
+   "verification": "not_sent",
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "none_recorded",
+   "related": [
+    "DSG-07"
+   ],
+   "synthesis_spot_check": "C05: evaluate.py:113-115 sets depth and fallback criteria to pass True as literals; :121 says SUNDIALS not installed; libsundials-dev 6.4.1 is installed.",
+   "synthesis_note": null,
+   "claim": "U03, U04, U10 and U11 result files regenerate byte for byte from the raw logs with the included scripts, and the three re-run targets match the reported pass counts (18, 6, 5). Residual defects: (a) evaluate.py hard-codes two G0 criteria as passed and a false NOT_RUN reason; (b) U09 has no machine-readable results file or summariser; (c) U03 RESULTS.json carries a ppsw1.rs hash that no longer matches head.",
+   "evidence": "(a) production_holdout/evaluate.py:113-116 ('depth_p95_le_6_max_le_8': candidate_stage_depth 1, pass True; 'fallback_le_0_1': fallback_fraction 0.0, pass True are literals, not read from logs/holdout_runs.jsonl) and :121 'CVODE BDF (SUNDIALS not installed)' while dpkg lists libsundials-dev 6.4.1 and /usr/lib/x86_64-linux-gnu/libsundials_cvode.so.6 exists. (b) geometry_mol/ holds only REPORT_KO.md, CHANGE_CONTRACT.json and logs; report numbers were checked against QUAL lines of logs/u09_green.log (all sampled values match). (c) RESULTS.json inputs_sha256 ppsw1.rs 758f712c... equals the blob at 2f19cf85; head blob is d2b27044... after 715a3f6f (U04); the --nocapture re-run at head still reproduces all 3060 non-wall values of logs/u03_green.log. Byte comparisons and pass counts: see part_b_unification_reproduction.",
+   "impact": "No U verdict is invalidated. HOLD for U11 rests on four measured failing criteria and does not depend on the two literal passes; the literal passes must not be quoted as measured. The CVODE comparator was omitted without a valid reason.",
+   "minimal_fix": "Derive depth and fallback from runner output or label them NOT_MEASURED; correct the NOT_RUN reason; add a summariser that writes U09 RESULTS.json from the QUAL lines; refresh the U03 input hash when the ledger row is written.",
+   "reproduce_cmd": "cd /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116 && sed -n '111,122p' research/production_unification_20261115/production_holdout/evaluate.py && ls /usr/lib/x86_64-linux-gnu/libsundials_cvode.so.6 && CARGO_TARGET_DIR=/mnt/extdrive/vigilode-loop-20261116/target cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test ppsw1_independent_qualification",
+   "source_file": "research/production_loop_20261116/audit/findings_evidence.json"
+  },
+  {
+   "id": "DSG-07",
+   "dimension": "DESIGN",
+   "severity": "minor",
+   "is_new": false,
+   "title": "U11 speed criterion: the thread arm was not preregistered and the evaluator was committed with the results",
+   "status": "confirmed_plan_stage_and_auditor",
+   "verification": "not_sent",
+   "plan_item": true,
+   "orchestrator_reproduced_at_plan_stage": true,
+   "plan_ref": "1.2 U11 (a) 6-thread arm",
+   "effect_on_recorded_verdicts": "none_recorded",
+   "related": [
+    "COD-08",
+    "EVD-10"
+   ],
+   "synthesis_spot_check": "C13: evaluate.py:88 takes speed ratios only for cand == 'ppsw1_t6'; evaluate.py first appears in 074a5699 (09:36:12), the preregistration in 745ffafb (09:28:25).",
+   "synthesis_note": null,
+   "claim": "PREREGISTRATION.json names the candidate 'at 1 and 6 threads' and the criterion 'median over problems' without choosing an arm. evaluate.py (first committed in 074a5699, after the runs) uses only ppsw1_t6 for speed and takes the median over 9 problem x E* points. Recomputed medians: 6-thread 0.00634 (equal to the stored value), 1-thread 0.0166, best single point 0.233. The 6-thread arm is 1.59-2.94x slower than the 1-thread arm with bitwise identical states. A Rayon pool is built inside the timed region on every solve, and the 6-thread arm pays 24.2-40.5 microseconds more per attempt. The best single 1-thread point is 4.94x below 1.15 and the 1-thread median 69.2x below.",
+   "evidence": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/research/production_unification_20261115/production_holdout/PREREGISTRATION.json:6,32; evaluate.py:88-89 (cand == 'ppsw1_t6'); git log -- evaluate.py -> 074a5699 only; crates/vigilode/src/selection.rs:945 and crates/rodas5p-integrators/src/parallel.rs:22-41 (pool per solve); runner/src/main.rs:170-213 (timed region); data.u11_recompute.",
+   "impact": "Does not change the verdict. It is an undisclosed analysis choice in a preregistered evaluation.",
+   "minimal_fix": "Future preregistrations name the arm, the aggregation and the evaluator hash before the run.",
+   "reproduce_cmd": "python3 /tmp/claude-1000/dsg-audit/u11_recompute.py",
+   "source_file": "research/production_loop_20261116/audit/findings_design.json"
+  },
+  {
+   "id": "DSG-08",
+   "dimension": "DESIGN",
+   "severity": "minor",
+   "is_new": true,
+   "title": "Cost model: stage-parallel PPSW1 can reach 1.15x only where Jacobian+LU is a small share and the step ratio is below about 2",
+   "status": "lead",
+   "verification": "not_sent",
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "none_recorded",
+   "related": [],
+   "synthesis_spot_check": null,
+   "synthesis_note": "A model, not a measurement (stated by the auditor).",
+   "claim": "Both methods build one Jacobian and one LU per attempt, so the LU count ratio equals the step ratio (measured 1.78-8.86 at equal tolerance). With ideal 6-way stage parallelism and zero overhead the speed is at most 1/(rho (f + (1-f)/8)), f being the Jacobian+LU share of a RODAS5P step. For the measured matched-error step ratios rho = 1.91-7.11 this needs f <= 0.377 at the best point and f <= 0.0969 at the median; for f = 0.5 it needs rho <= 1.55. In addition the starter factors a 5n x 5n matrix once, which equals 125 step factorizations in the cubic regime. This is a model, not a measurement.",
+   "evidence": "data.controller_floor.amdahl (computed from data.u11_recompute.matched); crates/rodas5p-integrators/src/ppsw1.rs:468-477 (one J and one LU per attempt), :1151-1165 (5n starter LU); RODAS5P counters in logs/holdout_runs.jsonl (direct_factorizations = attempts).",
+   "impact": "Design input for V10: the preregistered regime must be chain-dominated and large enough for threads; LU-dominated dense problems cannot pass with the current step ratios.",
+   "minimal_fix": "V10 preregistration states f from V04 for each regime before the run.",
+   "reproduce_cmd": "python3 /tmp/claude-1000/dsg-audit/controller_floor.py",
+   "source_file": "research/production_loop_20261116/audit/findings_design.json"
+  },
+  {
+   "id": "DSG-09",
+   "dimension": "DESIGN",
+   "severity": "minor",
+   "is_new": true,
+   "title": "The 1.10 cap was approved for a different method and is hard-wired, so V10 cannot vary sigma through Config",
+   "status": "lead",
+   "verification": "not_sent",
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "none_recorded",
+   "related": [
+    "DSG-01"
+   ],
+   "synthesis_spot_check": "C12: OD-15 exists at OWNER_DECISIONS_20261110.json:95; its text was not re-read.",
+   "synthesis_note": null,
+   "claim": "OD-15 reads 'PW04 sigma_max rule for mipeer6 ... sigma_max <= 1.10 (agent-proposed own rule, NOT literature; A(alpha)~79deg there)'; it concerns the multi-implicit peer candidate. OD-25 carries 'sigma_max<=1.10' into the PPSW1-6b estimator decision and OD-26 approves the controller as OWNER_CHOICE, 'not literature-certified for PPSW1'. No PPSW1-6b stability analysis of the cap is cited. Session::new rejects step_ratio_cap > 1.10 and check_sigma, propose_ratio and RATIO_CLIP clamp with the same constant, so the V10 arms sigma in {1.2, 1.3, 1.5} need a separate code path.",
+   "evidence": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/docs/agent/unified_local_agent_20261109/OWNER_DECISIONS_20261110.json (OD-15, OD-25, OD-26; file lines 95, 155, 161); crates/rodas5p-integrators/src/ppsw1.rs:57-58, :370, :697-703, :845, :939; docs/agent/unified_local_agent_20261109/PW04_PPSW1_6BC_VERIFICATION_KO.md:24 (stability constant 138 for sigma <= 1.10, 709 for sigma <= 1.5).",
+   "impact": "Provenance only; no verdict changes.",
+   "minimal_fix": "V10 adds an experiment-only sibling controller with its own cap constant and leaves ACCEPTED_STEP_SIGMA_MAX untouched.",
+   "reproduce_cmd": "grep -n 'ACCEPTED_STEP_SIGMA_MAX' crates/rodas5p-integrators/src/ppsw1.rs",
+   "source_file": "research/production_loop_20261116/audit/findings_design.json"
+  },
+  {
+   "id": "DSG-10",
+   "dimension": "DESIGN",
+   "severity": "minor",
+   "is_new": true,
+   "title": "U11 timing binary was built with a profile different from the repository release profile",
+   "status": "lead",
+   "verification": "not_sent",
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "limits_scope",
+   "related": [],
+   "synthesis_spot_check": "C12: the runner Cargo.toml has its own [workspace] and [profile.release] debug = false; the root profile is opt-level 3, lto fat, codegen-units 1, panic abort.",
+   "synthesis_note": null,
+   "claim": "The runner is its own Cargo workspace with [profile.release] debug = false, which gives opt-level 3 without LTO and with 16 codegen units; the repository release profile is fat LTO, one codegen unit, panic = abort. No target-cpu flag is set, so f64::mul_add compiles to libm fma calls (4.07% of main-thread cycles). Both arms share the binary, so the comparison is internally consistent, but absolute per-step costs differ from the profile used by the other timing campaigns.",
+   "evidence": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/research/production_unification_20261115/production_holdout/runner/Cargo.toml (own [workspace], profile); /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/Cargo.toml:35-39; logs/build.log ('release profile [optimized]'); data.perf_agg.fma_libcall_share_of_main_thread.",
+   "impact": "Limits comparability of U11 wall numbers with other campaigns; verdict unaffected.",
+   "minimal_fix": "Timing runners copy the workspace release profile and record RUSTFLAGS and target features.",
+   "reproduce_cmd": "cat research/production_unification_20261115/production_holdout/runner/Cargo.toml; sed -n 35,39p Cargo.toml",
+   "source_file": "research/production_loop_20261116/audit/findings_design.json"
+  },
+  {
+   "id": "COD-08",
+   "dimension": "CODE",
+   "severity": "minor",
+   "is_new": false,
+   "title": "PPSW1 6-thread arm: two rayon pool round trips per attempt and a pool built inside the timed solve",
+   "status": "confirmed_plan_stage_and_auditor",
+   "verification": "not_sent",
+   "plan_item": true,
+   "orchestrator_reproduced_at_plan_stage": true,
+   "plan_ref": "1.2 U11 (a) 6-thread arm",
+   "effect_on_recorded_verdicts": "none_recorded",
+   "related": [
+    "DSG-07"
+   ],
+   "synthesis_spot_check": null,
+   "synthesis_note": null,
+   "claim": "With threads > 1 every attempt runs pool.install twice (ppsw1.rs:502 solves, :597 RHS; parallel.rs:62-63) and PeerOde::solve builds a new rayon pool per call (selection.rs:945). The parallelised work at n=3..8 is about 6 solves and 6 RHS (LuFactorization::solve 14063 Ir per attempt), far below one wake/join.",
+   "evidence": "Recorded U11 rows, recomputed: t6/t1 wall 1.59-2.94; per attempt t1 [17.23, 17.68] us vs t6 [46.28, 49.19] us (Oregonator), [19.64, 21.74] vs [50.66, 63.73] (HIRES). perf cycles:u of the rerun: main thread 72.15%, the six rayon workers 27.85%.",
+   "impact": "Confirms plan 1.2(a): G0 speed judged on the 6-thread arm at n <= 64 measures thread wake-up, not the method. Does not change HOLD.",
+   "minimal_fix": "For V10 use the 1-thread arm at small n and a persistent pool with one fork-join per step (solve and RHS fused) where threads are tested.",
+   "reproduce_cmd": "python3 over research/production_unification_20261115/production_holdout/logs/holdout_runs.jsonl: wall_median_s / (accepted + rejected) per arm",
+   "source_file": "research/production_loop_20261116/audit/findings_code.json"
+  },
+  {
+   "id": "COD-09",
+   "dimension": "CODE",
+   "severity": "minor",
+   "is_new": false,
+   "title": "Hygiene: tracked reject files, research modules compiled unconditionally, crates outside the workspace",
+   "status": "confirmed_plan_stage_and_auditor",
+   "verification": "not_sent",
+   "plan_item": true,
+   "orchestrator_reproduced_at_plan_stage": true,
+   "plan_ref": "1.2 tracked .rej file; 1.3 crates outside the workspace",
+   "effect_on_recorded_verdicts": "none_recorded",
+   "related": [],
+   "synthesis_spot_check": "C11: two tracked .rej files; root Cargo.toml lists 7 members without vigilode-bench and vigilode-hybrid. Module categories are by name pattern (auditor's limitation).",
+   "synthesis_note": null,
+   "claim": "Tracked: crates/rodas5p-integrators/src/dense_output_v2.rs.rej (12 lines, a rejected hunk adding DenseErrorControl::VerifiedResidual) and research/production_reaudit_20261021/evidence/port/dense_patch_context.rej. crates/rodas5p-integrators/src/lib.rs has 103 mod lines: 6 behind a cargo feature (6922 LOC), 27 unconditional modules named after a gate, campaign or candidate (21142 LOC), 70 other unconditional modules (62788 LOC; these still include research drivers such as homotopy, sabr, transactional_q1_q2, packet_*). crates/vigilode-bench and crates/vigilode-hybrid carry their own [workspace] and Cargo.lock and are not in the root members list, so workspace build, test, clippy and fmt never see them.",
+   "evidence": "git ls-files | grep -E '\\.rej$'; grep -cE '^(pub(\\(crate\\))? )?mod [a-z0-9_]+;' crates/rodas5p-integrators/src/lib.rs; classification script output in raw_evidence.lib_rs_mod_categories (name-pattern based: a1_, g<digit>_, n01_, pr101, bound_, v38d, policy_redesign, scientific_, unified_gates/screen, *_gate, *_experiments, *_candidate, fourier_path, comparator_fidelity); Cargo.toml:3-11.",
+   "impact": "Packaging axis of the R-gate: the production crate compiles gate and campaign code unconditionally (at least 21k LOC); two crates are untested by the workspace commands. No numerical verdict affected.",
+   "minimal_fix": "git rm the two .rej files (their content is already recorded in history); move gate/campaign modules behind a 'research' feature in a later node with a bit-identity check of the protected drivers; add both crates to CI as separate jobs or to workspace.exclude with a documented build command.",
+   "reproduce_cmd": "cd /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116 && git ls-files | grep -E '\\.rej$' && grep -cE '^(pub(\\(crate\\))? )?mod [a-z0-9_]+;' crates/rodas5p-integrators/src/lib.rs",
+   "source_file": "research/production_loop_20261116/audit/findings_code.json"
+  },
+  {
+   "id": "COD-10",
+   "dimension": "CODE",
+   "severity": "minor",
+   "is_new": true,
+   "title": "README and crate docs contradict the code surface",
+   "status": "lead",
+   "verification": "not_sent",
+   "plan_item": false,
+   "orchestrator_reproduced_at_plan_stage": false,
+   "plan_ref": null,
+   "effect_on_recorded_verdicts": "none_recorded",
+   "related": [],
+   "synthesis_spot_check": "C11: 18 'pub fn solve*' in crates/vigilode/src; 0 README.md hits for PeerOde, MethodRegistry, ProductionSolver, AutomaticOde; crates/vigilode/README.md:3 says one solver.",
+   "synthesis_note": null,
+   "claim": "crates/vigilode/README.md:3-4, src/lib.rs:3-5 and Cargo.toml:7 say 'One problem type, one options type, one solver and one result'; the crate exports 10 solver entry types (Rodas5p, Dopri5, GeneralOde, AutomaticOde, SwitchingSolver, ProductionSolver, PeerOde, LawsonDopri5, ExplicitSession, Dopri5Ensemble), 6 result types and 18 'pub fn solve*'. Top-level README.md:43-52 describes a 'protected matrix-free Rosenbrock path' and 'Jacobian-free' integration, while the facade default routes are dense and banded direct LU (lib.rs:47-58) and GeneralOde defaults to DOPRI5 (selection.rs:190-196). README.md never mentions PeerOde, MethodRegistry, AutomaticOde or ProductionSolver. README.md:67 calls the internal BDF1/BDF2 and Radau solvers reference implementations, while the registry labels BDF ImplementedUnqualified and only Radau ReferenceImplementationOnly (selection.rs:633, :660). The first 41 README lines are dated notices; there is no quick start for the facade. Tier::Performance is documented honestly as executing Protected (options.rs:42-50, solve.rs:593, capabilities.rs:100).",
+   "evidence": "grep -nE '^pub struct (Rodas5p|Dopri5|GeneralOde|AutomaticOde|SwitchingSolver|ProductionSolver|PeerOde|LawsonDopri5|ExplicitSession|Dopri5Ensemble)' crates/vigilode/src/*.rs (10 hits); grep -nE 'pub fn solve[a-z_]*\\(' crates/vigilode/src/*.rs | wc -l (18); grep -n 'PeerOde\\|MethodRegistry\\|ProductionSolver\\|AutomaticOde' README.md (0 hits).",
+   "impact": "API and packaging axes of the R-gate; no numerical verdict affected.",
+   "minimal_fix": "Rewrite both READMEs in V13 from the registry descriptors after V03; until then replace 'one solver' by the list of entry points and their status.",
+   "reproduce_cmd": "cd /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116 && grep -n 'PeerOde\\|MethodRegistry\\|ProductionSolver\\|AutomaticOde' README.md; grep -nE 'pub fn solve[a-z_]*\\(' crates/vigilode/src/*.rs | wc -l",
+   "source_file": "research/production_loop_20261116/audit/findings_code.json"
+  }
+ ],
+ "plan_items": [
+  {
+   "plan_section": "1.1",
+   "item": "Ledger split: unification line ends at L-0204 with 0 U rows; switcher holds L-0205..L-0214",
+   "verdict": "confirmed",
+   "derived_by": "EVIDENCE; spot check C04",
+   "note": "The loop adds only L-0300; the program EVIDENCE_LEDGER.json has no U record."
+  },
+  {
+   "plan_section": "1.1",
+   "item": "Only crates/rodas5p-integrators/src/lib.rs is modified on both sides; switcher toolchain is stable",
+   "verdict": "confirmed",
+   "derived_by": "CODE; spot check C14",
+   "note": "Merge-base 569ce026; switcher 52 unique commits, loop 138."
+  },
+  {
+   "plan_section": "1.1",
+   "item": "Switcher modified protected files sequential.rs, vigilode/src/lib.rs, switching.rs, Cargo.toml, rust-toolchain.toml, rodas5p_fast.rs, adaptive.rs",
+   "verdict": "corrected",
+   "derived_by": "spot check C14 only (dimensions: not_checked)",
+   "note": "Eight files of the loop's protected list differ from the merge-base on the switcher line; the plan omits rodas5p_matrix_free_fast.rs (78 changed lines). Not independently verified."
+  },
+  {
+   "plan_section": "1.1",
+   "item": "lineage.json, LINEAGE.md and HISTORY_RECOVERY.json do not mention the switcher line",
+   "verdict": "confirmed",
+   "derived_by": "spot check C14 only",
+   "note": "0 hits in the three files; git_inventory.json does list both refs with ancestor_of_current_research_base false."
+  },
+  {
+   "plan_section": "1.1",
+   "item": "REI line (6844c8fe, 287 unique commits) is unmerged; N02, N03, 46,080-cell experiment",
+   "verdict": "confirmed",
+   "derived_by": "spot check C14 only",
+   "note": "Commit count 287 and non-ancestry reproduced; the content claims (N02, N03, 46k run) were not checked."
+  },
+  {
+   "plan_section": "1.2",
+   "item": "eval_k1/eval_c1/eval_b7 are simulate_cell models; eval_d1 holds a literal 14/24",
+   "verdict": "corrected",
+   "derived_by": "EVIDENCE; DESIGN (K1); spot check C01",
+   "note": "K1 and C1 use simulate_cell; B7 is a literal table; D1 is literal throughout. All four: 0 subprocess calls."
+  },
+  {
+   "plan_section": "1.2",
+   "item": "Synthetic ledger rows are L-0209, L-0214, L-0210, L-0213",
+   "verdict": "corrected",
+   "derived_by": "EVIDENCE; verifier (EVD-02, EVD-03)",
+   "note": "L-0212 (H1) is also typed-in; L-0211 (E1R) measures unrelated unit tests. Six rows L-0209..L-0214 lack executed support; L-0206 is already INVALID by L-0207."
+  },
+  {
+   "plan_section": "1.2",
+   "item": "examples/k1_shared_basis_bench.rs does not exist",
+   "verdict": "confirmed",
+   "derived_by": "EVIDENCE; verifier (EVD-04); spot check C02",
+   "note": "Also absent: examples/b7_first_batch_bench.rs and per-case E1R binaries. DESIGN.md lists them as allowed paths."
+  },
+  {
+   "plan_section": "1.2",
+   "item": "Shared basis and colouring performance were never measured",
+   "verdict": "confirmed",
+   "derived_by": "EVIDENCE",
+   "note": "Only contract tests exist."
+  },
+  {
+   "plan_section": "1.2",
+   "item": "L-0211 E1R is the only row that ran callgrind",
+   "verdict": "corrected",
+   "derived_by": "EVIDENCE; verifier (EVD-03)",
+   "note": "callgrind ran on work_model_contracts unit tests, not on the named solver cases."
+  },
+  {
+   "plan_section": "1.2",
+   "item": "U11 (a): G0 speed uses the 6-thread arm, which is 1.6-2.9x slower than 1 thread",
+   "verdict": "confirmed",
+   "derived_by": "EVIDENCE; DESIGN; CODE",
+   "note": "Recomputed 1.59-2.94 with bitwise identical states; the arm was not fixed by the preregistration (DSG-07)."
+  },
+  {
+   "plan_section": "1.2",
+   "item": "U11 (b): PPSW1 1-thread per-step wall 8-24x (n=3,8), 2.1-2.5x (n=64); implementation maturity; timer includes the starter",
+   "verdict": "corrected",
+   "derived_by": "DESIGN; CODE; verifier (DSG-02, COD-01)",
+   "note": "Ratios reproduce (7.77-13.89, 22.2-24.4, 2.12-2.51). The cause is the per-attempt double-double tableau rebuild: 79.9% of instructions at n=3, about 16% of cycles at n=64. Starter + h0 rule + output are 0.19% of one n=3 solve."
+  },
+  {
+   "plan_section": "1.2",
+   "item": "U11 (c): ACCEPTED_STEP_SIGMA_MAX = 1.10 (ppsw1.rs:57) is an agent rule, paper value 1.5; with the 6-step hysteresis it gives tolerance-insensitive step counts",
+   "verdict": "confirmed",
+   "derived_by": "EVIDENCE; DESIGN; CODE; spot check C12",
+   "note": "Limiter saturation 0.54-1.00 (auditor's scratch rebuild); OD-15 was written for mipeer6 (DSG-09, lead)."
+  },
+  {
+   "plan_section": "1.2",
+   "item": "U11 matched-error step ratio 1.9-7.1x",
+   "verdict": "confirmed",
+   "derived_by": "EVIDENCE; DESIGN; CODE",
+   "note": "1.911 to 7.108; 45/45 result objects reproduce on rerun of the recorded binary."
+  },
+  {
+   "plan_section": "1.2",
+   "item": "U11 HOLD is valid but is not a method-level conclusion for the large regime",
+   "verdict": "confirmed",
+   "derived_by": "DESIGN; CODE",
+   "note": "HOLD holds on either arm (median speed 0.00634 at 6 threads, 0.0166 at 1)."
+  },
+  {
+   "plan_section": "1.2",
+   "item": "SUNDIALS is installed although U11 recorded it as not installed",
+   "verdict": "confirmed",
+   "derived_by": "EVIDENCE; DESIGN; spot check C05",
+   "note": "libsundials-dev 6.4.1; literal string at evaluate.py:121."
+  },
+  {
+   "plan_section": "1.2",
+   "item": "Regime mismatch: evaluation at n <= 64 (sometimes 1D n <= 400); RHS share 1-11%; no large, expensive-RHS or 2D/3D matched-error evaluation",
+   "verdict": "corrected",
+   "derived_by": "DESIGN; verifier (DSG-05)",
+   "note": "87 evaluations tabulated: 16 have n > 1000 but none is a stiff cross-method matched-error run; matched-error maximum n = 400; nine 2D/3D cases exist on the switcher line (n <= 302), seven reference-disputed; 0 with an expensive RHS or a preconditioner. The conclusion holds."
+  },
+  {
+   "plan_section": "1.2",
+   "item": "G0 (research gate) and release readiness were bundled in one HOLD",
+   "verdict": "not_checked",
+   "derived_by": "-",
+   "note": "Addressed by owner decision OD-L1-4, not audited."
+  },
+  {
+   "plan_section": "1.2",
+   "item": "Lineage document errors: L10 PR135-147 attribution, H14/H15 paths, DICTIONARY NOT_PORTED meaning",
+   "verdict": "not_checked",
+   "derived_by": "-",
+   "note": "No dimension examined these."
+  },
+  {
+   "plan_section": "1.2",
+   "item": "dense_output_v2.rs.rej is tracked",
+   "verdict": "confirmed",
+   "derived_by": "CODE; spot check C11",
+   "note": "Plus research/production_reaudit_20261021/evidence/port/dense_patch_context.rej."
+  },
+  {
+   "plan_section": "1.3",
+   "item": "Ten or more frontends coexist with different option and result types",
+   "verdict": "confirmed",
+   "derived_by": "CODE; spot check C11",
+   "note": "10 entry structs, 6 result structs, 18 pub fn solve*."
+  },
+  {
+   "plan_section": "1.3",
+   "item": "MethodRegistry describes 6 methods but is not used for routing; select hardcodes DOPRI5/RODAS5P",
+   "verdict": "confirmed",
+   "derived_by": "CODE",
+   "note": "Extended by COD-03: admission and select disagree in 9 executed cases."
+  },
+  {
+   "plan_section": "1.3",
+   "item": "BDF, Radau, PEXPRB, lagged, small/batch, SABR, homotopy, transactional, PTSW2B, PPSW1-MF, vigilode-coupled unreachable from the facade; Tier::Performance equals Protected",
+   "verdict": "confirmed",
+   "derived_by": "CODE",
+   "note": ""
+  },
+  {
+   "plan_section": "1.3",
+   "item": "Facade RODAS5P paths are sequential with no per-phase timers",
+   "verdict": "confirmed",
+   "derived_by": "CODE",
+   "note": ""
+  },
+  {
+   "plan_section": "1.3",
+   "item": "Switcher router: Tier2/3/4/Protected call the same Rodas5p::solve; switching failure always MaxStepsReached",
+   "verdict": "confirmed",
+   "derived_by": "CODE; spot check C09",
+   "note": "Tier3Exponential is never produced. Read only, not built."
+  },
+  {
+   "plan_section": "1.3",
+   "item": "3D and sphere operators exist only in test files; vigilode-bench and vigilode-hybrid are not workspace members",
+   "verdict": "confirmed",
+   "derived_by": "EVIDENCE; CODE; spot check C11",
+   "note": "src/mol/mod.rs is a 3-line stub."
+  },
+  {
+   "plan_section": "1.4",
+   "item": "PPSW1 matrix-free W has no crossover (n <= 400)",
+   "verdict": "confirmed",
+   "derived_by": "DESIGN; EVIDENCE (byte-identical regeneration)",
+   "note": "Regime statement only: unpreconditioned GMRES against dense LU on a tridiagonal 1D problem (DSG-06, lead)."
+  },
+  {
+   "plan_section": "1.4",
+   "item": "R7 transactional q2 4.75x slower; C5 graph-Schur 2.24x slower",
+   "verdict": "confirmed",
+   "derived_by": "DESIGN",
+   "note": "RESULTS.json fields give 4.746 and 2.242; three source models with n <= 3."
+  },
+  {
+   "plan_section": "1.4",
+   "item": "Lagged LU kill gate (HIRES fails, Brusselator passes); lane batch 0.93x",
+   "verdict": "confirmed",
+   "derived_by": "DESIGN",
+   "note": "Ledger rows L-0141 and L-0089 read; raw files not re-parsed."
+  },
+  {
+   "plan_section": "1.4",
+   "item": "R6 sweep, diagonal SDC, the five exact tableau facts, the cost-structure model and the 1D Schwarz toy",
+   "verdict": "not_checked",
+   "derived_by": "-",
+   "note": "Outside the audit; tableau facts belong to V05, the toy is declared not evidence."
+  },
+  {
+   "plan_section": "1.5",
+   "item": "No CI or independent reproduction of the current head",
+   "verdict": "confirmed",
+   "derived_by": "EVIDENCE; spot check C03",
+   "note": "0 of 31 workflows trigger on a research-branch push. This audit regenerated U03/U04/U10/U11 results and re-ran three test targets."
+  },
+  {
+   "plan_section": "1.5",
+   "item": "Protected RODAS5P has the same step counts as Julia Rodas5P (228 = 228, 164 vs 162)",
+   "verdict": "corrected",
+   "derived_by": "EVIDENCE; DESIGN; verifier (DSG-03)",
+   "note": "True at rtol 1e-8 only. At 1e-4 the benchmark arm takes 1.44-3.08x the steps because 99 accepted steps per run are grid landings; Julia rows carry no error; dirty build."
+  },
+  {
+   "plan_section": "1.5",
+   "item": "Per-step cost similar to Hairer RODAS",
+   "verdict": "not_checked",
+   "derived_by": "-",
+   "note": "No dimension re-derived it."
+  },
+  {
+   "plan_section": "3.1",
+   "item": "V02: supersede the four synthetic rows with INVALID rows",
+   "verdict": "corrected",
+   "derived_by": "EVIDENCE; verifier (EVD-02, EVD-03)",
+   "note": "The set is L-0209..L-0214 (six rows)."
+  },
+  {
+   "plan_section": "3.1",
+   "item": "V02: zero public name collisions; Jacobian::SparseJvp makes the match at selection.rs:306 non-exhaustive",
+   "verdict": "confirmed",
+   "derived_by": "CODE",
+   "note": "PeerOde::lower has a wildcard arm and would refuse SparseJvp as UnsupportedJacobian."
+  },
+  {
+   "plan_section": "3.1",
+   "item": "V13: independent CI through production.yml workflow_dispatch",
+   "verdict": "refuted",
+   "derived_by": "EVIDENCE; spot check C03",
+   "note": "production.yml is absent on origin/main (local ref, no fetch); only a pull request would run it."
+  },
+  {
+   "plan_section": "-",
+   "item": "U03, U04, U09, U10, U11 results are backed by executed runs",
+   "verdict": "confirmed",
+   "derived_by": "EVIDENCE; DESIGN; CODE",
+   "note": "U03/U04/U10/U11 result files and reference.json regenerate byte-identically; 3060 U03 values and 5 U09 records reproduce at head; pass counts 18/6/5."
+  },
+  {
+   "plan_section": "-",
+   "item": "U11 preregistration was pushed before any holdout run",
+   "verdict": "not_checked",
+   "derived_by": "EVIDENCE; spot check C13",
+   "note": "Local commit order holds (745ffafb 09:28, runs 09:34, 074a5699 09:36); the push time is not verifiable locally."
+  }
+ ],
+ "plan_items_by_dimension": {
+  "EVIDENCE": [
+   {
+    "item": "1.1 ledger split: unification line ends at L-0204 with 0 U rows; switcher holds L-0205..L-0214",
+    "verdict": "confirmed",
+    "note": "LOOP adds only L-0300 (baseline). Ids 143-145 unused. Program EVIDENCE_LEDGER.json has no U record either."
+   },
+   {
+    "item": "1.2 eval_k1/eval_c1/eval_b7 are simulate_cell models and eval_d1 holds a literal 14/24",
+    "verdict": "corrected",
+    "note": "K1 and C1 use simulate_cell; B7 is a plain literal table; D1 is literal throughout (registered cells too). All four: subprocess 0."
+   },
+   {
+    "item": "1.2 synthetic ledger rows are L-0209, L-0214, L-0210, L-0213",
+    "verdict": "corrected",
+    "note": "L-0212 (H1) is also synthetic; L-0206 was synthetic and is already INVALID. Six rows of L-0205..L-0214 lack executed support when L-0211 is included."
+   },
+   {
+    "item": "1.2 examples/k1_shared_basis_bench.rs required by DESIGN.md X3 does not exist",
+    "verdict": "confirmed",
+    "note": "Also absent: examples/b7_first_batch_bench.rs (X10) and the per-case example binaries of X11."
+   },
+   {
+    "item": "1.2 shared basis and colouring performance were never measured",
+    "verdict": "confirmed",
+    "note": "Only contract tests exist (shared_basis_mf_contracts, sparse_jvp_contracts); no Ir, wall or matched-error run at n=256 or 10^4."
+   },
+   {
+    "item": "1.2 L-0211 E1R is the only row that ran callgrind",
+    "verdict": "corrected",
+    "note": "callgrind ran, but on unit tests of work_model_contracts selected by name; the named solver cases were not executed (EVD-03)."
+   },
+   {
+    "item": "1.2 U11: 6-thread arm 1.6-2.9x slower than 1-thread; PPSW1 1-thread per-step wall 8-24x (n=3,8) and 2.1-2.5x (n=64) of RODAS5P",
+    "verdict": "confirmed",
+    "note": "From EVALUATION.json rows: 1.59-2.94; 7.8-24.4; 2.1-2.5. Wall is diagnostic_only."
+   },
+   {
+    "item": "1.2 U11 says SUNDIALS is not installed, but it is",
+    "verdict": "confirmed",
+    "note": "libsundials-dev 6.4.1, libsundials_cvode.so.6 present; the string is a literal at evaluate.py:121."
+   },
+   {
+    "item": "1.2 ACCEPTED_STEP_SIGMA_MAX = 1.10 at ppsw1.rs:57",
+    "verdict": "confirmed",
+    "note": "Line 57 at loop head; origin of the value (agent rule versus paper) not checked in this dimension."
+   },
+   {
+    "item": "1.3 vigilode-bench and vigilode-hybrid are not workspace members",
+    "verdict": "confirmed",
+    "note": "Cargo.toml members: 7 crates without them; vigilode-bench has its own Cargo.lock."
+   },
+   {
+    "item": "1.5 no CI or independent reproduction of the current head",
+    "verdict": "confirmed",
+    "note": "0 of 31 workflows trigger on a research-branch push; U11 report itself lists the independent rerun as NOT_RUN. This audit re-ran three targets and regenerated U03/U04/U10/U11 results."
+   },
+   {
+    "item": "1.5 protected RODAS5P takes the same number of steps as Julia Rodas5P (Brusselator 228 = 228, Robertson 164 vs 162)",
+    "verdict": "corrected",
+    "note": "True at rtol 1e-8 only; at 1e-4: 105 vs 46 and 111 vs 36 because the benchmark arm lands on a 101-point grid; built from a dirty tree."
+   },
+   {
+    "item": "3.1 V02: supersede the four synthetic rows L-0209/0210/0213/0214 with INVALID rows",
+    "verdict": "corrected",
+    "note": "Set should be L-0209, L-0210, L-0211, L-0212, L-0213, L-0214."
+   },
+   {
+    "item": "3.1 V13: independent CI through production.yml workflow_dispatch if possible",
+    "verdict": "refuted",
+    "note": "production.yml is absent on origin/main (default branch, 2026-08-26), so dispatch is unavailable; a pull request is the only hosted route."
+   },
+   {
+    "item": "U03, U04, U09, U10, U11 results are backed by executed runs",
+    "verdict": "confirmed",
+    "note": "Byte-identical regeneration of 5 result files; 3060 U03 values and 5 U09 records reproduced at head; pass counts 18/6/5 equal the logs."
+   },
+   {
+    "item": "U11 preregistration was pushed before any holdout run",
+    "verdict": "not_checked",
+    "note": "Commit order holds locally (745ffafb 09:28:25, runs logged 09:34, evaluation 074a5699 09:36:12); the push time cannot be verified without the remote."
+   }
+  ],
+  "DESIGN": [
+   {
+    "item": "1.2 U11 (a): G0 speed verdict uses the 6-thread arm; 6 threads are 1.6-2.9x slower than 1 thread at n=3/8/64",
+    "verdict": "confirmed",
+    "note": "evaluate.py:88-89 uses ppsw1_t6 only; recomputed t6/t1 wall 1.59-2.94; states bitwise identical; arm not fixed by the preregistration (DSG-07)."
+   },
+   {
+    "item": "1.2 U11 (b): PPSW1 1-thread per-step wall 8-24x RODAS5P (n=3,8), 2.1-2.5x (n=64); fewer solves/RHS so it is implementation maturity; timer includes the starter",
+    "verdict": "corrected",
+    "note": "Ratios recomputed: 7.77-13.9 (n=8), 22.2-24.4 (n=3), 2.12-2.51 (n=64). Fewer RHS/solves holds per attempt (6 vs 8) but totals at equal tolerance are 1.34-6.92x (RHS) and 1.78-8.86x (LU). Dominant cause is the per-attempt double-double tableau rebuild (54.0% of main-thread cycles), not the starter (DSG-02)."
+   },
+   {
+    "item": "1.2 U11 (c): ACCEPTED_STEP_SIGMA_MAX = 1.10 (ppsw1.rs:57) is an agent rule (OD-15/25), paper value 1.5; with 6-step hysteresis it gives tolerance-insensitive step counts; step ratio mixes method and controller",
+    "verdict": "confirmed",
+    "note": "Measured: 0.0774-0.146 of accepted steps at the cap, limiter saturation 0.541-1.0; OD-15 was written for mipeer6 (DSG-01, DSG-09)."
+   },
+   {
+    "item": "1.2: HOLD verdict valid but not a method-level conclusion for the large regime",
+    "verdict": "confirmed",
+    "note": "Recomputed G0 values equal the stored ones (max step ratio 7.108, median speed 0.006343); rerun of the pinned binary reproduced 45/45 result objects."
+   },
+   {
+    "item": "1.2: SUNDIALS is installed although U11 recorded it as not installed",
+    "verdict": "confirmed",
+    "note": "ldconfig -p lists libsundials_* and /usr/include/sundials exists; the switcher bench links CVODE 6.4.1."
+   },
+   {
+    "item": "1.2 regime mismatch: candidate evaluation at n <= 64 (sometimes 1D n <= 400); RHS share 1-11%; no large, expensive-RHS or 2D/3D matched-error evaluation",
+    "verdict": "corrected",
+    "note": "87 evaluations tabulated: 16 have n > 1000 (none a stiff cross-method matched-error run), matched-error maximum n = 400, 9 2D/3D rows exist on the switcher line at n <= 302 with 7 of 9 reference-disputed, expensive RHS 0. RHS share 0.011-0.108 confirmed from L-0113."
+   },
+   {
+    "item": "1.2: synthetic evidence in switcher eval_k1.py etc. (simulate_cell, err = 0.42*rtol)",
+    "verdict": "confirmed",
+    "note": "eval_k1.py:12 and :50 read; K1 cells (1D/2D heat) are therefore excluded from the regime table. Other eval_* scripts not checked in this dimension."
+   },
+   {
+    "item": "1.4: PPSW1 matrix-free W has no crossover (n <= 400)",
+    "verdict": "confirmed",
+    "note": "Recomputed from the raw log; regime statement only (DSG-06)."
+   },
+   {
+    "item": "1.4: R7 transactional q2 4.75x slower; C5 graph-Schur 2.24x slower",
+    "verdict": "confirmed",
+    "note": "RESULTS.json fields give 1/0.2107 = 4.746 and 2.242; scope is three small source models with n <= 3."
+   },
+   {
+    "item": "1.4: lagged LU kill gate (HIRES fails, Brusselator passes); lane batch 0.93x",
+    "verdict": "confirmed",
+    "note": "Ledger rows L-0141 (0.588 > 0.4 on HIRES, 0.244 on Brusselator n = 100) and L-0089 (0.937/0.924) read; raw files not re-parsed."
+   },
+   {
+    "item": "1.5: protected RODAS5P has the same step counts as Julia Rodas5P on small problems (Brusselator 228 = 228, Robertson 164 vs 162) and per-step cost similar to Hairer RODAS",
+    "verdict": "corrected",
+    "note": "True only at rtol 1e-8. At rtol 1e-4 the ratio is 1.44-3.08 because 99 accepted steps per run are grid landings; Julia rows have no error; tables are matched-tolerance (DSG-03)."
+   },
+   {
+    "item": "1.3: 3D and spherical operators exist only in test files; vigilode-bench is not a workspace member",
+    "verdict": "not_checked",
+    "note": "Outside this dimension except that all 2D/3D evaluations found are in the switcher bench crate."
+   }
+  ],
+  "CODE": [
+   {
+    "item": "1.3 ten or more frontends coexist with different option and result types",
+    "verdict": "confirmed",
+    "note": "10 solver entry structs, 6 result structs, 18 pub fn solve* in crates/vigilode/src."
+   },
+   {
+    "item": "1.3 MethodRegistry describes 6 methods but is not used for routing; GeneralOde::select (selection.rs:176) hardcodes DOPRI5/RODAS5P; default policy is DOPRI5",
+    "verdict": "confirmed",
+    "note": "6 descriptors (selection.rs:509-665); only PeerOde::admission (:859-863) and tests call it. Extended by COD-03: admission also disagrees with select in 9 executed cases."
+   },
+   {
+    "item": "1.3 BDF, Radau, PEXPRB54s4, lagged, small/batch, SABR, homotopy, transactional, PTSW2B, PPSW1 matrix-free and vigilode-coupled are unreachable from the facade; Tier::Performance is the Protected path",
+    "verdict": "confirmed",
+    "note": "No reference in crates/vigilode/src except registry route strings; vigilode/Cargo.toml has no vigilode-coupled dependency; PeerOde never calls with_linear_backend; solve.rs:593 and capabilities.rs:100 set tier_executed = Protected (documented)."
+   },
+   {
+    "item": "1.3 facade RODAS5P paths are sequential and have no per-phase timers",
+    "verdict": "confirmed",
+    "note": "No ParallelExecution, rayon, threads or Instant in solve.rs; only PeerOde takes threads (selection.rs:945)."
+   },
+   {
+    "item": "1.3 switcher unified/router.rs: Tier2/3/4/Protected all call the same Rodas5p::solve; switching failure always maps to MaxStepsReached",
+    "verdict": "confirmed",
+    "note": "router.rs:63-75, :193, :285-291. Tier3Exponential is never produced by the analyzer. Extended by COD-05/06/07."
+   },
+   {
+    "item": "1.3 3D and sphere operators exist only in test files; vigilode-bench and vigilode-hybrid are not workspace members",
+    "verdict": "confirmed",
+    "note": "sphere/lat-lon hits only under tests/; src/mol/mod.rs is a 3-line stub; both crates have their own [workspace] and Cargo.lock."
+   },
+   {
+    "item": "1.2(a) the 6-thread PPSW1 arm is 1.6-2.9x slower than the 1-thread arm at n=3/8/64",
+    "verdict": "confirmed",
+    "note": "Recomputed from the recorded rows: 1.59-2.94. Cause located (COD-08)."
+   },
+   {
+    "item": "1.2(b) PPSW1 1-thread per-step wall is 8-24x RODAS5P at n=3,8 and 2.1-2.5x at n=64; implementation maturity; the timer includes the Radau/Newton starter",
+    "verdict": "corrected",
+    "note": "Ratios reproduce (7.77-24.38 and 2.12-2.51). The cause is specific, not general maturity: tableau(sigma) recomputation is 80.0% of PPSW1 instructions per attempt; allocations are 5.5%; the starter, h0 rule and output together are 0.19% of one solve, so the starter in the timer is negligible."
+   },
+   {
+    "item": "1.2(c) ACCEPTED_STEP_SIGMA_MAX = 1.10 at ppsw1.rs:57 with a 6-step hysteresis",
+    "verdict": "confirmed",
+    "note": "ppsw1.rs:57, HYSTERESIS_HISTORY = 6 at :841, keep-h rule at :946-952. Whether 1.10 is needed for stability is not a code question (V10)."
+   },
+   {
+    "item": "1.2 U11 matched-error step ratio 1.9-7.1x",
+    "verdict": "confirmed",
+    "note": "EVALUATION.json g0.steps_le_1_2x: evidence min 1.911, max 7.108. Raw equal-tolerance accepted-step ratios are 1.79-11.15. All 45 recorded result objects reproduce bit-identically on rerun of the recorded binary (sha256 matches)."
+   },
+   {
+    "item": "1.2 dense_output_v2.rs.rej is tracked",
+    "verdict": "confirmed",
+    "note": "Plus research/production_reaudit_20261021/evidence/port/dense_patch_context.rej."
+   },
+   {
+    "item": "1.1 only crates/rodas5p-integrators/src/lib.rs is modified on both sides; switcher moved the toolchain to stable",
+    "verdict": "confirmed",
+    "note": "comm of git diff --name-only against merge-base 569ce026 over crates, Cargo.toml, Cargo.lock, rust-toolchain.toml gives that single file; 93392249:rust-toolchain.toml has channel = \"stable\"."
+   },
+   {
+    "item": "3.1 V02: zero public name collisions; one semantic conflict, Jacobian::SparseJvp makes the match at selection.rs:306 non-exhaustive",
+    "verdict": "confirmed",
+    "note": "None of the 15 public names added by LOOP selection.rs occurs in the switcher crate; the match at selection.rs:306-310 has no wildcard arm. PeerOde::lower (:876-898) has one and would silently refuse SparseJvp as UnsupportedJacobian."
+   },
+   {
+    "item": "1.1 switcher edited protected files sequential.rs, rodas5p_fast.rs, adaptive.rs",
+    "verdict": "not_checked",
+    "note": "Lineage dimension."
+   }
+  ]
+ },
+ "cross_dimension_reconciliation": [
+  {
+   "topic": "Share of the tableau rebuild",
+   "dimensions": [
+    "DSG-02",
+    "COD-01"
+   ],
+   "resolution": "Not a contradiction: 54.0% is main-thread cycles over the whole holdout (three arms, three problems); 79.9% is PPSW1 instructions per attempt at n=3. The cost is fixed (~158k instructions, 78k-89k cycles per attempt), so the share falls with n: about 68-71% at n=3, 59-62% at n=8, 16% at n=64."
+  },
+  {
+   "topic": "Number of ledger rows to supersede",
+   "dimensions": [
+    "EVD-01",
+    "EVD-02",
+    "EVD-03"
+   ],
+   "resolution": "Five typed-in rows (L-0209, L-0210, L-0212, L-0213, L-0214) plus one mis-measured row (L-0211) = six rows L-0209..L-0214. EVD-02's 'five rows' counts the typed-in ones only."
+  },
+  {
+   "topic": "Plan 1.2 (b) cause of the per-step wall ratio",
+   "dimensions": [
+    "DSG-02",
+    "COD-01"
+   ],
+   "resolution": "Both dimensions replace 'implementation maturity and starter in the timer' by the tableau rebuild; the starter share is 0.19% at n=3 (COD) but the HIRES linear-fit intercept is 19.8% of its loosest run (DSG-02 verifier), so 'negligible starter' is established for n=3 only."
+  },
+  {
+   "topic": "2D/3D evidence",
+   "dimensions": [
+    "DSG-04",
+    "DSG-05",
+    "EVD-09"
+   ],
+   "resolution": "Consistent: spatial grid v2 and battery v3 each have 88 MATCHED rows, all on the two sphere-photon problems; v1 has 0."
+  }
+ ],
+ "effects_on_recorded_verdicts": {
+  "stay_valid": [
+   {
+    "verdict": "U11 production holdout: HOLD (G0)",
+    "basis": "Fails the step criterion on its own (1.911-7.108 against <= 1.2) and the speed criterion on either arm; 45/45 result objects reproduced by three agents.",
+    "findings": [
+     "DSG-01",
+     "DSG-02",
+     "COD-01",
+     "DSG-07",
+     "EVD-10"
+    ],
+    "caveat": "The two G0 sub-criteria depth and fallback are literal passes in evaluate.py and must not be quoted as measured."
+   },
+   {
+    "verdict": "U03 Peer qualification numbers",
+    "basis": "RESULTS.json and NONLINEAR_RESULTS.json regenerate; 18 tests pass; 3060 values reproduce at head.",
+    "findings": [
+     "EVD-10"
+    ],
+    "caveat": "RESULTS.json carries a stale ppsw1.rs input hash."
+   },
+   {
+    "verdict": "U04 NO_CROSSOVER_MEASURED for n <= 400",
+    "basis": "RESULTS.json regenerates byte-identically.",
+    "findings": [
+     "DSG-06"
+    ],
+    "caveat": "Regime statement, see limited_in_scope."
+   },
+   {
+    "verdict": "U09 geometry contracts and U10 switch-error transport",
+    "basis": "5 tests pass and 5 QUAL records reproduce; transport_results.json regenerates byte-identically.",
+    "findings": [
+     "EVD-10"
+    ],
+    "caveat": "U09 has no machine-readable results file; U10 is a pure Python model."
+   },
+   {
+    "verdict": "L-0207 INVALID (supersedes L-0206)",
+    "basis": "Already recorded on the switcher line.",
+    "findings": [
+     "EVD-01"
+    ],
+    "caveat": ""
+   },
+   {
+    "verdict": "L-0205 / L-0208 switcher admission",
+    "basis": "Scripts execute the solver; AFTER.json and GATES.json hash-match the ledger.",
+    "findings": [],
+    "caveat": "The 216 raw files are untracked (disk only), so the row cannot be replayed from git."
+   },
+   {
+    "verdict": "v3 qualification conclusion NOT_ESTABLISHED",
+    "basis": "Conservative and unaffected by the receipt error.",
+    "findings": [
+     "EVD-09"
+    ],
+    "caveat": "Receipts are typed text without logs."
+   },
+   {
+    "verdict": "L-0300 loop baseline FAIL",
+    "basis": "Valid as a record of the default-thread run.",
+    "findings": [
+     "EVD-08"
+    ],
+    "caveat": "The two failures are a test-harness race (lead), not a solver defect."
+   },
+   {
+    "verdict": "Defaults: WorkModel V1, entry_margin / return_margin None",
+    "basis": "No invalidated row had changed a default.",
+    "findings": [
+     "EVD-02",
+     "EVD-03"
+    ],
+    "caveat": ""
+   }
+  ],
+  "limited_in_scope": [
+   {
+    "verdict": "U11 step ratios 1.9-7.1",
+    "limit": "Property of the candidate as configured (1.10 cap, 6-step history, h0 rule), not of PPSW1-6b.",
+    "findings": [
+     "DSG-01",
+     "DSG-09"
+    ]
+   },
+   {
+    "verdict": "U11 per-step wall ratios and speed_vs_production",
+    "limit": "Dominated at n=3 and n=8 by the per-attempt tableau rebuild; 6-thread arm measures pool wake-up; non-repository build profile. Not method-level numbers and not extrapolable.",
+    "findings": [
+     "DSG-02",
+     "COD-01",
+     "COD-08",
+     "DSG-07",
+     "DSG-10"
+    ]
+   },
+   {
+    "verdict": "U04 no crossover",
+    "limit": "Unpreconditioned GMRES against dense LU on one 1D tridiagonal family at one tolerance.",
+    "findings": [
+     "DSG-06"
+    ]
+   },
+   {
+    "verdict": "U06 unified capability registry",
+    "limit": "A descriptive table; it does not reproduce GeneralOde::select (9 executed disagreements).",
+    "findings": [
+     "COD-03"
+    ]
+   },
+   {
+    "verdict": "U07 PeerOde adapter claims (typed refusal before callbacks, capability constraint) and every matched-error PPSW1 number",
+    "limit": "Admission ignores the provider form; failures are untyped strings; the starter interval is not error controlled.",
+    "findings": [
+     "COD-02",
+     "COD-04"
+    ]
+   },
+   {
+    "verdict": "Negative results on parallel stages, matrix-free solves and LU reuse",
+    "limit": "Small or 1D problems with cheap RHS; nothing stiff and matched-error above n = 400.",
+    "findings": [
+     "DSG-04"
+    ]
+   },
+   {
+    "verdict": "Switcher UNIFIED_BENCHMARK_REPORT and the plan's Julia step-parity sentence",
+    "limit": "Matched tolerance, grid-clipped VigilODE arms, Julia rows without error; parity holds at rtol 1e-8 only.",
+    "findings": [
+     "DSG-03",
+     "EVD-09"
+    ]
+   },
+   {
+    "verdict": "Switcher PDE battery v3",
+    "limit": "Matched rows for 2 of 9 problems (sphere-photon 2D/3D), n <= 302, 6-47 steps per run.",
+    "findings": [
+     "DSG-05"
+    ]
+   },
+   {
+    "verdict": "Switcher 'unified production frontend' (93392249)",
+    "limit": "Executed engines are DOPRI5, Rodas5p::solve and SwitchingSolver; tier names are labels. Read only, not built.",
+    "findings": [
+     "COD-05",
+     "COD-06",
+     "COD-07"
+    ]
+   },
+   {
+    "verdict": "Switcher X1-X11 'gate passed' statements",
+    "limit": "The gate tool was edited in gated commits (lead).",
+    "findings": [
+     "EVD-05"
+    ]
+   },
+   {
+    "verdict": "L-0211 third gate (transition_39 w_v2 = 264.2 WU, not below 200)",
+    "limit": "Independent of callgrind but computed from typed-in counters.",
+    "findings": [
+     "EVD-03"
+    ]
+   }
+  ],
+  "invalid_as_evidence": [
+   {
+    "verdict": "L-0209 (K1 FAIL), L-0210 (B7 FAIL), L-0213 (D1 FAIL), L-0214 (C1 PASS)",
+    "reason": "No process is started and no file is read; every number is a literal or arithmetic on literals. The FAIL rows are not negative results and the PASS has no support.",
+    "findings": [
+     "EVD-01",
+     "EVD-04"
+    ],
+    "confirmation": "plan stage + EVIDENCE auditor + spot check; not sent to a verifier"
+   },
+   {
+    "verdict": "L-0212 (H1 FAIL)",
+    "reason": "Typed-in work units without provenance.",
+    "findings": [
+     "EVD-02",
+     "EVD-04"
+    ],
+    "confirmation": "verifier"
+   },
+   {
+    "verdict": "L-0211 (E1R FAIL) as a WorkModel V2 calibration",
+    "reason": "callgrind measured unit tests unrelated to the named cases; WorkModel V2 is neither confirmed nor refuted.",
+    "findings": [
+     "EVD-03",
+     "EVD-04"
+    ],
+    "confirmation": "verifier"
+   },
+   {
+    "verdict": "v3 receipt statement '953 matched rows, all DIAGNOSTIC_ONLY'",
+    "reason": "The cited raw file has 1040 matched rows: 952 DIAGNOSTIC_ONLY and 88 MATCHED.",
+    "findings": [
+     "EVD-09"
+    ],
+    "confirmation": "EVIDENCE auditor + spot check C07"
+   },
+   {
+    "verdict": "U11 not_run reason 'SUNDIALS not installed'",
+    "reason": "libsundials-dev 6.4.1 is installed; the CVODE comparator was omitted without a valid reason.",
+    "findings": [
+     "EVD-10"
+    ],
+    "confirmation": "plan stage + two auditors + spot check C05"
+   },
+   {
+    "verdict": "Plan V13 route 'production.yml workflow_dispatch'",
+    "reason": "The workflow is absent on the default branch.",
+    "findings": [
+     "EVD-06"
+    ],
+    "confirmation": "EVIDENCE auditor + spot check C03 (local refs)"
+   }
+  ]
+ },
+ "not_executed": [
+  "Switcher line (93392249): nothing was built or run; COD-05, COD-06, COD-07 are source readings. The V02 trial merge, the 1.94.1 build and the bitwise oracle are not part of this audit.",
+  "Full test suites, clippy and fmt were not run by the audit; three test targets were re-run (18/6/5 passed). The 251-target integrators suite has not been run in loop L1.",
+  "Clean-clone build and hosted CI: not run (no workflow triggers; dispatch unavailable).",
+  "E1R: nothing was re-run under callgrind; EVD-03 rests on the stored RESULTS.json and the script source.",
+  "COD-04 probe counts (4 JVP callbacks, 52 rejections, 54 Jacobian callbacks) were not re-executed by the verifier.",
+  "Twelve findings were not sent to a verifier and stay leads: EVD-05, EVD-06, EVD-08, EVD-09, EVD-10, DSG-06, DSG-08, DSG-09, DSG-10, COD-06, COD-07, COD-10.",
+  "EVD-01 (critical) was not sent to a verifier; C1 and D1 scripts were read by one auditor plus the spot check.",
+  "Plan items not checked by any dimension: lineage document errors (L10, H14/H15, DICTIONARY), per-step cost against Hairer RODAS, the gate-bundling statement, the section 1.4 theory facts and toy, REI content claims, the push time of the U11 preregistration.",
+  "Protected-file changes on the switcher line were checked by the synthesis spot check only (file list and line counts, not content).",
+  "The 35 other test files that use a global allocation counter were not examined (EVD-08).",
+  "The U11 CVODE and Julia comparators, isolated-process RSS and the independent reviewer rerun stay NOT_RUN as recorded by U11; this audit reran the recorded binary only.",
+  "Wall-clock values in all three dimensions were taken at load average 15-34 and are diagnostic_only."
+ ],
+ "synthesis_spot_checks": {
+  "log": "research/production_loop_20261116/audit/synthesis_spot_checks.log",
+  "script": "research/production_loop_20261116/audit/synthesis_spot_checks.sh",
+  "log_sha256": "38df481bd0bd0aa54cfd986dbab5e34048f75851dd7704f7c9e160dcfc8955d9",
+  "nature": "read-only commands run by the synthesis agent on 2026-11-16; a spot check corroborates a finding, it is not the independent verification that the preregistration asks for",
+  "C01_subprocess_occurrences_per_eval_script": {
+   "eval_k1": 0,
+   "eval_b7": 0,
+   "eval_c1": 0,
+   "eval_d1": 0,
+   "eval_h1": 0,
+   "eval_e1r": 3
+  },
+  "C02_switcher_ledger_rows": {
+   "L-0205": {
+    "verdict": "PASS",
+    "supersedes": null,
+    "commit": "a4b08c59"
+   },
+   "L-0206": {
+    "verdict": "PASS",
+    "supersedes": null,
+    "commit": "d164d116"
+   },
+   "L-0207": {
+    "verdict": "INVALID",
+    "supersedes": "L-0206",
+    "commit": "4339facc"
+   },
+   "L-0208": {
+    "verdict": "PASS",
+    "supersedes": "L-0205",
+    "commit": "a4b08c59"
+   },
+   "L-0209": {
+    "verdict": "FAIL",
+    "supersedes": null,
+    "commit": "4339facc"
+   },
+   "L-0210": {
+    "verdict": "FAIL",
+    "supersedes": null,
+    "commit": "4339facc"
+   },
+   "L-0211": {
+    "verdict": "FAIL",
+    "supersedes": "L-0205",
+    "commit": "4339facc"
+   },
+   "L-0212": {
+    "verdict": "FAIL",
+    "supersedes": null,
+    "commit": "4339facc"
+   },
+   "L-0213": {
+    "verdict": "FAIL",
+    "supersedes": null,
+    "commit": "4339facc"
+   },
+   "L-0214": {
+    "verdict": "PASS",
+    "supersedes": null,
+    "commit": "4339facc"
+   }
+  },
+  "C02_bench_example_paths_in_tree": 0,
+  "C03_workflow_files_on_origin_main": 4,
+  "C03_production_yml_on_origin_main": false,
+  "C03_workflow_files_at_loop_head": 31,
+  "C04_loop_ledger_rows": 202,
+  "C04_loop_ledger_rows_mentioning_production_unification": 0,
+  "C04_check_research_node_exit": 1,
+  "C07_spatial_grid_v2_matched_rows": 1040,
+  "C07_spatial_grid_v2_diagnostic_only": 952,
+  "C07_spatial_grid_v2_matched": 88,
+  "C08_commits_touching_agent_gate_after_4339facc": 6,
+  "C11_tracked_reject_files": 2,
+  "C11_pub_fn_solve_count": 18,
+  "C14_switcher_only_commits": 52,
+  "C14_loop_only_commits": 138,
+  "C14_switcher_is_ancestor_of_loop": false,
+  "C14_rei_only_commits": 287,
+  "C14_rei_is_ancestor_of_loop": false,
+  "C14_followup_612063db_commits_not_on_switcher_head": 7,
+  "C14_protected_list_files_changed_on_switcher_since_merge_base": 8,
+  "C14_protected_list_files_changed_on_loop_since_merge_base": 1,
+  "C14_lineage_tracks": 14,
+  "C14_distinct_source_commits_cited_by_lineage_tracks": 2,
+  "C14_mentions_in_lineage_json": {
+   "93392249": 0,
+   "612063db": 0,
+   "6844c8fe": 0,
+   "switcher": 0,
+   "rei": 0
+  },
+  "C14_protected_list_files_changed_on_switcher": [
+   "Cargo.toml",
+   "crates/rodas5p-integrators/src/adaptive.rs",
+   "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+   "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+   "crates/rodas5p-integrators/src/sequential.rs",
+   "crates/vigilode/src/lib.rs",
+   "crates/vigilode/src/switching.rs",
+   "rust-toolchain.toml"
+  ]
+ },
+ "volatile_scratch": {
+  "note": "Raw outputs of the dimension audits were written to scratch; small text files were copied to research/production_loop_20261116/audit/raw_scratch with a sha256 manifest. Binaries, perf data and target directories were not copied.",
+  "original_dirs": [
+   "/tmp/claude-1000/evd-audit-l1",
+   "/tmp/claude-1000/dsg-audit",
+   "/tmp/claude-1000/cod-audit"
+  ]
+ }
+}

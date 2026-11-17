@@ -1,0 +1,85 @@
+{
+  "evidence_id": "EV-V3-CERT-BOUNDARY-20261107",
+  "task_id": "V3-CERT-BOUNDARY",
+  "claim_support": [
+    "IMPLEMENTATION_VERIFIED",
+    "NUMERICALLY_CHECKED"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "continue",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "https://github.com/cosmosapjw-quantum/vigilode",
+    "branch": "research/switcher-v2-20261103",
+    "head": "bcf6fcefa8322f7e8d4454ab40498256f4ff1e22",
+    "tree": "076c5d01e8419b1b8f0d88ca2d0de04407e21aa2",
+    "worktree_clean": true
+  },
+  "command_records": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "vigilode-coupled",
+        "--test",
+        "rhs_homotopy_contracts"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-core",
+        "--test",
+        "leja_total_contract"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "conditioned_polynomial_contracts"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-core",
+        "--test",
+        "nonnormal_observers_contracts"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    }
+  ],
+  "result": "69/69 contract tests passed cleanly. Outward interval contraction certificates, normality witness consumer-seam bindings, Gershgorin real symmetric disc inclusions, and nonnormal observer slab jump bounds verified.",
+  "limitations": [
+    "Local contraction certificates apply on specified balls; continuous global validated IVP enclosure across [t0, T] remains NOT_QUALIFIED."
+  ]
+}
+

@@ -1,0 +1,91 @@
+{
+  "schema": "vigilode.adoption-verification.v1",
+  "date": "2026-11-16",
+  "owner_decisions": [
+    "OD-L1-5",
+    "OD-L1-6"
+  ],
+  "tree_commit": "378e738435c520842fd77a2bac580eecabb7de2b",
+  "toolchain": "1.94.1",
+  "steps": {
+    "check_workspace_all_targets": {
+      "log": "research/production_loop_20261116/adoption/logs/a1_check.log",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0,
+      "failed_tests": [],
+      "exit": 0
+    },
+    "facade_core_krylov_allow_added_keys": {
+      "log": "research/production_loop_20261116/adoption/logs/a2_facade_core_krylov.log",
+      "passed": 958,
+      "failed": 1,
+      "ignored": 21,
+      "failed_tests": [
+        "counted_action_records_cold_coefficient_table_without_changing_authority"
+      ],
+      "exit": 101
+    },
+    "integrators_peer_sentinels_client_kit": {
+      "log": "research/production_loop_20261116/adoption/logs/a3_integrators.log",
+      "passed": 245,
+      "failed": 0,
+      "ignored": 5,
+      "failed_tests": [],
+      "exit": 0
+    },
+    "golden_strict_before_regeneration": {
+      "log": "research/production_loop_20261116/adoption/logs/a4_golden_strict_before_bless.log",
+      "passed": 10,
+      "failed": 1,
+      "ignored": 0,
+      "failed_tests": [
+        "production_automatic"
+      ],
+      "exit": 101
+    },
+    "clippy_facade_core": {
+      "log": "research/production_loop_20261116/adoption/logs/a5_clippy_facade_core.log",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0,
+      "failed_tests": [],
+      "exit": 0
+    },
+    "clippy_integrators": {
+      "log": "research/production_loop_20261116/adoption/logs/a6_clippy_integrators.log",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0,
+      "failed_tests": [],
+      "exit": 0
+    },
+    "golden_regeneration": {
+      "log": "research/production_loop_20261116/adoption/logs/a7_golden_bless.log",
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0,
+      "failed_tests": [],
+      "exit": 0
+    },
+    "golden_strict_after_regeneration": {
+      "log": "research/production_loop_20261116/adoption/logs/a8_golden_strict_after_bless.log",
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0,
+      "failed_tests": [],
+      "exit": 0
+    }
+  },
+  "golden_regeneration_scope": {
+    "files_changed": [
+      "M crates/vigilode/tests/golden/default_path/production_automatic.json"
+    ]
+  },
+  "known_after_adoption": [
+    "check-research-node --base 074a5699 reports stall violations for the invalidated switcher nodes and the ungoverned research/qualification directory",
+    "the merged .claude/settings.json and tools/agent_gate.py block edits in a session started inside a fresh worktree of this branch; not edited",
+    "crates/vigilode/src/unified/ labels tiers that all dispatch to Rodas5p::solve (audit COD-05..07); to be replaced or removed in V03",
+    "leja_setup_work_contract is thread-raced (FLAKE_PROBE.json)"
+  ]
+}

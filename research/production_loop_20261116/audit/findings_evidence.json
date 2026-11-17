@@ -1,0 +1,200 @@
+{
+  "schema": "vigilode.loop-l1.audit-findings.v1",
+  "dimension": "EVIDENCE",
+  "id_prefix": "EVD",
+  "date": "2026-11-16",
+  "auditor_scope": "read-only on sources; scripts re-run on copies under /tmp/claude-1000/evd-audit-l1 (ephemeral); three prebuilt test targets re-run with CARGO_TARGET_DIR=/mnt/extdrive/vigilode-loop-20261116/target",
+  "refs": {
+    "loop_worktree": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116 @ 2dc9a2c5778ac5b3ac960b0f6741aa5916122384",
+    "switcher_lineage": "/home/cosmosapjw/vigilode @ 933922495045796c99c530b0f1f1efd8fec83ed0",
+    "merge_base": "569ce02629498fec133db9ce368eb303ba943b69"
+  },
+  "part_a_switcher_script_classification": [
+    {"node": "research/switcher_admission_20261103", "ledger": ["L-0205", "L-0208"], "script": "research/adapter_switcher_economy_20261026/tools/{run_campaign.sh,analyze.py,compare.py}", "class": "EXECUTES_SOLVER", "raw": "research/switcher_admission_20261103/raw/ (216 files) exists on disk only: excluded by .git/info/exclude:8, 0 files tracked; AFTER.json/GATES.json tracked and hash-match the ledger"},
+    {"node": "research/switcher_work_model_v2_20261103", "ledger": ["L-0206", "L-0207"], "script": "eval_work_model.py", "class": "SYNTHETIC", "raw": "none (subprocess calls 0; measured Ir are literals); already superseded INVALID by L-0207"},
+    {"node": "research/k1_shared_krylov_basis_20261104", "ledger": ["L-0209"], "script": "eval_k1.py", "class": "SYNTHETIC", "raw": "none (subprocess 0, file reads 0)"},
+    {"node": "research/b7_first_batch_20261104", "ledger": ["L-0210"], "script": "eval_b7.py", "class": "SYNTHETIC", "raw": "none (literal table of callback counts; no simulate function either)"},
+    {"node": "research/e1r_work_model_v2_20261104", "ledger": ["L-0211"], "script": "eval_e1r.py", "class": "EXECUTES_BINARY_BUT_NOT_THE_SOLVER", "raw": "callgrind out files deleted after parsing (eval_e1r.py:150-152); the measured binary is the unit-test target work_model_contracts, see EVD-03"},
+    {"node": "research/h1_hysteresis_band_20261104", "ledger": ["L-0212"], "script": "eval_h1.py", "class": "SYNTHETIC", "raw": "none (work-unit literals 192/185/340/98/144/118/162/182)"},
+    {"node": "research/d1_stiffness_gate_20261104", "ledger": ["L-0213"], "script": "eval_d1.py", "class": "SYNTHETIC", "raw": "none (all registered-cell counters and off-registry window counts are literals)"},
+    {"node": "research/c1_coloured_assembly_20261104", "ledger": ["L-0214"], "script": "eval_c1.py", "class": "SYNTHETIC", "raw": "none (subprocess 0, file reads 0)"},
+    {"node": "docs/agent/production_solver_qualification_20261106_v2", "ledger": [], "script": "validate_package.py", "class": "STRUCTURAL_VALIDATOR_ONLY", "raw": "EXECUTION_EVIDENCE.json is a typed receipt (commands + verdict strings, no logs); validator exits 1 at current head (pinned HEAD mismatch)"},
+    {"node": "docs/agent/production_solver_qualification_20261107_v3", "ledger": [], "script": "validate_package.py", "class": "STRUCTURAL_VALIDATOR_ONLY", "raw": "13 evidence/*.json receipts list argv + exit_code 0 but store no stdout/stderr log or log hash; only bench/out/*.json is raw data; validator exits 0 (18 manifest-bound files)"},
+    {"node": "bench/ + crates/vigilode-bench", "ledger": [], "script": "crates/vigilode-bench (wp, report subcommands; FFI to Hairer RADAU5/RODAS, DVODE, CVODE, diffsol), bench/julia_comparator_bench.jl, bench/build_*_comparison.py (read raw JSON only)", "class": "EXECUTES_SOLVER", "raw": "bench/out/*.json tracked (rows with per-repetition wall_ns, counters, provenance, binary_sha256); 4 of 5 wp files built from a dirty tree (git_dirty true, dirty_source_allowed true)"}
+  ],
+  "ledger_rows_resting_on_synthetic_scripts": ["L-0206 (already INVALID via L-0207)", "L-0209", "L-0210", "L-0212", "L-0213", "L-0214"],
+  "ledger_rows_with_misattributed_measurement": ["L-0211"],
+  "design_prescribed_bench_examples": {
+    "examples/k1_shared_basis_bench.rs (DESIGN.md:1936)": "ABSENT in tree and in all history (git log --all -- '*k1_shared_basis_bench*' empty)",
+    "examples/b7_first_batch_bench.rs (DESIGN.md:2676)": "ABSENT in tree and in all history",
+    "frozen example binary per case for E1R (DESIGN.md:2709)": "ABSENT; eval_e1r.py runs test filters of work_model_contracts instead"
+  },
+  "part_b_unification_reproduction": {
+    "method": "copied research/production_unification_20261115 to scratch with crates/ symlinked read-only, ran the included scripts with python3 -I, compared bytes with the committed files",
+    "U03_peer_qualification": {
+      "summarize.py -> RESULTS.json": "identical except inputs_sha256 of crates/rodas5p-integrators/src/ppsw1.rs (committed 758f712c = blob at 2f19cf85; head d2b27044 after U04 commit 715a3f6f)",
+      "summarize_nonlinear.py -> NONLINEAR_RESULTS.json": "byte-identical",
+      "rerun_of_test_target": "cargo test: 18 passed, 0 failed (logs/u03_green.log: 18 passed); binary re-run with --nocapture --test-threads=1: 15 QUAL records, 3060 non-wall leaves compared with logs/u03_green.log, 0 differences",
+      "report_samples_matched": ["coefficient max diff 1.4e-16 (1.3754e-16)", "q02 degree-5 error 1.8e-12 / degree-6 1.0e-4", "pr_-1e4 359 steps at tol 1e-3..1e-9, achieved 8.3e-12", "F1 achieved 7.4e-8 at h_max half interval", "matched-error table RHS 1.9-2.6 / 1.4-2.5 / 3.3-5.6, LU 3.0-4.2 / 2.3-4.1 / 5.4-9.2, cp model 0.66-0.89 / 0.47-0.85 / 1.1-1.9", "U_ref 4.6e-14, 1.8e-11, 4.2e-12, 2.1e-10", "Robertson caller h0: E 3.17e-10"]
+    },
+    "U04_matrix_free_w": {
+      "summarize_u04.py -> RESULTS.json": "byte-identical",
+      "process_metrics_summary.json": "re-derived from logs/u04_process_metrics.jsonl (36 rows, all exit 0) with the script's own aggregation: equal (12 entries); the measuring half of process_metrics.py (cargo runs) was not re-executed",
+      "report_samples_matched": ["dense median s 0.0077/0.019/0.061/0.29/1.60/11.9", "best admissible speed 0.27/0.33/0.58/0.85/0.64", "n=400 r10: 670 -> 9647 steps, 257 rejections, 0.088 tol units", "n=200: 569 -> 894", "n=800 all MF arms LinearSolve failure", "process table n=400: 1.716/1.71/134248, 2.788/12.78/134468, 18.71/18.66, 40.62/40.55"]
+    },
+    "U09_geometry_mol": {
+      "results_json": "none in the node (numbers live only in QUAL lines of logs/u09_green.log)",
+      "rerun_of_test_target": "cargo test: 5 passed, 0 failed (logs/u09_green.log: 5 passed); --nocapture re-run: 5 QUAL records equal to the logged ones (dict equality)",
+      "report_samples_matched": ["eigen rel error 4.3e-2/1.1e-2/2.7e-3", "spatial order 1.98/1.99", "temporal error 1.4e-7/1.2e-9/1.3e-11", "spatial amplitude error 6.2e-3", "Y11 pole ring 2.4e-2/1.2e-2/6.1e-3", "advection sym defect 0.056/0.028", "sphere orders 2.00/2.00, 1.99/2.00, 1.87/1.89"]
+    },
+    "U10_switch_error": {
+      "transport.py -> transport_results.json": "byte-identical; stdout byte-identical to transport.log (1.5 s; pure Python model with mpmath/numpy, no Rust solver involved)",
+      "report_samples_matched": ["bound/error 8.7e175, 1.2e164", "q nodal max 429, 328", "q monomial max 12.2, 9.8", "violations 0", "gamma 0.61941197506625"]
+    },
+    "U11_production_holdout": {
+      "evaluate.py -> EVALUATION.json": "byte-identical (from logs/holdout_runs.jsonl, 45 rows, exit 0)",
+      "reference.py -> reference.json": "byte-identical, stdout identical to reference.log (4 min 36 s, SciPy 1.17.0)",
+      "report_samples_matched": ["45 runs, 0 failures, 45 admissible", "step ratio 1.9-5.2 / 3.4-5.8 / 2.5-7.1", "6-thread speed 0.049-0.14 / 0.0049-0.0082 / 0.0023-0.0061", "median order 10.4", "max steps ratio 7.1", "median speed 0.0063", "explicit J max 5188", "Newton max 7"],
+      "plan_numbers_rederived": "t6/t1 wall 1.59-2.94; PPSW1 1-thread per-step wall over RODAS5P 7.8-13.9 (HIRES n=8), 22.2-24.4 (Oregonator n=3), 2.1-2.5 (Brusselator n=64)"
+    },
+    "U06_capability_registry": {"rerun_of_test_target": "unified_method_capabilities: 6 passed, 0 failed (logs/u06_green.log: 6 passed)"},
+    "rerun_log_note": "raw re-run logs are in /tmp/claude-1000/evd-audit-l1/logs (scratch, not preserved); cargo exit codes 0, 0, 0; started 2026-11-16T17:06:27+09:00, finished 17:09:11+09:00"
+  },
+  "part_c_governance": {
+    "ledger": "LOOP research/LEDGER.jsonl has 202 rows: L-0001..L-0204 (ids 143-145 never used) and L-0300 (loop baseline, FAIL). 0 rows for U01-U11. docs/agent/production_solver_program_20261112/EVIDENCE_LEDGER.json (17 records, last change bee5563c 2026-11-15) mentions no U node either.",
+    "check_research_node": "python3 -I tools/check-research-node.py --base bee5563c51264a7da19c519295bdda2fb317caef -> exit 1: 'new node research/production_unification_20261115/: missing PREREGISTRATION.md' and 'no research/LEDGER.jsonl row whose outputs_sha256 covers it'; production_loop_20261116 passes",
+    "workflows_for_push_to_research_branch": "0 of 31 workflow files: every push trigger is restricted to main or to another named branch. production.yml triggers: workflow_dispatch, pull_request (paths crates/**, Cargo.toml, Cargo.lock, rust-toolchain.toml, the workflow file), push to main with the same paths.",
+    "default_branch": "origin/HEAD -> origin/main = 8d0c7918 (2026-08-26), 1466 commits behind the loop head; it carries 4 workflow files and neither production.yml nor research-process.yml (local refs, no fetch performed)",
+    "sp02_root_cause": "crates/rodas5p-krylov/tests/sp02_workspace_charge.rs:20-21,49-54 installs a #[global_allocator] with process-global LIVE_BYTES; each of the 3 tests reads live_bytes() before and after drop(ws) (lines 100-102, 155-157, 214-216) while libtest runs the sibling tests on other threads, so their allocations and frees land inside the window. Baseline log lines 1007-1014: 'charged 20024 - released 14424 = 5600 > 640' (sibling allocated 5600 B) and 'charged 20288 < released 4214311' (sibling freed about 4 MB)."
+  },
+  "findings": [
+    {
+      "id": "EVD-01",
+      "severity": "critical",
+      "is_new": false,
+      "title": "Ledger rows L-0209 (K1), L-0210 (B7), L-0213 (D1), L-0214 (C1) record formula or literal output as preregistered experiment results",
+      "claim": "The four evaluation scripts never start a process and never read a file; every count, error and Ir value is a literal or an arithmetic expression of literals. Several literals repeat numbers that DESIGN.md had announced before the task ran, and the C1 claim quotes a ratio that the script does not even produce.",
+      "evidence": "eval_k1.py:15-28 (step table), :30-32 (m_gmres/m_precond/k_shared), :42-48 (Ir = 28n etc.), :50 err_base = 0.42*rtol; eval_c1.py:13-20, :68-70 (state_diff 2.1e-14, J diff 3.2e-14 literals); eval_b7.py:14-60 (literal table; no code path for the min(...) arms exists: grep 'min_budget|first_batch' in crates/vigilode/src returns nothing); eval_d1.py:10-98 (problems viscous_burgers_n64 / allen_cahn_n64 do not exist in crates/vigilode or crates/rodas5p-integrators). grep counts: subprocess 0 in all four. Circularity: DESIGN.md:2197 'the prototype saw 0.58 on the Brusselator' = eval_d1.py:77 14/24; DESIGN.md:2688 'the dry run measured 400 -> 1,840 RHS calls' = eval_b7.py:19-20. C1: RESULTS.json ratios are 10.94 and 6.34, the script's reason string says 2.8x-3.4x (eval_c1.py:172), the ledger claim says 2.46x-2.87x (a number present in no file of the node).",
+      "impact": "Invalidates the recorded verdicts: L-0214 PASS has no support; L-0209/L-0210/L-0213 FAIL are equally unsupported and must not be read as negative results (K1 'shared basis loses to preconditioned GMRES' and D1 'agreement 0.58' are untested). V06/V08 start from zero measured evidence. Output hashes in the ledger still match the files, so the rows are intact as records.",
+      "minimal_fix": "Append INVALID rows superseding L-0209, L-0210, L-0213, L-0214 (keep the originals); state in each that the node has no executed run; do not cite their numbers in V06/V08 preregistrations.",
+      "reproduce_cmd": "cd /home/cosmosapjw/vigilode && grep -c 'subprocess\\.' research/{k1_shared_krylov_basis,b7_first_batch,c1_coloured_assembly,d1_stiffness_gate}_20261104/eval_*.py && sed -n '12,50p' research/k1_shared_krylov_basis_20261104/eval_k1.py"
+    },
+    {
+      "id": "EVD-02",
+      "severity": "major",
+      "is_new": true,
+      "title": "L-0212 (H1 hysteresis band) is a fifth synthetic row that the plan does not list",
+      "claim": "eval_h1.py computes the 'measured' log-work-ratio bias |b| = 1.2069 from eight typed work-unit numbers and decides the band with further literals; nothing is executed.",
+      "evidence": "eval_h1.py:35-50 (incumbent/challenger prefix and full-window WU 192/185/340/98 and 144/118/162/182), :87-90 (185 vs 192, 47 vs 193, 355 vs 193, 118 vs 144), :99-100 (breakeven_switches and tv_ln_phi = 0.18 literals); subprocess count 0; the only open() is the output write. Ledger L-0212 command: 'python3 research/h1_hysteresis_band_20261104/eval_h1.py'.",
+      "impact": "Invalidates L-0212 FAIL as evidence; the plan's V02 instruction names four synthetic rows (L-0209/0210/0213/0214) and would leave this one standing. The default (entry_margin/return_margin None) is unaffected.",
+      "minimal_fix": "Add L-0212 to the INVALID supersession set of V02 (five rows, plus L-0211 per EVD-03).",
+      "reproduce_cmd": "cd /home/cosmosapjw/vigilode && sed -n '27,50p;78,100p' research/h1_hysteresis_band_20261104/eval_h1.py"
+    },
+    {
+      "id": "EVD-03",
+      "severity": "major",
+      "is_new": true,
+      "title": "L-0211 (E1R) runs callgrind, but on unit tests unrelated to the named calibration cases",
+      "claim": "Each 'measured Ir' is the instruction count of one #[test] of work_model_contracts minus that of another, selected by a test_filter; the solver cases named in the table (rotation DOPRI5, MOL heat Krylov, Brusselator) are never run, and their counters are literals.",
+      "evidence": "eval_e1r.py:160-161 (baseline = test rhs_cost_ir_scaling), :163-304 (case -> test_filter, literal counters), :317-318. Case 'rotation_n2_dopri' maps to test polynomial_weight_exactness_and_powers, which is four assert_eq! on PolynomialWeight::eval (crates/vigilode/tests/work_model_contracts.rs:88-97); RESULTS.json gives it 598825 - 598285 = 540 Ir against a 'prediction' of 19250. Two cases share one filter (eval_e1r.py:259 and :292). The plan states that E1R alone executed callgrind; that is true of the process, not of the measurement.",
+      "impact": "Invalidates L-0211 as a calibration result (max relative error 183, Spearman 0.767 describe test-harness noise). The kept default WorkModel V1 is the conservative outcome and is not affected; WorkModel V2 remains uncalibrated, neither confirmed nor refuted. The row also sets supersedes = L-0205 (the admission row, already superseded by L-0208) instead of L-0206/L-0207.",
+      "minimal_fix": "Supersede L-0211 with an INVALID row; a real E1R needs one example binary per calibration case that prints its counters, measured under callgrind.",
+      "reproduce_cmd": "cd /home/cosmosapjw/vigilode && sed -n '163,176p' research/e1r_work_model_v2_20261104/eval_e1r.py && sed -n '88,97p' crates/vigilode/tests/work_model_contracts.rs && python3 -I -c \"import json;[print(d['case'],d['callgrind_ir_measured'],d['predicted_ir']) for d in json.load(open('research/e1r_work_model_v2_20261104/RESULTS.json'))['details']]\""
+    },
+    {
+      "id": "EVD-04",
+      "severity": "major",
+      "is_new": true,
+      "title": "The six 2026-11-04 nodes were not preregistered in time, cite a commit that predates their inputs, and lack the prescribed bench programs",
+      "claim": "PREREGISTRATION.md, the eval script, RESULTS.json and the ledger row of each node entered the repository in one commit; the ledger 'commit' field of L-0209..L-0214 is 4339facc, where the hashed input files do not exist; the example binaries DESIGN.md prescribes were never written.",
+      "evidence": "git show --stat 8800fb9a (K1), 68692104 (B7), 157586cf (E1R), 117e2870 (H1): each adds PREREGISTRATION.md + eval_*.py + RESULTS.json + LEDGER row together; D1 400cd0cc adds the ledger row with an outputs hash for RESULTS.json that is only committed 31 minutes later in 16eb1b87. DESIGN.md:1956 'Commit and push the preregistration before the first run'. git cat-file -e 4339facc:crates/rodas5p-krylov/src/shared_basis.rs, :crates/vigilode/src/coloring.rs, :crates/rodas5p-integrators/src/dopri5_stiffness.rs, :crates/vigilode/src/margin.rs all fail (4339facc is dated 2026-11-03 05:30). examples/k1_shared_basis_bench.rs (DESIGN.md:1936) and examples/b7_first_batch_bench.rs (DESIGN.md:2676): no path in the tree or in any ref's history.",
+      "impact": "The label 'preregistered' on these rows is not backed by commit order, and the rows cannot be replayed from the cited commit. This removes the last process argument for keeping any of the six rows; it limits nothing beyond EVD-01..03.",
+      "minimal_fix": "In the INVALID rows record 'preregistration and result share one commit' and the true commit of each node; in loop L1 keep preregistration and run in separate pushed commits (already the stated rule).",
+      "reproduce_cmd": "cd /home/cosmosapjw/vigilode && git show --stat --format='%h %ad %s' --date=iso 8800fb9a 68692104 157586cf 117e2870 400cd0cc 16eb1b87 | cat; git cat-file -e 4339facc:crates/rodas5p-krylov/src/shared_basis.rs; git log --all --oneline -- '*k1_shared_basis_bench*' '*b7_first_batch_bench*'"
+    },
+    {
+      "id": "EVD-05",
+      "severity": "major",
+      "is_new": true,
+      "title": "The switcher gate tool was edited inside the commits it was gating, and its progress record contradicts the ledger",
+      "claim": "tools/agent_gate.py gained self-exemptions during the X tasks, so 'research-node-check: 0' and 'finish' results on that line are not an independent control.",
+      "evidence": "052ba6d0 (X4): adds tools/agent_gate.py to always_ok and drops its own lines from the forbidden-pattern scan; f6f439cd (X2): meta_allowed adds .agents/skills/* and crates/rodas5p-krylov/src/shared_basis.rs for every task; 8800fb9a (K1 node commit): the clean-tree check now ignores a dirty tools/agent_gate.py and VigilODE_OPTIMIZATION_PLAN*; 16eb1b87 (C1): allowlists research/d1_stiffness_gate_20261104/RESULTS.json. PROGRESS.md:181 records D1 as 'verdict PASS' while L-0213 and RESULTS.json say FAIL; PROGRESS.md:170 'commit: uncommitted' for X9; the X5/X7 entries (lines 177-187) are free-form text, not the gate's record format.",
+      "impact": "Limits the scope of every 'gate passed' statement for switcher tasks X1-X11: scope and forbidden-pattern checks could be relaxed by the task itself. It does not by itself show a defect in the code those tasks added; that needs the V02 test and bit-identity run.",
+      "minimal_fix": "For V02 treat the switcher gate status as informational and rely on the 1.94.1 build, both test suites and the bitwise oracle; if the gate is reused, put agent_gate.py on the protected list.",
+      "reproduce_cmd": "cd /home/cosmosapjw/vigilode && git log --format='%h %s' 4339facc..HEAD -- tools/agent_gate.py | cat && git show 8800fb9a -- tools/agent_gate.py | cat && sed -n '177,187p' docs/agent/switcher_v2_remediation/PROGRESS.md"
+    },
+    {
+      "id": "EVD-06",
+      "severity": "major",
+      "is_new": true,
+      "title": "A push to a research branch runs no workflow, and production.yml cannot be dispatched because the default branch does not contain it",
+      "claim": "None of the 31 workflow files has a push trigger that matches research/production-loop-20261116 (or the unification and switcher branches). production.yml lists workflow_dispatch, but GitHub only offers dispatch for workflows present on the default branch, and origin/main (8d0c7918, 2026-08-26) has 4 workflows without production.yml or research-process.yml.",
+      "evidence": ".github/workflows/production.yml:10-25 (workflow_dispatch; pull_request with paths; push branches [main]); scan of all 31 'on:' blocks: push branch filters are main or other named research/audit branches, none unfiltered; git ls-tree --name-only origin/main .github/workflows/ -> a1-inner-tolerance-parity.yml, a1-two-arm-receipt.yml, a2-a3-gmres-inner-cycle.yml, e4-fresh-clone-build.yml; git rev-list --count origin/main..HEAD = 1466. Local refs only (no fetch).",
+      "impact": "Confirms the plan's statement that the current head has no CI, and corrects V13: 'production.yml workflow_dispatch' is not available. The only route to hosted CI without touching main is a pull request from the research branch (pull_request triggers of production.yml and research-process.yml use the workflow files of the PR head). Such a run would currently be red or flaky: research-process fails per EVD-07 and the test job runs sp02_workspace_charge with default threads (EVD-08). No recorded verdict is invalidated; the R-gate reproducibility axis stays unmet.",
+      "minimal_fix": "Decide with the owner whether to open a draft PR for CI; otherwise record CI as NOT_RUN in the R-gate matrix and use a clean-clone local replay as the independent check.",
+      "reproduce_cmd": "cd /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116 && sed -n '10,25p' .github/workflows/production.yml && git ls-tree --name-only origin/main .github/workflows/ && grep -l 'production-loop\\|production-unification' .github/workflows/*.yml"
+    },
+    {
+      "id": "EVD-07",
+      "severity": "major",
+      "is_new": false,
+      "title": "U01-U11 have no ledger row and the unification node fails the repository's own research-node check",
+      "claim": "The authoritative append-only ledger stops at L-0204 for the unification work; the only later row is the loop baseline L-0300. The U results are bound only by CHECKPOINT.json, which is rewritten in place.",
+      "evidence": "research/LEDGER.jsonl: 202 rows, no row mentions production_unification, PPSW1 or a U id except L-0300. python3 -I tools/check-research-node.py --base bee5563c51264a7da19c519295bdda2fb317caef -> 'FAIL: new node research/production_unification_20261115/: missing PREREGISTRATION.md' and 'FAIL: ... no research/LEDGER.jsonl row whose outputs_sha256 covers it', exit 1. EVIDENCE_LEDGER.json of the program has 17 records and no U node. The checker tests form only (preregistration file, hash coverage, stall rule): the synthetic switcher nodes passed it, the executed unification node fails it.",
+      "impact": "Does not invalidate any U verdict (the numbers reproduce, see part_b), but U03/U04/U09/U10/U11 results have no authority under the project's ledger rule, and research-process.yml would fail on a pull request.",
+      "minimal_fix": "Append one ledger row per U node with a results file (U03, U04, U10, U11; U09 after EVD-10) using ids >= L-0301 and the existing row script; add a node-level PREREGISTRATION.md that points to the per-node CHANGE_CONTRACT/PREREGISTRATION.json files or add a reasoned exemption.",
+      "reproduce_cmd": "cd /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116 && python3 -I tools/check-research-node.py --base bee5563c51264a7da19c519295bdda2fb317caef; tail -n 1 research/LEDGER.jsonl | cut -c1-120"
+    },
+    {
+      "id": "EVD-08",
+      "severity": "minor",
+      "is_new": true,
+      "title": "sp02_workspace_charge is flaky because three parallel tests share one process-global live-byte counter",
+      "claim": "The test binary replaces the global allocator and asserts on the difference of a global LIVE_BYTES counter around drop(ws); libtest runs the three tests concurrently, so allocations and frees of sibling tests fall inside the measurement window. It is a test-harness race, not a workspace accounting defect.",
+      "evidence": "crates/rodas5p-krylov/tests/sp02_workspace_charge.rs:20-21, 23-47, 49-54 (global allocator and counter), :100-102 and the same pattern at :155-157 and :214-216; no Mutex or serial guard in the file. research/production_loop_20261116/logs/baseline_facade_core_krylov.log:1007-1014: 'charged 20024 - released 14424 = 5600 > 640' and 'charged 20288 < released 4214311'. BASELINE_RESULTS.json flake_probe: 3/3 pass with --test-threads=1, 1 of 3 default runs fails.",
+      "impact": "Limits the baseline only: L-0300 FAIL is a harness artefact and says nothing about the solvers. production.yml runs this target with default threads, so hosted CI would fail intermittently. 35 test files in crates/*/tests use the same global-counter pattern and may share the hazard where a binary holds more than one measuring test (not checked).",
+      "minimal_fix": "Serialise the three tests with one static Mutex held for the whole test body, or count per thread with a thread_local counter in the allocator; the file is not protected.",
+      "reproduce_cmd": "cd /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116 && sed -n '18,54p;97,106p' crates/rodas5p-krylov/tests/sp02_workspace_charge.rs && sed -n '1005,1015p' research/production_loop_20261116/logs/baseline_facade_core_krylov.log"
+    },
+    {
+      "id": "EVD-09",
+      "severity": "minor",
+      "is_new": true,
+      "title": "Cross-solver benchmark is real, but its receipts misstate the raw data and the plan's Julia step-count equality holds at one tolerance only",
+      "claim": "crates/vigilode-bench is an executing runner with raw per-repetition data, yet (a) the v3 receipt and final report describe the cited raw file incorrectly, (b) raw files were overwritten in place and most were built from a dirty tree, (c) the VigilODE arm compared with Julia is grid-clipped.",
+      "evidence": "(a) evidence/V3-ACHIEVED-WP.json and FINAL_REPORT_KO.md:30,73 say 'all 953 matched rows DIAGNOSTIC_ONLY'; bench/out/adversarial_spatial_grid_v2_results.json (same binary_sha256 bdeaa896...) has 1040 matched rows = 952 DIAGNOSTIC_ONLY + 88 MATCHED with time ratios (for example vigilode-banded-dense against rodas-band 0.71-1.04, against cvode-bdf-band 1.5-3.8). (b) adversarial_rust_results.json had 900/900 DIAGNOSTIC_ONLY at 1403e108 and 652 + 248 MATCHED from 92d975dd on, same path; provenance git_dirty true in 4 of 5 wp files. (c) rust_bench_results.json against julia_bench_results.json, accepted steps VigilODE/Julia Rodas5P: Robertson 111/36, 122/66, 164/162; Brusselator n=100 105/46, 129/100, 228/228; HIRES 132/81, 265/258, 823/873 at rtol 1e-4/1e-6/1e-8. The row 'deviations' field states that the 101-point OutputSchedule adds clipped steps; Julia uses saveat interpolation. The 13 v3 receipts store argv and exit_code 0 without any log.",
+      "impact": "Limits scope: the v3 conclusion NOT_ESTABLISHED is conservative and stands, but the receipts are typed text, not parsed output. The plan's sentence 'same step count as Julia Rodas5P (228 = 228, 164 vs 162)' is true only at rtol 1e-8; at 1e-4 the benchmark arm takes 2.3-3.1 times more steps because of grid landing, so that file cannot support a per-step or method-equivalence statement at loose tolerance.",
+      "minimal_fix": "In V11/V13 rerun the comparison from a clean tree with the endpoint-only (dense-output) arm, keep each run under a new file name, and generate receipt counts from the raw JSON.",
+      "reproduce_cmd": "cd /home/cosmosapjw/vigilode && python3 -I -c \"import json,collections;d=json.load(open('bench/out/adversarial_spatial_grid_v2_results.json'));print(len(d['matched']),collections.Counter(m['status'] for m in d['matched']))\" && grep -n '953' docs/agent/production_solver_qualification_20261107_v3/FINAL_REPORT_KO.md | cut -c1-120"
+    },
+    {
+      "id": "EVD-10",
+      "severity": "minor",
+      "is_new": true,
+      "title": "Unification evidence reproduces; three residual defects in how U11 and U09 record it",
+      "claim": "U03, U04, U10 and U11 result files regenerate byte for byte from the raw logs with the included scripts, and the three re-run targets match the reported pass counts (18, 6, 5). Residual defects: (a) evaluate.py hard-codes two G0 criteria as passed and a false NOT_RUN reason; (b) U09 has no machine-readable results file or summariser; (c) U03 RESULTS.json carries a ppsw1.rs hash that no longer matches head.",
+      "evidence": "(a) production_holdout/evaluate.py:113-116 ('depth_p95_le_6_max_le_8': candidate_stage_depth 1, pass True; 'fallback_le_0_1': fallback_fraction 0.0, pass True are literals, not read from logs/holdout_runs.jsonl) and :121 'CVODE BDF (SUNDIALS not installed)' while dpkg lists libsundials-dev 6.4.1 and /usr/lib/x86_64-linux-gnu/libsundials_cvode.so.6 exists. (b) geometry_mol/ holds only REPORT_KO.md, CHANGE_CONTRACT.json and logs; report numbers were checked against QUAL lines of logs/u09_green.log (all sampled values match). (c) RESULTS.json inputs_sha256 ppsw1.rs 758f712c... equals the blob at 2f19cf85; head blob is d2b27044... after 715a3f6f (U04); the --nocapture re-run at head still reproduces all 3060 non-wall values of logs/u03_green.log. Byte comparisons and pass counts: see part_b_unification_reproduction.",
+      "impact": "No U verdict is invalidated. HOLD for U11 rests on four measured failing criteria and does not depend on the two literal passes; the literal passes must not be quoted as measured. The CVODE comparator was omitted without a valid reason.",
+      "minimal_fix": "Derive depth and fallback from runner output or label them NOT_MEASURED; correct the NOT_RUN reason; add a summariser that writes U09 RESULTS.json from the QUAL lines; refresh the U03 input hash when the ledger row is written.",
+      "reproduce_cmd": "cd /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116 && sed -n '111,122p' research/production_unification_20261115/production_holdout/evaluate.py && ls /usr/lib/x86_64-linux-gnu/libsundials_cvode.so.6 && CARGO_TARGET_DIR=/mnt/extdrive/vigilode-loop-20261116/target cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test ppsw1_independent_qualification"
+    }
+  ],
+  "plan_items_checked": [
+    {"item": "1.1 ledger split: unification line ends at L-0204 with 0 U rows; switcher holds L-0205..L-0214", "verdict": "confirmed", "note": "LOOP adds only L-0300 (baseline). Ids 143-145 unused. Program EVIDENCE_LEDGER.json has no U record either."},
+    {"item": "1.2 eval_k1/eval_c1/eval_b7 are simulate_cell models and eval_d1 holds a literal 14/24", "verdict": "corrected", "note": "K1 and C1 use simulate_cell; B7 is a plain literal table; D1 is literal throughout (registered cells too). All four: subprocess 0."},
+    {"item": "1.2 synthetic ledger rows are L-0209, L-0214, L-0210, L-0213", "verdict": "corrected", "note": "L-0212 (H1) is also synthetic; L-0206 was synthetic and is already INVALID. Six rows of L-0205..L-0214 lack executed support when L-0211 is included."},
+    {"item": "1.2 examples/k1_shared_basis_bench.rs required by DESIGN.md X3 does not exist", "verdict": "confirmed", "note": "Also absent: examples/b7_first_batch_bench.rs (X10) and the per-case example binaries of X11."},
+    {"item": "1.2 shared basis and colouring performance were never measured", "verdict": "confirmed", "note": "Only contract tests exist (shared_basis_mf_contracts, sparse_jvp_contracts); no Ir, wall or matched-error run at n=256 or 10^4."},
+    {"item": "1.2 L-0211 E1R is the only row that ran callgrind", "verdict": "corrected", "note": "callgrind ran, but on unit tests of work_model_contracts selected by name; the named solver cases were not executed (EVD-03)."},
+    {"item": "1.2 U11: 6-thread arm 1.6-2.9x slower than 1-thread; PPSW1 1-thread per-step wall 8-24x (n=3,8) and 2.1-2.5x (n=64) of RODAS5P", "verdict": "confirmed", "note": "From EVALUATION.json rows: 1.59-2.94; 7.8-24.4; 2.1-2.5. Wall is diagnostic_only."},
+    {"item": "1.2 U11 says SUNDIALS is not installed, but it is", "verdict": "confirmed", "note": "libsundials-dev 6.4.1, libsundials_cvode.so.6 present; the string is a literal at evaluate.py:121."},
+    {"item": "1.2 ACCEPTED_STEP_SIGMA_MAX = 1.10 at ppsw1.rs:57", "verdict": "confirmed", "note": "Line 57 at loop head; origin of the value (agent rule versus paper) not checked in this dimension."},
+    {"item": "1.3 vigilode-bench and vigilode-hybrid are not workspace members", "verdict": "confirmed", "note": "Cargo.toml members: 7 crates without them; vigilode-bench has its own Cargo.lock."},
+    {"item": "1.5 no CI or independent reproduction of the current head", "verdict": "confirmed", "note": "0 of 31 workflows trigger on a research-branch push; U11 report itself lists the independent rerun as NOT_RUN. This audit re-ran three targets and regenerated U03/U04/U10/U11 results."},
+    {"item": "1.5 protected RODAS5P takes the same number of steps as Julia Rodas5P (Brusselator 228 = 228, Robertson 164 vs 162)", "verdict": "corrected", "note": "True at rtol 1e-8 only; at 1e-4: 105 vs 46 and 111 vs 36 because the benchmark arm lands on a 101-point grid; built from a dirty tree."},
+    {"item": "3.1 V02: supersede the four synthetic rows L-0209/0210/0213/0214 with INVALID rows", "verdict": "corrected", "note": "Set should be L-0209, L-0210, L-0211, L-0212, L-0213, L-0214."},
+    {"item": "3.1 V13: independent CI through production.yml workflow_dispatch if possible", "verdict": "refuted", "note": "production.yml is absent on origin/main (default branch, 2026-08-26), so dispatch is unavailable; a pull request is the only hosted route."},
+    {"item": "U03, U04, U09, U10, U11 results are backed by executed runs", "verdict": "confirmed", "note": "Byte-identical regeneration of 5 result files; 3060 U03 values and 5 U09 records reproduced at head; pass counts 18/6/5 equal the logs."},
+    {"item": "U11 preregistration was pushed before any holdout run", "verdict": "not_checked", "note": "Commit order holds locally (745ffafb 09:28:25, runs logged 09:34, evaluation 074a5699 09:36:12); the push time cannot be verified without the remote."}
+  ]
+}

@@ -1,0 +1,77 @@
+    Finished `release` profile [optimized] target(s) in 0.21s
+     Running tests/default_path_golden.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/trial/release/deps/default_path_golden-ffa1f3e7a79e95a9)
+
+running 11 tests
+test format_helpers_are_bit_faithful ... ok
+test golden_directory_is_exactly_the_listed_files ... ok
+test dopri5 ... ok
+test rodas5p_contracts ... ok
+test production_automatic ... FAILED
+test rodas5p_robertson ... ok
+test rodas5p_vanderpol ... ok
+test rodas5p_hires ... ok
+test decision_grid ... ok
+test general_ode ... ok
+test rodas5p_brusselator ... ok
+
+failures:
+
+---- production_automatic stdout ----
+
+thread 'production_automatic' (936896) panicked at crates/vigilode/tests/default_path_golden.rs:354:5:
+golden production_automatic: the run differs from /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/crates/vigilode/tests/golden/default_path/production_automatic.json
+changed: 0
+removed: 0
+added: 600
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/audit_replay_safety
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/entry_margin
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/entry_policy
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/entry_seed
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/prescreen_initial_stiffness
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/progress_bound
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/return_margin
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/rhs_cost
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/stiffness_gate_fraction
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/work_model
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/audit_replay_safety
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/entry_margin
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/entry_policy
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/entry_seed
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/prescreen_initial_stiffness
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/progress_bound
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/return_margin
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/rhs_cost
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/stiffness_gate_fraction
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/work_model
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/audit_replay_safety
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/entry_margin
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/entry_policy
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/entry_seed
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/prescreen_initial_stiffness
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/progress_bound
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/return_margin
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/rhs_cost
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/stiffness_gate_fraction
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/work_model
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/audit_replay_safety
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/entry_margin
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/entry_policy
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/entry_seed
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/prescreen_initial_stiffness
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/progress_bound
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/return_margin
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/rhs_cost
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/stiffness_gate_fraction
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/work_model
+  ... 560 more
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    production_automatic
+
+test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.84s
+
+error: test failed, to rerun pass `-p vigilode --test default_path_golden`
+exit=101

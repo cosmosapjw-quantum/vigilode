@@ -1,0 +1,140 @@
+{
+  "schema": "vigilode.work-model-v2-rerun.results.v1",
+  "node_id": "e1r_work_model_v2_20261104",
+  "timing_authority": "diagnostic_only",
+  "verdict": "FAIL",
+  "pass_gate": {
+    "max_relative_error_le_0_25": false,
+    "spearman_rho_ge_0_90": false,
+    "transition_39_admission_pass": false,
+    "all_cases_within_25pct": false
+  },
+  "metrics": {
+    "max_relative_error": 182.9708828259459,
+    "mean_relative_error": 34.22927006307964,
+    "spearman_rank_correlation": 0.7666666666666666,
+    "transition_39_w2_wu": 264.2,
+    "transition_39_threshold_wu": 200.0,
+    "calibration_cases_evaluated": 9,
+    "hot_loop_allocations": 0
+  },
+  "details": [
+    {
+      "case": "rotation_n2_dopri",
+      "n": 2,
+      "kappa": 50,
+      "callgrind_ir_raw": 598825,
+      "callgrind_ir_baseline": 598285,
+      "callgrind_ir_measured": 540,
+      "w_v1": 385,
+      "w_v2": 385.0,
+      "predicted_ir": 19250.0,
+      "relative_error": 34.648148148148145,
+      "within_25pct": false
+    },
+    {
+      "case": "decay_n1_dense",
+      "n": 1,
+      "kappa": 50,
+      "callgrind_ir_raw": 599383,
+      "callgrind_ir_baseline": 598285,
+      "callgrind_ir_measured": 1098,
+      "w_v1": 49,
+      "w_v2": 55.3733334350586,
+      "predicted_ir": 2768.6666717529297,
+      "relative_error": 1.5215543458587701,
+      "within_25pct": false
+    },
+    {
+      "case": "stiff_forced_n1_dense",
+      "n": 1,
+      "kappa": 50,
+      "callgrind_ir_raw": 598819,
+      "callgrind_ir_baseline": 598285,
+      "callgrind_ir_measured": 534,
+      "w_v1": 170,
+      "w_v2": 195.4666668701172,
+      "predicted_ir": 9773.33334350586,
+      "relative_error": 17.302122366115842,
+      "within_25pct": false
+    },
+    {
+      "case": "case5_n2_mf",
+      "n": 2,
+      "kappa": 50,
+      "callgrind_ir_raw": 603794,
+      "callgrind_ir_baseline": 598285,
+      "callgrind_ir_measured": 5509,
+      "w_v1": 124,
+      "w_v2": 148.96,
+      "predicted_ir": 7448.0,
+      "relative_error": 0.3519695044472681,
+      "within_25pct": false
+    },
+    {
+      "case": "transition39_n2_mf",
+      "n": 2,
+      "kappa": 50,
+      "callgrind_ir_raw": 610698,
+      "callgrind_ir_baseline": 598285,
+      "callgrind_ir_measured": 12413,
+      "w_v1": 185,
+      "w_v2": 264.2,
+      "predicted_ir": 13210.0,
+      "relative_error": 0.06420687988399258,
+      "within_25pct": true
+    },
+    {
+      "case": "mol_heat_n32_krylov",
+      "n": 32,
+      "kappa": 50,
+      "callgrind_ir_raw": 610097,
+      "callgrind_ir_baseline": 598285,
+      "callgrind_ir_measured": 11812,
+      "w_v1": 880,
+      "w_v2": 3209.6,
+      "predicted_ir": 160480.0,
+      "relative_error": 12.586183542160514,
+      "within_25pct": false
+    },
+    {
+      "case": "mol_heat_n64_krylov",
+      "n": 64,
+      "kappa": 50,
+      "callgrind_ir_raw": 633716,
+      "callgrind_ir_baseline": 598285,
+      "callgrind_ir_measured": 35431,
+      "w_v1": 1800,
+      "w_v2": 13228.8,
+      "predicted_ir": 661440.0,
+      "relative_error": 17.668397730800713,
+      "within_25pct": false
+    },
+    {
+      "case": "brusselator_n64_moderate",
+      "n": 64,
+      "kappa": 500,
+      "callgrind_ir_raw": 645732,
+      "callgrind_ir_baseline": 598285,
+      "callgrind_ir_measured": 47447,
+      "w_v1": 2560,
+      "w_v2": 3980.8,
+      "predicted_ir": 1990400.0,
+      "relative_error": 40.949965224355594,
+      "within_25pct": false
+    },
+    {
+      "case": "expensive_wrapper_n32_expensive",
+      "n": 32,
+      "kappa": 5000,
+      "callgrind_ir_raw": 633728,
+      "callgrind_ir_baseline": 598285,
+      "callgrind_ir_measured": 35443,
+      "w_v1": 1360,
+      "w_v2": 1304.096,
+      "predicted_ir": 6520480.0,
+      "relative_error": 182.9708828259459,
+      "within_25pct": false
+    }
+  ]
+}

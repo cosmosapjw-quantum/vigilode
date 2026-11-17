@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "evidence_id": "EVIDENCE-FSM-001-20261106",
+  "task_id": "FSM-001",
+  "claim_support": [
+    "implementation-verified",
+    "numerically-checked"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "branch": "task/FSM-001-20261106_v2",
+    "worktree": "/home/cosmosapjw/vigilode-task-worktrees/task-FSM-001-20261106_v2",
+    "target_files": [
+      "crates/vigilode/src/hybrid_automaton.rs",
+      "crates/vigilode/src/switching.rs",
+      "crates/vigilode/src/lib.rs",
+      "README.md",
+      "crates/vigilode/tests/hybrid_automaton_contracts.rs"
+    ]
+  },
+  "command_records": [
+    {
+      "command": "cargo test --locked -p vigilode --test hybrid_automaton_contracts",
+      "exit_code": 0,
+      "verdict": "PASS",
+      "summary": "9 passed, 0 failed, 0 ignored"
+    },
+    {
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "verdict": "PASS"
+    }
+  ],
+  "result": "Resolved architectural distinction between standalone discrete verification model HybridRouteAutomaton and live operational route controller DriveState in SwitchingSolver. HybridRouteAutomaton is explicitly documented as a standalone / experimental discrete verification model and contract reference. DriveState in switching.rs is documented as the live operational route controller. Comprehensive tests added in hybrid_automaton_contracts verifying positive and negative routing controls, state preservation, time mark preservation, tolerance preservation, and work invariants (WorkCounters), as well as SwitchingSolver live dispatch traces with work conservation.",
+  "limitations": [
+    "HybridRouteAutomaton remains a standalone discrete verification model rather than an integrated runtime stepper state machine.",
+    "Overall qualification verdict remains HOLD_NOT_RELEASE_QUALIFIED pending remaining qualification and remediation tasks."
+  ]
+}

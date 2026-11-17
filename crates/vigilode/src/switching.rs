@@ -2,7 +2,16 @@
 //!
 //! This adapter uses observed work, not a stiffness estimate. Its default is
 //! RHS-only. Derivative fallbacks require a separate explicit authorization.
+//!
+//! Live route control is executed dynamically by [`DriveState`] across window boundaries,
+//! coordinating method switches, proposal reuse, and speculative pilot trials.
+//! (For the offline/standalone discrete verification model and contract reference,
+//! see [`crate::hybrid_automaton::HybridRouteAutomaton`]).
 
+use crate::registry::{
+    BatchOutcome, BatchRequest, BatchStop, Dopri5WindowDriver, Rodas5pWindowDriver, RouteId,
+    WindowDriver, compute_provider_epoch, compute_tolerance_epoch, compute_window_epoch,
+};
 use crate::selection_evidence::{
     CostComparison, CostEvidence, CostEvidenceKind, CostInterval, CostUnit, SelectionIdentity,
     compare_qualified_costs,
@@ -11,7 +20,8 @@ use rodas5p_integrators::{AdaptiveStepConfig, Dopri5StopReason};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    Atol, Dopri5, ExplicitStats, Jacobian, Options, Problem, Rodas5p, SessionEpochs, Stats, Status,
+    Atol, Dopri5, ExplicitStats, Jacobian, Options, Problem, RhsCost, Rodas5p, SessionEpochs,
+    Stats, WorkModelVersion, integer_work_v2,
 };
 
 /// Authorization for derivative work after the explicit path shows pressure.
@@ -27,6 +37,33 @@ pub enum DerivativeFallback {
     ProvidedOnly,
     /// Also permit the facade's finite-difference Jacobian provider.
     AllowFiniteDifference,
+}
+
+/// Policy governing exploratory implicit entry trials.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum EntryPolicy {
+    /// Legacy pressure-only entry policy.
+    PressureOnly,
+    /// Bounded evidence-driven entry screening.
+    Evidence,
+    /// Adaptive deterioration-triggered entry screening.
+    AdaptiveEvidence,
+}
+
+/// Proposal seeding method for implicit entry pilots.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum EntrySeed {
+    /// Legacy seeding from Options::h0.
+    #[default]
+    Legacy,
+    /// Proposal seeded from explicit checkpoint.
+    ExplicitCheckpoint,
+    /// Proposal seeded from observed entry step mean.
+    ObservedEntryStep,
+    /// Proposal seeded from pilot growth step.
+    PilotGrowthStep,
+    /// Proposal seeded from calibrated margin.
+    CalibratedMargin,
 }
 
 /// Reuse a losing entry comparison only while its observed regime remains
@@ -46,6 +83,9 @@ pub struct EntryProbeAdaptation {
     /// A rise in rejection fraction by this amount also renews evidence, after
     /// at least two rejected attempts. It never directly selects a method.
     pub rejection_fraction_increase: f64,
+    /// Whether to apply loss-margin logarithmic backoff on losing pilots.
+    #[serde(default)]
+    pub loss_margin_backoff: bool,
 }
 
 impl Default for EntryProbeAdaptation {
@@ -55,6 +95,7 @@ impl Default for EntryProbeAdaptation {
             work_rate_growth: 2.0,
             step_shrink_ratio: 0.5,
             rejection_fraction_increase: 0.2,
+            loss_margin_backoff: false,
         }
     }
 }
@@ -223,6 +264,72 @@ pub struct SwitchingConfig {
     /// Callbacks must be replay
     /// safe as for every competitive switching solve.
     pub entry_probe_adaptation: Option<EntryProbeAdaptation>,
+    /// Opt-in audit mode that evaluates callbacks twice on the first pilot
+    /// checkpoint and compares bitwise identity (Section 10.4).
+    #[serde(default)]
+    pub audit_replay_safety: bool,
+    /// Selected work model version.
+    #[serde(default)]
+    pub work_model: WorkModelVersion,
+    /// Nominal or declared RHS cost tier.
+    #[serde(default)]
+    pub rhs_cost: RhsCost,
+    /// Whether to screen unreachable entry pilots with the B8 progress bound.
+    #[serde(default)]
+    pub progress_bound: bool,
+    /// Policy governing exploratory implicit entry trials.
+    #[serde(default)]
+    pub entry_policy: Option<EntryPolicy>,
+    /// Proposal seeding method for implicit entry pilots.
+    #[serde(default)]
+    pub entry_seed: EntrySeed,
+    /// Optional hysteresis margin ratio `num / den` in `(0, 1]` for implicit entry pilots.
+    #[serde(default, with = "opt_margin_ratio_serde")]
+    pub entry_margin: Option<crate::margin::MarginRatio>,
+    /// Optional hysteresis margin ratio `num / den` in `(0, 1]` for explicit return comparators.
+    #[serde(default, with = "opt_margin_ratio_serde")]
+    pub return_margin: Option<crate::margin::MarginRatio>,
+    /// Optional fraction `(0, 1]` of DOPRI5 real-axis stability boundary for stiffness-gated entry pilots.
+    #[serde(default)]
+    pub stiffness_gate_fraction: Option<f64>,
+    /// Whether to pre-screen for stiffness at t0 before starting the first window.
+    /// If extreme stiffness is detected, begins directly under the authorized RODAS route.
+    #[serde(default)]
+    pub prescreen_initial_stiffness: bool,
+}
+
+mod opt_margin_ratio_serde {
+    use crate::margin::MarginRatio;
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    #[derive(Serialize, Deserialize)]
+    struct RawMarginRatio {
+        num: u64,
+        den: u64,
+    }
+
+    pub fn serialize<S>(val: &Option<MarginRatio>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        val.map(|m| RawMarginRatio {
+            num: m.num,
+            den: m.den,
+        })
+        .serialize(serializer)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<MarginRatio>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        Ok(
+            Option::<RawMarginRatio>::deserialize(deserializer)?.map(|r| MarginRatio {
+                num: r.num,
+                den: r.den,
+            }),
+        )
+    }
 }
 
 impl Default for SwitchingConfig {
@@ -255,6 +362,16 @@ impl Default for SwitchingConfig {
             rearm_rate_ratio: 2.0,
             return_sentinel_interval: 0,
             entry_probe_adaptation: None,
+            audit_replay_safety: false,
+            work_model: WorkModelVersion::V1,
+            rhs_cost: RhsCost::Cheap,
+            progress_bound: false,
+            entry_policy: None,
+            entry_seed: EntrySeed::Legacy,
+            entry_margin: None,
+            return_margin: None,
+            stiffness_gate_fraction: None,
+            prescreen_initial_stiffness: false,
         }
     }
 }
@@ -312,6 +429,39 @@ impl SwitchingConfig {
             ..Self::evidence_driven(fallback)
         }
     }
+
+    /// Entry policy actually implied by the scheduling fields. A declared
+    /// `entry_policy` must equal this value (checked before any callback).
+    pub fn effective_entry_policy(&self) -> EntryPolicy {
+        if self.implicit_pilot_attempt_budget == 0 {
+            EntryPolicy::PressureOnly
+        } else if self.entry_probe_adaptation.is_some() {
+            EntryPolicy::AdaptiveEvidence
+        } else {
+            EntryPolicy::Evidence
+        }
+    }
+
+    /// Route registry opt-in v2 factory setting (§8.3, §8.4, §8.6).
+    pub fn route_registry(fallback: DerivativeFallback) -> Self {
+        Self {
+            fallback,
+            entry_policy: Some(EntryPolicy::AdaptiveEvidence),
+            entry_seed: EntrySeed::ExplicitCheckpoint,
+            work_model: WorkModelVersion::V1,
+            progress_bound: true,
+            strict_entry_work_improvement: true,
+            strict_return_work_improvement: true,
+            carry_explicit_step: true,
+            reuse_entry_pilot_step: true,
+            seed_entry_pilot_from_explicit_checkpoint: true,
+            entry_probe_adaptation: Some(EntryProbeAdaptation {
+                loss_margin_backoff: true,
+                ..EntryProbeAdaptation::default()
+            }),
+            ..Self::adaptive_evidence(fallback)
+        }
+    }
 }
 
 /// What the observed batch establishes about method fitness.
@@ -324,6 +474,8 @@ pub enum SwitchingEvidence {
     Uncompared,
     /// An explicit batch required enough work to trigger reconsideration.
     ExplicitWorkPressure,
+    /// The explicit route is stability-limited per spectral Ritz / scalar test (WP-04).
+    ExplicitStabilityLimited,
     /// Same-checkpoint implicit trial completed with lower charged work.
     ImplicitCheaperOnPrefix,
     /// Completed implicit trial did not meet the required work advantage.
@@ -494,6 +646,93 @@ pub struct SwitchingSolution {
 #[error("invalid switching request: {0}")]
 pub struct SwitchingError(pub String);
 
+/// Check if a dense Jacobian exhibits stiff dissipative modes relative to the integration interval.
+#[inline]
+fn is_stiff_jacobian(jac: &[f64], n: usize, span: f64) -> bool {
+    let mut min_diag = 0.0;
+    for i in 0..n {
+        let diag = jac[i * n + i];
+        if diag < min_diag {
+            min_diag = diag;
+        }
+    }
+    // A negative real diagonal entry indicates a dissipative/decay mode.
+    // If min_diag < -5.0 and |min_diag| * span > 200.0, an explicit RK solver with
+    // linear stability boundary ~3.3 would require over 60 steps purely for stability.
+    min_diag < -5.0 && min_diag.abs() * span > 200.0
+}
+
+/// Pre-screen for initial stiffness at t0 before starting the first window.
+///
+/// Returns `true` if the problem's Jacobian (either at t0 or after an initial
+/// micro-probe) exhibits extreme stiffness on the integration interval.
+fn prescreen_initial_stiffness(
+    problem: &Problem,
+    t0: f64,
+    t1: f64,
+    y0: &[f64],
+    h0: f64,
+    rhs_calls: &mut u64,
+    jac_builds: &mut u64,
+) -> bool {
+    // Non-autonomous problems with explicit time dependence (e.g. forced oscillations,
+    // Prothero-Robinson type) suffer from Rosenbrock order reduction when h is moderately large,
+    // whereas high-order explicit RK often outperforms implicit methods on smooth forced tracks.
+    // Therefore, only autonomously stiff dissipative IVPs are pre-screened for instant Rodas5p entry.
+    if !problem.autonomous {
+        return false;
+    }
+    let n = problem.dimension;
+    if n == 0 || n > 64 || y0.len() != n {
+        return false;
+    }
+    let span = t1 - t0;
+    if span <= 1e-4 || !span.is_finite() {
+        return false;
+    }
+    let jac_fn = match &problem.jacobian {
+        Jacobian::Dense(jac) => jac,
+        _ => return false,
+    };
+
+    let mut jac = [0.0; 4096];
+    *jac_builds += 1;
+    if (jac_fn)(t0, y0, &mut jac[..n * n]).is_ok() && is_stiff_jacobian(&jac[..n * n], n, span) {
+        return true;
+    }
+
+    // Micro-probe for nonlinear chemical kinetics
+    let h_probe = if h0 > 0.0 && h0.is_finite() {
+        h0.min(span * 1e-4)
+    } else {
+        span * 1e-4
+    };
+    if h_probe <= 0.0 || !h_probe.is_finite() {
+        return false;
+    }
+
+    let mut f0 = [0.0; 64];
+    *rhs_calls += 1;
+    if (problem.rhs)(t0, y0, &mut f0[..n]).is_err() {
+        return false;
+    }
+
+    let mut y_probe = [0.0; 64];
+    for i in 0..n {
+        y_probe[i] = y0[i] + h_probe * f0[i];
+    }
+
+    jac[..n * n].fill(0.0);
+    *jac_builds += 1;
+    if (jac_fn)(t0 + h_probe, &y_probe[..n], &mut jac[..n * n]).is_ok()
+        && is_stiff_jacobian(&jac[..n * n], n, span)
+    {
+        return true;
+    }
+
+    false
+}
+
 /// RHS-first, derivative-opt-in adaptive window adapter.
 ///
 /// Smooth forward identity-mass IVPs with endpoint observations are supported.
@@ -568,9 +807,29 @@ impl SwitchingSolver {
             result.message = "reached final time".into();
             return Ok(result);
         }
+        let mut prescreen_rhs = 0u64;
+        let mut prescreen_jac = 0u64;
+        let initial_stiff = config.prescreen_initial_stiffness
+            && fallback
+            && prescreen_initial_stiffness(
+                problem,
+                t0,
+                t1,
+                y0,
+                opts.h0,
+                &mut prescreen_rhs,
+                &mut prescreen_jac,
+            );
+        result.stats.rhs_calls += prescreen_rhs;
+        result.stats.jacobian_builds += prescreen_jac;
+        let initial_method = if initial_stiff {
+            SwitchingMethod::Rodas5p
+        } else {
+            SwitchingMethod::Dopri5
+        };
         let mut progress = Some(DriveState {
             result,
-            method: SwitchingMethod::Dopri5,
+            method: initial_method,
             implicit_windows: 0,
             since_probe: 0,
             implicit_rate: None,
@@ -585,6 +844,7 @@ impl SwitchingSolver {
             implicit_rate_at_discard: None,
             implicit_seed: None,
             tenure_rechecks: 0,
+            first_explicit_batch_in_tenure: true,
         });
         while progress.as_ref().unwrap().next_window <= config.window_count {
             let current = progress.as_mut().unwrap();
@@ -617,13 +877,19 @@ impl SwitchingSolver {
                 }
                 .max(AdaptiveStepConfig::default().min_step);
                 let initial = current.result.final_state.clone();
-                let outcome = Dopri5::with_session(
+                let session_epochs = SessionEpochs {
+                    model: 0,
+                    provider: compute_provider_epoch(RouteId::Dopri5Rhs, problem),
+                    norm: 0,
+                    tolerance: compute_tolerance_epoch(opts),
+                };
+                let outcome = Dopri5::with_session_driver(
                     problem,
                     (start, t1),
                     &initial,
                     &session_opts,
                     &times,
-                    SessionEpochs::default(),
+                    session_epochs,
                     |active| {
                         let state = progress.take().unwrap();
                         progress = Some(drive_windows(
@@ -659,6 +925,16 @@ impl SwitchingSolver {
     }
 }
 
+/// Live operational route controller and execution state for [`SwitchingSolver`].
+///
+/// `DriveState` is the actual, live route controller during integration. It tracks
+/// the currently active route ([`SwitchingMethod`]), completed windows, explicit/implicit
+/// tenure dwell and cooldowns, speculative pilot discards, probe intervals, step proposals,
+/// and adaptive memory.
+///
+/// In contrast to the offline/standalone discrete verification model [`crate::hybrid_automaton::HybridRouteAutomaton`],
+/// `DriveState` manages the hot integration loop, state checkpoints, and dynamic window driver
+/// dispatch in real time while guaranteeing zero heap allocations during transitions (VG-1).
 struct DriveState {
     result: SwitchingSolution,
     method: SwitchingMethod,
@@ -683,6 +959,8 @@ struct DriveState {
     implicit_seed: Option<f64>,
     /// Due explicit rechecks in the current implicit tenure.
     tenure_rechecks: usize,
+    /// Whether the current batch is the first explicit batch of an explicit tenure.
+    first_explicit_batch_in_tenure: bool,
 }
 
 #[derive(Default)]
@@ -790,20 +1068,56 @@ impl EntryProbeMemory {
         }
     }
 
-    fn compared(&mut self, r: &SwitchingSegment, entered: bool) {
+    fn compared_with_pilot(
+        &mut self,
+        r: &SwitchingSegment,
+        pilot: Option<&SwitchingSegment>,
+        entered: bool,
+        adaptation: &EntryProbeAdaptation,
+        rho: f64,
+    ) {
         self.pending_renewal = false;
         self.pending_zero_progress_retry = false;
         if entered {
             *self = Self::default();
             return;
         }
-        self.negative_comparisons = self.negative_comparisons.saturating_add(1);
+        let inc = if adaptation.loss_margin_backoff
+            && let Some(pilot_rec) = pilot
+        {
+            let d_pilot = pilot_rec.reached_time - pilot_rec.start_time;
+            let l_explicit = r.reached_time - r.start_time;
+            if d_pilot > 0.0 && l_explicit > 0.0 && r.work_units > 0.0 {
+                let rate_pilot = pilot_rec.work_units / d_pilot;
+                let rate_explicit = r.work_units / l_explicit;
+                let q = rate_pilot / rate_explicit;
+                let prod = q * rho;
+                if prod > 1.0 && prod.is_finite() {
+                    (prod.log2().floor() as usize).max(1)
+                } else {
+                    1
+                }
+            } else {
+                1
+            }
+        } else {
+            1
+        };
+        self.negative_comparisons = self
+            .negative_comparisons
+            .saturating_add(inc)
+            .min(adaptation.max_backoff_batches);
         let dt = r.reached_time - r.start_time;
         self.anchor_rate = (dt > 0.0)
             .then_some(r.work_units / dt)
             .filter(|rate| rate.is_finite() && *rate > 0.0);
         self.anchor_h = r.proposed_next_step;
         self.anchor_rejection = r.rejected_steps as f64 / r.attempts.max(1) as f64;
+    }
+
+    #[allow(dead_code)]
+    fn compared(&mut self, r: &SwitchingSegment, entered: bool) {
+        self.compared_with_pilot(r, None, entered, &EntryProbeAdaptation::default(), 1.0);
     }
 
     fn retry_zero_progress_once(&mut self) {
@@ -857,9 +1171,13 @@ fn return_work_ceiling(rate: f64, span: f64, ratio: f64) -> u64 {
     ((ratio * rate * span).floor() as u64).saturating_add(1)
 }
 
-// The existing work objective, before any floating conversion. Checked
-// arithmetic prevents overflow from becoming evidence for a cheaper method.
-fn integer_work(record: &SwitchingSegment, dimension: usize, callbacks_only: bool) -> Option<u128> {
+/// The existing count-based integer work objective (WorkModel v1). Checked
+/// arithmetic prevents overflow from becoming evidence for a cheaper method.
+pub fn integer_work(
+    record: &SwitchingSegment,
+    dimension: usize,
+    callbacks_only: bool,
+) -> Option<u128> {
     let mut cost = (record.jacobian_builds as u128).checked_mul(dimension as u128)?;
     for count in [
         record.rhs_calls,
@@ -896,17 +1214,90 @@ fn work_enclosure(
 // For integer callback prefix cost L and incumbent total E, L >= E rules
 // out C_candidate < E. The guard charges the crossing callback and stops
 // on L > cap, hence cap = E - 1 (zero also admits no strict winner).
-fn strict_entry_callback_ceiling(incumbent: &SwitchingSegment, dimension: usize) -> Option<u64> {
-    let ceiling = integer_work(incumbent, dimension, false)?.saturating_sub(1);
+// WorkModel v2 costs are instruction units: v2 = kappa * callbacks + overhead,
+// overhead >= 0. The pilot guard counts callbacks. A pilot whose charged
+// callbacks c exceed floor((E - 1) / kappa) has v2 >= kappa * c >= E, so it
+// cannot be strictly cheaper than the incumbent E: the cap is decision-preserving.
+pub(crate) fn v2_entry_callback_cap(incumbent_v2: u128, kappa: u64) -> Option<u128> {
+    if kappa == 0 {
+        return None;
+    }
+    Some(incumbent_v2.saturating_sub(1) / kappa as u128)
+}
+
+// An implicit comparator whose charged callbacks L exceed floor(E / kappa) has
+// v2 >= kappa * L > E, so the completed explicit candidate E is strictly cheaper.
+pub(crate) fn v2_return_callback_cap(candidate_v2: u128, kappa: u64) -> Option<u128> {
+    if kappa == 0 {
+        return None;
+    }
+    Some(candidate_v2 / kappa as u128)
+}
+
+#[cfg(test)]
+fn strict_entry_callback_ceiling(
+    incumbent: &SwitchingSegment,
+    dimension: usize,
+    work_model: WorkModelVersion,
+    rhs_cost: RhsCost,
+) -> Option<u64> {
+    strict_entry_callback_ceiling_with_margin(incumbent, dimension, work_model, rhs_cost, None)
+}
+
+fn strict_entry_callback_ceiling_with_margin(
+    incumbent: &SwitchingSegment,
+    dimension: usize,
+    work_model: WorkModelVersion,
+    rhs_cost: RhsCost,
+    margin: Option<crate::margin::MarginRatio>,
+) -> Option<u64> {
+    let ceiling = match (work_model, margin) {
+        (WorkModelVersion::V1, None) => {
+            integer_work(incumbent, dimension, false)?.saturating_sub(1)
+        }
+        (WorkModelVersion::V1, Some(rho)) => {
+            crate::margin::margin_entry_cap(integer_work(incumbent, dimension, false)?, rho)?
+        }
+        (WorkModelVersion::V2, None) => v2_entry_callback_cap(
+            integer_work_v2(incumbent, dimension, rhs_cost)?,
+            rhs_cost.ir_cost(),
+        )?,
+        (WorkModelVersion::V2, Some(rho)) => {
+            let kappa = rhs_cost.ir_cost();
+            if kappa == 0 {
+                return None;
+            }
+            let inc_v2 = integer_work_v2(incumbent, dimension, rhs_cost)?;
+            crate::margin::margin_entry_cap(inc_v2, rho)? / kappa as u128
+        }
+    };
     // u64::MAX is the native unarmed sentinel; decline an unrepresentable
     // ceiling rather than truncate it. The global attempt cap still applies.
     (ceiling < u64::MAX as u128).then_some(ceiling as u64)
 }
 
-fn strict_entry_work_preferred(
+/// Strict entry preference: candidate replay is strictly cheaper than accepted prefix.
+pub fn strict_entry_work_preferred(
     incumbent: &SwitchingSegment,
     candidate: &SwitchingSegment,
     dimension: usize,
+    work_model: WorkModelVersion,
+    rhs_cost: RhsCost,
+) -> bool {
+    strict_entry_work_preferred_with_margin(
+        incumbent, candidate, dimension, work_model, rhs_cost, None,
+    )
+}
+
+/// Entry preference with optional hysteresis margin ratio `rho_e`: candidate wins iff
+/// `candidate < rho_e * incumbent` in exact integer work units.
+pub fn strict_entry_work_preferred_with_margin(
+    incumbent: &SwitchingSegment,
+    candidate: &SwitchingSegment,
+    dimension: usize,
+    work_model: WorkModelVersion,
+    rhs_cost: RhsCost,
+    margin: Option<crate::margin::MarginRatio>,
 ) -> bool {
     // The caller replays from the same physical checkpoint. An accepted
     // explicit prefix can be valid even if its larger batch hit a budget.
@@ -919,11 +1310,21 @@ fn strict_entry_work_preferred(
     {
         return false;
     }
-    match (
-        integer_work(incumbent, dimension, false),
-        integer_work(candidate, dimension, false),
-    ) {
-        (Some(incumbent_cost), Some(candidate_cost)) => candidate_cost < incumbent_cost,
+    let costs = match work_model {
+        WorkModelVersion::V1 => (
+            integer_work(incumbent, dimension, false),
+            integer_work(candidate, dimension, false),
+        ),
+        WorkModelVersion::V2 => (
+            integer_work_v2(incumbent, dimension, rhs_cost),
+            integer_work_v2(candidate, dimension, rhs_cost),
+        ),
+    };
+    match (costs, margin) {
+        ((Some(incumbent_cost), Some(candidate_cost)), None) => candidate_cost < incumbent_cost,
+        ((Some(incumbent_cost), Some(candidate_cost)), Some(rho)) => {
+            crate::margin::margin_entry_wins(candidate_cost, incumbent_cost, rho).unwrap_or(false)
+        }
         _ => false,
     }
 }
@@ -931,10 +1332,28 @@ fn strict_entry_work_preferred(
 // A completed explicit candidate E beats the same-window implicit completion
 // whenever E < I. For an incomplete deterministic replay, its already charged
 // work L is a lower bound on I, so E < L suffices without using its endpoint.
-fn strict_return_work_preferred(
+/// Strict return preference: candidate return is strictly cheaper than same-window implicit run.
+pub fn strict_return_work_preferred(
     incumbent: &SwitchingSegment,
     candidate: &SwitchingSegment,
     dimension: usize,
+    work_model: WorkModelVersion,
+    rhs_cost: RhsCost,
+) -> bool {
+    strict_return_work_preferred_with_margin(
+        incumbent, candidate, dimension, work_model, rhs_cost, None,
+    )
+}
+
+/// Return preference with optional hysteresis margin ratio `rho_r`: candidate wins iff
+/// `candidate < rho_r * incumbent` in exact integer work units.
+pub fn strict_return_work_preferred_with_margin(
+    incumbent: &SwitchingSegment,
+    candidate: &SwitchingSegment,
+    dimension: usize,
+    work_model: WorkModelVersion,
+    rhs_cost: RhsCost,
+    margin: Option<crate::margin::MarginRatio>,
 ) -> bool {
     if !candidate.success
         || candidate.accepted_steps == 0
@@ -951,11 +1370,21 @@ fn strict_return_work_preferred(
     {
         return false;
     }
-    match (
-        integer_work(incumbent, dimension, false),
-        integer_work(candidate, dimension, false),
-    ) {
-        (Some(incumbent_cost), Some(candidate_cost)) => candidate_cost < incumbent_cost,
+    let costs = match work_model {
+        WorkModelVersion::V1 => (
+            integer_work(incumbent, dimension, false),
+            integer_work(candidate, dimension, false),
+        ),
+        WorkModelVersion::V2 => (
+            integer_work_v2(incumbent, dimension, rhs_cost),
+            integer_work_v2(candidate, dimension, rhs_cost),
+        ),
+    };
+    match (costs, margin) {
+        ((Some(incumbent_cost), Some(candidate_cost)), None) => candidate_cost < incumbent_cost,
+        ((Some(incumbent_cost), Some(candidate_cost)), Some(rho)) => {
+            crate::margin::margin_return_wins(candidate_cost, incumbent_cost, rho).unwrap_or(false)
+        }
         _ => false,
     }
 }
@@ -963,8 +1392,41 @@ fn strict_return_work_preferred(
 // The callback guard stops after charging L > cap. Setting cap = E proves
 // E < L <= I at the crossing callback; the strict inequality fixes the exact
 // integer boundary without a ratio, rounding slack, or fitted safety factor.
-fn strict_return_comparator_ceiling(candidate: &SwitchingSegment, dimension: usize) -> Option<u64> {
-    let cost = integer_work(candidate, dimension, false)?;
+#[cfg(test)]
+fn strict_return_comparator_ceiling(
+    candidate: &SwitchingSegment,
+    dimension: usize,
+    work_model: WorkModelVersion,
+    rhs_cost: RhsCost,
+) -> Option<u64> {
+    strict_return_comparator_ceiling_with_margin(candidate, dimension, work_model, rhs_cost, None)
+}
+
+fn strict_return_comparator_ceiling_with_margin(
+    candidate: &SwitchingSegment,
+    dimension: usize,
+    work_model: WorkModelVersion,
+    rhs_cost: RhsCost,
+    margin: Option<crate::margin::MarginRatio>,
+) -> Option<u64> {
+    let cost = match (work_model, margin) {
+        (WorkModelVersion::V1, None) => integer_work(candidate, dimension, false)?,
+        (WorkModelVersion::V1, Some(rho)) => {
+            crate::margin::margin_return_cap(integer_work(candidate, dimension, false)?, rho)?
+        }
+        (WorkModelVersion::V2, None) => v2_return_callback_cap(
+            integer_work_v2(candidate, dimension, rhs_cost)?,
+            rhs_cost.ir_cost(),
+        )?,
+        (WorkModelVersion::V2, Some(rho)) => {
+            let kappa = rhs_cost.ir_cost();
+            if kappa == 0 {
+                return None;
+            }
+            let cand_v2 = integer_work_v2(candidate, dimension, rhs_cost)?;
+            crate::margin::margin_return_cap(cand_v2, rho)? / kappa as u128
+        }
+    };
     (cost < u64::MAX as u128).then_some(cost as u64)
 }
 
@@ -1017,8 +1479,10 @@ fn qualified_work_preferred(
     incumbent_admissible: bool,
     ratio: f64,
     window_epoch: u64,
+    tolerance_epoch: u64,
 ) -> bool {
     let identity = SelectionIdentity {
+        tolerance_epoch,
         window_epoch,
         ..Default::default()
     };
@@ -1066,7 +1530,17 @@ fn drive_windows(
         mut implicit_rate_at_discard,
         mut implicit_seed,
         mut tenure_rechecks,
+        mut first_explicit_batch_in_tenure,
     } = progress;
+    let tolerance_epoch = compute_tolerance_epoch(opts);
+    let session_epochs = SessionEpochs {
+        model: 0,
+        provider: compute_provider_epoch(RouteId::Dopri5Rhs, problem),
+        norm: 0,
+        tolerance: tolerance_epoch,
+    };
+    let mut replay_safety_audited = false;
+    let mut competitive_trials_disabled = false;
     let fallback = config.fallback != DerivativeFallback::Forbidden;
     let return_ratio = if config.strict_return_work_improvement {
         1.0
@@ -1112,6 +1586,7 @@ fn drive_windows(
                     implicit_rate_at_discard,
                     implicit_seed,
                     tenure_rechecks,
+                    first_explicit_batch_in_tenure,
                 };
             }
             let remaining = opts.max_steps - result.stats.attempts;
@@ -1149,6 +1624,7 @@ fn drive_windows(
                     t1,
                     &[],
                     None,
+                    false,
                 ) {
                     Ok(batch) => batch,
                     Err(message) => {
@@ -1195,7 +1671,13 @@ fn drive_windows(
                         t1,
                         &[],
                         if config.strict_return_work_improvement {
-                            strict_entry_callback_ceiling(&implicit.record, problem.dimension)
+                            strict_entry_callback_ceiling_with_margin(
+                                &implicit.record,
+                                problem.dimension,
+                                config.work_model,
+                                config.rhs_cost,
+                                config.return_margin,
+                            )
                         } else {
                             Some(return_work_ceiling(
                                 implicit.record.work_units,
@@ -1203,6 +1685,7 @@ fn drive_windows(
                                 return_ratio,
                             ))
                         },
+                        false,
                     ) {
                         Ok(batch) => Some(batch),
                         Err(message) => {
@@ -1253,10 +1736,13 @@ fn drive_windows(
                 let explicit_wins = explicit.as_ref().is_some_and(|e| {
                     e.record.success
                         && if config.strict_return_work_improvement {
-                            strict_return_work_preferred(
+                            strict_return_work_preferred_with_margin(
                                 &implicit.record,
                                 &e.record,
                                 problem.dimension,
+                                config.work_model,
+                                config.rhs_cost,
+                                config.return_margin,
                             )
                         } else {
                             qualified_work_preferred(
@@ -1264,7 +1750,8 @@ fn drive_windows(
                                 &e.record,
                                 true,
                                 return_ratio,
-                                result.stats.segments.len() as u64,
+                                compute_window_epoch(result.stats.segments.len(), start, target),
+                                tolerance_epoch,
                             )
                         }
                 });
@@ -1285,6 +1772,7 @@ fn drive_windows(
                     );
                     result.stats.segments.push(explicit.record);
                     method = SwitchingMethod::Dopri5;
+                    first_explicit_batch_in_tenure = true;
                     entry_memory = EntryProbeMemory::default();
                     batches_since_entry_pilot = usize::MAX;
                     result.stats.switches += 1;
@@ -1387,9 +1875,40 @@ fn drive_windows(
             // Each driver clips a valid initial proposal to its endpoint. Do
             // not turn a representable short tail into an invalid (< min_h)
             // input by clipping the configuration before native validation.
+            let is_dense_route = matches!(problem.jacobian, Jacobian::Dense(_))
+                || (matches!(problem.jacobian, Jacobian::FiniteDifference)
+                    && problem.band.is_none());
+            let route_registry_active = config.progress_bound
+                || config.entry_policy.is_some()
+                || config.entry_seed != EntrySeed::Legacy;
+
+            let explicit_budget = if fallback {
+                let mut budget = config.explicit_attempt_budget;
+                if is_dense_route
+                    && route_registry_active
+                    && first_explicit_batch_in_tenure
+                    && !probe
+                {
+                    let c_min = 16.0 + if problem.is_autonomous() { 0.0 } else { 1.0 };
+                    let c_r = problem.dimension as f64 + c_min;
+                    let c_d = 6.0;
+                    let rho = config.entry_cost_ratio.max(1e-12);
+                    let k_d0_min = ((3.0 * c_r) / (rho * c_d)).ceil() as usize;
+                    // B7 keeps `max`: for n <= 35 it leaves the configured first
+                    // batch unchanged, for larger dense n it lengthens it. The
+                    // shortening `min` variant raised stiff-forced RHS calls from
+                    // 400 to 1840 in the design dry run (DESIGN.md, task F5); a
+                    // change needs the preregistered node of task X10.
+                    budget = budget.max(k_d0_min);
+                }
+                budget
+            } else {
+                remaining
+            };
+
             local.max_steps = remaining.min(match selected {
                 SwitchingMethod::Dopri5 if probe => config.probe_attempt_budget,
-                SwitchingMethod::Dopri5 if fallback => config.explicit_attempt_budget,
+                SwitchingMethod::Dopri5 if fallback => explicit_budget,
                 // With no fallback/probes, a single driver can use the
                 // entire remaining budget instead of needless batch restarts.
                 _ => remaining,
@@ -1403,37 +1922,42 @@ fn drive_windows(
             } else {
                 None
             };
-            let batch_result =
-                if selected == SwitchingMethod::Dopri5 && !probe && config.carry_explicit_step {
-                    match session.as_deref_mut() {
-                        Some(active) => run_persistent_explicit(active, start, target, t1, &local),
-                        None => Err("explicit tenure has no active native session".into()),
+            let batch_result = if selected == SwitchingMethod::Dopri5
+                && !probe
+                && config.carry_explicit_step
+            {
+                match session.as_deref_mut() {
+                    Some(active) => {
+                        run_persistent_explicit(active, start, target, t1, &local, session_epochs)
                     }
-                } else {
-                    // Interior window endpoints of a coalesced batch, strictly
-                    // increasing: endpoints below the clock resolution collapse
-                    // onto their neighbour instead of refusing the native run.
-                    let mut landings: Vec<f64> = Vec::new();
-                    for w in window..window + windows.saturating_sub(1) {
-                        let t = window_target((t0, t1), w, config.window_count);
-                        if t > start && landings.last().is_none_or(|last| t > *last) {
-                            landings.push(t);
-                        }
+                    None => Err("explicit tenure has no active native session".into()),
+                }
+            } else {
+                // Interior window endpoints of a coalesced batch, strictly
+                // increasing: endpoints below the clock resolution collapse
+                // onto their neighbour instead of refusing the native run.
+                let mut landings: Vec<f64> = Vec::new();
+                for w in window..window + windows.saturating_sub(1) {
+                    let t = window_target((t0, t1), w, config.window_count);
+                    if t > start && landings.last().is_none_or(|last| t > *last) {
+                        landings.push(t);
                     }
-                    run(
-                        problem,
-                        start,
-                        batch_target,
-                        &result.final_state,
-                        &local,
-                        selected,
-                        probe,
-                        config.carry_explicit_step,
-                        t1,
-                        &landings,
-                        return_ceiling,
-                    )
-                };
+                }
+                run(
+                    problem,
+                    start,
+                    batch_target,
+                    &result.final_state,
+                    &local,
+                    selected,
+                    probe,
+                    config.carry_explicit_step,
+                    t1,
+                    &landings,
+                    return_ceiling,
+                    false,
+                )
+            };
             let batch = match batch_result {
                 Ok(batch) => batch,
                 Err(message) => {
@@ -1449,9 +1973,13 @@ fn drive_windows(
                 fatal,
                 budget_stop,
                 ceiling_stop,
+                ..
             } = batch;
             record.windows = windows;
             charge(&mut result.stats, &record);
+            if selected == SwitchingMethod::Dopri5 && !probe {
+                first_explicit_batch_in_tenure = false;
+            }
             if record.attempts == 0 && record.reached_time < batch_target && !fatal {
                 record.decision = "driver stopped without progress or attempted step";
                 result.message = record.decision.into();
@@ -1486,7 +2014,13 @@ fn drive_windows(
                             remaining.min(config.implicit_pilot_attempt_budget)
                         };
                         let comparator_ceiling = if config.strict_return_work_improvement {
-                            strict_return_comparator_ceiling(&record, problem.dimension)
+                            strict_return_comparator_ceiling_with_margin(
+                                &record,
+                                problem.dimension,
+                                config.work_model,
+                                config.rhs_cost,
+                                config.return_margin,
+                            )
                         } else {
                             config
                                 .stop_dominated_return_comparator
@@ -1511,6 +2045,7 @@ fn drive_windows(
                             t1,
                             &[],
                             comparator_ceiling,
+                            false,
                         ) {
                             Ok(mut replay) => {
                                 charge(&mut result.stats, &replay.record);
@@ -1536,10 +2071,13 @@ fn drive_windows(
                                 // predicate never labels its output admissible.
                                 let prefix_preferred = !replay.record.success
                                     && if config.strict_return_work_improvement {
-                                        strict_return_work_preferred(
+                                        strict_return_work_preferred_with_margin(
                                             &replay.record,
                                             &record,
                                             problem.dimension,
+                                            config.work_model,
+                                            config.rhs_cost,
+                                            config.return_margin,
                                         )
                                     } else {
                                         prefix_cost_dominates(
@@ -1555,10 +2093,13 @@ fn drive_windows(
                                     && replay.ceiling_stop
                                     && prefix_preferred;
                                 economical = if config.strict_return_work_improvement {
-                                    strict_return_work_preferred(
+                                    strict_return_work_preferred_with_margin(
                                         &replay.record,
                                         &record,
                                         problem.dimension,
+                                        config.work_model,
+                                        config.rhs_cost,
+                                        config.return_margin,
                                     )
                                 } else if replay.record.success {
                                     qualified_work_preferred(
@@ -1566,7 +2107,12 @@ fn drive_windows(
                                         &record,
                                         true,
                                         return_ratio,
-                                        result.stats.segments.len() as u64,
+                                        compute_window_epoch(
+                                            result.stats.segments.len(),
+                                            start,
+                                            target,
+                                        ),
+                                        tolerance_epoch,
                                     )
                                 } else {
                                     prefix_preferred
@@ -1630,6 +2176,7 @@ fn drive_windows(
                     explicit_step = record.proposed_next_step;
                     commit(&mut result, &mut record, state, landings);
                     method = SwitchingMethod::Dopri5;
+                    first_explicit_batch_in_tenure = true;
                     entry_memory = EntryProbeMemory::default();
                     batches_since_entry_pilot = usize::MAX;
                     result.stats.switches += 1;
@@ -1713,7 +2260,41 @@ fn drive_windows(
                     if rearm {
                         pilot_discards = 0;
                     }
-                    let adaptive_due = if let Some(a) = &config.entry_probe_adaptation {
+                    let batch_min_secant_h_lambda = (record.accepted_steps > 0)
+                        .then(rodas5p_integrators::NativeSessionTelemetry::last_batch_min_secant_h_lambda)
+                        .flatten();
+                    let adaptive_due = if let Some(fraction) = config.stiffness_gate_fraction {
+                        let flagged = batch_min_secant_h_lambda.is_some_and(|hl| {
+                            rodas5p_integrators::dopri5_stiffness::dopri5_stability_limited(
+                                hl, fraction,
+                            )
+                        });
+                        if flagged {
+                            if let Some(a) = &config.entry_probe_adaptation {
+                                let (reason, _) = entry_memory.schedule(
+                                    &record,
+                                    batches_since_entry_pilot,
+                                    config,
+                                    a,
+                                );
+                                record.entry_probe_reason = Some(reason);
+                            }
+                            true
+                        } else if let Some(a) = &config.entry_probe_adaptation {
+                            if batches_since_entry_pilot == usize::MAX {
+                                batches_since_entry_pilot = 1;
+                            }
+                            let due = batches_since_entry_pilot >= a.max_backoff_batches;
+                            record.entry_probe_reason = Some(if due {
+                                EntryProbeReason::SentinelExpired
+                            } else {
+                                EntryProbeReason::StableEvidenceBackoff
+                            });
+                            due
+                        } else {
+                            false
+                        }
+                    } else if let Some(a) = &config.entry_probe_adaptation {
                         let (reason, due) =
                             entry_memory.schedule(&record, batches_since_entry_pilot, config, a);
                         record.entry_probe_reason = Some(reason);
@@ -1729,8 +2310,37 @@ fn drive_windows(
                         let mut enter = config.implicit_pilot_attempt_budget == 0;
                         let mut entry_seed = None;
                         if config.implicit_pilot_attempt_budget > 0 {
+                            if config.audit_replay_safety && !replay_safety_audited {
+                                // Plan section 10.4: evaluate the callbacks twice at the
+                                // accepted checkpoint, charge the work, and disable all
+                                // competitive trials for the rest of the solve on a mismatch.
+                                replay_safety_audited = true;
+                                let n = problem.dimension;
+                                let (mut a, mut b) = (vec![0.0; n], vec![0.0; n]);
+                                let ok_a = (problem.rhs)(start, &result.final_state, &mut a);
+                                let ok_b = (problem.rhs)(start, &result.final_state, &mut b);
+                                result.stats.rhs_calls += 2;
+                                let mut replay_ok = ok_a.is_ok()
+                                    && ok_b.is_ok()
+                                    && a.iter().zip(&b).all(|(x, z)| x.to_bits() == z.to_bits());
+                                if replay_ok && let Jacobian::Jvp(jvp) = &problem.jacobian {
+                                    let v = vec![1.0; n];
+                                    let ok_c = (jvp)(start, &result.final_state, &v, &mut a);
+                                    let ok_d = (jvp)(start, &result.final_state, &v, &mut b);
+                                    result.stats.jvp_vectors += 2;
+                                    replay_ok = ok_c.is_ok()
+                                        && ok_d.is_ok()
+                                        && a.iter()
+                                            .zip(&b)
+                                            .all(|(x, z)| x.to_bits() == z.to_bits());
+                                }
+                                if !replay_ok {
+                                    competitive_trials_disabled = true;
+                                }
+                            }
                             let remaining = opts.max_steps - result.stats.attempts;
                             if (pilot_eligible || rearm)
+                                && !competitive_trials_disabled
                                 && (config.entry_probe_adaptation.is_some()
                                     || implicit_pilots < config.implicit_pilot_limit)
                                 && adaptive_due
@@ -1756,7 +2366,13 @@ fn drive_windows(
                                 // Charged callback work alone past this bound
                                 // means the replay cannot pass: stop it there.
                                 let entry_ceiling = if config.strict_entry_work_improvement {
-                                    strict_entry_callback_ceiling(&record, problem.dimension)
+                                    strict_entry_callback_ceiling_with_margin(
+                                        &record,
+                                        problem.dimension,
+                                        config.work_model,
+                                        config.rhs_cost,
+                                        config.entry_margin,
+                                    )
                                 } else {
                                     Some((config.entry_cost_ratio * record.work_units).floor()
                                         as u64)
@@ -1773,14 +2389,18 @@ fn drive_windows(
                                     t1,
                                     &[],
                                     entry_ceiling,
+                                    config.progress_bound,
                                 ) {
                                     Ok(mut pilot) => {
                                         charge(&mut result.stats, &pilot.record);
                                         enter = if config.strict_entry_work_improvement {
-                                            strict_entry_work_preferred(
+                                            strict_entry_work_preferred_with_margin(
                                                 &record,
                                                 &pilot.record,
                                                 problem.dimension,
+                                                config.work_model,
+                                                config.rhs_cost,
+                                                config.entry_margin,
                                             )
                                         } else if config.entry_probe_adaptation.is_some() {
                                             // Both records are freshly constructed from the
@@ -1792,7 +2412,12 @@ fn drive_windows(
                                                 &pilot.record,
                                                 record.accepted_steps > 0,
                                                 config.entry_cost_ratio,
-                                                result.stats.segments.len() as u64,
+                                                compute_window_epoch(
+                                                    result.stats.segments.len(),
+                                                    start,
+                                                    target,
+                                                ),
+                                                tolerance_epoch,
                                             )
                                         } else {
                                             pilot.record.success
@@ -1806,8 +2431,15 @@ fn drive_windows(
                                                 None
                                             };
                                         pilot.record.entry_probe_reason = record.entry_probe_reason;
-                                        if config.entry_probe_adaptation.is_some() {
-                                            entry_memory.compared(&record, enter);
+                                        if let Some(ref adaptation) = config.entry_probe_adaptation
+                                        {
+                                            entry_memory.compared_with_pilot(
+                                                &record,
+                                                Some(&pilot.record),
+                                                enter,
+                                                adaptation,
+                                                config.entry_cost_ratio,
+                                            );
                                             if config.retry_unresolved_entry_once
                                                 && !enter
                                                 && !pilot.fatal
@@ -1830,6 +2462,8 @@ fn drive_windows(
                                             "same-checkpoint implicit pilot passed strict integer work comparison"
                                         } else if enter {
                                             "same-checkpoint implicit pilot passed entry work ratio"
+                                        } else if pilot.progress_bound_stop {
+                                            "same-checkpoint implicit pilot discarded: unreachable under step growth bound"
                                         } else if pilot.ceiling_stop {
                                             "same-checkpoint implicit pilot discarded: exceeded entry work ceiling"
                                         } else {
@@ -1897,7 +2531,11 @@ fn drive_windows(
                             implicit_seed = entry_seed;
                             tenure_rechecks = 0;
                         } else {
-                            record.decision = "implicit entry not supported by bounded pilot evidence; retain explicit route";
+                            record.decision = if competitive_trials_disabled {
+                                "callback replay mismatch: RHS or JVP non-deterministic; competitive trials disabled; retain explicit route"
+                            } else {
+                                "implicit entry not supported by bounded pilot evidence; retain explicit route"
+                            };
                         }
                     } else if !record.success && !budget_stop {
                         commit(&mut result, &mut record, state, landings);
@@ -1965,6 +2603,7 @@ fn drive_windows(
         implicit_rate_at_discard,
         implicit_seed,
         tenure_rechecks,
+        first_explicit_batch_in_tenure,
     }
 }
 
@@ -2050,6 +2689,28 @@ struct Batch {
     budget_stop: bool,
     /// The trial stopped because its charged work passed its ceiling.
     ceiling_stop: bool,
+    progress_bound_stop: bool,
+}
+
+impl From<BatchOutcome> for Batch {
+    fn from(outcome: BatchOutcome) -> Self {
+        let (fatal, budget_stop, ceiling_stop, progress_bound_stop) = match outcome.stop {
+            BatchStop::Completed => (false, false, false, false),
+            BatchStop::Budget => (false, true, false, false),
+            BatchStop::Ceiling => (false, false, true, false),
+            BatchStop::ProgressBound => (false, false, true, true),
+            BatchStop::Fatal(_) => (true, false, false, false),
+        };
+        Self {
+            record: outcome.record,
+            state: outcome.state,
+            landings: outcome.landed,
+            fatal,
+            budget_stop,
+            ceiling_stop,
+            progress_bound_stop,
+        }
+    }
 }
 
 fn run_persistent_explicit(
@@ -2058,14 +2719,15 @@ fn run_persistent_explicit(
     target: f64,
     solve_end: f64,
     opts: &Options,
+    epochs: SessionEpochs,
 ) -> Result<Batch, String> {
     let initial_step = session.checkpoint().proposed_h;
     let before = session.snapshot();
     let outcome = session
-        .advance_to(target, opts.max_steps, SessionEpochs::default())
+        .advance_to(target, opts.max_steps, epochs)
         .map_err(|error| error.to_string())?;
-    let driver = session.stats_since(before);
     let after = session.snapshot();
+    let driver = session.stats_between(before, after);
     let checkpoint = session.checkpoint();
     let reached = checkpoint.t;
     let state = checkpoint.y.to_vec();
@@ -2122,6 +2784,7 @@ fn run_persistent_explicit(
         fatal,
         budget_stop,
         ceiling_stop: false,
+        progress_bound_stop: false,
     })
 }
 
@@ -2138,218 +2801,41 @@ fn run(
     solve_end: f64,
     landings: &[f64],
     ceiling: Option<u64>,
+    is_entry_pilot: bool,
 ) -> Result<Batch, String> {
-    let (
-        reached,
-        state,
-        landed,
-        success,
-        attempts,
-        accepted,
-        rejected,
-        rhs,
-        jac,
-        jvp,
-        ft,
-        solves,
-        fatal,
-        budget,
-        ceiling_stop,
-        driver,
-        proposed_next_step,
-    ) = match method {
-        SwitchingMethod::Dopri5 => {
-            // Probes always use a scoped native session: it can be advanced one
-            // attempt at a time, so their RHS work can be bounded exactly.
-            let (next, r, ceiling_stop) = if carry_explicit_step || probe {
-                let epochs = SessionEpochs::default();
-                // The batch target is an intermediate checkpoint, not the
-                // native terminal time. At tf the native driver intentionally
-                // skips the controller's next proposal, since none is needed.
-                let times = if target < solve_end {
-                    vec![start, target, solve_end]
-                } else {
-                    vec![start, target]
-                };
-                let (outcome, r) = Dopri5::with_session(
-                    problem,
-                    (start, solve_end),
-                    y,
-                    opts,
-                    &times,
-                    epochs,
-                    |session| {
-                        let mut stopped = false;
-                        match ceiling {
-                            None => {
-                                session.advance_to(target, opts.max_steps, epochs)?;
-                            }
-                            Some(cap) => {
-                                let base = session.checkpoint().counters.rhs_calls;
-                                loop {
-                                    let step = session.advance_to(target, 1, epochs)?;
-                                    if step != crate::SessionAdvance::Yield {
-                                        break;
-                                    }
-                                    if session.checkpoint().counters.rhs_calls - base > cap {
-                                        stopped = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        Ok::<(f64, bool), crate::ExplicitSolveError>((
-                            session.checkpoint().proposed_h,
-                            stopped,
-                        ))
-                    },
-                )
-                .map_err(|e| e.to_string())?;
-                let (next, stopped) = outcome.map_err(|e| e.to_string())?;
-                // No proposal was newly computed after the final accepted
-                // step of the full solve. Do not expose its stale snapshot.
-                // Without step carry no proposal is published at all.
-                (
-                    (carry_explicit_step && r.final_time < solve_end).then_some(next),
-                    r,
-                    stopped,
-                )
-            } else {
-                (
-                    None,
-                    Dopri5::solve(problem, (start, target), y, opts).map_err(|e| e.to_string())?,
-                    false,
-                )
-            };
-            let c = r.stats.counters;
-            // A deliberate pause at this batch's endpoint is a successful
-            // batch even though the native full-span solve is unfinished.
-            let success = if carry_explicit_step || probe {
-                r.final_time == target
-                    && matches!(r.stop_reason, None | Some(Dopri5StopReason::AttemptBudget))
-                    && r.callback_failure.is_none()
-            } else {
-                r.success
-            };
-            (
-                r.final_time,
-                r.final_state,
-                Vec::new(),
-                success,
-                r.stats.attempts,
-                r.stats.accepted_steps,
-                r.stats.rejected_steps,
-                c.rhs_calls,
-                c.jacobian_builds,
-                c.jvp_vectors,
-                c.ft_calls,
-                c.linear_solves,
-                r.callback_failure.is_some(),
-                r.final_time < target && r.stop_reason == Some(Dopri5StopReason::AttemptBudget),
-                ceiling_stop,
-                SwitchingDriverStats::Dopri5(Box::new(r.stats)),
-                next.filter(|h| h.is_finite() && *h > 0.0),
-            )
-        }
-        SwitchingMethod::Rodas5p => {
-            let r = Rodas5p::solve_observed_bounded(
-                problem,
-                (start, target),
-                y,
-                opts,
-                landings,
-                ceiling,
-            )
-            .map_err(|e| e.to_string())?;
-            let c = r.stats.counters;
-            let success = r.status == Status::Success;
-            let fatal = matches!(
-                r.status,
-                Status::Failed(crate::FailureReason::CallbackFailed { .. })
-            );
-            let budget = matches!(
-                r.status,
-                Status::Failed(crate::FailureReason::MaxStepsReached { .. })
-            );
-            let ceiling_stop = matches!(
-                r.status,
-                Status::Failed(crate::FailureReason::WorkCeilingReached { .. })
-            );
-            let reached = *r.t.last().unwrap_or(&start);
-            let crate::Solution {
-                t: times,
-                y: states,
-                stats,
-                ..
-            } = r;
-            // The last row is the batch's accepted state; rows strictly
-            // between the start and that state are landed window endpoints.
-            let rows = times.len();
-            let mut landed = Vec::new();
-            let mut state = None;
-            for (index, (t, row)) in times.into_iter().zip(states).enumerate() {
-                if index + 1 == rows {
-                    state = Some(row);
-                } else if t > start && t < reached {
-                    landed.push((t, row));
-                }
-            }
-            (
-                reached,
-                state.unwrap_or_else(|| y.to_vec()),
-                landed,
-                success,
-                stats.attempts,
-                stats.accepted_steps,
-                stats.rejected_steps,
-                c.rhs_calls,
-                c.jacobian_builds,
-                c.jvp_vectors,
-                c.ft_calls,
-                c.linear_solves,
-                fatal,
-                budget,
-                ceiling_stop,
-                SwitchingDriverStats::Rodas5p(Box::new(stats)),
-                None,
-            )
-        }
+    let route = match method {
+        SwitchingMethod::Dopri5 => RouteId::Dopri5Rhs,
+        SwitchingMethod::Rodas5p => Rodas5pWindowDriver::for_problem(problem).route(),
     };
-    let work_units =
-        rhs as f64 + jvp as f64 + ft as f64 + jac as f64 * y.len() as f64 + solves as f64;
-    Ok(Batch {
-        record: SwitchingSegment {
-            method,
-            start_time: start,
-            target_time: target,
-            reached_time: reached,
-            windows: 1,
-            is_probe: probe,
-            committed: false,
-            success,
-            attempts,
-            accepted_steps: accepted,
-            rejected_steps: rejected,
-            rhs_calls: rhs,
-            jacobian_builds: jac,
-            jvp_vectors: jvp,
-            ft_calls: ft,
-            linear_solves: solves,
-            work_units,
-            decision: "",
-            evidence: SwitchingEvidence::Uncompared,
-            initial_step: opts.h0,
-            proposed_next_step,
-            comparator_work_ratio: None,
-            entry_probe_reason: None,
-            driver,
-        },
-        state,
-        landings: landed,
-        fatal,
-        budget_stop: budget,
-        ceiling_stop,
-    })
+    let identity = SelectionIdentity {
+        model_epoch: 0,
+        provider_epoch: compute_provider_epoch(route, problem),
+        chart_epoch: 0,
+        mesh_epoch: 0,
+        physical_norm_epoch: 0,
+        tolerance_epoch: compute_tolerance_epoch(opts),
+        window_epoch: compute_window_epoch(0, start, target),
+        environment_epoch: 0,
+    };
+    let req = BatchRequest {
+        start_time: start,
+        target_time: target,
+        solve_end,
+        state: y,
+        proposed_h: Some(opts.h0),
+        options: opts,
+        landings,
+        ceiling,
+        carry_explicit_step,
+        is_probe: probe,
+        is_entry_pilot,
+        identity,
+    };
+    let outcome = match method {
+        SwitchingMethod::Dopri5 => Dopri5WindowDriver.run(problem, &req)?,
+        SwitchingMethod::Rodas5p => Rodas5pWindowDriver::for_problem(problem).run(problem, &req)?,
+    };
+    Ok(outcome.into())
 }
 
 fn commit(
@@ -2406,6 +2892,13 @@ fn validate(
     }
     if p.mass.is_some() || !p.events.is_empty() || o.dense_output {
         return Err(bad("identity mass, no events and endpoint output required"));
+    }
+    if let Some(declared) = c.entry_policy
+        && declared != c.effective_entry_policy()
+    {
+        return Err(bad(
+            "declared entry_policy does not match the effective entry schedule",
+        ));
     }
     if c.window_count == 0
         || c.window_count > 1_000_000
@@ -2495,6 +2988,34 @@ fn validate(
         {
             return Err(bad("band provider/declaration mismatch"));
         }
+    }
+    if let Some(m) = c.entry_margin
+        && crate::margin::MarginRatio::new(m.num, m.den).is_none()
+    {
+        return Err(bad("entry_margin must satisfy 0 < num <= den"));
+    }
+    if let Some(m) = c.return_margin
+        && crate::margin::MarginRatio::new(m.num, m.den).is_none()
+    {
+        return Err(bad("return_margin must satisfy 0 < num <= den"));
+    }
+    if c.entry_margin.is_some() || c.return_margin.is_some() {
+        let eff_entry = c
+            .entry_margin
+            .unwrap_or(crate::margin::MarginRatio { num: 1, den: 1 });
+        let eff_ret = c
+            .return_margin
+            .unwrap_or(crate::margin::MarginRatio { num: 1, den: 1 });
+        if !crate::margin::band_is_open(eff_entry, eff_ret) {
+            return Err(bad(
+                "hysteresis band must be open: entry_margin * return_margin < 1",
+            ));
+        }
+    }
+    if let Some(fraction) = c.stiffness_gate_fraction
+        && !(fraction.is_finite() && fraction > 0.0 && fraction <= 1.0)
+    {
+        return Err(bad("stiffness_gate_fraction must be in (0, 1]"));
     }
     Ok(())
 }
@@ -2677,6 +3198,7 @@ mod adaptive_return_productive_contract {
             implicit_rate_at_discard: None,
             implicit_seed: None,
             tenure_rechecks: 0,
+            first_explicit_batch_in_tenure: true,
         };
         let r = drive_windows(&p, (0.0, 1e-15), &opts, &config, state, None).result;
         assert_eq!(r.final_time, 1e-15, "{}", r.message);
@@ -2814,6 +3336,7 @@ mod adaptive_return_productive_contract {
             implicit_rate_at_discard: None,
             implicit_seed: None,
             tenure_rechecks: 0,
+            first_explicit_batch_in_tenure: true,
         };
         let after = drive_windows(&p, (0.0, 0.01), &opts, &config, state, None);
         let r = after.result;
@@ -2972,11 +3495,29 @@ mod comparator_dominance_arithmetic_contract {
         for cost in [1, 192, 1 << 53, (1 << 53) + 1, u64::MAX - 1] {
             incumbent.rhs_calls = cost;
             candidate.rhs_calls = cost;
-            assert!(!strict_entry_work_preferred(&incumbent, &candidate, 1));
+            assert!(!strict_entry_work_preferred(
+                &incumbent,
+                &candidate,
+                1,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
+            ));
             candidate.rhs_calls = cost - 1;
-            assert!(strict_entry_work_preferred(&incumbent, &candidate, 1));
+            assert!(strict_entry_work_preferred(
+                &incumbent,
+                &candidate,
+                1,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
+            ));
             candidate.rhs_calls = cost + 1;
-            assert!(!strict_entry_work_preferred(&incumbent, &candidate, 1));
+            assert!(!strict_entry_work_preferred(
+                &incumbent,
+                &candidate,
+                1,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
+            ));
         }
     }
 
@@ -2991,9 +3532,21 @@ mod comparator_dominance_arithmetic_contract {
         assert_eq!(integer_work(&incumbent, 17, false), Some(263));
         assert_eq!(integer_work(&incumbent, 17, true), Some(244));
         candidate.rhs_calls = 262;
-        assert!(strict_entry_work_preferred(&incumbent, &candidate, 17));
+        assert!(strict_entry_work_preferred(
+            &incumbent,
+            &candidate,
+            17,
+            WorkModelVersion::V1,
+            RhsCost::Cheap
+        ));
         candidate.linear_solves = 1;
-        assert!(!strict_entry_work_preferred(&incumbent, &candidate, 17));
+        assert!(!strict_entry_work_preferred(
+            &incumbent,
+            &candidate,
+            17,
+            WorkModelVersion::V1,
+            RhsCost::Cheap
+        ));
         if usize::BITS == 64 {
             candidate.rhs_calls = u64::MAX;
             candidate.jvp_vectors = u64::MAX;
@@ -3004,9 +3557,19 @@ mod comparator_dominance_arithmetic_contract {
             assert!(!strict_entry_work_preferred(
                 &incumbent,
                 &candidate,
-                usize::MAX
+                usize::MAX,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
             ));
-            assert_eq!(strict_entry_callback_ceiling(&candidate, usize::MAX), None);
+            assert_eq!(
+                strict_entry_callback_ceiling(
+                    &candidate,
+                    usize::MAX,
+                    WorkModelVersion::V1,
+                    RhsCost::Cheap
+                ),
+                None
+            );
         }
     }
 
@@ -3015,7 +3578,13 @@ mod comparator_dominance_arithmetic_contract {
         let (mut incumbent, mut candidate) = replay_pair();
         incumbent.rhs_calls = 192;
         candidate.rhs_calls = 160;
-        assert!(strict_entry_work_preferred(&incumbent, &candidate, 1));
+        assert!(strict_entry_work_preferred(
+            &incumbent,
+            &candidate,
+            1,
+            WorkModelVersion::V1,
+            RhsCost::Cheap
+        ));
         for changed in 0..5 {
             let mut rejected = candidate.clone();
             match changed {
@@ -3025,10 +3594,76 @@ mod comparator_dominance_arithmetic_contract {
                 3 => rejected.reached_time = 0.375,
                 _ => rejected.start_time = f64::NAN,
             }
-            assert!(!strict_entry_work_preferred(&incumbent, &rejected, 1));
+            assert!(!strict_entry_work_preferred(
+                &incumbent,
+                &rejected,
+                1,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
+            ));
         }
         incumbent.accepted_steps = 0;
-        assert!(!strict_entry_work_preferred(&incumbent, &candidate, 1));
+        assert!(!strict_entry_work_preferred(
+            &incumbent,
+            &candidate,
+            1,
+            WorkModelVersion::V1,
+            RhsCost::Cheap
+        ));
+    }
+
+    #[test]
+    fn v2_entry_callback_cap_matches_boundary_table() {
+        for (e, k, cap) in [
+            (0u128, 50u64, Some(0u128)),
+            (1, 50, Some(0)),
+            (50, 50, Some(0)),
+            (51, 50, Some(1)),
+            (100, 50, Some(1)),
+            (101, 50, Some(2)),
+            (7, 1, Some(6)),
+            (10, 0, None),
+        ] {
+            assert_eq!(super::v2_entry_callback_cap(e, k), cap, "e={e} kappa={k}");
+        }
+    }
+
+    #[test]
+    fn v2_return_callback_cap_matches_boundary_table() {
+        for (e, k, cap) in [
+            (0u128, 50u64, Some(0u128)),
+            (49, 50, Some(0)),
+            (50, 50, Some(1)),
+            (100, 50, Some(2)),
+            (7, 1, Some(7)),
+            (10, 0, None),
+        ] {
+            assert_eq!(super::v2_return_callback_cap(e, k), cap, "e={e} kappa={k}");
+        }
+    }
+
+    #[test]
+    fn v2_caps_are_decision_preserving() {
+        for kappa in [1u64, 7, 50, 500] {
+            for e in 0u128..400 {
+                let entry = super::v2_entry_callback_cap(e, kappa).expect("kappa > 0");
+                let ret = super::v2_return_callback_cap(e, kappa).expect("kappa > 0");
+                for overhead in [0u128, 1, 13, 1000] {
+                    for c in 0u128..60 {
+                        let pilot = kappa as u128 * c + overhead;
+                        if c > entry {
+                            assert!(pilot >= e, "entry cap {entry} would stop a winning pilot");
+                        }
+                        if c > ret {
+                            assert!(
+                                pilot > e,
+                                "return cap {ret} would stop before E < I is proved"
+                            );
+                        }
+                    }
+                }
+            }
+        }
     }
 
     #[test]
@@ -3042,10 +3677,16 @@ mod comparator_dominance_arithmetic_contract {
             (u64::MAX, u64::MAX - 1),
         ] {
             incumbent.rhs_calls = cost;
-            assert_eq!(strict_entry_callback_ceiling(&incumbent, 1), Some(cap));
+            assert_eq!(
+                strict_entry_callback_ceiling(&incumbent, 1, WorkModelVersion::V1, RhsCost::Cheap),
+                Some(cap)
+            );
         }
         incumbent.jvp_vectors = 1;
-        assert_eq!(strict_entry_callback_ceiling(&incumbent, 1), None);
+        assert_eq!(
+            strict_entry_callback_ceiling(&incumbent, 1, WorkModelVersion::V1, RhsCost::Cheap),
+            None
+        );
     }
 
     #[test]
@@ -3055,13 +3696,31 @@ mod comparator_dominance_arithmetic_contract {
         for cost in [1, 192, (1 << 53) + 1, u64::MAX - 1] {
             candidate.rhs_calls = cost;
             incumbent.rhs_calls = cost;
-            assert!(!strict_return_work_preferred(&incumbent, &candidate, 1));
+            assert!(!strict_return_work_preferred(
+                &incumbent,
+                &candidate,
+                1,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
+            ));
             incumbent.rhs_calls += 1;
-            assert!(strict_return_work_preferred(&incumbent, &candidate, 1));
+            assert!(strict_return_work_preferred(
+                &incumbent,
+                &candidate,
+                1,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
+            ));
             // An incomplete prefix supplies cost evidence even at zero progress.
             incumbent.reached_time = incumbent.start_time;
             incumbent.accepted_steps = 0;
-            assert!(strict_return_work_preferred(&incumbent, &candidate, 1));
+            assert!(strict_return_work_preferred(
+                &incumbent,
+                &candidate,
+                1,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
+            ));
         }
         for changed in 0..7 {
             let mut bad = incumbent.clone();
@@ -3074,10 +3733,22 @@ mod comparator_dominance_arithmetic_contract {
                 5 => bad.success = true,
                 _ => bad.start_time = f64::INFINITY,
             }
-            assert!(!strict_return_work_preferred(&bad, &candidate, 1));
+            assert!(!strict_return_work_preferred(
+                &bad,
+                &candidate,
+                1,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
+            ));
         }
         candidate.success = false;
-        assert!(!strict_return_work_preferred(&incumbent, &candidate, 1));
+        assert!(!strict_return_work_preferred(
+            &incumbent,
+            &candidate,
+            1,
+            WorkModelVersion::V1,
+            RhsCost::Cheap
+        ));
     }
 
     #[test]
@@ -3086,12 +3757,29 @@ mod comparator_dominance_arithmetic_contract {
         incumbent.target_time = candidate.target_time;
         for cost in [0, 1, 192, (1 << 53) + 1, u64::MAX - 1] {
             candidate.rhs_calls = cost;
-            assert_eq!(strict_return_comparator_ceiling(&candidate, 1), Some(cost));
+            assert_eq!(
+                strict_return_comparator_ceiling(
+                    &candidate,
+                    1,
+                    WorkModelVersion::V1,
+                    RhsCost::Cheap
+                ),
+                Some(cost)
+            );
             incumbent.rhs_calls = cost + 1;
-            assert!(strict_return_work_preferred(&incumbent, &candidate, 1));
+            assert!(strict_return_work_preferred(
+                &incumbent,
+                &candidate,
+                1,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
+            ));
         }
         candidate.rhs_calls = u64::MAX;
-        assert_eq!(strict_return_comparator_ceiling(&candidate, 1), None);
+        assert_eq!(
+            strict_return_comparator_ceiling(&candidate, 1, WorkModelVersion::V1, RhsCost::Cheap),
+            None
+        );
         if usize::BITS == 64 {
             for r in [&mut incumbent, &mut candidate] {
                 r.rhs_calls = u64::MAX;
@@ -3101,14 +3789,92 @@ mod comparator_dominance_arithmetic_contract {
                 r.linear_solves = u64::MAX;
             }
             assert_eq!(
-                strict_return_comparator_ceiling(&candidate, usize::MAX),
+                strict_return_comparator_ceiling(
+                    &candidate,
+                    usize::MAX,
+                    WorkModelVersion::V1,
+                    RhsCost::Cheap
+                ),
                 None
             );
             assert!(!strict_return_work_preferred(
                 &incumbent,
                 &candidate,
-                usize::MAX
+                usize::MAX,
+                WorkModelVersion::V1,
+                RhsCost::Cheap
             ));
+        }
+    }
+
+    #[test]
+    fn public_enum_variants_exhaustive_baseline_v1() {
+        // Compile-time exhaustiveness lock for schema v1 public enums (plan §16 item 5).
+        // Prevents unreviewed variant changes or early #[non_exhaustive] additions before schema v2.
+        match DerivativeFallback::Forbidden {
+            DerivativeFallback::Forbidden => {}
+            DerivativeFallback::ProvidedOnly => {}
+            DerivativeFallback::AllowFiniteDifference => {}
+        }
+
+        match EntryProbeReason::InitialComparison {
+            EntryProbeReason::InitialComparison => {}
+            EntryProbeReason::StableEvidenceBackoff => {}
+            EntryProbeReason::BackoffExpired => {}
+            EntryProbeReason::SentinelExpired => {}
+            EntryProbeReason::WorkDeteriorated => {}
+            EntryProbeReason::WorkRegimeRelaxed => {}
+            EntryProbeReason::PendingRegimeComparison => {}
+            EntryProbeReason::UnresolvedEntryRetry => {}
+            EntryProbeReason::RejectionDeteriorated => {}
+        }
+
+        match SwitchingEvidence::Uncompared {
+            SwitchingEvidence::Uncompared => {}
+            SwitchingEvidence::ExplicitWorkPressure => {}
+            SwitchingEvidence::ImplicitCheaperOnPrefix => {}
+            SwitchingEvidence::ImplicitNotCheaperOnPrefix => {}
+            SwitchingEvidence::ImplicitPilotIncomplete => {}
+            SwitchingEvidence::ExplicitCheaperThanPreviousWindow => {}
+            SwitchingEvidence::ExplicitCheaperOnSameWindow => {}
+            SwitchingEvidence::ExplicitCheaperThanComparatorLowerBound => {}
+            SwitchingEvidence::ImplicitPreferredOnSameWindow => {}
+            SwitchingEvidence::ExplicitReturnNotSupported => {}
+            SwitchingEvidence::ExplicitStabilityLimited => {}
+            SwitchingEvidence::ImplicitWindowCompleted => {}
+        }
+
+        match SwitchingMethod::Dopri5 {
+            SwitchingMethod::Dopri5 => {}
+            SwitchingMethod::Rodas5p => {}
+        }
+
+        match crate::selection_evidence::CostUnit::Work {
+            crate::selection_evidence::CostUnit::Work => {}
+            crate::selection_evidence::CostUnit::WorkModel(_) => {}
+            crate::selection_evidence::CostUnit::Seconds => {}
+        }
+
+        match crate::selection_evidence::CostEvidenceKind::ObservedWork {
+            crate::selection_evidence::CostEvidenceKind::ObservedWork => {}
+            crate::selection_evidence::CostEvidenceKind::ObservedLowerBound => {}
+            crate::selection_evidence::CostEvidenceKind::RateExtrapolated => {}
+            crate::selection_evidence::CostEvidenceKind::EmpiricalTiming => {}
+            crate::selection_evidence::CostEvidenceKind::DeclaredBound => {}
+        }
+
+        match crate::selection_evidence::CostIncomparability::IdentityMismatch {
+            crate::selection_evidence::CostIncomparability::IdentityMismatch => {}
+            crate::selection_evidence::CostIncomparability::UnitMismatch => {}
+            crate::selection_evidence::CostIncomparability::OutputNotQualified => {}
+            crate::selection_evidence::CostIncomparability::InvalidInterval => {}
+            crate::selection_evidence::CostIncomparability::InvalidPolicy => {}
+        }
+
+        match crate::selection_evidence::CostComparison::PreferCandidate {
+            crate::selection_evidence::CostComparison::PreferCandidate => {}
+            crate::selection_evidence::CostComparison::RetainIncumbent => {}
+            crate::selection_evidence::CostComparison::Incomparable(_) => {}
         }
     }
 }

@@ -1,0 +1,83 @@
+{
+  "schema": "vigilode.loop-l1.trial-merge.test-set-compare.v1",
+  "generator": "research/production_loop_20261116/trial_merge/compare_test_sets.py",
+  "comparisons": [
+    {
+      "label": "facade_core_krylov",
+      "baseline_log": "research/production_loop_20261116/logs/baseline_facade_core_krylov.log",
+      "merged_log": "research/production_loop_20261116/trial_merge/logs/t2_a_facade_core_krylov.log",
+      "baseline_tests": 806,
+      "merged_tests": 963,
+      "baseline_tests_missing_after_merge": [],
+      "outcome_changed": [
+        {
+          "test": "sp02_workspace_charge:tests/sp02_workspace_charge.rs :: gmres_workspace_charge_contract",
+          "baseline": [
+            "FAILED"
+          ],
+          "merged": [
+            "ok"
+          ]
+        },
+        {
+          "test": "sp02_workspace_charge:tests/sp02_workspace_charge.rs :: lgmres_into_workspace_charge_contract",
+          "baseline": [
+            "FAILED"
+          ],
+          "merged": [
+            "ok"
+          ]
+        }
+      ],
+      "new_tests_after_merge": 157,
+      "new_test_binaries_after_merge": [
+        "fd_chebyshev_contracts:tests/fd_chebyshev_contracts.rs",
+        "givens_ls_contracts:tests/givens_ls_contracts.rs",
+        "hermite_splice_contracts:tests/hermite_splice_contracts.rs",
+        "holdout_and_global_order_contracts:tests/holdout_and_global_order_contracts.rs",
+        "hybrid_automaton_contracts:tests/hybrid_automaton_contracts.rs",
+        "nonnormal_observers_contracts:tests/nonnormal_observers_contracts.rs",
+        "production_contracts:tests/production_contracts.rs",
+        "production_hotloop_allocation_contracts:tests/production_hotloop_allocation_contracts.rs",
+        "registry_contracts:tests/registry_contracts.rs",
+        "secant_preconditioner_contracts:tests/secant_preconditioner_contracts.rs",
+        "shared_basis_contracts:tests/shared_basis_contracts.rs",
+        "sparse_jvp_contracts:tests/sparse_jvp_contracts.rs",
+        "switcher_v2_admission_contracts:tests/switcher_v2_admission_contracts.rs",
+        "switching_v2_remediation_contracts:tests/switching_v2_remediation_contracts.rs",
+        "unified_production_solver_contracts:tests/unified_production_solver_contracts.rs",
+        "work_model_contracts:tests/work_model_contracts.rs"
+      ]
+    },
+    {
+      "label": "integrators_peer",
+      "baseline_log": "research/production_loop_20261116/logs/baseline_integrators_peer.log",
+      "merged_log": "research/production_loop_20261116/trial_merge/logs/t2_b_integrators_peer.log",
+      "baseline_tests": 221,
+      "merged_tests": 239,
+      "baseline_tests_missing_after_merge": [],
+      "outcome_changed": [
+        {
+          "test": "ppsw1_6b_contracts:tests/ppsw1_6b_contracts.rs :: g3_protected_sources_are_byte_identical",
+          "baseline": [
+            "ok"
+          ],
+          "merged": [
+            "FAILED"
+          ]
+        },
+        {
+          "test": "ptsw2b_contracts:tests/ptsw2b_contracts.rs :: h2_protected_sources_are_byte_identical",
+          "baseline": [
+            "ok"
+          ],
+          "merged": [
+            "FAILED"
+          ]
+        }
+      ],
+      "new_tests_after_merge": 18,
+      "new_test_binaries_after_merge": []
+    }
+  ]
+}

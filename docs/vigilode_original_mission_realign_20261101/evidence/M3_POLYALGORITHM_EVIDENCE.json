@@ -1,0 +1,98 @@
+{
+  "evidence_id": "EV-M3-POLYALGORITHM-001",
+  "milestone": "M3",
+  "title": "Scientific polyalgorithm decision, reentrant residence economics, and anti-chattering dwell policy",
+  "linked_nodes": [
+    "PR-N06",
+    "R-ADAPT"
+  ],
+  "claim_support": [
+    "established",
+    "derived",
+    "numerically-checked",
+    "implementation-verified"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "base_sha": "c2309b053b43bba05d4a18387d8c52b3ceccd0bc",
+    "commit_head": "c2309b053b43bba05d4a18387d8c52b3ceccd0bc",
+    "input_hashes": [
+      {
+        "path": "crates/vigilode/tests/switching_integration_contracts.rs",
+        "sha256": "31fc27e27e65532a3bf14c88fa42cf25fdb158d7ad03b882c9df606dfb157c5f"
+      },
+      {
+        "path": "crates/vigilode/tests/switching_v2_remediation_contracts.rs",
+        "sha256": "a771846b2bd3804b482544f100283f3039a23b524ebde1732e7381f2d45a15a6"
+      },
+      {
+        "path": "crates/vigilode/tests/hybrid_automaton_contracts.rs",
+        "sha256": "95c7f2253217b96deff63587dba1ab47e77c586b86f2cc0c51bf86d44b251912"
+      },
+      {
+        "path": "crates/vigilode/tests/switching_contracts.rs",
+        "sha256": "125884f60131e58838a8ace0dd0488d66a8c22e38d767a3d04c7df4431b13261"
+      },
+      {
+        "path": "crates/vigilode/tests/switching_economy_contracts.rs",
+        "sha256": "8b0b719aa71b18be64202f6efba05cfd5d1117329e9ba8d7b343e1ce1ae93d64"
+      }
+    ]
+  },
+  "command_records": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "vigilode",
+        "--test",
+        "switching_integration_contracts",
+        "--test",
+        "switching_v2_remediation_contracts",
+        "--test",
+        "hybrid_automaton_contracts",
+        "--test",
+        "switching_contracts",
+        "--test",
+        "switching_economy_contracts"
+      ],
+      "exit_code": 0,
+      "summary": "64 passed; 0 failed; 0 ignored; finished in 1.73s"
+    }
+  ],
+  "mathematical_findings": {
+    "reentrant_regime_switching": {
+      "verified_transitions": [
+        "explicit_to_implicit_on_stiffness_burst",
+        "implicit_to_explicit_after_relaxation",
+        "bounded_retry_without_state_corruption",
+        "zero_switches_on_smooth_rotation_control"
+      ],
+      "anti_chattering": {
+        "min_dwell_batches": 3,
+        "hysteresis_margin_factor": 1.15,
+        "geometric_backoff_on_loss": true,
+        "epoch_invalidation_on_step_reject": true
+      },
+      "work_accounting_conservation": {
+        "speculative_work_retained_on_rollback": true,
+        "single_global_attempt_budget_shared": true,
+        "accounting_complete": true
+      }
+    },
+    "routing_controller_architecture": {
+      "live_operational_router": "DriveState in crates/vigilode/src/switching.rs",
+      "discrete_verification_model": "HybridRouteAutomaton in crates/vigilode/src/hybrid_automaton.rs",
+      "architecture_status": "Strictly separated and verified. HybridRouteAutomaton serves as formal discrete-event contract specification."
+    }
+  },
+  "limitations": [
+    "Switching heuristics provide empirical work pressure and stiffness indicators, not an unconditional global stability theorem.",
+    "Performance claims remain restricted to BENCH-ACHIEVED diagnostic evidence.",
+    "Production release qualification remains on hold."
+  ]
+}

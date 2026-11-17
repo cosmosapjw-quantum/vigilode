@@ -1,0 +1,96 @@
+{
+  "schema": "vigilode.loop_l1.v21_banded_tight_kernel.stage_b.predeclared.v1",
+  "node": "V21_BANDED_TIGHT_KERNEL",
+  "stage": "b",
+  "frozen_row": "research/production_loop_20261116/PREREGISTRATION.md, addendum A4, row 'V21 stage b'",
+  "condition": "built only after PASS-I of stage a1 is recorded in RESULTS_V21.json",
+  "written_before_the_client_exists": true,
+  "client": "crates/rodas5p-integrators/src/stage_clients/banded_tight.rs, type BandedTightStageLu: fixed-offset loops for lower = upper = 2 and n >= 6, loops over row slices for every other band; charges direct_factorizations once per factorisation and direct_solve_calls once per solve, as BandedStageLu does",
+  "identity_tests": {
+    "file": "crates/rodas5p-integrators/tests/stage_clients_banded_tight_identity.rs",
+    "comparison": "integrate_rodas5p_fast_banded_observed_with_atol (protected banded driver, default kernel) against integrate_rodas5p_fast_client_observed_with_atol with BandedTightStageLu: every returned output state bit for bit, attempts, accepted and rejected steps, Jacobian reuses, and the whole WorkCounters value",
+    "cells": [
+      {
+        "family": "Brusselator 1D of node V04 (species interleaved, Dirichlet u = 1, v = 3, c = (cells + 1)^2 / 50, t in [0, 10], initial step 1e-6)",
+        "cells": [
+          500,
+          5000,
+          50000
+        ],
+        "n": [
+          1000,
+          10000,
+          100000
+        ],
+        "band": 2,
+        "rtol_equal_atol": [
+          0.0001,
+          1e-06,
+          1e-08
+        ]
+      },
+      {
+        "family": "FitzHugh-Nagumo 1D, species interleaved (u_i, v_i), zero-flux ends: u_t = du (u_l - 2u + u_r) + u - u^3/3 - v, v_t = dv (v_l - 2v + v_r) + 0.08 (u + 0.7 - 0.8 v), du = 1e-3 (cells + 1)^2, dv = 1e-4 (cells + 1)^2, u0 = -1.2 + 2.4 exp(-100 (x - 0.3)^2), v0 = -0.6, x = (i + 1) / (cells + 1), t in [0, 5], initial step 1e-6",
+        "cells": [
+          5000
+        ],
+        "n": [
+          10000
+        ],
+        "band": 2,
+        "rtol_equal_atol": [
+          0.0001,
+          1e-06,
+          1e-08
+        ]
+      },
+      {
+        "family": "Allen-Cahn 2D on an m x m grid, zero flux, natural ordering: u_t = 0.01 m^2 (sum of neighbours - degree * u) + u - u^3, u0 = 0.5 sin(2 pi x) cos(2 pi y) with cell centres x = (i + 0.5) / m, t in [0, 2], initial step 1e-6 (wide band, slice loops)",
+        "m": [
+          32
+        ],
+        "n": [
+          1024
+        ],
+        "band": 32,
+        "rtol_equal_atol": [
+          0.0001,
+          1e-06
+        ]
+      },
+      {
+        "family": "Brusselator 1D with cells = 2 and cells = 3 (n = 4 and n = 6: the general path and the smallest fixed-offset size)",
+        "rtol_equal_atol": [
+          1e-06
+        ]
+      }
+    ],
+    "long_cells": "the cells with n = 100000 are marked #[ignore] and are run with --include-ignored for the evidence log"
+  },
+  "allocation_test": "crates/rodas5p-integrators/tests/stage_clients_banded_tight_alloc.rs: one test in its own binary; allocations between two accepted steps, read by the accept control, are zero from the step after the warm-up to the last step before the end, on the Brusselator 1D with n = 1000",
+  "instruction_measure": {
+    "program": "banded_solve/runner, mode drive with the kernel names indexed (protected banded driver, default kernel) and tight (client driver with BandedTightStageLu); problems of node V04 as in stage a2",
+    "cells": [
+      {
+        "family": "bruss1d",
+        "size": 5000,
+        "n": 10000,
+        "budget": 40
+      },
+      {
+        "family": "bruss1d",
+        "size": 50000,
+        "n": 100000,
+        "budget": 40
+      }
+    ],
+    "validity": "equal attempts, accepted and rejected counts and equal hash of all returned states for both arms in every run (the counted band operations are not kept by the client and are not compared)",
+    "value": "instructions per attempt = (I(budget) - I(1)) / (attempts(budget) - 1), median over the seven measured rounds; ratio tight / indexed",
+    "files": "logs/drive_b<k>_<family><size>.jsonl written by measure_drive.py --tag b --kernels indexed,tight",
+    "PASS": "ratio <= 0.60 on both cells",
+    "KILL": "identity cannot be reached, or ratio > 0.85 on both cells",
+    "cycles": "reported with the quality rule of the loop; diagnostic_only when the host is busy",
+    "also_reported": "the wide-band problems of stage a2 with the kernel name tight (slice loops inside the client), without a threshold"
+  },
+  "crate_checks": "cargo +1.94.1 test --locked --release -p rodas5p-integrators for the new targets and for ppsw1_6b_contracts, ptsw2b_contracts, stage_clients_dense_identity, stage_clients_alloc; clippy with -D warnings on the library and the new targets; rustfmt --check on the new files; the loop checker"
+}

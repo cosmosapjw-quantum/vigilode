@@ -23,6 +23,7 @@ fn screened() -> SwitchingConfig {
         implicit_pilot_limit: 1,
         explicit_attempt_budget: 32,
         pressure_steps: 24,
+        prescreen_initial_stiffness: false,
         ..Default::default()
     }
 }

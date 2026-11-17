@@ -1,0 +1,40 @@
+{
+ "command": [
+  "taskset",
+  "-c",
+  "0-5,12-17",
+  "perf",
+  "stat",
+  "-x,",
+  "-e",
+  "instructions:u,cycles:u,page-faults",
+  "-o",
+  "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v04/research/production_loop_20261116/cost_anatomy/logs/perfstat/dense.radnet.n2048.fd.x1.instrumented.perf.csv",
+  "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v04/release/v04-cost-anatomy-runner",
+  "single",
+  "--cell",
+  "dense.radnet.n2048.fd.x1",
+  "--arm",
+  "instrumented",
+  "--attempts",
+  "20"
+ ],
+ "exit_code": 0,
+ "loadavg_before": [
+  3.85,
+  5.71,
+  6.27
+ ],
+ "loadavg_after": [
+  3.83,
+  5.35,
+  6.11
+ ],
+ "started_unix": 1794849855.4590576,
+ "wall_seconds": 62.518900871276855,
+ "log": "logs/perfstat/dense.radnet.n2048.fd.x1.instrumented.stdout.jsonl",
+ "log_sha256": "f05a93a4d7a4112351214d7c8bb723851cebf8aa5f93f1009c8101ea58d8ef4d",
+ "binary_sha256": "6c8024535a7f53a68c20033ec062b57645aa6ceb6325ed9e86002d19ab1769ec",
+ "attempt_budget": 20,
+ "arm": "instrumented"
+}

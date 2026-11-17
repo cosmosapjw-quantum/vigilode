@@ -1,0 +1,977 @@
+# git HEAD: 6827e66a3605a2a4f7b48224beb19337b5012010
+# uncommitted changes: 1
+# rustc: rustc 1.94.1 (e408947bf 2026-03-25)
+# CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v07
+# started: 2026-11-16T16:25:53Z; load average: 3.97 4.62 5.00
+
+## tests_speculative
+# command: taskset -c 0-9,12-21 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_speculative_contracts --test stage_clients_speculative_alloc --test stage_clients_speculative_problems --test stage_clients_speculative_measure
+    Finished `release` profile [optimized] target(s) in 0.04s
+     Running tests/stage_clients_speculative_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v07/release/deps/stage_clients_speculative_alloc-de3a7a875a945585)
+
+running 1 test
+test speculative_client_allocates_nothing_per_accepted_step ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+     Running tests/stage_clients_speculative_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v07/release/deps/stage_clients_speculative_contracts-cf79c0d805417d88)
+
+running 17 tests
+test closed_forms_solve_their_equations ... ok
+test misuse_is_refused_and_a_lost_point_falls_back_to_the_exact_jacobian ... ok
+test exact_mode_reproduces_protected_driver_robertson ... ok
+test recording_wrapper_is_result_neutral_call_by_call ... ok
+test recorded_calls_match_an_independent_k_form_step ... ok
+test the_time_derivative_is_evaluated_at_accepted_states_only ... ok
+test models_agree_bitwise_with_the_repository_definitions ... ok
+test exact_mode_reproduces_protected_driver_hires ... ok
+test exact_mode_reproduces_protected_driver_nonautonomous ... ok
+test exact_mode_reproduces_protected_driver_brusselator_n32 ... ok
+test an_attempt_that_failed_with_an_error_is_retried_with_the_exact_jacobian ... ok
+test recording_wrapper_is_result_neutral_for_the_protected_driver ... ok
+test model_jacobians_match_finite_differences ... ok
+test recorded_calls_are_the_stage_arguments_in_stage_order ... ok
+test exact_mode_reproduces_protected_driver_brusselator_n100 ... ok
+test modes_evaluate_the_jacobian_at_the_declared_points ... ok
+test exact_mode_reproduces_protected_driver_meanfield_brusselator_n100_faer ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
+
+     Running tests/stage_clients_speculative_measure.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v07/release/deps/stage_clients_speculative_measure-773621c73774e8f7)
+
+running 3 tests
+test measure_adaptive ... ignored, measurement program: run alone with --ignored --nocapture --test-threads=1
+test measure_fixed_step ... ignored, measurement program: run alone with --ignored --nocapture --test-threads=1
+test measure_model_probes ... ignored, measurement program: run alone with --ignored --nocapture --test-threads=1
+
+test result: ok. 0 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/stage_clients_speculative_problems.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v07/release/deps/stage_clients_speculative_problems-f540ce9533e90dd7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+CHECK tests_speculative exit=0
+
+## tests_sentinels
+# command: taskset -c 0-9,12-21 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test ppsw1_6b_contracts --test ptsw2b_contracts
+    Finished `release` profile [optimized] target(s) in 0.04s
+     Running tests/ppsw1_6b_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v07/release/deps/ppsw1_6b_contracts-bb15e8ac6d7c3de8)
+
+running 37 tests
+test a1_method_identity_is_distinct_and_opt_in ... ok
+test a2_derivative_class_is_exact_jacobian_or_jvp_frozen_at_step_start ... ok
+test a3_accepted_step_sigma_cap_is_1_10_and_the_paper_1_5_is_recorded_separately ... ok
+test b2_gamma_is_the_root_of_the_printed_degree6_polynomial_to_60_digits ... ok
+test b5_tableau_is_total_on_positive_finite_sigma_and_typed_error_otherwise ... ok
+test c1_order5_conditions_vanish_for_module_coefficients_at_variable_step ... ok
+test c2_order6_residual_is_nonzero_so_variable_step_order_is_exactly_5 ... ok
+test d3_six_stages_share_one_factorization_and_satisfy_the_stage_equations ... ok
+test d4_advance_charges_one_factorization_six_solves_and_six_rhs_calls ... ok
+test c3_one_step_error_with_exact_stage_data_scales_like_h6 ... ok
+test d2_perturbing_one_current_stage_input_changes_no_other_current_stage_output ... ok
+test b4_oracle_and_module_match_the_printed_pw04_sigma1_matrices ... ok
+test d6_jvp_only_problem_reproduces_explicit_jacobian_stage_solution ... ok
+test e1_rejected_attempt_leaves_history_and_controller_untouched_but_charges_work ... ok
+test e3_stale_attempt_is_refused_without_side_effects ... ok
+test d5_serial_and_two_thread_stage_solves_are_bitwise_identical ... ok
+test f2_stiff_limit_of_the_stability_matrix_is_minus_beta_over_gamma_with_rho_zero ... ok
+test e4_ratio_above_the_1_10_cap_is_a_typed_error_with_no_side_effects ... ok
+test g2_nothing_is_labelled_derivative_free ... ok
+test f1_beta_is_nilpotent_so_the_stiff_limit_has_spectral_radius_zero ... ok
+test g1_default_candidate_catalog_is_unchanged_and_peerw_stays_deferred ... ok
+test d1_stage_inputs_use_only_previous_step_data_and_oracle_formulas ... ok
+test h2_estimator_is_zero_on_degree4_polynomials_and_nonzero_on_degree5 ... ok
+test h1_estimator_weights_are_exact_lagrange_weights ... ok
+test h3_error_norm_and_accept_rule ... ok
+test h5_h0_rule_and_refusals ... ok
+test h4_controller_formula_hysteresis_and_nan ... ok
+test h8_try_step_rejects_on_estimator_and_commits_on_acceptance ... ok
+test e2_accepted_attempt_commits_exactly_the_certified_update ... ok
+test h7_starter_uses_forward_time_only_and_newton_only_in_the_starter ... ok
+test h6_starter_node_values_are_o_h0_to_the_5th_on_a_stiff_problem ... ok
+test g3_protected_sources_are_byte_identical ... ok
+test b3_module_tableau_matches_the_high_precision_oracle_within_1e_13 ... ok
+test b1_exact_oracle_reproduces_the_pw04_structure ... ok
+test i1_end_to_end_prothero_robinson_with_real_starter_and_controller ... ok
+test i2_end_to_end_stiff_linear_system_with_real_starter_and_controller ... ok
+test f3_l_alpha_angle_is_57_54_degrees_within_0_05 ... ok
+
+test result: ok. 37 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+
+     Running tests/ptsw2b_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v07/release/deps/ptsw2b_contracts-0447f4b7bfb8c35b)
+
+running 24 tests
+test a1_certified_data_is_internally_consistent_in_exact_arithmetic ... ok
+test b3_implementation_residuals_vanish_for_order2_and_not_for_order3 ... ok
+test c1_exact_stiff_limit_matrix_is_nilpotent_of_index_three_with_rho_zero ... ok
+test a2_implementation_coefficients_equal_certified_values ... ok
+test b2_exact_order3_condition_fails_so_order_is_exactly_two ... ok
+test b1_exact_order2_conditions_vanish_identically_in_sigma ... ok
+test c2_implementation_stiff_limit_matrix_matches_exact_and_is_nilpotent ... ok
+test d1_stage_inputs_use_only_previous_step_data_and_certified_formulas ... ok
+test d2_perturbing_one_current_stage_input_changes_no_other_current_stage_output ... ok
+test d3_both_stages_share_one_w_factor_and_satisfy_the_certified_stage_equations ... ok
+test d5_jvp_only_problem_reproduces_explicit_jacobian_stage_solution ... ok
+test e2_error_norm_is_componentwise_scaled_rms_of_the_embedded_difference ... ok
+test d4_serial_and_two_thread_stage_solves_are_bitwise_identical ... ok
+test e1_embedded_estimator_uses_its_own_exact_weights_and_is_order_one ... ok
+test e3_controller_uses_certified_constants_clip_and_hysteresis ... ok
+test f1_rejected_attempt_does_not_mutate_history_or_controller_but_charges_work ... ok
+test f2_accepted_attempt_commits_exactly_the_certified_update ... ok
+test g1_accepted_step_ceiling_is_the_owner_decided_1_10 ... ok
+test g2_method_identity_is_distinct_opt_in_control_with_the_declared_derivative_class ... ok
+test i1_startup_plan_is_forward_only_with_certified_times ... ok
+test h1_default_candidate_catalog_is_unchanged_and_peerw_stays_deferred ... ok
+test j2_l_stable_damping_on_stiff_prothero_robinson ... ok
+test j1_observed_global_order_is_two_with_exact_startup ... ok
+test h2_protected_sources_are_byte_identical ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+CHECK tests_sentinels exit=0
+
+## tests_client_kit
+# command: taskset -c 0-9,12-21 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_dense_identity --test stage_clients_alloc
+    Finished `release` profile [optimized] target(s) in 0.04s
+     Running tests/stage_clients_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v07/release/deps/stage_clients_alloc-161b4adb98a64c42)
+
+running 1 test
+test dense_client_allocates_nothing_per_accepted_step ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests/stage_clients_dense_identity.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v07/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a)
+
+running 10 tests
+test diagnostic_single_arm_for_instruction_count ... ignored, diagnostic single arm for perf stat: set STAGE_CLIENTS_ARM, _CASE and _RUNS
+test diagnostic_wall_ratio_client_over_protected ... ignored, diagnostic wall time: run alone with --ignored --nocapture --test-threads=1
+test protected_choice_follows_the_policy_and_misuse_is_refused ... ok
+test dense_client_reproduces_protected_driver_robertson ... ok
+test dense_client_reproduces_protected_driver_hires ... ok
+test dense_client_reproduces_protected_driver_brusselator_n32 ... ok
+test dense_client_reproduces_protected_driver_brusselator_n100 ... ok
+test faer_mode_off_policy_is_a_valid_solver_of_the_named_problems ... ok
+test timed_wrapper_is_result_neutral_and_counts_match_driver ... ok
+test dense_client_reproduces_protected_driver_meanfield_brusselator_n100_faer ... ok
+
+test result: ok. 8 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.30s
+
+CHECK tests_client_kit exit=0
+
+## clippy
+# command: taskset -c 0-9,12-21 cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --test stage_clients_speculative_contracts --test stage_clients_speculative_alloc --test stage_clients_speculative_problems --test stage_clients_speculative_measure --no-deps -- -D warnings
+    Checking rodas5p-core v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/crates/rodas5p-core)
+    Checking rodas5p-krylov v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/crates/rodas5p-krylov)
+    Checking rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 16.82s
+CHECK clippy exit=0
+
+## rustfmt
+# command: rustfmt +1.94.1 --check --edition 2024 crates/rodas5p-integrators/src/stage_clients/speculative.rs crates/rodas5p-integrators/tests/stage_clients_speculative_problems.rs crates/rodas5p-integrators/tests/stage_clients_speculative_contracts.rs crates/rodas5p-integrators/tests/stage_clients_speculative_alloc.rs crates/rodas5p-integrators/tests/stage_clients_speculative_measure.rs
+CHECK rustfmt exit=0
+
+## loop_checker
+# command: python3 -I research/production_loop_20261116/check_checkpoint.py
+PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities
+Scope: checkpoint reproducibility. Production HOLD; no new numerical qualification.
+CHECK loop_checker exit=0
+
+## strict_json
+# command: python3 -I -c 
+import json, sys
+from pathlib import Path
+def pairs(items):
+    out = {}
+    for key, value in items:
+        if key in out:
+            raise ValueError("duplicate key " + key)
+        out[key] = value
+    return out
+def constant(value):
+    raise ValueError("non-finite constant " + value)
+root = Path("research/production_loop_20261116/speculative_jacobian")
+files = sorted(root.rglob("*.json"))
+for path in files:
+    json.loads(path.read_text(), object_pairs_hook=pairs, parse_constant=constant)
+    print("strict JSON ok:", path)
+lines = 0
+for log in sorted((root / "logs").glob("*.log")):
+    for line in log.read_text().splitlines():
+        for prefix in ("SPECJ ", "REFPY ", "REFJL ", "MODELCHECK "):
+            if line.startswith(prefix):
+                json.loads(line[len(prefix):], object_pairs_hook=pairs, parse_constant=constant)
+                lines += 1
+print("strict JSON ok:", lines, "record lines in logs")
+sys.exit(0 if files else 1)
+
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/@plugins_snapshot.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_ast.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_ast.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_blake2.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_blake2.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_codecs.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_codecs.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_collections_abc.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_collections_abc.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_decimal.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_decimal.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_frozen_importlib.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_frozen_importlib.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_frozen_importlib_external.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_frozen_importlib_external.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_hashlib.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_hashlib.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_io.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_io.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_sitebuiltins.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_sitebuiltins.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_struct.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_struct.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_typeshed/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_typeshed/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_typeshed/importlib.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/_typeshed/importlib.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/abc.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/abc.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/ast.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/ast.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/build_results.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/build_results.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/builtins.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/builtins.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/codecs.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/codecs.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/collections/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/collections/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/collections/abc.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/collections/abc.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/contextlib.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/contextlib.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/dataclasses.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/dataclasses.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/decimal.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/decimal.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/email/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/email/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/email/_policybase.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/email/_policybase.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/email/charset.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/email/charset.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/email/contentmanager.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/email/contentmanager.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/email/errors.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/email/errors.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/email/header.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/email/header.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/email/message.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/email/message.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/email/policy.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/email/policy.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/enum.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/enum.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/fractions.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/fractions.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/genericpath.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/genericpath.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/hashlib.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/hashlib.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/_abc.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/_abc.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/_bootstrap.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/_bootstrap.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/_bootstrap_external.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/_bootstrap_external.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/abc.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/abc.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/machinery.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/machinery.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/metadata/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/metadata/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/metadata/_meta.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/metadata/_meta.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/readers.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/readers.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/resources/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/resources/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/resources/_common.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/resources/_common.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/resources/abc.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/importlib/resources/abc.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/io.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/io.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/json/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/json/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/json/decoder.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/json/decoder.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/json/encoder.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/json/encoder.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/math.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/math.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/numbers.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/numbers.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/os/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/os/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/os/path.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/os/path.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/pathlib.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/pathlib.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/posixpath.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/posixpath.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/re.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/re.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/resource.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/resource.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/sre_compile.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/sre_compile.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/sre_constants.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/sre_constants.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/sre_parse.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/sre_parse.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/struct.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/struct.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/subprocess.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/subprocess.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/sys/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/sys/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/sys/_monitoring.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/sys/_monitoring.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/types.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/types.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/typing.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/typing.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/typing_extensions.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/typing_extensions.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/zipfile/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/zipfile/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/zipfile/_path/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/.mypy_cache/3.12/zipfile/_path/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/PREDECLARED.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/RESULTS.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/@plugins_snapshot.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_ast.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_ast.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_asyncio.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_asyncio.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_blake2.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_blake2.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_codecs.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_codecs.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_collections_abc.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_collections_abc.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_contextvars.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_contextvars.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_ctypes.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_ctypes.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_decimal.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_decimal.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_frozen_importlib.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_frozen_importlib.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_frozen_importlib_external.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_frozen_importlib_external.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_hashlib.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_hashlib.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_io.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_io.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_pickle.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_pickle.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_queue.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_queue.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_sitebuiltins.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_sitebuiltins.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_socket.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_socket.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_ssl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_ssl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_struct.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_struct.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_thread.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_thread.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_typeshed/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_typeshed/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_typeshed/importlib.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_typeshed/importlib.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_warnings.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_warnings.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_weakref.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_weakref.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_weakrefset.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/_weakrefset.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/abc.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/abc.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/argparse.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/argparse.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/array.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/array.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/ast.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/ast.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/base_events.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/base_events.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/coroutines.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/coroutines.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/events.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/events.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/exceptions.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/exceptions.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/futures.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/futures.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/locks.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/locks.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/mixins.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/mixins.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/protocols.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/protocols.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/queues.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/queues.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/runners.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/runners.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/selector_events.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/selector_events.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/streams.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/streams.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/subprocess.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/subprocess.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/taskgroups.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/taskgroups.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/tasks.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/tasks.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/threads.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/threads.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/timeouts.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/timeouts.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/transports.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/transports.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/unix_events.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/asyncio/unix_events.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/builtins.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/builtins.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/codecs.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/codecs.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/collections/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/collections/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/collections/abc.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/collections/abc.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/concurrent/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/concurrent/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/concurrent/futures/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/concurrent/futures/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/concurrent/futures/_base.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/concurrent/futures/_base.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/concurrent/futures/process.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/concurrent/futures/process.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/concurrent/futures/thread.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/concurrent/futures/thread.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/contextlib.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/contextlib.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/contextvars.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/contextvars.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/copyreg.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/copyreg.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/ctypes/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/ctypes/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/ctypes/_endian.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/ctypes/_endian.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/dataclasses.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/dataclasses.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/datetime.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/datetime.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/decimal.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/decimal.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/dis.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/dis.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/email/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/email/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/email/_policybase.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/email/_policybase.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/email/charset.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/email/charset.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/email/contentmanager.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/email/contentmanager.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/email/errors.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/email/errors.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/email/header.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/email/header.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/email/message.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/email/message.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/email/policy.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/email/policy.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/enum.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/enum.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/fractions.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/fractions.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/functools.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/functools.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/genericpath.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/genericpath.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/hashlib.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/hashlib.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/_abc.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/_abc.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/_bootstrap.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/_bootstrap.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/_bootstrap_external.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/_bootstrap_external.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/abc.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/abc.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/machinery.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/machinery.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/metadata/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/metadata/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/metadata/_meta.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/metadata/_meta.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/readers.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/readers.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/resources/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/resources/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/resources/_common.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/resources/_common.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/resources/abc.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/importlib/resources/abc.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/inspect.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/inspect.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/io.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/io.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/json/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/json/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/json/decoder.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/json/decoder.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/json/encoder.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/json/encoder.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/logging/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/logging/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/math.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/math.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/mmap.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/mmap.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/models.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/models.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/connection.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/connection.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/context.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/context.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/managers.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/managers.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/pool.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/pool.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/popen_fork.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/popen_fork.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/popen_forkserver.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/popen_forkserver.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/popen_spawn_posix.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/popen_spawn_posix.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/popen_spawn_win32.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/popen_spawn_win32.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/process.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/process.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/queues.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/queues.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/reduction.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/reduction.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/shared_memory.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/shared_memory.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/sharedctypes.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/sharedctypes.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/spawn.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/spawn.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/synchronize.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/synchronize.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/util.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/multiprocessing/util.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numbers.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numbers.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/__config__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/__config__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_array_api_info.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_array_api_info.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/_asarray.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/_asarray.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/_internal.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/_internal.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/_type_aliases.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/_type_aliases.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/_ufunc_config.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/_ufunc_config.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/arrayprint.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/arrayprint.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/defchararray.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/defchararray.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/einsumfunc.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/einsumfunc.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/fromnumeric.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/fromnumeric.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/function_base.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/function_base.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/getlimits.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/getlimits.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/memmap.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/memmap.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/multiarray.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/multiarray.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/numeric.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/numeric.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/numerictypes.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/numerictypes.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/records.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/records.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/shape_base.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/shape_base.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/strings.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/strings.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/umath.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_core/umath.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_expired_attrs_2_0.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_expired_attrs_2_0.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_globals.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_globals.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_pytesttester.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_pytesttester.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_array_like.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_array_like.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_char_codes.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_char_codes.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_dtype_like.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_dtype_like.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_extended_precision.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_extended_precision.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_nbit.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_nbit.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_nbit_base.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_nbit_base.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_nested_sequence.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_nested_sequence.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_scalars.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_scalars.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_shape.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_shape.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_ufunc.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/_typing/_ufunc.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/char/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/char/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/core/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/core/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/ctypeslib/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/ctypeslib/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/ctypeslib/_ctypeslib.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/ctypeslib/_ctypeslib.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/dtypes.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/dtypes.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/exceptions.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/exceptions.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/f2py/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/f2py/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/f2py/__version__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/f2py/__version__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/f2py/auxfuncs.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/f2py/auxfuncs.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/f2py/cfuncs.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/f2py/cfuncs.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/f2py/f2py2e.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/f2py/f2py2e.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/fft/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/fft/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/fft/_helper.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/fft/_helper.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/fft/_pocketfft.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/fft/_pocketfft.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_array_utils_impl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_array_utils_impl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_arraypad_impl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_arraypad_impl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_arraysetops_impl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_arraysetops_impl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_arrayterator_impl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_arrayterator_impl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_datasource.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_datasource.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_format_impl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_format_impl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_function_base_impl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_function_base_impl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_histograms_impl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_histograms_impl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_index_tricks_impl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_index_tricks_impl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_iotools.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_iotools.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_nanfunctions_impl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_nanfunctions_impl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_npyio_impl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_npyio_impl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_polynomial_impl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_polynomial_impl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_scimath_impl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_scimath_impl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_shape_base_impl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_shape_base_impl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_stride_tricks_impl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_stride_tricks_impl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_twodim_base_impl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_twodim_base_impl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_type_check_impl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_type_check_impl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_ufunclike_impl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_ufunclike_impl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_utils_impl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_utils_impl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_version.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/_version.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/array_utils.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/array_utils.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/format.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/format.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/introspect.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/introspect.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/mixins.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/mixins.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/npyio.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/npyio.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/scimath.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/scimath.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/stride_tricks.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/lib/stride_tricks.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/linalg/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/linalg/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/linalg/_linalg.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/linalg/_linalg.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/linalg/_umath_linalg.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/linalg/_umath_linalg.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/ma/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/ma/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/ma/core.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/ma/core.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/ma/extras.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/ma/extras.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/ma/mrecords.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/ma/mrecords.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/matlib.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/matlib.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/matrixlib/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/matrixlib/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/matrixlib/defmatrix.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/matrixlib/defmatrix.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/_polybase.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/_polybase.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/_polytypes.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/_polytypes.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/chebyshev.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/chebyshev.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/hermite.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/hermite.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/hermite_e.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/hermite_e.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/laguerre.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/laguerre.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/legendre.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/legendre.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/polynomial.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/polynomial.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/polyutils.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/polynomial/polyutils.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/random/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/random/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/random/_generator.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/random/_generator.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/random/_mt19937.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/random/_mt19937.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/random/_pcg64.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/random/_pcg64.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/random/_philox.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/random/_philox.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/random/_sfc64.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/random/_sfc64.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/random/bit_generator.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/random/bit_generator.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/random/mtrand.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/random/mtrand.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/rec/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/rec/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/strings/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/strings/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/testing/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/testing/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/testing/_private/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/testing/_private/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/testing/_private/extbuild.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/testing/_private/extbuild.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/testing/_private/utils.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/testing/_private/utils.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/testing/overrides.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/testing/overrides.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/typing/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/typing/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/version.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/numpy/version.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/opcode.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/opcode.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/os/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/os/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/os/path.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/os/path.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/pathlib.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/pathlib.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/pickle.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/pickle.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/posixpath.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/posixpath.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/pprint.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/pprint.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/queue.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/queue.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/re.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/re.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/resource.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/resource.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/selectors.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/selectors.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/signal.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/signal.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/socket.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/socket.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/sre_compile.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/sre_compile.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/sre_constants.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/sre_constants.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/sre_parse.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/sre_parse.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/ssl.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/ssl.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/string.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/string.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/struct.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/struct.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/subprocess.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/subprocess.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/sys/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/sys/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/sys/_monitoring.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/sys/_monitoring.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/threading.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/threading.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/time.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/time.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/types.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/types.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/typing.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/typing.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/typing_extensions.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/typing_extensions.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/_log.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/_log.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/async_case.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/async_case.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/case.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/case.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/loader.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/loader.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/main.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/main.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/result.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/result.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/runner.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/runner.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/signals.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/signals.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/suite.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/unittest/suite.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/uuid.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/uuid.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/warnings.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/warnings.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/weakref.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/weakref.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/zipfile/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/zipfile/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/zipfile/_path/__init__.data.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/.mypy_cache/3.12/zipfile/_path/__init__.meta.json
+strict JSON ok: research/production_loop_20261116/speculative_jacobian/reference/reference.json
+strict JSON ok: 981 record lines in logs
+CHECK strict_json exit=0
+
+## allowed_paths
+# command: python3 -I -c 
+import fnmatch, subprocess, sys
+base = sys.argv[1]
+allowed = ["crates/rodas5p-integrators/src/stage_clients/speculative.rs",
+           "crates/rodas5p-integrators/tests/stage_clients_speculative_*.rs",
+           "research/production_loop_20261116/speculative_jacobian/*"]
+changed = subprocess.check_output(["git", "diff", "--name-only", base, "HEAD"], text=True).split()
+outside = [p for p in changed if not any(fnmatch.fnmatchcase(p, a) for a in allowed)]
+print(len(changed), "paths changed since", base[:8])
+for path in changed:
+    print("  ", path)
+print("outside the task allowlist:", outside)
+sys.exit(1 if outside or not changed else 0)
+ 0443025895dabf350f46fd3f0cdd0cf1d7fbcf85
+26 paths changed since 04430258
+   crates/rodas5p-integrators/src/stage_clients/speculative.rs
+   crates/rodas5p-integrators/tests/stage_clients_speculative_alloc.rs
+   crates/rodas5p-integrators/tests/stage_clients_speculative_contracts.rs
+   crates/rodas5p-integrators/tests/stage_clients_speculative_measure.rs
+   crates/rodas5p-integrators/tests/stage_clients_speculative_problems.rs
+   research/production_loop_20261116/speculative_jacobian/PREDECLARED.json
+   research/production_loop_20261116/speculative_jacobian/REPORT_KO.md
+   research/production_loop_20261116/speculative_jacobian/RESULTS.json
+   research/production_loop_20261116/speculative_jacobian/build_report.py
+   research/production_loop_20261116/speculative_jacobian/build_results.py
+   research/production_loop_20261116/speculative_jacobian/logs/check_models.log
+   research/production_loop_20261116/speculative_jacobian/logs/measure_adaptive.log
+   research/production_loop_20261116/speculative_jacobian/logs/measure_fixed_step.log
+   research/production_loop_20261116/speculative_jacobian/logs/measure_model_probes.log
+   research/production_loop_20261116/speculative_jacobian/logs/pilot_pde.log
+   research/production_loop_20261116/speculative_jacobian/logs/reference_julia.log
+   research/production_loop_20261116/speculative_jacobian/logs/reference_scipy.log
+   research/production_loop_20261116/speculative_jacobian/reference/build_reference.py
+   research/production_loop_20261116/speculative_jacobian/reference/check_models.py
+   research/production_loop_20261116/speculative_jacobian/reference/models.py
+   research/production_loop_20261116/speculative_jacobian/reference/pilot_pde.py
+   research/production_loop_20261116/speculative_jacobian/reference/reference.jl
+   research/production_loop_20261116/speculative_jacobian/reference/reference.json
+   research/production_loop_20261116/speculative_jacobian/reference/reference.py
+   research/production_loop_20261116/speculative_jacobian/run_checks.sh
+   research/production_loop_20261116/speculative_jacobian/run_measurements.sh
+outside the task allowlist: []
+CHECK allowed_paths exit=0
+
+## measurement_reproducible
+# command: bash -c 
+set -u
+here="$1"; rerun="$2"
+SPECJ_LOG_DIR="$rerun" bash "$here/run_measurements.sh" || exit 1
+for program in measure_model_probes measure_adaptive measure_fixed_step; do
+  if ! cmp <(grep "^SPECJ " "$here/logs/$program.log") <(grep "^SPECJ " "$rerun/$program.log"); then
+    echo "records of $program differ from the committed log"; exit 1
+  fi
+  echo "$program: $(grep -c "^SPECJ " "$rerun/$program.log") records identical to logs/$program.log"
+done
+ _ /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v07/research/production_loop_20261116/speculative_jacobian /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/specj-rerun.6IFg0R
+measure_model_probes exit=0
+measure_adaptive exit=0
+measure_fixed_step exit=0
+measure_model_probes: 49 records identical to logs/measure_model_probes.log
+measure_adaptive: 347 records identical to logs/measure_adaptive.log
+measure_fixed_step: 481 records identical to logs/measure_fixed_step.log
+CHECK measurement_reproducible exit=0
+
+# finished: 2026-11-16T16:26:14Z; load average: 4.03 4.59 4.98
+# overall status: 0

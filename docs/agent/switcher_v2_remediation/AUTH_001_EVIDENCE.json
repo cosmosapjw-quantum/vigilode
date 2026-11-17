@@ -1,0 +1,135 @@
+{
+  "evidence_id": "EV-AUTH-001",
+  "task_id": "AUTH-001",
+  "claim_support": [
+    "derived",
+    "numerically-checked",
+    "implementation-verified"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "worktree_path": "/home/cosmosapjw/vigilode-task-worktrees/task-AUTH-001-20261106_v2",
+    "worktree_branch": "task/AUTH-001-20261106_v2",
+    "worktree_head": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "tree_sha": "8a236871948798cb2a40c8a5ea65112a045bf16d",
+    "input_hashes": [
+      {
+        "path": "crates/vigilode-coupled/src/rhs_homotopy.rs",
+        "sha256": "fb7fee6f08c0f12eb1ca8c368bf18c5a414a3b14ffd1bd84c821fc82aa0d1e45",
+        "sha256_before": "83f77048901a4d9e1d928d188eb3c52ef05c62cea2b6f54579803dd3a6170232"
+      },
+      {
+        "path": "crates/vigilode-coupled/src/lib.rs",
+        "sha256": "c8fad4910a6f575726a0da7fd7f750e311632a1c0969fbb0bfc00d0f7541466a",
+        "sha256_before": "a0387601ab6cd37186aadb6c3d3a3d703473cc74cbc7ad75a099271ea1b11496"
+      },
+      {
+        "path": "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs",
+        "sha256": "7255e4e3f017f62c13837bec8e67835ba748929b569b08b7357e18a1616be205",
+        "sha256_before": "ec829e9aa9a84055e4a8cf6f56c98c53aedc220ae3792baec78d9f716c6f0db3"
+      }
+    ],
+    "identity_relation": "BYTE_IDENTITY"
+  },
+  "command_records": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "vigilode-coupled",
+        "--test",
+        "rhs_homotopy_contracts"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-AUTH-001-20261106_v2",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+      "exit_code": 0,
+      "test_count": 19,
+      "passed": 19,
+      "failed": 0
+    },
+    {
+      "argv": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "vigilode-coupled",
+        "--all-targets",
+        "--no-deps",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-AUTH-001-20261106_v2",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-AUTH-001-20261106_v2",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-AUTH-001-20261106_v2",
+      "exit_code": 0
+    }
+  ],
+  "result": "Successfully resolved Finding AUTH-001. Replaced caller-forgeable contraction evidence with independently verified map-bound evidence in crates/vigilode-coupled. Bound DerivativeSupremumEvidence to map identity, operator digest, model epoch, center, radius, norm, and verification method. Sealed certification so only verifier-created evidence can mint QContractionCertificate with is_certified=true. Verified outward-directed rounding on residual and root error bound quotient. 19/19 contract tests passed, including caller-scalar forgery rejection and 11 adversarial tamper attacks. Formatting and clippy clean.",
+  "limitations": [
+    "Certified lane is restricted to canonical PolynomialContractionSource with invertible diagonal preconditioner P.",
+    "Generic black-box RhsOnlyMap callbacks without sound interval extensions remain EstimateOnly.",
+    "Overall production solver qualification verdict remains HOLD_NOT_RELEASE_QUALIFIED pending full task battery."
+  ],
+  "math_review": {
+    "definitions": "T_P(x) = x - P G(x) on closed Euclidean ball B_2(x_c, r). P is required to be non-singular so that P G(x*) = 0 iff G(x*) = 0.",
+    "assumptions": [
+      "G is an exact canonical multivariate polynomial map with binary64 coefficients.",
+      "P is an invertible diagonal preconditioner with non-zero finite entries.",
+      "B_2(x_c, r) is enclosed in outward box product_i [x_{c,i} - r, x_{c,i} + r].",
+      "Matrix 2-norm is upper-bounded by Frobenius norm."
+    ],
+    "derivation": "q_hi >= sup_{x in B} ||I - P DG(x)||_2 with q_hi < 1; rho_hi >= ||P G(x_c)||_2 with rho_hi <= mul_down(sub_down(1.0, q_hi), r). Banach fixed-point theorem proves unique root in B_2(x_c, r) with root error bounded by div_up(rho_hi, sub_down(1.0, q_hi)).",
+    "roundoff_model": "Directed outward interval arithmetic (IEEE-754 next_up / next_down via rodas5p_core::directed).",
+    "counterexamples": [
+      "Caller scalar metadata cannot establish derivative bounds or certificate authority.",
+      "Non-contractive expanding map (q >= 1.0) rejected.",
+      "Singular preconditioner (P = 0) rejected.",
+      "Self-map violation (rho > (1 - q) * r) rejected.",
+      "Any 1 ULP coefficient perturbation or center/radius modification rejected by replay checker."
+    ]
+  },
+  "work_accounting": {
+    "rhs": 19,
+    "jvp": 0,
+    "jacobian": 0,
+    "linear_iterations": 0,
+    "factorizations": 0,
+    "rejected_steps": 0,
+    "speculative_work": 0,
+    "refused_work": 0,
+    "failed_attempts": 0,
+    "unknown_counters": []
+  },
+  "decision_rationale": "All acceptance criteria for AUTH-001 are met: caller scalars cannot authorize certificates; independent verifier replays enclosures bitwise; 11 adversarial tamper attacks strictly rejected; overall qualification remains HOLD_NOT_RELEASE_QUALIFIED."
+}

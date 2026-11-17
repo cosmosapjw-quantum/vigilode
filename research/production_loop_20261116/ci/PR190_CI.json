@@ -1,0 +1,712 @@
+{
+ "schema": "vigilode.loop.ci-record.v1",
+ "pull_request": 190,
+ "head_commit": "0443025895dabf350f46fd3f0cdd0cf1d7fbcf85",
+ "base_commit_for_comparison": "ef04bfab6926fcd4ba5f5fa2bbd8696f5e69d011",
+ "base_note": "programme baseline research/unified-t02-20261110; last pull-request CI run of the unification lineage before this loop",
+ "summary": {
+  "head": {
+   "success": 5,
+   "failure": 8,
+   "skipped": 3
+  },
+  "base": {
+   "success": 4,
+   "failure": 9,
+   "skipped": 3
+  },
+  "relations": {
+   "fails_on_both_same_signature": [
+    "a1-inner-tolerance-parity",
+    "ignored-tests"
+   ],
+   "fails_on_both_different_signature": [
+    "a2-a3-gmres-candidate",
+    "bench",
+    "research-process",
+    "test"
+   ],
+   "fails_only_on_base": [
+    "audit2-feature-and-usage",
+    "clippy",
+    "fresh-clone-build"
+   ],
+   "fails_only_on_head": [
+    "docs",
+    "semver"
+   ],
+   "no_failure": [
+    "fmt",
+    "mode-and-authority",
+    "receipt-validation",
+    "scientific-execution-aggregate",
+    "scientific-execution-cells"
+   ]
+  }
+ },
+ "jobs": [
+  {
+   "job": "a1-inner-tolerance-parity",
+   "relation": "fails_on_both_same_signature",
+   "head": {
+    "conclusion": "failure",
+    "job_id": 133246009698,
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/43851820585/job/133246009698",
+    "started_at": "2026-11-16T10:46:25Z",
+    "completed_at": "2026-11-16T11:52:19Z",
+    "parsed_log": {
+     "log": "raw/logs_04430258/a1-inner-tolerance-parity.job.log.gz",
+     "exit_code": 101,
+     "failed_tests": [
+      "test_r_parity_on_off_and_alg06_anchor"
+     ],
+     "panic_sites": [
+      "crates/rodas5p-integrators/tests/stage_residual_telemetry.rs:498"
+     ],
+     "failed_test_binaries": [
+      "-p rodas5p-integrators --test stage_residual_telemetry"
+     ],
+     "error_lines": [
+      "error: test failed, to rerun pass `-p rodas5p-integrators --test stage_residual_telemetry`"
+     ],
+     "ledger_fail_lines": 0,
+     "ledger_fail_kinds": {},
+     "semver_failed_lints": [],
+     "semver_summary": null,
+     "unsupported_rustc": [],
+     "missing_headers": [],
+     "runner_image": "ubuntu-26.04",
+     "left_right": [
+      [
+       "left: [\"3e6bf6471c33a9ed\", \"3d4d51ffa846eee5\", \"3fefffffe409b11a\"]",
+       "right: [\"3e6bf64d54ceae64\", \"3d4d52062e3ec4a2\", \"3fefffffe409ab7d\"]"
+      ]
+     ]
+    }
+   },
+   "base": {
+    "conclusion": "failure",
+    "job_id": 131135573528,
+    "parsed_log": {
+     "log": "raw/logs_base_ef04bfab/a1-inner-tolerance-parity.job.log.gz",
+     "exit_code": 101,
+     "failed_tests": [
+      "test_r_parity_on_off_and_alg06_anchor"
+     ],
+     "panic_sites": [
+      "crates/rodas5p-integrators/tests/stage_residual_telemetry.rs:498"
+     ],
+     "failed_test_binaries": [
+      "-p rodas5p-integrators --test stage_residual_telemetry"
+     ],
+     "error_lines": [
+      "error: test failed, to rerun pass `-p rodas5p-integrators --test stage_residual_telemetry`"
+     ],
+     "ledger_fail_lines": 0,
+     "ledger_fail_kinds": {},
+     "semver_failed_lints": [],
+     "semver_summary": null,
+     "unsupported_rustc": [],
+     "missing_headers": [],
+     "runner_image": "ubuntu-26.04",
+     "left_right": [
+      [
+       "left: [\"3e6bf6471c33a9ed\", \"3d4d51ffa846eee5\", \"3fefffffe409b11a\"]",
+       "right: [\"3e6bf64d54ceae64\", \"3d4d52062e3ec4a2\", \"3fefffffe409ab7d\"]"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "job": "a2-a3-gmres-candidate",
+   "relation": "fails_on_both_different_signature",
+   "head": {
+    "conclusion": "failure",
+    "job_id": 133246008360,
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/43851820205/job/133246008360",
+    "started_at": "2026-11-16T10:46:25Z",
+    "completed_at": "2026-11-16T10:49:27Z",
+    "parsed_log": {
+     "log": "raw/logs_04430258/a2-a3-gmres-candidate.job.log.gz",
+     "exit_code": 101,
+     "failed_tests": [
+      "s1_nine_native_cases_match_anchor"
+     ],
+     "panic_sites": [
+      "crates/rodas5p-krylov/tests/staged_solve_telemetry.rs:233"
+     ],
+     "failed_test_binaries": [
+      "-p rodas5p-krylov --test staged_solve_telemetry"
+     ],
+     "error_lines": [
+      "error: test failed, to rerun pass `-p rodas5p-krylov --test staged_solve_telemetry`"
+     ],
+     "ledger_fail_lines": 0,
+     "ledger_fail_kinds": {},
+     "semver_failed_lints": [],
+     "semver_summary": null,
+     "unsupported_rustc": [],
+     "missing_headers": [],
+     "runner_image": "ubuntu-26.04",
+     "left_right": [
+      [
+       "left: 3",
+       "right: 5"
+      ]
+     ]
+    }
+   },
+   "base": {
+    "conclusion": "failure",
+    "job_id": 131135573286,
+    "parsed_log": {
+     "log": "raw/logs_base_ef04bfab/a2-a3-gmres-candidate.job.log.gz",
+     "exit_code": 101,
+     "failed_tests": [
+      "candidate_and_production_outcomes_are_pinned_on_the_e05_nonnormal_jacobi_rows"
+     ],
+     "panic_sites": [
+      "crates/rodas5p-krylov/tests/givens_production_differential_contracts.rs:244"
+     ],
+     "failed_test_binaries": [
+      "-p rodas5p-krylov --test givens_production_differential_contracts"
+     ],
+     "error_lines": [
+      "error: test failed, to rerun pass `-p rodas5p-krylov --test givens_production_differential_contracts`"
+     ],
+     "ledger_fail_lines": 0,
+     "ledger_fail_kinds": {},
+     "semver_failed_lints": [],
+     "semver_summary": null,
+     "unsupported_rustc": [],
+     "missing_headers": [],
+     "runner_image": "ubuntu-26.04",
+     "left_right": [
+      [
+       "left: true",
+       "right: false"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "job": "audit2-feature-and-usage",
+   "relation": "fails_only_on_base",
+   "head": {
+    "conclusion": "success",
+    "job_id": 133246008759,
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/43851820302/job/133246008759",
+    "started_at": "2026-11-16T10:46:25Z",
+    "completed_at": "2026-11-16T10:52:50Z",
+    "parsed_log": null
+   },
+   "base": {
+    "conclusion": "failure",
+    "job_id": 131135573899,
+    "parsed_log": {
+     "log": "raw/logs_base_ef04bfab/audit2-feature-and-usage.job.log.gz",
+     "exit_code": 101,
+     "failed_tests": [],
+     "panic_sites": [],
+     "failed_test_binaries": [],
+     "error_lines": [
+      "error: the use of negated comparison operators on partially ordered types produces code that is hard to read and refactor, please consider using the `partial_cmp` method instead, to make it clear that the two values could be incomparable",
+      "error: the loop variable `i` is used to index `z`",
+      "error: the use of negated comparison operators on partially ordered types produces code that is hard to read and refactor, please consider using the `partial_cmp` method instead, to make it clear that the two values could be incomparable",
+      "error: the loop variable `i` is used to index `rb`",
+      "error: the loop variable `i` is used to index `ub`",
+      "error: the loop variable `j` is used to index `rb`"
+     ],
+     "ledger_fail_lines": 0,
+     "ledger_fail_kinds": {},
+     "semver_failed_lints": [],
+     "semver_summary": null,
+     "unsupported_rustc": [],
+     "missing_headers": [],
+     "runner_image": "ubuntu-26.04",
+     "left_right": []
+    }
+   }
+  },
+  {
+   "job": "bench",
+   "relation": "fails_on_both_different_signature",
+   "head": {
+    "conclusion": "failure",
+    "job_id": 133246009373,
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/43851820253/job/133246009373",
+    "started_at": "2026-11-16T10:46:25Z",
+    "completed_at": "2026-11-16T10:47:33Z",
+    "parsed_log": {
+     "log": "raw/logs_04430258/bench.job.log.gz",
+     "exit_code": 101,
+     "failed_tests": [],
+     "panic_sites": [],
+     "failed_test_binaries": [],
+     "error_lines": [
+      "error: rustc 1.94.1 is not supported by the following packages:"
+     ],
+     "ledger_fail_lines": 0,
+     "ledger_fail_kinds": {},
+     "semver_failed_lints": [],
+     "semver_summary": null,
+     "unsupported_rustc": [
+      "vigilode-bench@0.1.0 requires rustc 1.99.0"
+     ],
+     "missing_headers": [],
+     "runner_image": "ubuntu-26.04",
+     "left_right": []
+    }
+   },
+   "base": {
+    "conclusion": "failure",
+    "job_id": 131135573896,
+    "parsed_log": {
+     "log": "raw/logs_base_ef04bfab/bench.job.log.gz",
+     "exit_code": 101,
+     "failed_tests": [],
+     "panic_sites": [
+      "build.rs:19"
+     ],
+     "failed_test_binaries": [],
+     "error_lines": [
+      "error: failed to run custom build command for `vigilode-bench v0.1.0 (/home/runner/work/vigilode/vigilode/crates/vigilode-bench)`"
+     ],
+     "ledger_fail_lines": 0,
+     "ledger_fail_kinds": {},
+     "semver_failed_lints": [],
+     "semver_summary": null,
+     "unsupported_rustc": [],
+     "missing_headers": [
+      "mpi.h"
+     ],
+     "runner_image": "ubuntu-26.04",
+     "left_right": []
+    }
+   }
+  },
+  {
+   "job": "clippy",
+   "relation": "fails_only_on_base",
+   "head": {
+    "conclusion": "success",
+    "job_id": 133246009266,
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/43851820253/job/133246009266",
+    "started_at": "2026-11-16T10:46:26Z",
+    "completed_at": "2026-11-16T10:47:43Z",
+    "parsed_log": null
+   },
+   "base": {
+    "conclusion": "failure",
+    "job_id": 131135574460,
+    "parsed_log": {
+     "log": "raw/logs_base_ef04bfab/clippy.job.log.gz",
+     "exit_code": 101,
+     "failed_tests": [],
+     "panic_sites": [],
+     "failed_test_binaries": [],
+     "error_lines": [
+      "error: items after a test module",
+      "error: could not compile `rodas5p-core` (lib test) due to 1 previous error"
+     ],
+     "ledger_fail_lines": 0,
+     "ledger_fail_kinds": {},
+     "semver_failed_lints": [],
+     "semver_summary": null,
+     "unsupported_rustc": [],
+     "missing_headers": [],
+     "runner_image": "ubuntu-26.04",
+     "left_right": []
+    }
+   }
+  },
+  {
+   "job": "docs",
+   "relation": "fails_only_on_head",
+   "head": {
+    "conclusion": "failure",
+    "job_id": 133246009370,
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/43851820253/job/133246009370",
+    "started_at": "2026-11-16T10:46:26Z",
+    "completed_at": "2026-11-16T10:47:46Z",
+    "parsed_log": {
+     "log": "raw/logs_04430258/docs.job.log.gz",
+     "exit_code": 101,
+     "failed_tests": [],
+     "panic_sites": [],
+     "failed_test_binaries": [],
+     "error_lines": [
+      "error: public documentation for `hybrid_automaton` links to private item `crate::switching`",
+      "error: could not document `vigilode`"
+     ],
+     "ledger_fail_lines": 0,
+     "ledger_fail_kinds": {},
+     "semver_failed_lints": [],
+     "semver_summary": null,
+     "unsupported_rustc": [],
+     "missing_headers": [],
+     "runner_image": "ubuntu-26.04",
+     "left_right": []
+    }
+   },
+   "base": {
+    "conclusion": "success",
+    "job_id": 131135574483,
+    "parsed_log": null
+   }
+  },
+  {
+   "job": "fmt",
+   "relation": "no_failure",
+   "head": {
+    "conclusion": "success",
+    "job_id": 133246008932,
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/43851820253/job/133246008932",
+    "started_at": "2026-11-16T10:46:26Z",
+    "completed_at": "2026-11-16T10:47:02Z",
+    "parsed_log": null
+   },
+   "base": {
+    "conclusion": "success",
+    "job_id": 131135574583,
+    "parsed_log": null
+   }
+  },
+  {
+   "job": "fresh-clone-build",
+   "relation": "fails_only_on_base",
+   "head": {
+    "conclusion": "success",
+    "job_id": 133246009143,
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/43851820512/job/133246009143",
+    "started_at": "2026-11-16T10:46:26Z",
+    "completed_at": "2026-11-16T10:59:42Z",
+    "parsed_log": null
+   },
+   "base": {
+    "conclusion": "failure",
+    "job_id": 131135573601,
+    "parsed_log": {
+     "log": "raw/logs_base_ef04bfab/fresh-clone-build.job.log.gz",
+     "exit_code": 101,
+     "failed_tests": [],
+     "panic_sites": [],
+     "failed_test_binaries": [],
+     "error_lines": [
+      "error: the use of negated comparison operators on partially ordered types produces code that is hard to read and refactor, please consider using the `partial_cmp` method instead, to make it clear that the two values could be incomparable",
+      "error: the loop variable `i` is used to index `z`",
+      "error: the use of negated comparison operators on partially ordered types produces code that is hard to read and refactor, please consider using the `partial_cmp` method instead, to make it clear that the two values could be incomparable",
+      "error: the loop variable `i` is used to index `rb`",
+      "error: the loop variable `i` is used to index `ub`",
+      "error: the loop variable `j` is used to index `rb`"
+     ],
+     "ledger_fail_lines": 0,
+     "ledger_fail_kinds": {},
+     "semver_failed_lints": [],
+     "semver_summary": null,
+     "unsupported_rustc": [],
+     "missing_headers": [],
+     "runner_image": "ubuntu-26.04",
+     "left_right": []
+    }
+   }
+  },
+  {
+   "job": "ignored-tests",
+   "relation": "fails_on_both_same_signature",
+   "head": {
+    "conclusion": "failure",
+    "job_id": 133246008863,
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/43851820285/job/133246008863",
+    "started_at": "2026-11-16T10:46:25Z",
+    "completed_at": "2026-11-16T10:54:14Z",
+    "parsed_log": {
+     "log": "raw/logs_04430258/ignored-tests.job.log.gz",
+     "exit_code": 101,
+     "failed_tests": [
+      "prothero_robinson_wfiltered_enforce_kill_gate"
+     ],
+     "panic_sites": [
+      "crates/rodas5p-integrators/tests/dense_wfiltered_contracts.rs:316"
+     ],
+     "failed_test_binaries": [
+      "-p rodas5p-integrators --test dense_wfiltered_contracts"
+     ],
+     "error_lines": [
+      "error: test failed, to rerun pass `-p rodas5p-integrators --test dense_wfiltered_contracts`"
+     ],
+     "ledger_fail_lines": 0,
+     "ledger_fail_kinds": {},
+     "semver_failed_lints": [],
+     "semver_summary": null,
+     "unsupported_rustc": [],
+     "missing_headers": [],
+     "runner_image": "ubuntu-26.04",
+     "left_right": []
+    }
+   },
+   "base": {
+    "conclusion": "failure",
+    "job_id": 131135573621,
+    "parsed_log": {
+     "log": "raw/logs_base_ef04bfab/ignored-tests.job.log.gz",
+     "exit_code": 101,
+     "failed_tests": [
+      "prothero_robinson_wfiltered_enforce_kill_gate"
+     ],
+     "panic_sites": [
+      "crates/rodas5p-integrators/tests/dense_wfiltered_contracts.rs:316"
+     ],
+     "failed_test_binaries": [
+      "-p rodas5p-integrators --test dense_wfiltered_contracts"
+     ],
+     "error_lines": [
+      "error: test failed, to rerun pass `-p rodas5p-integrators --test dense_wfiltered_contracts`"
+     ],
+     "ledger_fail_lines": 0,
+     "ledger_fail_kinds": {},
+     "semver_failed_lints": [],
+     "semver_summary": null,
+     "unsupported_rustc": [],
+     "missing_headers": [],
+     "runner_image": "ubuntu-26.04",
+     "left_right": []
+    }
+   }
+  },
+  {
+   "job": "mode-and-authority",
+   "relation": "no_failure",
+   "head": {
+    "conclusion": "success",
+    "job_id": 133246009027,
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/43851820289/job/133246009027",
+    "started_at": "2026-11-16T10:46:25Z",
+    "completed_at": "2026-11-16T10:46:40Z",
+    "parsed_log": null
+   },
+   "base": {
+    "conclusion": "success",
+    "job_id": 131135573448,
+    "parsed_log": null
+   }
+  },
+  {
+   "job": "receipt-validation",
+   "relation": "no_failure",
+   "head": {
+    "conclusion": "skipped",
+    "job_id": 133246161188,
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/43851820289/job/133246161188",
+    "started_at": "2026-11-16T10:46:41Z",
+    "completed_at": "2026-11-16T10:46:41Z",
+    "parsed_log": null
+   },
+   "base": {
+    "conclusion": "skipped",
+    "job_id": 131135738979,
+    "parsed_log": null
+   }
+  },
+  {
+   "job": "research-process",
+   "relation": "fails_on_both_different_signature",
+   "head": {
+    "conclusion": "failure",
+    "job_id": 133246008815,
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/43851820326/job/133246008815",
+    "started_at": "2026-11-16T10:46:26Z",
+    "completed_at": "2026-11-16T10:46:52Z",
+    "parsed_log": {
+     "log": "raw/logs_04430258/research-process.job.log.gz",
+     "exit_code": 1,
+     "failed_tests": [],
+     "panic_sites": [],
+     "failed_test_binaries": [],
+     "error_lines": [],
+     "ledger_fail_lines": 7,
+     "ledger_fail_kinds": {
+      "other": 2,
+      "stall rule": 5
+     },
+     "semver_failed_lints": [],
+     "semver_summary": null,
+     "unsupported_rustc": [],
+     "missing_headers": [],
+     "runner_image": "ubuntu-26.04",
+     "left_right": []
+    }
+   },
+   "base": {
+    "conclusion": "failure",
+    "job_id": 131135573571,
+    "parsed_log": {
+     "log": "raw/logs_base_ef04bfab/research-process.job.log.gz",
+     "exit_code": 1,
+     "failed_tests": [],
+     "panic_sites": [],
+     "failed_test_binaries": [],
+     "error_lines": [],
+     "ledger_fail_lines": 248,
+     "ledger_fail_kinds": {
+      "missing commit": 247,
+      "other": 1
+     },
+     "semver_failed_lints": [],
+     "semver_summary": null,
+     "unsupported_rustc": [],
+     "missing_headers": [],
+     "runner_image": "ubuntu-26.04",
+     "left_right": []
+    }
+   }
+  },
+  {
+   "job": "scientific-execution-aggregate",
+   "relation": "no_failure",
+   "head": {
+    "conclusion": "skipped",
+    "job_id": 133246162060,
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/43851820289/job/133246162060",
+    "started_at": "2026-11-16T10:46:41Z",
+    "completed_at": "2026-11-16T10:46:41Z",
+    "parsed_log": null
+   },
+   "base": {
+    "conclusion": "skipped",
+    "job_id": 131135739595,
+    "parsed_log": null
+   }
+  },
+  {
+   "job": "scientific-execution-cells",
+   "relation": "no_failure",
+   "head": {
+    "conclusion": "skipped",
+    "job_id": 133246161361,
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/43851820289/job/133246161361",
+    "started_at": "2026-11-16T10:46:41Z",
+    "completed_at": "2026-11-16T10:46:41Z",
+    "parsed_log": null
+   },
+   "base": {
+    "conclusion": "skipped",
+    "job_id": 131135738904,
+    "parsed_log": null
+   }
+  },
+  {
+   "job": "semver",
+   "relation": "fails_only_on_head",
+   "head": {
+    "conclusion": "failure",
+    "job_id": 133246009854,
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/43851820253/job/133246009854",
+    "started_at": "2026-11-16T10:46:26Z",
+    "completed_at": "2026-11-16T10:53:18Z",
+    "parsed_log": {
+     "log": "raw/logs_04430258/semver.job.log.gz",
+     "exit_code": 100,
+     "failed_tests": [],
+     "panic_sites": [],
+     "failed_test_binaries": [],
+     "error_lines": [],
+     "ledger_fail_lines": 0,
+     "ledger_fail_kinds": {},
+     "semver_failed_lints": [
+      "constructible_struct_adds_field",
+      "enum_discriminants_undefined_non_unit_variant",
+      "enum_marked_non_exhaustive",
+      "enum_no_repr_variant_discriminant_changed",
+      "enum_variant_added"
+     ],
+     "semver_summary": "Summary semver requires new major version: 5 major and 0 minor checks failed",
+     "unsupported_rustc": [],
+     "missing_headers": [],
+     "runner_image": "ubuntu-26.04",
+     "left_right": []
+    }
+   },
+   "base": {
+    "conclusion": "success",
+    "job_id": 131135574725,
+    "parsed_log": null
+   }
+  },
+  {
+   "job": "test",
+   "relation": "fails_on_both_different_signature",
+   "head": {
+    "conclusion": "failure",
+    "job_id": 133246009273,
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/43851820253/job/133246009273",
+    "started_at": "2026-11-16T10:46:25Z",
+    "completed_at": "2026-11-16T10:52:47Z",
+    "parsed_log": {
+     "log": "raw/logs_04430258/test.job.log.gz",
+     "exit_code": 101,
+     "failed_tests": [
+      "s1_nine_native_cases_match_anchor"
+     ],
+     "panic_sites": [
+      "crates/rodas5p-krylov/tests/staged_solve_telemetry.rs:233"
+     ],
+     "failed_test_binaries": [
+      "-p rodas5p-krylov --test staged_solve_telemetry"
+     ],
+     "error_lines": [
+      "error: test failed, to rerun pass `-p rodas5p-krylov --test staged_solve_telemetry`"
+     ],
+     "ledger_fail_lines": 0,
+     "ledger_fail_kinds": {},
+     "semver_failed_lints": [],
+     "semver_summary": null,
+     "unsupported_rustc": [],
+     "missing_headers": [],
+     "runner_image": "ubuntu-26.04",
+     "left_right": [
+      [
+       "left: 3",
+       "right: 5"
+      ]
+     ]
+    }
+   },
+   "base": {
+    "conclusion": "failure",
+    "job_id": 131135574422,
+    "parsed_log": {
+     "log": "raw/logs_base_ef04bfab/test.job.log.gz",
+     "exit_code": 101,
+     "failed_tests": [
+      "refactor_and_both_apply_paths_allocate_zero_across_active_shapes"
+     ],
+     "panic_sites": [
+      "crates/rodas5p-core/tests/low_rank_bordered_allocation.rs:61"
+     ],
+     "failed_test_binaries": [
+      "-p rodas5p-core --test low_rank_bordered_allocation"
+     ],
+     "error_lines": [
+      "error: test failed, to rerun pass `-p rodas5p-core --test low_rank_bordered_allocation`"
+     ],
+     "ledger_fail_lines": 0,
+     "ledger_fail_kinds": {},
+     "semver_failed_lints": [],
+     "semver_summary": null,
+     "unsupported_rustc": [],
+     "missing_headers": [],
+     "runner_image": "ubuntu-26.04",
+     "left_right": [
+      [
+       "left: 2",
+       "right: 0"
+      ]
+     ]
+    }
+   }
+  }
+ ]
+}

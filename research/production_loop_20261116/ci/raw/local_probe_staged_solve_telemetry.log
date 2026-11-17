@@ -1,0 +1,14 @@
+# local probe: debug-profile test binary staged_solve_telemetry-33034b799492b7ec built from loop worktree (head 04430258 + doc fix) with cargo +1.94.1 test -p rodas5p-krylov --test staged_solve_telemetry
+## host: Ubuntu 24.04.5 LTS, ldd (Ubuntu GLIBC 2.39-0ubuntu8.12) 2.39, AMD Ryzen 9 5900X 12-Core Processor
+test s3_guard_and_shadow_telemetry ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+## container ubuntu:24.04 (image id a6f81fb630d5)
+ldd (Ubuntu GLIBC 2.39-0ubuntu8.8) 2.39
+test s1_nine_native_cases_match_anchor ... ok
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+## container ubuntu:26.04 (image id a8acf325a119)
+ldd (Ubuntu GLIBC 2.43-2ubuntu2.4) 2.43
+test s1_nine_native_cases_match_anchor ... ok
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s

@@ -78,9 +78,7 @@ pub fn solve_lgmres_with_workspace_and_residual_scale(
         let same_system =
             system_identity.is_some() && state.system_identity.as_ref() == system_identity.as_ref();
         if !same_system {
-            for image in &mut state.images {
-                *image = None;
-            }
+            state.images.fill(None);
             state.previous_solution = None;
             state.operator_token = Some(op.token());
             state.system_identity = system_identity.clone();

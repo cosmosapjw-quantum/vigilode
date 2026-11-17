@@ -1651,14 +1651,16 @@ fn sha256_hex(bytes: &[u8]) -> String {
 fn g3_protected_sources_are_byte_identical() {
     // sha256 of the worktree files at the start of PW04/PPSW1-6b (computed with sha256sum):
     // the ptsw2b h2 list plus ptsw2b.rs and ptsw2b_contracts.rs themselves.
+    // Re-pinned on 2026-11-16 to the tree after the adopted merge of the switcher lineage (owner
+    // decision OD-L1-5); old and new pins: research/production_loop_20261116/trial_merge/SENTINEL_REPIN.json.
     let pinned: [(&str, &str); 14] = [
         (
             "src/sequential.rs",
-            "9256587e04625eecaf21b053f4b94f907b8d8e2f7afdb2b8854f32e240bd5a0d",
+            "98044965711c2e09e9a6d6b80f09372e48e6a8439f88aa40a52bff2c2100a5e9",
         ),
         (
             "src/rodas5p_matrix_free_fast.rs",
-            "8425652310c29d8b3f8e649ea477040fa48c35bb391dcaf6f3073b83e1aae185",
+            "a6d138f0da89b4506e2d7bae28621c241c5c0653c3020aad6f2a125d5e891139",
         ),
         (
             "src/collective_rodas5p.rs",
@@ -1670,7 +1672,7 @@ fn g3_protected_sources_are_byte_identical() {
         ),
         (
             "src/problem.rs",
-            "f8da89e24e532c208b84711b5bbaa4c0c3a213ff5cdc90c8b9d7c53e6583365d",
+            "095b50eaf7471908bbad78f851170d304287806e1d25e6a075fb0f7597d0d660",
         ),
         (
             "src/parallel.rs",
@@ -1678,7 +1680,7 @@ fn g3_protected_sources_are_byte_identical() {
         ),
         (
             "src/adaptive.rs",
-            "3a04609dc5a7141d6bdfe6ebccec441d1d2c8a9960305ea58873914e10703c40",
+            "ce14696acdc134a45a250b5e4c83806c20914502e71940d044513f4a430eb9e4",
         ),
         (
             "src/integrate.rs",
@@ -1706,7 +1708,7 @@ fn g3_protected_sources_are_byte_identical() {
         ),
         (
             "tests/ptsw2b_contracts.rs",
-            "89ca2fae065d88addf5dab0623e1d96cfed2ccdb727f291a847b58c3e0bf1d1d",
+            "e0e54c374503698d465b1aaccc14f1a1d0823e7ce339798a0c3dfec1d963e2fc",
         ),
     ];
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -1714,18 +1716,26 @@ fn g3_protected_sources_are_byte_identical() {
         let bytes = std::fs::read(root.join(rel)).unwrap_or_else(|e| panic!("{rel}: {e}"));
         assert_eq!(sha256_hex(&bytes), want, "protected file changed: {rel}");
     }
-    // lib.rs may gain exactly ONE line `pub mod ppsw1;` and nothing else (owner allowlist):
-    // with that single line removed, its bytes must equal the pre-PW04 file.
+    // lib.rs allowlist (owner decisions; extended on 2026-11-16 by OD-L1-6): the file may hold the
+    // line `pub mod ppsw1;` and the loop L1 module block, each at most once. With these removed its
+    // bytes must equal the pinned file (re-pinned after the adopted merge, OD-L1-5).
     let lib = std::fs::read_to_string(root.join("src/lib.rs")).unwrap();
-    let marker = "pub mod ppsw1;\n";
-    assert!(
-        lib.matches(marker).count() <= 1,
-        "at most one `pub mod ppsw1;` line"
-    );
+    let allowed = [
+        "pub mod ppsw1;\n",
+        "\n// Loop L1 (2026-11-16) opt-in modules.\npub mod mol;\npub mod stage_clients;\n",
+    ];
+    let mut stripped = lib.clone();
+    for marker in allowed {
+        assert!(
+            lib.matches(marker).count() <= 1,
+            "an allowed lib.rs block occurs more than once"
+        );
+        stripped = stripped.replace(marker, "");
+    }
     assert_eq!(
-        sha256_hex(lib.replace(marker, "").as_bytes()),
-        "56822aa7a940bd5c2c79bddaa28c0e133c3f22be65e17e4ca378c1bb5a2e31d9",
-        "src/lib.rs may differ from the pre-PW04 file only by the one `pub mod ppsw1;` line"
+        sha256_hex(stripped.as_bytes()),
+        "1ad6c849a4e8ccd3aed86979e603d7365a8e78215fddf4001b2d00a9897402a9",
+        "src/lib.rs may differ from the pinned file only by the allowed module lines"
     );
 }
 

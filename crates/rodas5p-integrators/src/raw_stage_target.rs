@@ -367,3 +367,33 @@ pub fn raw_residual_transport_bound(
     }
     Ok(bound)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn wp01b_raw_absolute_residual_budget_k_to_u_consistency() {
+        let gamma = 0.25;
+        let tau_k = 1.0e-6;
+        let budget_u = raw_absolute_residual_budget(tau_k, gamma).expect("valid positive budget");
+        let expected = 0.25e-6;
+        assert!(
+            (budget_u - expected).abs() <= 2.0 * f64::EPSILON * expected,
+            "expected {expected:e}, got {budget_u:e}"
+        );
+
+        // Negative gamma: |gamma| is used
+        let neg_gamma = -0.25;
+        let budget_u_neg =
+            raw_absolute_residual_budget(tau_k, neg_gamma).expect("valid positive budget");
+        assert_eq!(budget_u, budget_u_neg);
+
+        // Invalid parameters are rejected before any calculation
+        assert!(raw_absolute_residual_budget(0.0, gamma).is_err());
+        assert!(raw_absolute_residual_budget(-1.0e-6, gamma).is_err());
+        assert!(raw_absolute_residual_budget(f64::NAN, gamma).is_err());
+        assert!(raw_absolute_residual_budget(tau_k, 0.0).is_err());
+        assert!(raw_absolute_residual_budget(tau_k, f64::NAN).is_err());
+    }
+}

@@ -1,0 +1,279 @@
+{
+  "schema": "vigilode.loop-l1.trial-merge.gates.v1",
+  "generator": "research/production_loop_20261116/trial_merge/make_gates.py",
+  "node": "V02",
+  "base_commit": "2dc9a2c5778ac5b3ac960b0f6741aa5916122384",
+  "merged_commit": "933922495045796c99c530b0f1f1efd8fec83ed0",
+  "merge_commit": "97385fe4f21368faad8c8535c1475b371e044026",
+  "evaluated_head": "763b80ff2e7cca8e4dfd9d7f835398d4170c22cd",
+  "toolchain": "1.94.1",
+  "wall_time": "diagnostic_only",
+  "gates": {
+    "T1": {
+      "status": "PASS",
+      "command": "cargo +1.94.1 check --workspace --all-targets --locked -j 6",
+      "log": "research/production_loop_20261116/trial_merge/logs/t1_check_final_head.log",
+      "runs": [
+        {
+          "log": "research/production_loop_20261116/trial_merge/logs/t1_check_attempt1.log",
+          "log_sha256": "4628ed90896301dfea8f61181025b99d65a470af7038a7051ee0db2a8db990f0",
+          "command": "cargo +1.94.1 check --workspace --all-targets --locked -j 6",
+          "head": "9fe7e7ee6e8ecdd3af8866ee862cc293ae20e919",
+          "start": "2026-11-16T17:35:16+09:00",
+          "end": "2026-11-16T17:37:26+09:00",
+          "exit_code": 101,
+          "compiler_errors": 3,
+          "compiler_warnings": 0
+        },
+        {
+          "log": "research/production_loop_20261116/trial_merge/logs/t1_check_attempt2.log",
+          "log_sha256": "df1ccfc7f00157f33629e0102486e3883944653165f464d263bcd3e1dfdb8aa5",
+          "command": "cargo +1.94.1 check --workspace --all-targets --locked -j 6",
+          "head": "e23cf30abd4b9d8fe38c0a680364361a7610a299",
+          "start": "2026-11-16T17:38:06+09:00",
+          "end": "2026-11-16T17:39:34+09:00",
+          "exit_code": 0,
+          "compiler_errors": 0,
+          "compiler_warnings": 0
+        },
+        {
+          "log": "research/production_loop_20261116/trial_merge/logs/t1_check_final_head.log",
+          "log_sha256": "6b83c9ca3d04645c4bc13ac992d67828c52e74c9850dfeb48b1f4faf1c2083e2",
+          "command": "cargo +1.94.1 check --workspace --all-targets --locked -j 6",
+          "head": "763b80ff2e7cca8e4dfd9d7f835398d4170c22cd",
+          "start": "2026-11-16T18:01:45+09:00",
+          "end": "2026-11-16T18:02:08+09:00",
+          "exit_code": 0,
+          "compiler_errors": 0,
+          "compiler_warnings": 0
+        }
+      ],
+      "note": "attempt1 = after fix-up (a) only (fails on try_update); attempt2 = after fix-ups (a)-(c); final_head = after the oracle cherry-pick."
+    },
+    "T2": {
+      "status": "FAIL",
+      "command": [
+        "cargo +1.94.1 test --locked -j 6 --release --no-fail-fast -p vigilode -p rodas5p-core -p rodas5p-krylov",
+        "cargo +1.94.1 test --locked -j 6 --release --no-fail-fast -p rodas5p-integrators --lib --test ppsw1_6b_contracts --test ppsw1_independent_qualification --test ppsw1_parallel_rhs_contracts --test ppsw1_session_boundary_contracts --test ppsw1_linear_backend_contracts --test ptsw2b_contracts",
+        "cargo +1.94.1 test --locked -j 6 --release --no-fail-fast -p rodas5p-integrators --test causal_depth_stage_residual_contracts --test dopri5_stiffness_guards --test real_collective_client_contracts --test shared_basis_mf_contracts",
+        "cargo +1.94.1 test --locked -j 6 --release --no-fail-fast -p rodas5p-krylov --test givens_ls_contracts --test secant_preconditioner_contracts --test shared_basis_contracts"
+      ],
+      "log": [
+        "research/production_loop_20261116/trial_merge/logs/t2_a_facade_core_krylov.log",
+        "research/production_loop_20261116/trial_merge/logs/t2_b_integrators_peer.log",
+        "research/production_loop_20261116/trial_merge/logs/t2_c_switcher_added_integrators.log",
+        "research/production_loop_20261116/trial_merge/logs/t2_c_switcher_added_krylov.log"
+      ],
+      "passed": 1210,
+      "failed": 2,
+      "ignored": 24,
+      "failed_tests": [
+        {
+          "binary": "ppsw1_6b_contracts:tests/ppsw1_6b_contracts.rs",
+          "test": "g3_protected_sources_are_byte_identical"
+        },
+        {
+          "binary": "ptsw2b_contracts:tests/ptsw2b_contracts.rs",
+          "test": "h2_protected_sources_are_byte_identical"
+        }
+      ],
+      "runs": [
+        {
+          "log": "research/production_loop_20261116/trial_merge/logs/t2_a_facade_core_krylov.log",
+          "command": "cargo +1.94.1 test --locked -j 6 --release --no-fail-fast -p vigilode -p rodas5p-core -p rodas5p-krylov",
+          "head": "e23cf30abd4b9d8fe38c0a680364361a7610a299",
+          "exit_code": 0,
+          "test_binaries": 152,
+          "passed": 948,
+          "failed": 0,
+          "ignored": 21,
+          "failed_tests": []
+        },
+        {
+          "log": "research/production_loop_20261116/trial_merge/logs/t2_b_integrators_peer.log",
+          "command": "cargo +1.94.1 test --locked -j 6 --release --no-fail-fast -p rodas5p-integrators --lib --test ppsw1_6b_contracts --test ppsw1_independent_qualification --test ppsw1_parallel_rhs_contracts --test ppsw1_session_boundary_contracts --test ppsw1_linear_backend_contracts --test ptsw2b_contracts",
+          "head": "e23cf30abd4b9d8fe38c0a680364361a7610a299",
+          "exit_code": 101,
+          "test_binaries": 7,
+          "passed": 234,
+          "failed": 2,
+          "ignored": 3,
+          "failed_tests": [
+            {
+              "binary": "ppsw1_6b_contracts:tests/ppsw1_6b_contracts.rs",
+              "test": "g3_protected_sources_are_byte_identical"
+            },
+            {
+              "binary": "ptsw2b_contracts:tests/ptsw2b_contracts.rs",
+              "test": "h2_protected_sources_are_byte_identical"
+            }
+          ]
+        },
+        {
+          "log": "research/production_loop_20261116/trial_merge/logs/t2_c_switcher_added_integrators.log",
+          "command": "cargo +1.94.1 test --locked -j 6 --release --no-fail-fast -p rodas5p-integrators --test causal_depth_stage_residual_contracts --test dopri5_stiffness_guards --test real_collective_client_contracts --test shared_basis_mf_contracts",
+          "head": "e23cf30abd4b9d8fe38c0a680364361a7610a299",
+          "exit_code": 0,
+          "test_binaries": 4,
+          "passed": 17,
+          "failed": 0,
+          "ignored": 0,
+          "failed_tests": []
+        },
+        {
+          "log": "research/production_loop_20261116/trial_merge/logs/t2_c_switcher_added_krylov.log",
+          "command": "cargo +1.94.1 test --locked -j 6 --release --no-fail-fast -p rodas5p-krylov --test givens_ls_contracts --test secant_preconditioner_contracts --test shared_basis_contracts",
+          "head": "e23cf30abd4b9d8fe38c0a680364361a7610a299",
+          "exit_code": 0,
+          "test_binaries": 3,
+          "passed": 11,
+          "failed": 0,
+          "ignored": 0,
+          "failed_tests": []
+        }
+      ]
+    },
+    "T3": {
+      "status": "FAIL",
+      "command": "env -u VIGILODE_BLESS_DEFAULT_PATH -u VIGILODE_DEFAULT_PATH_ALLOW_ADDED_KEYS cargo +1.94.1 test --locked -j 6 --release -p vigilode --test default_path_golden",
+      "log": "research/production_loop_20261116/trial_merge/logs/t3_golden_strict_run1.log",
+      "blessed": false,
+      "strict_runs": [
+        {
+          "log": "research/production_loop_20261116/trial_merge/logs/t3_golden_strict_run1.log",
+          "log_sha256": "f6c0592d6227236fd26e6f386667208594833fd76821b132e77684ad99a6cdbb",
+          "command": "env -u VIGILODE_BLESS_DEFAULT_PATH -u VIGILODE_DEFAULT_PATH_ALLOW_ADDED_KEYS cargo +1.94.1 test --locked -j 6 --release -p vigilode --test default_path_golden",
+          "head": "763b80ff2e7cca8e4dfd9d7f835398d4170c22cd",
+          "start": "2026-11-16T17:59:15+09:00",
+          "end": "2026-11-16T17:59:43+09:00",
+          "exit_code": 101,
+          "compiler_errors": 1,
+          "compiler_warnings": 0
+        },
+        {
+          "log": "research/production_loop_20261116/trial_merge/logs/t3_golden_strict_run2.log",
+          "log_sha256": "451316d3d809764a8aa54581462ec0fa91b50a0e061f71e544a71224723c9efe",
+          "command": "env -u VIGILODE_BLESS_DEFAULT_PATH -u VIGILODE_DEFAULT_PATH_ALLOW_ADDED_KEYS cargo +1.94.1 test --locked -j 6 --release -p vigilode --test default_path_golden",
+          "head": "763b80ff2e7cca8e4dfd9d7f835398d4170c22cd",
+          "start": "2026-11-16T18:01:43+09:00",
+          "end": "2026-11-16T18:01:45+09:00",
+          "exit_code": 101,
+          "compiler_errors": 1,
+          "compiler_warnings": 0
+        }
+      ],
+      "strict_byte_identity": false,
+      "differing_golden_files": [
+        "production_automatic"
+      ],
+      "identical_golden_files": [
+        "decision_grid",
+        "dopri5",
+        "general_ode",
+        "rodas5p_brusselator",
+        "rodas5p_contracts",
+        "rodas5p_hires",
+        "rodas5p_robertson",
+        "rodas5p_vanderpol"
+      ],
+      "values_changed": 0,
+      "values_removed": 0,
+      "keys_added": 600,
+      "differing_cases": 41,
+      "allow_added_keys_run": {
+        "log": "research/production_loop_20261116/trial_merge/logs/t3_golden_allow_added_keys.log",
+        "log_sha256": "78fee0664b08da28ab4da6c2849048f56bceb1b2f71537d576b59e12ba597694",
+        "command": "env -u VIGILODE_BLESS_DEFAULT_PATH VIGILODE_DEFAULT_PATH_ALLOW_ADDED_KEYS=1 cargo +1.94.1 test --locked -j 6 --release -p vigilode --test default_path_golden -- --nocapture --test-threads=1",
+        "head": "763b80ff2e7cca8e4dfd9d7f835398d4170c22cd",
+        "start": "2026-11-16T18:00:54+09:00",
+        "end": "2026-11-16T18:00:56+09:00",
+        "exit_code": 0,
+        "compiler_errors": 0,
+        "compiler_warnings": 0,
+        "status": "PASS"
+      },
+      "details": "research/production_loop_20261116/trial_merge/T3_GOLDEN_DIFF.json"
+    },
+    "T5": {
+      "status": "PASS",
+      "command": [
+        "cargo +1.94.1 clippy --locked -j 6 --release -p vigilode -p rodas5p-core --all-targets --no-deps -- -D warnings",
+        "cargo +1.94.1 clippy --locked -j 6 --release -p rodas5p-integrators --lib --no-deps -- -D warnings"
+      ],
+      "log": [
+        "research/production_loop_20261116/trial_merge/logs/t5_clippy_facade_core_final_head.log",
+        "research/production_loop_20261116/trial_merge/logs/t5_clippy_integrators_lib_final_head.log"
+      ],
+      "warnings": 0,
+      "errors": 0,
+      "runs": [
+        {
+          "log": "research/production_loop_20261116/trial_merge/logs/t5_clippy_facade_core_attempt1.log",
+          "log_sha256": "b8557a107c3d789b3e7f6ab48b451e816e9b7cd35c7cd1202b9d0bd1873051a7",
+          "command": "cargo +1.94.1 clippy --locked -j 6 --release -p vigilode -p rodas5p-core --all-targets --no-deps -- -D warnings",
+          "head": "e23cf30abd4b9d8fe38c0a680364361a7610a299",
+          "start": "2026-11-16T17:42:10+09:00",
+          "end": "2026-11-16T17:44:30+09:00",
+          "exit_code": 0,
+          "compiler_errors": 0,
+          "compiler_warnings": 0
+        },
+        {
+          "log": "research/production_loop_20261116/trial_merge/logs/t5_clippy_integrators_lib_attempt1.log",
+          "log_sha256": "dd45e2f655c1e89c8d6d56bb4da0899a3b86d29643f3b2c048bd1181e40b0d5c",
+          "command": "cargo +1.94.1 clippy --locked -j 6 --release -p rodas5p-integrators --lib --no-deps -- -D warnings",
+          "head": "e23cf30abd4b9d8fe38c0a680364361a7610a299",
+          "start": "2026-11-16T17:44:30+09:00",
+          "end": "2026-11-16T17:45:15+09:00",
+          "exit_code": 0,
+          "compiler_errors": 0,
+          "compiler_warnings": 0
+        },
+        {
+          "log": "research/production_loop_20261116/trial_merge/logs/t5_clippy_facade_core_final_head.log",
+          "log_sha256": "d4f0f4b58e7b9839eb7aeb077170138af36f9c3f17644ade6b78bba4b7097eec",
+          "command": "cargo +1.94.1 clippy --locked -j 6 --release -p vigilode -p rodas5p-core --all-targets --no-deps -- -D warnings",
+          "head": "763b80ff2e7cca8e4dfd9d7f835398d4170c22cd",
+          "start": "2026-11-16T18:02:08+09:00",
+          "end": "2026-11-16T18:03:02+09:00",
+          "exit_code": 0,
+          "compiler_errors": 0,
+          "compiler_warnings": 0
+        },
+        {
+          "log": "research/production_loop_20261116/trial_merge/logs/t5_clippy_integrators_lib_final_head.log",
+          "log_sha256": "e4f9e53f3eccdf256151c44be6ed799d816262a8dcbe3cede6b93655fabaa4a0",
+          "command": "cargo +1.94.1 clippy --locked -j 6 --release -p rodas5p-integrators --lib --no-deps -- -D warnings",
+          "head": "763b80ff2e7cca8e4dfd9d7f835398d4170c22cd",
+          "start": "2026-11-16T18:03:03+09:00",
+          "end": "2026-11-16T18:03:47+09:00",
+          "exit_code": 0,
+          "compiler_errors": 0,
+          "compiler_warnings": 0
+        }
+      ],
+      "extra_test_cfg_run": {
+        "log": "research/production_loop_20261116/trial_merge/logs/t5_clippy_integrators_lib_testcfg.log",
+        "log_sha256": "b3c9dd499f1d3b77876c6025a2614d9226c055725714d717da27214380651ea5",
+        "command": null,
+        "head": "e23cf30abd4b9d8fe38c0a680364361a7610a299",
+        "start": "2026-11-16T17:45:39+09:00",
+        "end": "2026-11-16T17:46:46+09:00",
+        "exit_code": 0,
+        "compiler_errors": 0,
+        "compiler_warnings": 0
+      }
+    },
+    "T6": {
+      "status": "FAIL",
+      "command": "python3 -I tools/check-research-node.py --base 2dc9a2c5778ac5b3ac960b0f6741aa5916122384",
+      "log": "research/production_loop_20261116/trial_merge/logs/t6_check_research_node.log",
+      "exit_code": 1,
+      "failures": [
+        "new node research/qualification/: missing PREREGISTRATION.md (pre-registration)",
+        "new node research/qualification/: no research/LEDGER.jsonl row whose outputs_sha256 covers it"
+      ],
+      "summary_line": "check-research-node: FAIL (212 ledger rows, base=2dc9a2c5778ac5b3ac960b0f6741aa5916122384, new nodes=['b7_first_batch_20261104', 'c1_coloured_assembly_20261104', 'd1_stiffness_gate_20261104', 'e1r_work_model_v2_20261104', 'h1_hysteresis_band_20261104', 'k1_shared_krylov_basis_20261104', 'qualification', 'switcher_admission_20261103', 'switcher_work_model_v2_20261103'])"
+    }
+  }
+}

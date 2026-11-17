@@ -29,19 +29,27 @@ pub struct SelectionIdentity {
 }
 
 /// Units must match: a deterministic work score cannot be compared to seconds.
+#[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub enum CostUnit {
     /// A caller-defined common deterministic work score.
     Work,
+    /// Frozen integer work model version.
+    WorkModel(u32),
     /// Elapsed seconds with the same accounting boundary.
     Seconds,
 }
 
 /// Provenance of the interval, kept separate from the arithmetic decision.
+#[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub enum CostEvidenceKind {
     /// Actual work on the observed prefix; no future enclosure is implied.
     ObservedWork,
+    /// Charged prefix of a deterministic, replay-safe run (conservative lower bound).
+    ObservedLowerBound,
+    /// Two-stage rate extrapolated interval; never output-admissible.
+    RateExtrapolated,
     /// An empirical interval made from observed elapsed times.
     EmpiricalTiming,
     /// A caller-provided bound whose mathematical validity is external.
@@ -129,8 +137,20 @@ pub fn compare_qualified_costs(
     if incumbent.identity != candidate.identity {
         return Incomparable(IdentityMismatch);
     }
-    if incumbent.unit != candidate.unit {
-        return Incomparable(UnitMismatch);
+    match (incumbent.unit, candidate.unit) {
+        (CostUnit::Work, CostUnit::Work) => {}
+        (CostUnit::Seconds, CostUnit::Seconds) => {}
+        (CostUnit::WorkModel(a), CostUnit::WorkModel(b)) if a == b => {}
+        _ => return Incomparable(UnitMismatch),
+    }
+    if candidate.kind == CostEvidenceKind::ObservedLowerBound {
+        return Incomparable(InvalidPolicy);
+    }
+    if incumbent.kind == CostEvidenceKind::RateExtrapolated {
+        return Incomparable(InvalidPolicy);
+    }
+    if candidate.kind == CostEvidenceKind::RateExtrapolated && candidate.admissible {
+        return Incomparable(InvalidPolicy);
     }
     if !incumbent.admissible || !candidate.admissible {
         return Incomparable(OutputNotQualified);

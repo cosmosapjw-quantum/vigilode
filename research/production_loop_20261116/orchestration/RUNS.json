@@ -1,0 +1,73 @@
+{
+  "schema": "vigilode.loop-l1.orchestration-runs.v1",
+  "note": "Workflow scripts as launched by the orchestrator session; staged, not yet launched: wave2_group3.js, wave2_group4.js. Fields other than run_id, script and what are read from the run records of the session.",
+  "runs": [
+    {
+      "run_id": "wf_7cef339f-7cb",
+      "script": "wave1.js",
+      "script_sha256": "9b522f405cccaa1639faf414f5f1a3afc1ec92d777e2e78548874dc19562bfe2",
+      "what": "wave 1: audit, theory, golden oracle, client kit, Schwarz screen",
+      "recorded_script_sha256": "9b522f405cccaa1639faf414f5f1a3afc1ec92d777e2e78548874dc19562bfe2",
+      "status": "completed",
+      "agent_count": 18,
+      "total_tokens": 3232382,
+      "total_tool_calls": 603,
+      "duration_ms": 4209064,
+      "default_model": "claude-fable-5-2",
+      "errors": [
+        "[screen:V14] failed: You've hit your monthly spend limit \u00b7 your 5-hour limit resets 9:10pm (Asia/Seoul)"
+      ]
+    },
+    {
+      "run_id": "wf_4529fa64-b63",
+      "script": "wave2_group1.js",
+      "script_sha256": "2c3c232a27695d47127662cc55b19269f2cccb29e1c198828dd05f8d67cb4b66",
+      "what": "wave 2 group 1: V04, V06, V07 with reviewers",
+      "recorded_script_sha256": "2c3c232a27695d47127662cc55b19269f2cccb29e1c198828dd05f8d67cb4b66",
+      "status": "completed",
+      "agent_count": 6,
+      "total_tokens": 3357047,
+      "total_tool_calls": 691,
+      "duration_ms": 10660323,
+      "default_model": "claude-fable-5-2",
+      "errors": []
+    },
+    {
+      "run_id": "wf_1610a0a6-5b3",
+      "script": "wave2_group2.js",
+      "script_sha256": "39fcb7610a7cb440ccca80f43f368e68fa21b1c0d1aff8f30774c4d94390e64b",
+      "what": "wave 2 group 2, first launch: V03a, V17, V16 with reviewers",
+      "recorded_script_sha256": "39fcb7610a7cb440ccca80f43f368e68fa21b1c0d1aff8f30774c4d94390e64b",
+      "status": "completed",
+      "agent_count": 3,
+      "total_tokens": 828443,
+      "total_tool_calls": 108,
+      "duration_ms": 1181253,
+      "default_model": "claude-fable-5-2",
+      "args_base": "c468478e73123a4625c6d20f7459a9f79cbf33de",
+      "args_notes_sha256": "efe502e1ecb188b88ebf1fd6bb6d0cff2ffd884fbe72c39b4e1b5c7c69c83631",
+      "errors": [
+        "[build:v16] failed: You've hit your monthly spend limit \u00b7 your Fable limit resets Nov 23, 3pm (Asia/Seoul). Switch to another model to continue.",
+        "[build:v03] failed: You've hit your monthly spend limit \u00b7 your Fable limit resets Nov 23, 3pm (Asia/Seoul). Switch to another model to continue.",
+        "[build:v17] failed: You've hit your monthly spend limit \u00b7 your Fable limit resets Nov 23, 3pm (Asia/Seoul). Switch to another model to continue."
+      ]
+    },
+    {
+      "run_id": "wf_7beb7c33-487",
+      "script": "wave2_group2.js",
+      "script_sha256": "39fcb7610a7cb440ccca80f43f368e68fa21b1c0d1aff8f30774c4d94390e64b",
+      "what": "wave 2 group 2, second launch: V03a, V17, V16 with reviewers",
+      "status": "running or record not yet written"
+    }
+  ],
+  "staged": [
+    {
+      "script": "wave2_group3.js",
+      "script_sha256": "dbc05effb123990382ef1fc8df9556733ddbfea27f9b88b81cadda5af87c4b0f"
+    },
+    {
+      "script": "wave2_group4.js",
+      "script_sha256": "1f49891f97873b9003fb230eddbcbe1fc0fb0dc27c9e4eff4a96fcb6c70496ae"
+    }
+  ]
+}

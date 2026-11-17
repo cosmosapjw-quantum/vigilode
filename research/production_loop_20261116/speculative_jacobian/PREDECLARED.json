@@ -1,0 +1,120 @@
+{
+  "schema": "vigilode.loop-l1.v07-stage-a.predeclared.v1",
+  "node": "V07_SPECULATIVE_JACOBIAN",
+  "stage": "a (sequential emulation; no threads, no timing claim)",
+  "written": "2026-11-17",
+  "base_commit": "0443025895dabf350f46fd3f0cdd0cf1d7fbcf85",
+  "branch": "research/production-loop-20261116-w2-v07",
+  "status_at_commit": "No VigilODE run of any arm (protected, exact, g8, g7, lagged) has been executed for this node when this file is committed. The only executed runs are (1) reference/pilot_pde.py, a SciPy-only characterisation of the two method-of-lines problems used to choose their end times (output logs/pilot_pde.log), and (2) smoke runs of the pinned Julia environment on the scalar problem y' = -1000 (y - cos t), made in a scratch directory outside the repository to choose the second reference code (RadauIIA9 of that environment missed its tolerance by a factor 2600 and is not used; RadauIIA5 and Rodas5P are).",
+  "frozen_discriminators": {
+    "source": "research/production_loop_20261116/PREREGISTRATION.md, row V07, and TASK_CONTRACTS.json V07_SPECULATIVE_JACOBIAN; not changed here",
+    "evaluated_separately_for": ["g8", "g7"],
+    "step_ratio": "median <= 1.02 and max <= 1.05",
+    "error_ratio": "within [0.67, 1.5]",
+    "observed_order": ">= 4.8",
+    "kill": "any step ratio > 1.10 with g7"
+  },
+  "arms": {
+    "protected": "integrate_rodas5p_fast_observed_with_atol (protected dense driver, default options) on the problem without the recording wrapper",
+    "exact": "integrate_rodas5p_fast_client_observed_with_atol_and_control with SpeculativeJacobianClient(mode Exact) around DenseLuStageClient (LU mode = DenseLuMode::protected_choice_at(t0, y0)) on the problem with the recording right-hand-side wrapper; control arm, must equal 'protected' bit for bit (end state, attempts, accepted, rejected, every WorkCounters field) in every cell; a mismatch voids the cell and is reported as a blocker",
+    "g8": "the same client in mode G8: the Jacobian of a step is evaluated at the argument of stage 8 of the previous accepted attempt",
+    "g7": "the same client in mode G7: the argument of stage 7 of the previous accepted attempt",
+    "lagged": "EXPLORATORY, no gate: the same client in mode LaggedOneStep: the Jacobian of a step is evaluated at the previous accepted state (the start of the previous step)",
+    "protected_rtol_up / protected_rtol_down": "EXPLORATORY, no gate: the protected arm with rtol and atol multiplied / divided by 1.02 (E5: rtol only), to show how much the end-point error and the attempt count move under a perturbation of the controller that changes no part of the method",
+    "fallback_rules_of_the_speculative_modes": "the first linearization of a run uses the exact Jacobian; a linearization at the same time as the previous one (the driver's retry after an attempt that failed with an error) uses the exact Jacobian; a linearization for which the recorder holds no complete attempt ending at the linearization time uses the exact Jacobian; after a local-error rejection the driver does not linearize, so the Jacobian of the rejected attempt is kept. The number of linearizations of each kind is reported per run."
+  },
+  "driver_configuration": {
+    "adaptive_step_config": {
+      "rtol": "the cell's rtol",
+      "atol": "the cell's atol (also passed as a uniform vector)",
+      "initial_step": 1e-06,
+      "min_step": 1e-14,
+      "max_step": "t_end - t0",
+      "max_attempts": 1000000,
+      "other_fields": "AdaptiveStepConfig::default() (safety 0.9, min_factor 0.2, max_factor 5, reject_max_factor 0.9, Integral controller, AllowClockResolutionSlack)"
+    },
+    "output_schedule": "[t0, t_end] only, so no step is clipped by an intermediate output time",
+    "toolchain": "cargo +1.94.1, --locked, --release, -j 4",
+    "cpu_partition": "taskset -c 0-9,12-21; single-threaded runs; deterministic counters only, wall time is not measured"
+  },
+  "adaptive_set": {
+    "rtols": [0.0001, 1e-06, 1e-08],
+    "atol_rule": "atol = rtol * atol_scale, uniform over the components; e5 uses the fixed atol 1.7e-24 of the stiff test-set literature",
+    "problems": [
+      {"id": "robertson", "n": 3, "t_span": [0.0, 40.0], "atol_scale": 0.0001, "y0": "(1, 0, 0)", "definition": "y1' = -0.04 y1 + 1e4 y2 y3; y2' = 0.04 y1 - 1e4 y2 y3 - 3e7 y2^2; y3' = 3e7 y2^2", "reference": "numerical"},
+      {"id": "vdpol-eps1e-6", "n": 2, "t_span": [0.0, 2.0], "atol_scale": 1.0, "y0": "(2, 0)", "definition": "y1' = y2; y2' = ((1 - y1^2) y2 - y1) / eps, eps = 1e-6 (Van der Pol with mu = 1000 in scaled time)", "reference": "numerical"},
+      {"id": "oregonator", "n": 3, "t_span": [0.0, 360.0], "atol_scale": 1.0, "y0": "(1, 2, 3)", "definition": "y1' = 77.27 (y2 + y1 (1 - 8.375e-6 y1 - y2)); y2' = (y3 - (1 + y1) y2) / 77.27; y3' = 0.161 (y1 - y3)", "reference": "numerical", "note": "configuration of the consumed U11 holdout; used here as a development problem, not as a holdout"},
+      {"id": "hires", "n": 8, "t_span": [0.0, 321.8122], "atol_scale": 0.0001, "y0": "(1, 0, 0, 0, 0, 0, 0, 0.0057)", "definition": "HIRES as in crates/rodas5p-integrators/tests/b1_problems/mod.rs", "reference": "numerical", "note": "configuration of the consumed U11 holdout; development problem, not a holdout"},
+      {"id": "pollution", "n": 20, "t_span": [0.0, 60.0], "atol_scale": 1e-06, "y0": "y2 = 0.2, y4 = 0.04, y7 = 0.1, y8 = 0.3, y9 = 0.01, y17 = 0.007, others 0 (1-based)", "definition": "POLLU, 25 reactions, rate constants and stoichiometry as in crates/rodas5p-integrators/src/scientific_corpus_v2.rs (pollu.f of the Bari test set)", "reference": "numerical"},
+      {"id": "e5", "n": 4, "t_span": [0.0, 10000000000000.0], "atol_fixed": 1.7e-24, "y0": "(1.76e-3, 0, 0, 0)", "definition": "f1 = -A y1 - B y1 y3; f2 = A y1 - M C y2 y3; f4 = B y1 y3 - C y4; f3 = f2 - f4; A = 7.89e-10, B = 1.1e7, C = 1.13e3, M = 1e6", "reference": "numerical"},
+      {"id": "brusselator-1d-32", "n": 64, "t_span": [0.0, 10.0], "atol_scale": 1.0, "y0": "u_i = 1 + sin(2 pi x_i), v_i = 3, x_i = i / (N + 1)", "definition": "1D Brusselator of b1_problems/mod.rs with N = 32 cells: u' = 1 + u^2 v - 4 u + c (u_l - 2 u + u_r), v' = 3 u - u^2 v + c (v_l - 2 v + v_r), c = (N + 1)^2 / 50, boundary values u = 1, v = 3, unknowns interleaved (u_1, v_1, u_2, ...)", "reference": "numerical", "note": "N = 32 is the size of the consumed U11 holdout; development problem, not a holdout"},
+      {"id": "brusselator-1d-100", "n": 200, "t_span": [0.0, 10.0], "atol_scale": 1.0, "y0": "as brusselator-1d-32", "definition": "the same with N = 100 cells", "reference": "numerical"},
+      {"id": "pr-nonlinear", "n": 2, "t_span": [0.0, 10.0], "atol_scale": 1.0, "y0": "(phi1(0), phi2(0)) = (1, 1)", "definition": "nonlinear Prothero-Robinson type, non-autonomous, analytic f_t: y1' = phi1'(t) - L (1 + y2^2) (y1 - phi1(t)); y2' = phi2'(t) - (y2 - phi2(t)) - (y1 - phi1(t)) y2; L = 1e6; phi1 = 1 + 0.5 sin(3 t), phi2 = cos(2 t)", "reference": "closed form y = (phi1(t), phi2(t))"},
+      {"id": "combustion-100", "n": 100, "t_span": [0.0, 0.27], "atol_scale": 1.0, "y0": "u_i = 1", "definition": "u_t = u_xx + D (1 + alpha - u) exp(-delta / u), D = R exp(delta) / (alpha delta), alpha = 1, delta = 20, R = 5; x in (0, 1), u_x(0) = 0, u(1) = 1; nodes x_i = i dx, i = 0..99, dx = 1/100, second-order central differences, u_{-1} = u_1, u_100 = 1", "reference": "numerical", "note": "end time chosen with logs/pilot_pde.log (SciPy only): at t = 0.27 the flame front is near the middle of the domain"},
+      {"id": "nldiff-100", "n": 100, "t_span": [0.0, 0.3], "atol_scale": 1.0, "y0": "u_i = 0.1", "definition": "quasilinear diffusion-reaction u_t = (u^2 u_x)_x + 5 u (1 - u); x in (0, 1), u(0) = 1, zero flux at the right end; nodes x_i = i dx, i = 1..100, dx = 1/100; conservative fluxes F_{i+1/2} = ((u_i + u_{i+1}) / 2)^2 (u_{i+1} - u_i) / dx, u_0 = 1, u_101 = u_100", "reference": "numerical", "note": "end time chosen with logs/pilot_pde.log (SciPy only): at t = 0.3 the front and the bulk growth are both active"}
+    ],
+    "jacobians": "analytic, dense storage, written in place (fixed sparsity pattern); the same callback serves the protected and the client driver",
+    "cells": "11 problems x 3 rtol = 33 cells per arm"
+  },
+  "adaptive_metrics": {
+    "attempts": "accepted + rejected attempts of the run (Rodas5pFastResult::attempts); rejected includes local-error rejections and attempts that failed with an error",
+    "step_ratio": "attempts(arm) / attempts(protected) of the same cell; comparisons with 1.02, 1.05 and 1.10 are made in integer arithmetic (100 a <= 105 p, and so on)",
+    "jacobian_counts": "WorkCounters::jacobian_builds of each arm, reported with the number of speculative and exact linearizations; no criterion",
+    "end_point_error": "e = sqrt(mean_i ((y_i - ref_i) / (atol + rtol |ref_i|))^2) at t_end with the cell's atol and rtol (the controller's weights, in tolerance units), y = last output state",
+    "error_ratio": "e(arm) / e(protected)",
+    "reference_uncertainty": "U = sqrt(mean_i (u_i / (atol + rtol |ref_i|))^2) with the componentwise reference uncertainty u_i defined under 'reference'",
+    "error_ratio_interval": "[max(e_arm - U, 0) / (e_prot + U), (e_arm + U) / (e_prot - U)] (upper end unbounded when e_prot <= U)",
+    "median": "middle value of the sorted list; mean of the two middle values for an even count"
+  },
+  "reference": {
+    "numerical_problems": {
+      "y_ref": "SciPy solve_ivp, method Radau, analytic dense Jacobian, rtol = 1e-13, atol = ref_atol",
+      "ref_atol": "1e-14 * atol_scale (1e-6 of the measurement atol at rtol = 1e-8); e5: 1.7e-30",
+      "uncertainty": "u_i = |y_ref,i - y_A,i| + max(|y_ref,i - y_B,i|, |y_ref,i - y_C,i|), with A = the same SciPy Radau at rtol = 1e-11 (atol = 100 ref_atol), B = Julia OrdinaryDiffEqFIRK RadauIIA5 and C = Julia OrdinaryDiffEq Rodas5P, both Float64, reltol = 1e-13, abstol = ref_atol, default ForwardDiff Jacobian, from the pinned environment tools/benchmarks/component_julia (independent code in another language; C is another implementation of the method under test and enters the uncertainty only, never the reference value)",
+      "failure_rule": "a reference run that does not report success is recorded; if B or C fails the maximum is taken over the one that succeeded; if both fail, or the SciPy rtol = 1e-13 run fails, the error ratio of every cell of that problem is NOT_DECIDABLE (the step ratio is unaffected)",
+      "status": "u_i is an estimate of the reference error, not a proven bound"
+    },
+    "closed_form_problems": "y_ref = the closed form evaluated with mpmath at 40 digits and rounded to binary64; u_i = |y_ref,i| * 2^-52",
+    "model_agreement": "the Rust and the Python definitions are compared on probe states printed by the Rust program (right-hand side at (t0, y0) and at two perturbed states); a relative difference above 1e-9 of the largest component is reported as a blocker for that problem"
+  },
+  "adaptive_decision_rules": {
+    "cell_validity": "a cell is valid when the protected arm reaches t_end and the exact arm equals it bit for bit; a cell whose protected arm fails is reported and excluded from every ratio",
+    "arm_failure": "if g8 or g7 does not reach t_end in a valid cell, the cell is reported as ARM_FAILED: its step ratio and error ratio are not defined, the obstacle is stated, and the mode cannot receive PASS while such a cell exists (no value is substituted for the missing ratio)",
+    "step_criterion": "PASS when the median of the step ratios over the valid cells is <= 1.02 and the maximum is <= 1.05; otherwise FAIL",
+    "kill": "KILL for g7 when any valid cell has a step ratio > 1.10",
+    "error_cell": "PASS when the whole error-ratio interval lies in [0.67, 1.5]; FAIL when the whole interval lies outside (upper end < 0.67 or lower end > 1.5); otherwise NOT_DECIDABLE (reference uncertainty)",
+    "error_criterion": "strict reading of the frozen row: PASS when every valid cell is PASS; FAIL when at least one valid cell is FAIL; otherwise NOT_DECIDABLE. The frozen row names no aggregate for the error ratio, so none is used for the verdict; the median and the range are reported as context only",
+    "every_cell_is_reported": true
+  },
+  "order_set": {
+    "problems": [
+      {"id": "kaps-eps1", "n": 2, "t_span": [0.0, 1.5], "class": "non-stiff", "definition": "Kaps: y1' = -(2 + 1/eps) y1 + y2^2 / eps; y2' = y1 - y2 (1 + y2); eps = 1; y0 = (1, 1); exact (exp(-2 t), exp(-t))"},
+      {"id": "logistic-pair", "n": 2, "t_span": [0.0, 1.5], "class": "non-stiff", "definition": "y1' = 4 y1 (1 - y1); y2' = -2 y1 y2; y0 = (0.1, 1); exact y1 = 1 / (1 + 9 exp(-4 t)), y2 = ((exp(4 t) + 9) / 10)^(-1/2)"},
+      {"id": "kaps-eps1e-6", "n": 2, "t_span": [0.0, 1.5], "class": "stiff", "definition": "Kaps with eps = 1e-6"},
+      {"id": "pr-linear", "n": 1, "t_span": [0.0, 1.5], "class": "stiff, Prothero-Robinson, non-autonomous, constant Jacobian", "definition": "y' = lambda (y - phi1(t)) + phi1'(t), lambda = -1e6, phi1 = 1 + 0.5 sin(3 t); y0 = 1; exact phi1(t). Its Jacobian does not depend on the state, so the speculative modes cannot differ from the exact one except through the time argument; it is reported and is non-discriminating by construction"},
+      {"id": "pr-nonlinear", "n": 2, "t_span": [0.0, 1.5], "class": "stiff, Prothero-Robinson type, non-autonomous, state-dependent Jacobian", "definition": "as in the adaptive set, on [0, 1.5]"}
+    ],
+    "step_sizes": "h = 1.5 / N for N in [6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 384, 512, 768, 1024]; every h and every grid time k h is a dyadic rational, exact in binary64",
+    "N": [6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 384, 512, 768, 1024],
+    "constant_step_enforcement": "the adaptive driver is run with initial_step = max_step = h and rtol = atol = 1e10, so every attempt is accepted and every controller proposal is capped at h. A run counts as a fixed-step run only if accepted steps = N, rejected = 0 and the smallest and the largest accepted step (AcceptedStepView::h_used) both equal h bit for bit; otherwise it is reported and excluded",
+    "arms": ["protected", "exact", "g8", "g7", "lagged (exploratory)"],
+    "error": "E(h) = max_i |y_i(t_end) - exact_i| / max_i |exact_i|",
+    "fit_rule": "The range of h is fixed by this rule from the exact arm alone and then used for every arm: walk the grid from the largest h downwards and stop before the first h whose exact-arm error is below 1e-11 (round-off guard); from the remaining contiguous points take the six with the smallest h. If fewer than four points remain the problem is reported as not fitted. The observed order is the least-squares slope of log10 E against log10 h on these points.",
+    "discriminating": "a problem on which the exact arm is not fitted or its slope is below 4.8 is reported but is not discriminating for the order criterion",
+    "order_criterion": "for a mode: PASS when its slope is >= 4.8 on every discriminating problem and at least one problem is discriminating; FAIL when its slope is < 4.8 on at least one discriminating problem; NOT_DECIDABLE when no problem is discriminating. A point of a speculative arm that is excluded as not being a fixed-step run makes that problem not fitted for that arm (reported, counted as FAIL of the problem if the exact arm is discriminating)"
+  },
+  "mode_verdict": "for g8 and g7 separately: KILL when the kill rule fires (g7 only); else FAIL when the step, the error or the order criterion is FAIL or a cell is ARM_FAILED; else PASS when all three are PASS; else NOT_DECIDABLE with the undecided criterion named",
+  "exploratory_no_gate": {
+    "E1_lagged": "the lagged arm on the adaptive set and on the order set (prediction of theory S4: classical order 3 and an error estimate dominated by the lag)",
+    "E2_jacobian_differences": "in the exact arm, after every accepted step: the Frobenius norms of J(t_stage, g7) - J(t_{n+1}, u_{n+1}), J(t_stage, g8) - J(t_{n+1}, u_{n+1}) and J(t_n, u_n) - J(t_{n+1}, u_{n+1}), and of J(t_{n+1}, u_{n+1}); on the order set the maximum over the steps is fitted against h (predicted slopes 4, 5 and 1); on the adaptive set the quantiles of the relative norms are reported per cell, and the full series of brusselator-1d-32 at rtol = 1e-6 is logged",
+    "E3_point_distance": "the distance of g7 and g8 from the accepted state in tolerance units (the cell's weights), maximum and median over the steps",
+    "E4_tolerance_jitter": "the two protected runs with rtol multiplied / divided by 1.02: their step ratio and error ratio against the protected run",
+    "E5_matched_error": "attempts of an arm at the protected arm's achieved error, from a log-log interpolation of the arm's three (error, attempts) points per problem"
+  },
+  "outputs": {
+    "raw_logs": "logs/*.log (stdout and stderr of every executed command, failed runs kept)",
+    "results": "RESULTS.json, built by build_results.py from the raw logs and reference/reference.json only (no typed-in number); strict JSON",
+    "report": "REPORT_KO.md"
+  },
+  "deviations": "any departure from this file after its commit is listed in REPORT_KO.md under its own heading"
+}

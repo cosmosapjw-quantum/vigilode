@@ -1,0 +1,102 @@
+    Checking rodas5p-core v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15/crates/rodas5p-core)
+    Checking rodas5p-krylov v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15/crates/rodas5p-krylov)
+    Checking rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-v15/crates/rodas5p-integrators)
+warning: the use of negated comparison operators on partially ordered types produces code that is hard to read and refactor, please consider using the `partial_cmp` method instead, to make it clear that the two values could be incomparable
+   --> crates/rodas5p-integrators/src/source_owned_graph_schur.rs:321:12
+    |
+321 |         if !(max_q < 1.) {
+    |            ^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#neg_cmp_op_on_partial_ord
+    = note: `#[warn(clippy::neg_cmp_op_on_partial_ord)]` on by default
+
+warning: the loop variable `i` is used to index `z`
+   --> crates/rodas5p-integrators/src/source_owned_graph_schur.rs:329:22
+    |
+329 |             for i in 0..n {
+    |                      ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+    = note: `#[warn(clippy::needless_range_loop)]` on by default
+help: consider using an iterator and enumerate()
+    |
+329 -             for i in 0..n {
+329 +             for (i, <item>) in z.iter_mut().enumerate().take(n) {
+    |
+
+warning: the use of negated comparison operators on partially ordered types produces code that is hard to read and refactor, please consider using the `partial_cmp` method instead, to make it clear that the two values could be incomparable
+   --> crates/rodas5p-integrators/src/source_owned_graph_schur.rs:353:16
+    |
+353 |             if !(row_z < 1.) {
+    |                ^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#neg_cmp_op_on_partial_ord
+
+warning: the loop variable `i` is used to index `rb`
+   --> crates/rodas5p-integrators/src/source_owned_graph_schur.rs:377:18
+    |
+377 |         for i in 0..k {
+    |                  ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+377 -         for i in 0..k {
+377 +         for (i, <item>) in rb.iter_mut().enumerate().take(k) {
+    |
+
+warning: the loop variable `i` is used to index `ub`
+   --> crates/rodas5p-integrators/src/source_owned_graph_schur.rs:385:18
+    |
+385 |         for i in 0..k {
+    |                  ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+385 -         for i in 0..k {
+385 +         for (i, <item>) in ub.iter_mut().enumerate().take(k) {
+    |
+
+warning: the loop variable `j` is used to index `rb`
+   --> crates/rodas5p-integrators/src/source_owned_graph_schur.rs:386:22
+    |
+386 |             for j in 0..k {
+    |                      ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+386 -             for j in 0..k {
+386 +             for (j, <item>) in rb.iter().enumerate().take(k) {
+    |
+
+warning: the loop variable `j` is used to index `ub`
+   --> crates/rodas5p-integrators/src/source_owned_graph_schur.rs:395:22
+    |
+395 |             for j in 0..k {
+    |                      ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+395 -             for j in 0..k {
+395 +             for (j, <item>) in ub.iter().enumerate().take(k) {
+    |
+
+warning: the loop variable `j` is used to index `out`
+   --> crates/rodas5p-integrators/src/source_owned_graph_schur.rs:411:22
+    |
+411 |             for j in 0..n {
+    |                      ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+411 -             for j in 0..n {
+411 +             for (j, <item>) in out.iter().enumerate().take(n) {
+    |
+
+warning: `rodas5p-integrators` (lib) generated 8 warnings
+warning: `rodas5p-integrators` (lib) generated 8 warnings (8 duplicates)
+    Finished `release` profile [optimized] target(s) in 56.71s

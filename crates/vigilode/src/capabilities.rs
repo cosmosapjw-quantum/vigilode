@@ -69,12 +69,17 @@ impl Rodas5p {
         {
             return Err(reason);
         }
-        let band = problem.band.is_some() || matches!(problem.jacobian, Jacobian::Banded { .. });
+        let sparse_banded =
+            matches!(&problem.jacobian, Jacobian::SparseJvp { pattern, .. } if pattern.is_banded());
+        let sparse_mf = matches!(&problem.jacobian, Jacobian::SparseJvp { pattern, .. } if !pattern.is_banded());
+        let band = problem.band.is_some()
+            || matches!(problem.jacobian, Jacobian::Banded { .. })
+            || sparse_banded;
         let sequential = problem.mass.is_some()
             || (options.dense_output && options.interior_error == InteriorError::Enforce);
         let route = if sequential {
             FacadeRoute::SequentialDense
-        } else if matches!(problem.jacobian, Jacobian::Jvp(_)) {
+        } else if matches!(problem.jacobian, Jacobian::Jvp(_)) || sparse_mf {
             FacadeRoute::MatrixFree
         } else if options.dense_output {
             if band {

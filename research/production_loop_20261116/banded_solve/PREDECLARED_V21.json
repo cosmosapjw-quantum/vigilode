@@ -1,0 +1,85 @@
+{
+  "schema": "vigilode.loop_l1.v21_banded_tight_kernel.predeclared.v1",
+  "node": "V21_BANDED_TIGHT_KERNEL",
+  "frozen_row": "research/production_loop_20261116/PREREGISTRATION.md, addendum A4",
+  "written_before_first_timing_run": true,
+  "binary": "the second binary of the V19 measurement program (banded_solve/runner at the commit of this file; sha256 of the build used for the validity logs: 54f4bc07fd76d069f807dd98b96828a6b25307f6a8a8fee64e41dd6dd5e547eb); build settings as in PREDECLARED.json",
+  "exists_before_this_file": [
+    "logs/xcheck_S1..S5.log (validity of every arm of the second binary)",
+    "a smoke run of the whole-run mode on Allen-Cahn 2D grid 32 and Brusselator 1D n = 1000 (state hashes only)"
+  ],
+  "stage_a1": {
+    "arms": {
+      "A0": "as in PREDECLARED.json",
+      "TA": "lower = upper = 2 only: assembly, pivot search, interchanges, row updates and both substitutions of the protected kernel in the same order, written with fixed row offsets; forward substitution on three carried values; back substitution on four carried values; the last four rows or columns use the general steps",
+      "TD": "as TA; back substitution subtracts the unknowns i + 2, i + 3, i + 4 first and i + 1 last, then divides"
+    },
+    "reported_without_verdict": [
+      "A1",
+      "B3",
+      "BD",
+      "TS"
+    ],
+    "validity": {
+      "TA": "bit-identical to the reference solution of the protected kernel in every case of S1-S5 with lower = upper = 2 (xcheck logs)",
+      "TD": "V2 and V3 of PREDECLARED.json on the same logs"
+    },
+    "cost_unit": "as PREDECLARED.json key cost (matrix S1 state 1, inv = 100; one factorisation and eight solves; patterns 20000, 2000, 200 for n = 1000, 10000, 100000)",
+    "instructions_per_pattern": "(instructions(R, 8) - instructions(0, 0)) / R, median over the seven measured rounds (the counts are deterministic up to the noise of the process start; the spread is reported)",
+    "cycles_per_pattern": "as PREDECLARED.json",
+    "files": "logs/measure_v<k>_n<n>.jsonl written by measure.py with --tag v --arms A0,A1,TA,TD,TS,BD,B3",
+    "PASS_I": "instructions of TA / instructions of A0 <= 0.40 at n = 10000 and n = 100000",
+    "PASS_C": "cycles of TA / cycles of A0 <= 0.60 at n = 10000 and n = 100000 on cells that are authoritative under the protocol of PREDECLARED.json (load <= 8 before and after, spread of A0 and TA <= 10%, at most two re-measurements); otherwise NOT_DECIDABLE",
+    "KILL": "instructions of TA / instructions of A0 > 0.77 at both sizes"
+  },
+  "stage_a2": {
+    "program": "runner drive <family> <size> <kernel> <attempts>: the problem definitions of cost_anatomy/runner/src/problems.rs (included unchanged), integrate_rodas5p_fast_banded_observed_with_kernel, tolerances and initial step of the problem definition, output at the two ends of the time span, stop after <attempts> attempts",
+    "kernels": [
+      "indexed",
+      "slices"
+    ],
+    "problems": [
+      {
+        "family": "ac2d",
+        "size": 64,
+        "n": 4096,
+        "band": 64,
+        "budget": 16
+      },
+      {
+        "family": "bruss2d",
+        "size": 32,
+        "n": 2048,
+        "band": 64,
+        "budget": 16
+      },
+      {
+        "family": "ac3d",
+        "size": 16,
+        "n": 4096,
+        "band": 256,
+        "budget": 6
+      },
+      {
+        "family": "bruss1d",
+        "size": 5000,
+        "n": 10000,
+        "band": 2,
+        "budget": 40,
+        "role": "narrow control, decides nothing"
+      }
+    ],
+    "validity": "per problem: attempts, accepted and rejected counts, counted factor and solve operations and the hash of all returned states (outputs and the state at the stop) are equal for both kernels in every run",
+    "instructions_per_attempt": "(instructions(budget) - instructions(1)) / (attempts(budget) - attempts(1)), median over the seven measured rounds",
+    "cycles_per_attempt": "the same with cycles:u",
+    "files": "logs/drive_v<k>_<family><size>.jsonl written by measure_drive.py with --tag v",
+    "PASS_I": "instructions of slices / instructions of indexed <= 0.50 on each of ac2d 64, bruss2d 32 and ac3d 16",
+    "PASS_C": "cycles ratio <= 0.67 on each of the three on authoritative cells (load <= 8 before and after, spread of both kernels <= 10%, at most two re-measurements); otherwise NOT_DECIDABLE",
+    "KILL": "instructions ratio > 0.90 on all three wide-band problems"
+  },
+  "stage_b": "declared in a separate file before its runs (second family, wide-band problem, tolerances); built only after PASS_I of stage a1",
+  "protocol": "timing prefix, core, rounds, load records and re-measurement rule as in PREDECLARED.json key protocol",
+  "outputs": {
+    "results": "banded_solve/RESULTS_V21.json built by banded_solve/build_results_v21.py from the logs only"
+  }
+}

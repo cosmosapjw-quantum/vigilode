@@ -1,0 +1,78 @@
+# cmd: env -u VIGILODE_BLESS_DEFAULT_PATH VIGILODE_DEFAULT_PATH_ALLOW_ADDED_KEYS=1 cargo +1.94.1 test --locked -j 6 --release -p vigilode --test default_path_golden -- --nocapture --test-threads=1
+# head: 763b80ff2e7cca8e4dfd9d7f835398d4170c22cd
+# toolchain: rustc 1.94.1 (e408947bf 2026-03-25)
+# start: 2026-11-16T18:00:54+09:00
+    Finished `release` profile [optimized] target(s) in 0.13s
+     Running tests/default_path_golden.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/trial/release/deps/default_path_golden-ffa1f3e7a79e95a9)
+
+running 11 tests
+test decision_grid ... golden decision_grid: identical (488690 bytes)
+ok
+test dopri5 ... golden dopri5: identical (86128 bytes)
+ok
+test format_helpers_are_bit_faithful ... ok
+test general_ode ... golden general_ode: identical (286767 bytes)
+ok
+test golden_directory_is_exactly_the_listed_files ... ok
+test production_automatic ... golden production_automatic: the run differs from /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-trial/crates/vigilode/tests/golden/default_path/production_automatic.json
+changed: 0
+removed: 0
+added: 600
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/audit_replay_safety
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/entry_margin
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/entry_policy
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/entry_seed
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/prescreen_initial_stiffness
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/progress_bound
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/return_margin
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/rhs_cost
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/stiffness_gate_fraction
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-4/record/config/work_model
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/audit_replay_safety
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/entry_margin
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/entry_policy
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/entry_seed
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/prescreen_initial_stiffness
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/progress_bound
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/return_margin
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/rhs_cost
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/stiffness_gate_fraction
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-6/record/config/work_model
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/audit_replay_safety
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/entry_margin
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/entry_policy
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/entry_seed
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/prescreen_initial_stiffness
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/progress_bound
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/return_margin
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/rhs_cost
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/stiffness_gate_fraction
+  /cases/brusselator-n64/automatic-default-policy/rtol=1e-8/record/config/work_model
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/audit_replay_safety
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/entry_margin
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/entry_policy
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/entry_seed
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/prescreen_initial_stiffness
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/progress_bound
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/return_margin
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/rhs_cost
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/stiffness_gate_fraction
+  /cases/brusselator-n64/production-rhs-only/rtol=1e-4/config/switching/work_model
+  ... 560 more
+accepted: only added keys, and VIGILODE_DEFAULT_PATH_ALLOW_ADDED_KEYS=1
+ok
+test rodas5p_brusselator ... golden rodas5p_brusselator: identical (564956 bytes)
+ok
+test rodas5p_contracts ... golden rodas5p_contracts: identical (154604 bytes)
+ok
+test rodas5p_hires ... golden rodas5p_hires: identical (170461 bytes)
+ok
+test rodas5p_robertson ... golden rodas5p_robertson: identical (370941 bytes)
+ok
+test rodas5p_vanderpol ... golden rodas5p_vanderpol: identical (158780 bytes)
+ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.93s
+
+# exit_code: 0
+# end: 2026-11-16T18:00:56+09:00

@@ -1,0 +1,618 @@
+{
+ "schema": "vigilode.loop-l1.r-gate-proposal.v1",
+ "date_kst": "2026-11-16",
+ "nature": "Proposal from the V01 audit synthesis. It does not edit RELEASE_GATE_MATRIX.json and is not a verdict.",
+ "matrix": "docs/agent/production_solver_program_20261112/RELEASE_GATE_MATRIX.json",
+ "matrix_sha256": "51d2cfa6ad0af0d1d0278b0f57b1c20a76c3a19d2fbb5397f75ef50d6beacd0a",
+ "judged_head": "2dc9a2c5778ac5b3ac960b0f6741aa5916122384 (code equal to 074a5699 plus loop bootstrap)",
+ "status_rule": {
+  "MET": "every sub-criterion has an executed receipt on the judged head and an independent rerun",
+  "NOT_MET": "at least one sub-criterion has an executed counterexample or is structurally absent",
+  "PARTIAL": "some sub-criteria have executed support, none has a counterexample, others are not run or exist only off the judged head",
+  "NOT_RUN": "nothing executed for the axis"
+ },
+ "sub_criterion_states": [
+  "EXECUTED_SUPPORT",
+  "HISTORICAL_EXECUTED",
+  "EXECUTED_OFF_HEAD",
+  "COUNTEREXAMPLE",
+  "ABSENT",
+  "LEAD",
+  "NOT_RUN",
+  "NOT_JUDGED"
+ ],
+ "proposed_overall": "NOT_MET",
+ "proposed_overall_basis": "Six of eight axes are proposed NOT_MET and two PARTIAL; no axis is MET. Unchanged from the matrix's plan-stage verdict.",
+ "relation_to_g0": "G0 is not judged here; U11 HOLD stays as recorded.",
+ "caveats": [
+  "Sub-criteria in state LEAD rest on findings that no verifier reproduced; they do not drive any proposed status.",
+  "No axis was evaluated by a dedicated battery; statuses follow from audit findings and reruns of existing evidence.",
+  "Wall-clock figures in the cited evidence are diagnostic_only."
+ ],
+ "axes": [
+  {
+   "id": "R1_CORRECTNESS",
+   "criterion": "Order, stiff convergence and agreement with independent references for every exposed method on a stratified battery.",
+   "current_status_in_matrix": "NOT_EVALUATED",
+   "proposed_status": "NOT_MET",
+   "reasons": [
+    "One executed counterexample on an exposed method is enough to fail 'every exposed method'.",
+    "Protected RODAS5P correctness was not re-evaluated here; it is neither supported nor questioned by this audit."
+   ],
+   "sub_criteria": [
+    {
+     "item": "order and stiff convergence, Peer candidate",
+     "state": "EXECUTED_SUPPORT",
+     "basis": "U03: 18 tests pass, 3060 logged values reproduce at head",
+     "findings": [
+      "EVD-10"
+     ]
+    },
+    {
+     "item": "agreement with references, every exposed method",
+     "state": "COUNTEREXAMPLE",
+     "basis": "PeerOde (public, admitted without admit_unqualified) returns success=true with error 8.31 and 50.2 at rtol 1e-6 (9.0e6 and 5.7e7 tolerance units)",
+     "findings": [
+      "COD-02"
+     ]
+    },
+    {
+     "item": "stratified battery over every exposed method (RODAS5P routes, DOPRI5, Lawson, ensemble, switching)",
+     "state": "NOT_RUN",
+     "basis": "this audit ran no correctness battery; baseline suites are a receipt, not a qualification",
+     "findings": []
+    }
+   ],
+   "findings": [
+    {
+     "id": "COD-02",
+     "status": "confirmed_by_verifier",
+     "severity": "major"
+    },
+    {
+     "id": "EVD-10",
+     "status": "lead",
+     "severity": "minor"
+    }
+   ],
+   "evidence_paths": [
+    "research/production_loop_20261116/audit/findings_code.json (COD-02, probe_sources)",
+    "research/production_unification_20261115/peer_qualification/RESULTS.json",
+    "research/production_loop_20261116/BASELINE_RESULTS.json"
+   ]
+  },
+  {
+   "id": "R2_ROBUSTNESS",
+   "criterion": "Typed failures, no silent fallback, session ownership, non-finite input and step-size underflow handling.",
+   "current_status_in_matrix": "NOT_EVALUATED",
+   "proposed_status": "NOT_MET",
+   "reasons": [
+    "Three confirmed defects of the public PeerOde adapter contradict the typed-failure and refusal sub-criteria."
+   ],
+   "sub_criteria": [
+    {
+     "item": "typed failures",
+     "state": "COUNTEREXAMPLE",
+     "basis": "PeerOde failure is Option<String>; success=false with failure=None for span (0.3, 0.9); user Recoverable error ends as an unrelated InvalidInput after 52 halvings (count from the auditor's probe)",
+     "findings": [
+      "COD-04"
+     ]
+    },
+    {
+     "item": "capability refusal before callbacks",
+     "state": "COUNTEREXAMPLE",
+     "basis": "a caller that does not allow provided_jvp still gets JVP callbacks; admission says Admitted for a banded problem that solve() refuses",
+     "findings": [
+      "COD-04"
+     ]
+    },
+    {
+     "item": "non-finite input",
+     "state": "COUNTEREXAMPLE",
+     "basis": "options.h0 = NaN is replaced silently by the endpoint cap",
+     "findings": [
+      "COD-02"
+     ]
+    },
+    {
+     "item": "step-size underflow, session ownership, protected-route failure paths",
+     "state": "NOT_RUN",
+     "basis": "not examined on the loop head",
+     "findings": []
+    },
+    {
+     "item": "no silent fallback (switcher unified frontend, not on the judged head)",
+     "state": "LEAD",
+     "basis": "failure reasons replaced, uncharged preflight, repeat instead of fallback; read only",
+     "findings": [
+      "COD-06",
+      "COD-07"
+     ]
+    }
+   ],
+   "findings": [
+    {
+     "id": "COD-02",
+     "status": "confirmed_by_verifier",
+     "severity": "major"
+    },
+    {
+     "id": "COD-04",
+     "status": "confirmed_by_verifier",
+     "severity": "major"
+    },
+    {
+     "id": "COD-06",
+     "status": "lead",
+     "severity": "major"
+    },
+    {
+     "id": "COD-07",
+     "status": "lead",
+     "severity": "major"
+    }
+   ],
+   "evidence_paths": [
+    "research/production_loop_20261116/audit/findings_code.json (COD-04, COD-02, COD-06)",
+    "crates/vigilode/src/selection.rs:815,837-864,959-979,1028",
+    "crates/rodas5p-integrators/src/ppsw1.rs:786-794"
+   ]
+  },
+  {
+   "id": "R3_API",
+   "criterion": "One documented entry point, consistent options and solution view, capability and refusal semantics, MSRV and feature policy.",
+   "current_status_in_matrix": "NOT_EVALUATED",
+   "proposed_status": "NOT_MET",
+   "reasons": [
+    "No single entry point exists on the judged head; V03 is the node that would change this."
+   ],
+   "sub_criteria": [
+    {
+     "item": "one documented entry point",
+     "state": "ABSENT",
+     "basis": "10 solver entry structs, 6 result types, 18 pub fn solve*",
+     "findings": [
+      "COD-10"
+     ]
+    },
+    {
+     "item": "capability and refusal semantics",
+     "state": "COUNTEREXAMPLE",
+     "basis": "MethodRegistry admission and GeneralOde::select disagree in 9 executed cases; the registry is not used for routing",
+     "findings": [
+      "COD-03"
+     ]
+    },
+    {
+     "item": "documentation matches the surface",
+     "state": "LEAD",
+     "basis": "README says one solver and never mentions PeerOde, MethodRegistry, AutomaticOde, ProductionSolver",
+     "findings": [
+      "COD-10"
+     ]
+    },
+    {
+     "item": "MSRV and feature policy",
+     "state": "NOT_RUN",
+     "basis": "not examined",
+     "findings": []
+    }
+   ],
+   "findings": [
+    {
+     "id": "COD-03",
+     "status": "confirmed_plan_stage_and_auditor",
+     "severity": "major"
+    },
+    {
+     "id": "COD-10",
+     "status": "lead",
+     "severity": "minor"
+    }
+   ],
+   "evidence_paths": [
+    "research/production_loop_20261116/audit/findings_code.json (COD-03 raw_evidence.registry_vs_select, COD-10)",
+    "crates/vigilode/src/selection.rs:176-227,509-665",
+    "research/production_loop_20261116/audit/synthesis_spot_checks.log (C11)"
+   ]
+  },
+  {
+   "id": "R4_REPRODUCIBILITY",
+   "criterion": "Clean-checkout build on the pinned toolchain, locked dependencies, deterministic tests, CI evidence on the judged head, independent rerun.",
+   "current_status_in_matrix": "NOT_EVALUATED",
+   "proposed_status": "NOT_MET",
+   "reasons": [
+    "A flaky test target and the absence of any CI run on the head contradict two sub-criteria.",
+    "The executed reruns support the recorded U numbers; their raw logs were in scratch (copied to audit/raw_scratch)."
+   ],
+   "sub_criteria": [
+    {
+     "item": "build on the pinned toolchain with locked dependencies",
+     "state": "EXECUTED_SUPPORT",
+     "basis": "baseline at 074a5699, toolchain 1.94.1, --locked (not a clean clone)",
+     "findings": []
+    },
+    {
+     "item": "clean-checkout build",
+     "state": "NOT_RUN",
+     "basis": "",
+     "findings": []
+    },
+    {
+     "item": "deterministic tests",
+     "state": "COUNTEREXAMPLE",
+     "basis": "baseline 789 passed / 2 failed with default threads (L-0300 FAIL); sp02_workspace_charge fails 1 of 3 default-thread runs, 0 of 3 single-threaded",
+     "findings": [
+      "EVD-08"
+     ]
+    },
+    {
+     "item": "CI evidence on the judged head",
+     "state": "ABSENT",
+     "basis": "0 of 31 workflows trigger on a research-branch push; production.yml is not on the default branch, so dispatch is unavailable",
+     "findings": [
+      "EVD-06"
+     ]
+    },
+    {
+     "item": "independent rerun",
+     "state": "EXECUTED_SUPPORT",
+     "basis": "U03, U04, U10, U11 result files regenerate byte-identically; targets re-run 18/6/5 passed; U11 recorded binary reproduces 45/45 result objects (coverage: U03, U04, U06, U09, U10, U11 only)",
+     "findings": [
+      "EVD-10",
+      "DSG-02",
+      "COD-01"
+     ]
+    }
+   ],
+   "findings": [
+    {
+     "id": "COD-01",
+     "status": "confirmed_by_verifier",
+     "severity": "major"
+    },
+    {
+     "id": "DSG-02",
+     "status": "confirmed_by_verifier",
+     "severity": "major"
+    },
+    {
+     "id": "EVD-06",
+     "status": "lead",
+     "severity": "major"
+    },
+    {
+     "id": "EVD-08",
+     "status": "lead",
+     "severity": "minor"
+    },
+    {
+     "id": "EVD-10",
+     "status": "lead",
+     "severity": "minor"
+    }
+   ],
+   "evidence_paths": [
+    "research/production_loop_20261116/BASELINE_RESULTS.json",
+    "research/production_loop_20261116/logs/baseline_facade_core_krylov.log:1007-1014",
+    "research/production_loop_20261116/audit/findings_evidence.json (part_b_unification_reproduction, part_c_governance)",
+    ".github/workflows/production.yml:10-25",
+    "research/production_loop_20261116/audit/synthesis_spot_checks.log (C03)"
+   ]
+  },
+  {
+   "id": "R5_PERFORMANCE",
+   "criterion": "Matched-achieved-error work-precision against external solvers per regime; documented, not required to win.",
+   "current_status_in_matrix": "NOT_EVALUATED",
+   "proposed_status": "PARTIAL",
+   "reasons": [
+    "Executed matched-error data exists only for small 0D/1D problems and, off the judged head, for two sphere problems.",
+    "The criterion asks for documentation per regime and does not require a win; three regimes have no run.",
+    "All wall figures in the cited sources are diagnostic_only."
+   ],
+   "sub_criteria": [
+    {
+     "item": "matched-achieved-error work-precision, small 0D/1D regime",
+     "state": "HISTORICAL_EXECUTED",
+     "basis": "ledger L-0139/L-0142 (bench_wave2/3, n <= 400) and 26 matched-error cross-method evaluations in the auditor's table; not re-run on the judged head by this audit",
+     "findings": [
+      "DSG-04"
+     ]
+    },
+    {
+     "item": "external-solver comparison harness",
+     "state": "EXECUTED_OFF_HEAD",
+     "basis": "crates/vigilode-bench executes RADAU5, RODAS, DVODE, CVODE, diffsol and Julia with raw per-repetition data, on the unmerged switcher line; its unified report is matched-tolerance with grid-clipped arms",
+     "findings": [
+      "DSG-03",
+      "EVD-09"
+     ]
+    },
+    {
+     "item": "2D/3D regime",
+     "state": "EXECUTED_OFF_HEAD",
+     "basis": "battery v3: matched rows for 2 of 9 problems, n <= 302, 6-47 steps per run; 7 problems reference-disputed",
+     "findings": [
+      "DSG-05"
+     ]
+    },
+    {
+     "item": "large n, expensive RHS, preconditioned Krylov",
+     "state": "NOT_RUN",
+     "basis": "0 evaluations found among 87",
+     "findings": [
+      "DSG-04"
+     ]
+    },
+    {
+     "item": "U11 external comparators (CVODE, Julia)",
+     "state": "NOT_RUN",
+     "basis": "recorded as not run; the stated reason for CVODE is wrong",
+     "findings": [
+      "EVD-10"
+     ]
+    }
+   ],
+   "findings": [
+    {
+     "id": "DSG-03",
+     "status": "confirmed_by_verifier",
+     "severity": "major"
+    },
+    {
+     "id": "DSG-04",
+     "status": "confirmed_plan_stage_and_auditor",
+     "severity": "major"
+    },
+    {
+     "id": "DSG-05",
+     "status": "confirmed_by_verifier",
+     "severity": "major"
+    },
+    {
+     "id": "EVD-09",
+     "status": "lead",
+     "severity": "minor"
+    },
+    {
+     "id": "EVD-10",
+     "status": "lead",
+     "severity": "minor"
+    }
+   ],
+   "evidence_paths": [
+    "research/production_loop_20261116/audit/findings_design.json (DSG-03, DSG-04, DSG-05; data.regime_table, data.bench_v3)",
+    "/home/cosmosapjw/vigilode/bench/out/adversarial_spatial_battery_v3_results.json",
+    "/home/cosmosapjw/vigilode/bench/out/rust_bench_results.json",
+    "research/LEDGER.jsonl (L-0139, L-0142)"
+   ]
+  },
+  {
+   "id": "R6_PACKAGING",
+   "criterion": "Workspace membership, separation of research code from the production crates, licences, crate metadata.",
+   "current_status_in_matrix": "NOT_EVALUATED",
+   "proposed_status": "NOT_MET",
+   "reasons": [
+    "Research modules are not separated from the production crate and two crates are outside every workspace command."
+   ],
+   "sub_criteria": [
+    {
+     "item": "workspace membership",
+     "state": "COUNTEREXAMPLE",
+     "basis": "crates/vigilode-bench and crates/vigilode-hybrid have their own [workspace] and lock file; root members list has 7 crates without them",
+     "findings": [
+      "COD-09"
+     ]
+    },
+    {
+     "item": "separation of research code from production crates",
+     "state": "COUNTEREXAMPLE",
+     "basis": "rodas5p-integrators compiles 27 gate/campaign/candidate modules (21142 LOC, name-pattern count) unconditionally; two .rej files are tracked",
+     "findings": [
+      "COD-09"
+     ]
+    },
+    {
+     "item": "crate metadata",
+     "state": "LEAD",
+     "basis": "crates/vigilode Cargo.toml description and README say one solver",
+     "findings": [
+      "COD-10"
+     ]
+    },
+    {
+     "item": "licences",
+     "state": "NOT_RUN",
+     "basis": "not examined",
+     "findings": []
+    }
+   ],
+   "findings": [
+    {
+     "id": "COD-09",
+     "status": "confirmed_plan_stage_and_auditor",
+     "severity": "minor"
+    },
+    {
+     "id": "COD-10",
+     "status": "lead",
+     "severity": "minor"
+    }
+   ],
+   "evidence_paths": [
+    "research/production_loop_20261116/audit/findings_code.json (COD-09, raw_evidence.lib_rs_mod_categories)",
+    "Cargo.toml:3-11",
+    "crates/rodas5p-integrators/src/lib.rs",
+    "research/production_loop_20261116/audit/synthesis_spot_checks.log (C11)"
+   ]
+  },
+  {
+   "id": "R7_EVIDENCE_GOVERNANCE",
+   "criterion": "Ledger continuity, no evaluation without executed solver output, pre-registration before runs.",
+   "current_status_in_matrix": "NOT_EVALUATED",
+   "proposed_status": "NOT_MET",
+   "reasons": [
+    "All three named sub-criteria have confirmed counterexamples, two of them verifier-confirmed."
+   ],
+   "sub_criteria": [
+    {
+     "item": "ledger continuity",
+     "state": "COUNTEREXAMPLE",
+     "basis": "0 ledger rows for U01-U11; tools/check-research-node.py exits 1 for the unification node; rows L-0205..L-0214 live only on the unmerged switcher line",
+     "findings": [
+      "EVD-07"
+     ]
+    },
+    {
+     "item": "no evaluation without executed solver output",
+     "state": "COUNTEREXAMPLE",
+     "basis": "six switcher rows L-0209..L-0214 rest on typed-in or mis-measured numbers; U11 evaluate.py has two literal G0 passes",
+     "findings": [
+      "EVD-01",
+      "EVD-02",
+      "EVD-03",
+      "EVD-10"
+     ]
+    },
+    {
+     "item": "pre-registration before runs",
+     "state": "COUNTEREXAMPLE",
+     "basis": "the six 2026-11-04 nodes commit preregistration, script and result together; the U11 speed arm and evaluator were fixed after the runs",
+     "findings": [
+      "EVD-04",
+      "DSG-07"
+     ]
+    },
+    {
+     "item": "gate tooling independence (switcher line)",
+     "state": "LEAD",
+     "basis": "agent_gate.py edited inside gated commits",
+     "findings": [
+      "EVD-05"
+     ]
+    },
+    {
+     "item": "loop L1 own process",
+     "state": "NOT_JUDGED",
+     "basis": "PREREGISTRATION.md states it was pushed before any V run; not audited here",
+     "findings": []
+    }
+   ],
+   "findings": [
+    {
+     "id": "DSG-07",
+     "status": "confirmed_plan_stage_and_auditor",
+     "severity": "minor"
+    },
+    {
+     "id": "EVD-01",
+     "status": "confirmed_plan_stage_and_auditor",
+     "severity": "critical"
+    },
+    {
+     "id": "EVD-02",
+     "status": "confirmed_by_verifier",
+     "severity": "major"
+    },
+    {
+     "id": "EVD-03",
+     "status": "confirmed_by_verifier",
+     "severity": "major"
+    },
+    {
+     "id": "EVD-04",
+     "status": "confirmed_by_verifier",
+     "severity": "major"
+    },
+    {
+     "id": "EVD-05",
+     "status": "lead",
+     "severity": "major"
+    },
+    {
+     "id": "EVD-07",
+     "status": "confirmed_plan_stage_and_auditor",
+     "severity": "major"
+    },
+    {
+     "id": "EVD-10",
+     "status": "lead",
+     "severity": "minor"
+    }
+   ],
+   "evidence_paths": [
+    "research/production_loop_20261116/audit/findings_evidence.json (EVD-01..EVD-07, part_a, part_c)",
+    "research/LEDGER.jsonl",
+    "/home/cosmosapjw/vigilode/research/LEDGER.jsonl (lines for L-0209..L-0214)",
+    "research/production_unification_20261115/production_holdout/evaluate.py:88-89,113-121",
+    "research/production_loop_20261116/audit/synthesis_spot_checks.log (C01, C02, C04)"
+   ]
+  },
+  {
+   "id": "R8_GEOMETRY_SCOPE",
+   "criterion": "2D, 3D and sphere operators with stated limits and executed convergence and conservation contracts.",
+   "current_status_in_matrix": "NOT_EVALUATED",
+   "proposed_status": "PARTIAL",
+   "reasons": [
+    "Convergence contracts are executed and reproduce, but the operators are test-only and conservation was not examined."
+   ],
+   "sub_criteria": [
+    {
+     "item": "executed convergence contracts for 2D, 3D and sphere operators",
+     "state": "EXECUTED_SUPPORT",
+     "basis": "U09 geometry_mol_contracts: 5 tests pass and 5 QUAL records reproduce at head (spatial order 1.98/1.99; sphere orders 2.00/2.00, 1.99/2.00, 1.87/1.89; pole-ring error 2.4e-2/1.2e-2/6.1e-3)",
+     "findings": [
+      "EVD-10"
+     ]
+    },
+    {
+     "item": "operators available outside tests, with stated limits",
+     "state": "ABSENT",
+     "basis": "3D and sphere operators exist only under tests/; src/mol/mod.rs is a 3-line stub",
+     "findings": []
+    },
+    {
+     "item": "conservation contracts",
+     "state": "NOT_RUN",
+     "basis": "not examined by this audit",
+     "findings": []
+    },
+    {
+     "item": "machine-readable receipt",
+     "state": "ABSENT",
+     "basis": "U09 has no results file or summariser; numbers live in log lines",
+     "findings": [
+      "EVD-10"
+     ]
+    },
+    {
+     "item": "2D/3D matched-error battery",
+     "state": "EXECUTED_OFF_HEAD",
+     "basis": "switcher battery v3: 2 of 9 problems matched, 7 reference-disputed",
+     "findings": [
+      "DSG-05"
+     ]
+    }
+   ],
+   "findings": [
+    {
+     "id": "DSG-05",
+     "status": "confirmed_by_verifier",
+     "severity": "major"
+    },
+    {
+     "id": "EVD-10",
+     "status": "lead",
+     "severity": "minor"
+    }
+   ],
+   "evidence_paths": [
+    "research/production_unification_20261115/geometry_mol/logs/u09_green.log",
+    "crates/vigilode/tests/geometry_mol_contracts.rs",
+    "research/production_loop_20261116/audit/findings_evidence.json (part_b U09_geometry_mol, EVD-10)",
+    "research/production_loop_20261116/audit/findings_design.json (DSG-05)"
+   ]
+  }
+ ],
+ "source_findings": "research/production_loop_20261116/audit/audit_findings.json"
+}

@@ -98,6 +98,7 @@ use crate::{
         EnclosureEvidence, JOINT_PHI_TERMS, JointPhiInput, SpectralEnclosure,
         SymmetricNonpositiveOperator, TotalErrorStatus,
     },
+    safe_l2, sha256_f64_slice_bytes,
 };
 
 pub const LEJA_SCHEMA: &str = "vigilode-leja-phi-action-v1";
@@ -2711,6 +2712,754 @@ fn leja_phi_action_certified_with_cache_and_workspace_inner<'a>(
     Ok(workspace.report.as_ref().unwrap())
 }
 
+// =============================================================================
+// Complex Leja phi-actions for oscillatory spectra (Track 2 WP-10)
+// =============================================================================
+
+fn build_symmetric_leja_xi(cap: usize) -> Vec<f64> {
+    if cap == 0 {
+        return Vec::new();
+    }
+    let mut points = Vec::with_capacity(cap);
+    points.push(1.0);
+    if points.len() == cap {
+        return points;
+    }
+    points.push(-1.0);
+    if points.len() == cap {
+        return points;
+    }
+    points.push(0.0);
+    if points.len() == cap {
+        return points;
+    }
+
+    const GRID_SIZE: usize = 32768;
+    let grid: Vec<f64> = (1..GRID_SIZE)
+        .map(|i| (std::f64::consts::PI * i as f64 / (2.0 * GRID_SIZE as f64)).cos())
+        .collect();
+
+    let mut log_prod = vec![0.0_f64; grid.len()];
+    let mut taken = vec![false; grid.len()];
+
+    for (i, &g) in grid.iter().enumerate() {
+        let val = g * (1.0 - g * g);
+        log_prod[i] = if val > 0.0 {
+            val.ln()
+        } else {
+            f64::NEG_INFINITY
+        };
+    }
+
+    let pairs_needed = cap.saturating_sub(points.len()).div_ceil(2);
+    for _iter in 0..pairs_needed {
+        if points.len() >= cap {
+            break;
+        }
+        let mut best = f64::NEG_INFINITY;
+        let mut next_idx = 0;
+        for (i, &lp) in log_prod.iter().enumerate() {
+            if !taken[i] && lp > best {
+                best = lp;
+                next_idx = i;
+            }
+        }
+        taken[next_idx] = true;
+        let xi = grid[next_idx];
+        points.push(xi);
+        if points.len() < cap {
+            points.push(-xi);
+        }
+        let xi2 = xi * xi;
+        for (i, &g) in grid.iter().enumerate() {
+            if taken[i] {
+                continue;
+            }
+            let diff = (g * g - xi2).abs();
+            if diff > 0.0 {
+                log_prod[i] += diff.ln();
+            } else {
+                log_prod[i] = f64::NEG_INFINITY;
+            }
+        }
+    }
+    points
+}
+
+fn symmetric_leja_xi() -> &'static [f64] {
+    static XI: OnceLock<Vec<f64>> = OnceLock::new();
+    XI.get_or_init(|| build_symmetric_leja_xi(LEJA_DEGREE_CAP + 1))
+}
+
+/// Imaginary coordinate values `y_k \in [-\beta, \beta]` for discrete Leja points `z_k = i y_k`.
+pub fn complex_imaginary_leja_points(beta: f64, m: usize) -> Vec<f64> {
+    if m == 0 {
+        return Vec::new();
+    }
+    let b = if beta.is_finite() { beta.abs() } else { 0.0 };
+    if b == 0.0 {
+        return vec![0.0; m];
+    }
+    let xi = symmetric_leja_xi();
+    if m <= xi.len() {
+        xi[..m].iter().map(|&x| b * x).collect()
+    } else {
+        let full = build_symmetric_leja_xi(m);
+        full.iter().map(|&x| b * x).collect()
+    }
+}
+
+/// Computes the canonical 64-bit digest of a dense matrix representation.
+pub fn canonical_matrix_digest(dense_matrix: &[f64]) -> u64 {
+    let hash = sha256_f64_slice_bytes(dense_matrix);
+    u64::from_le_bytes(hash[0..8].try_into().unwrap())
+}
+
+/// Sealed witness proving that an operator is normal (e.g. skew-symmetric)
+/// and certifying that its imaginary spectrum is enclosed by $[-i\beta, i\beta]$.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+pub struct CertifiedNormalityWitness {
+    operator_key: u64,
+    dimension: usize,
+    scaling: f64,
+    model_epoch: u64,
+    certified_beta: f64,
+    evidence_reference: u64,
+}
+
+impl CertifiedNormalityWitness {
+    pub fn operator_key(&self) -> u64 {
+        self.operator_key
+    }
+
+    pub fn dimension(&self) -> usize {
+        self.dimension
+    }
+
+    pub fn scaling(&self) -> f64 {
+        self.scaling
+    }
+
+    pub fn model_epoch(&self) -> u64 {
+        self.model_epoch
+    }
+
+    pub fn certified_beta(&self) -> f64 {
+        self.certified_beta
+    }
+
+    pub fn evidence_reference(&self) -> u64 {
+        self.evidence_reference
+    }
+
+    /// Certifies a dense skew-symmetric operator $A^T = -A$ with outward Gershgorin bound on $\beta$.
+    ///
+    /// Validates exact skew-symmetry: $A_{ii} == 0.0$ and $A_{ij} == -A_{ji}$ exactly
+    /// (fail closed on any nonzero defect).
+    /// Binds to canonical operator digest, dimension, unit scaling, and model epoch.
+    pub fn certify_dense_skew_symmetric(
+        dense_matrix: &[f64],
+        n: usize,
+        operator_key: u64,
+        model_epoch: u64,
+        evidence_reference: u64,
+    ) -> CoreResult<Self> {
+        Self::certify_dense_skew_symmetric_scaled(
+            dense_matrix,
+            n,
+            1.0,
+            operator_key,
+            model_epoch,
+            evidence_reference,
+        )
+    }
+
+    /// Certifies a dense skew-symmetric operator with explicit scaling.
+    pub fn certify_dense_skew_symmetric_scaled(
+        dense_matrix: &[f64],
+        n: usize,
+        scaling: f64,
+        operator_key: u64,
+        model_epoch: u64,
+        evidence_reference: u64,
+    ) -> CoreResult<Self> {
+        if n == 0 || dense_matrix.len() != n * n {
+            return Err(CoreError::InvalidInput("invalid matrix dimensions".into()));
+        }
+        if !scaling.is_finite() || scaling <= 0.0 {
+            return Err(CoreError::InvalidInput(
+                "scaling must be finite and positive".into(),
+            ));
+        }
+        if evidence_reference == 0 {
+            return Err(CoreError::InvalidInput(
+                "evidence_reference must be nonzero".into(),
+            ));
+        }
+
+        // Exact represented skew-symmetry check (fail closed without outward defect bounds):
+        for i in 0..n {
+            let diag = dense_matrix[i * n + i];
+            if !diag.is_finite() || diag != 0.0 {
+                return Err(CoreError::InvalidInput(
+                    "diagonal entry must be exact zero for skew-symmetric operator".into(),
+                ));
+            }
+            for j in (i + 1)..n {
+                let a_ij = dense_matrix[i * n + j];
+                let a_ji = dense_matrix[j * n + i];
+                if !a_ij.is_finite() || !a_ji.is_finite() || a_ij != -a_ji {
+                    return Err(CoreError::InvalidInput(
+                        "operator is not skew-symmetric: exact A_ij == -A_ji required without outward perturbation enclosure".into(),
+                    ));
+                }
+            }
+        }
+
+        // Canonical operator digest binding:
+        let canonical_digest = canonical_matrix_digest(dense_matrix);
+        if operator_key != 0 && operator_key != canonical_digest {
+            return Err(CoreError::InvalidInput(format!(
+                "operator_key mismatch: caller provided {operator_key:#x}, canonical digest is {canonical_digest:#x}"
+            )));
+        }
+
+        // Gershgorin outward bound on imaginary eigenvalues:
+        let mut beta_max = 0.0_f64;
+        for i in 0..n {
+            let mut row_sum = 0.0_f64;
+            for j in 0..n {
+                row_sum = add_up(row_sum, dense_matrix[i * n + j].abs())?;
+            }
+            beta_max = beta_max.max(row_sum);
+        }
+        if !beta_max.is_finite() || beta_max < 0.0 {
+            return Err(CoreError::NonFinite("nonfinite beta bound".into()));
+        }
+        let certified_beta = if scaling == 1.0 {
+            beta_max
+        } else {
+            mul_up(beta_max, scaling)?
+        };
+
+        Ok(Self {
+            operator_key: canonical_digest,
+            dimension: n,
+            scaling,
+            model_epoch,
+            certified_beta,
+            evidence_reference,
+        })
+    }
+}
+
+/// Configuration for complex Newton-Leja phi-actions on oscillatory spectra.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+pub struct ComplexLejaConfig {
+    pub beta: f64,
+    pub order: usize,
+    /// Historical caller boolean. Note that `is_normal = true` ALONE does NOT grant `Certified` status;
+    /// certification strictly requires a verified `witness`.
+    pub is_normal: bool,
+    /// Sealed normality and spectral enclosure witness.
+    pub witness: Option<CertifiedNormalityWitness>,
+    /// Expected model epoch at consumer seam.
+    pub model_epoch: u64,
+    /// Expected operator scaling at consumer seam.
+    pub scaling: f64,
+}
+
+impl ComplexLejaConfig {
+    /// Creates an uncertified estimate-only configuration.
+    ///
+    /// Even if `is_normal` is true, without a sealed `witness` the action returns `EstimateOnly`.
+    pub fn new(beta: f64, order: usize, is_normal: bool) -> Self {
+        Self {
+            beta,
+            order,
+            is_normal,
+            witness: None,
+            model_epoch: 0,
+            scaling: 1.0,
+        }
+    }
+
+    /// Creates a certified configuration bound to a verified sealed normality witness.
+    pub fn with_witness(order: usize, witness: CertifiedNormalityWitness) -> Self {
+        Self {
+            beta: witness.certified_beta,
+            order,
+            is_normal: true,
+            witness: Some(witness),
+            model_epoch: witness.model_epoch,
+            scaling: witness.scaling,
+        }
+    }
+
+    /// Creates a certified configuration with custom beta (which must be >= witness.certified_beta).
+    pub fn with_witness_and_beta(
+        beta: f64,
+        order: usize,
+        witness: CertifiedNormalityWitness,
+    ) -> Self {
+        Self {
+            beta,
+            order,
+            is_normal: true,
+            witness: Some(witness),
+            model_epoch: witness.model_epoch,
+            scaling: witness.scaling,
+        }
+    }
+
+    /// Sets the expected current model epoch.
+    pub fn with_epoch(mut self, epoch: u64) -> Self {
+        self.model_epoch = epoch;
+        self
+    }
+
+    /// Sets the expected operator scaling.
+    pub fn with_scaling(mut self, scaling: f64) -> Self {
+        self.scaling = scaling;
+        self
+    }
+}
+
+const MAX_PRECOMPUTED_FACTORIAL: usize = 171;
+
+#[allow(clippy::needless_range_loop)]
+fn inverse_factorials() -> &'static [f64; MAX_PRECOMPUTED_FACTORIAL] {
+    static INV_FACT: OnceLock<[f64; MAX_PRECOMPUTED_FACTORIAL]> = OnceLock::new();
+    INV_FACT.get_or_init(|| {
+        let mut table = [0.0; MAX_PRECOMPUTED_FACTORIAL];
+        table[0] = 1.0;
+        let mut acc = 1.0_f64;
+        for (i, slot) in table
+            .iter_mut()
+            .enumerate()
+            .take(MAX_PRECOMPUTED_FACTORIAL)
+            .skip(1)
+        {
+            acc *= i as f64;
+            *slot = 1.0 / acc;
+        }
+        table
+    })
+}
+
+#[allow(clippy::needless_range_loop)]
+fn compute_divided_differences_into(
+    y_pts: &[f64],
+    k: usize,
+    out: &mut Vec<(f64, f64)>,
+    h_table: &mut Vec<f64>,
+) {
+    let m = y_pts.len();
+    out.clear();
+    if m == 0 {
+        return;
+    }
+    let inv_fact = inverse_factorials();
+    const MAX_TAYLOR_DEG: usize = 120;
+    let cols = MAX_TAYLOR_DEG + 1;
+    let required_h_len = m * cols;
+    if h_table.len() < required_h_len {
+        h_table.resize(required_h_len, 0.0);
+    }
+
+    let y0 = y_pts[0];
+    h_table[0] = 1.0;
+    let mut pow = 1.0_f64;
+    for slot in h_table[1..cols].iter_mut() {
+        pow *= y0;
+        *slot = pow;
+    }
+
+    for (j, &yj) in y_pts.iter().enumerate().take(m).skip(1) {
+        let curr_row = j * cols;
+        let prev_row = (j - 1) * cols;
+        h_table[curr_row] = 1.0;
+        for d in 1..cols {
+            h_table[curr_row + d] = h_table[prev_row + d] + yj * h_table[curr_row + d - 1];
+        }
+    }
+
+    for j in 0..m {
+        let row_start = j * cols;
+        let mut re = 0.0_f64;
+        let mut re_comp = 0.0_f64;
+        let mut im = 0.0_f64;
+        let mut im_comp = 0.0_f64;
+
+        for d in 0..cols {
+            let n = j + d + k;
+            let inv_f = if n < MAX_PRECOMPUTED_FACTORIAL {
+                inv_fact[n]
+            } else {
+                0.0
+            };
+            if inv_f == 0.0 {
+                continue;
+            }
+            let h_val = h_table[row_start + d];
+            let term = h_val * inv_f;
+
+            if d % 2 == 0 {
+                let sign = if (d / 2) % 2 == 0 { 1.0 } else { -1.0 };
+                let signed_term = sign * term;
+                let t = re + signed_term;
+                re_comp += if re.abs() >= signed_term.abs() {
+                    (re - t) + signed_term
+                } else {
+                    (signed_term - t) + re
+                };
+                re = t;
+            } else {
+                let sign = if ((d - 1) / 2) % 2 == 0 { 1.0 } else { -1.0 };
+                let signed_term = sign * term;
+                let t = im + signed_term;
+                im_comp += if im.abs() >= signed_term.abs() {
+                    (im - t) + signed_term
+                } else {
+                    (signed_term - t) + im
+                };
+                im = t;
+            }
+        }
+        out.push((re + re_comp, im + im_comp));
+    }
+}
+
+/// Newton divided differences for `\phi_k(i y)` on imaginary Leja points.
+/// Returns pairs of `(real, imag)`.
+pub fn complex_leja_divided_differences(beta: f64, k: usize, m: usize) -> Vec<(f64, f64)> {
+    if m == 0 {
+        return Vec::new();
+    }
+    let y_pts = complex_imaginary_leja_points(beta, m);
+    let mut out = Vec::with_capacity(m);
+    let mut h_table = Vec::with_capacity(m * 121);
+    compute_divided_differences_into(&y_pts, k, &mut out, &mut h_table);
+    out
+}
+
+/// Preallocated workspace for zero-allocation complex Leja phi actions.
+#[derive(Clone, Debug, Default)]
+pub struct ComplexLejaWorkspace {
+    pub dimension: usize,
+    pub max_order: usize,
+    pub r: Vec<f64>,
+    pub u: Vec<f64>,
+    pub w: Vec<f64>,
+    pub y_points: Vec<f64>,
+    pub coeffs: Vec<(f64, f64)>,
+    h_table: Vec<f64>,
+}
+
+impl ComplexLejaWorkspace {
+    pub fn new(dimension: usize, max_order: usize) -> Self {
+        let max_order = max_order.max(LEJA_DEGREE_CAP + 1);
+        Self {
+            dimension,
+            max_order,
+            r: vec![0.0; dimension],
+            u: vec![0.0; dimension],
+            w: vec![0.0; dimension],
+            y_points: Vec::with_capacity(max_order + 4),
+            coeffs: Vec::with_capacity(max_order + 4),
+            h_table: Vec::with_capacity((max_order + 4) * 121),
+        }
+    }
+
+    pub fn ensure_capacity(&mut self, dimension: usize, max_order: usize) {
+        if self.dimension < dimension {
+            self.dimension = dimension;
+            self.r.resize(dimension, 0.0);
+            self.u.resize(dimension, 0.0);
+            self.w.resize(dimension, 0.0);
+        }
+        if self.max_order < max_order {
+            self.max_order = max_order;
+            let extra = max_order + 4;
+            if self.y_points.capacity() < extra {
+                self.y_points.reserve(extra - self.y_points.capacity());
+            }
+            if self.coeffs.capacity() < extra {
+                self.coeffs.reserve(extra - self.coeffs.capacity());
+            }
+            let needed_h = extra * 121;
+            if self.h_table.capacity() < needed_h {
+                self.h_table.reserve(needed_h - self.h_table.capacity());
+            }
+        }
+    }
+}
+
+#[inline(always)]
+fn apply_op_scaled<Op: LinearOperator>(
+    op: &Op,
+    h: f64,
+    x: &[f64],
+    y: &mut [f64],
+    work: &mut WorkCounters,
+) -> CoreResult<()> {
+    op.apply(x, y)?;
+    work.poly_vector_products += 1;
+    work.poly_block_products += 1;
+    if h != 1.0 {
+        for val in y.iter_mut() {
+            *val *= h;
+        }
+    }
+    Ok(())
+}
+
+/// Real-operator action evaluating `phi_k(h A) v` for skewsymmetric / oscillatory operator `A`.
+/// Zero allocations in the hot loop when using a preallocated `workspace`.
+#[allow(clippy::too_many_arguments)]
+pub fn complex_leja_phi_action_into<Op: LinearOperator>(
+    op: &Op,
+    h: f64,
+    k: usize,
+    config: &ComplexLejaConfig,
+    v: &[f64],
+    out: &mut [f64],
+    workspace: &mut ComplexLejaWorkspace,
+    work: &mut WorkCounters,
+) -> CoreResult<TotalErrorStatus> {
+    let n = op.dimension();
+    if v.len() != n || out.len() != n {
+        return Err(CoreError::Dimension(format!(
+            "complex_leja_phi_action_into: vector length ({}, {}) does not match operator dimension {}",
+            v.len(),
+            out.len(),
+            n
+        )));
+    }
+    if !h.is_finite() || !config.beta.is_finite() || config.beta < 0.0 {
+        return Err(CoreError::InvalidInput(
+            "complex_leja_phi_action_into: h and beta must be finite with beta >= 0".into(),
+        ));
+    }
+    if v.iter().any(|x| !x.is_finite()) {
+        return Err(CoreError::NonFinite(
+            "complex_leja_phi_action_into: input vector contains NaN/Inf".into(),
+        ));
+    }
+
+    if n == 0 {
+        return Ok(TotalErrorStatus::Certified { bound: 0.0 });
+    }
+
+    if h == 0.0 {
+        let inv_fact = inverse_factorials();
+        let scale = if k < MAX_PRECOMPUTED_FACTORIAL {
+            inv_fact[k]
+        } else {
+            0.0
+        };
+        for (o, &vi) in out.iter_mut().zip(v) {
+            *o = vi * scale;
+        }
+        return Ok(TotalErrorStatus::Certified { bound: 0.0 });
+    }
+
+    let m = config.order;
+    if m == 0 {
+        out.fill(0.0);
+        return Ok(TotalErrorStatus::EstimateOnly {
+            reason: "COMPLEX_LEJA_ZERO_ORDER: degree zero requested".into(),
+            bounded_components: 0.0,
+        });
+    }
+
+    let effective_beta = config.beta * h.abs();
+    let points_to_compute = m + 2;
+    workspace.ensure_capacity(n, points_to_compute);
+
+    workspace.y_points.clear();
+    let xi = symmetric_leja_xi();
+    if points_to_compute <= xi.len() {
+        for &x in &xi[..points_to_compute] {
+            workspace.y_points.push(effective_beta * x);
+        }
+    } else {
+        let full = build_symmetric_leja_xi(points_to_compute);
+        for &x in &full {
+            workspace.y_points.push(effective_beta * x);
+        }
+    }
+
+    work.poly_coefficient_setups += 1;
+    compute_divided_differences_into(
+        &workspace.y_points,
+        k,
+        &mut workspace.coeffs,
+        &mut workspace.h_table,
+    );
+
+    out.fill(0.0);
+    workspace.r[..n].copy_from_slice(v);
+
+    let mut idx = 0;
+    for _iter in 0..m {
+        if idx >= m {
+            break;
+        }
+        if workspace.y_points[idx].abs() < 1e-15 {
+            let d_val = workspace.coeffs[idx].0;
+            for (o, &ri) in out.iter_mut().zip(&workspace.r[..n]) {
+                *o += d_val * ri;
+            }
+            if idx + 1 < m {
+                apply_op_scaled(op, h, &workspace.r[..n], &mut workspace.u[..n], work)?;
+                workspace.r[..n].copy_from_slice(&workspace.u[..n]);
+            }
+            idx += 1;
+        } else if idx + 1 < m
+            && (workspace.y_points[idx] + workspace.y_points[idx + 1]).abs() < 1e-14
+        {
+            let y_val = workspace.y_points[idx].abs();
+            let y2 = y_val * y_val;
+            let re_val = workspace.coeffs[idx].0;
+            let d_next = workspace.coeffs[idx + 1].0;
+
+            apply_op_scaled(op, h, &workspace.r[..n], &mut workspace.u[..n], work)?;
+            for (o, (&ri, &ui)) in out
+                .iter_mut()
+                .zip(workspace.r[..n].iter().zip(&workspace.u[..n]))
+            {
+                *o += re_val * ri + d_next * ui;
+            }
+            if idx + 2 < m {
+                apply_op_scaled(op, h, &workspace.u[..n], &mut workspace.w[..n], work)?;
+                for (ri, &wi) in workspace.r[..n].iter_mut().zip(&workspace.w[..n]) {
+                    *ri = wi + y2 * *ri;
+                }
+            }
+            idx += 2;
+        } else {
+            let d_val = workspace.coeffs[idx].0;
+            for (o, &ri) in out.iter_mut().zip(&workspace.r[..n]) {
+                *o += d_val * ri;
+            }
+            if idx + 1 < m {
+                apply_op_scaled(op, h, &workspace.r[..n], &mut workspace.u[..n], work)?;
+                workspace.r[..n].copy_from_slice(&workspace.u[..n]);
+            }
+            idx += 1;
+        }
+    }
+
+    if !out.iter().all(|x| x.is_finite()) {
+        return Err(CoreError::NonFinite(
+            "complex_leja_phi_action_into produced non-finite output".into(),
+        ));
+    }
+
+    // Certified status requires ALL:
+    // 1. config.is_normal == true
+    // 2. Sealed witness present
+    // 3. w.dimension() == op.dimension()
+    // 4. config.beta >= w.certified_beta()
+    // 5. w.model_epoch() == config.model_epoch (stale epoch rejected)
+    // 6. w.scaling().to_bits() == config.scaling.to_bits()
+    // 7. op provides explicit matrix whose canonical digest matches w.operator_key()
+    let is_certified_normal = if let Some(ref w) = config.witness {
+        if !config.is_normal
+            || w.dimension() != n
+            || config.beta < w.certified_beta()
+            || w.model_epoch() != config.model_epoch
+            || w.scaling().to_bits() != config.scaling.to_bits()
+        {
+            false
+        } else if let Some(mat) = op.explicit() {
+            let op_digest = canonical_matrix_digest(mat.as_slice());
+            w.operator_key() == op_digest
+        } else {
+            false
+        }
+    } else {
+        false
+    };
+
+    if is_certified_normal {
+        let v_norm = safe_l2(v);
+        if v_norm == 0.0 {
+            return Ok(TotalErrorStatus::Certified { bound: 0.0 });
+        }
+        let half_beta = effective_beta * 0.5;
+        let mut capacity_pow = 2.0_f64;
+        for _ in 0..m {
+            capacity_pow = mul_up(capacity_pow, half_beta)?;
+        }
+        let d_m_re = workspace.coeffs.get(m).map(|c| c.0).unwrap_or(0.0);
+        let d_m_im = workspace.coeffs.get(m).map(|c| c.1).unwrap_or(0.0);
+        let d_m_mag = sqrt_up(add_up(
+            mul_up(d_m_re.abs(), d_m_re.abs())?,
+            mul_up(d_m_im.abs(), d_m_im.abs())?,
+        )?)?;
+
+        let mut remainder = mul_up(d_m_mag, capacity_pow)?;
+        if let Some(c_next) = workspace.coeffs.get(m + 1) {
+            let d_next_mag = sqrt_up(add_up(
+                mul_up(c_next.0.abs(), c_next.0.abs())?,
+                mul_up(c_next.1.abs(), c_next.1.abs())?,
+            )?)?;
+            let cap_next = mul_up(capacity_pow, half_beta)?;
+            remainder = add_up(remainder, mul_up(d_next_mag, cap_next)?)?;
+        }
+        let truncation = mul_up(v_norm, remainder)?;
+        let roundoff = mul_up(v_norm, ((2 * m + 4) as f64) * f64::EPSILON)?;
+        let total_bound = add_up(truncation, roundoff)?;
+        Ok(TotalErrorStatus::Certified { bound: total_bound })
+    } else {
+        let reason = if config.witness.is_none() && config.is_normal {
+            "COMPLEX_LEJA_CALLER_UNSEALED_NORMALITY: caller boolean is_normal=true without sealed CertifiedNormalityWitness"
+        } else if let Some(ref w) = config.witness {
+            if !config.is_normal {
+                "COMPLEX_LEJA_NONNORMAL_NOT_ENCLOSED: config.is_normal is false"
+            } else if w.dimension() != n {
+                "COMPLEX_LEJA_WITNESS_DIMENSION_MISMATCH: witness dimension does not match operator"
+            } else if config.beta < w.certified_beta() {
+                "COMPLEX_LEJA_BETA_TOO_SMALL: config.beta is smaller than certified_beta enclosure"
+            } else if w.model_epoch() != config.model_epoch {
+                "COMPLEX_LEJA_STALE_EPOCH: witness model_epoch does not match current model_epoch"
+            } else if w.scaling().to_bits() != config.scaling.to_bits() {
+                "COMPLEX_LEJA_SCALING_MISMATCH: witness scaling does not match config scaling"
+            } else if let Some(mat) = op.explicit() {
+                let op_digest = canonical_matrix_digest(mat.as_slice());
+                if w.operator_key() != op_digest {
+                    "COMPLEX_LEJA_OPERATOR_MISMATCH: witness operator_key does not match consumed operator digest"
+                } else {
+                    "COMPLEX_LEJA_NONNORMAL_NOT_ENCLOSED: operator is not normal or spectral enclosure is unverified"
+                }
+            } else {
+                "COMPLEX_LEJA_NON_EXPLICIT_OPERATOR: operator does not provide explicit representation for digest verification"
+            }
+        } else {
+            "COMPLEX_LEJA_NONNORMAL_NOT_ENCLOSED: operator is not normal or spectral enclosure is unverified"
+        };
+        Ok(TotalErrorStatus::EstimateOnly {
+            reason: reason.into(),
+            bounded_components: 0.0,
+        })
+    }
+}
+
+/// Evaluates `phi_k(A) v` directly without external `h` scaling (h = 1.0).
+pub fn complex_leja_phi_action_direct_into<Op: LinearOperator>(
+    op: &Op,
+    k: usize,
+    config: &ComplexLejaConfig,
+    v: &[f64],
+    out: &mut [f64],
+    workspace: &mut ComplexLejaWorkspace,
+    work: &mut WorkCounters,
+) -> CoreResult<TotalErrorStatus> {
+    complex_leja_phi_action_into(op, 1.0, k, config, v, out, workspace, work)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -3202,5 +3951,363 @@ mod production_audit_suffix {
         assert_eq!(workspace.report.as_ref().unwrap(), &committed);
         assert!(work.poly_block_products > 0);
         assert!(work.poly_vector_products > 0);
+    }
+
+    #[test]
+    fn test_complex_imaginary_leja_distribution() {
+        let beta = 5.0;
+        let m = 32;
+        let points = complex_imaginary_leja_points(beta, m);
+        assert_eq!(points.len(), m);
+        assert!((points[0] - beta).abs() < 1e-12);
+        assert!((points[1] + beta).abs() < 1e-12);
+        assert!(points[2].abs() < 1e-12);
+
+        for &p in &points {
+            assert!(p.abs() <= beta + 1e-12, "point {p} exceeds beta {beta}");
+        }
+
+        for i in 0..m {
+            for j in (i + 1)..m {
+                let diff = (points[i] - points[j]).abs();
+                assert!(
+                    diff > 0.01,
+                    "points {i} ({}) and {j} ({}) too close",
+                    points[i],
+                    points[j]
+                );
+            }
+        }
+
+        assert!(
+            complex_imaginary_leja_points(0.0, 10)
+                .iter()
+                .all(|&x| x == 0.0)
+        );
+        assert!(complex_imaginary_leja_points(beta, 0).is_empty());
+    }
+
+    #[test]
+    fn test_complex_leja_divided_differences_accuracy() {
+        let omega = 0.05;
+        let k = 1;
+        let m = 5;
+        let diffs = complex_leja_divided_differences(omega, k, m);
+        assert_eq!(diffs.len(), m);
+
+        let w = omega;
+        let exact_re = 1.0 - w * w / 6.0 + w.powi(4) / 120.0;
+        let exact_im = w / 2.0 - w.powi(3) / 24.0 + w.powi(5) / 720.0;
+        assert!(
+            (diffs[0].0 - exact_re).abs() < 1e-11,
+            "re mismatch: {} vs {}",
+            diffs[0].0,
+            exact_re
+        );
+        assert!(
+            (diffs[0].1 - exact_im).abs() < 1e-11,
+            "im mismatch: {} vs {}",
+            diffs[0].1,
+            exact_im
+        );
+
+        assert!(
+            diffs[1].1.abs() < 1e-15,
+            "d1 imag must be zero, got {}",
+            diffs[1].1
+        );
+        let exact_d1_re = 0.5 - w * w / 24.0 + w.powi(4) / 720.0;
+        assert!(
+            (diffs[1].0 - exact_d1_re).abs() < 1e-11,
+            "d1 re mismatch: {} vs {}",
+            diffs[1].0,
+            exact_d1_re
+        );
+
+        let diffs_0 = complex_leja_divided_differences(omega, 0, 3);
+        assert!((diffs_0[0].0 - w.cos()).abs() < 1e-12);
+        assert!((diffs_0[0].1 - w.sin()).abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_complex_leja_action_harmonic_oscillator() {
+        let omega = 1.5;
+        let t = 1.0;
+        let mat_slice = [0.0, -omega, omega, 0.0];
+        let matrix = DenseMatrix::from_rows(&[&[0.0, -omega], &[omega, 0.0]]).unwrap();
+        let op = DenseOperator::new(matrix).unwrap();
+        let v = [1.0, 0.0];
+        let mut out = [0.0; 2];
+
+        // 1. Certified route: requiring a sealed CertifiedNormalityWitness
+        let mat_digest = canonical_matrix_digest(&mat_slice);
+        let witness =
+            CertifiedNormalityWitness::certify_dense_skew_symmetric(&mat_slice, 2, 0, 1, 100)
+                .unwrap();
+        assert_eq!(witness.operator_key(), mat_digest);
+        assert_eq!(witness.certified_beta(), omega);
+        let config_certified = ComplexLejaConfig::with_witness(25, witness);
+
+        let mut workspace = ComplexLejaWorkspace::new(2, 30);
+        let mut work = WorkCounters::default();
+
+        let status = complex_leja_phi_action_into(
+            &op,
+            t,
+            0,
+            &config_certified,
+            &v,
+            &mut out,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+
+        let exact_0 = (omega * t).cos();
+        let exact_1 = (omega * t).sin();
+        let err_0 = (out[0] - exact_0).abs();
+        let err_1 = (out[1] - exact_1).abs();
+        let total_err = (err_0 * err_0 + err_1 * err_1).sqrt();
+
+        assert!(
+            total_err < 1e-11,
+            "action error {total_err:e} exceeds 1e-11 target; out = {:?}",
+            out
+        );
+
+        match status {
+            TotalErrorStatus::Certified { bound } => {
+                assert!(
+                    bound >= total_err,
+                    "bound {bound:e} must enclose error {total_err:e}"
+                );
+            }
+            TotalErrorStatus::EstimateOnly { reason, .. } => {
+                panic!("expected Certified status for normal operator, got: {reason}");
+            }
+        }
+
+        assert!(work.poly_vector_products > 0);
+        assert!(work.poly_block_products > 0);
+        assert!(work.poly_coefficient_setups > 0);
+
+        // 2. Adversarial test: Caller lies about normality with unsealed boolean
+        let config_lying_caller = ComplexLejaConfig::new(omega, 25, true);
+        let status_lying = complex_leja_phi_action_into(
+            &op,
+            t,
+            0,
+            &config_lying_caller,
+            &v,
+            &mut out,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+        assert!(matches!(
+            status_lying,
+            TotalErrorStatus::EstimateOnly {
+                ref reason,
+                ..
+            } if reason.contains("COMPLEX_LEJA_CALLER_UNSEALED_NORMALITY")
+        ));
+
+        // 3. Explicit non-normal config
+        let config_nonnormal = ComplexLejaConfig::new(omega, 25, false);
+        let status_nn = complex_leja_phi_action_into(
+            &op,
+            t,
+            0,
+            &config_nonnormal,
+            &v,
+            &mut out,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+        assert!(matches!(status_nn, TotalErrorStatus::EstimateOnly { .. }));
+
+        // 4. Adversarial test: Caller tries to certify non-normal / non-skew matrix
+        let nonnormal_mat = [1.0, 2.0, 3.0, 4.0];
+        let witness_attempt =
+            CertifiedNormalityWitness::certify_dense_skew_symmetric(&nonnormal_mat, 2, 2, 1, 200);
+        assert!(
+            witness_attempt.is_err(),
+            "Non-skew matrix must be rejected by certify_dense_skew_symmetric"
+        );
+
+        // 5. Adversarial test: Caller supplies beta that is too small for enclosure
+        let mut config_small_beta = ComplexLejaConfig::with_witness(25, witness);
+        config_small_beta.beta = omega * 0.5; // strictly smaller than certified_beta
+        let status_small_beta = complex_leja_phi_action_into(
+            &op,
+            t,
+            0,
+            &config_small_beta,
+            &v,
+            &mut out,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+        assert!(matches!(
+            status_small_beta,
+            TotalErrorStatus::EstimateOnly {
+                ref reason,
+                ..
+            } if reason.contains("COMPLEX_LEJA_BETA_TOO_SMALL")
+        ));
+
+        // 6. Direct action with scaled matrix and certified witness
+        let scaled_slice = [0.0, -omega * t, omega * t, 0.0];
+        let scaled_matrix =
+            DenseMatrix::from_rows(&[&[0.0, -omega * t], &[omega * t, 0.0]]).unwrap();
+        let op_scaled = DenseOperator::new(scaled_matrix).unwrap();
+        let scaled_witness =
+            CertifiedNormalityWitness::certify_dense_skew_symmetric(&scaled_slice, 2, 0, 1, 300)
+                .unwrap();
+        let config_direct = ComplexLejaConfig::with_witness(25, scaled_witness);
+        let status_direct = complex_leja_phi_action_direct_into(
+            &op_scaled,
+            0,
+            &config_direct,
+            &v,
+            &mut out,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+        let direct_err = ((out[0] - exact_0).powi(2) + (out[1] - exact_1).powi(2)).sqrt();
+        assert!(direct_err < 1e-11);
+        assert!(matches!(status_direct, TotalErrorStatus::Certified { .. }));
+
+        // 7. AUTH-002: Same-dimension witness for another operator must be rejected
+        let diff_matrix = DenseMatrix::from_rows(&[&[0.0, -3.0], &[3.0, 0.0]]).unwrap();
+        let diff_op = DenseOperator::new(diff_matrix).unwrap();
+        let status_mismatched_op = complex_leja_phi_action_into(
+            &diff_op,
+            t,
+            0,
+            &config_certified, // bound to mat_slice, not different_slice
+            &v,
+            &mut out,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+        assert!(matches!(
+            status_mismatched_op,
+            TotalErrorStatus::EstimateOnly {
+                ref reason,
+                ..
+            } if reason.contains("COMPLEX_LEJA_OPERATOR_MISMATCH")
+        ));
+
+        // 8. AUTH-002: Stale epoch witness must be rejected
+        let config_stale_epoch = config_certified.with_epoch(2); // witness has epoch 1
+        let status_stale = complex_leja_phi_action_into(
+            &op,
+            t,
+            0,
+            &config_stale_epoch,
+            &v,
+            &mut out,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+        assert!(matches!(
+            status_stale,
+            TotalErrorStatus::EstimateOnly {
+                ref reason,
+                ..
+            } if reason.contains("COMPLEX_LEJA_STALE_EPOCH")
+        ));
+
+        // 9. AUTH-002: One-ulp and tolerance-near skew defects must be rejected
+        let one_ulp_diag = [f64::MIN_POSITIVE, -omega, omega, 0.0];
+        assert!(
+            CertifiedNormalityWitness::certify_dense_skew_symmetric(&one_ulp_diag, 2, 0, 1, 100)
+                .is_err(),
+            "Nonzero diagonal must be rejected"
+        );
+        let one_ulp_skew = [0.0, -omega, omega + f64::EPSILON, 0.0];
+        assert!(
+            CertifiedNormalityWitness::certify_dense_skew_symmetric(&one_ulp_skew, 2, 0, 1, 100)
+                .is_err(),
+            "1-ulp skew defect must be rejected"
+        );
+        let tol_near_skew = [0.0, -omega, omega + 1e-15, 0.0];
+        assert!(
+            CertifiedNormalityWitness::certify_dense_skew_symmetric(&tol_near_skew, 2, 0, 1, 100)
+                .is_err(),
+            "Tolerance-near skew defect must be rejected"
+        );
+
+        // 10. AUTH-002: Construction with mismatched operator_key must be rejected
+        assert!(
+            CertifiedNormalityWitness::certify_dense_skew_symmetric(
+                &mat_slice,
+                2,
+                0xdead_beef,
+                1,
+                100
+            )
+            .is_err(),
+            "Mismatched operator_key at construction must be rejected"
+        );
+    }
+
+    #[test]
+    fn test_complex_leja_workspace_zero_allocation() {
+        let omega = 2.0;
+        let matrix = DenseMatrix::from_rows(&[&[0.0, -omega], &[omega, 0.0]]).unwrap();
+        let op = DenseOperator::new(matrix).unwrap();
+        let v = [0.8, -0.6];
+        let mut out = [0.0; 2];
+        let config = ComplexLejaConfig::new(omega, 20, true);
+        let mut workspace = ComplexLejaWorkspace::new(2, 25);
+        let mut work = WorkCounters::default();
+
+        complex_leja_phi_action_into(
+            &op,
+            0.5,
+            0,
+            &config,
+            &v,
+            &mut out,
+            &mut workspace,
+            &mut work,
+        )
+        .unwrap();
+
+        let r_cap = workspace.r.capacity();
+        let u_cap = workspace.u.capacity();
+        let w_cap = workspace.w.capacity();
+        let y_cap = workspace.y_points.capacity();
+        let c_cap = workspace.coeffs.capacity();
+        let h_cap = workspace.h_table.capacity();
+
+        for step in 1..=50 {
+            let h = 0.01 * step as f64;
+            complex_leja_phi_action_into(
+                &op,
+                h,
+                0,
+                &config,
+                &v,
+                &mut out,
+                &mut workspace,
+                &mut work,
+            )
+            .unwrap();
+
+            assert_eq!(workspace.r.capacity(), r_cap);
+            assert_eq!(workspace.u.capacity(), u_cap);
+            assert_eq!(workspace.w.capacity(), w_cap);
+            assert_eq!(workspace.y_points.capacity(), y_cap);
+            assert_eq!(workspace.coeffs.capacity(), c_cap);
+            assert_eq!(workspace.h_table.capacity(), h_cap);
+        }
     }
 }
