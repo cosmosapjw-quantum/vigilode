@@ -1333,8 +1333,11 @@ fn d3_route_is_pure_for_every_choice_over_the_extension_grid() {
             }
         }
     }
+    let rodas5p_variants = MethodRegistry::entry("rodas5p")
+        .expect("the RODAS5P entry")
+        .route_variants;
     let (mut routed, mut plans, mut refusals) = (0usize, 0usize, 0usize);
-    let (mut rodas_checked, mut rodas_equal) = (0usize, 0usize);
+    let (mut rodas_checked, mut rodas_equal, mut rodas_query_defects) = (0usize, 0usize, 0usize);
     let mut tally = |result: &Result<vigilode::MethodRoutePlan, MethodRouteRefusal>| {
         routed += 1;
         match result {
@@ -1358,7 +1361,41 @@ fn d3_route_is_pure_for_every_choice_over_the_extension_grid() {
                             rodas_checked += 1;
                             let same = match (&result, Rodas5p::capabilities(&problem, &options)) {
                                 (Ok(plan), Ok(capabilities)) => {
-                                    plan.route.facade_route == Some(capabilities.route)
+                                    // Independent statement of what `Rodas5p::solve` runs: the
+                                    // route of the capability query, except that a general
+                                    // sparse-JVP request leaves the router with dense output
+                                    // (fast dense driver) or a vector atol (dense fast driver).
+                                    let sparse_general =
+                                        feature.jacobian == GridJacobian::SparseGeneral;
+                                    let executed = match capabilities.route {
+                                        FacadeRoute::MatrixFree
+                                            if sparse_general && grid_option.dense_output =>
+                                        {
+                                            FacadeRoute::FastDense
+                                        }
+                                        FacadeRoute::MatrixFree
+                                            if sparse_general && grid_option.vector_atol =>
+                                        {
+                                            FacadeRoute::DenseFast
+                                        }
+                                        queried => queried,
+                                    };
+                                    rodas_query_defects +=
+                                        usize::from(executed != capabilities.route);
+                                    // the catalog row of the planned route is that driver
+                                    // family and supports what the request asks for
+                                    let row = rodas5p_variants
+                                        .iter()
+                                        .find(|v| v.facade_route == executed)
+                                        .expect("one row per facade route");
+                                    let dense_provider = feature.jacobian == GridJacobian::Dense;
+                                    plan.route.facade_route == Some(executed)
+                                        && plan.route.variant == row.label
+                                        && plan.route.needs.dense_matrix
+                                            == (row.dense_matrix || dense_provider)
+                                        && (!feature.mass || row.supports_mass)
+                                        && (!feature.events || row.supports_events)
+                                        && (!grid_option.dense_output || row.supports_dense_output)
                                 }
                                 (Err(MethodRouteRefusal::Method { reasons, .. }), Err(refusal)) => {
                                     reasons == &[MethodRefusalReason::Implicit(refusal)]
@@ -1388,6 +1425,7 @@ fn d3_route_is_pure_for_every_choice_over_the_extension_grid() {
             "auto_policies": auto_policies.len(),
             "rodas5p_admissions_compared_with_capabilities": rodas_checked,
             "rodas5p_admissions_equal_to_capabilities": rodas_equal,
+            "rodas5p_capability_query_names_another_driver_than_runs": rodas_query_defects,
             "callback_entries": callbacks,
         }})
     );
@@ -1396,6 +1434,10 @@ fn d3_route_is_pure_for_every_choice_over_the_extension_grid() {
         192 * 4 * 12 * (2 * (ids.len() + 1) + auto_policies.len())
     );
     assert_eq!(rodas_equal, rodas_checked);
+    // general sparse-JVP requests whose capability query names a driver that does not run:
+    // dense output on a fast route (16 feature rows * 4 dimensions * 4 option rows) and a
+    // vector atol without dense output (8 * 4 * 3), each with 2 parameter sets
+    assert_eq!(rodas_query_defects, (16 * 4 * 4 + 8 * 4 * 3) * 2);
     assert!(plans > 0 && refusals > 0);
     assert_eq!(callbacks, 0, "a routing query entered a callback");
 }
@@ -2798,6 +2840,172 @@ fn view_reports_typed_failure_with_accepted_prefix_and_work() {
     );
 }
 
+/// The plan names the route that runs, and the view reads it back from the run
+/// record. For a general sparse-JVP provider `Rodas5p::capabilities` answers
+/// `matrix-free` although `Rodas5p::solve` leaves the router with dense output
+/// (fast dense driver) or a vector atol (dense fast driver), assembling the
+/// Jacobian from `n` JVP columns per build. The registry plans the driver that
+/// runs, with the dense-matrix need it has; the adapter is still the direct
+/// call bit for bit.
+#[test]
+fn view_reports_the_executed_route_when_the_capability_query_disagrees() {
+    let fixture = heat_reaction();
+    let n = fixture.n;
+    let rows: Vec<Vec<usize>> = (0..n)
+        .map(|i| {
+            let mut row: Vec<usize> = (i.saturating_sub(1)..=(i + 1).min(n - 1)).collect();
+            if i == 0 {
+                row.push(n - 1);
+            }
+            row
+        })
+        .collect();
+    let pattern = SparsityPattern::from_rows(n, &rows).expect("a valid pattern");
+    assert!(!pattern.is_banded());
+    let problem = Problem::new(n, |t, y, dy| {
+        heat_rhs(t, y, dy);
+        Ok(())
+    })
+    .jacobian(Jacobian::sparse_jvp(pattern, |t, y, v, out| {
+        heat_jvp(t, y, v, out);
+        Ok(())
+    }))
+    .autonomous();
+    let base = tolerances(1e-6, 1e-9);
+    let cases = [
+        ("plain", base.clone(), "rodas5p/matrix-free"),
+        (
+            "dense output",
+            Options {
+                dense_output: true,
+                ..base.clone()
+            },
+            "rodas5p/fast-dense",
+        ),
+        (
+            "vector atol",
+            Options {
+                atol: Atol::Vector(vec![1e-9; n]),
+                ..base.clone()
+            },
+            "rodas5p/dense-fast",
+        ),
+    ];
+    let mut data = Vec::new();
+    for (name, options, expected) in cases {
+        let queried = Rodas5p::capabilities(&problem, &options)
+            .expect("supported")
+            .route;
+        assert_eq!(
+            queried,
+            FacadeRoute::MatrixFree,
+            "{name}: the capability query"
+        );
+        let plan = explicit_plan(&problem, &options, "rodas5p");
+        let unified =
+            MethodRegistry::solve(&problem, fixture.span, &fixture.y0, &options, &plan).unwrap();
+        let direct = Rodas5p::solve(&problem, fixture.span, &fixture.y0, &options).unwrap();
+        let view = unified.view();
+        assert!(view.is_success(), "{name}");
+        assert_eq!(bits(view.times()), bits(&direct.t), "{name}");
+        assert_eq!(row_bits(view.states()), row_bits(&direct.y), "{name}");
+        assert_eq!(view.work(), direct.stats.counters, "{name}");
+        // the executed route is read from the run record, and the plan named it
+        assert_eq!(view.route_id(), expected, "{name}: executed route");
+        assert_eq!(plan.route.id(), expected, "{name}: planned route");
+        assert_eq!(view.route(), *view.planned_route(), "{name}");
+        let dense = expected != "rodas5p/matrix-free";
+        assert_eq!(
+            plan.route.needs.dense_matrix, dense,
+            "{name}: dense-matrix need"
+        );
+        assert!(plan.route.needs.provided_jvp, "{name}");
+        let counters = direct.stats.counters;
+        if dense {
+            // the Jacobian is assembled from n JVP columns per build
+            assert!(counters.jacobian_builds > 0, "{name}");
+            assert!(
+                counters.jvp_calls >= n as u64 * counters.jacobian_builds,
+                "{name}"
+            );
+        } else {
+            assert_eq!(counters.jacobian_builds, 0, "{name}");
+        }
+        data.push(json!({
+            "request": name,
+            "capability_query_route": format!("{queried:?}"),
+            "planned_route": plan.route.id(),
+            "executed_route": view.route_id(),
+            "executed_driver": view.executed_driver(),
+            "entry_point": direct.stats.route.entry_point,
+            "jacobian_builds": counters.jacobian_builds,
+            "jvp_calls": counters.jvp_calls,
+            "accepted": direct.stats.accepted_steps,
+        }));
+    }
+    // Auto does not admit the dense drivers without the dense-matrix permission
+    let policy = MethodAutoPolicy {
+        regime: ProblemRegime::Stiff,
+        allowed: CapabilitySet {
+            provided_jvp: true,
+            ..CapabilitySet::NONE
+        },
+        admit_unqualified: false,
+        fallback: MethodFallback::Never,
+        use_measured_evidence: false,
+        evidence: &[],
+    };
+    let auto = |options: &Options| {
+        MethodRegistry::route(&problem, options, &MethodChoice::Auto(policy))
+            .map(|plan| plan.route.id())
+            .ok()
+    };
+    assert_eq!(auto(&base).as_deref(), Some("rodas5p/matrix-free"));
+    assert_eq!(
+        auto(&Options {
+            dense_output: true,
+            ..base.clone()
+        }),
+        None,
+        "the fast dense driver needs the dense-matrix permission"
+    );
+    // The general surface keeps its receipt on the capability query (default routing is
+    // not changed): with a vector atol it selects this problem as matrix-free and does not
+    // apply the dense-dimension ceiling, although the dense fast driver runs. The plan of
+    // route(General) names the driver that runs and its dense-matrix need.
+    let vector = Options {
+        atol: Atol::Vector(vec![1e-9; n]),
+        ..base.clone()
+    };
+    let policy = GeneralOdePolicy {
+        regime: ProblemRegime::Stiff,
+        derivatives: DerivativeFallback::ProvidedOnly,
+        max_dense_dimension: 4,
+        allow_matrix_free: true,
+    };
+    let selection = GeneralOde::select(&problem, &vector, &policy).expect("selected");
+    let reference = GeneralOde::select_reference(&problem, &vector, &policy).expect("selected");
+    assert_eq!(selection.implicit_route, Some(FacadeRoute::MatrixFree));
+    assert_eq!(reference.implicit_route, selection.implicit_route);
+    let plan = MethodRegistry::route(&problem, &vector, &MethodChoice::General(policy)).unwrap();
+    assert_eq!(plan.route.id(), "rodas5p/dense-fast");
+    assert!(plan.route.needs.dense_matrix && n > policy.max_dense_dimension);
+    println!(
+        "QUAL {}",
+        json!({"test": "executed_route_vs_capability_query", "data": {
+            "requests": data,
+            "general_surface_vector_atol": {
+                "dimension": n,
+                "max_dense_dimension": policy.max_dense_dimension,
+                "select_implicit_route": format!("{:?}", selection.implicit_route),
+                "select_equals_reference_body": true,
+                "planned_route_of_route_general": plan.route.id(),
+                "plan_needs_dense_matrix": plan.route.needs.dense_matrix,
+            },
+        }})
+    );
+}
+
 // ------------------------------------------------ Auto: ranking and fallback
 
 fn ranked_ids(plan: &vigilode::MethodRoutePlan) -> Vec<&'static str> {
@@ -3156,6 +3364,33 @@ fn catalog_extends_the_registry_and_states_what_is_unavailable() {
         (radau.stages, radau.order),
         (stages.count(), stages.order())
     );
+    // the RODAS5P entry carries the six driver families as exact route variants, the banded
+    // and the sequential one included (the U06 descriptor has neither); no other entry
+    // needs them
+    for entry in &catalog {
+        let labels: Vec<&str> = entry.route_variants.iter().map(|v| v.label).collect();
+        if entry.descriptor.method_id == "rodas5p" {
+            assert_eq!(
+                labels,
+                vec![
+                    "dense-fast",
+                    "banded-fast",
+                    "matrix-free",
+                    "fast-dense",
+                    "fast-banded-dense",
+                    "sequential-dense"
+                ]
+            );
+            assert!(
+                entry
+                    .route_variants
+                    .iter()
+                    .all(|v| v.dense_matrix != v.label.contains("banded") || v.matrix_free)
+            );
+        } else {
+            assert!(labels.is_empty(), "{}", entry.descriptor.method_id);
+        }
+    }
     let peer = MethodRegistry::entry(ppsw1::METHOD_ID).unwrap();
     assert_eq!(
         peer.jacobian_forms,

@@ -161,6 +161,30 @@ enum AdapterKind {
     Lawson,
 }
 
+/// One exact route variant of a method: a driver family, what it stores and what it
+/// supports. The catalog entry of RODAS5P carries the six driver families of the facade;
+/// its U06 descriptor has three permission variants and neither a banded nor a sequential
+/// one (audit finding COD-03).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct MethodRouteVariant {
+    /// Variant label: the second half of a route id.
+    pub label: &'static str,
+    /// The driver family of the facade.
+    pub facade_route: FacadeRoute,
+    /// The route stores and factorizes an n-by-n matrix whatever the provider form. (A
+    /// dense Jacobian callback materializes one on every route.)
+    pub dense_matrix: bool,
+    /// The route never assembles a matrix; the general surface asks for
+    /// `GeneralOdePolicy::allow_matrix_free`.
+    pub matrix_free: bool,
+    /// Runs with a mass matrix.
+    pub supports_mass: bool,
+    /// Locates events (on the continuous extension, so together with dense output).
+    pub supports_events: bool,
+    /// Returns the continuous extension.
+    pub supports_dense_output: bool,
+}
+
 /// One routable method: its descriptor, and what its adapter lowers.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct MethodEntry {
@@ -186,6 +210,9 @@ pub struct MethodEntry {
     pub direct_call: &'static str,
     /// What a failed run returns as its accepted prefix.
     pub failure_prefix: &'static str,
+    /// The exact route variants, when the method has more than one driver family (RODAS5P);
+    /// empty when the descriptor's variants are the routes.
+    pub route_variants: Vec<MethodRouteVariant>,
     #[serde(skip)]
     kind: AdapterKind,
 }
@@ -215,6 +242,11 @@ fn entry(
             PREFIX_OUTPUT_SAMPLES
         } else {
             PREFIX_LAST_ACCEPTED
+        },
+        route_variants: if kind == Kind::Rodas5p {
+            RODAS5P_FACADE_ROUTES.map(rodas5p_route_variant).to_vec()
+        } else {
+            Vec::new()
         },
         kind,
     }
@@ -688,34 +720,78 @@ fn executed_facade_route(driver_work: &DriverWork) -> FacadeRoute {
     }
 }
 
-/// Variant label of the RODAS5P facade route.
-fn rodas5p_variant(route: FacadeRoute) -> &'static str {
-    match route {
-        FacadeRoute::DenseFast => "dense-fast",
-        FacadeRoute::BandedFast => "banded-fast",
-        FacadeRoute::MatrixFree => "matrix-free",
-        FacadeRoute::FastDense => "fast-dense",
-        FacadeRoute::FastBandedDense => "fast-banded-dense",
-        FacadeRoute::SequentialDense => "sequential-dense",
+/// The driver families of the RODAS5P facade, in the order of [`FacadeRoute`].
+const RODAS5P_FACADE_ROUTES: [FacadeRoute; 6] = [
+    FacadeRoute::DenseFast,
+    FacadeRoute::BandedFast,
+    FacadeRoute::MatrixFree,
+    FacadeRoute::FastDense,
+    FacadeRoute::FastBandedDense,
+    FacadeRoute::SequentialDense,
+];
+
+/// The route variant of a RODAS5P facade route: the rows of the catalog entry. What a
+/// route supports restates `Rodas5p::capabilities`: a mass matrix runs the sequential
+/// driver, the continuous extension the two fast dense drivers or the sequential one,
+/// events need the continuous extension, and the matrix-free route has none of the three.
+fn rodas5p_route_variant(route: FacadeRoute) -> MethodRouteVariant {
+    // (label, dense storage, matrix-free, mass, events, dense output)
+    let (label, dense_matrix, matrix_free, mass, events, dense_output) = match route {
+        FacadeRoute::DenseFast => ("dense-fast", true, false, false, false, false),
+        FacadeRoute::BandedFast => ("banded-fast", false, false, false, false, false),
+        FacadeRoute::MatrixFree => ("matrix-free", false, true, false, false, false),
+        FacadeRoute::FastDense => ("fast-dense", true, false, false, true, true),
+        FacadeRoute::FastBandedDense => ("fast-banded-dense", false, false, false, true, true),
+        FacadeRoute::SequentialDense => ("sequential-dense", true, false, true, true, true),
+    };
+    MethodRouteVariant {
+        label,
+        facade_route: route,
+        dense_matrix,
+        matrix_free,
+        supports_mass: mass,
+        supports_events: events,
+        supports_dense_output: dense_output,
     }
 }
 
+/// Variant label of the RODAS5P facade route.
+fn rodas5p_variant(route: FacadeRoute) -> &'static str {
+    rodas5p_route_variant(route).label
+}
+
 /// Capabilities a RODAS5P facade route uses for these facts. An n-by-n matrix is
-/// materialized on the dense and sequential routes, and whenever the provider is a dense
+/// materialized on the routes with dense storage, and whenever the provider is a dense
 /// callback (a declared band on it is verified against the full matrix).
 fn rodas5p_needs(route: FacadeRoute, facts: &MethodFacts) -> CapabilitySet {
     let mut needs = facts.provider_needs();
     if facts.time_derivative_by_difference() {
         needs.finite_difference = true;
     }
-    needs.dense_matrix = matches!(
-        route,
-        FacadeRoute::DenseFast | FacadeRoute::FastDense | FacadeRoute::SequentialDense
-    ) || facts.jacobian == JacobianForm::Dense;
+    needs.dense_matrix =
+        rodas5p_route_variant(route).dense_matrix || facts.jacobian == JacobianForm::Dense;
     needs
 }
 
-fn rodas5p_route(route: FacadeRoute, facts: &MethodFacts) -> MethodRoute {
+/// The driver family that `Rodas5p::solve` runs for a request whose capability query
+/// answered `queried`. It is `queried`, except for a general sparse-JVP provider: the query
+/// answers matrix-free for every such request that is not sequential, while `solve` leaves
+/// the router when dense output is requested (the fast dense driver) or the absolute
+/// tolerance is a vector (the dense fast driver); both assemble the Jacobian from `n` JVP
+/// columns. The contract test `view_reports_the_executed_route_...` runs both cases.
+/// (`Jacobian::Jvp` is refused by the query in both, so nothing changes for it.)
+fn rodas5p_executed_route(queried: FacadeRoute, facts: &MethodFacts) -> FacadeRoute {
+    match queried {
+        FacadeRoute::MatrixFree if facts.dense_output => FacadeRoute::FastDense,
+        FacadeRoute::MatrixFree if facts.vector_atol => FacadeRoute::DenseFast,
+        other => other,
+    }
+}
+
+/// The plan of a RODAS5P request whose capability query answered `queried`: the route
+/// that runs, with what it needs.
+fn rodas5p_route(queried: FacadeRoute, facts: &MethodFacts) -> MethodRoute {
+    let route = rodas5p_executed_route(queried, facts);
     MethodRoute {
         method_id: "rodas5p",
         variant: rodas5p_variant(route),
@@ -1002,9 +1078,10 @@ impl MethodRegistry {
     /// 4. Otherwise the policy must authorize derivatives; a finite-difference provider and
     ///    a time derivative taken by differences need the finite-difference permission.
     /// 5. The method's own admission for the declared facts follows (for RODAS5P the
-    ///    capability query of the facade), then the route permissions of the policy:
-    ///    the matrix-free route, and the dense-dimension ceiling for a route that
-    ///    materializes an n-by-n matrix.
+    ///    capability query of the facade), then the route permissions of the policy, read
+    ///    from the route's row in the catalog ([`MethodRouteVariant`]): the matrix-free
+    ///    route, and the dense-dimension ceiling for a route that materializes an n-by-n
+    ///    matrix.
     pub fn general_selection(
         problem: &Problem,
         options: &Options,
@@ -1053,23 +1130,25 @@ impl MethodRegistry {
         if facts.time_derivative_by_difference() && !finite_differences {
             return Err(SelectionRefusal::MissingTimeDerivative);
         }
-        let params = MethodParams::default();
-        let route = match admit(&entry, problem, options, &facts, &params, None, false) {
-            Ok(route) => route,
-            Err(reasons) => match reasons.as_slice() {
-                [MethodRefusalReason::Implicit(unsupported)] => {
-                    return Err(SelectionRefusal::Implicit(*unsupported));
-                }
-                _ => return reference(),
+        // The receipt carries the route of the facade's capability query, as it always has
+        // (`GeneralSelection::implicit_route`), and the route permissions are judged on the
+        // catalog row of that route.
+        let queried = match entry.kind {
+            AdapterKind::Rodas5p => match Rodas5p::capabilities(problem, options) {
+                Ok(capabilities) => capabilities.route,
+                Err(unsupported) => return Err(SelectionRefusal::Implicit(unsupported)),
             },
+            _ => return reference(),
         };
-        if route.facade_route == Some(FacadeRoute::MatrixFree) && !policy.allow_matrix_free {
+        let variant = rodas5p_route_variant(queried);
+        if variant.matrix_free && !policy.allow_matrix_free {
             return Err(SelectionRefusal::MatrixFreeNotEnabled);
         }
-        if route.needs.dense_matrix && facts.dimension > policy.max_dense_dimension {
+        let materializes_dense = variant.dense_matrix || facts.jacobian == JacobianForm::Dense;
+        if materializes_dense && facts.dimension > policy.max_dense_dimension {
             return Err(SelectionRefusal::DenseDimensionLimit);
         }
-        Ok(selection(route.facade_route))
+        Ok(selection(Some(queried)))
     }
 
     /// Route a request with default [`MethodParams`]. See [`MethodRegistry::route_with`].
@@ -1109,10 +1188,14 @@ impl MethodRegistry {
                 let selection = GeneralOde::select(problem, options, &policy)
                     .map_err(MethodRouteRefusal::General)?;
                 let route = match (selection.method, selection.implicit_route) {
-                    (ProductionMethod::Rodas5p, Some(route)) => rodas5p_route(route, &facts),
                     (ProductionMethod::Dopri5, _) => dopri5_route(),
+                    (ProductionMethod::Rodas5p, Some(queried)) => rodas5p_route(queried, &facts),
+                    // a RODAS5P selection carries its facade route; ask the facade if not
                     (ProductionMethod::Rodas5p, None) => {
-                        unreachable!("a RODAS5P selection carries its facade route")
+                        let capabilities = Rodas5p::capabilities(problem, options)
+                            .map_err(SelectionRefusal::Implicit)
+                            .map_err(MethodRouteRefusal::General)?;
+                        rodas5p_route(capabilities.route, &facts)
                     }
                 };
                 Ok(MethodRoutePlan {

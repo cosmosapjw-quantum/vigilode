@@ -19,8 +19,8 @@ pub use frontend::{
     METHOD_ID_RODAS5P_LAGGED, MethodAutoPolicy, MethodAvailability, MethodCandidate, MethodChoice,
     MethodChoiceKind, MethodCostEvidence, MethodEntry, MethodFacts, MethodFailure, MethodFallback,
     MethodOutputGrid, MethodParams, MethodRefusalReason, MethodResult, MethodRoute,
-    MethodRoutePlan, MethodRouteRefusal, MethodSolution, MethodSolveError, MethodWork,
-    SolutionView,
+    MethodRoutePlan, MethodRouteRefusal, MethodRouteVariant, MethodSolution, MethodSolveError,
+    MethodWork, SolutionView,
 };
 pub use peer::{
     PEER_STARTER_MAX_HALVINGS, PeerFailure, PeerOde, PeerPhase, PeerSolution, PeerSolveError,

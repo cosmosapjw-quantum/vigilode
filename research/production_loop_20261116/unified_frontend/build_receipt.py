@@ -384,9 +384,12 @@ def main():
                     "route_plans": purity["plans"],
                     "route_refusals": purity["refusals"],
                     "route_callback_entries": purity["callback_entries"],
-                    "rodas5p_admissions_equal_to_capabilities": [
+                    "rodas5p_plans_equal_to_the_route_that_runs": [
                         purity["rodas5p_admissions_equal_to_capabilities"],
                         purity["rodas5p_admissions_compared_with_capabilities"],
+                    ],
+                    "rodas5p_capability_query_names_another_driver_than_runs": purity[
+                        "rodas5p_capability_query_names_another_driver_than_runs"
                     ],
                     "refused_solve_calls": solve_refusals["refused_solve_calls"],
                     "solve_methods_checked": [
@@ -440,6 +443,7 @@ def main():
             "fallback": one(contracts, "auto_fallback"),
         },
         "view_typed_failures": one(contracts, "view_typed_failures"),
+        "executed_route_vs_capability_query": one(contracts, "executed_route_vs_capability_query"),
         "cod03_audit_cases": one(contracts, "cod03_audit_cases"),
         "method_catalog": one(contracts, "method_catalog"),
         "commands": [
