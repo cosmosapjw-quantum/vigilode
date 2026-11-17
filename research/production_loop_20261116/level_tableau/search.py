@@ -136,7 +136,7 @@ def polish(F, x, iters, fixed_gamma=False):
 
 
 def report(F, x, r, t0, extra):
-    gamma = float(x[0]) if F.has_gamma else F.gamma5
+    gamma = float(x[0]) if F.has_gamma else F.gamma_fixed
     cmax = F.coef_max(x) if np.all(np.isfinite(x)) else float("inf")
     in_window = (not F.has_gamma) or (layouts.GAMMA_WINDOW_6[0] <= gamma <= layouts.GAMMA_WINDOW_6[1])
     ok = bool(np.isfinite(r) and r <= PASS_TOL and in_window and cmax <= COEF_BOUND)

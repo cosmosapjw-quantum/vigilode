@@ -17,7 +17,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 LEVELS = {5: [[1], [2, 3], [4, 5], [6, 7], [8]], 6: [[1], [2, 3], [4, 5], [6, 7], [8, 9], [10]]}
 ASTABLE_WINDOW_6 = (0.18391465, 0.33414237)   # theory S9
 GAMMA_WINDOW_6 = (0.19, 0.33)                    # searched range (amendment A-1), inside the A-stable window
-SEED_CODE = {"D5F": 51, "D5G": 52, "D6T": 61, "D6F": 62}
+SEED_CODE = {"D5F": 51, "D5G": 52, "D6T": 61, "D6F": 62, "D6L": 63}
 WEIGHTS = {"E6": 0.1, "D": 1.0, "Dhat": 1.0, "PR": 1.0, "PRhat": 0.3, "REG": 1e-5}
 RHO_HAT = 0.2          # R_hat(infinity) of formulation D5F
 ENTRY_BOUND = 50.0
@@ -27,6 +27,22 @@ def gamma5_mp():
     """A-stable root of the z^5 coefficient of exp(z)(1 - g z)^5 (theory S9), at the current mp precision."""
     return mp.findroot(lambda g: 120 * g ** 5 - 600 * g ** 4 + 600 * g ** 3 - 200 * g ** 2 + 25 * g - 1,
                        mpf("0.2780538411364523"))
+
+
+def gamma5_str():
+    """The pinned gamma of depth 5 as a decimal string with 50 significant digits."""
+    with mp.workdps(80):
+        return mp.nstr(gamma5_mp(), 50)
+
+
+def gamma6l_str():
+    """Depth 6, linear order 6 (amendment A-3): root in [0.33, 0.34] of the z^6 coefficient of
+    exp(z)(1 - g z)^6, rounded DOWN to 40 decimals so that the value stays inside the A-stable window."""
+    with mp.workdps(80):
+        g = mp.findroot(lambda g: 720 * g ** 6 - 4320 * g ** 5 + 5400 * g ** 4 - 2400 * g ** 3 + 450 * g ** 2
+                        - 36 * g + 1, mpf("0.33414237"))
+        n = int(mp.floor(g * mpf(10) ** 40))
+    return "0." + str(n).zfill(40)
 
 
 def _trees_from_strings(strings, pool):
@@ -102,10 +118,10 @@ class Formulation:
                 level_of[st - 1] = li
         self.level_of = level_of
         self.pairs = [(i, j) for i in range(s) for j in range(i) if level_of[j] < level_of[i]]
-        self.tied = fid == "D6T"
+        self.tied = fid in ("D6T", "D6L")
         self.alpha_pairs = [p for p in self.pairs if not (self.tied and p[0] == s - 1)]
         self.gam_pairs = list(self.pairs)
-        self.has_gamma = self.depth == 6
+        self.has_gamma = fid in ("D6T", "D6F")
         self.has_d = not self.tied
         self.n_gamma = 1 if self.has_gamma else 0
         self.n_alpha = len(self.alpha_pairs)
@@ -123,10 +139,11 @@ class Formulation:
         ys, zs = rt.index1_trees(5)
         self.d_main = _trees_from_strings(sel["main"], ys + zs)
         self.d_emb = _trees_from_strings(sel["embedded"], ys + zs)
-        self.gamma5 = float(gamma5_mp())
+        self.gamma_fixed_str = None if self.has_gamma else (gamma6l_str() if fid == "D6L" else gamma5_str())
+        self.gamma_fixed = None if self.has_gamma else float(self.gamma_fixed_str)
         if fid == "D5F":
             self.hard_names = ["O5"] * 17 + ["E4"] * 8 + ["W", "C", "N"]
-        elif fid == "D6T":
+        elif self.tied:
             self.hard_names = ["O5"] * 17 + ["E4"] * 8 + ["W", "C"]
         else:
             self.hard_names = ["O5"] * 17 + ["E4"] * 8 + ["W", "N2"]
@@ -178,8 +195,8 @@ class Formulation:
             gamma = X[:, 0]
             o = 1
         else:
-            g5 = gamma5_mp() if obj else self.gamma5
-            gamma = np.full(B, g5, dtype=X.dtype)
+            gfix = mpf(self.gamma_fixed_str) if obj else self.gamma_fixed
+            gamma = np.full(B, gfix, dtype=X.dtype)
         alpha[:, self.ai, self.aj] = X[:, o:o + self.n_alpha]
         o += self.n_alpha
         gam[:, self.gi, self.gj] = X[:, o:o + self.n_gam]
@@ -212,7 +229,7 @@ class Formulation:
         gi = tab["Gamma"].sum(axis=2)
         c = tab["alpha"].sum(axis=2)
         res.append((b * gi).sum(axis=-1))
-        if self.id == "D6T":
+        if self.tied:
             res.append(c[:, s - 2] - 1)
         elif self.id == "D5F":
             res.append(c[:, s - 1] - 1)
@@ -252,7 +269,7 @@ class Formulation:
         gi = tab["Gamma"].sum(axis=2)
         c = tab["alpha"].sum(axis=2)
         extra = [(b * gi).sum(axis=-1)]
-        if self.id == "D6T":
+        if self.tied:
             extra.append(c[:, s - 2] - 1)
         elif self.id == "D5F":
             extra.append(c[:, s - 1] - 1)

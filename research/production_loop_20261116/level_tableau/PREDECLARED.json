@@ -22,6 +22,25 @@
         "the refinement pool is the 8 best by score among the phase-B and continuation results (distinctness rule unchanged)"
       ],
       "unchanged": "hard conditions, 2000 starts per formulation, seeds, start distribution, score definition, every FOUND check, candidate selection rule, order check, pay-off screen, all thresholds"
+    },
+    {
+      "id": "A-2",
+      "date": "2026-11-17, committed before any candidate existed and before any order run of a candidate",
+      "scope": "round-off guard of the order check",
+      "evidence": "logs/amend_A2_order_RODAS5P_floor1e-11.jsonl: the cross-check run of RODAS5P alone. On PENDULUM_FORCED its errors are 1.4e-7, 5.0e-9, 1.7e-10, 5.6e-12, 1.8e-13, 9.9e-15, so only two consecutive pairs lie above the declared guard 1e-11 and the declared rule (at least 3 pairs) would return NOT_DECIDABLE for the reference method itself. The reference uncertainty of the three problems is at most 3e-14 and the error at 320 steps (9.9e-15) shows the round-off level.",
+      "changes": ["round-off guard of the order check: 1e-12 (was 1e-11)"],
+      "unchanged": "problems, step numbers, error measure, reference, median rule, the minimum of 3 pairs, the threshold 4.8"
+    },
+    {
+      "id": "A-3",
+      "date": "2026-11-17, committed while the declared D6T run was in progress and before any of its results was inspected; before any D6L start",
+      "scope": "one more formulation for depth 6; nothing is removed",
+      "evidence": "logs/dev_smoke_payoff.jsonl: development runs on HIRES and OREGO (development problems) with the smoke candidates candidates/smoke_D6T_r01.json and candidates/smoke_D5F_r01.json (seeds outside the declared range). Attempts at matched error were 2 to 3 times those of RODAS5P, growing as the tolerance is tightened. Explanation by the stability function, which for a depth-L stiffly accurate tableau is P(z)/(1 - gamma z)^L with P fixed by gamma: RODAS5P has linear order 6 with defect 1.0e-5 at z^7; depth 5 has linear order 5 with defect 5.3e-4 at z^6 (theory S9); depth 6 has a z^6 defect that vanishes only at the root gamma = 0.3341423670680504... of 720 g^6 - 4320 g^5 + 5400 g^4 - 2400 g^3 + 450 g^2 - 36 g + 1 (then the z^7 defect is 3.4e-4). That root is the upper end of the declared window; amendment A-1 had cut the searched range at 0.33. No pay-off problem (ROBER, VDPOL, BURGERS) was run with any candidate.",
+      "changes": [
+        "additional formulation D6L for depth 6: as D6T, but gamma is fixed at that root rounded down to 40 decimals (0.3341423670680504359540300929339359425765), so that the value lies on the A-stable side; 73 unknowns; hard conditions O5, E4, W, C as D6T (27); seed code 63; 2000 starts; phases A and B of amendment A-1; no continuation",
+        "depth-6 pool for refinement and selection: the 8 best of D6T (phase B and continuation) and the 8 best of D6L (phase B); the selection rule (development problems) is unchanged and picks one primary candidate for the layout"
+      ],
+      "unchanged": "D6T and D5F runs as declared, all FOUND checks, selection rule, order check, pay-off screen, all thresholds"
     }
   ],
   "timing": "No wall time is measured in this node. All verdict numbers are deterministic counters (step attempts) and residuals. The modelled speed-up is a model, not a measurement.",

@@ -91,3 +91,32 @@ DONE
 NEXT
 - Launch phase A for D6T and D5F (2000 starts each, 4 workers), then phase B, continuation, refinement.
 - Meanwhile: proto.py, problems.py, verify_candidate.py, refine.py, runners, parser, report.
+
+== 2026-11-17, entry 3 (pipeline tested on smoke seeds; amendments A-2 and A-3) ==
+
+DONE
+- proto.py (code form, W = I/(h gamma) - J, controller of adaptive.rs), problems.py, run_order.py, run_payoff.py,
+  refine.py, verify_candidate.py written. Declared search chain running in the background since about 14:50 KST:
+  search_D6T -> polish_D6T -> continuation_D6T -> search_D5F -> polish_D5F (about 3.5 s per start under load 30-45).
+- RODAS5P in the prototype, fixed step: median pairwise orders 5.34 (BRUSS_ODE), 4.97 (VDP_MU2), 4.85
+  (PENDULUM_FORCED, only 2 admissible pairs under guard 1e-11 -> amendment A-2, guard 1e-12).
+- Independent verifier self-test on RODAS5P in candidate format (scratch): order-5 residual 5.524e-15, embedded
+  order-4 residual 4.04e-15, W -3.32e-16, z^7 defect -1.0153e-5: identical to theory S2/S4/S5 and to the generator.
+- Smoke pipeline (seeds 1000000..1000002, NOT declared runs): refine converges in 4 Newton steps to 1e-55;
+  verify_candidate passes all algebraic checks for smoke_D6T_r01, smoke_D5F_r01, smoke_D5F_r02
+  (logs/smoke2_*.jsonl, candidates/smoke_*.json). Depth-5 z^6 defect 5.30e-4 as in theory S9.
+- Development runs with the smoke candidates (logs/dev_smoke_payoff.jsonl): HIRES and OREGO, attempts 2-3x
+  RODAS5P at matched error. Cause identified: linear error constant of the stability function (see A-3).
+  c7(gamma_6L) = 3.4135e-4 against 1.0153e-5 of RODAS5P: (33.6)^(1/7) = 1.65 more steps on linear problems,
+  which is above the depth gain 1.33; depth 5: order 5 against order 6.
+- Smoke candidates have abscissae c_i outside [0, 1] (e.g. -1.5); not controlled by the declared objective.
+
+DECISIONS
+- A-2: order-check round-off guard 1e-12. A-3: extra formulation D6L (gamma fixed at the linear-order-6 root,
+  rounded down), 2000 starts, seed code 63; depth-6 pool = 8 best of D6T + 8 best of D6L.
+- No candidate is run on ROBER/VDPOL/BURGERS before the primary candidates are selected on HIRES/OREGO.
+
+NEXT
+- wait for the chain; run D6L phases A and B; refine (D6T, D6L, D5F); verify; dev screen; select; order check;
+  pay-off screen; exploratory script (error constants, linear bound, schedule, speed-up model); parser; report;
+  literature.
