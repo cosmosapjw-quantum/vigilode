@@ -1404,6 +1404,44 @@
       ],
       "evidence": [],
       "state_note": "Added 2026-11-17 by ruling (pre-registration addendum A3); run by the orchestrator session."
+    },
+    {
+      "id": "V21_BANDED_TIGHT_KERNEL",
+      "depends": [
+        "V19_BANDED_SOLVE_KERNEL",
+        "V15_STAGE_CLIENT_KIT"
+      ],
+      "status": "IN_PROGRESS",
+      "purpose": "Banded kernels with identical bits and fewer instructions: tight loops for narrow bands, and the existing Slices kernel against the Indexed kernel on the wide bands of two- and three-dimensional grids; then an opt-in stage client.",
+      "write_allowlist": [
+        "research/production_loop_20261116/banded_solve/**",
+        "crates/rodas5p-integrators/src/stage_clients/**",
+        "crates/rodas5p-integrators/tests/stage_clients_*.rs"
+      ],
+      "equations_and_design": [
+        "Stage a1 (kernel level): arms A0, TA, TD on the cost unit of V19; primary measure user-mode instructions per stage pattern, cycles under the quality rule.",
+        "Stage a2 (whole runs): the protected banded driver with its Indexed and Slices kernels on problems of V04; validity by equal counts and equal state hashes.",
+        "Stage b: an opt-in stage client whose runs equal the protected banded driver bit for bit."
+      ],
+      "acceptance_checks": [
+        "a1 PASS-I: TA at most 0.40 of the instructions of A0 at n = 1e4 and 1e5; PASS-C: at most 0.60 of the cycles on authoritative cells; KILL: above 0.77 in instructions at both sizes.",
+        "a2 PASS-I: Slices at most 0.50 of the instructions of Indexed on each of three wide-band problems; PASS-C: at most 0.67 of the cycles on authoritative cells; KILL: above 0.90 on all three.",
+        "b PASS: bit identity of end state, counts and counters with the protected banded driver; no allocation per step; whole-run instructions at most 0.60 on the one-dimensional cells with n >= 1e4."
+      ],
+      "completion_requires": [
+        "PREDECLARED_V21.json before the timing runs",
+        "RESULTS_V21.json from executed runs"
+      ],
+      "failure_action": "Opt-in only; the protected driver, its kernels and the default route are not edited. A change of the facade's kernel is an owner decision.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [],
+      "state_note": "Added 2026-11-17 by ruling (pre-registration addendum A4) from the first look at V19; run by the orchestrator session."
     }
   ],
   "execution_policy": "Resume ready bounded tasks; research/implementation may overlap only with disjoint writes. Qualification dependencies restrict promotion, not safe opt-in refactoring.",

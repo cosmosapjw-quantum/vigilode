@@ -180,6 +180,65 @@ def parse_measurement(path):
     }
 
 
+def parse_drive(path):
+    """Whole runs of the protected banded driver per protected kernel (exploratory)."""
+    header, footer, runs = None, None, []
+    with open(path) as f:
+        for line in f:
+            rec = json.loads(line)
+            if rec["type"] == "header":
+                header = rec
+            elif rec["type"] == "footer":
+                footer = rec
+            else:
+                rec["fields"] = dict(tok.split("=", 1) for tok in rec["stdout"].split()[1:]) \
+                    if rec["stdout"].startswith("DRIVE ") else {}
+                runs.append(rec)
+    if header is None:
+        return None
+    budget = header["budget"]
+    kernels, hashes = {}, {}
+    for kernel in header["kernels"]:
+        per_round = {}
+        for rec in runs:
+            if rec["kernel"] == kernel and not rec["warmup"] and "cycles" in rec and rec["fields"]:
+                per_round.setdefault(rec["round"], {})[rec["budget"]] = rec
+                if rec["budget"] == budget:
+                    hashes.setdefault(kernel, set()).add(rec["fields"]["state_hash"])
+        cyc, ins, attempts = [], [], None
+        for rnd in sorted(per_round):
+            pair = per_round[rnd]
+            if len(pair) != 2:
+                continue
+            lo, hi = pair[1], pair[budget]
+            d_att = int(hi["fields"]["attempts"]) - int(lo["fields"]["attempts"])
+            attempts = int(hi["fields"]["attempts"])
+            cyc.append((hi["cycles"] - lo["cycles"]) / d_att)
+            ins.append((hi["instructions"] - lo["instructions"]) / d_att)
+        if cyc:
+            med = statistics.median(cyc)
+            kernels[kernel] = {"rounds": len(cyc), "attempts_of_the_long_run": attempts,
+                               "cycles_per_attempt": med,
+                               "spread": (max(cyc) - min(cyc)) / med,
+                               "instructions_per_attempt": statistics.median(ins)}
+    if "indexed" in kernels:
+        for entry in kernels.values():
+            entry["cycles_ratio_to_indexed"] = entry["cycles_per_attempt"] / kernels["indexed"]["cycles_per_attempt"]
+            entry["instructions_ratio_to_indexed"] = (
+                entry["instructions_per_attempt"] / kernels["indexed"]["instructions_per_attempt"])
+    all_hashes = set().union(*hashes.values()) if hashes else set()
+    sample = next((r["fields"] for r in runs if r["fields"]), {})
+    return {
+        "file": os.path.relpath(path, HERE), "sha256": sha256(path), "family": header["family"],
+        "size": header["size"], "n": int(sample.get("n", 0)), "lower": int(sample.get("lower", 0)),
+        "upper": int(sample.get("upper", 0)), "budget": budget, "complete": footer is not None,
+        "load_before": header["load_before"],
+        "load_after": footer["load_after"] if footer else None,
+        "end_state_identical_across_kernels": len(all_hashes) == 1,
+        "kernels": kernels,
+    }
+
+
 def best(meas, family, valid):
     cands = [(meas["arms"][a]["cycles_per_pattern"], a) for a in family
              if a in meas["arms"] and valid.get(a)]
@@ -290,6 +349,9 @@ def main():
         "measurements": frozen,
         "verdicts": decide(frozen, valid) if frozen else None,
         "exploratory_measurements": explor,
+        "exploratory_whole_runs_of_the_protected_driver": [
+            d for d in (parse_drive(p) for p in sorted(
+                glob.glob(os.path.join(HERE, "logs", "drive_x*.jsonl")))) if d],
         "exploratory_check_logs": [{"file": os.path.relpath(p, HERE), "sha256": sha256(p)}
                                    for p in xfiles],
         "exploratory_validity_second_binary": xval,

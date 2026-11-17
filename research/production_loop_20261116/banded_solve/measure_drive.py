@@ -2,12 +2,13 @@
 """Exploratory timing of whole runs of the protected banded driver with its own kernels.
 
 usage: measure_drive.py <runner binary> <family> <size> <budget> <index> [--kernels a,b,...]
+                        [--tag v]
 
-Writes logs/drive_x<index>_<family><size>.jsonl next to this script (header, one line per run,
+Writes logs/drive_<tag><index>_<family><size>.jsonl next to this script (header, one line per run,
 footer). Every run is `runner drive <family> <size> <kernel> <attempts>` under the timing prefix
 of the loop and `perf stat`; each round runs every kernel with 1 attempt and with <budget>
-attempts. Same rounds (2 warm-ups + 7) and load records as measure.py. Exploratory: these files
-decide no frozen verdict.
+attempts. Same rounds (2 warm-ups + 7) and load records as measure.py. Tag v: the series of
+node V21 stage a2 (PREDECLARED_V21.json); tag x: exploratory, decides nothing.
 """
 import json
 import os
@@ -61,15 +62,17 @@ def one_run(binary, family, size, kernel, attempts):
 def main():
     args = sys.argv[1:]
     binary, family, size, budget, index = args[0], args[1], int(args[2]), int(args[3]), int(args[4])
-    kernels = ["indexed", "slices"]
+    kernels, tag = ["indexed", "slices"], "x"
     rest = args[5:]
     while rest:
         key = rest.pop(0)
         if key == "--kernels":
             kernels = rest.pop(0).split(",")
+        elif key == "--tag":
+            tag = rest.pop(0)
         else:
             raise SystemExit(f"unknown option {key}")
-    path = os.path.join(HERE, "logs", f"drive_x{index}_{family}{size}.jsonl")
+    path = os.path.join(HERE, "logs", f"drive_{tag}{index}_{family}{size}.jsonl")
     os.makedirs(os.path.dirname(path), exist_ok=True)
     if os.path.exists(path):
         raise SystemExit(f"{path} exists: measurements are never overwritten")
