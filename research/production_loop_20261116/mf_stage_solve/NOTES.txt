@@ -115,3 +115,28 @@ NEXT STEPS
 2. exploratory phase (restart, jacobi, kappa, stiff Brusselator).
 3. timing phase with --wait-minutes 20 (bounded poll), one try; re-measure only cells that miss on spread.
 4. parse_results.py, make_report.py, loop checker, strict JSON check, final commit.
+
+== 2026-11-17 15:19 KST: declared runs done, exploratory done, timing (try 1) running ==
+- Declared runs complete (logs/runs: 140 logs, 80 perf files). Validity: zero failed residual checks in A, B, C;
+  attempts of B within 1.05 of A at every tolerance (cusp1d: 0.976, 1.026, 1.006, 1.000, 1.000; others 1.000).
+- Instructions at matched error (geometric mean): B/A fhn3d 0.359, cusp1d 0.382, burgers2d 0.216, bruss1d 0.430;
+  C/A 0.129, 0.118, 0.100, 0.146. Policy (C): 4 of 4 families pass. Cadence (B): instructions part 4 of 4;
+  the wall part needs authoritative timing.
+- Host: 1-minute load 28-44 during the whole session; cores 6-11 are used by other jobs (logs/timing/
+  CORES_6_11.log, LOAD_WAIT.log). Timing try 1 started 15:12 without waiting the full 20 minutes (the wait is
+  optional; the poll went on in parallel). Cells are expected to be diagnostic_only (spreads 10-200%).
+- Added to the timing records: on-CPU time of the solver thread (/proc/thread-self/schedstat), exploratory.
+- Exploratory (logs/exploratory): restart 10/20/80 for A and B at rtol 1e-5 (A with restart 10 costs 0.26-0.37 of
+  A with restart 40; B with restart 10: 0.16-0.29), right Jacobi for B (helps cusp1d only), kappa 1e-4 / 1e-2,
+  stiff Brusselator 600 cells (B/A instructions 0.77, C/A 0.10 at equal tolerance with a larger error).
+- bruss1d_stiff600 reference: DOP853 at 1e-13 did not finish in 13 minutes (stopped, noted in its log); the
+  Radau fallback (reference/bruss1d_stiff600_radau.json) is used for that exploratory cell.
+- Tool caches (.mypy_cache, __pycache__) that appeared in the evidence directory were moved to the scratchpad.
+- logs/checks: tests, sentinels, clippy, fmt all exit 0 (commit 98ea8a37 tree + clippy allow).
+- Binaries: declared runs 3fc4994c65c1..., exploratory and timing 533d04044ca0... (adds thread CPU time to the
+  TIMING records and the clippy allow; RUN mode unchanged; timed runs are checked against the instruction runs'
+  final states bit for bit).
+
+NEXT STEPS
+1. When timing try 1 ends: parse; if the load is <= 8 by then, re-measure the cells that missed (try 2, 3).
+2. run_checks.sh checker json; parse_results.py -> RESULTS.json; make_report.py -> REPORT_KO.md; commit.

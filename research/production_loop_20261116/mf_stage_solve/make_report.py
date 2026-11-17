@@ -415,6 +415,21 @@ def main():
     add(table(["family", "rtol", "A: 평균 / 최대 열", "A: pass 수 분포 (성공한 solve)", "B: 평균 / 최대 열", "C: 평균 / 최대 열",
                "C: 정책 임계값이 쓰인 solve", "C: 0 반복으로 받은 solve"], rows))
     add("")
+    add("stage별 solve당 평균 열 수 (rtol 1e-5; stage 1~8 순):")
+    add("")
+    rows = []
+    for fid, family in families.items():
+        cell = family["cells"].get("1e-5") or {}
+        for arm in ("B", "C"):
+            client = ((cell.get("arms") or {}).get(arm) or {}).get("client") or {}
+            vectors, solves = client.get("stage_krylov_vectors") or [], client.get("stage_solves") or []
+            if not vectors:
+                continue
+            rows.append([f"`{fid}`", arm] + [f"{v / s:.1f}" if s else "-" for v, s in zip(vectors, solves)])
+    add(table(["family", "arm"] + [f"stage {k}" for k in range(1, 9)], rows))
+    add("")
+    add("- B의 임계값은 우변 크기에 상대적이고 C의 정책 임계값은 step 허용치에 묶인 절대값이다. 우변이 작은 stage에서 두 규칙이 요구하는 열 수가 어떻게 갈리는지는 위 표의 stage별 값에서 볼 수 있다.")
+    add("")
     add("### 5.4 restart 길이 (rtol 1e-5)")
     add("")
     rows = []
