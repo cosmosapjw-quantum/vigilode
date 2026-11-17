@@ -610,6 +610,7 @@ impl ProtectedAudit {
     }
 
     /// `(||r_i||, threshold)` of stage `i` of the attempt `(t, y, h)`.
+    #[allow(clippy::too_many_arguments)]
     fn stage_residual(
         &mut self,
         problem: &OdeProblem,
