@@ -36,7 +36,7 @@ mod problems;
 use std::time::Instant;
 
 use problems::{Arm, ArmOptions, ArmRun, Family, adaptive, declared, run_arm};
-use rodas5p_core::{LinearOperator, WorkCounters};
+use rodas5p_core::WorkCounters;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 

@@ -13,8 +13,8 @@ use problems::{
     Arm, ArmOptions, ArmRun, DEVELOPMENT, Family, ProtectedAudit, adaptive, declared, run_arm,
 };
 use rodas5p_core::{
-    CoreResult, IdentityPreconditioner, LinearOperator, ShiftedOperator, WorkCounters,
-    rodas5p_coefficients, safe_l2,
+    CoreResult, IdentityPreconditioner, ShiftedOperator, WorkCounters, rodas5p_coefficients,
+    safe_l2,
 };
 use rodas5p_integrators::stage_clients::krylov::{
     KrylovPreconditioner, KrylovStageClient, PerStageGmresOptions, ResidualAuditClient,
@@ -643,7 +643,15 @@ fn the_shipped_cadence_client_does_the_work_of_the_protected_driver() {
                 a.counters.linear_iterations, b0.counters.linear_iterations,
                 "{what}: Arnoldi columns"
             );
-            assert_eq!(a.counters.rhs_calls, b0.counters.rhs_calls, "{what}: RHS");
+            // The client driver evaluates f(t, y) again for the retry after
+            // an attempt that failed with an error; the protected driver
+            // keeps it. Nothing else differs in the right-hand sides.
+            let error_failures = b0.rejected as u64 - b0.counters.local_error_failures;
+            assert_eq!(
+                a.counters.rhs_calls + error_failures,
+                b0.counters.rhs_calls,
+                "{what}: RHS"
+            );
             let scale = safe_l2(&a.y_end).max(1.0);
             let difference: Vec<f64> = a.y_end.iter().zip(&b0.y_end).map(|(x, y)| x - y).collect();
             assert!(
