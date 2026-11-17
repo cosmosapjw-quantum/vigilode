@@ -764,12 +764,17 @@ def main():
             new_run, old_run = first(mine, "V06_RUN_JSON"), tagged(theirs_path, "V06_RUN_JSON")
             new_state, old_state = first(mine, "V06_STATE_JSON"), tagged(theirs_path, "V06_STATE_JSON")
             if new_run and old_run:
+                # Fields that are not results (wall time, free label), and
+                # fields the V06 binary of that day did not print yet.
                 ignore = {"wall_seconds_diagnostic_only", "label"}
-                differing = sorted(key for key in set(new_run) | set(old_run)
-                                   if key not in ignore and new_run.get(key) != old_run.get(key))
+                common = (set(new_run) & set(old_run)) - ignore
+                differing = sorted(key for key in common if new_run[key] != old_run[key])
                 row["differing_fields"] = differing
+                row["fields_compared"] = len(common)
+                row["fields_only_in_v06_log"] = sorted(set(old_run) - set(new_run) - ignore)
+                row["fields_only_in_new_log"] = sorted(set(new_run) - set(old_run) - ignore)
                 row["state_bits_equal"] = bool(new_state and old_state and new_state.get("state_hex") == old_state.get("state_hex"))
-                row["identical"] = not differing and row["state_bits_equal"]
+                row["identical"] = not differing and not row["fields_only_in_v06_log"] and row["state_bits_equal"]
                 row["attempts"] = new_run.get("attempts")
                 row["jvp_calls"] = new_run.get("jvp_calls")
             else:

@@ -522,11 +522,12 @@ def main():
     add("")
     regression = results["v06_regression"]
     add(f"- V06 회귀: V17 build로 V06 측정 target을 V06 cell에서 다시 돌려 `shared_krylov/logs`의 기록과 비교했다. 비교 {regression['compared']}건 중 counter, 통계, 최종 상태 비트가 모두 같은 것 {regression['identical']}건.")
-    rows = [[f"`{row['name']}`", num(row.get("identical")), num(row.get("attempts")), num(row.get("jvp_calls")),
-             ", ".join(row.get("differing_fields") or [])] for row in regression["rows"]]
+    rows = [[f"`{row['name']}`", num(row.get("identical")), num(row.get("fields_compared")), num(row.get("state_bits_equal")),
+             num(row.get("attempts")), num(row.get("jvp_calls")),
+             ", ".join(row.get("differing_fields") or []), ", ".join(row.get("fields_only_in_new_log") or [])] for row in regression["rows"]]
     if rows:
         add("")
-        add(table(["V06 실행", "동일", "attempts", "JVP", "다른 필드"], rows))
+        add(table(["V06 실행", "동일", "비교한 필드 수", "최종 상태 비트 동일", "attempts", "JVP", "값이 다른 필드", "V06 기록에 없던 필드"], rows))
         add("")
     add("- 테스트 target (모두 `cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test <target>`): `stage_clients_krylov_v17_contracts`(11개), `stage_clients_krylov_v17_alloc`(1개, 전용 binary), V06의 `stage_clients_krylov_contracts`, `stage_clients_krylov_alloc`, sentinel `ppsw1_6b_contracts`, `ptsw2b_contracts`. 실행 결과는 `logs/checks/`에 있다.")
     add("- 파일:")

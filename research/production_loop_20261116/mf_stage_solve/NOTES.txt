@@ -92,3 +92,26 @@ NEXT STEPS
 2. run_measurements.py (setup / runs / timing / exploratory / regression phases), parse_results.py,
    make_report.py.
 3. Declared runs (counters + perf) on cores 0-5,12-17; timing last under the lock on cores 6-11.
+
+== 2026-11-17 15:04 KST: declared runs in progress ==
+- Commits: a6c66e9b (PREDECLARED), 2681f19a (amendment A1), 2bd2dd65 (driver + parser), 2db755a4 (report
+  generator). Measurement binary sha256 3fc4994c65c1... built from the tree of 2bd2dd65 (tracked tree clean).
+- Done: references (burgers2d, bruss1d, fhn3d, cusp1d; bruss1d_stiff600 running), logs/setup (SETUP x3, RHS0,
+  calibration), logs/runs for burgers2d, bruss1d, fhn3d; cusp1d running (A needs 13-25 s per run).
+- V06 regression (logs/v06_regression): 14 of 14 V06 cells reproduce the V06 logs in every common field and in
+  the final state bits (the V06 logs lack the later field linear_rtol).
+- Parser and report generator run on the partial data. First numbers (not final until the parser is rerun):
+  matched-error instructions B/A 0.36 (fhn3d), 0.22 (burgers2d), 0.43 (bruss1d); C/A 0.13, 0.10, 0.15;
+  zero failed residual checks; attempts of B equal those of A on these three families.
+- cusp1d: errors are erratic in the jump phase (E/rtol 1.4 to 124 at the same tolerance across arms):
+  non-monotone work-precision curves; the declared conservative rule applies.
+- clippy flagged too_many_arguments on ProtectedAudit::stage_residual (test support file): allow attribute
+  added, NOT yet rebuilt (the declared runs still use the binary). Rebuild after the runs phase; then the
+  exploratory and timing phases use the new binary (its sha256 is recorded in every log).
+- Host load stays at 35-45 (other projects). Timing will most likely be diagnostic_only.
+
+NEXT STEPS
+1. After the runs phase: rebuild, rerun V17 + V06 tests, sentinels, clippy, rustfmt; logs to logs/checks.
+2. exploratory phase (restart, jacobi, kappa, stiff Brusselator).
+3. timing phase with --wait-minutes 20 (bounded poll), one try; re-measure only cells that miss on spread.
+4. parse_results.py, make_report.py, loop checker, strict JSON check, final commit.
