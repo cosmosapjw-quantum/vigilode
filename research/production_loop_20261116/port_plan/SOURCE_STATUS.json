@@ -1,0 +1,503 @@
+{
+  "schema": "vigilode.port-source-status.v1",
+  "head": "c19c3c080988e35d6a434adda43398d9304cf15a",
+  "generated_by": "verify_sources.py (git only)",
+  "items": [
+    {
+      "id": "P01",
+      "name": "Shared Krylov basis across the 8 stage solves",
+      "arrival": "at_head",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "commit_present": true,
+          "ancestor_of_head": true,
+          "paths": {
+            "crates/rodas5p-krylov/src/shared_basis.rs": true
+          }
+        }
+      ],
+      "head_paths": {
+        "crates/rodas5p-krylov/src/shared_basis.rs": true,
+        "crates/rodas5p-integrators/src/stage_clients/krylov.rs": true
+      },
+      "head_tests": {
+        "crates/rodas5p-integrators/tests/shared_basis_mf_contracts.rs": true,
+        "crates/rodas5p-integrators/tests/stage_clients_krylov_contracts.rs": true
+      }
+    },
+    {
+      "id": "P02",
+      "name": "Coloured (Curtis-Powell-Reid) and threaded Jacobian assembly",
+      "arrival": "at_head",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "commit_present": true,
+          "ancestor_of_head": true,
+          "paths": {
+            "crates/vigilode/src/coloring.rs": true
+          }
+        }
+      ],
+      "head_paths": {
+        "crates/vigilode/src/coloring.rs": true,
+        "crates/rodas5p-integrators/src/stage_clients/assembly.rs": true
+      },
+      "head_tests": {
+        "crates/vigilode/tests/sparse_jvp_contracts.rs": true,
+        "crates/rodas5p-integrators/tests/stage_clients_assembly_contracts.rs": false
+      }
+    },
+    {
+      "id": "P03",
+      "name": "Spatial PDE battery v3 with sphere surface diffusion",
+      "arrival": "at_head",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "commit_present": true,
+          "ancestor_of_head": true,
+          "paths": {
+            "crates/vigilode-bench/src/pde_models/spherical.rs": true,
+            "crates/vigilode-bench/src/pde_models/gray_scott.rs": true,
+            "crates/vigilode-bench/src/pde_models/allen_cahn.rs": true,
+            "crates/vigilode-bench/src/pde_models/burgers.rs": true,
+            "crates/vigilode-bench/src/pde_models/sine_gordon.rs": true,
+            "crates/vigilode-bench/src/spatial_grid.rs": true
+          }
+        }
+      ],
+      "head_paths": {
+        "crates/vigilode-bench/src/pde_models/spherical.rs": true,
+        "crates/vigilode-bench/src/spatial_grid.rs": true,
+        "crates/rodas5p-integrators/src/mol/mod.rs": true
+      },
+      "head_tests": {
+        "crates/rodas5p-integrators/tests/mol_contracts.rs": false
+      }
+    },
+    {
+      "id": "P04",
+      "name": "Oriented incidence operators D0, D1 and Hodge Laplacians",
+      "arrival": "partly_at_head",
+      "source_refs": [
+        {
+          "rev": "074a5699",
+          "commit_present": true,
+          "ancestor_of_head": true,
+          "paths": {
+            "crates/vigilode-coupled/tests/structure_certificate_transfer.rs": true
+          }
+        }
+      ],
+      "head_paths": {
+        "crates/vigilode-coupled/tests/structure_certificate_transfer.rs": true,
+        "crates/rodas5p-integrators/src/mol/complex.rs": false
+      },
+      "head_tests": {
+        "crates/rodas5p-integrators/tests/mol_complex_contracts.rs": false
+      }
+    },
+    {
+      "id": "P05",
+      "name": "DOPRI5 secant stiffness estimate",
+      "arrival": "at_head",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "commit_present": true,
+          "ancestor_of_head": true,
+          "paths": {
+            "crates/rodas5p-integrators/src/dopri5_stiffness.rs": true
+          }
+        }
+      ],
+      "head_paths": {
+        "crates/rodas5p-integrators/src/dopri5_stiffness.rs": true
+      },
+      "head_tests": {
+        "crates/rodas5p-integrators/tests/dopri5_stiffness_guards.rs": true
+      }
+    },
+    {
+      "id": "P06",
+      "name": "Nonnormal observers (weighted logarithmic norm, transient growth)",
+      "arrival": "at_head_but_follow_up_commits_unmerged",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "commit_present": true,
+          "ancestor_of_head": true,
+          "paths": {
+            "crates/rodas5p-core/src/nonnormal_observers.rs": true
+          }
+        },
+        {
+          "rev": "612063db",
+          "commit_present": true,
+          "ancestor_of_head": false,
+          "paths": {
+            "crates/rodas5p-core/src/nonnormal_observers.rs": true,
+            "crates/rodas5p-core/tests/nonnormal_observers_contracts.rs": true
+          },
+          "unmerged_commits_touching_paths": [
+            "cd94c922 fix(rodas5p-core): reserve Certified observer status for enclosed estimates"
+          ],
+          "differs_from_head": true
+        }
+      ],
+      "head_paths": {
+        "crates/rodas5p-core/src/nonnormal_observers.rs": true
+      },
+      "head_tests": {
+        "crates/rodas5p-core/tests/nonnormal_observers_contracts.rs": true
+      }
+    },
+    {
+      "id": "P07",
+      "name": "Hybrid route automaton (dwell time, hysteresis, epoch invalidation)",
+      "arrival": "at_head",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "commit_present": true,
+          "ancestor_of_head": true,
+          "paths": {
+            "crates/vigilode/src/hybrid_automaton.rs": true,
+            "crates/vigilode/src/margin.rs": true
+          }
+        }
+      ],
+      "head_paths": {
+        "crates/vigilode/src/hybrid_automaton.rs": true,
+        "crates/vigilode/src/margin.rs": true
+      },
+      "head_tests": {
+        "crates/vigilode/tests/hybrid_automaton_contracts.rs": true
+      }
+    },
+    {
+      "id": "P08",
+      "name": "Secant preconditioner",
+      "arrival": "at_head",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "commit_present": true,
+          "ancestor_of_head": true,
+          "paths": {
+            "crates/rodas5p-krylov/src/secant_preconditioner.rs": true
+          }
+        }
+      ],
+      "head_paths": {
+        "crates/rodas5p-krylov/src/secant_preconditioner.rs": true
+      },
+      "head_tests": {
+        "crates/rodas5p-krylov/tests/secant_preconditioner_contracts.rs": true
+      }
+    },
+    {
+      "id": "P09",
+      "name": "N02 triggered flexible GMRES",
+      "arrival": "not_at_head",
+      "source_refs": [
+        {
+          "rev": "6844c8fe",
+          "commit_present": true,
+          "ancestor_of_head": false,
+          "paths": {
+            "crates/rodas5p-krylov/src/gmres_into_triggered.rs": true
+          },
+          "unmerged_commits_touching_paths": [
+            "505569c9 N02: repair rustfmt-required source formatting without algorithm changes",
+            "2ddb0b86 N02: add opt-in flexible right GMRES projected-trigger kernel (unverified native)"
+          ],
+          "differs_from_head": true
+        }
+      ],
+      "head_paths": {
+        "crates/rodas5p-krylov/src/gmres_into_triggered.rs": false
+      },
+      "head_tests": {}
+    },
+    {
+      "id": "P10",
+      "name": "N03 stage interval certificate",
+      "arrival": "not_at_head",
+      "source_refs": [
+        {
+          "rev": "6844c8fe",
+          "commit_present": true,
+          "ancestor_of_head": false,
+          "paths": {
+            "crates/rodas5p-krylov/src/stage_interval_certificate.rs": true
+          },
+          "unmerged_commits_touching_paths": [
+            "2ba40c11 N03: add conditional source interval original-residual certificate"
+          ],
+          "differs_from_head": true
+        }
+      ],
+      "head_paths": {
+        "crates/rodas5p-krylov/src/stage_interval_certificate.rs": false
+      },
+      "head_tests": {}
+    },
+    {
+      "id": "P11",
+      "name": "Affine event certificate",
+      "arrival": "not_at_head",
+      "source_refs": [
+        {
+          "rev": "8357faa5",
+          "commit_present": true,
+          "ancestor_of_head": false,
+          "paths": {
+            "crates/rodas5p-integrators/src/affine_event_certificate.rs": true
+          },
+          "unmerged_commits_touching_paths": [
+            "567420e6 research(sym02): format native provider and publish independent bit-evidence probe [skip ci]",
+            "a019082c research(sym02): C5 Implement opt-in native scalar-affine certificate and refusal contracts"
+          ],
+          "differs_from_head": true
+        }
+      ],
+      "head_paths": {
+        "crates/rodas5p-integrators/src/affine_event_certificate.rs": false
+      },
+      "head_tests": {}
+    },
+    {
+      "id": "P12",
+      "name": "Work-efficient (Blelloch) and chain-parallel affine scan",
+      "arrival": "no_code_path_declared",
+      "source_refs": [
+        {
+          "rev": "3336d682",
+          "commit_present": true,
+          "ancestor_of_head": false,
+          "paths": {
+            "research/vigilode_dynamical_symbolic_router_20261102/R4_CANDIDATES_AND_ROUTER.md": true
+          },
+          "unmerged_commits_touching_paths": [
+            "3336d682 research(vigilode): survey dynamical and symbolic solver portfolio"
+          ],
+          "differs_from_head": true
+        }
+      ],
+      "head_paths": {},
+      "head_tests": {}
+    },
+    {
+      "id": "P13",
+      "name": "Chebyshev-product resolvent and complex Leja points",
+      "arrival": "at_head_but_follow_up_commits_unmerged",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "commit_present": true,
+          "ancestor_of_head": true,
+          "paths": {
+            "crates/rodas5p-integrators/src/conditioned_polynomial.rs": true,
+            "crates/rodas5p-core/src/leja_action.rs": true
+          }
+        },
+        {
+          "rev": "612063db",
+          "commit_present": true,
+          "ancestor_of_head": false,
+          "paths": {
+            "crates/rodas5p-integrators/src/conditioned_polynomial.rs": true,
+            "crates/rodas5p-core/src/leja_action.rs": true,
+            "crates/rodas5p-core/tests/leja_total_contract.rs": true,
+            "crates/rodas5p-integrators/tests/conditioned_polynomial_contracts.rs": true
+          },
+          "unmerged_commits_touching_paths": [
+            "7630db0c fix(rodas5p-integrators): require source-bound spectral enclosure",
+            "d5f58d20 fix(rodas5p-core): bind Leja normality witness to operator identity"
+          ],
+          "differs_from_head": true
+        }
+      ],
+      "head_paths": {
+        "crates/rodas5p-integrators/src/conditioned_polynomial.rs": true,
+        "crates/rodas5p-core/src/leja_action.rs": true
+      },
+      "head_tests": {
+        "crates/rodas5p-integrators/tests/conditioned_polynomial_contracts.rs": true,
+        "crates/rodas5p-core/tests/leja_total_contract.rs": true
+      }
+    },
+    {
+      "id": "P14",
+      "name": "Preconditioned fixed-point homotopy",
+      "arrival": "at_head_but_follow_up_commits_unmerged",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "commit_present": true,
+          "ancestor_of_head": true,
+          "paths": {
+            "crates/vigilode-coupled/src/rhs_homotopy.rs": true
+          }
+        },
+        {
+          "rev": "612063db",
+          "commit_present": true,
+          "ancestor_of_head": false,
+          "paths": {
+            "crates/vigilode-coupled/src/rhs_homotopy.rs": true,
+            "crates/vigilode-coupled/src/lib.rs": true,
+            "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs": true
+          },
+          "unmerged_commits_touching_paths": [
+            "52dec17e feat(vigilode-coupled): make contraction evidence provenance non-forgeable"
+          ],
+          "differs_from_head": true
+        }
+      ],
+      "head_paths": {
+        "crates/vigilode-coupled/src/rhs_homotopy.rs": true
+      },
+      "head_tests": {
+        "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs": true
+      }
+    },
+    {
+      "id": "P15",
+      "name": "RVJ N3R/N3H/N4 represented-clock envelopes",
+      "arrival": "no_code_path_declared",
+      "source_refs": [
+        {
+          "rev": "origin/research/rvj-n4b-two-window-20261031",
+          "commit_present": true,
+          "ancestor_of_head": false,
+          "paths": {
+            "research/rvj_n3r_represented_upper_20261030/rust": true,
+            "research/rvj_n4_cert_kernel_rawu8_20261030/rust": true
+          },
+          "unmerged_commits_touching_paths": [
+            "03fe9c062 research N4B: source-owned exact second-window float enclosure, 716/716 rational checked (HOLD)",
+            "d70198396 research N4A: add verified cubic coefficient carrier source code",
+            "d4d570b35 research N4A: add verified cubic coefficient carrier source code",
+            "310ceffd3 research N4A: add verified cubic coefficient carrier source code",
+            "3ce8caa46 research N4A: source-owned first-window floating carrier interval extension",
+            "32cbee37d research N4A: source-owned first-window floating carrier interval extension",
+            "5f00ae95c research N4: source-specific outward Volterra kernel, original raw-U8 reference, fail-closed transaction and evidence ledger (HOLD)",
+            "8dbc1da16 research N3H: add native failing-to-passing exact horizon negative tests",
+            "7ec3c9fa1 research N3H: forbid exact represented time-window horizon overshoot via TwoSum",
+            "3fe402331 research N3R: add locked offline Cargo research project metadata",
+            "1b5e6f0fc research N3R: add locked offline Cargo research project metadata",
+            "1117dc4a1 research N3R: publish source-specific reproducible experiment bench.rs",
+            "be5ca94e2 research N3R: publish source-specific reproducible experiment main.rs",
+            "0a8cece9b research N3R: publish full source-owned Rust 1.99.1 envelope implementation and tests"
+          ],
+          "differs_from_head": true
+        }
+      ],
+      "head_paths": {},
+      "head_tests": {}
+    },
+    {
+      "id": "P16",
+      "name": "Guarded transition words with product-norm bounds",
+      "arrival": "no_code_path_declared",
+      "source_refs": [],
+      "head_paths": {},
+      "head_tests": {}
+    },
+    {
+      "id": "P17",
+      "name": "Whole-slab trace certificate in time",
+      "arrival": "at_head",
+      "source_refs": [
+        {
+          "rev": "074a5699",
+          "commit_present": true,
+          "ancestor_of_head": true,
+          "paths": {
+            "crates/vigilode-coupled/src/trace_certificate.rs": true
+          }
+        }
+      ],
+      "head_paths": {
+        "crates/vigilode-coupled/src/trace_certificate.rs": true
+      },
+      "head_tests": {
+        "crates/vigilode-coupled/tests/trace_certificate_allocations.rs": true
+      }
+    },
+    {
+      "id": "P18",
+      "name": "Cyclic closure and cofactor chart certificate boundary",
+      "arrival": "at_head",
+      "source_refs": [
+        {
+          "rev": "074a5699",
+          "commit_present": true,
+          "ancestor_of_head": true,
+          "paths": {
+            "crates/vigilode-coupled/src/cyclic_closure.rs": true,
+            "crates/vigilode/src/cofactor_chart.rs": true
+          }
+        }
+      ],
+      "head_paths": {
+        "crates/vigilode-coupled/src/cyclic_closure.rs": true,
+        "crates/vigilode/src/cofactor_chart.rs": true
+      },
+      "head_tests": {}
+    },
+    {
+      "id": "P19",
+      "name": "RVJ archive members (shift_jet, fusion, fft_bridge, witness_lift, fourier_volterra)",
+      "arrival": "no_code_path_declared",
+      "source_refs": [
+        {
+          "rev": "074a5699",
+          "commit_present": true,
+          "ancestor_of_head": true,
+          "paths": {
+            "research/production_unification_20261115/HISTORY_RECOVERY.json": true
+          }
+        }
+      ],
+      "head_paths": {},
+      "head_tests": {}
+    },
+    {
+      "id": "P20",
+      "name": "PR33 matrix-free W correction; residual_gain/polynomial_action extensions",
+      "arrival": "at_head_but_follow_up_commits_unmerged",
+      "source_refs": [
+        {
+          "rev": "981bf1bc",
+          "commit_present": true,
+          "ancestor_of_head": false,
+          "paths": {
+            "crates/rodas5p-integrators/src/audit2_research/matrix_free.rs": true,
+            "crates/rodas5p-integrators/tests/audit2_matrix_free_contracts.rs": true
+          },
+          "unmerged_commits_touching_paths": [
+            "981bf1bc research(audit2): add matrix-free W correction with scoped setup reuse"
+          ],
+          "differs_from_head": true
+        },
+        {
+          "rev": "76e59c69",
+          "commit_present": true,
+          "ancestor_of_head": false,
+          "paths": {}
+        }
+      ],
+      "head_paths": {
+        "crates/rodas5p-integrators/src/audit2_matrix_free_research.rs": true
+      },
+      "head_tests": {
+        "crates/rodas5p-integrators/tests/audit2_matrix_free_contracts.rs": false
+      }
+    }
+  ]
+}
