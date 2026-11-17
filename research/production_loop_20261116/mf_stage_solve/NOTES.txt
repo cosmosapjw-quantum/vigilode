@@ -1,0 +1,39 @@
+NOTES of node V17_MATRIX_FREE_STAGE_SOLVE (loop L1, wave 2, group 2)
+worktree /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v17
+branch   research/production-loop-20261116-w2-v17, base c468478e73123a4625c6d20f7459a9f79cbf33de
+target   CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v17
+
+== 2026-11-17 14:04 KST: session start ==
+State found: worktree at the base commit, no earlier V17 files or commits.
+Host load at start: 1-minute load average 35.9 (jobs of other projects). Timing goes last.
+
+READ SO FAR
+- research/production_loop_20261116/PREREGISTRATION.md:11-17 (rules), :90-96 (addendum A2, row V17).
+- docs/agent/production_solver_program_20261112/TASK_CONTRACTS.json tasks[26] (V17 contract:
+  write allowlist = stage_clients/krylov.rs, stage_clients/krylov/**, tests/stage_clients_krylov_*.rs,
+  research/production_loop_20261116/mf_stage_solve/**).
+- crates/rodas5p-integrators/src/stage_clients/krylov.rs (whole file, 1232 lines):
+  :76-137 StageStoppingRule (threshold = max(atol*gamma*inv_h_gamma, rtol*||b||)), PRODUCTION_RTOL 1e-10,
+  PRODUCTION_ATOL 1e-14; :157-201 PerStageGmresOptions (baseline = restart 40, max_arnoldi 200,
+  in_cycle_exit true, recompute_final false; shipped_cadence = in_cycle_exit false, recompute_final true);
+  :429-604 gmres_solve (true residual at the top of every pass decides; in-cycle exit on the projected
+  residual); :1103-1232 ResidualAuditClient (saves b, checks ||b - W x|| with its own JVP and counters).
+- research/production_loop_20261116/shared_krylov/PREDECLARED.json (V06 cells: bruss1d n=1024,
+  grayscott2d n=2048, adr2d n=1024, robertson_rd1d n=1026 (final only), exploratory bruss1d_stiff 512 cells;
+  rtol 1e-4 and 1e-6; arms A / B0 / B / C; reference DOP853 + Radau).
+
+DESIGN DECISIONS SO FAR
+- Arm B = KrylovStageClient::per_stage with PerStageGmresOptions::baseline() and
+  StageStoppingRule::protected_production() (exists since V06; not changed).
+- Arm C = the same client with a rule whose rtol is tied to the step tolerance (formula to be fixed in
+  PREDECLARED.json before any run). Needs an additive constructor/policy type in krylov.rs.
+- Arm A = protected driver integrate_rodas5p_mf_fast_observed_gmres_into as routed
+  (RoutingOptions::default().matrix_free). Open point: how every stage solve of arm A is checked against
+  the original residual with an independent JVP (the protected driver is not client based).
+
+NEXT STEPS
+1. Read how the protected driver exposes its stage solves (stage telemetry / solve log) and how the V06
+   measurement target ran arm A and B0 (tests/stage_clients_krylov_measure.rs, *_problems.rs).
+2. Read the V04/V06 reports + REVIEW.json for the correction notices.
+3. Fix families, sizes, tolerances, reference, interpolation rule -> PREDECLARED.json, commit.
+4. Additive client code + tests, measurement runner, parser, report script.
