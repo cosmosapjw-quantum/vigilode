@@ -1364,6 +1364,46 @@
         "tolerances/controller constants"
       ],
       "evidence": []
+    },
+    {
+      "id": "V19_BANDED_SOLVE_KERNEL",
+      "depends": [
+        "V04_STAGE_COST_ANATOMY",
+        "V15_STAGE_CLIENT_KIT"
+      ],
+      "status": "IN_PROGRESS",
+      "purpose": "Kernels for the banded stage solve in the one-dimensional narrow-band regime, where the eight stage solves take 61-70% of the step: a sequential back substitution with a shorter dependent chain, and a partition of the unknowns into blocks whose recurrences run in lockstep.",
+      "write_allowlist": [
+        "research/production_loop_20261116/banded_solve/**",
+        "crates/rodas5p-integrators/src/stage_clients/**",
+        "crates/rodas5p-integrators/tests/stage_clients_*.rs"
+      ],
+      "equations_and_design": [
+        "Arms A0 (protected client BandedStageLu), A1 (reference kernel, same operation order), B (sequential, newest unknown last, reciprocal pivots), C(P) for P in {2, 4, 8} (blocks, explicit spikes, dense reduced system on the separators, lockstep recurrences), BV and CV(P) (with a residual check of the original system after every solve).",
+        "Cost unit: one factorisation and eight solves (the stage pattern of one RODAS5P attempt); metric: user-mode cycles of the pinned single-threaded process with set-up subtraction.",
+        "Stage a runs in a standalone measurement program; stage b (an opt-in stage client with fail-closed fallback) only after stage a passes."
+      ],
+      "acceptance_checks": [
+        "Validity: A1 equals A0 bit for bit; on the target family no error and backward error <= 1e-14; on the adversarial suites no silent failure (backward error above 1e-12 without an error).",
+        "Stage a PASS: at n = 1e4 and n = 1e5 the best valid arm needs at most 0.50 of the cycles of A0 and at most 0.67 of A1 per stage pattern. KILL: every valid arm above 0.77 of A1 at both sizes. Partitioning is kept only if the best C arm needs at most 0.77 of the best B arm at both sizes.",
+        "Stage b PASS: whole run at matched achieved error at most 0.77 of the cycles of the protected banded driver (default kernel) and at most 0.83 of its fastest bit-identical kernel on two families; KILL: above 0.91 of the default kernel on both.",
+        "Timing cells are authoritative only under the loop's quality rule; otherwise the verdict is NOT_DECIDABLE."
+      ],
+      "completion_requires": [
+        "PREDECLARED.json before the runs",
+        "measurement program with validity tests",
+        "RESULTS.json from executed runs"
+      ],
+      "failure_action": "Opt-in only; the protected banded driver, its kernels and its default are not edited.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [],
+      "state_note": "Added 2026-11-17 by ruling (pre-registration addendum A3); run by the orchestrator session."
     }
   ],
   "execution_policy": "Resume ready bounded tasks; research/implementation may overlap only with disjoint writes. Qualification dependencies restrict promotion, not safe opt-in refactoring.",
