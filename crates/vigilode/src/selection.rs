@@ -9,8 +9,19 @@ use crate::{
 };
 use serde::{Deserialize, Serialize};
 
+mod adapters;
+mod frontend;
 mod peer;
 
+pub use adapters::{MethodCallbackCounts, MethodObservedRun};
+pub use frontend::{
+    JacobianForm, METHOD_CATALOG_VERSION, METHOD_ID_LAWSON, METHOD_ID_PEXPRB,
+    METHOD_ID_RODAS5P_LAGGED, MethodAutoPolicy, MethodAvailability, MethodCandidate, MethodChoice,
+    MethodChoiceKind, MethodCostEvidence, MethodEntry, MethodFacts, MethodFailure, MethodFallback,
+    MethodOutputGrid, MethodParams, MethodRefusalReason, MethodResult, MethodRoute,
+    MethodRoutePlan, MethodRouteRefusal, MethodSolution, MethodSolveError, MethodWork,
+    SolutionView,
+};
 pub use peer::{
     PEER_STARTER_MAX_HALVINGS, PeerFailure, PeerOde, PeerPhase, PeerSolution, PeerSolveError,
     PeerSolveOptions, PeerStarterRecord,
@@ -652,9 +663,12 @@ impl MethodRegistry {
             MethodDescriptor {
                 method_id: "radau-iia3",
                 version: v,
-                tableau_identity: "Radau IIA order 3 (radau.rs)",
-                stages: 2,
-                order: 3,
+                // `RadauConfig::default()` runs `RadauIiaStages::Three`: three stages, order
+                // five, with the embedded third-order estimate (the U06 entry said two
+                // stages and order three; corrected by node V03 against radau.rs).
+                tableau_identity: "3-stage Radau IIA, order 5, embedded order-3 estimate (radau.rs)",
+                stages: 3,
+                order: 5,
                 history_steps: 1,
                 startup: "none",
                 variants: vec![

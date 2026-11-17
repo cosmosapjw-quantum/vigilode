@@ -1094,6 +1094,17 @@ fn build(
     Ok((ode, plan, record))
 }
 
+/// The driver-level problem of `problem` under the facade lowering: the
+/// [`build`] that [`Rodas5p::solve`] runs, with the callbacks wrapped by
+/// `guard`. Accessor for the registry adapters of `selection` (research loop
+/// L1, node V03); nothing on the RODAS5P path calls it or changes with it.
+pub(crate) fn lowered_driver_problem(
+    problem: &Problem,
+    guard: &Arc<Guard>,
+) -> Result<OdeProblem, SolveError> {
+    build(problem, guard, false).map(|(ode, _plan, _record)| ode)
+}
+
 /// A dense Jacobian assembled from a band fill. `OdeProblem` requires a
 /// Jacobian provider; the banded driver itself reads the band.
 fn band_as_dense(fill: CoreRhs, n: usize, lower: usize, upper: usize) -> CoreJacobian {
