@@ -38,7 +38,7 @@ NEXT STEPS
 3. Fix families, sizes, tolerances, reference, interpolation rule -> PREDECLARED.json, commit.
 4. Additive client code + tests, measurement runner, parser, report script.
 
-== 2026-11-17 14:55 KST: pre-declaration committed (a6c66e9b), code written, first build running ==
+== 2026-11-17 14:35 KST: pre-declaration committed (a6c66e9b), code written, first build running ==
 READ SINCE THE START
 - crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2198-2428 (integrate_observed_with_observer: the
   attempt observer gets t, y, h, Option<error> and the workspace after every attempt), :2543 (stage(i)),
@@ -73,7 +73,7 @@ NEXT STEPS
 2. Sizing on reduced instances (size_*), amendment A1 (time spans), commit.
 3. References (make_reference.py), run script, parser, measurement, timing last (host load is 30-45 now).
 
-== 2026-11-17 16:05 KST: amendment A1 (families and spans), before any run at a declared size ==
+== 2026-11-17 14:51 KST: amendment A1 (families and spans), before any run at a declared size ==
 - Build ok; V17 contracts 11/11, V17 alloc 1/1, V06 contracts 9/9 (+1 ignored by design), V06 alloc 1/1.
 - Sizing on reduced instances (arm A only) showed: ac3d ends in the equilibrium u = 1 before t = 0.7;
   the Gray-Scott bump of the crate start state dies (v_max 0.007 at t = 20); cusp1d on [0, 0.1] has no jumps;
