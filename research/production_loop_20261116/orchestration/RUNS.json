@@ -57,14 +57,35 @@
       "script": "wave2_group2.js",
       "script_sha256": "39fcb7610a7cb440ccca80f43f368e68fa21b1c0d1aff8f30774c4d94390e64b",
       "what": "wave 2 group 2, second launch: V03a, V17, V16 with reviewers",
-      "status": "running or record not yet written"
+      "status": "completed with errors",
+      "agent_count": 4,
+      "total_tokens": 1977248,
+      "duration_ms": 5852894,
+      "errors": [
+        "build:v16, build:v17 and review:v03 failed: monthly spend limit of the model (reset 2026-11-23 15:00 KST); build:v03 finished"
+      ]
+    },
+    {
+      "run_id": "wf_f2599e6f-a4a",
+      "script": "wave2_group2_reviews.js",
+      "script_sha256": "ab75dfa97701b08fbba2cd6ee8f62cf0a75dc74f21e8b3c8a0e3011ce5b8e46b",
+      "what": "wave 2 group 2: reviews of V03a, V17, V16 (2026-11-23)",
+      "status": "completed",
+      "agent_count": 3,
+      "total_tokens": 1355134,
+      "duration_ms": 1938276,
+      "errors": []
+    },
+    {
+      "run_id": "wf_8b1894ea-1d1",
+      "script": "wave2_group3.js",
+      "script_sha256": "7ac9990f49754079850ecbe70132476411676e1985d1967860fa3ba57892120c",
+      "what": "wave 2 group 3: V03b, V08, V18 with reviewers, and one reviewer of the orchestrator-run nodes V19 and V21 (launched 2026-11-23 21:05 KST)",
+      "status": "running or record not yet written",
+      "args_base": "587a139501729bbe886bb2b8c49b0ef893705d08"
     }
   ],
   "staged": [
-    {
-      "script": "wave2_group3.js",
-      "script_sha256": "dbc05effb123990382ef1fc8df9556733ddbfea27f9b88b81cadda5af87c4b0f"
-    },
     {
       "script": "wave2_group4.js",
       "script_sha256": "1f49891f97873b9003fb230eddbcbe1fc0fb0dc27c9e4eff4a96fcb6c70496ae"
