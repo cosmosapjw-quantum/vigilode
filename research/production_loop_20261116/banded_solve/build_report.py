@@ -96,6 +96,21 @@ def main():
         w("facade의 banded 경로(`crates/vigilode/src/solve.rs`)와 client kit의 기준 client(`BandedStageLu`)는 Indexed kernel을 쓴다. Slices kernel은 같은 보호 파일에 이미 있고 bit 동일로 문서화돼 있으며, 이 측정의 모든 실행에서 시도·수락·거부 횟수, 센 band 연산 수, 반환 상태 hash가 같았다(표의 '결과 동일' 열).")
         w("")
 
+        sb = v21.get("stage_b")
+        if sb and any(sb["per_cell"].values()):
+            w("### 1.4 stage b: 선택형 client `BandedTightStageLu` (보호 banded driver와 bit 동일)")
+            w("")
+            w(f"명령어 측정 판정: **{sb['instruction_measure']}** (기준: client 실행의 시도당 명령어가 보호 banded driver의 {sb['thresholds']['PASS']} 이하, n = 1e4와 1e5 모두; {sb['thresholds']['KILL']} 초과면 KILL).")
+            w("")
+            w("| cell | n | 결과 동일(시도·수락·거부 횟수, 상태 hash) | 명령어 비 (보호 driver = 1) | cycle 비 | cycle 표시 |")
+            w("|---|---|---|---|---|---|")
+            for key, c in sb["per_cell"].items():
+                if c:
+                    w(f"| {key} | {c['n']} | {c['valid']} | {f3(c['instructions_ratio'])} | {f3(c['cycles_ratio'])} | {c['cycles_label']} |")
+            w("")
+            w("identity test(`crates/rodas5p-integrators/tests/stage_clients_banded_tight_identity.rs`)는 보호 banded driver와 client driver를 같은 문제에 돌려 출력 상태 bit, 시도·수락·거부 횟수, work counter 전체를 비교한다. 사용법: `integrate_rodas5p_fast_client_observed_with_atol(problem, Box::new(BandedTightStageLu::new(n, &band)?), ...)`. 기본 경로는 바뀌지 않는다.")
+            w("")
+
     # ---------------------------------------------------------------- V19
     if v19:
         val, ver = v19["validity"], v19["verdicts"]
@@ -141,7 +156,8 @@ def main():
     w("- 이 결과는 kernel과 시도 단위의 비용이다. 방법(RODAS5P tableau, controller, 허용오차)과 결과 bit는 그대로다.")
     w("- 기본 kernel을 바꾸는 것은 이 loop의 권한 밖이다(보호 파일, 기본 경로 불변). facade의 banded 경로를 Slices kernel로 바꿀지는 owner 결정 사항이다.")
     w("- cycle 판정이 NOT_DECIDABLE인 칸은 조용한 호스트에서 같은 명령으로 다시 재면 된다(재측정은 cell당 2회까지, 기록은 모두 보존).")
-    w("- V21 stage b(선택형 bit 동일 client)는 a1의 PASS-I 뒤에만 만든다.")
+    w("- 탐색 기록(판정 아님): 같은 코드를 `-C target-cpu=x86-64-v3`로 build하면 Slices kernel의 명령어가 넓은 band 문제에서 다시 0.46-0.62배가 되고 상태 hash는 같다(`logs/xflag_v3_instructions.log`).")
+    w("- 다음 병목: tight kernel 뒤에는 stage 산술(보호 driver의 선형결합 loop)과 RHS가 남는다. V04의 명령어 수로 보면 stage 산술은 성분·stage당 약 95개 명령어다. 이 부분은 보호 driver 안에 있어 client로는 바꿀 수 없다.")
     w("")
     with open(os.path.join(HERE, "REPORT_KO.md"), "w", encoding="utf-8") as f:
         f.write("\n".join(out))

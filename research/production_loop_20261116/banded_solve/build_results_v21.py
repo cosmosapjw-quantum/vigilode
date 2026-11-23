@@ -22,6 +22,8 @@ A1_PASS_I, A1_PASS_C, A1_KILL_I = 0.40, 0.60, 0.77
 A2_PASS_I, A2_PASS_C, A2_KILL_I = 0.50, 0.67, 0.90
 DECIDING_N = [10000, 100000]
 WIDE = [("ac2d", 64), ("bruss2d", 32), ("ac3d", 16)]
+B_PASS_I, B_KILL_I = 0.60, 0.85
+B_DECIDING = [("bruss1d", 5000), ("bruss1d", 50000)]
 
 
 def sha256(path):
@@ -102,14 +104,14 @@ def kernel_cell(path):
     }
 
 
-def drive_cell(path):
+def drive_cell(path, keys=("attempts", "accepted", "rejected", "factor_ops", "solve_ops", "state_hash"),
+               other="slices"):
     header, footer, runs = read_lines(path)
     budget = header["budget"]
     for rec in runs:
         rec["f"] = dict(tok.split("=", 1) for tok in rec["stdout"].split()[1:]) \
             if rec["stdout"].startswith("DRIVE ") else {}
     kernels, signatures = {}, {}
-    keys = ("attempts", "accepted", "rejected", "factor_ops", "solve_ops", "state_hash")
     for kernel in header["kernels"]:
         rounds = {}
         for rec in runs:
@@ -155,7 +157,7 @@ def drive_cell(path):
         "load_ok": load_ok,
         "counts_operations_and_state_hash_equal_in_every_run": identical,
         "cycles_authoritative": bool(load_ok and all(
-            k in kernels and kernels[k]["cycles_spread"] <= MAX_SPREAD for k in ("indexed", "slices"))),
+            k in kernels and kernels[k]["cycles_spread"] <= MAX_SPREAD for k in ("indexed", other))),
         "kernels": kernels,
     }
 
@@ -253,6 +255,40 @@ def main():
                         if all(p["cycles_label"] == "authoritative" for p in probs) else "NOT_DECIDABLE")
     a2["thresholds"] = {"PASS_I": A2_PASS_I, "PASS_C": A2_PASS_C, "KILL_I": A2_KILL_I}
 
+    # Stage b: whole runs of the protected banded driver against the client driver with the
+    # opt-in client (PREDECLARED_V21B.json). The client keeps no counted band operations.
+    b_keys = ("attempts", "accepted", "rejected", "state_hash")
+    b_cells = [drive_cell(p, b_keys, "tight")
+               for p in sorted(glob.glob(os.path.join(HERE, "logs", "drive_b*_*.jsonl")))]
+    stage_b = {"per_cell": {}, "thresholds": {"PASS": B_PASS_I, "KILL": B_KILL_I}}
+    for family, size in B_DECIDING:
+        cells = [c for c in b_cells if (c["family"], c["size"]) == (family, size)
+                 and c["complete"] and "tight" in c["kernels"]]
+        cell, auth = first_authoritative(cells, "cycles_authoritative")
+        key = f"{family}{size}"
+        if cell is None:
+            stage_b["per_cell"][key] = None
+            continue
+        tight = cell["kernels"]["tight"]
+        stage_b["per_cell"][key] = {
+            "measurement": cell["file"], "n": cell["n"],
+            "valid": cell["counts_operations_and_state_hash_equal_in_every_run"],
+            "cycles_label": "authoritative" if auth else "diagnostic_only",
+            "instructions_ratio": tight["instructions_ratio_to_indexed"],
+            "cycles_ratio": tight["cycles_ratio_to_indexed"],
+        }
+    b_list = list(stage_b["per_cell"].values())
+    if not b_list or any(c is None for c in b_list):
+        stage_b["instruction_measure"] = "NOT_RUN"
+    elif not all(c["valid"] for c in b_list):
+        stage_b["instruction_measure"] = "FAIL (identity)"
+    elif all(c["instructions_ratio"] <= B_PASS_I for c in b_list):
+        stage_b["instruction_measure"] = "PASS"
+    elif all(c["instructions_ratio"] > B_KILL_I for c in b_list):
+        stage_b["instruction_measure"] = "KILL"
+    else:
+        stage_b["instruction_measure"] = "FAIL"
+
     result = {
         "schema": "vigilode.loop_l1.v21_banded_tight_kernel.results.v1",
         "node": "V21_BANDED_TIGHT_KERNEL",
@@ -261,8 +297,10 @@ def main():
         "validity": validity,
         "stage_a1": a1,
         "stage_a2": a2,
+        "stage_b": stage_b,
         "kernel_level_measurements": kernel_cells,
         "whole_run_measurements": drive_cells,
+        "stage_b_measurements": b_cells,
     }
     with open(os.path.join(HERE, "RESULTS_V21.json"), "w") as f:
         json.dump(result, f, indent=2, sort_keys=True, allow_nan=False)
