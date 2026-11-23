@@ -89,7 +89,10 @@
     "research/production_loop_20261116/unified_router/REVIEW.json": "6154b1d0ede055518936f9d82e484b3a1a7a7d160dda3af4633386188a0b036e",
     "research/production_loop_20261116/jacobian_assembly/PREDECLARED.json": "9d23b8fd1cdce0292a54f4160df2cbdcd607cf9ce070f90de29eaf761dbb02da",
     "research/production_loop_20261116/jacobian_assembly/RESULTS.json": "db78b0d559fc3578c51906096b65b16a3b93776cb957a02eb6df3223db22af14",
-    "research/production_loop_20261116/jacobian_assembly/REVIEW.json": "de80d4af5813a4223cef926a70b636e3716ceb87649943d53767d31fb9b17f76"
+    "research/production_loop_20261116/jacobian_assembly/REVIEW.json": "de80d4af5813a4223cef926a70b636e3716ceb87649943d53767d31fb9b17f76",
+    "research/production_loop_20261116/dense_lu_client/PREDECLARED.json": "5362482065cd5c5e709c08e03385a2d3b26b69d31f5580ab36d0d6295b63b806",
+    "research/production_loop_20261116/dense_lu_client/RESULTS.json": "f7d80cf157ec69f5939003a8159010b34376c195a74e901b9cf0504e92db25d5",
+    "research/production_loop_20261116/dense_lu_client/REVIEW.json": "c47ab0ff06057857aaced008be6f244edaf7bd2c1dd242de4c76f9858ad2ce67"
   },
   "implemented_source_sha256": {
     "crates/vigilode/tests/default_path_golden.rs": "9ef2b4b7aff1d92b14c7f28c764e5ff791a2823091ec50cf8ffc1167366863ec",
@@ -111,7 +114,7 @@
     "crates/rodas5p-integrators/tests/stage_clients_speculative_contracts.rs": "5829fe8175d7302db8479ada7d3a779cd598658b146a6262006d4d77a664788a",
     "crates/rodas5p-integrators/tests/stage_clients_speculative_measure.rs": "e076c39847179d4bae5a3db0fbe8b5a6292dd9464e85929ca488257c2f59ae3b",
     "crates/rodas5p-integrators/tests/stage_clients_speculative_problems.rs": "eaf83d08cb2c28855beff9768c5bd440b39fd6fe8650c2c1b3b418bad9926e82",
-    "crates/rodas5p-integrators/src/stage_clients/dense_lu_reuse.rs": "3871cd0b223b434c1fbfa1a9c23416c44f6ea8eff8f44a6891f2ed8f30c4efd8",
+    "crates/rodas5p-integrators/src/stage_clients/dense_lu_reuse.rs": "f364dc416803dcf4ec3e41d5dd77b575bcdb37448181d06dbc1518ecda8f5891",
     "crates/rodas5p-integrators/src/stage_clients/banded_tight.rs": "574452455d99ec6996b6d4e8b402288a01331b8566f49bda401b2c20600f9f7a",
     "crates/rodas5p-integrators/tests/stage_clients_banded_tight_identity.rs": "702a2d4fd03f20724449b5dc885d485cc1f1b877ccc54650e7c43257ddf65d2b",
     "crates/rodas5p-integrators/tests/stage_clients_banded_tight_alloc.rs": "0bc864ac2c4acc4dafb35848e69c465c1aab0c7a6f8091ae5bae322ad0c92f32",
@@ -146,7 +149,11 @@
     "crates/rodas5p-integrators/tests/stage_clients_assembly_identity.rs": "e5f8a3d7e813bf5f2c7dc66b8978e62ee84a88c46d91fb5d18fe0f59693263e8",
     "crates/rodas5p-integrators/tests/stage_clients_assembly_alloc.rs": "d0f084b3fbea653e2708092372eae296873c38465f2e0bd67f835a62590a7593",
     "crates/rodas5p-integrators/tests/stage_clients_assembly_measure.rs": "14226a2e117c3b993f88e1c57ed7df6eda389f3bc670ff98253975354c51b59b",
-    "crates/rodas5p-integrators/tests/stage_clients_assembly_problems.rs": "1451236df52a99c08ca9a0e0e5f6e6e440d75cf8ba4c213bee5477b60d6eb939"
+    "crates/rodas5p-integrators/tests/stage_clients_assembly_problems.rs": "1451236df52a99c08ca9a0e0e5f6e6e440d75cf8ba4c213bee5477b60d6eb939",
+    "crates/rodas5p-integrators/src/stage_clients/dense_lu_reuse/threaded.rs": "0ebed67798f5293eae4f28aa8792f153f6e435a908f940413fe104a70f645277",
+    "crates/rodas5p-integrators/tests/stage_clients_dense_lu_reuse_identity.rs": "86b7b6590ade124c5339cfd501f9ef572cd089927e427bbe8b06da9bbe5c4d93",
+    "crates/rodas5p-integrators/tests/stage_clients_dense_lu_reuse_alloc.rs": "316ade90e36fd735448ec4e07daf761451710b5db63ea3bea65f5f253c7495ab",
+    "crates/rodas5p-integrators/tests/stage_clients_dense_lu_reuse_problems.rs": "5d3267f19e0dad9cb9f75487c0872c7f2143dccdcf988e99b4d3d77e08f2203d"
   },
   "preregistration_frozen_part_sha256": "0a5c7e061be57d24f382f24594c7d83a1ec68a4365ec6590c316d1d351ba0c85",
   "notes": [
@@ -167,7 +174,8 @@
     "2026-11-23: independent review of nodes V19 and V21 (banded_solve/REVIEW.json) added to the evidence list; the report of those nodes was regenerated after its corrections (result files unchanged).",
     "2026-11-23: review finding F08 of nodes V19 and V21: the fixed-width solve of BandedTightStageLu uses wrapping pivot differences (no overflow panic on a solve before a factorization) and the identity test file gains two tests; both identities updated.",
     "2026-11-23: node V03 part B (unified router) merged (cfbd2b18): unified_router/PREDECLARED.json, RECEIPT.json and REVIEW.json added to the evidence list and the twelve code paths of the node to the implemented sources (unified/analyzer.rs with the documentation correction of review finding F2); V03_UNIFIED_FRONTEND is COMPLETE_SCOPED in TASK_CONTRACTS.json and RESEARCH_DAG.json.",
-    "2026-11-23: node V08 (finite-difference Jacobian assembly client) merged (bc8121cf) and corrected after its review (a7d1e824): jacobian_assembly/PREDECLARED.json, RESULTS.json and REVIEW.json added to the evidence list, the three source files and four test files of the client to the implemented sources; V08_JACOBIAN_ASSEMBLY is COMPLETE_SCOPED."
+    "2026-11-23: node V08 (finite-difference Jacobian assembly client) merged (bc8121cf) and corrected after its review (a7d1e824): jacobian_assembly/PREDECLARED.json, RESULTS.json and REVIEW.json added to the evidence list, the three source files and four test files of the client to the implemented sources; V08_JACOBIAN_ASSEMBLY is COMPLETE_SCOPED.",
+    "2026-11-24: node V18 (dense LU client with storage reuse and opt-in worker threads) merged (406b2a3b) and annotated after its review (10356292): dense_lu_client/PREDECLARED.json, RESULTS.json and REVIEW.json added to the evidence list; the identity of the pre-seeded file stage_clients/dense_lu_reuse.rs is updated to the implemented client, and threaded.rs and three test files are added; V18_DENSE_LU_CLIENT is COMPLETE_SCOPED."
   ],
   "epochs": [
     {

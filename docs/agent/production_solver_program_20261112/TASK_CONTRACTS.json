@@ -1239,7 +1239,7 @@
         "V04_STAGE_COST_ANATOMY",
         "V15_STAGE_CLIENT_KIT"
       ],
-      "status": "PLANNED",
+      "status": "COMPLETE_SCOPED",
       "purpose": "A dense stage client that reuses the factorisation storage, and an opt-in threaded factorisation, for the regime where the factorisation dominates the step.",
       "write_allowlist": [
         "crates/rodas5p-integrators/src/stage_clients/**",
@@ -1269,7 +1269,11 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_loop_20261116/dense_lu_client/RESULTS.json",
+        "research/production_loop_20261116/dense_lu_client/REVIEW.json"
+      ],
+      "state_note": "Reuse arm: identity, allocations and page faults PASS (ledger L-0332); wall NOT_DECIDABLE under the frozen quality rule (ledger L-0333, INCONCLUSIVE). Threaded arm through the parallelism argument of faer: NOT_RUN (needs a protected manifest change). Client-side threaded arm, ruled to be the threaded arm of addendum A2: NOT_DECIDABLE, kill not triggered, every n = 512 value below the pass level. Reviewer corrections in REVIEW.json. A decidable wall test needs a new pre-registration."
     },
     {
       "id": "V03_UNIFIED_FRONTEND",
