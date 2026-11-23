@@ -253,6 +253,10 @@ impl BandedTightStageLu {
 
     /// Both substitutions for `lower = upper = 2`: the operations of [`Self::solve_slices`] in
     /// the same order, the forward sweep on three carried values and the back sweep on four.
+    ///
+    /// After a successful factorization a pivot row is its column or one of the two rows below
+    /// it. Before one the pivots are zero: the wrapping differences below keep such a call free
+    /// of an overflow panic, as the reference client is; its result is then meaningless.
     fn solve_fixed2(&self, b: &mut [f64]) {
         let n = self.n;
         let (rows, _) = self.factors.as_chunks::<7>();
@@ -266,7 +270,7 @@ impl BandedTightStageLu {
                 .zip(&self.pivots[..n - 3])
                 .enumerate();
             for (k, (((out, next), below), &p)) in steps {
-                match p - k {
+                match p.wrapping_sub(k) {
                     0 => {}
                     1 => std::mem::swap(&mut w0, &mut w1),
                     _ => std::mem::swap(&mut w0, &mut w2),
@@ -279,7 +283,7 @@ impl BandedTightStageLu {
                 w2 = next.get();
             }
             // Column n - 3.
-            match self.pivots[n - 3] - (n - 3) {
+            match self.pivots[n - 3].wrapping_sub(n - 3) {
                 0 => {}
                 1 => std::mem::swap(&mut w0, &mut w1),
                 _ => std::mem::swap(&mut w0, &mut w2),

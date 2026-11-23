@@ -470,3 +470,65 @@ fn a_singular_matrix_is_the_same_linear_solve_error() {
     }
     assert_eq!(messages[0], messages[1]);
 }
+
+/// A zero pivot in each of the last four columns, which the fixed-width client handles outside
+/// its main loop: the same error text as the reference client, at the same column.
+#[test]
+fn a_singular_pivot_in_the_last_columns_is_the_same_error() {
+    use rodas5p_core::{CoreError, WorkCounters};
+    use rodas5p_integrators::{BandedStageLu, StageLinearSystem};
+    let n = 12;
+    let problem = brusselator(6).problem;
+    let y = vec![0.0; n];
+    for column in n - 4..n {
+        // J is zero except J[column][column] = 1 / (h gamma): W is diagonal with one zero.
+        let fill: BandFill = Arc::new(move |_t, _y, band| {
+            band[column * 5 + 2] = 4.0;
+            Ok(())
+        });
+        let band = BandedJacobian {
+            lower: 2,
+            upper: 2,
+            fill,
+        };
+        let tight = BandedTightStageLu::new(n, &band).unwrap();
+        assert!(tight.uses_fixed_offsets());
+        let mut clients: Vec<Box<dyn StageLinearSystem>> = vec![
+            Box::new(BandedStageLu::new(n, &band).unwrap()),
+            Box::new(tight),
+        ];
+        let mut messages = Vec::new();
+        for client in &mut clients {
+            let mut counters = WorkCounters::default();
+            client.linearize(&problem, 0.0, &y, &mut counters).unwrap();
+            match client.factor(4.0, &mut counters) {
+                Err(CoreError::LinearSolve(message)) => messages.push(message),
+                other => panic!("column {column}: expected a LinearSolve error, got {other:?}"),
+            }
+            assert_eq!(counters.direct_factorizations, 1);
+        }
+        assert_eq!(messages[0], messages[1], "column {column}");
+        assert!(
+            messages[0].ends_with(&format!("column {column}")),
+            "{}",
+            messages[0]
+        );
+    }
+}
+
+/// A solve before any successful factorization is a misuse; like the reference client, the
+/// fixed-width client must not panic on it (its pivots are still zero).
+#[test]
+fn a_solve_before_a_factorization_does_not_panic() {
+    use rodas5p_core::WorkCounters;
+    use rodas5p_integrators::StageLinearSystem;
+    let case = brusselator(6);
+    let n = case.problem.dimension;
+    let mut client = BandedTightStageLu::new(n, &case.band).unwrap();
+    assert!(client.uses_fixed_offsets());
+    let mut counters = WorkCounters::default();
+    let mut b: Vec<f64> = (0..n).map(|i| 1.0 + i as f64).collect();
+    // The result is meaningless; only the absence of a panic is asserted.
+    let _ = client.solve_in_place(&mut b, &mut counters);
+    assert_eq!(b.len(), n);
+}

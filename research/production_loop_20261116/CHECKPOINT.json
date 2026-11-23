@@ -106,8 +106,8 @@
     "crates/rodas5p-integrators/tests/stage_clients_speculative_measure.rs": "e076c39847179d4bae5a3db0fbe8b5a6292dd9464e85929ca488257c2f59ae3b",
     "crates/rodas5p-integrators/tests/stage_clients_speculative_problems.rs": "eaf83d08cb2c28855beff9768c5bd440b39fd6fe8650c2c1b3b418bad9926e82",
     "crates/rodas5p-integrators/src/stage_clients/dense_lu_reuse.rs": "3871cd0b223b434c1fbfa1a9c23416c44f6ea8eff8f44a6891f2ed8f30c4efd8",
-    "crates/rodas5p-integrators/src/stage_clients/banded_tight.rs": "aa75809e43faea94ad56639e417d3f12e187ecb7311824502dc7f717a09ce771",
-    "crates/rodas5p-integrators/tests/stage_clients_banded_tight_identity.rs": "26d113cdda3c38d4b36b6c1b0d1b77f1ee681a48c0c9266d3ea2427a364b5db0",
+    "crates/rodas5p-integrators/src/stage_clients/banded_tight.rs": "574452455d99ec6996b6d4e8b402288a01331b8566f49bda401b2c20600f9f7a",
+    "crates/rodas5p-integrators/tests/stage_clients_banded_tight_identity.rs": "702a2d4fd03f20724449b5dc885d485cc1f1b877ccc54650e7c43257ddf65d2b",
     "crates/rodas5p-integrators/tests/stage_clients_banded_tight_alloc.rs": "0bc864ac2c4acc4dafb35848e69c465c1aab0c7a6f8091ae5bae322ad0c92f32",
     "crates/rodas5p-integrators/src/stage_clients/krylov/step_tied.rs": "f6e1e46a9df589a3c735c9cda41ec4cd791c1ca9cd90ea416ab8fa5ae4648ac4",
     "crates/rodas5p-integrators/tests/stage_clients_krylov_v17_alloc.rs": "b44f3c8fa9f18376c8f14093abadd5765bda8eb496c097bf733f906fe6a5673a",
@@ -139,7 +139,8 @@
     "2026-11-23: epoch 3 opened. It holds the edits of protected files that the owner approved on 2026-11-23 (OD-L1-9 to OD-L1-12); the pins of epoch 2 are kept in the list of epochs. First edit, under OD-L1-12: workspace version 0.1.0 -> 0.2.0 in Cargo.toml and the six workspace package entries of Cargo.lock that take that version; no dependency changed.",
     "2026-11-23, epoch 3, node V22 under OD-L1-9: rodas5p_fast.rs gains one public function, rodas5p_fast_dense.rs two public functions, one identifier and a kernel parameter on two private functions (no existing public function changes), and crates/vigilode/src/lib.rs gains one re-export and a paragraph of route documentation. The sentinel test keeps its pins and allows one more lib.rs block (banded_kernel_route/SENTINEL_REPIN.json). The width constant of the facade is provisional (8) until the deciding series of the width scan.",
     "2026-11-23: owner decisions OD-L1-13 and OD-L1-14 appended to OWNER_DECISIONS_20261116.json; its identity is updated.",
-    "2026-11-23: independent review of nodes V19 and V21 (banded_solve/REVIEW.json) added to the evidence list; the report of those nodes was regenerated after its corrections (result files unchanged)."
+    "2026-11-23: independent review of nodes V19 and V21 (banded_solve/REVIEW.json) added to the evidence list; the report of those nodes was regenerated after its corrections (result files unchanged).",
+    "2026-11-23: review finding F08 of nodes V19 and V21: the fixed-width solve of BandedTightStageLu uses wrapping pivot differences (no overflow panic on a solve before a factorization) and the identity test file gains two tests; both identities updated."
   ],
   "epochs": [
     {
