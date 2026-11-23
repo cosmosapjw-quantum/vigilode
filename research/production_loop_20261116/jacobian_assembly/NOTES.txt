@@ -54,3 +54,46 @@ NEXT STEPS
    and commit it before any measurement run.
 3. Implement assembly.rs + tests (identity, counts, fail closed, alloc), commit.
 4. Measurement test target / runner, logs, parser, RESULTS.json, REPORT_KO.md (rendered by a script).
+
+== 2026-11-23, entry 2 (client and contract tests done; nothing timed yet) ==
+
+COMMITS SO FAR
+- 13123887 PREDECLARED.json (predeclared_commit 1312388740c0e7217aff08e465e0a2973a1d39a1), before any run.
+- d3f3eb37 client: src/stage_clients/assembly.rs + assembly/{engine,pattern}.rs.
+- 6003d327 tests: tests/stage_clients_assembly_{identity,problems}.rs (13 tests pass).
+- this commit: tests/stage_clients_assembly_alloc.rs (1 test passes) and these notes.
+
+DESIGN AS BUILT
+- AssemblyStageClient = finite-difference engine + an unchanged back end of the kit. The engine writes the
+  Jacobian into a shared slot in the layout of the back end (row-major n x n, or the BandedJacobianFn band
+  layout); the back end reads it through its normal provider (DenseLuStageClient: jacobian_into of an internal
+  view problem; BandedStageLu / BandedTightStageLu: the band fill callback). The provider refuses a request
+  for another (t, y) than the assembled one. One copy of the Jacobian per linearization.
+- Sequential dense build = fd.rs:476-509 statement for statement; sequential coloured build = fd.rs:581-622
+  for the Curtis-Powell-Reid first-fit groups (for a full band: j mod (lower + upper + 1), the facade's
+  groups).
+- Threaded build: three parallel passes in one pool.install (right-hand sides into per-task slots that own
+  their shifted state copy; entries per task; target by rows). No lock held during a right-hand side, no
+  per-thread scratch (a right-hand side that itself uses rayon cannot deadlock the client).
+- Failure order of the threaded build = the sequential one (first failing task in task order, base first);
+  difference: every right-hand side of the build has been entered, so rhs_calls of a failed build is larger.
+- Checks: every coloured build compares the rows a colour does not cover with the base evaluation (no extra
+  right-hand side); first linearization (and on request) compares 8 evenly spread single-column evaluations
+  made on the calling thread (+ the base evaluation again for threaded execution). Sequential dense route:
+  no check (it is the facade's algorithm; nothing to compare with).
+- Typed error AssemblyError (UncoveredRowChanged, UndeclaredEntry, AliasedEntry, NotReproducible, ...); the
+  driver gets CoreError::InvalidInput (fatal), the typed error stays in AssemblyReportHandle.
+
+FACTS FOUND WHILE TESTING
+- First-fit colouring of the cyclic tridiagonal pattern with n = 11 gives 5 groups (4 would do): the grouping
+  is deterministic, not minimal.
+- CoreError has no PartialEq/Clone: tests compare Debug strings.
+- Zero allocations per accepted step for the sequential modes on DenseLu(InPlace), BandedStageLu and
+  BandedTightStageLu; threaded modes 0-1 per step (reported, not asserted).
+
+NEXT STEPS
+1. tests/stage_clients_assembly_measure.rs (#[ignore]): modes identity, rhs_cost, timing; logs under
+   jacobian_assembly/logs/.
+2. Standalone runner (vigilode dependency): facade_identity and facade sparse_jvp measurement.
+3. build_results.py, build_report.py, RESULTS.json, REPORT_KO.md; reference error with SciPy.
+4. clippy, rustfmt --check, sentinels, loop checker, strict JSON load.
