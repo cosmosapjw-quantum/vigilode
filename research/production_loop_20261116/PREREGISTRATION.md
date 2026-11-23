@@ -161,3 +161,6 @@ Reason: owner decision OD-L1-9 allows the Slices kernel on the facade's banded r
 
 Not changed by this node: the kernels, every existing entry point of the banded driver, the stage client `BandedStageLu`, callers outside the facade, tolerances, controller constants, default method routing, G0. Protected files edited under OD-L1-9: `rodas5p_fast.rs` and `rodas5p_fast_dense.rs` (new public functions only), `crates/vigilode/src/lib.rs` (route documentation and one re-export).
 
+## Ledger rows restated (appended 2026-11-23; nothing above this line changes)
+
+The rows L-0317 (V03 part A), L-0318 (V17), L-0319 (V16) and L-0320 (V19) of the result tables above break the row schema of the ledger (claim longer than 600 characters; the verdict KILL of L-0320 is not in the vocabulary). They are superseded by L-0324, L-0325, L-0326 and L-0327 with the same evidence, a claim within the limit and, for V19, the verdict FAIL. The verdicts of the nodes do not change: the frozen row of V19 calls its failure KILL.
