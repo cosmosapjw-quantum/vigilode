@@ -1,0 +1,27 @@
+# local probe of the step 'The recorded stopping-test difference of the merged hook still fails' (ignored-tests.yml)
+# the hosted step uses --profile measurement; this probe uses --release (existing build), same test and same filter
+# commit 6ff7e86a3f0a6bbbf4a08803a40f9c863f4317f2 (worktree with the uncommitted workflow edit); date 2026-11-23T23:38:00+09:00
+# command: taskset -c 0-5,12-17 cargo +1.94.1 test --release --locked -j 4 -p rodas5p-integrators --test stage_clients_krylov_contracts -- --ignored --exact merged_hook_solution_meets_the_protected_threshold
+    Finished `release` profile [optimized] target(s) in 2.54s
+     Running tests/stage_clients_krylov_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_krylov_contracts-f29d2171e495db3e)
+
+running 1 test
+test merged_hook_solution_meets_the_protected_threshold ... FAILED
+
+failures:
+
+---- merged_hook_solution_meets_the_protected_threshold stdout ----
+
+thread 'merged_hook_solution_meets_the_protected_threshold' (1327576) panicked at crates/rodas5p-integrators/tests/stage_clients_krylov_contracts.rs:655:5:
+the merged hook accepted a stage solution with residual 1.032519640099976e-4; the protected driver's threshold for this system is 1.9887688296747326e-9 (5.2e4 times smaller)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    merged_hook_solution_meets_the_protected_threshold
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test stage_clients_krylov_contracts`
+# exit code of cargo: 101
+STEP_RESULT pass: the test fails with its recorded signature

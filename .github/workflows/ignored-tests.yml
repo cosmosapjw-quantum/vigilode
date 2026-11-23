@@ -1,8 +1,10 @@
 name: Ignored long tests
 
 # Every #[ignore]d test runs here in the measurement profile (audit F-003).
-# The recorded kill gate is a negative control: it runs in a step of its own
-# that passes only while the test fails with its recorded signature.
+# Two ignored tests fail by design and are negative controls: the recorded
+# kill gate and the stopping-test difference of the merged stage hook. Each
+# runs in a step of its own that passes only while the test fails with its
+# recorded signature.
 # tools/check_ignored_tests_in_ci.py fails if a new ignored test is not
 # reachable from a workflow, or if a workflow skips a test that no other step
 # runs and that the script does not list as a documented exclusion.
@@ -39,11 +41,13 @@ jobs:
           rustup override set 1.94.1
       - name: Every ignored test is reachable from CI
         run: python3 tools/check_ignored_tests_in_ci.py
-      # The skipped test is the recorded kill gate; the next step runs it.
+      # The two skipped tests fail by design; the next two steps run them.
+      # --no-fail-fast: without it cargo stops at the first failing test
+      # binary and the binaries after it are not run.
       - name: Run the ignored tests in the measurement profile
         env:
           RAYON_NUM_THREADS: '1'
-        run: cargo test --workspace --profile measurement --locked -- --ignored --skip prothero_robinson_wfiltered_enforce_kill_gate
+        run: cargo test --workspace --profile measurement --locked --no-fail-fast -- --ignored --skip prothero_robinson_wfiltered_enforce_kill_gate --skip merged_hook_solution_meets_the_protected_threshold
       # Negative control (research/qualification/negative_controls/
       # negative_fixture_manifest.json): the kill gate failed on 2026-10-21 and
       # its threshold is frozen. The step passes only if the test still fails
@@ -67,3 +71,26 @@ jobs:
             exit 1
           fi
           echo "the kill gate fails with its recorded signature"
+      # Negative control of loop L1 node V06 (crates/rodas5p-integrators/tests/
+      # stage_clients_krylov_contracts.rs): the merged stage hook accepts a
+      # stage solution whose residual is above the threshold of the protected
+      # driver. The test states that fact as a failing assertion. The step
+      # passes only if the test still fails with that message.
+      - name: The recorded stopping-test difference of the merged hook still fails
+        if: ${{ !cancelled() }}
+        env:
+          RAYON_NUM_THREADS: '1'
+        run: |
+          set +e
+          out=$(cargo test --profile measurement --locked -p rodas5p-integrators --test stage_clients_krylov_contracts -- --ignored --exact merged_hook_solution_meets_the_protected_threshold 2>&1)
+          code=$?
+          echo "$out" | tail -n 25
+          if [ "$code" -eq 0 ]; then
+            echo "the test passed: the negative control no longer fails"
+            exit 1
+          fi
+          if ! echo "$out" | grep -q 'the merged hook accepted a stage solution with residual'; then
+            echo "the test failed without its recorded signature"
+            exit 1
+          fi
+          echo "the stopping-test difference fails with its recorded signature"

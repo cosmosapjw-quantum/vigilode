@@ -147,3 +147,14 @@ PR base(`074a5699`) 대비 `vigilode` 공개 API가 깨졌다. 전부 switcher �
 - 발견: `Q_NEGATIVE_EVIDENCE.json`이 적은 manifest hash(82f7d983...)는 commit된 파일의 hash(e3b06b7e...)와 다르다. 채택한 switcher 계보의 증거 기록 문제이며 이번에 고치지 않았다.
 - 남는 `research-process` 실패: stall rule 5건(switcher node L-0210~L-0214). 이 node들은 유효한 수치 결과가 없어서 행을 고쳐 해소할 수 없다.
 
+
+## 8. 2026-11-23 밤: 호스티드 결과와 두 번째 음성대조
+
+head 892132e5의 호스티드 실행(run 45187691774, 45187691424):
+
+- Production CI: 다음 push가 취소했다. 취소 전에 fmt, docs, clippy, semver는 통과했고 bench는 알려진 대로 `vigilode-bench`의 rust-version에서 멈췄다(V11).
+- Ignored long tests: 도달성 검사 통과. kill gate 음성대조 단계는 runner에서도 통과했다(`KILL GATE: 2.143x the Off accepted-step count > 1.3x`). 전체 workspace 단계는 test 하나에서 실패했다: `stage_clients_krylov_contracts.rs`의 `merged_hook_solution_meets_the_protected_threshold`. 이 loop의 V06 node(2026-11-17)가 넣은 test이고 ignore 사유가 "fails by design"이다. 병합된 stage hook이 잔차 1.032519640099976e-4인 해를 받아들이는데 보호 driver의 기준은 1.9887688296747326e-9라는 사실을 실패하는 assertion으로 적어 둔 것이다. 오늘 저녁까지는 kill gate가 먼저 cargo를 멈춰서 이 test binary까지 간 적이 없었다. 그 단계에 `--no-fail-fast`가 없어서 그 뒤 test binary들은 실행되지 않았다.
+
+조치(OD-L1-12 범위): `ignored-tests.yml`에서 이 test를 전체 workspace 단계에서 빼고 kill gate와 같은 형식의 별도 단계로 실행한다. 그 단계는 test가 기록된 문구로 실패할 때만 통과한다. 전체 workspace 단계에 `--no-fail-fast`를 넣었다. `tools/check_ignored_tests_in_ci.py`: ignored test 96개 전부 도달, 제외 항목 없음. local에서 같은 논리를 release profile로 돌린 결과 runner와 같은 두 숫자로 실패한다(`raw/local_probe_merged_hook_negative_control.log`).
+
+설계상 실패하는 ignored test는 이 둘뿐이다(`#[ignore]` 사유 전수 확인).
