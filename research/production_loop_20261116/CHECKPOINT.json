@@ -86,7 +86,10 @@
     "research/production_loop_20261116/banded_solve/REVIEW.json": "6c9f6d9ef9e9b2fc97954932e0897ac7e8a6f8e61c1ae57e5dbfcf8d119a885a",
     "research/production_loop_20261116/unified_router/PREDECLARED.json": "37931a3567e9edefb8c69bfeacd3f953edb756e195759a1aa2dae2efde11253b",
     "research/production_loop_20261116/unified_router/RECEIPT.json": "bc469b227c99d72a97caadfec32cc8403ce24d5cac7ff39ae245f4ad9c87c8e8",
-    "research/production_loop_20261116/unified_router/REVIEW.json": "6154b1d0ede055518936f9d82e484b3a1a7a7d160dda3af4633386188a0b036e"
+    "research/production_loop_20261116/unified_router/REVIEW.json": "6154b1d0ede055518936f9d82e484b3a1a7a7d160dda3af4633386188a0b036e",
+    "research/production_loop_20261116/jacobian_assembly/PREDECLARED.json": "9d23b8fd1cdce0292a54f4160df2cbdcd607cf9ce070f90de29eaf761dbb02da",
+    "research/production_loop_20261116/jacobian_assembly/RESULTS.json": "db78b0d559fc3578c51906096b65b16a3b93776cb957a02eb6df3223db22af14",
+    "research/production_loop_20261116/jacobian_assembly/REVIEW.json": "de80d4af5813a4223cef926a70b636e3716ceb87649943d53767d31fb9b17f76"
   },
   "implemented_source_sha256": {
     "crates/vigilode/tests/default_path_golden.rs": "9ef2b4b7aff1d92b14c7f28c764e5ff791a2823091ec50cf8ffc1167366863ec",
@@ -136,7 +139,14 @@
     "crates/vigilode/src/registry.rs": "88b39c788796ae49fafbc2c346eb280d263f9694e8c98923b6e04ec6e50f4ddf",
     "crates/vigilode/tests/unified_router_contracts.rs": "03e58ae0b62e6e1b916ec6a275abe28c26a5c1680ef7c5f7aa407171e7986a71",
     "crates/vigilode/tests/unified_production_solver_contracts.rs": "635c068d03a03a6d1053f6744fb4364cd3b7bbe868d72a74fd0cdf09352f5357",
-    "crates/vigilode/examples/unified_production_solver.rs": "40e423913b1cce7c86ee2ebf92bc1dd6e1e709f0f70ea47813ec6efb463e53d2"
+    "crates/vigilode/examples/unified_production_solver.rs": "40e423913b1cce7c86ee2ebf92bc1dd6e1e709f0f70ea47813ec6efb463e53d2",
+    "crates/rodas5p-integrators/src/stage_clients/assembly.rs": "43163061d7b59ddf528147510c0f6f2397ad926ee12f5b62d0fd3581a1fceac1",
+    "crates/rodas5p-integrators/src/stage_clients/assembly/engine.rs": "7bfaabea782e5c0c36accbdaaa83097b9ff762ae29033ddcbe9446f72c0f148c",
+    "crates/rodas5p-integrators/src/stage_clients/assembly/pattern.rs": "05ec338343713f2d104222c6356dc9edb0f6de0cad76249e8706cd8c33cbf265",
+    "crates/rodas5p-integrators/tests/stage_clients_assembly_identity.rs": "e5f8a3d7e813bf5f2c7dc66b8978e62ee84a88c46d91fb5d18fe0f59693263e8",
+    "crates/rodas5p-integrators/tests/stage_clients_assembly_alloc.rs": "d0f084b3fbea653e2708092372eae296873c38465f2e0bd67f835a62590a7593",
+    "crates/rodas5p-integrators/tests/stage_clients_assembly_measure.rs": "14226a2e117c3b993f88e1c57ed7df6eda389f3bc670ff98253975354c51b59b",
+    "crates/rodas5p-integrators/tests/stage_clients_assembly_problems.rs": "1451236df52a99c08ca9a0e0e5f6e6e440d75cf8ba4c213bee5477b60d6eb939"
   },
   "preregistration_frozen_part_sha256": "0a5c7e061be57d24f382f24594c7d83a1ec68a4365ec6590c316d1d351ba0c85",
   "notes": [
@@ -156,7 +166,8 @@
     "2026-11-23: owner decisions OD-L1-13 and OD-L1-14 appended to OWNER_DECISIONS_20261116.json; its identity is updated.",
     "2026-11-23: independent review of nodes V19 and V21 (banded_solve/REVIEW.json) added to the evidence list; the report of those nodes was regenerated after its corrections (result files unchanged).",
     "2026-11-23: review finding F08 of nodes V19 and V21: the fixed-width solve of BandedTightStageLu uses wrapping pivot differences (no overflow panic on a solve before a factorization) and the identity test file gains two tests; both identities updated.",
-    "2026-11-23: node V03 part B (unified router) merged (cfbd2b18): unified_router/PREDECLARED.json, RECEIPT.json and REVIEW.json added to the evidence list and the twelve code paths of the node to the implemented sources (unified/analyzer.rs with the documentation correction of review finding F2); V03_UNIFIED_FRONTEND is COMPLETE_SCOPED in TASK_CONTRACTS.json and RESEARCH_DAG.json."
+    "2026-11-23: node V03 part B (unified router) merged (cfbd2b18): unified_router/PREDECLARED.json, RECEIPT.json and REVIEW.json added to the evidence list and the twelve code paths of the node to the implemented sources (unified/analyzer.rs with the documentation correction of review finding F2); V03_UNIFIED_FRONTEND is COMPLETE_SCOPED in TASK_CONTRACTS.json and RESEARCH_DAG.json.",
+    "2026-11-23: node V08 (finite-difference Jacobian assembly client) merged (bc8121cf) and corrected after its review (a7d1e824): jacobian_assembly/PREDECLARED.json, RESULTS.json and REVIEW.json added to the evidence list, the three source files and four test files of the client to the implemented sources; V08_JACOBIAN_ASSEMBLY is COMPLETE_SCOPED."
   ],
   "epochs": [
     {

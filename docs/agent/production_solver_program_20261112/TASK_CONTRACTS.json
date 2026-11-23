@@ -979,7 +979,7 @@
       "depends": [
         "V15_STAGE_CLIENT_KIT"
       ],
-      "status": "PLANNED",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Exact threaded and coloured Jacobian assembly.",
       "write_allowlist": [
         "crates/rodas5p-integrators/src/stage_clients/**",
@@ -1007,7 +1007,11 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_loop_20261116/jacobian_assembly/RESULTS.json",
+        "research/production_loop_20261116/jacobian_assembly/REVIEW.json"
+      ],
+      "state_note": "Identity, right-hand-side count and the seven declared fail-closed controls PASS (ledger L-0330); wall FAIL under the pre-declared strict rule: dense cell PASS, wide band NOT_DECIDABLE, narrow band FAIL (ledger L-0331). Reviewer corrections in REVIEW.json; the default check of 8 sampled columns is not fail-closed in general (finding F-01; whether the full check becomes the default is an owner item)."
     },
     {
       "id": "V09_LAGGED_LARGE_N",
