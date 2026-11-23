@@ -132,3 +132,46 @@ REMAINING (mechanical, in this order)
 2. ./run_measurements.sh perf <cell> <arm> for the qualifying cells, arms seq and t6.
 3. python3 -I reference_error.py <cell> >> logs/reference_error.log for the 3 qualifying cells.
 4. ./run_checks.sh; python3 -I build_results.py; python3 -I build_report.py; commit.
+
+== 2026-11-23 22:52, entry 4 (everything run; timing tries 1 and 2 done, try 3 is the last action) ==
+
+STATE
+- Frozen discriminators from the logs (build_results.py): identity PASS (30 client runs of the 5 declared
+  cells equal the protected driver runs), rhs_calls PASS, fail_closed PASS (7 negative controls).
+- Wall: two tries per cell so far, every ratio but one is diagnostic_only by the quality rule (1-minute load
+  above 8: other agents of the group compile and time, jobs of other projects run unpinned, also on the
+  timing cores). Consistent diagnostic picture over both tries, whole solve seq/tP:
+    nlkpp-dense-n400      t2 1.78/1.79, t4 2.96/3.05, t6 3.93/3.89  (right-hand side 102 us)
+    nlkpp-band-n4096-r24  t2 1.20/1.21, t4 1.29/1.46, t6 1.51/1.58  (banded_tight; 95 us, 49 colours)
+      secondary back end banded_protected: t6 1.36 (try 1), 1.37 (try 2, authoritative: load 6.4/6.7)
+    bruss1d-n131072       t2 0.93/0.91, t4 0.93/0.92, t6 0.99/0.94  (164-177 us, 5 colours)
+    controls              0.48-0.89 (threading loses)
+- Bounded wait: 21:57:16-22:17:46, one check per minute, load never at or below 8 (12-28). Try 1 measured
+  at 22:18 anyway. Try 2 at 22:35-22:49 when the load touched 8 (7.9 at the decision, 8.1-10.9 inside the
+  cells). No further waiting: try 3 is run once at the end, whatever the load.
+- Instruction counts (perf stat, one solve per arm, diagnostic): threading adds 0.3 % (dense), 2.6 % (wide
+  band), 8 % (narrow band).
+- Reference errors (SciPy 1.11.4 LSODA, NumPy 1.26.4: the versions "python3 -I" finds on this host):
+  3.0e-7 (dense), 6.6e-8 (wide band), 3.8e-6 (narrow band, 3.5 tolerance units); reference uncertainty
+  9e-10, 5e-10, 3e-9. First attempt failed for the banded problems (LSODA wants lband padding rows in the
+  banded Jacobian); corrected and rerun, noted in the log header.
+
+CORRECTIONS MADE (none touches a frozen number)
+- Contract tests used atol = 1e-2 rtol for every problem; PREDECLARED.json says rtol * b1 case scale (1) for
+  the Brusselator. Tests corrected (commit 01b21a63); all pass.
+- An expectation of mine in a test was wrong (first-fit colours of the cyclic pattern, n = 11: 5, not 4).
+
+FINDINGS FOR THE ORCHESTRATOR
+- rodas5p-integrators has no finite-difference state Jacobian; "the protected driver's finite-difference
+  path" is crates/vigilode/src/fd.rs, attached by the facade as a Jacobian callback. The client re-implements
+  that arithmetic; equality with the real fd.rs is shown through vigilode::Rodas5p::solve (logs/facade.log).
+- In bruss1d-n131072 only about a quarter of the Jacobian phase of this client is right-hand-side time; the
+  rest is entry extraction, the check and the copy into the back end (memory traffic). Threading cannot help
+  there; a tighter sequential path (no entry table, no copy) would.
+- vigilode Stats report jvp_calls = 0 for Jacobian::sparse_jvp on a banded pattern (368 JVP calls made).
+- Client construction (colouring, tables) costs 16-18 ms for n = 4096 with 49 colours: 4-7 % of the short
+  timed solves; it is inside the declared wall.
+
+REMAINING
+- ./run_checks.sh; ./run_measurements.sh timing <cell> 3 (5 cells + protected secondary);
+  python3 -I build_results.py; python3 -I build_report.py; commit.
