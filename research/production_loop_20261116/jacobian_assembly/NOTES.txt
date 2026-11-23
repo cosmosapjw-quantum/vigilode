@@ -1,0 +1,56 @@
+NOTES of node V08_JACOBIAN_ASSEMBLY (loop L1, wave 2), builder worktree w2-v08
+branch research/production-loop-20261116-w2-v08, base 587a139501729bbe886bb2b8c49b0ef893705d08
+All times KST. Newest entry last.
+
+== 2026-11-23, entry 1 (start; nothing measured yet) ==
+
+READ SO FAR (file:line)
+- research/production_loop_20261116/PREREGISTRATION.md:32  frozen row V08: "Jacobian and trajectory bitwise
+  equal to sequential assembly; RHS calls = colours + 1; wall >= 1.5x on finite-difference problems with
+  n >= 64 and RHS cost >= 50 microseconds | kill < 1.1x". Rules at :11-17.
+- docs/agent/production_solver_program_20261112/TASK_CONTRACTS.json tasks[20] (V08): acceptance checks, the same
+  three lines plus "a wrong pattern fails closed"; failure_action "Opt-in execution policy only".
+- crates/rodas5p-integrators/src/client_stage.rs:36-60  trait StageLinearSystem (linearize / factor /
+  solve_in_place; the driver charges jacobian_builds before linearize).
+- crates/rodas5p-integrators/src/stage_clients/dense_lu.rs:160-262  DenseLuStageClient: linearize through
+  OdeProblem::dense_jacobian_into, W = I/(h gamma) - J (negate, add diagonal), lu_research::zero_skipping
+  or LuFactorization (faer). Its jacobian field is private (no setter).
+- crates/rodas5p-integrators/src/stage_clients/timed.rs  TimedStageClient + PhaseTimesHandle (linearize_ns
+  is the Jacobian phase).
+- crates/rodas5p-integrators/src/problem.rs:391-437  OdeProblem::new needs an explicit Jacobian or a JVP;
+  :645-664 eval_rhs_into (charges rhs_calls and rhs_evaluations, checks finite); :871-895
+  dense_jacobian_into. FINDING: rodas5p-integrators has NO finite-difference state Jacobian. The only
+  finite difference in problem.rs is the time derivative (:823-831).
+- The finite-difference Jacobian of the default path lives in the facade, crates/vigilode/src/fd.rs:
+  :443-455 increment(yj): raw = sqrt(EPS) * max(|yj|, 1); forward = yj + raw; shifted = forward if finite
+           else yj - raw; delta = shifted - yj  (the represented difference).
+  :476-509 DenseFdScratch::fill: matrix zeroed; f0 = rhs(t, y) into a zeroed buffer; shifted = y; for j in
+           0..n: shifted[j] = y_j shifted; f1 zeroed; rhs(t, shifted, f1); shifted[j] = y[j]; for i:
+           entry = (f1[i] - f0[i]) / delta; non-finite entry -> CoreError::NonFinite; matrix[(i,j)] = entry.
+  :581-622 BandedFdScratch::fill: groups = min(lower+upper+1, n); group g perturbs the columns
+           j = g, g+width, ...; entry = (f1[i] - f0[i]) / deltas[j] for i in the band rows of column j.
+  :220-223 Guard::fd_rhs and :103-134 Guard::vector_call: the facade wraps the user RHS (output filled
+           with NaN before the call, input checked finite); FD right-hand sides are counted by the Guard
+           (fd_rhs_calls), not by the driver's WorkCounters.
+  fd.rs is not in the protected list of this task but its bits are pinned by the default-path golden.
+
+DESIGN DECISIONS SO FAR
+- The client lives in rodas5p-integrators and cannot call vigilode::fd (dependency direction). It
+  re-implements the arithmetic of fd.rs:443-455 and :476-509 and cites those lines. Equality with the real
+  facade code is checked in the standalone runner (which may depend on both crates) through trajectories of
+  vigilode::solve with Jacobian::FiniteDifference; equality with a test-local transcription of fd.rs is
+  checked in the crate tests.
+- Right-hand sides are evaluated through OdeProblem::eval_rhs_into with per-worker WorkCounters that are
+  summed afterwards (integer sums, order independent).
+- Threaded modes use a rayon ThreadPool owned by the client (ThreadPoolBuilder::num_threads(P)), never the
+  global pool.
+- "wall" in the frozen row: primary = whole solve (client construction + integrate); secondary = the
+  Jacobian phase (TimedStageClient linearize_ns). To be frozen in PREDECLARED.json before any measurement.
+
+NEXT STEPS
+1. Read the client driver entry (rodas5p_fast.rs integrate_rodas5p_fast_client_observed_with_atol), the
+   dense identity test, banded_tight.rs, the facade solve.rs FD wiring and coloring.rs.
+2. Write PREDECLARED.json (problems, P, tolerances, wall definition, timing quality rule, verdict rule)
+   and commit it before any measurement run.
+3. Implement assembly.rs + tests (identity, counts, fail closed, alloc), commit.
+4. Measurement test target / runner, logs, parser, RESULTS.json, REPORT_KO.md (rendered by a script).
