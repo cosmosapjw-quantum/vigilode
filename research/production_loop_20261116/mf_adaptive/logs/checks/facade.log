@@ -1,35 +1,34 @@
-# V24_CHECK_BEGIN {"name": "facade", "command": ["cargo", "+1.94.1", "test", "--locked", "-j", "4", "--release", "--no-fail-fast", "-p", "vigilode"], "cpus": "0-5,12-17", "git_head": "d891c5491b54b6b164d040bc838ba40924c8b56c", "git_dirty_tracked": 1, "date": "2026-11-24T00:14:56+0900"}
-   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/vigilode)
-    Finished `release` profile [optimized] target(s) in 5m 39s
+# V24_CHECK_BEGIN {"name": "facade", "command": ["cargo", "+1.94.1", "test", "--locked", "-j", "4", "--release", "--no-fail-fast", "-p", "vigilode"], "cpus": "0-5,12-17", "git_head": "55b35f61b5f9eabbbbd49910ae06e8d0b3e766ef", "git_dirty_tracked": 6, "date": "2026-11-24T00:24:14+0900"}
+    Finished `release` profile [optimized] target(s) in 0.05s
      Running unittests src/lib.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/vigilode-c8ae2c2baf35fbb7)
 
 running 60 tests
 test coloring::tests::dense_row_forces_n_colours ... ok
-test coloring::tests::malformed_patterns_are_refused ... ok
 test coloring::tests::five_point_colouring_is_valid_and_bounded ... ok
-test coloring::tests::recovery_reproduces_dense_jacobian ... ok
+test coloring::tests::malformed_patterns_are_refused ... ok
 test coloring::tests::tridiagonal_needs_three_colours ... ok
+test coloring::tests::recovery_reproduces_dense_jacobian ... ok
 test fd::tests::a_fatal_error_latches_and_short_circuits ... ok
 test fd::tests::dense_difference_is_accurate_to_the_increment ... ok
 test events::tests::missing_extension_is_an_explicit_failure_without_calling_event ... ok
 test events::tests::missing_interior_does_not_implicate_the_event_callback ... ok
-test fd::tests::fd_workspace_preserves_original_dense_bits ... ok
-test fd::tests::grouped_band_equals_the_band_of_the_dense_difference ... ok
-test fd::tests::finite_boundary_uses_a_signed_representable_increment ... ok
-test fd::tests::recoverable_band_failure_restores_group_shift_before_retry ... ok
-test fd::tests::fatal_fd_error_enters_callback_once_then_short_circuits ... ok
-test fd::tests::recoverable_fd_failure_restores_shift_and_preserves_charges ... ok
-test fd::tests::nonfinite_difference_entries_fail_before_factorization ... ok
 test fd::tests::dense_into_matches_returned_matrix_bits_and_counters ... ok
+test fd::tests::fd_workspace_preserves_original_dense_bits ... ok
+test fd::tests::finite_boundary_uses_a_signed_representable_increment ... ok
+test fd::tests::fatal_fd_error_enters_callback_once_then_short_circuits ... ok
+test fd::tests::grouped_band_equals_the_band_of_the_dense_difference ... ok
+test fd::tests::nonfinite_difference_entries_fail_before_factorization ... ok
+test fd::tests::recoverable_band_failure_restores_group_shift_before_retry ... ok
+test fd::tests::recoverable_fd_failure_restores_shift_and_preserves_charges ... ok
 test fd::tests::test_jvp_chebyshev4_ver07_accuracy ... ok
 test fd::tests::vector_callback_refuses_invalid_input_without_entering_user_code ... ok
+test hermite_splice::tests::test_derivative_continuity_at_switch ... ok
 test hermite_splice::tests::test_endpoint_preservation_bit_for_bit ... ok
 test hermite_splice::tests::test_interior_point_accuracy ... ok
+test fd::tests::concurrent_build_uses_isolated_scratch_without_waiting_on_callback ... ok
 test hermite_splice::tests::test_invalid_splice_construction ... ok
 test margin::tests::boundary_table ... ok
-test fd::tests::vector_callback_detects_stale_output_on_reused_buffer ... ok
 test margin::tests::ratio_validation ... ok
-test fd::tests::concurrent_build_uses_isolated_scratch_without_waiting_on_callback ... ok
 test margin::tests::unit_ratio_reduces_to_existing_strict_rules ... ok
 test registry::fnv_tests::fnv1a64_feeds_integers_little_endian ... ok
 test registry::fnv_tests::fnv1a64_matches_reference_vectors ... ok
@@ -46,16 +45,14 @@ test switching::adaptive_return_productive_contract::entry_checkpoint_seed_uses_
 test switching::adaptive_return_productive_contract::entry_seed_never_reduces_the_requested_initial_proposal ... ok
 test switching::adaptive_return_productive_contract::implicit_tiny_representable_tail_uses_native_endpoint_clipping ... ok
 test switching::adaptive_return_productive_contract::observed_entry_step_accepts_only_finite_positive_accepted_prefixes ... ok
-test solution::tests::truncate_after_on_both_extension_stores ... ok
-test hermite_splice::tests::test_derivative_continuity_at_switch ... ok
 test switching::adaptive_return_productive_contract::return_work_ceiling_saturates_for_overflowing_short_interval_rate ... ok
 test switching::adaptive_return_productive_contract::unresolved_retry_is_sticky_but_never_rearms_within_one_explicit_tenure ... ok
-test switching::comparator_dominance_arithmetic_contract::ceiling_uses_upper_candidate_cost_and_prefix_lower_bound ... ok
 test switching::adaptive_return_productive_contract::stale_old_rate_cannot_replace_a_cheaper_same_window_implicit_candidate ... ok
+test switching::comparator_dominance_arithmetic_contract::ceiling_uses_upper_candidate_cost_and_prefix_lower_bound ... ok
 test switching::comparator_dominance_arithmetic_contract::outward_cost_check_never_promotes_an_inexact_boundary ... ok
+test solution::tests::truncate_after_on_both_extension_stores ... ok
 test switching::comparator_dominance_arithmetic_contract::public_enum_variants_exhaustive_baseline_v1 ... ok
 test switching::comparator_dominance_arithmetic_contract::strict_entry_callback_ceiling_is_exact_and_never_truncates_large_costs ... ok
-test margin::tests::caps_are_decision_preserving ... ok
 test switching::comparator_dominance_arithmetic_contract::strict_entry_counts_all_existing_work_categories_with_checked_arithmetic ... ok
 test switching::comparator_dominance_arithmetic_contract::strict_entry_keeps_ties_and_resolves_one_unit_above_float_precision ... ok
 test switching::comparator_dominance_arithmetic_contract::strict_entry_requires_qualified_completion_of_the_same_accepted_prefix ... ok
@@ -63,6 +60,8 @@ test switching::comparator_dominance_arithmetic_contract::strict_return_ceiling_
 test switching::comparator_dominance_arithmetic_contract::strict_return_requires_same_window_and_resolves_exact_integer_boundary ... ok
 test switching::comparator_dominance_arithmetic_contract::v2_entry_callback_cap_matches_boundary_table ... ok
 test switching::comparator_dominance_arithmetic_contract::v2_return_callback_cap_matches_boundary_table ... ok
+test fd::tests::vector_callback_detects_stale_output_on_reused_buffer ... ok
+test margin::tests::caps_are_decision_preserving ... ok
 test switching::comparator_dominance_arithmetic_contract::v2_caps_are_decision_preserving ... ok
 
 test result: ok. 60 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
@@ -73,11 +72,11 @@ running 10 tests
 test adaptive_factory_and_frontdoor_preserve_derivative_permission ... ok
 test invalid_adaptation_is_refused_before_callbacks ... ok
 test adaptive_probes_remain_inside_global_attempt_budget ... ok
-test return_to_explicit_requires_same_checkpoint_comparison ... ok
-test exhausted_return_comparison_budget_keeps_previous_committed_state ... ok
 test fatal_return_comparator_does_not_publish_the_discarded_probe_state ... ok
-test completed_fast_transients_renew_uneconomical_startup_comparisons ... ok
+test exhausted_return_comparison_budget_keeps_previous_committed_state ... ok
+test return_to_explicit_requires_same_checkpoint_comparison ... ok
 test adaptive_sentinel_never_exhausts_its_observation_right_in_stable_regime ... ok
+test completed_fast_transients_renew_uneconomical_startup_comparisons ... ok
 test stable_rotation_reuses_negative_evidence_without_regressing_native_backoff ... ok
 test shifted_smooth_stiffness_onsets_renew_old_negative_evidence ... ok
 
@@ -98,8 +97,8 @@ test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 10 tests
 test eligible_challenger_still_requires_replay_contract_and_explicit_resource_permission ... ok
 test default_rhs_only_route_matches_one_native_observed_run_exactly ... ok
-test global_feature_requests_are_refused_before_any_callback ... ok
 test fallback_keeps_failed_partial_run_and_charges_the_attempt_budget ... ok
+test global_feature_requests_are_refused_before_any_callback ... ok
 test ineligible_challenger_does_not_hide_invalid_numerical_input ... ok
 test missing_optional_provider_runs_rhs_once_and_preserves_window_observations ... ok
 test missing_optional_time_derivative_does_not_force_replay_or_call_jacobian ... ok
@@ -152,9 +151,9 @@ test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
      Running tests/comparator_dominance_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/comparator_dominance_contracts-a57a4443cb6523b9)
 
 running 3 tests
+test an_observed_fatal_comparator_precedes_dominance_and_retains_checkpoint ... ok
 test implicit_first_sentinel_is_unchanged_by_ordinary_comparator_optimization ... ok
 test stopped_comparator_preserves_the_entire_accepted_trajectory_and_reduces_work ... ok
-test an_observed_fatal_comparator_precedes_dominance_and_retains_checkpoint ... ok
 
 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
@@ -163,12 +162,12 @@ test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 11 tests
 test format_helpers_are_bit_faithful ... ok
 test golden_directory_is_exactly_the_listed_files ... ok
-test dopri5 ... ok
 test rodas5p_contracts ... ok
-test production_automatic ... ok
+test dopri5 ... ok
 test rodas5p_robertson ... ok
-test rodas5p_vanderpol ... ok
+test production_automatic ... ok
 test rodas5p_hires ... ok
+test rodas5p_vanderpol ... ok
 test decision_grid ... ok
 test general_ode ... ok
 test rodas5p_brusselator ... ok
@@ -194,13 +193,13 @@ test events_without_dense_output_refused ... ok
 test even_crossings_in_a_half_interval_and_tangent_touches_are_missed ... ok
 test exponential_decay_half_life ... ok
 test iteration_cap_falls_back_to_bisection ... ok
-test nonfinite_event_function_fails_typed ... ok
 test crossing_at_step_endpoint_reported_once ... ok
+test nonfinite_event_function_fails_typed ... ok
 test events_do_not_change_integration ... ok
-test terminal_event_charges_work_after_it ... ok
 test terminal_event_truncates ... ok
-test terminal_index_is_into_events_not_declaration ... ok
+test terminal_event_charges_work_after_it ... ok
 test zero_at_t0_is_not_an_event ... ok
+test terminal_index_is_into_events_not_declaration ... ok
 test oscillator_crossings ... ok
 test nonfinite_event_keeps_an_earlier_driver_failure ... ok
 test terminal_event_wins_over_later_driver_failure ... ok
@@ -237,11 +236,11 @@ test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 9 tests
 test exact_key_and_nesting_cannot_reuse_unsafe_evidence ... ok
 test expired_calibration_falls_back_and_requests_probe ... ok
+test actual_dispatch_preserves_order_and_no_implicit_replay ... ok
 test invalid_or_wrong_output_clears_prior_evidence ... ok
 test measured_gain_and_overhead_payback ... ok
-test actual_dispatch_preserves_order_and_no_implicit_replay ... ok
-test single_item_calibration_never_replays_or_builds_pool ... ok
 test internal_nested_wrapper_is_forced_serial ... ok
+test single_item_calibration_never_replays_or_builds_pool ... ok
 test slow_parallel_stays_serial ... ok
 test real_calibration_and_shape_validation ... ok
 
@@ -285,25 +284,25 @@ test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
      Running tests/facade_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/facade_contracts-c26d1deed7c459f1)
 
 running 20 tests
-test a_recoverable_rhs_error_rejects_the_step_and_the_run_succeeds ... ok
 test an_exhausted_attempt_budget_is_a_typed_failure ... ok
+test a_recoverable_rhs_error_rejects_the_step_and_the_run_succeeds ... ok
 test a_failing_rhs_returns_the_partial_solution_and_a_typed_reason ... ok
 test dense_jacobian_with_declared_band_is_verified_and_routed_to_the_banded_driver ... ok
+test banded_user_jacobian_is_bit_identical_to_the_direct_banded_driver ... ok
 test explicit_time_derivative_drives_a_nonautonomous_problem ... ok
 test dense_route_records_jacobian_reuses_and_lu ... ok
-test malformed_input_is_refused_before_any_step ... ok
-test banded_user_jacobian_is_bit_identical_to_the_direct_banded_driver ... ok
 test banded_routes_record_band_work ... ok
+test malformed_input_is_refused_before_any_step ... ok
 test unsupported_requests_are_refused_not_substituted ... ok
-test performance_tier_executes_the_protected_route_bit_for_bit ... ok
 test robertson_dense_jacobian_is_bit_identical_to_the_direct_fast_driver ... ok
 test stats_serialize_every_option_and_counter ... ok
-test vector_atol_refused_on_mf_sequential_and_declared_band ... ok
 test zero_atol_with_an_identically_zero_component_succeeds_on_dense_and_jvp_routes ... ok
+test vector_atol_refused_on_mf_sequential_and_declared_band ... ok
+test performance_tier_executes_the_protected_route_bit_for_bit ... ok
 test banded_finite_difference_uses_grouped_columns_and_the_banded_driver ... ok
 test vector_atol_accepted_on_fast_routes ... ok
-test finite_difference_robertson_is_within_twice_the_analytic_error ... ok
 test stiff_example_jvp_is_bit_identical_to_the_direct_matrix_free_driver ... ok
+test finite_difference_robertson_is_within_twice_the_analytic_error ... ok
 test matrix_free_route_records_state_reuses_and_policy_ids ... ok
 
 test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
@@ -312,28 +311,28 @@ test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fin
 
 running 15 tests
 test fd::tests::a_fatal_error_latches_and_short_circuits ... ok
-test fd::tests::dense_into_matches_returned_matrix_bits_and_counters ... ok
 test fd::tests::dense_difference_is_accurate_to_the_increment ... ok
-test fd::tests::fatal_fd_error_enters_callback_once_then_short_circuits ... ok
-test fd::tests::fd_workspace_preserves_original_dense_bits ... ok
+test fd::tests::dense_into_matches_returned_matrix_bits_and_counters ... ok
 test fd::tests::concurrent_build_uses_isolated_scratch_without_waiting_on_callback ... ok
+test fd::tests::fd_workspace_preserves_original_dense_bits ... ok
+test fd::tests::fatal_fd_error_enters_callback_once_then_short_circuits ... ok
 test fd::tests::finite_boundary_uses_a_signed_representable_increment ... ok
-test fd::tests::nonfinite_difference_entries_fail_before_factorization ... ok
 test fd::tests::grouped_band_equals_the_band_of_the_dense_difference ... ok
+test fd::tests::nonfinite_difference_entries_fail_before_factorization ... ok
 test fd::tests::recoverable_band_failure_restores_group_shift_before_retry ... ok
 test fd::tests::recoverable_fd_failure_restores_shift_and_preserves_charges ... ok
 test fd::tests::test_jvp_chebyshev4_ver07_accuracy ... ok
 test fd::tests::vector_callback_detects_stale_output_on_reused_buffer ... ok
-test repeated_fd_builds_reuse_scratch_after_warmup ... ok
 test fd::tests::vector_callback_refuses_invalid_input_without_entering_user_code ... ok
+test repeated_fd_builds_reuse_scratch_after_warmup ... ok
 
 test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
      Running tests/fd_chebyshev_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/fd_chebyshev_contracts-4805585bee14d208)
 
 running 3 tests
-test test_chebyshev4_convergence_order_smooth ... ok
 test test_chebyshev4_kink_detection ... ok
+test test_chebyshev4_convergence_order_smooth ... ok
 test test_chebyshev4_zero_allocation ... ok
 
 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
@@ -342,16 +341,16 @@ test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 
 running 3 tests
 test bad_forcing_is_rejected_before_callback ... ok
-test declared_affine_facade_uses_no_derivatives_and_reports_split ... ok
 test affine_fatal_callback_preserves_initial_state ... ok
+test declared_affine_facade_uses_no_derivatives_and_reports_split ... ok
 
 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
      Running tests/frontier_fatal_session_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/frontier_fatal_session_contracts-4a1e76f376a0edd5)
 
 running 3 tests
-test fatal_interior_sink_rejects_candidate_and_keeps_initial_prefix ... ok
 test fatal_on_last_budget_attempt_overrides_budget_and_skips_events ... ok
+test fatal_interior_sink_rejects_candidate_and_keeps_initial_prefix ... ok
 test terminal_callbacks_stop_once_and_preserve_prefix_on_supported_routes ... ok
 
 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
@@ -424,8 +423,8 @@ test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 6 tests
 test declared_linear_flow_removes_fast_scale_without_derivatives ... ok
 test fatal_and_malformed_residuals_preserve_partial_states_and_telemetry ... ok
-test malformed_requests_are_refused_before_residual_evaluation ... ok
 test facade_records_residual_work_and_method_identity ... ok
+test malformed_requests_are_refused_before_residual_evaluation ... ok
 test nonlinear_radial_residual_has_independent_exact_decay ... ok
 test residual_is_n_not_full_rhs_and_forcing_matches_analytic_solution ... ok
 
@@ -439,8 +438,8 @@ test conservative_semidiscretizations_telescope ... ok
 test false_switching_claims_are_negative_controls ... ok
 test hierarchy_streaming_is_skew_and_scattering_is_dissipative ... ok
 test invalid_or_overflowed_reference_is_unavailable ... ok
-test all_twenty_four_models_have_finite_rhs_and_directional_derivatives ... ok
 test negligible_evolution_certificate_is_scoped_in_time ... ok
+test all_twenty_four_models_have_finite_rhs_and_directional_derivatives ... ok
 test nonautonomous_partial_time_derivative_matches_independent_difference ... ok
 test data_parallel_rows_preserve_bits_and_thread_pool_budget ... ok
 
@@ -467,9 +466,9 @@ test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fin
 running 9 tests
 test band_declaration_on_jvp_problem ... ok
 test declared_band_on_dense_with_mass_or_dense_output ... ok
-test display_text_is_the_former_message ... ok
 test events_without_dense_output ... ok
 test jvp_with_mass_or_dense_output ... ok
+test display_text_is_the_former_message ... ok
 test vector_atol_on_matrix_free_route ... ok
 test vector_atol_on_sequential_route ... ok
 test vector_atol_with_declared_band_on_dense ... ok
@@ -480,28 +479,28 @@ test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
      Running tests/p0_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/p0_contracts-35421e0febe9b3db)
 
 running 24 tests
+test a_fatal_rhs_after_several_steps_returns_the_last_accepted_state ... ok
 test a_fatal_rhs_on_the_dense_output_route_keeps_every_accepted_step ... ok
 test a_fatal_rhs_on_the_banded_route_returns_the_last_accepted_state ... ok
-test a_fatal_rhs_after_several_steps_returns_the_last_accepted_state ... ok
 test a_fatal_jvp_inside_gmres_returns_the_partial_solution ... ok
-test at_without_dense_output_returns_stored_samples_only ... ok
 test at_none_outside_span_and_after_failure ... ok
+test at_without_dense_output_returns_stored_samples_only ... ok
 test empty_span_dense_output ... ok
 test dense_output_routes_to_fast_dense ... ok
 test mass_and_dense_output_refusals ... ok
 test dense_output_bit_identical_to_direct_fast_dense ... ok
 test finite_difference_band_on_the_dense_output_route_runs_and_agrees ... ok
-test a_recoverable_midpoint_failure_rejects_on_every_facade_dense_route ... ok
 test prothero_robinson_interior_error_is_controlled_through_the_facade ... ok
 test enforcing_interior_error_survives_a_zero_error_scale_component ... ok
+test a_recoverable_midpoint_failure_rejects_on_every_facade_dense_route ... ok
 test failure_reasons_name_the_drivers_failure_kind ... ok
 test options_without_interior_error_deserialize_to_the_default ... ok
 test banded_provider_on_the_dense_output_route_matches_the_dense_provider ... ok
-test uniform_vector_atol_equals_scalar_under_dense_output ... ok
 test interior_error_modes_route_with_the_named_control ... ok
 test enforce_and_mass_stay_sequential ... ok
 test mass_matrix_route_is_bit_identical_to_the_direct_dense_driver ... ok
 test mass_route_without_dense_output_is_the_same_run_without_segments ... ok
+test uniform_vector_atol_equals_scalar_under_dense_output ... ok
 test robertson_as_an_index1_dae_with_a_singular_mass_matrix ... ok
 test terminal_event_on_every_dense_store ... ok
 
@@ -510,9 +509,9 @@ test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fin
      Running tests/production_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/production_contracts-99b48e51040f8157)
 
 running 7 tests
-test test_callback_failure_returns_partial_prefix_with_success_false ... ok
-test test_full_endpoint_success ... ok
 test test_invalid_configuration_rejected_before_callbacks ... ok
+test test_full_endpoint_success ... ok
+test test_callback_failure_returns_partial_prefix_with_success_false ... ok
 test test_max_step_termination_returns_partial_prefix_with_success_false ... ok
 test test_no_progress_termination_returns_partial_prefix ... ok
 test test_partial_accepted_prefix_inspection ... ok
@@ -543,12 +542,12 @@ test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
      Running tests/production_selection_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/production_selection_contracts-354f10b199960c8b)
 
 running 6 tests
-test matrix_free_is_an_explicit_permission_and_inherits_atol_refusal ... ok
 test default_is_rhs_only_even_with_provided_derivatives ... ok
+test matrix_free_is_an_explicit_permission_and_inherits_atol_refusal ... ok
 test resource_ceiling_includes_dense_callbacks_with_declared_band ... ok
-test unsupported_requests_and_permissions_fail_without_callbacks ... ok
 test failure_preserves_partial_state_and_typed_error ... ok
 test selected_implicit_method_matches_direct_method_and_fd_is_opt_in ... ok
+test unsupported_requests_and_permissions_fail_without_callbacks ... ok
 
 test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
@@ -591,8 +590,8 @@ test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 
 running 5 tests
 test distinct_routes_have_distinct_provider_epochs ... ok
-test audit_replay_safety_detects_non_deterministic_callbacks ... ok
 test state_machine_batch_stop_coverage ... ok
+test audit_replay_safety_detects_non_deterministic_callbacks ... ok
 test state_machine_table_driven_all_transitions ... ok
 test audit_replay_safety_allows_deterministic_callbacks ... ok
 
@@ -602,10 +601,10 @@ test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 
 running 7 tests
 test sentinel_is_opt_in_and_off_in_every_factory ... ok
-test incomplete_implicit_comparator_above_explicit_work_does_not_retain_implicit ... ok
 test losing_sentinel_return_is_bounded_by_current_implicit_work ... ok
-test exhausted_budget_inside_the_sentinel_window_keeps_accepted_state ... ok
 test every_second_recheck_is_a_sentinel_and_the_count_restarts_each_tenure ... ok
+test incomplete_implicit_comparator_above_explicit_work_does_not_retain_implicit ... ok
+test exhausted_budget_inside_the_sentinel_window_keeps_accepted_state ... ok
 test fatal_sentinel_explicit_trial_keeps_only_the_completed_implicit_window ... ok
 test stale_rate_screen_misses_the_current_explicit_win_that_the_sentinel_recovers ... ok
 
@@ -659,22 +658,22 @@ test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 19 tests
 test default_is_rhs_only_even_when_derivatives_are_declared ... ok
 test budget_failure_preserves_accepted_state_and_never_forges_success ... ok
-test fatal_callback_is_not_retried_with_another_method ... ok
 test bounded_probe_can_return_to_the_rhs_only_route ... ok
 test all_attempts_and_discarded_probes_share_one_budget ... ok
-test finite_difference_requires_its_separate_opt_in ... ok
+test fatal_callback_is_not_retried_with_another_method ... ok
 test forbidden_persistent_failure_keeps_native_partial_state_and_counts ... ok
+test finite_difference_requires_its_separate_opt_in ... ok
 test forbidden_route_preserves_native_observed_session_bit_for_bit ... ok
-test malformed_output_stops_before_fallback ... ok
 test endpoint_accuracy_for_rotation_is_checked_separately_from_stiffness_routing ... ok
+test malformed_output_stops_before_fallback ... ok
+test request_preflight_rejects_unsupported_and_resource_contracts_without_callbacks ... ok
 test prescreen_initial_stiffness_disabled_starts_with_dopri5 ... ok
 test prescreen_initial_stiffness_non_autonomous_stays_with_dopri5 ... ok
 test prescreen_initial_stiffness_micro_probe_detects_robertson_stiffness ... ok
-test request_preflight_rejects_unsupported_and_resource_contracts_without_callbacks ... ok
 test prescreen_initial_stiffness_starts_directly_with_rodas5p ... ok
 test zero_span_and_representationally_tiny_windows_do_not_loop ... ok
-test serialization_preserves_route_and_original_driver_records ... ok
 test stiff_work_pressure_enters_authorized_fallback_from_accepted_state ... ok
+test serialization_preserves_route_and_original_driver_records ... ok
 test prescreen_initial_stiffness_detects_hires_and_keeps_nonstiff_explicit ... ok
 
 test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
@@ -688,12 +687,12 @@ test discarded_probes_back_off_and_are_work_bounded_on_a_persistently_stiff_prob
 test economical_pilot_is_never_stopped_by_the_ceiling ... ok
 test bounded_pilot_on_a_declared_band_is_discarded_not_refused ... ok
 test new_policy_controls_are_validated_before_callbacks ... ok
-test discarded_pilot_work_is_bounded_by_the_entry_ceiling ... ok
 test implicit_tenure_coalesces_windows_between_probes_and_seeds_its_step ... ok
-test return_to_explicit_still_happens_after_a_stiff_to_smooth_transition ... ok
 test switching_selector_with_pilots_allocation_is_bounded ... ok
-test b1_loss_margin_backoff_contracts ... ok
+test return_to_explicit_still_happens_after_a_stiff_to_smooth_transition ... ok
+test discarded_pilot_work_is_bounded_by_the_entry_ceiling ... ok
 test explicit_batch_loop_allocation_is_bounded ... ok
+test b1_loss_margin_backoff_contracts ... ok
 test discarded_pilots_back_off_geometrically_and_rearm_on_a_work_rate_jump ... ok
 
 test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
@@ -701,12 +700,12 @@ test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fin
      Running tests/switching_integration_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/switching_integration_contracts-84d838a1d002d1af)
 
 running 6 tests
-test adaptive_bounded_entry_preserves_fatal_derivative_failure ... ok
 test legacy_explicit_tiny_representable_span_uses_native_endpoint_clipping ... ok
+test adaptive_bounded_entry_preserves_fatal_derivative_failure ... ok
 test completed_winning_entry_pilot_can_seed_only_the_next_implicit_proposal ... ok
 test unresolved_entry_retry_is_once_bounded_and_preserves_accepted_explicit_states ... ok
-test rejected_entry_pilots_never_supply_a_seed ... ok
 test adaptive_entry_does_not_stack_legacy_rate_rearm_or_backoff ... ok
+test rejected_entry_pilots_never_supply_a_seed ... ok
 
 test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
@@ -714,11 +713,11 @@ test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 
 running 6 tests
 test exact_final_time_budget_exhaustion_is_success ... ok
-test zero_span_forbidden_retains_committed_zero_work_driver_record ... ok
-test pure_explicit_tenure_matches_uninterrupted_observed_run ... ok
 test accepted_return_probe_at_global_budget_keeps_fully_accounted_checkpoint ... ok
-test discarded_implicit_pilot_keeps_native_explicit_session_and_charges_work ... ok
 test committed_implicit_route_reconstructs_explicit_fsal_state ... ok
+test pure_explicit_tenure_matches_uninterrupted_observed_run ... ok
+test discarded_implicit_pilot_keeps_native_explicit_session_and_charges_work ... ok
+test zero_span_forbidden_retains_committed_zero_work_driver_record ... ok
 
 test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
@@ -734,12 +733,12 @@ test f8_declared_entry_policy_must_match_effective_schedule ... ok
 test f9_switcher_route_selection_is_limited_to_legacy_routes ... ok
 test wp02_window_epoch_is_checkpoint_sensitive_sha256_stable ... ok
 test f6_nondeterministic_jvp_disables_competitive_trials ... ok
-test f2_v2_entry_ceiling_stops_losing_rotation_pilots_like_v1 ... ok
 test f6_replay_audit_charges_deterministic_jvp_calls ... ok
 test x9_hysteresis_band_validation_and_default_neutrality ... ok
-test f4_progress_screen_preserves_entry_decisions ... ok
-test skeleton_helpers_reproduce_registered_counters ... ok
 test f6_replay_mismatch_keeps_explicit_progress_and_disables_pilots ... ok
+test skeleton_helpers_reproduce_registered_counters ... ok
+test f2_v2_entry_ceiling_stops_losing_rotation_pilots_like_v1 ... ok
+test f4_progress_screen_preserves_entry_decisions ... ok
 test x5_stiffness_gate_flags_stiff_forced_and_backs_off_on_rotation ... ok
 test f9_reference_counters_after_remediation ... ok
 
@@ -750,25 +749,25 @@ test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fin
 running 31 tests
 test cod02_p5_invalid_h0_is_refused_before_any_callback ... ok
 test auto_ranking_is_transparent_and_refuses_before_any_callback ... ok
+test catalog_extends_the_registry_and_states_what_is_unavailable ... ok
 test cod03_audit_cases_agree_through_route ... ok
 test cod04e_p7_declared_band_is_refused_by_admission_too ... ok
 test cod04c_p4_recoverable_jacobian_error_is_reported_as_itself ... ok
-test catalog_extends_the_registry_and_states_what_is_unavailable ... ok
 test cod04cd_p6_fatal_rhs_error_is_reported_as_a_fatal_callback ... ok
 test d2_dopri5_adapter_and_general_plan_are_bitwise_the_direct_calls ... ok
 test cod04b_p2a_starter_endpoint_above_t_end_is_a_success_with_exact_endpoint ... ok
 test auto_fallback_is_opt_in_bounded_by_permissions_and_never_silent ... ok
 test cod04a_p1_jvp_provider_needs_the_jvp_permission ... ok
-test d2_lawson_adapter_is_bitwise_the_direct_call_and_needs_its_declaration ... ok
 test d3_explicit_refusals_are_typed ... ok
-test d2_lagged_rodas5p_adapter_is_bitwise_the_direct_call ... ok
+test d2_lawson_adapter_is_bitwise_the_direct_call_and_needs_its_declaration ... ok
 test d3_solve_refuses_malformed_input_before_any_callback ... ok
+test d2_lagged_rodas5p_adapter_is_bitwise_the_direct_call ... ok
 test d2_radau_adapter_is_bitwise_the_direct_call ... ok
-test peer_fatal_rhs_error_on_a_peer_step_is_typed_with_prefix ... ok
 test d2_pexprb_adapter_is_bitwise_the_direct_call ... ok
-test d2_rodas5p_adapter_is_bitwise_the_direct_call_on_every_facade_route ... ok
+test peer_fatal_rhs_error_on_a_peer_step_is_typed_with_prefix ... ok
 test d2_bdf_adapter_is_bitwise_the_direct_call ... ok
 test peer_recoverable_jacobian_error_on_a_peer_step_is_typed_and_stops ... ok
+test d2_rodas5p_adapter_is_bitwise_the_direct_call_on_every_facade_route ... ok
 test view_reports_the_executed_route_when_the_capability_query_disagrees ... ok
 test cod02_p3_fast_forcing_20_is_error_controlled_or_refused ... ok
 test view_reports_typed_failure_with_accepted_prefix_and_work ... ok
@@ -804,14 +803,14 @@ test e4_fatal_callback_keeps_the_accepted_prefix_and_charged_work ... ok
 test e5_recoverable_callback_rejects_then_recovers ... ok
 test e1_end_to_end_dense_and_jvp_reach_the_endpoint_accurately ... ok
 
-test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
 
      Running tests/unified_production_solver_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/unified_production_solver_contracts-264bd6dd14ce68d8)
 
 running 6 tests
 test contract_2_workspace_reuse_and_retained_bytes ... ok
-test contract_6_complete_work_accounting_and_timing_authority ... ok
 test contract_5_physical_invariant_preservation ... ok
+test contract_6_complete_work_accounting_and_timing_authority ... ok
 test contract_4_fail_closed_protected_fallback ... ok
 test contract_3_autonomous_tier_routing ... ok
 test contract_1_single_api_ergonomics ... ok
@@ -824,8 +823,8 @@ running 9 tests
 test compute_overhead_ir_calculation ... ok
 test frozen_weights_match_toml_source ... ok
 test integer_work_v2_from_counters_matches_segment ... ok
-test integer_work_v2_zero_allocation ... ok
 test polynomial_weight_exactness_and_powers ... ok
+test integer_work_v2_zero_allocation ... ok
 test polynomial_weight_monotonicity ... ok
 test polynomial_weight_overflow_protection ... ok
 test rhs_cost_ir_scaling ... ok
@@ -848,5 +847,5 @@ test crates/vigilode/src/lib.rs - (line 169) - compile fail ... ok
 
 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
 
-all doctests ran in 6.81s; merged doctests compilation took 6.77s
-# V24_CHECK_END {"exit_code": 0, "seconds": 348.5610935688019, "date": "2026-11-24T00:20:45+0900"}
+all doctests ran in 6.71s; merged doctests compilation took 6.68s
+# V24_CHECK_END {"exit_code": 0, "seconds": 8.847294330596924, "date": "2026-11-24T00:24:23+0900"}

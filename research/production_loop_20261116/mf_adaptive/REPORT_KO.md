@@ -1,7 +1,7 @@
 # V24: 행렬 없는(matrix-free) 단계 풀이의 재시작 길이와 잔차 검사를 풀이에 맞추기
 
 - 노드: `V24_MF_ADAPTIVE_STAGE_SOLVE` (소유자 결정 OD-L1-11, 사전등록 부록 A6, `mf_adaptive/PREDECLARED.json`)
-- 이 문서의 모든 숫자는 `RESULTS.json`, `CHOICE.json`, `RECORDING_A.json`, `R_SUITES.json`에서 스크립트(`make_report.py`)가 읽어 넣은 것입니다. 생성 시각: 2026-11-24T00:22:51+0900
+- 이 문서의 모든 숫자는 `RESULTS.json`, `CHOICE.json`, `RECORDING_A.json`, `R_SUITES.json`에서 스크립트(`make_report.py`)가 읽어 넣은 것입니다. 생성 시각: 2026-11-24T00:25:22+0900
 - 비교한 두 팔: **S** = 지금 출하된 정책 그대로, **N** = 선택된 적응형 변형 **P2**
 
 ## 1. 결론
@@ -200,7 +200,7 @@ V17의 규약 그대로: 시간 측정 접두어(`flock ... taskset -c 6-11`), �
 | workspace_check | 0 | 0 / 0 / 0 | - |
 | loop_checker | 1 | 0 / 0 / 0 | - |
 
-실행한 트리: 커밋 d891c549; 추적 파일 중 커밋되지 않은 것의 수: 0, 1.
+실행한 트리: 커밋 55b35f61; 추적 파일 중 커밋되지 않은 것의 수: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11.
 
 루프 검사기(`check_checkpoint.py`)를 그대로 돌리면 종료 코드 1이고 마지막 줄은 다음과 같습니다:
 

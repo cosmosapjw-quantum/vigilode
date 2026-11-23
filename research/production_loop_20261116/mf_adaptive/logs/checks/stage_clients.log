@@ -1,12 +1,11 @@
-# V24_CHECK_BEGIN {"name": "stage_clients", "command": ["cargo", "+1.94.1", "test", "--locked", "-j", "4", "--release", "--no-fail-fast", "-p", "rodas5p-integrators", "--test", "stage_clients_*"], "cpus": "0-5,12-17", "git_head": "d891c5491b54b6b164d040bc838ba40924c8b56c", "git_dirty_tracked": 1, "date": "2026-11-24T00:10:33+0900"}
-   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-integrators)
-    Finished `release` profile [optimized] target(s) in 50.77s
+# V24_CHECK_BEGIN {"name": "stage_clients", "command": ["cargo", "+1.94.1", "test", "--locked", "-j", "4", "--release", "--no-fail-fast", "-p", "rodas5p-integrators", "--test", "stage_clients_*"], "cpus": "0-5,12-17", "git_head": "55b35f61b5f9eabbbbd49910ae06e8d0b3e766ef", "git_dirty_tracked": 2, "date": "2026-11-24T00:23:45+0900"}
+    Finished `release` profile [optimized] target(s) in 0.04s
      Running tests/stage_clients_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/stage_clients_alloc-3e13379013d7cd8e)
 
 running 1 test
 test dense_client_allocates_nothing_per_accepted_step ... ok
 
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
 
      Running tests/stage_clients_banded_tight_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/stage_clients_banded_tight_alloc-070679195e42d6d9)
 
@@ -25,7 +24,7 @@ test wide_band_allen_cahn_equals_the_protected_banded_driver ... ok
 test fitzhugh_nagumo_10000_equals_the_protected_banded_driver ... ok
 test brusselator_1000_and_10000_equal_the_protected_banded_driver ... ok
 
-test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.94s
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.92s
 
      Running tests/stage_clients_dense_identity.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/stage_clients_dense_identity-ea7f4f6468efc8ba)
 
@@ -41,14 +40,14 @@ test faer_mode_off_policy_is_a_valid_solver_of_the_named_problems ... ok
 test dense_client_reproduces_protected_driver_meanfield_brusselator_n100_faer ... ok
 test timed_wrapper_is_result_neutral_and_counts_match_driver ... ok
 
-test result: ok. 8 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.29s
+test result: ok. 8 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.28s
 
      Running tests/stage_clients_krylov_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/stage_clients_krylov_alloc-03c9958be235ea2f)
 
 running 1 test
 test krylov_clients_allocate_nothing_per_accepted_step ... ok
 
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.28s
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.26s
 
      Running tests/stage_clients_krylov_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/stage_clients_krylov_contracts-f29d2171e495db3e)
 
@@ -64,7 +63,7 @@ test every_jvp_is_accounted_for ... ok
 test every_arm_reproduces_itself_bit_for_bit ... ok
 test the_audit_checks_every_solve_and_leaves_the_run_unchanged ... ok
 
-test result: ok. 9 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 4.88s
+test result: ok. 9 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 4.77s
 
      Running tests/stage_clients_krylov_measure.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/stage_clients_krylov_measure-a6ef51f6c444aa9c)
 
@@ -84,13 +83,13 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 1 test
 test v17_clients_allocate_nothing_per_accepted_step ... ok
 
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.57s
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.59s
 
      Running tests/stage_clients_krylov_v17_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/stage_clients_krylov_v17_contracts-ba18eef3a034b22f)
 
 running 11 tests
-test arm_b_and_the_protected_kernel_stop_at_the_same_residual ... ok
 test arm_c_accepts_at_the_larger_of_the_two_thresholds ... ok
+test arm_b_and_the_protected_kernel_stop_at_the_same_residual ... ok
 test the_client_threshold_is_the_protected_threshold ... ok
 test the_routed_configuration_has_the_constants_of_arm_b ... ok
 test the_step_tied_bound_is_the_declared_formula ... ok
@@ -98,10 +97,10 @@ test v17_family_jvps_and_diagonals_match_the_right_hand_side ... ok
 test the_audit_of_arm_c_tests_against_the_threshold_of_arm_c ... ok
 test the_protected_check_detects_a_mismatched_stage_system ... ok
 test the_shipped_cadence_client_does_the_work_of_the_protected_driver ... ok
-test the_checks_cover_every_solve_and_leave_the_runs_unchanged ... ok
 test every_arm_reproduces_itself_bit_for_bit ... ok
+test the_checks_cover_every_solve_and_leave_the_runs_unchanged ... ok
 
-test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.57s
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.53s
 
      Running tests/stage_clients_krylov_v17_measure.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/stage_clients_krylov_v17_measure-53ca16d423f30d0a)
 
@@ -129,19 +128,19 @@ running 17 tests
 test closed_forms_solve_their_equations ... ok
 test misuse_is_refused_and_a_lost_point_falls_back_to_the_exact_jacobian ... ok
 test recorded_calls_match_an_independent_k_form_step ... ok
-test recording_wrapper_is_result_neutral_call_by_call ... ok
 test exact_mode_reproduces_protected_driver_robertson ... ok
+test recording_wrapper_is_result_neutral_call_by_call ... ok
 test the_time_derivative_is_evaluated_at_accepted_states_only ... ok
 test models_agree_bitwise_with_the_repository_definitions ... ok
 test exact_mode_reproduces_protected_driver_hires ... ok
 test exact_mode_reproduces_protected_driver_nonautonomous ... ok
 test an_attempt_that_failed_with_an_error_is_retried_with_the_exact_jacobian ... ok
 test exact_mode_reproduces_protected_driver_brusselator_n32 ... ok
-test model_jacobians_match_finite_differences ... ok
-test recorded_calls_are_the_stage_arguments_in_stage_order ... ok
 test recording_wrapper_is_result_neutral_for_the_protected_driver ... ok
-test exact_mode_reproduces_protected_driver_brusselator_n100 ... ok
+test recorded_calls_are_the_stage_arguments_in_stage_order ... ok
+test model_jacobians_match_finite_differences ... ok
 test modes_evaluate_the_jacobian_at_the_declared_points ... ok
+test exact_mode_reproduces_protected_driver_brusselator_n100 ... ok
 test exact_mode_reproduces_protected_driver_meanfield_brusselator_n100_faer ... ok
 
 test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
@@ -161,4 +160,4 @@ running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-# V24_CHECK_END {"exit_code": 0, "seconds": 65.89920449256897, "date": "2026-11-24T00:11:39+0900"}
+# V24_CHECK_END {"exit_code": 0, "seconds": 15.000611066818237, "date": "2026-11-24T00:24:00+0900"}

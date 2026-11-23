@@ -1,32 +1,31 @@
-# V24_CHECK_BEGIN {"name": "krylov_all", "command": ["cargo", "+1.94.1", "test", "--locked", "-j", "4", "--release", "--no-fail-fast", "-p", "rodas5p-krylov"], "cpus": "0-5,12-17", "git_head": "d891c5491b54b6b164d040bc838ba40924c8b56c", "git_dirty_tracked": 0, "date": "2026-11-24T00:08:11+0900"}
-   Compiling rodas5p-krylov v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-krylov)
-    Finished `release` profile [optimized] target(s) in 1m 32s
+# V24_CHECK_BEGIN {"name": "krylov_all", "command": ["cargo", "+1.94.1", "test", "--locked", "-j", "4", "--release", "--no-fail-fast", "-p", "rodas5p-krylov"], "cpus": "0-5,12-17", "git_head": "55b35f61b5f9eabbbbd49910ae06e8d0b3e766ef", "git_dirty_tracked": 0, "date": "2026-11-24T00:23:43+0900"}
+    Finished `release` profile [optimized] target(s) in 0.04s
      Running unittests src/lib.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/rodas5p_krylov-559f59a612290974)
 
 running 24 tests
-test gmres_givens::tests::stable_real_givens_zeroes_the_second_component ... ok
 test gmres_givens::tests::incremental_projected_residual_matches_full_qr_oracle ... ok
+test gmres_givens::tests::stable_real_givens_zeroes_the_second_component ... ok
 test gmres_givens::tests::triangular_backsolve_reconstructs_the_rotated_system ... ok
-test gmres_givens::tests::triangular_backsolve_rejects_an_identically_zero_factor ... ok
 test gmres_givens::tests::uniformly_scaled_identity_preserves_solution_and_convergence ... ok
-test gmres_staged::tests::fallback_sees_the_iterate_and_its_true_residual ... ok
+test gmres_givens::tests::triangular_backsolve_rejects_an_identically_zero_factor ... ok
 test gmres_staged::tests::converges_in_cycle_and_charges_like_production ... ok
+test gmres_staged::tests::fallback_sees_the_iterate_and_its_true_residual ... ok
 test gmres_staged::tests::nu_guard_tightens_the_threshold_on_a_nonnormal_system ... ok
-test gmres_staged::tests::failed_confirmations_continue_the_cycle_with_doubling_gaps ... ok
-test gmres_staged::tests::zero_right_hand_side_needs_no_work ... ok
 test gmres_staged::tests::stall_rule_accepts_the_attainable_floor ... ok
-test kernels::cgs2_tests::test_two_pass_cgs_into_orthogonality_and_counter_parity ... ok
+test gmres_staged::tests::zero_right_hand_side_needs_no_work ... ok
 test secant_preconditioner::tests::test_capacitance_safeguard_fallback ... ok
-test secant_preconditioner::tests::test_collinear_safeguard ... ok
-test secant_preconditioner::tests::test_exact_action_on_range ... ok
+test kernels::cgs2_tests::test_two_pass_cgs_into_orthogonality_and_counter_parity ... ok
+test gmres_staged::tests::failed_confirmations_continue_the_cycle_with_doubling_gaps ... ok
 test gmres_staged::tests::restarted_solve_reaches_the_threshold ... ok
-test secant_preconditioner::tests::test_secant_default_bit_identity ... ok
+test secant_preconditioner::tests::test_exact_action_on_range ... ok
 test gmres_staged::tests::guard_aborts_a_stagnating_solve_and_classifies_it ... ok
+test secant_preconditioner::tests::test_collinear_safeguard ... ok
+test secant_preconditioner::tests::test_secant_default_bit_identity ... ok
 test secant_preconditioner::tests::test_true_residual_contract ... ok
 test secant_preconditioner::tests::test_zero_allocation_in_apply_into ... ok
+test workspace::basis_only_tests::augmented_solve_reinitializes_directions_after_basis_only_shape_changes ... ok
 test small::generalized_eigen_tests::a_complex_pair_of_a_small_pencil_does_not_panic ... ok
 test small::generalized_eigen_tests::real_and_complex_spectra_are_eigenpairs ... ok
-test workspace::basis_only_tests::augmented_solve_reinitializes_directions_after_basis_only_shape_changes ... ok
 test gmres_staged::tests::shadow_classification_is_the_guard_free_outcome ... ok
 
 test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
@@ -34,12 +33,12 @@ test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fin
      Running tests/alg04_alg06_staged_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/alg04_alg06_staged_contracts-b94c63f55d79b051)
 
 running 8 tests
-test exhaustion_keeps_the_alg01_nu_rule ... ok
 test exhaustion_runs_a_small_system_to_the_end_of_its_krylov_space ... ok
+test exhaustion_keeps_the_alg01_nu_rule ... ok
 test guard_test_uses_the_given_cycle_length ... ok
-test classifying_accepted_guard_aborts_changes_nothing_but_the_label ... ok
 test effective_cycle_length_removes_the_small_system_overrun ... ok
 test exhaustion_is_inactive_above_the_restart_length ... ok
+test classifying_accepted_guard_aborts_changes_nothing_but_the_label ... ok
 test floor_accepts_at_a_confirmation_without_a_slow_cycle ... ok
 test floor_is_inert_where_the_threshold_is_met ... ok
 
@@ -67,8 +66,8 @@ test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 8 tests
 test block_gmres_deflates_linearly_dependent_rhs ... ok
 test block_arnoldi_rank_is_uniformly_operator_scale_invariant ... ok
-test block_gmres_rejects_ragged_rhs_without_counting_a_solve ... ok
 test block_gmres_does_not_false_converge_on_small_nonzero_rhs ... ok
+test block_gmres_rejects_ragged_rhs_without_counting_a_solve ... ok
 test block_gmres_solves_multiple_rhs_through_block_operator_calls ... ok
 test exhausted_block_gmres_retains_attempted_work_counters ... ok
 test seeded_arnoldi_rank_is_uniformly_operator_scale_invariant ... ok
@@ -88,9 +87,9 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 10 tests
 test a_confirmed_happy_breakdown_reuses_the_residual ... ok
 test accounting_identifiers_are_versioned ... ok
+test a_happy_breakdown_without_confirmation_fails_identically ... ok
 test zero_right_hand_side_keeps_the_recomputation ... ok
 test the_entry_points_without_accounting_use_the_default ... ok
-test a_happy_breakdown_without_confirmation_fails_identically ... ok
 test budget_exhaustion_fails_identically ... ok
 test jacobi_left_preconditioning ... ok
 test a_nonzero_start_within_the_threshold_keeps_the_recomputation ... ok
@@ -105,8 +104,8 @@ running 6 tests
 test gcrodr_wrong_length_warm_start_under_matching_identity_is_a_typed_error ... ok
 test gcrodr_same_system_keeps_the_warm_start ... ok
 test lgmres_state_reused_across_a_dimension_change_returns_without_panicking ... ok
-test gcrodr_state_reused_across_a_dimension_change_returns_without_panicking ... ok
 test gcrodr_operator_identity_change_clears_the_stale_warm_start ... ok
+test gcrodr_state_reused_across_a_dimension_change_returns_without_panicking ... ok
 test gcrodr_recycle_rank_above_one_keeps_its_invariant_across_system_changes ... ok
 
 test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
@@ -150,7 +149,7 @@ running 2 tests
 test the_staged_solver_returns_the_bits_of_the_code_before_the_edit ... ok
 test the_shipped_policy_returns_the_bits_of_the_code_before_the_edit ... ok
 
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
      Running tests/gmres_staged_column_test_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/gmres_staged_column_test_contracts-5aeb5c19e44af443)
 
@@ -160,9 +159,9 @@ test a_start_is_used_and_a_converged_start_needs_no_cycle ... ok
 test the_accounting_changes_only_the_duplicate_final_residual ... ok
 test the_workspace_does_not_grow_after_the_first_solve ... ok
 test a_cycle_ends_at_the_first_column_that_meets_the_threshold ... ok
-test the_upper_bound_is_the_restart_length_or_doubles_from_ten ... ok
 test the_shipped_kernel_and_the_column_tested_one_meet_the_same_threshold ... ok
 test the_projected_residual_is_the_true_residual_of_the_iterate_of_every_column ... ok
+test the_upper_bound_is_the_restart_length_or_doubles_from_ten ... ok
 test failures_are_the_errors_of_the_shipped_kernel_and_leave_the_output_untouched ... ok
 
 test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
@@ -181,13 +180,13 @@ test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
      Running tests/krylov_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/krylov_contracts-81d06943a9c86226)
 
 running 9 tests
-test gcrodr_handles_one_dimensional_recycle_updates_without_panicking ... ok
 test gcrodr_cross_operator_refresh_remains_scale_invariant ... ok
 test gcrodr_arnoldi_breakdown_is_uniformly_operator_scale_invariant ... ok
+test gcrodr_handles_one_dimensional_recycle_updates_without_panicking ... ok
 test gcrodr_preserves_bu_equals_c_and_refreshes_changed_operator ... ok
+test gcrodr_reuses_only_an_exact_operator_preconditioner_system_identity ... ok
 test gmres_uses_the_same_jacobi_preconditioner_contract ... ok
 test lgmres_commits_state_only_after_a_certified_solve ... ok
-test gcrodr_reuses_only_an_exact_operator_preconditioner_system_identity ... ok
 test lgmres_invalidates_cached_images_on_exact_h_or_preconditioner_change ... ok
 test restarted_gmres_matches_direct_solution_and_certifies_true_residual ... ok
 
@@ -252,8 +251,8 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 4 tests
 test a_wrong_output_length_is_rejected ... ok
 test failing_solves_roll_back_alike_and_leave_the_output ... ok
-test a_direction_of_the_wrong_length_is_dropped_alike ... ok
 test successful_solves_match_bit_for_bit ... ok
+test a_direction_of_the_wrong_length_is_dropped_alike ... ok
 
 test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
@@ -309,8 +308,8 @@ test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
      Running tests/spd04_ls_workspace.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/spd04_ls_workspace-a60666772b58aeb8)
 
 running 5 tests
-test shape_errors_and_empty_systems_match ... ok
 test gmres_into_with_the_workspace_matches_the_default ... ok
+test shape_errors_and_empty_systems_match ... ok
 test non_finite_input_fails_with_the_same_error ... ok
 test reuse_sequences_grow_only_above_the_previous_maximum ... ok
 test seeded_hessenberg_systems_match_bit_for_bit ... ok
@@ -328,8 +327,8 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
      Running tests/staged_solve_telemetry.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/staged_solve_telemetry-d09269ca30833021)
 
 running 7 tests
-test s1_nine_native_cases_match_anchor ... ok
 test s2_fallback_accepted_above_target_finite_and_homogeneous ... ok
+test s1_nine_native_cases_match_anchor ... ok
 test s2_fallback_seam_overflow_fails_and_control_fails ... ok
 test s4_raised_target_converged_budget_exceeded ... ok
 test s5_failures ... ok
@@ -383,4 +382,4 @@ running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-# V24_CHECK_END {"exit_code": 0, "seconds": 93.97433686256409, "date": "2026-11-24T00:09:45+0900"}
+# V24_CHECK_END {"exit_code": 0, "seconds": 1.5336363315582275, "date": "2026-11-24T00:23:45+0900"}

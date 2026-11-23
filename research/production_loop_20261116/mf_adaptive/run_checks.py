@@ -70,8 +70,11 @@ def run(name, command):
     path = os.path.join(LOGS, name + ".log")
     env = dict(os.environ)
     env["CARGO_TARGET_DIR"] = TARGET
+    # Tracked files that differ from HEAD, not counting what this script itself rewrites (its logs and summary).
+    own = [":!research/production_loop_20261116/mf_adaptive/logs/checks", ":!research/production_loop_20261116/mf_adaptive/R_SUITES.json"]
+    dirty = [line for line in git("status", "--porcelain", "--untracked-files=no", "--", ".", *own).splitlines() if line]
     header = {"name": name, "command": command, "cpus": CPUS, "git_head": git("rev-parse", "HEAD"),
-              "git_dirty_tracked": len([line for line in git("status", "--porcelain", "--untracked-files=no").splitlines() if line]),
+              "git_dirty_tracked": len(dirty),
               "date": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
     start = time.time()
     with open(path, "w", encoding="utf-8") as log:

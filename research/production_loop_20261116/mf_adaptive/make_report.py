@@ -383,7 +383,7 @@ def main():
         w("")
         head = {row.get("git_head") for row in suites["rows"] if row.get("present")}
         dirty = {row.get("git_dirty_tracked") for row in suites["rows"] if row.get("present")}
-        w(f"실행한 트리: 커밋 {', '.join(sorted(str(value)[:8] for value in head))}; 추적 파일 중 커밋되지 않은 것의 수: {', '.join(str(value) for value in sorted(dirty))}.")
+        w(f"실행한 트리: 커밋 {', '.join(sorted(str(value)[:8] for value in head))}; 추적 파일 중 커밋과 다른 것의 수(이 스크립트가 다시 쓰는 자기 로그와 요약은 제외): {', '.join(str(value) for value in sorted(dirty))}. 이 커밋 뒤로는 `mf_adaptive/` 아래의 로그와 결과 파일만 바뀝니다.")
         w("")
         if checker:
             w(f"루프 검사기(`check_checkpoint.py`)를 그대로 돌리면 종료 코드 {checker['checker_unchanged_run']['exit_code']}이고 마지막 줄은 다음과 같습니다:")
