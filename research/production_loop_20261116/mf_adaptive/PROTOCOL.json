@@ -1,0 +1,139 @@
+{
+  "schema": "vigilode.loop-l1.v24-protocol.v1",
+  "node": "V24_MF_ADAPTIVE_STAGE_SOLVE",
+  "written": "2026-11-23 23:10 KST, before any measurement run of this node and before any edit of a source file",
+  "role": "PREDECLARED.json of this directory is frozen and is not edited. This file fixes every protocol choice that PREDECLARED.json leaves open. It is committed before the first run. Later corrections are made in place with a dated entry under 'amendments' (owner instruction of 2026-11-23: in-place edits allowed); git history keeps the order.",
+  "frozen_file": {
+    "path": "research/production_loop_20261116/mf_adaptive/PREDECLARED.json",
+    "sha256": "2ed7ca7d6c64bba0cddaaaf20b5a6460acb57cf46838bb420b0ec94a74a55375"
+  },
+  "base_commit": "892132e5d879b5d8c2740ef7a73946fd2b1d25f9",
+
+  "deciding_grid": {
+    "contradiction_in_the_frozen_sentence": "PREDECLARED.json names the families twice: by reference ('the four families of node V17 as finally run (mf_stage_solve/PREDECLARED.json, families_final)') and by a list ('ac3d, cusp1d, burgers2d, grayscott2d'). families_final of that file is fhn3d, cusp1d, burgers2d, bruss1d. ac3d and grayscott2d are the families V17 withdrew by its amendment A1 before any run: no V17 run, no reference and no generator of them exists (crates/rodas5p-integrators/tests/stage_clients_krylov_v17_problems.rs declares fhn3d, cusp1d, burgers2d, bruss1d), and V17 recorded that their end state is an equilibrium, where an achieved error cannot be matched across tolerances.",
+    "reading_used": "The reference decides: the deciding grid is families_final of mf_stage_solve/PREDECLARED.json. This is the only reading under which 'its references, error metric and matched-error rule' (PREREGISTRATION.md, addendum A6) can be used without deriving a new reference. The list of names is treated as a transcription of the withdrawn block. Fixed before any run; listed as an open issue for the reviewer.",
+    "families": [
+      {"id": "fhn3d", "generator": "problems::declared(\"fhn3d\") = fhn3d(10)", "n": 2000, "t_span": [0.0, 40.0], "reference": "mf_stage_solve/reference/fhn3d.json"},
+      {"id": "cusp1d", "generator": "problems::declared(\"cusp1d\") = cusp1d(400)", "n": 1200, "t_span": [0.0, 0.7], "reference": "mf_stage_solve/reference/cusp1d.json"},
+      {"id": "burgers2d", "generator": "problems::declared(\"burgers2d\") = burgers2d(28, 0.05, 4.0)", "n": 1568, "t_span": [0.0, 0.5], "reference": "mf_stage_solve/reference/burgers2d.json"},
+      {"id": "bruss1d", "generator": "problems::declared(\"bruss1d\") = v06::bruss1d(700, 8.0)", "n": 1400, "t_span": [0.0, 10.0], "reference": "mf_stage_solve/reference/bruss1d.json"}
+    ],
+    "tolerances_rtol": [0.001, 0.0001, 1e-05, 1e-06, 1e-07],
+    "atol": "equal to rtol",
+    "cells": 20,
+    "integrator_configuration": "problems::adaptive(family, rtol) of stage_clients_krylov_v17_problems.rs, unchanged: initial_step 1e-3, min_step 1e-14, max_step t1 - t0, max_attempts 1000000, otherwise AdaptiveStepConfig::default(); output schedule [t0, t1]",
+    "linear_configuration": "RoutingOptions::default().matrix_free: GMRES, restart 40, budget 200 Arnoldi vectors, rtol 1e-10, atol 1e-14, no preconditioner, zero start"
+  },
+
+  "development_cells": {
+    "problems": [
+      {"id": "dev06_bruss1d", "generator": "v06::declared(\"bruss1d\") = bruss1d(512, 8.0) of stage_clients_krylov_problems.rs", "n": 1024, "t_span": [0.0, 10.0], "reference": "shared_krylov/reference/bruss1d.json"},
+      {"id": "dev06_adr2d", "generator": "v06::declared(\"adr2d\") = adr2d(32) of stage_clients_krylov_problems.rs", "n": 1024, "t_span": [0.0, 0.1], "reference": "shared_krylov/reference/adr2d.json"}
+    ],
+    "tolerances": "the five tolerances of the deciding grid, atol = rtol",
+    "cells": 10,
+    "integrator_configuration": "the same function as the deciding grid (initial_step 1e-3), not the V06 configuration (initial_step 1e-6): one configuration for the whole node",
+    "references": "the V06 reference files as they are (DOP853 rtol 1e-13 atol 1e-16, cross-check Radau rtol 1e-10 atol 1e-13); nothing is re-derived. u_ref of a development problem is the stored uncertainty.max_abs (max_i |ref_i - other_i|), an upper bound of the V17 statistic max_i |ref_i - other_i| / (1 + |ref_i|). The V06 files hold no start-state record, so the numpy/Rust consistency check of the right-hand side is not available for the development problems.",
+    "family_overlap": "dev06_bruss1d is the Brusselator of the deciding family bruss1d at another size (512 cells, n = 1024, against 700 cells, n = 1400). The cell is not part of the deciding grid; the overlap of the family is stated in the report."
+  },
+
+  "arms": {
+    "S": {
+      "what": "the driver with the shipped policy",
+      "audit_off_entry": "rodas5p_integrators::integrate_rodas5p_mf_fast_observed_gmres_into (the entry of the route; this function keeps the shipped policy after the edit)",
+      "audit_on_entry": "Rodas5pMfFastWorkspace::new, set_gmres_into(true), set_solve_log(true), integrate_observed_with_observer (the audit entry of V17 arm A), after the edit with the policy set to shipped explicitly as well"
+    },
+    "P1": "the driver with the adaptive policy, upper bound of every cycle = the configured restart length (40)",
+    "P2": "the driver with the adaptive policy, upper bound 10 for the first cycle of a solve, 20 for the second, 40 (the configured restart length) from the third on: the bound doubles after every cycle that is followed by another cycle of the same solve",
+    "N": "P1 or P2 as fixed by CHOICE.json",
+    "adaptive_policy_exactly": [
+      "zero start and the right-hand side norm as shipped; threshold tau = max(linear_atol, rtol_lin * ||rhs||_2), the expression of the shipped kernel",
+      "top of every pass, as shipped: the true residual of the current iterate (rhs itself for the all-zero iterate, otherwise rhs - A x with one counted operator application); if its 2-norm is at most tau the loop ends; if the budget (200 Arnoldi vectors) is used up the solve fails with the shipped error text",
+      "a cycle: Arnoldi columns with the two-pass modified Gram-Schmidt kernel of the shipped solver; after EVERY column the Givens-projected residual |g_(j+1)| of the Arnoldi relation is compared with tau; the cycle ends at the first column with |g_(j+1)| <= tau, at a happy breakdown, at the upper bound of the cycle, or when the budget is used up",
+      "the iterate of the cycle is formed once, at its end; the next pass forms its true residual and tests it against tau (the original stage residual test); if the test fails the solve continues from that iterate",
+      "after the loop: the final residual test of the shipped kernel under the residual accounting of the workspace (default RecomputeFinal: the true residual of the returned iterate is formed once more and tested against tau; a failure is the shipped error)",
+      "an iterate is returned only if its true residual is at most tau; every failure is CoreError::LinearSolve with the shipped texts, which the driver turns into a rejected attempt exactly as today"
+    ],
+    "residual_accounting_of_the_adaptive_arms": "the default of the route (ResidualAccounting::RecomputeFinal), unchanged: the registered decision of SP01 is not overridden by this node. The adaptive arms therefore pay the duplicate final residual like the shipped arm. ReuseConfirmed with the adaptive policy is measured only as an exploratory arm.",
+    "preconditioner": "none, as shipped (the driver's preconditioner is the identity; the adaptive kernel applies none and counts no preconditioner application)"
+  },
+
+  "discriminator_protocol": {
+    "D0": {
+      "recording": "Commit A (before any edit of the driver or of gmres_staged.rs): the measurement target mf_adaptive_measure runs the shipped driver on the 30 cells through three entries: 'route' = integrate_rodas5p_mf_fast_observed_gmres_into, 'route_ls' = integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace (what the facade calls), 'audit' = the audit-on entry with the solve log. Per run: success, attempts, accepted, rejected, the bits of the end time, sha256 of the bits of the end state, every field of WorkCounters; for 'audit' also the sha256 of the solve log and the audit summary. logs/record_a/*.log, compacted by the parser into RECORDING_A.json.",
+      "comparison": "After the edit the same three entries are run again with the new binary, and a fourth entry 'policy_shipped' (the new policy option set to shipped explicitly). D0 holds iff every recorded field of every entry of every one of the 20 deciding cells is equal, and 'policy_shipped' equals 'route'. The 10 development cells are compared in the same way and reported with D0.",
+      "cross_check": "the 'route' recording of the 20 deciding cells is also compared with the arm A audit-off logs of node V17 (mf_stage_solve/logs/runs): counters, attempts, state hash. Reported; a difference would mean that the driver changed between the V17 head and this base."
+    },
+    "V": {
+      "audited_runs": "every audit-on run of an adaptive arm: P1 and P2 on the 10 development cells, N on the 20 deciding cells, and every exploratory audit-on run. V of the frozen row is counted on N on the deciding grid; a violation in any other audited run of an adaptive arm is reported under V as well and counts as a violation.",
+      "check_1_independent": "ProtectedAudit of stage_clients_krylov_v17_problems.rs, unchanged: in the attempt observer every stage solve the driver completed is rebuilt from the stage equations with the audit's own right-hand side and JVP; violation iff the residual norm is not finite or exceeds max(gamma atol_lin rounded down, rtol_lin ||rhs_i||_2).",
+      "check_2_solve_log": "the driver's own record of every returned iterate (reported true residual norm and the threshold it used): violation iff the reported norm is not finite or exceeds the threshold.",
+      "check_3_coverage": "audited solves = records of the driver = the counter linear_solves; every attempt that failed in a stage solve is counted by linear_solve_failures and classified by the kernel's error text (budget exhaustion or other). A mismatch of these counts is a violation.",
+      "check_4_determinism": "the audit-on and the audit-off run of an arm in a cell agree in every counter and every bit of the end state; a mismatch voids the cell (V17 rule).",
+      "violations": "sum of the violations of checks 1 to 3 over the audited runs; V holds iff it is 0 and check 4 holds in every cell."
+    },
+    "A": "per cell E_N <= 3 E_S with E = max_i |y_i(t1) - ref_i| / (1 + |ref_i|) (V17 primary metric), both at the tolerance of the cell. A cell whose E_S is below 10 u_ref is flagged reference limited.",
+    "P": {
+      "work_measure": "V17 instruction measure, unchanged: perf stat -e instructions:u over the whole process of the audit-off run (the test binary called directly), minus the median of three SETUP runs of the same family with the same binary. One execution per run.",
+      "family_number": "the family statistic of the V17 matched-error rule, unchanged (curve_value and matched of mf_stage_solve/parse_results.py, imported, not re-written): geometric mean over 201 points in log E on the matched range of W_N(E) / W_S(E), arm S in the role of arm A (smallest interpolated value), arm N in the role of the candidate (largest). P needs it <= 0.50 in each of the four families. A family with fewer than 4 completed tolerances in an arm or without an overlapping error range above 10 u_ref is NOT_DECIDABLE.",
+      "cell_number": "per cell the candidate's interpolated work at the error arm S achieved in that cell, divided by the work of arm S in that cell (V17: 'ratio at every point of arm A inside the range'). For a cell whose S point lies outside the matched range (no extrapolation) the ratio at equal tolerance is used and the cell is labelled. P needs every cell number <= 1.00.",
+      "also_reported_not_deciding": "the geometric mean of the five cell numbers, the geometric mean and every value of the ratio at equal tolerance, the largest ratio on the 201-point grid. If the verdict of a family or cell would differ under one of these, the report says so next to the verdict.",
+      "kill_clause": "the frozen KILL clause 'P above 0.85 on two families' uses the family number."
+    },
+    "S": "per family the geometric mean over the five tolerances of attempts_N / attempts_S at equal tolerance must be <= 1.05, and every one of the 20 ratios <= 1.15 (attempts = accepted + rejected). The matched-error attempts ratio is reported, not deciding. A family with a run that did not complete is NOT_DECIDABLE.",
+    "B": "per cell: budget-exhausting stage solves of N <= those of S. Counted by the driver for both policies: stage solves that ended with the kernel error 'GMRES exhausted <budget> Arnoldi vectors' (classified by that text). Reported next to linear_solve_failures; other linear failures are listed separately.",
+    "T": {
+      "prefix": "flock /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/timing.lock taskset -c 6-11",
+      "cell": "V17 protocol with two arms: 9 rounds, each round runs S and N once, order rotated by the round index (SN, NS, ...); rounds 0 and 1 are warm-ups, rounds 2 to 8 the 7 repetitions; median and spread (max - min)/median per arm; load from /proc/loadavg read by the wrapper immediately before and after every invocation.",
+      "quality_rule": "authoritative iff the 1-minute load is at most 8 before and after and the spread of both arms is at most 10 percent; every timed run must end in the state of the instruction run of its arm.",
+      "short_invocations": "no invocation holds the lock for two minutes: if the two single-run walls of a cell (from the instruction runs) sum to more than 8 s the nine rounds are nine invocations of one round each with the same rotation (V17 long-cell rule with a lower limit).",
+      "waiting_and_repeats": "at most 10 minutes of waiting for a quiet host in total; then the cells are measured as the host is. A cell that misses the rule is re-measured at most once and only if the load is at most 8 at that moment; every measurement is kept; the first one that meets the rule is used, otherwise the last one, labelled diagnostic_only.",
+      "status": "reported per family (speed-up at matched error, V17 statistic); not part of the verdict"
+    },
+    "G": "evaluated only if step 5 is reached; its script and exact comparison rule are written under 'amendments' and committed before the golden files are regenerated",
+    "R": {
+      "targets_fixed_now": {
+        "krylov": "the whole test suite of rodas5p-krylov (all targets, with the new gmres_staged_column_test_* targets)",
+        "sentinels": ["ppsw1_6b_contracts", "ptsw2b_contracts"],
+        "stage_clients": "--test 'stage_clients_*' of rodas5p-integrators",
+        "matrix_free_and_router_targets_of_the_integrators": ["a1_zero_tolerance_scale", "alg01_coupled_stage_target", "alg04_alg06", "audit2_matrix_free_common_w_contracts", "declared_structure_routing", "int01_gcrodr_verified_reuse", "int01_posthoc_tolerance", "krylov_workspace_driver_contract", "matrix_free_problem_contracts", "native_reaudit_cache_contracts", "p0_partial_contracts", "residual_acceptance_contract", "rev03_export", "rnext01_residual_output", "rnext02_gmres_into_study", "rnext03_gcrodr_attribution", "rnext03_posthoc_invariant", "rnext07_model_epoch", "safe_recycle_policy", "shared_basis_mf_contracts", "sp01_dupfix_adoption", "spd04_ls_workspace_study", "spd07_mf_step_warm_start", "stage_residual_telemetry", "thread_transfer_mf_workspace", "time_fd_workspace_contracts", "zero_start_policy_holdout"],
+        "selection_rule": "every test target of rodas5p-integrators at the base whose source names the matrix-free fast driver, its workspace, the router or the staged GMRES solver (grep of 2026-11-23 23:05), plus the two targets with matrix_free in their name; and the library unit tests of rodas5p-integrators (--lib)",
+        "new": "--test 'mf_adaptive_*' of rodas5p-integrators",
+        "facade": "cargo test --locked -p vigilode --release --no-fail-fast (whole suite, log kept)",
+        "static": "clippy -D warnings on rodas5p-krylov and vigilode (all targets) and on the library and the new and edited test targets of rodas5p-integrators; cargo fmt --check on the three packages; cargo check --locked --workspace --all-targets (extra, so that no other crate of the workspace stops compiling)"
+      }
+    }
+  },
+
+  "choice_of_the_variant": {
+    "frozen_rule": "the variant with the smaller geometric mean of instructions at matched achieved error on the two development problems; within 2 percent P1 is taken",
+    "computation": "for each variant X in {P1, P2} and each development problem d: R(X, d) = the V17 family statistic of the instructions of X against the shipped arm S on d (same function as discriminator P). score(X) = sqrt(R(X, dev06_bruss1d) * R(X, dev06_adr2d)). P2 is chosen iff score(P2) < 0.98 * score(P1); otherwise P1.",
+    "fallback": "if R(X, d) is NOT_DECIDABLE for either variant on a problem, the geometric mean over the five tolerances of the ratio at equal tolerance is used for BOTH variants on that problem and CHOICE.json says so.",
+    "eligibility": "a variant with a V violation in a development run is not chosen; such a violation is a KILL of the node by the frozen rule and is reported as such",
+    "file": "CHOICE.json is written by the parser from the development logs and committed before any run of an adaptive arm on the deciding grid"
+  },
+
+  "runs": {
+    "per_cell_and_arm": ["audit on (taskset -c 0-5,12-17)", "audit off under perf stat -e instructions:u (taskset -c 0-5,12-17)"],
+    "per_family": ["SETUP x 3 under perf stat with the binary of the runs", "RHS0 (start state and f(t0, y0) as hex, compared with the reference file by the parser; deciding families only)"],
+    "parallelism": "runs that are not timing runs may run up to four at a time inside the work partition: counters and state bits do not depend on it, and instructions:u counts the process only",
+    "time_limit": "30 minutes per run; a run that does not finish is NOT_COMPLETED and is not a point of a curve",
+    "exclusions": "none; every declared run is kept, failed and negative ones included",
+    "search_budget": "none: there is no parameter search. P1 and P2 are fixed by PREDECLARED.json; no other bound, threshold or constant is tried for a verdict."
+  },
+
+  "exploratory_declared_now": [
+    "the adaptive arm N with ResidualAccounting::ReuseConfirmed (no duplicate final residual) on the deciding grid: instructions, counters, achieved error, audit",
+    "the variant that was not chosen, on the deciding grid: instructions, attempts, achieved error, audit",
+    "instructions of arm S before and after the edit (the recording of commit A against the post-edit run), to show what the added branch costs",
+    "Krylov vectors per solve, cycles per solve and the share of cycles that end at their bound, from the driver's statistics"
+  ],
+
+  "known_obstacle_found_before_any_run": {
+    "what": "Step 5 (the adaptive policy as the default of the route under rodas5p-mf-fast-transformed-v2) makes assertions fail that pin the v1 identifier or the bits of the shipped entry for the default JVP route in files outside the write list of this node: crates/vigilode/tests/capabilities_contracts.rs:116 (the identifier by text), crates/vigilode/tests/facade_contracts.rs:258-281 and :929-971 (the facade's JVP solve equal to integrate_rodas5p_mf_fast_observed_gmres_into[_ls_workspace] bit for bit, and driver_id == RODAS5P_MF_FAST_DRIVER_ID), :1038 (driver_id).",
+    "consequence": "discriminator R ('the facade suite passes') cannot hold together with the default switch inside the write list. This is reported, not worked around: no file outside the write list is edited.",
+    "plan_if_D0_V_A_P_S_B_hold": "the switch is made in one separate commit, the golden records are regenerated there and G is evaluated, the suites are run and every failing test is listed verbatim; because R then does not hold, the switch is reverted by a new commit (git revert, nothing is rewritten) so that the branch head keeps the shipped default with the adaptive policy opt-in, which is the state the frozen row prescribes whenever PASS is not reached. The switch commit stays in the history for the orchestrator."
+  },
+
+  "amendments": []
+}
