@@ -173,6 +173,49 @@ def main():
     )
     add("")
 
+    add(
+        "**정정 고지 (2026-11-23, 독립 리뷰 `REVIEW.json`, 판정: 정정 조건부 수용).** 동결 판별식의 판정은 "
+        "리뷰가 원자료에서 다시 계산해 확인했다. 병합 뒤 orchestrator가 바꾼 것과 정정할 서술:"
+    )
+    add(
+        "1. **3회차 측정**: 자격 cell 세 개와 보조 back end의 세 번째 측정은 리뷰어가 선언된 명령과 같은 "
+        "binary로 조용한 시점(1분 load 2.6-4.3)에 잰 실행이다(`logs/timing_*_try3.log`, 출처 "
+        "`logs/TRY3_ORIGIN.json`). orchestrator가 한 번 더 재면 세 결과를 알고 재는 네 번째 측정이 되므로 "
+        "이것을 3회차로 채택했다."
+    )
+    add(
+        "2. **cell 규칙**: parser가 'P = 2·4·6 전부 권위 측정이어야 FAIL/KILL'로 읽던 것을 사전 선언 문구"
+        "(`verdict_rules.wall_cell`: 권위 측정 비율 중 최댓값으로 판정, 권위 측정 비율이 하나도 없을 때만 판정 불가)대로 "
+        "고쳤다. 달라지는 cell은 `bruss1d-n131072` 하나다(이전 읽기: 판정 불가, 문구대로: FAIL). 두 읽기를 "
+        "`RESULTS.json`에 모두 남겼다. 기준 숫자(1.5, 1.1, load 8, 퍼짐 0.10)는 그대로다."
+    )
+    add(
+        "3. **fail-closed의 범위 (리뷰 F-01, major)**: PASS는 사전 선언한 음성 통제 7개에 대한 것이다. 기본 설정"
+        "(첫 사용 때 8개 열만 검사)에서는 누락된 결합이 표본 밖 열에서 선언된 항목으로 alias되면 잡히지 않는다. "
+        "리뷰어 반례: 삼중대각으로 선언한 주기 ring 문제가 n = 34, 64, 100, 127, 128, 1000에서 틀린 Jacobian으로 "
+        "끝까지 성공했고(수락 step 44-95개, 올바른 pattern은 28개), Brusselator pattern에서 항목 하나를 뺀 경우의 "
+        "9-13 %가 통과했다. `CheckColumns::All`(첫 선형화에 RHS n회 추가)은 시도한 경우를 잡았다(유한차분이 y0에서 "
+        "정확히 0인 한 경우 제외). 이 client를 조건 없이 fail-closed라고 부르면 안 된다. 기본값을 전체 검사로 "
+        "바꿀지는 소유자 결정 사항이다. facade의 banded 유한차분 경로도 같은 틀린 선언을 조용히 받아들인다."
+    )
+    add(
+        "4. **RHS 호출 수 (F-02)**: '색 수 + 1'은 build 한 번의 조립 호출 수다. client의 첫 선형화는 기본 검사 때문에 "
+        "8회(thread mode 9회)가 더 든다."
+    )
+    add(
+        "5. **넓은 띠 수치의 back end (F-04)**: 49색 넓은 띠에서 권위 측정인 값은 보호 kernel(Indexed) back end의 "
+        "P = 6 비율 1.37-1.43이다. tight kernel back end의 1.5-1.6은 진단값이다."
+    )
+    add(
+        "6. **로그 없는 서술 (F-05)**: 유한 대기 중 load 12-28, client 생성 16-18 ms·4-7 %는 로그로 뒷받침되지 "
+        "않는 서술이다(로그 값: 16.2-18.0 ms·3.7-6.5 %, 13.2-15.6 ms·3.4-6.3 %). 실패한 첫 reference 실행은 "
+        "로그 머리말의 메모로만 남아 있다."
+    )
+    add(
+        "7. **속도비를 인용할 때 붙일 조건 (F-06)**: wall은 시도 48회로 제한한 전체 풀이 시간이다. 자격 문제는 "
+        "RHS가 50 µs를 넘도록 연산 수로 크기를 맞춘 합성 문제다(sleep이나 반복 없음)."
+    )
+    add("")
     add("## 1. 판정 요약")
     add("")
     qualifying = wall["qualifying_cells"]
@@ -195,8 +238,9 @@ def main():
                 [
                     "틀린 pattern은 닫힌 채 실패",
                     verdict(closed["verdict"]),
-                    f"음성 통제 {sum(1 for c in closed.get('controls', []) if c['must_fail'])}개 모두 "
-                    "`InvalidInput` + typed error, 수락 step 0 (3.3절)",
+                    f"사전 선언한 음성 통제 {sum(1 for c in closed.get('controls', []) if c['must_fail'])}개 모두 "
+                    "`InvalidInput` + typed error, 수락 step 0 (3.3절). 선언한 통제에 한한 판정이다: 기본 검사는 "
+                    "일반적으로 fail-closed가 아니다(정정 고지 3)",
                 ],
                 [
                     "wall ≥ 1.5x (n ≥ 64, RHS ≥ 50 µs인 FD 문제); KILL < 1.1x",

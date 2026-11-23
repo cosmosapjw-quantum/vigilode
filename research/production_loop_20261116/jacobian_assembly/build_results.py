@@ -24,6 +24,7 @@ SPREAD_MAX = 0.10
 RHS_COST_MIN_NS = 50_000.0
 PASS_RATIO = 1.5
 KILL_RATIO = 1.1
+MAX_MEASUREMENTS = 3  # one measurement and at most two re-measurements (quality rule)
 CHECK_COLUMNS = 8
 
 
@@ -459,17 +460,36 @@ def cell_verdict(tries):
                 break
     values = [entry["whole_solve_speed_up"] for entry in used.values()]
     complete = len(used) == len(VERDICT_WORKERS)
+    # The reading of the builder's first parser: a cell without an authoritative ratio at
+    # every worker count is NOT_DECIDABLE unless it passes.
     if values and max(values) >= PASS_RATIO:
+        strict = "PASS"
+    elif complete and max(values) < KILL_RATIO:
+        strict = "KILL"
+    elif complete:
+        strict = "FAIL"
+    else:
+        strict = "NOT_DECIDABLE"
+    # PREDECLARED.json, verdict_rules.wall_cell (correction after the independent review,
+    # finding F-03): the best ratio is taken among the authoritative ratios; NOT_DECIDABLE is
+    # reserved for a cell with no authoritative ratio. KILL needs the speed-up at every worker
+    # count. While an allowed measurement is left, a cell that does not pass stays open.
+    measurements_left = len(tries) < MAX_MEASUREMENTS
+    if not values:
+        verdict = "NOT_DECIDABLE"
+    elif max(values) >= PASS_RATIO:
         verdict = "PASS"
     elif complete and max(values) < KILL_RATIO:
         verdict = "KILL"
-    elif complete:
-        verdict = "FAIL"
-    else:
+    elif not complete and measurements_left:
         verdict = "NOT_DECIDABLE"
+    else:
+        verdict = "FAIL"
     last = tries[-1]["ratios"] if tries else {}
     return {
         "verdict": verdict,
+        "verdict_if_every_worker_count_must_be_authoritative": strict,
+        "measurements": len(tries),
         "authoritative_ratios_used": used,
         "best_authoritative_whole_solve_speed_up": max(values) if values else None,
         "diagnostic_ratios_of_the_last_try": {
