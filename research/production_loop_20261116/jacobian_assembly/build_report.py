@@ -563,9 +563,32 @@ def main():
     )
     add("")
     add(
-        "thread 한 개가 기준 평가와 열(색) 평가를 함께 나눠 하므로, 작업 수(색 수 + 1)가 P보다 적으면 "
-        "남는 worker는 쓸모가 없다. 조립 뒤 원소 계산과 행별 모으기도 pool에서 한다."
+        "기준 평가도 pool의 작업 하나다. 작업 수(색 수 + 1, dense는 n + 1)가 P보다 적으면 남는 worker는 "
+        "할 일이 없다. 원소 계산과 행별 모으기도 pool에서 하지만, 이 부분과 back end로의 복사는 memory "
+        "대역폭에 묶여 RHS만큼 빨라지지 않는다. 그래서 Jacobian phase의 속도비는 P보다 작고, RHS가 "
+        "Jacobian phase에서 차지하는 몫(3.4절 둘째 표)이 작을수록 더 작다."
     )
+    add("")
+    shown_cells = []
+    for cell, entry in wall["cells"].items():
+        primary = entry.get("primary_backend")
+        if not primary:
+            continue
+        shown = used_try(entry["backends"][primary])
+        seq = shown["arms"].get("seq", {})
+        best = max(
+            (
+                value["whole_solve_speed_up"]
+                for arm, value in shown["ratios"].items()
+                if arm != "t1"
+            ),
+            default=None,
+        )
+        shown_cells.append(
+            f"`{cell}`: 조립 RHS가 wall의 {percent(seq.get('rhs_share_of_wall_estimate'))}"
+            f", P = 2·4·6 중 가장 큰 전체 속도비 {ratio(best)}"
+        )
+    add("측정값으로 본 순서: " + "; ".join(shown_cells) + ".")
     add("")
 
     add("## 5. 순도 계약 (thread mode를 켜는 사람이 수락하는 것)")
