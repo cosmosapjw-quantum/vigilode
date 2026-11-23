@@ -1274,13 +1274,18 @@
         "V03G_DEFAULT_PATH_GOLDEN",
         "V15_STAGE_CLIENT_KIT"
       ],
-      "status": "IN_PROGRESS",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Make the registry the routing authority behind one entry point while every existing frontend keeps working (owner decision OD-L1-3).",
       "write_allowlist": [
         "crates/vigilode/src/selection.rs",
         "crates/vigilode/src/selection/**",
         "crates/vigilode/src/solve.rs",
-        "crates/vigilode/tests/unified_frontend_contracts.rs"
+        "crates/vigilode/tests/unified_frontend_contracts.rs",
+        "crates/vigilode/src/unified/**",
+        "crates/vigilode/src/registry.rs",
+        "crates/vigilode/tests/unified_router_contracts.rs",
+        "crates/vigilode/tests/unified_production_solver_contracts.rs",
+        "crates/vigilode/examples/unified_production_solver.rs"
       ],
       "equations_and_design": [
         "MethodChoice {General, Auto, Explicit}; pure MethodRegistry::route; MethodRegistry::solve; borrowed SolutionView that carries the output grid.",
@@ -1306,9 +1311,11 @@
       ],
       "evidence": [
         "research/production_loop_20261116/unified_frontend/RECEIPT.json",
-        "research/production_loop_20261116/unified_frontend/REVIEW.json"
+        "research/production_loop_20261116/unified_frontend/REVIEW.json",
+        "research/production_loop_20261116/unified_router/RECEIPT.json",
+        "research/production_loop_20261116/unified_router/REVIEW.json"
       ],
-      "state_note": "Part A (registry-routed entry point) merged, frozen criteria PASS (ledger L-0317); part B (truthful unified router) is a node of the next group."
+      "state_note": "Part A (registry-routed entry point): frozen criteria D1 to D4 PASS (ledger L-0317). Part B (truthful unified router): acceptance criteria A1 to A4 PASS (ledger L-0329), merged with cfbd2b18; reviewer corrections in unified_router/REVIEW.json. Open owner items of part B: the Auto routing constants, a supplied derivative runs RODAS5P unless regime(Nonstiff) is declared, a fatal callback at a probe point of the stiffness screen ends the solve, unread options kept as inert, exact status of a switching stop needs the protected switching.rs."
     },
     {
       "id": "V12_PORT_PLAN",

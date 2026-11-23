@@ -2,6 +2,8 @@
 
 이 문서는 `build_report.py`가 `RECEIPT.json`에서 만들었다. 숫자는 모두 실행한 명령의 로그(`logs/*.log`)와 `git`에서 `build_receipt.py`가 읽었다. 손으로 적은 숫자는 없다.
 
+**정정 고지 (2026-11-23, 독립 리뷰 `REVIEW.json`, 판정: 정정 조건부 수용).** 판정 9개는 리뷰가 원자료에서 다시 계산해 모두 PASS로 확인했다. 정정할 서술: (1) 강성 screen은 '한쪽 방향'만이 아니다. probe 점에서 fatal callback 오류가 나면 어떤 leg도 돌기 전에 solve가 그 오류로 끝난다(3.2절에 반영). (2) 판별식 A1의 '각 테스트를 실패하는 테스트로 먼저 썼다'는 base API 테스트 20개에만 해당한다. 나머지 16개는 구현 뒤에 추가했다. (3) SwitchingSolver·ProductionSolver 기록이 'byte 동일'이라고 한 것은 JSON 길이와 FNV-1a 64 비교였다(77/77). byte 단위 비교는 리뷰어가 416개 기록으로 했고 모두 같았다. (4) 정지한 실행이 driver의 원래 이유를 돌려준다는 서술은 `stop`에는 맞고 `status`에는 항상 맞지는 않는다(9절). (5) screen이 보지 못하는 강성 문제의 비용은 explicit trial이다. 리뷰어 측정에서 최악은 직접 RODAS5P 대비 RHS 호출 약 15배(Jacobian 없는 Robertson, 6233 대 415)였다. (6) 읽히지 않는 option과 `HighPerformance`를 남긴 것, 그리고 `SelectedTier` 값 3개 등 공개 항목을 없앤 것은 저장소 밖 호출자에게는 source 호환이 깨지는 변경이다. 리뷰어 수치는 `REVIEW.json`에 있고 `RECEIPT.json`에는 없다.
+
 - base: `587a139501729bbe886bb2b8c49b0ef893705d08`
 - 검증을 실행한 코드 commit: `4503b86e16a576685a756abb4d51d3d306228db6`, `ec0ee46dbc6ff74a7cef43dc0af2f941ece6b950`
 - 사전등록: `PREDECLARED.json`, commit `5192520c81497e362c5aef235015da567ee63204`. 첫 로그의 commit(`8dbbfcd5ae36fe0c6f8f8b78db731b496db4b6eb`)보다 먼저 commit했는가: 예
@@ -50,7 +52,9 @@ regime에 맞는 방법은 `MethodRegistry::general_method`, 승인 여부와 �
 
 `f0 = f(t0, y0)`와 좌표마다 `δ_j = sqrt(eps) max(|y0_j|, 1)`로 `L = max_j |f(t0, y0 + δ_j e_j) - f0| / δ_j`를 만든다. `L`은 `f(t0, ·)`의 Lipschitz 상수의 하계다. `L (t1 - t0) > 3.3 B`(`B`는 trial의 시도 예산, 3.3은 DOPRI5의 실수축 안정 한계)이면 trial이 그 예산으로 구간을 끝낼 수 없으므로 RODAS5P로 보낸다. RHS `n + 1`회, 저장은 `O(n)`이고 호출은 모두 counter에 들어간다.
 
-screen은 한쪽 방향으로만 작동한다. trial을 RODAS5P로 바꿀 수는 있어도 그 반대는 없다. 증거가 없다는 것을 비강성의 증거로 쓰지 않으므로 trial에는 예산과 fallback이 그대로 붙는다. `t0` 이후에 생기는 강성(Robertson)은 screen이 보지 못한다.
+screen은 trial을 RODAS5P로 바꿀 수는 있어도 그 반대는 없다. 증거가 없다는 것을 비강성의 증거로 쓰지 않으므로 trial에는 예산과 fallback이 그대로 붙는다. `t0` 이후에 생기는 강성(Robertson)은 screen이 보지 못한다.
+
+세 번째 결과가 있다(독립 리뷰 F2). probe 점 `y0 + δ_j e_j`는 궤적 위의 점이 아니다. 그 점에서 RHS가 fatal 오류를 내면 어떤 leg도 돌기 전에 solve가 그 오류로 끝난다. DOPRI5만으로는 끝까지 적분되는 문제도 그렇다(`Rodas5p::solve`의 유한차분 Jacobian도 같은 RHS에서 실패한다). 궤적이 지나지 않는 점의 fatal 오류를 'screen이 아무것도 보이지 않은 것'으로 볼지는 소유자 결정 사항이다.
 
 | 문제 | `L` | 구간 | 기준 `3.3 B` | 증거 | RHS 호출 |
 |---|---|---|---|---|---|

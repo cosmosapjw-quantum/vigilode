@@ -203,3 +203,20 @@ Addendum A6 and `mf_adaptive/PREDECLARED.json` name the deciding families as ac3
 
 Consequence: the development problem bruss1d n = 1024 belongs to a family of the deciding grid, at another size. The frozen rule for the choice of the variant is not changed. In addition the choice is reported on the development problem adr2d alone, which shares no family with the deciding grid; if the two choices differ, the report says so and the frozen rule decides the verdict. Thresholds and discriminators are unchanged.
 
+
+## Results, wave 2, group 3: node V03 part B (appended 2026-11-23; nothing above this line changes)
+
+Builder and reviewer: agents build:v03b and review:v03b of run `wf_8b1894ea-1d1`; branch head 2cf5ed27, merged with cfbd2b18. Part B has no frozen row in this file (the row of V03 covers part A). Its criteria are the four acceptance checks of the task text and the thresholds of `unified_router/PREDECLARED.json`, committed (5192520c) before the first log (8dbbfcd5). Review: accept with corrections; every verdict was recomputed by the reviewer from the raw logs and agrees (`unified_router/REVIEW.json`, both answers verbatim); correction notice at the top of `unified_router/REPORT_KO.md`. The other nodes of group 3 (V08, V18) follow in a section of their own.
+
+| criterion | verdict | measured |
+|---|---|---|
+| A1 contract tests | PASS | 36 of 36 pass. The 20 tests of the existing API fail on the base sources by assertion (20 of 20) and pass now. The 16 tests of the API added by the node were written after the implementation; their failing state is a compile failure against a copy of the base |
+| A2 default-path golden oracle | PASS | nine golden files identical, 0 diff lines against the base |
+| A3 every other facade test | PASS | 533 passed, 0 failed, 0 ignored in 56 test binaries and one doctest run; 497 outside the new binary |
+| A4 other frontends unchanged | PASS | length and FNV-1a 64 of the full record of SwitchingSolver::solve and ProductionSolver::solve identical in 77 of 77 lines between the base sources and the node; the reviewer compared 416 full records byte for byte: identical. Rodas5p, Dopri5, GeneralOde, AutomaticOde and the default ProductionSolver by the golden oracle (sources unchanged) |
+
+Predeclared thresholds, all PASS: bounded work on four stiff contractive problems (328, 48, 723 and 74 charged right-hand-side calls against the bounds 30727, 181818, 5890 and 181818; base 314119, 600049, 58411 and 600073; no DOPRI5 leg); label equals the executed driver (11 of 11 cases, base 0 of 11; 336 replayed requests: 312 solved, 24 refused before any callback, 0 mismatches); a failing switching solve returns its real stop (base: max-steps-reached in three of three cases); preflight calls charged (0 uncharged entries in three cases); one attempt budget over the legs (266 attempts under max_steps 500, base 516); a single-leg unified solve equals the direct call bit for bit.
+
+Corrections of the review (none changes a verdict): the stiffness screen is not one-sided, a fatal callback at a probe point ends the solve (F2, major; documentation and report corrected, the behaviour is listed for the owner); a copy of the base built in the worktree's target directory leaves units that cargo takes for fresh (F1, major, process; the builder's logs are not affected); A1 holds as "written first as a failing test" for 20 of 36 tests (F3); "byte-identical" in the builder's report was a comparison of length and FNV-1a 64 (F4); the status field can still carry a substituted reason where the stop field is exact (F6); for a stiff problem the screen does not see, the cost is the explicit trial, worst observed about 15 times the right-hand-side calls of direct RODAS5P (F8); unread options are kept and the removed public items break source compatibility outside the repository (F9).
+
+Merged tree (with the facade rule of V22): rustfmt, clippy and rustdoc with warnings denied exit 0; facade suite 536 passed, 0 failed in 59 result lines; sentinels, kernel entry identity and stage client targets 123 passed, 0 failed, 9 ignored in 19 binaries (`logs/w2c_v03b_merge_*.log`). Ledger row L-0329.

@@ -160,11 +160,16 @@ impl RouteBasis {
 /// decaying mode. If that exceeds the attempt budget `B` of the trial,
 /// `L (t1 - t0) > 3.3 B`, the trial is skipped and RODAS5P runs.
 ///
-/// The screen is one-sided. It can move a request from the explicit trial to RODAS5P,
-/// never the other way, and a negative result is not evidence of non-stiffness: stiffness
-/// that develops after `t0` (Robertson) is left to the trial budget and the fallback. A
-/// strongly oscillatory or non-normal problem can be moved to RODAS5P although DOPRI5
-/// would have finished; the result is still error controlled.
+/// The screen can move a request from the explicit trial to RODAS5P, never the other way,
+/// and a negative result is not evidence of non-stiffness: stiffness that develops after
+/// `t0` (Robertson) is left to the trial budget and the fallback. A strongly oscillatory
+/// or non-normal problem can be moved to RODAS5P although DOPRI5 would have finished; the
+/// result is still error controlled.
+///
+/// The screen has a third outcome. Its probe points `y0 + delta_j e_j` are not on the
+/// trajectory. A fatal callback error at one of them ends the solve with that error before
+/// any leg runs, also for a problem that DOPRI5 alone would integrate (a finite-difference
+/// Jacobian of `Rodas5p::solve` meets the same right-hand side).
 ///
 /// Cost: `n + 1` right-hand-side calls and `O(n)` storage, with `n` at most
 /// [`EXPLICIT_TRIAL_MAX_DIMENSION`]. Every call is charged.

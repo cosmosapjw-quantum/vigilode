@@ -83,7 +83,10 @@
     "research/production_loop_20261116/banded_kernel_route/SENTINEL_REPIN.json": "f55615af6632533c7556dc161dcd3c4905c419df4cd70f77b7418fd87f219a9e",
     "research/production_loop_20261116/capabilities_fix/PREDECLARED.json": "e094b60d4f467594fc91bb3949830fb36f040858fe564a962cdf178362202d25",
     "research/production_loop_20261116/mf_adaptive/PREDECLARED.json": "2ed7ca7d6c64bba0cddaaaf20b5a6460acb57cf46838bb420b0ec94a74a55375",
-    "research/production_loop_20261116/banded_solve/REVIEW.json": "6c9f6d9ef9e9b2fc97954932e0897ac7e8a6f8e61c1ae57e5dbfcf8d119a885a"
+    "research/production_loop_20261116/banded_solve/REVIEW.json": "6c9f6d9ef9e9b2fc97954932e0897ac7e8a6f8e61c1ae57e5dbfcf8d119a885a",
+    "research/production_loop_20261116/unified_router/PREDECLARED.json": "37931a3567e9edefb8c69bfeacd3f953edb756e195759a1aa2dae2efde11253b",
+    "research/production_loop_20261116/unified_router/RECEIPT.json": "bc469b227c99d72a97caadfec32cc8403ce24d5cac7ff39ae245f4ad9c87c8e8",
+    "research/production_loop_20261116/unified_router/REVIEW.json": "6154b1d0ede055518936f9d82e484b3a1a7a7d160dda3af4633386188a0b036e"
   },
   "implemented_source_sha256": {
     "crates/vigilode/tests/default_path_golden.rs": "9ef2b4b7aff1d92b14c7f28c764e5ff791a2823091ec50cf8ffc1167366863ec",
@@ -121,7 +124,19 @@
     "crates/vigilode/src/solve.rs": "1e6f82fd33383600eee9d42b1b21b699385ff815128db9737b676c58bb113a74",
     "crates/vigilode/tests/unified_frontend_contracts.rs": "ff1dc49dc8ede819888087fca3ebd0ae499afcc163fc5defc47137b112c76c4d",
     "crates/rodas5p-integrators/tests/banded_kernel_entry_identity.rs": "0138a950cef4a91956194116a75b418b57c55ab8969b408d617324bae94f3653",
-    "crates/vigilode/tests/banded_kernel_route_contracts.rs": "7aa3888fed761320d2b466f4f984be3161a02e0707df2957760d57ca33908b3c"
+    "crates/vigilode/tests/banded_kernel_route_contracts.rs": "7aa3888fed761320d2b466f4f984be3161a02e0707df2957760d57ca33908b3c",
+    "crates/vigilode/src/unified/analyzer.rs": "5e5bf7cba0acde165835bb074cd31251e16b9cf8dbb23dec7fd34e7e6eb52506",
+    "crates/vigilode/src/unified/fallback.rs": "b3ed3e41e0b2106a9c92377f6868488a97d25ab7262b7c1f8722a1b1efe621a9",
+    "crates/vigilode/src/unified/legs.rs": "4192921884db82857607f27c3758555824c6ce3d4abe55d018ac463cb857bef4",
+    "crates/vigilode/src/unified/mod.rs": "8f30dcf18bdb4602e9046bc63859300bf3c1b7606b6b67609763f8f789362de4",
+    "crates/vigilode/src/unified/options.rs": "de40c0f9fa2ca4ad8b698a203b003942d9eb5b5ebaf313a096fb8c8fa2b0c83b",
+    "crates/vigilode/src/unified/router.rs": "11f3696ab98f52a4ece5d003cafaa0fa65d2813ea4a4cfa3d820cd0bfa2f7eb4",
+    "crates/vigilode/src/unified/solution.rs": "7f9a9302a893568363f09cad11ff4bfad433314c00f83e950628d94a26752ae6",
+    "crates/vigilode/src/unified/workspace.rs": "8006036bc39bd85211d47609cb9f8f5eee7ff0a8fd4fd01fc012287b9b351466",
+    "crates/vigilode/src/registry.rs": "88b39c788796ae49fafbc2c346eb280d263f9694e8c98923b6e04ec6e50f4ddf",
+    "crates/vigilode/tests/unified_router_contracts.rs": "03e58ae0b62e6e1b916ec6a275abe28c26a5c1680ef7c5f7aa407171e7986a71",
+    "crates/vigilode/tests/unified_production_solver_contracts.rs": "635c068d03a03a6d1053f6744fb4364cd3b7bbe868d72a74fd0cdf09352f5357",
+    "crates/vigilode/examples/unified_production_solver.rs": "40e423913b1cce7c86ee2ebf92bc1dd6e1e709f0f70ea47813ec6efb463e53d2"
   },
   "preregistration_frozen_part_sha256": "0a5c7e061be57d24f382f24594c7d83a1ec68a4365ec6590c316d1d351ba0c85",
   "notes": [
@@ -140,7 +155,8 @@
     "2026-11-23, epoch 3, node V22 under OD-L1-9: rodas5p_fast.rs gains one public function, rodas5p_fast_dense.rs two public functions, one identifier and a kernel parameter on two private functions (no existing public function changes), and crates/vigilode/src/lib.rs gains one re-export and a paragraph of route documentation. The sentinel test keeps its pins and allows one more lib.rs block (banded_kernel_route/SENTINEL_REPIN.json). The width constant of the facade is provisional (8) until the deciding series of the width scan.",
     "2026-11-23: owner decisions OD-L1-13 and OD-L1-14 appended to OWNER_DECISIONS_20261116.json; its identity is updated.",
     "2026-11-23: independent review of nodes V19 and V21 (banded_solve/REVIEW.json) added to the evidence list; the report of those nodes was regenerated after its corrections (result files unchanged).",
-    "2026-11-23: review finding F08 of nodes V19 and V21: the fixed-width solve of BandedTightStageLu uses wrapping pivot differences (no overflow panic on a solve before a factorization) and the identity test file gains two tests; both identities updated."
+    "2026-11-23: review finding F08 of nodes V19 and V21: the fixed-width solve of BandedTightStageLu uses wrapping pivot differences (no overflow panic on a solve before a factorization) and the identity test file gains two tests; both identities updated.",
+    "2026-11-23: node V03 part B (unified router) merged (cfbd2b18): unified_router/PREDECLARED.json, RECEIPT.json and REVIEW.json added to the evidence list and the twelve code paths of the node to the implemented sources (unified/analyzer.rs with the documentation correction of review finding F2); V03_UNIFIED_FRONTEND is COMPLETE_SCOPED in TASK_CONTRACTS.json and RESEARCH_DAG.json."
   ],
   "epochs": [
     {
