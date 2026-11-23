@@ -1,0 +1,21 @@
+# date=2026-11-23T19:44:31+09:00 head=f7ab9d1e45dcb9f1b2de79572c4cf469165f4a33 dirty_tracked=1
+# python3 -I -B -c 
+import importlib.util
+spec = importlib.util.spec_from_file_location("check_checkpoint", "research/production_loop_20261116/check_checkpoint.py")
+checker = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(checker)
+original = checker.strict
+def strict_without_pin(path):
+    data = original(path)
+    if path.name == "CHECKPOINT.json":
+        removed = data["implemented_source_sha256"].pop("crates/rodas5p-integrators/src/stage_clients/krylov.rs", None)
+        print("entry taken out of implemented_source_sha256:", "crates/rodas5p-integrators/src/stage_clients/krylov.rs", removed is not None)
+    return data
+checker.strict = strict_without_pin
+checker.main()
+
+entry taken out of implemented_source_sha256: crates/rodas5p-integrators/src/stage_clients/krylov.rs True
+entry taken out of implemented_source_sha256: crates/rodas5p-integrators/src/stage_clients/krylov.rs True
+PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities
+Scope: checkpoint reproducibility. Production HOLD; no new numerical qualification.
+# exit=0

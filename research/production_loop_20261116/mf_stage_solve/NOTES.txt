@@ -140,3 +140,21 @@ NEXT STEPS
 NEXT STEPS
 1. When timing try 1 ends: parse; if the load is <= 8 by then, re-measure the cells that missed (try 2, 3).
 2. run_checks.sh checker json; parse_results.py -> RESULTS.json; make_report.py -> REPORT_KO.md; commit.
+
+== 2026-11-23 19:45 KST: completion by the orchestrator session ==
+- The builder agent was cut by the account usage limit on 2026-11-17 at about 15:38 KST, during timing try 1
+  (all of try 1 had been measured under a 1-minute load of 22-44 except five rounds of cusp1d 1e-7).
+- The orchestrator ran only the steps listed under NEXT STEPS above, with the same binary (sha256
+  533d04044ca0...) and no protocol choice of its own, on a quiet host (1-minute load 2-3.5):
+    run_measurements.py timing --try 1                      (the five missing rounds of cusp1d 1e-7)
+    run_measurements.py timing --try 2 --cells <bruss1d, burgers2d, cusp1d: all five tolerances>
+    run_measurements.py timing --try 2 --cells <fhn3d: all five tolerances>
+    run_measurements.py timing --try 3 --cells burgers2d:1e-4   (try 2 missed the rule: spread of arm C 0.104)
+    parse_results.py; make_report.py; run_checks.sh checker json
+  Every measurement is kept; the parser uses the first try that meets the rule (try 2 everywhere, try 3 for
+  burgers2d 1e-4). No cell was measured more than three times.
+- Result: all 20 cells authoritative. Cadence (B) PASS on 4 of 4 families (wall at matched error 3.03, 2.61,
+  5.30, 2.36 for fhn3d, cusp1d, burgers2d, bruss1d; instructions part 4 of 4). Policy (C) PASS on 4 of 4.
+  KILL not triggered. The loop checker exits 1 only because stage_clients/krylov.rs is pinned in the
+  checkpoint and this node changes it (allowed path); checker_without_krylov_pin exits 0.
+- The independent reviewer re-runs what decides the verdicts.

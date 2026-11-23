@@ -573,7 +573,8 @@ def main():
     remaining.append("B는 보호 driver와 다른 driver(client driver)를 쓴다. 두 driver는 stage 우변을 scaled/unscaled 형태로 다르게 만들어 최종 상태가 반올림 수준에서 다르고(5.2절의 B0), 오류로 실패한 attempt 뒤에 RHS를 한 번 더 평가한다. default로 삼으려면 보호 kernel(`gmres_into.rs`)에 열 단위 검사를 넣거나 client driver를 matrix-free 기본 경로로 승격하는 결정이 필요하고, 어느 쪽이든 보호 파일 또는 default routing을 건드리므로 owner 결정 사항이다.")
     remaining.append("default 경로의 golden(`default_path_golden.rs`)은 반복 수와 상태 비트가 달라지므로 다시 만들어야 한다. 그 전에 G0과 hosted CI에서의 재현을 확인해야 한다.")
     remaining.append("C의 정책은 상수 하나(kappa = 1e-3)를 네 family에서 한 번 확인한 것이다. 성분 scale이 크게 다른 문제(atol << rtol*|y|인 성분과 0에 가까운 성분이 섞인 경우)는 이번 family에 없다: 그런 문제에서는 `min_i(atol + rtol*|y_i|)`가 가장 작은 성분에 맞춰져 보수적이 되지만, 2-norm 검사가 WRMS 검사를 대신할 수 있는지는 따로 확인해야 한다. 비자율 문제, mass matrix, DAE도 범위 밖이다.")
-    remaining.append("Krylov 한도에 걸리는 강한 stiff 영역(5.7절)에서는 검사 주기만으로는 이득이 작다. 그 영역은 preconditioner가 필요하고, client에는 right Jacobi뿐이다(5.5절).")
+    remaining.append("Krylov 한도에 걸리는 영역은 탐색 cell 하나(5.7절)만 봤다. 거기서는 검사 주기의 효과가 선언 family보다 작고 허용치 정책의 효과가 크지만, tolerance가 하나뿐이고 matched error 비교가 아니다. 이 영역에 대한 판정 자료는 없다. client의 preconditioner는 right Jacobi뿐이다(5.5절).")
+    remaining.append("restart 길이(5.4절)는 한 tolerance에서 본 탐색 자료다. 보호 driver의 설정값만 바꾸는 대안이므로, default 후보로 삼으려면 여러 tolerance와 family에서 matched error로 따로 사전등록해 확인해야 한다.")
     remaining.append("facade에 opt-in 선택지를 내는 일(V03 계열)과 문서화가 남아 있다.")
     for item in remaining:
         add(f"- {item}")
@@ -582,6 +583,7 @@ def main():
     # ------------------------------------------------------------ 8. amendments and limits
     add("## 8. 사전등록 수정과 한계")
     add("")
+    add("- 사전등록 수정은 `PREDECLARED.json`의 `amendments`에 영어로 적혀 있다. 아래는 그 원문이다. 요지: 축소 instance에서 arm A만 돌려 본 결과 처음 선언한 family 두 개(ac3d, grayscott2d)는 끝 상태가 평형점이어서 달성 오차를 맞출 수 없었고, 나머지 둘은 구간 또는 시작 상태를 고쳤다. 선언 크기에서의 실행과 arm 비교가 있기 전에 commit했다.")
     for amendment in predeclared["amendments"]:
         add(f"- 수정 {amendment['id']} ({amendment['date']}): {amendment['what']}")
         add(f"  - 시점: {amendment['status']}")
@@ -629,7 +631,12 @@ def main():
         ("crates/rodas5p-integrators/tests/stage_clients_krylov_v17_{problems,contracts,alloc,measure}.rs", "family, 계약 테스트, 할당 테스트, 측정 프로그램"),
     ]:
         add(f"  - `{path}`: {text}")
-    add("- wall 재측정 (조용한 host에서): `python3 -I run_measurements.py timing --bin <stage_clients_krylov_v17_measure binary> --try 2` 뒤 `python3 -I parse_results.py && python3 -I make_report.py`. cell당 측정은 3회까지이며 규칙을 처음 만족한 측정을 쓴다.")
+    measured = max((family["cells"][label]["timing"]["measurements"] for family in families.values() for label in labels), default=0)
+    if any(label != "authoritative" for label in wall_labels.values()):
+        if measured < 3:
+            add(f"- wall 재측정 (조용한 host에서): `python3 -I run_measurements.py timing --bin <stage_clients_krylov_v17_measure binary> --try {measured + 1}` (필요하면 `--cells family:rtol,...`로 미달 cell만) 뒤 `python3 -I parse_results.py && python3 -I make_report.py`. cell당 측정은 3회까지이며 규칙을 처음 만족한 측정을 쓴다. 지금까지 cell당 최대 {measured}회 측정했다.")
+        else:
+            add("- cell당 3회 측정 한도를 다 쓴 cell이 있다. 그 cell의 wall을 authoritative로 다시 재려면 사전등록 수정이 필요하다.")
     add("")
 
     with open(args.out, "w", encoding="utf-8") as handle:

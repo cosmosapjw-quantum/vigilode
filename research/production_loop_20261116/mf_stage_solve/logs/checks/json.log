@@ -1,0 +1,22 @@
+# date=2026-11-23T19:44:31+09:00 head=f7ab9d1e45dcb9f1b2de79572c4cf469165f4a33 dirty_tracked=1
+# python3 -I -c 
+import glob, json, sys
+def bad(value):
+    raise ValueError("nonfinite JSON constant: " + value)
+paths = sorted(glob.glob("research/production_loop_20261116/mf_stage_solve/*.json")
+               + glob.glob("research/production_loop_20261116/mf_stage_solve/reference/*.json"))
+for path in paths:
+    with open(path, encoding="utf-8") as handle:
+        json.load(handle, parse_constant=bad)
+    print("strict JSON ok:", path)
+print(len(paths), "files")
+
+strict JSON ok: research/production_loop_20261116/mf_stage_solve/PREDECLARED.json
+strict JSON ok: research/production_loop_20261116/mf_stage_solve/RESULTS.json
+strict JSON ok: research/production_loop_20261116/mf_stage_solve/reference/bruss1d.json
+strict JSON ok: research/production_loop_20261116/mf_stage_solve/reference/bruss1d_stiff600_radau.json
+strict JSON ok: research/production_loop_20261116/mf_stage_solve/reference/burgers2d.json
+strict JSON ok: research/production_loop_20261116/mf_stage_solve/reference/cusp1d.json
+strict JSON ok: research/production_loop_20261116/mf_stage_solve/reference/fhn3d.json
+7 files
+# exit=0
