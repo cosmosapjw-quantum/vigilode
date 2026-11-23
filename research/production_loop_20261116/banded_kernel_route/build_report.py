@@ -38,22 +38,30 @@ def main():
         out.append(f"- facade 수준(D4, Allen-Cahn 2D 64): 직접 Indexed 호출 대비 instructions {fmt(m['instructions_ratio_facade_to_direct'])} (기준 {d4['thresholds']['instructions']}), cycles {fmt(m['cycles_ratio_facade_to_direct'])} ({m['cycles_label']}). 횟수와 상태 hash 동일: {m['equal_counts_and_state_hash']}.")
     out.append("")
     out.append("## 2. 폭 scan (Slices / Indexed, attempt당)\n")
-    out.append(f"유효성(모든 실행에서 횟수, 연산 수, 상태 hash 동일): {a['validity_equal_counts_operations_and_state_hash_in_every_run']}. 측정 셀 {a['cells_measured']}개.\n")
-    out.append("| 반띠폭 | Allen-Cahn strip: instr | cycles | 라벨 | Brusselator strip: instr | cycles | 라벨 | 자격 |")
-    out.append("|---|---|---|---|---|---|---|---|")
+    v = a["validity_detail"]
+    out.append(f"유효성(기록된 모든 실행에서 두 커널의 횟수, 연산 수, 상태 hash 동일): {a['validity_equal_counts_operations_and_state_hash_in_every_run']}. 측정 로그 {a['cells_measured']}개, 비교한 (로그, attempt 예산) 쌍 {v['budget_pairs_compared']}개, 차이 {len(v['differences'])}건.\n")
+    out.append("| 반띠폭 | Allen-Cahn strip: instr | cycles | 라벨 | 측정 | Brusselator strip: instr | cycles | 라벨 | 측정 | 자격 |")
+    out.append("|---|---|---|---|---|---|---|---|---|---|")
     for w in sorted(a["by_half_band_width"], key=int):
         row = a["by_half_band_width"][w]
         cells = []
         for family in ("acstrip", "brstrip"):
             e = row.get(family)
             if e is None:
-                cells += ["-", "-", "-"]
+                cells += ["-", "-", "-", "-"]
             else:
                 cells += [fmt(e["instructions_ratio"]), fmt(e["cycles_ratio"]),
-                          "권위" if e["cycles_label"] == "authoritative" else "진단"]
+                          "권위" if e["cycles_label"] == "authoritative" else "진단",
+                          f"{e['measurements_taken']}회 중 `{os.path.basename(e['measurement'])}`"]
         out.append(f"| {w} | " + " | ".join(cells) + f" | {'예' if a['width_qualifies'][w] else '아니오'} |")
     out.append("")
     out.append("자격: 그 폭에서 측정한 모든 계열이 instructions와 cycles 모두 0.95 이하이고 cycles가 권위 측정일 때. W는 그 폭 이상 전부가 자격을 갖는 가장 작은 폭.")
+    out.append("")
+    out.append("측정 칸: 그 셀을 잰 횟수(최대 3회)와 판정에 쓴 로그. 품질 규칙(1분 load 8 이하, 커널별 cycles 분산 0.10 이하)을 처음 만족한 측정이 판정한다. 만족한 측정이 없으면 마지막 측정을 진단용으로 보인다.")
+    for item in v["interrupted_measurements"]:
+        out.append(f"- 중단된 측정 `{item['file']}`: 기록된 실행 {item['runs_recorded']}개, 두 커널을 비교할 수 있었던 예산 {item['budgets_compared']}, 짝이 없는 예산 {item['budgets_without_a_pair']}. 그 셀의 측정 1회로 센다. 중단 이유는 host 상태였고 결과를 보고 멈춘 것이 아니다(PROGRESS.md 22:48, 23:00).")
+    if v["complete_logs_with_a_failed_run_or_a_missing_pair"]:
+        out.append(f"- 결함 있는 로그: {json.dumps(v['complete_logs_with_a_failed_run_or_a_missing_pair'], ensure_ascii=False)}")
     if a["rises_above_the_trend_bound"]:
         out.append(f"\n추세 점검에서 상승 발견: {json.dumps(a['rises_above_the_trend_bound'], ensure_ascii=False)}")
     out.append("")

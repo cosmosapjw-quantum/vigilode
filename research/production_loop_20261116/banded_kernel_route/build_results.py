@@ -81,6 +81,48 @@ def scan_table(all_cells):
     return table
 
 
+def run_validity(scan):
+    """The validity rule of PREDECLARED.json over every recorded run of the series.
+
+    A difference is a budget of one log at which the runs of the two kernels do not all print
+    the same attempts, accepted and rejected steps, counted factor and solve operations and
+    state hash. A measurement that was interrupted (no footer) is compared in the runs it
+    holds; a budget that only one kernel reached there has no pair and is listed, it is not a
+    difference. A complete log must hold both kernels at both budgets and no failed run.
+    """
+    keys = ("attempts", "accepted", "rejected", "factor_ops", "solve_ops", "state_hash")
+    differences, defective, interrupted, pairs = [], [], [], 0
+    for cell in scan:
+        path = os.path.join(HERE, cell["file"])
+        header, footer, runs = v21.read_lines(path)
+        per, failed = {}, 0
+        for rec in runs:
+            if rec["exit"] != 0 or not rec["stdout"].startswith("DRIVE "):
+                failed += 1
+                continue
+            fields = dict(tok.split("=", 1) for tok in rec["stdout"].split()[1:])
+            per.setdefault(rec["budget"], {}).setdefault(rec["kernel"], set()).add(
+                tuple(fields[k] for k in keys))
+        paired = {b: sig for b, sig in per.items() if len(sig) == len(header["kernels"])}
+        pairs += len(paired)
+        differing = sorted(b for b, sig in paired.items() if len(set().union(*sig.values())) != 1)
+        unstable = sorted(b for b, sig in per.items() if any(len(s) != 1 for s in sig.values()))
+        if differing or unstable:
+            differences.append({"file": cell["file"], "budgets_where_the_kernels_differ": differing,
+                                "budgets_where_one_kernel_differs_between_its_runs": unstable})
+        if footer is None:
+            interrupted.append({"file": cell["file"], "runs_recorded": len(runs),
+                                "budgets_compared": sorted(paired),
+                                "budgets_without_a_pair": sorted(set(per) - set(paired))})
+        elif failed or len(paired) != 2:
+            defective.append({"file": cell["file"], "failed_runs": failed,
+                              "budgets_compared": sorted(paired)})
+    return {"holds": bool(scan) and not differences and not defective,
+            "budget_pairs_compared": pairs, "differences": differences,
+            "complete_logs_with_a_failed_run_or_a_missing_pair": defective,
+            "interrupted_measurements": interrupted}
+
+
 def choose_width(table):
     widths = sorted(table)
     expected = sorted({w for sizes in SCAN.values() for w in sizes.values()})
@@ -138,11 +180,12 @@ def main():
     scan = cells("s")
     table = scan_table(scan)
     complete, qualifies, width, rises = choose_width(table)
-    valid = bool(scan) and all(c["counts_operations_and_state_hash_equal_in_every_run"]
-                               and c["complete"] for c in scan)
+    validity = run_validity(scan)
+    valid = validity["holds"]
     stage_a = {
         "cells_measured": len(scan), "scan_complete": complete,
         "validity_equal_counts_operations_and_state_hash_in_every_run": valid,
+        "validity_detail": validity,
         "by_half_band_width": {str(w): table[w] for w in sorted(table)},
         "width_qualifies": {str(w): q for w, q in qualifies.items()},
         "W": width, "rises_above_the_trend_bound": rises,
