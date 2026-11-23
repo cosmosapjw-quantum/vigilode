@@ -1,0 +1,160 @@
+NOTES of node V17_MATRIX_FREE_STAGE_SOLVE (loop L1, wave 2, group 2)
+worktree /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v17
+branch   research/production-loop-20261116-w2-v17, base c468478e73123a4625c6d20f7459a9f79cbf33de
+target   CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v17
+
+== 2026-11-17 14:04 KST: session start ==
+State found: worktree at the base commit, no earlier V17 files or commits.
+Host load at start: 1-minute load average 35.9 (jobs of other projects). Timing goes last.
+
+READ SO FAR
+- research/production_loop_20261116/PREREGISTRATION.md:11-17 (rules), :90-96 (addendum A2, row V17).
+- docs/agent/production_solver_program_20261112/TASK_CONTRACTS.json tasks[26] (V17 contract:
+  write allowlist = stage_clients/krylov.rs, stage_clients/krylov/**, tests/stage_clients_krylov_*.rs,
+  research/production_loop_20261116/mf_stage_solve/**).
+- crates/rodas5p-integrators/src/stage_clients/krylov.rs (whole file, 1232 lines):
+  :76-137 StageStoppingRule (threshold = max(atol*gamma*inv_h_gamma, rtol*||b||)), PRODUCTION_RTOL 1e-10,
+  PRODUCTION_ATOL 1e-14; :157-201 PerStageGmresOptions (baseline = restart 40, max_arnoldi 200,
+  in_cycle_exit true, recompute_final false; shipped_cadence = in_cycle_exit false, recompute_final true);
+  :429-604 gmres_solve (true residual at the top of every pass decides; in-cycle exit on the projected
+  residual); :1103-1232 ResidualAuditClient (saves b, checks ||b - W x|| with its own JVP and counters).
+- research/production_loop_20261116/shared_krylov/PREDECLARED.json (V06 cells: bruss1d n=1024,
+  grayscott2d n=2048, adr2d n=1024, robertson_rd1d n=1026 (final only), exploratory bruss1d_stiff 512 cells;
+  rtol 1e-4 and 1e-6; arms A / B0 / B / C; reference DOP853 + Radau).
+
+DESIGN DECISIONS SO FAR
+- Arm B = KrylovStageClient::per_stage with PerStageGmresOptions::baseline() and
+  StageStoppingRule::protected_production() (exists since V06; not changed).
+- Arm C = the same client with a rule whose rtol is tied to the step tolerance (formula to be fixed in
+  PREDECLARED.json before any run). Needs an additive constructor/policy type in krylov.rs.
+- Arm A = protected driver integrate_rodas5p_mf_fast_observed_gmres_into as routed
+  (RoutingOptions::default().matrix_free). Open point: how every stage solve of arm A is checked against
+  the original residual with an independent JVP (the protected driver is not client based).
+
+NEXT STEPS
+1. Read how the protected driver exposes its stage solves (stage telemetry / solve log) and how the V06
+   measurement target ran arm A and B0 (tests/stage_clients_krylov_measure.rs, *_problems.rs).
+2. Read the V04/V06 reports + REVIEW.json for the correction notices.
+3. Fix families, sizes, tolerances, reference, interpolation rule -> PREDECLARED.json, commit.
+4. Additive client code + tests, measurement runner, parser, report script.
+
+== 2026-11-17 14:35 KST: pre-declaration committed (a6c66e9b), code written, first build running ==
+READ SINCE THE START
+- crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2198-2428 (integrate_observed_with_observer: the
+  attempt observer gets t, y, h, Option<error> and the workspace after every attempt), :2543 (stage(i)),
+  :1589-1596 (solve log), :2711-3050 (attempt_inner: stage rhs = h gamma f_i + gamma sum C_ij U_j, GmresConfig,
+  solve_gmres_into_with_accounting), :3276-3294 (shipped entry = traced entry with a no-op observer),
+  :699-751 (residual transfer constants).
+- crates/rodas5p-krylov/src/gmres_into.rs:233-312, 372-390, 455-476; common.rs:39-47;
+  crates/rodas5p-integrators/src/routing.rs:233-251; raw_stage_target.rs:292-304 (gamma*atol rounded down).
+- shared_krylov/REPORT_KO.md sections 4, 5, 8.3-8.5 and its correction notice (leads only).
+- crates/rodas5p-integrators/src/adaptive.rs:161-178 (default initial_step 1e-3).
+
+DECISIONS (all in PREDECLARED.json)
+- Arm A audit: observer rebuilds each stage system from the stage equations (own RHS, own JVP), threshold
+  max(raw_absolute_residual_budget(1e-14, gamma), 1e-10 ||rhs||); completed solves of a failed attempt counted
+  with the driver's solve log. Audit-on run must equal the audit-off run bit for bit.
+- Arm C policy: tau_C = max(tau_B, kappa sqrt(n) min_i(atol + rtol |y_i|) / (h gamma)), kappa = 1e-3.
+  Transfer constants recomputed from the snapshot: sum tau_y = 25.17, sum tau_e = 14.19.
+- Families: ac3d (m 12, n 1728, new, 3D), cusp1d (N 400, n 1200, new, strongly stiff), burgers2d (m 28,
+  n 1568, new), grayscott2d (grid 40, n 3200, V06 family at a new size). rtol 1e-3..1e-7, atol = rtol,
+  initial step 1e-3. Time spans provisional until amendment A1 (from reduced instances only).
+- Matched error: E = max |y - ref| / (1 + |ref|); geometric mean of the work ratio over the common error range.
+
+FILES WRITTEN (uncommitted until this commit)
+- crates/rodas5p-integrators/src/stage_clients/krylov/step_tied.rs (StepTiedTolerance)
+- crates/rodas5p-integrators/src/stage_clients/krylov.rs (additive: policy option on the client and on the audit,
+  KrylovStats::policy_bound_solves)
+- crates/rodas5p-integrators/tests/stage_clients_krylov_v17_{problems,contracts,alloc,measure}.rs
+- research/production_loop_20261116/mf_stage_solve/reference/make_reference.py
+
+NEXT STEPS
+1. Finish the build, run the V17 contract and allocation tests and the four V06 targets + sentinels.
+2. Sizing on reduced instances (size_*), amendment A1 (time spans), commit.
+3. References (make_reference.py), run script, parser, measurement, timing last (host load is 30-45 now).
+
+== 2026-11-17 14:51 KST: amendment A1 (families and spans), before any run at a declared size ==
+- Build ok; V17 contracts 11/11, V17 alloc 1/1, V06 contracts 9/9 (+1 ignored by design), V06 alloc 1/1.
+- Sizing on reduced instances (arm A only) showed: ac3d ends in the equilibrium u = 1 before t = 0.7;
+  the Gray-Scott bump of the crate start state dies (v_max 0.007 at t = 20); cusp1d on [0, 0.1] has no jumps;
+  burgers2d with mean flow 0.5 takes 7-27 attempts. An end state at an equilibrium makes the achieved error
+  useless for matching, and <15 attempts make the 1.05/1.10 attempts bounds a matter of one attempt.
+- A1: families_final = fhn3d (m 10, n 2000, 3D, new), cusp1d (N 400, n 1200, [0, 0.7], new, strongly stiff),
+  burgers2d (m 28, n 1568, mean flow 4.0, [0, 0.5], new), bruss1d (700 cells, n 1400, [0, 10], V06 family at a
+  new size). Evidence: logs/sizing/*.log. The original "families" block stays in PREDECLARED.json.
+- Rust and numpy right-hand sides agree at y0 on the dev instances (relative difference <= 1.7e-15) and the
+  errors of all arms against the numpy reference scale with the tolerance (dev instances, console check).
+- V17_T1 (end-time override) exists in the measurement target for sizing only; the parser must refuse a
+  declared run whose span is not the declared one.
+
+NEXT STEPS
+1. References for the four declared families + bruss1d_stiff600 (make_reference.py, background).
+2. run_measurements.py (setup / runs / timing / exploratory / regression phases), parse_results.py,
+   make_report.py.
+3. Declared runs (counters + perf) on cores 0-5,12-17; timing last under the lock on cores 6-11.
+
+== 2026-11-17 15:04 KST: declared runs in progress ==
+- Commits: a6c66e9b (PREDECLARED), 2681f19a (amendment A1), 2bd2dd65 (driver + parser), 2db755a4 (report
+  generator). Measurement binary sha256 3fc4994c65c1... built from the tree of 2bd2dd65 (tracked tree clean).
+- Done: references (burgers2d, bruss1d, fhn3d, cusp1d; bruss1d_stiff600 running), logs/setup (SETUP x3, RHS0,
+  calibration), logs/runs for burgers2d, bruss1d, fhn3d; cusp1d running (A needs 13-25 s per run).
+- V06 regression (logs/v06_regression): 14 of 14 V06 cells reproduce the V06 logs in every common field and in
+  the final state bits (the V06 logs lack the later field linear_rtol).
+- Parser and report generator run on the partial data. First numbers (not final until the parser is rerun):
+  matched-error instructions B/A 0.36 (fhn3d), 0.22 (burgers2d), 0.43 (bruss1d); C/A 0.13, 0.10, 0.15;
+  zero failed residual checks; attempts of B equal those of A on these three families.
+- cusp1d: errors are erratic in the jump phase (E/rtol 1.4 to 124 at the same tolerance across arms):
+  non-monotone work-precision curves; the declared conservative rule applies.
+- clippy flagged too_many_arguments on ProtectedAudit::stage_residual (test support file): allow attribute
+  added, NOT yet rebuilt (the declared runs still use the binary). Rebuild after the runs phase; then the
+  exploratory and timing phases use the new binary (its sha256 is recorded in every log).
+- Host load stays at 35-45 (other projects). Timing will most likely be diagnostic_only.
+
+NEXT STEPS
+1. After the runs phase: rebuild, rerun V17 + V06 tests, sentinels, clippy, rustfmt; logs to logs/checks.
+2. exploratory phase (restart, jacobi, kappa, stiff Brusselator).
+3. timing phase with --wait-minutes 20 (bounded poll), one try; re-measure only cells that miss on spread.
+4. parse_results.py, make_report.py, loop checker, strict JSON check, final commit.
+
+== 2026-11-17 15:19 KST: declared runs done, exploratory done, timing (try 1) running ==
+- Declared runs complete (logs/runs: 140 logs, 80 perf files). Validity: zero failed residual checks in A, B, C;
+  attempts of B within 1.05 of A at every tolerance (cusp1d: 0.976, 1.026, 1.006, 1.000, 1.000; others 1.000).
+- Instructions at matched error (geometric mean): B/A fhn3d 0.359, cusp1d 0.382, burgers2d 0.216, bruss1d 0.430;
+  C/A 0.129, 0.118, 0.100, 0.146. Policy (C): 4 of 4 families pass. Cadence (B): instructions part 4 of 4;
+  the wall part needs authoritative timing.
+- Host: 1-minute load 28-44 during the whole session; cores 6-11 are used by other jobs (logs/timing/
+  CORES_6_11.log, LOAD_WAIT.log). Timing try 1 started 15:12 without waiting the full 20 minutes (the wait is
+  optional; the poll went on in parallel). Cells are expected to be diagnostic_only (spreads 10-200%).
+- Added to the timing records: on-CPU time of the solver thread (/proc/thread-self/schedstat), exploratory.
+- Exploratory (logs/exploratory): restart 10/20/80 for A and B at rtol 1e-5 (A with restart 10 costs 0.26-0.37 of
+  A with restart 40; B with restart 10: 0.16-0.29), right Jacobi for B (helps cusp1d only), kappa 1e-4 / 1e-2,
+  stiff Brusselator 600 cells (B/A instructions 0.77, C/A 0.10 at equal tolerance with a larger error).
+- bruss1d_stiff600 reference: DOP853 at 1e-13 did not finish in 13 minutes (stopped, noted in its log); the
+  Radau fallback (reference/bruss1d_stiff600_radau.json) is used for that exploratory cell.
+- Tool caches (.mypy_cache, __pycache__) that appeared in the evidence directory were moved to the scratchpad.
+- logs/checks: tests, sentinels, clippy, fmt all exit 0 (commit 98ea8a37 tree + clippy allow).
+- Binaries: declared runs 3fc4994c65c1..., exploratory and timing 533d04044ca0... (adds thread CPU time to the
+  TIMING records and the clippy allow; RUN mode unchanged; timed runs are checked against the instruction runs'
+  final states bit for bit).
+
+NEXT STEPS
+1. When timing try 1 ends: parse; if the load is <= 8 by then, re-measure the cells that missed (try 2, 3).
+2. run_checks.sh checker json; parse_results.py -> RESULTS.json; make_report.py -> REPORT_KO.md; commit.
+
+== 2026-11-23 19:45 KST: completion by the orchestrator session ==
+- The builder agent was cut by the account usage limit on 2026-11-17 at about 15:38 KST, during timing try 1
+  (all of try 1 had been measured under a 1-minute load of 22-44 except five rounds of cusp1d 1e-7).
+- The orchestrator ran only the steps listed under NEXT STEPS above, with the same binary (sha256
+  533d04044ca0...) and no protocol choice of its own, on a quiet host (1-minute load 2-3.5):
+    run_measurements.py timing --try 1                      (the five missing rounds of cusp1d 1e-7)
+    run_measurements.py timing --try 2 --cells <bruss1d, burgers2d, cusp1d: all five tolerances>
+    run_measurements.py timing --try 2 --cells <fhn3d: all five tolerances>
+    run_measurements.py timing --try 3 --cells burgers2d:1e-4   (try 2 missed the rule: spread of arm C 0.104)
+    parse_results.py; make_report.py; run_checks.sh checker json
+  Every measurement is kept; the parser uses the first try that meets the rule (try 2 everywhere, try 3 for
+  burgers2d 1e-4). No cell was measured more than three times.
+- Result: all 20 cells authoritative. Cadence (B) PASS on 4 of 4 families (wall at matched error 3.03, 2.61,
+  5.30, 2.36 for fhn3d, cusp1d, burgers2d, bruss1d; instructions part 4 of 4). Policy (C) PASS on 4 of 4.
+  KILL not triggered. The loop checker exits 1 only because stage_clients/krylov.rs is pinned in the
+  checkpoint and this node changes it (allowed path); checker_without_krylov_pin exits 0.
+- The independent reviewer re-runs what decides the verdicts.

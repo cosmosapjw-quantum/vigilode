@@ -1,0 +1,9 @@
+# V17_LOG_BEGIN {"binary": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v17/release/deps/stage_clients_krylov_v17_measure-b6c134331ade4bf3", "binary_sha256": "3fc4994c65c15fbe8e4d4aeddd49bcceb661ef1932a0169209bae1391dea941c", "git_head": "2bd2dd65fdbac41d378243b123312f1606c4367f", "git_dirty_tracked": 0, "phase": "setup", "name": "burgers2d__CALIB_RHS", "date": "2026-11-17T14:56:23+0900", "env": {"V17_FAMILY": "burgers2d", "V17_LABEL": "setup", "V17_MODE": "CALIB_RHS"}, "perf": true, "timing": false, "command": ["taskset", "-c", "0-5,12-17", "perf", "stat", "-x", ",", "-e", "instructions:u", "-o", "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v17/research/production_loop_20261116/mf_stage_solve/logs/setup/burgers2d__CALIB_RHS.perf", "--", "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v17/release/deps/stage_clients_krylov_v17_measure-b6c134331ade4bf3", "--ignored", "--nocapture", "--exact", "v17_run"], "cpus": "0-5,12-17", "loadavg_before_launch": "36.86 34.22 33.53 23/7878 953651"}
+
+running 1 test
+V17_CALIB_JSON {"calls":20000,"checksum_bits":"c1001f3580693ecb","family":"burgers2d","label":"setup","mode":"CALIB_RHS","n":1568,"schema":"vigilode.loop-l1.v17.run.v1","t_span":[0.0,0.5]}
+test v17_run ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+# V17_LOG_END {"exit_code": 0, "timed_out": false, "seconds": 0.21431946754455566, "loadavg_after_exit": "36.86 34.22 33.53 23/7878 953676", "date": "2026-11-17T14:56:23+0900"}

@@ -1,0 +1,9 @@
+# V17_REFERENCE family=bruss1d_stiff600 date=2026-11-17T15:03:05+09:00 head=2db755a499edfeb5c1543691ad64921e38cc32d0 script_sha256=4d51b3d7804eca6a03a78e4391305f102589373b1ae48db5d8fde6fa1fb32cbb
+family bruss1d_stiff600 n 1200 span [0.0, 10.0] (exploratory cell)
+/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v17/research/production_loop_20261116/mf_stage_solve/reference/make_reference.py:173: RuntimeWarning: overflow encountered in multiply
+  out[0::2] = 1.0 + u * u * v - 4.0 * u + c * (ul - 2.0 * u + ur)
+/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v17/research/production_loop_20261116/mf_stage_solve/reference/make_reference.py:174: RuntimeWarning: overflow encountered in multiply
+  out[1::2] = 3.0 * u - u * u * v + c * (vl - 2.0 * v + vr)
+Terminated
+# V17_REFERENCE_END exit=143 date=2026-11-17T15:16:56+09:00
+# V17_REFERENCE_STOPPED date=2026-11-17T15:16:58+09:00 reason="DOP853 at 1e-13 on the stiff exploratory cell had not finished after 13 minutes at about 4 cores; stopped by the node; the Radau fallback of PREDECLARED.json is used (logs/reference/bruss1d_stiff600_radau.log)"
