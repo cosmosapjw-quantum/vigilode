@@ -378,7 +378,7 @@ pub fn skewnet_problem(data: &Arc<SkewnetData>, hook: Option<StepHook>) -> CoreR
     let net = Arc::clone(data);
     let partial_t = Arc::new(move |t: f64, _y: &[f64], out: &mut [f64]| {
         let (alpha, beta) = modes(t);
-        for i in 0..n {
+        for (i, value) in out.iter_mut().enumerate() {
             let z = alpha[0] * net.p[i] + beta[0] * net.q[i];
             let dz = alpha[1] * net.p[i] + beta[1] * net.q[i];
             let ddz = alpha[2] * net.p[i] + beta[2] * net.q[i];
@@ -386,7 +386,7 @@ pub fn skewnet_problem(data: &Arc<SkewnetData>, hook: Option<StepHook>) -> CoreR
             let dphi = dz * g;
             let ddphi = ddz * g + 2.0 * z * dz * dz * g * g;
             let forcing = net.scale * (alpha[1] * net.sp[i] + beta[1] * net.sq[i]);
-            out[i] = -net.c[i] * (forcing - dphi) + ddphi;
+            *value = -net.c[i] * (forcing - dphi) + ddphi;
         }
         Ok(())
     });
