@@ -4,11 +4,11 @@
 A test counts as reachable when some workflow step runs
 `cargo test --workspace ... -- --ignored` (which runs every ignored test),
 or runs `-- --ignored` with `--test <file stem>` naming the test's file,
-and that step does not skip the test: `--skip <text>` leaves out every test
-whose name contains <text>.
+and that step does not leave the test out: `--skip <text>` leaves out every
+test whose name contains <text>, and `--exact <name>` runs only that test.
 
-A test that every such step skips must be listed in DOCUMENTED_EXCLUSIONS.
-The script also fails when a listed test does not exist or is not skipped.
+A test that no step runs must be listed in DOCUMENTED_EXCLUSIONS. The script
+also fails when a listed test does not exist or is run by a workflow.
 """
 
 import re
@@ -17,12 +17,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-# Ignored tests that no workflow runs, each with the reason.
-DOCUMENTED_EXCLUSIONS = {
-    # Recorded kill gate (FAIL on 2026-10-21, threshold frozen): the test
-    # fails by design and stays in the tree so the failure can be reproduced.
-    "prothero_robinson_wfiltered_enforce_kill_gate": "recorded kill gate, fails by design",
-}
+# Ignored tests that no workflow runs, each with the reason. Empty: the
+# recorded kill gate, which the whole-workspace step skips, runs in a step of
+# its own as a negative control (ignored-tests.yml).
+DOCUMENTED_EXCLUSIONS = {}
 
 
 def ignored_tests():
@@ -48,7 +46,11 @@ def workflow_commands():
 
 
 def skips(command, name):
-    return any(text in name for text in re.findall(r"--skip[ =](\S+)", command))
+    """True when the test step `command` does not run the test `name`."""
+    if any(text in name for text in re.findall(r"--skip[ =](\S+)", command)):
+        return True
+    exact = re.findall(r"--exact[ =](\S+)", command)
+    return bool(exact) and name not in exact
 
 
 def main():

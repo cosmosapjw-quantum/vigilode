@@ -1,10 +1,11 @@
 name: Ignored long tests
 
-# Every #[ignore]d test runs here in the measurement profile (audit F-003),
-# except the recorded kill gate that the run step skips.
+# Every #[ignore]d test runs here in the measurement profile (audit F-003).
+# The recorded kill gate is a negative control: it runs in a step of its own
+# that passes only while the test fails with its recorded signature.
 # tools/check_ignored_tests_in_ci.py fails if a new ignored test is not
-# reachable from a workflow, or if a workflow skips a test that the script
-# does not list as a documented exclusion.
+# reachable from a workflow, or if a workflow skips a test that no other step
+# runs and that the script does not list as a documented exclusion.
 
 on:
   pull_request:
@@ -38,10 +39,31 @@ jobs:
           rustup override set 1.94.1
       - name: Every ignored test is reachable from CI
         run: python3 tools/check_ignored_tests_in_ci.py
-      # The skipped test reproduces a kill gate that failed on 2026-10-21 and is
-      # kept so that the failure stays reproducible (its threshold is frozen);
-      # it fails by design. See dense_wfiltered_contracts.rs.
+      # The skipped test is the recorded kill gate; the next step runs it.
       - name: Run the ignored tests in the measurement profile
         env:
           RAYON_NUM_THREADS: '1'
         run: cargo test --workspace --profile measurement --locked -- --ignored --skip prothero_robinson_wfiltered_enforce_kill_gate
+      # Negative control (research/qualification/negative_controls/
+      # negative_fixture_manifest.json): the kill gate failed on 2026-10-21 and
+      # its threshold is frozen. The step passes only if the test still fails
+      # with the recorded signature; a pass of the test, or another failure,
+      # fails the step.
+      - name: The recorded kill gate still fails
+        if: ${{ !cancelled() }}
+        env:
+          RAYON_NUM_THREADS: '1'
+        run: |
+          set +e
+          out=$(cargo test --profile measurement --locked -p rodas5p-integrators --test dense_wfiltered_contracts -- --ignored --exact prothero_robinson_wfiltered_enforce_kill_gate 2>&1)
+          code=$?
+          echo "$out" | tail -n 25
+          if [ "$code" -eq 0 ]; then
+            echo "the kill gate passed: the negative control no longer fails"
+            exit 1
+          fi
+          if ! echo "$out" | grep -q 'KILL GATE: 2.143x the Off accepted-step count > 1.3x'; then
+            echo "the kill gate failed without its recorded signature"
+            exit 1
+          fi
+          echo "the kill gate fails with its recorded signature"

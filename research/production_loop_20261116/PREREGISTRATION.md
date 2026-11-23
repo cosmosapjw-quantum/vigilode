@@ -180,3 +180,7 @@ Not changed by these nodes: the stage threshold, the controller constants, the K
 
 The confirmation cell of addendum A5 (square Allen-Cahn problem of size 8, 16 or 32, long run of 60 attempts) lasts about 3 ms at size 8. That is too short for a cycle count under the quality rule of the loop. Change: the same problem is integrated 200 times in one process (runner family `ac2dr`), in the long run and in the run with 1 attempt alike; the counts are sums over the repetitions, so the per-attempt measure, the ratios and the thresholds (at most 1.00 in instructions and in cycles) are those of addendum A5. No confirmation cell has been measured. The cells of the width scan are not changed.
 
+## Ledger rows corrected in place (appended 2026-11-23, owner decision OD-L1-13; nothing above this line changes)
+
+By owner decision the rows L-0317, L-0318, L-0319 and L-0320 were then corrected in place: each now holds the claim of the row that restates it, and L-0320 the verdict FAIL. The rows L-0324 to L-0327 stay in the ledger with the same claims.
+

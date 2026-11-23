@@ -138,3 +138,12 @@ PR base(`074a5699`) 대비 `vigilode` 공개 API가 깨졌다. 전부 switcher �
 
 - 로컬에서 확인: 검사 스크립트(96개 중 95개 도달, 문서화된 제외 1개; 문서화되지 않은 skip, 실행되는 제외 항목, 없는 이름은 exit 1), workflow YAML 구문, lock 5개.
 - 로컬에서 확인하지 않음: hosted job 결과. push 뒤 PR #190 실행으로 확인한다.
+
+## 7. 2026-11-23 추가 조치 (소유자 결정 OD-L1-13, OD-L1-14)
+
+- ledger: 형식 위반 4행(L-0317~L-0320)을 제자리에서 고쳤다. `tools/check-research-node.py`가 ledger 줄을 더 이상 지적하지 않는다.
+- `research/qualification/`: 파일은 `negative_controls/negative_fixture_manifest.json` 하나다. `Q_NEGATIVE_EVIDENCE.json`이 인용하고 "negative control의 임계값은 완화하지 않는다"는 규칙을 담고 있어 그대로 둔다. fixture 14개의 hash와 크기가 tree와 일치한다(`verify_negative_controls.py`). 사전등록 파일 요건은 `tools/research_node_exemptions.txt`에 사유와 함께 면제 항목으로 적었다.
+- kill gate: `ignored-tests` job에서 단순 제외 대신 별도 단계로 실행한다. 그 test가 기록된 서명으로 실패할 때만 단계가 통과한다. negative control이 CI에서 계속 실행된다.
+- 발견: `Q_NEGATIVE_EVIDENCE.json`이 적은 manifest hash(82f7d983...)는 commit된 파일의 hash(e3b06b7e...)와 다르다. 채택한 switcher 계보의 증거 기록 문제이며 이번에 고치지 않았다.
+- 남는 `research-process` 실패: stall rule 5건(switcher node L-0210~L-0214). 이 node들은 유효한 수치 결과가 없어서 행을 고쳐 해소할 수 없다.
+
