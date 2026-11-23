@@ -1,0 +1,119 @@
+NOTES of node V24_MF_ADAPTIVE_STAGE_SOLVE (loop L1, wave 2; owner decision OD-L1-11)
+worktree /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24
+branch   research/production-loop-20261116-w2-v24, base 892132e5d879b5d8c2740ef7a73946fd2b1d25f9
+target   CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24
+
+== 2026-11-23 22:55 KST: step 0 (written before any edit of a source file and before any run) ==
+State found: worktree at the base commit, mf_adaptive/ holds only the frozen PREDECLARED.json.
+Host: 1-minute load average 9.9 at 22:53.
+
+1. WHERE THE RESTART LENGTH AND THE ONCE-PER-CYCLE RESIDUAL TEST LIVE ON THE SHIPPED PATH
+
+   The task text names gmres_staged.rs. The shipped matrix-free route does NOT pass through that file.
+   It passes through crates/rodas5p-krylov/src/gmres_into.rs. The path, top to bottom:
+
+   crates/rodas5p-integrators/src/routing.rs
+     :233-251  RoutingOptions::default().matrix_free = GMRES, rtol 1e-10, atol 1e-14, no preconditioner,
+               zero start, maxiter 200, everything else LinearSolverConfig::default()
+               (crates/rodas5p-core/src/solver_types.rs:60: restart 40).
+     :473-477  the route record takes RODAS5P_MF_FAST_DRIVER_ID ("rodas5p-mf-fast-transformed-v1",
+               rodas5p_matrix_free_fast.rs:75).
+     :500-506  rule 4 calls integrate_rodas5p_mf_fast_observed_gmres_into, or ..._gmres_into_ls_workspace
+               when RoutingOptions::krylov_ls_workspace is set (the facade sets it: crates/vigilode/src/solve.rs:332-335).
+   crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs
+     :3276-3294 integrate_rodas5p_mf_fast_observed_gmres_into -> integrate_rodas5p_mf_fast_observed_traced
+                (gmres_into = true) -> integrate_mf_fast_inner (:3392-3422: workspace, set_gmres_into(true),
+                StageTargetPolicy::Legacy, default accounting) -> integrate_observed_with_observer (:2198).
+     :2711      attempt_inner. :2785 ShiftedOperator I - h gamma J (U form). :2787-2791 linear_atol =
+                raw_absolute_residual_budget(config.atol, gamma) = gamma * atol rounded down
+                (raw_stage_target.rs:292-304).
+     :2865-2881 stage right-hand side rhs_i = h gamma f_i + gamma sum_j C_ij U_j (+ f_t term, zero if autonomous).
+     :2924-2929 GmresConfig { restart: config.restart (40), max_arnoldi: max(maxiter, restart) (200),
+                rtol: config.rtol (1e-10), atol: linear_atol }.          <- the restart length enters here
+     :2981-3049 the gmres_into branch: x0 (None for the zero start), solve_gmres_into_with_accounting(
+                &shifted, &self.preconditioner, &self.stage_rhs, x0, &gmres_config, None, stage, &mut self.gmres,
+                GmresCapacity::unbounded(), GmresIntoOptions { skip_final_residual: dup_fix },
+                self.residual_accounting, counters) at :3016-3031; the solve log entry at :3042-3048.
+   crates/rodas5p-krylov/src/gmres_into.rs
+     :255       columns = min(restart, max_arnoldi, n).
+     :268-269   right_norm = ||rhs||_2 (residual_scale None); threshold = residual_threshold(rtol, atol, right_norm)
+                = max(atol, rtol * ||rhs||_2) (common.rs:39-47).
+     :277-370   the restart loop. At the TOP of every pass: the true residual of the current iterate
+                (:278-292: rhs itself for the all-zero iterate, else rhs - A x with one counted Krylov product,
+                common.rs:104-120), its 2-norm (:293-297), the test residual_norm <= threshold (:301-306),
+                the budget test total >= max_arnoldi -> CoreError::LinearSolve("GMRES exhausted ...") (:307-312).
+                This is the once-per-cycle residual test.
+     :358       steps = min(restart, max_arnoldi - total, n): the length of the pass.
+     :359, :414-477 cycle -> run_cycle: begin_cycle, then ALL `steps` columns (arnoldi_column :498-555:
+                product, two-pass MGS, Hessenberg column, breakdown test); only a happy breakdown leaves the
+                loop early (:467-474); ONE least-squares solve after the last column (:475, :561-705);
+                x += V y (:360-365).
+     :372-390   after the loop: the final true residual once more (Diagnostic category) under the default
+                accounting RecomputeFinal (accounting.rs), tested against the same threshold; the solve
+                returns Err(LinearSolve) if it fails.
+   gmres_staged.rs is reached only from Rodas5pMfFastWorkspace::staged_stage_solve
+   (rodas5p_matrix_free_fast.rs:1715-1960) under a staged StageTargetPolicy (ALG01/03/04/06 research arms);
+   the route uses StageTargetPolicy::Legacy, which never enters it (:2799, :2882-2885).
+   gmres_into.rs is not in the write list of this node and stays untouched.
+
+2. WHICH CODE FORMS THE TRUE STAGE RESIDUAL AND WHAT ITS THRESHOLD IS
+
+   The true stage residual of the shipped driver is r = rhs_i - (I - h gamma J) U_i in the 2-norm, formed by
+   true_residual_into (common.rs:104-120) with one application of ShiftedOperator through apply_counted, at
+   gmres_into.rs:282-290 (top of a pass, Krylov category) and again at :375-383 (final, Diagnostic category).
+   Threshold: tau = max(linear_atol, rtol_lin * ||rhs_i||_2) with rtol_lin = 1e-10 and
+   linear_atol = gamma * 1e-14 rounded down (gmres_into.rs:269, common.rs:39-47,
+   rodas5p_matrix_free_fast.rs:2787-2791). An iterate is returned iff ||r||_2 <= tau and finite
+   (:301, :386); otherwise the solve is an error: budget exhaustion (:307-312), residual breakdown (:353-357),
+   or "true residual exceeds" (:386-390). The driver turns CoreError::LinearSolve into a failed attempt
+   (failure_kind, rodas5p_matrix_free_fast.rs:3241-3248).
+   The independent audit of node V17 (arm A) rebuilds rhs_i and r_i from the stage equations with its own
+   RHS and JVP and applies the same tau (mf_stage_solve/PREDECLARED.json, residual_check.A); it is reused.
+
+3. HOW THE ADAPTIVE POLICY IS ADDED WITHOUT CHANGING ONE BIT OF THE SHIPPED ARITHMETIC
+
+   - A policy value (shipped | adaptive P1 | adaptive P2) is carried by the driver workspace
+     (a new field of Rodas5pMfFastWorkspace with a setter, like set_gmres_into) and by RoutingOptions
+     (a new field; default = shipped until step 5). LinearSolverConfig (rodas5p-core) is not touched.
+   - In attempt_inner the gmres_into branch gets ONE new branch in front of the existing call: when the
+     policy is adaptive it calls a new solver function; when it is shipped the existing statements run
+     unchanged, in the same order, on the same data (the call at :3016-3031 and everything around it is not
+     re-ordered or re-expressed). No floating-point expression of the shipped path is edited.
+   - The new solver function is added to gmres_staged.rs (the file this node may edit) as new items; the
+     existing staged solver (solve_staged_gmres*, iterate) is not modified, so the staged research arms keep
+     their bits as well. The new function: restarted GMRES with the Arnoldi column of the shipped kernel
+     (same product, two-pass MGS kernel, breakdown test), an incremental Givens QR of the Hessenberg matrix,
+     the projected residual |g_(j+1)| tested after EVERY column against the same tau, the cycle ended at the
+     first column that meets tau (or at the cycle's upper bound: P1 = restart; P2 = 10, doubled after every
+     cycle that does not converge, capped by restart), then the true residual rhs - A x of the iterate with
+     one counted product, tested against the same tau at the top of the next pass exactly like the shipped
+     loop; a failed true test continues the solve from that iterate; budget max_arnoldi as shipped; failures
+     reported as the shipped kernel reports them (CoreError::LinearSolve with the same messages).
+   - gmres_into.rs, gmres.rs, common.rs, kernels.rs and workspace.rs are not edited.
+   - Proof obligation D0: commit A records, with the driver as it is at the base commit, a hash of the end
+     state bits, attempts, accepted, rejected and every counter on the 20 deciding and 10 development cells;
+     after the edit the shipped policy must reproduce every one of them.
+
+4. THINGS FOUND WHILE READING THAT THE ORCHESTRATOR SHOULD KNOW (not decided by me)
+
+   a. Family names. mf_adaptive/PREDECLARED.json says: "the four families of node V17 as finally run
+      (mf_stage_solve/PREDECLARED.json, families_final): ac3d, cusp1d, burgers2d, grayscott2d".
+      families_final of that file (amendment A1 of V17, before any V17 run) is fhn3d, cusp1d, burgers2d,
+      bruss1d (700 cells, n = 1400). ac3d and grayscott2d are the WITHDRAWN families of the original block:
+      V17 never ran them, mf_stage_solve/reference/ holds no reference for them (only fhn3d, cusp1d,
+      burgers2d, bruss1d), and V17 withdrew them because their end state is an equilibrium (no matched
+      error). The prior numbers quoted in the same file (0.359, 0.382, 0.216, 0.430) are those of fhn3d,
+      cusp1d, burgers2d, bruss1d. PREREGISTRATION.md addendum A6 says "the four families and five tolerances
+      of node V17, its references". The two descriptions inside the frozen sentence contradict each other.
+      Reading used here: the defining clause ("as finally run", "families_final", "its references") decides;
+      the list of names in the sentence is a transcription of the withdrawn block. Deciding grid =
+      fhn3d, cusp1d, burgers2d, bruss1d(700 cells) x rtol 1e-3..1e-7. This reading is written to
+      PROTOCOL.json before any run and is listed as an open issue for the reviewer. No reference is
+      re-derived.
+   b. Consequence of (a): the development problem "bruss1d n = 1024" (512 cells, V06 size) is the same
+      family as the deciding family bruss1d n = 1400 (700 cells), at another size. The cell is not part of
+      the deciding grid, as the frozen text requires; the family overlap is stated here and in the report.
+   c. The driver identifier is also asserted outside the files this node may edit:
+      crates/vigilode/tests/capabilities_contracts.rs:116 and tests of the integrators that compare with
+      RODAS5P_MF_FAST_DRIVER_ID. Whether step 5 can be completed inside the write list is checked before
+      step 5 and reported, not worked around.
