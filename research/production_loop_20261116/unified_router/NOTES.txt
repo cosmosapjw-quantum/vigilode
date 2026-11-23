@@ -108,3 +108,31 @@ passed; golden 11 passed, 9 files identical; clippy, fmt and doc clean when run 
 is running (logs/full_suite.log). Still to do: clippy/fmt/doc/example/checker/diff through
 run_checks.sh, refresh logs/failing_first_new_api.log with the final test file, RECEIPT.json,
 REPORT_KO.md (build_receipt.py, build_report.py are written).
+
+== entry 4 (2026-11-23, final) ==
+Checks (run_checks.sh; logs/*.log; code identical at 4503b86e and ec0ee46d, only files under
+research/production_loop_20261116/unified_router changed between them):
+- contracts.log            36 passed, 0 failed (20 part 1, 15 parts 2 and 3, 1 digest module)
+- existing_unified_and_registry_tests.log  86 passed, 0 failed (8 targets)
+- default_path_golden.log  11 passed; 9 golden files reported identical; golden_diff.log empty
+- full_suite.log           533 passed, 0 failed, 0 ignored (56 test binaries and the doc-tests);
+                           533 - 36 = 497 tests outside the new binary
+- clippy.log, fmt_check.log, doc.log, example.log  exit 0
+- check_checkpoint.log     exit 1, "ValueError: changed path outside active allowlist:
+                           crates/vigilode/examples/unified_production_solver.rs". The checker stops at
+                           the first path outside the programme allowlist; repeating its last loop gives
+                           12 such paths, all of them code paths that the task allows (listed in
+                           RECEIPT.json, loop_checker_allowlist). Every earlier check of the checker passed.
+- protected_diff.log       empty
+- logs/failing_first_new_api.log was refreshed with the final test file (exit 101, compile errors).
+
+RECEIPT.json is built by build_receipt.py from the logs and git; REPORT_KO.md by build_report.py from
+RECEIPT.json. Rebuild: python3 -I research/production_loop_20261116/unified_router/build_receipt.py &&
+python3 -I research/production_loop_20261116/unified_router/build_report.py
+
+Open (also in REPORT_KO.md section 9): behaviour changes of Auto (supplied Jacobian -> RODAS5P; explicit
+trial limited to 1000 attempts); status is approximate for a switching stop on a DOPRI5 segment that is
+neither a callback failure nor the budget; no permission option for finite-difference Jacobians; the
+Refused path and the refusal-after-screen path have no test; registry items not changed (work_units,
+Pexprb recoverable errors, SolverState without caller); BatchStop::Completed still covers minimum-step
+stops because switching.rs matches the enum exhaustively.

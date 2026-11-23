@@ -14,6 +14,32 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 
+# Why each existing file was edited, in Korean (the receipt carries the same list in English).
+EDIT_REASONS_KO = {
+    "crates/vigilode/tests/unified_production_solver_contracts.rs": [
+        "contract_3: `assert_eq!(first_tier, \"Tier1ExplicitDopri5\")`는 label 문자열을 고정했다. "
+        "이제 history 항목을 DOPRI5 구간의 `ExplicitStats::method`와 비교한다.",
+        "contract_3: `contains(\"Protected\") || contains(\"Staged\")`도 label 문자열이었다. "
+        "이제 `Stats::route.driver_id`와 비교한다.",
+        "contract_3: `assert_eq!(heat_tier, \"Tier2MatrixFreeKrylov\")`는 driver가 없던 tier의 label이었다. "
+        "이제 `Stats::route.driver_id`와 비교하고 `DriverWork::MatrixFree`를 확인한다.",
+        "contract_4: `to_tier == \"ProtectedRODAS5P\"`는 label 문자열이었다. 이제 DOPRI5 구간 뒤에 "
+        "자기 실행 기록의 이름을 가진 RODAS5P 구간이 오는지 본다.",
+        "이 단정문들 옆의 주석 두 개가 제거된 label을 이름으로 들고 있었다.",
+    ],
+    "crates/vigilode/examples/unified_production_solver.rs": [
+        "머리말 목록: multi-tier routing, transactional fallback, stepping hot loop의 zero heap "
+        "allocation(VG-1)을 내세웠다. 예제가 실제로 보여 주는 것으로 바꿨다.",
+        "문제 4의 주석: 'stiffness rejection을 만나 smoothly rolls back'은 없는 감지 기능을 말했다. "
+        "trial 예산을 적었다.",
+    ],
+}
+
+
+def count_list(mapping):
+    """`key n개, ...` of a {key: count} mapping."""
+    return ", ".join(f"`{key}` {value}" for key, value in mapping.items())
+
 
 def strict_number(text):
     raise ValueError(f"non-finite JSON constant {text}")
@@ -330,8 +356,8 @@ def main():
         tests_now = other["tests_now"]
         w(f"**Part 2, 3 (이 node가 추가한 API, {len(tests_now)}개).** 구현 뒤에 썼다. base에는 없는 API를 "
           f"쓰므로 base 소스 사본에서는 compile이 실패한다(`logs/failing_first_new_api.log`, exit "
-          f"{other['exit']}, 오류 코드별 개수 {other['compile_errors_by_code']}). 실행으로 실패를 확인한 것은 "
-          "part 1뿐이다.")
+          f"{other['exit']}, 오류 코드별 개수: {count_list(other['compile_errors_by_code'])}). "
+          "실행으로 실패를 확인한 것은 part 1뿐이다.")
         w("")
     grid = receipt.get("replay_grid")
     if grid:
@@ -343,8 +369,9 @@ def main():
           f"{grid['failures']}개.")
         w("- 다시 실행한 최종 상태는 bit 단위로 같고, callback 진입 횟수(RHS, Jacobian, JVP)는 사전 점검 "
           "호출을 더하면 같다.")
-        w(f"- tier별 건수: {grid['tiers']}")
-        w(f"- driver별 구간 수: {grid['drivers']}")
+        w(f"- tier별 건수: {count_list(grid['tiers'])}")
+        w(f"- driver별 구간 수: {count_list(grid['drivers'])}")
+        w(f"- 경로별 구간 수: {count_list(grid['routes'])}")
         w("")
     neutral = receipt.get("switching_adapter_neutrality")
     if neutral:
@@ -376,7 +403,7 @@ def main():
     for edit in receipt["edits_of_existing_files"]:
         w(f"**`{edit['path']}`** (+{edit['lines_added']} / -{edit['lines_removed']}줄)")
         w("")
-        for reason in edit["reasons"]:
+        for reason in EDIT_REASONS_KO.get(edit["path"], edit["reasons"]):
             w(f"- {reason}")
         w("")
     before = receipt.get("existing_unified_tests_before_the_edit")
@@ -408,6 +435,15 @@ def main():
     for line in lints["loop_checker_output"]:
         w(line)
     w("```")
+    w("")
+    checker = receipt["loop_checker_allowlist"]
+    w("checker는 프로그램 allowlist 밖의 첫 경로에서 멈춘다. 그 앞의 검사(엄격한 JSON, task/DAG 구조, "
+      "조상 관계, 보호 blob, 증거와 구현 소스의 동일성)는 통과했다. 마지막 반복문을 모든 경로에 대해 다시 "
+      f"돌리면 allowlist 밖의 경로는 {len(checker['paths_outside_the_programme_allowlist'])}개이고, 모두 이 "
+      f"과제가 명시적으로 허용한 경로인가: {fmt(checker['all_of_them_are_allowed_by_the_task'])}.")
+    w("")
+    for path in checker["paths_outside_the_programme_allowlist"]:
+        w(f"- `{path}`")
     w("")
     outside = receipt["changed_paths_outside_the_task_allowlist"]
     w(f"바꾼 경로 {len(receipt['changed_paths'])}개 가운데 과제의 허용 경로 밖: {fmt(outside)}. "

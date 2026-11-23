@@ -1,0 +1,2019 @@
+{
+  "schema": "vigilode.loop-l1.v03b.receipt.v1",
+  "node": "V03_UNIFIED_FRONTEND (part B: truthful unified router)",
+  "generated_by": "build_receipt.py: every number is parsed from logs/*.log or from git",
+  "base_commit": "587a139501729bbe886bb2b8c49b0ef893705d08",
+  "head_commit_when_built": "ec0ee46dbc6ff74a7cef43dc0af2f941ece6b950",
+  "timing": "no wall-time claim; elapsed times in the logs are diagnostic_only",
+  "predeclared": {
+    "file": "PREDECLARED.json",
+    "commit": "5192520c81497e362c5aef235015da567ee63204",
+    "first_log_commit": "8dbbfcd5ae36fe0c6f8f8b78db731b496db4b6eb",
+    "committed_before_the_first_log": true,
+    "frozen_row": "none: PREREGISTRATION.md has a row for V03 part A only. The acceptance list of the task text is the criterion: (A1) the contract tests of unified_router_contracts.rs pass, each one written first as a failing test; (A2) the default-path golden oracle is unchanged; (A3) every other pre-existing facade test passes; (A4) no behaviour change of SwitchingSolver, Rodas5p, Dopri5, GeneralOde, AutomaticOde, ProductionSolver."
+  },
+  "commands": [
+    {
+      "log": "logs/contracts.log",
+      "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_router_contracts -- --nocapture --test-threads 1",
+      "commit": "4503b86e16a576685a756abb4d51d3d306228db6",
+      "worktree_dirty_files": "0",
+      "date": "2026-11-23T22:07:27+09:00",
+      "loadavg_before": "13.11 12.90 12.74 9/5291 921601",
+      "loadavg_after": "13.11 12.90 12.74 9/5287 921658",
+      "exit_code": 0,
+      "tests": {
+        "passed": 36,
+        "failed": 0,
+        "ignored": 0,
+        "result_lines": 1,
+        "binaries": 1,
+        "doctest_runs": 0
+      }
+    },
+    {
+      "log": "logs/existing_unified_and_registry_tests.log",
+      "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_production_solver_contracts --test unified_frontend_contracts --test registry_contracts --test switcher_v2_admission_contracts --test switching_economy_contracts --test production_hotloop_allocation_contracts --test sparse_jvp_contracts --test switching_v2_remediation_contracts",
+      "commit": "4503b86e16a576685a756abb4d51d3d306228db6",
+      "worktree_dirty_files": "0",
+      "date": "2026-11-23T22:07:28+09:00",
+      "loadavg_before": "13.11 12.90 12.74 9/5287 921684",
+      "loadavg_after": "15.08 13.58 12.99 18/5291 926870",
+      "exit_code": 0,
+      "tests": {
+        "passed": 86,
+        "failed": 0,
+        "ignored": 0,
+        "result_lines": 8,
+        "binaries": 8,
+        "doctest_runs": 0
+      }
+    },
+    {
+      "log": "logs/default_path_golden.log",
+      "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test default_path_golden -- --nocapture --test-threads 1",
+      "commit": "4503b86e16a576685a756abb4d51d3d306228db6",
+      "worktree_dirty_files": "0",
+      "date": "2026-11-23T22:08:36+09:00",
+      "loadavg_before": "15.08 13.58 12.99 13/5291 926896",
+      "loadavg_after": "15.43 13.85 13.10 11/5299 929521",
+      "exit_code": 0,
+      "tests": {
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0,
+        "result_lines": 1,
+        "binaries": 1,
+        "doctest_runs": 0
+      }
+    },
+    {
+      "log": "logs/full_suite.log",
+      "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --no-fail-fast",
+      "commit": "4503b86e16a576685a756abb4d51d3d306228db6",
+      "worktree_dirty_files": "0",
+      "date": "2026-11-23T22:09:25+09:00",
+      "loadavg_before": "14.72 13.77 13.09 33/5327 931393",
+      "loadavg_after": "14.91 17.51 15.32 12/5806 959579",
+      "exit_code": 0,
+      "tests": {
+        "passed": 533,
+        "failed": 0,
+        "ignored": 0,
+        "result_lines": 58,
+        "binaries": 56,
+        "doctest_runs": 1
+      }
+    },
+    {
+      "log": "logs/clippy.log",
+      "command": "taskset -c 0-5,12-17 cargo +1.94.1 clippy --locked -j 4 --release -p vigilode --all-targets --no-deps -- -D warnings",
+      "commit": "ec0ee46dbc6ff74a7cef43dc0af2f941ece6b950",
+      "worktree_dirty_files": "0",
+      "date": "2026-11-23T22:21:07+09:00",
+      "loadavg_before": "15.06 16.46 15.39 17/5792 978503",
+      "loadavg_after": "13.88 16.07 15.29 9/5816 979975",
+      "exit_code": 0
+    },
+    {
+      "log": "logs/fmt_check.log",
+      "command": "taskset -c 0-5,12-17 cargo +1.94.1 fmt -p vigilode -- --check",
+      "commit": "ec0ee46dbc6ff74a7cef43dc0af2f941ece6b950",
+      "worktree_dirty_files": "0",
+      "date": "2026-11-23T22:21:32+09:00",
+      "loadavg_before": "13.88 16.07 15.29 9/5816 980001",
+      "loadavg_after": "13.88 16.07 15.29 11/5815 980052",
+      "exit_code": 0
+    },
+    {
+      "log": "logs/doc.log",
+      "command": "env RUSTDOCFLAGS=-D warnings taskset -c 0-5,12-17 cargo +1.94.1 doc -j 4 -p vigilode --no-deps --locked",
+      "commit": "ec0ee46dbc6ff74a7cef43dc0af2f941ece6b950",
+      "worktree_dirty_files": "0",
+      "date": "2026-11-23T22:21:32+09:00",
+      "loadavg_before": "13.88 16.07 15.29 9/5815 980078",
+      "loadavg_after": "13.88 16.07 15.29 9/5815 980105",
+      "exit_code": 0
+    },
+    {
+      "log": "logs/example.log",
+      "command": "taskset -c 0-5,12-17 cargo +1.94.1 run --locked -j 4 --release -p vigilode --example unified_production_solver",
+      "commit": "ec0ee46dbc6ff74a7cef43dc0af2f941ece6b950",
+      "worktree_dirty_files": "0",
+      "date": "2026-11-23T22:21:32+09:00",
+      "loadavg_before": "13.88 16.07 15.29 9/5815 980131",
+      "loadavg_after": "13.88 16.07 15.29 9/5811 980196",
+      "exit_code": 0
+    },
+    {
+      "log": "logs/check_checkpoint.log",
+      "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+      "commit": "ec0ee46dbc6ff74a7cef43dc0af2f941ece6b950",
+      "worktree_dirty_files": "0",
+      "date": "2026-11-23T22:21:33+09:00",
+      "loadavg_before": "13.88 16.07 15.29 12/5813 980224",
+      "loadavg_after": "13.88 16.07 15.29 15/5819 980278",
+      "exit_code": 1
+    },
+    {
+      "log": "logs/changed_paths.log",
+      "command": "git diff --name-status 587a139501729bbe886bb2b8c49b0ef893705d08 HEAD",
+      "commit": "ec0ee46dbc6ff74a7cef43dc0af2f941ece6b950",
+      "worktree_dirty_files": "0",
+      "date": "2026-11-23T22:21:33+09:00",
+      "loadavg_before": "13.88 16.07 15.29 15/5819 980304",
+      "loadavg_after": "13.88 16.07 15.29 14/5819 980306",
+      "exit_code": 0
+    },
+    {
+      "log": "logs/golden_diff.log",
+      "command": "git diff --stat 587a139501729bbe886bb2b8c49b0ef893705d08 HEAD -- crates/vigilode/tests/golden crates/vigilode/tests/default_path_golden.rs",
+      "commit": "ec0ee46dbc6ff74a7cef43dc0af2f941ece6b950",
+      "worktree_dirty_files": "0",
+      "date": "2026-11-23T22:21:33+09:00",
+      "loadavg_before": "13.88 16.07 15.29 10/5819 980332",
+      "loadavg_after": "13.88 16.07 15.29 15/5819 980334",
+      "exit_code": 0
+    },
+    {
+      "log": "logs/protected_diff.log",
+      "command": "git diff --stat 587a139501729bbe886bb2b8c49b0ef893705d08 HEAD -- fixtures/rodas5p_coefficients_snapshot.json crates/rodas5p-core crates/rodas5p-krylov crates/rodas5p-integrators crates/vigilode/src/lib.rs crates/vigilode/src/automatic.rs crates/vigilode/src/switching.rs crates/vigilode/src/selection.rs crates/vigilode/src/selection crates/vigilode/src/solve.rs crates/vigilode/src/explicit.rs crates/vigilode/src/production.rs crates/vigilode/src/prelude.rs crates/vigilode/Cargo.toml Cargo.toml Cargo.lock rust-toolchain.toml research/LEDGER.jsonl docs/agent research/production_loop_20261116/PREREGISTRATION.md research/production_loop_20261116/PROGRESS.md research/production_loop_20261116/CHECKPOINT.json",
+      "commit": "ec0ee46dbc6ff74a7cef43dc0af2f941ece6b950",
+      "worktree_dirty_files": "0",
+      "date": "2026-11-23T22:21:33+09:00",
+      "loadavg_before": "13.88 16.07 15.29 16/5819 980360",
+      "loadavg_after": "13.88 16.07 15.29 14/5819 980362",
+      "exit_code": 0
+    }
+  ],
+  "code_commits_of_the_runs": [
+    "4503b86e16a576685a756abb4d51d3d306228db6",
+    "ec0ee46dbc6ff74a7cef43dc0af2f941ece6b950"
+  ],
+  "source_paths_changed_after_a_run": [],
+  "failing_first_part1": {
+    "log": "logs/failing_first_base.log",
+    "header": [
+      "# failing-first run against the base sources",
+      "# HEAD 5192520c81497e362c5aef235015da567ee63204; src diff vs base 587a1395: (empty = none)",
+      "# test file sha256 bcfdbcbfd06a5cea0f5051aafbb37fe950c622557764105dbe4994b99c670316",
+      "# command: taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_router_contracts -- --nocapture --test-threads 1",
+      "# date 2026-11-23T12:31:22Z"
+    ],
+    "base_totals": {
+      "passed": 0,
+      "failed": 20,
+      "ignored": 0,
+      "result_lines": 1,
+      "binaries": 1,
+      "doctest_runs": 0
+    },
+    "base_exit": 101,
+    "tests": [
+      {
+        "test": "p1_failing_switching_solve_reports_the_fatal_jacobian_callback",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "applicable": true,
+          "direct_attempts": 33,
+          "direct_message": "fatal callback; stop without fallback",
+          "direct_success": false,
+          "unified_status": "{\"status\":\"failed\",\"kind\":\"max-steps-reached\",\"max_steps\":100000}"
+        },
+        "record": {
+          "applicable": true,
+          "direct_attempts": 33,
+          "direct_message": "fatal callback; stop without fallback",
+          "direct_success": false,
+          "unified_status": "{\"status\":\"failed\",\"kind\":\"callback-failed\",\"callback\":\"jacobian\",\"t\":0.0006820904373118785,\"message\":\"jacobian table missing\"}"
+        }
+      },
+      {
+        "test": "p1_failing_switching_solve_reports_the_fatal_rhs_callback",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "direct_attempts": 12,
+          "direct_final_time": 0.281,
+          "direct_message": "fatal callback; stop without fallback",
+          "direct_success": false,
+          "fatal_entries": 1,
+          "max_steps": 100000,
+          "unified_final_time": 0.281,
+          "unified_status": "{\"status\":\"failed\",\"kind\":\"max-steps-reached\",\"max_steps\":100000}"
+        },
+        "record": {
+          "direct_attempts": 12,
+          "direct_final_time": 0.281,
+          "direct_message": "fatal callback; stop without fallback",
+          "direct_success": false,
+          "fatal_entries": 1,
+          "max_steps": 100000,
+          "unified_final_time": 0.281,
+          "unified_status": "{\"status\":\"failed\",\"kind\":\"callback-failed\",\"callback\":\"rhs\",\"t\":0.30920000000000003,\"message\":\"sensor offline\"}"
+        }
+      },
+      {
+        "test": "p1_failing_switching_solve_with_attempts_left_is_not_reported_as_max_steps",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "applicable": true,
+          "direct_attempts": 321,
+          "direct_final_time": 1.0000002494258216,
+          "direct_message": "implicit driver stopped; preserve partial accepted state",
+          "direct_success": false,
+          "max_steps": 100000,
+          "unified_status": "{\"status\":\"failed\",\"kind\":\"max-steps-reached\",\"max_steps\":100000}"
+        },
+        "record": {
+          "applicable": true,
+          "direct_attempts": 321,
+          "direct_final_time": 1.0000002494258216,
+          "direct_message": "implicit driver stopped; preserve partial accepted state",
+          "direct_success": false,
+          "max_steps": 100000,
+          "unified_status": "{\"status\":\"failed\",\"kind\":\"step-size-too-small\",\"min_step\":1e-14}"
+        }
+      },
+      {
+        "test": "p1_fallback_shares_one_attempt_budget_and_keeps_the_work_of_the_failed_leg",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "accepted_plus_rejected_in_counters": 516,
+          "fallback_steps": 1,
+          "labels": [
+            "Tier1ExplicitDopri5",
+            "ProtectedRODAS5P"
+          ],
+          "max_steps": 500,
+          "rhs_charged": 3188,
+          "rhs_entries": 3189,
+          "stats_accepted_steps": 15,
+          "stats_attempts": 16,
+          "stats_rejected_steps": 1,
+          "success": true
+        },
+        "record": {
+          "accepted_plus_rejected_in_counters": 266,
+          "fallback_steps": 1,
+          "labels": [
+            "dopri5-5(4)-fsal",
+            "rodas5p-fast-transformed-v2"
+          ],
+          "max_steps": 500,
+          "rhs_charged": 1697,
+          "rhs_entries": 1697,
+          "stats_accepted_steps": 252,
+          "stats_attempts": 266,
+          "stats_rejected_steps": 14,
+          "success": true
+        }
+      },
+      {
+        "test": "p1_fatal_callback_on_the_explicit_leg_is_not_retried_by_another_method",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "fatal_entries": 2,
+          "final_time": 0.18700000000000003,
+          "labels": [
+            "Tier1ExplicitDopri5",
+            "ProtectedRODAS5P"
+          ],
+          "rhs_charged": 64,
+          "rhs_entries": 65,
+          "status": "{\"status\":\"failed\",\"kind\":\"callback-failed\",\"callback\":\"rhs\",\"t\":0.3091163340632591,\"message\":\"sensor offline\"}"
+        },
+        "record": {
+          "fatal_entries": 1,
+          "final_time": 0.156,
+          "labels": [
+            "dopri5-5(4)-fsal"
+          ],
+          "rhs_charged": 30,
+          "rhs_entries": 30,
+          "status": "{\"status\":\"failed\",\"kind\":\"callback-failed\",\"callback\":\"rhs\",\"t\":0.3428866093365234,\"message\":\"sensor offline\"}"
+        }
+      },
+      {
+        "test": "p1_label_equals_executed_driver_on_every_rodas5p_driver_family",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "cases": [
+            {
+              "case": "robertson, dense Jacobian, Auto",
+              "direct_driver": "rodas5p-fast-transformed-v2",
+              "equal": false,
+              "labels": [
+                "TierProtectedReference"
+              ],
+              "success": true
+            },
+            {
+              "case": "heat n=16, band Jacobian callback, Auto",
+              "direct_driver": "rodas5p-fast-banded-v1",
+              "equal": false,
+              "labels": [
+                "Tier4StagedRodas5p"
+              ],
+              "success": true
+            },
+            {
+              "case": "heat n=16, finite differences with a declared band, Auto",
+              "direct_driver": "rodas5p-fast-banded-v1",
+              "equal": false,
+              "labels": [
+                "Tier4StagedRodas5p"
+              ],
+              "success": true
+            },
+            {
+              "case": "heat n=12, JVP, Auto",
+              "direct_driver": "rodas5p-mf-fast-transformed-v1",
+              "equal": false,
+              "labels": [
+                "TierProtectedReference"
+              ],
+              "success": true
+            },
+            {
+              "case": "heat n=25, JVP, HighPerformance",
+              "direct_driver": "rodas5p-mf-fast-transformed-v1",
+              "equal": false,
+              "labels": [
+                "Tier2MatrixFreeKrylov"
+              ],
+              "success": true
+            },
+            {
+              "case": "robertson DAE, singular mass matrix, Auto",
+              "direct_driver": "rodas5p-sequential-dense-v2",
+              "equal": false,
+              "labels": [
+                "TierProtectedReference"
+              ],
+              "success": true
+            },
+            {
+              "case": "robertson, dense Jacobian, dense output, Auto",
+              "direct_driver": "rodas5p-fast-dense-v1",
+              "equal": false,
+              "labels": [
+                "TierProtectedReference"
+              ],
+              "success": true
+            },
+            {
+              "case": "oscillator, finite differences, RobustStiff",
+              "direct_driver": "rodas5p-fast-transformed-v2",
+              "equal": false,
+              "labels": [
+                "TierProtectedReference"
+              ],
+              "success": true
+            },
+            {
+              "case": "heat n=16, finite differences without structure, Auto",
+              "direct_driver": "rodas5p-fast-transformed-v2",
+              "equal": false,
+              "labels": [
+                "TierProtectedReference"
+              ],
+              "success": true
+            }
+          ],
+          "mismatches": 9,
+          "total": 9
+        },
+        "record": {
+          "cases": [
+            {
+              "case": "robertson, dense Jacobian, Auto",
+              "direct_driver": "rodas5p-fast-transformed-v2",
+              "equal": true,
+              "labels": [
+                "rodas5p-fast-transformed-v2"
+              ],
+              "success": true
+            },
+            {
+              "case": "heat n=16, band Jacobian callback, Auto",
+              "direct_driver": "rodas5p-fast-banded-v1",
+              "equal": true,
+              "labels": [
+                "rodas5p-fast-banded-v1"
+              ],
+              "success": true
+            },
+            {
+              "case": "heat n=16, finite differences with a declared band, Auto",
+              "direct_driver": "rodas5p-fast-banded-v1",
+              "equal": true,
+              "labels": [
+                "rodas5p-fast-banded-v1"
+              ],
+              "success": true
+            },
+            {
+              "case": "heat n=12, JVP, Auto",
+              "direct_driver": "rodas5p-mf-fast-transformed-v1",
+              "equal": true,
+              "labels": [
+                "rodas5p-mf-fast-transformed-v1"
+              ],
+              "success": true
+            },
+            {
+              "case": "heat n=25, JVP, HighPerformance",
+              "direct_driver": "rodas5p-mf-fast-transformed-v1",
+              "equal": true,
+              "labels": [
+                "rodas5p-mf-fast-transformed-v1"
+              ],
+              "success": true
+            },
+            {
+              "case": "robertson DAE, singular mass matrix, Auto",
+              "direct_driver": "rodas5p-sequential-dense-v2",
+              "equal": true,
+              "labels": [
+                "rodas5p-sequential-dense-v2"
+              ],
+              "success": true
+            },
+            {
+              "case": "robertson, dense Jacobian, dense output, Auto",
+              "direct_driver": "rodas5p-fast-dense-v1",
+              "equal": true,
+              "labels": [
+                "rodas5p-fast-dense-v1"
+              ],
+              "success": true
+            },
+            {
+              "case": "oscillator, finite differences, RobustStiff",
+              "direct_driver": "rodas5p-fast-transformed-v2",
+              "equal": true,
+              "labels": [
+                "rodas5p-fast-transformed-v2"
+              ],
+              "success": true
+            },
+            {
+              "case": "heat n=16, finite differences without structure, Auto",
+              "direct_driver": "rodas5p-fast-transformed-v2",
+              "equal": true,
+              "labels": [
+                "rodas5p-fast-transformed-v2"
+              ],
+              "success": true
+            }
+          ],
+          "mismatches": 0,
+          "total": 9
+        }
+      },
+      {
+        "test": "p1_label_equals_executed_driver_on_the_explicit_route",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "cases": [
+            {
+              "case": "oscillator, finite differences, Auto",
+              "direct_driver": "dopri5-5(4)-fsal",
+              "equal": false,
+              "labels": [
+                "Tier1ExplicitDopri5"
+              ],
+              "success": true
+            }
+          ],
+          "mismatches": 1,
+          "total": 1
+        },
+        "record": {
+          "cases": [
+            {
+              "case": "oscillator, finite differences, Auto",
+              "direct_driver": "dopri5-5(4)-fsal",
+              "equal": true,
+              "labels": [
+                "dopri5-5(4)-fsal"
+              ],
+              "success": true
+            }
+          ],
+          "mismatches": 0,
+          "total": 1
+        }
+      },
+      {
+        "test": "p1_label_equals_executed_driver_on_the_switching_adapter",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "cases": [
+            {
+              "case": "oscillator, AdaptiveReentrant",
+              "direct_driver": "vigilode.switching.v1",
+              "equal": false,
+              "labels": [
+                "Tier5AdaptiveSwitching"
+              ],
+              "success": true
+            }
+          ],
+          "mismatches": 1,
+          "total": 1
+        },
+        "record": {
+          "cases": [
+            {
+              "case": "oscillator, AdaptiveReentrant",
+              "direct_driver": "vigilode.switching.v1",
+              "equal": true,
+              "labels": [
+                "vigilode.switching.v1"
+              ],
+              "success": true
+            }
+          ],
+          "mismatches": 0,
+          "total": 1
+        }
+      },
+      {
+        "test": "p1_matrix_free_solve_allocates_no_dense_matrix",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "allocated_bytes": 79044866,
+          "dense_matrix_bytes": 72000000,
+          "dimension": 3000,
+          "labels": [
+            "Tier2MatrixFreeKrylov"
+          ],
+          "largest_single_allocation_bytes": 72000000,
+          "success": true
+        },
+        "record": {
+          "allocated_bytes": 6164001,
+          "dense_matrix_bytes": 72000000,
+          "dimension": 3000,
+          "labels": [
+            "rodas5p-mf-fast-transformed-v1"
+          ],
+          "largest_single_allocation_bytes": 4194304,
+          "success": true
+        }
+      },
+      {
+        "test": "p1_preflight_callback_failure_is_a_typed_stop_not_invalid_input",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "outcome": "Err: InvalidInput(\"initial RHS evaluation failed: fatal callback error: model not loaded\")",
+          "rhs_charged": null,
+          "rhs_entries": 1
+        },
+        "record": {
+          "outcome": "Ok: {\"status\":\"failed\",\"kind\":\"callback-failed\",\"callback\":\"rhs\",\"t\":0.0,\"message\":\"model not loaded\"}",
+          "rhs_charged": 1,
+          "rhs_entries": 1
+        }
+      },
+      {
+        "test": "p1_preflight_callbacks_are_charged_with_a_dense_jacobian",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "direct": {
+            "jacobian_charged": 18,
+            "jacobian_entries": 18,
+            "rhs_charged": 151,
+            "rhs_entries": 151
+          },
+          "direct_uncharged_rhs_jacobian": [
+            0,
+            0
+          ],
+          "unified": {
+            "jacobian_charged": 18,
+            "jacobian_entries": 19,
+            "rhs_charged": 151,
+            "rhs_entries": 152
+          },
+          "unified_uncharged_rhs_jacobian": [
+            1,
+            1
+          ]
+        },
+        "record": {
+          "direct": {
+            "jacobian_charged": 18,
+            "jacobian_entries": 18,
+            "rhs_charged": 151,
+            "rhs_entries": 151
+          },
+          "direct_uncharged_rhs_jacobian": [
+            0,
+            0
+          ],
+          "unified": {
+            "jacobian_charged": 18,
+            "jacobian_entries": 18,
+            "rhs_charged": 151,
+            "rhs_entries": 151
+          },
+          "unified_uncharged_rhs_jacobian": [
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "test": "p1_preflight_callbacks_are_charged_with_a_jvp",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "direct": {
+            "jvp_charged": 2916,
+            "jvp_entries": 2916,
+            "rhs_charged": 126,
+            "rhs_entries": 126
+          },
+          "direct_uncharged_rhs": 0,
+          "unified": {
+            "jvp_charged": 2916,
+            "jvp_entries": 2916,
+            "rhs_charged": 126,
+            "rhs_entries": 127
+          },
+          "unified_uncharged_rhs": 1
+        },
+        "record": {
+          "direct": {
+            "jvp_charged": 2916,
+            "jvp_entries": 2916,
+            "rhs_charged": 126,
+            "rhs_entries": 126
+          },
+          "direct_uncharged_rhs": 0,
+          "unified": {
+            "jvp_charged": 2916,
+            "jvp_entries": 2916,
+            "rhs_charged": 126,
+            "rhs_entries": 126
+          },
+          "unified_uncharged_rhs": 0
+        }
+      },
+      {
+        "test": "p1_preflight_callbacks_are_charged_without_a_jacobian",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "direct": {
+            "rhs_charged": 55,
+            "rhs_entries": 55
+          },
+          "direct_uncharged_rhs": 0,
+          "preflight_rhs_entries": 1,
+          "unified": {
+            "rhs_charged": 55,
+            "rhs_entries": 56
+          },
+          "unified_uncharged_rhs": 1
+        },
+        "record": {
+          "direct": {
+            "rhs_charged": 55,
+            "rhs_entries": 55
+          },
+          "direct_uncharged_rhs": 0,
+          "preflight_rhs_entries": 3,
+          "unified": {
+            "rhs_charged": 58,
+            "rhs_entries": 58
+          },
+          "unified_uncharged_rhs": 0
+        }
+      },
+      {
+        "test": "p1_rodas5p_leg_is_the_direct_call_bit_for_bit",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "attempts": [
+            35,
+            35
+          ],
+          "counters_equal": true,
+          "final_state_bits_equal": true,
+          "rhs_entries": [
+            280,
+            279
+          ]
+        },
+        "record": {
+          "attempts": [
+            35,
+            35
+          ],
+          "counters_equal": true,
+          "final_state_bits_equal": true,
+          "rhs_entries": [
+            279,
+            279
+          ]
+        }
+      },
+      {
+        "test": "p1_stiff_contractive_heat_equation_with_dense_jacobian_is_not_explicit",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "error": null,
+          "explicit_leg": true,
+          "labels": [
+            "Tier1ExplicitDopri5"
+          ],
+          "rhs_bound": 30727,
+          "rhs_calls_charged": 314119,
+          "rhs_entries_at_the_boundary": 314120,
+          "success": true
+        },
+        "record": {
+          "error": null,
+          "explicit_leg": false,
+          "labels": [
+            "rodas5p-fast-transformed-v2"
+          ],
+          "rhs_bound": 30727,
+          "rhs_calls_charged": 328,
+          "rhs_entries_at_the_boundary": 328,
+          "success": true
+        }
+      },
+      {
+        "test": "p1_stiff_contractive_heat_equation_without_jacobian_is_not_explicit",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "error": null,
+          "explicit_leg": true,
+          "labels": [
+            "Tier1ExplicitDopri5"
+          ],
+          "rhs_bound": 5890,
+          "rhs_calls_charged": 58411,
+          "rhs_entries_at_the_boundary": 58412,
+          "success": true
+        },
+        "record": {
+          "error": null,
+          "explicit_leg": false,
+          "labels": [
+            "rodas5p-fast-transformed-v2"
+          ],
+          "rhs_bound": 5890,
+          "rhs_calls_charged": 723,
+          "rhs_entries_at_the_boundary": 723,
+          "success": true
+        }
+      },
+      {
+        "test": "p1_stiff_contractive_scalar_with_dense_jacobian_is_not_explicit",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "error": null,
+          "explicit_leg": true,
+          "labels": [
+            "Tier1ExplicitDopri5",
+            "ProtectedRODAS5P"
+          ],
+          "rhs_bound": 181818,
+          "rhs_calls_charged": 600049,
+          "rhs_entries_at_the_boundary": 600050,
+          "success": true
+        },
+        "record": {
+          "error": null,
+          "explicit_leg": false,
+          "labels": [
+            "rodas5p-fast-transformed-v2"
+          ],
+          "rhs_bound": 181818,
+          "rhs_calls_charged": 48,
+          "rhs_entries_at_the_boundary": 48,
+          "success": true
+        }
+      },
+      {
+        "test": "p1_stiff_contractive_scalar_without_jacobian_is_not_explicit",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "error": null,
+          "explicit_leg": true,
+          "labels": [
+            "Tier1ExplicitDopri5",
+            "ProtectedRODAS5P"
+          ],
+          "rhs_bound": 181818,
+          "rhs_calls_charged": 600073,
+          "rhs_entries_at_the_boundary": 600074,
+          "success": true
+        },
+        "record": {
+          "error": null,
+          "explicit_leg": false,
+          "labels": [
+            "rodas5p-fast-transformed-v2"
+          ],
+          "rhs_bound": 181818,
+          "rhs_calls_charged": 74,
+          "rhs_entries_at_the_boundary": 74,
+          "success": true
+        }
+      },
+      {
+        "test": "p1_switching_leg_keeps_the_full_work_of_its_segments",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "direct": {
+            "accepted_steps": 61,
+            "attempts": 67,
+            "jacobian_builds": 28,
+            "jacobian_entries": 28,
+            "linear_solves": 224,
+            "rejected_steps": 6,
+            "rhs_calls": 460,
+            "rhs_entries": 460,
+            "segment_direct_solves": 224,
+            "segment_factorizations": 28,
+            "segments": 5,
+            "success": true
+          },
+          "unified": {
+            "direct_factorizations": 0,
+            "direct_solve_calls": 0,
+            "jacobian_builds": 28,
+            "jacobian_entries": 28,
+            "linear_solves": 224,
+            "rhs_calls": 460,
+            "rhs_entries": 460,
+            "stats_accepted_steps": 0,
+            "stats_attempts": 0,
+            "stats_rejected_steps": 0,
+            "success": true
+          }
+        },
+        "record": {
+          "direct": {
+            "accepted_steps": 61,
+            "attempts": 67,
+            "jacobian_builds": 28,
+            "jacobian_entries": 28,
+            "linear_solves": 224,
+            "rejected_steps": 6,
+            "rhs_calls": 460,
+            "rhs_entries": 460,
+            "segment_direct_solves": 224,
+            "segment_factorizations": 28,
+            "segments": 5,
+            "success": true
+          },
+          "unified": {
+            "direct_factorizations": 28,
+            "direct_solve_calls": 224,
+            "jacobian_builds": 28,
+            "jacobian_entries": 28,
+            "linear_solves": 224,
+            "rhs_calls": 460,
+            "rhs_entries": 460,
+            "stats_accepted_steps": 61,
+            "stats_attempts": 67,
+            "stats_rejected_steps": 6,
+            "success": true
+          }
+        }
+      },
+      {
+        "test": "p1_workspace_storage_is_linear_in_the_dimension",
+        "base_sources": "FAILED",
+        "this_node": "ok",
+        "failing_first": true,
+        "base_record": {
+          "bound_bytes": 1024000,
+          "dense_matrix_bytes": 32000000,
+          "dimension": 2000,
+          "retained_bytes": 32704000
+        },
+        "record": {
+          "bound_bytes": 1024000,
+          "dense_matrix_bytes": 32000000,
+          "dimension": 2000,
+          "retained_bytes": 64000
+        }
+      }
+    ],
+    "count": 20,
+    "failed_on_base_and_pass_now": 20,
+    "regression_guards_passing_on_base": []
+  },
+  "failing_first_part2_and_3": {
+    "log": "logs/failing_first_new_api.log",
+    "header": [
+      "# parts 2 and 3 (API added by this node) against a scratch copy of the base sources",
+      "# scratch copy: git archive 587a139501729bbe886bb2b8c49b0ef893705d08 Cargo.toml Cargo.lock rust-toolchain.toml crates, plus the test file of this node",
+      "# test file sha256 03e58ae0b62e6e1b916ec6a275abe28c26a5c1680ef7c5f7aa407171e7986a71 (the committed file at f2f30a3d778311b8517e260e7efa08790c24932c)",
+      "# command (in the scratch copy): taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_router_contracts --no-run",
+      "# expected: the test target does not compile, because parts 2 and 3 name items that the base does not have",
+      "# date 2026-11-23T13:19:35Z"
+    ],
+    "kind": "compile failure against a scratch copy of the base sources: these tests name API that the base does not have, and were written after the implementation",
+    "exit": 101,
+    "compile_errors_by_code": {
+      "E0432": 2,
+      "E0609": 76,
+      "E0599": 23,
+      "E0282": 1,
+      "E0614": 1,
+      "E0004": 1
+    },
+    "tests_now": {
+      "neutrality::switching_adapter_record_digests": "ok",
+      "part2::p2_a_refusal_of_the_switching_adapter_is_reported_and_rodas5p_runs": "ok",
+      "part2::p2_declared_nonstiff_runs_dopri5_with_the_whole_budget_and_no_second_method": "ok",
+      "part2::p2_declared_regime_routes_as_the_general_policy_does": "ok",
+      "part2::p2_every_tier_has_a_driver_and_every_report_replays_as_direct_calls": "ok",
+      "part2::p2_exhausted_shared_budget_reports_the_total_and_keeps_the_leg_stop": "ok",
+      "part2::p2_fallback_rule_and_trial_budget": "ok",
+      "part2::p2_legs_are_direct_calls_and_their_work_adds_up": "ok",
+      "part2::p2_records_are_strict_json_and_options_keep_their_file_format": "ok",
+      "part2::p2_stiffness_screen_is_a_charged_lower_bound": "ok",
+      "part2::p2_typed_stop_of_a_rodas5p_leg_and_its_prefix": "ok",
+      "part2::p2_typed_stop_of_the_switching_adapter": "ok",
+      "part2::p2_unsupported_request_is_refused_before_any_callback": "ok",
+      "part3::p3_batch_outcome_keeps_the_stop_of_its_driver": "ok",
+      "part3::p3_switching_adapter_reads_a_driver_refusal_as_the_same_text": "ok",
+      "part3::p3_window_driver_errors_are_typed_and_keep_their_text": "ok"
+    }
+  },
+  "stiff_contractive": {
+    "p1_stiff_contractive_heat_equation_with_dense_jacobian_is_not_explicit": {
+      "labels": {
+        "base": [
+          "Tier1ExplicitDopri5"
+        ],
+        "now": [
+          "rodas5p-fast-transformed-v2"
+        ]
+      },
+      "rhs_calls_charged": {
+        "base": 314119,
+        "now": 328
+      },
+      "rhs_entries_at_the_boundary": {
+        "base": 314120,
+        "now": 328
+      },
+      "rhs_bound": {
+        "base": 30727,
+        "now": 30727
+      },
+      "explicit_leg": {
+        "base": true,
+        "now": false
+      }
+    },
+    "p1_stiff_contractive_scalar_with_dense_jacobian_is_not_explicit": {
+      "labels": {
+        "base": [
+          "Tier1ExplicitDopri5",
+          "ProtectedRODAS5P"
+        ],
+        "now": [
+          "rodas5p-fast-transformed-v2"
+        ]
+      },
+      "rhs_calls_charged": {
+        "base": 600049,
+        "now": 48
+      },
+      "rhs_entries_at_the_boundary": {
+        "base": 600050,
+        "now": 48
+      },
+      "rhs_bound": {
+        "base": 181818,
+        "now": 181818
+      },
+      "explicit_leg": {
+        "base": true,
+        "now": false
+      }
+    },
+    "p1_stiff_contractive_heat_equation_without_jacobian_is_not_explicit": {
+      "labels": {
+        "base": [
+          "Tier1ExplicitDopri5"
+        ],
+        "now": [
+          "rodas5p-fast-transformed-v2"
+        ]
+      },
+      "rhs_calls_charged": {
+        "base": 58411,
+        "now": 723
+      },
+      "rhs_entries_at_the_boundary": {
+        "base": 58412,
+        "now": 723
+      },
+      "rhs_bound": {
+        "base": 5890,
+        "now": 5890
+      },
+      "explicit_leg": {
+        "base": true,
+        "now": false
+      }
+    },
+    "p1_stiff_contractive_scalar_without_jacobian_is_not_explicit": {
+      "labels": {
+        "base": [
+          "Tier1ExplicitDopri5",
+          "ProtectedRODAS5P"
+        ],
+        "now": [
+          "rodas5p-fast-transformed-v2"
+        ]
+      },
+      "rhs_calls_charged": {
+        "base": 600073,
+        "now": 74
+      },
+      "rhs_entries_at_the_boundary": {
+        "base": 600074,
+        "now": 74
+      },
+      "rhs_bound": {
+        "base": 181818,
+        "now": 181818
+      },
+      "explicit_leg": {
+        "base": true,
+        "now": false
+      }
+    }
+  },
+  "shared_budget": {
+    "labels": {
+      "base": [
+        "Tier1ExplicitDopri5",
+        "ProtectedRODAS5P"
+      ],
+      "now": [
+        "dopri5-5(4)-fsal",
+        "rodas5p-fast-transformed-v2"
+      ]
+    },
+    "max_steps": {
+      "base": 500,
+      "now": 500
+    },
+    "accepted_plus_rejected_in_counters": {
+      "base": 516,
+      "now": 266
+    },
+    "stats_attempts": {
+      "base": 16,
+      "now": 266
+    },
+    "rhs_entries": {
+      "base": 3189,
+      "now": 1697
+    },
+    "rhs_charged": {
+      "base": 3188,
+      "now": 1697
+    },
+    "success": {
+      "base": true,
+      "now": true
+    }
+  },
+  "storage": {
+    "workspace_retained_bytes_n2000": {
+      "base": 32704000,
+      "now": 64000
+    },
+    "largest_single_allocation_bytes_matrix_free_n3000": {
+      "base": 72000000,
+      "now": 4194304
+    },
+    "dense_matrix_bytes_n3000": {
+      "base": 72000000,
+      "now": 72000000
+    }
+  },
+  "stop_reasons": {
+    "fatal_rhs_under_switching": {
+      "base": "{\"status\":\"failed\",\"kind\":\"max-steps-reached\",\"max_steps\":100000}",
+      "now": "{\"status\":\"failed\",\"kind\":\"callback-failed\",\"callback\":\"rhs\",\"t\":0.30920000000000003,\"message\":\"sensor offline\"}"
+    },
+    "fatal_jacobian_under_switching": {
+      "base": "{\"status\":\"failed\",\"kind\":\"max-steps-reached\",\"max_steps\":100000}",
+      "now": "{\"status\":\"failed\",\"kind\":\"callback-failed\",\"callback\":\"jacobian\",\"t\":0.0006820904373118785,\"message\":\"jacobian table missing\"}"
+    },
+    "blow_up_under_switching": {
+      "base": "{\"status\":\"failed\",\"kind\":\"max-steps-reached\",\"max_steps\":100000}",
+      "now": "{\"status\":\"failed\",\"kind\":\"step-size-too-small\",\"min_step\":1e-14}"
+    },
+    "fatal_preflight_callback": {
+      "base": "Err: InvalidInput(\"initial RHS evaluation failed: fatal callback error: model not loaded\")",
+      "now": "Ok: {\"status\":\"failed\",\"kind\":\"callback-failed\",\"callback\":\"rhs\",\"t\":0.0,\"message\":\"model not loaded\"}"
+    },
+    "fatal_entries_on_the_explicit_leg": {
+      "base": 2,
+      "now": 1
+    }
+  },
+  "preflight_charging": {
+    "p1_preflight_callbacks_are_charged_with_a_dense_jacobian": {
+      "direct": {
+        "jacobian_charged": 18,
+        "jacobian_entries": 18,
+        "rhs_charged": 151,
+        "rhs_entries": 151
+      },
+      "unified": {
+        "base": {
+          "jacobian_charged": 18,
+          "jacobian_entries": 19,
+          "rhs_charged": 151,
+          "rhs_entries": 152
+        },
+        "now": {
+          "jacobian_charged": 18,
+          "jacobian_entries": 18,
+          "rhs_charged": 151,
+          "rhs_entries": 151
+        }
+      }
+    },
+    "p1_preflight_callbacks_are_charged_without_a_jacobian": {
+      "direct": {
+        "rhs_charged": 55,
+        "rhs_entries": 55
+      },
+      "unified": {
+        "base": {
+          "rhs_charged": 55,
+          "rhs_entries": 56
+        },
+        "now": {
+          "rhs_charged": 58,
+          "rhs_entries": 58
+        }
+      }
+    },
+    "p1_preflight_callbacks_are_charged_with_a_jvp": {
+      "direct": {
+        "jvp_charged": 2916,
+        "jvp_entries": 2916,
+        "rhs_charged": 126,
+        "rhs_entries": 126
+      },
+      "unified": {
+        "base": {
+          "jvp_charged": 2916,
+          "jvp_entries": 2916,
+          "rhs_charged": 126,
+          "rhs_entries": 127
+        },
+        "now": {
+          "jvp_charged": 2916,
+          "jvp_entries": 2916,
+          "rhs_charged": 126,
+          "rhs_entries": 126
+        }
+      }
+    }
+  },
+  "replay_grid": {
+    "cases": 336,
+    "drivers": {
+      "dopri5-5(4)-fsal": 30,
+      "rodas5p-fast-banded-dense-v1": 72,
+      "rodas5p-fast-banded-v1": 42,
+      "rodas5p-fast-dense-v1": 72,
+      "rodas5p-fast-transformed-v2": 26,
+      "rodas5p-mf-fast-transformed-v1": 28,
+      "vigilode.switching.v1": 42
+    },
+    "failures": 0,
+    "first_failures": [],
+    "refused_before_any_callback": 24,
+    "routes": {
+      "dopri5/rhs-only": 30,
+      "rodas5p/banded-fast": 42,
+      "rodas5p/dense-fast": 26,
+      "rodas5p/fast-banded-dense": 72,
+      "rodas5p/fast-dense": 72,
+      "rodas5p/matrix-free": 28,
+      "switching/dopri5": 39,
+      "switching/dopri5+rodas5p": 3
+    },
+    "solved": 312,
+    "tiers": {
+      "Tier1Explicit": 30,
+      "Tier5AdaptiveSwitching": 78,
+      "TierProtectedReference": 204
+    },
+    "with_stiffness_screen": 2
+  },
+  "label_cases": {
+    "p1_label_equals_executed_driver_on_the_explicit_route": {
+      "base_mismatches": {
+        "base": 1,
+        "now": 0
+      },
+      "total": {
+        "base": 1,
+        "now": 1
+      }
+    },
+    "p1_label_equals_executed_driver_on_every_rodas5p_driver_family": {
+      "base_mismatches": {
+        "base": 9,
+        "now": 0
+      },
+      "total": {
+        "base": 9,
+        "now": 9
+      }
+    },
+    "p1_label_equals_executed_driver_on_the_switching_adapter": {
+      "base_mismatches": {
+        "base": 1,
+        "now": 0
+      },
+      "total": {
+        "base": 1,
+        "now": 1
+      }
+    }
+  },
+  "part2_and_3_records": {
+    "p2_a_refusal_of_the_switching_adapter_is_reported_and_rodas5p_runs": {
+      "direct_entries": [
+        152,
+        19
+      ],
+      "entries": [
+        152,
+        19
+      ],
+      "fallback_steps": 1,
+      "history": [
+        {
+          "from_tier": "preflight",
+          "reason": "SwitchingSolver::solve refused the request before any callback: invalid switching request: identity mass, no events and endpoint output required",
+          "step_index": 0,
+          "time": 0.0,
+          "to_tier": "rodas5p-sequential-dense-v2"
+        }
+      ],
+      "suggested_tier": "tier5-adaptive-switching"
+    },
+    "p2_declared_nonstiff_runs_dopri5_with_the_whole_budget_and_no_second_method": {
+      "attempts": 50,
+      "basis": {
+        "kind": "declared-regime",
+        "regime": "nonstiff"
+      },
+      "drivers": [
+        "dopri5-5(4)-fsal"
+      ],
+      "final_time": 0.00015854344733433958,
+      "jacobian_entries": 0,
+      "status": "{\"status\":\"failed\",\"kind\":\"max-steps-reached\",\"max_steps\":50}",
+      "stop": {
+        "callback": null,
+        "message": "DOPRI5 attempt budget exhausted",
+        "reason": "attempt-budget",
+        "source": "dopri5"
+      }
+    },
+    "p2_declared_regime_routes_as_the_general_policy_does": {
+      "cases": [
+        {
+          "equal_route": true,
+          "equal_state_bits": true,
+          "general_route": "rodas5p/dense-fast",
+          "legs": 1,
+          "problem": "oscillator",
+          "regime": "Stiff",
+          "unified_route": "rodas5p/dense-fast"
+        },
+        {
+          "equal_route": true,
+          "equal_state_bits": true,
+          "general_route": "rodas5p/dense-fast",
+          "legs": 1,
+          "problem": "robertson-dense",
+          "regime": "Stiff",
+          "unified_route": "rodas5p/dense-fast"
+        },
+        {
+          "equal_route": true,
+          "equal_state_bits": true,
+          "general_route": "rodas5p/matrix-free",
+          "legs": 1,
+          "problem": "heat-jvp",
+          "regime": "Stiff",
+          "unified_route": "rodas5p/matrix-free"
+        },
+        {
+          "equal_route": true,
+          "equal_state_bits": true,
+          "general_route": "dopri5/rhs-only",
+          "legs": 1,
+          "problem": "oscillator",
+          "regime": "Nonstiff",
+          "unified_route": "dopri5/rhs-only"
+        },
+        {
+          "equal_route": true,
+          "equal_state_bits": true,
+          "general_route": "dopri5/rhs-only",
+          "legs": 1,
+          "problem": "robertson-dense",
+          "regime": "Nonstiff",
+          "unified_route": "dopri5/rhs-only"
+        },
+        {
+          "equal_route": true,
+          "equal_state_bits": true,
+          "general_route": "dopri5/rhs-only",
+          "legs": 1,
+          "problem": "heat-jvp",
+          "regime": "Nonstiff",
+          "unified_route": "dopri5/rhs-only"
+        }
+      ]
+    },
+    "p2_exhausted_shared_budget_reports_the_total_and_keeps_the_leg_stop": {
+      "drivers": [
+        "dopri5-5(4)-fsal",
+        "rodas5p-fast-transformed-v2"
+      ],
+      "final_time": 1.092556464811854,
+      "leg_attempts": [
+        10,
+        10
+      ],
+      "leg_budgets": [
+        10,
+        10
+      ],
+      "rhs_charged": 185,
+      "rhs_entries": 185,
+      "status": "{\"status\":\"failed\",\"kind\":\"max-steps-reached\",\"max_steps\":20}",
+      "stop": {
+        "reason": {
+          "kind": "max-steps-reached",
+          "max_steps": 10
+        },
+        "source": "rodas5p"
+      }
+    },
+    "p2_fallback_rule_and_trial_budget": {
+      "attempts": 1,
+      "basis": {
+        "kind": "no-budget-for-trial",
+        "max_steps": 1
+      },
+      "drivers": [
+        "rodas5p-fast-transformed-v2"
+      ],
+      "status": "{\"status\":\"failed\",\"kind\":\"max-steps-reached\",\"max_steps\":1}"
+    },
+    "p2_records_are_strict_json_and_options_keep_their_file_format": {
+      "serialized_bytes": [
+        8510,
+        6701,
+        4932
+      ]
+    },
+    "p2_stiffness_screen_is_a_charged_lower_bound": {
+      "dimension_limit": 10,
+      "heat_span_1": {
+        "completed": true,
+        "lipschitz_lower_bound": 198.40866916543743,
+        "rhs_calls": 9,
+        "span": 1.0,
+        "stiffness_evidence": false,
+        "threshold": 3300.0,
+        "trial_attempts": 1000
+      },
+      "heat_span_100": {
+        "completed": true,
+        "lipschitz_lower_bound": 198.40866916543743,
+        "rhs_calls": 9,
+        "span": 100.0,
+        "stiffness_evidence": true,
+        "threshold": 3300.0,
+        "trial_attempts": 1000
+      },
+      "oscillator": {
+        "completed": true,
+        "lipschitz_lower_bound": 1.0,
+        "rhs_calls": 3,
+        "span": 1.0,
+        "stiffness_evidence": false,
+        "threshold": 3300.0,
+        "trial_attempts": 1000
+      },
+      "robertson": {
+        "completed": true,
+        "lipschitz_lower_bound": 0.6322027276634105,
+        "rhs_calls": 4,
+        "span": 10.0,
+        "stiffness_evidence": false,
+        "threshold": 3300.0,
+        "trial_attempts": 1000
+      },
+      "scalar": {
+        "completed": true,
+        "lipschitz_lower_bound": 1000000.0,
+        "rhs_calls": 2,
+        "span": 1.0,
+        "stiffness_evidence": true,
+        "threshold": 3300.0,
+        "trial_attempts": 1000
+      },
+      "trial_limit": 1000
+    },
+    "p2_typed_stop_of_a_rodas5p_leg_and_its_prefix": {
+      "attempts": 5,
+      "direct_final_time": 0.0009638165263210587,
+      "final_time": 0.0009638165263210587,
+      "status": "{\"status\":\"failed\",\"kind\":\"max-steps-reached\",\"max_steps\":5}",
+      "stop": {
+        "reason": {
+          "kind": "max-steps-reached",
+          "max_steps": 5
+        },
+        "source": "rodas5p"
+      }
+    },
+    "p2_typed_stop_of_the_switching_adapter": {
+      "blowup_status": "{\"status\":\"failed\",\"kind\":\"step-size-too-small\",\"min_step\":1e-14}",
+      "blowup_stop": {
+        "accounting_complete": true,
+        "attempts": 321,
+        "callback": null,
+        "decision": "implicit driver stopped; preserve partial accepted state",
+        "driver_stop": {
+          "last_failure": null,
+          "reason": "minimum-step",
+          "t": 1.0000002494258216
+        },
+        "max_steps": 100000,
+        "message": "implicit driver stopped; preserve partial accepted state",
+        "method": "rodas5p",
+        "source": "switching"
+      },
+      "direct_message": "fatal callback; stop without fallback",
+      "fatal_stop": {
+        "accounting_complete": true,
+        "attempts": 12,
+        "callback": {
+          "callback": "rhs",
+          "message": "sensor offline",
+          "t": 0.30920000000000003
+        },
+        "decision": "fatal callback; stop without fallback",
+        "driver_stop": null,
+        "max_steps": 100000,
+        "message": "fatal callback; stop without fallback",
+        "method": "dopri5",
+        "source": "switching"
+      }
+    },
+    "p2_unsupported_request_is_refused_before_any_callback": {
+      "callback_entries_before_the_refusal": 0,
+      "declared_nonstiff_drivers": [
+        "dopri5-5(4)-fsal"
+      ],
+      "refusal": "unsupported: a vector atol on a JVP-only problem: the matrix-free driver's Krylov weights take a scalar absolute tolerance"
+    },
+    "p3_batch_outcome_keeps_the_stop_of_its_driver": {
+      "cases": [
+        {
+          "case": "RODAS5P, reached the target",
+          "failure": "None",
+          "reached": 1.0,
+          "record_success": true,
+          "scheduling_class": "Completed"
+        },
+        {
+          "case": "RODAS5P, blow-up",
+          "failure": "Some(Implicit(StepSizeTooSmall { min_step: 1e-14 }))",
+          "reached": 1.000000729132762,
+          "record_success": false,
+          "scheduling_class": "Completed"
+        },
+        {
+          "case": "RODAS5P, three attempts",
+          "failure": "Some(Implicit(MaxStepsReached { max_steps: 3 }))",
+          "reached": 0.0004312123425178129,
+          "record_success": false,
+          "scheduling_class": "Budget"
+        },
+        {
+          "case": "RODAS5P, fatal Jacobian",
+          "failure": "Some(Implicit(CallbackFailed { callback: Jacobian, t: 0.0, message: \"jacobian table missing\" }))",
+          "reached": 0.0,
+          "record_success": false,
+          "scheduling_class": "Fatal(\"Jacobian callback failed at t = 0e0: jacobian table missing\")"
+        },
+        {
+          "case": "DOPRI5, fatal right-hand side",
+          "failure": "Some(Explicit { reason: Some(Callback), callback: Some(ExplicitCallbackFailure { t: 0.3428866093365234, message: \"sensor offline\", malformed_output: false }) })",
+          "reached": 0.156,
+          "record_success": false,
+          "scheduling_class": "Fatal(\"sensor offline\")"
+        },
+        {
+          "case": "DOPRI5, blow-up",
+          "failure": "Some(Explicit { reason: Some(StepUnderflow), callback: None })",
+          "reached": 1.0000002565515667,
+          "record_success": false,
+          "scheduling_class": "Completed"
+        }
+      ]
+    },
+    "p3_switching_adapter_reads_a_driver_refusal_as_the_same_text": {
+      "adapter_accounting_complete": false,
+      "adapter_final_time": 0.0006821587281740627,
+      "adapter_message": "structure refused: band verification rejected the declaration: vector 0, mismatch 7.401718609680348e-1 > 1e-12 x reference norm 7.401831791486709e3",
+      "adapter_success": false,
+      "facade_refusal": "structure refused: band verification rejected the declaration: vector 0, mismatch 7.401718609680348e-1 > 1e-12 x reference norm 7.401831791486709e3"
+    },
+    "p3_window_driver_errors_are_typed_and_keep_their_text": {
+      "cases": [
+        {
+          "case": "assembled JVP, n = 9",
+          "expected": "JvpAssembled route supports dimension <= 8, got 9",
+          "text": "JvpAssembled route supports dimension <= 8, got 9",
+          "variant": "Route"
+        },
+        {
+          "case": "assembled JVP without a JVP",
+          "expected": "JvpAssembled route requires JVP Jacobian",
+          "text": "JvpAssembled route requires JVP Jacobian",
+          "variant": "Route"
+        },
+        {
+          "case": "exponential driver without derivatives",
+          "expected": "Pexprb route requires an explicit Jacobian or JVP",
+          "text": "Pexprb route requires an explicit Jacobian or JVP",
+          "variant": "Route"
+        },
+        {
+          "case": "RODAS5P refusal",
+          "expected": "unsupported: a vector atol on a JVP-only problem: the matrix-free driver's Krylov weights take a scalar absolute tolerance",
+          "text": "unsupported: a vector atol on a JVP-only problem: the matrix-free driver's Krylov weights take a scalar absolute tolerance",
+          "variant": "Implicit"
+        },
+        {
+          "case": "DOPRI5 refusal",
+          "expected": "unsupported explicit-solver request: DOPRI5 requires identity mass expressed by no mass matrix",
+          "text": "unsupported explicit-solver request: DOPRI5 requires identity mass expressed by no mass matrix",
+          "variant": "Explicit"
+        }
+      ]
+    }
+  },
+  "two_leg_solve": {
+    "screen": {
+      "completed": true,
+      "lipschitz_lower_bound": 0.6322027276634105,
+      "rhs_calls": 4,
+      "span": 10.0,
+      "stiffness_evidence": false,
+      "threshold": 825.0,
+      "trial_attempts": 250
+    },
+    "preflight_rhs_calls": 4,
+    "leg_rhs_calls": 1693,
+    "total_rhs_calls": 1697,
+    "rhs_entries": 1697,
+    "direct_rhs_entries": 1693,
+    "invariant_drift": [
+      [
+        "mass",
+        1.3322676295501878e-15
+      ]
+    ],
+    "legs": [
+      {
+        "tier": "tier1-explicit",
+        "driver_id": "dopri5-5(4)-fsal",
+        "route_id": "dopri5/rhs-only",
+        "t_start": 0.0,
+        "t_end": 0.34574795015503906,
+        "target": 10.0,
+        "success": false,
+        "attempt_budget": 250,
+        "attempts": 250,
+        "accepted_steps": 236,
+        "rejected_steps": 14,
+        "rhs_calls": 1501,
+        "stop": {
+          "callback": null,
+          "message": "DOPRI5 attempt budget exhausted",
+          "reason": "attempt-budget",
+          "source": "dopri5"
+        }
+      },
+      {
+        "tier": "tier-protected-reference",
+        "driver_id": "rodas5p-fast-transformed-v2",
+        "route_id": "rodas5p/dense-fast",
+        "t_start": 0.34574795015503906,
+        "t_end": 10.0,
+        "target": 10.0,
+        "success": true,
+        "attempt_budget": 250,
+        "attempts": 16,
+        "accepted_steps": 16,
+        "rejected_steps": 0,
+        "rhs_calls": 192,
+        "stop": null
+      }
+    ]
+  },
+  "switching_adapter_neutrality": {
+    "what": "one line per (problem, configuration): success, final time bits, attempts, switches, segments, length and FNV-1a 64 of the full serialized record of SwitchingSolver::solve and of ProductionSolver::solve",
+    "base_log": "logs/switching_digests_base.log",
+    "base_header": [
+      "# digests of the switching adapter's records on the BASE sources",
+      "# scratch copy of 587a139501729bbe886bb2b8c49b0ef893705d08 (git archive Cargo.toml Cargo.lock rust-toolchain.toml crates); test file = the text between the neutrality markers of crates/vigilode/tests/unified_router_contracts.rs",
+      "# module sha256 564c1c0dc3eb0e3b7057c47c40a2865c9d456f14042862dadbf1415a26100289",
+      "# command (in the scratch copy): taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test v03b_neutrality_base -- --nocapture --test-threads 1"
+    ],
+    "lines_on_base_sources": 77,
+    "lines_on_this_node": 77,
+    "identical_lines": 77,
+    "all_identical": true,
+    "error_lines": 0
+  },
+  "full_suite": {
+    "exit_code": 0,
+    "passed": 533,
+    "failed": 0,
+    "ignored": 0,
+    "result_lines": 58,
+    "binaries": 56,
+    "doctest_runs": 1,
+    "failed_tests": [],
+    "tests_of_the_new_binary": 36,
+    "tests_outside_the_new_binary": 497
+  },
+  "golden": {
+    "exit_code": 0,
+    "files_reported_identical": [
+      "decision_grid",
+      "dopri5",
+      "general_ode",
+      "production_automatic",
+      "rodas5p_brusselator",
+      "rodas5p_contracts",
+      "rodas5p_hires",
+      "rodas5p_robertson",
+      "rodas5p_vanderpol"
+    ],
+    "tests": {
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0,
+      "result_lines": 1,
+      "binaries": 1,
+      "doctest_runs": 0
+    },
+    "diff_against_base_lines": 0
+  },
+  "acceptance": {
+    "A1_contract_tests_pass_each_written_first_as_a_failing_test": {
+      "measured": {
+        "contract_tests_passed": 36,
+        "contract_tests_failed": 0,
+        "part1_tests": 20,
+        "part1_failed_on_base_and_pass_now": 20
+      },
+      "verdict": "PASS"
+    },
+    "A2_default_path_golden_unchanged": {
+      "measured": {
+        "exit_code": 0,
+        "golden_files_identical": 9,
+        "diff_lines_against_base": 0
+      },
+      "verdict": "PASS"
+    },
+    "A3_every_other_pre_existing_facade_test_passes": {
+      "measured": {
+        "exit_code": 0,
+        "passed": 533,
+        "failed": 0,
+        "ignored": 0,
+        "test_binaries": 56,
+        "doctest_runs": 1,
+        "failed_tests": []
+      },
+      "verdict": "PASS"
+    },
+    "A4_no_behaviour_change_of_the_other_frontends": {
+      "measured": {
+        "switching_and_production_record_digests_identical": 77,
+        "digest_lines": 77,
+        "golden_files_identical": 9,
+        "protected_diff_lines": 0
+      },
+      "scope": "Rodas5p, Dopri5, GeneralOde, AutomaticOde and the default ProductionSolver by the golden oracle (their sources are unchanged); SwitchingSolver and ProductionSolver by the record digests on the base sources and here",
+      "verdict": "PASS"
+    }
+  },
+  "lints": {
+    "clippy_exit_code": 0,
+    "fmt_check_exit_code": 0,
+    "doc_exit_code": 0,
+    "example_exit_code": 0,
+    "loop_checker_exit_code": 1,
+    "loop_checker_output": [
+      "Traceback (most recent call last):",
+      "  File \"/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03b/research/production_loop_20261116/check_checkpoint.py\", line 95, in <module>",
+      "    main()",
+      "  File \"/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03b/research/production_loop_20261116/check_checkpoint.py\", line 89, in main",
+      "    require(any(fnmatch.fnmatchcase(path, pattern) for pattern in allowed),",
+      "  File \"/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03b/research/production_loop_20261116/check_checkpoint.py\", line 28, in require",
+      "    raise ValueError(message)",
+      "ValueError: changed path outside active allowlist: crates/vigilode/examples/unified_production_solver.rs"
+    ]
+  },
+  "changed_paths": [
+    {
+      "status": "M",
+      "path": "crates/vigilode/examples/unified_production_solver.rs"
+    },
+    {
+      "status": "M",
+      "path": "crates/vigilode/src/registry.rs"
+    },
+    {
+      "status": "M",
+      "path": "crates/vigilode/src/unified/analyzer.rs"
+    },
+    {
+      "status": "M",
+      "path": "crates/vigilode/src/unified/fallback.rs"
+    },
+    {
+      "status": "A",
+      "path": "crates/vigilode/src/unified/legs.rs"
+    },
+    {
+      "status": "M",
+      "path": "crates/vigilode/src/unified/mod.rs"
+    },
+    {
+      "status": "M",
+      "path": "crates/vigilode/src/unified/options.rs"
+    },
+    {
+      "status": "M",
+      "path": "crates/vigilode/src/unified/router.rs"
+    },
+    {
+      "status": "M",
+      "path": "crates/vigilode/src/unified/solution.rs"
+    },
+    {
+      "status": "M",
+      "path": "crates/vigilode/src/unified/workspace.rs"
+    },
+    {
+      "status": "M",
+      "path": "crates/vigilode/tests/unified_production_solver_contracts.rs"
+    },
+    {
+      "status": "A",
+      "path": "crates/vigilode/tests/unified_router_contracts.rs"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/NOTES.txt"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/PREDECLARED.json"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/RECEIPT.json"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/REPORT_KO.md"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/build_receipt.py"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/build_report.py"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/logs/changed_paths.log"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/logs/check_checkpoint.log"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/logs/clippy.log"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/logs/contracts.log"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/logs/default_path_golden.log"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/logs/doc.log"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/logs/example.log"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/logs/existing_unified_and_registry_tests.log"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/logs/existing_unified_tests_before_edit.log"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/logs/failing_first_base.log"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/logs/failing_first_new_api.log"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/logs/fmt_check.log"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/logs/full_suite.log"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/logs/golden_diff.log"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/logs/protected_diff.log"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/logs/switching_digests_base.log"
+    },
+    {
+      "status": "A",
+      "path": "research/production_loop_20261116/unified_router/run_checks.sh"
+    }
+  ],
+  "changed_paths_outside_the_task_allowlist": [],
+  "loop_checker_allowlist": {
+    "checker_complaint": "ValueError: changed path outside active allowlist: crates/vigilode/examples/unified_production_solver.rs",
+    "paths_outside_the_programme_allowlist": [
+      "crates/vigilode/examples/unified_production_solver.rs",
+      "crates/vigilode/src/registry.rs",
+      "crates/vigilode/src/unified/analyzer.rs",
+      "crates/vigilode/src/unified/fallback.rs",
+      "crates/vigilode/src/unified/legs.rs",
+      "crates/vigilode/src/unified/mod.rs",
+      "crates/vigilode/src/unified/options.rs",
+      "crates/vigilode/src/unified/router.rs",
+      "crates/vigilode/src/unified/solution.rs",
+      "crates/vigilode/src/unified/workspace.rs",
+      "crates/vigilode/tests/unified_production_solver_contracts.rs",
+      "crates/vigilode/tests/unified_router_contracts.rs"
+    ],
+    "all_of_them_are_allowed_by_the_task": true,
+    "checks_passed_before_the_allowlist_step": "strict JSON of the programme and loop files, task/DAG structure, ancestry, protected blobs, evidence and implemented source identities: the checker reaches its allowlist loop only after them"
+  },
+  "protected_paths_diff_against_base": [],
+  "edits_of_existing_files": [
+    {
+      "path": "crates/vigilode/tests/unified_production_solver_contracts.rs",
+      "lines_added": 23,
+      "lines_removed": 11,
+      "reasons": [
+        "contract_3: `assert_eq!(first_tier, \"Tier1ExplicitDopri5\")` pinned a label string; it now compares the history entry with `ExplicitStats::method` of the DOPRI5 leg",
+        "contract_3: `contains(\"Protected\") || contains(\"Staged\")` pinned label strings; it now compares with `Stats::route.driver_id`",
+        "contract_3: `assert_eq!(heat_tier, \"Tier2MatrixFreeKrylov\")` pinned the label of a tier that had no driver; it now compares with `Stats::route.driver_id` and checks `DriverWork::MatrixFree`",
+        "contract_4: `to_tier == \"ProtectedRODAS5P\"` pinned a label string; it now requires a RODAS5P leg, named by its own run record, after the DOPRI5 leg",
+        "two comments next to these assertions named the removed labels"
+      ]
+    },
+    {
+      "path": "crates/vigilode/examples/unified_production_solver.rs",
+      "lines_added": 16,
+      "lines_removed": 9,
+      "reasons": [
+        "header list: it claimed multi-tier routing, a transactional fallback and zero heap allocation in stepping hot loops (VG-1); the list now states what the example shows",
+        "comment of problem 4: 'encounters stiffness rejection, and smoothly rolls back' described a detection that does not exist; it now states the trial budget"
+      ]
+    }
+  ],
+  "existing_unified_tests_before_the_edit": {
+    "log": "logs/existing_unified_tests_before_edit.log",
+    "statuses": {
+      "contract_1_single_api_ergonomics": "ok",
+      "contract_2_workspace_reuse_and_retained_bytes": "ok",
+      "contract_3_autonomous_tier_routing": "FAILED",
+      "contract_4_fail_closed_protected_fallback": "FAILED",
+      "contract_5_physical_invariant_preservation": "ok",
+      "contract_6_complete_work_accounting_and_timing_authority": "ok"
+    },
+    "what": "the unedited test file against the new router: only the label assertions fail"
+  },
+  "missing_logs": [],
+  "json_files_checked_strict": [
+    "PREDECLARED.json",
+    "RECEIPT.json"
+  ]
+}
