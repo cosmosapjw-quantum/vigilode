@@ -1189,6 +1189,8 @@ mod part2 {
     };
 
     type Build = Box<dyn Fn(&Calls) -> Problem>;
+    /// A named problem family: a builder for each dimension.
+    type Provider = (&'static str, fn(usize) -> Build);
 
     /// Heat equation on a ring (periodic), so that the Jacobian pattern is not banded.
     fn ring_rhs(n: usize, y: &[f64], dy: &mut [f64]) {
@@ -1305,7 +1307,7 @@ mod part2 {
     fn p2_every_tier_has_a_driver_and_every_report_replays_as_direct_calls() {
         let test = "p2_every_tier_has_a_driver_and_every_report_replays_as_direct_calls";
         assert_eq!(SelectedTier::ALL.len(), 3);
-        let providers: Vec<(&str, fn(usize) -> Build)> = vec![
+        let providers: Vec<Provider> = vec![
             ("finite-difference", |n| Box::new(move |c| heat_fd(n, c))),
             ("fd-declared-band", |n| {
                 Box::new(move |c| heat_fd(n, c).banded(1, 1))
@@ -2157,3 +2159,631 @@ mod part2 {
         record(test, json!({ "serialized_bytes": sizes }));
     }
 }
+
+// ======================================================================================
+// Part 3: the window drivers of the registry (typed error, typed stop)
+// ======================================================================================
+
+mod part3 {
+    use super::*;
+    use rodas5p_integrators::Dopri5StopReason;
+    use vigilode::selection_evidence::SelectionIdentity;
+    use vigilode::{
+        BatchFailure, BatchRequest, BatchStop, Dopri5WindowDriver, ExplicitSolveError,
+        ExplicitUnsupported, PexprbWindowDriver, Rodas5pWindowDriver, RouteId, Unsupported,
+        WindowDriver, WindowDriverError,
+    };
+
+    fn request<'a>(state: &'a [f64], options: &'a Options, target: f64) -> BatchRequest<'a> {
+        BatchRequest {
+            start_time: 0.0,
+            target_time: target,
+            solve_end: target,
+            state,
+            proposed_h: None,
+            options,
+            landings: &[],
+            ceiling: None,
+            carry_explicit_step: false,
+            is_probe: false,
+            is_entry_pilot: false,
+            identity: SelectionIdentity::default(),
+        }
+    }
+
+    fn blowup() -> Problem {
+        Problem::new(1, |_t, y: &[f64], dy: &mut [f64]| {
+            dy[0] = y[0] * y[0];
+            Ok::<(), CallbackError>(())
+        })
+        .jacobian(Jacobian::dense(|_t, y: &[f64], jac: &mut [f64]| {
+            jac[0] = 2.0 * y[0];
+            Ok(())
+        }))
+        .autonomous()
+    }
+
+    #[test]
+    fn p3_window_driver_errors_are_typed_and_keep_their_text() {
+        let test = "p3_window_driver_errors_are_typed_and_keep_their_text";
+        let options = Options::default();
+        let mut rows = Vec::new();
+        let mut check = |name: &str, error: WindowDriverError, expected: String| {
+            // the error is a std error, and its text is what a text caller reads
+            let _: &dyn std::error::Error = &error;
+            let text = error.to_string();
+            rows.push(json!({ "case": name, "text": text, "expected": expected,
+                              "variant": format!("{error:?}").split(['(', ' ', '{']).next() }));
+            assert_eq!(text, expected, "{name}");
+            assert_eq!(String::from(error), expected, "{name}");
+        };
+
+        // a route precondition: the assembled-JVP route takes dimension <= 8
+        let calls = Calls::default();
+        let nine = heat_jvp(9, &calls);
+        let y9 = vec![1.0; 9];
+        let error = Rodas5pWindowDriver::with_route(RouteId::Rodas5pJvpAssembled)
+            .run(&nine, &request(&y9, &options, 0.01))
+            .unwrap_err();
+        assert!(matches!(
+            error,
+            WindowDriverError::Route {
+                route: RouteId::Rodas5pJvpAssembled,
+                ..
+            }
+        ));
+        check(
+            "assembled JVP, n = 9",
+            error,
+            "JvpAssembled route supports dimension <= 8, got 9".into(),
+        );
+        let error = Rodas5pWindowDriver::with_route(RouteId::Rodas5pJvpAssembled)
+            .run(&oscillator(&calls), &request(&[1.0, 0.0], &options, 1.0))
+            .unwrap_err();
+        check(
+            "assembled JVP without a JVP",
+            error,
+            "JvpAssembled route requires JVP Jacobian".into(),
+        );
+        let error = PexprbWindowDriver
+            .run(&oscillator(&calls), &request(&[1.0, 0.0], &options, 1.0))
+            .unwrap_err();
+        assert!(matches!(
+            error,
+            WindowDriverError::Route {
+                route: RouteId::Pexprb54s4Fused,
+                ..
+            }
+        ));
+        check(
+            "exponential driver without derivatives",
+            error,
+            "Pexprb route requires an explicit Jacobian or JVP".into(),
+        );
+
+        // a refusal of the RODAS5P facade keeps its type
+        let vector = Options {
+            atol: Atol::Vector(vec![1e-9; 9]),
+            ..Options::default()
+        };
+        let facade = Rodas5p::solve(&nine, (0.0, 0.01), &y9, &vector).unwrap_err();
+        let error = Rodas5pWindowDriver::for_problem(&nine)
+            .run(&nine, &request(&y9, &vector, 0.01))
+            .unwrap_err();
+        assert!(matches!(
+            error,
+            WindowDriverError::Implicit(SolveError::Unsupported(
+                Unsupported::VectorAtolOnMatrixFreeRoute
+            ))
+        ));
+        check("RODAS5P refusal", error, facade.to_string());
+
+        // a refusal of DOPRI5 keeps its type
+        let dae = robertson_dae(&calls);
+        let y3 = [1.0, 0.0, 0.0];
+        let facade = Dopri5::solve(&dae, (0.0, 1.0), &y3, &options).unwrap_err();
+        let error = Dopri5WindowDriver
+            .run(&dae, &request(&y3, &options, 1.0))
+            .unwrap_err();
+        assert!(matches!(
+            error,
+            WindowDriverError::Explicit(ExplicitSolveError::Unsupported(
+                ExplicitUnsupported::MassMatrix
+            ))
+        ));
+        check("DOPRI5 refusal", error, facade.to_string());
+
+        assert_eq!(
+            calls.rhs() + calls.jacobian() + calls.jvp(),
+            0,
+            "no refusal entered user code"
+        );
+        record(test, json!({ "cases": rows }));
+    }
+
+    #[test]
+    fn p3_batch_outcome_keeps_the_stop_of_its_driver() {
+        let test = "p3_batch_outcome_keeps_the_stop_of_its_driver";
+        let options = Options::default();
+        let mut rows = Vec::new();
+        let mut row = |name: &str, outcome: &vigilode::BatchOutcome| {
+            rows.push(json!({
+                "case": name, "scheduling_class": format!("{:?}", outcome.stop),
+                "record_success": outcome.record.success, "reached": outcome.record.reached_time,
+                "failure": format!("{:?}", outcome.failure),
+            }));
+        };
+
+        // success: nothing to report
+        let calls = Calls::default();
+        let done = Rodas5pWindowDriver::for_problem(&robertson_dense(&calls))
+            .run(
+                &robertson_dense(&calls),
+                &request(&[1.0, 0.0, 0.0], &options, 1.0),
+            )
+            .unwrap();
+        row("RODAS5P, reached the target", &done);
+        assert!(done.record.success && done.failure.is_none());
+        assert_eq!(done.stop, BatchStop::Completed);
+
+        // RODAS5P at the minimum step: the scheduling class stays `Completed`, the driver's
+        // reason is the one of Rodas5p::solve
+        let facade = Rodas5p::solve(&blowup(), (0.0, 2.0), &[1.0], &options).unwrap();
+        let Status::Failed(facade_reason) = facade.status.clone() else {
+            panic!("the blow-up must stop RODAS5P")
+        };
+        let stuck = Rodas5pWindowDriver::for_problem(&blowup())
+            .run(&blowup(), &request(&[1.0], &options, 2.0))
+            .unwrap();
+        row("RODAS5P, blow-up", &stuck);
+        assert!(!stuck.record.success);
+        assert_eq!(stuck.stop, BatchStop::Completed);
+        assert_eq!(
+            stuck.failure,
+            Some(BatchFailure::Implicit(facade_reason.clone()))
+        );
+        assert!(!matches!(
+            facade_reason,
+            FailureReason::MaxStepsReached { .. } | FailureReason::CallbackFailed { .. }
+        ));
+
+        // RODAS5P out of attempts
+        let few = Options {
+            max_steps: 3,
+            ..Options::default()
+        };
+        let budget = Rodas5pWindowDriver::for_problem(&robertson_dense(&calls))
+            .run(
+                &robertson_dense(&calls),
+                &request(&[1.0, 0.0, 0.0], &few, 40.0),
+            )
+            .unwrap();
+        row("RODAS5P, three attempts", &budget);
+        assert_eq!(budget.stop, BatchStop::Budget);
+        assert_eq!(
+            budget.failure,
+            Some(BatchFailure::Implicit(FailureReason::MaxStepsReached {
+                max_steps: 3
+            }))
+        );
+
+        // a fatal Jacobian: the text of the class is the callback's failure, not a constant
+        let no_jacobian = Problem::new(1, |_t, y: &[f64], dy: &mut [f64]| {
+            dy[0] = -y[0];
+            Ok::<(), CallbackError>(())
+        })
+        .jacobian(Jacobian::dense(|_t, _y, _jac: &mut [f64]| {
+            Err(CallbackError::Fatal("jacobian table missing".into()))
+        }))
+        .autonomous();
+        let fatal = Rodas5pWindowDriver::for_problem(&no_jacobian)
+            .run(&no_jacobian, &request(&[1.0], &options, 1.0))
+            .unwrap();
+        row("RODAS5P, fatal Jacobian", &fatal);
+        match (&fatal.stop, &fatal.failure) {
+            (
+                BatchStop::Fatal(text),
+                Some(BatchFailure::Implicit(FailureReason::CallbackFailed {
+                    callback,
+                    message,
+                    ..
+                })),
+            ) => {
+                assert!(text.contains("jacobian table missing"), "text: {text}");
+                assert_eq!(*callback, Callback::Jacobian);
+                assert_eq!(message, "jacobian table missing");
+            }
+            other => panic!("expected the fatal callback, got {other:?}"),
+        }
+
+        // DOPRI5: a fatal right-hand side, and a stop that is neither budget nor callback
+        let fatal = Dopri5WindowDriver
+            .run(
+                &fatal_rhs_after(&Calls::default()),
+                &request(&[1.0], &options, 1.0),
+            )
+            .unwrap();
+        row("DOPRI5, fatal right-hand side", &fatal);
+        assert_eq!(fatal.stop, BatchStop::Fatal("sensor offline".into()));
+        match &fatal.failure {
+            Some(BatchFailure::Explicit {
+                reason,
+                callback: Some(callback),
+            }) => {
+                assert_eq!(*reason, Some(Dopri5StopReason::Callback));
+                assert!(callback.t > 0.3 && callback.message == "sensor offline");
+            }
+            other => panic!("expected the DOPRI5 callback stop, got {other:?}"),
+        }
+        let direct = Dopri5::solve(&blowup(), (0.0, 2.0), &[1.0], &options).unwrap();
+        let stuck = Dopri5WindowDriver
+            .run(&blowup(), &request(&[1.0], &options, 2.0))
+            .unwrap();
+        row("DOPRI5, blow-up", &stuck);
+        assert!(!stuck.record.success && !direct.success);
+        assert_eq!(
+            stuck.failure,
+            Some(BatchFailure::Explicit {
+                reason: direct.stop_reason,
+                callback: None
+            })
+        );
+        assert!(direct.stop_reason.is_some());
+        if direct.stop_reason != Some(Dopri5StopReason::AttemptBudget) {
+            assert_eq!(stuck.stop, BatchStop::Completed);
+        }
+        record(test, json!({ "cases": rows }));
+    }
+
+    #[test]
+    fn p3_switching_adapter_reads_a_driver_refusal_as_the_same_text() {
+        let test = "p3_switching_adapter_reads_a_driver_refusal_as_the_same_text";
+        // y' = A y with a full 2-by-2 matrix and a band declaration that is false: the
+        // RODAS5P facade refuses the first implicit window after verifying the band
+        let build = || {
+            Problem::new(2, |_t, y: &[f64], dy: &mut [f64]| {
+                dy[0] = -1.0e4 * y[0] + y[1];
+                dy[1] = y[0] - 1.0e4 * y[1];
+                Ok::<(), CallbackError>(())
+            })
+            .jacobian(Jacobian::dense(|_t, _y, jac: &mut [f64]| {
+                jac.copy_from_slice(&[-1.0e4, 1.0, 1.0, -1.0e4]);
+                Ok(())
+            }))
+            .banded(0, 0)
+            .autonomous()
+        };
+        let y0 = [1.0, 1.0];
+        let options = Options::default();
+        let facade = Rodas5p::solve(&build(), (0.0, 1.0), &y0, &options);
+        let adapter = SwitchingSolver::solve(
+            &build(),
+            (0.0, 1.0),
+            &y0,
+            &options,
+            &router_switching_config(),
+        )
+        .unwrap();
+        let facade_text = facade.as_ref().err().map(|e| e.to_string());
+        record(
+            test,
+            json!({
+                "facade_refusal": facade_text,
+                "adapter_success": adapter.success,
+                "adapter_message": adapter.message,
+                "adapter_accounting_complete": adapter.stats.accounting_complete,
+                "adapter_final_time": adapter.final_time,
+            }),
+        );
+        let facade_text = facade_text.expect("the facade refuses the false band");
+        assert!(
+            facade_text.starts_with("structure refused"),
+            "{facade_text}"
+        );
+        if !adapter.success {
+            // the adapter stopped on the refusal: its message is the text of the typed error
+            assert!(
+                adapter.message.starts_with("structure refused"),
+                "{}",
+                adapter.message
+            );
+            assert!(!adapter.stats.accounting_complete);
+        }
+    }
+}
+
+// ======================================================================================
+// Neutrality of the switching adapter: digests of its full record. This module uses only
+// the public API of the base commit and nothing of the file above, so that the same text
+// runs against the base sources; the receipt compares the two outputs line by line.
+// ======================================================================================
+
+// >>> neutrality
+mod neutrality {
+    use vigilode::{
+        CallbackError, DerivativeFallback, Jacobian, Options, Problem, ProductionConfig,
+        ProductionSolver, SwitchingConfig, SwitchingSolver,
+    };
+
+    /// FNV-1a 64 of a byte string.
+    fn fnv1a64(bytes: &[u8]) -> u64 {
+        let mut hash = 0xcbf2_9ce4_8422_2325u64;
+        for &byte in bytes {
+            hash ^= u64::from(byte);
+            hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
+        }
+        hash
+    }
+
+    fn oscillator() -> Problem {
+        Problem::new(2, |_t, y: &[f64], dy: &mut [f64]| {
+            dy[0] = y[1];
+            dy[1] = -y[0];
+            Ok::<(), CallbackError>(())
+        })
+        .autonomous()
+    }
+
+    fn robertson(jacobian: bool) -> Problem {
+        let problem = Problem::new(3, |_t, y: &[f64], dy: &mut [f64]| {
+            dy[0] = -0.04 * y[0] + 1.0e4 * y[1] * y[2];
+            dy[1] = 0.04 * y[0] - 1.0e4 * y[1] * y[2] - 3.0e7 * y[1] * y[1];
+            dy[2] = 3.0e7 * y[1] * y[1];
+            Ok::<(), CallbackError>(())
+        })
+        .autonomous();
+        if !jacobian {
+            return problem;
+        }
+        problem.jacobian(Jacobian::dense(|_t, y: &[f64], jac: &mut [f64]| {
+            jac.copy_from_slice(&[
+                -0.04,
+                1.0e4 * y[2],
+                1.0e4 * y[1],
+                0.04,
+                -1.0e4 * y[2] - 6.0e7 * y[1],
+                -1.0e4 * y[1],
+                0.0,
+                6.0e7 * y[1],
+                0.0,
+            ]);
+            Ok(())
+        }))
+    }
+
+    fn van_der_pol(mu: f64) -> Problem {
+        Problem::new(2, move |_t, y: &[f64], dy: &mut [f64]| {
+            dy[0] = y[1];
+            dy[1] = mu * (1.0 - y[0] * y[0]) * y[1] - y[0];
+            Ok::<(), CallbackError>(())
+        })
+        .jacobian(Jacobian::dense(move |_t, y: &[f64], jac: &mut [f64]| {
+            jac.copy_from_slice(&[
+                0.0,
+                1.0,
+                -2.0 * mu * y[0] * y[1] - 1.0,
+                mu * (1.0 - y[0] * y[0]),
+            ]);
+            Ok(())
+        }))
+        .autonomous()
+    }
+
+    fn heat(n: usize, y: &[f64], dy: &mut [f64]) {
+        let inv_dx2 = ((n + 1) as f64).powi(2);
+        for i in 0..n {
+            let left = if i == 0 { 0.0 } else { y[i - 1] };
+            let right = if i + 1 == n { 0.0 } else { y[i + 1] };
+            dy[i] = (left - 2.0 * y[i] + right) * inv_dx2;
+        }
+    }
+
+    fn heat_jvp(n: usize) -> Problem {
+        Problem::new(n, move |_t, y: &[f64], dy: &mut [f64]| {
+            heat(n, y, dy);
+            Ok::<(), CallbackError>(())
+        })
+        .jvp(move |_t, _y, v: &[f64], out: &mut [f64]| {
+            heat(n, v, out);
+            Ok(())
+        })
+        .autonomous()
+    }
+
+    fn heat_banded(n: usize) -> Problem {
+        Problem::new(n, move |_t, y: &[f64], dy: &mut [f64]| {
+            heat(n, y, dy);
+            Ok::<(), CallbackError>(())
+        })
+        .banded(1, 1)
+        .autonomous()
+    }
+
+    fn fatal_rhs() -> Problem {
+        Problem::new(1, |t: f64, y: &[f64], dy: &mut [f64]| {
+            if t > 0.3 {
+                return Err(CallbackError::Fatal("sensor offline".into()));
+            }
+            dy[0] = -y[0];
+            Ok(())
+        })
+        .autonomous()
+    }
+
+    fn fatal_jacobian() -> Problem {
+        Problem::new(1, |_t, y: &[f64], dy: &mut [f64]| {
+            dy[0] = -1.0e4 * y[0];
+            Ok::<(), CallbackError>(())
+        })
+        .jacobian(Jacobian::dense(|_t, _y, _jac: &mut [f64]| {
+            Err(CallbackError::Fatal("jacobian table missing".into()))
+        }))
+        .autonomous()
+    }
+
+    fn blowup() -> Problem {
+        Problem::new(1, |_t, y: &[f64], dy: &mut [f64]| {
+            dy[0] = y[0] * y[0];
+            Ok::<(), CallbackError>(())
+        })
+        .jacobian(Jacobian::dense(|_t, y: &[f64], jac: &mut [f64]| {
+            jac[0] = 2.0 * y[0];
+            Ok(())
+        }))
+        .autonomous()
+    }
+
+    fn false_band() -> Problem {
+        Problem::new(2, |_t, y: &[f64], dy: &mut [f64]| {
+            dy[0] = -1.0e4 * y[0] + y[1];
+            dy[1] = y[0] - 1.0e4 * y[1];
+            Ok::<(), CallbackError>(())
+        })
+        .jacobian(Jacobian::dense(|_t, _y, jac: &mut [f64]| {
+            jac.copy_from_slice(&[-1.0e4, 1.0, 1.0, -1.0e4]);
+            Ok(())
+        }))
+        .banded(0, 0)
+        .autonomous()
+    }
+
+    #[test]
+    fn switching_adapter_record_digests() {
+        type Case = (&'static str, Problem, (f64, f64), Vec<f64>, usize);
+        let cases: Vec<Case> = vec![
+            (
+                "oscillator",
+                oscillator(),
+                (0.0, 20.0),
+                vec![1.0, 0.0],
+                100_000,
+            ),
+            (
+                "robertson-dense",
+                robertson(true),
+                (0.0, 40.0),
+                vec![1.0, 0.0, 0.0],
+                100_000,
+            ),
+            (
+                "robertson-fd",
+                robertson(false),
+                (0.0, 40.0),
+                vec![1.0, 0.0, 0.0],
+                100_000,
+            ),
+            (
+                "robertson-fd-300",
+                robertson(false),
+                (0.0, 40.0),
+                vec![1.0, 0.0, 0.0],
+                300,
+            ),
+            (
+                "van-der-pol-50",
+                van_der_pol(50.0),
+                (0.0, 120.0),
+                vec![2.0, 0.0],
+                100_000,
+            ),
+            (
+                "heat-jvp-12",
+                heat_jvp(12),
+                (0.0, 0.5),
+                vec![1.0; 12],
+                100_000,
+            ),
+            (
+                "heat-banded-16",
+                heat_banded(16),
+                (0.0, 0.5),
+                vec![1.0; 16],
+                100_000,
+            ),
+            ("fatal-rhs", fatal_rhs(), (0.0, 1.0), vec![1.0], 100_000),
+            (
+                "fatal-jacobian",
+                fatal_jacobian(),
+                (0.0, 1.0),
+                vec![1.0],
+                100_000,
+            ),
+            ("blow-up", blowup(), (0.0, 2.0), vec![1.0], 100_000),
+            (
+                "false-band",
+                false_band(),
+                (0.0, 1.0),
+                vec![1.0, 1.0],
+                100_000,
+            ),
+        ];
+        let allow = DerivativeFallback::AllowFiniteDifference;
+        let configs: Vec<(&str, SwitchingConfig)> = vec![
+            (
+                "default-allow-fd",
+                SwitchingConfig {
+                    fallback: allow,
+                    ..SwitchingConfig::default()
+                },
+            ),
+            (
+                "default-prescreen",
+                SwitchingConfig {
+                    fallback: allow,
+                    prescreen_initial_stiffness: true,
+                    ..SwitchingConfig::default()
+                },
+            ),
+            ("default-forbidden", SwitchingConfig::default()),
+            ("evidence-driven", SwitchingConfig::evidence_driven(allow)),
+            (
+                "adaptive-evidence",
+                SwitchingConfig::adaptive_evidence(allow),
+            ),
+            ("route-registry", SwitchingConfig::route_registry(allow)),
+        ];
+        let mut lines = 0;
+        for (name, problem, span, y0, max_steps) in &cases {
+            let options = Options {
+                max_steps: *max_steps,
+                ..Options::default()
+            };
+            for (config_name, config) in &configs {
+                let text = match SwitchingSolver::solve(problem, *span, y0, &options, config) {
+                    Ok(solution) => format!(
+                        "ok success={} t={:016x} attempts={} switches={} segments={} json_len={} fnv={:016x}",
+                        solution.success,
+                        solution.final_time.to_bits(),
+                        solution.stats.attempts,
+                        solution.stats.switches,
+                        solution.stats.segments.len(),
+                        serde_json::to_string(&solution).unwrap().len(),
+                        fnv1a64(serde_json::to_string(&solution).unwrap().as_bytes()),
+                    ),
+                    Err(error) => format!("err {error}"),
+                };
+                println!("V03B_SWITCHING_DIGEST {name} {config_name} {text}");
+                lines += 1;
+            }
+            // the production frontend runs the same adapter behind its own configuration
+            let production = ProductionConfig::rhs_only(options.clone(), 8);
+            let text = match ProductionSolver::solve(problem, *span, y0, &production) {
+                Ok(solution) => format!(
+                    "ok success={} t={:016x} attempts={} switches={} segments={} json_len={} fnv={:016x}",
+                    solution.success,
+                    solution.final_time.to_bits(),
+                    solution.stats.attempts,
+                    solution.stats.switches,
+                    solution.stats.segments.len(),
+                    serde_json::to_string(&solution).unwrap().len(),
+                    fnv1a64(serde_json::to_string(&solution).unwrap().as_bytes()),
+                ),
+                Err(error) => format!("err {error}"),
+            };
+            println!("V03B_SWITCHING_DIGEST {name} production-rhs-only {text}");
+            lines += 1;
+        }
+        assert_eq!(lines, cases.len() * (configs.len() + 1));
+    }
+}
+// <<< neutrality

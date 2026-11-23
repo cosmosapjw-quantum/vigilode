@@ -1,0 +1,91 @@
+# digests of the switching adapter's records on the BASE sources
+# scratch copy of 587a139501729bbe886bb2b8c49b0ef893705d08 (git archive Cargo.toml Cargo.lock rust-toolchain.toml crates); test file = the text between the neutrality markers of crates/vigilode/tests/unified_router_contracts.rs
+# module sha256 564c1c0dc3eb0e3b7057c47c40a2865c9d456f14042862dadbf1415a26100289
+# command (in the scratch copy): taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test v03b_neutrality_base -- --nocapture --test-threads 1
+   Compiling vigilode v0.1.0 (/tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/base_copy_v03b/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 30.63s
+     Running tests/v03b_neutrality_base.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03b/release/deps/v03b_neutrality_base-8a9f05e7b3480710)
+
+running 1 test
+test neutrality::switching_adapter_record_digests ... V03B_SWITCHING_DIGEST oscillator default-allow-fd ok success=true t=4034000000000000 attempts=143 switches=0 segments=8 json_len=22296 fnv=92b9ea72d4831301
+V03B_SWITCHING_DIGEST oscillator default-prescreen ok success=true t=4034000000000000 attempts=143 switches=0 segments=8 json_len=22295 fnv=496665494940969a
+V03B_SWITCHING_DIGEST oscillator default-forbidden ok success=true t=4034000000000000 attempts=123 switches=0 segments=1 json_len=4536 fnv=ea39621639e5a65c
+V03B_SWITCHING_DIGEST oscillator evidence-driven ok success=true t=4034000000000000 attempts=123 switches=0 segments=8 json_len=22528 fnv=9bb74310e827283b
+V03B_SWITCHING_DIGEST oscillator adaptive-evidence ok success=true t=4034000000000000 attempts=123 switches=0 segments=8 json_len=22785 fnv=8d83b3b80a8fcdbc
+V03B_SWITCHING_DIGEST oscillator route-registry ok success=true t=4034000000000000 attempts=123 switches=0 segments=8 json_len=22806 fnv=c2e516600d659c00
+V03B_SWITCHING_DIGEST oscillator production-rhs-only ok success=true t=4034000000000000 attempts=123 switches=0 segments=1 json_len=4535 fnv=927ef495fdb592d1
+V03B_SWITCHING_DIGEST robertson-dense default-allow-fd ok success=true t=4044000000000000 attempts=67 switches=1 segments=5 json_len=20600 fnv=6e96c3d4f8103d23
+V03B_SWITCHING_DIGEST robertson-dense default-prescreen ok success=true t=4044000000000000 attempts=46 switches=0 segments=4 json_len=17844 fnv=dc3229c68054673b
+V03B_SWITCHING_DIGEST robertson-dense default-forbidden ok success=true t=4044000000000000 attempts=36147 switches=0 segments=1 json_len=4789 fnv=f9e8617c7fd83101
+V03B_SWITCHING_DIGEST robertson-dense evidence-driven ok success=true t=4044000000000000 attempts=245 switches=1 segments=12 json_len=43309 fnv=0025ce9f64da51d0
+V03B_SWITCHING_DIGEST robertson-dense adaptive-evidence ok success=true t=4044000000000000 attempts=340 switches=1 segments=15 json_len=51917 fnv=68bd907feb634892
+V03B_SWITCHING_DIGEST robertson-dense route-registry ok success=true t=4044000000000000 attempts=341 switches=1 segments=15 json_len=51902 fnv=38ac58bf773a0faf
+V03B_SWITCHING_DIGEST robertson-dense production-rhs-only ok success=true t=4044000000000000 attempts=36147 switches=0 segments=1 json_len=4788 fnv=924e28b806cde6b6
+V03B_SWITCHING_DIGEST robertson-fd default-allow-fd ok success=true t=4044000000000000 attempts=73 switches=1 segments=5 json_len=21002 fnv=41bbaf6c01aa5ce2
+V03B_SWITCHING_DIGEST robertson-fd default-prescreen ok success=true t=4044000000000000 attempts=73 switches=1 segments=5 json_len=21001 fnv=43e29ee5da9f9f85
+V03B_SWITCHING_DIGEST robertson-fd default-forbidden ok success=true t=4044000000000000 attempts=36147 switches=0 segments=1 json_len=4789 fnv=f9e8617c7fd83101
+V03B_SWITCHING_DIGEST robertson-fd evidence-driven ok success=true t=4044000000000000 attempts=251 switches=1 segments=12 json_len=43953 fnv=be1c902c3a9f989b
+V03B_SWITCHING_DIGEST robertson-fd adaptive-evidence ok success=true t=4044000000000000 attempts=345 switches=1 segments=15 json_len=52559 fnv=74e80aa14aeff039
+V03B_SWITCHING_DIGEST robertson-fd route-registry ok success=true t=4044000000000000 attempts=348 switches=1 segments=15 json_len=52552 fnv=aaa9d6bc9c8b32ad
+V03B_SWITCHING_DIGEST robertson-fd production-rhs-only ok success=true t=4044000000000000 attempts=36147 switches=0 segments=1 json_len=4788 fnv=924e28b806cde6b6
+V03B_SWITCHING_DIGEST robertson-fd-300 default-allow-fd ok success=true t=4044000000000000 attempts=73 switches=1 segments=5 json_len=20987 fnv=4d5cf97344b9cff6
+V03B_SWITCHING_DIGEST robertson-fd-300 default-prescreen ok success=true t=4044000000000000 attempts=73 switches=1 segments=5 json_len=20986 fnv=26d77a1c04c4c341
+V03B_SWITCHING_DIGEST robertson-fd-300 default-forbidden ok success=false t=3fdacc5ed856723c attempts=300 switches=0 segments=1 json_len=4315 fnv=9c1c7546f663d830
+V03B_SWITCHING_DIGEST robertson-fd-300 evidence-driven ok success=true t=4044000000000000 attempts=251 switches=1 segments=12 json_len=43896 fnv=cd902a4ebf087819
+V03B_SWITCHING_DIGEST robertson-fd-300 adaptive-evidence ok success=false t=3fd96e64974ab734 attempts=300 switches=0 segments=10 json_len=31183 fnv=8cdd8764ddd23e4b
+V03B_SWITCHING_DIGEST robertson-fd-300 route-registry ok success=false t=3fd955dc3e50a2f4 attempts=300 switches=0 segments=10 json_len=31109 fnv=e971d59358edeadf
+V03B_SWITCHING_DIGEST robertson-fd-300 production-rhs-only ok success=false t=3fdacc5ed856723c attempts=300 switches=0 segments=1 json_len=4314 fnv=e02a80cc2b99f761
+V03B_SWITCHING_DIGEST van-der-pol-50 default-allow-fd ok success=true t=405e000000000000 attempts=546 switches=1 segments=5 json_len=20487 fnv=76f7cd23cc7cbe0d
+V03B_SWITCHING_DIGEST van-der-pol-50 default-prescreen ok success=true t=405e000000000000 attempts=528 switches=0 segments=4 json_len=17771 fnv=8544a3306e3fc8c7
+V03B_SWITCHING_DIGEST van-der-pol-50 default-forbidden ok success=true t=405e000000000000 attempts=3903 switches=0 segments=1 json_len=4586 fnv=56485726209f9ede
+V03B_SWITCHING_DIGEST van-der-pol-50 evidence-driven ok success=true t=405e000000000000 attempts=727 switches=1 segments=12 json_len=43016 fnv=bccc4f926754b597
+V03B_SWITCHING_DIGEST van-der-pol-50 adaptive-evidence ok success=true t=405e000000000000 attempts=820 switches=1 segments=15 json_len=51536 fnv=5e6d8aef968211fe
+V03B_SWITCHING_DIGEST van-der-pol-50 route-registry ok success=true t=405e000000000000 attempts=820 switches=1 segments=15 json_len=51526 fnv=1c4292da88a6086f
+V03B_SWITCHING_DIGEST van-der-pol-50 production-rhs-only ok success=true t=405e000000000000 attempts=3903 switches=0 segments=1 json_len=4585 fnv=d70049bfeb8245fb
+V03B_SWITCHING_DIGEST heat-jvp-12 default-allow-fd ok success=true t=3fe0000000000000 attempts=77 switches=2 segments=6 json_len=24272 fnv=ef362995dc58bea4
+V03B_SWITCHING_DIGEST heat-jvp-12 default-prescreen ok success=true t=3fe0000000000000 attempts=77 switches=2 segments=6 json_len=24271 fnv=d6fc29c57e10848d
+V03B_SWITCHING_DIGEST heat-jvp-12 default-forbidden ok success=true t=3fe0000000000000 attempts=123 switches=0 segments=1 json_len=6430 fnv=a3a3b8b2cc3e937b
+V03B_SWITCHING_DIGEST heat-jvp-12 evidence-driven ok success=true t=3fe0000000000000 attempts=125 switches=0 segments=9 json_len=29481 fnv=f7fd0294df8c7ea5
+V03B_SWITCHING_DIGEST heat-jvp-12 adaptive-evidence ok success=true t=3fe0000000000000 attempts=125 switches=0 segments=9 json_len=29789 fnv=57e51a2cc0ea36bd
+V03B_SWITCHING_DIGEST heat-jvp-12 route-registry ok success=true t=3fe0000000000000 attempts=125 switches=0 segments=9 json_len=29816 fnv=1481400ce47a8916
+V03B_SWITCHING_DIGEST heat-jvp-12 production-rhs-only ok success=true t=3fe0000000000000 attempts=123 switches=0 segments=1 json_len=6429 fnv=8cccbd0bc2dda33a
+V03B_SWITCHING_DIGEST heat-banded-16 default-allow-fd ok success=true t=3fe0000000000000 attempts=67 switches=1 segments=5 json_len=24179 fnv=79ca27f64b762c5f
+V03B_SWITCHING_DIGEST heat-banded-16 default-prescreen ok success=true t=3fe0000000000000 attempts=67 switches=1 segments=5 json_len=24178 fnv=079e7499e9292a24
+V03B_SWITCHING_DIGEST heat-banded-16 default-forbidden ok success=true t=3fe0000000000000 attempts=201 switches=0 segments=1 json_len=7178 fnv=716747de63808a2d
+V03B_SWITCHING_DIGEST heat-banded-16 evidence-driven ok success=true t=3fe0000000000000 attempts=220 switches=0 segments=11 json_len=37640 fnv=d6e4819cde8eb1c2
+V03B_SWITCHING_DIGEST heat-banded-16 adaptive-evidence ok success=true t=3fe0000000000000 attempts=215 switches=0 segments=10 json_len=33273 fnv=b56abea2edb0568e
+V03B_SWITCHING_DIGEST heat-banded-16 route-registry ok success=true t=3fe0000000000000 attempts=218 switches=0 segments=10 json_len=33300 fnv=1ae6c3f9219fbca6
+V03B_SWITCHING_DIGEST heat-banded-16 production-rhs-only ok success=true t=3fe0000000000000 attempts=201 switches=0 segments=1 json_len=7177 fnv=52a865cda8d8c1ce
+V03B_SWITCHING_DIGEST fatal-rhs default-allow-fd ok success=false t=3fd1fbe76c8b4396 attempts=12 switches=0 segments=3 json_len=9255 fnv=42a080484667bde4
+V03B_SWITCHING_DIGEST fatal-rhs default-prescreen ok success=false t=3fd1fbe76c8b4396 attempts=12 switches=0 segments=3 json_len=9254 fnv=2f359d940b19a50b
+V03B_SWITCHING_DIGEST fatal-rhs default-forbidden ok success=false t=3fd0000000000000 attempts=6 switches=0 segments=1 json_len=4181 fnv=6121ca3ae63bcb52
+V03B_SWITCHING_DIGEST fatal-rhs evidence-driven ok success=false t=3fd0000000000000 attempts=6 switches=0 segments=3 json_len=9326 fnv=39be7d475259ff07
+V03B_SWITCHING_DIGEST fatal-rhs adaptive-evidence ok success=false t=3fd0000000000000 attempts=6 switches=0 segments=3 json_len=9487 fnv=8a3d3b284fbc3ca4
+V03B_SWITCHING_DIGEST fatal-rhs route-registry ok success=false t=3fd0000000000000 attempts=6 switches=0 segments=3 json_len=9508 fnv=712061c1daec93ee
+V03B_SWITCHING_DIGEST fatal-rhs production-rhs-only ok success=false t=3fd0000000000000 attempts=6 switches=0 segments=1 json_len=4180 fnv=e17f139fd35745a5
+V03B_SWITCHING_DIGEST fatal-jacobian default-allow-fd ok success=false t=3f4659ca0f82760a attempts=33 switches=1 segments=2 json_len=8677 fnv=54b75c42b21c35c6
+V03B_SWITCHING_DIGEST fatal-jacobian default-prescreen ok success=false t=3f4659ca0f82760a attempts=33 switches=1 segments=2 json_len=8676 fnv=dc790bda0962ff02
+V03B_SWITCHING_DIGEST fatal-jacobian default-forbidden ok success=true t=3ff0000000000000 attempts=3179 switches=0 segments=1 json_len=4413 fnv=efca579f553958f4
+V03B_SWITCHING_DIGEST fatal-jacobian evidence-driven ok success=false t=3f4659ca0f82760a attempts=33 switches=0 segments=2 json_len=8759 fnv=2616b97c6112f2e1
+V03B_SWITCHING_DIGEST fatal-jacobian adaptive-evidence ok success=false t=3f4659ca0f82760a attempts=33 switches=0 segments=2 json_len=8920 fnv=936ade057914b182
+V03B_SWITCHING_DIGEST fatal-jacobian route-registry ok success=false t=3f4659ca0f82760a attempts=33 switches=0 segments=2 json_len=8941 fnv=7573ddcbe2c3ec64
+V03B_SWITCHING_DIGEST fatal-jacobian production-rhs-only ok success=true t=3ff0000000000000 attempts=3179 switches=0 segments=1 json_len=4412 fnv=44a28a1c04e623cf
+V03B_SWITCHING_DIGEST blow-up default-allow-fd ok success=false t=3ff0000042f46975 attempts=321 switches=1 segments=5 json_len=16472 fnv=57feb88110c5a7cc
+V03B_SWITCHING_DIGEST blow-up default-prescreen ok success=false t=3ff0000042f46975 attempts=321 switches=1 segments=5 json_len=16471 fnv=3088059acaf438e4
+V03B_SWITCHING_DIGEST blow-up default-forbidden ok success=false t=3ff000003a7c2bb3 attempts=405 switches=0 segments=1 json_len=4361 fnv=10d2b93be2bb8cfc
+V03B_SWITCHING_DIGEST blow-up evidence-driven ok success=false t=3ff000003a7c2bb3 attempts=530 switches=0 segments=24 json_len=80638 fnv=a47fc766be516cbf
+V03B_SWITCHING_DIGEST blow-up adaptive-evidence ok success=false t=3ff000003a7c2bb3 attempts=620 switches=0 segments=29 json_len=104068 fnv=f1964b017a4c8f09
+V03B_SWITCHING_DIGEST blow-up route-registry ok success=false t=3ff000003a7c2bb3 attempts=669 switches=0 segments=29 json_len=104264 fnv=36e87c855a93ede4
+V03B_SWITCHING_DIGEST blow-up production-rhs-only ok success=false t=3ff000003a7c2bb3 attempts=405 switches=0 segments=1 json_len=4360 fnv=39422c0e19f36539
+V03B_SWITCHING_DIGEST false-band default-allow-fd ok success=false t=3f465a5cb6cee1ec attempts=32 switches=1 segments=1 json_len=4398 fnv=04b02d42be72bcfc
+V03B_SWITCHING_DIGEST false-band default-prescreen ok success=false t=0000000000000000 attempts=0 switches=0 segments=0 json_len=1681 fnv=bf32c94f7cc0d35a
+V03B_SWITCHING_DIGEST false-band default-forbidden ok success=true t=3ff0000000000000 attempts=3183 switches=0 segments=1 json_len=4619 fnv=212019c818d48b94
+V03B_SWITCHING_DIGEST false-band evidence-driven ok success=false t=3f465a5cb6cee1ec attempts=32 switches=0 segments=1 json_len=4413 fnv=4d411e7d5656713f
+V03B_SWITCHING_DIGEST false-band adaptive-evidence ok success=false t=3f465a5cb6cee1ec attempts=32 switches=0 segments=1 json_len=4558 fnv=275cde3aab40254d
+V03B_SWITCHING_DIGEST false-band route-registry ok success=false t=3f465a5cb6cee1ec attempts=32 switches=0 segments=1 json_len=4579 fnv=56b1aa8a4f0fccfd
+V03B_SWITCHING_DIGEST false-band production-rhs-only ok success=true t=3ff0000000000000 attempts=3183 switches=0 segments=1 json_len=4618 fnv=34d1731c68a8ff5b
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+exit=0

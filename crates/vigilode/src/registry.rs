@@ -1,7 +1,8 @@
 //! Route registry, WindowDriver trait, and formal solver state machine (Phase 2, plan §5.2, §5.3, §6.1, §10.4).
 
 use crate::{
-    Dopri5, Options, Problem, Rodas5p, SessionEpochs,
+    Dopri5, ExplicitCallbackFailure, ExplicitSolveError, FailureReason, Options, Problem, Rodas5p,
+    SessionEpochs, SolveError, Status,
     selection_evidence::SelectionIdentity,
     switching::{SwitchingDriverStats, SwitchingEvidence, SwitchingMethod, SwitchingSegment},
 };
@@ -46,10 +47,14 @@ impl RouteId {
     }
 }
 
-/// Why a batch execution stopped.
+/// How the scheduler classifies the end of a batch. It is a scheduling class, not the
+/// driver's stop reason: that is [`BatchOutcome::failure`].
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum BatchStop {
-    /// Batch completed all requested work up to the target.
+    /// The driver returned without a budget, ceiling or fatal stop. This does not say that
+    /// the target was reached: a RODAS5P run that stopped at the minimum step, or a DOPRI5
+    /// run that stopped for a step-size underflow, is also classified here. Read
+    /// `record.success` and [`BatchOutcome::failure`].
     Completed,
     /// Batch stopped because the attempt budget was exhausted.
     Budget,
@@ -57,8 +62,64 @@ pub enum BatchStop {
     Ceiling,
     /// Batch stopped because the progress bound was violated.
     ProgressBound,
-    /// Batch failed with a fatal error.
+    /// A callback failed fatally (DOPRI5, RODAS5P): the text is the callback's message,
+    /// for RODAS5P with the callback and the time of the failing call. For the exponential
+    /// driver: every stop that is neither the budget nor the ceiling, with its message.
     Fatal(String),
+}
+
+/// The stop of the driver behind a batch that did not reach its target, as the driver
+/// reported it.
+#[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
+pub enum BatchFailure {
+    /// `Rodas5p`: the status reason of its solution.
+    Implicit(FailureReason),
+    /// `Dopri5`: its stop reason (`None` when the batch was cut by its quota or its work
+    /// ceiling and the driver itself did not stop) and the callback failure.
+    Explicit {
+        /// The driver's stop reason.
+        reason: Option<Dopri5StopReason>,
+        /// The fatal or malformed callback, when one ended the run.
+        callback: Option<ExplicitCallbackFailure>,
+    },
+    /// The exponential driver: its message. It has no typed stop reason.
+    Driver {
+        /// The driver's message.
+        message: String,
+    },
+}
+
+/// Why a window driver returned no batch. Nothing was integrated. `Display` is the text
+/// that the drivers returned as a `String` before the error was typed.
+#[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
+pub enum WindowDriverError {
+    /// A refusal or an initialization error of the RODAS5P facade.
+    #[error(transparent)]
+    Implicit(#[from] SolveError),
+    /// A refusal or an initialization error of DOPRI5 or of its session.
+    #[error(transparent)]
+    Explicit(#[from] ExplicitSolveError),
+    /// The route cannot run this problem.
+    #[error("{message}")]
+    Route {
+        /// The route.
+        route: RouteId,
+        /// Why.
+        message: String,
+    },
+    /// An error of an integrator-crate driver or of its setup.
+    #[error(transparent)]
+    Core(#[from] rodas5p_core::CoreError),
+}
+
+impl From<WindowDriverError> for String {
+    /// The text of the error: what a caller that still handles driver errors as text (the
+    /// switching adapter) reads.
+    fn from(error: WindowDriverError) -> Self {
+        error.to_string()
+    }
 }
 
 /// Everything the scheduler and comparator need from one bounded batch.
@@ -72,10 +133,13 @@ pub struct BatchOutcome {
     pub state: Vec<f64>,
     /// Intermediate window endpoints landed during coalesced execution.
     pub landed: Vec<(f64, Vec<f64>)>,
-    /// Stop reason of this batch.
+    /// Scheduling class of the end of this batch.
     pub stop: BatchStop,
     /// Proposed next step size from the driver.
     pub proposed_next_step: Option<f64>,
+    /// The driver's own stop, when the batch did not reach its target; `None` after a
+    /// success and for a pilot that the progress bound discarded before any driver ran.
+    pub failure: Option<BatchFailure>,
 }
 
 /// Permissions and requirements of a route.
@@ -172,8 +236,13 @@ pub trait WindowDriver {
     fn requires(&self) -> RouteRequirements;
     /// Progress model for bounding pilot progress.
     fn progress_model(&self, n: usize, autonomous: bool) -> Option<ProgressModel>;
-    /// Run one bounded window batch.
-    fn run(&mut self, problem: &Problem, req: &BatchRequest<'_>) -> Result<BatchOutcome, String>;
+    /// Run one bounded window batch. `Err` means that the driver refused or could not
+    /// start: nothing was integrated and no work record exists.
+    fn run(
+        &mut self,
+        problem: &Problem,
+        req: &BatchRequest<'_>,
+    ) -> Result<BatchOutcome, WindowDriverError>;
 }
 
 /// Dopri5 RHS-only window driver.
@@ -197,7 +266,11 @@ impl WindowDriver for Dopri5WindowDriver {
         None
     }
 
-    fn run(&mut self, problem: &Problem, req: &BatchRequest<'_>) -> Result<BatchOutcome, String> {
+    fn run(
+        &mut self,
+        problem: &Problem,
+        req: &BatchRequest<'_>,
+    ) -> Result<BatchOutcome, WindowDriverError> {
         let start = req.start_time;
         let target = req.target_time;
         let solve_end = req.solve_end;
@@ -251,9 +324,8 @@ impl WindowDriver for Dopri5WindowDriver {
                         stopped,
                     ))
                 },
-            )
-            .map_err(|e| e.to_string())?;
-            let (next, stopped) = outcome.map_err(|e| e.to_string())?;
+            )?;
+            let (next, stopped) = outcome?;
             (
                 (carry_explicit_step && r.final_time < solve_end).then_some(next),
                 r,
@@ -262,7 +334,7 @@ impl WindowDriver for Dopri5WindowDriver {
         } else {
             (
                 None,
-                Dopri5::solve(problem, (start, target), y, opts).map_err(|e| e.to_string())?,
+                Dopri5::solve(problem, (start, target), y, opts)?,
                 false,
             )
         };
@@ -274,11 +346,14 @@ impl WindowDriver for Dopri5WindowDriver {
         } else {
             r.success
         };
-        let fatal = r.callback_failure.is_some();
         let budget =
             r.final_time < target && r.stop_reason == Some(Dopri5StopReason::AttemptBudget);
-        let stop = if fatal {
-            BatchStop::Fatal("callback failure".to_string())
+        let failure = (!success).then(|| BatchFailure::Explicit {
+            reason: r.stop_reason,
+            callback: r.callback_failure.clone(),
+        });
+        let stop = if let Some(callback) = &r.callback_failure {
+            BatchStop::Fatal(callback.message.clone())
         } else if budget {
             BatchStop::Budget
         } else if ceiling_stop {
@@ -331,6 +406,7 @@ impl WindowDriver for Dopri5WindowDriver {
             landed: Vec::new(),
             stop,
             proposed_next_step,
+            failure,
         })
     }
 }
@@ -396,7 +472,11 @@ impl WindowDriver for Rodas5pWindowDriver {
         })
     }
 
-    fn run(&mut self, problem: &Problem, req: &BatchRequest<'_>) -> Result<BatchOutcome, String> {
+    fn run(
+        &mut self,
+        problem: &Problem,
+        req: &BatchRequest<'_>,
+    ) -> Result<BatchOutcome, WindowDriverError> {
         let start = req.start_time;
         let target = req.target_time;
         let y = req.state;
@@ -457,20 +537,29 @@ impl WindowDriver for Rodas5pWindowDriver {
                     landed: Vec::new(),
                     stop: BatchStop::ProgressBound,
                     proposed_next_step: None,
+                    failure: None,
                 });
             }
         }
 
         let r = if self.route == RouteId::Rodas5pJvpAssembled {
             if problem.dimension > 8 {
-                return Err(format!(
-                    "JvpAssembled route supports dimension <= 8, got {}",
-                    problem.dimension
-                ));
+                return Err(WindowDriverError::Route {
+                    route: self.route,
+                    message: format!(
+                        "JvpAssembled route supports dimension <= 8, got {}",
+                        problem.dimension
+                    ),
+                });
             }
             let jvp = match &problem.jacobian {
                 crate::problem::Jacobian::Jvp(jvp) => jvp.clone(),
-                _ => return Err("JvpAssembled route requires JVP Jacobian".to_string()),
+                _ => {
+                    return Err(WindowDriverError::Route {
+                        route: self.route,
+                        message: "JvpAssembled route requires JVP Jacobian".to_string(),
+                    });
+                }
             };
             let dim = problem.dimension;
             let dense_cb =
@@ -490,8 +579,7 @@ impl WindowDriver for Rodas5pWindowDriver {
                 };
             let mut p = problem.clone();
             p.jacobian = crate::problem::Jacobian::dense(dense_cb);
-            Rodas5p::solve_observed_bounded(&p, (start, target), y, opts, req.landings, ceiling)
-                .map_err(|e| e.to_string())?
+            Rodas5p::solve_observed_bounded(&p, (start, target), y, opts, req.landings, ceiling)?
         } else {
             Rodas5p::solve_observed_bounded(
                 problem,
@@ -500,8 +588,7 @@ impl WindowDriver for Rodas5pWindowDriver {
                 opts,
                 req.landings,
                 ceiling,
-            )
-            .map_err(|e| e.to_string())?
+            )?
         };
 
         let c = r.stats.counters;
@@ -518,14 +605,15 @@ impl WindowDriver for Rodas5pWindowDriver {
             r.status,
             crate::solution::Status::Failed(crate::FailureReason::WorkCeilingReached { .. })
         );
-        let stop = if fatal {
-            BatchStop::Fatal("callback failure".to_string())
-        } else if budget {
-            BatchStop::Budget
-        } else if ceiling_stop {
-            BatchStop::Ceiling
-        } else {
-            BatchStop::Completed
+        let failure = match &r.status {
+            Status::Success => None,
+            Status::Failed(reason) => Some(BatchFailure::Implicit(reason.clone())),
+        };
+        let stop = match &r.status {
+            Status::Failed(reason) if fatal => BatchStop::Fatal(reason.to_string()),
+            _ if budget => BatchStop::Budget,
+            _ if ceiling_stop => BatchStop::Ceiling,
+            _ => BatchStop::Completed,
         };
         let reached = *r.t.last().unwrap_or(&start);
         let crate::Solution {
@@ -583,6 +671,7 @@ impl WindowDriver for Rodas5pWindowDriver {
             landed,
             stop,
             proposed_next_step: None,
+            failure,
         })
     }
 }
@@ -597,6 +686,12 @@ type SystemPartialTFn =
     Arc<dyn Fn(f64, &[f64], &mut [f64]) -> rodas5p_core::CoreResult<()> + Send + Sync>;
 
 /// Fused adaptive exponential integrator window driver.
+///
+/// A stand-alone driver: the switching adapter does not call it. Its segment record says
+/// `SwitchingMethod::Rodas5p` and carries a `Stats` record of the RODAS5P type, because
+/// neither type has an exponential value; the driver that ran is named by
+/// [`WindowDriver::route`] and by `route.driver_id` of that record (`pexprb54s4-fused`).
+/// Every callback error, recoverable ones included, ends the run.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct PexprbWindowDriver;
 
@@ -620,7 +715,11 @@ impl WindowDriver for PexprbWindowDriver {
         })
     }
 
-    fn run(&mut self, problem: &Problem, req: &BatchRequest<'_>) -> Result<BatchOutcome, String> {
+    fn run(
+        &mut self,
+        problem: &Problem,
+        req: &BatchRequest<'_>,
+    ) -> Result<BatchOutcome, WindowDriverError> {
         let start = req.start_time;
         let target = req.target_time;
         let y = req.state;
@@ -681,6 +780,7 @@ impl WindowDriver for PexprbWindowDriver {
                     landed: Vec::new(),
                     stop: BatchStop::ProgressBound,
                     proposed_next_step: None,
+                    failure: None,
                 });
             }
         }
@@ -738,7 +838,10 @@ impl WindowDriver for PexprbWindowDriver {
                 )
             }
             _ => {
-                return Err("Pexprb route requires an explicit Jacobian or JVP".to_string());
+                return Err(WindowDriverError::Route {
+                    route: RouteId::Pexprb54s4Fused,
+                    message: "Pexprb route requires an explicit Jacobian or JVP".to_string(),
+                });
             }
         };
 
@@ -755,8 +858,7 @@ impl WindowDriver for PexprbWindowDriver {
             .mass
             .as_ref()
             .map(|m| rodas5p_core::DenseMatrix::new(n, n, m.clone()))
-            .transpose()
-            .map_err(|e| e.to_string())?;
+            .transpose()?;
 
         let ode = rodas5p_integrators::OdeProblem::new(
             "vigilode-pexprb",
@@ -769,8 +871,7 @@ impl WindowDriver for PexprbWindowDriver {
             problem.autonomous,
             mass_matrix,
             None,
-        )
-        .map_err(|e| e.to_string())?;
+        )?;
 
         let atol = match &req.options.atol {
             crate::options::Atol::Scalar(s) => *s,
@@ -795,7 +896,7 @@ impl WindowDriver for PexprbWindowDriver {
         if target > start {
             times.push(target);
         }
-        let output = rodas5p_integrators::OutputSchedule::new(times).map_err(|e| e.to_string())?;
+        let output = rodas5p_integrators::OutputSchedule::new(times)?;
 
         let phi_config = rodas5p_integrators::FusedPhiKrylovConfig::default();
         let execution = rodas5p_integrators::ParallelExecution::sequential();
@@ -809,10 +910,7 @@ impl WindowDriver for PexprbWindowDriver {
             &execution,
         );
 
-        let res = match run_res {
-            Ok(r) => r,
-            Err(e) => return Err(e.to_string()),
-        };
+        let res = run_res?;
 
         let c = res.observed.counters;
         let attempts = res.diagnostics.attempts;
@@ -835,6 +933,9 @@ impl WindowDriver for PexprbWindowDriver {
         } else {
             BatchStop::Fatal(res.observed.message.clone())
         };
+        let failure = (!success).then(|| BatchFailure::Driver {
+            message: res.observed.message.clone(),
+        });
 
         let reached = *res.observed.t.last().unwrap_or(&start);
         let rows = res.observed.t.len();
@@ -903,6 +1004,7 @@ impl WindowDriver for PexprbWindowDriver {
             landed,
             stop,
             proposed_next_step,
+            failure,
         })
     }
 }
