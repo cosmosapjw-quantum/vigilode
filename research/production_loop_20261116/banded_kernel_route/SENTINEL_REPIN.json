@@ -1,0 +1,30 @@
+{
+  "schema": "vigilode.loop-l1.sentinel-repin.v1",
+  "node": "V22_FACADE_BANDED_KERNEL",
+  "date_kst": "2026-11-23",
+  "authority": "owner decision OD-L1-9 (sentinels and the checkpoint are re-pinned with this decision)",
+  "sentinel": "crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs, test g3_protected_sources_are_byte_identical",
+  "what_changed": "the list of allowed lib.rs blocks got a third entry: the re-export block of the banded entry points that take the kernel. No pinned hash changed: with the three allowed blocks removed, src/lib.rs still hashes to the pin of 2026-11-16.",
+  "pin_of_stripped_lib_rs_unchanged": "1ad6c849a4e8ccd3aed86979e603d7365a8e78215fddf4001b2d00a9897402a9",
+  "allowed_block_added": [
+    "",
+    "// Loop L1 node V22 (owner decision OD-L1-9): banded entry points that take the kernel.",
+    "pub use rodas5p_fast::integrate_rodas5p_fast_banded_observed_with_atol_and_kernel;",
+    "pub use rodas5p_fast_dense::{",
+    "    RODAS5P_FAST_BANDED_DENSE_SLICES_DRIVER_ID,",
+    "    integrate_rodas5p_fast_banded_dense_observed_with_atol_and_kernel,",
+    "    integrate_rodas5p_fast_banded_dense_observed_with_kernel,",
+    "};"
+  ],
+  "files": {
+    "crates/rodas5p-integrators/src/lib.rs": {
+      "sha256_before": "a5637a0c0821856597c014fe49292fa0ceea6e639d9d6f00aea609ca3eee959b",
+      "sha256_after": "2ff6aa4f44ba6eaf43ce9380a10b54fc3c97c31f816bc97832cfb5a0d28781cd"
+    },
+    "crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs": {
+      "sha256_before": "7adf878cc96e3d05adef0c79ea26d3fc2326320bc2cf7df3a25bf8415d9b0c99",
+      "sha256_after": "849fc0c7a668309c37650f3dffb9244974fdf337d328a8f02592a1c88f251477"
+    }
+  },
+  "not_pinned_by_this_sentinel": "src/rodas5p_fast.rs and src/rodas5p_fast_dense.rs (they are pinned by the loop checkpoint, which records their new blobs in epoch 3)"
+}

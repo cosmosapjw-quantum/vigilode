@@ -7,14 +7,18 @@ use std::fmt::Display;
 
 use rodas5p_core::{CoreError, CoreResult, DenseMatrix, LinearSolverConfig, WorkCounters};
 use rodas5p_integrators::{
-    AdaptiveDenseSegmentRun, AdaptiveFailureKind, AdaptiveStepConfig, BandedJacobian,
+    AdaptiveDenseSegmentRun, AdaptiveFailureKind, AdaptiveStepConfig, BandedJacobian, BandedKernel,
     DenseErrorControl, DriverPartial, DriverStopReason, FastInteriorControl, IntegrationMethod,
     InteriorSampling, JacobianIntoFn, ObservedIntegrationResult, OdeProblem, OutputSamplingPlan,
     OutputSchedule, RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID, RoutedDriver, RoutedRun, RoutingError,
     RoutingOptions, StructureDeclaration, integrate_adaptive_dense_observed_with_partial,
     integrate_adaptive_dense_observed_with_segments, integrate_rodas5p_fast_banded_dense_observed,
-    integrate_rodas5p_fast_banded_dense_observed_with_atol, integrate_rodas5p_fast_banded_observed,
-    integrate_rodas5p_fast_banded_observed_with_atol, integrate_rodas5p_fast_dense_observed,
+    integrate_rodas5p_fast_banded_dense_observed_with_atol,
+    integrate_rodas5p_fast_banded_dense_observed_with_atol_and_kernel,
+    integrate_rodas5p_fast_banded_dense_observed_with_kernel,
+    integrate_rodas5p_fast_banded_observed, integrate_rodas5p_fast_banded_observed_with_atol,
+    integrate_rodas5p_fast_banded_observed_with_atol_and_kernel,
+    integrate_rodas5p_fast_banded_observed_with_kernel, integrate_rodas5p_fast_dense_observed,
     integrate_rodas5p_fast_dense_observed_with_atol, integrate_rodas5p_fast_observed_with_atol,
     integrate_rodas5p_routed_observed_with_options,
 };
@@ -49,6 +53,15 @@ const ENTRY_FAST_DENSE: &str = "integrate_rodas5p_fast_dense_observed";
 const ENTRY_FAST_DENSE_ATOL: &str = "integrate_rodas5p_fast_dense_observed_with_atol";
 const ENTRY_FAST_BANDED_DENSE: &str = "integrate_rodas5p_fast_banded_dense_observed";
 const ENTRY_FAST_BANDED_DENSE_ATOL: &str = "integrate_rodas5p_fast_banded_dense_observed_with_atol";
+/// The twins of the four banded entry points that take the kernel: called
+/// when [`banded_kernel`] chooses the Slices kernel.
+const ENTRY_BANDED_KERNEL: &str = "integrate_rodas5p_fast_banded_observed_with_kernel";
+const ENTRY_BANDED_ATOL_KERNEL: &str =
+    "integrate_rodas5p_fast_banded_observed_with_atol_and_kernel";
+const ENTRY_FAST_BANDED_DENSE_KERNEL: &str =
+    "integrate_rodas5p_fast_banded_dense_observed_with_kernel";
+const ENTRY_FAST_BANDED_DENSE_ATOL_KERNEL: &str =
+    "integrate_rodas5p_fast_banded_dense_observed_with_atol_and_kernel";
 /// Dense output under a mass matrix or `InteriorError::Enforce`.
 const ENTRY_SEQUENTIAL_DENSE: &str = "integrate_adaptive_dense_observed_with_segments";
 /// The same driver without the segment sink (mass matrix, no dense output).
@@ -157,6 +170,26 @@ impl AtolSpec {
 }
 
 /// How the facade will call the drivers, decided before any step.
+/// The smallest half band width at which the banded routes of
+/// [`Rodas5p::solve`] run the Slices kernel of the protected banded driver.
+///
+/// A band with `lower >= BANDED_SLICES_MIN_HALF_WIDTH` and
+/// `upper >= BANDED_SLICES_MIN_HALF_WIDTH` runs on the Slices kernel, every
+/// other band on the Indexed kernel. The two kernels perform the same
+/// floating-point operations in the same order, so the results are the same
+/// bits; [`crate::Stats::route`] names the entry point and the driver that
+/// ran. Below this width the Slices kernel is not faster (loop L1 node V22).
+pub const BANDED_SLICES_MIN_HALF_WIDTH: usize = 8;
+
+/// The kernel of the facade's banded routes for `band`.
+fn banded_kernel(band: &BandedJacobian) -> BandedKernel {
+    if band.lower.min(band.upper) >= BANDED_SLICES_MIN_HALF_WIDTH {
+        BandedKernel::Slices
+    } else {
+        BandedKernel::Indexed
+    }
+}
+
 enum Plan {
     /// Through the router, with an optional band declaration.
     Routed {
@@ -422,18 +455,34 @@ impl Rodas5p {
                             &ode, t_span, y0, &adaptive, control, atol,
                         ),
                     ),
-                    (Some(band), AtolSpec::Scalar(_)) => (
-                        ENTRY_FAST_BANDED_DENSE,
-                        integrate_rodas5p_fast_banded_dense_observed(
-                            &ode, band, t_span, y0, &adaptive, control,
+                    (Some(band), AtolSpec::Scalar(_)) => match banded_kernel(band) {
+                        BandedKernel::Indexed => (
+                            ENTRY_FAST_BANDED_DENSE,
+                            integrate_rodas5p_fast_banded_dense_observed(
+                                &ode, band, t_span, y0, &adaptive, control,
+                            ),
                         ),
-                    ),
-                    (Some(band), AtolSpec::Vector(atol)) => (
-                        ENTRY_FAST_BANDED_DENSE_ATOL,
-                        integrate_rodas5p_fast_banded_dense_observed_with_atol(
-                            &ode, band, t_span, y0, &adaptive, control, atol,
+                        kernel => (
+                            ENTRY_FAST_BANDED_DENSE_KERNEL,
+                            integrate_rodas5p_fast_banded_dense_observed_with_kernel(
+                                &ode, band, t_span, y0, &adaptive, control, kernel,
+                            ),
                         ),
-                    ),
+                    },
+                    (Some(band), AtolSpec::Vector(atol)) => match banded_kernel(band) {
+                        BandedKernel::Indexed => (
+                            ENTRY_FAST_BANDED_DENSE_ATOL,
+                            integrate_rodas5p_fast_banded_dense_observed_with_atol(
+                                &ode, band, t_span, y0, &adaptive, control, atol,
+                            ),
+                        ),
+                        kernel => (
+                            ENTRY_FAST_BANDED_DENSE_ATOL_KERNEL,
+                            integrate_rodas5p_fast_banded_dense_observed_with_atol_and_kernel(
+                                &ode, band, t_span, y0, &adaptive, control, atol, kernel,
+                            ),
+                        ),
+                    },
                 };
                 let result = result.map_err(|e| driver_error(e, &guard))?;
                 let fast = result.fast;
@@ -461,17 +510,29 @@ impl Rodas5p {
                 }
             }
             Plan::Banded(band) => {
-                let (entry_point, result) = match &atol {
-                    AtolSpec::Scalar(_) => (
+                let (entry_point, result) = match (&atol, banded_kernel(&band)) {
+                    (AtolSpec::Scalar(_), BandedKernel::Indexed) => (
                         ENTRY_BANDED,
                         integrate_rodas5p_fast_banded_observed(
                             &ode, &band, t_span, y0, &adaptive, &schedule,
                         ),
                     ),
-                    AtolSpec::Vector(atol) => (
+                    (AtolSpec::Scalar(_), kernel) => (
+                        ENTRY_BANDED_KERNEL,
+                        integrate_rodas5p_fast_banded_observed_with_kernel(
+                            &ode, &band, t_span, y0, &adaptive, &schedule, kernel,
+                        ),
+                    ),
+                    (AtolSpec::Vector(atol), BandedKernel::Indexed) => (
                         ENTRY_BANDED_ATOL,
                         integrate_rodas5p_fast_banded_observed_with_atol(
                             &ode, &band, t_span, y0, &adaptive, &schedule, atol,
+                        ),
+                    ),
+                    (AtolSpec::Vector(atol), kernel) => (
+                        ENTRY_BANDED_ATOL_KERNEL,
+                        integrate_rodas5p_fast_banded_observed_with_atol_and_kernel(
+                            &ode, &band, t_span, y0, &adaptive, &schedule, atol, kernel,
                         ),
                     ),
                 };

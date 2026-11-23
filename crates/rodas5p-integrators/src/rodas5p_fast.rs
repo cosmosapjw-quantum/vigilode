@@ -2075,6 +2075,41 @@ pub fn integrate_rodas5p_fast_banded_observed_with_atol(
     )
 }
 
+/// [`integrate_rodas5p_fast_banded_observed_with_atol`] with an explicit
+/// [`BandedKernel`] (loop L1 node V22). `Indexed` is that function; every
+/// kernel returns the same bits and reports its own driver identifier.
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_rodas5p_fast_banded_observed_with_atol_and_kernel(
+    problem: &OdeProblem,
+    band: &BandedJacobian,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    atol: &[f64],
+    kernel: BandedKernel,
+) -> CoreResult<Rodas5pFastBandedResult> {
+    let n = problem.dimension;
+    require_atol_vector(n, atol)?;
+    if band.lower >= n.max(1) || band.upper >= n.max(1) {
+        return Err(CoreError::InvalidInput(
+            "the band of the RODAS5P fast banded driver must lie inside the matrix".into(),
+        ));
+    }
+    integrate_banded(
+        problem,
+        band,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        Rodas5pFastOptions::default(),
+        kernel,
+        atol,
+        &mut NoSink,
+    )
+}
+
 /// [`integrate_rodas5p_fast_banded_observed_with_atol`] with an accept
 /// control (library step L3); see
 /// [`integrate_rodas5p_fast_client_observed_with_atol_and_control`] for the

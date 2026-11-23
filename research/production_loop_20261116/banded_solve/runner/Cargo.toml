@@ -11,6 +11,8 @@ publish = false
 [dependencies]
 rodas5p-core = { path = "../../../../crates/rodas5p-core" }
 rodas5p-integrators = { path = "../../../../crates/rodas5p-integrators" }
+# Node V22, discriminator D4: the facade against the direct call of the banded driver.
+vigilode = { path = "../../../../crates/vigilode" }
 
 # The release profile of the repository workspace (root Cargo.toml), repeated because a standalone
 # package does not inherit it: the protected kernel is measured as the workspace builds it.

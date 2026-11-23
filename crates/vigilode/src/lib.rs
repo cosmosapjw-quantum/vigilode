@@ -60,6 +60,17 @@
 //! A declared band on a [`Jacobian::Dense`] provider is refused with a mass
 //! matrix or dense output.
 //!
+//! On the two rows of the banded fast driver the driver runs one of two
+//! kernels that perform the same floating-point operations in the same
+//! order. With both half band widths at least
+//! [`BANDED_SLICES_MIN_HALF_WIDTH`] it is the Slices kernel: the entry point
+//! is then the twin that takes the kernel (`..._with_kernel`, or
+//! `..._with_atol_and_kernel` with a vector [`Atol`]) and the driver
+//! identifier ends in `-slices`. Every other band runs the Indexed kernel
+//! through the entry points of the table. The results are the same bits. A
+//! declared band on a [`Jacobian::Dense`] provider (router rule 1) runs the
+//! Indexed kernel.
+//!
 //! Dense output without a mass matrix runs the fast dense drivers: the
 //! solution holds every accepted step and [`Solution::at`] evaluates the
 //! RODAS5P continuous extension anywhere in the span, with the interior error
@@ -234,7 +245,7 @@ pub use solution::{
     JacobianRecord, KrylovStartRecord, RouteRecord, STATS_SCHEMA, Solution, Stats, Status,
     StopRecord,
 };
-pub use solve::Rodas5p;
+pub use solve::{BANDED_SLICES_MIN_HALF_WIDTH, Rodas5p};
 pub use switching::*;
 pub use work_model::*;
 

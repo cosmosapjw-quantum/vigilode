@@ -318,7 +318,9 @@ pub enum DriverWork {
     /// The fast dense or banded driver with a continuous extension
     /// (`integrate_rodas5p_fast_dense_observed` or
     /// `integrate_rodas5p_fast_banded_dense_observed`, `..._with_atol` with a
-    /// vector [`crate::Atol`]): the dense-output route without a mass matrix,
+    /// vector [`crate::Atol`]; on a wide band the twins that take the banded
+    /// kernel, see [`crate::BANDED_SLICES_MIN_HALF_WIDTH`]): the dense-output
+    /// route without a mass matrix,
     /// under [`crate::InteriorError::WFilteredEnforce`] or
     /// [`crate::InteriorError::Off`].
     FastDense {

@@ -1,0 +1,22 @@
+    Finished `release` profile [optimized] target(s) in 0.32s
+     Running tests/banded_kernel_entry_identity.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/banded_kernel_entry_identity-ae6e12c282a73f85)
+
+running 5 tests
+test a_run_stopped_by_its_budget_keeps_its_partial_record ... ok
+test dense_output_twins_equal_the_existing_entry_points ... V22_D1_DENSE case=allen-cahn-strip n=384 interior=Off segments=16 attempts=16 rejected=0 interior_samples=0
+V22_D1_DENSE case=allen-cahn-strip n=384 interior=WFilteredEnforce segments=16 attempts=16 rejected=0 interior_samples=16
+V22_D1_DENSE case=brusselator-strip n=256 interior=Off segments=22 attempts=23 rejected=1 interior_samples=0
+V22_D1_DENSE case=brusselator-strip n=256 interior=WFilteredEnforce segments=22 attempts=23 rejected=1 interior_samples=22
+V22_D1_DENSE case=exchange-chain n=120 interior=Off segments=40 attempts=40 rejected=0 interior_samples=0
+V22_D1_DENSE case=exchange-chain n=120 interior=WFilteredEnforce segments=40 attempts=40 rejected=0 interior_samples=40
+ok
+test endpoint_twins_equal_the_existing_entry_points ... V22_D1_ENDPOINT case=allen-cahn-strip n=384 lower=16 upper=16 attempts_scalar=16 attempts_vector=16 rejected_scalar=0 factor_operations=6189040 solve_operations=4597760
+V22_D1_ENDPOINT case=brusselator-strip n=256 lower=8 upper=8 attempts_scalar=25 attempts_vector=25 rejected_scalar=2 factor_operations=1726525 solve_operations=2440000
+V22_D1_ENDPOINT case=exchange-chain n=120 lower=2 upper=2 attempts_scalar=41 attempts_vector=39 rejected_scalar=0 factor_operations=111315 solve_operations=503152
+ok
+test the_dense_output_twins_refuse_the_other_kernels ... ok
+test the_exchange_chain_exchanges_rows ... V22_D1_EXCHANGE largest_step=7.204669554265517e-1 diagonal=7.549045336734997e0 below=1e3
+ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+

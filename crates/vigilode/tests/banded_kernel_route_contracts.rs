@@ -3,14 +3,19 @@
 //! `golden/banded_kernel_route/wide_band.json` holds the record of facade runs on banded
 //! problems with half band widths from 2 to 32: the route labels, the step counts, every work
 //! counter and a hash of the bits of every returned state. The file was first written while
-//! every banded facade run used the Indexed kernel of the protected banded driver.
+//! every banded facade run used the Indexed kernel of the protected banded driver. Since the
+//! facade chooses the kernel by band width ([`BANDED_SLICES_MIN_HALF_WIDTH`]), the runs on the
+//! Slices kernel differ from that first version in their two route labels and in nothing else.
 //! `VIGILODE_BLESS_BANDED_KERNEL_ROUTE=1` writes the file instead of comparing.
 
 use std::f64::consts::PI;
 use std::path::PathBuf;
 
 use serde_json::{Value, json};
-use vigilode::{Atol, CallbackError, Jacobian, Options, Problem, Rodas5p, Solution};
+use vigilode::{
+    Atol, BANDED_SLICES_MIN_HALF_WIDTH, CallbackError, Jacobian, Options, Problem, Rodas5p,
+    Solution,
+};
 
 const BLESS_ENV: &str = "VIGILODE_BLESS_BANDED_KERNEL_ROUTE";
 /// Cell size of every problem here, in both directions.
@@ -323,10 +328,10 @@ fn record(name: &str, lower: usize, upper: usize, solution: &Solution) -> Value 
         "attempts": stats.attempts,
         "accepted_steps": stats.accepted_steps,
         "rejected_steps": stats.rejected_steps,
-        "counters": serde_json::to_value(&stats.counters).unwrap(),
-        "driver_counters": serde_json::to_value(&stats.driver_counters).unwrap(),
+        "counters": serde_json::to_value(stats.counters).unwrap(),
+        "driver_counters": serde_json::to_value(stats.driver_counters).unwrap(),
         "driver_work": serde_json::to_value(&stats.driver_work).unwrap(),
-        "finite_difference": serde_json::to_value(&stats.finite_difference).unwrap(),
+        "finite_difference": serde_json::to_value(stats.finite_difference).unwrap(),
         "state_hash": format!("{states:016x}"),
         "interior_samples": samples,
         "interior_hash": format!("{interior:016x}"),
@@ -381,4 +386,81 @@ fn banded_facade_runs_keep_their_record() {
         );
     }
     panic!("the golden file differs from the runs in its formatting only");
+}
+
+/// The route labels the rule gives a run: the entry point and the driver identifier.
+fn expected_labels(variant: &str, lower: usize, upper: usize) -> (String, &'static str) {
+    let slices = lower.min(upper) >= BANDED_SLICES_MIN_HALF_WIDTH;
+    let dense = variant.starts_with("dense-output");
+    let vector = variant.ends_with("vector-atol");
+    let stem = if dense {
+        "integrate_rodas5p_fast_banded_dense_observed"
+    } else {
+        "integrate_rodas5p_fast_banded_observed"
+    };
+    let suffix = match (vector, slices) {
+        (false, false) => "",
+        (true, false) => "_with_atol",
+        (false, true) => "_with_kernel",
+        (true, true) => "_with_atol_and_kernel",
+    };
+    let driver = match (dense, slices) {
+        (false, false) => "rodas5p-fast-banded-v1",
+        (false, true) => "rodas5p-fast-banded-v1-slices",
+        (true, false) => "rodas5p-fast-banded-dense-v1",
+        (true, true) => "rodas5p-fast-banded-dense-v1-slices",
+    };
+    (format!("{stem}{suffix}"), driver)
+}
+
+#[test]
+fn the_route_labels_follow_the_width_rule() {
+    let (mut on_slices, mut on_indexed) = (0, 0);
+    for record in run_all() {
+        let case = record["case"].as_str().unwrap();
+        // "<problem>/<shape>/<variant>"
+        let variant = case.splitn(3, '/').nth(2).unwrap();
+        let (lower, upper) = (
+            record["lower"].as_u64().unwrap() as usize,
+            record["upper"].as_u64().unwrap() as usize,
+        );
+        let (entry_point, driver) = expected_labels(variant, lower, upper);
+        assert_eq!(record["entry_point"], json!(entry_point), "{case}");
+        assert_eq!(record["driver_id"], json!(driver), "{case}");
+        if driver.ends_with("-slices") {
+            on_slices += 1;
+        } else {
+            on_indexed += 1;
+        }
+    }
+    // Both branches of the rule are exercised, and a band with one narrow side stays on Indexed.
+    assert!(on_slices > 0 && on_indexed > 0);
+    println!(
+        "V22_D2_LABELS width={BANDED_SLICES_MIN_HALF_WIDTH} runs_on_slices={on_slices} runs_on_indexed={on_indexed}"
+    );
+}
+
+#[test]
+fn the_kernel_changes_at_the_declared_width() {
+    const { assert!(BANDED_SLICES_MIN_HALF_WIDTH >= 2) };
+    let options = Options {
+        rtol: 1.0e-6,
+        atol: Atol::Scalar(1.0e-8),
+        ..Options::default()
+    };
+    for (width, driver) in [
+        (BANDED_SLICES_MIN_HALF_WIDTH - 1, "rodas5p-fast-banded-v1"),
+        (
+            BANDED_SLICES_MIN_HALF_WIDTH,
+            "rodas5p-fast-banded-v1-slices",
+        ),
+    ] {
+        let case = allen_cahn_strip(width, 24);
+        let solution = Rodas5p::solve(&case.problem, (0.0, 0.5), &case.y0, &options).unwrap();
+        assert!(solution.is_success());
+        assert_eq!(
+            solution.stats.route.driver_id, driver,
+            "half band width {width}"
+        );
+    }
 }

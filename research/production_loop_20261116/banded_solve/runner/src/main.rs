@@ -21,7 +21,8 @@ use rodas5p_core::WorkCounters;
 use rodas5p_integrators::stage_clients::BandedTightStageLu;
 use rodas5p_integrators::{
     AdaptiveStepConfig, BandedJacobian, BandedKernel, BandedStageLu, OdeProblem, OutputSchedule,
-    StageLinearSystem, integrate_rodas5p_fast_banded_observed_with_kernel,
+    StageLinearSystem, integrate_rodas5p_fast_banded_observed,
+    integrate_rodas5p_fast_banded_observed_with_kernel,
     integrate_rodas5p_fast_client_observed_with_atol, rodas5p_fast_banded_solve,
 };
 
@@ -494,9 +495,14 @@ fn bench(arm_name: &str, n: usize, patterns: usize, solves: usize, lu: Option<us
 /// Exploratory: one whole run of the protected banded driver on a V04 problem with one of the
 /// protected kernels (all of them documented as bit-identical), stopped after `budget` attempts.
 fn drive(family: &str, size: usize, kernel_name: &str, budget: usize) {
+    // Node V22, amendment of the small-n confirmation: `ac2dr` is `ac2d` integrated
+    // `REPEATS_OF_AC2DR` times in one process, because one run of a small problem is too short
+    // for the cycle counter. The printed counts are sums over the repetitions.
+    const REPEATS_OF_AC2DR: usize = 200;
+    let repeats = if family == "ac2dr" { REPEATS_OF_AC2DR } else { 1 };
     let def = match family {
         "bruss1d" => problems::bruss1d(size),
-        "ac2d" => problems::allen_cahn(2, size),
+        "ac2d" | "ac2dr" => problems::allen_cahn(2, size),
         "ac3d" => problems::allen_cahn(3, size),
         "bruss2d" => problems::bruss2d(size),
         // Node V22: strips of fixed cell size, the half band width is the free parameter.
@@ -504,6 +510,9 @@ fn drive(family: &str, size: usize, kernel_name: &str, budget: usize) {
         "brstrip" => strip::brusselator_strip(size),
         other => panic!("unknown family {other}"),
     };
+    if kernel_name == "facade" || kernel_name == "direct" {
+        return drive_facade(family, size, &def, kernel_name, budget);
+    }
     let kernel = match kernel_name {
         "indexed" => Some(BandedKernel::Indexed),
         "slices" => Some(BandedKernel::Slices),
@@ -541,6 +550,10 @@ fn drive(family: &str, size: usize, kernel_name: &str, budget: usize) {
         ..AdaptiveStepConfig::default()
     };
     let output = OutputSchedule::new(vec![def.t_span.0, def.t_span.1]).expect("schedule");
+    let (mut attempts, mut accepted, mut rejected) = (0, 0, 0);
+    let (mut factor_total, mut solve_total) = (0u64, 0u64);
+    let (mut hash, mut stop_t) = (0u64, 0.0f64);
+    for _ in 0..repeats {
     let (fast, partial, factor_ops, solve_ops) = match kernel {
         Some(kernel) => {
             let out = integrate_rodas5p_fast_banded_observed_with_kernel(
@@ -565,8 +578,9 @@ fn drive(family: &str, size: usize, kernel_name: &str, budget: usize) {
             (fast, partial, 0, 0)
         }
     };
-    // FNV-1a over the bits of every state the run returned (outputs and the stop state).
-    let mut hash = 0xcbf2_9ce4_8422_2325u64;
+    // FNV-1a over the bits of every state the run returned (outputs and the stop state); with
+    // repetitions, of the last one (every repetition is the same integration).
+    hash = 0xcbf2_9ce4_8422_2325u64;
     let mut eat = |v: f64| {
         for byte in v.to_bits().to_le_bytes() {
             hash = (hash ^ u64::from(byte)).wrapping_mul(0x0000_0100_0000_01b3);
@@ -575,23 +589,114 @@ fn drive(family: &str, size: usize, kernel_name: &str, budget: usize) {
     for state in &fast.observed.y {
         state.iter().copied().for_each(&mut eat);
     }
-    let stop_t = match &partial {
+    stop_t = match &partial {
         Some(p) => {
             p.y.iter().copied().for_each(&mut eat);
             p.t
         }
         None => def.t_span.1,
     };
+    attempts += fast.attempts;
+    accepted += fast.accepted_steps;
+    rejected += fast.rejected_steps;
+    factor_total += factor_ops;
+    solve_total += solve_ops;
+    }
     println!(
-        "DRIVE family={family} size={size} n={} lower={} upper={} kernel={kernel_name} budget={budget} attempts={} accepted={} rejected={} stop_t={stop_t:e} factor_ops={} solve_ops={} state_hash={hash:016x}",
-        def.n,
-        band.lower,
-        band.upper,
-        fast.attempts,
-        fast.accepted_steps,
-        fast.rejected_steps,
-        factor_ops,
-        solve_ops,
+        "DRIVE family={family} size={size} n={} lower={} upper={} kernel={kernel_name} budget={budget} attempts={attempts} accepted={accepted} rejected={rejected} stop_t={stop_t:e} factor_ops={factor_total} solve_ops={solve_total} state_hash={hash:016x}",
+        def.n, band.lower, band.upper,
+    );
+}
+
+/// Node V22, discriminator D4: one whole run through the facade (`facade`) or through the direct
+/// call of the Indexed banded driver with the controller settings the facade passes (`direct`),
+/// stopped after `budget` attempts. The two arms run the same integration: they must print the
+/// same counts and the same hash of the last state.
+fn drive_facade(family: &str, size: usize, def: &problems::ProblemDef, arm: &str, budget: usize) {
+    let band = def.band.as_ref().expect("banded problem");
+    let (attempts, accepted, rejected, driver, last) = if arm == "facade" {
+        let rhs = def.rhs.clone();
+        let fill = band.fill.clone();
+        let problem = vigilode::Problem::new(def.n, move |t, y, dy| {
+            rhs(t, y, dy).map_err(|error| vigilode::CallbackError::Fatal(error.to_string()))
+        })
+        .jacobian(vigilode::Jacobian::banded(
+            band.lower,
+            band.upper,
+            move |t, y, out| {
+                fill(t, y, out).map_err(|error| vigilode::CallbackError::Fatal(error.to_string()))
+            },
+        ))
+        .autonomous();
+        let options = vigilode::Options {
+            rtol: def.rtol,
+            atol: vigilode::Atol::Scalar(def.atol),
+            h0: def.initial_step,
+            max_steps: budget,
+            ..vigilode::Options::default()
+        };
+        let solution =
+            vigilode::Rodas5p::solve(&problem, def.t_span, &def.y0, &options).expect("facade");
+        (
+            solution.stats.attempts,
+            solution.stats.accepted_steps,
+            solution.stats.rejected_steps,
+            solution.stats.route.driver_id,
+            solution.y.last().expect("state").clone(),
+        )
+    } else {
+        let banded = BandedJacobian {
+            lower: band.lower,
+            upper: band.upper,
+            fill: band.fill.clone(),
+        };
+        let problem = OdeProblem::new(
+            "v22-direct",
+            def.n,
+            def.rhs.clone(),
+            None,
+            None,
+            def.jvp.clone(),
+            None,
+            true,
+            None,
+            None,
+        )
+        .expect("problem");
+        // The controller settings of `Rodas5p::solve` (crates/vigilode/src/solve.rs).
+        let adaptive = AdaptiveStepConfig {
+            rtol: def.rtol,
+            atol: def.atol,
+            initial_step: def.initial_step,
+            max_attempts: budget,
+            ..AdaptiveStepConfig::default()
+        };
+        let output = OutputSchedule::new(vec![def.t_span.0, def.t_span.1]).expect("schedule");
+        let out = integrate_rodas5p_fast_banded_observed(
+            &problem, &banded, def.t_span, &def.y0, &adaptive, &output,
+        )
+        .expect("driver");
+        let last = match &out.partial {
+            Some(partial) => partial.y.clone(),
+            None => out.fast.observed.y.last().expect("state").clone(),
+        };
+        (
+            out.fast.attempts,
+            out.fast.accepted_steps,
+            out.fast.rejected_steps,
+            out.fast.driver,
+            last,
+        )
+    };
+    let mut hash = 0xcbf2_9ce4_8422_2325u64;
+    for value in &last {
+        for byte in value.to_bits().to_le_bytes() {
+            hash = (hash ^ u64::from(byte)).wrapping_mul(0x0000_0100_0000_01b3);
+        }
+    }
+    println!(
+        "DRIVE family={family} size={size} n={} lower={} upper={} kernel={arm} budget={budget} attempts={attempts} accepted={accepted} rejected={rejected} driver={driver} state_hash={hash:016x}",
+        def.n, band.lower, band.upper,
     );
 }
 

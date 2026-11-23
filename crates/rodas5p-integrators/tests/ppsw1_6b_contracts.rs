@@ -1716,13 +1716,24 @@ fn g3_protected_sources_are_byte_identical() {
         let bytes = std::fs::read(root.join(rel)).unwrap_or_else(|e| panic!("{rel}: {e}"));
         assert_eq!(sha256_hex(&bytes), want, "protected file changed: {rel}");
     }
-    // lib.rs allowlist (owner decisions; extended on 2026-11-16 by OD-L1-6): the file may hold the
-    // line `pub mod ppsw1;` and the loop L1 module block, each at most once. With these removed its
-    // bytes must equal the pinned file (re-pinned after the adopted merge, OD-L1-5).
+    // lib.rs allowlist (owner decisions; extended on 2026-11-16 by OD-L1-6 and on 2026-11-23 by
+    // OD-L1-9): the file may hold the line `pub mod ppsw1;`, the loop L1 module block and the
+    // re-exports of the banded entry points that take the kernel (loop L1 node V22), each at most
+    // once. With these removed its bytes must equal the pinned file (re-pinned after the adopted
+    // merge, OD-L1-5).
     let lib = std::fs::read_to_string(root.join("src/lib.rs")).unwrap();
     let allowed = [
         "pub mod ppsw1;\n",
         "\n// Loop L1 (2026-11-16) opt-in modules.\npub mod mol;\npub mod stage_clients;\n",
+        concat!(
+            "\n// Loop L1 node V22 (owner decision OD-L1-9): banded entry points that take the kernel.\n",
+            "pub use rodas5p_fast::integrate_rodas5p_fast_banded_observed_with_atol_and_kernel;\n",
+            "pub use rodas5p_fast_dense::{\n",
+            "    RODAS5P_FAST_BANDED_DENSE_SLICES_DRIVER_ID,\n",
+            "    integrate_rodas5p_fast_banded_dense_observed_with_atol_and_kernel,\n",
+            "    integrate_rodas5p_fast_banded_dense_observed_with_kernel,\n",
+            "};\n",
+        ),
     ];
     let mut stripped = lib.clone();
     for marker in allowed {
