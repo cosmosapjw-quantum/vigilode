@@ -1,0 +1,317 @@
+=== tests
+$ taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_dense_lu_reuse_identity --test stage_clients_dense_lu_reuse_alloc --test stage_clients_dense_lu_reuse_problems --test stage_clients_dense_identity --test stage_clients_alloc
+    Finished `release` profile [optimized] target(s) in 0.12s
+     Running tests/stage_clients_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v18/release/deps/stage_clients_alloc-161b4adb98a64c42)
+
+running 1 test
+test dense_client_allocates_nothing_per_accepted_step ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/stage_clients_dense_identity.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v18/release/deps/stage_clients_dense_identity-4ea5d1eed49d404a)
+
+running 10 tests
+test diagnostic_single_arm_for_instruction_count ... ignored, diagnostic single arm for perf stat: set STAGE_CLIENTS_ARM, _CASE and _RUNS
+test diagnostic_wall_ratio_client_over_protected ... ignored, diagnostic wall time: run alone with --ignored --nocapture --test-threads=1
+test dense_client_reproduces_protected_driver_robertson ... ok
+test protected_choice_follows_the_policy_and_misuse_is_refused ... ok
+test dense_client_reproduces_protected_driver_hires ... ok
+test dense_client_reproduces_protected_driver_brusselator_n32 ... ok
+test dense_client_reproduces_protected_driver_brusselator_n100 ... ok
+test faer_mode_off_policy_is_a_valid_solver_of_the_named_problems ... ok
+test timed_wrapper_is_result_neutral_and_counts_match_driver ... ok
+test dense_client_reproduces_protected_driver_meanfield_brusselator_n100_faer ... ok
+
+test result: ok. 8 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.41s
+
+     Running tests/stage_clients_dense_lu_reuse_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v18/release/deps/stage_clients_dense_lu_reuse_alloc-b949b6cc32f034aa)
+
+running 1 test
+test reuse_client_allocates_nothing_per_attempt_after_warm_up ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.63s
+
+     Running tests/stage_clients_dense_lu_reuse_identity.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v18/release/deps/stage_clients_dense_lu_reuse_identity-abe4a7fe8dd192cc)
+
+running 8 tests
+test reuse_client_reproduces_protected_driver_on_the_faer_path_n2048 ... ignored, the order 2048 takes minutes: run with --ignored --nocapture
+test misuse_is_refused ... ok
+test singular_matrix_gives_the_typed_error_of_the_protected_path ... ok
+test factors_permutation_and_solves_equal_the_protected_kernel ... ok
+test threaded_run_follows_the_sequential_run ... ok
+test reuse_client_reproduces_protected_driver_on_the_client_kit_set ... ok
+test threaded_factorization_is_a_partial_pivoting_lu ... ok
+test reuse_client_reproduces_protected_driver_on_the_faer_path_n128_n512 ... ok
+
+test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 10.59s
+
+     Running tests/stage_clients_dense_lu_reuse_problems.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v18/release/deps/stage_clients_dense_lu_reuse_problems-4c8dbf86b800f65d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+exit code: 0
+=== sentinels
+$ taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test ppsw1_6b_contracts --test ptsw2b_contracts
+    Finished `release` profile [optimized] target(s) in 0.04s
+     Running tests/ppsw1_6b_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v18/release/deps/ppsw1_6b_contracts-bb15e8ac6d7c3de8)
+
+running 37 tests
+test a1_method_identity_is_distinct_and_opt_in ... ok
+test a2_derivative_class_is_exact_jacobian_or_jvp_frozen_at_step_start ... ok
+test a3_accepted_step_sigma_cap_is_1_10_and_the_paper_1_5_is_recorded_separately ... ok
+test b2_gamma_is_the_root_of_the_printed_degree6_polynomial_to_60_digits ... ok
+test b5_tableau_is_total_on_positive_finite_sigma_and_typed_error_otherwise ... ok
+test c1_order5_conditions_vanish_for_module_coefficients_at_variable_step ... ok
+test c2_order6_residual_is_nonzero_so_variable_step_order_is_exactly_5 ... ok
+test d3_six_stages_share_one_factorization_and_satisfy_the_stage_equations ... ok
+test d4_advance_charges_one_factorization_six_solves_and_six_rhs_calls ... ok
+test c3_one_step_error_with_exact_stage_data_scales_like_h6 ... ok
+test e1_rejected_attempt_leaves_history_and_controller_untouched_but_charges_work ... ok
+test e3_stale_attempt_is_refused_without_side_effects ... ok
+test d2_perturbing_one_current_stage_input_changes_no_other_current_stage_output ... ok
+test d6_jvp_only_problem_reproduces_explicit_jacobian_stage_solution ... ok
+test e4_ratio_above_the_1_10_cap_is_a_typed_error_with_no_side_effects ... ok
+test b4_oracle_and_module_match_the_printed_pw04_sigma1_matrices ... ok
+test d1_stage_inputs_use_only_previous_step_data_and_oracle_formulas ... ok
+test e2_accepted_attempt_commits_exactly_the_certified_update ... ok
+test f2_stiff_limit_of_the_stability_matrix_is_minus_beta_over_gamma_with_rho_zero ... ok
+test f1_beta_is_nilpotent_so_the_stiff_limit_has_spectral_radius_zero ... ok
+test g1_default_candidate_catalog_is_unchanged_and_peerw_stays_deferred ... ok
+test h3_error_norm_and_accept_rule ... ok
+test h4_controller_formula_hysteresis_and_nan ... ok
+test h5_h0_rule_and_refusals ... ok
+test h1_estimator_weights_are_exact_lagrange_weights ... ok
+test h2_estimator_is_zero_on_degree4_polynomials_and_nonzero_on_degree5 ... ok
+test h7_starter_uses_forward_time_only_and_newton_only_in_the_starter ... ok
+test h6_starter_node_values_are_o_h0_to_the_5th_on_a_stiff_problem ... ok
+test g2_nothing_is_labelled_derivative_free ... ok
+test h8_try_step_rejects_on_estimator_and_commits_on_acceptance ... ok
+test b3_module_tableau_matches_the_high_precision_oracle_within_1e_13 ... ok
+test d5_serial_and_two_thread_stage_solves_are_bitwise_identical ... ok
+test g3_protected_sources_are_byte_identical ... ok
+test b1_exact_oracle_reproduces_the_pw04_structure ... ok
+test i1_end_to_end_prothero_robinson_with_real_starter_and_controller ... ok
+test i2_end_to_end_stiff_linear_system_with_real_starter_and_controller ... ok
+test f3_l_alpha_angle_is_57_54_degrees_within_0_05 ... ok
+
+test result: ok. 37 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+     Running tests/ptsw2b_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v18/release/deps/ptsw2b_contracts-0447f4b7bfb8c35b)
+
+running 24 tests
+test a1_certified_data_is_internally_consistent_in_exact_arithmetic ... ok
+test b3_implementation_residuals_vanish_for_order2_and_not_for_order3 ... ok
+test b2_exact_order3_condition_fails_so_order_is_exactly_two ... ok
+test c1_exact_stiff_limit_matrix_is_nilpotent_of_index_three_with_rho_zero ... ok
+test a2_implementation_coefficients_equal_certified_values ... ok
+test c2_implementation_stiff_limit_matrix_matches_exact_and_is_nilpotent ... ok
+test d1_stage_inputs_use_only_previous_step_data_and_certified_formulas ... ok
+test b1_exact_order2_conditions_vanish_identically_in_sigma ... ok
+test d2_perturbing_one_current_stage_input_changes_no_other_current_stage_output ... ok
+test d3_both_stages_share_one_w_factor_and_satisfy_the_certified_stage_equations ... ok
+test d5_jvp_only_problem_reproduces_explicit_jacobian_stage_solution ... ok
+test e2_error_norm_is_componentwise_scaled_rms_of_the_embedded_difference ... ok
+test d4_serial_and_two_thread_stage_solves_are_bitwise_identical ... ok
+test e1_embedded_estimator_uses_its_own_exact_weights_and_is_order_one ... ok
+test e3_controller_uses_certified_constants_clip_and_hysteresis ... ok
+test g1_accepted_step_ceiling_is_the_owner_decided_1_10 ... ok
+test g2_method_identity_is_distinct_opt_in_control_with_the_declared_derivative_class ... ok
+test h1_default_candidate_catalog_is_unchanged_and_peerw_stays_deferred ... ok
+test i1_startup_plan_is_forward_only_with_certified_times ... ok
+test f2_accepted_attempt_commits_exactly_the_certified_update ... ok
+test f1_rejected_attempt_does_not_mutate_history_or_controller_but_charges_work ... ok
+test j2_l_stable_damping_on_stiff_prothero_robinson ... ok
+test j1_observed_global_order_is_two_with_exact_startup ... ok
+test h2_protected_sources_are_byte_identical ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+exit code: 0
+=== clippy
+$ taskset -c 0-5,12-17 cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --test stage_clients_dense_lu_reuse_identity --test stage_clients_dense_lu_reuse_alloc --test stage_clients_dense_lu_reuse_problems --no-deps -- -D warnings
+    Checking rodas5p-core v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-core)
+    Checking rodas5p-krylov v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-krylov)
+    Checking rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 20.12s
+exit code: 0
+=== rustfmt
+$ rustfmt +1.94.1 --check --edition 2024 crates/rodas5p-integrators/src/stage_clients/dense_lu_reuse.rs crates/rodas5p-integrators/src/stage_clients/dense_lu_reuse/threaded.rs crates/rodas5p-integrators/tests/stage_clients_dense_lu_reuse_identity.rs crates/rodas5p-integrators/tests/stage_clients_dense_lu_reuse_alloc.rs crates/rodas5p-integrators/tests/stage_clients_dense_lu_reuse_problems.rs research/production_loop_20261116/dense_lu_client/runner/src/main.rs
+exit code: 0
+=== loop_checker
+$ python3 -I research/production_loop_20261116/check_checkpoint.py
+Traceback (most recent call last):
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/research/production_loop_20261116/check_checkpoint.py", line 95, in <module>
+    main()
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/research/production_loop_20261116/check_checkpoint.py", line 82, in main
+    require(hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == expected,
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/research/production_loop_20261116/check_checkpoint.py", line 28, in require
+    raise ValueError(message)
+ValueError: implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/src/stage_clients/dense_lu_reuse.rs
+exit code: 1
+=== strict_json
+$ python3 -I -c 
+import json, pathlib, sys
+here = pathlib.Path("research/production_loop_20261116/dense_lu_client")
+def refuse(text):
+    raise ValueError("non-finite constant " + text)
+count = 0
+for path in sorted(here.glob("*.json")) + sorted((here / "logs").glob("*.json")):
+    json.loads(path.read_text(), parse_constant=refuse)
+    count += 1
+lines = 0
+for path in sorted((here / "logs").glob("*.jsonl")):
+    for line in path.read_text().splitlines():
+        if line.strip():
+            json.loads(line, parse_constant=refuse)
+            lines += 1
+print(f"{count} JSON files and {lines} JSON lines load strictly")
+
+3 JSON files and 3823 JSON lines load strictly
+exit code: 0
+=== loop_checker_remaining
+$ python3 -I research/production_loop_20261116/dense_lu_client/check_remaining.py
+base commit: c63171dcf350cf5e1abb5e875eb7370685efc0af
+protected blobs: 23 checked
+evidence digests: 45 checked
+implemented sources: 34 checked, changed: ['crates/rodas5p-integrators/src/stage_clients/dense_lu_reuse.rs']
+strict JSON files: 683 checked
+changed paths against the checkpoint base: 2353
+changed paths outside the programme allowlist: []
+changed paths against the start of the node (587a1395): 133
+  crates/rodas5p-integrators/src/stage_clients/dense_lu_reuse.rs
+  crates/rodas5p-integrators/src/stage_clients/dense_lu_reuse/threaded.rs
+  crates/rodas5p-integrators/tests/stage_clients_dense_lu_reuse_alloc.rs
+  crates/rodas5p-integrators/tests/stage_clients_dense_lu_reuse_identity.rs
+  crates/rodas5p-integrators/tests/stage_clients_dense_lu_reuse_problems.rs
+  research/production_loop_20261116/dense_lu_client/NOTES.txt
+  research/production_loop_20261116/dense_lu_client/PREDECLARED.json
+  research/production_loop_20261116/dense_lu_client/REPORT_KO.md
+  research/production_loop_20261116/dense_lu_client/RESULTS.json
+  research/production_loop_20261116/dense_lu_client/check_remaining.py
+  research/production_loop_20261116/dense_lu_client/logs/MANIFEST.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/WAIT_BUDGET.json
+  research/production_loop_20261116/dense_lu_client/logs/build_runner.log
+  research/production_loop_20261116/dense_lu_client/logs/build_runner.log.err
+  research/production_loop_20261116/dense_lu_client/logs/extra.meanfield.n2048.rtol1e-6.threads.try1.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/extra.meanfield.n2048.rtol1e-6.threads.try2.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/extra.meanfield.n512.rtol1e-6.threads.try1.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/extra.meanfield.n512.rtol1e-6.threads.try2.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/extra.skewnet.n2048.rtol1e-4.reuse.try1.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/extra.skewnet.n2048.rtol1e-4.reuse.try2.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.meanfield.n128.rtol1e-6.len93.kit.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.meanfield.n128.rtol1e-6.len93.protected.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.meanfield.n128.rtol1e-6.len93.reuse.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.meanfield.n2048.rtol1e-6.len93.kit.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.meanfield.n2048.rtol1e-6.len93.protected.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.meanfield.n2048.rtol1e-6.len93.reuse.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.meanfield.n512.rtol1e-6.len108.kit.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.meanfield.n512.rtol1e-6.len108.protected.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.meanfield.n512.rtol1e-6.len108.reuse.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.meanfield.n512.rtol1e-6.len108.threaded6.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.meanfield.n512.rtol1e-6.len124.kit.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.meanfield.n512.rtol1e-6.len124.protected.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.meanfield.n512.rtol1e-6.len124.reuse.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.meanfield.n512.rtol1e-6.len124.threaded6.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.meanfield.n512.rtol1e-6.len93.kit.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.meanfield.n512.rtol1e-6.len93.protected.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.meanfield.n512.rtol1e-6.len93.reuse.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.meanfield.n512.rtol1e-6.len93.threaded6.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.skewnet.n128.rtol1e-6.len93.kit.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.skewnet.n128.rtol1e-6.len93.protected.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.skewnet.n128.rtol1e-6.len93.reuse.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.skewnet.n2048.rtol1e-5.len93.kit.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.skewnet.n2048.rtol1e-5.len93.protected.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.skewnet.n2048.rtol1e-5.len93.reuse.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.skewnet.n512.rtol1e-6.len108.kit.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.skewnet.n512.rtol1e-6.len108.protected.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.skewnet.n512.rtol1e-6.len108.reuse.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.skewnet.n512.rtol1e-6.len108.threaded6.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.skewnet.n512.rtol1e-6.len124.kit.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.skewnet.n512.rtol1e-6.len124.protected.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.skewnet.n512.rtol1e-6.len124.reuse.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.skewnet.n512.rtol1e-6.len124.threaded6.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.skewnet.n512.rtol1e-6.len93.kit.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.skewnet.n512.rtol1e-6.len93.protected.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.skewnet.n512.rtol1e-6.len93.reuse.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/faults.skewnet.n512.rtol1e-6.len93.threaded6.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/identity.meanfield.n128.rtol1e-4.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/identity.meanfield.n128.rtol1e-6.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/identity.meanfield.n128.rtol1e-8.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/identity.meanfield.n2048.rtol1e-4.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/identity.meanfield.n2048.rtol1e-6.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/identity.meanfield.n2048.rtol1e-8.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/identity.meanfield.n512.rtol1e-4.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/identity.meanfield.n512.rtol1e-6.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/identity.meanfield.n512.rtol1e-8.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/identity.skewnet.n128.rtol1e-4.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/identity.skewnet.n128.rtol1e-6.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/identity.skewnet.n128.rtol1e-8.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/identity.skewnet.n2048.rtol1e-4.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/identity.skewnet.n2048.rtol1e-5.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/identity.skewnet.n2048.rtol1e-6.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/identity.skewnet.n512.rtol1e-4.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/identity.skewnet.n512.rtol1e-6.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/identity.skewnet.n512.rtol1e-8.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/perf.meanfield.n512.rtol1e-6.kit.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/perf.meanfield.n512.rtol1e-6.kit.perf.csv
+  research/production_loop_20261116/dense_lu_client/logs/perf.meanfield.n512.rtol1e-6.none.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/perf.meanfield.n512.rtol1e-6.none.perf.csv
+  research/production_loop_20261116/dense_lu_client/logs/perf.meanfield.n512.rtol1e-6.protected.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/perf.meanfield.n512.rtol1e-6.protected.perf.csv
+  research/production_loop_20261116/dense_lu_client/logs/perf.meanfield.n512.rtol1e-6.reuse.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/perf.meanfield.n512.rtol1e-6.reuse.perf.csv
+  research/production_loop_20261116/dense_lu_client/logs/perf.skewnet.n512.rtol1e-6.kit.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/perf.skewnet.n512.rtol1e-6.kit.perf.csv
+  research/production_loop_20261116/dense_lu_client/logs/perf.skewnet.n512.rtol1e-6.none.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/perf.skewnet.n512.rtol1e-6.none.perf.csv
+  research/production_loop_20261116/dense_lu_client/logs/perf.skewnet.n512.rtol1e-6.protected.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/perf.skewnet.n512.rtol1e-6.protected.perf.csv
+  research/production_loop_20261116/dense_lu_client/logs/perf.skewnet.n512.rtol1e-6.reuse.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/perf.skewnet.n512.rtol1e-6.reuse.perf.csv
+  research/production_loop_20261116/dense_lu_client/logs/pilot_protected_only.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/reference_inputs.skewnet.n2048.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/reference_inputs.skewnet.n512.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/test_alloc.log
+  research/production_loop_20261116/dense_lu_client/logs/test_alloc.log.err
+  research/production_loop_20261116/dense_lu_client/logs/test_identity.log
+  research/production_loop_20261116/dense_lu_client/logs/test_identity.log.err
+  research/production_loop_20261116/dense_lu_client/logs/test_identity_n2048.log
+  research/production_loop_20261116/dense_lu_client/logs/test_identity_n2048.log.err
+  research/production_loop_20261116/dense_lu_client/logs/threaded_faer_feature_state.log
+  research/production_loop_20261116/dense_lu_client/logs/threaded_faer_par_compile_probe.log
+  research/production_loop_20261116/dense_lu_client/logs/wall.meanfield.n512.rtol1e-6.len108.try1.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wall.meanfield.n512.rtol1e-6.len108.try2.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wall.meanfield.n512.rtol1e-6.len124.try1.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wall.meanfield.n512.rtol1e-6.len124.try2.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wall.meanfield.n512.rtol1e-6.len93.try1.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wall.meanfield.n512.rtol1e-6.len93.try2.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wall.skewnet.n512.rtol1e-6.len108.try1.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wall.skewnet.n512.rtol1e-6.len108.try2.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wall.skewnet.n512.rtol1e-6.len124.try1.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wall.skewnet.n512.rtol1e-6.len124.try2.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wall.skewnet.n512.rtol1e-6.len93.try1.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wall.skewnet.n512.rtol1e-6.len93.try2.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wp.skewnet.n2048.rtol1e-4.try1.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wp.skewnet.n2048.rtol1e-4.try2.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wp.skewnet.n2048.rtol1e-5.try1.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wp.skewnet.n2048.rtol1e-5.try2.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wp.skewnet.n2048.rtol1e-6.try1.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wp.skewnet.n2048.rtol1e-6.try2.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wp.skewnet.n512.rtol1e-4.try1.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wp.skewnet.n512.rtol1e-4.try2.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wp.skewnet.n512.rtol1e-6.try1.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wp.skewnet.n512.rtol1e-6.try2.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wp.skewnet.n512.rtol1e-8.try1.jsonl
+  research/production_loop_20261116/dense_lu_client/logs/wp.skewnet.n512.rtol1e-8.try2.jsonl
+  research/production_loop_20261116/dense_lu_client/make_report.py
+  research/production_loop_20261116/dense_lu_client/parse_results.py
+  research/production_loop_20261116/dense_lu_client/run_checks.sh
+  research/production_loop_20261116/dense_lu_client/run_measurements.py
+  research/production_loop_20261116/dense_lu_client/runner/Cargo.lock
+  research/production_loop_20261116/dense_lu_client/runner/Cargo.toml
+  research/production_loop_20261116/dense_lu_client/runner/src/bin/v18-dense-lu-phases.rs
+  research/production_loop_20261116/dense_lu_client/runner/src/main.rs
+PASS: every failure of check_checkpoint.py on this branch names a path the task of V18 allows
+exit code: 0
