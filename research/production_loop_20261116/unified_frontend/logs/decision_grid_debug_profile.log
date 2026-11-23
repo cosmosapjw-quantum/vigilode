@@ -1,0 +1,18 @@
+# command: taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 -p vigilode --test unified_frontend_contracts -- d1_ --nocapture --test-threads 1
+# commit: b52f79cd8d72c697945dde37b36c2da3c2ec2669
+# worktree_dirty_files: 0
+# date: 2026-11-17T15:34:14+09:00
+# loadavg_before: 16.70 23.35 28.91 10/7884 1164784
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running tests/unified_frontend_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03/debug/deps/unified_frontend_contracts-1324d49ebb354701)
+
+running 2 tests
+test d1_phase_b_select_equals_the_reference_body_on_the_extension_grid ... QUAL {"data":{"callback_entries":0,"differing_examples":[],"distinct_outcomes":23,"entries":331776,"general_selection_equal_to_reference":331776,"outcome_counts":{"{\"refused\":\"dense-dimension-limit\"}":348,"{\"refused\":\"dense-output\"}":41472,"{\"refused\":\"derivatives-forbidden\"}":4608,"{\"refused\":\"events\"}":82944,"{\"refused\":\"mass-matrix\"}":165888,"{\"refused\":\"matrix-free-not-enabled\"}":840,"{\"refused\":\"missing-jacobian\"}":768,"{\"refused\":\"missing-time-derivative\"}":960,"{\"refused\":{\"implicit\":\"band-declaration-on-jvp-problem\"}}":336,"{\"refused\":{\"implicit\":\"vector-atol-on-matrix-free-route\"}}":672,"{\"refused\":{\"implicit\":\"vector-atol-with-declared-band-on-dense\"}}":336,"{\"selected\":{\"derivatives\":\"allow-finite-difference\",\"implicit_route\":\"banded-fast\",\"method\":\"rodas5p\",\"regime\":\"stiff\"}}":2064,"{\"selected\":{\"derivatives\":\"allow-finite-difference\",\"implicit_route\":\"dense-fast\",\"method\":\"rodas5p\",\"regime\":\"stiff\"}}":576,"{\"selected\":{\"derivatives\":\"allow-finite-difference\",\"implicit_route\":\"matrix-free\",\"method\":\"rodas5p\",\"regime\":\"stiff\"}}":480,"{\"selected\":{\"derivatives\":\"allow-finite-difference\",\"implicit_route\":null,\"method\":\"dopri5\",\"regime\":\"nonstiff\"}}":4608,"{\"selected\":{\"derivatives\":\"allow-finite-difference\",\"implicit_route\":null,\"method\":\"dopri5\",\"regime\":\"unknown\"}}":4608,"{\"selected\":{\"derivatives\":\"forbidden\",\"implicit_route\":null,\"method\":\"dopri5\",\"regime\":\"nonstiff\"}}":4608,"{\"selected\":{\"derivatives\":\"forbidden\",\"implicit_route\":null,\"method\":\"dopri5\",\"regime\":\"unknown\"}}":4608,"{\"selected\":{\"derivatives\":\"provided-only\",\"implicit_route\":\"banded-fast\",\"method\":\"rodas5p\",\"regime\":\"stiff\"}}":1260,"{\"selected\":{\"derivatives\":\"provided-only\",\"implicit_route\":\"dense-fast\",\"method\":\"rodas5p\",\"regime\":\"stiff\"}}":216,"{\"selected\":{\"derivatives\":\"provided-only\",\"implicit_route\":\"matrix-free\",\"method\":\"rodas5p\",\"regime\":\"stiff\"}}":360,"{\"selected\":{\"derivatives\":\"provided-only\",\"implicit_route\":null,\"method\":\"dopri5\",\"regime\":\"nonstiff\"}}":4608,"{\"selected\":{\"derivatives\":\"provided-only\",\"implicit_route\":null,\"method\":\"dopri5\",\"regime\":\"unknown\"}}":4608},"select_equal_to_reference":331776},"test":"d1_phase_b_extension_grid"}
+ok
+test d1_route_general_equals_select_on_the_golden_decision_grid ... QUAL {"data":{"callback_entries":0,"differing_examples":[],"entries":221184,"equal_to_golden_file":221184,"equal_to_reference_body":221184,"equal_to_select":221184,"golden_file_entries":221184},"test":"d1_decision_grid"}
+ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 29 filtered out; finished in 9.74s
+
+# loadavg_after: 17.24 23.24 28.81 8/7884 1165820
+# exit_code: 0

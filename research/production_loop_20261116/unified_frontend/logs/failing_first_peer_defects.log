@@ -1,0 +1,73 @@
+# failing-first run of the PeerOde defect reproductions on the base sources
+# commit: 00d327647538eda44d640f19dad5b317d818a7b9 (selection.rs unchanged from base c468478e: yes)
+# date: 2026-11-17T14:16:06+09:00
+# command: taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_frontend_contracts -- --nocapture --test-threads 1
+   Compiling vigilode v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 14.50s
+     Running tests/unified_frontend_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03/release/deps/unified_frontend_contracts-9e56bd7e5363fb4e)
+
+running 9 tests
+test cod02_p3_fast_forcing_20_is_error_controlled_or_refused ... QUAL {"data":{"abs_error":8.31322207926079,"accepted_peer_steps":0,"error_in_tolerance_units":9007275.429075394,"exact":0.9129452507276277,"failure":null,"h0":0.5,"omega":20.0,"rejected_peer_steps":0,"startup_jacobian_builds":2,"startup_rhs_calls":16,"success":true,"y_end":9.226167329988417},"test":"cod02_p3"}
+
+thread 'cod02_p3_fast_forcing_20_is_error_controlled_or_refused' (687642) panicked at crates/vigilode/tests/unified_frontend_contracts.rs:228:9:
+cod02_p3: success with an error of 9.007e6 tolerance units
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test cod02_p3b_fast_forcing_200_is_error_controlled_or_refused ... QUAL {"data":{"abs_error":50.24527499380263,"accepted_peer_steps":0,"error_in_tolerance_units":56883763.996879764,"exact":-0.8732972972139946,"failure":null,"h0":0.5,"omega":200.0,"rejected_peer_steps":0,"startup_jacobian_builds":2,"startup_rhs_calls":16,"success":true,"y_end":-51.118572291016626},"test":"cod02_p3b"}
+
+thread 'cod02_p3b_fast_forcing_200_is_error_controlled_or_refused' (687643) panicked at crates/vigilode/tests/unified_frontend_contracts.rs:228:9:
+cod02_p3b: success with an error of 5.688e7 tolerance units
+FAILED
+test cod02_p5_invalid_h0_is_refused_before_any_callback ... QUAL {"data":[{"h0":"negative","outcome":"Ok(success=false, failure=Some(\"starter: InvalidInput(\\\"first step size h0 must be finite and positive\\\")\"), h0=-1.0)","user_callbacks":0},{"h0":"nan","outcome":"Ok(success=true, failure=None, h0=0.5)","user_callbacks":17},{"h0":"zero","outcome":"Ok(success=false, failure=Some(\"starter: InvalidInput(\\\"first step size h0 must be finite and positive\\\")\"), h0=0.0)","user_callbacks":0},{"h0":"infinite","outcome":"Ok(success=true, failure=None, h0=0.5)","user_callbacks":17}],"test":"cod02_p5"}
+
+thread 'cod02_p5_invalid_h0_is_refused_before_any_callback' (687644) panicked at crates/vigilode/tests/unified_frontend_contracts.rs:294:5:
+invalid h0 was not refused: [
+    "h0 negative: Ok(success=false, failure=Some(\"starter: InvalidInput(\\\"first step size h0 must be finite and positive\\\")\"), h0=-1.0), 0 user callbacks",
+    "h0 nan: Ok(success=true, failure=None, h0=0.5), 17 user callbacks",
+    "h0 zero: Ok(success=false, failure=Some(\"starter: InvalidInput(\\\"first step size h0 must be finite and positive\\\")\"), h0=0.0), 0 user callbacks",
+    "h0 infinite: Ok(success=true, failure=None, h0=0.5), 17 user callbacks",
+]
+FAILED
+test cod04a_p1_jvp_provider_needs_the_jvp_permission ... QUAL {"data":{"admission":"Admitted { method_id: \"ppsw1-6b-schmitt-weiner-singly-implicit-peer-w\", variant: \"explicit-jacobian-dense\", qualification: ScopedCalibration, access: ExplicitApiOnly }","error":null,"solve_is_err":false,"user_callbacks":20},"test":"cod04a_p1"}
+
+thread 'cod04a_p1_jvp_provider_needs_the_jvp_permission' (687645) panicked at crates/vigilode/tests/unified_frontend_contracts.rs:118:5:
+a JVP provider without the provided_jvp permission was admitted: Admitted { method_id: "ppsw1-6b-schmitt-weiner-singly-implicit-peer-w", variant: "explicit-jacobian-dense", qualification: ScopedCalibration, access: ExplicitApiOnly }
+FAILED
+test cod04b_p2a_starter_endpoint_above_t_end_is_a_success_with_exact_endpoint ... 
+thread 'cod04b_p2a_starter_endpoint_above_t_end_is_a_success_with_exact_endpoint' (687646) panicked at crates/vigilode/tests/unified_frontend_contracts.rs:170:9:
+span (0.3, 0.9): success == false without a reason
+FAILED
+test cod04c_p4_recoverable_jacobian_error_is_reported_as_itself ... QUAL {"data":{"accepted_peer_steps":0,"failure":"t=2: InvalidInput(\"PPSW1 requires a finite, representably advancing time\")","rejected_peer_steps":52,"success":false,"user_jacobian_callbacks":54},"test":"cod04c_p4"}
+
+thread 'cod04c_p4_recoverable_jacobian_error_is_reported_as_itself' (687647) panicked at crates/vigilode/tests/unified_frontend_contracts.rs:337:5:
+the reason does not carry the callback's message: t=2: InvalidInput("PPSW1 requires a finite, representably advancing time")
+FAILED
+test cod04cd_p6_fatal_rhs_error_is_reported_as_a_fatal_callback ... QUAL {"data":{"failure":"t=2: InvalidInput(\"fatal callback error: user fatal\")","n_outputs":1,"success":false,"user_rhs_callbacks":41},"test":"cod04cd_p6"}
+
+thread 'cod04cd_p6_fatal_rhs_error_is_reported_as_a_fatal_callback' (687648) panicked at crates/vigilode/tests/unified_frontend_contracts.rs:385:5:
+a fatal callback error is reported as invalid input: t=2: InvalidInput("fatal callback error: user fatal")
+FAILED
+test cod04e_p7_declared_band_is_refused_by_admission_too ... QUAL {"data":{"admission":"Admitted { method_id: \"ppsw1-6b-schmitt-weiner-singly-implicit-peer-w\", variant: \"explicit-jacobian-dense\", qualification: ScopedCalibration, access: ExplicitApiOnly }","solve":"Some(UnsupportedJacobian)","user_callbacks":0},"test":"cod04e_p7"}
+
+thread 'cod04e_p7_declared_band_is_refused_by_admission_too' (687649) panicked at crates/vigilode/tests/unified_frontend_contracts.rs:427:5:
+admission says Admitted while solve refuses: Admitted { method_id: "ppsw1-6b-schmitt-weiner-singly-implicit-peer-w", variant: "explicit-jacobian-dense", qualification: ScopedCalibration, access: ExplicitApiOnly }
+FAILED
+test peer_baseline_digests_of_the_u07_cases ... QUAL {"data":[{"accepted":143,"h0_bits":"3f647ae147ae147b","jacobian":"dense","n_outputs":144,"rejected":0,"startup_jacobian_builds":2,"startup_jvp_calls":0,"startup_rhs_calls":16,"step_jacobian_builds":143,"step_jvp_calls":0,"step_rhs_calls":858,"threads":1,"trajectory_fnv1a64":"11f88b8ffe6c8d47"},{"accepted":143,"h0_bits":"3f647ae147ae147b","jacobian":"dense","n_outputs":144,"rejected":0,"startup_jacobian_builds":2,"startup_jvp_calls":0,"startup_rhs_calls":16,"step_jacobian_builds":143,"step_jvp_calls":0,"step_rhs_calls":858,"threads":4,"trajectory_fnv1a64":"11f88b8ffe6c8d47"},{"accepted":143,"h0_bits":"3f647ae147ae147b","jacobian":"jvp","n_outputs":144,"rejected":0,"startup_jacobian_builds":2,"startup_jvp_calls":4,"startup_rhs_calls":16,"step_jacobian_builds":143,"step_jvp_calls":286,"step_rhs_calls":858,"threads":1,"trajectory_fnv1a64":"11f88b8ffe6c8d47"},{"accepted":143,"h0_bits":"3f647ae147ae147b","jacobian":"jvp","n_outputs":144,"rejected":0,"startup_jacobian_builds":2,"startup_jvp_calls":4,"startup_rhs_calls":16,"step_jacobian_builds":143,"step_jvp_calls":286,"step_rhs_calls":858,"threads":4,"trajectory_fnv1a64":"11f88b8ffe6c8d47"}],"test":"peer_baseline_digests"}
+ok
+
+failures:
+
+failures:
+    cod02_p3_fast_forcing_20_is_error_controlled_or_refused
+    cod02_p3b_fast_forcing_200_is_error_controlled_or_refused
+    cod02_p5_invalid_h0_is_refused_before_any_callback
+    cod04a_p1_jvp_provider_needs_the_jvp_permission
+    cod04b_p2a_starter_endpoint_above_t_end_is_a_success_with_exact_endpoint
+    cod04c_p4_recoverable_jacobian_error_is_reported_as_itself
+    cod04cd_p6_fatal_rhs_error_is_reported_as_a_fatal_callback
+    cod04e_p7_declared_band_is_refused_by_admission_too
+
+test result: FAILED. 1 passed; 8 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p vigilode --test unified_frontend_contracts`
+# exit_code: 101
