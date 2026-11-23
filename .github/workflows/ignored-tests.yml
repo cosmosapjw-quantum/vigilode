@@ -1,8 +1,10 @@
 name: Ignored long tests
 
-# Every #[ignore]d test runs here in the measurement profile (audit F-003).
+# Every #[ignore]d test runs here in the measurement profile (audit F-003),
+# except the recorded kill gate that the run step skips.
 # tools/check_ignored_tests_in_ci.py fails if a new ignored test is not
-# reachable from a workflow.
+# reachable from a workflow, or if a workflow skips a test that the script
+# does not list as a documented exclusion.
 
 on:
   pull_request:
@@ -36,7 +38,10 @@ jobs:
           rustup override set 1.94.1
       - name: Every ignored test is reachable from CI
         run: python3 tools/check_ignored_tests_in_ci.py
+      # The skipped test reproduces a kill gate that failed on 2026-10-21 and is
+      # kept so that the failure stays reproducible (its threshold is frozen);
+      # it fails by design. See dense_wfiltered_contracts.rs.
       - name: Run the ignored tests in the measurement profile
         env:
           RAYON_NUM_THREADS: '1'
-        run: cargo test --workspace --profile measurement --locked -- --ignored
+        run: cargo test --workspace --profile measurement --locked -- --ignored --skip prothero_robinson_wfiltered_enforce_kill_gate

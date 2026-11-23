@@ -108,7 +108,8 @@
       "changes to frozen G0 or reference thresholds",
       "change of protected RODAS5P sources outside a passed trial merge",
       "change of the PPSW1 default sigma cap"
-    ]
+    ],
+    "owner_decisions_20261123": "OD-L1-9 to OD-L1-12 (OWNER_DECISIONS_20261116.json): kernel of the facade's banded route, fix of the Rodas5p::capabilities defect, adaptive restart length and residual-test cadence of the protected matrix-free stage solve, workflow edits of ci/TRIAGE_KO.md and workspace version 0.2.0. Each edit of a protected file under these decisions is recorded in CHECKPOINT.json (epoch 3) with the decision id."
   },
   "policy_corrections_20261115": [
     {
@@ -153,7 +154,14 @@
     "crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs",
     "crates/rodas5p-integrators/tests/ptsw2b_contracts.rs",
     "crates/rodas5p-core/tests/leja_setup_work_contract.rs",
-    "crates/vigilode/src/hybrid_automaton.rs"
+    "crates/vigilode/src/hybrid_automaton.rs",
+    ".github/workflows/production.yml",
+    ".github/workflows/ignored-tests.yml",
+    "tools/check_ignored_tests_in_ci.py",
+    "Cargo.toml",
+    "Cargo.lock",
+    "crates/vigilode-bench/Cargo.lock",
+    "crates/vigilode-hybrid/Cargo.lock"
   ],
   "effective_policy_precedence": [
     "current user request",

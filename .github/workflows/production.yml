@@ -91,13 +91,17 @@ jobs:
       - uses: Swatinem/rust-cache@v2.7.8
         with:
           shared-key: root
+      # --no-fail-fast: without it cargo stops at the first failing test binary
+      # and the binaries after it are not run.
       - name: Facade and light crates
-        run: cargo test --locked -p vigilode -p rodas5p-core -p rodas5p-krylov -p vigilode-coupled
+        run: cargo test --locked --no-fail-fast -p vigilode -p rodas5p-core -p rodas5p-krylov -p vigilode-coupled
       # Every non-ignored target of the package (lib, integration tests, doc
       # tests), so new test files are included automatically. #[ignore]d tests
-      # run in ignored-tests.yml.
+      # run in ignored-tests.yml. The step also runs when the step above
+      # failed, so one run of the job reports every failing test binary.
       - name: Integrators
-        run: cargo test --locked -p rodas5p-integrators
+        if: ${{ !cancelled() }}
+        run: cargo test --locked --no-fail-fast -p rodas5p-integrators
 
   docs:
     runs-on: ubuntu-latest
@@ -165,7 +169,12 @@ jobs:
           -p vigilode
 
   bench:
-    runs-on: ubuntu-latest
+    # ubuntu-24.04 ships SUNDIALS 6.4.1, the CVODE version the comparator
+    # bridge (crates/vigilode-bench/native/bridge) is written for and the
+    # benchmark evidence was produced with. ubuntu-26.04 ships SUNDIALS 7.1.1:
+    # its headers include mpi.h and no longer define the types the bridge
+    # uses, so the bridge does not compile there.
+    runs-on: ubuntu-24.04
     timeout-minutes: 90
     env:
       OPENBLAS_NUM_THREADS: 1

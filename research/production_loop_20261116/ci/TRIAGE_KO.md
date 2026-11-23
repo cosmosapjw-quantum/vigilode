@@ -96,3 +96,45 @@ PR base(`074a5699`) 대비 `vigilode` 공개 API가 깨졌다. 전부 switcher �
 | workflow 수정: `test`에 `--no-fail-fast`, `bench`에 MPI header, `ignored-tests`에서 kill gate 제외 | 소유자 결정 필요 |
 | semver: 버전 0.2.0 또는 API 호환 유지 | 소유자 결정 필요 |
 | `research/qualification/` 처리(삭제, INVALID 행, 또는 사후 기록 명시) | 소유자 결정 필요 |
+
+## 6. 2026-11-23 조치 (소유자 결정 OD-L1-12)
+
+소유자가 workflow 수정과 버전 0.2.0을 승인했다. 적용 내용과 5절 표의 갱신 상태:
+
+| 조치 | 상태 |
+|---|---|
+| `test`에 `--no-fail-fast` | 완료. 두 step 모두. `Integrators` step에 `if: ${{ !cancelled() }}`를 더했다(없으면 앞 step이 실패할 때 실행되지 않는다) |
+| `ignored-tests`에서 kill gate 제외 | 완료. `--skip prothero_robinson_wfiltered_enforce_kill_gate`. `tools/check_ignored_tests_in_ci.py`가 제외 목록을 검사한다 |
+| `bench`의 CVODE bridge 컴파일 | 완료, 단 처방을 바꿨다(6.1). MPI 패키지 추가가 아니라 `runs-on: ubuntu-24.04` |
+| semver: 버전 0.2.0 | 완료. `[workspace.package] version` (6개 crate). hosted `semver` job 결과는 push 뒤 확인 |
+| `vigilode-bench`, `vigilode-hybrid`의 `rust-version` 정렬 | 미수행. V11. 그때까지 `bench` job은 이 원인으로 계속 실패한다 |
+| host 의존 anchor의 원인 확정 | 미수행. 다음 loop 후보 |
+| `research/qualification/` 처리 | 소유자 결정 필요 (이번 승인에 없음) |
+
+### 6.1 bench: 3.3절 처방의 정정
+
+3.3절은 "apt-get에 MPI 개발 패키지 추가"를 제안했다. 컨테이너에서 bridge 컴파일 명령(build script와 같은 gcc 인자)을 실행해 보니 그 처방은 통하지 않는다.
+
+| 환경 | `libsundials-dev` | 결과 |
+|---|---|---|
+| ubuntu:26.04 (runner image), workflow의 패키지 그대로 | 7.1.1 | 실패. hosted와 같은 오류(`sundials_types.h:57: mpi.h`) |
+| ubuntu:26.04 + `libopenmpi-dev` | 7.1.1 | 실패. 같은 오류. Ubuntu는 `mpi.h`를 gcc 기본 검색 경로 밖에 둔다 |
+| ubuntu:26.04 + `libopenmpi-dev` + `CPATH` | 7.1.1 | 실패. 오류 8건. SUNDIALS 7에는 bridge가 쓰는 `realtype`이 없다 |
+| ubuntu:24.04, workflow의 패키지 그대로 | 6.4.1 | 성공 |
+
+- 원인은 MPI header가 아니라 SUNDIALS major 버전이다. bridge와 지금까지의 비교 증거는 CVODE 6.4.1 기준이다.
+- 조치: `bench` job만 `ubuntu-24.04`에 고정했다. 비교 solver 버전이 증거와 같아진다.
+- 다른 길: bridge를 SUNDIALS 7로 옮긴다. 비교 대상 버전이 바뀌므로 연구 결정이다. 하지 않았다.
+- 로그: `raw/local_probe_bench_bridge_ubuntu2404.log`, `raw/local_probe_bench_bridge_ubuntu2604.log`.
+
+### 6.2 버전 범위
+
+- 바꾼 것: `[workspace.package] version` 0.1.0 → 0.2.0. 이 값을 쓰는 crate는 `vigilode`, `rodas5p-core`, `rodas5p-krylov`, `rodas5p-integrators`, `rodas5p-cli`, `rodas5p-fair-ab`.
+- 그대로 둔 것: `vigilode-coupled`, `vigilode-bench`, `vigilode-hybrid` (자체 버전 0.1.0). semver 지적은 `vigilode`의 공개 API였고, `vigilode-coupled`는 `vigilode`에 의존하지 않는다.
+- lock 파일 5개에서 위 path crate의 버전 줄만 고쳤다(root, `vigilode-bench`, `vigilode-hybrid`, loop runner 2개). 5개 모두 `cargo +1.94.1 metadata --locked` exit 0.
+- 릴리스나 배포는 아니다. 승인 범위 밖이다.
+
+### 6.3 검증 상태
+
+- 로컬에서 확인: 검사 스크립트(96개 중 95개 도달, 문서화된 제외 1개; 문서화되지 않은 skip, 실행되는 제외 항목, 없는 이름은 exit 1), workflow YAML 구문, lock 5개.
+- 로컬에서 확인하지 않음: hosted job 결과. push 뒤 PR #190 실행으로 확인한다.
