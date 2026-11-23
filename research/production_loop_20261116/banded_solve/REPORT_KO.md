@@ -10,7 +10,7 @@
 
 | 단계 | 내용 | 명령어 판정 (PASS-I) | cycle 판정 (PASS-C) |
 |---|---|---|---|
-| a1 | 좁은 band(lower = upper = 2)용 tight kernel TA, kernel 수준 | PASS | NOT_DECIDABLE (authoritative였다면: PASS) |
+| a1 | 좁은 band(lower = upper = 2)용 tight kernel TA, kernel 수준 | PASS | PASS (authoritative였다면: PASS) |
 | a2 | 넓은 band에서 보호 Slices kernel 대 Indexed kernel, 전체 실행 | PASS | NOT_DECIDABLE (authoritative였다면: PASS) |
 
 기준: a1 PASS-I는 TA 명령어가 A0의 0.4 이하(n = 1e4, 1e5 모두), PASS-C는 cycle 0.6 이하. a2 PASS-I는 Slices 명령어가 Indexed의 0.5 이하(넓은 band 3문제 모두), PASS-C는 cycle 0.67 이하. cycle 판정은 호스트 1분 부하 8 이하이고 arm 내 편차 10% 이하일 때만 authoritative이고, 아니면 NOT_DECIDABLE(숫자는 diagnostic)이다.
@@ -91,6 +91,18 @@ n = 100000 (`logs/measure_v2_n100000.jsonl`, 부하 2.08 → 2.63, cycle authori
 | BD | 0.964 | 0.666 | 390.0 | 163.7 | 86.1 | 37.9 | 0.063 |
 | B3 | 0.896 | 0.506 | 471.0 | 138.8 | 103.0 | 24.1 | 0.142 |
 
+n = 100000 (`logs/measure_v3_n100000.jsonl`, 부하 3.55 → 3.29, cycle authoritative: True)
+
+| arm | 명령어 비 (A0 = 1) | cycle 비 (A0 = 1) | 행당 명령어: 분해 | 행당 명령어: solve 1회 | 행당 cycle: 분해 | 행당 cycle: solve 1회 | cycle 편차 |
+|---|---|---|---|---|---|---|---|
+| A0 | 1.000 | 1.000 | 462.0 | 162.7 | 91.8 | 61.0 | 0.023 |
+| A1 | 0.918 | 1.071 | 390.0 | 153.8 | 85.9 | 67.0 | 0.017 |
+| TA | 0.251 | 0.568 | 100.0 | 42.8 | 40.5 | 36.1 | 0.026 |
+| TD | 0.251 | 0.444 | 100.0 | 42.8 | 40.4 | 27.2 | 0.026 |
+| TS | 0.265 | 0.287 | 125.0 | 42.8 | 43.9 | 15.4 | 0.064 |
+| BD | 0.964 | 0.672 | 390.0 | 163.7 | 86.2 | 37.7 | 0.039 |
+| B3 | 0.896 | 0.499 | 471.0 | 138.8 | 101.0 | 23.3 | 0.190 |
+
 arm 설명: TA = 보호 kernel과 같은 연산을 같은 순서로, 행 offset 고정·값 carry로 작성(bit 동일). TD = TA에서 역대입 순서만 변경(최신 미지수 마지막), 나눗셈 유지. TS = 역수로 미리 scale한 U 행 사용(V19 동결 기준 V2 미달, 참고용). A1 = 보호 kernel 순서의 slice 구현(bit 동일). BD, B3 = V19의 탐색 arm.
 
 ### 1.3 a2: 넓은 band, 보호 banded driver 전체 실행 (시도 1회당)
@@ -101,6 +113,7 @@ arm 설명: TA = 보호 kernel과 같은 연산을 같은 순서로, 행 offset 
 | ac2d 64 | 4096 | 64 | True | 0.220 | 0.402 | 0.086 / 0.031 | authoritative |
 | ac3d 16 | 4096 | 256 | True | 0.163 | 0.263 | 0.422 / 0.238 | diagnostic |
 | ac3d 16 | 4096 | 256 | True | 0.163 | 0.339 | 0.282 / 0.041 | diagnostic |
+| ac3d 16 | 4096 | 256 | True | 0.163 | 0.341 | 0.143 / 0.024 | diagnostic |
 | bruss1d 5000 | 10000 | 2 | True | 0.980 | 1.122 | 0.101 / 0.156 | diagnostic |
 | bruss1d 5000 | 10000 | 2 | True | 0.980 | 1.143 | 0.026 / 0.020 | authoritative |
 | bruss2d 32 | 2048 | 64 | True | 0.221 | 0.349 | 0.307 / 0.254 | diagnostic |
@@ -114,14 +127,14 @@ facade의 banded 경로(`crates/vigilode/src/solve.rs`)와 client kit의 기준 
 
 | cell | n | 결과 동일(시도·수락·거부 횟수, 상태 hash) | 명령어 비 (보호 driver = 1) | cycle 비 | cycle 표시 |
 |---|---|---|---|---|---|
-| bruss1d5000 | 10000 | True | 0.449 | 0.692 | diagnostic_only |
-| bruss1d50000 | 100000 | True | 0.451 | 0.745 | diagnostic_only |
+| bruss1d5000 | 10000 | True | 0.449 | 0.702 | authoritative |
+| bruss1d50000 | 100000 | True | 0.451 | 0.710 | authoritative |
 
 identity test(`crates/rodas5p-integrators/tests/stage_clients_banded_tight_identity.rs`)는 보호 banded driver와 client driver를 같은 문제에 돌려 출력 상태 bit, 시도·수락·거부 횟수, work counter 전체를 비교한다. 사용법: `integrate_rodas5p_fast_client_observed_with_atol(problem, Box::new(BandedTightStageLu::new(n, &band)?), ...)`. 기본 경로는 바뀌지 않는다.
 
 ## 2. V19: 의존 사슬 가설 (동결 판정)
 
-- stage a 판정: **NOT_DECIDABLE** (cell이 authoritative였다면: KILL).
+- stage a 판정: **KILL** (cell이 authoritative였다면: KILL).
 - 둘째 질문(분할 유지 여부): NOT_DECIDABLE (authoritative였다면: None).
 - 기준: 최선의 유효 arm이 A0의 0.5 이하이고 A1의 0.67 이하면 PASS, 모든 유효 arm이 A1의 0.77 초과면 KILL (n = 1e4, 1e5 모두).
 - 유효 arm(동결 기준 V2·V3): BD, C16, C8, CV16, CV8. V1(A1이 A0와 bit 동일): True (142건).

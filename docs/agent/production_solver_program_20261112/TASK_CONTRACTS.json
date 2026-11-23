@@ -1383,7 +1383,7 @@
         "V04_STAGE_COST_ANATOMY",
         "V15_STAGE_CLIENT_KIT"
       ],
-      "status": "IN_PROGRESS",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Kernels for the banded stage solve in the one-dimensional narrow-band regime, where the eight stage solves take 61-70% of the step: a sequential back substitution with a shorter dependent chain, and a partition of the unknowns into blocks whose recurrences run in lockstep.",
       "write_allowlist": [
         "research/production_loop_20261116/banded_solve/**",
@@ -1414,8 +1414,10 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": [],
-      "state_note": "Added 2026-11-17 by ruling (pre-registration addendum A3); run by the orchestrator session."
+      "evidence": [
+        "research/production_loop_20261116/banded_solve/RESULTS.json"
+      ],
+      "state_note": "Stage a KILL on authoritative cells (ledger L-0320); stage b not built. The observation that led to V21 is recorded in PROGRESS.md."
     },
     {
       "id": "V21_BANDED_TIGHT_KERNEL",
@@ -1423,7 +1425,7 @@
         "V19_BANDED_SOLVE_KERNEL",
         "V15_STAGE_CLIENT_KIT"
       ],
-      "status": "IN_PROGRESS",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Banded kernels with identical bits and fewer instructions: tight loops for narrow bands, and the existing Slices kernel against the Indexed kernel on the wide bands of two- and three-dimensional grids; then an opt-in stage client.",
       "write_allowlist": [
         "research/production_loop_20261116/banded_solve/**",
@@ -1452,8 +1454,10 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": [],
-      "state_note": "Added 2026-11-17 by ruling (pre-registration addendum A4) from the first look at V19; run by the orchestrator session."
+      "evidence": [
+        "research/production_loop_20261116/banded_solve/RESULTS_V21.json"
+      ],
+      "state_note": "a1 PASS-I and PASS-C (L-0321); a2 PASS-I, cycles NOT_DECIDABLE for one of three problems (L-0322); stage b PASS, opt-in client merged (L-0323). Independent review pending with group 3."
     }
   ],
   "execution_policy": "Resume ready bounded tasks; research/implementation may overlap only with disjoint writes. Qualification dependencies restrict promotion, not safe opt-in refactoring.",

@@ -694,12 +694,124 @@
       "n": 100000,
       "patterns": 200,
       "sha256": "ffd2153c9d79005e9058338be7793594c241915bdab82e25d0fec67c5f011ef8"
+    },
+    {
+      "arms": {
+        "A0": {
+          "cycles_per_pattern": 58080518.705,
+          "cycles_per_row_factorisation": 91.80110555,
+          "cycles_per_row_solve": 60.99896833125,
+          "cycles_ratio_to_A0": 1.0,
+          "cycles_spread": 0.02263773601400041,
+          "instructions_per_pattern": 176399196.52,
+          "instructions_per_row_factorisation": 461.995978,
+          "instructions_per_row_solve": 162.749499625,
+          "instructions_ratio_to_A0": 1.0,
+          "instructions_spread": 4.6173679763928865e-08,
+          "rounds": 7,
+          "runs_with_problems": 0
+        },
+        "A1": {
+          "cycles_per_pattern": 62210906.855,
+          "cycles_per_row_factorisation": 85.854589,
+          "cycles_per_row_solve": 67.02310449375,
+          "cycles_ratio_to_A0": 1.0711148633327274,
+          "cycles_spread": 0.016554040956199882,
+          "instructions_per_pattern": 162000562.8,
+          "instructions_per_row_factorisation": 389.99906865,
+          "instructions_per_row_solve": 153.7508192875,
+          "instructions_ratio_to_A0": 0.9183747204972813,
+          "instructions_spread": 1.67283368137924e-08,
+          "rounds": 7,
+          "runs_with_problems": 0
+        },
+        "B3": {
+          "cycles_per_pattern": 29008555.875,
+          "cycles_per_row_factorisation": 100.98921255,
+          "cycles_per_row_solve": 23.26677865625,
+          "cycles_ratio_to_A0": 0.49945414610256794,
+          "cycles_spread": 0.18997686092155383,
+          "instructions_per_pattern": 158100240.565,
+          "instructions_per_row_factorisation": 470.99872174999996,
+          "instructions_per_row_solve": 138.75046044375,
+          "instructions_ratio_to_A0": 0.8962639495190371,
+          "instructions_spread": 3.2858900176777005e-08,
+          "rounds": 7,
+          "runs_with_problems": 0
+        },
+        "BD": {
+          "cycles_per_pattern": 39010310.5,
+          "cycles_per_row_factorisation": 86.19421285,
+          "cycles_per_row_solve": 37.739716025,
+          "cycles_ratio_to_A0": 0.671659127187542,
+          "cycles_spread": 0.03910020224012319,
+          "instructions_per_pattern": 169999838.15,
+          "instructions_per_row_factorisation": 389.99906875,
+          "instructions_per_row_solve": 163.7499150875,
+          "instructions_ratio_to_A0": 0.9637222929795236,
+          "instructions_spread": 3.50588567812841e-08,
+          "rounds": 7,
+          "runs_with_problems": 0
+        },
+        "TA": {
+          "cycles_per_pattern": 32992193.54,
+          "cycles_per_row_factorisation": 40.4695232,
+          "cycles_per_row_solve": 36.08111793125,
+          "cycles_ratio_to_A0": 0.5680423363223129,
+          "cycles_spread": 0.02617630300795093,
+          "instructions_per_pattern": 44204550.105,
+          "instructions_per_row_factorisation": 100.0071135,
+          "instructions_per_row_solve": 42.754800175,
+          "instructions_ratio_to_A0": 0.2505938290937063,
+          "instructions_spread": 8.370179074759374e-08,
+          "rounds": 7,
+          "runs_with_problems": 0
+        },
+        "TD": {
+          "cycles_per_pattern": 25796815.68,
+          "cycles_per_row_factorisation": 40.37077075,
+          "cycles_per_row_solve": 27.22239519375,
+          "cycles_ratio_to_A0": 0.44415608288600256,
+          "cycles_spread": 0.026191477792502547,
+          "instructions_per_pattern": 44204493.045,
+          "instructions_per_row_factorisation": 100.00709570000001,
+          "instructions_per_row_solve": 42.75473033750001,
+          "instructions_ratio_to_A0": 0.2505935056228452,
+          "instructions_spread": 2.6241676360096157e-07,
+          "rounds": 7,
+          "runs_with_problems": 0
+        },
+        "TS": {
+          "cycles_per_pattern": 16648026.935,
+          "cycles_per_row_factorisation": 43.933361399999995,
+          "cycles_per_row_solve": 15.36199103125,
+          "cycles_ratio_to_A0": 0.2866370222958566,
+          "cycles_spread": 0.06412478452660544,
+          "instructions_per_pattern": 46704256.61,
+          "instructions_per_row_factorisation": 125.00921935000001,
+          "instructions_per_row_solve": 42.75416644999999,
+          "instructions_ratio_to_A0": 0.2647645654366952,
+          "instructions_spread": 1.2140221054548454e-07,
+          "rounds": 7,
+          "runs_with_problems": 0
+        }
+      },
+      "complete": true,
+      "cycles_authoritative_for_TA": true,
+      "file": "logs/measure_v3_n100000.jsonl",
+      "index": 3,
+      "load_after": 3.29,
+      "load_before": 3.55,
+      "load_ok": true,
+      "n": 100000,
+      "patterns": 200,
+      "sha256": "4c567073d5afd459f8d74ac5efe61742edaa9aad657105c0d58ce054423a8d17"
     }
   ],
   "node": "V21_BANDED_TIGHT_KERNEL",
   "schema": "vigilode.loop_l1.v21_banded_tight_kernel.results.v1",
   "stage_a1": {
-    "PASS_C": "NOT_DECIDABLE",
+    "PASS_C": "PASS",
     "PASS_C_if_the_cells_were_authoritative": "PASS",
     "PASS_I": "PASS",
     "per_size": {
@@ -712,12 +824,12 @@
         "measurement": "logs/measure_v2_n10000.jsonl"
       },
       "100000": {
-        "TA_cycles_ratio": 0.5686101668758473,
-        "TA_instructions_ratio": 0.25059382105004446,
-        "TD_cycles_ratio": 0.4418831847038946,
-        "TD_instructions_ratio": 0.2505935059125513,
-        "cycles_label": "diagnostic_only",
-        "measurement": "logs/measure_v2_n100000.jsonl"
+        "TA_cycles_ratio": 0.5680423363223129,
+        "TA_instructions_ratio": 0.2505938290937063,
+        "TD_cycles_ratio": 0.44415608288600256,
+        "TD_instructions_ratio": 0.2505935056228452,
+        "cycles_label": "authoritative",
+        "measurement": "logs/measure_v3_n100000.jsonl"
       }
     },
     "thresholds": {
@@ -743,9 +855,9 @@
       "ac3d16": {
         "band": 256,
         "cycles_label": "diagnostic_only",
-        "cycles_ratio": 0.339419474670535,
-        "instructions_ratio": 0.16285947773915357,
-        "measurement": "logs/drive_v2_ac3d16.jsonl",
+        "cycles_ratio": 0.3407376310237274,
+        "instructions_ratio": 0.16285948528602912,
+        "measurement": "logs/drive_v3_ac3d16.jsonl",
         "n": 4096,
         "valid": true
       },
@@ -769,18 +881,18 @@
     "instruction_measure": "PASS",
     "per_cell": {
       "bruss1d5000": {
-        "cycles_label": "diagnostic_only",
-        "cycles_ratio": 0.6916560931640595,
-        "instructions_ratio": 0.44863046371433796,
-        "measurement": "logs/drive_b1_bruss1d5000.jsonl",
+        "cycles_label": "authoritative",
+        "cycles_ratio": 0.7018206242426573,
+        "instructions_ratio": 0.4486298322785046,
+        "measurement": "logs/drive_b2_bruss1d5000.jsonl",
         "n": 10000,
         "valid": true
       },
       "bruss1d50000": {
-        "cycles_label": "diagnostic_only",
-        "cycles_ratio": 0.7453344010700732,
-        "instructions_ratio": 0.451456637377509,
-        "measurement": "logs/drive_b1_bruss1d50000.jsonl",
+        "cycles_label": "authoritative",
+        "cycles_ratio": 0.7102066612603364,
+        "instructions_ratio": 0.4514566177555286,
+        "measurement": "logs/drive_b2_bruss1d50000.jsonl",
         "n": 100000,
         "valid": true
       }
@@ -941,6 +1053,82 @@
       "load_ok": false,
       "n": 100000,
       "sha256": "53fb9e1cdaec155198b40139b5edf059dabed21a3190ba8dc5abbbc162cba7ac",
+      "size": 50000
+    },
+    {
+      "band": 2,
+      "budget": 40,
+      "complete": true,
+      "counts_operations_and_state_hash_equal_in_every_run": true,
+      "cycles_authoritative": true,
+      "family": "bruss1d",
+      "file": "logs/drive_b2_bruss1d5000.jsonl",
+      "index": 2,
+      "kernels": {
+        "indexed": {
+          "attempts_of_the_long_run": 40,
+          "cycles_per_attempt": 7031417.538461538,
+          "cycles_ratio_to_indexed": 1.0,
+          "cycles_spread": 0.027138978184083104,
+          "instructions_per_attempt": 23822969.692307692,
+          "instructions_ratio_to_indexed": 1.0,
+          "instructions_spread": 9.708363577980818e-07,
+          "rounds": 7
+        },
+        "tight": {
+          "attempts_of_the_long_run": 40,
+          "cycles_per_attempt": 4934793.846153846,
+          "cycles_ratio_to_indexed": 0.7018206242426573,
+          "cycles_spread": 0.014005427499218445,
+          "instructions_per_attempt": 10687694.897435898,
+          "instructions_ratio_to_indexed": 0.4486298322785046,
+          "instructions_spread": 2.1352137237291575e-06,
+          "rounds": 7
+        }
+      },
+      "load_after": 2.95,
+      "load_before": 3.12,
+      "load_ok": true,
+      "n": 10000,
+      "sha256": "288a0e4ad2e77e09995ddc5fed35de4c74d437767efb5f24606e47482d09c07a",
+      "size": 5000
+    },
+    {
+      "band": 2,
+      "budget": 40,
+      "complete": true,
+      "counts_operations_and_state_hash_equal_in_every_run": true,
+      "cycles_authoritative": true,
+      "family": "bruss1d",
+      "file": "logs/drive_b2_bruss1d50000.jsonl",
+      "index": 2,
+      "kernels": {
+        "indexed": {
+          "attempts_of_the_long_run": 40,
+          "cycles_per_attempt": 73169179.58974358,
+          "cycles_ratio_to_indexed": 1.0,
+          "cycles_spread": 0.07259918065179585,
+          "instructions_per_attempt": 239534869.23076922,
+          "instructions_ratio_to_indexed": 1.0,
+          "instructions_spread": 1.630296339469607e-07,
+          "rounds": 7
+        },
+        "tight": {
+          "attempts_of_the_long_run": 40,
+          "cycles_per_attempt": 51965238.743589744,
+          "cycles_ratio_to_indexed": 0.7102066612603364,
+          "cycles_spread": 0.019983676356122054,
+          "instructions_per_attempt": 108139601.8974359,
+          "instructions_ratio_to_indexed": 0.4514566177555286,
+          "instructions_spread": 3.872013040990242e-07,
+          "rounds": 7
+        }
+      },
+      "load_after": 3.12,
+      "load_before": 2.95,
+      "load_ok": true,
+      "n": 100000,
+      "sha256": "3f8a2e8a560b68cf97b5a08fa168a15fa009bf373120b2a14e53e1712ab7c951",
       "size": 50000
     }
   ],
@@ -1348,6 +1536,44 @@
       "n": 2048,
       "sha256": "b70651fd83298e14aea0d77693ce0ca99923c6c7c0e5f7b77e39fddc978d59df",
       "size": 32
+    },
+    {
+      "band": 256,
+      "budget": 6,
+      "complete": true,
+      "counts_operations_and_state_hash_equal_in_every_run": true,
+      "cycles_authoritative": false,
+      "family": "ac3d",
+      "file": "logs/drive_v3_ac3d16.jsonl",
+      "index": 3,
+      "kernels": {
+        "indexed": {
+          "attempts_of_the_long_run": 6,
+          "cycles_per_attempt": 1899464012.4,
+          "cycles_ratio_to_indexed": 1.0,
+          "cycles_spread": 0.14280256716065595,
+          "instructions_per_attempt": 11638247871.6,
+          "instructions_ratio_to_indexed": 1.0,
+          "instructions_spread": 2.0621660807350147e-08,
+          "rounds": 7
+        },
+        "slices": {
+          "attempts_of_the_long_run": 6,
+          "cycles_per_attempt": 647218867.8,
+          "cycles_ratio_to_indexed": 0.3407376310237274,
+          "cycles_spread": 0.02445013393041259,
+          "instructions_per_attempt": 1895399058.0,
+          "instructions_ratio_to_indexed": 0.16285948528602912,
+          "instructions_spread": 2.259154863670317e-07,
+          "rounds": 7
+        }
+      },
+      "load_after": 2.92,
+      "load_before": 3.29,
+      "load_ok": true,
+      "n": 4096,
+      "sha256": "9f406867ec0bb0f9092a86e839369a63b82275365c7c2a1a85db4c86b5339ae5",
+      "size": 16
     }
   ]
 }
