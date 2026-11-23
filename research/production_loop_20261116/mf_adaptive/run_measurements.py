@@ -12,7 +12,13 @@ phases
   setup        per family: SETUP x 3 (perf) and RHS0, with the binary of the runs
   d0           after the edit: arm S through route (perf), route_ls, audit and
                policy_shipped on the 30 cells (also the arm S of every comparison)
-  dev          P1 and P2 on the 10 development cells: audit and route (perf)
+  dev          the binary that holds both adaptive variants, on the 10
+               development cells: SETUP x 3 (perf) per problem; S, P1 and P2
+               through audit and route (perf). CHOICE.json is computed from
+               these logs only.
+  dev_repeat   the chosen arm on the 10 development cells with the final
+               binary (--arm): audit and route (perf); must reproduce the
+               development runs
   runs         arm N (--arm P1 or P2) on the 20 deciding cells: audit and route (perf)
   timing       per deciding cell the wall protocol under
                "flock <lock> taskset -c 6-11" (--arm, --try 1 or 2, --cells)
@@ -217,7 +223,7 @@ def wait_for_quiet(minutes, threshold=8.0):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("phase", choices=["record_a", "setup", "d0", "dev", "runs", "timing", "exploratory"])
+    parser.add_argument("phase", choices=["record_a", "setup", "d0", "dev", "dev_repeat", "runs", "timing", "exploratory"])
     parser.add_argument("--bin", required=True, help="the mf_adaptive_measure test binary")
     parser.add_argument("--families", default="")
     parser.add_argument("--rtols", default=",".join(RTOLS))
@@ -248,8 +254,14 @@ def main():
                                                          ("policy_shipped", False)], "after the edit"), args.jobs)
     elif args.phase == "dev":
         families = chosen or DEVELOPMENT
-        for arm in ("P1", "P2"):
+        runner.run_many(setup_jobs(families, "development", False), args.jobs)
+        for arm in ("S", "P1", "P2"):
             runner.run_many(cell_jobs(families, rtols, arm, [("audit", False), ("route", True)], "development"), args.jobs)
+    elif args.phase == "dev_repeat":
+        if args.arm not in ("P1", "P2"):
+            sys.exit("dev_repeat needs --arm P1 or --arm P2 (CHOICE.json)")
+        families = chosen or DEVELOPMENT
+        runner.run_many(cell_jobs(families, rtols, args.arm, [("audit", False), ("route", True)], "development repeat"), args.jobs)
     elif args.phase == "runs":
         if args.arm not in ("P1", "P2"):
             sys.exit("runs needs --arm P1 or --arm P2 (CHOICE.json)")
