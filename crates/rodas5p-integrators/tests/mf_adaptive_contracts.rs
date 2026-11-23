@@ -18,9 +18,10 @@ mod problems;
 use problems::{Family, ProtectedAudit, adaptive, declared, v06};
 use rodas5p_core::{CoreError, CoreResult, LinearMethod};
 use rodas5p_integrators::{
-    MfStageSolvePolicy, MfStageSolveStatistics, OutputSchedule, RODAS5P_MF_FAST_DRIVER_ID,
-    Rodas5pMfFastResult, Rodas5pMfFastWorkspace, RoutedRun, RoutingOptions, StageTargetOptions,
-    StageTargetPolicy, integrate_rodas5p_mf_fast_observed_gmres_into,
+    MfStageSolvePolicy, MfStageSolveStatistics, OutputSchedule, RODAS5P_MF_FAST_ADAPTIVE_DRIVER_ID,
+    RODAS5P_MF_FAST_DRIVER_ID, Rodas5pMfFastResult, Rodas5pMfFastWorkspace, RoutedRun,
+    RoutingOptions, StageTargetOptions, StageTargetPolicy,
+    integrate_rodas5p_mf_fast_observed_gmres_into,
     integrate_rodas5p_mf_fast_observed_with_stage_solve_policy,
     integrate_rodas5p_routed_observed_with_options,
 };
@@ -385,4 +386,43 @@ fn the_adaptive_policies_are_refused_where_they_do_not_apply() {
         );
         assert!(adaptive_run.observed.success);
     }
+}
+
+#[test]
+fn the_identifiers_name_the_policies() {
+    // The shipped policy keeps the identifier of the driver; the variant
+    // node V24 selected (P2) reports the next version; the other variant
+    // keeps a candidate identifier.
+    assert_eq!(RODAS5P_MF_FAST_DRIVER_ID, "rodas5p-mf-fast-transformed-v1");
+    assert_eq!(
+        RODAS5P_MF_FAST_ADAPTIVE_DRIVER_ID,
+        "rodas5p-mf-fast-transformed-v2"
+    );
+    assert_eq!(
+        MfStageSolvePolicy::Shipped.driver_id(),
+        RODAS5P_MF_FAST_DRIVER_ID
+    );
+    assert_eq!(
+        MfStageSolvePolicy::ColumnTestedDoubling.driver_id(),
+        RODAS5P_MF_FAST_ADAPTIVE_DRIVER_ID
+    );
+    assert_eq!(
+        MfStageSolvePolicy::ColumnTested.driver_id(),
+        "rodas5p-mf-fast-transformed-v2-candidate-p1"
+    );
+    assert!(!MfStageSolvePolicy::Shipped.is_adaptive());
+    let ids: Vec<&str> = [MfStageSolvePolicy::Shipped]
+        .into_iter()
+        .chain(ADAPTIVE)
+        .map(MfStageSolvePolicy::id)
+        .collect();
+    assert_eq!(
+        ids,
+        [
+            "mf-stage-solve-shipped-v1",
+            "mf-stage-solve-column-tested-v1",
+            "mf-stage-solve-column-tested-doubling-v1"
+        ]
+    );
+    assert_eq!(MfStageSolvePolicy::DOUBLING_FIRST_CYCLE, 10);
 }

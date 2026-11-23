@@ -127,12 +127,17 @@ impl MfStageSolvePolicy {
     }
 
     /// The driver identifier a run under this policy reports. The shipped
-    /// policy keeps [`RODAS5P_MF_FAST_DRIVER_ID`].
+    /// policy keeps [`RODAS5P_MF_FAST_DRIVER_ID`]. Node V24 selected the
+    /// variant P2 on its development problems
+    /// (`research/production_loop_20261116/mf_adaptive/CHOICE.json`), so
+    /// `ColumnTestedDoubling` reports
+    /// [`RODAS5P_MF_FAST_ADAPTIVE_DRIVER_ID`]; the variant that was not
+    /// selected keeps a candidate identifier.
     pub fn driver_id(self) -> &'static str {
         match self {
             Self::Shipped => RODAS5P_MF_FAST_DRIVER_ID,
             Self::ColumnTested => "rodas5p-mf-fast-transformed-v2-candidate-p1",
-            Self::ColumnTestedDoubling => "rodas5p-mf-fast-transformed-v2-candidate-p2",
+            Self::ColumnTestedDoubling => RODAS5P_MF_FAST_ADAPTIVE_DRIVER_ID,
         }
     }
 
