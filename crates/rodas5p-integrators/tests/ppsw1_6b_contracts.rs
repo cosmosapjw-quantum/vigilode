@@ -1663,7 +1663,7 @@ fn g3_protected_sources_are_byte_identical() {
         ),
         (
             "src/rodas5p_matrix_free_fast.rs",
-            "734fd17d6b341848a495db341ac6bc13383a3bf571048149ce7ebf810bd6ae87",
+            "6136f83b304cbfde02b8ccd1a8b4a93466dc5d742e6abcca6061cdfaa4301071",
         ),
         (
             "src/collective_rodas5p.rs",

@@ -1,7 +1,7 @@
 {
   "schema": "vigilode.loop-l1.sentinel-repin.v1",
   "node": "V24_MF_ADAPTIVE_STAGE_SOLVE",
-  "date_kst": "2026-11-23",
+  "date_kst": "2026-11-24",
   "authority": "owner decision OD-L1-11 (the protected matrix-free driver is edited; the sentinel is re-pinned for it and the old and new pins are recorded)",
   "sentinel": "crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs, test g3_protected_sources_are_byte_identical",
   "what_changed": "the pin of src/rodas5p_matrix_free_fast.rs, and one more allowed lib.rs block (the re-exports of the policy of the matrix-free stage solve). No other pin changed: with the four allowed blocks removed, src/lib.rs still hashes to the pin of 2026-11-16.",
@@ -9,8 +9,8 @@
     "file": "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
     "old": "a6d138f0da89b4506e2d7bae28621c241c5c0653c3020aad6f2a125d5e891139",
     "old_equals_the_file_at_the_base": true,
-    "new": "734fd17d6b341848a495db341ac6bc13383a3bf571048149ce7ebf810bd6ae87",
-    "pin_found_in_g3_before_this_run_of_the_script": "37c9dda727e606dc4ccbed76731f7929864a783bf905fc6f2bce72a50af73ce6"
+    "new": "6136f83b304cbfde02b8ccd1a8b4a93466dc5d742e6abcca6061cdfaa4301071",
+    "pin_found_in_g3_before_this_run_of_the_script": "734fd17d6b341848a495db341ac6bc13383a3bf571048149ce7ebf810bd6ae87"
   },
   "pin_of_stripped_lib_rs_unchanged": "1ad6c849a4e8ccd3aed86979e603d7365a8e78215fddf4001b2d00a9897402a9",
   "stripped_lib_rs_hash_now": "1ad6c849a4e8ccd3aed86979e603d7365a8e78215fddf4001b2d00a9897402a9",
@@ -25,7 +25,7 @@
   "files": {
     "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs": {
       "sha256_before": "a6d138f0da89b4506e2d7bae28621c241c5c0653c3020aad6f2a125d5e891139",
-      "sha256_after": "734fd17d6b341848a495db341ac6bc13383a3bf571048149ce7ebf810bd6ae87"
+      "sha256_after": "6136f83b304cbfde02b8ccd1a8b4a93466dc5d742e6abcca6061cdfaa4301071"
     },
     "crates/rodas5p-integrators/src/lib.rs": {
       "sha256_before": "2ff6aa4f44ba6eaf43ce9380a10b54fc3c97c31f816bc97832cfb5a0d28781cd",
@@ -33,18 +33,18 @@
     },
     "crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs": {
       "sha256_before": "849fc0c7a668309c37650f3dffb9244974fdf337d328a8f02592a1c88f251477",
-      "sha256_after": "0b38ce6325c44e2f20cc645f7c646a5e66ebb2f133018302198765518ce0b48a"
+      "sha256_after": "8dbb4b4c9f260387062304ec7208297535849d87d4439adc54f9bf8a0ddc161c"
     }
   },
   "second_sentinel_not_repinned": {
     "sentinel": "crates/rodas5p-integrators/tests/ptsw2b_contracts.rs, test h2_protected_sources_are_byte_identical",
     "why": "it pins the sha256 of src/rodas5p_matrix_free_fast.rs as well; the file is protected and is not in the write list of node V24, and g3 pins the bytes of tests/ptsw2b_contracts.rs itself. h2 therefore fails on this branch until the orchestrator changes two lines.",
     "h2_pin_now": "a6d138f0da89b4506e2d7bae28621c241c5c0653c3020aad6f2a125d5e891139",
-    "h2_pin_needed": "734fd17d6b341848a495db341ac6bc13383a3bf571048149ce7ebf810bd6ae87",
+    "h2_pin_needed": "6136f83b304cbfde02b8ccd1a8b4a93466dc5d742e6abcca6061cdfaa4301071",
     "sha256_of_ptsw2b_contracts_rs_now": "e0e54c374503698d465b1aaccc14f1a1d0823e7ce339798a0c3dfec1d963e2fc",
-    "sha256_of_ptsw2b_contracts_rs_after_that_one_line_change": "981a7523b4b98e2c06b559400bc8fd8aeea4675dc46372e339d3dfcdee44beb5",
+    "sha256_of_ptsw2b_contracts_rs_after_that_one_line_change": "217732bebfb13d985afd69a4fe5234d769be6e7bd75d7ef5ee806d4ffc1ed4c9",
     "g3_pin_of_tests_ptsw2b_contracts_rs_now": "e0e54c374503698d465b1aaccc14f1a1d0823e7ce339798a0c3dfec1d963e2fc",
-    "g3_pin_of_tests_ptsw2b_contracts_rs_needed": "981a7523b4b98e2c06b559400bc8fd8aeea4675dc46372e339d3dfcdee44beb5",
+    "g3_pin_of_tests_ptsw2b_contracts_rs_needed": "217732bebfb13d985afd69a4fe5234d769be6e7bd75d7ef5ee806d4ffc1ed4c9",
     "written_by_this_node": false
   },
   "not_pinned_by_this_sentinel": "src/routing.rs and crates/rodas5p-krylov/src/gmres_staged.rs (pinned by the loop checkpoint only)"

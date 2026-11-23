@@ -86,6 +86,15 @@ pub const RODAS5P_MF_FAST_ADAPTIVE_DRIVER_ID: &str = "rodas5p-mf-fast-transforme
 /// every policy: an iterate is returned only if its true residual
 /// `||rhs - (I - h gamma J) U||_2` is at most
 /// `max(|gamma| atol_lin, rtol_lin ||rhs||_2)`.
+///
+/// Status after node V24: the adaptive policies are opt-in. The frozen
+/// verdict of the node was FAIL: the selected variant met the pre-registered
+/// bounds on validity, accuracy, instructions and step counts on four
+/// problem families, but in one of twenty cells it had more stage solves
+/// that exhausted the Krylov budget than the shipped policy, which the
+/// pre-registered rule does not allow. The default of the driver and of the
+/// router therefore stays [`MfStageSolvePolicy::Shipped`]; the numbers are
+/// in `research/production_loop_20261116/mf_adaptive/REPORT_KO.md`.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum MfStageSolvePolicy {
