@@ -175,3 +175,34 @@ FINDINGS FOR THE ORCHESTRATOR
 REMAINING
 - ./run_checks.sh; ./run_measurements.sh timing <cell> 3 (5 cells + protected secondary);
   python3 -I build_results.py; python3 -I build_report.py; commit.
+
+== 2026-11-23 22:55, entry 5 (final state of this builder session) ==
+
+DECISION ON THE THIRD TIMING TRY
+- The quality rule allows one first measurement and two re-measurements per cell. Two measurements are used
+  (try 1 after the bounded wait, try 2 when the load touched 8). The third is NOT used: with the other
+  agents of the group still building and timing and unpinned jobs of other projects on the timing cores,
+  the arm spreads of t4/t6 were 10-40 % even at a load near 8, so a third try now would most likely have been
+  diagnostic again and would have closed the cell for good. It is left for a quiet host.
+- What is left for the orchestrator (mechanical, about 5 minutes on a quiet host, load <= 6 before starting):
+    cd research/production_loop_20261116/jacobian_assembly
+    ./run_measurements.sh build        # only if the measurement binary is gone; the logs record its sha256
+    for cell in nlkpp-band-n4096-r24 nlkpp-dense-n400 bruss1d-n131072 bruss1d-n128-dense \
+        bruss1d-n128-coloured; do ./run_measurements.sh timing $cell 3; done
+    python3 -I build_results.py && python3 -I build_report.py
+  The parser takes, per worker count, the first try that meets the rule; nothing else has to be edited.
+  Expected from the diagnostic numbers (not a verdict): dense cell PASS (t2 alone gives 1.78), wide-band cell
+  around the 1.5 threshold at P = 6 (1.51, 1.58), narrow-band cell below 1.1 at every P (KILL) -> node rule
+  FAIL (mixed) under the strict reading declared in PREDECLARED.json.
+
+DEVIATIONS FROM THE LETTER OF PREDECLARED.json (all in REPORT_KO.md section 8)
+- The arm rotation of a timing cell has six members (the diagnostic prot arm included): round r starts with
+  arm r mod 6, not r mod 5.
+- Contract-test tolerances corrected to the declared ones (entry 4).
+- Reference solutions with SciPy 1.11.4 / NumPy 1.26.4 (what python3 -I finds here).
+
+FINAL CHECKS (logs/checks.log, all exit 0)
+- tests of this node: 14 passed (13 contracts + 1 allocation), measure ignored;
+- sentinels ppsw1_6b_contracts + ptsw2b_contracts: 61 passed;
+- kit tests of earlier nodes (dense identity, alloc, banded tight identity): 14 passed;
+- clippy -D warnings (lib + 4 test targets), rustfmt --check (8 files), loop checker PASS, strict JSON load.

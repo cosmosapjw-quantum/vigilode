@@ -3,11 +3,11 @@
  "node": "V08_JACOBIAN_ASSEMBLY",
  "built_by": "build_results.py from the raw logs only",
  "predeclared_commit": "1312388740c0e7217aff08e465e0a2973a1d39a1",
- "head_at_build": "351bec189b6f526cbda86cff6f5bb6d96c4442dd",
+ "head_at_build": "b644643a63e59bd182de3e720afbe4e9354fa783",
  "logs": [
   {
    "file": "logs/checks.log",
-   "sha256": "04a1402973153647d44563e64ca4e036d9401cb6403ebbb1d33d631fcdc528ea"
+   "sha256": "3b08d5ceeccb29dc248670ad331ac1ab9ca32204c7c8dad6ff06c77577035c7e"
   },
   {
    "file": "logs/dump_bruss1d-n131072.log",
@@ -115,7 +115,7 @@
   },
   {
    "file": "logs/tests.log",
-   "sha256": "5ea9b1d0175ba858493bad61b8452d1b790fb3bdad4aea5b97aae23d3597d0a5"
+   "sha256": "dbc1b160285eaad8d69f943b2dc5e84f10b4c517578a948a58ab72e17ab1f417"
   },
   {
    "file": "logs/timing_bruss1d-n128-coloured_try1.log",
@@ -3947,7 +3947,7 @@
   "log": "logs/tests.log",
   "test_binaries_and_results": [
    "Running tests/stage_clients_assembly_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v08/release/deps/stage_clients_assembly_alloc-9ea93d9dc93206f0)",
-   "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s",
+   "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s",
    "Running tests/stage_clients_assembly_identity.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v08/release/deps/stage_clients_assembly_identity-73d5af4819718199)",
    "test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s",
    "Running tests/stage_clients_assembly_measure.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v08/release/deps/stage_clients_assembly_measure-bb6f046b6e731bed)",
@@ -4483,7 +4483,7 @@
  },
  "checks": {
   "log": "logs/checks.log",
-  "log_sha256": "04a1402973153647d44563e64ca4e036d9401cb6403ebbb1d33d631fcdc528ea",
+  "log_sha256": "3b08d5ceeccb29dc248670ad331ac1ab9ca32204c7c8dad6ff06c77577035c7e",
   "rows": [
    {
     "name": "tests of this node (identity, alloc; measure is ignored)",
@@ -4507,7 +4507,7 @@
     "name": "clippy -D warnings (lib and this node's test targets)",
     "command": "taskset -c 0-5,12-17 cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --test stage_clients_assembly_identity --test stage_clients_assembly_alloc --test stage_clients_assembly_problems --test stage_clients_assembly_measure --no-deps -- -D warnings",
     "exit_code": 0,
-    "result": "    Finished `release` profile [optimized] target(s) in 18.76s"
+    "result": "Checking rodas5p-core v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v08/crates/rodas5p-core) | Checking rodas5p-krylov v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v08/crates/rodas5p-krylov) | Checking rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v08/crates/rodas5p-integrators) | Finished `release` profile [optimized] target(s) in 17.97s"
    },
    {
     "name": "rustfmt --check",
@@ -4519,13 +4519,13 @@
     "name": "loop checker",
     "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
     "exit_code": 0,
-    "result": "Scope: checkpoint reproducibility. Production HOLD; no new numerical qualification."
+    "result": "PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities | Scope: checkpoint reproducibility. Production HOLD; no new numerical qualification."
    },
    {
     "name": "strict JSON load of the JSON files of this node",
     "command": "python3 -I -c \nimport json, sys\ndef refuse(text):\n    raise ValueError(\"non-strict constant \" + text)\nbase = \"research/production_loop_20261116/jacobian_assembly/\"\nfor name in (\"PREDECLARED.json\", \"RESULTS.json\"):\n    json.load(open(base + name, encoding=\"utf-8\"), parse_constant=refuse)\n    print(name, \"strict JSON ok\")\n",
     "exit_code": 0,
-    "result": "RESULTS.json strict JSON ok"
+    "result": "PREDECLARED.json strict JSON ok | RESULTS.json strict JSON ok"
    }
   ]
  }

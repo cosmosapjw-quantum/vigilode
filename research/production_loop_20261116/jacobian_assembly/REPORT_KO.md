@@ -1,7 +1,7 @@
 # V08 Jacobian 조립: 정확한 thread 병렬·색칠 유한차분 조립 (opt-in stage client)
 
 - node: `V08_JACOBIAN_ASSEMBLY` (loop L1, wave 2). 이 문서는 `build_report.py`가 `RESULTS.json`에서 만든다. 숫자는 모두 실행 로그(`logs/`)에서 `build_results.py`가 읽은 값이다.
-- 사전 선언: `PREDECLARED.json`, commit `1312388740c0e7217aff08e465e0a2973a1d39a1` (어떤 측정보다 먼저 commit). 결과 생성 시점 HEAD: `351bec189b6f526cbda86cff6f5bb6d96c4442dd`.
+- 사전 선언: `PREDECLARED.json`, commit `1312388740c0e7217aff08e465e0a2973a1d39a1` (어떤 측정보다 먼저 commit). 결과 생성 시점 HEAD: `b644643a63e59bd182de3e720afbe4e9354fa783`.
 - code: `crates/rodas5p-integrators/src/stage_clients/assembly.rs`, `assembly/engine.rs`, `assembly/pattern.rs`. test: `tests/stage_clients_assembly_{identity,alloc,measure,problems}.rs`.
 
 ## 1. 판정 요약
@@ -203,7 +203,14 @@ thread build에서는 RHS가 여러 thread에서 동시에, 서로 다른 이동
 - **달성 오차** `nlkpp-band-n4096-r24` (t = 10): 독립 기준(SciPy LSODA, rtol 1e-12, atol 1e-14, 해석 Jacobian, NumPy RHS) 대비 최대 절대 오차 6.62e-08, 허용오차 단위로 최대 0.0445(rms 0.00818); 기준의 불확도(rtol 1e-10 풀이와의 최대 차) 5.03e-10. 탐색적 기록이며 판별식이 아니다.
 - **달성 오차** `bruss1d-n131072` (t = 5.16045): 독립 기준(SciPy LSODA, rtol 1e-12, atol 1e-14, 해석 Jacobian, NumPy RHS) 대비 최대 절대 오차 3.82e-06, 허용오차 단위로 최대 3.54(rms 1.6); 기준의 불확도(rtol 1e-10 풀이와의 최대 차) 3.15e-09. 탐색적 기록이며 판별식이 아니다.
 
-## 8. 재현
+## 8. 선언과 다르게 한 것, 경과
+
+- timing의 arm 순환은 진단용 `prot` arm(보호 driver + 기준 유한차분 callback)을 포함한 6개 arm으로 돌렸다(round r은 arm r mod 6부터). `PREDECLARED.json`의 문장은 5개 arm(r mod 5)이다. `prot`는 판정에 쓰이지 않는다. 보조 cell(보호 banded kernel)은 선언대로 seq와 t6만 쟀다.
+- 계약 test의 허용오차: 처음에는 모든 문제에 atol = 1e-2 rtol을 썼다. 선언은 Brusselator에 atol = rtol(b1 case scale 1)이다. test를 선언대로 고쳤고 전부 통과한다. 측정 program은 처음부터 선언값(rtol 1e-6, atol 1e-8)이다.
+- 기준 풀이는 이 host의 `python3 -I`가 찾는 SciPy 1.11.4 / NumPy 1.26.4로 계산했다. banded 문제의 첫 시도는 LSODA의 banded Jacobian 배열 크기(lband 행 padding) 때문에 실패했고, script를 고쳐 다시 돌렸다(`logs/reference_error.log` 머리말).
+- 대기와 측정 순서: 유한 대기 21:57–22:17(1분 간격, load 12–28, 8 이하가 된 적 없음) 뒤 try 1. try 2는 다른 작업(instruction 계수, 기준 풀이, 검사)을 마친 뒤 load가 8 근처일 때 쟀다. 측정 이력 표가 모든 try를 보여 준다.
+
+## 9. 재현
 
 ```bash
 cd research/production_loop_20261116/jacobian_assembly
@@ -219,12 +226,12 @@ python3 -I build_results.py && python3 -I build_report.py
 | tests of this node (identity, alloc; measure is ignored) | 0 | 4 test binaries: 14 passed, 0 failed, 1 ignored |
 | source-pinning sentinels | 0 | 2 test binaries: 61 passed, 0 failed, 0 ignored |
 | stage client kit tests of earlier nodes (unchanged files) | 0 | 3 test binaries: 14 passed, 0 failed, 3 ignored |
-| clippy -D warnings (lib and this node's test targets) | 0 |     Finished `release` profile [optimized] target(s) in 18.76s |
+| clippy -D warnings (lib and this node's test targets) | 0 | Checking rodas5p-core v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v08/crates/rodas5p-core) | Checking rodas5p-krylov v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v08/crates/rodas5p-krylov) | Checking rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v08/crates/rodas5p-integrators) | Finished `release` profile [optimized] target(s) in 17.97s |
 | rustfmt --check | 0 | no output |
-| loop checker | 0 | Scope: checkpoint reproducibility. Production HOLD; no new numerical qualification. |
-| strict JSON load of the JSON files of this node | 0 | RESULTS.json strict JSON ok |
+| loop checker | 0 | PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities | Scope: checkpoint reproducibility. Production HOLD; no new numerical qualification. |
+| strict JSON load of the JSON files of this node | 0 | PREDECLARED.json strict JSON ok | RESULTS.json strict JSON ok |
 
-## 9. 열린 문제
+## 10. 열린 문제
 
 - 색칠 경로의 전체 풀이 이득은 문제 구조(색 수, 선형대수 비용)에 달려 있다. 넓은 band에서도 back end kernel에 따라 판정이 갈린다.
 - 검사 열은 표본이다. 표본 밖 열의 섞인 원소와, 검사 시점에 유한차분이 0인 원소는 보지 못한다.
