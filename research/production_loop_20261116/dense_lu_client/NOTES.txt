@@ -1,0 +1,68 @@
+V18_DENSE_LU_CLIENT - working notes (builder, loop L1 wave 2 group 3)
+worktree /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18, branch research/production-loop-20261116-w2-v18
+base commit 587a139501729bbe886bb2b8c49b0ef893705d08; CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v18
+
+== 2026-11-23 21:12 KST: state at start ==
+No earlier run of this node in the worktree (git log ends at the base commit, dense_lu_client/ did not exist,
+dense_lu_reuse.rs is the one-line stub).
+
+== Read so far (file:line) ==
+- research/production_loop_20261116/PREREGISTRATION.md:90-97  addendum A2, frozen row of V18.
+- docs/agent/production_solver_program_20261112/TASK_CONTRACTS.json tasks[27] V18_DENSE_LU_CLIENT:
+  "Threaded arm: 2, 4, 6 workers through a parallelism argument of the factorisation call, opt-in, no global
+  setting and no manifest change."
+- crates/rodas5p-integrators/src/stage_clients/dense_lu.rs:188-224 (client-kit factor: W = -J, diag += inv_h_gamma,
+  counters.direct_factorizations += 1, LuFactorization::new(&w)); :230-261 (solve through
+  LuFactorization::solve_in_place_with_workspace); :55-68 protected_choice (faer iff n > 64 AND density > 0.1).
+- crates/rodas5p-core/src/matrix.rs:198-200 to_faer = Mat::from_fn(n, n, |i, j| a[(i, j)]) (allocation 1, n x n);
+  :251-261 LuFactorization::new = a.to_faer().partial_piv_lu(); :232-243 LuSolveWorkspace (rhs Mat n x 1 and
+  a MemBuffer of solve_in_place_scratch::<usize, f64>(n, 1, par)); :273-306 solve_in_place_with_workspace
+  (finite check of the rhs, copy into the Mat, faer solve_in_place_with_conj(L, U, P, Conj::No, rhs, par, stack),
+  copy back, finite check -> CoreError::LinearSolve("LU produced NaN/Inf")).
+- faer 0.24.4 (~/.cargo/registry/src/*/faer-0.24.4):
+  src/linalg/solvers.rs:984-987 PartialPivLu::new = A.to_owned() (allocation 2, n x n) then new_imp;
+  :990-1019 new_imp: par = get_global_parallelism(); two vec![0usize; m] (allocations 3, 4); MemBuffer of
+  lu_in_place_scratch (allocation 5); lu_in_place(LU.as_mut(), fwd, bwd, par, stack, default()); split_LU(LU);
+  :955-979 split_LU (m >= n): L = LU (moved), U = Mat::zeros(n, n) (allocation 6, n x n), copy of the upper
+  triangle, strict upper triangle of L zeroed, diagonal of L set to one.
+  src/linalg/lu/partial_pivoting/factor.rs: lu_in_place (perm = identity, transpositions from the stack,
+  lu_in_place_recursion(matrix, 0, size, transpositions, par, params), perm and perm_inv from the transpositions);
+  params auto(): recursion_threshold 16, block_size 64, par_threshold 128*128; recursion: half = n/2,
+  block = half rounded up to a multiple of min(16, half.next_power_of_two()); unit lower triangular solve and
+  matmul with `par`; row swaps of the columns outside the block.
+  src/lib.rs:1112-1121 GLOBAL_PARALLELISM starts at 1 (= Par::Seq) when the feature "rayon" is off;
+  :929-936 enum Par { Seq, #[cfg(feature = "rayon")] Rayon(NonZeroUsize) }.
+  src/linalg/lu/partial_pivoting/solve.rs:21-52 solve_in_place_with_conj = permute_rows_in_place, unit lower
+  solve with L, upper solve with U.
+  src/linalg/triangular_solve.rs:433-500 (unit lower) and :501-565 (lower; the upper solve is the lower solve on
+  the reversed matrix, :589-604): the recursion splits the matrix with split_with(bs, bs) and uses only the
+  top-left, bottom-left and bottom-right blocks; the base cases (n <= 4) read the strict lower triangle (unit) or
+  the lower triangle with the diagonal. Neither solve reads the opposite triangle.
+- Cargo.toml:24 faer = { version = "0.24.4", default-features = false, features = ["std", "linalg",
+  "sparse-linalg"] }; Cargo.lock:316-331 faer has no dependency on rayon or spindle.
+- research/production_loop_20261116/cost_anatomy/REVIEW.json finding V04-R1: the path-length variants of the
+  review were symbolic links to one binary whose own path has 93 characters; link paths of 100, 108, 116 and 124
+  characters (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v04/review-scratch/head-len108-yyy...).
+  Minor faults per attempt of the protected driver at n = 512: 496 / 496 / 776 / 776 / 776.
+
+== Design decisions so far ==
+D1 (reuse arm). Client-owned faer Mat<f64> n x n for the combined factors, two usize arrays for the permutation,
+   one MemBuffer for the transpositions, one Mat n x 1 and one MemBuffer for the solve. factor() writes
+   W = -J (+ inv_h_gamma on the diagonal) straight into the column-major Mat and calls
+   faer::linalg::lu::partial_pivoting::factor::lu_in_place(.., Par::Seq, .., Default::default()): the call,
+   the parameters and the storage layout (a faer Mat of the same shape) of the protected path.
+   The protected split into L and U is not repeated: both triangular solves read only their own triangle
+   (see above), so the combined matrix is passed as L and as U. Identity is then tested, not assumed.
+D2 (threaded arm). faer's own threads are behind the cargo feature "rayon", which the workspace manifest switches
+   off; Par::Rayon does not exist in this build. Switching it on needs Cargo.toml:24 and Cargo.lock (new
+   packages rayon -> faer, spindle): both protected. So the arm as the contract words it ("through a parallelism
+   argument of the factorisation call") is NOT_RUN. To be confirmed with `cargo tree -e features` and a compile
+   probe, both kept as logs.
+   Candidate exploratory arm that needs no manifest change: the same recursion written in the client, with the
+   triangular solve and the matmul of each level split over column chunks on a client-owned rayon pool (rayon is
+   already a dependency of rodas5p-integrators). To be decided after the reuse arm is in place.
+
+== Next steps ==
+1. Read tests/stage_clients_dense_identity.rs and tests/stage_clients_alloc.rs (identity set, counting allocator).
+2. Read choose_lu in rodas5p_fast.rs and the V04 runner (dense problem family, timing protocol).
+3. Write PREDECLARED.json, commit, then the client, the tests, the runner.
