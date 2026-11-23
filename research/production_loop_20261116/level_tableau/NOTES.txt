@@ -171,3 +171,17 @@ NEW STRUCTURAL FACT (derived, then checked numerically to 1e-56 by run_explorato
 NEXT
 - D5F chain (running, 1093/2000 at 17:15), then D6L (queued). Then refine/verify/dev for both, selection, order,
   screen, exploratory, parse, render, checks, commit.
+
+== 2026-11-23 19:30 KST, entry 6 (written by the orchestrator session) ==
+
+The builder agent of this node was cut by the account usage limit on 2026-11-17 at about 15:38 KST, after
+commit 3777768a and before its last step. All declared runs were complete at that point (search, polish,
+refinement, verification, order checks and pay-off screens of D5F, D6T and D6L; exploratory log). The
+orchestrator ran only the last mechanical step, with no protocol choice of its own:
+  python3 -I parse_results.py      (RESULTS.json from logs/*.jsonl; verdicts depth 5 FOUND_FAIL, depth 6
+                                    FOUND_FAIL, node FAIL)
+  python3 -I render_report.py      (REPORT_KO.md from RESULTS.json; the renderer is the builder's
+                                    uncommitted version of 2026-11-17, committed as found)
+  strict JSON load of RESULTS.json, PREDECLARED.json, LITERATURE.json, index1_selected.json and the 27
+  candidate files; loop checker: PASS.
+The independent reviewer of this node checks the renderer change and every claim of the report.
