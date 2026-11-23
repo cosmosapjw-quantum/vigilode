@@ -3,11 +3,11 @@
  "node": "V08_JACOBIAN_ASSEMBLY",
  "built_by": "build_results.py from the raw logs only",
  "predeclared_commit": "1312388740c0e7217aff08e465e0a2973a1d39a1",
- "head_at_build": "d64effda39f145cf62c3ea6f25aca6dc8e533f16",
+ "head_at_build": "351bec189b6f526cbda86cff6f5bb6d96c4442dd",
  "logs": [
   {
    "file": "logs/checks.log",
-   "sha256": "a9db8132f638fc55adc63fdfe61ed0233daf6081cd941026a02e3f4443042c07"
+   "sha256": "04a1402973153647d44563e64ca4e036d9401cb6403ebbb1d33d631fcdc528ea"
   },
   {
    "file": "logs/dump_bruss1d-n131072.log",
@@ -115,7 +115,7 @@
   },
   {
    "file": "logs/tests.log",
-   "sha256": "708ac5d1f3b81324533074a71654868a6c568b0742fd203c19c2fd2b85b445a8"
+   "sha256": "5ea9b1d0175ba858493bad61b8452d1b790fb3bdad4aea5b97aae23d3597d0a5"
   },
   {
    "file": "logs/timing_bruss1d-n128-coloured_try1.log",
@@ -3947,7 +3947,7 @@
   "log": "logs/tests.log",
   "test_binaries_and_results": [
    "Running tests/stage_clients_assembly_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v08/release/deps/stage_clients_assembly_alloc-9ea93d9dc93206f0)",
-   "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s",
+   "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s",
    "Running tests/stage_clients_assembly_identity.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v08/release/deps/stage_clients_assembly_identity-73d5af4819718199)",
    "test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s",
    "Running tests/stage_clients_assembly_measure.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v08/release/deps/stage_clients_assembly_measure-bb6f046b6e731bed)",
@@ -3988,8 +3988,8 @@
      "client": "coloured route, 2 workers, BandedTightStageLu",
      "rtol": 0.0001,
      "steady_steps_measured": 40,
-     "steady_allocations_total": 1,
-     "steady_allocations_max_per_step": 1
+     "steady_allocations_total": 0,
+     "steady_allocations_max_per_step": 0
     },
     {
      "client": "coloured route, 2 workers, BandedTightStageLu",
@@ -4483,7 +4483,7 @@
  },
  "checks": {
   "log": "logs/checks.log",
-  "log_sha256": "a9db8132f638fc55adc63fdfe61ed0233daf6081cd941026a02e3f4443042c07",
+  "log_sha256": "04a1402973153647d44563e64ca4e036d9401cb6403ebbb1d33d631fcdc528ea",
   "rows": [
    {
     "name": "tests of this node (identity, alloc; measure is ignored)",
@@ -4507,7 +4507,7 @@
     "name": "clippy -D warnings (lib and this node's test targets)",
     "command": "taskset -c 0-5,12-17 cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --test stage_clients_assembly_identity --test stage_clients_assembly_alloc --test stage_clients_assembly_problems --test stage_clients_assembly_measure --no-deps -- -D warnings",
     "exit_code": 0,
-    "result": "    Finished `release` profile [optimized] target(s) in 20.31s"
+    "result": "    Finished `release` profile [optimized] target(s) in 18.76s"
    },
    {
     "name": "rustfmt --check",

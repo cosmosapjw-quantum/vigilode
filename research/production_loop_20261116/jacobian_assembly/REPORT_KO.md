@@ -1,7 +1,7 @@
 # V08 Jacobian 조립: 정확한 thread 병렬·색칠 유한차분 조립 (opt-in stage client)
 
 - node: `V08_JACOBIAN_ASSEMBLY` (loop L1, wave 2). 이 문서는 `build_report.py`가 `RESULTS.json`에서 만든다. 숫자는 모두 실행 로그(`logs/`)에서 `build_results.py`가 읽은 값이다.
-- 사전 선언: `PREDECLARED.json`, commit `1312388740c0e7217aff08e465e0a2973a1d39a1` (어떤 측정보다 먼저 commit). 결과 생성 시점 HEAD: `d64effda39f145cf62c3ea6f25aca6dc8e533f16`.
+- 사전 선언: `PREDECLARED.json`, commit `1312388740c0e7217aff08e465e0a2973a1d39a1` (어떤 측정보다 먼저 commit). 결과 생성 시점 HEAD: `351bec189b6f526cbda86cff6f5bb6d96c4442dd`.
 - code: `crates/rodas5p-integrators/src/stage_clients/assembly.rs`, `assembly/engine.rs`, `assembly/pattern.rs`. test: `tests/stage_clients_assembly_{identity,alloc,measure,problems}.rs`.
 
 ## 1. 판정 요약
@@ -14,6 +14,20 @@
 | wall ≥ 1.5x (n ≥ 64, RHS ≥ 50 µs인 FD 문제); KILL < 1.1x | 판정 불가 | 자격 문제별: `nlkpp-dense-n400` 판정 불가, `nlkpp-band-n4096-r24` 판정 불가, `bruss1d-n131072` 판정 불가. 사전 선언한 엄격한 규칙(자격 문제 전부 PASS여야 node PASS)에 따른 값 (3.4절) |
 
 판정 규칙은 `PREDECLARED.json`의 `verdict_rules` 그대로다. wall 판정은 전체 풀이 시간(client 생성 + driver 호출)으로 하고, Jacobian phase 시간은 옆에 적기만 한다.
+
+**wall 판정 불가의 이유**: `nlkpp-dense-n400`, `nlkpp-band-n4096-r24`, `bruss1d-n131072`에서 품질 규칙(1분 load ≤ 8, arm 내 퍼짐 ≤ 10 %)을 충족한 측정이 P = 2·4·6 전부에 대해서는 나오지 않았다. 측정하는 동안 같은 group의 다른 agent들이 build·timing을 했고 다른 project의 job도 돌았다. 선언한 유한 대기(20분) 뒤 측정했고, cell마다 측정은 2·2·2회다(규칙상 첫 측정 + 재측정 두 번까지, 모든 측정을 남김). 기준은 움직이지 않았다. 아래 진단값은 try마다 일관되지만 판정에 쓰지 않는다.
+
+| 자격 문제 | P | 전체 풀이 속도비 (try 순서) | Jacobian phase 속도비 (try 순서) |
+|---|---|---|---|
+| `nlkpp-dense-n400` | 2 | 1.78 (d), 1.79 (d) | 1.95, 1.95 |
+| `nlkpp-dense-n400` | 4 | 2.96 (d), 3.05 (d) | 3.77, 3.81 |
+| `nlkpp-dense-n400` | 6 | 3.93 (d), 3.89 (d) | 5.38, 5.09 |
+| `nlkpp-band-n4096-r24` | 2 | 1.20 (d), 1.21 (d) | 1.59, 1.61 |
+| `nlkpp-band-n4096-r24` | 4 | 1.29 (d), 1.46 (d) | 2.05, 2.77 |
+| `nlkpp-band-n4096-r24` | 6 | 1.51 (d), 1.58 (d) | 2.95, 3.38 |
+| `bruss1d-n131072` | 2 | 0.93 (d), 0.91 (d) | 0.85, 0.88 |
+| `bruss1d-n131072` | 4 | 0.93 (d), 0.92 (d) | 0.93, 0.95 |
+| `bruss1d-n131072` | 6 | 0.99 (d), 0.94 (d) | 1.03, 0.99 |
 
 ## 2. 만든 것
 
@@ -116,20 +130,20 @@ Amdahl 상한은 측정한 seq arm의 Jacobian 비중 f로 계산한 `1 / (1 - f
 
 측정 이력(모든 try를 남긴다):
 
-| 문제 | back end | try | 1분 load 전/후 | arm별 wall 퍼짐 % | 모든 run의 끝 상태 동일 | 권위 없는 이유 | log |
-|---|---|---|---|---|---|---|---|
-| `nlkpp-dense-n400` | dense_lu(faer) | 1 | 13.39 / 12.97 | t2 6.1, t4 10.1, t6 25.8, prot 8.7, seq 7.0, t1 3.4 | 예 | 1-minute load 13.39 before, 12.97 after (limit 8); t4: wall spread 0.101 > 0.10; t6: wall spread 0.258 > 0.10 | `logs/timing_nlkpp-dense-n400_try1.log` |
-| `nlkpp-dense-n400` | dense_lu(faer) | 2 | 8.11 / 10.86 | t2 3.2, t4 10.5, t6 40.2, prot 4.0, seq 4.2, t1 9.0 | 예 | 1-minute load 8.11 before, 10.86 after (limit 8); t4: wall spread 0.105 > 0.10; t6: wall spread 0.402 > 0.10 | `logs/timing_nlkpp-dense-n400_try2.log` |
-| `nlkpp-band-n4096-r24` | banded_protected | 1 | 19.65 / 18.25 | seq 11.0, t6 22.5 | 예 | 1-minute load 19.65 before, 18.25 after (limit 8); seq: wall spread 0.110 > 0.10; t6: wall spread 0.225 > 0.10 | `logs/timing_nlkpp-band-n4096-r24_protected_try1.log` |
-| `nlkpp-band-n4096-r24` | banded_protected | 2 | 6.38 / 6.67 | seq 8.6, t6 9.6 | 예 | 모든 비율이 규칙 충족 | `logs/timing_nlkpp-band-n4096-r24_protected_try2.log` |
-| `nlkpp-band-n4096-r24` | banded_tight | 1 | 12.97 / 15.0 | t2 26.9, t4 35.3, t6 46.5, prot 15.3, seq 12.2, t1 18.7 | 예 | 1-minute load 12.97 before, 15.0 after (limit 8); seq: wall spread 0.122 > 0.10; t1: wall spread 0.187 > 0.10; t2: wall spread 0.269 > 0.10; t4: wall spread 0.353 > 0.10; t6: wall spread 0.465 > 0.10 | `logs/timing_nlkpp-band-n4096-r24_try1.log` |
-| `nlkpp-band-n4096-r24` | banded_tight | 2 | 8.21 / 8.14 | t2 8.5, t4 19.0, t6 7.7, prot 1.6, seq 5.3, t1 7.1 | 예 | 1-minute load 8.21 before, 8.14 after (limit 8); t4: wall spread 0.190 > 0.10 | `logs/timing_nlkpp-band-n4096-r24_try2.log` |
-| `bruss1d-n131072` | banded_tight | 1 | 15.0 / 19.65 | t2 16.8, t4 17.4, t6 19.2, prot 16.7, seq 13.9, t1 47.4 | 예 | 1-minute load 15.0 before, 19.65 after (limit 8); seq: wall spread 0.139 > 0.10; t1: wall spread 0.474 > 0.10; t2: wall spread 0.168 > 0.10; t4: wall spread 0.174 > 0.10; t6: wall spread 0.192 > 0.10 | `logs/timing_bruss1d-n131072_try1.log` |
-| `bruss1d-n131072` | banded_tight | 2 | 9.34 / 7.31 | t2 33.4, t4 16.5, t6 10.5, prot 6.9, seq 5.0, t1 7.8 | 예 | 1-minute load 9.34 before, 7.31 after (limit 8); t2: wall spread 0.334 > 0.10; t4: wall spread 0.165 > 0.10; t6: wall spread 0.105 > 0.10 | `logs/timing_bruss1d-n131072_try2.log` |
-| `bruss1d-n128-dense` | dense_lu(in-place) | 1 | 19.65 / 19.65 | t2 9.2, t4 25.4, t6 20.2, prot 7.3, seq 43.8, t1 7.1 | 예 | 1-minute load 19.65 before, 19.65 after (limit 8); seq: wall spread 0.438 > 0.10; t4: wall spread 0.254 > 0.10; t6: wall spread 0.202 > 0.10 | `logs/timing_bruss1d-n128-dense_try1.log` |
-| `bruss1d-n128-dense` | dense_lu(in-place) | 2 | 6.55 / 6.55 | t2 4.7, t4 5.1, t6 13.0, prot 3.0, seq 29.2, t1 5.2 | 예 | seq: wall spread 0.292 > 0.10; t6: wall spread 0.130 > 0.10 | `logs/timing_bruss1d-n128-dense_try2.log` |
-| `bruss1d-n128-coloured` | banded_tight | 1 | 19.65 / 19.65 | t2 20.3, t4 21.2, t6 16.1, prot 23.8, seq 32.8, t1 20.1 | 예 | 1-minute load 19.65 before, 19.65 after (limit 8); seq: wall spread 0.328 > 0.10; t1: wall spread 0.201 > 0.10; t2: wall spread 0.203 > 0.10; t4: wall spread 0.212 > 0.10; t6: wall spread 0.161 > 0.10 | `logs/timing_bruss1d-n128-coloured_try1.log` |
-| `bruss1d-n128-coloured` | banded_tight | 2 | 17.72 / 17.72 | t2 22.1, t4 14.3, t6 13.0, prot 7.4, seq 12.8, t1 6.4 | 예 | 1-minute load 17.72 before, 17.72 after (limit 8); seq: wall spread 0.128 > 0.10; t2: wall spread 0.221 > 0.10; t4: wall spread 0.143 > 0.10; t6: wall spread 0.130 > 0.10 | `logs/timing_bruss1d-n128-coloured_try2.log` |
+| 문제 | back end | try | 1분 load 전/후 | 전체 속도비 P=2/4/6 | arm별 wall 퍼짐 % | 모든 run의 끝 상태 동일 | 권위 없는 이유 | log |
+|---|---|---|---|---|---|---|---|---|
+| `nlkpp-dense-n400` | dense_lu(faer) | 1 | 13.39 / 12.97 | 1.78 (d) / 2.96 (d) / 3.93 (d) | t2 6.1, t4 10.1, t6 25.8, prot 8.7, seq 7.0, t1 3.4 | 예 | 1-minute load 13.39 before, 12.97 after (limit 8); t4: wall spread 0.101 > 0.10; t6: wall spread 0.258 > 0.10 | `logs/timing_nlkpp-dense-n400_try1.log` |
+| `nlkpp-dense-n400` | dense_lu(faer) | 2 | 8.11 / 10.86 | 1.79 (d) / 3.05 (d) / 3.89 (d) | t2 3.2, t4 10.5, t6 40.2, prot 4.0, seq 4.2, t1 9.0 | 예 | 1-minute load 8.11 before, 10.86 after (limit 8); t4: wall spread 0.105 > 0.10; t6: wall spread 0.402 > 0.10 | `logs/timing_nlkpp-dense-n400_try2.log` |
+| `nlkpp-band-n4096-r24` | banded_protected | 1 | 19.65 / 18.25 | - / - / 1.36 (d) | seq 11.0, t6 22.5 | 예 | 1-minute load 19.65 before, 18.25 after (limit 8); seq: wall spread 0.110 > 0.10; t6: wall spread 0.225 > 0.10 | `logs/timing_nlkpp-band-n4096-r24_protected_try1.log` |
+| `nlkpp-band-n4096-r24` | banded_protected | 2 | 6.38 / 6.67 | - / - / 1.37 | seq 8.6, t6 9.6 | 예 | 모든 비율이 규칙 충족 | `logs/timing_nlkpp-band-n4096-r24_protected_try2.log` |
+| `nlkpp-band-n4096-r24` | banded_tight | 1 | 12.97 / 15.0 | 1.20 (d) / 1.29 (d) / 1.51 (d) | t2 26.9, t4 35.3, t6 46.5, prot 15.3, seq 12.2, t1 18.7 | 예 | 1-minute load 12.97 before, 15.0 after (limit 8); seq: wall spread 0.122 > 0.10; t1: wall spread 0.187 > 0.10; t2: wall spread 0.269 > 0.10; t4: wall spread 0.353 > 0.10; t6: wall spread 0.465 > 0.10 | `logs/timing_nlkpp-band-n4096-r24_try1.log` |
+| `nlkpp-band-n4096-r24` | banded_tight | 2 | 8.21 / 8.14 | 1.21 (d) / 1.46 (d) / 1.58 (d) | t2 8.5, t4 19.0, t6 7.7, prot 1.6, seq 5.3, t1 7.1 | 예 | 1-minute load 8.21 before, 8.14 after (limit 8); t4: wall spread 0.190 > 0.10 | `logs/timing_nlkpp-band-n4096-r24_try2.log` |
+| `bruss1d-n131072` | banded_tight | 1 | 15.0 / 19.65 | 0.93 (d) / 0.93 (d) / 0.99 (d) | t2 16.8, t4 17.4, t6 19.2, prot 16.7, seq 13.9, t1 47.4 | 예 | 1-minute load 15.0 before, 19.65 after (limit 8); seq: wall spread 0.139 > 0.10; t1: wall spread 0.474 > 0.10; t2: wall spread 0.168 > 0.10; t4: wall spread 0.174 > 0.10; t6: wall spread 0.192 > 0.10 | `logs/timing_bruss1d-n131072_try1.log` |
+| `bruss1d-n131072` | banded_tight | 2 | 9.34 / 7.31 | 0.91 (d) / 0.92 (d) / 0.94 (d) | t2 33.4, t4 16.5, t6 10.5, prot 6.9, seq 5.0, t1 7.8 | 예 | 1-minute load 9.34 before, 7.31 after (limit 8); t2: wall spread 0.334 > 0.10; t4: wall spread 0.165 > 0.10; t6: wall spread 0.105 > 0.10 | `logs/timing_bruss1d-n131072_try2.log` |
+| `bruss1d-n128-dense` | dense_lu(in-place) | 1 | 19.65 / 19.65 | 0.79 (d) / 0.85 (d) / 0.82 (d) | t2 9.2, t4 25.4, t6 20.2, prot 7.3, seq 43.8, t1 7.1 | 예 | 1-minute load 19.65 before, 19.65 after (limit 8); seq: wall spread 0.438 > 0.10; t4: wall spread 0.254 > 0.10; t6: wall spread 0.202 > 0.10 | `logs/timing_bruss1d-n128-dense_try1.log` |
+| `bruss1d-n128-dense` | dense_lu(in-place) | 2 | 6.55 / 6.55 | 0.83 (d) / 0.89 (d) / 0.85 (d) | t2 4.7, t4 5.1, t6 13.0, prot 3.0, seq 29.2, t1 5.2 | 예 | seq: wall spread 0.292 > 0.10; t6: wall spread 0.130 > 0.10 | `logs/timing_bruss1d-n128-dense_try2.log` |
+| `bruss1d-n128-coloured` | banded_tight | 1 | 19.65 / 19.65 | 0.64 (d) / 0.59 (d) / 0.48 (d) | t2 20.3, t4 21.2, t6 16.1, prot 23.8, seq 32.8, t1 20.1 | 예 | 1-minute load 19.65 before, 19.65 after (limit 8); seq: wall spread 0.328 > 0.10; t1: wall spread 0.201 > 0.10; t2: wall spread 0.203 > 0.10; t4: wall spread 0.212 > 0.10; t6: wall spread 0.161 > 0.10 | `logs/timing_bruss1d-n128-coloured_try1.log` |
+| `bruss1d-n128-coloured` | banded_tight | 2 | 17.72 / 17.72 | 0.64 (d) / 0.59 (d) / 0.48 (d) | t2 22.1, t4 14.3, t6 13.0, prot 7.4, seq 12.8, t1 6.4 | 예 | 1-minute load 17.72 before, 17.72 after (limit 8); seq: wall spread 0.128 > 0.10; t2: wall spread 0.221 > 0.10; t4: wall spread 0.143 > 0.10; t6: wall spread 0.130 > 0.10 | `logs/timing_bruss1d-n128-coloured_try2.log` |
 
 **정합 오차**: 한 cell의 모든 arm은 같은 수락 상태를 bit 단위로 낸다(timing run마다 끝 상태 fingerprint를 확인, 위 표). 따라서 달성 오차는 arm마다 같은 수이고, 속도비는 정확히 같은 오차에서의 비교다. 달성 오차 수준 자체는 7절에 적었다.
 
@@ -183,7 +197,7 @@ thread build에서는 RHS가 여러 thread에서 동시에, 서로 다른 이동
 
 ## 7. 그 밖의 측정
 
-- **할당**(`stage_clients_assembly_alloc.rs`, 별도 binary): 순차 mode run 42개, 정상 구간 step 3158개에서 할당 합계 **0** (PASS). 대상: TimedStageClient(coloured route, BandedStageLu (protected kernel)); TimedStageClient(coloured route, BandedTightStageLu); TimedStageClient(coloured route, DenseLu(InPlace)); TimedStageClient(dense route, DenseLu(InPlace)); coloured route, BandedStageLu (protected kernel); coloured route, BandedTightStageLu; coloured route, DenseLu(InPlace); dense route, DenseLu(InPlace). thread mode는 보고만 한다: dense route, 2 workers, DenseLu(InPlace) rtol 0.0001: step 40개에 0회; dense route, 2 workers, DenseLu(InPlace) rtol 1e-06: step 80개에 1회; coloured route, 2 workers, BandedTightStageLu rtol 0.0001: step 40개에 1회; coloured route, 2 workers, BandedTightStageLu rtol 1e-06: step 80개에 1회.
+- **할당**(`stage_clients_assembly_alloc.rs`, 별도 binary): 순차 mode run 42개, 정상 구간 step 3158개에서 할당 합계 **0** (PASS). 대상: TimedStageClient(coloured route, BandedStageLu (protected kernel)); TimedStageClient(coloured route, BandedTightStageLu); TimedStageClient(coloured route, DenseLu(InPlace)); TimedStageClient(dense route, DenseLu(InPlace)); coloured route, BandedStageLu (protected kernel); coloured route, BandedTightStageLu; coloured route, DenseLu(InPlace); dense route, DenseLu(InPlace). thread mode는 보고만 한다: dense route, 2 workers, DenseLu(InPlace) rtol 0.0001: step 40개에 0회; dense route, 2 workers, DenseLu(InPlace) rtol 1e-06: step 80개에 1회; coloured route, 2 workers, BandedTightStageLu rtol 0.0001: step 40개에 0회; coloured route, 2 workers, BandedTightStageLu rtol 1e-06: step 80개에 1회.
 - **instructions:u**(진단 전용, arm당 풀이 1회, process 전체): `bruss1d-n131072` seq: 9.590 G; `bruss1d-n131072` t1: 10.340 G; `bruss1d-n131072` t2: 10.342 G; `bruss1d-n131072` t4: 10.353 G; `bruss1d-n131072` t6: 10.365 G; `nlkpp-band-n4096-r24` seq: 5.970 G; `nlkpp-band-n4096-r24` t1: 6.112 G; `nlkpp-band-n4096-r24` t2: 6.113 G; `nlkpp-band-n4096-r24` t4: 6.119 G; `nlkpp-band-n4096-r24` t6: 6.127 G; `nlkpp-dense-n400` seq: 17.591 G; `nlkpp-dense-n400` t1: 17.634 G; `nlkpp-dense-n400` t2: 17.635 G; `nlkpp-dense-n400` t4: 17.639 G; `nlkpp-dense-n400` t6: 17.649 G. thread는 instruction을 줄이지 않는다(조금 늘린다). 이 node의 판별식이 아니다.
 - **달성 오차** `nlkpp-dense-n400` (t = 10): 독립 기준(SciPy LSODA, rtol 1e-12, atol 1e-14, 해석 Jacobian, NumPy RHS) 대비 최대 절대 오차 3e-07, 허용오차 단위로 최대 0.122(rms 0.0418); 기준의 불확도(rtol 1e-10 풀이와의 최대 차) 8.85e-10. 탐색적 기록이며 판별식이 아니다.
 - **달성 오차** `nlkpp-band-n4096-r24` (t = 10): 독립 기준(SciPy LSODA, rtol 1e-12, atol 1e-14, 해석 Jacobian, NumPy RHS) 대비 최대 절대 오차 6.62e-08, 허용오차 단위로 최대 0.0445(rms 0.00818); 기준의 불확도(rtol 1e-10 풀이와의 최대 차) 5.03e-10. 탐색적 기록이며 판별식이 아니다.
@@ -205,7 +219,7 @@ python3 -I build_results.py && python3 -I build_report.py
 | tests of this node (identity, alloc; measure is ignored) | 0 | 4 test binaries: 14 passed, 0 failed, 1 ignored |
 | source-pinning sentinels | 0 | 2 test binaries: 61 passed, 0 failed, 0 ignored |
 | stage client kit tests of earlier nodes (unchanged files) | 0 | 3 test binaries: 14 passed, 0 failed, 3 ignored |
-| clippy -D warnings (lib and this node's test targets) | 0 |     Finished `release` profile [optimized] target(s) in 20.31s |
+| clippy -D warnings (lib and this node's test targets) | 0 |     Finished `release` profile [optimized] target(s) in 18.76s |
 | rustfmt --check | 0 | no output |
 | loop checker | 0 | Scope: checkpoint reproducibility. Production HOLD; no new numerical qualification. |
 | strict JSON load of the JSON files of this node | 0 | RESULTS.json strict JSON ok |
@@ -216,4 +230,7 @@ python3 -I build_results.py && python3 -I build_report.py
 - 검사 열은 표본이다. 표본 밖 열의 섞인 원소와, 검사 시점에 유한차분이 0인 원소는 보지 못한다.
 - dense back end의 값 복사(n²)와 thread mode의 작업별 상태 복사는 RHS가 싼 문제에서 손해다.
 - facade `Jacobian::sparse_jvp`의 band 경로는 JVP 호출을 `Stats`에 기록하지 않는다(6절).
+- 색 수가 적고 n이 큰 문제(`bruss1d-n131072`)에서는 이 client의 Jacobian phase 대부분이 RHS가 아니라 원소 계산·복사다(3.4절 둘째 표). thread로는 줄지 않는다. 원소 table 없이 band를 직접 채우고 복사를 없애는 순차 경로가 더 낫다(만들지 않았다).
+- 묶음은 자연 순서 first-fit이라 최소가 아니다(순환 삼중대각 n = 11에서 5색, 최소는 4). client 생성(색칠과 table)은 n = 4096, 49색에서 16–18 ms로, 짧은 측정 풀이의 4–7 %다(선언한 wall에 포함).
+- wall 판별식은 host가 조용할 때 같은 명령(`run_measurements.sh timing <cell> <try>`)으로 다시 재야 판정된다. 규칙이 허용하는 측정은 cell당 3회이고 지금까지 2회 했다(남은 재측정 1회).
 - client는 opt-in으로만 둔다. 기본 routing과 보호 source는 바꾸지 않았다.

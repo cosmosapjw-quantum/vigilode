@@ -65,8 +65,13 @@ if results:
     ignored = sum(int(r[3]) for r in results)
     result = f"{len(results)} test binaries: {passed} passed, {failed} failed, {ignored} ignored"
 else:
-    lines = [line for line in text.strip().splitlines() if line.strip()]
-    result = lines[-1][:300] if lines else "no output"
+    lines = [line.strip() for line in text.strip().splitlines() if line.strip()]
+    if not lines:
+        result = "no output"
+    elif len(lines) <= 4:
+        result = " | ".join(lines)[:600]
+    else:
+        result = lines[-1][:300]
 print("V08_CHECK_JSON " + json.dumps({"name": name, "command": command, "exit_code": rc, "result": result}))
 EOF
     echo "$name: exit $rc"

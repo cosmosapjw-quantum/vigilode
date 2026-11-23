@@ -118,12 +118,22 @@ def tries_rows(results):
                     f"{arm} {100.0 * summary['wall_spread']:.1f}"
                     for arm, summary in attempt["arms"].items()
                 )
+                ratios = " / ".join(
+                    (
+                        ratio(attempt["ratios"][f"t{workers}"]["whole_solve_speed_up"])
+                        + ("" if attempt["ratios"][f"t{workers}"]["authoritative"] else " (d)")
+                    )
+                    if f"t{workers}" in attempt["ratios"]
+                    else "-"
+                    for workers in (2, 4, 6)
+                )
                 rows.append(
                     [
                         f"`{cell}`",
                         backend,
                         index + 1,
                         f"{attempt['load_1m_before']} / {attempt['load_1m_after']}",
+                        ratios,
                         spreads,
                         "예" if attempt["same_final_state_in_every_run"] else "아니오",
                         "; ".join(reasons) if reasons else "모든 비율이 규칙 충족",
@@ -204,6 +214,56 @@ def main():
         "(client 생성 + driver 호출)으로 하고, Jacobian phase 시간은 옆에 적기만 한다."
     )
     add("")
+    undecided = [
+        cell
+        for cell, entry in wall["cells"].items()
+        if entry["qualifies"] and entry["verdict"] == "NOT_DECIDABLE"
+    ]
+    if undecided:
+        add(
+            "**wall 판정 불가의 이유**: "
+            + ", ".join(f"`{cell}`" for cell in undecided)
+            + "에서 품질 규칙(1분 load ≤ 8, arm 내 퍼짐 ≤ 10 %)을 충족한 측정이 P = 2·4·6 전부에 대해서는 "
+            "나오지 않았다. 측정하는 동안 같은 group의 다른 agent들이 build·timing을 했고 다른 project의 "
+            "job도 돌았다. 선언한 유한 대기(20분) 뒤 측정했고, cell마다 측정은 "
+            + "·".join(
+                str(len(wall["cells"][cell]["backends"][wall["cells"][cell]["primary_backend"]]["tries"]))
+                for cell in undecided
+            )
+            + "회다(규칙상 첫 측정 + 재측정 두 번까지, 모든 측정을 남김). 기준은 움직이지 않았다. 아래 "
+            "진단값은 try마다 일관되지만 판정에 쓰지 않는다."
+        )
+        add("")
+        rows = []
+        for cell, entry in wall["cells"].items():
+            if not entry["qualifies"]:
+                continue
+            data = entry["backends"][entry["primary_backend"]]
+            for workers in (2, 4, 6):
+                values = [
+                    attempt["ratios"][f"t{workers}"]
+                    for attempt in data["tries"]
+                    if f"t{workers}" in attempt["ratios"]
+                ]
+                rows.append(
+                    [
+                        f"`{cell}`",
+                        workers,
+                        ", ".join(
+                            ratio(value["whole_solve_speed_up"])
+                            + ("" if value["authoritative"] else " (d)")
+                            for value in values
+                        ),
+                        ", ".join(ratio(value["jacobian_phase_speed_up"]) for value in values),
+                    ]
+                )
+        add(
+            table(
+                ["자격 문제", "P", "전체 풀이 속도비 (try 순서)", "Jacobian phase 속도비 (try 순서)"],
+                rows,
+            )
+        )
+        add("")
 
     add("## 2. 만든 것")
     add("")
@@ -522,6 +582,7 @@ def main():
                 "back end",
                 "try",
                 "1분 load 전/후",
+                "전체 속도비 P=2/4/6",
                 "arm별 wall 퍼짐 %",
                 "모든 run의 끝 상태 동일",
                 "권위 없는 이유",
@@ -811,6 +872,28 @@ def main():
     add(
         "- facade `Jacobian::sparse_jvp`의 band 경로는 JVP 호출을 `Stats`에 기록하지 않는다(6절)."
     )
+    add(
+        "- 색 수가 적고 n이 큰 문제(`bruss1d-n131072`)에서는 이 client의 Jacobian phase 대부분이 RHS가 아니라 "
+        "원소 계산·복사다(3.4절 둘째 표). thread로는 줄지 않는다. 원소 table 없이 band를 직접 채우고 "
+        "복사를 없애는 순차 경로가 더 낫다(만들지 않았다)."
+    )
+    add(
+        "- 묶음은 자연 순서 first-fit이라 최소가 아니다(순환 삼중대각 n = 11에서 5색, 최소는 4). client "
+        "생성(색칠과 table)은 n = 4096, 49색에서 16–18 ms로, 짧은 측정 풀이의 4–7 %다(선언한 wall에 포함)."
+    )
+    if wall["node_verdict"] == "NOT_DECIDABLE":
+        most = max(
+            len(data["tries"])
+            for entry in wall["cells"].values()
+            for name, data in entry["backends"].items()
+            if name == entry["primary_backend"]
+        )
+        left = max(0, 3 - most)
+        add(
+            "- wall 판별식은 host가 조용할 때 같은 명령(`run_measurements.sh timing <cell> <try>`)으로 "
+            f"다시 재야 판정된다. 규칙이 허용하는 측정은 cell당 3회이고 지금까지 {most}회 했다"
+            + (f"(남은 재측정 {left}회)." if left else "(남은 재측정 없음).")
+        )
     add("- client는 opt-in으로만 둔다. 기본 routing과 보호 source는 바꾸지 않았다.")
     add("")
 
