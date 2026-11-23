@@ -186,7 +186,7 @@ for cell, item in wall["cells"].items():
             continue
         p, r = used["arms"].get("protected"), used["arms"].get("reuse")
         rows.append([
-            cell, used["argv0_length"], variant["label"], f"{len(variant['invocation']['tries'])}회 중 {used['try']}번째",
+            cell, used["argv0_length"], variant["label"], f"{len(variant['invocation']['tries'])}회 중 round {used['round']} try {used['try']}",
             ms(p["wall_median_ns"]), ms(r["wall_median_ns"]), f(variant["speedup_protected_over_reuse"], 3),
             f"{f(p['spread'], 3)} / {f(r['spread'], 3)}",
             f"{f(p['steady_minor_faults_per_accepted_step'], 1)} / {f(r['steady_minor_faults_per_accepted_step'], 1)}",
@@ -227,7 +227,7 @@ for cell, size in client["sizes"].items():
         p = arms["protected"]
         cells_ms = " / ".join(ms(arms[a]["wall_median_ns"]) if a in arms else "-" for a in ("protected", "reuse", "threaded2", "threaded4", "threaded6"))
         rows.append([
-            f"{inv['rtol']:.0e}", inv["label"], f"{len(inv['tries'])}회 중 {used['try']}번째", p["attempts"], e(p.get("error_max_abs")),
+            f"{inv['rtol']:.0e}", inv["label"], f"{len(inv['tries'])}회 중 round {used['round']} try {used['try']}", p["attempts"], e(p.get("error_max_abs")),
             cells_ms, f(used["worst_spread"], 3), f"{used['loadavg_before'][0]} / {used['loadavg_after'][0]}",
             f(p["wall_median_ms_per_attempt"], 2),
         ])

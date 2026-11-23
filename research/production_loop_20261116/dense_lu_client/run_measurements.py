@@ -27,7 +27,6 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 LOGS = HERE / "logs"
 MANIFEST = LOGS / "MANIFEST.jsonl"
-WAIT_STATE = LOGS / "WAIT_BUDGET.json"
 RUNNER_DIR = HERE / "runner"
 TARGET = Path(os.environ.get("CARGO_TARGET_DIR", ""))
 EXPECTED_TARGET = Path("/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v18")
@@ -42,6 +41,11 @@ LOAD_LIMIT = 8.0
 SPREAD_LIMIT = 0.10
 MAX_TRIES = 3
 WAIT_BUDGET_S = 20 * 60
+# A later measurement round (V18_ROUND=2, ...) keeps the logs of the earlier ones: its timing
+# logs carry the suffix .round<N> and it has a wait budget of its own. Round 1 is the node's run.
+ROUND = int(os.environ.get("V18_ROUND", "1"))
+ROUND_SUFFIX = "" if ROUND == 1 else f".round{ROUND}"
+WAIT_STATE = LOGS / f"WAIT_BUDGET{ROUND_SUFFIX}.json"
 
 PREDECLARED = json.loads((HERE / "PREDECLARED.json").read_text())
 CELLS = PREDECLARED["cells"]
@@ -139,7 +143,9 @@ def wait_for_quiet():
         print(f"  load {load1():.2f} > {LOAD_LIMIT}: waiting ({total:.0f} s of {WAIT_BUDGET_S} used)", flush=True)
         time.sleep(60)
         total += 60
-        WAIT_STATE.write_text(json.dumps({"waited_s": total, "limit_s": WAIT_BUDGET_S}) + "\n")
+        state = json.loads(WAIT_STATE.read_text()) if WAIT_STATE.exists() else {}
+        state.update({"waited_s": total, "limit_s": WAIT_BUDGET_S})
+        WAIT_STATE.write_text(json.dumps(state) + "\n")
 
 
 def meets_quality_rule(name):
@@ -163,7 +169,7 @@ def measure(stage, base, length, cell, rtol, arms, options=()):
     """A timing invocation with the re-measurement rule; every try is kept."""
     for attempt in range(1, MAX_TRIES + 1):
         wait_for_quiet()
-        name = f"{base}.try{attempt}.jsonl"
+        name = f"{base}{ROUND_SUFFIX}.try{attempt}.jsonl"
         code = runner(
             stage,
             name,
@@ -173,7 +179,7 @@ def measure(stage, base, length, cell, rtol, arms, options=()):
             rtol,
             ["--arms", ",".join(arms), "--warmups", "2", "--reps", "7"] + list(options),
             TIMING,
-            {"try": attempt, "arms": arms},
+            {"try": attempt, "round": ROUND, "arms": arms},
         )
         if code == 0 and meets_quality_rule(name):
             print(f"  {name}: meets the quality rule", flush=True)

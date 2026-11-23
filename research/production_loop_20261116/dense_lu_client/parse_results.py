@@ -517,10 +517,16 @@ def invocation(stage, base):
     """All tries of one timing invocation and the one the rule selects."""
     entries = last_invocations(stage)
     tries = []
-    for attempt in (1, 2, 3):
-        name = f"{base}.try{attempt}.jsonl"
-        if name in entries:
-            tries.append(parse_measure(name, entries[name]))
+    # Round 1 is the node's own run (at most three tries); a later round, if any, is a
+    # re-measurement that keeps the earlier logs (suffix .round<N>).
+    for round_index in range(1, 10):
+        suffix = "" if round_index == 1 else f".round{round_index}"
+        for attempt in (1, 2, 3):
+            name = f"{base}{suffix}.try{attempt}.jsonl"
+            if name in entries:
+                parsed = parse_measure(name, entries[name])
+                parsed["round"] = round_index
+                tries.append(parsed)
     if not tries:
         return {"base": base, "status": "NOT_RUN", "tries": [], "label": None, "used": None}
     used = next((t for t in tries if t["authoritative"]), None)
