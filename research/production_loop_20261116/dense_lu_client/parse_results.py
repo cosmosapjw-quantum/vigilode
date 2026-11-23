@@ -820,6 +820,130 @@ def exploratory_section():
     return out
 
 
+def diagnostic_summary(wall, threaded):
+    """Ranges over every try that ran, whatever its label. No verdict uses these ranges."""
+
+    def span(values):
+        values = [v for v in values if v is not None]
+        return {"count": len(values), "min": min(values), "max": max(values)} if values else {"count": 0}
+
+    reuse_by_cell = {}
+    for cell, item in wall["cells"].items():
+        speedups = []
+        for variant in item["variants"]:
+            for attempt in variant["invocation"]["tries"]:
+                if attempt["status"] == "RUN" and {"protected", "reuse"} <= set(attempt["arms"]):
+                    arms = attempt["arms"]
+                    speedups.append(arms["protected"]["wall_median_ns"] / arms["reuse"]["wall_median_ns"])
+        reuse_by_cell[cell] = span(speedups)
+    threaded_by_cell = {}
+    for cell, size in threaded["client_side_arm"]["sizes"].items():
+        per_arm = {}
+        for inv in size["invocations"]:
+            for attempt in inv["tries"]:
+                if attempt["status"] != "RUN" or "protected" not in attempt["arms"]:
+                    continue
+                base = attempt["arms"]["protected"]["wall_median_ns"]
+                for arm, item in attempt["arms"].items():
+                    if arm != "protected":
+                        per_arm.setdefault(arm, []).append(base / item["wall_median_ns"])
+        threaded_by_cell[cell] = {arm: span(values) for arm, values in sorted(per_arm.items())}
+    tries = [
+        attempt
+        for item in wall["cells"].values()
+        for variant in item["variants"]
+        for attempt in variant["invocation"]["tries"]
+    ] + [
+        attempt
+        for size in threaded["client_side_arm"]["sizes"].values()
+        for inv in size["invocations"]
+        for attempt in inv["tries"]
+    ]
+    ran = [attempt for attempt in tries if attempt["status"] == "RUN"]
+    return {
+        "note": "speed-up of the protected arm's median wall over the arm's median wall, per try, at equal tolerance",
+        "reuse_wall_speedup_over_all_tries": reuse_by_cell,
+        "threaded_speedup_over_all_tries": threaded_by_cell,
+        "timing_tries_total": len(tries),
+        "timing_tries_authoritative": sum(1 for attempt in ran if attempt["authoritative"]),
+        "timing_tries_missing_only_the_load_limit": sum(
+            1 for attempt in ran if not attempt["authoritative"] and attempt["worst_spread"] <= SPREAD_LIMIT
+        ),
+        "timing_tries_missing_the_spread_limit": sum(1 for attempt in ran if attempt["worst_spread"] > SPREAD_LIMIT),
+        "load_before_min_max": [
+            min(attempt["loadavg_before"][0] for attempt in ran),
+            max(attempt["loadavg_before"][0] for attempt in ran),
+        ]
+        if ran
+        else None,
+    }
+
+
+def phases_section():
+    """Exploratory phase times (TimedStageClient around every client arm)."""
+    out = []
+    for name, entry in sorted(last_invocations("phases").items()):
+        data = rows_of(name)
+        header = next((r for r in data if r["type"] == "header"), None)
+        footer = next((r for r in data if r["type"] == "footer"), None)
+        if entry["exit_code"] != 0 or header is None or footer is None:
+            out.append({"log": name, "status": "FAILED", "exit_code": entry["exit_code"]})
+            continue
+        arms = {}
+        for row in data:
+            if row["type"] == "run" and row["kind"] == "timed":
+                arms.setdefault(row["arm"], []).append(row)
+        stats = {}
+        for arm, runs in arms.items():
+            attempts = runs[0]["attempts"]
+            walls = [r["wall_ns"] for r in runs]
+
+            def per_attempt(key):
+                return median([r[key] for r in runs]) / attempts / 1.0e6
+
+            factor, solve, linearize = per_attempt("factor_ns"), per_attempt("solve_ns"), per_attempt("linearize_ns")
+            total = median(walls) / attempts / 1.0e6
+            stats[arm] = {
+                "repetitions": len(runs),
+                "attempts": attempts,
+                "end_state_fingerprints": sorted({r["end_state_fnv1a64"] for r in runs}),
+                "spread": (max(walls) - min(walls)) / median(walls),
+                "wall_ms_per_attempt": total,
+                "factor_ms_per_attempt": factor,
+                "solve_ms_per_attempt": solve,
+                "linearize_ms_per_attempt": linearize,
+                "rest_ms_per_attempt": total - factor - solve - linearize,
+                "factor_share": factor / total,
+            }
+        for arm, item in stats.items():
+            for base in ("kit", "reuse"):
+                if base in stats:
+                    item[f"factor_speedup_over_{base}"] = stats[base]["factor_ms_per_attempt"] / item["factor_ms_per_attempt"]
+                    item[f"run_speedup_over_{base}"] = stats[base]["wall_ms_per_attempt"] / item["wall_ms_per_attempt"]
+        load_before, load_after = header["loadavg_before"][0], footer["loadavg_after"][0]
+        worst = max(item["spread"] for item in stats.values())
+        out.append(
+            {
+                "log": name,
+                "status": "RUN",
+                "cell": header["cell"]["id"],
+                "n": header["cell"]["n"],
+                "rtol": header["cell"]["rtol"],
+                "t_span": header["cell"]["t_span"],
+                "cpus_allowed_list": header["cpus_allowed_list"],
+                "loadavg_before": header["loadavg_before"],
+                "loadavg_after": footer["loadavg_after"],
+                "worst_spread": worst,
+                "label": "authoritative"
+                if load_before <= LOAD_LIMIT and load_after <= LOAD_LIMIT and worst <= SPREAD_LIMIT
+                else "diagnostic_only",
+                "same_end_state_in_every_arm": len({fp for item in stats.values() for fp in item["end_state_fingerprints"]}) == 1,
+                "arms": stats,
+            }
+        )
+    return out
+
+
 def main():
     identity = identity_section()
     allocations = allocation_section()
@@ -878,6 +1002,9 @@ def main():
                     if "runner_sha256" in entry
                 }
             ),
+            "phases_binary_sha256": sorted(
+                {e["phases_sha256"] for e in last_invocations("phases").values() if "phases_sha256" in e}
+            ),
             "runner_sha256_of_superseded_invocations": sorted(
                 {e["runner_sha256"] for e in MANIFEST if "runner_sha256" in e}
                 - {
@@ -903,7 +1030,8 @@ def main():
         "page_faults": faults,
         "reuse_wall": wall,
         "threaded": threaded,
-        "exploratory": exploratory_section(),
+        "exploratory": dict(exploratory_section(), phases=phases_section()),
+        "diagnostic_summary": diagnostic_summary(wall, threaded),
         "verdicts": {
             "reuse_parts": parts,
             "reuse_pass_criterion": reuse_pass,

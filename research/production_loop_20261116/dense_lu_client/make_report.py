@@ -89,6 +89,18 @@ add("스레드 arm에는 두 줄이 있다. faer 자체의 스레드 인수분�
     "둘째 줄을 부록 A2의 판정으로 볼지 탐색 결과로 볼지는 오케스트레이터가 정한다. 이 노드는 정하지 않는다.")
 add("")
 
+D = R["diagnostic_summary"]
+add(f"타이밍 시도 {D['timing_tries_total']}개 가운데 품질 규칙을 만족한 것은 {D['timing_tries_authoritative']}개다 "
+    f"(spread 한도를 넘은 시도 {D['timing_tries_missing_the_spread_limit']}개, load 한도만 넘은 시도 {D['timing_tries_missing_only_the_load_limit']}개; "
+    f"시작 시 1분 load 범위 {D['load_before_min_max']}). 호스트에서 같은 그룹의 다른 에이전트가 빌드와 테스트를 돌리고 있었다. "
+    "NOT_DECIDABLE인 줄은 동결 규칙대로 판정하지 않은 것이다. 아래 범위는 라벨과 상관없이 실행된 모든 시도의 값이며 진단용이다 (판정에 쓰지 않음):")
+add("")
+rows = [[f"재사용 / 보호, {cell}", item.get("count"), f(item.get("min"), 3), f(item.get("max"), 3)] for cell, item in D["reuse_wall_speedup_over_all_tries"].items()]
+for cell, arms in D["threaded_speedup_over_all_tries"].items():
+    rows += [[f"{arm} / 보호, {cell}", item.get("count"), f(item.get("min"), 3), f(item.get("max"), 3)] for arm, item in arms.items()]
+add(table(["속도비 (보호 중앙값 / arm 중앙값)", "시도 수", "최소", "최대"], rows))
+add("")
+
 # ---------------------------------------------------------------------------------------------
 add("## 2. 무엇을 만들었나, 사용자가 무엇을 켜야 하나")
 add("")
@@ -286,6 +298,26 @@ if rows:
     add("사용자 모드 명령 수 (`perf stat -e instructions:u`, 설정 비용 차감, 결정적 보조 지표). 커널이 page fault에서 하는 일은 들어 있지 않다:")
     add("")
     add(table(["셀", "arm", "시도 합", "시도당 instructions:u", "보호 대비 비", "시도당 minor fault (perf)"], rows))
+    add("")
+
+rows = []
+for item in ex.get("phases", []):
+    if item.get("status") != "RUN":
+        continue
+    for arm in ("kit", "reuse", "threaded2", "threaded4", "threaded6"):
+        data = item["arms"].get(arm)
+        if not data:
+            continue
+        rows.append([
+            item["cell"], arm, f(data["factor_ms_per_attempt"], 3), f(data["solve_ms_per_attempt"], 3), f(data["linearize_ms_per_attempt"], 3),
+            f(data["rest_ms_per_attempt"], 3), f(data["wall_ms_per_attempt"], 3), f(data["factor_share"], 3),
+            f(data.get("factor_speedup_over_reuse"), 2), f(data.get("run_speedup_over_kit"), 2), item["label"],
+        ])
+if rows:
+    add("단계별 시간 (`v18-dense-lu-phases`, 클라이언트 키트의 `TimedStageClient`로 감싼 각 arm; 시도당 ms, 반복 5회의 중앙값). "
+        "`kit`은 보호 드라이버의 faer 경로와 같은 선형대수, 같은 할당, 같은 비트다. 이 측정은 사전 선언에 없고, 첫 타이밍 결과를 본 뒤에 추가한 탐색 측정이다:")
+    add("")
+    add(table(["셀", "arm", "인수분해", "풀이 8회", "선형화", "나머지", "합계", "인수분해 비중", "인수분해 속도비 (재사용 대비)", "실행 속도비 (kit 대비)", "라벨"], rows))
     add("")
 
 # ---------------------------------------------------------------------------------------------

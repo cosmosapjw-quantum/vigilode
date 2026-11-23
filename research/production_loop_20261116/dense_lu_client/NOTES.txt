@@ -129,3 +129,33 @@ so the two re-measurements can be made later than the first try instead of back 
 2. run_checks.sh (cargo; not while a timing invocation runs), then timing pass 2 and 3 for invocations that
    miss the quality rule, then perf stage.
 3. parse_results.py, make_report.py, final checks, final commit.
+
+== 2026-11-23 22:52 KST: milestone - timing passes 1 and 2 done, pass 3 running ==
+Timing passes (one try per invocation and pass; wall: 6 invocations, wp: 6, extra: 3):
+pass 1 22:22-22:34 (1-minute load 8.8..15), pass 2 22:34-22:50 (load 8.0..10.9), pass 3 started 22:50.
+No try of passes 1 and 2 meets the quality rule. 23 of 24 tries of the frozen cells miss the 10 % spread
+limit; the load was within 0.4 of the limit for most of pass 2.
+Why the spread is large (per-repetition rows of the logs): the protected arm changes its page-fault regime
+between repetitions of one invocation (for example wall.skewnet.n512.len124.try2: 2496, 42432 and 63210
+minor faults after warm-up in runs of 399, 472..513 and 499..517 ms), and at a constant fault count its wall
+still drifts (wall.meanfield.n512.len108.try2: 450..576 ms at 64672 faults). The reuse arm has a spread of
+0.05..0.07 in pass 2.
+Diagnostic numbers so far (no verdict): reuse/protected at n = 512: 1.36..1.62 over 12 tries; in the 5-arm
+wp invocations the protected arm did not fault after warm-up and reuse/protected was 1.11..1.26; threaded6
+at n = 2048: 2.53..2.76; threaded6 at n = 512: 1.21..1.27; reuse at n = 2048 (extra): 1.47.
+perf stat: user-mode instructions per attempt reuse/protected 0.960 (meanfield.n512) and 0.966
+(skewnet.n512): the wall difference is kernel work on page faults, not user-mode instructions.
+Threaded trajectories are bit-identical to the protected one in every pair row.
+
+Added after seeing the first timing pass (exploratory, not in PREDECLARED.json): a second binary of the
+runner package, v18-dense-lu-phases, which wraps every client arm in the kit's TimedStageClient and prints
+the time of linearization, factorization and solves; stage `phases` of run_measurements.py. Reason: the
+threaded arm gains little at n = 512 and the phase split tells whether the factorization or the rest of
+the step limits it. The main runner binary is unchanged.
+
+== Next steps ==
+1. Wait for pass 3. 2. Build the phases binary, run run_checks.sh (cargo). 3. Stage phases.
+4. parse_results.py, make_report.py, strict JSON, final commit, structured answer.
+If the timing verdicts stay NOT_DECIDABLE: a later measurement on a quiet host is
+`V18_ROUND=2 python3 -I research/production_loop_20261116/dense_lu_client/run_measurements.py wall wp extra`
+(logs get the suffix .round2; the parser uses the first try that meets the rule, in round order).

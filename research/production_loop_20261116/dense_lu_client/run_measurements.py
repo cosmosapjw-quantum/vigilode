@@ -5,7 +5,7 @@ Usage (from the worktree root, CARGO_TARGET_DIR exported):
 
     python3 -I research/production_loop_20261116/dense_lu_client/run_measurements.py <stage> ...
 
-Stages: build, links, tests, identity, reference, faults, wall, wp, extra, perf.
+Stages: build, links, tests, identity, reference, faults, wall, wp, extra, perf, phases.
 
 The protocol (cells, tolerances, caps) is read from PREDECLARED.json. This script starts
 programs, stores their raw output under logs/ and appends one line per invocation to
@@ -299,6 +299,35 @@ def stage_extra():
     measure("extra", "extra.skewnet.n2048.rtol1e-4.reuse", 93, "skewnet.n2048", 1.0e-4, ["protected", "reuse"])
 
 
+PHASES_BINARY = TARGET / "release" / "v18-dense-lu-phases"
+# Exploratory (not in PREDECLARED.json): phase times of the client arms. n = 1024 is not a
+# declared cell, so the time span is given here.
+PHASE_CELLS = (
+    ("skewnet.n512", 2.0, 1.0e-6),
+    ("meanfield.n512", 10.0, 1.0e-6),
+    ("skewnet.n1024", 1.0, 1.0e-5),
+    ("skewnet.n2048", 1.0, 1.0e-4),
+)
+
+
+def stage_phases():
+    for cell, t_end, rtol in PHASE_CELLS:
+        name = f"phases.{cell}.rtol{rtol_text(rtol)}{ROUND_SUFFIX}.jsonl"
+        wait_for_quiet()
+        argv = (
+            TIMING
+            + CLEAN_ENV
+            + [str(PHASES_BINARY), "--cell", cell, "--t-end", repr(t_end), "--rtol", repr(rtol)]
+            + ["--warmups", "1", "--reps", "5"]
+        )
+        run(
+            "phases",
+            name,
+            argv,
+            extra={"cell": cell, "rtol": rtol, "round": ROUND, "phases_sha256": sha256(PHASES_BINARY)},
+        )
+
+
 def stage_perf():
     for cell in ("skewnet.n512", "meanfield.n512"):
         for arm in ("none", "protected", "kit", "reuse"):
@@ -326,6 +355,7 @@ STAGES = {
     "wp": stage_wp,
     "extra": stage_extra,
     "perf": stage_perf,
+    "phases": stage_phases,
 }
 
 
