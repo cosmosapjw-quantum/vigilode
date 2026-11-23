@@ -29,17 +29,27 @@
 //! development problems `dev06_bruss1d`, `dev06_adr2d` (the declared
 //! instances of node V06, run with the integrator configuration of V17).
 //!
-//! Arms: `S` is the driver with the shipped stage-solve policy.
+//! Arms: `S` is the driver with the shipped stage-solve policy, `P1` and
+//! `P2` the driver with the adaptive policies (`MfStageSolvePolicy`). The
+//! exploratory arms `SR`, `P1R`, `P2R` are the same policies under
+//! `ResidualAccounting::ReuseConfirmed` (no duplicate final residual).
 //!
-//! Entries of arm `S`:
+//! Entries:
 //!
-//! * `route`: `integrate_rodas5p_mf_fast_observed_gmres_into`, what the
-//!   router calls;
-//! * `route_ls`: `integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace`,
-//!   what the facade calls through the router;
-//! * `audit`: the workspace with the solve log and an attempt observer that
-//!   checks every completed stage solve against the original stage residual
-//!   (`ProtectedAudit` of node V17, unchanged).
+//! * `route`: the audit-off entry. Arm `S`:
+//!   `integrate_rodas5p_mf_fast_observed_gmres_into`, what the router calls;
+//!   `P1`, `P2`: `integrate_rodas5p_mf_fast_observed_with_stage_solve_policy`,
+//!   what the router calls under an adaptive policy; the `R` arms: the
+//!   workspace with that accounting, no log and no observer.
+//! * `route_ls`: the same with the least-squares workspace of the facade
+//!   (arm `S`: `integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace`).
+//! * `policy_shipped` (arm `S` only): the policy entry with the shipped
+//!   policy named explicitly.
+//! * `audit`: the workspace with the solve log, the driver's stage-solve
+//!   records and an attempt observer that checks every completed stage solve
+//!   against the original stage residual (`ProtectedAudit` of node V17,
+//!   unchanged). The driver's records are audited as well: the reported true
+//!   residual of every returned iterate against the threshold it used.
 
 #[path = "stage_clients_krylov_v17_problems.rs"]
 mod problems;
@@ -49,10 +59,13 @@ use std::time::Instant;
 use problems::{AuditSummary, Family, ProtectedAudit, adaptive, declared, v06};
 use rodas5p_core::{CoreError, CoreResult, WorkCounters};
 use rodas5p_integrators::{
-    OutputSchedule, Rodas5pMfFastResult, Rodas5pMfFastWorkspace, RoutingOptions,
-    StageSolveLogEntry, integrate_rodas5p_mf_fast_observed_gmres_into,
+    MfStageSolvePolicy, MfStageSolveRecord, MfStageSolveStatistics, OutputSchedule,
+    Rodas5pMfFastResult, Rodas5pMfFastWorkspace, RoutingOptions, StageSolveLogEntry,
+    integrate_rodas5p_mf_fast_observed_gmres_into,
     integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace,
+    integrate_rodas5p_mf_fast_observed_with_stage_solve_policy,
 };
+use rodas5p_krylov::ResidualAccounting;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
@@ -118,25 +131,59 @@ fn family(id: &str) -> CoreResult<Family> {
     }
 }
 
-/// The arms of the node.
+/// The arms of the node: a stage-solve policy and a residual accounting.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum Arm {
-    /// The driver with the shipped stage-solve policy.
-    Shipped,
+struct Arm {
+    label: &'static str,
+    policy: MfStageSolvePolicy,
+    accounting: ResidualAccounting,
 }
 
 impl Arm {
     fn parse(label: &str) -> Self {
-        match label {
-            "S" => Self::Shipped,
+        let (label, policy, accounting) = match label {
+            "S" => (
+                "S",
+                MfStageSolvePolicy::Shipped,
+                ResidualAccounting::DEFAULT,
+            ),
+            "P1" => (
+                "P1",
+                MfStageSolvePolicy::ColumnTested,
+                ResidualAccounting::DEFAULT,
+            ),
+            "P2" => (
+                "P2",
+                MfStageSolvePolicy::ColumnTestedDoubling,
+                ResidualAccounting::DEFAULT,
+            ),
+            "SR" => (
+                "SR",
+                MfStageSolvePolicy::Shipped,
+                ResidualAccounting::ReuseConfirmed,
+            ),
+            "P1R" => (
+                "P1R",
+                MfStageSolvePolicy::ColumnTested,
+                ResidualAccounting::ReuseConfirmed,
+            ),
+            "P2R" => (
+                "P2R",
+                MfStageSolvePolicy::ColumnTestedDoubling,
+                ResidualAccounting::ReuseConfirmed,
+            ),
             other => panic!("unknown arm {other}"),
+        };
+        Self {
+            label,
+            policy,
+            accounting,
         }
     }
 
-    fn label(self) -> &'static str {
-        match self {
-            Self::Shipped => "S",
-        }
+    /// The accounting of the route.
+    fn default_accounting(self) -> bool {
+        self.accounting == ResidualAccounting::DEFAULT
     }
 }
 
@@ -145,6 +192,7 @@ impl Arm {
 enum Entry {
     Route,
     RouteLs,
+    PolicyShipped,
     Audit,
 }
 
@@ -153,6 +201,7 @@ impl Entry {
         match label {
             "route" => Self::Route,
             "route_ls" => Self::RouteLs,
+            "policy_shipped" => Self::PolicyShipped,
             "audit" => Self::Audit,
             other => panic!("unknown entry {other}"),
         }
@@ -162,6 +211,7 @@ impl Entry {
         match self {
             Self::Route => "route",
             Self::RouteLs => "route_ls",
+            Self::PolicyShipped => "policy_shipped",
             Self::Audit => "audit",
         }
     }
@@ -194,14 +244,76 @@ fn solve_log_digest(log: &[StageSolveLogEntry]) -> SolveLogDigest {
     }
 }
 
+/// The audit of the driver's own stage-solve records: for every returned
+/// iterate the true residual norm the kernel reported against the threshold
+/// it used.
+#[derive(Clone, Copy, Debug, Default)]
+struct RecordAudit {
+    records: u64,
+    /// Records whose reported residual is not finite or exceeds the
+    /// threshold.
+    violations: u64,
+    max_ratio: f64,
+    zero_threshold_records: u64,
+    columns: u64,
+    max_columns: u64,
+    cycles: u64,
+    max_cycles: u64,
+    failed_confirmations: u64,
+    /// Records whose projected residual (adaptive policies) exceeds the
+    /// threshold although the solve ended: the last cycle ran to its bound
+    /// and the true residual met the threshold all the same.
+    projected_above_threshold: u64,
+}
+
+fn audit_records(records: &[MfStageSolveRecord]) -> RecordAudit {
+    let mut audit = RecordAudit::default();
+    for record in records {
+        audit.records += 1;
+        let passed = record.residual_norm.is_finite() && record.residual_norm <= record.threshold;
+        if !passed {
+            audit.violations += 1;
+        }
+        if record.threshold > 0.0 {
+            let ratio = record.residual_norm / record.threshold;
+            if ratio.is_finite() {
+                audit.max_ratio = audit.max_ratio.max(ratio);
+            }
+        } else {
+            audit.zero_threshold_records += 1;
+        }
+        audit.columns += record.columns;
+        audit.max_columns = audit.max_columns.max(record.columns);
+        audit.cycles += record.cycles;
+        audit.max_cycles = audit.max_cycles.max(record.cycles);
+        audit.failed_confirmations += record.failed_confirmations;
+        if record.projected_residual > record.threshold {
+            audit.projected_above_threshold += 1;
+        }
+    }
+    audit
+}
+
 /// The result of one run.
 struct CellRun {
     result: Rodas5pMfFastResult,
     audit: Option<AuditSummary>,
     solve_log: Option<SolveLogDigest>,
+    record_audit: Option<RecordAudit>,
+    statistics: Option<MfStageSolveStatistics>,
 }
 
 impl CellRun {
+    fn plain(result: Rodas5pMfFastResult) -> Self {
+        Self {
+            result,
+            audit: None,
+            solve_log: None,
+            record_audit: None,
+            statistics: None,
+        }
+    }
+
     fn end_state(&self) -> &[f64] {
         self.result.observed.y.last().map_or(&[], Vec::as_slice)
     }
@@ -213,37 +325,88 @@ fn run_cell(family: &Family, rtol: f64, arm: Arm, entry: Entry) -> CoreResult<Ce
     let config = adaptive(family, rtol);
     let output = OutputSchedule::new(vec![family.span.0, family.span.1])?;
     let linear = RoutingOptions::default().matrix_free;
-    match (arm, entry) {
-        (Arm::Shipped, Entry::Route) => Ok(CellRun {
-            result: integrate_rodas5p_mf_fast_observed_gmres_into(
-                &family.problem,
-                family.span,
-                &family.y0,
-                &linear,
-                &config,
-                &output,
-            )?,
-            audit: None,
-            solve_log: None,
-        }),
-        (Arm::Shipped, Entry::RouteLs) => Ok(CellRun {
-            result: integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace(
-                &family.problem,
-                family.span,
-                &family.y0,
-                &linear,
-                &config,
-                &output,
-            )?,
-            audit: None,
-            solve_log: None,
-        }),
-        (Arm::Shipped, Entry::Audit) => {
-            // What the shipped entry does (`integrate_mf_fast_inner`), plus
-            // the solve log and a non-empty observer.
+    let shipped = arm.policy == MfStageSolvePolicy::Shipped;
+    match entry {
+        Entry::Route | Entry::RouteLs if arm.default_accounting() => {
+            let ls_workspace = entry == Entry::RouteLs;
+            let result = if shipped {
+                let integrate = if ls_workspace {
+                    integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace
+                } else {
+                    integrate_rodas5p_mf_fast_observed_gmres_into
+                };
+                integrate(
+                    &family.problem,
+                    family.span,
+                    &family.y0,
+                    &linear,
+                    &config,
+                    &output,
+                )?
+            } else {
+                integrate_rodas5p_mf_fast_observed_with_stage_solve_policy(
+                    &family.problem,
+                    family.span,
+                    &family.y0,
+                    &linear,
+                    &config,
+                    &output,
+                    arm.policy,
+                    ls_workspace,
+                )?
+            };
+            Ok(CellRun::plain(result))
+        }
+        Entry::Route => {
+            // An accounting the entries do not take: the workspace, without
+            // a log and without an observer.
             let mut work = Rodas5pMfFastWorkspace::new(&family.problem, &linear)?;
             work.set_gmres_into(true);
+            work.set_residual_accounting(arm.accounting);
+            work.set_stage_solve_policy(arm.policy)?;
+            let result = work.integrate_observed(
+                &family.problem,
+                family.span,
+                &family.y0,
+                &config,
+                &output,
+            )?;
+            Ok(CellRun {
+                statistics: Some(work.stage_solve_policy_statistics()),
+                ..CellRun::plain(result)
+            })
+        }
+        Entry::RouteLs => Err(CoreError::InvalidInput(
+            "entry route_ls is declared for the default accounting only".into(),
+        )),
+        Entry::PolicyShipped => {
+            if !(shipped && arm.default_accounting()) {
+                return Err(CoreError::InvalidInput(
+                    "entry policy_shipped is the shipped arm".into(),
+                ));
+            }
+            Ok(CellRun::plain(
+                integrate_rodas5p_mf_fast_observed_with_stage_solve_policy(
+                    &family.problem,
+                    family.span,
+                    &family.y0,
+                    &linear,
+                    &config,
+                    &output,
+                    MfStageSolvePolicy::Shipped,
+                    false,
+                )?,
+            ))
+        }
+        Entry::Audit => {
+            // What the audit-off entry does, plus the solve log, the
+            // stage-solve records and a non-empty observer.
+            let mut work = Rodas5pMfFastWorkspace::new(&family.problem, &linear)?;
+            work.set_gmres_into(true);
+            work.set_residual_accounting(arm.accounting);
+            work.set_stage_solve_policy(arm.policy)?;
             work.set_solve_log(true);
+            work.set_stage_solve_records(true);
             let mut audit =
                 ProtectedAudit::new(family.problem.dimension, linear.rtol, linear.atol)?;
             let mut observer =
@@ -261,10 +424,15 @@ fn run_cell(family: &Family, rtol: f64, arm: Arm, entry: Entry) -> CoreResult<Ce
             let log = log.ok_or_else(|| {
                 CoreError::InvalidInput("the driver returned no solve log".into())
             })?;
+            let records = work.stage_solve_records().ok_or_else(|| {
+                CoreError::InvalidInput("the driver kept no stage-solve records".into())
+            })?;
             Ok(CellRun {
                 result,
                 audit: Some(audit.summary),
                 solve_log: Some(solve_log_digest(&log)),
+                record_audit: Some(audit_records(records)),
+                statistics: Some(work.stage_solve_policy_statistics()),
             })
         }
     }
@@ -318,6 +486,29 @@ fn run_json(run: &CellRun) -> Value {
             }),
         );
     }
+    if let Some(audit) = &run.record_audit {
+        fields.insert(
+            "record_audit".into(),
+            json!({
+                "records": audit.records,
+                "violations": audit.violations,
+                "max_ratio": audit.max_ratio,
+                "zero_threshold_records": audit.zero_threshold_records,
+                "columns": audit.columns,
+                "max_columns": audit.max_columns,
+                "cycles": audit.cycles,
+                "max_cycles": audit.max_cycles,
+                "failed_confirmations": audit.failed_confirmations,
+                "projected_above_threshold": audit.projected_above_threshold,
+            }),
+        );
+    }
+    if let Some(statistics) = &run.statistics {
+        fields.insert(
+            "policy_statistics".into(),
+            serde_json::to_value(statistics).expect("statistics"),
+        );
+    }
     record
 }
 
@@ -350,7 +541,9 @@ fn mode_run(family_id: &str, family: &Family) {
         json!({
             "rtol": config.rtol,
             "atol": config.atol,
-            "arm": arm.label(),
+            "arm": arm.label,
+            "policy": arm.policy.id(),
+            "accounting": arm.accounting.id(),
             "entry": entry.label(),
             "audit": entry == Entry::Audit,
         }),
@@ -370,7 +563,7 @@ fn mode_run(family_id: &str, family: &Family) {
                     "label": record["label"],
                     "family": family_id,
                     "rtol": config.rtol,
-                    "arm": arm.label(),
+                    "arm": arm.label,
                     "entry": entry.label(),
                     "n": run.end_state().len(),
                     "state_sha256": record["state_sha256"],
@@ -414,7 +607,7 @@ fn mode_timing(family_id: &str, family: &Family) {
                 json!({
                     "rtol": config.rtol,
                     "atol": config.atol,
-                    "arm": arm.label(),
+                    "arm": arm.label,
                     "entry": Entry::Route.label(),
                     "round": global_round,
                     "position": position,

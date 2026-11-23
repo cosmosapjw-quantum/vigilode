@@ -50,11 +50,11 @@ use rodas5p_core::{
 pub use rodas5p_krylov::shared_basis::{SharedBasis, SharedBasisConfig};
 use rodas5p_krylov::{
     GcrodrConfig, GcrodrSolveOptions, GcrodrState, GcrodrWorkspace, GmresCapacity, GmresConfig,
-    GmresIntoOptions, GmresWorkspace, HeuristicGain, LgmresConfig, LgmresIntoWorkspace,
-    LgmresState, LgmresWorkspace, ResidualAccounting, StagedAcceptanceReason, StagedGmresConfig,
-    StagedGmresFailure, StagedGmresOutcome, StagedGmresReport, StagedGmresWorkspace,
-    StagedGuardAbort, StagedSolveTelemetry, TargetAttainment, VerifiedBound, copy_system_identity,
-    solve_gcrodr_with_workspace, solve_gcrodr_with_workspace_and_options,
+    GmresIntoOptions, GmresIntoReport, GmresWorkspace, HeuristicGain, LgmresConfig,
+    LgmresIntoWorkspace, LgmresState, LgmresWorkspace, ResidualAccounting, StagedAcceptanceReason,
+    StagedGmresConfig, StagedGmresFailure, StagedGmresOutcome, StagedGmresReport,
+    StagedGmresWorkspace, StagedGuardAbort, StagedSolveTelemetry, TargetAttainment, VerifiedBound,
+    copy_system_identity, solve_gcrodr_with_workspace, solve_gcrodr_with_workspace_and_options,
     solve_gmres_into_with_accounting, solve_gmres_with_workspace_and_accounting, solve_lgmres_into,
     solve_lgmres_with_workspace, solve_staged_gmres, solve_staged_gmres_observed,
 };
@@ -73,6 +73,133 @@ use crate::{
 
 /// Identifier of this driver in research records.
 pub const RODAS5P_MF_FAST_DRIVER_ID: &str = "rodas5p-mf-fast-transformed-v1";
+
+/// Identifier of this driver under the adaptive stage-solve policy that loop
+/// L1 node V24 selects (owner decision OD-L1-11); see
+/// [`MfStageSolvePolicy::driver_id`]. The shipped policy keeps
+/// [`RODAS5P_MF_FAST_DRIVER_ID`].
+pub const RODAS5P_MF_FAST_ADAPTIVE_DRIVER_ID: &str = "rodas5p-mf-fast-transformed-v2";
+
+/// The policy of the restart cycle of the GMRES-into stage solves (loop L1
+/// node V24, owner decision OD-L1-11). The stage threshold, the Krylov
+/// method, the budget and the driver's failure handling are the same under
+/// every policy: an iterate is returned only if its true residual
+/// `||rhs - (I - h gamma J) U||_2` is at most
+/// `max(|gamma| atol_lin, rtol_lin ||rhs||_2)`.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum MfStageSolvePolicy {
+    /// Today's solve and arithmetic, bit for bit: every cycle runs the
+    /// configured restart length and the true residual is tested once per
+    /// cycle (`solve_gmres_into_with_accounting`).
+    #[default]
+    Shipped,
+    /// Adaptive, variant P1: the projected residual is tested after every
+    /// Arnoldi column and a cycle ends at the first column that meets the
+    /// threshold; the true residual of the iterate is then tested against
+    /// the same threshold and a failed test continues the solve. The upper
+    /// bound of every cycle is the configured restart length.
+    ColumnTested,
+    /// Adaptive, variant P2: as `ColumnTested`, with an upper bound of
+    /// [`MfStageSolvePolicy::DOUBLING_FIRST_CYCLE`] columns for the first
+    /// cycle of a solve, doubled after every cycle that is followed by
+    /// another one, up to the configured restart length.
+    ColumnTestedDoubling,
+}
+
+impl MfStageSolvePolicy {
+    /// The upper bound of the first cycle of a solve under
+    /// [`MfStageSolvePolicy::ColumnTestedDoubling`].
+    pub const DOUBLING_FIRST_CYCLE: usize = 10;
+
+    /// Stable identifier for research records.
+    pub fn id(self) -> &'static str {
+        match self {
+            Self::Shipped => "mf-stage-solve-shipped-v1",
+            Self::ColumnTested => "mf-stage-solve-column-tested-v1",
+            Self::ColumnTestedDoubling => "mf-stage-solve-column-tested-doubling-v1",
+        }
+    }
+
+    /// The policy tests the residual after every Arnoldi column.
+    pub fn is_adaptive(self) -> bool {
+        self != Self::Shipped
+    }
+
+    /// The driver identifier a run under this policy reports. The shipped
+    /// policy keeps [`RODAS5P_MF_FAST_DRIVER_ID`].
+    pub fn driver_id(self) -> &'static str {
+        match self {
+            Self::Shipped => RODAS5P_MF_FAST_DRIVER_ID,
+            Self::ColumnTested => "rodas5p-mf-fast-transformed-v2-candidate-p1",
+            Self::ColumnTestedDoubling => "rodas5p-mf-fast-transformed-v2-candidate-p2",
+        }
+    }
+
+    /// The upper bound of the first cycle of a solve with the configured
+    /// restart length `restart`; `None` for the shipped policy.
+    fn first_cycle_columns(self, restart: usize) -> Option<usize> {
+        match self {
+            Self::Shipped => None,
+            Self::ColumnTested => Some(restart),
+            Self::ColumnTestedDoubling => Some(Self::DOUBLING_FIRST_CYCLE.min(restart)),
+        }
+    }
+}
+
+/// Counts of the GMRES-into stage solves of one integration, kept for every
+/// [`MfStageSolvePolicy`] (loop L1 node V24). Nothing in the driver reads
+/// them.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+pub struct MfStageSolveStatistics {
+    /// Stage solves that returned an iterate.
+    pub completed_solves: u64,
+    /// Arnoldi columns of the completed solves.
+    pub columns: u64,
+    /// Restart cycles of the completed solves.
+    pub cycles: u64,
+    /// Adaptive policies: cycles that ended at a column whose projected
+    /// residual met the threshold.
+    pub projected_exits: u64,
+    /// Adaptive policies: projected exits whose iterate failed the true
+    /// residual test (the solve continued).
+    pub failed_confirmations: u64,
+    /// Adaptive policies: cycles that ran to their upper bound.
+    pub bound_exits: u64,
+    /// Adaptive policies: columns of the longest cycle.
+    pub longest_cycle: u64,
+    /// Attempts that failed in a stage solve whose Krylov budget was used up
+    /// (the kernel error `GMRES exhausted ...`).
+    pub budget_exhausted_solves: u64,
+    /// Attempts that failed with another linear-solve error.
+    pub other_linear_failures: u64,
+}
+
+/// What the driver's own residual test saw for one returned iterate of a
+/// GMRES-into stage solve, recorded when
+/// [`Rodas5pMfFastWorkspace::set_stage_solve_records`] is on (loop L1 node
+/// V24; a research record that changes nothing).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct MfStageSolveRecord {
+    /// Stage index of the solve.
+    pub stage: u32,
+    /// `||rhs||_2` of the stage system.
+    pub right_norm: f64,
+    /// `max(|gamma| atol_lin, rtol_lin ||rhs||_2)`.
+    pub threshold: f64,
+    /// The true residual norm of the returned iterate, as the kernel
+    /// reported it.
+    pub residual_norm: f64,
+    /// Adaptive policies: the projected residual after the last column
+    /// (`NaN` for the shipped policy and when no cycle ran).
+    pub projected_residual: f64,
+    /// Arnoldi columns and restart cycles of the solve.
+    pub columns: u64,
+    pub cycles: u64,
+    /// Adaptive policies: projected exits of the solve whose iterate failed
+    /// the true residual test.
+    pub failed_confirmations: u64,
+}
 
 /// How the U-form driver's GCRO-DR stage solves treat the carried recycle
 /// pair (RVJ DAG node SAFE-RECYCLE, `research/safe_recycle_policy_20261004`).
@@ -1322,6 +1449,15 @@ pub struct Rodas5pMfFastWorkspace {
     start_telemetry_enabled: bool,
     /// Opt-in start telemetry accumulator (research node SP04).
     start_telemetry: KrylovStartTelemetry,
+    /// The policy of the restart cycle of the GMRES-into stage solves (loop
+    /// L1 node V24). `Shipped` by default.
+    stage_solve_policy: MfStageSolvePolicy,
+    /// Counts of the GMRES-into stage solves of the current integration
+    /// (loop L1 node V24; nothing reads them).
+    stage_solve_policy_statistics: MfStageSolveStatistics,
+    /// Research record (loop L1 node V24): one [`MfStageSolveRecord`] per
+    /// returned iterate of a GMRES-into stage solve, when switched on.
+    stage_solve_records: Option<Vec<MfStageSolveRecord>>,
 }
 
 /// One successful Krylov stage solve's report, as recorded by
@@ -1451,6 +1587,9 @@ impl Clone for Rodas5pMfFastWorkspace {
             zero_x0: self.zero_x0.clone(),
             start_telemetry_enabled: self.start_telemetry_enabled,
             start_telemetry: self.start_telemetry.clone(),
+            stage_solve_policy: self.stage_solve_policy,
+            stage_solve_policy_statistics: self.stage_solve_policy_statistics,
+            stage_solve_records: self.stage_solve_records.clone(),
         }
     }
 }
@@ -1548,7 +1687,58 @@ impl Rodas5pMfFastWorkspace {
             zero_x0: vec![0.0; n],
             start_telemetry_enabled: false,
             start_telemetry: KrylovStartTelemetry::default(),
+            stage_solve_policy: MfStageSolvePolicy::Shipped,
+            stage_solve_policy_statistics: MfStageSolveStatistics::default(),
+            stage_solve_records: None,
         })
+    }
+
+    /// Set the policy of the restart cycle of the GMRES-into stage solves
+    /// (loop L1 node V24, owner decision OD-L1-11). `Shipped` by default.
+    /// The adaptive policies need GMRES; an attempt under one of them also
+    /// needs [`Self::set_gmres_into`] on and the `Legacy` stage target.
+    pub fn set_stage_solve_policy(&mut self, policy: MfStageSolvePolicy) -> CoreResult<()> {
+        if policy.is_adaptive() && self.config.method != LinearMethod::Gmres {
+            return Err(CoreError::InvalidInput(
+                "the adaptive stage-solve policies need GMRES".into(),
+            ));
+        }
+        self.stage_solve_policy = policy;
+        Ok(())
+    }
+
+    pub fn stage_solve_policy(&self) -> MfStageSolvePolicy {
+        self.stage_solve_policy
+    }
+
+    /// Counts of the GMRES-into stage solves of the last integration (loop
+    /// L1 node V24).
+    pub fn stage_solve_policy_statistics(&self) -> MfStageSolveStatistics {
+        self.stage_solve_policy_statistics
+    }
+
+    /// Record what the driver's residual test saw for every returned iterate
+    /// of a GMRES-into stage solve (loop L1 node V24; a research record that
+    /// changes nothing). Switching it on clears the records.
+    pub fn set_stage_solve_records(&mut self, on: bool) {
+        self.stage_solve_records = on.then(Vec::new);
+    }
+
+    /// The recorded stage solves of the current integration, if recording is
+    /// on.
+    pub fn stage_solve_records(&self) -> Option<&[MfStageSolveRecord]> {
+        self.stage_solve_records.as_deref()
+    }
+
+    /// Classify a failed attempt for [`MfStageSolveStatistics`].
+    fn note_linear_failure(&mut self, outcome: &CoreResult<f64>) {
+        if let Err(CoreError::LinearSolve(text)) = outcome {
+            if text.starts_with("GMRES exhausted") {
+                self.stage_solve_policy_statistics.budget_exhausted_solves += 1;
+            } else {
+                self.stage_solve_policy_statistics.other_linear_failures += 1;
+            }
+        }
     }
 
     /// Set opt-in stage and attempt residual telemetry (research node AS04).
@@ -2222,6 +2412,10 @@ impl Rodas5pMfFastWorkspace {
             tel.clear();
         }
         self.start_telemetry = KrylovStartTelemetry::default();
+        self.stage_solve_policy_statistics = MfStageSolveStatistics::default();
+        if let Some(records) = self.stage_solve_records.as_mut() {
+            records.clear();
+        }
         let staged = self.stage_target.policy != StageTargetPolicy::Legacy;
         if staged {
             self.set_stage_target_span(tf - t);
@@ -2402,7 +2596,7 @@ impl Rodas5pMfFastWorkspace {
             accepted_steps,
             rejected_steps,
             state_reuses: reuses,
-            driver: RODAS5P_MF_FAST_DRIVER_ID,
+            driver: self.stage_solve_policy.driver_id(),
             gcrodr_policy: self.gcrodr_policy.id(),
             krylov_workspace: self.krylov_workspace.id(),
             start_policy: self.start_policy.id(),
@@ -2678,7 +2872,10 @@ impl Rodas5pMfFastWorkspace {
         counters: &mut WorkCounters,
     ) -> CoreResult<f64> {
         if self.stage_telemetry.is_none() {
-            return self.attempt_inner(problem, t, y, h, fresh, recycle, atol, rtol, counters);
+            let outcome =
+                self.attempt_inner(problem, t, y, h, fresh, recycle, atol, rtol, counters);
+            self.note_linear_failure(&outcome);
+            return outcome;
         }
 
         self.current_attempt_metric = if self.stage_target.policy.is_coupled() {
@@ -2699,6 +2896,7 @@ impl Rodas5pMfFastWorkspace {
 
         let attempt_result =
             self.attempt_inner(problem, t, y, h, fresh, recycle, atol, rtol, counters);
+        self.note_linear_failure(&attempt_result);
 
         let jvp_delta = counters.jvp_calls.saturating_sub(jvp_before);
         self.record_attempt_telemetry(t, h, &attempt_result, stages_start, jvp_delta);
@@ -2801,6 +2999,21 @@ impl Rodas5pMfFastWorkspace {
         if dup_fix && !(self.gmres_into && self.config.method == LinearMethod::Gmres) {
             return Err(CoreError::InvalidInput(
                 "the DupFix stage target needs GMRES into".into(),
+            ));
+        }
+        // Loop L1 node V24: `None` under the shipped policy, whose stage
+        // solves then run the statements below exactly as before.
+        let adaptive_first_cycle = self
+            .stage_solve_policy
+            .first_cycle_columns(self.config.restart);
+        if adaptive_first_cycle.is_some()
+            && !(self.gmres_into
+                && self.config.method == LinearMethod::Gmres
+                && self.stage_target.policy == StageTargetPolicy::Legacy)
+        {
+            return Err(CoreError::InvalidInput(
+                "the adaptive stage-solve policies need GMRES into and the Legacy stage target"
+                    .into(),
             ));
         }
         if staged {
@@ -3010,8 +3223,48 @@ impl Rodas5pMfFastWorkspace {
                     None
                 };
                 let used_proposal = proposal_report.is_some();
+                // Loop L1 node V24: what an adaptive solve reports beyond the
+                // shipped report (stays `None` under the shipped policy).
+                let mut adaptive_detail = None;
                 let report = if let Some(report) = proposal_report {
                     report
+                } else if let Some(first_cycle) = adaptive_first_cycle {
+                    let bytes_before = self.staged.retained_bytes();
+                    let solved = self.staged.solve_column_tested_into(
+                        &shifted,
+                        &self.stage_rhs,
+                        x0,
+                        &gmres_config,
+                        first_cycle,
+                        self.residual_accounting,
+                        stage,
+                        counters,
+                        None,
+                    )?;
+                    adaptive_detail = Some((
+                        solved.right_norm,
+                        solved.threshold,
+                        solved.projected_residual,
+                        solved.failed_confirmations,
+                    ));
+                    let statistics = &mut self.stage_solve_policy_statistics;
+                    statistics.projected_exits += solved.projected_exits;
+                    statistics.failed_confirmations += solved.failed_confirmations;
+                    statistics.bound_exits += solved.bound_exits;
+                    statistics.longest_cycle = statistics.longest_cycle.max(solved.longest_cycle);
+                    GmresIntoReport {
+                        residual_norm: solved.residual_norm,
+                        relative_residual: solved.residual_norm
+                            / solved.right_norm.max(f64::MIN_POSITIVE),
+                        iterations: solved.columns,
+                        matvecs: solved.matvecs,
+                        preconditioner_apps: 0,
+                        cycles: solved.cycles,
+                        least_squares_solves: solved.cycles,
+                        workspace_grew: self.staged.retained_bytes() > bytes_before,
+                        method: "gmres-column-tested",
+                        initial_residual_norm: solved.initial_residual_norm,
+                    }
                 } else {
                     solve_gmres_into_with_accounting(
                         &shifted,
@@ -3045,6 +3298,39 @@ impl Rodas5pMfFastWorkspace {
                         report.relative_residual,
                         report.iterations,
                     ));
+                }
+                // Loop L1 node V24: counts and the optional research record
+                // (integer counts and, with the record on, one norm of the
+                // right-hand side; no state of the solve is touched).
+                self.stage_solve_policy_statistics.completed_solves += 1;
+                self.stage_solve_policy_statistics.columns += report.iterations;
+                self.stage_solve_policy_statistics.cycles += report.cycles;
+                if let Some(records) = self.stage_solve_records.as_mut() {
+                    let (right_norm, threshold, projected_residual, failed_confirmations) =
+                        match adaptive_detail {
+                            Some(detail) => detail,
+                            None => {
+                                // The threshold of the shipped kernel, by its
+                                // own expression.
+                                let right_norm = safe_l2(&self.stage_rhs);
+                                (
+                                    right_norm,
+                                    linear_atol.max(gmres_config.rtol * right_norm),
+                                    f64::NAN,
+                                    0,
+                                )
+                            }
+                        };
+                    records.push(MfStageSolveRecord {
+                        stage: u32::try_from(i).unwrap_or(u32::MAX),
+                        right_norm,
+                        threshold,
+                        residual_norm: report.residual_norm,
+                        projected_residual,
+                        columns: report.iterations,
+                        cycles: report.cycles,
+                        failed_confirmations,
+                    });
                 }
                 continue;
             }
@@ -3317,6 +3603,47 @@ pub fn integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace(
         true,
         StageTargetOptions::default(),
         AccountingRun::DEFAULT,
+    )
+    .map(|(result, ..)| result)
+}
+
+/// The U-form driver through GMRES into under an explicit
+/// [`MfStageSolvePolicy`] (loop L1 node V24, owner decision OD-L1-11).
+/// With [`MfStageSolvePolicy::Shipped`] it is
+/// [`integrate_rodas5p_mf_fast_observed_gmres_into`] bit for bit, or, with
+/// `ls_workspace`, [`integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace`].
+/// The adaptive policies do not use the least-squares workspace; the switch
+/// then only names the run.
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_rodas5p_mf_fast_observed_with_stage_solve_policy(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    linear_config: &LinearSolverConfig,
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    policy: MfStageSolvePolicy,
+    ls_workspace: bool,
+) -> CoreResult<Rodas5pMfFastResult> {
+    // The settings of `integrate_mf_fast_inner` for the two shipped entries,
+    // in its order, then the policy.
+    let mut work = Rodas5pMfFastWorkspace::new(problem, linear_config)?;
+    work.set_gmres_into(true);
+    work.set_gcrodr_policy(GcrodrRecyclePolicy::Legacy);
+    work.set_ls_workspace(ls_workspace);
+    work.set_residual_accounting(AccountingRun::DEFAULT.accounting);
+    work.set_solve_log(AccountingRun::DEFAULT.solve_log);
+    if ls_workspace && linear_config.method == LinearMethod::Gmres {
+        work.set_krylov_workspace(KrylovWorkspaceOptions::ls_workspace())?;
+    }
+    work.set_stage_solve_policy(policy)?;
+    work.integrate_observed_with_observer(
+        problem,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        &mut |_, _, _, _, _| {},
     )
     .map(|(result, ..)| result)
 }

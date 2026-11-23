@@ -139,6 +139,12 @@ pub use rodas5p_fast_dense::{
     integrate_rodas5p_fast_banded_dense_observed_with_kernel,
 };
 
+// Loop L1 node V24 (owner decision OD-L1-11): policy of the matrix-free stage solve.
+pub use rodas5p_matrix_free_fast::{
+    MfStageSolvePolicy, MfStageSolveRecord, MfStageSolveStatistics,
+    RODAS5P_MF_FAST_ADAPTIVE_DRIVER_ID, integrate_rodas5p_mf_fast_observed_with_stage_solve_policy,
+};
+
 #[cfg(feature = "audit2-bateman-authority")]
 pub use audit2_bateman_real_client_research::{
     AUDIT2_BATEMAN_AUTHORITY_MANIFEST_SHA256, AUDIT2_BATEMAN_AUTHORITY_PROOF_SHA256,

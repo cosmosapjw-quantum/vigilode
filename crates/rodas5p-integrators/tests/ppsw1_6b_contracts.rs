@@ -1653,6 +1653,9 @@ fn g3_protected_sources_are_byte_identical() {
     // the ptsw2b h2 list plus ptsw2b.rs and ptsw2b_contracts.rs themselves.
     // Re-pinned on 2026-11-16 to the tree after the adopted merge of the switcher lineage (owner
     // decision OD-L1-5); old and new pins: research/production_loop_20261116/trial_merge/SENTINEL_REPIN.json.
+    // src/rodas5p_matrix_free_fast.rs re-pinned on 2026-11-23 for loop L1 node V24 (owner decision
+    // OD-L1-11: policy of the matrix-free stage solve); old and new pins:
+    // research/production_loop_20261116/mf_adaptive/SENTINEL_REPIN.json.
     let pinned: [(&str, &str); 14] = [
         (
             "src/sequential.rs",
@@ -1660,7 +1663,7 @@ fn g3_protected_sources_are_byte_identical() {
         ),
         (
             "src/rodas5p_matrix_free_fast.rs",
-            "a6d138f0da89b4506e2d7bae28621c241c5c0653c3020aad6f2a125d5e891139",
+            "37c9dda727e606dc4ccbed76731f7929864a783bf905fc6f2bce72a50af73ce6",
         ),
         (
             "src/collective_rodas5p.rs",
@@ -1717,8 +1720,9 @@ fn g3_protected_sources_are_byte_identical() {
         assert_eq!(sha256_hex(&bytes), want, "protected file changed: {rel}");
     }
     // lib.rs allowlist (owner decisions; extended on 2026-11-16 by OD-L1-6 and on 2026-11-23 by
-    // OD-L1-9): the file may hold the line `pub mod ppsw1;`, the loop L1 module block and the
-    // re-exports of the banded entry points that take the kernel (loop L1 node V22), each at most
+    // OD-L1-9 and OD-L1-11): the file may hold the line `pub mod ppsw1;`, the loop L1 module block,
+    // the re-exports of the banded entry points that take the kernel (loop L1 node V22) and the
+    // re-exports of the policy of the matrix-free stage solve (loop L1 node V24), each at most
     // once. With these removed its bytes must equal the pinned file (re-pinned after the adopted
     // merge, OD-L1-5).
     let lib = std::fs::read_to_string(root.join("src/lib.rs")).unwrap();
@@ -1732,6 +1736,13 @@ fn g3_protected_sources_are_byte_identical() {
             "    RODAS5P_FAST_BANDED_DENSE_SLICES_DRIVER_ID,\n",
             "    integrate_rodas5p_fast_banded_dense_observed_with_atol_and_kernel,\n",
             "    integrate_rodas5p_fast_banded_dense_observed_with_kernel,\n",
+            "};\n",
+        ),
+        concat!(
+            "\n// Loop L1 node V24 (owner decision OD-L1-11): policy of the matrix-free stage solve.\n",
+            "pub use rodas5p_matrix_free_fast::{\n",
+            "    MfStageSolvePolicy, MfStageSolveRecord, MfStageSolveStatistics,\n",
+            "    RODAS5P_MF_FAST_ADAPTIVE_DRIVER_ID, integrate_rodas5p_mf_fast_observed_with_stage_solve_policy,\n",
             "};\n",
         ),
     ];

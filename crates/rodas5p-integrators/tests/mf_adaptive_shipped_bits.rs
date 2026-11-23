@@ -15,9 +15,12 @@ mod problems;
 use problems::{Family, adaptive, declared, v06};
 use rodas5p_core::CoreResult;
 use rodas5p_integrators::{
-    OutputSchedule, Rodas5pMfFastResult, RoutingOptions,
+    MfStageSolvePolicy, OutputSchedule, RODAS5P_MF_FAST_DRIVER_ID, Rodas5pMfFastResult,
+    Rodas5pMfFastWorkspace, RoutedRun, RoutingOptions,
     integrate_rodas5p_mf_fast_observed_gmres_into,
     integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace,
+    integrate_rodas5p_mf_fast_observed_with_stage_solve_policy,
+    integrate_rodas5p_routed_observed_with_options,
 };
 use sha2::{Digest, Sha256};
 
@@ -167,6 +170,98 @@ fn the_shipped_entries_return_the_bits_recorded_before_the_edit() {
             } else {
                 assert_eq!(route, recorded(id, rtol), "{id} {rtol:e}: the bits changed");
             }
+        }
+    }
+}
+
+/// After the edit: the shipped policy, named explicitly, is the shipped
+/// entry bit for bit, through the policy entry, through the workspace and
+/// through the router, whose default it is.
+#[test]
+fn the_shipped_policy_named_explicitly_returns_the_recorded_bits() {
+    assert_eq!(MfStageSolvePolicy::default(), MfStageSolvePolicy::Shipped);
+    assert_eq!(
+        MfStageSolvePolicy::Shipped.driver_id(),
+        RODAS5P_MF_FAST_DRIVER_ID
+    );
+    for id in SMALL {
+        for rtol in RTOLS {
+            let want = recorded(id, rtol);
+            let family = family(id).unwrap();
+            let config = adaptive(&family, rtol);
+            let output = OutputSchedule::new(vec![family.span.0, family.span.1]).unwrap();
+            let linear = RoutingOptions::default().matrix_free;
+
+            // The policy entry, with and without the least-squares workspace.
+            for ls_workspace in [false, true] {
+                let run = integrate_rodas5p_mf_fast_observed_with_stage_solve_policy(
+                    &family.problem,
+                    family.span,
+                    &family.y0,
+                    &linear,
+                    &config,
+                    &output,
+                    MfStageSolvePolicy::Shipped,
+                    ls_workspace,
+                )
+                .unwrap();
+                assert_eq!(
+                    line(&run),
+                    want,
+                    "{id} {rtol:e} policy entry {ls_workspace}"
+                );
+                assert_eq!(run.driver, RODAS5P_MF_FAST_DRIVER_ID);
+                assert_eq!(
+                    run.krylov_workspace,
+                    shipped(id, rtol, ls_workspace).krylov_workspace
+                );
+            }
+
+            // The workspace with the policy set, the stage-solve records on.
+            let mut work = Rodas5pMfFastWorkspace::new(&family.problem, &linear).unwrap();
+            work.set_gmres_into(true);
+            work.set_stage_solve_policy(MfStageSolvePolicy::Shipped)
+                .unwrap();
+            work.set_stage_solve_records(true);
+            let run = work
+                .integrate_observed(&family.problem, family.span, &family.y0, &config, &output)
+                .unwrap();
+            assert_eq!(line(&run), want, "{id} {rtol:e} workspace");
+            let records = work.stage_solve_records().unwrap();
+            assert_eq!(records.len() as u64, run.observed.counters.linear_solves);
+            assert!(
+                records
+                    .iter()
+                    .all(|r| r.residual_norm <= r.threshold && r.projected_residual.is_nan())
+            );
+            let statistics = work.stage_solve_policy_statistics();
+            assert_eq!(
+                statistics.completed_solves,
+                run.observed.counters.linear_solves
+            );
+            assert_eq!(
+                (statistics.projected_exits, statistics.bound_exits),
+                (0, 0),
+                "the shipped policy has no column test"
+            );
+
+            // The router: the shipped policy is its default.
+            let options = RoutingOptions::default();
+            assert_eq!(options.matrix_free_policy, MfStageSolvePolicy::Shipped);
+            let routed = integrate_rodas5p_routed_observed_with_options(
+                &family.problem,
+                family.span,
+                &family.y0,
+                &config,
+                &output,
+                &options,
+            )
+            .unwrap();
+            assert_eq!(routed.routing.driver_id, RODAS5P_MF_FAST_DRIVER_ID);
+            let RoutedRun::MatrixFree(run) = &routed.run else {
+                panic!("{id}: the JVP-only problem is routed to the matrix-free driver");
+            };
+            assert_eq!(line(run), want, "{id} {rtol:e} router");
         }
     }
 }
