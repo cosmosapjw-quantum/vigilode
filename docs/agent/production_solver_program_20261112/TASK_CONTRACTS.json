@@ -1505,6 +1505,98 @@
       ],
       "evidence": [],
       "state_note": "Pre-registered 2026-11-23 (addendum A5). Run by the orchestrator session."
+    },
+    {
+      "id": "V23_CAPABILITIES_TRUTH",
+      "depends": [
+        "V03_UNIFIED_FRONTEND"
+      ],
+      "status": "PLANNED",
+      "purpose": "Rodas5p::capabilities gives a plan only to requests that the named driver family runs; what cannot run is refused with a typed reason before any callback (owner decision OD-L1-10).",
+      "write_allowlist": [
+        "research/production_loop_20261116/capabilities_fix/**",
+        "crates/vigilode/src/capabilities.rs",
+        "crates/vigilode/src/solve.rs",
+        "crates/vigilode/src/error.rs",
+        "crates/vigilode/tests/capabilities_contracts.rs",
+        "crates/vigilode/tests/capabilities_truth_contracts.rs",
+        "crates/vigilode/tests/golden/capabilities_truth/**",
+        "crates/vigilode/tests/unified_frontend_contracts.rs",
+        "crates/vigilode/tests/default_path_golden.rs",
+        "crates/vigilode/tests/golden/default_path/**"
+      ],
+      "equations_and_design": [
+        "One decision function serves the capability query and the validation of the solve.",
+        "A general sparse-JVP provider on the sequential dense route is refused before any callback; other classes found by execution are treated the same way and listed."
+      ],
+      "acceptance_checks": [
+        "D1: every plan of the 9216-request grid runs on the planned driver family at n = 8; plans that cannot run: 0.",
+        "D2: records of all other requests equal before and after the fix. D3: golden files change only in the listed records. D4: registry and unified router agree with the query; suites, clippy and rustfmt pass."
+      ],
+      "completion_requires": [
+        "capabilities_fix/PREDECLARED.json before any edit",
+        "capabilities_fix/RESULTS.json from executed runs",
+        "independent review"
+      ],
+      "failure_action": "Not merged; the defect stays listed for the owner.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "drivers of rodas5p-integrators"
+      ],
+      "evidence": [],
+      "state_note": "Pre-registered 2026-11-23 (addendum A6). Builder node, launched after the unified-router node V03 part B is merged."
+    },
+    {
+      "id": "V24_MF_ADAPTIVE_STAGE_SOLVE",
+      "depends": [
+        "V17_MATRIX_FREE_STAGE_SOLVE"
+      ],
+      "status": "PLANNED",
+      "purpose": "The protected matrix-free stage solve tests the residual after every Arnoldi column and ends a cycle at convergence, so that restart length and test cadence follow the solve (owner decision OD-L1-11).",
+      "write_allowlist": [
+        "research/production_loop_20261116/mf_adaptive/**",
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+        "crates/rodas5p-integrators/src/routing.rs",
+        "crates/rodas5p-integrators/src/lib.rs",
+        "crates/rodas5p-krylov/src/gmres_staged.rs",
+        "crates/rodas5p-integrators/tests/mf_adaptive_*.rs",
+        "crates/rodas5p-krylov/tests/gmres_staged_column_test_*.rs",
+        "crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs",
+        "crates/vigilode/src/solve.rs",
+        "crates/vigilode/src/solution.rs",
+        "crates/vigilode/tests/default_path_golden.rs",
+        "crates/vigilode/tests/golden/default_path/**"
+      ],
+      "equations_and_design": [
+        "After every Arnoldi column the projected residual is compared with the stage threshold; at the first column that meets it the cycle ends and the true residual of the iterate is tested against the same threshold.",
+        "Two variants of the upper bound of a cycle, fixed before any run; the variant is chosen on two development problems outside the deciding grid.",
+        "The shipped policy stays selectable and keeps its driver identifier; the adaptive policy becomes the default of the matrix-free route under a new identifier."
+      ],
+      "acceptance_checks": [
+        "D0: the shipped policy equals the driver before the edit bit for bit. V: true residual within the threshold in every solve.",
+        "A: achieved error at most 3 times the shipped driver. P: instructions at matched achieved error at most 0.50 per family, no cell above 1.00. S: attempts at most 1.05 per family. B: no more budget-exhausting solves.",
+        "G: golden records of the matrix-free route re-pinned with a difference report inside the tolerance band. R: sentinels re-pinned with recorded pins; suites pass."
+      ],
+      "completion_requires": [
+        "mf_adaptive/PREDECLARED.json before any edit",
+        "the chosen variant committed before the deciding grid",
+        "mf_adaptive/RESULTS.json from executed runs",
+        "independent review"
+      ],
+      "failure_action": "FAIL: the adaptive policy stays opt-in and the default is unchanged. KILL: nothing is merged.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve",
+        "every driver other than the matrix-free fast driver"
+      ],
+      "evidence": [],
+      "state_note": "Pre-registered 2026-11-23 (addendum A6). Builder node."
     }
   ],
   "execution_policy": "Resume ready bounded tasks; research/implementation may overlap only with disjoint writes. Qualification dependencies restrict promotion, not safe opt-in refactoring.",
