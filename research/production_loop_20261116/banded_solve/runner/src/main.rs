@@ -10,6 +10,7 @@ mod kernel;
 #[allow(dead_code)]
 #[path = "../../../cost_anatomy/runner/src/problems.rs"]
 mod problems;
+mod strip;
 
 use std::f64::consts::PI;
 use std::hint::black_box;
@@ -498,6 +499,9 @@ fn drive(family: &str, size: usize, kernel_name: &str, budget: usize) {
         "ac2d" => problems::allen_cahn(2, size),
         "ac3d" => problems::allen_cahn(3, size),
         "bruss2d" => problems::bruss2d(size),
+        // Node V22: strips of fixed cell size, the half band width is the free parameter.
+        "acstrip" => strip::allen_cahn_strip(size),
+        "brstrip" => strip::brusselator_strip(size),
         other => panic!("unknown family {other}"),
     };
     let kernel = match kernel_name {
@@ -591,9 +595,52 @@ fn drive(family: &str, size: usize, kernel_name: &str, budget: usize) {
     );
 }
 
+/// Node V22: the band fill of a strip family against its Jacobian-vector product, column by
+/// column at the initial state (no dense matrix is stored), and a finite right-hand side. Not a
+/// measurement.
+fn stripcheck(family: &str, size: usize) {
+    let def = match family {
+        "acstrip" => strip::allen_cahn_strip(size),
+        "brstrip" => strip::brusselator_strip(size),
+        other => panic!("unknown strip family {other}"),
+    };
+    let band = def.band.as_ref().expect("banded problem");
+    let (n, lower, upper) = (def.n, band.lower, band.upper);
+    let jw = lower + upper + 1;
+    let mut jac = vec![0.0; n * jw];
+    (band.fill)(0.0, &def.y0, &mut jac).expect("band fill");
+    let jvp = def.jvp.as_ref().expect("jvp");
+    let (mut unit, mut column) = (vec![0.0; n], vec![0.0; n]);
+    let (mut worst, mut outside, mut nonzeros) = (0.0f64, 0usize, 0usize);
+    for j in 0..n {
+        unit[j] = 1.0;
+        jvp(0.0, &def.y0, &unit, &mut column).expect("jvp");
+        unit[j] = 0.0;
+        for (i, &value) in column.iter().enumerate() {
+            if j + lower >= i && j <= i + upper {
+                let entry = jac[i * jw + (j + lower - i)];
+                worst = worst.max((entry - value).abs());
+                nonzeros += usize::from(entry != 0.0);
+            } else if value != 0.0 {
+                outside += 1;
+            }
+        }
+    }
+    let mut f = vec![0.0; n];
+    (def.rhs)(0.0, &def.y0, &mut f).expect("rhs");
+    let finite = f.iter().all(|v| v.is_finite());
+    println!(
+        "STRIPCHECK family={family} size={size} n={n} lower={lower} upper={upper} band_nonzeros={nonzeros} max_abs_difference={worst:e} nonzeros_outside_band={outside} rhs_finite={finite}"
+    );
+    if worst != 0.0 || outside != 0 || !finite {
+        std::process::exit(1);
+    }
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     match args.get(1).map(String::as_str) {
+        Some("stripcheck") => stripcheck(&args[2], args[3].parse().expect("size")),
         Some("drive") => drive(
             &args[2],
             args[3].parse().expect("size"),
@@ -610,7 +657,7 @@ fn main() {
         ),
         _ => {
             eprintln!(
-                "usage: runner check <suite> | runner bench <arm> <n> <patterns> <solves> [lu] | runner drive <family> <size> <kernel> <budget>"
+                "usage: runner check <suite> | runner bench <arm> <n> <patterns> <solves> [lu] | runner drive <family> <size> <kernel> <budget> | runner stripcheck <family> <size>"
             );
             std::process::exit(2);
         }

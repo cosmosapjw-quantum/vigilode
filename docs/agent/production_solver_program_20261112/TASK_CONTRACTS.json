@@ -1458,6 +1458,53 @@
         "research/production_loop_20261116/banded_solve/RESULTS_V21.json"
       ],
       "state_note": "a1 PASS-I and PASS-C (L-0321); a2 PASS-I, cycles NOT_DECIDABLE for one of three problems (L-0322); stage b PASS, opt-in client merged (L-0323). Independent review pending with group 3."
+    },
+    {
+      "id": "V22_FACADE_BANDED_KERNEL",
+      "depends": [
+        "V21_BANDED_TIGHT_KERNEL",
+        "V03G_DEFAULT_PATH_GOLDEN"
+      ],
+      "status": "IN_PROGRESS",
+      "purpose": "The facade's banded route uses the Slices kernel of the protected banded driver from a measured half band width on, with identical bits and no slower narrow band (owner decision OD-L1-9).",
+      "write_allowlist": [
+        "research/production_loop_20261116/banded_kernel_route/**",
+        "research/production_loop_20261116/banded_solve/runner/**",
+        "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+        "crates/rodas5p-integrators/src/rodas5p_fast_dense.rs",
+        "crates/rodas5p-integrators/src/lib.rs",
+        "crates/rodas5p-integrators/tests/banded_kernel_entry_identity.rs",
+        "crates/vigilode/src/solve.rs",
+        "crates/vigilode/src/solution.rs",
+        "crates/vigilode/src/lib.rs",
+        "crates/vigilode/tests/banded_kernel_route_contracts.rs",
+        "crates/vigilode/tests/golden/banded_kernel_route/**"
+      ],
+      "equations_and_design": [
+        "Stage a: whole runs of the protected banded driver with its Indexed and Slices kernels on two strip families whose half band width is the free parameter (about 8192 unknowns); per-attempt instructions and cycles with set-up subtraction.",
+        "Rule: W is the smallest scanned half band width such that every scanned width from W on needs at most 0.95 of the instructions and of the cycles of Indexed; the facade uses Slices if lower >= W and upper >= W, otherwise Indexed.",
+        "Stage b: twins of three banded entry points that take the kernel; the facade calls them only when the rule selects Slices; the route record names the entry point and the driver that ran."
+      ],
+      "acceptance_checks": [
+        "Validity: equal counts, counted band operations and state hashes of the two kernels in every run of the scan.",
+        "W exists and the small-n confirmation holds (ratios at most 1.00).",
+        "D1: twins equal the existing entry points bit for bit. D2: wide-band facade golden recorded before the edit passes after it with only the label fields changed. D3: default-path golden oracle unchanged, sentinels and suites pass, clippy and rustfmt clean. D4: facade at most 0.60 of the per-attempt instructions of the direct Indexed call on Allen-Cahn 2D 64."
+      ],
+      "completion_requires": [
+        "banded_kernel_route/PREDECLARED.json before any count of the strip families",
+        "banded_kernel_route/RESULTS.json from executed runs",
+        "checkpoint pins of the edited protected files with the decision id"
+      ],
+      "failure_action": "KILL or HOLD: the facade keeps the Indexed kernel and nothing in the drivers is merged; the result is reported to the owner.",
+      "protected": [
+        "original RODAS tableau/drivers except the additions named in the pre-registration (OD-L1-9)",
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [],
+      "state_note": "Pre-registered 2026-11-23 (addendum A5). Run by the orchestrator session."
     }
   ],
   "execution_policy": "Resume ready bounded tasks; research/implementation may overlap only with disjoint writes. Qualification dependencies restrict promotion, not safe opt-in refactoring.",

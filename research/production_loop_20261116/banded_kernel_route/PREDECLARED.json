@@ -1,0 +1,140 @@
+{
+  "schema": "vigilode.loop-l1.v22-predeclared.v1",
+  "node": "V22_FACADE_BANDED_KERNEL",
+  "date_kst": "2026-11-23",
+  "authority": "owner decision OD-L1-9 (OWNER_DECISIONS_20261116.json): the facade's banded route may use the Slices kernel; results stay bit-identical; narrow bands do not become slower",
+  "frozen_before": "any instruction or cycle count of the strip families, and any edit of the drivers or the facade. Correctness checks of the two generators (band against Jacobian-vector product) are not measurements.",
+  "question": "From which half band width on can the facade's banded route use the Slices kernel of the protected banded driver, so that results keep their bits and no band becomes slower?",
+  "prior_data": {
+    "source": "banded_solve/RESULTS_V21.json, stage a2 (whole runs of the protected banded driver, Slices against Indexed)",
+    "wide_bands": {
+      "ac2d64 (n 4096, band 64)": {
+        "instructions_ratio": 0.2204,
+        "cycles_ratio": 0.4022,
+        "cycles_label": "authoritative"
+      },
+      "bruss2d32 (n 2048, band 64)": {
+        "instructions_ratio": 0.221,
+        "cycles_ratio": 0.3999,
+        "cycles_label": "authoritative"
+      },
+      "ac3d16 (n 4096, band 256)": {
+        "instructions_ratio": 0.1629,
+        "cycles_ratio": 0.3407,
+        "cycles_label": "diagnostic_only"
+      }
+    },
+    "narrow_band": "exploratory runs of node V21 on bruss1d (band 2): Slices about 0.98 of the instructions of Indexed and 7 to 13 percent more cycles. This is why the kernel is chosen by band width."
+  },
+  "stage_a_width_scan": {
+    "what_runs": "runner drive <family> <size> <kernel> <attempts> of banded_solve/runner: one whole run of integrate_rodas5p_fast_banded_observed_with_kernel, stopped after <attempts> attempts",
+    "kernels": [
+      "indexed",
+      "slices"
+    ],
+    "families": {
+      "acstrip": {
+        "problem": "Allen-Cahn u_t = D lap u + kappa (u - u^3), D = 0.01, kappa = 1, cell-centred second-order finite volumes with cell size 1/64 in both directions, zero-flux boundaries, natural ordering",
+        "shape": "w cells across (fast index), ceil(8192 / w) cells along; n = w * ceil(8192 / w)",
+        "band": "lower = upper = w",
+        "initial_state": "0.5 cos(2 pi x) cos(3 pi y) + 0.3 cos(5 pi x) cos(pi y) - 0.1 at the cell centres x = (i + 1/2)/64, y = (j + 1/2)/64",
+        "tolerances": {
+          "rtol": 1e-06,
+          "atol": 1e-08,
+          "initial_step": 0.001,
+          "t_span": [
+            0.0,
+            10.0
+          ]
+        },
+        "sizes_w": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          8,
+          10,
+          12,
+          16,
+          24,
+          32,
+          64
+        ]
+      },
+      "brstrip": {
+        "problem": "two-dimensional Brusselator, A = 1, B = 3.4, alpha = 0.02, cell size 1/64 in both directions, zero-flux boundaries, species interleaved per cell",
+        "shape": "m cells across (fast index), ceil(4096 / m) cells along; n = 2 * m * ceil(4096 / m)",
+        "band": "lower = upper = 2 m",
+        "initial_state": "u = 0.5 + (j + 1/2)/(cells along), v = 1 + 5 (i + 1/2)/m",
+        "tolerances": {
+          "rtol": 1e-06,
+          "atol": 1e-08,
+          "initial_step": 0.001,
+          "t_span": [
+            0.0,
+            10.0
+          ]
+        },
+        "sizes_m": [
+          1,
+          2,
+          3,
+          4,
+          6,
+          8,
+          12,
+          16,
+          32
+        ]
+      }
+    },
+    "attempts_of_the_long_run_by_half_band_width": {
+      "1 to 8": 60,
+      "10 to 16": 40,
+      "24 and 32": 24,
+      "64": 12
+    },
+    "measure": "per attempt: (count of the long run - count of the run with 1 attempt) / (difference of attempts), per round; median over 7 rounds after 2 warm-up rounds; user-mode instructions and user-mode cycles (perf stat), one pinned core, the timing lock of the loop",
+    "ratio": "R_I(f, w) and R_C(f, w): per-attempt instructions and cycles of Slices divided by those of Indexed, family f, half band width w",
+    "timing_quality_rule": "cycles are authoritative only if the 1-minute load is at most 8 before and after the cell and the spread (max - min)/median of each kernel is at most 0.10; at most two re-measurements of a cell, all kept, the first that meets the rule decides; otherwise the cell is diagnostic_only",
+    "validity": "in every run of a cell the two kernels return equal attempts, accepted and rejected steps, counted factor and solve operations and state hash (bits of every returned state). One difference in any cell: verdict KILL, nothing is changed."
+  },
+  "rule": {
+    "a_width_qualifies": "half band width w qualifies if, for every family scanned at w, R_I <= 0.95 and R_C <= 0.95 on an authoritative cell. A cell that is not authoritative does not qualify.",
+    "W": "the smallest scanned half band width such that every scanned half band width >= W qualifies",
+    "facade_rule": "the facade's banded route uses Slices if lower >= W and upper >= W, otherwise Indexed (as today). Bands with one side below W are not changed.",
+    "trend_check": "over the scanned widths >= W the ratios must not rise with the width by more than 0.03 from one scanned width to the next; a rise is reported to the owner and W moves above it",
+    "small_n_confirmation": "with W fixed: the square Allen-Cahn problem ac2d of the smallest size in {8, 16, 32} that is >= W (n = size^2, band = size), 60 attempts: R_I <= 1.00 and R_C <= 1.00 on an authoritative cell. If it fails: verdict HOLD, nothing is changed, the result is reported."
+  },
+  "stage_b_implementation": {
+    "design": [
+      "Integrators: the vector-tolerance banded entry point and the two dense-output banded entry points get twins that take a BandedKernel (the scalar twin exists). The existing entry points keep their kernel (Indexed) and their results.",
+      "The dense-output twins accept Indexed and Slices only; with Slices the result's driver identifier is rodas5p-fast-banded-dense-v1-slices.",
+      "Facade: one function chooses the kernel from (lower, upper) by the facade rule. With Indexed the facade calls the entry points it calls today (labels unchanged). With Slices it calls the twins; the route record names the entry point and the driver that ran.",
+      "The constant W is public in the facade crate; tests use the constant, not a number."
+    ],
+    "protected_files_edited_under_OD-L1-9": [
+      "crates/rodas5p-integrators/src/rodas5p_fast.rs (one new public function, no change of an existing one)",
+      "crates/rodas5p-integrators/src/rodas5p_fast_dense.rs (two new public functions, one new identifier, a kernel parameter on two private functions)",
+      "crates/vigilode/src/lib.rs (documentation of the route table and one re-export)"
+    ],
+    "discriminators": {
+      "D1_identity_of_the_twins": "each twin with Indexed and with Slices against the existing entry point: equal bits of every output state, equal counts, counters, band work, partial record, and for dense output equal segments and interior work; on three problems (one with row exchanges, one stopped by a budget) with scalar and vector tolerance, and dense output with interior control Off and WFilteredEnforce",
+      "D2_facade_bits_and_labels": "a golden file of wide-band facade runs is recorded before the facade is edited (commit A). After the edit (commit B) the same test passes with the golden file changed in the two label fields only (entry point, driver identifier). Below W the labels are those of today; at W they are those of Slices; a band with one side below W keeps Indexed.",
+      "D3_no_change_elsewhere": "the default-path golden oracle passes with no golden file changed; the sentinels ppsw1_6b_contracts and ptsw2b_contracts, every stage_clients target, the banded driver tests of the integrators and the facade tests pass; clippy and rustfmt clean",
+      "D4_facade_speed": "one binary after the edit: the facade on ac2d 64 against the direct call of the Indexed driver with the same settings; both must return equal counts and state hash; per-attempt instructions of the facade at most 0.60 of the direct Indexed call; cycles at most 0.75 on an authoritative cell (reported as NOT_DECIDABLE otherwise)"
+    }
+  },
+  "verdicts": {
+    "PASS": "W exists (W <= 64), the small-n confirmation holds, D1 to D3 hold, D4 holds in instructions",
+    "HOLD": "the scan or the confirmation cannot be decided (cycles not authoritative after the allowed re-measurements) or the confirmation fails: the facade is not changed",
+    "KILL": "any difference of bits or counts between the kernels, or no scanned width qualifies: the facade is not changed"
+  },
+  "not_changed": [
+    "the kernels themselves and every existing entry point of the banded driver",
+    "the stage client BandedStageLu and every caller outside the facade",
+    "tolerances, controller constants, default method routing, G0"
+  ]
+}
