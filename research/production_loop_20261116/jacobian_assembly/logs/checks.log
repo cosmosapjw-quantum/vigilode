@@ -1,0 +1,7 @@
+# node V08 checks
+# date: 2026-11-23T22:08:15+09:00
+# git head: 9f25ae5ea791830adba5d94e67fb19bb19e580af
+# rustc: rustc 1.94.1 (e408947bf 2026-03-25)
+V08_CHECK_JSON {"name": "tests of this node (identity, alloc; measure is ignored)", "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_assembly_identity --test stage_clients_assembly_alloc --test stage_clients_assembly_problems --test stage_clients_assembly_measure -- --nocapture", "exit_code": 0, "result": "4 test binaries: 14 passed, 0 failed, 1 ignored"}
+V08_CHECK_JSON {"name": "source-pinning sentinels", "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test ppsw1_6b_contracts --test ptsw2b_contracts", "exit_code": 0, "result": "2 test binaries: 61 passed, 0 failed, 0 ignored"}
+V08_CHECK_JSON {"name": "stage client kit tests of earlier nodes (unchanged files)", "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_dense_identity --test stage_clients_alloc --test stage_clients_banded_tight_identity", "exit_code": 0, "result": "3 test binaries: 14 passed, 0 failed, 3 ignored"}

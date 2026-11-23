@@ -97,3 +97,38 @@ NEXT STEPS
 2. Standalone runner (vigilode dependency): facade_identity and facade sparse_jvp measurement.
 3. build_results.py, build_report.py, RESULTS.json, REPORT_KO.md; reference error with SciPy.
 4. clippy, rustfmt --check, sentinels, loop checker, strict JSON load.
+
+== 2026-11-23 22:10, entry 3 (identity, fail-closed and facade logs done; timing pending on host load) ==
+
+DONE SINCE ENTRY 2
+- tests/stage_clients_assembly_measure.rs (ignored test; modes identity, failclosed, timing, single with a
+  final-state dump) and run_measurements.sh (commands of every log).
+- logs/identity_<cell>.log for the 5 declared cells: every arm (seq, t1, t2, t4, t6) equals the protected
+  driver run with reference finite differences in steps, final state, linearization points and assembled
+  Jacobians (fingerprints). nlkpp-dense-n400 and nlkpp-band-n4096-r24 reach t = 10 in 34 and 38 attempts
+  (the 48-attempt cap does not bind there); the two Brusselator sizes stop at the cap (48 attempts).
+- logs/failclosed.log: 7 negative controls end with InvalidInput and a typed AssemblyError, no build
+  completed; the counter-example (aliased pattern, check columns switched off) runs unnoticed, as documented.
+- runner/ (standalone, links vigilode): logs/facade.log. (1) facade identity: vigilode solve with
+  Jacobian::FiniteDifference equals the client driver + sequential assembly client bit for bit in 3 cases
+  (dense faer, dense in-place, banded), also with 3 workers. (2) facade coloured JVP route on the Brusselator
+  (n = 128): 4 colours, 4.0 JVP calls per Jacobian build (368 calls / 92 builds), recovered values equal the
+  analytic Jacobian bit for bit (508 entries), final state equal to the analytic band solve bit for bit.
+  Finding: vigilode Stats report jvp_calls = 0 for that route (the JVPs inside the band fill are not counted).
+- build_results.py (parser, verdict rules of PREDECLARED.json), build_report.py (REPORT_KO.md renderer),
+  reference_error.py (SciPy LSODA reference; analytic Jacobians checked against central differences),
+  run_checks.sh (tests, sentinels, clippy, rustfmt, loop checker, strict JSON).
+- reference/final_state_<cell>.bin: last accepted state of the sequential arm of the 3 qualifying problems.
+
+HOST
+- 1-minute load 12-15 since 21:57 (other agents of the group compile and test). Bounded wait for a load of
+  8 or less started 21:57:16, ends 22:17 at the latest; then the timing cells are measured anyway and
+  labelled by the quality rule (re-measurement at most twice, every try kept: logs/timing_<cell>_try<k>.log).
+
+REMAINING (mechanical, in this order)
+1. ./run_measurements.sh timing <cell> 1 for: nlkpp-dense-n400, nlkpp-band-n4096-r24, bruss1d-n131072,
+   bruss1d-n128-dense, bruss1d-n128-coloured; and ./run_measurements.sh timing nlkpp-band-n4096-r24 1
+   protected seq,t6 (secondary back end).
+2. ./run_measurements.sh perf <cell> <arm> for the qualifying cells, arms seq and t6.
+3. python3 -I reference_error.py <cell> >> logs/reference_error.log for the 3 qualifying cells.
+4. ./run_checks.sh; python3 -I build_results.py; python3 -I build_report.py; commit.
