@@ -189,23 +189,29 @@ add("프로토콜: 코어 6-11 고정 (타이밍 락), arm 교대, 워밍업 2 +
     f"권위 조건: 전후 1분 load {f(R['timing_quality_rule']['load_limit'], 0)} 이하, arm별 (최대-최소)/중앙값 {f(R['timing_quality_rule']['spread_limit'], 2)} 이하. "
     "속도비 = 보호 드라이버 중앙값 / 재사용 arm 중앙값.")
 add("")
-rows = []
-for cell, item in wall["cells"].items():
-    for variant in item["variants"]:
-        used = variant["invocation"]["used"]
-        if used is None:
-            rows.append([cell, variant["argv0_length_requested"], variant["status"], "-", "-", "-", "-", "-", "-", "-", "-"])
-            continue
-        p, r = used["arms"].get("protected"), used["arms"].get("reuse")
-        rows.append([
-            cell, used["argv0_length"], variant["label"], f"{len(variant['invocation']['tries'])}회 중 round {used['round']} try {used['try']}",
-            ms(p["wall_median_ns"]), ms(r["wall_median_ns"]), f(variant["speedup_protected_over_reuse"], 3),
-            f"{f(p['spread'], 3)} / {f(r['spread'], 3)}",
-            f"{f(p['steady_minor_faults_per_accepted_step'], 1)} / {f(r['steady_minor_faults_per_accepted_step'], 1)}",
-            f"{used['loadavg_before'][0]} / {used['loadavg_after'][0]}", p["attempts"],
-        ])
-add(table(["셀", "경로 길이", "라벨", "쓴 시도", "보호 ms", "재사용 ms", "속도비", "spread 보호/재사용", "스텝당 fault 보호/재사용", "load 전/후", "시도 수"], rows))
-add("")
+
+
+def wall_table(section):
+    rows = []
+    for cell, item in section["cells"].items():
+        for variant in item["variants"]:
+            used = variant["invocation"]["used"]
+            if used is None:
+                rows.append([cell, variant["argv0_length_requested"], variant["status"], "-", "-", "-", "-", "-", "-", "-", "-"])
+                continue
+            p, r = used["arms"].get("protected"), used["arms"].get("reuse")
+            rows.append([
+                cell, used["argv0_length"], variant["label"], f"{len(variant['invocation']['tries'])}회 중 round {used['round']} try {used['try']}",
+                ms(p["wall_median_ns"]), ms(r["wall_median_ns"]), f(variant["speedup_protected_over_reuse"], 3),
+                f"{f(p['spread'], 3)} / {f(r['spread'], 3)}",
+                f"{f(p['steady_minor_faults_per_accepted_step'], 1)} / {f(r['steady_minor_faults_per_accepted_step'], 1)}",
+                f"{used['loadavg_before'][0]} / {used['loadavg_after'][0]}", p["attempts"],
+            ])
+    add(table(["셀", "경로 길이", "라벨", "쓴 시도", "보호 ms", "재사용 ms", "속도비", "spread 보호/재사용", "스텝당 fault 보호/재사용", "load 전/후", "시도 수"], rows))
+    add("")
+
+
+wall_table(wall)
 add(f"- 셀별 판정: " + ", ".join(f"{cell}: {verdict_word(v)}" for cell, v in V["reuse_wall_per_cell"].items()) + f". 합친 판정: {verdict_word(parts['wall'])}.")
 add("- 모든 시도(재측정 포함)는 `RESULTS.json`의 `reuse_wall.cells.*.variants[].invocation.tries`에 있다.")
 add("")
@@ -226,44 +232,60 @@ add("faer의 재귀를 클라이언트 안에서 돌린다: 64열 이하 패널�
     "상수(패널 64열, 조각당 최소 2e6 flop, 교환 65536개)는 타이밍 전에 정했고 조정하지 않았다.")
 add("")
 client = R["threaded"]["client_side_arm"]
-for cell, size in client["sizes"].items():
-    add(f"**{cell}** (적분 구간 {SPANS[cell]}):")
-    add("")
-    rows = []
-    for inv in size["invocations"]:
-        used = inv["used"]
-        if used is None:
-            rows.append([f"{inv['rtol']:.0e}", inv["status"], "-", "-", "-", "-", "-", "-", "-"])
-            continue
-        arms = used["arms"]
-        p = arms["protected"]
-        cells_ms = " / ".join(ms(arms[a]["wall_median_ns"]) if a in arms else "-" for a in ("protected", "reuse", "threaded2", "threaded4", "threaded6"))
-        rows.append([
-            f"{inv['rtol']:.0e}", inv["label"], f"{len(inv['tries'])}회 중 round {used['round']} try {used['try']}", p["attempts"], e(p.get("error_max_abs")),
-            cells_ms, f(used["worst_spread"], 3), f"{used['loadavg_before'][0]} / {used['loadavg_after'][0]}",
-            f(p["wall_median_ms_per_attempt"], 2),
-        ])
-    add(table(["rtol", "라벨", "쓴 시도", "시도 수", "보호 arm 달성 오차", "중앙값 ms: 보호 / 재사용 / 2 / 4 / 6 워커", "최악 spread", "load 전/후", "보호 ms/시도"], rows))
-    add("")
-    rows = []
-    for arm in ("threaded2", "threaded4", "threaded6", "reuse"):
-        item = size["matched_error"].get(arm)
-        if not item:
-            continue
-        for point in item["points"]:
-            rows.append([
-                arm, f"{point['rtol']:.0e}", f(point["speedup_at_matched_error"], 3), f(point["speedup_at_equal_tolerance"], 3),
-                f"{point['attempts_arm']} / {point['attempts_protected']}", f(point["error_ratio"], 6),
-                f(point["bit_identical_to_protected"]), point["label"],
-            ])
-    if rows:
-        add(table(["arm", "rtol", "같은 달성 오차에서 속도비", "같은 허용오차에서 속도비", "시도 arm/보호", "오차비", "궤적 비트 동일", "라벨"], rows))
+
+
+def threaded_tables(section):
+    for cell, size in section["sizes"].items():
+        add(f"**{cell}** (적분 구간 {SPANS[cell]}):")
         add("")
+        rows = []
+        for inv in size["invocations"]:
+            used = inv["used"]
+            if used is None:
+                rows.append([f"{inv['rtol']:.0e}", inv["status"], "-", "-", "-", "-", "-", "-", "-"])
+                continue
+            arms = used["arms"]
+            p = arms["protected"]
+            cells_ms = " / ".join(ms(arms[a]["wall_median_ns"]) if a in arms else "-" for a in ("protected", "reuse", "threaded2", "threaded4", "threaded6"))
+            rows.append([
+                f"{inv['rtol']:.0e}", inv["label"], f"{len(inv['tries'])}회 중 round {used['round']} try {used['try']}", p["attempts"], e(p.get("error_max_abs")),
+                cells_ms, f(used["worst_spread"], 3), f"{used['loadavg_before'][0]} / {used['loadavg_after'][0]}",
+                f(p["wall_median_ms_per_attempt"], 2),
+            ])
+        add(table(["rtol", "라벨", "쓴 시도", "시도 수", "보호 arm 달성 오차", "중앙값 ms: 보호 / 재사용 / 2 / 4 / 6 워커", "최악 spread", "load 전/후", "보호 ms/시도"], rows))
+        add("")
+        rows = []
+        for arm in ("threaded2", "threaded4", "threaded6", "reuse"):
+            item = size["matched_error"].get(arm)
+            if not item:
+                continue
+            for point in item["points"]:
+                rows.append([
+                    arm, f"{point['rtol']:.0e}", f(point["speedup_at_matched_error"], 3), f(point["speedup_at_equal_tolerance"], 3),
+                    f"{point['attempts_arm']} / {point['attempts_protected']}", f(point["error_ratio"], 6),
+                    f(point["bit_identical_to_protected"]), point["label"],
+                ])
+        if rows:
+            add(table(["arm", "rtol", "같은 달성 오차에서 속도비", "같은 허용오차에서 속도비", "시도 arm/보호", "오차비", "궤적 비트 동일", "라벨"], rows))
+            add("")
+
+
+threaded_tables(client)
 ps = client["per_size"]
 add("- 6 워커 판독: " + "; ".join(
     f"{cell}: 상태 {item['state']}, 속도비 최소 {f(item['speedup_min_6_workers'], 3)} / 최대 {f(item['speedup_max_6_workers'], 3)}, PASS 임계 충족 {f(item['meets_pass_thresholds'])}"
     for cell, item in ps.items()))
 add(f"- PASS 기준: {verdict_word(client['pass_criterion'])}. KILL 기준: {verdict_word(client['kill_criterion'])}.")
+six_large = client["sizes"]["skewnet.n2048"]["matched_error"].get("threaded6")
+if six_large and client["kill_criterion"] == "NOT_DECIDABLE":
+    firm = [p for p in six_large["points"] if p["label"] == "authoritative" and p["speedup_at_matched_error"] is not None]
+    if firm:
+        above = [p for p in firm if p["speedup_at_matched_error"] >= T["threaded_kill"]]
+        add(f"- 참고 (판정 줄은 바꾸지 않음): n = 2048에서 권위 라벨을 얻은 허용오차는 {len(firm)}개이고 6 워커 속도비는 "
+            + ", ".join(f"rtol {p['rtol']:.0e}: {f(p['speedup_at_matched_error'], 3)}" for p in firm)
+            + f"다. KILL 조건은 세 허용오차 모두에서 {f(T['threaded_kill'], 2)} 미만이어야 하므로, "
+            + (f"그중 {len(above)}개가 이미 그 이상인 이상 나머지 한 칸의 값과 무관하게 성립할 수 없다. " if above else "권위 칸만으로는 성립 여부를 말할 수 없다. ")
+            + "그래도 사전 선언한 규칙(세 호출 모두 권위)에 따라 판정 줄은 NOT_DECIDABLE로 둔다.")
 add("- 기준 해: skewnet의 정확해 phi(t_end)를 파서가 mpmath 40자리로 다시 계산해 끝 상태(비트 패턴으로 기록)와 비교한다. "
     + "; ".join(f"{cell}: 러너 값과의 최대 차이 {e(ref['runner_value_max_abs_difference'])}" for cell, ref in R["references"].items()) + ". 기준 해 불확도 상한 1e-12 (사전 선언).")
 add("")
@@ -320,18 +342,119 @@ if rows:
     add(table(["셀", "arm", "인수분해", "풀이 8회", "선형화", "나머지", "합계", "인수분해 비중", "인수분해 속도비 (재사용 대비)", "실행 속도비 (kit 대비)", "라벨"], rows))
     add("")
 
+later = ex.get("later_rounds", {})
+if later.get("status") == "RUN":
+    readings = later["readings_not_verdicts"]
+    add("### 조용한 호스트에서의 반복 측정 (round 2; 이 노드의 판정이 아님)")
+    add("")
+    add("재측정 규칙은 호출마다 측정 1회와 재측정 2회까지만 판정에 쓰게 한다. 세 번째 시도가 끝날 무렵 호스트가 조용해져서, "
+        "같은 호출을 같은 프로토콜로 한 번 더 돌려 탐색 자료로 남겼다 (로그 접미사 `.round2`). "
+        "아래는 같은 파서 규칙을 그 자료에 적용한 판독이다. 판정으로 채택할지는 오케스트레이터가 정한다.")
+    add("")
+    add(table(
+        ["판독 (판정 아님)", "값"],
+        [
+            ["재사용 벽시계, 합친 판독", verdict_word(readings["reuse_wall_combined"])],
+            ["재사용 벽시계, 셀별", ", ".join(f"{cell}: {verdict_word(v)}" for cell, v in readings["reuse_wall_per_cell"].items())],
+            ["스레드 PASS 기준", verdict_word(readings["threaded_pass_criterion"])],
+            ["스레드 KILL 기준", verdict_word(readings["threaded_kill_criterion"])],
+            ["스레드 6 워커, 크기별", "; ".join(
+                f"{cell}: 상태 {item['state']}, 최소 {f(item['speedup_min_6_workers'], 3)}, 최대 {f(item['speedup_max_6_workers'], 3)}, 임계 충족 {f(item['meets_pass_thresholds'])}"
+                for cell, item in readings["threaded_per_size"].items())],
+        ],
+    ))
+    add("")
+    wall_table(later["reuse_wall"])
+    threaded_tables(later["threaded_client_side_arm"])
+
 # ---------------------------------------------------------------------------------------------
-add("## 8. 한계와 열린 항목")
+add("## 8. 재사용 arm이 없애는 것, 스레드가 이득인 곳")
+add("")
+WP_PROTECTED_FAULTS = [
+    attempt["arms"]["protected"]["steady_minor_faults_per_accepted_step"]
+    for inv in client["sizes"]["skewnet.n512"]["invocations"]
+    for attempt in inv["tries"]
+    if attempt["status"] == "RUN"
+] or [None]
+add("### 8.1 재사용 arm이 없애는 것")
+add("")
+by_arm = alloc["summary_by_arm"]
+if "protected" in by_arm:
+    item = by_arm["protected"]
+    add(f"- 힙 할당: 보호 faer 경로는 인수분해 1회에 {item['allocations_per_attempt_min']}번 할당한다 (n x n 행렬 3개와 작은 배열 3개; "
+        + ", ".join(f"n = {n}에서 {v[0] / 1.0e6:.2f} MB" for n, v in item["bytes_per_attempt_by_n"].items())
+        + f"). 재사용 arm은 센 스텝 {by_arm['reuse']['counted_steps']}개에서 {by_arm['reuse']['counted_allocations_total']}번.")
+ranges = {}
+for row in faults["summary"]:
+    n = int(row["cell"].split(".n")[1])
+    lo, hi = ranges.setdefault((n, row["arm"]), [row["minor_faults_per_accepted_step_min"], row["minor_faults_per_accepted_step_max"]])
+    ranges[(n, row["arm"])] = [min(lo, row["minor_faults_per_accepted_step_min"]), max(hi, row["minor_faults_per_accepted_step_max"])]
+if ranges:
+    add("- Minor page fault (수락 스텝당, 실행 전체의 최소..최대): "
+        + "; ".join(f"n = {n}: 보호 {f(ranges[(n, 'protected')][0], 1)}..{f(ranges[(n, 'protected')][1], 1)}, 재사용 {f(ranges[(n, 'reuse')][0], 2)}..{f(ranges[(n, 'reuse')][1], 2)}"
+                    for n in sorted({key[0] for key in ranges}) if (n, "protected") in ranges and (n, "reuse") in ranges)
+        + ". n = 512에서 보호 드라이버의 값은 힙 상태에 따라 실행마다, 한 호출의 반복 사이에서도 바뀐다. "
+        "n = 2048의 값은 행렬 세 개(각 32 MB = 8192쪽, 합 24576쪽)를 인수분해마다 새로 건드리는 양에 해당한다.")
+ratios = [(item["cell"], item["arms"]["reuse"].get("instructions_ratio_to_protected")) for item in ex["instructions"] if item.get("status") == "RUN" and "reuse" in item["arms"]]
+if ratios:
+    add("- 사용자 모드 명령 수 (시도당, 재사용 / 보호): " + ", ".join(f"{cell}: {f(v, 4)}" for cell, v in ratios)
+        + ". 사용자 모드에서 줄어드는 명령은 몇 퍼센트다. 벽시계 차이의 나머지는 이 계수에 잡히지 않는 일이며, page fault를 처리하는 커널 쪽 일이 거기에 들어간다 (얼마가 그 몫인지는 따로 재지 않았다).")
+phase_rows = [item for item in ex.get("phases", []) if item.get("status") == "RUN" and {"kit", "reuse"} <= set(item["arms"])]
+if phase_rows:
+    add("- 인수분해 단계의 시간 (탐색, 시도당 ms, kit -> 재사용): "
+        + "; ".join(f"{item['cell']}: {f(item['arms']['kit']['factor_ms_per_attempt'], 2)} -> {f(item['arms']['reuse']['factor_ms_per_attempt'], 2)}" for item in phase_rows) + ".")
+add("- 벽시계 (진단 범위, 1절): n = 512에서 보호 / 재사용 "
+    + ", ".join(f"{cell} {f(item.get('min'), 2)}..{f(item.get('max'), 2)}" for cell, item in D["reuse_wall_speedup_over_all_tries"].items())
+    + ". 다섯 arm을 한 프로세스에서 교대한 work-precision 호출(skewnet.n512)에서는 보호 드라이버의 워밍업 후 스텝당 fault가 "
+    + f"{f(min(WP_PROTECTED_FAULTS), 1)}..{f(max(WP_PROTECTED_FAULTS), 1)}였고, 그때 재사용 / 보호는 "
+    + ", ".join(f"{f(item.get('min'), 2)}..{f(item.get('max'), 2)}" for cell, arms in D["threaded_speedup_over_all_tries"].items() for arm, item in arms.items() if arm == "reuse")
+    + "였다.")
+add("")
+add("### 8.2 스레드가 이득인 곳")
+add("")
+if phase_rows:
+    add("- 인수분해 단계만의 속도비 (탐색, 재사용 arm 대비, 2 / 4 / 6 워커): "
+        + "; ".join(f"{item['cell']}: " + " / ".join(f(item["arms"][arm].get("factor_speedup_over_reuse"), 2) for arm in ("threaded2", "threaded4", "threaded6") if arm in item["arms"]) for item in phase_rows) + ".")
+    add("- 재사용 arm에서 인수분해가 시도 시간에서 차지하는 비중 (탐색): "
+        + "; ".join(f"{item['cell']}: {f(item['arms']['reuse']['factor_share'], 2)}" for item in phase_rows) + ".")
+add("- 실행 전체의 속도비 (보호 대비, 6 워커, 모든 시도의 범위): "
+    + "; ".join(f"{cell}: {f(arms['threaded6'].get('min'), 2)}..{f(arms['threaded6'].get('max'), 2)}" for cell, arms in D["threaded_speedup_over_all_tries"].items() if "threaded6" in arms) + ".")
+small = D["threaded_speedup_over_all_tries"].get("skewnet.n512", {})
+if "threaded6" in small and "reuse" in small:
+    overlap = small["threaded6"]["min"] <= small["reuse"]["max"]
+    add(f"- n = 512, 같은 호출들에서: 6 워커 {f(small['threaded6']['min'], 2)}..{f(small['threaded6']['max'], 2)}, 재사용 arm {f(small['reuse']['min'], 2)}..{f(small['reuse']['max'], 2)} (보호 대비). "
+        + ("두 범위가 겹친다: 이 구현에서 n = 512의 이득은 대부분 저장소 재사용에서 온다. " if overlap else "6 워커의 범위가 재사용 arm의 범위 위에 있다. ")
+        + "원인은 재지 않았다. 구현의 상수(패널 64열, 조각당 최소 2e6 flop)는 타이밍 전에 정한 값 그대로이며, 작은 n에 맞춘 조정은 하지 않았다 (사전 선언: 조정 없음).")
+pair_flags = [
+    item["bit_identical_to_protected_in_every_repetition"]
+    for size in client["sizes"].values()
+    for inv in size["invocations"]
+    for attempt in inv["tries"]
+    if attempt["status"] == "RUN"
+    for arm, item in attempt["arms"].items()
+    if arm.startswith("threaded")
+]
+identical_rows = s["runner_rows_threaded_identical"] == s["runner_rows_threaded"] and all(pair_flags)
+add(f"- 스레드 arm의 궤적과 보호 드라이버의 비트 동일성: 러너 동일성 행 {s['runner_rows_threaded_identical']} / {s['runner_rows_threaded']}, "
+    f"타이밍 호출의 (시도, arm) {sum(1 for flag in pair_flags if flag)} / {len(pair_flags)}에서 모든 반복이 동일. "
+    + ("잰 모든 행에서 같았다 (따라서 시도 수와 달성 오차도 같다). " if identical_rows else "같지 않은 행이 있다. ")
+    + "구성상 보장되는 성질은 아니다.")
+add("")
+
+# ---------------------------------------------------------------------------------------------
+add("## 9. 한계와 열린 항목")
 add("")
 add("- 스레드 arm의 둘째 줄(6.2)이 부록 A2의 판정인지는 오케스트레이터의 결정 사항이다.")
-add("- 벽시계 판정은 타이밍 품질 규칙을 만족한 시도만 쓴다. 라벨이 diagnostic_only인 칸의 수치는 판정에 쓰지 않았다.")
+add("- 벽시계 판정은 타이밍 품질 규칙을 만족한 round 1의 시도만 쓴다. 라벨이 diagnostic_only인 칸의 수치는 판정에 쓰지 않았다.")
+add("- 보호 드라이버는 한 호출의 반복 사이에서 page fault 상태가 바뀌어 (max - min) / median이 10 %를 넘는 일이 잦다 (5절의 spread 열, 조용한 호스트의 round 2에서도 같다). "
+    "그래서 재사용 arm의 벽시계 기준은 루프의 spread 규칙 아래에서는 호스트가 조용해도 판정 불가로 남을 수 있다. 규칙을 어떻게 적용할지는 오케스트레이터의 결정 사항이다.")
 add("- 재사용 arm과 보호 드라이버의 동일성은 이 빌드(faer 0.24.4, `rayon` 기능 꺼짐, 전역 병렬도 `Seq`)에서 시험한 성질이다. faer 버전이나 기능이 바뀌면 다시 시험해야 한다.")
 add("- 스레드 arm의 풀은 실행마다 클라이언트와 함께 만들어지고 버려진다 (잰 구간 안). 풀이(solve)는 순차다.")
 failed = R["sources"]["invocations_with_non_zero_exit"]
 add(f"- 종료 코드가 0이 아닌 호출: {len(failed)}개" + (": " + ", ".join(f"`{x['log']}` ({x['exit_code']})" for x in failed) if failed else "") + ".")
 add(f"- 타이밍 전 대기에 쓴 시간: {f(R['sources']['wait_budget']['waited_s'], 0)}초 (노드 한도 1200초).")
 add("")
-add("## 9. 재현")
+add("## 10. 재현")
 add("")
 add("```")
 add("export CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v18")

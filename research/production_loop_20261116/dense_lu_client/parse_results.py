@@ -513,13 +513,20 @@ def parse_measure(name, entry):
     }
 
 
-def invocation(stage, base):
-    """All tries of one timing invocation and the one the rule selects."""
+FIRST_ROUND = (1,)
+LATER_ROUNDS = tuple(range(2, 10))
+
+
+def invocation(stage, base, rounds=FIRST_ROUND):
+    """All tries of one timing invocation in the given rounds and the one the rule selects.
+
+    Round 1 is the node's own run: one measurement and at most two re-measurements, the only
+    tries a verdict may use. A later round (log suffix .round<N>) is a replicate that keeps the
+    earlier logs; it is parsed with the same code and reported apart, without a verdict.
+    """
     entries = last_invocations(stage)
     tries = []
-    # Round 1 is the node's own run (at most three tries); a later round, if any, is a
-    # re-measurement that keeps the earlier logs (suffix .round<N>).
-    for round_index in range(1, 10):
+    for round_index in rounds:
         suffix = "" if round_index == 1 else f".round{round_index}"
         for attempt in (1, 2, 3):
             name = f"{base}{suffix}.try{attempt}.jsonl"
@@ -547,12 +554,12 @@ def ratio(inv, numerator, denominator):
     return used["arms"][numerator]["wall_median_ns"] / used["arms"][denominator]["wall_median_ns"]
 
 
-def reuse_wall_section():
+def reuse_wall_section(rounds=FIRST_ROUND):
     cells = {}
     for cell in ("skewnet.n512", "meanfield.n512"):
         variants = []
         for length in VARIANTS:
-            inv = invocation("wall", f"wall.{cell}.rtol1e-6.len{length}")
+            inv = invocation("wall", f"wall.{cell}.rtol1e-6.len{length}", rounds)
             used = inv["used"]
             variants.append(
                 {
@@ -609,12 +616,12 @@ def interpolate(points, error):
     return math.exp(walls[lo] + slope * (x - errors[lo]))
 
 
-def threaded_section():
+def threaded_section(rounds=FIRST_ROUND):
     sizes = {}
     for cell in ("skewnet.n512", "skewnet.n2048"):
         invocations = []
         for rtol in CELLS[cell]["rtols"]:
-            inv = invocation("wp", f"wp.{cell}.rtol{rtol_text(rtol)}")
+            inv = invocation("wp", f"wp.{cell}.rtol{rtol_text(rtol)}", rounds)
             inv["rtol"] = rtol
             invocations.append(inv)
         ran = [inv for inv in invocations if inv["status"] == "RUN"]
@@ -879,6 +886,38 @@ def diagnostic_summary(wall, threaded):
     }
 
 
+def later_rounds():
+    """Replicates after round 1 (exploratory): the sections of the verdict, parsed alike.
+
+    The re-measurement rule allows a verdict only from round 1. The readings below show what the
+    same rules give on the replicate; they are not verdicts of this node.
+    """
+    names = [
+        name
+        for stage in ("wall", "wp")
+        for name in last_invocations(stage)
+        if ".round" in name
+    ]
+    if not names:
+        return {"status": "NOT_RUN"}
+    wall = reuse_wall_section(LATER_ROUNDS)
+    threaded = threaded_section(LATER_ROUNDS)["client_side_arm"]
+    return {
+        "status": "RUN",
+        "note": "exploratory replicate; not a verdict (the rule allows one measurement and two re-measurements)",
+        "logs": sorted(names),
+        "reuse_wall": wall,
+        "threaded_client_side_arm": threaded,
+        "readings_not_verdicts": {
+            "reuse_wall_combined": wall["verdict_combined"],
+            "reuse_wall_per_cell": {cell: item["verdict"] for cell, item in wall["cells"].items()},
+            "threaded_pass_criterion": threaded["pass_criterion"],
+            "threaded_kill_criterion": threaded["kill_criterion"],
+            "threaded_per_size": threaded["per_size"],
+        },
+    }
+
+
 def phases_section():
     """Exploratory phase times (TimedStageClient around every client arm)."""
     out = []
@@ -977,7 +1016,8 @@ def main():
         for e in MANIFEST
         if "exit_code" in e and e["exit_code"] != 0
     ]
-    logs = sorted(p for p in LOGS.iterdir() if p.is_file())
+    # The logs of the closing checks are written after this file and are not sources of it.
+    logs = sorted(p for p in LOGS.iterdir() if p.is_file() and not p.name.startswith("checks"))
     results = {
         "schema": "vigilode.loop_l1.v18_dense_lu_client.results.v1",
         "node": "V18_DENSE_LU_CLIENT",
@@ -1030,7 +1070,7 @@ def main():
         "page_faults": faults,
         "reuse_wall": wall,
         "threaded": threaded,
-        "exploratory": dict(exploratory_section(), phases=phases_section()),
+        "exploratory": dict(exploratory_section(), phases=phases_section(), later_rounds=later_rounds()),
         "diagnostic_summary": diagnostic_summary(wall, threaded),
         "verdicts": {
             "reuse_parts": parts,

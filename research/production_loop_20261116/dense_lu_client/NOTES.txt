@@ -159,3 +159,26 @@ the step limits it. The main runner binary is unchanged.
 If the timing verdicts stay NOT_DECIDABLE: a later measurement on a quiet host is
 `V18_ROUND=2 python3 -I research/production_loop_20261116/dense_lu_client/run_measurements.py wall wp extra`
 (logs get the suffix .round2; the parser uses the first try that meets the rule, in round order).
+
+== 2026-11-23 23:30 KST: milestone - all measurements done, results and report written ==
+Timing, round 1 (the node's own three tries per invocation; verdict source): 36 tries, 2 meet the quality
+rule (wp.skewnet.n2048 at rtol 1e-5 and 1e-6, try 3, after the host became quiet at about 22:57). 33 miss the
+10 % spread limit. Verdict lines: reuse wall NOT_DECIDABLE; threaded (client-side arm) PASS and KILL criteria
+NOT_DECIDABLE under the pre-declared rule (all invocations of a size authoritative).
+Round 2 (23:02-23:17, exploratory replicate on the quiet host, one try, logs *.round2.try1.jsonl, never used
+for a verdict): 5 of 12 invocations meet the rule. The protected arm still changes its page-fault regime
+between repetitions on the three skewnet wall cells (spread 0.14..0.26 at a load of 2.5..4).
+Stage phases (23:18, exploratory, added after pass 1): factor phase per attempt kit -> reuse -> 6 workers:
+n = 512 3.73 -> 3.05 -> 2.69 ms, n = 1024 24.7 -> 18.5 -> 10.7 ms, n = 2048 205.6 -> 128.8 -> 56.0 ms.
+Checks (run_checks.sh, logs/checks.log): tests exit 0 (7 test binaries ok), sentinels exit 0, clippy exit 0,
+rustfmt exit 0, strict JSON exit 0; loop checker exit 1 with the expected complaint about the pre-seeded stub
+("implementation changed; rerun affected tests/update checkpoint:
+crates/rodas5p-integrators/src/stage_clients/dense_lu_reuse.rs"); check_remaining.py runs the checks the
+loop checker does not reach after that complaint: all pass (logs/checks_loop_checker_remaining.log).
+
+For the orchestrator:
+- Ruling 1: is the client-side threaded arm the threaded arm of addendum A2, or exploratory?
+- Ruling 2: how to apply the spread rule to a baseline arm whose wall is bimodal by construction (the
+  protected faer path at n = 512).
+- A further measurement on a quiet host: V18_ROUND=3 python3 -I .../run_measurements.py wall wp extra
+  (round 2 already exists), then parse_results.py and make_report.py.

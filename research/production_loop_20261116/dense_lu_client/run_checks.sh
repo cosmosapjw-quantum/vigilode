@@ -66,3 +66,4 @@ print(f"{count} JSON files and {lines} JSON lines load strictly")
 '
 grep -c '^test result: ok' "$LOG" | xargs -I{} echo "test binaries with 'test result: ok': {}"
 grep '^test result:' "$LOG"
+check loop_checker_remaining python3 -I research/production_loop_20261116/dense_lu_client/check_remaining.py
