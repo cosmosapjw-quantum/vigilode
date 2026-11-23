@@ -1,0 +1,9 @@
+# V24_LOG_BEGIN {"binary": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/v24-bins/mf_adaptive_measure.final", "binary_sha256": "f35805e9c6871f9758247a54373565a7e2dfab59114009b6462e565017877046", "git_head": "7fb23b63b0c30625965b0489bf179c0b8e059609", "git_dirty_tracked": 0, "phase": "setup", "name": "burgers2d__SETUP__r1", "date": "2026-11-23T23:40:11+0900", "env": {"V24_FAMILY": "burgers2d", "V24_LABEL": "setup", "V24_MODE": "SETUP"}, "perf": true, "timing": false, "command": ["taskset", "-c", "0-5,12-17", "perf", "stat", "-x", ",", "-e", "instructions:u", "-o", "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/mf_adaptive/logs/setup/burgers2d__SETUP__r1.perf", "--", "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/v24-bins/mf_adaptive_measure.final", "--ignored", "--nocapture", "--exact", "v24_run"], "cpus": "0-5,12-17", "loadavg_before_launch": "11.49 8.05 7.22 18/4969 1335783"}
+
+running 1 test
+V24_RUN_JSON {"family":"burgers2d","label":"setup","mode":"SETUP","n":1568,"schema":"vigilode.loop-l1.v24.run.v1","setup_only":true,"t_span":[0.0,0.5]}
+test v24_run ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+# V24_LOG_END {"exit_code": 0, "timed_out": false, "seconds": 0.06491494178771973, "loadavg_after_exit": "11.49 8.05 7.22 12/4962 1335810", "date": "2026-11-23T23:40:11+0900"}
