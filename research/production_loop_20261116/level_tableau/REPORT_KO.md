@@ -1,3 +1,12 @@
+> **검토 반영 (2026-11-23, 독립 검토 `REVIEW.json`, 판정: 수정 조건부 수용).** 판정(도구 검증 PASS, depth 5와 6 발견 후 pay-off FAIL, node FAIL, KILL 조건 미충족)은 검토자의 독립 검증기와 적분기로 재현됐다. 아래는 표현을 바로잡는 내용이다.
+>
+> 1. 수정 A-2(차수 검사의 반올림 guard 1e-11 -> 1e-12)는 RODAS5P 차수 실행 결과를 본 뒤에 쓰였다. 처음 선언한 guard에서는 depth 5의 한 문제가 NOT_DECIDABLE이다. depth 5는 어느 guard에서도 pay-off에서 탈락하므로 판정은 같다.
+> 2. "계수 100 이하"는 k-form 계수 기준이다. 코드 형식에서는 후보 24개 중 14개가 100을 넘는다(두 1순위 후보는 두 형식 모두 충족).
+> 3. A-안정성은 설계 안정성 함수에 대한 것이고, D6L 후보는 A-안정 구간의 경계에 있다(여유 0).
+> 4. depth 6의 1순위 후보는 수정 A-3으로 추가한 formulation(D6L)에서 나왔다. 어느 해석으로도 depth 6은 PASS도 KILL도 아니다.
+> 5. `D6T_r07`은 탐색 결과일 뿐이다. 확인하려면 새 문제에서 사전등록한 node가 필요하다.
+> 6. 마지막 단계(결과와 보고서 생성)는 builder agent가 사용 한도로 끊긴 뒤 orchestrator가 실행했다(`NOTES.txt` 마지막 항목).
+
 # V16 레벨 구조 Rosenbrock-Wanner 타블로 탐색 (루프 L1, 2026-11-17)
 
 - 노드: `V16_LEVEL_TABLEAU_SEARCH` (사전등록 부록 A1). Python 프로토타입만 사용, Rust 코드와 보호 경로는 변경 없음.

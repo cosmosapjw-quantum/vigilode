@@ -1148,7 +1148,7 @@
       "depends": [
         "V05_STAGE_THEORY"
       ],
-      "status": "PLANNED",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Search for an order-5(4), stiffly accurate Rosenbrock-Wanner tableau whose stage graph has depth 5 or 6 on two processors, as a candidate successor of the depth-8 RODAS5P chain. Prototype only.",
       "write_allowlist": [
         "research/production_loop_20261116/level_tableau/**"
@@ -1179,7 +1179,11 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_loop_20261116/level_tableau/RESULTS.json",
+        "research/production_loop_20261116/level_tableau/REVIEW.json"
+      ],
+      "state_note": "Depth 5 and depth 6 found, pay-off FAIL, node FAIL (ledger L-0319)."
     },
     {
       "id": "V17_MATRIX_FREE_STAGE_SOLVE",
@@ -1187,7 +1191,7 @@
         "V04_STAGE_COST_ANATOMY",
         "V06_SHARED_KRYLOV_BASIS"
       ],
-      "status": "PLANNED",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Confirm on new problems whether a residual test after every Arnoldi column, and a linear tolerance tied to the step tolerance, cut the cost of the eight matrix-free stage solves at matched achieved error.",
       "write_allowlist": [
         "crates/rodas5p-integrators/src/stage_clients/krylov.rs",
@@ -1219,7 +1223,11 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_loop_20261116/mf_stage_solve/RESULTS.json",
+        "research/production_loop_20261116/mf_stage_solve/REVIEW.json"
+      ],
+      "state_note": "Cadence PASS and policy PASS on 4 of 4 families (ledger L-0318); reviewer corrections in REVIEW.json."
     },
     {
       "id": "V18_DENSE_LU_CLIENT",
@@ -1266,7 +1274,7 @@
         "V03G_DEFAULT_PATH_GOLDEN",
         "V15_STAGE_CLIENT_KIT"
       ],
-      "status": "PLANNED",
+      "status": "IN_PROGRESS",
       "purpose": "Make the registry the routing authority behind one entry point while every existing frontend keeps working (owner decision OD-L1-3).",
       "write_allowlist": [
         "crates/vigilode/src/selection.rs",
@@ -1296,7 +1304,11 @@
         "default routing",
         "tolerances/controller constants"
       ],
-      "evidence": []
+      "evidence": [
+        "research/production_loop_20261116/unified_frontend/RECEIPT.json",
+        "research/production_loop_20261116/unified_frontend/REVIEW.json"
+      ],
+      "state_note": "Part A (registry-routed entry point) merged, frozen criteria PASS (ledger L-0317); part B (truthful unified router) is a node of the next group."
     },
     {
       "id": "V12_PORT_PLAN",

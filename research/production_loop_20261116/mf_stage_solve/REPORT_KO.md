@@ -1,3 +1,12 @@
+> **검토 반영 (2026-11-23, 독립 검토 `REVIEW.json`, 판정: 수정 조건부 수용).** 판정(유효성 PASS, cadence PASS 4/4, 정책 PASS 4/4, KILL 미발동)은 검토자가 raw log에서 다시 계산해 일치했다. 아래는 표현을 바로잡는 내용이다.
+>
+> 1. cadence 이득은 출하 설정(restart 40) 대비다. 보호 driver를 restart 10으로만 바꿔도 명령어가 restart 40의 0.26-0.37배가 된다(탐색). 같은 restart 10에서 열마다 residual을 검사하는 효과만 보면 명령어 0.64-0.78배다(탐색, 허용오차 1개).
+> 2. 정책(C)의 시도 횟수 조건(1.10 이하)은 사전선언한 통계(기하평균)와 같은 허용오차끼리의 비교에서 성립한다. 최악 격자점에서는 cusp1d 1.44, bruss1d 1.23으로 1.10을 넘는다.
+> 3. "모든 solve에서 residual check 통과"는 완료된 solve 기준이다. cusp1d에서 Krylov 예산을 다 쓴 solve가 A 149, B 149, C 33회 있었고 이들은 검사 대상 밖이다.
+> 4. KILL은 "평가했고 발동하지 않음"이다. 측정 binary는 3개다. timing 부하 범위는 try 1이 14.5-41.7, try 2와 3이 1.9-3.9다.
+> 5. cusp1d는 jump 구간의 오차가 불규칙해, matched-error 진술에서는 noise 한계가 있는 계열로 본다.
+> 6. timing try 2와 3, parser, 보고서 생성, checker는 builder agent가 사용 한도로 끊긴 뒤 orchestrator가 실행했다(`NOTES.txt` 마지막 항목).
+
 # V17 matrix-free stage solve: 잔차 검사 주기와 선형 허용치 정책 (실측 보고)
 
 - node `V17_MATRIX_FREE_STAGE_SOLVE`, loop L1 wave 2 group 2, 생성 시각 2026-11-23T19:44:08+0900

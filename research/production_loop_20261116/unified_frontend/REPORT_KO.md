@@ -1,3 +1,12 @@
+> **검토 반영 (2026-11-23, 독립 검토 `REVIEW.json`, 판정: 수정 조건부 수용).** 동결 기준 4개(D1-D4)는 검토자가 다시 실행해 모두 재현했다. 아래는 이 보고서의 표현을 바로잡는 내용이다.
+>
+> 1. "RODAS5P plan이 실제 실행 driver와 18432/18432 일치"는 실행 결과가 아니라 규칙과의 대조다. 일반 sparse-JVP 문제의 sequential 경로 plan 352개(중복 포함 704개)는 실행하면 callback 전에 driver 오류로 끝난다. 원인은 이 node 범위 밖인 `Rodas5p::capabilities`의 기존 결함이다(owner 결정 필요).
+> 2. PPSW1 adapter는 잘못된 `Options::h0`를 거절하지 않고 무시한다.
+> 3. dense provider에 틀린 band 선언을 주면 solve가 callback 2회 뒤에 거절한다(`StructureRefused`). "callback 전 거절"은 routing 거절과 입력 검증에 한한다.
+> 4. plan의 필드를 고친 뒤 solve에 넘기면 다시 승인받지 않고 실행된다. 거절 보장은 고치지 않은 plan에만 성립한다.
+> 5. PeerOde는 "이전과 동일"이 아니다. starter 제어가 h0를 줄이면 시도 횟수와 궤적이 달라진다(tol <= 1e-6인 Oregonator 설정에서 관측). V10과 U11 재실행에 영향이 있다.
+> 6. Phase B의 정확한 표현: `select`는 catalog 기반 registry 함수에 위임한다. U06 `query()`는 routing 권위가 아니며 COD-03 사례에서 여전히 `select`와 다르다. radau-iia3 descriptor 1개는 수정됐다.
+
 # V03 통합 frontend (part A) 보고
 
 이 문서는 `build_report.py`가 `RECEIPT.json`에서 만든 것이다. 숫자는 모두 `logs/*.log`(실행된 명령의 원 출력)에서 `build_receipt.py`가 파싱했다. 손으로 적은 숫자는 없다.
