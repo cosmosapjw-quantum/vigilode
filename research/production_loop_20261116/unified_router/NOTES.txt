@@ -1,0 +1,44 @@
+NOTES of node V03_UNIFIED_FRONTEND part B (truthful unified router), loop L1 wave 2
+worktree /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03b
+branch   research/production-loop-20261116-w2-v03b, base 587a139501729bbe886bb2b8c49b0ef893705d08
+target   /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03b
+
+== entry 1 (2026-11-23, start) ==
+State found: worktree clean at the base commit, no earlier run of this node
+(research/production_loop_20261116/unified_router/ did not exist).
+
+Read so far (file:line of the base commit):
+- crates/vigilode/src/unified/mod.rs:1-9      module doc claims "Nilpotent homotopy sweep", "GCRO-DR",
+                                              "Exponential Actions", "Zero-Allocation Hot Loops": no code behind them.
+- crates/vigilode/src/unified/router.rs:63-75 Tier2MatrixFreeKrylov | Tier4StagedRodas5p | TierProtectedReference |
+                                              Tier3Exponential -> dispatch_rodas5p_tier -> Rodas5p::solve (:193);
+                                              :175-180 only the label string differs (COD-05).
+- router.rs:285-291                           every unsuccessful SwitchingSolution -> Failed(MaxStepsReached) (COD-06).
+- router.rs:267-273                           7 switching counters copied, the rest dropped; :277 empty_stats.
+- router.rs:142                               fixed text instead of the DOPRI5 stop reason.
+- router.rs:222-235                           "fallback" of a JVP problem calls the identical Rodas5p::solve again.
+- router.rs:260-263                           AdaptiveReentrant escalates to DerivativeFallback::AllowFiniteDifference.
+- unified/fallback.rs:44-46                   fallback leg restarts the full max_steps budget; '?' drops the charged
+                                              explicit prefix and route_history; :56 stats cover the fallback leg only.
+- unified/analyzer.rs:113-116                 one RHS call at preflight, not charged; error -> InvalidInput.
+- analyzer.rs:162-198                         dense Jacobian + mu2 (eigen solve); mu2 <= 0 and span <= 100 -> Tier1Explicit,
+                                              is_stiff = !is_contracting (COD-07); not charged.
+- analyzer.rs:210-221                         every finite-difference problem with n <= 10 -> Tier1Explicit.
+- unified/workspace.rs:45-47                  8n, (m+1)n and n*n buffers allocated for every problem; never passed to a driver;
+                                              :123-144 step_into is a Heun step with the VG-1 claim.
+- unified/options.rs:25-52                    profile, max_krylov_restarts, invariant_drift_tol never read.
+- unified/solution.rs:37                      doc says max_t |I(y(t)) - I(y0)|, code computes the endpoint difference.
+- crates/vigilode/tests/unified_production_solver_contracts.rs:204,232,262  assert label strings
+  ("Tier1ExplicitDopri5", "Tier2MatrixFreeKrylov", "ProtectedRODAS5P"), not the executed driver.
+- research/production_loop_20261116/audit/audit_findings.json  COD-05, COD-06, COD-07 (claims, minimal_fix).
+- docs/agent/production_solver_program_20261112/TASK_CONTRACTS.json tasks[28] V03_UNIFIED_FRONTEND (state_note: part B
+  is a node of the next group); PREREGISTRATION.md has no frozen row for part B: the acceptance list of the task text
+  is the criterion, protocol choices go to PREDECLARED.json before the first test run.
+
+Next steps:
+1. read selection.rs / selection/** (V03a: MethodChoice, MethodRegistry::route/solve, SolutionView), production.rs
+   (GeneralOdePolicy), explicit.rs, switching.rs public API, solution.rs (Stats.route, FailureReason), registry.rs.
+2. PREDECLARED.json (test problems, tolerances, work bounds, what "label equals executed driver" compares) -> commit.
+3. unified_router_contracts.rs written first, run against the base sources, failing outputs kept in logs/.
+4. fix router/analyzer/fallback/solution/workspace/options/mod docs; registry.rs typed driver error if in reach.
+5. full facade suite, clippy, fmt, doc, loop checker, RECEIPT.json, REPORT_KO.md (rendered by script).
