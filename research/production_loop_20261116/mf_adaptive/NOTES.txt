@@ -189,3 +189,31 @@ STEP 4 (logs/setup, logs/d0, logs/runs; parser committed at 910d18eb before the 
   with its `require` collecting in memory (checker_report.py) the complete list is that line and
   "implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs".
   Both paths are in the write list of the node; no changed path is outside it.
+
+== 2026-11-24 00:25 KST: T, exploratory runs, R, report ==
+- T (logs/timing, binary f35805e9c687): 20 cells, try 1 at a load of 3.9 to 8.4; fhn3d 1e-6 and 1e-7 missed the
+  load rule (8.39) and were measured once more at a load of 3.8 (try 2). All 20 cells are authoritative; wall
+  speed-up S/N at matched error 3.98, 3.21, 6.42, 3.63. Cells whose two single-run walls sum to more than 8 s
+  (cusp1d) ran as nine invocations of one round; the longest invocation under the lock ran 46.5 s.
+- Exploratory arms on the deciding grid (logs/exploratory, same binary): P1 (declared before the runs), P2R
+  (declared), P1R and SR (added afterwards, PROTOCOL.json amendment P-3). P1: matched-error instruction ratio
+  0.376, 0.394, 0.231, 0.446; budget-exhausting solves equal to S in every cell (55, 46, 34, 11, 3); no audit
+  violation; largest error ratio 2.60 (cusp1d). These numbers are exploratory: P1 was not the chosen variant.
+- Exploratory replay (logs/shadow, binary 17ff1525ae09 = the measurement target with the mode SHADOW added;
+  driver and kernels unchanged): every stage system of the cusp1d runs of S and of P2 solved again by the
+  shipped kernel, P1 and P2. The replay of the driver's own kernel reproduces the driver in every system
+  (column count of each completed solve, failure of each failed one). On the 28811 systems of the S runs:
+  shipped solved and P2 exhausted the budget in 8, shipped exhausted and P2 solved in 3; P1 0 and 0. The
+  systems P2 loses are those the shipped kernel solves with exactly 200 columns.
+- The log headers of logs/shadow name head 1d421b17 (the doc-comment commit); the replay binary was built at
+  10ea5b31. Between the two only a doc comment of the driver and the sentinel pin differ.
+- Doc comment of MfStageSolvePolicy states the outcome (commit 1d421b17); g3 re-pinned again by
+  repin_sentinel.py: the final pin of the driver file is in SENTINEL_REPIN.json.
+- R (run_checks.py, logs/checks, R_SUITES.json): every command exits 0 except the sentinels, where
+  ptsw2b_contracts::h2_protected_sources_are_byte_identical fails (the pin of the driver file that this node
+  may not edit). The facade suite: 500 passed, 0 failed, the golden oracle included; no file under
+  crates/vigilode changed.
+- RESULTS.json and REPORT_KO.md are written by parse_results.py and make_report.py from the logs.
+- The git-ignored directory research/production_loop_20261116/mf_stage_solve/.mypy_cache (created by a session
+  hook when the V17 scripts were read) was moved out of the worktree to
+  /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/v24-bins/moved_out_mypy_cache_mf_stage_solve.

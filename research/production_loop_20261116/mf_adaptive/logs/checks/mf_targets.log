@@ -1,0 +1,297 @@
+# V24_CHECK_BEGIN {"name": "mf_targets", "command": ["cargo", "+1.94.1", "test", "--locked", "-j", "4", "--release", "--no-fail-fast", "-p", "rodas5p-integrators", "--test", "a1_zero_tolerance_scale", "--test", "alg01_coupled_stage_target", "--test", "alg04_alg06", "--test", "audit2_matrix_free_common_w_contracts", "--test", "declared_structure_routing", "--test", "int01_gcrodr_verified_reuse", "--test", "int01_posthoc_tolerance", "--test", "krylov_workspace_driver_contract", "--test", "matrix_free_problem_contracts", "--test", "native_reaudit_cache_contracts", "--test", "p0_partial_contracts", "--test", "residual_acceptance_contract", "--test", "rev03_export", "--test", "rnext01_residual_output", "--test", "rnext02_gmres_into_study", "--test", "rnext03_gcrodr_attribution", "--test", "rnext03_posthoc_invariant", "--test", "rnext07_model_epoch", "--test", "safe_recycle_policy", "--test", "shared_basis_mf_contracts", "--test", "sp01_dupfix_adoption", "--test", "spd04_ls_workspace_study", "--test", "spd07_mf_step_warm_start", "--test", "stage_residual_telemetry", "--test", "thread_transfer_mf_workspace", "--test", "time_fd_workspace_contracts", "--test", "zero_start_policy_holdout"], "cpus": "0-5,12-17", "git_head": "d891c5491b54b6b164d040bc838ba40924c8b56c", "git_dirty_tracked": 1, "date": "2026-11-24T00:11:39+0900"}
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 2m 03s
+     Running tests/a1_zero_tolerance_scale.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/a1_zero_tolerance_scale-32940eb2aaa0fd55)
+
+running 9 tests
+test fast_small_driver_accepts_a_zero_component_with_zero_atol ... ok
+test fast_dense_driver_accepts_a_zero_component_with_zero_atol ... ok
+test fast_small_batch_driver_accepts_a_zero_component_with_zero_atol ... ok
+test fast_banded_driver_accepts_a_zero_component_with_zero_atol ... ok
+test lagged_driver_refuses_a_zero_richardson_weight_with_a_typed_error ... ok
+test lagged_driver_with_forced_refresh_accepts_a_zero_component_with_zero_atol ... ok
+test matrix_free_fast_driver_accepts_a_zero_component_with_zero_atol ... ok
+test protected_sequential_driver_accepts_a_zero_component_with_zero_atol ... ok
+test staged_coupled_target_refuses_a_zero_start_weight_with_a_typed_error ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/alg01_coupled_stage_target.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/alg01_coupled_stage_target-2c678bd691e845e9)
+
+running 14 tests
+test export_base ... ignored, base export of research/alg01_coupled_stage_target_20261008; release build
+test export_base_alg03 ... ignored, base export of research/alg03_stage_budget_guard_20261008; release build
+test export_runs ... ignored, recorded run of research/alg01_coupled_stage_target_20261008; release build
+test export_runs_alg03 ... ignored, recorded run of research/alg03_stage_budget_guard_20261008; release build
+test e05_unit_rhs_matches_the_committed_anchor ... ok
+test frontier_grid_is_one_to_ten_decades_in_half_decades ... ok
+test lu_twin_agrees_with_the_matrix_free_u_form_step ... ok
+test staged_policies_refuse_other_solvers ... ok
+test transfer_constants_reproduce_the_pilot_table ... ok
+test coupled_targets_follow_the_registered_rule ... ok
+test staged_policies_integrate_small_cases_without_a_duplicate_residual ... ok
+test legacy_rows_reproduce_the_base_export_on_small_cases ... ok
+test legacy_policy_is_the_gmres_into_driver_bit_for_bit ... ok
+test guard_classification_does_not_change_the_run ... ok
+
+test result: ok. 10 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/alg04_alg06.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/alg04_alg06-358bc601ba6a5535)
+
+running 14 tests
+test export_runs_alg04 ... ignored, recorded run of research/alg04_coupled_target_v2_20261010; release build
+test export_runs_alg06 ... ignored, recorded run of research/alg06_guard_v2_20261010; release build
+test dup_fix_needs_gmres_into ... ok
+test g3_needs_a_coupled_target ... ok
+test b3_is_coupled_guarded2_where_nothing_fires ... ok
+test g3_charges_the_fallback_residual_to_the_attempt_error ... ok
+test coupled_guarded2_is_coupled_guarded_above_the_restart_length ... ok
+test g3_rejections_take_the_local_error_path ... ok
+test classifying_accepted_guard_aborts_does_not_change_the_run ... ok
+test legacy_ladder_at_the_alg04_budget_reproduces_the_alg01_base ... ok
+test alg04_cells_are_the_alg01_base_cells ... ok
+test dup_fix_is_legacy_without_the_diagnostic_residual ... ok
+test alg06_cells_are_the_alg03_base_cells_and_the_spd07_set ... ok
+test base_references_cover_every_problem ... ok
+
+test result: ok. 12 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/audit2_matrix_free_common_w_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/audit2_matrix_free_common_w_contracts-1c16488b526557f0)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/declared_structure_routing.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/declared_structure_routing-72eac388c66d58b3)
+
+running 6 tests
+test export_runs ... ignored, recorded run of research/sp03_declared_structure_routing_20261010; release build; set SP03_RUNS
+test the_transcribed_problems_are_consistent ... ok
+test a_dense_declaration_above_eight_records_its_fallback ... ok
+test band_verification_is_charged_and_reported ... ok
+test every_malformed_declaration_is_refused_before_any_step ... ok
+test routed_equals_its_target_driver_on_quick_cells ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/int01_gcrodr_verified_reuse.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/int01_gcrodr_verified_reuse-5b3d48f5ad4cdd8a)
+
+running 2 tests
+test fresh_family_cold_gmres_only ... ignored, development check of research/int01_gcrodr_verified_reuse_20261003: cold GMRES on the fresh family only
+test gcrodr_verified_reuse ... ignored, research run of research/int01_gcrodr_verified_reuse_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/int01_posthoc_tolerance.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/int01_posthoc_tolerance-379a9138ac8244f5)
+
+running 1 test
+test gcrodr_reuse_tolerance_posthoc ... ignored, post-hoc diagnostic of research/int01_gcrodr_verified_reuse_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/krylov_workspace_driver_contract.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/krylov_workspace_driver_contract-f0ce12aa14181ac3)
+
+running 9 tests
+test export_runs ... ignored, export SP02 runs to RUNS.json
+test caller_parity_attempt_and_trajectory ... ok
+test faer_premise_pinned ... ok
+test forced_failure_rollback_gmres_and_lgmres ... ok
+test nonfinite_jvp_rejection_rollback ... ok
+test refusal_contracts ... ok
+test snapshot_rollback_restores_system_identity_under_same_token ... ok
+test warmed_krylov_solves_and_snapshot_rollback_allocate_zero ... ok
+test workspace_growth_reuse_and_clone ... ok
+
+test result: ok. 8 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/matrix_free_problem_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/matrix_free_problem_contracts-fbfc0cd1b3a96817)
+
+running 2 tests
+test supplied_jvp_matches_the_explicit_jacobian_action ... ok
+test jvp_only_clone_hides_explicit_jacobian_and_builds_matrix_free_shifted_operator ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/native_reaudit_cache_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/native_reaudit_cache_contracts-701cae85bd3807e8)
+
+running 8 tests
+test a_cloned_problem_same_state_changed_step_still_reuses_the_cache ... ok
+test a_failed_fresh_callback_cannot_leave_an_old_linearization_reusable ... ok
+test a_failed_time_derivative_refresh_is_also_atomic ... ok
+test a_nonfinite_time_and_overflowing_error_scale_are_not_admissible ... ok
+test a_same_named_different_callback_is_not_the_same_frozen_problem ... ok
+test nonfinite_or_negative_output_tolerances_are_rejected_before_work ... ok
+test the_public_attempt_cannot_bypass_the_identity_mass_contract ... ok
+test a_reuse_hint_does_not_override_state_or_time_identity ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p0_partial_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/p0_partial_contracts-e3de245916663eae)
+
+running 9 tests
+test fast_dense_partial_after_a_latched_rhs_failure ... ok
+test fast_banded_partial_after_a_latched_rhs_failure_and_none_on_success ... ok
+test fast_dense_partial_reports_the_attempt_budget_and_the_last_accepted_state ... ok
+test fast_dense_partial_is_none_on_success_and_the_run_is_bit_identical ... ok
+test router_carries_the_partial_record_of_the_routed_driver ... ok
+test segment_driver_reports_a_partial_record_on_failure ... ok
+test matrix_free_partial_after_a_latched_rhs_failure_and_none_on_success ... ok
+test every_step_sampling_off_is_the_named_driver_and_wfiltered_samples_every_step ... ok
+test segment_driver_with_output_time_sampling_is_the_named_driver_bit_for_bit ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/residual_acceptance_contract.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/residual_acceptance_contract-41ca550a97282619)
+
+running 9 tests
+test accurate_seam_is_accepted_at_every_scale ... ok
+test finite_scale_control_behaves_as_before ... ok
+test recorded_overflow_counterexample_is_rejected ... ok
+test unrepresentable_inputs_reject ... ok
+test driver_rejects_overflowing_fallback_transactionally ... ok
+test driver_finite_control_is_unchanged ... ok
+test driver_accepts_accurate_fallback_at_finite_and_overflowing_scale ... ok
+test power_of_two_rescaling_into_overflow_never_creates_acceptance ... ok
+test decision_matches_old_rule_wherever_old_intermediates_are_finite ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+
+     Running tests/rev03_export.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/rev03_export-9fe8bbff934a2025)
+
+running 1 test
+test export_fresh_step_sizes ... ignored, export of research/rev03_one_sided_acceptance_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rnext01_residual_output.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/rnext01_residual_output-011f3b8edb29691b)
+
+running 1 test
+test export_one_step_comparisons ... ignored, export of research/rnext01_residual_output_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rnext02_gmres_into_study.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/rnext02_gmres_into_study-0fdb7d8a9dbe22d0)
+
+running 1 test
+test gmres_into_study ... ignored, research run of research/rnext02_gmres_into_20261003; release build, one test thread
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rnext03_gcrodr_attribution.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/rnext03_gcrodr_attribution-3181ad730fca5eb4)
+
+running 1 test
+test gcrodr_attribution ... ignored, research run of research/rnext03_gcrodr_attribution_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rnext03_posthoc_invariant.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/rnext03_posthoc_invariant-2606160698762e39)
+
+running 1 test
+test recycle_invariant_probe ... ignored, post-hoc diagnostic of research/rnext03_gcrodr_attribution_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rnext07_model_epoch.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/rnext07_model_epoch-30185e5e92ac140a)
+
+running 1 test
+test model_epoch_contract ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/safe_recycle_policy.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/safe_recycle_policy-81f7acbb04edf3c6)
+
+running 4 tests
+test export_legacy_base ... ignored, base export of research/safe_recycle_policy_20261004; release build
+test export_policies ... ignored, recorded run of research/safe_recycle_policy_20261004; release build
+test cold_stage_solve_leaves_carried_state ... ok
+test refreshed_stage_solve_equals_traced_rev01c_call ... ok
+
+test result: ok. 2 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/shared_basis_mf_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/shared_basis_mf_contracts-f307a64d6773445b)
+
+running 3 tests
+test shared_basis_workspace_configuration_and_accessors ... ok
+test shared_basis_on_heat_uses_fewer_jvps_at_matched_steps ... ok
+test shared_basis_off_is_bit_identical ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+     Running tests/sp01_dupfix_adoption.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/sp01_dupfix_adoption-8ade264fa3c16689)
+
+running 7 tests
+test export_runs ... ignored, recorded export of research/sp01_dupfix_adoption_20261010; release build
+test the_registered_cells ... ok
+test dup_fix_is_unchanged ... ok
+test explicit_w_jacobi_sequential_steps ... ok
+test the_accounting_entry_points_reproduce_the_default_drivers ... ok
+test the_kform_step_loop_is_the_comparator ... ok
+test both_accountings_agree_and_differ_by_the_observed_count ... ok
+
+test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests/spd04_ls_workspace_study.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/spd04_ls_workspace_study-62c4ee466248b701)
+
+running 1 test
+test spd04_ls_workspace_study ... ignored, research run of research/spd04_ls_workspace_20261007; release build, one test thread
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/spd07_mf_step_warm_start.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/spd07_mf_step_warm_start-92c97d9bc17ac828)
+
+running 6 tests
+test export_base ... ignored, base export of research/spd07_mf_step_warm_start_20261007; release build
+test export_runs ... ignored, recorded run of research/spd07_mf_step_warm_start_20261007; release build
+test sequential_step_refuses_step_indexed_starts ... ok
+test recorded_step_starts_each_stage_from_its_own_solution ... ok
+test step_indexed_starts_are_used ... ok
+test default_guesses_reproduce_the_base_export ... ok
+
+test result: ok. 4 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/stage_residual_telemetry.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/stage_residual_telemetry-02586fa3a2609daa)
+
+running 6 tests
+test export_runs ... ignored, recorded run of research/as04_stage_residual_telemetry_20261011; release build
+test test_workspace_clone_telemetry_isolation ... ok
+test test_d1_transactional_failure ... ok
+test test_d2_epoch_and_generation ... ok
+test test_telemetry_off_and_reserved_capacity_contract ... ok
+test test_r_parity_on_off_and_alg06_anchor ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.10s
+
+     Running tests/thread_transfer_mf_workspace.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/thread_transfer_mf_workspace-c6e4e8a2f4b78856)
+
+running 1 test
+test matrix_free_u_form_driver ... ignored, research run of research/thread_transfer_mf_workspace_20261002 (about 2 min in release); run by the ignored-tests CI job in the measurement profile
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/time_fd_workspace_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/time_fd_workspace_contracts-86b20676619f2595)
+
+running 2 tests
+test dense_fd_scratch_matches_stack_callback_with_no_extra_step_allocations ... ok
+test matrix_free_fd_scratch_matches_stack_callback_with_no_extra_step_allocations ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/zero_start_policy_holdout.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/zero_start_policy_holdout-e19019d241bb76cf)
+
+running 12 tests
+test export_base ... ignored, SP04 base export across 6 cells and 8 comparator arms; release build
+test export_runs ... ignored, SP04 runs export across 6 cells and 11 arms (8 comparator + 3 new); release build
+test current_w_preserves_buffer_capacity ... ok
+test first_stage_solve_zero_start_parity ... ok
+test zero_allocation_in_explicit_zero_hot_loop ... ok
+test smoke_e_normal_g_z ... ok
+test current_w_contract ... ok
+test default_entry_point_equals_g_p ... ok
+test vg3_base_json_bitwise_anchor ... ok
+test separation_contract_and_telemetry_parity ... ok
+test smoke_all_arms_e_normal ... ok
+test smoke_all_problems ... ok
+
+test result: ok. 10 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 3.13s
+
+# V24_CHECK_END {"exit_code": 0, "seconds": 128.50174236297607, "date": "2026-11-24T00:13:47+0900"}

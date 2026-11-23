@@ -1,0 +1,10 @@
+# V24_CHECK_BEGIN {"name": "loop_checker", "command": ["python3", "-I", "research/production_loop_20261116/check_checkpoint.py"], "cpus": "0-5,12-17", "git_head": "d891c5491b54b6b164d040bc838ba40924c8b56c", "git_dirty_tracked": 1, "date": "2026-11-24T00:22:13+0900"}
+Traceback (most recent call last):
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/check_checkpoint.py", line 95, in <module>
+    main()
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/check_checkpoint.py", line 77, in main
+    require(git('hash-object', path) == expected, 'protected file changed: ' + path)
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/check_checkpoint.py", line 28, in require
+    raise ValueError(message)
+ValueError: protected file changed: crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs
+# V24_CHECK_END {"exit_code": 1, "seconds": 0.1103055477142334, "date": "2026-11-24T00:22:13+0900"}

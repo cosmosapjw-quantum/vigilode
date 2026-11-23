@@ -60,6 +60,7 @@ def main():
     recording = load("RECORDING_A.json")
     repin = load("SENTINEL_REPIN.json")
     suites = load("R_SUITES.json")
+    checker = load("CHECKER_REPORT.json")
     disc = results["discriminators"]
     verdict = results["verdict"]
     arm = results["chosen_variant"]
@@ -99,6 +100,11 @@ def main():
         for family, label, s, n in failing_b:
             w(f"- 불성립한 판별식은 B 하나이고, 20칸 중 한 칸입니다: **{family}, rtol {label}에서 Krylov 예산(200열)을 다 쓰고 실패한 단계 풀이가 N {n}건, S {s}건.** B는 \"어느 칸에서도 N이 S보다 많으면 안 된다\"는 조건입니다.")
     w(f"- 성립한 것: " + ", ".join(f"{name} {verdict_text(value)}" for name, value in six.items() if value == "PASS") + ".")
+    if suites and suites["verdict"] != "PASS":
+        w(f"- R이 불성립인 까닭은 시험 하나입니다: {'; '.join(suites['summary']['failing_tests'])}. 이 센티널은 편집한 드라이버 파일의 해시를 고정하는데, 이 노드의 쓰기 허용 목록 밖에 있어 다시 고정할 수 없었습니다(10절). 그 밖의 시험 {whole(suites['summary']['tests_passed'])}개는 모두 통과했습니다.")
+    explored = results.get("exploratory") or {}
+    if "P1" in explored:
+        w("- 탐색적 관측(판정에 쓰지 않음): 선택되지 않은 변형 P1은 결정 격자에서 예산 소진 풀이 수가 모든 칸에서 S와 같았고, 같은 선형계를 다시 푼 재현 분석에서도 출하 커널과 차이가 없었습니다. P2는 같은 선형계에서도 예산 경계의 계를 조금 더 놓쳤습니다(5절, 7절, 8-1절).")
     w("")
     w("| 판별식 | 동결 기준 | 측정값 | 결과 |")
     w("|---|---|---|---|")
@@ -191,11 +197,17 @@ def main():
         w("")
         w("| 실행(궤적) | rtol | 선형계 수 | 예산 소진: 출하 / P1 / P2 | 출하는 풀고 P2는 소진 | 출하는 소진, P2는 풂 | 출하는 풀고 P1은 소진 | 출하는 소진, P1은 풂 | 세 커널이 모두 푼 계의 열 수 합: 출하 / P1 / P2 | 재현이 드라이버와 다른 계 |")
         w("|---|---|---|---|---|---|---|---|---|---|")
-        for name in sorted(runs):
+        ordered = sorted(runs, key=lambda name: (name.split("__")[2] != "S", name.split("__")[0], LABELS.index(name.split("__")[1])))
+        for name in ordered:
             row = runs[name]
             if row.get("systems") is None:
                 continue
-            w(f"| {row['family']} {row['arm']} | {row['rtol']:g} | {whole(row['systems'])} | {row['budget'][0]} / {row['budget'][1]} / {row['budget'][2]} | {row['shipped_solved_p2_budget']} | {row['shipped_budget_p2_solved']} | {row['shipped_solved_p1_budget']} | {row['shipped_budget_p1_solved']} | {whole(row['columns_where_all_solved'][0])} / {whole(row['columns_where_all_solved'][1])} / {whole(row['columns_where_all_solved'][2])} | {row['replay_differs_from_driver']} |")
+            family, label, label_arm = name.split("__")
+            w(f"| {family}, {label_arm}의 궤적 | {label} | {whole(row['systems'])} | {row['budget'][0]} / {row['budget'][1]} / {row['budget'][2]} | {row['shipped_solved_p2_budget']} | {row['shipped_budget_p2_solved']} | {row['shipped_solved_p1_budget']} | {row['shipped_budget_p1_solved']} | {whole(row['columns_where_all_solved'][0])} / {whole(row['columns_where_all_solved'][1])} / {whole(row['columns_where_all_solved'][2])} | {row['replay_differs_from_driver']} |")
+        w("")
+        differs = sum(row.get("replay_differs_from_driver") or 0 for row in runs.values())
+        same_end = all(row.get("end_state_equals_the_instruction_run") for row in runs.values() if "end_state_equals_the_instruction_run" in row)
+        w(f"재현의 자기 점검: 드라이버 자신의 커널로 다시 푼 결과가 드라이버의 기록(열 수, 실패 여부)과 다른 계는 모든 실행을 합쳐 {differs}개이고, 재현을 붙인 실행의 끝 상태는 명령어 측정 실행과 {'모두 같습니다' if same_end else '같지 않은 것이 있습니다'}.")
         w("")
         s_runs = [row for row in runs.values() if row.get("arm") == "S" and row.get("systems") is not None]
         if s_runs:
@@ -204,7 +216,26 @@ def main():
             lost1 = sum(row["shipped_solved_p1_budget"] for row in s_runs)
             won1 = sum(row["shipped_budget_p1_solved"] for row in s_runs)
             total = sum(row["systems"] for row in s_runs)
-            w(f"S의 궤적 위 선형계 {whole(total)}개를 합치면: 출하 커널은 풀었는데 P2가 예산을 소진한 계 **{lost}개**, 반대로 출하 커널은 소진했는데 P2가 푼 계 **{won}개**; P1은 각각 {lost1}개와 {won1}개입니다. 이 숫자가 \"같은 계에서 P2의 짧은 첫 주기(10, 20열)가 예산 안 수렴을 놓치는가\"에 대한 직접 측정입니다.")
+            w(f"S의 궤적 위 선형계 {whole(total)}개를 합치면: 출하 커널은 풀었는데 P2가 예산을 소진한 계 **{lost}개**, 반대로 출하 커널은 소진했는데 P2가 푼 계 **{won}개**; P1은 각각 **{lost1}개**와 **{won1}개**입니다.")
+            edge = []
+            for row in runs.values():
+                for item in row.get("disagreements_first_40") or []:
+                    if item[3] >= 0 and item[5] == -1:
+                        edge.append((item[3], item[4]))
+            won_columns = []
+            for row in runs.values():
+                for item in row.get("disagreements_first_40") or []:
+                    if item[3] == -1 and item[5] >= 0:
+                        won_columns.append(item[5])
+
+            def span(values):
+                return f"모두 {min(values)}" if min(values) == max(values) else f"{min(values)}에서 {max(values)}"
+
+            if edge:
+                w(f"P2만 예산을 소진한 계(두 궤적 합쳐 기록된 {len(edge)}개)에서 출하 커널이 쓴 열 수는 {span([a for a, _ in edge])}, P1이 쓴 열 수는 {span([b for _, b in edge])}입니다(예산 200). 곧, 출하 정책이 예산의 끝에서 겨우 푸는 계에서, 첫 두 주기를 10열과 20열로 짧게 끊는 P2가 수렴을 놓칩니다."
+                  + (f" 반대 방향(출하 커널은 소진, P2는 풂)의 {len(won_columns)}개 계에서 P2가 쓴 열 수는 {span(won_columns)}으로, 같은 경계입니다." if won_columns else ""))
+            w("")
+            w("해석(탐색적): B가 한 칸에서 어긋난 것은 두 실행의 궤적 차이만으로 생긴 것이 아닙니다. 같은 선형계에서도 P2는 예산 경계의 계를 출하 정책보다 조금 더 자주 놓칩니다. P1은 재현한 모든 계에서 출하 커널과 예산 소진 여부가 같았습니다. 이것은 사전등록되지 않은 사후 분석이므로 판정을 바꾸지 않습니다.")
             w("")
     w("")
 
@@ -250,6 +281,14 @@ def main():
             w(f"| {names.get(label_arm, label_arm)} | " + " | ".join(cells) + " |")
         w("")
         if "P1" in exploratory:
+            block = exploratory["P1"]["families"]
+            w("선택되지 않은 P1을 결정 격자에 돌린 결과(탐색적): 정합 오차 명령어 비 " + ", ".join(f"{family} {f3(block[family]['instructions_matched_error'])}" for family in FAMILIES)
+              + "; 칸별 같은 허용오차 비의 최댓값 " + ", ".join(f3(max(block[family]["per_cell_instructions_equal_tolerance"].values())) for family in FAMILIES)
+              + "; 시도 횟수 비 " + ", ".join(f"{block[family]['attempts_equal_tolerance']:.4f}" for family in FAMILIES)
+              + "; 오차 비 최댓값 " + ", ".join(f"{block[family]['max_error_ratio']:.3f}" for family in FAMILIES)
+              + "; 감사 위반 " + ", ".join(str(block[family]["audit_violations"]) for family in FAMILIES) + ".")
+            w("P1은 동결된 선택 규칙이 고른 변형이 아니고 이 숫자들은 선택과 결정 실행 뒤에 나온 것이므로, 이것으로 P1을 통과시킬 수는 없습니다. P1을 채택하려면 새 사전등록과 확인 실행이 필요합니다.")
+            w("")
             rows = []
             for label in LABELS:
                 block = exploratory["P1"]["families"]["cusp1d"]["cells"][label]
@@ -274,7 +313,32 @@ def main():
         speed = " ".join(f2(tf["speedup_equal_tolerance"].get(label)) for label in LABELS)
         w(f"| {family} | {labels} | {speed} | {f2(tf['wall'].get('speedup'))} | {tf['label']} |")
     w("")
+    retried = []
+    longest = 0.0
+    for family in FAMILIES:
+        for label in LABELS:
+            cell = families[family]["timing_cells"][label]
+            if cell.get("measurements", 0) > 1:
+                retried.append(f"{family} {label} (1차 측정이 규칙을 놓친 이유: {'; '.join(cell['tries'][0]['misses'])}; 사용한 측정: {cell.get('used_try')}차)")
+            for attempt in cell.get("tries", []):
+                longest = max(longest, attempt.get("longest_process_seconds_under_the_lock") or 0.0)
     w("라벨 표기: auth = authoritative, diag = diagnostic_only, NOT_ = 실행하지 않음. diagnostic_only인 칸의 숫자는 판정 근거가 아닙니다. 이 노드의 결정 척도는 명령어 수입니다.")
+    w("")
+    w(f"다시 측정한 칸: {'; '.join(retried) if retried else '없음'}. 모든 측정은 로그로 남아 있습니다. 한 번의 호출이 시간 측정 잠금 아래에서 돈 가장 긴 시간은 {longest:.1f}초입니다.")
+    w("")
+
+    # ------------------------------------------------------------------ 8b
+    w("## 8-1. 소유자가 정할 일")
+    w("")
+    w("이 노드가 정한 것은 없습니다. 동결 규칙이 정한 대로 기본값을 그대로 두었고, 아래는 근거가 가리키는 선택지입니다.")
+    w("")
+    w("1. **지금 상태 유지.** 적응형 정책은 선택 사양으로 남습니다. 병합하려면 10절의 h2 센티널 두 줄을 orchestrator가 다시 고정해야 합니다.")
+    if "P1" in exploratory:
+        block = exploratory["P1"]["families"]
+        w("2. **P1을 새로 사전등록해 확인.** 탐색적 실행에서 P1은 예산 소진이 모든 칸에서 S와 같았고(재현 분석에서도 같은 계에서 차이 0), 정합 오차 명령어 비는 "
+          + ", ".join(f3(block[family]["instructions_matched_error"]) for family in FAMILIES)
+          + "이었습니다. 다만 cusp1d에서 오차 비 최댓값이 " + f"{block['cusp1d']['max_error_ratio']:.3f}" + "으로 A의 한계 3에 가깝습니다(cusp1d의 끝점 오차는 V17 검토에서도 잡음이 크다고 적혔습니다). 이 격자는 이미 본 자료이므로 확인에는 새 문제나 새 크기가 필요합니다.")
+    w("3. **P2를 유지하되 B를 다시 정의.** 예를 들어 같은 선형계 위의 재현 비교로 정의할 수 있지만, 이번 재현 분석에서 P2는 그 기준으로도 출하 정책보다 예산 경계의 계를 더 놓쳤습니다(위 5절).")
     w("")
 
     # ------------------------------------------------------------------ 9
@@ -317,14 +381,26 @@ def main():
             failing = "; ".join(f"{(test['binary'] or '').split('/')[-1]}::{test['test']}" for test in row.get("failing_tests", [])) or "-"
             w(f"| {row['name']} | {row.get('exit_code')} | {row.get('passed', 0)} / {row.get('failed', 0)} / {row.get('ignored', 0)} | {failing} |")
         w("")
-        checker = next((row for row in suites["rows"] if row["name"] == "loop_checker"), None)
-        if checker and checker.get("present"):
-            w("루프 검사기(`check_checkpoint.py`)의 출력(그대로):")
+        head = {row.get("git_head") for row in suites["rows"] if row.get("present")}
+        dirty = {row.get("git_dirty_tracked") for row in suites["rows"] if row.get("present")}
+        w(f"실행한 트리: 커밋 {', '.join(sorted(str(value)[:8] for value in head))}; 추적 파일 중 커밋되지 않은 것의 수: {', '.join(str(value) for value in sorted(dirty))}.")
+        w("")
+        if checker:
+            w(f"루프 검사기(`check_checkpoint.py`)를 그대로 돌리면 종료 코드 {checker['checker_unchanged_run']['exit_code']}이고 마지막 줄은 다음과 같습니다:")
             w("")
             w("```")
-            for line in checker.get("last_lines", []):
-                w(line)
+            w(checker["checker_unchanged_run"]["last_line_verbatim"])
             w("```")
+            w("")
+            w(f"검사기는 첫 불만에서 멈춥니다. 검사기의 `require`만 메모리에서 수집기로 바꿔(파일은 바꾸지 않음, `checker_report.py`) 끝까지 돌리면 불만은 모두 {checker['complaints']}줄입니다:")
+            w("")
+            w("```")
+            for row in checker["every_complaint_with_require_collecting_in_memory"]:
+                w(row["complaint"])
+            w("```")
+            w("")
+            outside = checker["complaints_naming_a_path_outside_the_task"]
+            w(f"이 가운데 이 노드의 쓰기 허용 목록 밖의 경로를 가리키는 줄: {len(outside)}개. 기준 커밋 이후 바뀐 경로 중 허용 목록 밖의 것: {len(checker['changed_paths_outside_the_write_list_of_the_task'])}개.")
             w("")
     w("## 12. 재현")
     w("")
@@ -340,8 +416,14 @@ def main():
     if recording:
         w(f"편집 전 기록(커밋 A): `RECORDING_A.json` ({recording['summary']['runs_present']}개 실행, {recording['summary']['cells']}칸; V17의 팔 A와 {recording['summary']['v17_arm_A_cells_equal']}/{recording['summary']['v17_arm_A_cells_compared']}칸 동일).")
     binaries = results.get("binaries") or {}
+    parts = []
+    if recording:
+        parts.append("커밋 A(편집 전): " + ", ".join(f"{key[:12]} ({value}개 로그)" for key, value in recording["binaries"].items()))
+    if choice:
+        parts.append("개발 칸(두 변형이 모두 든 바이너리): " + ", ".join(f"{key[:12]} ({value}개 로그)" for key, value in choice["binaries"].items()))
     if binaries:
-        w("측정 바이너리(sha256 앞 12자리: 로그 수): " + ", ".join(f"{key[:12]}: {value}" for key, value in binaries.items()) + ".")
+        parts.append("결정 격자, 시간 측정, 탐색 실행, 재현 분석: " + ", ".join(f"{key[:12]} ({value}개 로그)" for key, value in binaries.items()))
+    w("측정 바이너리(sha256 앞 12자리): " + "; ".join(parts) + ". 재현 분석용 바이너리는 측정 프로그램에 재현 모드만 더한 것이고 드라이버와 커널은 같습니다.")
     w("")
     with open(args.out, "w", encoding="utf-8") as handle:
         handle.write("\n".join(out) + "\n")

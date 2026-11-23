@@ -21,6 +21,7 @@ import json
 import math
 import os
 import statistics
+import subprocess
 import sys
 import time
 
@@ -1019,6 +1020,21 @@ def build_results():
             discriminators[name] = {"verdict": data.get("verdict"), "file": filename, "summary": data.get("summary")}
         else:
             discriminators[name] = {"verdict": "NOT_RUN", "file": None}
+    # What changed in the repository since the base of the node (from git, not typed).
+    root = os.path.abspath(os.path.join(NODE, "..", "..", ".."))
+    base = "892132e5d879b5d8c2740ef7a73946fd2b1d25f9"
+    changed = subprocess.run(["git", "-C", root, "diff", "--name-only", base], capture_output=True, text=True, check=False).stdout.split()
+    facade = [path for path in changed if path.startswith("crates/vigilode/")]
+    results["changed_since_the_base"] = {
+        "base": base, "paths": len(changed),
+        "under_crates": sorted(path for path in changed if path.startswith("crates/")),
+        "under_crates_vigilode": facade,
+        "golden_files_changed": [path for path in facade if "/golden/" in path],
+    }
+    if discriminators["G"]["verdict"] == "NOT_RUN":
+        discriminators["G"]["reason"] = ("step 5 was not reached: the frozen verdict is not PASS on D0, V, A, P, S, B, so the default of the route was not "
+                                         "switched and no golden record was regenerated; golden files changed since the base: "
+                                         + str(len(results["changed_since_the_base"]["golden_files_changed"])))
     results["discriminators"] = discriminators
 
     six = [discriminators[name]["verdict"] for name in ("D0", "V", "A", "P", "S", "B")]
