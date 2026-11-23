@@ -92,7 +92,8 @@
     "research/production_loop_20261116/jacobian_assembly/REVIEW.json": "de80d4af5813a4223cef926a70b636e3716ceb87649943d53767d31fb9b17f76",
     "research/production_loop_20261116/dense_lu_client/PREDECLARED.json": "5362482065cd5c5e709c08e03385a2d3b26b69d31f5580ab36d0d6295b63b806",
     "research/production_loop_20261116/dense_lu_client/RESULTS.json": "f7d80cf157ec69f5939003a8159010b34376c195a74e901b9cf0504e92db25d5",
-    "research/production_loop_20261116/dense_lu_client/REVIEW.json": "c47ab0ff06057857aaced008be6f244edaf7bd2c1dd242de4c76f9858ad2ce67"
+    "research/production_loop_20261116/dense_lu_client/REVIEW.json": "c47ab0ff06057857aaced008be6f244edaf7bd2c1dd242de4c76f9858ad2ce67",
+    "research/production_loop_20261116/banded_kernel_route/RESULTS.json": "2eb06a35484e804729d1b7ea23085357e855b6e3cd68b1ee922f22cc01e02c8f"
   },
   "implemented_source_sha256": {
     "crates/vigilode/tests/default_path_golden.rs": "9ef2b4b7aff1d92b14c7f28c764e5ff791a2823091ec50cf8ffc1167366863ec",
@@ -127,7 +128,7 @@
     "crates/vigilode/src/selection/adapters.rs": "b00005ee63ee277162f112aa491588daf5b2b4296966f97b389f50759b632f55",
     "crates/vigilode/src/selection/frontend.rs": "1e8ba82382b7d8bbd85fb512b182f6447e940d6f3b2288781e939e7b06dc6fe4",
     "crates/vigilode/src/selection/peer.rs": "8053325f939da490ee043e0f3b097f17da151d05bad0ca18bcfaf6614e75fc17",
-    "crates/vigilode/src/solve.rs": "1e6f82fd33383600eee9d42b1b21b699385ff815128db9737b676c58bb113a74",
+    "crates/vigilode/src/solve.rs": "afb8c5e68d9635cd5ed9e22e89b3a9fc720b96dfb2484691d3a5572d15ff559f",
     "crates/vigilode/tests/unified_frontend_contracts.rs": "ff1dc49dc8ede819888087fca3ebd0ae499afcc163fc5defc47137b112c76c4d",
     "crates/rodas5p-integrators/tests/banded_kernel_entry_identity.rs": "0138a950cef4a91956194116a75b418b57c55ab8969b408d617324bae94f3653",
     "crates/vigilode/tests/banded_kernel_route_contracts.rs": "7aa3888fed761320d2b466f4f984be3161a02e0707df2957760d57ca33908b3c",
@@ -153,7 +154,8 @@
     "crates/rodas5p-integrators/src/stage_clients/dense_lu_reuse/threaded.rs": "0ebed67798f5293eae4f28aa8792f153f6e435a908f940413fe104a70f645277",
     "crates/rodas5p-integrators/tests/stage_clients_dense_lu_reuse_identity.rs": "86b7b6590ade124c5339cfd501f9ef572cd089927e427bbe8b06da9bbe5c4d93",
     "crates/rodas5p-integrators/tests/stage_clients_dense_lu_reuse_alloc.rs": "316ade90e36fd735448ec4e07daf761451710b5db63ea3bea65f5f253c7495ab",
-    "crates/rodas5p-integrators/tests/stage_clients_dense_lu_reuse_problems.rs": "5d3267f19e0dad9cb9f75487c0872c7f2143dccdcf988e99b4d3d77e08f2203d"
+    "crates/rodas5p-integrators/tests/stage_clients_dense_lu_reuse_problems.rs": "5d3267f19e0dad9cb9f75487c0872c7f2143dccdcf988e99b4d3d77e08f2203d",
+    "crates/vigilode/tests/golden/banded_kernel_route/wide_band.json": "3c5789b309e4a34dcd707a30aa1ee7c80e7f014e67baa2576a0c5a4d532abda5"
   },
   "preregistration_frozen_part_sha256": "0a5c7e061be57d24f382f24594c7d83a1ec68a4365ec6590c316d1d351ba0c85",
   "notes": [
@@ -175,7 +177,8 @@
     "2026-11-23: review finding F08 of nodes V19 and V21: the fixed-width solve of BandedTightStageLu uses wrapping pivot differences (no overflow panic on a solve before a factorization) and the identity test file gains two tests; both identities updated.",
     "2026-11-23: node V03 part B (unified router) merged (cfbd2b18): unified_router/PREDECLARED.json, RECEIPT.json and REVIEW.json added to the evidence list and the twelve code paths of the node to the implemented sources (unified/analyzer.rs with the documentation correction of review finding F2); V03_UNIFIED_FRONTEND is COMPLETE_SCOPED in TASK_CONTRACTS.json and RESEARCH_DAG.json.",
     "2026-11-23: node V08 (finite-difference Jacobian assembly client) merged (bc8121cf) and corrected after its review (a7d1e824): jacobian_assembly/PREDECLARED.json, RESULTS.json and REVIEW.json added to the evidence list, the three source files and four test files of the client to the implemented sources; V08_JACOBIAN_ASSEMBLY is COMPLETE_SCOPED.",
-    "2026-11-24: node V18 (dense LU client with storage reuse and opt-in worker threads) merged (406b2a3b) and annotated after its review (10356292): dense_lu_client/PREDECLARED.json, RESULTS.json and REVIEW.json added to the evidence list; the identity of the pre-seeded file stage_clients/dense_lu_reuse.rs is updated to the implemented client, and threaded.rs and three test files are added; V18_DENSE_LU_CLIENT is COMPLETE_SCOPED."
+    "2026-11-24: node V18 (dense LU client with storage reuse and opt-in worker threads) merged (406b2a3b) and annotated after its review (10356292): dense_lu_client/PREDECLARED.json, RESULTS.json and REVIEW.json added to the evidence list; the identity of the pre-seeded file stage_clients/dense_lu_reuse.rs is updated to the implemented client, and threaded.rs and three test files are added; V18_DENSE_LU_CLIENT is COMPLETE_SCOPED.",
+    "2026-11-24: node V22 decided (commit 1cd674a6): BANDED_SLICES_MIN_HALF_WIDTH = 6; the identity of crates/vigilode/src/solve.rs is updated, the golden file of the banded routes is added to the implemented sources and banded_kernel_route/RESULTS.json to the evidence list; V22_FACADE_BANDED_KERNEL is COMPLETE_SCOPED with its independent review still to run."
   ],
   "epochs": [
     {

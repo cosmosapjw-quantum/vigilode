@@ -1480,7 +1480,7 @@
         "V21_BANDED_TIGHT_KERNEL",
         "V03G_DEFAULT_PATH_GOLDEN"
       ],
-      "status": "IN_PROGRESS",
+      "status": "COMPLETE_SCOPED",
       "purpose": "The facade's banded route uses the Slices kernel of the protected banded driver from a measured half band width on, with identical bits and no slower narrow band (owner decision OD-L1-9).",
       "write_allowlist": [
         "research/production_loop_20261116/banded_kernel_route/**",
@@ -1518,8 +1518,10 @@
         "default method routing",
         "tolerances/controller constants"
       ],
-      "evidence": [],
-      "state_note": "Pre-registered 2026-11-23 (addendum A5). Run by the orchestrator session."
+      "evidence": [
+        "research/production_loop_20261116/banded_kernel_route/RESULTS.json"
+      ],
+      "state_note": "Frozen verdict PASS (ledger L-0334): W = 6, the small-n confirmation holds, D1 to D4 hold. Run by the orchestrator session. The independent review of this node has NOT run: the owner asked for a pause on 2026-11-23 23:29 KST before it was launched; it is the first step when the loop resumes (orchestration/wave2_group5.js with review_v22 = true)."
     },
     {
       "id": "V23_CAPABILITIES_TRUTH",
