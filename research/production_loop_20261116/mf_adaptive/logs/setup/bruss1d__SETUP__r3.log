@@ -1,0 +1,9 @@
+# V24_LOG_BEGIN {"binary": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/v24-bins/mf_adaptive_measure.final", "binary_sha256": "f35805e9c6871f9758247a54373565a7e2dfab59114009b6462e565017877046", "git_head": "7fb23b63b0c30625965b0489bf179c0b8e059609", "git_dirty_tracked": 0, "phase": "setup", "name": "bruss1d__SETUP__r3", "date": "2026-11-23T23:40:11+0900", "env": {"V24_FAMILY": "bruss1d", "V24_LABEL": "setup", "V24_MODE": "SETUP"}, "perf": true, "timing": false, "command": ["taskset", "-c", "0-5,12-17", "perf", "stat", "-x", ",", "-e", "instructions:u", "-o", "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/mf_adaptive/logs/setup/bruss1d__SETUP__r3.perf", "--", "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/v24-bins/mf_adaptive_measure.final", "--ignored", "--nocapture", "--exact", "v24_run"], "cpus": "0-5,12-17", "loadavg_before_launch": "11.49 8.05 7.22 16/4961 1335812"}
+
+running 1 test
+V24_RUN_JSON {"family":"bruss1d","label":"setup","mode":"SETUP","n":1400,"schema":"vigilode.loop-l1.v24.run.v1","setup_only":true,"t_span":[0.0,10.0]}
+test v24_run ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+# V24_LOG_END {"exit_code": 0, "timed_out": false, "seconds": 0.06395626068115234, "loadavg_after_exit": "11.49 8.05 7.22 11/4959 1335830", "date": "2026-11-23T23:40:11+0900"}

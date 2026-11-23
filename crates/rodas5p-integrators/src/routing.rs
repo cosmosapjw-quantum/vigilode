@@ -14,7 +14,9 @@
 //!    driver;
 //! 4. otherwise an `Unstructured` problem with a JVP goes to the U-form
 //!    matrix-free driver with the `Legacy` stage target
-//!    ([`crate::integrate_rodas5p_mf_fast_observed_gmres_into`]).
+//!    ([`crate::integrate_rodas5p_mf_fast_observed_gmres_into`]), under the
+//!    stage-solve policy of [`RoutingOptions::matrix_free_policy`] (loop L1
+//!    node V24; the shipped policy by default).
 //!
 //! Band verification compares the band callback's `J v` with the problem's
 //! own JVP, or with its dense Jacobian when only that is available, on
@@ -41,9 +43,9 @@ use crate::{
         integrate_rodas5p_fast_observed_with_partial,
     },
     rodas5p_matrix_free_fast::{
-        RODAS5P_MF_FAST_DRIVER_ID, Rodas5pMfFastResult,
-        integrate_rodas5p_mf_fast_observed_gmres_into,
+        MfStageSolvePolicy, Rodas5pMfFastResult, integrate_rodas5p_mf_fast_observed_gmres_into,
         integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace,
+        integrate_rodas5p_mf_fast_observed_with_stage_solve_policy,
     },
 };
 
@@ -228,6 +230,13 @@ pub struct RoutingOptions {
     /// Default false keeps the routed default and its record identical.
     /// Struct literals must now name this field or use `..Default::default()`.
     pub krylov_ls_workspace: bool,
+    /// The policy of the restart cycle of the matrix-free route's stage
+    /// solves (loop L1 node V24, owner decision OD-L1-11). The default is
+    /// [`MfStageSolvePolicy::Shipped`]: the routed default and its record
+    /// are unchanged. An adaptive policy tests the residual after every
+    /// Arnoldi column and reports its own driver identifier
+    /// ([`MfStageSolvePolicy::driver_id`]).
+    pub matrix_free_policy: MfStageSolvePolicy,
 }
 
 impl Default for RoutingOptions {
@@ -246,6 +255,7 @@ impl Default for RoutingOptions {
                 ..LinearSolverConfig::default()
             },
             krylov_ls_workspace: false,
+            matrix_free_policy: MfStageSolvePolicy::Shipped,
         }
     }
 }
@@ -473,7 +483,7 @@ pub fn integrate_rodas5p_routed_observed_with_options(
         driver_id: match driver {
             RoutedDriver::Banded => RODAS5P_FAST_BANDED_DRIVER_ID,
             RoutedDriver::Dense => RODAS5P_FAST_DRIVER_ID,
-            RoutedDriver::MatrixFree => RODAS5P_MF_FAST_DRIVER_ID,
+            RoutedDriver::MatrixFree => options.matrix_free_policy.driver_id(),
         },
         fallback,
         verification: None,
@@ -498,12 +508,25 @@ pub fn integrate_rodas5p_routed_observed_with_options(
             (RoutedRun::Dense(run), partial)
         }
         RoutedDriver::MatrixFree => {
-            let integrate = if options.krylov_ls_workspace {
-                integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace
+            let run = if options.matrix_free_policy == MfStageSolvePolicy::Shipped {
+                let integrate = if options.krylov_ls_workspace {
+                    integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace
+                } else {
+                    integrate_rodas5p_mf_fast_observed_gmres_into
+                };
+                integrate(problem, t_span, y0, &options.matrix_free, adaptive, output)?
             } else {
-                integrate_rodas5p_mf_fast_observed_gmres_into
+                integrate_rodas5p_mf_fast_observed_with_stage_solve_policy(
+                    problem,
+                    t_span,
+                    y0,
+                    &options.matrix_free,
+                    adaptive,
+                    output,
+                    options.matrix_free_policy,
+                    options.krylov_ls_workspace,
+                )?
             };
-            let run = integrate(problem, t_span, y0, &options.matrix_free, adaptive, output)?;
             let partial = run.partial.clone();
             (RoutedRun::MatrixFree(run), partial)
         }
