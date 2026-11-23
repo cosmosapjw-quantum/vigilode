@@ -42,3 +42,38 @@ Next steps:
 3. unified_router_contracts.rs written first, run against the base sources, failing outputs kept in logs/.
 4. fix router/analyzer/fallback/solution/workspace/options/mod docs; registry.rs typed driver error if in reach.
 5. full facade suite, clippy, fmt, doc, loop checker, RECEIPT.json, REPORT_KO.md (rendered by script).
+
+== entry 2 (2026-11-23) ==
+Commits so far: f360f05f notes; 5192520c PREDECLARED.json (before any run); 8dbbfcd5 contract tests,
+part 1 (public API of the base only) + logs/failing_first_base.log: 20 of 20 fail on the base by
+assertion; e07aa292 implementation: the same 20 pass.
+
+Read in addition (base commit): crates/vigilode/src/selection.rs:30-66 (ProblemRegime, GeneralOdePolicy),
+selection/frontend.rs:255-407 (catalog, ids "dopri5" and "rodas5p"), :830-945 (admit), :1054-1250
+(general_method, route), :1396-1755 (MethodSolution, SolutionView, solve); explicit.rs:141-470;
+switching.rs:466-926, :2613-2839 (Batch, From<BatchOutcome>, run); solve.rs:57-139, :595-746;
+registry.rs:1-590; solution.rs:36-183, :276-522.
+
+Design decisions (all in PREDECLARED.json before the first run):
+- SelectedTier = {Tier1Explicit, TierProtectedReference, Tier5AdaptiveSwitching}; Tier2/3/4 removed
+  (no file outside src/unified names them).
+- label of a leg = driver id of its own run record, written after the leg ran.
+- routing: strategy, declared regime (new option VigilodeOptions::regime), explicit admission by the
+  registry, supplied derivative/band, dimension > 10, else charged stiffness screen (n + 1 rhs calls,
+  Lipschitz lower bound L; evidence iff L * span > 3.3 * B) and a trial of B = min(1000, N/2) attempts.
+- DOPRI5 and RODAS5P legs run through MethodRegistry::route / solve with MethodChoice::Explicit(id);
+  the method of a regime is MethodRegistry::general_method(regime).
+- switching leg: SwitchingSolver::solve on a clone of the problem whose callbacks are forwarded
+  unchanged and whose first fatal error is recorded (the adapter keeps no callback message:
+  registry.rs:281 and :522 "callback failure", dropped at switching.rs:2702).
+- new file crates/vigilode/src/unified/legs.rs (UnifiedLeg, UnifiedStop, CallbackStop).
+- existing files edited: tests/unified_production_solver_contracts.rs (4 label assertions, 2 comments),
+  examples/unified_production_solver.rs (header list, 1 comment). logs/existing_unified_tests_before_edit.log
+  shows that only contract_3 and contract_4 failed before the edit, both on label strings.
+
+Measured (part 1, new code): heat n=64 dense J 328 rhs calls (base 314119); heat n=8 FD 723 (58411);
+scalar dense 48 (600049); scalar FD 74 (600073); Robertson FD max_steps 500: 266 attempts (base 516).
+
+Next steps: part 2 tests (new API) and their compile-fail log on a scratch copy of the base;
+registry.rs typed WindowDriver error (COD-06) if it can be done without touching switching.rs;
+full facade suite, golden oracle, clippy, fmt, doc, loop checker, RECEIPT.json, REPORT_KO.md.
