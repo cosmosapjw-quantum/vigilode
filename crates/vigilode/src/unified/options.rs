@@ -1,55 +1,106 @@
-//! Options, strategies, and execution profiles for the unified production solver.
+//! Options of the unified router.
+//!
+//! Three fields decide what runs: [`VigilodeOptions::options`] (tolerances, the attempt
+//! budget and the output mode of the drivers), [`VigilodeOptions::strategy`] and
+//! [`VigilodeOptions::regime`]. The other fields are recorded and read by nothing; their
+//! documentation says so.
 
 use serde::{Deserialize, Serialize};
 
+use crate::ProblemRegime;
 use crate::options::{Atol, InteriorError, Options, Tier};
 
-/// Routing strategy for the unified production solver.
+/// What the router does with a request.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum SolverStrategy {
-    /// Autonomous routing based on preflight system diagnosis
-    /// (dimension, sparsity, nonnormality mu_2, JVP availability, and stiffness).
+    /// Route by declared facts ([`super::PreflightAnalyzer::analyze`] lists the rules):
+    /// the declared regime, what the explicit method admits, a supplied derivative or
+    /// band, the dimension, and for a small problem without any declaration a charged
+    /// stiffness screen followed by a budgeted explicit trial.
     #[default]
     Auto,
-    /// High-performance mode: prioritizes fast lanes (Matrix-Free Krylov / DOPRI5)
-    /// with automatic fail-closed protected fallback.
+    /// Routes exactly as [`SolverStrategy::Auto`]: no route of this release is faster
+    /// than the one `Auto` picks. Kept so that existing callers compile.
     HighPerformance,
-    /// Robust stiff mode: enters directly into L-stable RODAS5P.
+    /// Calls `Rodas5p::solve` directly.
     RobustStiff,
-    /// Adaptive reentrant mode: dynamic switching between explicit and implicit
-    /// across changing regimes.
+    /// Calls `SwitchingSolver::solve` with finite-difference derivatives allowed; if the
+    /// adapter refuses the request before any callback, `Rodas5p::solve` runs instead.
     AdaptiveReentrant,
 }
 
-/// Performance profile to balance accuracy vs speed.
+/// A profile name that is stored in the options and read by nothing: neither the router
+/// nor a driver changes a tolerance, a step bound or a linear threshold because of it.
+/// Kept so that existing callers and stored option files stay valid.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum PerformanceProfile {
-    /// Balanced standard operational profile.
+    /// Stored only.
     #[default]
     Standard,
-    /// Conservative profile with tight tolerances and strict verification.
+    /// Stored only.
     Conservative,
-    /// Aggressive profile with enlarged step growth and relaxed linear thresholds.
+    /// Stored only.
     Aggressive,
 }
 
-/// Unified options for [`super::VigilODE`].
+mod regime_serde {
+    //! `ProblemRegime` serializes as `unknown`, `nonstiff` or `stiff` and has no
+    //! `Deserialize`; the options read the same three names.
+
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    use crate::ProblemRegime;
+
+    pub fn serialize<S: Serializer>(
+        regime: &ProblemRegime,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        regime.serialize(serializer)
+    }
+
+    pub fn deserialize<'de, D: Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<ProblemRegime, D::Error> {
+        let name = String::deserialize(deserializer)?;
+        match name.as_str() {
+            "unknown" => Ok(ProblemRegime::Unknown),
+            "nonstiff" => Ok(ProblemRegime::Nonstiff),
+            "stiff" => Ok(ProblemRegime::Stiff),
+            other => Err(serde::de::Error::unknown_variant(
+                other,
+                &["unknown", "nonstiff", "stiff"],
+            )),
+        }
+    }
+}
+
+/// Options of [`super::VigilODE`].
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct VigilodeOptions {
-    /// Underlying standard solver options.
+    /// Options of the drivers. [`Options::max_steps`] is the attempt budget of the whole
+    /// solve: every leg is charged to it.
     pub options: Options,
-    /// High-level routing strategy.
+    /// What the router does with the request.
     pub strategy: SolverStrategy,
-    /// Performance and verification profile.
+    /// Stored only; see [`PerformanceProfile`].
     pub profile: PerformanceProfile,
-    /// Maximum Krylov subspace dimension before restart.
+    /// Stored only. The matrix-free route of `Rodas5p::solve` uses its own fixed Krylov
+    /// configuration, recorded in `Stats::matrix_free_linear`; this number does not reach
+    /// it and sizes no buffer.
     pub max_krylov_dim: usize,
-    /// Maximum number of Krylov restart cycles.
+    /// Stored only; see [`VigilodeOptions::max_krylov_dim`].
     pub max_krylov_restarts: usize,
-    /// Permissible physical invariant absolute drift tolerance.
+    /// Stored only. The solve is neither stopped nor flagged by it: compare it with
+    /// [`super::VigilodeSolution::max_invariant_drift`] yourself.
     pub invariant_drift_tol: Option<f64>,
+    /// What the caller knows about the problem, with the meaning it has for
+    /// `GeneralOdePolicy`. Under [`SolverStrategy::Auto`], `Stiff` runs RODAS5P and
+    /// `Nonstiff` runs DOPRI5 with the whole attempt budget and no second method;
+    /// `Unknown` (the default) leaves the choice to the declared structure of the problem.
+    #[serde(default, with = "regime_serde")]
+    pub regime: ProblemRegime,
 }
 
 impl Default for VigilodeOptions {
@@ -61,12 +112,13 @@ impl Default for VigilodeOptions {
             max_krylov_dim: 30,
             max_krylov_restarts: 5,
             invariant_drift_tol: None,
+            regime: ProblemRegime::Unknown,
         }
     }
 }
 
 impl VigilodeOptions {
-    /// Wrap standard [`Options`] with default unified strategy settings.
+    /// Wrap driver [`Options`] with the default strategy and an undeclared regime.
     pub fn new(options: Options) -> Self {
         Self {
             options,
@@ -74,13 +126,19 @@ impl VigilodeOptions {
         }
     }
 
-    /// Set the solver routing strategy.
+    /// Set the strategy.
     pub fn strategy(mut self, strategy: SolverStrategy) -> Self {
         self.strategy = strategy;
         self
     }
 
-    /// Set the performance profile.
+    /// Declare the regime of the problem.
+    pub fn regime(mut self, regime: ProblemRegime) -> Self {
+        self.regime = regime;
+        self
+    }
+
+    /// Store a profile name; nothing reads it ([`PerformanceProfile`]).
     pub fn profile(mut self, profile: PerformanceProfile) -> Self {
         self.profile = profile;
         self
@@ -92,61 +150,63 @@ impl VigilodeOptions {
         self
     }
 
-    /// Set scalar absolute tolerance.
+    /// Set a scalar absolute tolerance.
     pub fn atol(mut self, atol: f64) -> Self {
         self.options.atol = Atol::Scalar(atol);
         self
     }
 
-    /// Set vector absolute tolerance.
+    /// Set a vector absolute tolerance.
     pub fn atol_vector(mut self, atol: Vec<f64>) -> Self {
         self.options.atol = Atol::Vector(atol);
         self
     }
 
-    /// Set initial step size.
+    /// Set the initial step size.
     pub fn h0(mut self, h0: f64) -> Self {
         self.options.h0 = h0;
         self
     }
 
-    /// Set maximum allowed step attempts.
+    /// Set the attempt budget of the whole solve.
     pub fn max_steps(mut self, max_steps: usize) -> Self {
         self.options.max_steps = max_steps;
         self
     }
 
-    /// Enable continuous dense output.
+    /// Ask for the continuous extension. Only RODAS5P returns one, so the request runs
+    /// `Rodas5p::solve`.
     pub fn dense_output(mut self, dense: bool) -> Self {
         self.options.dense_output = dense;
         self
     }
 
-    /// Set interior dense output error control mode.
+    /// Set the interior error control of dense output.
     pub fn interior_error(mut self, mode: InteriorError) -> Self {
         self.options.interior_error = mode;
         self
     }
 
-    /// Set the underlying driver tier.
+    /// Set the tier option of the RODAS5P facade.
     pub fn tier(mut self, tier: Tier) -> Self {
         self.options.tier = tier;
         self
     }
 
-    /// Set maximum Krylov subspace dimension.
+    /// Store a Krylov dimension; nothing reads it ([`VigilodeOptions::max_krylov_dim`]).
     pub fn max_krylov_dim(mut self, dim: usize) -> Self {
         self.max_krylov_dim = dim;
         self
     }
 
-    /// Set maximum Krylov restart cycles.
+    /// Store a restart count; nothing reads it.
     pub fn max_krylov_restarts(mut self, restarts: usize) -> Self {
         self.max_krylov_restarts = restarts;
         self
     }
 
-    /// Set maximum allowed invariant drift.
+    /// Store an invariant drift tolerance; nothing reads it
+    /// ([`VigilodeOptions::invariant_drift_tol`]).
     pub fn invariant_drift_tol(mut self, tol: f64) -> Self {
         self.invariant_drift_tol = Some(tol);
         self

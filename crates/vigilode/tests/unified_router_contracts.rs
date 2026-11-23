@@ -723,14 +723,9 @@ fn p1_failing_switching_solve_with_attempts_left_is_not_reported_as_max_steps() 
     };
     let span = (0.0, 2.0);
     let options = Options::default();
-    let direct = SwitchingSolver::solve(
-        &build(),
-        span,
-        &[1.0],
-        &options,
-        &router_switching_config(),
-    )
-    .expect("direct switching call");
+    let direct =
+        SwitchingSolver::solve(&build(), span, &[1.0], &options, &router_switching_config())
+            .expect("direct switching call");
     let unified = VigilODE::solve(&build(), span, &[1.0], SolverStrategy::AdaptiveReentrant)
         .expect("a run that stops is Ok");
     let applicable = !direct.success && direct.stats.attempts < options.max_steps;
@@ -786,7 +781,10 @@ fn p1_preflight_callbacks_are_charged_with_a_dense_jacobian() {
         .expect("unified solve");
     let direct_uncharged = (
         uncharged(direct_calls.rhs(), direct.stats.counters.rhs_calls),
-        uncharged(direct_calls.jacobian(), direct.stats.counters.jacobian_builds),
+        uncharged(
+            direct_calls.jacobian(),
+            direct.stats.counters.jacobian_builds,
+        ),
     );
     let unified_uncharged = (
         uncharged(calls.rhs(), unified.stats.counters.rhs_calls),
@@ -1154,9 +1152,8 @@ fn p1_matrix_free_solve_allocates_no_dense_matrix() {
     let calls = Calls::default();
     let problem = heat_jvp(n, &calls);
     let y0 = vec![1.0; n];
-    let (solved, largest, bytes) = allocation_scope(|| {
-        VigilODE::solve(&problem, (0.0, 1.0e-7), &y0, SolverStrategy::Auto)
-    });
+    let (solved, largest, bytes) =
+        allocation_scope(|| VigilODE::solve(&problem, (0.0, 1.0e-7), &y0, SolverStrategy::Auto));
     let unified = solved.expect("unified solve");
     let dense = n * n * 8;
     record(
