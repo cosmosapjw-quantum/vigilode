@@ -1,0 +1,56 @@
+{
+  "schema": "vigilode.loop_l1.predeclared.v1",
+  "node": "V03_UNIFIED_FRONTEND part B (truthful unified router)",
+  "written": "2026-11-23, before the first test run of this node",
+  "base_commit": "587a139501729bbe886bb2b8c49b0ef893705d08",
+  "branch": "research/production-loop-20261116-w2-v03b",
+  "frozen_row": "none: PREREGISTRATION.md has a row for V03 part A only. The acceptance list of the task text is the criterion: (A1) the contract tests of unified_router_contracts.rs pass, each one written first as a failing test; (A2) the default-path golden oracle is unchanged; (A3) every other pre-existing facade test passes; (A4) no behaviour change of SwitchingSolver, Rodas5p, Dopri5, GeneralOde, AutomaticOde, ProductionSolver.",
+  "timing": "none in this node. Every number is a deterministic counter or a bit pattern; no wall time is reported.",
+  "toolchain": "cargo +1.94.1, --locked, -j 4, release profile, CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03b, taskset -c 0-5,12-17",
+  "failing_first_protocol": {
+    "rule": "Every requirement of task item 4 is expressed by at least one test that uses only the public API of the base commit, so that it compiles against the base sources and fails there by an assertion (not by a compile error). The test file is written and run before any file under crates/vigilode/src is changed; the output is kept in logs/failing_first_base.log and committed. Tests of API added by this node cannot compile on the base; they are added afterwards, are listed separately, and their first run before the implementation (a compile error) is kept in logs/failing_first_new_api.log.",
+    "counted_as_failing_first": "a test listed in base_api_tests that FAILS in logs/failing_first_base.log and PASSES in the final log",
+    "not_counted": "a base-API test that already passes on the base is reported as a regression guard, not as a failing-first test"
+  },
+  "design_choices_fixed_before_any_run": {
+    "tiers": "SelectedTier keeps exactly the values that have an entry point of their own: Tier1Explicit (Dopri5::solve), TierProtectedReference (Rodas5p::solve, whose driver family is chosen by the facade) and Tier5AdaptiveSwitching (SwitchingSolver::solve). Tier2MatrixFreeKrylov, Tier3Exponential and Tier4StagedRodas5p are removed: no file of the repository names them outside crates/vigilode/src/unified.",
+    "label": "The label of an executed leg (RouteTransitionRecord::to_tier) is the driver identifier of the leg's own run record: Stats::route.driver_id for RODAS5P, ExplicitStats::method for DOPRI5, SwitchingSolution::schema for the switching adapter. It is written after the leg ran.",
+    "routing": "Declared facts first, in this order: (1) strategy RobustStiff -> RODAS5P, strategy AdaptiveReentrant -> switching adapter; (2) a declared regime (new option, default Unknown): Stiff -> RODAS5P, Nonstiff -> DOPRI5 with the whole attempt budget and no fallback; (3) the explicit method is not admitted by the registry for the declared facts (mass matrix, dense output, events) -> RODAS5P; (4) a derivative or a band is supplied (provider other than FiniteDifference, or Problem::banded) -> RODAS5P; (5) dimension above 10 (the limit of the base commit, kept) -> RODAS5P; (6) otherwise the charged stiffness screen, then either RODAS5P or a budgeted explicit trial followed by RODAS5P from the last accepted state. Contractivity (logarithmic norm) is not computed and not used.",
+    "registry_delegation": "The method of a regime is MethodRegistry::general_method(regime); admission and the planned route are MethodRegistry::route with MethodChoice::Explicit(method id); DOPRI5 and RODAS5P legs run through MethodRegistry::solve. The analyzer keeps no rule about which RODAS5P driver family runs.",
+    "stiffness_screen": {
+      "when": "only in routing case (6): no declared regime, no supplied derivative or band, dimension <= 10, explicit method admitted",
+      "definition": "f0 = f(t0, y0); for each coordinate j: delta_j = sqrt(f64::EPSILON) * max(|y0_j|, 1), L_j = ||f(t0, y0 + delta_j e_j) - f0||_2 / delta_j; L = max_j L_j. L is a finite-difference lower bound of the Lipschitz constant of f(t0, .) near y0 (for the linearisation: L >= ||J||_2 / sqrt(n)).",
+      "cost": "n + 1 right-hand-side calls, O(n) storage, all charged to counters.rhs_calls and counters.rhs_evaluations",
+      "criterion": "evidence of stiffness iff L * (t1 - t0) > 3.3 * B, where 3.3 is the real-axis stability bound of DOPRI5 and B is the attempt budget of the explicit trial: with it the trial cannot cover the span at its stability limit. A negative screen is not treated as evidence of non-stiffness: the trial stays budgeted and falls back.",
+      "one_sided": "the screen can only move a problem from the explicit trial to RODAS5P"
+    },
+    "attempt_budget": "Options::max_steps (N) is the total over all legs. Explicit trial budget B = min(1000, N / 2) (integer division); a declared Nonstiff regime gets N. A fallback leg gets N minus the attempts already used; with nothing left it is not started. The switching adapter already charges one total budget.",
+    "no_retry_after_fatal_callback": "a leg stopped by a fatal callback or a malformed callback output is not followed by another leg",
+    "failure_value": "VigilodeSolution::stop is the typed stop of the last leg as its driver reported it (RODAS5P: FailureReason; DOPRI5: Dopri5StopReason, callback failure and message; switching adapter: its message, the stopping segment's own stop record and the first fatal callback observed at the callback boundary). VigilodeSolution::status carries the facade FailureReason that the stop maps to.",
+    "allocation": "VigilodeWorkspace holds O(n) vectors only. No n*n buffer and no Krylov basis are allocated by the router; a dense matrix exists only inside the driver that needs it."
+  },
+  "test_problems": {
+    "P_heat_dense": "y_i' = (y_{i-1} - 2 y_i + y_{i+1}) / dx^2, zero Dirichlet ends, n = 64, dx = 1/65, y0_i = sin(pi x_i), dense Jacobian callback, autonomous; span (0, 10); default Options (rtol 1e-6, atol 1e-9, h0 1e-3, max_steps 100000); strategy Auto. Spectral radius rho = 4/dx^2 * sin^2(n pi dx / 2) <= 4/dx^2 = 16900.",
+    "P_heat_fd": "the same equation with n = 8, dx = 1/9, no Jacobian (finite differences), span (0, 100), default Options, strategy Auto. rho <= 324.",
+    "P_scalar_dense": "y' = -1e6 (y - cos t), y(0) = 1, dense Jacobian [-1e6], time derivative -1e6 sin t supplied; span (0, 1); default Options; strategy Auto.",
+    "P_scalar_fd": "the same equation without Jacobian and without time derivative; span (0, 1); default Options; strategy Auto.",
+    "P_oscillator": "y1' = y2, y2' = -y1, y0 = (1, 0), no Jacobian, autonomous; span (0, 1) unless a test says otherwise.",
+    "P_robertson": "Robertson kinetics (0.04, 1e4, 3e7), y0 = (1, 0, 0), with and without the dense Jacobian, autonomous.",
+    "P_heat_jvp": "the heat equation with a JVP callback, n = 12 and n = 25, y0 = 1, span (0, 0.01).",
+    "P_heat_banded": "the heat equation with a band Jacobian callback (1, 1) and, separately, with finite differences and Problem::banded(1, 1), n = 16.",
+    "P_mass": "Robertson with the algebraic constraint as a singular mass matrix (index-1 DAE), dense Jacobian.",
+    "P_fatal": "y' = -y, n = 1, whose right-hand side returns CallbackError::Fatal(\"sensor offline\") for t > 0.3; span (0, 1); strategy AdaptiveReentrant.",
+    "P_blowup": "y' = y^2, y(0) = 1 (blow-up at t = 1), dense Jacobian [2 y]; span (0, 2); strategy AdaptiveReentrant. Used only if a direct SwitchingSolver::solve call with the router's configuration stops before t1 with fewer attempts than Options::max_steps; otherwise the case is reported as not applicable."
+  },
+  "thresholds_fixed_before_any_run": {
+    "bounded_work": "for the stiff contractive problems the charged right-hand-side calls of the whole unified solve must be at most W = floor(0.1 * 6 * rho_bound * span / 3.3): one tenth of the least work DOPRI5 can do at its stability limit (6 right-hand sides per attempt, rho * span / 3.3 attempts). P_heat_dense: rho_bound 16900, span 10 -> W = 30727. P_heat_fd: rho_bound 324, span 100 -> W = 5890. P_scalar_dense and P_scalar_fd: rho 1e6, span 1 -> W = 181818.",
+    "route_of_stiff_contractive": "no executed leg may be DOPRI5 (no route label that contains 'dopri5', case-insensitive) and the solve must succeed",
+    "label_equals_driver": "exact string equality between the label of every executed leg and the driver identifier that a direct call of the same driver on the same problem, span and options reports",
+    "stop_reason": "P_fatal: status must be Failed(CallbackFailed { callback: Rhs, message containing 'sensor offline' }) and must not be MaxStepsReached. P_blowup (if applicable): status must not be MaxStepsReached.",
+    "preflight_charging": "uncharged(X) = right-hand-side (and Jacobian) callback entries counted inside the user closures minus the charged counters. Required: uncharged(unified solve) = uncharged(direct call of the executed driver on the same legs) for the right-hand side and for the Jacobian; where the direct call has uncharged = 0 the unified solve must have 0 as well.",
+    "shared_budget": "P_robertson without Jacobian, span (0, 10), max_steps 500, strategy Auto: accepted + rejected attempts over all legs <= 500, the solve succeeds, and a RODAS5P leg follows a DOPRI5 leg.",
+    "neutrality": "a unified solve that executes one RODAS5P leg, one DOPRI5 leg with the whole budget, or the switching adapter returns the final state of the direct call bit for bit and the same charged counters."
+  },
+  "exclusions": "none. A case that cannot be evaluated as declared is reported with the obstacle; no threshold is moved.",
+  "existing_files_that_may_be_edited": "crates/vigilode/tests/unified_production_solver_contracts.rs and crates/vigilode/examples/unified_production_solver.rs: only assertions or text that pin a label of the base commit, or that no longer compile; each edit is listed with its reason in RECEIPT.json."
+}
