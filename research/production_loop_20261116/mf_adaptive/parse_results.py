@@ -525,9 +525,500 @@ def build_choice():
     return out
 
 
+# ---------------------------------------------------------------- D0
+
+SHIPPED_DRIVER_ID = "rodas5p-mf-fast-transformed-v1"
+
+
+def build_d0(store):
+    """The shipped policy after the edit against the recording of commit A."""
+    entries = ("route", "route_ls", "audit")
+    out = {"cells": {}, "recorded_fields": list(RESULT_KEYS) + ["error", "state_hex_sha256"],
+           "audit_entry_also": ["solve_log", "residual_audit"]}
+    counts = {"deciding": [0, 0], "development": [0, 0]}
+    problems = []
+    instruction_ratios = []
+    for family in DECIDING + DEVELOPMENT:
+        group = "deciding" if family in DECIDING else "development"
+        out["cells"][family] = {}
+        for label in RTOL_LABELS:
+            before = {entry: collect_run("record_a", f"{family}__{label}__S__{entry}") for entry in entries}
+            after = {entry: collect_run("d0", f"{family}__{label}__S__{entry}") for entry in entries + ("policy_shipped",)}
+            row = {"differing": {}}
+            present = True
+            for entry in entries + ("policy_shipped",):
+                note_identity(store, after[entry])
+                if after[entry] is None or not after[entry]["record"]:
+                    present = False
+            for entry in entries:
+                differing = differing_fields(result_fields(before[entry]), result_fields(after[entry]))
+                if entry == "audit" and before[entry] and after[entry] and before[entry]["record"] and after[entry]["record"]:
+                    for key in ("solve_log", "residual_audit"):
+                        if before[entry]["record"].get(key) != after[entry]["record"].get(key):
+                            differing.append(key)
+                row["differing"][entry] = differing
+            row["differing"]["policy_shipped_against_route_after"] = differing_fields(
+                result_fields(after["route"]), result_fields(after["policy_shipped"]))
+            drivers = sorted({(after[entry]["record"] or {}).get("driver") for entry in after if after[entry] and after[entry]["record"]}, key=str)
+            row["driver_ids_after"] = drivers
+            row["present"] = present
+            row["equal"] = present and all(not value for value in row["differing"].values()) and drivers == [SHIPPED_DRIVER_ID]
+            if before["route"] and after["route"]:
+                raw_before, raw_after = before["route"]["instructions_raw"], after["route"]["instructions_raw"]
+                row["instructions_raw_before"] = raw_before
+                row["instructions_raw_after"] = raw_after
+                row["instructions_after_over_before"] = v17.ratio(raw_after, raw_before)
+                if row["instructions_after_over_before"] is not None:
+                    instruction_ratios.append(row["instructions_after_over_before"])
+            counts[group][0] += 1
+            counts[group][1] += int(row["equal"])
+            if not row["equal"]:
+                problems.append(f"{family} {label}: {row['differing']} drivers {drivers} present {present}")
+            out["cells"][family][label] = row
+    out["deciding_cells"] = {"compared": counts["deciding"][0], "equal": counts["deciding"][1]}
+    out["development_cells"] = {"compared": counts["development"][0], "equal": counts["development"][1]}
+    out["differences"] = problems
+    out["exploratory_instructions_after_over_before"] = {
+        "min": min(instruction_ratios) if instruction_ratios else None,
+        "max": max(instruction_ratios) if instruction_ratios else None,
+        "geometric_mean": geometric_mean(instruction_ratios),
+        "note": "raw instructions of the route entry, binary after the edit over binary of commit A (two different binaries; not a discriminator)",
+    }
+    if counts["deciding"][0] != len(DECIDING) * len(RTOL_LABELS):
+        out["verdict"] = "NOT_RUN"
+    else:
+        out["verdict"] = "PASS" if counts["deciding"][1] == counts["deciding"][0] else "FAIL"
+    return out
+
+
+# ---------------------------------------------------------------- timing
+
+def collect_timing(family, label, arm, plain_states):
+    """Every timing measurement of a cell, in the order of the tries (V17 rule, two arms)."""
+    directory = os.path.join(LOGS, "timing")
+    arms = ("S", arm)
+    tries = []
+    for attempt in (1, 2):
+        single = os.path.join(directory, f"{family}__{label}__try{attempt}.log")
+        split = sorted(glob.glob(os.path.join(directory, f"{family}__{label}__try{attempt}__round*.log")))
+        paths = [single] if os.path.exists(single) else split
+        if not paths:
+            continue
+        logs = [read_log(path) for path in paths]
+        runs, loads_before, loads_after, metas, complete, seconds = [], [], [], [], True, []
+        for log in logs:
+            runs.extend(log["tags"].get("V24_TIMING_JSON", []))
+            metas.extend(log["tags"].get("V24_TIMING_META_JSON", []))
+            loads_before.extend(log["load_before"])
+            loads_after.extend(log["load_after"])
+            if not log["end"] or log["end"].get("exit_code") != 0:
+                complete = False
+            if log["end"]:
+                seconds.append(log["end"].get("seconds"))
+        entry = {
+            "try": attempt, "logs": [log["path"] for log in logs], "invocations": len(logs),
+            "split_long_cell": len(logs) > 1, "process_complete": complete,
+            "load_before": loads_before, "load_after": loads_after,
+            "longest_invocation_seconds_including_the_wait_for_the_lock": max([value for value in seconds if value is not None], default=None),
+            "longest_process_seconds_under_the_lock": max([meta.get("process_seconds") for meta in metas if meta.get("process_seconds") is not None], default=None),
+            "arms": {},
+        }
+        load_values = [float(text.split()[0]) for text in loads_before + loads_after if text.split()]
+        entry["load_1min_max"] = max(load_values) if load_values else None
+        reasons = []
+        if not complete:
+            reasons.append("an invocation did not exit with 0")
+        if len(loads_before) != len(logs) or len(loads_after) != len(logs):
+            reasons.append("a load reading is missing")
+        elif entry["load_1min_max"] > LOAD_MAX:
+            reasons.append(f"1-minute load average {entry['load_1min_max']} above {LOAD_MAX}")
+        for name in arms:
+            mine = sorted((run for run in runs if run.get("arm") == name), key=lambda run: run.get("round", 0))
+            warm = [run["wall_seconds"] for run in mine if run.get("round", 0) < WARM_UP_ROUNDS]
+            reps = [run for run in mine if run.get("round", 0) >= WARM_UP_ROUNDS]
+            walls = [run["wall_seconds"] for run in reps]
+            states_ok = bool(mine) and all(run.get("completed") and run.get("success")
+                                           and run.get("state_sha256") == plain_states.get(name) for run in mine)
+            arm_entry = {"warm_up_walls": warm, "walls": walls, "repetitions": len(walls),
+                         "states_equal_instruction_run": states_ok}
+            if walls:
+                median = statistics.median(walls)
+                arm_entry.update({"median": median, "min": min(walls), "max": max(walls),
+                                  "spread": (max(walls) - min(walls)) / median if median > 0 else None})
+            cpus = [run.get("thread_cpu_seconds") for run in reps]
+            if cpus and all(value is not None for value in cpus):
+                median_cpu = statistics.median(cpus)
+                arm_entry.update({"median_thread_cpu": median_cpu,
+                                  "spread_thread_cpu": (max(cpus) - min(cpus)) / median_cpu if median_cpu > 0 else None})
+            entry["arms"][name] = arm_entry
+            if len(walls) != REPETITIONS or len(warm) != WARM_UP_ROUNDS:
+                reasons.append(f"arm {name}: {len(warm)} warm-ups and {len(walls)} repetitions")
+            elif arm_entry["spread"] is None or arm_entry["spread"] > SPREAD_MAX:
+                reasons.append(f"arm {name}: spread {arm_entry['spread']:.3f} above {SPREAD_MAX}")
+            if not states_ok:
+                reasons.append(f"arm {name}: a timed run did not end in the state of the instruction run")
+        entry["meets_rule"] = not reasons
+        entry["misses"] = reasons
+        tries.append(entry)
+    chosen = next((entry for entry in tries if entry["meets_rule"]), None)
+    out = {"tries": tries, "measurements": len(tries)}
+    if chosen is not None:
+        out.update({"label": "authoritative", "used_try": chosen["try"]})
+    elif tries:
+        out.update({"label": "diagnostic_only", "used_try": tries[-1]["try"]})
+    else:
+        out.update({"label": "NOT_RUN", "used_try": None})
+    used = chosen or (tries[-1] if tries else None)
+    if used:
+        out["median_wall"] = {name: used["arms"][name].get("median") for name in arms}
+        out["spread"] = {name: used["arms"][name].get("spread") for name in arms}
+        out["median_thread_cpu"] = {name: used["arms"][name].get("median_thread_cpu") for name in arms}
+        out["speedup_equal_tolerance"] = v17.ratio(out["median_wall"].get("S"), out["median_wall"].get(arm))
+        out["thread_cpu_speedup_equal_tolerance"] = v17.ratio(out["median_thread_cpu"].get("S"), out["median_thread_cpu"].get(arm))
+    return out
+
+
+def timing_family(cells_s, cells_n, timings, arm, u_ref):
+    """The wall statistic of a family at matched error (V17 statistic on the medians)."""
+    out = {}
+    labels = [timings[label]["label"] for label in RTOL_LABELS]
+    out["cells"] = dict(zip(RTOL_LABELS, labels))
+    if all(label == "authoritative" for label in labels):
+        out["label"] = "authoritative"
+    elif all(timings[label].get("median_wall") for label in RTOL_LABELS):
+        out["label"] = "diagnostic_only"
+    else:
+        out["label"] = "NOT_RUN" if all(label == "NOT_RUN" for label in labels) else "incomplete"
+    for key, field in (("wall", "median_wall"), ("thread_cpu", "median_thread_cpu")):
+        points = {"S": [], arm: []}
+        completed = {"S": 0, arm: 0}
+        for name, cells in (("S", cells_s), (arm, cells_n)):
+            for label in RTOL_LABELS:
+                cell = cells[label]
+                work = (timings[label].get(field) or {}).get(name)
+                if not cell.get("completed") or cell.get("E") is None or work is None:
+                    continue
+                completed[name] += 1
+                points[name].append((cell["E"], float(work)))
+        block = v17.matched(points["S"], points[arm], 10.0 * u_ref, completed["S"], completed[arm], 4)
+        if block.get("geometric_mean_ratio"):
+            block["speedup"] = 1.0 / block["geometric_mean_ratio"]
+            block["speedup_min"] = 1.0 / block["max_ratio"]
+            block["speedup_max"] = 1.0 / block["min_ratio"]
+        out[key] = block
+    out["thread_cpu"]["label"] = "exploratory, never used for a verdict"
+    equal = [timings[label].get("speedup_equal_tolerance") for label in RTOL_LABELS]
+    out["speedup_equal_tolerance"] = dict(zip(RTOL_LABELS, equal))
+    out["speedup_equal_tolerance_geometric_mean"] = geometric_mean(equal) if all(value is not None for value in equal) else None
+    return out
+
+
+# ---------------------------------------------------------------- results
+
+def verdict_of(parts):
+    if any(part == "FAIL" for part in parts):
+        return "FAIL"
+    if any(part != "PASS" for part in parts):
+        return "NOT_DECIDABLE"
+    return "PASS"
+
+
+def evaluate_family(family, arm, cells_s, cells_n, comparison, u_ref):
+    """The frozen discriminators A, P, S, B and V on one deciding family."""
+    out = {}
+    rows = comparison["cells"]
+    complete = all(rows[label]["both_completed"] for label in RTOL_LABELS)
+
+    # A: achieved error at most 3 times that of the shipped arm, in every cell.
+    a_cells = {}
+    for label in RTOL_LABELS:
+        value = rows[label].get("error_ratio")
+        a_cells[label] = {"error_ratio": value, "reference_limited": rows[label].get("reference_limited"),
+                          "verdict": "NOT_DECIDABLE" if value is None else ("PASS" if value <= A_ERROR_RATIO_MAX else "FAIL")}
+    out["A"] = {"cells": a_cells, "max_error_ratio": max((c["error_ratio"] for c in a_cells.values() if c["error_ratio"] is not None), default=None),
+                "verdict": verdict_of([c["verdict"] for c in a_cells.values()])}
+
+    # P: instructions at matched achieved error.
+    block = comparison["matched_error"]["instructions_net"]
+    family_number = block.get("geometric_mean_ratio")
+    p_cells = {}
+    for label in RTOL_LABELS:
+        value = rows[label].get("cell_number")
+        p_cells[label] = {"cell_number": value, "kind": rows[label].get("cell_number_kind"),
+                          "equal_tolerance": rows[label].get("instructions_equal_tolerance"),
+                          "verdict": "NOT_DECIDABLE" if value is None else ("PASS" if value <= P_CELL_MAX else "FAIL")}
+    family_part = "NOT_DECIDABLE" if family_number is None else ("PASS" if family_number <= P_FAMILY_MAX else "FAIL")
+    cells_part = verdict_of([c["verdict"] for c in p_cells.values()])
+    out["P"] = {
+        "family_number": family_number, "family_part": family_part, "matched_range": block.get("range"),
+        "matched_status": block.get("status"), "matched_reason": block.get("reason"),
+        "cells": p_cells, "cells_part": cells_part,
+        "max_cell_number": max((c["cell_number"] for c in p_cells.values() if c["cell_number"] is not None), default=None),
+        "verdict": verdict_of([family_part, cells_part]),
+        "above_kill_level_0_85": None if family_number is None else family_number > P_KILL_FAMILY,
+        "also_reported": {
+            "geometric_mean_of_the_cell_numbers": comparison["cell_numbers_geometric_mean"],
+            "geometric_mean_at_equal_tolerance": comparison["equal_tolerance"]["instructions_geometric_mean"],
+            "largest_ratio_on_the_grid": block.get("max_ratio"), "smallest_ratio_on_the_grid": block.get("min_ratio"),
+            "largest_ratio_at_equal_tolerance": max((c["equal_tolerance"] for c in p_cells.values() if c["equal_tolerance"] is not None), default=None),
+        },
+    }
+    also = out["P"]["also_reported"]
+    notes = []
+    for name in ("geometric_mean_of_the_cell_numbers", "geometric_mean_at_equal_tolerance"):
+        if also[name] is not None and family_number is not None and (also[name] <= P_FAMILY_MAX) != (family_number <= P_FAMILY_MAX):
+            notes.append(f"the family part would differ under {name} ({also[name]:.4f})")
+    for name in ("largest_ratio_on_the_grid", "largest_ratio_at_equal_tolerance"):
+        if also[name] is not None and cells_part == "PASS" and also[name] > P_CELL_MAX:
+            notes.append(f"{name} is {also[name]:.4f}, above 1.00, while every cell number is not")
+    out["P"]["notes_next_to_the_verdict"] = notes
+
+    # S: attempts at equal tolerance.
+    s_cells = {}
+    for label in RTOL_LABELS:
+        value = rows[label].get("attempts_equal_tolerance")
+        s_cells[label] = {"attempts_ratio": value, "attempts_S": cells_s[label].get("attempts"), "attempts_N": cells_n[label].get("attempts"),
+                          "verdict": "NOT_DECIDABLE" if value is None else ("PASS" if value <= S_CELL_MAX else "FAIL")}
+    mean = comparison["equal_tolerance"]["attempts_geometric_mean"] if complete else None
+    family_part = "NOT_DECIDABLE" if mean is None else ("PASS" if mean <= S_FAMILY_MAX else "FAIL")
+    out["S"] = {"geometric_mean": mean, "family_part": family_part, "cells": s_cells,
+                "cells_part": verdict_of([c["verdict"] for c in s_cells.values()]),
+                "max_ratio": max((c["attempts_ratio"] for c in s_cells.values() if c["attempts_ratio"] is not None), default=None),
+                "matched_error_attempts_ratio_reported_only": comparison["matched_error"]["attempts"].get("geometric_mean_ratio")}
+    out["S"]["verdict"] = verdict_of([family_part, out["S"]["cells_part"]])
+
+    # B: budget-exhausting stage solves.
+    b_cells = {}
+    for label in RTOL_LABELS:
+        stat_s = cells_s[label].get("policy_statistics") or {}
+        stat_n = cells_n[label].get("policy_statistics") or {}
+        bs, bn = stat_s.get("budget_exhausted_solves"), stat_n.get("budget_exhausted_solves")
+        b_cells[label] = {"S": bs, "N": bn, "other_linear_failures_S": stat_s.get("other_linear_failures"),
+                          "other_linear_failures_N": stat_n.get("other_linear_failures"),
+                          "linear_solve_failures_S": cells_s[label].get("linear_solve_failures"),
+                          "linear_solve_failures_N": cells_n[label].get("linear_solve_failures"),
+                          "verdict": "NOT_DECIDABLE" if bs is None or bn is None else ("PASS" if bn <= bs else "FAIL")}
+    out["B"] = {"cells": b_cells, "total_S": sum(c["S"] or 0 for c in b_cells.values()), "total_N": sum(c["N"] or 0 for c in b_cells.values()),
+                "verdict": verdict_of([c["verdict"] for c in b_cells.values()])}
+
+    # V: the audit of every stage solve of arm N (and of arm S, reported).
+    v_cells = {}
+    totals = {"completed_solves": 0, "failed_solves": 0, "independent_checks": 0, "violations": 0}
+    max_ratio = 0.0
+    for label in RTOL_LABELS:
+        audit = cells_n[label]["audit"]
+        v_cells[label] = audit
+        for key in ("completed_solves", "failed_solves", "independent_checks", "violations"):
+            totals[key] += audit.get(key) or 0
+        max_ratio = max(max_ratio, audit.get("independent_max_residual_over_threshold") or 0.0,
+                        audit.get("driver_max_residual_over_threshold") or 0.0)
+    all_audited = all(v_cells[label].get("audited") for label in RTOL_LABELS)
+    all_ok = all(v_cells[label].get("ok") for label in RTOL_LABELS)
+    out["V"] = {"cells": v_cells, "totals": totals, "max_residual_over_threshold": max_ratio,
+                "every_cell_audited": all_audited, "every_cell_deterministic": all(v_cells[label].get("deterministic") for label in RTOL_LABELS if v_cells[label].get("audited")),
+                "verdict": "PASS" if all_ok else ("FAIL" if totals["violations"] > 0 or all_audited else "NOT_DECIDABLE")}
+    shipped_checks = sum((cells_s[label]["audit"].get("independent_checks") or 0) for label in RTOL_LABELS)
+    shipped_violations = sum((cells_s[label]["audit"].get("violations") or 0) for label in RTOL_LABELS)
+    out["V"]["shipped_arm_reported"] = {"independent_checks": shipped_checks, "violations": shipped_violations}
+    return out
+
+
+def adaptive_arm(label):
+    return label in ("P1", "P2", "P1R", "P2R")
+
+
+def build_results():
+    with open(os.path.join(NODE, "CHOICE.json"), encoding="utf-8") as handle:
+        choice = json.load(handle)
+    arm = choice["chosen"]
+    predeclared_path = os.path.join(NODE, "PREDECLARED.json")
+    protocol_path = os.path.join(NODE, "PROTOCOL.json")
+    results = {
+        "schema": "vigilode.loop-l1.v24.results.v1",
+        "node": "V24_MF_ADAPTIVE_STAGE_SOLVE",
+        "generated": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "predeclared_sha256": sha256_file(predeclared_path),
+        "protocol_sha256": sha256_file(protocol_path),
+        "frozen_thresholds": {
+            "A_error_ratio_max": A_ERROR_RATIO_MAX, "P_family_max": P_FAMILY_MAX, "P_cell_max": P_CELL_MAX,
+            "P_kill_family": P_KILL_FAMILY, "S_family_max": S_FAMILY_MAX, "S_cell_max": S_CELL_MAX,
+            "G_state_units_max": G_STATE_UNITS_MAX, "G_attempts_max": G_ATTEMPTS_MAX,
+            "timing_load_max": LOAD_MAX, "timing_spread_max": SPREAD_MAX,
+        },
+        "arms": {"S": "the driver with the shipped stage-solve policy", "N": f"the chosen adaptive variant: {arm}"},
+        "chosen_variant": arm,
+        "choice": {key: choice.get(key) for key in ("score", "score_ratio_P2_over_P1", "chosen", "reason", "fallback_used", "V_violations_in_development_runs")},
+        "binaries": {}, "git_heads": {}, "checks": [], "families": {},
+    }
+    problems = results["checks"]
+    results["D0"] = build_d0(results)
+    all_violations = {"deciding": 0, "development": sum((choice.get("V_violations_in_development_runs") or {}).values()), "exploratory": 0}
+
+    for family in DECIDING:
+        reference = load_reference(family)
+        shipped = collect_arm("d0", "setup", family, "S", reference, results)
+        new = collect_arm("runs", "setup", family, arm, reference, results)
+        entry = {
+            "n": reference["n"], "t_span": reference["t_span"],
+            "reference": {key: reference[key] for key in ("file", "sha256", "u_ref", "note", "method")},
+            "setup_instructions": shipped["setup_instructions"],
+            "arms": {"S": shipped["cells"], "N": new["cells"]},
+        }
+        rhs0 = first(read_log(os.path.join(LOGS, "setup", f"{family}__RHS0.log")), "V24_RHS0_JSON")
+        if rhs0 and reference["y0_hex"] and reference["f0_hex"]:
+            y0_rust, f0_rust = v17.unhex(rhs0["y0_hex"]), v17.unhex(rhs0["f0_hex"])
+            y0_ref, f0_ref = v17.unhex(reference["y0_hex"]), v17.unhex(reference["f0_hex"])
+            scale = max(abs(value) for value in f0_ref) or 1.0
+            consistency = {
+                "y0_max_abs_difference": max(abs(a - b) for a, b in zip(y0_rust, y0_ref)),
+                "f0_max_relative_difference": max(abs(a - b) for a, b in zip(f0_rust, f0_ref)) / scale,
+            }
+            consistency["consistent"] = consistency["f0_max_relative_difference"] <= 1e-12 and consistency["y0_max_abs_difference"] <= 1e-12
+            entry["reference"]["rhs_consistency"] = consistency
+            if not consistency["consistent"]:
+                problems.append(f"{family}: numpy and Rust right-hand sides differ at the start state")
+        else:
+            problems.append(f"{family}: no RHS0 record")
+        for name, cells in (("S", shipped["cells"]), ("N", new["cells"])):
+            for label in RTOL_LABELS:
+                if not cells[label].get("completed"):
+                    problems.append(f"{family} {label} {name}: the run did not complete ({cells[label].get('error')})")
+        comparison = compare_arms(shipped["cells"], new["cells"], reference["u_ref"])
+        entry["comparison"] = comparison
+        entry["discriminators"] = evaluate_family(family, arm, shipped["cells"], new["cells"], comparison, reference["u_ref"])
+        all_violations["deciding"] += entry["discriminators"]["V"]["totals"]["violations"]
+        plain_states = {}
+        timings = {}
+        for label in RTOL_LABELS:
+            plain_states = {"S": shipped["cells"][label].get("state_sha256"), arm: new["cells"][label].get("state_sha256")}
+            timings[label] = collect_timing(family, label, arm, plain_states)
+        entry["timing_cells"] = timings
+        entry["T"] = timing_family(shipped["cells"], new["cells"], timings, arm, reference["u_ref"])
+        results["families"][family] = entry
+
+    # The development runs of the chosen arm, repeated with the final binary.
+    repeat = {"cells": {}, "compared": 0, "equal": 0}
+    for family in DEVELOPMENT:
+        for label in RTOL_LABELS:
+            for entry_name in ("route", "audit"):
+                before = collect_run("dev", f"{family}__{label}__{arm}__{entry_name}")
+                after = collect_run("dev_repeat", f"{family}__{label}__{arm}__{entry_name}")
+                if after is None:
+                    continue
+                note_identity(results, after)
+                differing = differing_fields(result_fields(before), result_fields(after))
+                repeat["compared"] += 1
+                repeat["equal"] += int(not differing)
+                if differing:
+                    repeat["cells"][f"{family} {label} {entry_name}"] = differing
+                audit = audit_verdict(collect_run("dev_repeat", f"{family}__{label}__{arm}__route"), after) if entry_name == "audit" else None
+                if audit is not None:
+                    all_violations["development"] += audit.get("violations") or 0
+    results["development_repeat_with_the_final_binary"] = repeat
+
+    # Exploratory arms on the deciding grid.
+    exploratory = {}
+    present = sorted({os.path.basename(path).split("__")[2] for path in glob.glob(os.path.join(LOGS, "exploratory", "*__route.log"))})
+    for label_arm in present:
+        block = {"families": {}}
+        for family in DECIDING:
+            reference = load_reference(family)
+            shipped_cells = results["families"][family]["arms"]["S"]
+            cells = collect_arm("exploratory", "setup", family, label_arm, reference, results)["cells"]
+            comparison = compare_arms(shipped_cells, cells, reference["u_ref"])
+            violations = sum((cells[label]["audit"].get("violations") or 0) for label in RTOL_LABELS)
+            if adaptive_arm(label_arm):
+                all_violations["exploratory"] += violations
+            block["families"][family] = {
+                "cells": cells,
+                "instructions_matched_error": comparison["matched_error"]["instructions_net"].get("geometric_mean_ratio"),
+                "instructions_equal_tolerance": comparison["equal_tolerance"]["instructions_geometric_mean"],
+                "attempts_equal_tolerance": comparison["equal_tolerance"]["attempts_geometric_mean"],
+                "jvp_equal_tolerance": comparison["equal_tolerance"]["jvp_geometric_mean"],
+                "max_error_ratio": max((comparison["cells"][label].get("error_ratio") or 0.0) for label in RTOL_LABELS),
+                "per_cell_instructions_equal_tolerance": {label: comparison["cells"][label].get("instructions_equal_tolerance") for label in RTOL_LABELS},
+                "audit_violations": violations,
+                "audit_ok_in_every_cell": all(cells[label]["audit"].get("ok") for label in RTOL_LABELS),
+            }
+        exploratory[label_arm] = block
+    results["exploratory"] = exploratory
+
+    # Discriminators and verdict.
+    def family_verdicts(name):
+        return {family: results["families"][family]["discriminators"][name]["verdict"] for family in DECIDING}
+
+    discriminators = {"D0": {"verdict": results["D0"]["verdict"], "deciding_cells": results["D0"]["deciding_cells"],
+                             "development_cells": results["D0"]["development_cells"]}}
+    for name in ("A", "P", "S", "B"):
+        verdicts = family_verdicts(name)
+        discriminators[name] = {"families": verdicts, "verdict": verdict_of(list(verdicts.values()))}
+    discriminators["P"]["family_numbers"] = {family: results["families"][family]["discriminators"]["P"]["family_number"] for family in DECIDING}
+    discriminators["P"]["max_cell_numbers"] = {family: results["families"][family]["discriminators"]["P"]["max_cell_number"] for family in DECIDING}
+    discriminators["P"]["families_above_0_85"] = [family for family in DECIDING if results["families"][family]["discriminators"]["P"]["above_kill_level_0_85"]]
+    discriminators["S"]["geometric_means"] = {family: results["families"][family]["discriminators"]["S"]["geometric_mean"] for family in DECIDING}
+    discriminators["S"]["max_ratios"] = {family: results["families"][family]["discriminators"]["S"]["max_ratio"] for family in DECIDING}
+    discriminators["A"]["max_error_ratios"] = {family: results["families"][family]["discriminators"]["A"]["max_error_ratio"] for family in DECIDING}
+    discriminators["B"]["budget_exhausted"] = {family: {"S": results["families"][family]["discriminators"]["B"]["total_S"],
+                                                         "N": results["families"][family]["discriminators"]["B"]["total_N"]} for family in DECIDING}
+    v_family = family_verdicts("V")
+    totals = {"completed_solves": 0, "failed_solves": 0, "independent_checks": 0, "violations": 0}
+    max_ratio = 0.0
+    for family in DECIDING:
+        block = results["families"][family]["discriminators"]["V"]
+        for key in totals:
+            totals[key] += block["totals"][key]
+        max_ratio = max(max_ratio, block["max_residual_over_threshold"])
+    total_violations = sum(all_violations.values())
+    v_verdict = verdict_of(list(v_family.values()))
+    if total_violations > 0:
+        v_verdict = "FAIL"
+    discriminators["V"] = {"families": v_family, "deciding_grid": totals, "max_residual_over_threshold": max_ratio,
+                           "violations_by_group_of_audited_adaptive_runs": all_violations, "violations": total_violations, "verdict": v_verdict}
+    labels = {family: results["families"][family]["T"]["label"] for family in DECIDING}
+    discriminators["T"] = {
+        "labels": labels, "verdict": "reported only",
+        "wall_speedup_at_matched_error": {family: results["families"][family]["T"]["wall"].get("speedup") for family in DECIDING},
+        "wall_speedup_at_equal_tolerance": {family: results["families"][family]["T"]["speedup_equal_tolerance_geometric_mean"] for family in DECIDING},
+    }
+    for name, filename in (("G", "GOLDEN_DIFF.json"), ("R", "R_SUITES.json")):
+        path = os.path.join(NODE, filename)
+        if os.path.exists(path):
+            with open(path, encoding="utf-8") as handle:
+                data = json.load(handle)
+            discriminators[name] = {"verdict": data.get("verdict"), "file": filename, "summary": data.get("summary")}
+        else:
+            discriminators[name] = {"verdict": "NOT_RUN", "file": None}
+    results["discriminators"] = discriminators
+
+    six = [discriminators[name]["verdict"] for name in ("D0", "V", "A", "P", "S", "B")]
+    kill_reasons = []
+    if total_violations > 0:
+        kill_reasons.append(f"{total_violations} violations of V")
+    if len(discriminators["P"]["families_above_0_85"]) >= 2:
+        kill_reasons.append(f"P above 0.85 on {discriminators['P']['families_above_0_85']}")
+    failed = [name for name in ("P", "S", "A", "B") if discriminators[name]["verdict"] == "FAIL"]
+    not_pass = [name for name in ("D0", "V", "A", "P", "S", "B", "G", "R") if discriminators[name]["verdict"] != "PASS"]
+    if kill_reasons:
+        verdict, reason = "KILL", "; ".join(kill_reasons)
+    elif failed and discriminators["V"]["verdict"] == "PASS":
+        verdict, reason = "FAIL", f"{failed} fail with V intact: the adaptive policy stays opt-in and the default is not changed"
+    elif not not_pass:
+        verdict, reason = "PASS", "D0, V, A, P, S, B, G and R hold"
+    else:
+        verdict, reason = "NOT_PASS", f"not PASS: {({name: discriminators[name]['verdict'] for name in not_pass})}"
+    results["verdict"] = {
+        "frozen_rules": {"PASS": "D0, V, A, P, S, B, G and R hold", "FAIL": "P, S, A or B fails with V intact",
+                         "KILL": "V is violated in any solve, or P is above 0.85 on two families"},
+        "verdict": verdict, "reason": reason,
+        "D0_V_A_P_S_B_all_hold": all(value == "PASS" for value in six),
+        "step_5_condition_met": all(value == "PASS" for value in six),
+    }
+    return results
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("what", choices=["recording", "choice"])
+    parser.add_argument("what", choices=["recording", "choice", "results"])
     args = parser.parse_args()
     if args.what == "recording":
         write_json(os.path.join(NODE, "RECORDING_A.json"), build_recording())
@@ -536,6 +1027,12 @@ def main():
         write_json(os.path.join(NODE, "CHOICE.json"), choice)
         print("score", choice.get("score"), "chosen", choice.get("chosen"), "-", choice.get("reason"))
         print("checks:", choice["checks"])
+    elif args.what == "results":
+        results = build_results()
+        write_json(os.path.join(NODE, "RESULTS.json"), results)
+        print(json.dumps({name: block.get("verdict") for name, block in results["discriminators"].items()}))
+        print(json.dumps(results["verdict"]))
+        print("checks:", results["checks"])
 
 
 if __name__ == "__main__":
