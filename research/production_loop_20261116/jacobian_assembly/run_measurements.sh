@@ -9,6 +9,9 @@
 #                                                     authoritative timing: timing lock, cores 6-11
 #   run_measurements.sh perf <cell> <arm>             one solve under perf stat -e instructions:u
 #   run_measurements.sh dump <cell>                   last accepted state of the sequential arm, for reference/
+#   run_measurements.sh runner-build                  build the standalone runner (links vigilode)
+#   run_measurements.sh facade                        the client against vigilode's finite differences;
+#                                                     the facade's coloured JVP route
 #
 # Cells: nlkpp-dense-n400 nlkpp-band-n4096-r24 bruss1d-n131072 bruss1d-n128-dense bruss1d-n128-coloured
 set -euo pipefail
@@ -114,6 +117,23 @@ perf)
     } >"$log" 2>&1
     echo "$log"
     ;;
+runner-build)
+    # The standalone runner (facade comparisons). Its Cargo.lock is a copy of the repository
+    # lock, completed once by "cargo build --offline".
+    cd "$HERE/runner"
+    taskset -c "$BUILD_CPUS" cargo +1.94.1 build --locked -j 4 --release
+    ;;
+facade)
+    bin="$CARGO_TARGET_DIR/release/v08-assembly-runner"
+    log="$LOGS/facade.log"
+    cmd="taskset -c $BUILD_CPUS $bin facade-identity; taskset -c $BUILD_CPUS $bin facade-coloured"
+    {
+        header "$bin" "$cmd"
+        run taskset -c "$BUILD_CPUS" "$bin" facade-identity
+        run taskset -c "$BUILD_CPUS" "$bin" facade-coloured
+    } >"$log" 2>&1
+    echo "$log"
+    ;;
 dump)
     # The last accepted time and state of the sequential arm (little-endian f64: t, then y).
     cell="$2"
@@ -131,7 +151,7 @@ dump)
     echo "$log"
     ;;
 *)
-    sed -n '2,13p' "${BASH_SOURCE[0]}"
+    sed -n '2,16p' "${BASH_SOURCE[0]}"
     exit 2
     ;;
 esac
