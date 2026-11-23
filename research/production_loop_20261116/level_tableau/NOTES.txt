@@ -1,0 +1,187 @@
+V16_LEVEL_TABLEAU_SEARCH -- working notes (plain text, updated at every milestone)
+Worktree /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v16, branch research/production-loop-20261116-w2-v16,
+base commit c468478e. Scratch: /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v16/
+
+== 2026-11-17, entry 1 (before any run) ==
+
+READ SO FAR (file:line)
+- research/production_loop_20261116/PREREGISTRATION.md:11-18 (rules), :60-66 (addendum A1, frozen row of V16).
+- docs/agent/production_solver_program_20261112/TASK_CONTRACTS.json, entry /tasks/25 (V16 contract).
+- research/production_loop_20261116/theory/THEORY.md:436-503 (S9: layouts, stiff accuracy = "b is the last row of beta",
+  counts 59/51/44 for 1-2-2-2-1 and 93/83/74 for 1-2-2-2-2-1, gamma pinned to 0.2780538411 for depth 5, window
+  [0.18391465, 0.33414237] for depth 6), :36-41 (notation: k-form, U-form, reconstruction Gamma = (I/gamma - C)^-1,
+  alpha = A Gamma, beta = alpha + Gamma, b = Gamma^T b_code), :205-226 (S4: W conditions, gamma_i = row sum of
+  gamma_ij with the diagonal), :273-288 (S5: 17 ROW conditions, branching vertex carries alpha, singly-branched
+  vertex carries beta with the diagonal, right-hand side 1/gamma(t)).
+- research/production_loop_20261116/theory/verify_independent.py:117-134 (loader of the snapshot; bhat = alpha row 8).
+- fixtures/rodas5p_coefficients_snapshot.json (keys gamma, A, C, c, b_code, H; decimal strings).
+- Controller of the protected driver: crates/rodas5p-integrators/src/adaptive.rs:397 (factor = safety * err^(-1/order)),
+  :273-277 (legacy_rodas: safety 0.9, min_factor 0.2, max_factor 5.0, reject_max_factor 0.9, ControllerKind::Integral),
+  :161-177 (Default config: same constants, initial_step 1e-3), :91-97 (estimator order 5), :372-378 (err == 0 ->
+  max_factor on acceptance), :404-408 (clamp [min,max] accepted, [min,reject_max] rejected), :718-732 (rejection:
+  factor from max(err,1e-16); non-finite error -> min_factor);
+  crates/rodas5p-integrators/src/sequential.rs:841-843 (scale and acceptance: err <= 1 and finite);
+  crates/rodas5p-core/src/norms.rs:75 (scale_i = atol + rtol * max(|y0_i|, |y1_i|)), :119 (WRMS);
+  crates/rodas5p-core/src/coefficients.rs:195 (btilde = last row of Gamma: error vector = U_8 = sum_j gamma_8j k_j).
+
+DERIVATIONS DONE ON PAPER (no run yet)
+1. ROW conditions (k-form, beta = alpha + gamma_ij with beta_ii = gamma): Phi_j(leaf) = 1; one child: sum_k beta_jk Phi_k;
+   two or more children: product over children of sum_k alpha_jk Phi_k(child); condition sum_j b_j Phi_j(t) = 1/gamma(t).
+2. Depth 5 (levels {1},{2,3},{4,5},{6,7},{8}), stiffly accurate: R = P/(1-gamma z)^5, deg P <= 4, order 5 pins gamma.
+   NEW OBSTRUCTION for the tie alpha_8 = beta_7 (embedded weights = row 7 of beta): the embedded method then uses only
+   the first four levels and has R_hat(inf) = 0, so R_hat = P_hat/(1-gamma z)^4 with deg P_hat <= 3, and order 4 needs
+   the z^4 coefficient of exp(z)(1-gamma z)^4 to vanish: gamma^4 - 4 gamma^3 + 3 gamma^2 - (2/3) gamma + 1/24 = 0.
+   At gamma = 0.2780538411 the value is about 8.2e-3, not 0. Hence in the 8-stage depth-5 layout the embedded weights
+   cannot be row 7 of beta; they must be free weights b_hat = b - d with d_8 != 0 and then R_hat(inf) = d^T beta^4 1 /
+   gamma^5 != 0 unless the estimator vanishes identically on linear problems. With 8 stages the 8 order-4 conditions
+   on d are homogeneous and square: a non-trivial d needs det[Phi_j(t)] = 0 (one extra condition on the tableau).
+   (To be confirmed by the scripts; it changes the unknown count of S9 for depth 5: 50 tableau entries + 8 for d.)
+3. Depth 6 (levels {1},{2,3},{4,5},{6,7},{8,9},{10}) with the tie alpha_10 = beta_9: the embedded method has five
+   levels, R_hat = trunc_4[exp(z)(1-gamma z)^5]/(1-gamma z)^5, no constraint on gamma; its linear estimator degenerates
+   at gamma = 0.27805 (z^5 defect zero), to be kept away from.
+4. Prothero-Robinson local error of a ROW step started on the manifold (exact J and f_t):
+   W_2(z) = b^T (I - z beta)^-1 (beta 1 - z c^2/2) - 1/2,  W_q(z) = b^T (I - z beta)^-1 (c^(q-1)/(q-1)! - z c^q/q!) - 1/q!.
+   Stiff accuracy with c_s = 1 gives W_q(inf) = 0; the 1/z coefficient vanishes iff (last row of beta^-1) . c^q = q.
+5. Index-1 conditions (two-coloured trees, fat vertex = algebraic solve, >= 2 children, carries omega = beta^-1;
+   order = number of meagre vertices; gamma(fat root) = product of gamma(children)). Derived from the stage equations;
+   will be VALIDATED numerically on RODAS5P and only conditions that vanish on RODAS5P are used (as soft targets).
+
+DESIGN DECISIONS SO FAR
+- Hard set per layout = exactly the frozen FOUND conditions (17 order-5 conditions, embedded order 4 (8 conditions),
+  sum b_i gamma_i = 0, stiff accuracy by structure, gamma A-stable). Quality terms (order-6 error coefficients,
+  index-1 conditions, Prothero-Robinson functions, coefficient size) are soft terms of the least-squares objective.
+- Depth 6: tied formulation D6T (74 unknowns). Depth 5: free-embedded formulation D5F (gamma fixed, 58 unknowns).
+- Candidate selection uses algebraic scores and development problems (HIRES, Oregonator: consumed, development only),
+  never the three pay-off problems.
+- Prototype: k-form, exact Jacobian, autonomous problems (time appended as a state when needed), numpy.
+- Coefficient bound 100 applies to gamma, alpha_ij, gamma_ij, b_i, b_hat_i (k-form, the coefficients counted in S9);
+  the code-form matrices A and C are reported as exploratory (RODAS5P itself has |C| up to 165).
+
+NEXT STEPS
+1. PREDECLARED.json (commit before any run of generator, search or integrator).
+2. rowtrees.py (generator) + validation on RODAS5P; proto.py + order check of RODAS5P.
+3. search.py (multi-start, 2000 starts per layout, continuation in gamma), refine.py (mpmath), verify_candidate.py
+   (independent, typed-out conditions), run_order.py, run_payoff.py, parse_results.py, render_report.py.
+4. Literature check (owner PDFs in the main checkout are read-only sources; web for Voss, Cao).
+
+== 2026-11-17, entry 2 (generator validated; smoke test of the search; amendment A-1) ==
+
+DONE
+- PREDECLARED.json committed at 996da358 (before any run). Generator rowtrees.py + run_validation.py committed at
+  238321b5; logs/validation.jsonl: 17 conditions vanish on RODAS5P to 8.9e-15 (binary64) / 5.5e-15 (60 digits);
+  index-1 extension: 60 generated two-coloured trees, 58 vanish on RODAS5P main weights (the two that do not are
+  z-rooted, order 5: {o,{o,{o,[o]}}} 4.7e-2 and {o,{o,{o,{o,o}}}} 2.8e-1), 14 of 16 (order <= 4) on the embedded
+  weights; Prothero-Robinson terms b^T beta^k u_q vanish for q = 2, 3 (all k) on RODAS5P and are about 5e-5 for
+  q = 4; RODAS5P: |E6| = 1.151e-2, embedded |ehat5| = 1.467e-2. Depth-5 gamma = 0.278053841136452324931586...,
+  obstruction value 0.19745 (as derived).
+- layouts.py: 4 formulations (unknowns 58/58/74/93, hard conditions 28/27/27/27 as declared). Vectorised plan
+  agrees with the simple evaluator to 1e-14; complex-step Jacobian agrees to 1e-15 relative.
+- Smoke test (seeds 1000000..1000007, outside the declared range), optimiser as first declared:
+  D6T 3/8 and D5F 5/8 pass the double-precision screen, but every start used all 400 nfev and the plain projection
+  raised |D| from ~1e-3 to ~1e-1.
+- Polish test on smoke starts 1000002 and 1000004 (REG 1e-5, stage 1 with 150 nfev):
+    D6T 1000002: polish 60 -> score 2.07e-3; polish 600 -> score 8.4e-4, D 2.9e-5, Dhat 2.4e-5, PR 5.4e-4,
+                 PRhat 1.2e-3, E6 5.2e-3, max coefficient 3.3, gamma 0.2183, max hard 5e-16
+    D6T 1000004: polish 600 -> score 9.5e-4, D 7.4e-5, PR 5.1e-4, E6 3.1e-3, gamma 0.2008
+    D5F 1000002: polish 600 -> score 1.32e-2, D 1.1e-2, Dhat 7.1e-3, PR 1.7e-3, E6 8.3e-3, max coefficient 9.9
+    D5F 1000004: stage 1 ends in an infeasible local minimum (hard 1.2); kept as failed.
+  With REG 1e-3 one D6T polish ended at gamma = 0.1839 (end of the window).
+- Amendment A-1 written to PREDECLARED.json (optimiser internals only) and committed before the declared starts.
+
+NEXT
+- Launch phase A for D6T and D5F (2000 starts each, 4 workers), then phase B, continuation, refinement.
+- Meanwhile: proto.py, problems.py, verify_candidate.py, refine.py, runners, parser, report.
+
+== 2026-11-17, entry 3 (pipeline tested on smoke seeds; amendments A-2 and A-3) ==
+
+DONE
+- proto.py (code form, W = I/(h gamma) - J, controller of adaptive.rs), problems.py, run_order.py, run_payoff.py,
+  refine.py, verify_candidate.py written. Declared search chain running in the background since about 14:50 KST:
+  search_D6T -> polish_D6T -> continuation_D6T -> search_D5F -> polish_D5F (about 3.5 s per start under load 30-45).
+- RODAS5P in the prototype, fixed step: median pairwise orders 5.34 (BRUSS_ODE), 4.97 (VDP_MU2), 4.85
+  (PENDULUM_FORCED, only 2 admissible pairs under guard 1e-11 -> amendment A-2, guard 1e-12).
+- Independent verifier self-test on RODAS5P in candidate format (scratch): order-5 residual 5.524e-15, embedded
+  order-4 residual 4.04e-15, W -3.32e-16, z^7 defect -1.0153e-5: identical to theory S2/S4/S5 and to the generator.
+- Smoke pipeline (seeds 1000000..1000002, NOT declared runs): refine converges in 4 Newton steps to 1e-55;
+  verify_candidate passes all algebraic checks for smoke_D6T_r01, smoke_D5F_r01, smoke_D5F_r02
+  (logs/smoke2_*.jsonl, candidates/smoke_*.json). Depth-5 z^6 defect 5.30e-4 as in theory S9.
+- Development runs with the smoke candidates (logs/dev_smoke_payoff.jsonl): HIRES and OREGO, attempts 2-3x
+  RODAS5P at matched error. Cause identified: linear error constant of the stability function (see A-3).
+  c7(gamma_6L) = 3.4135e-4 against 1.0153e-5 of RODAS5P: (33.6)^(1/7) = 1.65 more steps on linear problems,
+  which is above the depth gain 1.33; depth 5: order 5 against order 6.
+- Smoke candidates have abscissae c_i outside [0, 1] (e.g. -1.5); not controlled by the declared objective.
+
+DECISIONS
+- A-2: order-check round-off guard 1e-12. A-3: extra formulation D6L (gamma fixed at the linear-order-6 root,
+  rounded down), 2000 starts, seed code 63; depth-6 pool = 8 best of D6T + 8 best of D6L.
+- No candidate is run on ROBER/VDPOL/BURGERS before the primary candidates are selected on HIRES/OREGO.
+
+NEXT
+- wait for the chain; run D6L phases A and B; refine (D6T, D6L, D5F); verify; dev screen; select; order check;
+  pay-off screen; exploratory script (error constants, linear bound, schedule, speed-up model); parser; report;
+  literature.
+
+== 2026-11-17, entry 4 (about 16:25 KST) ==
+
+DONE
+- parse_results.py, render_report.py, run_exploratory.py, LITERATURE.json written and tested on partial logs.
+- Exploratory linear bound (smoke test of run_exploratory.py, scratch): step ratio against RODAS5P on a scalar
+  linear problem is 2.2-3.1 for depth 5 and 1.7-2.5 for depth 6 at gamma = 0.33414 (eps 1e-3..1e-10): above the
+  depth gains 1.6 and 1.33. This is a property of R(z) = P(z)/(1 - gamma z)^L, independent of the other coefficients.
+- Literature: owner's four PDF copies (peer methods) read through pdftotext; Voss 2004, Cao-Li-Liu 2002,
+  Chen-Liu 2000 from bibliographic records/abstract pages (several 403).
+- Declared chain: search_D6T complete (2000 starts), polish_D6T running; then continuation_D6T, search_D5F,
+  polish_D5F; a second background chain waits and then runs search_D6L and polish_D6L.
+
+NEXT (in this order)
+1. refine.py + verify_candidate.py for D6T as soon as continuation_D6T has its footer; dev screen
+   (run_payoff.py --label dev) for the D6T candidates.
+2. Same for D5F, then select the depth-5 primary (parse_results.py), order check, pay-off screen.
+3. Same for D6L; select the depth-6 primary among D6T and D6L; order check; pay-off screen.
+4. run_exploratory.py for RODAS5P and the primaries; parse; render; loop checker; strict-JSON check; commit.
+
+== 2026-11-17, entry 5 (about 17:15 KST) ==
+
+RESULTS SO FAR
+- D6T (declared): 2000 starts, 551 pass the double screen; phase B 39/40 pass, best score 1.93e-4 (gamma at the
+  lower search bound 0.19); continuation 70/71 pass, best score by gamma 1.41e-4 (0.20) ... 9.4e-4 (0.33).
+  8 refined candidates (candidates/D6T_r01..r08.json), all pass every algebraic check of verify_candidate.py
+  (order-5 residual <= 2.2e-16 binary64, <= 8e-40 exact). Depth 6 is FOUND on the algebraic part.
+- Development screen (logs/payoff_dev_D6T.jsonl): attempt ratio against RODAS5P, geometric mean of HIRES and
+  OREGO: r07 1.42 (gamma 0.19), r01 1.69, r08 1.78, others 2.07-2.14. All above the depth gain 1.33.
+- Order run of D6T_r07 (logs/order_D6T_r07.jsonl): VDP_MU2 4.999, PENDULUM_FORCED 4.984, BRUSS_ODE pairs
+  6.59, 4.97, 3.86, 4.63 (median 4.799; the pair 160->320 has order 4.92 but err(320) = 3.2e-13 is under the
+  guard). By the declared rule BRUSS_ODE is below 4.8 by 0.001. Reported as measured; rule not changed.
+- Exploratory Prothero-Robinson run: D6T_r07 has order 1 at lambda = -1e6 (errors 4.8e-8 .. 1.6e-9), RODAS5P
+  order 3 (5e-12 ..): the soft Prothero-Robinson terms are not small enough.
+
+NEW STRUCTURAL FACT (derived, then checked numerically to 1e-56 by run_exploratory.py, kind pr_pole_identity)
+  b^T N^(L-1) u_2 = gamma^2 * b^T N^(L-1) 1   (N = beta - gamma I, u_2 = beta^2 1 - c^2/2, stiffly accurate b),
+  because N^(L-1) only connects level 1 to level L and (u_2)_1 = gamma^2. Hence W_2(z) = 0 identically (the
+  Prothero-Robinson property that RODAS5P has for q = 2 and 3) forces mu_(L-1) = b^T N^(L-1) 1 = 0, i.e. the
+  stability function loses one pole: R = P/(1 - gamma z)^(L-1).
+  Consequences for two processors and order 5 with R(inf) = 0:
+    depth 5 + exact W_2 = 0  -> 4 poles -> impossible (theory S9, L = 4 no-go);
+    depth 6 + exact W_2 = 0  -> 5 poles -> gamma pinned at 0.27805, linear order 5 (defect 5.3e-4);
+    RODAS5P: 8 stages, 7 poles (theory S2: N^7 = 0) -- the same mechanism (beta_21 = 0).
+  A tried variant "D6L with hard Prothero-Robinson conditions" (smoke seeds only, logs/smoke3_search_D6L_hardPR.jsonl,
+  0 of 4 feasible) is infeasible for this reason and was dropped before any declared start; D6L runs as declared in
+  amendment A-3 (soft Prothero-Robinson terms).
+
+NEXT
+- D5F chain (running, 1093/2000 at 17:15), then D6L (queued). Then refine/verify/dev for both, selection, order,
+  screen, exploratory, parse, render, checks, commit.
+
+== 2026-11-23 19:30 KST, entry 6 (written by the orchestrator session) ==
+
+The builder agent of this node was cut by the account usage limit on 2026-11-17 at about 15:38 KST, after
+commit 3777768a and before its last step. All declared runs were complete at that point (search, polish,
+refinement, verification, order checks and pay-off screens of D5F, D6T and D6L; exploratory log). The
+orchestrator ran only the last mechanical step, with no protocol choice of its own:
+  python3 -I parse_results.py      (RESULTS.json from logs/*.jsonl; verdicts depth 5 FOUND_FAIL, depth 6
+                                    FOUND_FAIL, node FAIL)
+  python3 -I render_report.py      (REPORT_KO.md from RESULTS.json; the renderer is the builder's
+                                    uncommitted version of 2026-11-17, committed as found)
+  strict JSON load of RESULTS.json, PREDECLARED.json, LITERATURE.json, index1_selected.json and the 27
+  candidate files; loop checker: PASS.
+The independent reviewer of this node checks the renderer change and every claim of the report.

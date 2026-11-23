@@ -1,0 +1,226 @@
+{
+  "schema": "vigilode-loop-l1-v16-predeclared-v1",
+  "node": "V16_LEVEL_TABLEAU_SEARCH",
+  "written": "2026-11-17, before any run of the generator, the search or the integrator",
+  "base_commit": "c468478e73123a4625c6d20f7459a9f79cbf33de",
+  "frozen_row": "research/production_loop_20261116/PREREGISTRATION.md, addendum A1 (thresholds are taken from there unchanged)",
+  "amendment_rule": "A protocol choice that turns out to be unexecutable is amended only by appending an entry to 'amendments' in a commit made before the affected run, with the reason; thresholds of the frozen row are never changed. Everything not declared here is labelled exploratory.",
+  "amendments": [
+    {
+      "id": "A-1",
+      "date": "2026-11-17, committed before any declared start (start indices 0..1999) was run",
+      "scope": "internals of the search optimiser only",
+      "evidence": "logs/smoke_search_D6T.jsonl and logs/smoke_search_D5F.jsonl: 8 starts each with start indices 1000000..1000007 (seeds outside the declared range), run with the optimiser as first declared; and an interactive test of the polish on the smoke starts 1000002 and 1000004, quoted in NOTES.txt entry 2",
+      "observation": "Every smoke start used all 400 function evaluations without converging. The minimum-norm projection onto the hard conditions raised the norm of the index-1 terms from about 1e-3 to about 1e-1, i.e. it destroyed the soft optimum. The regulariser (weight 1e-3, norm 2e-3 to 8e-3) was the largest term of the objective at the optimum. One polished solution ended on the lower end of the gamma window.",
+      "changes": [
+        "stage 1 of every start: least_squares as declared, but max_nfev = 150 (was 400)",
+        "after stage 1, a polish on the manifold of the hard conditions replaces the plain projection: projected Levenberg-Marquardt on the weighted soft terms, every iterate projected back onto the hard conditions by minimum-norm Gauss-Newton steps; 60 iterations per start (phase A)",
+        "phase B: the 40 best passing starts of a formulation by score get up to 600 further polish iterations",
+        "continuation in gamma (depth 6): from the 5 best phase-B results; each grid solve fixes gamma, projects and runs up to 200 polish iterations (instead of a full least_squares run)",
+        "weight of REG is 1e-5 (was 1e-3)",
+        "gamma of depth 6 is searched in [0.19, 0.33], inside the declared window, to keep a margin from the ends of the A-stability window",
+        "the refinement pool is the 8 best by score among the phase-B and continuation results (distinctness rule unchanged)"
+      ],
+      "unchanged": "hard conditions, 2000 starts per formulation, seeds, start distribution, score definition, every FOUND check, candidate selection rule, order check, pay-off screen, all thresholds"
+    },
+    {
+      "id": "A-2",
+      "date": "2026-11-17, committed before any candidate existed and before any order run of a candidate",
+      "scope": "round-off guard of the order check",
+      "evidence": "logs/amend_A2_order_RODAS5P_floor1e-11.jsonl: the cross-check run of RODAS5P alone. On PENDULUM_FORCED its errors are 1.4e-7, 5.0e-9, 1.7e-10, 5.6e-12, 1.8e-13, 9.9e-15, so only two consecutive pairs lie above the declared guard 1e-11 and the declared rule (at least 3 pairs) would return NOT_DECIDABLE for the reference method itself. The reference uncertainty of the three problems is at most 3e-14 and the error at 320 steps (9.9e-15) shows the round-off level.",
+      "changes": ["round-off guard of the order check: 1e-12 (was 1e-11)"],
+      "unchanged": "problems, step numbers, error measure, reference, median rule, the minimum of 3 pairs, the threshold 4.8"
+    },
+    {
+      "id": "A-3",
+      "date": "2026-11-17, committed while the declared D6T run was in progress and before any of its results was inspected; before any D6L start",
+      "scope": "one more formulation for depth 6; nothing is removed",
+      "evidence": "logs/dev_smoke_payoff.jsonl: development runs on HIRES and OREGO (development problems) with the smoke candidates candidates/smoke_D6T_r01.json and candidates/smoke_D5F_r01.json (seeds outside the declared range). Attempts at matched error were 2 to 3 times those of RODAS5P, growing as the tolerance is tightened. Explanation by the stability function, which for a depth-L stiffly accurate tableau is P(z)/(1 - gamma z)^L with P fixed by gamma: RODAS5P has linear order 6 with defect 1.0e-5 at z^7; depth 5 has linear order 5 with defect 5.3e-4 at z^6 (theory S9); depth 6 has a z^6 defect that vanishes only at the root gamma = 0.3341423670680504... of 720 g^6 - 4320 g^5 + 5400 g^4 - 2400 g^3 + 450 g^2 - 36 g + 1 (then the z^7 defect is 3.4e-4). That root is the upper end of the declared window; amendment A-1 had cut the searched range at 0.33. No pay-off problem (ROBER, VDPOL, BURGERS) was run with any candidate.",
+      "changes": [
+        "additional formulation D6L for depth 6: as D6T, but gamma is fixed at that root rounded down to 40 decimals (0.3341423670680504359540300929339359425765), so that the value lies on the A-stable side; 73 unknowns; hard conditions O5, E4, W, C as D6T (27); seed code 63; 2000 starts; phases A and B of amendment A-1; no continuation",
+        "depth-6 pool for refinement and selection: the 8 best of D6T (phase B and continuation) and the 8 best of D6L (phase B); the selection rule (development problems) is unchanged and picks one primary candidate for the layout"
+      ],
+      "unchanged": "D6T and D5F runs as declared, all FOUND checks, selection rule, order check, pay-off screen, all thresholds"
+    }
+  ],
+  "timing": "No wall time is measured in this node. All verdict numbers are deterministic counters (step attempts) and residuals. The modelled speed-up is a model, not a measurement.",
+
+  "notation": {
+    "method": "k-form of theory S9: (I - h gamma J) k_i = h f(y_n + sum_{j<i} alpha_ij k_j) + h J sum_{j<i} gamma_ij k_j, y_{n+1} = y_n + sum_i b_i k_i; Gamma = (gamma_ij) with gamma_ii = gamma; beta = alpha + Gamma; c_i = sum_j alpha_ij; gamma_i = sum_j Gamma_ij (diagonal included); omega = beta^-1.",
+    "stiff_accuracy": "b = last row of beta (theory S9), hence R(infinity) = 0",
+    "embedded": "y_hat = y_n + sum_i bhat_i k_i; error vector = sum_i (b_i - bhat_i) k_i",
+    "problems": "all test problems are integrated in autonomous form (time is appended as a state with derivative 1 where needed); the Jacobian is exact and evaluated at (t_n, y_n)"
+  },
+
+  "order_condition_generator": {
+    "source": "Hairer and Wanner, Solving Ordinary Differential Equations II, section IV.7 (order conditions of Rosenbrock methods, beta_ij = alpha_ij + gamma_ij) and section VI.4 (index-1 trees); cited from memory, the book was not consulted. The recursion is re-derived in NOTES.txt and validated numerically on the protected RODAS5P coefficients.",
+    "recursion": "Phi_j(leaf) = 1; vertex with one child: sum_k beta_jk Phi_k(child) (beta with its diagonal gamma); vertex with two or more children: product over the children of sum_k alpha_jk Phi_k(child); condition for weights w: sum_j w_j Phi_j(t) = 1/gamma(t) with the density gamma(t) of the tree.",
+    "trees": "all rooted trees with at most 5 vertices: 1, 1, 2, 4, 9 = 17 trees; order 6 (20 trees) is generated for the error coefficients only",
+    "tool_validation": "frozen: every one of the 17 generated conditions vanishes on the protected RODAS5P coefficients (fixtures/rodas5p_coefficients_snapshot.json, reconstruction of theory section 0) to <= 1e-12 in binary64; additionally reported: the same in 60-digit arithmetic on the decimal strings",
+    "numerical_cross_check": "observed order of RODAS5P itself in the prototype integrator on the three order-check problems below (does not use the generator)",
+    "index1_extension": "two-coloured trees (meagre and fat vertices; a fat vertex has at least two children and carries omega; order = number of meagre vertices; gamma of a fat-rooted tree = product of gamma of its children). This extension is NOT part of the frozen tool validation. It is evaluated on RODAS5P; only the generated conditions with |residual| <= 1e-10 on the RODAS5P main weights (order <= 5) and on the RODAS5P embedded weights (order <= 4) are used, and only as soft targets. The others are listed in the validation log and not used."
+  },
+
+  "layouts": {
+    "depth5": {
+      "stages": 8,
+      "levels": [[1], [2, 3], [4, 5], [6, 7], [8]],
+      "zero_pattern": "alpha_ij = gamma_ij = 0 unless level(j) < level(i); gamma_ii = gamma",
+      "gamma": "fixed at the root in [0.27, 0.29] of 120 g^5 - 600 g^4 + 600 g^3 - 200 g^2 + 25 g - 1 = 0 (the z^5 coefficient of exp(z)(1 - g z)^5), about 0.2780538411, computed to 50 digits by the script",
+      "structural_remark": "The tie alpha_8 = beta_7 with embedded weights = row 7 of beta (the 44-unknown variant of theory S9) is not searched: that embedded method lives on four levels with R_hat(infinity) = 0, so order 4 would need 24 g^4 - 96 g^3 + 72 g^2 - 16 g + 1 = 0, which is about 0.197 at the pinned gamma. The scripts check this number.",
+      "primary_formulation": {
+        "id": "D5F",
+        "seed_code": 51,
+        "unknowns": "25 entries alpha_ij, 25 entries gamma_ij (i > j, allowed pattern), 8 entries of d = b - bhat: 58 unknowns; b = row 8 of beta",
+        "imposed_hard_conditions": [
+          "O5: the 17 order-5 conditions for b",
+          "E4: sum_j d_j Phi_j(t) = 0 for the 8 trees of order <= 4 (bhat = b - d has order 4)",
+          "W: sum_i b_i gamma_i = 0",
+          "C: c_8 = 1 (design condition, not in the frozen row)",
+          "N: d^T beta^4 1 = 0.2 gamma^5, i.e. R_hat(infinity) = 0.2 (excludes d = 0 and estimators that vanish identically on linear problems)"
+        ],
+        "count": "28 conditions, 58 unknowns"
+      },
+      "fallback_formulation": {
+        "id": "D5G",
+        "seed_code": 52,
+        "unknowns": "as D5F",
+        "imposed_hard_conditions": ["O5", "E4", "W", "N2: sum_j d_j^2 = 1 (excludes only d = 0)"],
+        "count": "27 conditions, 58 unknowns"
+      }
+    },
+    "depth6": {
+      "stages": 10,
+      "levels": [[1], [2, 3], [4, 5], [6, 7], [8, 9], [10]],
+      "zero_pattern": "alpha_ij = gamma_ij = 0 unless level(j) < level(i); gamma_ii = gamma",
+      "gamma": "unknown, bounded to the A-stability window of theory S9, [0.18391465, 0.33414237]; A-stability is re-verified on every candidate",
+      "primary_formulation": {
+        "id": "D6T",
+        "seed_code": 61,
+        "unknowns": "gamma, 32 entries alpha_ij (stages 2..9), 41 entries gamma_ij (stages 2..10): 74 unknowns; tie alpha_10,j = beta_9,j (j = 1..9); b = row 10 of beta; bhat = row 9 of beta (so the error vector is sum_j Gamma_10,j k_j, as in RODAS5P)",
+        "imposed_hard_conditions": [
+          "O5: the 17 order-5 conditions for b",
+          "E4: the 8 order-4 conditions for bhat",
+          "W: sum_i b_i gamma_i = 0",
+          "C: c_9 = 1 (design condition, not in the frozen row; c_10 = 1 holds by the tie)"
+        ],
+        "count": "27 conditions, 74 unknowns"
+      },
+      "fallback_formulation": {
+        "id": "D6F",
+        "seed_code": 62,
+        "unknowns": "gamma, 41 entries alpha_ij, 41 entries gamma_ij, 10 entries of d = b - bhat: 93 unknowns; b = row 10 of beta",
+        "imposed_hard_conditions": ["O5", "E4 (homogeneous, for d)", "W", "N2: sum_j d_j^2 = 1"],
+        "count": "27 conditions, 93 unknowns"
+      }
+    },
+    "fallback_rule": "The fallback formulation of a layout is run (2000 starts) only if its primary formulation yields no candidate that passes every algebraic FOUND check after refinement. A layout is reported 'not found within the declared budget' only if both formulations yield none."
+  },
+
+  "soft_terms": {
+    "purpose": "quality terms of the least-squares objective; they do not enter the FOUND decision",
+    "E6": "the 20 order-6 error coefficients e(t) = (sum_j b_j Phi_j(t) - 1/gamma(t)) / sigma(t), sigma = symmetry of the tree; weight 0.1",
+    "D": "index-1 conditions for b (order <= 5) selected by the rule of 'index1_extension'; weight 1",
+    "Dhat": "index-1 conditions for bhat (order <= 4) selected by the same rule; weight 1",
+    "PR": "Prothero-Robinson terms b^T beta^k u_q, k = 0..L-1 (L = number of levels), q = 2, 3, 4, with u_2 = beta^2 1 - c^2/2, u_3 = beta c^2/2 - c^3/6, u_4 = beta c^3/6 - c^4/24 (W_q(z) = sum_k z^(k+1) b^T beta^k u_q is the local error factor of h^q phi^(q) on y' = lambda (y - phi) + phi'); weight 1",
+    "PRhat": "the same for bhat with q = 2, 3; weight 0.3",
+    "REG": "every unknown times 1e-3",
+    "score": "sqrt(|D|^2 + |Dhat|^2 + |PR|^2 + 0.09 |PRhat|^2 + 0.01 |E6|^2) at the projected point (Euclidean norms of the unweighted terms); lower is better"
+  },
+
+  "search": {
+    "optimiser": "scipy.optimize.least_squares, method 'trf', exact Jacobian by complex-step differentiation, bounds [-50, 50] on alpha_ij, gamma_ij and d_j and the gamma window for depth 6, ftol = xtol = gtol = 1e-14, max_nfev = 400, on the stacked residual [hard; weighted soft]; then Gauss-Newton projection onto the hard conditions only (minimum-norm steps with the pseudo-inverse, at most 30 iterations)",
+    "starts_per_formulation": 2000,
+    "seeds": "start k of a formulation uses numpy.random.default_rng(numpy.random.SeedSequence([20261117, seed_code, k])), k = 0..1999",
+    "start_distribution": "alpha_ij, gamma_ij ~ Normal(0, 0.6^2); d_j ~ Normal(0, 0.3^2); gamma ~ Uniform over the window (depth 6)",
+    "double_precision_pass": "max |hard residual| <= 1e-12 after projection, gamma inside its window, max coefficient magnitude <= 100",
+    "continuation_in_gamma_depth6": "from each of the 5 best passing D6T candidates (by score) gamma is fixed on the grid 0.19, 0.20, ..., 0.33 and the same optimiser is run with warm starts, stepping away from the candidate's gamma in both directions; every solve is logged and joins the candidate pool",
+    "refinement": "the 8 best passing candidates per formulation by score (pairwise max-norm distance of the unknown vectors > 1e-3): mpmath at 60 digits, simplified Newton on the hard conditions with the pseudo-inverse of the binary64 Jacobian, at most 25 iterations, target max |hard residual| <= 1e-45; coefficient file with 40 significant digits",
+    "workers": "at most 4 processes, taskset -c 0-5,12-17, OMP_NUM_THREADS = OPENBLAS_NUM_THREADS = 1"
+  },
+
+  "algebraic_found_checks": {
+    "evaluated_from": "the coefficient file (decimal strings), by verify_candidate.py, which shares no code with the generator or the search (17 conditions typed out, exact rational arithmetic)",
+    "checks": [
+      "order 5: max |residual| of the 17 conditions <= 1e-12 in binary64 and <= 1e-25 in exact arithmetic on the decimal strings",
+      "stiff accuracy: b equals the last row of beta exactly; R(infinity) = 1 - b^T beta^-1 1 = 0",
+      "A-stability: (i) E(s) = (1 + gamma^2 s)^L - |P(i sqrt(s))|^2 for the design numerator P = trunc_{L-1}[exp(z)(1 - gamma z)^L] has no root in s > 0 by a Sturm sequence in exact rationals and is non-negative; (ii) the numerator of the tableau differs from the design numerator by <= 1e-25 in every coefficient; (iii) max over y = 10^(k/8), k = -48..56, of |R(iy)| - 1 <= 1e-20, R evaluated from the tableau",
+      "embedded order 4: max |residual| of the 8 conditions <= 1e-12 in binary64 and <= 1e-25 exact; non-degeneracy: max |order-5 residual of bhat| >= 1e-6 (reported; a smaller value is flagged as a degenerate estimator)",
+      "W: |sum_i b_i gamma_i| <= 1e-12 in binary64 and <= 1e-25 exact",
+      "coefficient bound: max(|gamma|, |alpha_ij|, |gamma_ij|, |b_i|, |bhat_i|) <= 100. The bound is applied to the k-form coefficients, which are the coefficients counted in theory S9. The code-form matrices A = alpha Gamma^-1 and C = I/gamma - Gamma^-1 are reported as exploratory (the protected RODAS5P has |C| up to 165)."
+    ]
+  },
+
+  "candidate_selection": {
+    "rule": "Per layout, the refined candidates that pass every algebraic check are run on the development problems; the primary candidate is the one with the lowest geometric mean of the two development attempt ratios (a problem without 3 usable targets or with a failed arm counts as ratio 10). If no development ratio can be formed, the candidate with the lowest score is primary. The primary candidate alone decides the verdict of its layout; up to two more candidates may be screened and are reported as exploratory.",
+    "development_problems": [
+      {"id": "HIRES", "note": "consumed U11 configuration, development use only", "t_end": 321.8122, "a_scale": 1e-4},
+      {"id": "OREGO", "note": "consumed U11 configuration, development use only", "t_end": 360.0, "a_scale": 1e-6}
+    ],
+    "protocol": "identical to the pay-off screen below"
+  },
+
+  "prototype_integrator": {
+    "code": "proto.py, one generic ROW stepper in the k-form used for the candidate and for RODAS5P; stages are executed in level order, sequentially; one Jacobian and one LU factorisation of I - h gamma J per attempt (scipy.linalg.lu_factor)",
+    "rodas5p_coefficients": "fixtures/rodas5p_coefficients_snapshot.json through the reconstruction Gamma = (I/gamma - C)^-1, alpha = A Gamma, b = Gamma^T b_code, bhat = row 8 of alpha",
+    "controller": {
+      "formula": "err = sqrt(mean_i((e_i / (atol + rtol max(|y_n,i|, |y_n+1,i|)))^2)); accept iff err is finite and err <= 1; next h = h * clamp(0.9 err^(-1/5), 0.2, 5.0) after acceptance (5.0 if err = 0) and h * clamp(0.9 max(err, 1e-16)^(-1/5), 0.2, 0.9) after rejection (0.2 if err is not finite); the last step is shortened to end at t_end",
+      "source": [
+        "crates/rodas5p-integrators/src/adaptive.rs:397 (factor = safety * error^(-1/order), ControllerKind::Integral)",
+        "crates/rodas5p-integrators/src/adaptive.rs:273-277 and 170-174 (safety 0.9, min_factor 0.2, max_factor 5.0, reject_max_factor 0.9)",
+        "crates/rodas5p-integrators/src/adaptive.rs:91-97 (estimator order 5)",
+        "crates/rodas5p-integrators/src/adaptive.rs:372-378, 404-408, 718-732 (zero error, clamps, rejection)",
+        "crates/rodas5p-integrators/src/sequential.rs:841-843 (scale, WRMS norm, acceptance err <= 1)",
+        "crates/rodas5p-core/src/norms.rs:75 (scale = atol + rtol * max(|y0|, |y1|))"
+      ],
+      "same_for_both_methods": true,
+      "not_reproduced": "output clipping history rules of adaptive.rs:694-716 (no intermediate output is requested), the predictive controller kinds, min_step"
+    },
+    "initial_step": 1e-6,
+    "max_attempts": 500000,
+    "attempts": "accepted + rejected steps; every attempt costs one Jacobian, one factorisation and s stage solves"
+  },
+
+  "order_check": {
+    "frozen": "observed order >= 4.8 on three smooth problems at fixed step with exact Jacobian",
+    "problems": [
+      {"id": "BRUSS_ODE", "rhs": "y1' = 1 + y1^2 y2 - 4 y1, y2' = 3 y1 - y1^2 y2", "y0": [1.5, 3.0], "t_end": 2.0},
+      {"id": "VDP_MU2", "rhs": "y1' = y2, y2' = 2 (1 - y1^2) y2 - y1", "y0": [2.0, 0.0], "t_end": 2.0},
+      {"id": "PENDULUM_FORCED", "rhs": "y1' = y2, y2' = -sin(y1) + 0.5 cos(2 t), time appended as y3", "y0": [1.0, 0.0], "t_end": 2.0}
+    ],
+    "steps": [10, 20, 40, 80, 160, 320],
+    "error": "max_i |y_i - yref_i| / max(1, |yref_i|) at t_end (the appended time component is excluded)",
+    "reference": "mpmath.odefun (Taylor series) at 40 digits; stated uncertainty = difference to scipy DOP853 with rtol = 1e-13, atol = 1e-15 (reported, expected about 1e-13)",
+    "observed_order": "median of log2(err(N) / err(2N)) over the consecutive pairs in which both errors are >= 1e-11 (round-off guard); at least 3 such pairs are required, otherwise NOT_DECIDABLE",
+    "arms": "the primary candidate of each layout, and RODAS5P (prototype validation and cross-check of the generator)"
+  },
+
+  "payoff_screen": {
+    "frozen": "attempts of the new method / attempts of RODAS5P at matched achieved error; depth 5 passes at <= 1.25 on at least 2 of 3 problems, depth 6 at <= 1.10 on at least 2 of 3; KILL level: >= 1.6 (depth 5) or >= 1.33 (depth 6) on all three",
+    "problems": [
+      {"id": "ROBER", "rhs": "y1' = -0.04 y1 + 1e4 y2 y3, y2' = 0.04 y1 - 1e4 y2 y3 - 3e7 y2^2, y3' = 3e7 y2^2", "y0": [1.0, 0.0, 0.0], "t_end": 1e5, "a_scale": 1e-6},
+      {"id": "VDPOL", "rhs": "y1' = y2, y2' = ((1 - y1^2) y2 - y1) / 1e-6", "y0": [2.0, -0.66], "t_end": 2.0, "a_scale": 1.0},
+      {"id": "BURGERS", "rhs": "u_t = nu u_xx - u u_x on (0,1), u = 0 at both ends, nu = 0.05, second-order central differences on 100 interior points, u0 = sin(2 pi x) + 0.5 sin(pi x)", "t_end": 1.0, "a_scale": 1.0}
+    ],
+    "tolerances": "rtol = 10^(-k/2), k = 6..18 (13 values from 1e-3 to 1e-9); atol = a_scale * rtol",
+    "achieved_error": "max_i |y_i - yref_i| / (a_scale + |yref_i|) at t_end",
+    "reference": "scipy.integrate.solve_ivp, method Radau, exact Jacobian, rtol = 1e-13, atol = 1e-13 * a_scale. Stated uncertainty u_ref = max of (a) the achieved-error measure between this solution and Radau with rtol = 1e-11 and (b) the same between this solution and the RODAS5P prototype at rtol = 1e-11 (a different method in a different code). The difference to LSODA (rtol = 1e-12) is reported only.",
+    "matched_error_rule": "Per arm, the finished ladder runs give points (error, attempts). The Pareto front (no other point of the arm with error <= and attempts <=, one of them strict) is sorted by error; A(E) is the linear interpolation of ln(attempts) in ln(error) between the neighbouring front points. Targets E = 10^(-m/2), m = 6..18. A target is usable if it lies inside the error range of the front of both arms and E >= 100 u_ref. Ratio of a problem = geometric mean over the usable targets of A_new(E) / A_rodas5p(E); with fewer than 3 usable targets the problem is NOT_DECIDABLE.",
+    "exclusions": "a run that does not reach t_end (non-finite state, more than 500000 attempts) is kept in the log and excluded from the front; nothing else is excluded"
+  },
+
+  "exploratory": [
+    "order on a stiff Prothero-Robinson problem y' = lambda (y - phi(t)) + phi'(t), phi = sin(t) + 2, lambda = -1e6, t in [0, 1], fixed steps 1/10 .. 1/320, both methods",
+    "norm of the order-6 error coefficients and of the estimator coefficients relative to RODAS5P; z^6 and z^7 defects of the stability function",
+    "index-1 and Prothero-Robinson residuals of the candidate and of RODAS5P",
+    "two-processor schedule of the stages",
+    "modelled speed-up of the step: 1 / ((1 - f_chain + f_chain * L / 8) * attempt ratio), f_chain from research/production_loop_20261116/cost_anatomy/AMDAHL.json where present",
+    "code-form magnitudes max |A|, max |C|"
+  ],
+
+  "literature": "primary sources only (publisher pages, the owner's PDF copies in the main checkout read-only); what exists at which order and depth; no novelty claim",
+
+  "deliverables": [
+    "rowtrees.py (generator), layouts.py + search.py (search), refine.py (multiprecision), verify_candidate.py (independent), proto.py + problems.py (integrator), run_validation.py, run_order.py, run_payoff.py, parse_results.py (RESULTS.json from raw logs only), render_report.py (REPORT_KO.md), logs/, candidates/"
+  ]
+}
