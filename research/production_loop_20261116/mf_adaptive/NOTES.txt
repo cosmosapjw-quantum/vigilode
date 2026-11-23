@@ -117,3 +117,27 @@ Host: 1-minute load average 9.9 at 22:53.
       crates/vigilode/tests/capabilities_contracts.rs:116 and tests of the integrators that compare with
       RODAS5P_MF_FAST_DRIVER_ID. Whether step 5 can be completed inside the write list is checked before
       step 5 and reported, not worked around.
+
+== 2026-11-23 23:27 KST: commit A (the driver before the edit is recorded) ==
+- PROTOCOL.json committed at 2ddeb9fb before any run (protocol choices the frozen file leaves open).
+- Measurement target crates/rodas5p-integrators/tests/mf_adaptive_measure.rs committed at cd7a4557; binary
+  sha256 3a4877913dc0... (copy kept outside the repository at
+  $CARGO_TARGET_DIR/v24-bins/mf_adaptive_measure.commitA).
+- Recording: logs/record_a (90 runs = 30 cells x entries route, route_ls, audit; 18 SETUP runs), compacted by
+  parse_results.py into RECORDING_A.json. In all 30 cells the three entries agree in every recorded field;
+  the route entry equals arm A (audit off) of node V17 in all 20 deciding cells (counters, step counts,
+  state hash): the driver did not change between the V17 head and this base. The independent residual audit
+  of the shipped driver has 0 failures in every cell (largest residual/threshold 0.997).
+- Budget-exhausting solves of the shipped driver (linear_solve_failures): cusp1d 55, 46, 34, 11, 3; 0 in
+  every other cell.
+- Small-system bits recorded at the base and pinned in tests:
+  crates/rodas5p-krylov/tests/gmres_staged_column_test_bits.rs (solve_gmres_into_with_accounting under both
+  accountings on 5 systems, one of them failing by budget; solve_staged_gmres on 4 systems),
+  crates/rodas5p-integrators/tests/mf_adaptive_shipped_bits.rs (the two shipped entries on 5 small problems at
+  2 tolerances).
+- Obstacles found so far (PROTOCOL.json: known_obstacle_found_before_any_run, amendments P-1 and P-2):
+  facade tests outside the write list pin the v1 identifier and bits of the default JVP route; sentinel h2 of
+  ptsw2b_contracts.rs pins the driver file as well and cannot be re-pinned here; lib.rs of rodas5p-krylov
+  cannot get a re-export line.
+- A session hook created research/production_loop_20261116/mf_stage_solve/.mypy_cache (git-ignored) when the
+  V17 Python scripts were opened with the Read tool; it is moved out of the worktree at the end.
