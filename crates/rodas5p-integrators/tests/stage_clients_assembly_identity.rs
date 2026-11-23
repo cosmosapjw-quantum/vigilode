@@ -347,10 +347,18 @@ fn assert_same_run(label: &str, protected: &ProtectedRun, client: &ClientRun) {
     );
 }
 
-fn config(rtol: f64) -> RunConfig {
+/// The tolerances of `PREDECLARED.json` for the contract tests: `atol` is
+/// `rtol` times the case scale of `b1_problems` (1 for the Brusselator) and
+/// `1e-2 rtol` for the other problems.
+fn config(fd: &FdProblem, rtol: f64) -> RunConfig {
+    let scale = if fd.id.starts_with("bruss1d") {
+        1.0
+    } else {
+        1.0e-2
+    };
     RunConfig {
         rtol,
-        atol: 1.0e-2 * rtol,
+        atol: scale * rtol,
         max_attempts: 1_000_000,
     }
 }
@@ -372,7 +380,7 @@ fn every_mode_reproduces_the_protected_dense_driver() {
         assert_eq!(mode, *expected_mode, "{}", fd.id);
         let backend = LinearBackend::DenseLu(mode);
         for rtol in RTOLS {
-            let config = config(rtol);
+            let config = config(fd, rtol);
             let protected = run_protected_dense(fd, &config).unwrap();
             assert!(protected.result.observed.success, "{} at {rtol:e}", fd.id);
             assert_eq!(protected.result.lu, mode.protected_lu(), "{}", fd.id);
@@ -414,7 +422,7 @@ fn the_coloured_route_reproduces_the_protected_banded_driver() {
         let (lower, upper) = fd.band.unwrap();
         let route = ColumnRoute::Coloured(SparsityPattern::banded(fd.n, lower, upper).unwrap());
         for rtol in RTOLS {
-            let config = config(rtol);
+            let config = config(fd, rtol);
             let protected = run_protected_banded(fd, lower, upper, &config).unwrap();
             assert!(protected.result.observed.success, "{} at {rtol:e}", fd.id);
             assert_eq!(protected.result.lu, Rodas5pFastLu::Banded);
@@ -443,7 +451,7 @@ fn a_run_cut_by_the_attempt_budget_is_reproduced_too() {
     let (lower, upper) = fd.band.unwrap();
     let config = RunConfig {
         max_attempts: 48,
-        ..config(1.0e-6)
+        ..config(&fd, 1.0e-6)
     };
     let protected = run_protected_banded(&fd, lower, upper, &config).unwrap();
     assert!(!protected.result.observed.success);
@@ -466,12 +474,13 @@ fn a_run_cut_by_the_attempt_budget_is_reproduced_too() {
 
 #[test]
 fn right_hand_side_calls_are_colours_plus_one_per_build() {
-    let config = config(1.0e-6);
+    let tolerance = 1.0e-6;
     // (problem, route, colours or n, declared check calls: sequential, threaded)
     let coloured = brusselator(32, true);
     let (lower, upper) = coloured.band.unwrap();
     let pattern = SparsityPattern::banded(coloured.n, lower, upper).unwrap();
-    let protected = run_protected_banded(&coloured, lower, upper, &config).unwrap();
+    let coloured_config = config(&coloured, tolerance);
+    let protected = run_protected_banded(&coloured, lower, upper, &coloured_config).unwrap();
     let stage_calls = protected.result.observed.counters.rhs_calls;
     for (arm, check_calls) in [(Arm::Seq, 8), (Arm::Threaded(2), 9), (Arm::Threaded(4), 9)] {
         coloured.calls.store(0, Ordering::Relaxed);
@@ -480,7 +489,7 @@ fn right_hand_side_calls_are_colours_plus_one_per_build() {
             arm,
             LinearBackend::BandedTight { lower, upper },
         );
-        let (_, run) = run_client(&coloured, &spec, &config);
+        let (_, run) = run_client(&coloured, &spec, &coloured_config);
         let run = run.unwrap();
         let stats = run.stats;
         let label = format!("coloured {}", arm.name());
@@ -504,14 +513,15 @@ fn right_hand_side_calls_are_colours_plus_one_per_build() {
     }
 
     let dense = nlkpp_dense(24, true);
-    let protected = run_protected_dense(&dense, &config).unwrap();
+    let dense_config = config(&dense, tolerance);
+    let protected = run_protected_dense(&dense, &dense_config).unwrap();
     let stage_calls = protected.result.observed.counters.rhs_calls;
     for (arm, checks, check_calls) in [(Arm::Seq, 0, 0), (Arm::Threaded(3), 1, 9)] {
         dense.calls.store(0, Ordering::Relaxed);
         let (_, run) = run_client(
             &dense,
             &spec(ColumnRoute::Dense, arm, DENSE_IN_PLACE),
-            &config,
+            &dense_config,
         );
         let run = run.unwrap();
         let stats = run.stats;
@@ -627,7 +637,7 @@ fn checks_can_be_switched_off_and_requested() {
 /// The run must end with `InvalidInput`, nothing built, and a contract
 /// error in the handle.
 fn assert_fails_closed(label: &str, fd: &FdProblem, spec: &ClientSpec) -> AssemblyError {
-    let (handle, run) = run_client(fd, spec, &config(1.0e-6));
+    let (handle, run) = run_client(fd, spec, &config(fd, 1.0e-6));
     match run {
         Err(CoreError::InvalidInput(message)) => {
             let error = handle
@@ -743,7 +753,7 @@ fn a_wrong_pattern_fails_closed() {
         first_use_check: CheckColumns::None,
         ..spec(route.clone(), Arm::Seq, DENSE_IN_PLACE)
     };
-    let (_, run) = run_client(&chain, &unchecked, &config(1.0e-6));
+    let (_, run) = run_client(&chain, &unchecked, &config(&chain, 1.0e-6));
     assert!(
         run.is_ok(),
         "an aliased entry is invisible without check columns"

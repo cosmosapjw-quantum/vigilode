@@ -84,9 +84,16 @@ fn measure(
     rtol: f64,
     readings: &mut Vec<u64>,
 ) -> Measured {
+    // The tolerances of the contract tests in PREDECLARED.json: atol = rtol
+    // for the Brusselator (the case scale of b1_problems), 1e-2 rtol else.
+    let scale = if fd.id.starts_with("bruss1d") {
+        1.0
+    } else {
+        1.0e-2
+    };
     let config = RunConfig {
         rtol,
-        atol: 1.0e-2 * rtol,
+        atol: scale * rtol,
         max_attempts: 1_000_000,
     };
     let adaptive = config.adaptive(fd.span);

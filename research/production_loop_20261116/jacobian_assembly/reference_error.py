@@ -161,7 +161,18 @@ def main():
         raw = handle.read()
     values = struct.unpack(f"<{len(raw) // 8}d", raw)
     t_end, state = values[0], np.array(values[1:])
-    rhs, jac, y0, band = PROBLEMS[cell]()
+    rhs, band_jac, y0, band = PROBLEMS[cell]()
+    if band:
+        # SciPy 1.11 passes the ODEPACK work array to the callback: it wants
+        # lband extra rows below the lband + uband + 1 rows of the band
+        # (as scipy's own wrapper for VODE adds them).
+        padding = np.zeros((band["lband"], y0.size))
+
+        def jac(t, y):
+            return np.vstack([band_jac(t, y), padding])
+
+    else:
+        jac = band_jac
     record.update({"t_end": t_end, "n": int(state.size), "dump": os.path.relpath(path, HERE)})
     # The NumPy right-hand side against the dumped state's dimension.
     assert y0.size == state.size

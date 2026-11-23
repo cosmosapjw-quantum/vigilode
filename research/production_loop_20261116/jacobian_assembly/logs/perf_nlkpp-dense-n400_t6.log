@@ -1,0 +1,20 @@
+# node V08 measurement log
+# date: 2026-11-23T22:21:32+09:00
+# git head: ee56d71d5ab025ebbb5a1e540cfc016798cabbea
+# git status (tracked changes): 0
+# binary: /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v08/release/deps/stage_clients_assembly_measure-bb6f046b6e731bed
+# binary sha256: 63017cba54baa93c07b81c620adf530463f6c77269369db0b5cc984931a2176f
+# rustc: rustc 1.94.1 (e408947bf 2026-03-25)
+# host: 7.0.0-43-generic, 24 logical cpus
+# loadavg at start: 13.88 16.07 15.29 13/5810 980191
+# command: V08_MODE=single V08_CELL=nlkpp-dense-n400 V08_ARM=t6 flock /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/timing.lock taskset -c 6-11 perf stat -e instructions:u -x, /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v08/release/deps/stage_clients_assembly_measure-bb6f046b6e731bed --ignored --nocapture --exact v08_measure
+
+running 1 test
+V08_META_JSON {"arm_env":"t6","arms_env":null,"atol":1e-8,"backend_env":null,"cell":"nlkpp-dense-n400","cpus_allowed_list":"6-11","max_attempts":48,"mode":"single","rtol":1e-6,"timed_rounds":7,"warm_up_rounds":2}
+V08_SINGLE_JSON {"accepted_steps":34,"arm":"t6","assembly_rhs_calls":13634,"attempts":34,"backend":"dense_lu(faer)","backend_cell":"dense_lu(faer)","builds":34,"cell":"nlkpp-dense-n400","colours":null,"construct_ns":2336823,"direct_factorizations":34,"direct_solve_calls":272,"factor_calls":34,"factor_ns":96722544,"failed_builds":0,"final_fingerprint":"3420708b661a5d39","jacobian_builds":34,"jacobian_fingerprint":"cbf29ce484222325","jacobian_reuses":0,"linearize_calls":34,"linearize_ns":307145460,"n":400,"rejected_steps":0,"rhs_calls":13915,"rhs_per_build":401,"route":"dense","solve_calls":272,"solve_ns":9817665,"state_fingerprint":"cbf29ce484222325","stop_reason":null,"success":true,"t_end":10.0,"t_end_bits":"4024000000000000","verification_rhs_calls":9,"verifications":1,"verified_columns":8,"wall_ns":445389025}
+test v08_measure ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+
+17648688999,,instructions:u,1727207343,100.00,,
+# exit code: 0
