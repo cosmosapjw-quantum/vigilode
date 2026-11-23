@@ -395,6 +395,23 @@ def timing_try(path):
             "calls_per_batch": costs[0]["calls_per_batch"],
         }
     first = rows[0] if rows else {}
+    # How much of the sequential Jacobian phase is right-hand-side time:
+    # builds * right-hand sides per build * the calibrated cost per call.
+    seq_rows = arms.get("seq", [])
+    if seq_rows and cost and "seq" in summaries:
+        builds = seq_rows[0]["builds"]
+        per_build = seq_rows[0]["rhs_per_build"]
+        rhs_ns = builds * per_build * cost["median_ns"]
+        summaries["seq"]["builds"] = builds
+        summaries["seq"]["rhs_per_build"] = per_build
+        summaries["seq"]["jacobian_phase_per_build_ns"] = (
+            summaries["seq"]["linearize_median_ns"] / builds
+        )
+        summaries["seq"]["rhs_time_in_jacobian_phase_estimate_ns"] = rhs_ns
+        summaries["seq"]["rhs_share_of_jacobian_phase_estimate"] = (
+            rhs_ns / summaries["seq"]["linearize_median_ns"]
+        )
+        summaries["seq"]["rhs_share_of_wall_estimate"] = rhs_ns / summaries["seq"]["wall_median_ns"]
     result = {
         "log": rel(path),
         "log_sha256": sha256(path),

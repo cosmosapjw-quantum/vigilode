@@ -473,6 +473,8 @@ def main():
                     ms(seq.get("solve_median_ns")),
                     ms(seq.get("construct_median_ns")),
                     percent(share),
+                    percent(seq.get("rhs_share_of_jacobian_phase_estimate")),
+                    percent(seq.get("rhs_share_of_wall_estimate")),
                     " / ".join(
                         ratio(
                             shown["ratios"].get(f"t{workers}", {}).get(
@@ -494,6 +496,8 @@ def main():
                 "seq stage solve ms",
                 "client 생성 ms",
                 "Jacobian 비중",
+                "Jacobian phase 중 RHS (추정)",
+                "wall 중 조립 RHS (추정)",
                 "Amdahl 상한 P=2/4/6",
                 "seq client / 보호 driver wall",
             ],
@@ -502,8 +506,11 @@ def main():
     )
     add("")
     add(
-        "Amdahl 상한은 측정한 seq arm의 Jacobian 비중 f로 계산한 `1 / (1 - f (1 - 1/P))`다. 마지막 열은 "
-        "순차 client의 wall을 같은 유한차분 callback을 단 보호 driver의 wall로 나눈 값(진단)이다."
+        "Amdahl 상한은 측정한 seq arm의 Jacobian 비중 f로 계산한 `1 / (1 - f (1 - 1/P))`다. "
+        "'Jacobian phase 중 RHS'는 build 수 × build당 RHS 수 × 보정한 RHS 비용을 seq arm의 Jacobian phase "
+        "시간으로 나눈 추정값이다: 나머지는 원소 계산·검사·back end로의 복사이며, RHS만큼 잘 병렬화되지 "
+        "않는다. 마지막 열은 순차 client의 wall을 같은 유한차분 callback을 단 보호 driver의 wall로 나눈 "
+        "값(진단)이다."
     )
     add("")
     add("측정 이력(모든 try를 남긴다):")
