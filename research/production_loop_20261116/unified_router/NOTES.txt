@@ -77,3 +77,34 @@ scalar dense 48 (600049); scalar FD 74 (600073); Robertson FD max_steps 500: 266
 Next steps: part 2 tests (new API) and their compile-fail log on a scratch copy of the base;
 registry.rs typed WindowDriver error (COD-06) if it can be done without touching switching.rs;
 full facade suite, golden oracle, clippy, fmt, doc, loop checker, RECEIPT.json, REPORT_KO.md.
+
+== entry 3 (2026-11-23) ==
+Commits since entry 2: 5870b04e part 2 tests + logs/failing_first_new_api.log (compile failure on a
+scratch copy of the base); 9abb4d5c registry.rs (typed WindowDriverError, BatchOutcome::failure,
+BatchStop::Fatal carries the callback message) + part 3 tests + neutrality digest module +
+logs/switching_digests_base.log; 0736e2c1 method-id lookup cached; 4503b86e run_checks.sh.
+
+registry.rs decisions:
+- BatchStop keeps its five values: switching.rs:2697-2703 matches on them without a wildcard, so a new
+  value would not compile in a protected file. The driver's stop is the new field BatchOutcome::failure.
+- WindowDriver::run -> Result<BatchOutcome, WindowDriverError>; impl From<WindowDriverError> for String
+  keeps `?` in switching.rs:2835-2836 compiling and gives the same text (Display is transparent).
+- not changed: work_units (it would change SwitchingSolver decisions), the Recoverable -> FatalCallback
+  mapping of PexprbWindowDriver, SolverState/next_solver_state.
+
+Neutrality of the switching adapter: the module between the markers ">>> neutrality" / "<<< neutrality"
+of tests/unified_router_contracts.rs uses only base API; it was run on a scratch copy of the base
+(git archive 587a1395 Cargo.toml Cargo.lock rust-toolchain.toml crates, in the session scratch
+directory, built in the node's cargo target directory) and here: 77 of 77 lines identical
+(11 problems x 7 configurations, JSON length and FNV-1a 64 of the full record).
+
+Implementation detail consistent with the predeclared budget rule: with max_steps <= 1 the trial budget
+min(1000, N/2) is 0, no trial is made and RODAS5P runs (RouteBasis::NoBudgetForTrial).
+
+A hook flagged "rm -rf" of the scratch copy as destructive: not run; a fresh directory name was used.
+
+State of the checks at 4503b86e: contracts 36 passed; existing unified/registry/switching targets 86
+passed; golden 11 passed, 9 files identical; clippy, fmt and doc clean when run by hand. The full suite
+is running (logs/full_suite.log). Still to do: clippy/fmt/doc/example/checker/diff through
+run_checks.sh, refresh logs/failing_first_new_api.log with the final test file, RECEIPT.json,
+REPORT_KO.md (build_receipt.py, build_report.py are written).
