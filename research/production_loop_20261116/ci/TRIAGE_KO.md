@@ -158,3 +158,13 @@ head 892132e5의 호스티드 실행(run 45187691774, 45187691424):
 조치(OD-L1-12 범위): `ignored-tests.yml`에서 이 test를 전체 workspace 단계에서 빼고 kill gate와 같은 형식의 별도 단계로 실행한다. 그 단계는 test가 기록된 문구로 실패할 때만 통과한다. 전체 workspace 단계에 `--no-fail-fast`를 넣었다. `tools/check_ignored_tests_in_ci.py`: ignored test 96개 전부 도달, 제외 항목 없음. local에서 같은 논리를 release profile로 돌린 결과 runner와 같은 두 숫자로 실패한다(`raw/local_probe_merged_hook_negative_control.log`).
 
 설계상 실패하는 ignored test는 이 둘뿐이다(`#[ignore]` 사유 전수 확인).
+
+head 1fcf356c의 호스티드 실행(run 45190467664, 45190467441; 2026-11-24 00:15 KST에 확인):
+
+- Production CI: fmt, docs, clippy, semver 통과. bench는 알려진 대로 `vigilode-bench`의 rust-version에서 멈춤. test job은 두 단계가 처음으로 모두 끝까지 실행됐다(`--no-fail-fast`와 `if: !cancelled()`의 효과).
+  - Facade and light crates: 결과 줄 183개, 1211 passed, 1 failed, 22 ignored. 실패는 `rodas5p-krylov`의 `staged_solve_telemetry::s1_nine_native_cases_match_anchor` 하나(알려진 host 의존 bit anchor).
+  - Integrators: 결과 줄 270개, 1448 passed, 1 failed, 65 ignored. 실패는 `stage_residual_telemetry::test_r_parity_on_off_and_alg06_anchor` 하나다. 기록된 f64 bit 세 개가 runner에서 하위 bit가 다르다(`3e6bf6471c33a9ed` 대 `3e6bf64d54ceae64` 등). 이것도 host 의존 anchor다.
+  - 즉 runner에서 ignore되지 않은 test 2661개 가운데 실패는 host 의존 bit anchor 두 개뿐이다.
+- Ignored long tests: 취소됨. job 제한 60분에 걸렸다. `ppsw1_linear_backend_contracts.rs`의 측정 test `c5_measured_crossover_paired_interleaved` 하나가 46분 넘게 돌고 있었다(892132e5 실행에서는 같은 test가 1678초). job 전체가 취소되면서 음성대조 단계도 건너뛰었다.
+
+조치(OD-L1-12 범위): `ignored-tests.yml`에서 음성대조 두 단계를 긴 전체 workspace 단계 앞으로 옮겼고(각 단계 `if: !cancelled()`), job 제한을 180분으로 늘렸다. 전체 workspace 단계는 호스티드 runner에서 한 번도 끝까지 간 적이 없다(어제까지는 실패하는 test에서, 그 뒤로는 60분 제한에서 멈춤). 처음 완주하는 실행이 필요한 시간을 알려 준다. 남는 결정: 계약형 ignored test는 PR마다, 측정 프로그램은 예약 실행이나 수동 실행으로 나눌지 여부. 도달성 검사는 ignored test 98개 전부 도달로 통과한다(V08, V18 병합으로 2개 늘었다).

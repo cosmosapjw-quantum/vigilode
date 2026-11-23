@@ -32,7 +32,10 @@ permissions:
 jobs:
   ignored-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # The whole-workspace step has never completed on a hosted runner: it was
+    # stopped by a failing test until 2026-11-23 and then by the limit of 60
+    # minutes. The first complete run gives the time this job needs.
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - name: Install the pinned Rust toolchain
@@ -41,13 +44,6 @@ jobs:
           rustup override set 1.94.1
       - name: Every ignored test is reachable from CI
         run: python3 tools/check_ignored_tests_in_ci.py
-      # The two skipped tests fail by design; the next two steps run them.
-      # --no-fail-fast: without it cargo stops at the first failing test
-      # binary and the binaries after it are not run.
-      - name: Run the ignored tests in the measurement profile
-        env:
-          RAYON_NUM_THREADS: '1'
-        run: cargo test --workspace --profile measurement --locked --no-fail-fast -- --ignored --skip prothero_robinson_wfiltered_enforce_kill_gate --skip merged_hook_solution_meets_the_protected_threshold
       # Negative control (research/qualification/negative_controls/
       # negative_fixture_manifest.json): the kill gate failed on 2026-10-21 and
       # its threshold is frozen. The step passes only if the test still fails
@@ -94,3 +90,14 @@ jobs:
             exit 1
           fi
           echo "the stopping-test difference fails with its recorded signature"
+      # The two tests that fail by design are skipped here; the two steps before
+      # this one run them. --no-fail-fast: without it cargo stops at the first
+      # failing test binary and the binaries after it are not run. The step is
+      # long (one measurement test alone ran 28 minutes and more than 46
+      # minutes on hosted runners), so it runs last and the job has a wide
+      # time limit.
+      - name: Run the ignored tests in the measurement profile
+        if: ${{ !cancelled() }}
+        env:
+          RAYON_NUM_THREADS: '1'
+        run: cargo test --workspace --profile measurement --locked --no-fail-fast -- --ignored --skip prothero_robinson_wfiltered_enforce_kill_gate --skip merged_hook_solution_meets_the_protected_threshold
