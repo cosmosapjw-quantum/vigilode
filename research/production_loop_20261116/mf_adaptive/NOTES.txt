@@ -141,3 +141,51 @@ Host: 1-minute load average 9.9 at 22:53.
   cannot get a re-export line.
 - A session hook created research/production_loop_20261116/mf_stage_solve/.mypy_cache (git-ignored) when the
   V17 Python scripts were opened with the Read tool; it is moved out of the worktree at the end.
+
+== 2026-11-23 23:52 KST: steps 2 to 4 ==
+STEP 2 (commit ee230b99; identifiers 7fb23b63)
+- Kernel: StagedGmresWorkspace::solve_column_tested_into in crates/rodas5p-krylov/src/gmres_staged.rs (new items
+  only; solve_staged_gmres*, iterate and every other item of the file are unchanged; gmres_into.rs, gmres.rs,
+  common.rs, kernels.rs, workspace.rs, accounting.rs untouched). The loop is the shipped one (true residual at
+  the top of every pass decides; same threshold expression; same error texts); the cycle tests the Givens
+  projected residual after every column. Upper bound of a cycle: min(first, restart), doubled after every
+  cycle that is followed by another one (P1: first = restart; P2: first = 10).
+- Driver: MfStageSolvePolicy {Shipped, ColumnTested (P1), ColumnTestedDoubling (P2)} carried by the workspace
+  (set_stage_solve_policy) and by RoutingOptions::matrix_free_policy; default Shipped everywhere. In
+  attempt_inner one added `else if` in front of the untouched call of solve_gmres_into_with_accounting. The
+  diff of the driver against the base removes three things only: the import list (re-wrapped for one added
+  name), `driver: RODAS5P_MF_FAST_DRIVER_ID` (now the policy's identifier, the same string for Shipped), and
+  the early `return self.attempt_inner(...)` of attempt() (now the same call followed by a classification of
+  a linear failure for the statistics).
+- Statistics for every policy (MfStageSolveStatistics) and an optional record of every returned iterate
+  (MfStageSolveRecord: reported true residual and threshold) for the audit.
+- Tests: crates/rodas5p-krylov/tests/gmres_staged_column_test_{bits,contracts}.rs (11 tests),
+  crates/rodas5p-integrators/tests/mf_adaptive_{shipped_bits,contracts}.rs (8 tests) and the measurement
+  target. Sentinel g3 re-pinned by repin_sentinel.py (SENTINEL_REPIN.json); h2 of ptsw2b_contracts.rs fails
+  (37 passed in ppsw1_6b_contracts, 23 passed and 1 failed in ptsw2b_contracts), as written down in
+  PROTOCOL.json amendment P-1.
+
+STEP 3 (commit c7cc6695, before any run of an adaptive arm on the deciding grid)
+- Development cells, one binary (sha256 de8b86ffbed5...) for S, P1, P2: logs/dev. V: 0 violations in every
+  run; attempts equal to S in all 10 cells for both variants.
+- Matched-error instruction ratio against S: dev06_bruss1d P1 0.339, P2 0.248; dev06_adr2d P1 0.205, P2 0.188.
+  Scores 0.2637 and 0.2162, ratio 0.820 < 0.98: P2 is chosen (CHOICE.json).
+- After the choice the identifier strings were set (P2 reports rodas5p-mf-fast-transformed-v2, P1 keeps a
+  candidate identifier), nothing else; the final binary (sha256 f35805e9c687...) reproduces the 20
+  development runs of P2 in every counter and state bit (logs/dev_repeat).
+
+STEP 4 (logs/setup, logs/d0, logs/runs; parser committed at 910d18eb before the runs of arm N)
+- D0 PASS: 20 of 20 deciding cells and 10 of 10 development cells equal to the recording of commit A in
+  every recorded field through route, route_ls and audit; the policy entry with Shipped equals route.
+- V PASS: 37823 completed solves of arm N on the deciding grid, all checked independently, 0 violations,
+  largest residual/threshold 0.99998; 151 solves failed by budget exhaustion and were reported as failures.
+- A PASS (largest error ratio 1.40, cusp1d 1e-6). P PASS (family numbers 0.320, 0.334, 0.201, 0.319; largest
+  cell number 0.521). S PASS (geometric means 1.000, 1.006, 1.000, 1.000; largest cell 1.026).
+- B FAIL: cusp1d rtol 1e-6, 13 budget-exhausting solves of arm N against 11 of arm S (the other cusp1d
+  cells 55/55, 46/46, 34/34, 3/3; no such solve in the other families).
+- Frozen verdict: FAIL (B fails with V intact). The adaptive policy stays opt-in, the default of the route
+  is not changed, step 5 is not carried out, the golden files are untouched.
+- The loop checker stops at "protected file changed: crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs";
+  with its `require` collecting in memory (checker_report.py) the complete list is that line and
+  "implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs".
+  Both paths are in the write list of the node; no changed path is outside it.

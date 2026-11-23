@@ -1,0 +1,13 @@
+# V24_LOG_BEGIN {"binary": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/v24-bins/mf_adaptive_measure.final", "binary_sha256": "f35805e9c6871f9758247a54373565a7e2dfab59114009b6462e565017877046", "git_head": "78b6601dd7e0f94b805efe8b53bbc2b26c9bf9b8", "git_dirty_tracked": 0, "phase": "timing", "name": "cusp1d__1e-6__try1__round5", "date": "2026-11-23T23:54:46+0900", "env": {"V24_FAMILY": "cusp1d", "V24_RTOL": "1e-6", "V24_MODE": "TIMING", "V24_ARMS": "S,P2", "V24_LABEL": "timing try 1", "V24_ROUNDS": "1", "V24_ROUND_OFFSET": "5"}, "perf": false, "timing": true, "command": ["flock", "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/timing.lock", "taskset", "-c", "6-11", "sh", "-c", "printf \"V24_LOAD_BEFORE %s\\n\" \"$(cat /proc/loadavg)\"; \"$0\" \"$@\"; rc=$?; printf \"V24_LOAD_AFTER %s\\n\" \"$(cat /proc/loadavg)\"; exit $rc", "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/v24-bins/mf_adaptive_measure.final", "--ignored", "--nocapture", "--exact", "v24_run"], "cpus": "6-11", "loadavg_before_launch": "3.80 5.66 6.55 2/4936 1380739"}
+V24_LOAD_BEFORE 3.80 5.66 6.55 2/4939 1380742
+
+running 1 test
+V24_TIMING_JSON {"arm":"P2","atol":1e-6,"attempts":866,"completed":true,"entry":"route","family":"cusp1d","jvp_calls":171342,"label":"timing try 1","mode":"TIMING","n":1200,"position":0,"round":5,"rtol":1e-6,"schema":"vigilode.loop-l1.v24.run.v1","state_sha256":"381b8d97d8e10b71974c07b8603563f3cabb10465b43d5a54cd02e91f81edf83","success":true,"t_span":[0.0,0.7],"thread_cpu_seconds":3.602010218,"wall_seconds":3.602433849}
+V24_TIMING_JSON {"arm":"S","atol":1e-6,"attempts":853,"completed":true,"entry":"route","family":"cusp1d","jvp_calls":336478,"label":"timing try 1","mode":"TIMING","n":1200,"position":1,"round":5,"rtol":1e-6,"schema":"vigilode.loop-l1.v24.run.v1","state_sha256":"72dd400654fe81ac52ce916ba2c6f74f7708413a82a02b78acab7477689bd6e2","success":true,"t_span":[0.0,0.7],"thread_cpu_seconds":14.899939254,"wall_seconds":14.902881692}
+V24_TIMING_META_JSON {"arms":"S,P2","family":"cusp1d","label":"timing try 1","loadavg_end":"3.98 5.57 6.50 2/4933 1381745","loadavg_start":"3.80 5.66 6.55 2/4940 1380744","mode":"TIMING","n":1200,"process_seconds":18.505455803,"round_offset":5,"rounds":1,"rtol":1e-6,"schema":"vigilode.loop-l1.v24.run.v1","t_span":[0.0,0.7]}
+test v24_run ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 18.51s
+
+V24_LOAD_AFTER 3.98 5.57 6.50 2/4932 1381746
+# V24_LOG_END {"exit_code": 0, "timed_out": false, "seconds": 18.539849042892456, "loadavg_after_exit": "3.98 5.57 6.50 2/4929 1381746", "date": "2026-11-23T23:55:05+0900"}

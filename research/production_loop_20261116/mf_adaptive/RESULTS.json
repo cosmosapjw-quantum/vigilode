@@ -1,9 +1,9 @@
 {
  "schema": "vigilode.loop-l1.v24.results.v1",
  "node": "V24_MF_ADAPTIVE_STAGE_SOLVE",
- "generated": "2026-11-23T23:43:06+0900",
+ "generated": "2026-11-24T00:02:10+0900",
  "predeclared_sha256": "2ed7ca7d6c64bba0cddaaaf20b5a6460acb57cf46838bb420b0ec94a74a55375",
- "protocol_sha256": "e5299cc645707575ebbb6f1c45e70153c6b5d46251923e3eb42175269c0d72a5",
+ "protocol_sha256": "7a51b1d73a86050c9e1ad6dee38f9a4b0544db84c396c7226e8dbe5cd081458b",
  "frozen_thresholds": {
   "A_error_ratio_max": 3.0,
   "P_family_max": 0.5,
@@ -1674,66 +1674,625 @@
    },
    "timing_cells": {
     "1e-3": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/fhn3d__1e-3__try1.log"
+       ],
+       "invocations": 1,
+       "split_long_cell": false,
+       "process_complete": true,
+       "load_before": [
+        "6.39 7.79 7.37 13/4988 1351651"
+       ],
+       "load_after": [
+        "6.18 7.64 7.33 4/4947 1352961"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 19.745185375213623,
+       "longest_process_seconds_under_the_lock": 19.688446813,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          1.619194764,
+          1.586048001
+         ],
+         "walls": [
+          1.575322124,
+          1.580302987,
+          1.58998593,
+          1.5627804360000002,
+          1.558787271,
+          1.5576127450000001,
+          1.600247209
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 1.575322124,
+         "min": 1.5576127450000001,
+         "max": 1.600247209,
+         "spread": 0.027063965744189483,
+         "median_thread_cpu": 1.57460106,
+         "spread_thread_cpu": 0.026165533001738992
+        },
+        "P2": {
+         "warm_up_walls": [
+          0.614203716,
+          0.612708541
+         ],
+         "walls": [
+          0.597035719,
+          0.600610612,
+          0.604955087,
+          0.601959186,
+          0.60176579,
+          0.601009918,
+          0.622478031
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.60176579,
+         "min": 0.597035719,
+         "max": 0.622478031,
+         "spread": 0.042279425688190125,
+         "median_thread_cpu": 0.6020175949999995,
+         "spread_thread_cpu": 0.04229796472975258
+        }
+       },
+       "load_1min_max": 6.39,
+       "meets_rule": true,
+       "misses": []
+      }
+     ],
+     "measurements": 1,
+     "label": "authoritative",
+     "used_try": 1,
+     "median_wall": {
+      "S": 1.575322124,
+      "P2": 0.60176579
+     },
+     "spread": {
+      "S": 0.027063965744189483,
+      "P2": 0.042279425688190125
+     },
+     "median_thread_cpu": {
+      "S": 1.57460106,
+      "P2": 0.6020175949999995
+     },
+     "speedup_equal_tolerance": 2.617832635517549,
+     "thread_cpu_speedup_equal_tolerance": 2.6155399328486424
     },
     "1e-4": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/fhn3d__1e-4__try1.log"
+       ],
+       "invocations": 1,
+       "split_long_cell": false,
+       "process_complete": true,
+       "load_before": [
+        "6.18 7.64 7.33 4/4947 1352964"
+       ],
+       "load_after": [
+        "6.30 7.57 7.31 13/4959 1353708"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 20.699805974960327,
+       "longest_process_seconds_under_the_lock": 20.643766102,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          1.7122423329999998,
+          1.706840431
+         ],
+         "walls": [
+          1.704470217,
+          1.687672285,
+          1.721591015,
+          1.764111596,
+          1.723791179,
+          1.71678771,
+          1.71969858
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 1.71969858,
+         "min": 1.687672285,
+         "max": 1.764111596,
+         "spread": 0.04444924935624468,
+         "median_thread_cpu": 1.7196875570000003,
+         "spread_thread_cpu": 0.04462757126293465
+        },
+        "P2": {
+         "warm_up_walls": [
+          0.565779516,
+          0.569246561
+         ],
+         "walls": [
+          0.560082934,
+          0.556967821,
+          0.611079187,
+          0.594169991,
+          0.578473773,
+          0.575890506,
+          0.573430596
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.575890506,
+         "min": 0.556967821,
+         "max": 0.611079187,
+         "spread": 0.09396120518784866,
+         "median_thread_cpu": 0.576001460999997,
+         "spread_thread_cpu": 0.08892137688519017
+        }
+       },
+       "load_1min_max": 6.3,
+       "meets_rule": true,
+       "misses": []
+      }
+     ],
+     "measurements": 1,
+     "label": "authoritative",
+     "used_try": 1,
+     "median_wall": {
+      "S": 1.71969858,
+      "P2": 0.575890506
+     },
+     "spread": {
+      "S": 0.04444924935624468,
+      "P2": 0.09396120518784866
+     },
+     "median_thread_cpu": {
+      "S": 1.7196875570000003,
+      "P2": 0.576001460999997
+     },
+     "speedup_equal_tolerance": 2.9861554619898523,
+     "thread_cpu_speedup_equal_tolerance": 2.9855611025959
     },
     "1e-5": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/fhn3d__1e-5__try1.log"
+       ],
+       "invocations": 1,
+       "split_long_cell": false,
+       "process_complete": true,
+       "load_before": [
+        "6.30 7.57 7.31 11/4959 1353711"
+       ],
+       "load_after": [
+        "6.94 7.60 7.33 11/4985 1355071"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 23.85071849822998,
+       "longest_process_seconds_under_the_lock": 23.805250845,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          2.100621186,
+          2.103161242
+         ],
+         "walls": [
+          2.0891373460000002,
+          2.154240186,
+          2.122254501,
+          2.124129756,
+          2.122409269,
+          2.096697238,
+          2.172633494
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 2.122409269,
+         "min": 2.0891373460000002,
+         "max": 2.172633494,
+         "spread": 0.039340267317688395,
+         "median_thread_cpu": 2.1217978609999992,
+         "spread_thread_cpu": 0.03910314763014125
+        },
+        "P2": {
+         "warm_up_walls": [
+          0.521805564,
+          0.524222137
+         ],
+         "walls": [
+          0.520445928,
+          0.521294309,
+          0.52464904,
+          0.520313515,
+          0.517219208,
+          0.515665251,
+          0.552879097
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.520445928,
+         "min": 0.515665251,
+         "max": 0.552879097,
+         "spread": 0.0715037701284503,
+         "median_thread_cpu": 0.5199655750000005,
+         "spread_thread_cpu": 0.06905352916873085
+        }
+       },
+       "load_1min_max": 6.94,
+       "meets_rule": true,
+       "misses": []
+      }
+     ],
+     "measurements": 1,
+     "label": "authoritative",
+     "used_try": 1,
+     "median_wall": {
+      "S": 2.122409269,
+      "P2": 0.520445928
+     },
+     "spread": {
+      "S": 0.039340267317688395,
+      "P2": 0.0715037701284503
+     },
+     "median_thread_cpu": {
+      "S": 2.1217978609999992,
+      "P2": 0.5199655750000005
+     },
+     "speedup_equal_tolerance": 4.0780591312456185,
+     "thread_cpu_speedup_equal_tolerance": 4.08065064884343
     },
     "1e-6": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/fhn3d__1e-6__try1.log"
+       ],
+       "invocations": 1,
+       "split_long_cell": false,
+       "process_complete": true,
+       "load_before": [
+        "6.94 7.60 7.33 10/4985 1355074"
+       ],
+       "load_after": [
+        "8.39 7.92 7.44 4/4958 1357041"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 33.67612981796265,
+       "longest_process_seconds_under_the_lock": 33.653591991,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          3.218160156,
+          3.19518427
+         ],
+         "walls": [
+          3.248005081,
+          3.127257241,
+          3.183624014,
+          3.1073123049999998,
+          3.113249967,
+          3.09134219,
+          3.094939247
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 3.113249967,
+         "min": 3.09134219,
+         "max": 3.248005081,
+         "spread": 0.050321333866732154,
+         "median_thread_cpu": 3.1127666950000012,
+         "spread_thread_cpu": 0.04991916202701401
+        },
+        "P2": {
+         "warm_up_walls": [
+          0.604195778,
+          0.593618413
+         ],
+         "walls": [
+          0.58267874,
+          0.583634127,
+          0.587305431,
+          0.580538301,
+          0.580970172,
+          0.579847625,
+          0.580212016
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.580970172,
+         "min": 0.579847625,
+         "max": 0.587305431,
+         "spread": 0.012836813935432147,
+         "median_thread_cpu": 0.5809965470000051,
+         "spread_thread_cpu": 0.013334463070397436
+        }
+       },
+       "load_1min_max": 8.39,
+       "meets_rule": false,
+       "misses": [
+        "1-minute load average 8.39 above 8.0"
+       ]
+      }
+     ],
+     "measurements": 1,
+     "label": "diagnostic_only",
+     "used_try": 1,
+     "median_wall": {
+      "S": 3.113249967,
+      "P2": 0.580970172
+     },
+     "spread": {
+      "S": 0.050321333866732154,
+      "P2": 0.012836813935432147
+     },
+     "median_thread_cpu": {
+      "S": 3.1127666950000012,
+      "P2": 0.5809965470000051
+     },
+     "speedup_equal_tolerance": 5.358708789269821,
+     "thread_cpu_speedup_equal_tolerance": 5.357633726177677
     },
     "1e-7": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/fhn3d__1e-7__try1.log"
+       ],
+       "invocations": 1,
+       "split_long_cell": false,
+       "process_complete": true,
+       "load_before": [
+        "8.39 7.92 7.44 4/4958 1357044"
+       ],
+       "load_after": [
+        "5.78 7.30 7.26 11/4965 1360487"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 46.487895250320435,
+       "longest_process_seconds_under_the_lock": 46.47533298,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          4.54512503,
+          4.580596662
+         ],
+         "walls": [
+          4.56677204,
+          4.520972771,
+          4.59394196,
+          4.551701529,
+          4.509664114,
+          4.431240852,
+          4.468741198
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 4.520972771,
+         "min": 4.431240852,
+         "max": 4.59394196,
+         "spread": 0.03598807518675061,
+         "median_thread_cpu": 4.520701894999998,
+         "spread_thread_cpu": 0.03606086262407743
+        },
+        "P2": {
+         "warm_up_walls": [
+          0.628580731,
+          0.629947668
+         ],
+         "walls": [
+          0.635444464,
+          0.636259364,
+          0.645175562,
+          0.644597958,
+          0.621378761,
+          0.624491401,
+          0.639372284
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.636259364,
+         "min": 0.621378761,
+         "max": 0.645175562,
+         "spread": 0.037401101416245766,
+         "median_thread_cpu": 0.6359985639999994,
+         "spread_thread_cpu": 0.039180278715219806
+        }
+       },
+       "load_1min_max": 8.39,
+       "meets_rule": false,
+       "misses": [
+        "1-minute load average 8.39 above 8.0"
+       ]
+      }
+     ],
+     "measurements": 1,
+     "label": "diagnostic_only",
+     "used_try": 1,
+     "median_wall": {
+      "S": 4.520972771,
+      "P2": 0.636259364
+     },
+     "spread": {
+      "S": 0.03598807518675061,
+      "P2": 0.037401101416245766
+     },
+     "median_thread_cpu": {
+      "S": 4.520701894999998,
+      "P2": 0.6359985639999994
+     },
+     "speedup_equal_tolerance": 7.105550074073252,
+     "thread_cpu_speedup_equal_tolerance": 7.108037896450349
     }
    },
    "T": {
     "cells": {
-     "1e-3": "NOT_RUN",
-     "1e-4": "NOT_RUN",
-     "1e-5": "NOT_RUN",
-     "1e-6": "NOT_RUN",
-     "1e-7": "NOT_RUN"
+     "1e-3": "authoritative",
+     "1e-4": "authoritative",
+     "1e-5": "authoritative",
+     "1e-6": "diagnostic_only",
+     "1e-7": "diagnostic_only"
     },
-    "label": "NOT_RUN",
+    "label": "diagnostic_only",
     "wall": {
-     "points_A": [],
-     "points_X": [],
-     "status": "NOT_DECIDABLE",
-     "reason": "fewer than 4 completed tolerances (A 0, X 0)"
+     "points_A": [
+      [
+       0.0007771260816617173,
+       1.575322124
+      ],
+      [
+       5.134263094978319e-05,
+       1.71969858
+      ],
+      [
+       1.7814099018689474e-05,
+       2.122409269
+      ],
+      [
+       2.8861980148884637e-06,
+       3.113249967
+      ],
+      [
+       4.790852687583526e-07,
+       4.520972771
+      ]
+     ],
+     "points_X": [
+      [
+       0.0007771256954868715,
+       0.60176579
+      ],
+      [
+       5.1342628708303725e-05,
+       0.575890506
+      ],
+      [
+       1.781412222459168e-05,
+       0.520445928
+      ],
+      [
+       2.8861909843874993e-06,
+       0.580970172
+      ],
+      [
+       4.790814828731217e-07,
+       0.636259364
+      ]
+     ],
+     "status": "OK",
+     "range": [
+      4.790852687583526e-07,
+      0.0007771256954868715
+     ],
+     "floor_10_u_ref": 6.421332227456235e-11,
+     "geometric_mean_ratio": 0.251773989317248,
+     "min_ratio": 0.1407350014492919,
+     "max_ratio": 0.3819953844241114,
+     "ratio_at_points_of_A": [
+      {
+       "E": 5.134263094978319e-05,
+       "ratio": 0.3348787474178686
+      },
+      {
+       "E": 1.7814099018689474e-05,
+       "ratio": 0.24521470791783648
+      },
+      {
+       "E": 2.8861980148884637e-06,
+       "ratio": 0.18661209109994048
+      },
+      {
+       "E": 4.790852687583526e-07,
+       "ratio": 0.1407350014492919
+      }
+     ],
+     "speedup": 3.9718161622325066,
+     "speedup_min": 2.617832677501012,
+     "speedup_max": 7.105552916488291
     },
     "thread_cpu": {
-     "points_A": [],
-     "points_X": [],
-     "status": "NOT_DECIDABLE",
-     "reason": "fewer than 4 completed tolerances (A 0, X 0)",
+     "points_A": [
+      [
+       0.0007771260816617173,
+       1.57460106
+      ],
+      [
+       5.134263094978319e-05,
+       1.7196875570000003
+      ],
+      [
+       1.7814099018689474e-05,
+       2.1217978609999992
+      ],
+      [
+       2.8861980148884637e-06,
+       3.1127666950000012
+      ],
+      [
+       4.790852687583526e-07,
+       4.520701894999998
+      ]
+     ],
+     "points_X": [
+      [
+       0.0007771256954868715,
+       0.6020175949999995
+      ],
+      [
+       5.1342628708303725e-05,
+       0.576001460999997
+      ],
+      [
+       1.781412222459168e-05,
+       0.5199655750000005
+      ],
+      [
+       2.8861909843874993e-06,
+       0.5809965470000051
+      ],
+      [
+       4.790814828731217e-07,
+       0.6359985639999994
+      ]
+     ],
+     "status": "OK",
+     "range": [
+      4.790852687583526e-07,
+      0.0007771256954868715
+     ],
+     "floor_10_u_ref": 6.421332227456235e-11,
+     "geometric_mean_ratio": 0.251798048208353,
+     "min_ratio": 0.1406857443002582,
+     "max_ratio": 0.3823302299157897,
+     "ratio_at_points_of_A": [
+      {
+       "E": 5.134263094978319e-05,
+       "ratio": 0.3349454143947449
+      },
+      {
+       "E": 1.7814099018689474e-05,
+       "ratio": 0.2450589784540561
+      },
+      {
+       "E": 2.8861980148884637e-06,
+       "ratio": 0.18664953645088198
+      },
+      {
+       "E": 4.790852687583526e-07,
+       "ratio": 0.1406857443002582
+      }
+     ],
+     "speedup": 3.9714366617033474,
+     "speedup_min": 2.615539975011276,
+     "speedup_max": 7.108040725617177,
      "label": "exploratory, never used for a verdict"
     },
     "speedup_equal_tolerance": {
-     "1e-3": null,
-     "1e-4": null,
-     "1e-5": null,
-     "1e-6": null,
-     "1e-7": null
+     "1e-3": 2.617832635517549,
+     "1e-4": 2.9861554619898523,
+     "1e-5": 4.0780591312456185,
+     "1e-6": 5.358708789269821,
+     "1e-7": 7.105550074073252
     },
-    "speedup_equal_tolerance_geometric_mean": null
+    "speedup_equal_tolerance_geometric_mean": 4.138406372992551
    }
   },
   "cusp1d": {
@@ -3366,66 +3925,741 @@
    },
    "timing_cells": {
     "1e-3": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/cusp1d__1e-3__try1__round0.log",
+        "logs/timing/cusp1d__1e-3__try1__round1.log",
+        "logs/timing/cusp1d__1e-3__try1__round2.log",
+        "logs/timing/cusp1d__1e-3__try1__round3.log",
+        "logs/timing/cusp1d__1e-3__try1__round4.log",
+        "logs/timing/cusp1d__1e-3__try1__round5.log",
+        "logs/timing/cusp1d__1e-3__try1__round6.log",
+        "logs/timing/cusp1d__1e-3__try1__round7.log",
+        "logs/timing/cusp1d__1e-3__try1__round8.log"
+       ],
+       "invocations": 9,
+       "split_long_cell": true,
+       "process_complete": true,
+       "load_before": [
+        "5.78 7.30 7.26 9/4973 1360498",
+        "5.72 7.24 7.24 2/4936 1361563",
+        "4.83 6.96 7.15 3/4937 1361873",
+        "4.63 6.85 7.11 3/4945 1362696",
+        "5.16 6.86 7.11 6/4937 1363620",
+        "5.21 6.81 7.09 7/4945 1363902",
+        "6.00 6.90 7.11 8/5153 1364853",
+        "6.14 6.89 7.10 9/5133 1365359",
+        "6.60 6.96 7.12 7/4957 1366473"
+       ],
+       "load_after": [
+        "5.72 7.24 7.24 2/4943 1361553",
+        "4.83 6.96 7.15 3/4937 1361870",
+        "4.63 6.85 7.11 3/4945 1362693",
+        "5.16 6.86 7.11 6/4937 1363617",
+        "5.21 6.81 7.09 6/4945 1363899",
+        "6.00 6.90 7.11 7/5153 1364850",
+        "6.14 6.89 7.10 10/5133 1365356",
+        "6.60 6.96 7.12 7/4957 1366470",
+        "6.70 6.97 7.12 7/4958 1366807"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 13.134202718734741,
+       "longest_process_seconds_under_the_lock": 13.102603034,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          8.715103778,
+          8.605974073
+         ],
+         "walls": [
+          8.775547844,
+          8.896441083,
+          8.880773512,
+          9.019197849,
+          8.958763805,
+          9.000531623,
+          9.039447348
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 8.958763805,
+         "min": 8.775547844,
+         "max": 9.039447348,
+         "spread": 0.02945713379034658,
+         "median_thread_cpu": 8.955774768000001,
+         "spread_thread_cpu": 0.028946484443343468
+        },
+        "P2": {
+         "warm_up_walls": [
+          3.882704177,
+          3.875766579
+         ],
+         "walls": [
+          4.014490632,
+          3.9551641589999997,
+          4.016835282,
+          4.044098985,
+          4.060309434,
+          4.101910011,
+          4.048093817
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 4.044098985,
+         "min": 3.9551641589999997,
+         "max": 4.101910011,
+         "spread": 0.036286414487948164,
+         "median_thread_cpu": 4.043475935,
+         "spread_thread_cpu": 0.03639739752772881
+        }
+       },
+       "load_1min_max": 6.7,
+       "meets_rule": true,
+       "misses": []
+      }
+     ],
+     "measurements": 1,
+     "label": "authoritative",
+     "used_try": 1,
+     "median_wall": {
+      "S": 8.958763805,
+      "P2": 4.044098985
+     },
+     "spread": {
+      "S": 0.02945713379034658,
+      "P2": 0.036286414487948164
+     },
+     "median_thread_cpu": {
+      "S": 8.955774768000001,
+      "P2": 4.043475935
+     },
+     "speedup_equal_tolerance": 2.2152681816713744,
+     "thread_cpu_speedup_equal_tolerance": 2.2148703026719017
     },
     "1e-4": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/cusp1d__1e-4__try1__round0.log",
+        "logs/timing/cusp1d__1e-4__try1__round1.log",
+        "logs/timing/cusp1d__1e-4__try1__round2.log",
+        "logs/timing/cusp1d__1e-4__try1__round3.log",
+        "logs/timing/cusp1d__1e-4__try1__round4.log",
+        "logs/timing/cusp1d__1e-4__try1__round5.log",
+        "logs/timing/cusp1d__1e-4__try1__round6.log",
+        "logs/timing/cusp1d__1e-4__try1__round7.log",
+        "logs/timing/cusp1d__1e-4__try1__round8.log"
+       ],
+       "invocations": 9,
+       "split_long_cell": true,
+       "process_complete": true,
+       "load_before": [
+        "6.70 6.97 7.12 9/4958 1366810",
+        "7.08 7.03 7.14 9/4971 1367328",
+        "7.29 7.08 7.16 8/4960 1368180",
+        "7.15 7.06 7.15 4/4963 1368662",
+        "7.16 7.07 7.15 6/4946 1369273",
+        "6.67 6.97 7.12 9/4960 1369730",
+        "6.70 6.96 7.11 6/4944 1370460",
+        "6.46 6.89 7.08 5/4953 1371079",
+        "5.90 6.75 7.04 5/4953 1371555"
+       ],
+       "load_after": [
+        "7.08 7.03 7.14 9/4971 1367318",
+        "7.29 7.08 7.16 7/4960 1368177",
+        "7.15 7.06 7.15 5/4963 1368659",
+        "7.16 7.07 7.15 5/4946 1369270",
+        "6.67 6.97 7.12 4/4960 1369720",
+        "6.70 6.96 7.11 6/4944 1370457",
+        "6.46 6.89 7.08 6/4953 1371076",
+        "5.90 6.75 7.04 6/4953 1371552",
+        "5.64 6.65 7.00 4/4961 1372166"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 14.73832631111145,
+       "longest_process_seconds_under_the_lock": 14.714146168,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          10.714878349,
+          10.864102721
+         ],
+         "walls": [
+          10.763615724,
+          10.690055304,
+          10.546245412,
+          10.562538258,
+          10.678592069,
+          10.563068817,
+          10.585107025
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 10.585107025,
+         "min": 10.546245412,
+         "max": 10.763615724,
+         "spread": 0.020535485516264766,
+         "median_thread_cpu": 10.583216917,
+         "spread_thread_cpu": 0.020431280082020026
+        },
+        "P2": {
+         "warm_up_walls": [
+          3.883606324,
+          3.849882508
+         ],
+         "walls": [
+          3.750022434,
+          3.793327116,
+          3.707082427,
+          3.731355007,
+          3.783513082,
+          3.7598432280000003,
+          3.767227301
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 3.7598432280000003,
+         "min": 3.707082427,
+         "max": 3.793327116,
+         "spread": 0.022938373695404496,
+         "median_thread_cpu": 3.7587308200000003,
+         "spread_thread_cpu": 0.021704546536269256
+        }
+       },
+       "load_1min_max": 7.29,
+       "meets_rule": true,
+       "misses": []
+      }
+     ],
+     "measurements": 1,
+     "label": "authoritative",
+     "used_try": 1,
+     "median_wall": {
+      "S": 10.585107025,
+      "P2": 3.7598432280000003
+     },
+     "spread": {
+      "S": 0.020535485516264766,
+      "P2": 0.022938373695404496
+     },
+     "median_thread_cpu": {
+      "S": 10.583216917,
+      "P2": 3.7587308200000003
+     },
+     "speedup_equal_tolerance": 2.8153054218248905,
+     "thread_cpu_speedup_equal_tolerance": 2.8156357621267487
     },
     "1e-5": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/cusp1d__1e-5__try1__round0.log",
+        "logs/timing/cusp1d__1e-5__try1__round1.log",
+        "logs/timing/cusp1d__1e-5__try1__round2.log",
+        "logs/timing/cusp1d__1e-5__try1__round3.log",
+        "logs/timing/cusp1d__1e-5__try1__round4.log",
+        "logs/timing/cusp1d__1e-5__try1__round5.log",
+        "logs/timing/cusp1d__1e-5__try1__round6.log",
+        "logs/timing/cusp1d__1e-5__try1__round7.log",
+        "logs/timing/cusp1d__1e-5__try1__round8.log"
+       ],
+       "invocations": 9,
+       "split_long_cell": true,
+       "process_complete": true,
+       "load_before": [
+        "5.64 6.65 7.00 4/4962 1372170",
+        "5.42 6.55 6.96 3/4945 1372671",
+        "5.89 6.59 6.96 5/4954 1373377",
+        "5.35 6.42 6.90 4/4952 1374206",
+        "6.38 6.61 6.95 7/4964 1374788",
+        "6.45 6.61 6.95 10/4949 1375314",
+        "6.13 6.53 6.92 4/4951 1375694",
+        "5.66 6.40 6.87 4/4952 1376507",
+        "5.77 6.38 6.85 18/4964 1377458"
+       ],
+       "load_after": [
+        "5.42 6.55 6.96 3/4945 1372668",
+        "5.89 6.59 6.96 6/4954 1373374",
+        "5.35 6.42 6.90 4/4952 1374203",
+        "6.38 6.61 6.95 7/4965 1374772",
+        "6.45 6.61 6.95 10/4949 1375311",
+        "6.13 6.53 6.92 5/4951 1375691",
+        "5.66 6.40 6.87 7/4952 1376504",
+        "5.77 6.38 6.85 7/4965 1377455",
+        "5.68 6.33 6.83 5/4944 1377933"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 16.441314220428467,
+       "longest_process_seconds_under_the_lock": 16.427674838,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          12.569785268,
+          12.513930864
+         ],
+         "walls": [
+          12.442519752,
+          12.556370747999999,
+          12.493784782,
+          12.468988022,
+          12.458639731,
+          12.698904354,
+          12.734517476
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 12.493784782,
+         "min": 12.442519752,
+         "max": 12.734517476,
+         "spread": 0.02337143860687321,
+         "median_thread_cpu": 12.492333524000001,
+         "spread_thread_cpu": 0.023211124522326675
+        },
+        "P2": {
+         "warm_up_walls": [
+          3.6880113740000002,
+          3.680810988
+         ],
+         "walls": [
+          3.670048564,
+          3.665045363,
+          3.69541917,
+          3.701734375,
+          3.685935132,
+          3.686021289,
+          3.6930037049999997
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 3.686021289,
+         "min": 3.665045363,
+         "max": 3.701734375,
+         "spread": 0.009953554014863987,
+         "median_thread_cpu": 3.6854257340000003,
+         "spread_thread_cpu": 0.009902697716388204
+        }
+       },
+       "load_1min_max": 6.45,
+       "meets_rule": true,
+       "misses": []
+      }
+     ],
+     "measurements": 1,
+     "label": "authoritative",
+     "used_try": 1,
+     "median_wall": {
+      "S": 12.493784782,
+      "P2": 3.686021289
+     },
+     "spread": {
+      "S": 0.02337143860687321,
+      "P2": 0.009953554014863987
+     },
+     "median_thread_cpu": {
+      "S": 12.492333524000001,
+      "P2": 3.6854257340000003
+     },
+     "speedup_equal_tolerance": 3.3895042384276364,
+     "thread_cpu_speedup_equal_tolerance": 3.389658190301224
     },
     "1e-6": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/cusp1d__1e-6__try1__round0.log",
+        "logs/timing/cusp1d__1e-6__try1__round1.log",
+        "logs/timing/cusp1d__1e-6__try1__round2.log",
+        "logs/timing/cusp1d__1e-6__try1__round3.log",
+        "logs/timing/cusp1d__1e-6__try1__round4.log",
+        "logs/timing/cusp1d__1e-6__try1__round5.log",
+        "logs/timing/cusp1d__1e-6__try1__round6.log",
+        "logs/timing/cusp1d__1e-6__try1__round7.log",
+        "logs/timing/cusp1d__1e-6__try1__round8.log"
+       ],
+       "invocations": 9,
+       "split_long_cell": true,
+       "process_complete": true,
+       "load_before": [
+        "5.68 6.33 6.83 5/4944 1377936",
+        "6.33 6.45 6.86 3/4932 1378639",
+        "5.54 6.26 6.78 3/4947 1379287",
+        "4.95 6.08 6.71 2/4932 1379833",
+        "4.29 5.88 6.64 3/4938 1380312",
+        "3.80 5.66 6.55 2/4939 1380742",
+        "3.98 5.57 6.50 2/4932 1381749",
+        "3.61 5.41 6.43 3/4938 1382266",
+        "3.28 5.22 6.35 2/4932 1382882"
+       ],
+       "load_after": [
+        "6.33 6.45 6.86 3/4932 1378636",
+        "5.54 6.26 6.78 2/4947 1379284",
+        "4.95 6.08 6.71 3/4932 1379830",
+        "4.29 5.88 6.64 2/4938 1380309",
+        "3.80 5.66 6.55 2/4939 1380739",
+        "3.98 5.57 6.50 2/4932 1381746",
+        "3.61 5.41 6.43 3/4938 1382263",
+        "3.28 5.22 6.35 2/4932 1382879",
+        "3.84 5.22 6.32 2/4934 1383316"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 19.29520845413208,
+       "longest_process_seconds_under_the_lock": 19.272733172,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          15.594668923,
+          14.947313439
+         ],
+         "walls": [
+          14.761404164,
+          14.752061579,
+          14.847492576,
+          14.902881692,
+          14.884171829,
+          14.777095729,
+          14.78399388
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 14.78399388,
+         "min": 14.752061579,
+         "max": 14.902881692,
+         "spread": 0.010201581130524655,
+         "median_thread_cpu": 14.783047398,
+         "spread_thread_cpu": 0.010098164876356513
+        },
+        "P2": {
+         "warm_up_walls": [
+          3.677919348,
+          3.681826981
+         ],
+         "walls": [
+          3.607181225,
+          3.645230853,
+          3.590995241,
+          3.602433849,
+          3.662784083,
+          3.655462662,
+          3.6044221910000003
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 3.607181225,
+         "min": 3.590995241,
+         "max": 3.662784083,
+         "spread": 0.01990164550160635,
+         "median_thread_cpu": 3.6067798249999985,
+         "spread_thread_cpu": 0.019957760243930842
+        }
+       },
+       "load_1min_max": 6.33,
+       "meets_rule": true,
+       "misses": []
+      }
+     ],
+     "measurements": 1,
+     "label": "authoritative",
+     "used_try": 1,
+     "median_wall": {
+      "S": 14.78399388,
+      "P2": 3.607181225
+     },
+     "spread": {
+      "S": 0.010201581130524655,
+      "P2": 0.01990164550160635
+     },
+     "median_thread_cpu": {
+      "S": 14.783047398,
+      "P2": 3.6067798249999985
+     },
+     "speedup_equal_tolerance": 4.098489362701759,
+     "thread_cpu_speedup_equal_tolerance": 4.098683067797189
     },
     "1e-7": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/cusp1d__1e-7__try1__round0.log",
+        "logs/timing/cusp1d__1e-7__try1__round1.log",
+        "logs/timing/cusp1d__1e-7__try1__round2.log",
+        "logs/timing/cusp1d__1e-7__try1__round3.log",
+        "logs/timing/cusp1d__1e-7__try1__round4.log",
+        "logs/timing/cusp1d__1e-7__try1__round5.log",
+        "logs/timing/cusp1d__1e-7__try1__round6.log",
+        "logs/timing/cusp1d__1e-7__try1__round7.log",
+        "logs/timing/cusp1d__1e-7__try1__round8.log"
+       ],
+       "invocations": 9,
+       "split_long_cell": true,
+       "process_complete": true,
+       "load_before": [
+        "3.84 5.22 6.32 2/4934 1383319",
+        "3.39 5.03 6.23 4/4937 1384087",
+        "2.87 4.77 6.11 3/4936 1384718",
+        "3.29 4.72 6.06 3/4937 1386063",
+        "3.20 4.61 6.00 3/4930 1387054",
+        "3.06 4.46 5.91 5/4943 1387879",
+        "3.28 4.39 5.85 4/4958 1389414",
+        "4.15 4.52 5.85 7/4953 1390270",
+        "5.68 4.84 5.92 8/4956 1392398"
+       ],
+       "load_after": [
+        "3.39 5.03 6.23 3/4937 1384084",
+        "2.87 4.77 6.11 3/4935 1384714",
+        "3.29 4.72 6.06 3/4937 1386060",
+        "3.20 4.61 6.00 2/4930 1387051",
+        "3.06 4.46 5.91 2/4943 1387876",
+        "3.28 4.39 5.85 5/4958 1389411",
+        "4.15 4.52 5.85 8/4953 1390267",
+        "5.68 4.84 5.92 8/4956 1392395",
+        "6.21 5.01 5.95 8/4962 1393235"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 24.30422353744507,
+       "longest_process_seconds_under_the_lock": 24.274920777,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          19.404290252,
+          19.423850561
+         ],
+         "walls": [
+          19.834661766,
+          19.82885793,
+          19.892993087,
+          19.981943032,
+          20.02019699,
+          20.339185379,
+          20.361525393
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 19.981943032,
+         "min": 19.82885793,
+         "max": 20.361525393,
+         "spread": 0.02665744077775425,
+         "median_thread_cpu": 19.977605014,
+         "spread_thread_cpu": 0.026538581958571048
+        },
+        "P2": {
+         "warm_up_walls": [
+          3.73994366,
+          3.729752798
+         ],
+         "walls": [
+          3.9064124319999998,
+          3.869745569,
+          3.806306477,
+          3.813504728,
+          3.858080902,
+          3.904711803,
+          3.913185732
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 3.869745569,
+         "min": 3.806306477,
+         "max": 3.913185732,
+         "spread": 0.027619194361560868,
+         "median_thread_cpu": 3.868944506,
+         "spread_thread_cpu": 0.027563328146635927
+        }
+       },
+       "load_1min_max": 6.21,
+       "meets_rule": true,
+       "misses": []
+      }
+     ],
+     "measurements": 1,
+     "label": "authoritative",
+     "used_try": 1,
+     "median_wall": {
+      "S": 19.981943032,
+      "P2": 3.869745569
+     },
+     "spread": {
+      "S": 0.02665744077775425,
+      "P2": 0.027619194361560868
+     },
+     "median_thread_cpu": {
+      "S": 19.977605014,
+      "P2": 3.868944506
+     },
+     "speedup_equal_tolerance": 5.163632253260421,
+     "thread_cpu_speedup_equal_tolerance": 5.163580140014549
     }
    },
    "T": {
     "cells": {
-     "1e-3": "NOT_RUN",
-     "1e-4": "NOT_RUN",
-     "1e-5": "NOT_RUN",
-     "1e-6": "NOT_RUN",
-     "1e-7": "NOT_RUN"
+     "1e-3": "authoritative",
+     "1e-4": "authoritative",
+     "1e-5": "authoritative",
+     "1e-6": "authoritative",
+     "1e-7": "authoritative"
     },
-    "label": "NOT_RUN",
+    "label": "authoritative",
     "wall": {
-     "points_A": [],
-     "points_X": [],
-     "status": "NOT_DECIDABLE",
-     "reason": "fewer than 4 completed tolerances (A 0, X 0)"
+     "points_A": [
+      [
+       0.011606081977328523,
+       8.958763805
+      ],
+      [
+       0.0018111310650613752,
+       10.585107025
+      ],
+      [
+       0.00015465682143729146,
+       12.493784782
+      ],
+      [
+       6.70222885016728e-07,
+       14.78399388
+      ],
+      [
+       9.473993564474334e-07,
+       19.981943032
+      ]
+     ],
+     "points_X": [
+      [
+       0.01185668546754439,
+       4.044098985
+      ],
+      [
+       5.478702725837815e-05,
+       3.7598432280000003
+      ],
+      [
+       0.00015213811352813257,
+       3.686021289
+      ],
+      [
+       9.392505104351492e-07,
+       3.607181225
+      ],
+      [
+       1.0359237254898947e-06,
+       3.869745569
+      ]
+     ],
+     "status": "OK",
+     "range": [
+      9.392505104351492e-07,
+      0.011606081977328523
+     ],
+     "floor_10_u_ref": 1.1934590119647484e-09,
+     "geometric_mean_ratio": 0.31175265538756963,
+     "min_ratio": 0.24655266382040597,
+     "max_ratio": 0.45128192837406567,
+     "ratio_at_points_of_A": [
+      {
+       "E": 0.011606081977328523,
+       "ratio": 0.4512819283740657
+      },
+      {
+       "E": 0.0018111310650613752,
+       "ratio": 0.37244866720224
+      },
+      {
+       "E": 0.00015465682143729146,
+       "ratio": 0.3051998428272492
+      },
+      {
+       "E": 9.473993564474334e-07,
+       "ratio": 0.18164395298063424
+      }
+     ],
+     "speedup": 3.207671154418249,
+     "speedup_min": 2.2159096944185728,
+     "speedup_max": 4.055928597585223
     },
     "thread_cpu": {
-     "points_A": [],
-     "points_X": [],
-     "status": "NOT_DECIDABLE",
-     "reason": "fewer than 4 completed tolerances (A 0, X 0)",
+     "points_A": [
+      [
+       0.011606081977328523,
+       8.955774768000001
+      ],
+      [
+       0.0018111310650613752,
+       10.583216917
+      ],
+      [
+       0.00015465682143729146,
+       12.492333524000001
+      ],
+      [
+       6.70222885016728e-07,
+       14.783047398
+      ],
+      [
+       9.473993564474334e-07,
+       19.977605014
+      ]
+     ],
+     "points_X": [
+      [
+       0.01185668546754439,
+       4.043475935
+      ],
+      [
+       5.478702725837815e-05,
+       3.7587308200000003
+      ],
+      [
+       0.00015213811352813257,
+       3.6854257340000003
+      ],
+      [
+       9.392505104351492e-07,
+       3.6067798249999985
+      ],
+      [
+       1.0359237254898947e-06,
+       3.868944506
+      ]
+     ],
+     "status": "OK",
+     "range": [
+      9.392505104351492e-07,
+      0.011606081977328523
+     ],
+     "floor_10_u_ref": 1.1934590119647484e-09,
+     "geometric_mean_ratio": 0.3117382938461084,
+     "min_ratio": 0.24654180894210323,
+     "max_ratio": 0.4513627422649175,
+     "ratio_at_points_of_A": [
+      {
+       "E": 0.011606081977328523,
+       "ratio": 0.4513627422649174
+      },
+      {
+       "E": 0.0018111310650613752,
+       "ratio": 0.37243933469167706
+      },
+      {
+       "E": 0.00015465682143729146,
+       "ratio": 0.30515334262883964
+      },
+      {
+       "E": 9.473993564474334e-07,
+       "ratio": 0.1816616448315425
+      }
+     ],
+     "speedup": 3.2078189293409567,
+     "speedup_min": 2.2155129485921807,
+     "speedup_max": 4.056107174239301,
      "label": "exploratory, never used for a verdict"
     },
     "speedup_equal_tolerance": {
-     "1e-3": null,
-     "1e-4": null,
-     "1e-5": null,
-     "1e-6": null,
-     "1e-7": null
+     "1e-3": 2.2152681816713744,
+     "1e-4": 2.8153054218248905,
+     "1e-5": 3.3895042384276364,
+     "1e-6": 4.098489362701759,
+     "1e-7": 5.163632253260421
     },
-    "speedup_equal_tolerance_geometric_mean": null
+    "speedup_equal_tolerance_geometric_mean": 3.389482726207445
    }
   },
   "burgers2d": {
@@ -5045,66 +6279,613 @@
    },
    "timing_cells": {
     "1e-3": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/burgers2d__1e-3__try1.log"
+       ],
+       "invocations": 1,
+       "split_long_cell": false,
+       "process_complete": true,
+       "load_before": [
+        "6.21 5.01 5.95 8/4962 1393238"
+       ],
+       "load_after": [
+        "6.60 5.11 5.98 8/4963 1393330"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 3.2702276706695557,
+       "longest_process_seconds_under_the_lock": 3.230451788,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          0.275159335,
+          0.268523411
+         ],
+         "walls": [
+          0.266488958,
+          0.266617961,
+          0.266633572,
+          0.268464674,
+          0.275144644,
+          0.267357703,
+          0.267738456
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.267357703,
+         "min": 0.266488958,
+         "max": 0.275144644,
+         "spread": 0.03237492656046643,
+         "median_thread_cpu": 0.2670005630000001,
+         "spread_thread_cpu": 0.03366339718167758
+        },
+        "P2": {
+         "warm_up_walls": [
+          0.09032557,
+          0.090910486
+         ],
+         "walls": [
+          0.08830359,
+          0.088362581,
+          0.089014023,
+          0.089054238,
+          0.091278437,
+          0.09100775,
+          0.088843374
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.089014023,
+         "min": 0.08830359,
+         "max": 0.091278437,
+         "spread": 0.03341998147864862,
+         "median_thread_cpu": 0.08900024699999998,
+         "spread_thread_cpu": 0.03375713103358385
+        }
+       },
+       "load_1min_max": 6.6,
+       "meets_rule": true,
+       "misses": []
+      }
+     ],
+     "measurements": 1,
+     "label": "authoritative",
+     "used_try": 1,
+     "median_wall": {
+      "S": 0.267357703,
+      "P2": 0.089014023
+     },
+     "spread": {
+      "S": 0.03237492656046643,
+      "P2": 0.03341998147864862
+     },
+     "median_thread_cpu": {
+      "S": 0.2670005630000001,
+      "P2": 0.08900024699999998
+     },
+     "speedup_equal_tolerance": 3.0035458907412824,
+     "thread_cpu_speedup_equal_tolerance": 2.999998000005552
     },
     "1e-4": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/burgers2d__1e-4__try1.log"
+       ],
+       "invocations": 1,
+       "split_long_cell": false,
+       "process_complete": true,
+       "load_before": [
+        "6.60 5.11 5.98 7/4962 1393346"
+       ],
+       "load_after": [
+        "6.63 5.14 5.99 7/4962 1393457"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 4.470358610153198,
+       "longest_process_seconds_under_the_lock": 4.462299588,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          0.41413703,
+          0.41060945
+         ],
+         "walls": [
+          0.412838601,
+          0.41366464,
+          0.41159269,
+          0.4123286,
+          0.41877211,
+          0.413038626,
+          0.411184676
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.412838601,
+         "min": 0.411184676,
+         "max": 0.41877211,
+         "spread": 0.018378693226896066,
+         "median_thread_cpu": 0.41294786299999986,
+         "spread_thread_cpu": 0.01686551892871657
+        },
+        "P2": {
+         "warm_up_walls": [
+          0.082440174,
+          0.0826189
+         ],
+         "walls": [
+          0.082131797,
+          0.082276138,
+          0.082374313,
+          0.082430147,
+          0.083080488,
+          0.083197527,
+          0.082469773
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.082430147,
+         "min": 0.082131797,
+         "max": 0.083197527,
+         "spread": 0.012928886321165812,
+         "median_thread_cpu": 0.08299961599999994,
+         "spread_thread_cpu": 0.012061706405971626
+        }
+       },
+       "load_1min_max": 6.63,
+       "meets_rule": true,
+       "misses": []
+      }
+     ],
+     "measurements": 1,
+     "label": "authoritative",
+     "used_try": 1,
+     "median_wall": {
+      "S": 0.412838601,
+      "P2": 0.082430147
+     },
+     "spread": {
+      "S": 0.018378693226896066,
+      "P2": 0.012928886321165812
+     },
+     "median_thread_cpu": {
+      "S": 0.41294786299999986,
+      "P2": 0.08299961599999994
+     },
+     "speedup_equal_tolerance": 5.008344835294301,
+     "thread_cpu_speedup_equal_tolerance": 4.975298476079698
     },
     "1e-5": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/burgers2d__1e-5__try1.log"
+       ],
+       "invocations": 1,
+       "split_long_cell": false,
+       "process_complete": true,
+       "load_before": [
+        "6.63 5.14 5.99 7/4962 1393460"
+       ],
+       "load_after": [
+        "6.66 5.17 5.99 7/4971 1393679"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 6.5735182762146,
+       "longest_process_seconds_under_the_lock": 6.55495285,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          0.659135533,
+          0.644773351
+         ],
+         "walls": [
+          0.641483843,
+          0.645060571,
+          0.637089895,
+          0.636755565,
+          0.638475615,
+          0.635784065,
+          0.635537515
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.637089895,
+         "min": 0.635537515,
+         "max": 0.645060571,
+         "spread": 0.014947742971186239,
+         "median_thread_cpu": 0.6369793620000004,
+         "spread_thread_cpu": 0.015584423283088572
+        },
+        "P2": {
+         "warm_up_walls": [
+          0.091988184,
+          0.089405474
+         ],
+         "walls": [
+          0.089284788,
+          0.084742555,
+          0.084921181,
+          0.085061234,
+          0.084719754,
+          0.084699617,
+          0.084801299
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.084801299,
+         "min": 0.084699617,
+         "max": 0.089284788,
+         "spread": 0.054069584476530236,
+         "median_thread_cpu": 0.08499967500000016,
+         "spread_thread_cpu": 0.058314387672659035
+        }
+       },
+       "load_1min_max": 6.66,
+       "meets_rule": true,
+       "misses": []
+      }
+     ],
+     "measurements": 1,
+     "label": "authoritative",
+     "used_try": 1,
+     "median_wall": {
+      "S": 0.637089895,
+      "P2": 0.084801299
+     },
+     "spread": {
+      "S": 0.014947742971186239,
+      "P2": 0.054069584476530236
+     },
+     "median_thread_cpu": {
+      "S": 0.6369793620000004,
+      "P2": 0.08499967500000016
+     },
+     "speedup_equal_tolerance": 7.51273745228832,
+     "thread_cpu_speedup_equal_tolerance": 7.493903500219256
     },
     "1e-6": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/burgers2d__1e-6__try1.log"
+       ],
+       "invocations": 1,
+       "split_long_cell": false,
+       "process_complete": true,
+       "load_before": [
+        "6.66 5.17 5.99 7/4971 1393682"
+       ],
+       "load_after": [
+        "6.95 5.28 6.02 9/4965 1394010"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 10.078927040100098,
+       "longest_process_seconds_under_the_lock": 10.057134564,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          1.008932534,
+          1.003889595
+         ],
+         "walls": [
+          1.007721097,
+          1.008467199,
+          1.006094453,
+          1.006372978,
+          1.006192181,
+          1.011162961,
+          1.010575701
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 1.007721097,
+         "min": 1.006094453,
+         "max": 1.011162961,
+         "spread": 0.00502967340377108,
+         "median_thread_cpu": 1.007924166,
+         "spread_thread_cpu": 0.004839248987706124
+        },
+        "P2": {
+         "warm_up_walls": [
+          0.109367003,
+          0.109520251
+         ],
+         "walls": [
+          0.109601716,
+          0.109378547,
+          0.109336671,
+          0.109608751,
+          0.109844957,
+          0.109804931,
+          0.109982207
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.109608751,
+         "min": 0.109336671,
+         "max": 0.109982207,
+         "spread": 0.005889456764268777,
+         "median_thread_cpu": 0.10999014599999946,
+         "spread_thread_cpu": 0.009093960108020738
+        }
+       },
+       "load_1min_max": 6.95,
+       "meets_rule": true,
+       "misses": []
+      }
+     ],
+     "measurements": 1,
+     "label": "authoritative",
+     "used_try": 1,
+     "median_wall": {
+      "S": 1.007721097,
+      "P2": 0.109608751
+     },
+     "spread": {
+      "S": 0.00502967340377108,
+      "P2": 0.005889456764268777
+     },
+     "median_thread_cpu": {
+      "S": 1.007924166,
+      "P2": 0.10999014599999946
+     },
+     "speedup_equal_tolerance": 9.193801478496912,
+     "thread_cpu_speedup_equal_tolerance": 9.163767870623655
     },
     "1e-7": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/burgers2d__1e-7__try1.log"
+       ],
+       "invocations": 1,
+       "split_long_cell": false,
+       "process_complete": true,
+       "load_before": [
+        "6.95 5.28 6.02 13/4965 1394013"
+       ],
+       "load_after": [
+        "6.80 5.36 6.03 5/4967 1394648"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 15.838382244110107,
+       "longest_process_seconds_under_the_lock": 15.807047897,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          1.616633576,
+          1.630632549
+         ],
+         "walls": [
+          1.632396463,
+          1.603136009,
+          1.604837286,
+          1.616756671,
+          1.609917217,
+          1.6004910780000001,
+          1.601892373
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 1.604837286,
+         "min": 1.6004910780000001,
+         "max": 1.632396463,
+         "spread": 0.01988076004859221,
+         "median_thread_cpu": 1.6049366429999994,
+         "spread_thread_cpu": 0.020480402851640836
+        },
+        "P2": {
+         "warm_up_walls": [
+          0.142925146,
+          0.142657384
+         ],
+         "walls": [
+          0.147575179,
+          0.14689825,
+          0.142226286,
+          0.141877733,
+          0.141547139,
+          0.141834849,
+          0.141540813
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.141877733,
+         "min": 0.141540813,
+         "max": 0.147575179,
+         "spread": 0.04253215689596628,
+         "median_thread_cpu": 0.14200055000000056,
+         "spread_thread_cpu": 0.035058040268152076
+        }
+       },
+       "load_1min_max": 6.95,
+       "meets_rule": true,
+       "misses": []
+      }
+     ],
+     "measurements": 1,
+     "label": "authoritative",
+     "used_try": 1,
+     "median_wall": {
+      "S": 1.604837286,
+      "P2": 0.141877733
+     },
+     "spread": {
+      "S": 0.01988076004859221,
+      "P2": 0.04253215689596628
+     },
+     "median_thread_cpu": {
+      "S": 1.6049366429999994,
+      "P2": 0.14200055000000056
+     },
+     "speedup_equal_tolerance": 11.31141055094248,
+     "thread_cpu_speedup_equal_tolerance": 11.3023269487336
     }
    },
    "T": {
     "cells": {
-     "1e-3": "NOT_RUN",
-     "1e-4": "NOT_RUN",
-     "1e-5": "NOT_RUN",
-     "1e-6": "NOT_RUN",
-     "1e-7": "NOT_RUN"
+     "1e-3": "authoritative",
+     "1e-4": "authoritative",
+     "1e-5": "authoritative",
+     "1e-6": "authoritative",
+     "1e-7": "authoritative"
     },
-    "label": "NOT_RUN",
+    "label": "authoritative",
     "wall": {
-     "points_A": [],
-     "points_X": [],
-     "status": "NOT_DECIDABLE",
-     "reason": "fewer than 4 completed tolerances (A 0, X 0)"
+     "points_A": [
+      [
+       0.0004704649212095605,
+       0.267357703
+      ],
+      [
+       3.215003408478204e-05,
+       0.412838601
+      ],
+      [
+       3.078583031095823e-06,
+       0.637089895
+      ],
+      [
+       3.79175061482334e-07,
+       1.007721097
+      ],
+      [
+       5.099087967767173e-08,
+       1.604837286
+      ]
+     ],
+     "points_X": [
+      [
+       0.0004704649035171051,
+       0.089014023
+      ],
+      [
+       3.2150039684856864e-05,
+       0.082430147
+      ],
+      [
+       3.0785865321552017e-06,
+       0.084801299
+      ],
+      [
+       3.7917533364866783e-07,
+       0.109608751
+      ],
+      [
+       5.099094805487628e-08,
+       0.141877733
+      ]
+     ],
+     "status": "OK",
+     "range": [
+      5.099094805487628e-08,
+      0.0004704649035171051
+     ],
+     "floor_10_u_ref": 8.237562904316179e-11,
+     "geometric_mean_ratio": 0.15567093227281134,
+     "min_ratio": 0.08840633150974449,
+     "max_ratio": 0.3329398085754399,
+     "ratio_at_points_of_A": [
+      {
+       "E": 3.215003408478204e-05,
+       "ratio": 0.1996667631706579
+      },
+      {
+       "E": 3.078583031095823e-06,
+       "ratio": 0.13310729220819612
+      },
+      {
+       "E": 3.79175061482334e-07,
+       "ratio": 0.10876894553981875
+      }
+     ],
+     "speedup": 6.423806843062471,
+     "speedup_min": 3.0035459090300183,
+     "speedup_max": 11.311407032988086
     },
     "thread_cpu": {
-     "points_A": [],
-     "points_X": [],
-     "status": "NOT_DECIDABLE",
-     "reason": "fewer than 4 completed tolerances (A 0, X 0)",
+     "points_A": [
+      [
+       0.0004704649212095605,
+       0.2670005630000001
+      ],
+      [
+       3.215003408478204e-05,
+       0.41294786299999986
+      ],
+      [
+       3.078583031095823e-06,
+       0.6369793620000004
+      ],
+      [
+       3.79175061482334e-07,
+       1.007924166
+      ],
+      [
+       5.099087967767173e-08,
+       1.6049366429999994
+      ]
+     ],
+     "points_X": [
+      [
+       0.0004704649035171051,
+       0.08900024699999998
+      ],
+      [
+       3.2150039684856864e-05,
+       0.08299961599999994
+      ],
+      [
+       3.0785865321552017e-06,
+       0.08499967500000016
+      ],
+      [
+       3.7917533364866783e-07,
+       0.10999014599999946
+      ],
+      [
+       5.099094805487628e-08,
+       0.14200055000000056
+      ]
+     ],
+     "status": "OK",
+     "range": [
+      5.099094805487628e-08,
+      0.0004704649035171051
+     ],
+     "floor_10_u_ref": 8.237562904316179e-11,
+     "geometric_mean_ratio": 0.15620398007433609,
+     "min_ratio": 0.08847738306032615,
+     "max_ratio": 0.3333335535179218,
+     "ratio_at_points_of_A": [
+      {
+       "E": 3.215003408478204e-05,
+       "ratio": 0.20099296686938609
+      },
+      {
+       "E": 3.078583031095823e-06,
+       "ratio": 0.13344182240048386
+      },
+      {
+       "E": 3.79175061482334e-07,
+       "ratio": 0.10912542804484501
+      }
+     ],
+     "speedup": 6.401885531496117,
+     "speedup_min": 2.999998018340013,
+     "speedup_max": 11.302323434658712,
      "label": "exploratory, never used for a verdict"
     },
     "speedup_equal_tolerance": {
-     "1e-3": null,
-     "1e-4": null,
-     "1e-5": null,
-     "1e-6": null,
-     "1e-7": null
+     "1e-3": 3.0035458907412824,
+     "1e-4": 5.008344835294301,
+     "1e-5": 7.51273745228832,
+     "1e-6": 9.193801478496912,
+     "1e-7": 11.31141055094248
     },
-    "speedup_equal_tolerance_geometric_mean": null
+    "speedup_equal_tolerance_geometric_mean": 6.51669985601697
    }
   },
   "bruss1d": {
@@ -6750,66 +8531,629 @@
    },
    "timing_cells": {
     "1e-3": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/bruss1d__1e-3__try1.log"
+       ],
+       "invocations": 1,
+       "split_long_cell": false,
+       "process_complete": true,
+       "load_before": [
+        "6.80 5.36 6.03 5/4967 1394651"
+       ],
+       "load_after": [
+        "6.24 5.31 6.00 4/4941 1396012"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 18.94029450416565,
+       "longest_process_seconds_under_the_lock": 18.890993545,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          1.4131928870000001,
+          1.4167028560000001
+         ],
+         "walls": [
+          1.408075295,
+          1.4184889379999999,
+          1.4030448739999999,
+          1.403692239,
+          1.4046378609999999,
+          1.407269744,
+          1.412315233
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 1.407269744,
+         "min": 1.4030448739999999,
+         "max": 1.4184889379999999,
+         "spread": 0.010974487347466188,
+         "median_thread_cpu": 1.4069855589999989,
+         "spread_thread_cpu": 0.011288960926712268
+        },
+        "P2": {
+         "warm_up_walls": [
+          0.688711243,
+          0.690562982
+         ],
+         "walls": [
+          0.691225417,
+          0.69537998,
+          0.689064617,
+          0.68874398,
+          0.686027813,
+          0.683009158,
+          0.689660571
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.689064617,
+         "min": 0.683009158,
+         "max": 0.69537998,
+         "spread": 0.0179530652057847,
+         "median_thread_cpu": 0.6889791390000006,
+         "spread_thread_cpu": 0.017365206466724896
+        }
+       },
+       "load_1min_max": 6.8,
+       "meets_rule": true,
+       "misses": []
+      }
+     ],
+     "measurements": 1,
+     "label": "authoritative",
+     "used_try": 1,
+     "median_wall": {
+      "S": 1.407269744,
+      "P2": 0.689064617
+     },
+     "spread": {
+      "S": 0.010974487347466188,
+      "P2": 0.0179530652057847
+     },
+     "median_thread_cpu": {
+      "S": 1.4069855589999989,
+      "P2": 0.6889791390000006
+     },
+     "speedup_equal_tolerance": 2.0422899526126734,
+     "thread_cpu_speedup_equal_tolerance": 2.042130856156441
     },
     "1e-4": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/bruss1d__1e-4__try1.log"
+       ],
+       "invocations": 1,
+       "split_long_cell": false,
+       "process_complete": true,
+       "load_before": [
+        "6.24 5.31 6.00 5/4941 1396015"
+       ],
+       "load_after": [
+        "5.65 5.24 5.96 3/4945 1396666"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 20.891826629638672,
+       "longest_process_seconds_under_the_lock": 20.8487589,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          1.660654297,
+          1.639630011
+         ],
+         "walls": [
+          1.6439629500000001,
+          1.6314515809999999,
+          1.630191175,
+          1.641986068,
+          1.631000637,
+          1.635470485,
+          1.6309517169999999
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 1.6314515809999999,
+         "min": 1.630191175,
+         "max": 1.6439629500000001,
+         "spread": 0.008441424287663339,
+         "median_thread_cpu": 1.6319405329999999,
+         "spread_thread_cpu": 0.008513437051814345
+        },
+        "P2": {
+         "warm_up_walls": [
+          0.685767128,
+          0.678095692
+         ],
+         "walls": [
+          0.676108613,
+          0.676536161,
+          0.679879634,
+          0.677015288,
+          0.677612534,
+          0.676981726,
+          0.674368152
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.676981726,
+         "min": 0.674368152,
+         "max": 0.679879634,
+         "spread": 0.008141256681424746,
+         "median_thread_cpu": 0.6769807409999977,
+         "spread_thread_cpu": 0.007342278293849562
+        }
+       },
+       "load_1min_max": 6.24,
+       "meets_rule": true,
+       "misses": []
+      }
+     ],
+     "measurements": 1,
+     "label": "authoritative",
+     "used_try": 1,
+     "median_wall": {
+      "S": 1.6314515809999999,
+      "P2": 0.676981726
+     },
+     "spread": {
+      "S": 0.008441424287663339,
+      "P2": 0.008141256681424746
+     },
+     "median_thread_cpu": {
+      "S": 1.6319405329999999,
+      "P2": 0.6769807409999977
+     },
+     "speedup_equal_tolerance": 2.409890131953133,
+     "thread_cpu_speedup_equal_tolerance": 2.410615892247377
     },
     "1e-5": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/bruss1d__1e-5__try1.log"
+       ],
+       "invocations": 1,
+       "split_long_cell": false,
+       "process_complete": true,
+       "load_before": [
+        "5.65 5.24 5.96 3/4945 1396676"
+       ],
+       "load_after": [
+        "4.53 5.01 5.87 5/4944 1397978"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 22.64521884918213,
+       "longest_process_seconds_under_the_lock": 22.620400581,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          1.8931819540000001,
+          1.894807729
+         ],
+         "walls": [
+          1.887317259,
+          1.8906232840000001,
+          1.87441122,
+          1.855068627,
+          1.891411224,
+          1.8608460660000001,
+          1.856451107
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 1.87441122,
+         "min": 1.855068627,
+         "max": 1.891411224,
+         "spread": 0.0193888067955547,
+         "median_thread_cpu": 1.8746170880000008,
+         "spread_thread_cpu": 0.019223077731808615
+        },
+        "P2": {
+         "warm_up_walls": [
+          0.641554093,
+          0.643760233
+         ],
+         "walls": [
+          0.632549191,
+          0.641514453,
+          0.629869686,
+          0.628936379,
+          0.633963953,
+          0.627351987,
+          0.635572368
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.632549191,
+         "min": 0.627351987,
+         "max": 0.641514453,
+         "spread": 0.022389509308533652,
+         "median_thread_cpu": 0.6319767409999999,
+         "spread_thread_cpu": 0.022228015825028296
+        }
+       },
+       "load_1min_max": 5.65,
+       "meets_rule": true,
+       "misses": []
+      }
+     ],
+     "measurements": 1,
+     "label": "authoritative",
+     "used_try": 1,
+     "median_wall": {
+      "S": 1.87441122,
+      "P2": 0.632549191
+     },
+     "spread": {
+      "S": 0.0193888067955547,
+      "P2": 0.022389509308533652
+     },
+     "median_thread_cpu": {
+      "S": 1.8746170880000008,
+      "P2": 0.6319767409999999
+     },
+     "speedup_equal_tolerance": 2.963265539928578,
+     "thread_cpu_speedup_equal_tolerance": 2.9662754439882164
     },
     "1e-6": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/bruss1d__1e-6__try1.log"
+       ],
+       "invocations": 1,
+       "split_long_cell": false,
+       "process_complete": true,
+       "load_before": [
+        "4.53 5.01 5.87 2/4944 1397981"
+       ],
+       "load_after": [
+        "3.95 4.83 5.78 3/4935 1398511"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 23.094207286834717,
+       "longest_process_seconds_under_the_lock": 23.057470029,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          2.039611986,
+          2.03685278
+         ],
+         "walls": [
+          2.033499169,
+          2.046876852,
+          2.038954804,
+          2.035702842,
+          2.037594817,
+          2.053443925,
+          2.028019442
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 2.037594817,
+         "min": 2.028019442,
+         "max": 2.053443925,
+         "spread": 0.012477693203711985,
+         "median_thread_cpu": 2.037919746,
+         "spread_thread_cpu": 0.012250005943071022
+        },
+        "P2": {
+         "warm_up_walls": [
+          0.529290335,
+          0.5291243
+         ],
+         "walls": [
+          0.521649012,
+          0.521447217,
+          0.517243185,
+          0.520648874,
+          0.52153642,
+          0.519098289,
+          0.525760366
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.521447217,
+         "min": 0.517243185,
+         "max": 0.525760366,
+         "spread": 0.01633373565401536,
+         "median_thread_cpu": 0.5209791880000019,
+         "spread_thread_cpu": 0.01539797017765023
+        }
+       },
+       "load_1min_max": 4.53,
+       "meets_rule": true,
+       "misses": []
+      }
+     ],
+     "measurements": 1,
+     "label": "authoritative",
+     "used_try": 1,
+     "median_wall": {
+      "S": 2.037594817,
+      "P2": 0.521447217
+     },
+     "spread": {
+      "S": 0.012477693203711985,
+      "P2": 0.01633373565401536
+     },
+     "median_thread_cpu": {
+      "S": 2.037919746,
+      "P2": 0.5209791880000019
+     },
+     "speedup_equal_tolerance": 3.9075763578195493,
+     "thread_cpu_speedup_equal_tolerance": 3.911710473163839
     },
     "1e-7": {
-     "tries": [],
-     "measurements": 0,
-     "label": "NOT_RUN",
-     "used_try": null
+     "tries": [
+      {
+       "try": 1,
+       "logs": [
+        "logs/timing/bruss1d__1e-7__try1.log"
+       ],
+       "invocations": 1,
+       "split_long_cell": false,
+       "process_complete": true,
+       "load_before": [
+        "3.95 4.83 5.78 3/4935 1398514"
+       ],
+       "load_after": [
+        "3.80 4.73 5.72 3/4941 1399660"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 29.656203031539917,
+       "longest_process_seconds_under_the_lock": 29.628667213,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          2.740376435,
+          2.743097117
+         ],
+         "walls": [
+          2.7682341360000002,
+          2.749546872,
+          2.777939506,
+          2.73963681,
+          2.738590942,
+          2.744155186,
+          2.785647863
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 2.749546872,
+         "min": 2.738590942,
+         "max": 2.785647863,
+         "spread": 0.01711442764595279,
+         "median_thread_cpu": 2.748912883000001,
+         "spread_thread_cpu": 0.01669989044901918
+        },
+        "P2": {
+         "warm_up_walls": [
+          0.535258792,
+          0.533665348
+         ],
+         "walls": [
+          0.542443749,
+          0.54174471,
+          0.539604153,
+          0.547110836,
+          0.529767466,
+          0.532512524,
+          0.538138504
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.539604153,
+         "min": 0.529767466,
+         "max": 0.547110836,
+         "spread": 0.032140912747941675,
+         "median_thread_cpu": 0.5399624020000005,
+         "spread_thread_cpu": 0.03143872598743471
+        }
+       },
+       "load_1min_max": 3.95,
+       "meets_rule": true,
+       "misses": []
+      }
+     ],
+     "measurements": 1,
+     "label": "authoritative",
+     "used_try": 1,
+     "median_wall": {
+      "S": 2.749546872,
+      "P2": 0.539604153
+     },
+     "spread": {
+      "S": 0.01711442764595279,
+      "P2": 0.032140912747941675
+     },
+     "median_thread_cpu": {
+      "S": 2.748912883000001,
+      "P2": 0.5399624020000005
+     },
+     "speedup_equal_tolerance": 5.095488714668955,
+     "thread_cpu_speedup_equal_tolerance": 5.090933873947762
     }
    },
    "T": {
     "cells": {
-     "1e-3": "NOT_RUN",
-     "1e-4": "NOT_RUN",
-     "1e-5": "NOT_RUN",
-     "1e-6": "NOT_RUN",
-     "1e-7": "NOT_RUN"
+     "1e-3": "authoritative",
+     "1e-4": "authoritative",
+     "1e-5": "authoritative",
+     "1e-6": "authoritative",
+     "1e-7": "authoritative"
     },
-    "label": "NOT_RUN",
+    "label": "authoritative",
     "wall": {
-     "points_A": [],
-     "points_X": [],
-     "status": "NOT_DECIDABLE",
-     "reason": "fewer than 4 completed tolerances (A 0, X 0)"
+     "points_A": [
+      [
+       3.7616407021608475e-05,
+       1.407269744
+      ],
+      [
+       3.33072016773402e-05,
+       1.6314515809999999
+      ],
+      [
+       1.0770664940032994e-05,
+       1.87441122
+      ],
+      [
+       3.135730354121551e-06,
+       2.037594817
+      ],
+      [
+       2.9268364159488667e-07,
+       2.749546872
+      ]
+     ],
+     "points_X": [
+      [
+       3.7616458008561714e-05,
+       0.689064617
+      ],
+      [
+       3.3307088994785206e-05,
+       0.676981726
+      ],
+      [
+       1.0770656272321944e-05,
+       0.632549191
+      ],
+      [
+       3.135754097835211e-06,
+       0.521447217
+      ],
+      [
+       2.9262963413203935e-07,
+       0.539604153
+      ]
+     ],
+     "status": "OK",
+     "range": [
+      2.9268364159488667e-07,
+      3.7616407021608475e-05
+     ],
+     "floor_10_u_ref": 2.3876858966746013e-10,
+     "geometric_mean_ratio": 0.27541597616363567,
+     "min_ratio": 0.19625150652973555,
+     "max_ratio": 0.48964634117797357,
+     "ratio_at_points_of_A": [
+      {
+       "E": 3.7616407021608475e-05,
+       "ratio": 0.48964634117797357
+      },
+      {
+       "E": 3.33072016773402e-05,
+       "ratio": 0.41495688066509345
+      },
+      {
+       "E": 1.0770664940032994e-05,
+       "ratio": 0.3374655544423016
+      },
+      {
+       "E": 3.135730354121551e-06,
+       "ratio": 0.2559131332839255
+      },
+      {
+       "E": 2.9268364159488667e-07,
+       "ratio": 0.19625150652973555
+      }
+     ],
+     "speedup": 3.6308714328389575,
+     "speedup_min": 2.042290355104535,
+     "speedup_max": 5.095502285219311
     },
     "thread_cpu": {
-     "points_A": [],
-     "points_X": [],
-     "status": "NOT_DECIDABLE",
-     "reason": "fewer than 4 completed tolerances (A 0, X 0)",
+     "points_A": [
+      [
+       3.7616407021608475e-05,
+       1.4069855589999989
+      ],
+      [
+       3.33072016773402e-05,
+       1.6319405329999999
+      ],
+      [
+       1.0770664940032994e-05,
+       1.8746170880000008
+      ],
+      [
+       3.135730354121551e-06,
+       2.037919746
+      ],
+      [
+       2.9268364159488667e-07,
+       2.748912883000001
+      ]
+     ],
+     "points_X": [
+      [
+       3.7616458008561714e-05,
+       0.6889791390000006
+      ],
+      [
+       3.3307088994785206e-05,
+       0.6769807409999977
+      ],
+      [
+       1.0770656272321944e-05,
+       0.6319767409999999
+      ],
+      [
+       3.135754097835211e-06,
+       0.5209791880000019
+      ],
+      [
+       2.9262963413203935e-07,
+       0.5399624020000005
+      ]
+     ],
+     "status": "OK",
+     "range": [
+      2.9268364159488667e-07,
+      3.7616407021608475e-05
+     ],
+     "floor_10_u_ref": 2.3876858966746013e-10,
+     "geometric_mean_ratio": 0.27529088953345326,
+     "min_ratio": 0.19642706819773784,
+     "max_ratio": 0.4896844887644832,
+     "ratio_at_points_of_A": [
+      {
+       "E": 3.7616407021608475e-05,
+       "ratio": 0.4896844887644832
+      },
+      {
+       "E": 3.33072016773402e-05,
+       "ratio": 0.4148319488425701
+      },
+      {
+       "E": 1.0770664940032994e-05,
+       "ratio": 0.33712312558931035
+      },
+      {
+       "E": 3.135730354121551e-06,
+       "ratio": 0.25564267118489387
+      },
+      {
+       "E": 2.9268364159488667e-07,
+       "ratio": 0.19642706819773784
+      }
+     ],
+     "speedup": 3.6325212276175973,
+     "speedup_min": 2.0421312558277833,
+     "speedup_max": 5.090948050974965,
      "label": "exploratory, never used for a verdict"
     },
     "speedup_equal_tolerance": {
-     "1e-3": null,
-     "1e-4": null,
-     "1e-5": null,
-     "1e-6": null,
-     "1e-7": null
+     "1e-3": 2.0422899526126734,
+     "1e-4": 2.409890131953133,
+     "1e-5": 2.963265539928578,
+     "1e-6": 3.9075763578195493,
+     "1e-7": 5.095488714668955
     },
-    "speedup_equal_tolerance_geometric_mean": null
+    "speedup_equal_tolerance_geometric_mean": 3.108820924853169
    }
   }
  },
@@ -7353,6 +9697,10 @@
   "equal": 20
  },
  "exploratory": {},
+ "exploratory_budget_replay": {
+  "runs": {},
+  "note": "paired on identical stage systems: the systems of the run of the named arm, each solved again by the shipped kernel, P1 and P2 with their own operator; kernels order [shipped, P1, P2]"
+ },
  "discriminators": {
   "D0": {
    "verdict": "PASS",
@@ -7474,23 +9822,23 @@
   },
   "T": {
    "labels": {
-    "fhn3d": "NOT_RUN",
-    "cusp1d": "NOT_RUN",
-    "burgers2d": "NOT_RUN",
-    "bruss1d": "NOT_RUN"
+    "fhn3d": "diagnostic_only",
+    "cusp1d": "authoritative",
+    "burgers2d": "authoritative",
+    "bruss1d": "authoritative"
    },
    "verdict": "reported only",
    "wall_speedup_at_matched_error": {
-    "fhn3d": null,
-    "cusp1d": null,
-    "burgers2d": null,
-    "bruss1d": null
+    "fhn3d": 3.9718161622325066,
+    "cusp1d": 3.207671154418249,
+    "burgers2d": 6.423806843062471,
+    "bruss1d": 3.6308714328389575
    },
    "wall_speedup_at_equal_tolerance": {
-    "fhn3d": null,
-    "cusp1d": null,
-    "burgers2d": null,
-    "bruss1d": null
+    "fhn3d": 4.138406372992551,
+    "cusp1d": 3.389482726207445,
+    "burgers2d": 6.51669985601697,
+    "bruss1d": 3.108820924853169
    }
   },
   "G": {

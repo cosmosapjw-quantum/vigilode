@@ -238,6 +238,17 @@
       "status": "as P-1",
       "what": "crates/rodas5p-krylov/src/lib.rs is not in the write list, so a new public item of gmres_staged.rs cannot be re-exported by name. The adaptive kernel is therefore an inherent method of the already exported type StagedGmresWorkspace, with primitive and already exported parameter types; its report type is public inside the module and reachable through the method's return value. A re-export line in lib.rs is left to the orchestrator.",
       "consequence": "none for a discriminator"
+    },
+    {
+      "id": "P-3",
+      "date": "2026-11-23 23:55 KST",
+      "status": "written after the declared runs of the deciding grid (arm S and arm N = P2) and after RESULTS.json showed their verdicts; nothing declared before is changed",
+      "what": "Discriminator B does not hold in one cell (cusp1d, rtol 1e-6). By the frozen rule the verdict is FAIL: the adaptive policy stays opt-in and the default of the route is not changed. Step 5 is therefore not carried out: no switch of the default, no regeneration of the golden files; G is not evaluated (NOT_RUN) and no comparison rule for it is written. R is evaluated on the opt-in tree.",
+      "exploratory_runs_added_after_the_deciding_runs": [
+        "arms P1R (P1 with ReuseConfirmed) and SR (the shipped policy with ReuseConfirmed) on the deciding grid, next to the two arms declared before the runs (P1 and P2R)",
+        "replay analysis (mode SHADOW of the measurement target): every stage system of a cusp1d run of arm S and of arm P2 is solved again with the shipped kernel, P1 and P2 on its own operator, to count on identical systems which kernel exhausts the Krylov budget. It needs a measurement binary with that mode; the driver and the kernels are not changed for it."
+      ],
+      "use": "exploratory only; no verdict, threshold or choice depends on them"
     }
   ]
 }

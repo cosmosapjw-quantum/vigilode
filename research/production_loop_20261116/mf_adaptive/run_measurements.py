@@ -24,6 +24,9 @@ phases
                "flock <lock> taskset -c 6-11" (--arm, --try 1 or 2, --cells)
   exploratory  --arms A,B,...: the named arms on the deciding grid: audit and
                route (perf)
+  shadow       exploratory: --arms (default S,P2) on --families (default
+               cusp1d): every stage system of the run is solved again with the
+               three kernels (mode SHADOW of the measurement target)
 
 A log that already exists with its end marker is not repeated (a run is never
 overwritten; an interrupted log is kept under another name).
@@ -223,7 +226,7 @@ def wait_for_quiet(minutes, threshold=8.0):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("phase", choices=["record_a", "setup", "d0", "dev", "dev_repeat", "runs", "timing", "exploratory"])
+    parser.add_argument("phase", choices=["record_a", "setup", "d0", "dev", "dev_repeat", "runs", "timing", "exploratory", "shadow"])
     parser.add_argument("--bin", required=True, help="the mf_adaptive_measure test binary")
     parser.add_argument("--families", default="")
     parser.add_argument("--rtols", default=",".join(RTOLS))
@@ -283,6 +286,15 @@ def main():
         families = chosen or DECIDING
         for arm in [a for a in args.arms.split(",") if a]:
             runner.run_many(cell_jobs(families, rtols, arm, [("audit", False), ("route", True)], "exploratory"), args.jobs)
+    elif args.phase == "shadow":
+        families = chosen or ["cusp1d"]
+        jobs = []
+        for arm in [a for a in (args.arms or "S,P2").split(",") if a]:
+            for family in families:
+                for rtol in rtols:
+                    jobs.append((f"{family}__{rtol}__{arm}", {"V24_FAMILY": family, "V24_RTOL": rtol, "V24_MODE": "SHADOW",
+                                                             "V24_ARM": arm, "V24_LABEL": "exploratory replay"}, False))
+        runner.run_many(jobs, args.jobs)
 
 
 if __name__ == "__main__":

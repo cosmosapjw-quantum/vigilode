@@ -827,6 +827,29 @@ def adaptive_arm(label):
     return label in ("P1", "P2", "P1R", "P2R")
 
 
+def collect_shadow(store):
+    """Exploratory: the replay of every stage system with the three kernels."""
+    out = {"runs": {}, "note": "paired on identical stage systems: the systems of the run of the named arm, each solved again by the shipped kernel, P1 and P2 with their own operator; kernels order [shipped, P1, P2]"}
+    for path in sorted(glob.glob(os.path.join(LOGS, "shadow", "*.log"))):
+        log = read_log(path)
+        record = first(log, "V24_SHADOW_JSON")
+        name = os.path.basename(path)[:-len(".log")]
+        begin, end = log["begin"] or {}, log["end"] or {}
+        note_identity(store, {"binary_sha256": begin.get("binary_sha256"), "git_head": begin.get("git_head"),
+                              "git_dirty_tracked": begin.get("git_dirty_tracked")})
+        row = {"log": log["path"], "exit_code": end.get("exit_code")}
+        if record:
+            for key in ("family", "rtol", "arm", "success", "attempts", "state_sha256", "systems", "driver_completed",
+                        "driver_failed", "replay_differs_from_driver", "solved", "budget", "other", "columns_of_solved",
+                        "all_solved", "columns_where_all_solved", "shipped_solved_p1_budget", "shipped_budget_p1_solved",
+                        "shipped_solved_p2_budget", "shipped_budget_p2_solved", "p1_solved_p2_budget", "p1_budget_p2_solved",
+                        "disagreements_first_40", "disagreement_columns", "policy_statistics"):
+                row[key] = record.get(key)
+            row["linear_solve_failures"] = (record.get("counters") or {}).get("linear_solve_failures")
+        out["runs"][name] = row
+    return out
+
+
 def build_results():
     with open(os.path.join(NODE, "CHOICE.json"), encoding="utf-8") as handle:
         choice = json.load(handle)
@@ -942,6 +965,14 @@ def build_results():
             }
         exploratory[label_arm] = block
     results["exploratory"] = exploratory
+    results["exploratory_budget_replay"] = collect_shadow(results)
+    # A replay run must be the run of the arm it shadows: same end state.
+    for name, row in results["exploratory_budget_replay"]["runs"].items():
+        family, label, label_arm = name.split("__")
+        if family in results["families"]:
+            cells = results["families"][family]["arms"]["S" if label_arm == "S" else "N"] if label_arm in ("S", arm) else None
+            if cells is not None:
+                row["end_state_equals_the_instruction_run"] = row.get("state_sha256") == cells[label].get("state_sha256")
 
     # Discriminators and verdict.
     def family_verdicts(name):
