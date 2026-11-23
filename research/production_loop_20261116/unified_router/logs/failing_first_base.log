@@ -1,0 +1,151 @@
+# failing-first run against the base sources
+# HEAD 5192520c81497e362c5aef235015da567ee63204; src diff vs base 587a1395: (empty = none)
+# test file sha256 bcfdbcbfd06a5cea0f5051aafbb37fe950c622557764105dbe4994b99c670316
+# command: taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_router_contracts -- --nocapture --test-threads 1
+# date 2026-11-23T12:31:22Z
+    Finished `release` profile [optimized] target(s) in 0.08s
+     Running tests/unified_router_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03b/release/deps/unified_router_contracts-71b899f82a3dcdd5)
+
+running 20 tests
+test p1_failing_switching_solve_reports_the_fatal_jacobian_callback ... V03B_RECORD {"fields":{"applicable":true,"direct_attempts":33,"direct_message":"fatal callback; stop without fallback","direct_success":false,"unified_status":"{\"status\":\"failed\",\"kind\":\"max-steps-reached\",\"max_steps\":100000}"},"test":"p1_failing_switching_solve_reports_the_fatal_jacobian_callback"}
+
+thread 'p1_failing_switching_solve_reports_the_fatal_jacobian_callback' (757557) panicked at crates/vigilode/tests/unified_router_contracts.rs:705:18:
+the stop reason is not the callback failure: Failed(MaxStepsReached { max_steps: 100000 })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test p1_failing_switching_solve_reports_the_fatal_rhs_callback ... V03B_RECORD {"fields":{"direct_attempts":12,"direct_final_time":0.281,"direct_message":"fatal callback; stop without fallback","direct_success":false,"fatal_entries":1,"max_steps":100000,"unified_final_time":0.281,"unified_status":"{\"status\":\"failed\",\"kind\":\"max-steps-reached\",\"max_steps\":100000}"},"test":"p1_failing_switching_solve_reports_the_fatal_rhs_callback"}
+
+thread 'p1_failing_switching_solve_reports_the_fatal_rhs_callback' (757558) panicked at crates/vigilode/tests/unified_router_contracts.rs:648:18:
+the stop reason is not the callback failure: Failed(MaxStepsReached { max_steps: 100000 })
+FAILED
+test p1_failing_switching_solve_with_attempts_left_is_not_reported_as_max_steps ... V03B_RECORD {"fields":{"applicable":true,"direct_attempts":321,"direct_final_time":1.0000002494258216,"direct_message":"implicit driver stopped; preserve partial accepted state","direct_success":false,"max_steps":100000,"unified_status":"{\"status\":\"failed\",\"kind\":\"max-steps-reached\",\"max_steps\":100000}"},"test":"p1_failing_switching_solve_with_attempts_left_is_not_reported_as_max_steps"}
+
+thread 'p1_failing_switching_solve_with_attempts_left_is_not_reported_as_max_steps' (757559) panicked at crates/vigilode/tests/unified_router_contracts.rs:754:5:
+attempts were left (321 of 100000), yet the status is Failed(MaxStepsReached { max_steps: 100000 })
+FAILED
+test p1_fallback_shares_one_attempt_budget_and_keeps_the_work_of_the_failed_leg ... V03B_RECORD {"fields":{"accepted_plus_rejected_in_counters":516,"fallback_steps":1,"labels":["Tier1ExplicitDopri5","ProtectedRODAS5P"],"max_steps":500,"rhs_charged":3188,"rhs_entries":3189,"stats_accepted_steps":15,"stats_attempts":16,"stats_rejected_steps":1,"success":true},"test":"p1_fallback_shares_one_attempt_budget_and_keeps_the_work_of_the_failed_leg"}
+
+thread 'p1_fallback_shares_one_attempt_budget_and_keeps_the_work_of_the_failed_leg' (757560) panicked at crates/vigilode/tests/unified_router_contracts.rs:1005:5:
+516 attempts were made under a budget of 500
+FAILED
+test p1_fatal_callback_on_the_explicit_leg_is_not_retried_by_another_method ... V03B_RECORD {"fields":{"fatal_entries":2,"final_time":0.18700000000000003,"labels":["Tier1ExplicitDopri5","ProtectedRODAS5P"],"rhs_charged":64,"rhs_entries":65,"status":"{\"status\":\"failed\",\"kind\":\"callback-failed\",\"callback\":\"rhs\",\"t\":0.3091163340632591,\"message\":\"sensor offline\"}"},"test":"p1_fatal_callback_on_the_explicit_leg_is_not_retried_by_another_method"}
+
+thread 'p1_fatal_callback_on_the_explicit_leg_is_not_retried_by_another_method' (757561) panicked at crates/vigilode/tests/unified_router_contracts.rs:944:5:
+assertion `left == right` failed: the callback that reported a fatal error was entered again
+  left: 2
+ right: 1
+FAILED
+test p1_label_equals_executed_driver_on_every_rodas5p_driver_family ... V03B_RECORD {"fields":{"cases":[{"case":"robertson, dense Jacobian, Auto","direct_driver":"rodas5p-fast-transformed-v2","equal":false,"labels":["TierProtectedReference"],"success":true},{"case":"heat n=16, band Jacobian callback, Auto","direct_driver":"rodas5p-fast-banded-v1","equal":false,"labels":["Tier4StagedRodas5p"],"success":true},{"case":"heat n=16, finite differences with a declared band, Auto","direct_driver":"rodas5p-fast-banded-v1","equal":false,"labels":["Tier4StagedRodas5p"],"success":true},{"case":"heat n=12, JVP, Auto","direct_driver":"rodas5p-mf-fast-transformed-v1","equal":false,"labels":["TierProtectedReference"],"success":true},{"case":"heat n=25, JVP, HighPerformance","direct_driver":"rodas5p-mf-fast-transformed-v1","equal":false,"labels":["Tier2MatrixFreeKrylov"],"success":true},{"case":"robertson DAE, singular mass matrix, Auto","direct_driver":"rodas5p-sequential-dense-v2","equal":false,"labels":["TierProtectedReference"],"success":true},{"case":"robertson, dense Jacobian, dense output, Auto","direct_driver":"rodas5p-fast-dense-v1","equal":false,"labels":["TierProtectedReference"],"success":true},{"case":"oscillator, finite differences, RobustStiff","direct_driver":"rodas5p-fast-transformed-v2","equal":false,"labels":["TierProtectedReference"],"success":true},{"case":"heat n=16, finite differences without structure, Auto","direct_driver":"rodas5p-fast-transformed-v2","equal":false,"labels":["TierProtectedReference"],"success":true}],"mismatches":9,"total":9},"test":"p1_label_equals_executed_driver_on_every_rodas5p_driver_family"}
+
+thread 'p1_label_equals_executed_driver_on_every_rodas5p_driver_family' (757562) panicked at crates/vigilode/tests/unified_router_contracts.rs:368:5:
+label differs from the executed driver in ["robertson, dense Jacobian, Auto", "heat n=16, band Jacobian callback, Auto", "heat n=16, finite differences with a declared band, Auto", "heat n=12, JVP, Auto", "heat n=25, JVP, HighPerformance", "robertson DAE, singular mass matrix, Auto", "robertson, dense Jacobian, dense output, Auto", "oscillator, finite differences, RobustStiff", "heat n=16, finite differences without structure, Auto"]
+FAILED
+test p1_label_equals_executed_driver_on_the_explicit_route ... V03B_RECORD {"fields":{"cases":[{"case":"oscillator, finite differences, Auto","direct_driver":"dopri5-5(4)-fsal","equal":false,"labels":["Tier1ExplicitDopri5"],"success":true}],"mismatches":1,"total":1},"test":"p1_label_equals_executed_driver_on_the_explicit_route"}
+
+thread 'p1_label_equals_executed_driver_on_the_explicit_route' (757563) panicked at crates/vigilode/tests/unified_router_contracts.rs:368:5:
+label differs from the executed driver in ["oscillator, finite differences, Auto"]
+FAILED
+test p1_label_equals_executed_driver_on_the_switching_adapter ... V03B_RECORD {"fields":{"cases":[{"case":"oscillator, AdaptiveReentrant","direct_driver":"vigilode.switching.v1","equal":false,"labels":["Tier5AdaptiveSwitching"],"success":true}],"mismatches":1,"total":1},"test":"p1_label_equals_executed_driver_on_the_switching_adapter"}
+
+thread 'p1_label_equals_executed_driver_on_the_switching_adapter' (757564) panicked at crates/vigilode/tests/unified_router_contracts.rs:368:5:
+label differs from the executed driver in ["oscillator, AdaptiveReentrant"]
+FAILED
+test p1_matrix_free_solve_allocates_no_dense_matrix ... V03B_RECORD {"fields":{"allocated_bytes":79044866,"dense_matrix_bytes":72000000,"dimension":3000,"labels":["Tier2MatrixFreeKrylov"],"largest_single_allocation_bytes":72000000,"success":true},"test":"p1_matrix_free_solve_allocates_no_dense_matrix"}
+
+thread 'p1_matrix_free_solve_allocates_no_dense_matrix' (757565) panicked at crates/vigilode/tests/unified_router_contracts.rs:1174:5:
+a single allocation of 72000000 bytes was made on a matrix-free route (n*n*8 = 72000000)
+FAILED
+test p1_preflight_callback_failure_is_a_typed_stop_not_invalid_input ... V03B_RECORD {"fields":{"outcome":"Err: InvalidInput(\"initial RHS evaluation failed: fatal callback error: model not loaded\")","rhs_charged":null,"rhs_entries":1},"test":"p1_preflight_callback_failure_is_a_typed_stop_not_invalid_input"}
+
+thread 'p1_preflight_callback_failure_is_a_typed_stop_not_invalid_input' (757566) panicked at crates/vigilode/tests/unified_router_contracts.rs:897:27:
+a callback failure is a stopped run, not a refused input: InvalidInput("initial RHS evaluation failed: fatal callback error: model not loaded")
+FAILED
+test p1_preflight_callbacks_are_charged_with_a_dense_jacobian ... V03B_RECORD {"fields":{"direct":{"jacobian_charged":18,"jacobian_entries":18,"rhs_charged":151,"rhs_entries":151},"direct_uncharged_rhs_jacobian":[0,0],"unified":{"jacobian_charged":18,"jacobian_entries":19,"rhs_charged":151,"rhs_entries":152},"unified_uncharged_rhs_jacobian":[1,1]},"test":"p1_preflight_callbacks_are_charged_with_a_dense_jacobian"}
+
+thread 'p1_preflight_callbacks_are_charged_with_a_dense_jacobian' (757567) panicked at crates/vigilode/tests/unified_router_contracts.rs:806:5:
+assertion `left == right` failed: the router made callbacks that are not in the counters
+  left: (1, 1)
+ right: (0, 0)
+FAILED
+test p1_preflight_callbacks_are_charged_with_a_jvp ... V03B_RECORD {"fields":{"direct":{"jvp_charged":2916,"jvp_entries":2916,"rhs_charged":126,"rhs_entries":126},"direct_uncharged_rhs":0,"unified":{"jvp_charged":2916,"jvp_entries":2916,"rhs_charged":126,"rhs_entries":127},"unified_uncharged_rhs":1},"test":"p1_preflight_callbacks_are_charged_with_a_jvp"}
+
+thread 'p1_preflight_callbacks_are_charged_with_a_jvp' (757568) panicked at crates/vigilode/tests/unified_router_contracts.rs:867:5:
+assertion `left == right` failed: the router made right-hand-side calls that are not in the counters
+  left: 1
+ right: 0
+FAILED
+test p1_preflight_callbacks_are_charged_without_a_jacobian ... V03B_RECORD {"fields":{"direct":{"rhs_charged":55,"rhs_entries":55},"direct_uncharged_rhs":0,"preflight_rhs_entries":1,"unified":{"rhs_charged":55,"rhs_entries":56},"unified_uncharged_rhs":1},"test":"p1_preflight_callbacks_are_charged_without_a_jacobian"}
+
+thread 'p1_preflight_callbacks_are_charged_without_a_jacobian' (757569) panicked at crates/vigilode/tests/unified_router_contracts.rs:836:5:
+assertion `left == right` failed: the router made right-hand-side calls that are not in the counters
+  left: 1
+ right: 0
+FAILED
+test p1_rodas5p_leg_is_the_direct_call_bit_for_bit ... V03B_RECORD {"fields":{"attempts":[35,35],"counters_equal":true,"final_state_bits_equal":true,"rhs_entries":[280,279]},"test":"p1_rodas5p_leg_is_the_direct_call_bit_for_bit"}
+
+thread 'p1_rodas5p_leg_is_the_direct_call_bit_for_bit' (757570) panicked at crates/vigilode/tests/unified_router_contracts.rs:1128:5:
+assertion `left == right` failed
+  left: 280
+ right: 279
+FAILED
+test p1_stiff_contractive_heat_equation_with_dense_jacobian_is_not_explicit ... V03B_RECORD {"fields":{"error":null,"explicit_leg":true,"labels":["Tier1ExplicitDopri5"],"rhs_bound":30727,"rhs_calls_charged":314119,"rhs_entries_at_the_boundary":314120,"success":true},"test":"p1_stiff_contractive_heat_equation_with_dense_jacobian_is_not_explicit"}
+
+thread 'p1_stiff_contractive_heat_equation_with_dense_jacobian_is_not_explicit' (757571) panicked at crates/vigilode/tests/unified_router_contracts.rs:538:5:
+sent to the explicit route: ["Tier1ExplicitDopri5"]
+FAILED
+test p1_stiff_contractive_heat_equation_without_jacobian_is_not_explicit ... V03B_RECORD {"fields":{"error":null,"explicit_leg":true,"labels":["Tier1ExplicitDopri5"],"rhs_bound":5890,"rhs_calls_charged":58411,"rhs_entries_at_the_boundary":58412,"success":true},"test":"p1_stiff_contractive_heat_equation_without_jacobian_is_not_explicit"}
+
+thread 'p1_stiff_contractive_heat_equation_without_jacobian_is_not_explicit' (757582) panicked at crates/vigilode/tests/unified_router_contracts.rs:538:5:
+sent to the explicit route: ["Tier1ExplicitDopri5"]
+FAILED
+test p1_stiff_contractive_scalar_with_dense_jacobian_is_not_explicit ... V03B_RECORD {"fields":{"error":null,"explicit_leg":true,"labels":["Tier1ExplicitDopri5","ProtectedRODAS5P"],"rhs_bound":181818,"rhs_calls_charged":600049,"rhs_entries_at_the_boundary":600050,"success":true},"test":"p1_stiff_contractive_scalar_with_dense_jacobian_is_not_explicit"}
+
+thread 'p1_stiff_contractive_scalar_with_dense_jacobian_is_not_explicit' (757583) panicked at crates/vigilode/tests/unified_router_contracts.rs:538:5:
+sent to the explicit route: ["Tier1ExplicitDopri5", "ProtectedRODAS5P"]
+FAILED
+test p1_stiff_contractive_scalar_without_jacobian_is_not_explicit ... V03B_RECORD {"fields":{"error":null,"explicit_leg":true,"labels":["Tier1ExplicitDopri5","ProtectedRODAS5P"],"rhs_bound":181818,"rhs_calls_charged":600073,"rhs_entries_at_the_boundary":600074,"success":true},"test":"p1_stiff_contractive_scalar_without_jacobian_is_not_explicit"}
+
+thread 'p1_stiff_contractive_scalar_without_jacobian_is_not_explicit' (757590) panicked at crates/vigilode/tests/unified_router_contracts.rs:538:5:
+sent to the explicit route: ["Tier1ExplicitDopri5", "ProtectedRODAS5P"]
+FAILED
+test p1_switching_leg_keeps_the_full_work_of_its_segments ... V03B_RECORD {"fields":{"direct":{"accepted_steps":61,"attempts":67,"jacobian_builds":28,"jacobian_entries":28,"linear_solves":224,"rejected_steps":6,"rhs_calls":460,"rhs_entries":460,"segment_direct_solves":224,"segment_factorizations":28,"segments":5,"success":true},"unified":{"direct_factorizations":0,"direct_solve_calls":0,"jacobian_builds":28,"jacobian_entries":28,"linear_solves":224,"rhs_calls":460,"rhs_entries":460,"stats_accepted_steps":0,"stats_attempts":0,"stats_rejected_steps":0,"success":true}},"test":"p1_switching_leg_keeps_the_full_work_of_its_segments"}
+
+thread 'p1_switching_leg_keeps_the_full_work_of_its_segments' (757599) panicked at crates/vigilode/tests/unified_router_contracts.rs:1087:5:
+assertion `left == right` failed: factorizations of the segments were dropped
+  left: 0
+ right: 28
+FAILED
+test p1_workspace_storage_is_linear_in_the_dimension ... V03B_RECORD {"fields":{"bound_bytes":1024000,"dense_matrix_bytes":32000000,"dimension":2000,"retained_bytes":32704000},"test":"p1_workspace_storage_is_linear_in_the_dimension"}
+
+thread 'p1_workspace_storage_is_linear_in_the_dimension' (757600) panicked at crates/vigilode/tests/unified_router_contracts.rs:1143:5:
+the workspace retains 32704000 bytes for n = 2000: an n-by-n buffer is 32000000 bytes
+FAILED
+
+failures:
+
+failures:
+    p1_failing_switching_solve_reports_the_fatal_jacobian_callback
+    p1_failing_switching_solve_reports_the_fatal_rhs_callback
+    p1_failing_switching_solve_with_attempts_left_is_not_reported_as_max_steps
+    p1_fallback_shares_one_attempt_budget_and_keeps_the_work_of_the_failed_leg
+    p1_fatal_callback_on_the_explicit_leg_is_not_retried_by_another_method
+    p1_label_equals_executed_driver_on_every_rodas5p_driver_family
+    p1_label_equals_executed_driver_on_the_explicit_route
+    p1_label_equals_executed_driver_on_the_switching_adapter
+    p1_matrix_free_solve_allocates_no_dense_matrix
+    p1_preflight_callback_failure_is_a_typed_stop_not_invalid_input
+    p1_preflight_callbacks_are_charged_with_a_dense_jacobian
+    p1_preflight_callbacks_are_charged_with_a_jvp
+    p1_preflight_callbacks_are_charged_without_a_jacobian
+    p1_rodas5p_leg_is_the_direct_call_bit_for_bit
+    p1_stiff_contractive_heat_equation_with_dense_jacobian_is_not_explicit
+    p1_stiff_contractive_heat_equation_without_jacobian_is_not_explicit
+    p1_stiff_contractive_scalar_with_dense_jacobian_is_not_explicit
+    p1_stiff_contractive_scalar_without_jacobian_is_not_explicit
+    p1_switching_leg_keeps_the_full_work_of_its_segments
+    p1_workspace_storage_is_linear_in_the_dimension
+
+test result: FAILED. 0 passed; 20 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+
+error: test failed, to rerun pass `-p vigilode --test unified_router_contracts`
+exit=101
