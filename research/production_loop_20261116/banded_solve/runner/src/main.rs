@@ -17,10 +17,11 @@ use std::sync::Arc;
 
 use kernel::{Band, KernelError, Partition, Seq, SeqMode, layout};
 use rodas5p_core::WorkCounters;
+use rodas5p_integrators::stage_clients::BandedTightStageLu;
 use rodas5p_integrators::{
     AdaptiveStepConfig, BandedJacobian, BandedKernel, BandedStageLu, OdeProblem, OutputSchedule,
     StageLinearSystem, integrate_rodas5p_fast_banded_observed_with_kernel,
-    rodas5p_fast_banded_solve,
+    integrate_rodas5p_fast_client_observed_with_atol, rodas5p_fast_banded_solve,
 };
 
 /// SplitMix64, as declared in PREDECLARED.json.
@@ -500,9 +501,11 @@ fn drive(family: &str, size: usize, kernel_name: &str, budget: usize) {
         other => panic!("unknown family {other}"),
     };
     let kernel = match kernel_name {
-        "indexed" => BandedKernel::Indexed,
-        "slices" => BandedKernel::Slices,
-        "fixed2" => BandedKernel::FixedWidth2,
+        "indexed" => Some(BandedKernel::Indexed),
+        "slices" => Some(BandedKernel::Slices),
+        "fixed2" => Some(BandedKernel::FixedWidth2),
+        // Node V21 stage b: the client driver with the opt-in client BandedTightStageLu.
+        "tight" => None,
         other => panic!("unknown kernel {other}"),
     };
     let band = def.band.as_ref().expect("banded problem");
@@ -534,10 +537,30 @@ fn drive(family: &str, size: usize, kernel_name: &str, budget: usize) {
         ..AdaptiveStepConfig::default()
     };
     let output = OutputSchedule::new(vec![def.t_span.0, def.t_span.1]).expect("schedule");
-    let out = integrate_rodas5p_fast_banded_observed_with_kernel(
-        &problem, &banded, def.t_span, &def.y0, &adaptive, &output, kernel,
-    )
-    .expect("driver");
+    let (fast, partial, factor_ops, solve_ops) = match kernel {
+        Some(kernel) => {
+            let out = integrate_rodas5p_fast_banded_observed_with_kernel(
+                &problem, &banded, def.t_span, &def.y0, &adaptive, &output, kernel,
+            )
+            .expect("driver");
+            (
+                out.fast,
+                out.partial,
+                out.work.factor_operations,
+                out.work.solve_operations,
+            )
+        }
+        None => {
+            let client = Box::new(BandedTightStageLu::new(def.n, &banded).expect("client"));
+            let atol = vec![def.atol; def.n];
+            let (fast, partial, _client) = integrate_rodas5p_fast_client_observed_with_atol(
+                &problem, client, def.t_span, &def.y0, &adaptive, &output, &atol,
+            )
+            .expect("client driver");
+            // The client does not keep the counted band operations.
+            (fast, partial, 0, 0)
+        }
+    };
     // FNV-1a over the bits of every state the run returned (outputs and the stop state).
     let mut hash = 0xcbf2_9ce4_8422_2325u64;
     let mut eat = |v: f64| {
@@ -545,10 +568,10 @@ fn drive(family: &str, size: usize, kernel_name: &str, budget: usize) {
             hash = (hash ^ u64::from(byte)).wrapping_mul(0x0000_0100_0000_01b3);
         }
     };
-    for state in &out.fast.observed.y {
+    for state in &fast.observed.y {
         state.iter().copied().for_each(&mut eat);
     }
-    let stop_t = match &out.partial {
+    let stop_t = match &partial {
         Some(p) => {
             p.y.iter().copied().for_each(&mut eat);
             p.t
@@ -560,11 +583,11 @@ fn drive(family: &str, size: usize, kernel_name: &str, budget: usize) {
         def.n,
         band.lower,
         band.upper,
-        out.fast.attempts,
-        out.fast.accepted_steps,
-        out.fast.rejected_steps,
-        out.work.factor_operations,
-        out.work.solve_operations,
+        fast.attempts,
+        fast.accepted_steps,
+        fast.rejected_steps,
+        factor_ops,
+        solve_ops,
     );
 }
 

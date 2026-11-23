@@ -6,6 +6,7 @@
 //! module is selected by default.
 
 pub mod assembly;
+pub mod banded_tight;
 pub mod dense_lu;
 pub mod dense_lu_reuse;
 pub mod krylov;
@@ -13,5 +14,6 @@ pub mod sparse_lu;
 pub mod speculative;
 pub mod timed;
 
+pub use banded_tight::BandedTightStageLu;
 pub use dense_lu::{DenseLuMode, DenseLuStageClient};
 pub use timed::{PhaseTimes, PhaseTimesHandle, TimedStageClient};

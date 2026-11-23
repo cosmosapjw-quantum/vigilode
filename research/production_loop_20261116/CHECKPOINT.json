@@ -67,7 +67,7 @@
   },
   "implemented_source_sha256": {
     "crates/vigilode/tests/default_path_golden.rs": "9ef2b4b7aff1d92b14c7f28c764e5ff791a2823091ec50cf8ffc1167366863ec",
-    "crates/rodas5p-integrators/src/stage_clients/mod.rs": "6711180e5d8f94420066a874404caa767c81eb8a4b3d6a4628f0460a06fabcc7",
+    "crates/rodas5p-integrators/src/stage_clients/mod.rs": "3613713d20c77c043f067163ba53ede41a47b9e34070154349bf97740e52c44f",
     "crates/rodas5p-integrators/src/stage_clients/dense_lu.rs": "e38ac77f206911b3a89d95fbd111d0bbc3976d435591b3f963ae2fed449f4568",
     "crates/rodas5p-integrators/src/stage_clients/timed.rs": "bfe575492d5e4f9fa9e83f6f38cb005e7ceec0a95b085218aa15c38e91f2554c",
     "crates/rodas5p-integrators/tests/stage_clients_dense_identity.rs": "7769e739736f67690bd38b6e5d1e01e29bdc97e29a5bf3ed91292376fad2ad74",
@@ -85,7 +85,10 @@
     "crates/rodas5p-integrators/tests/stage_clients_speculative_contracts.rs": "5829fe8175d7302db8479ada7d3a779cd598658b146a6262006d4d77a664788a",
     "crates/rodas5p-integrators/tests/stage_clients_speculative_measure.rs": "e076c39847179d4bae5a3db0fbe8b5a6292dd9464e85929ca488257c2f59ae3b",
     "crates/rodas5p-integrators/tests/stage_clients_speculative_problems.rs": "eaf83d08cb2c28855beff9768c5bd440b39fd6fe8650c2c1b3b418bad9926e82",
-    "crates/rodas5p-integrators/src/stage_clients/dense_lu_reuse.rs": "3871cd0b223b434c1fbfa1a9c23416c44f6ea8eff8f44a6891f2ed8f30c4efd8"
+    "crates/rodas5p-integrators/src/stage_clients/dense_lu_reuse.rs": "3871cd0b223b434c1fbfa1a9c23416c44f6ea8eff8f44a6891f2ed8f30c4efd8",
+    "crates/rodas5p-integrators/src/stage_clients/banded_tight.rs": "aa75809e43faea94ad56639e417d3f12e187ecb7311824502dc7f717a09ce771",
+    "crates/rodas5p-integrators/tests/stage_clients_banded_tight_identity.rs": "26d113cdda3c38d4b36b6c1b0d1b77f1ee681a48c0c9266d3ea2427a364b5db0",
+    "crates/rodas5p-integrators/tests/stage_clients_banded_tight_alloc.rs": "0bc864ac2c4acc4dafb35848e69c465c1aab0c7a6f8091ae5bae322ad0c92f32"
   },
   "preregistration_frozen_part_sha256": "0a5c7e061be57d24f382f24594c7d83a1ec68a4365ec6590c316d1d351ba0c85",
   "notes": [
@@ -95,7 +98,8 @@
     "Wave 1: golden oracle merged; trial merge not adopted (gates T2, T3 strict, T6 fail); V15 code stays on its branch.",
     "Epoch 2 starts at the adoption content commit; protected blobs are the post-merge bytes. The 2026-11-15 checker no longer applies.",
     "2026-11-17 wave 2 group 1: nodes V04, V06 (stage a) and V07 (stage a) merged after independent review; 10 implemented source files and 12 evidence files added to the identity lists. Stage-client stubs krylov.rs and speculative.rs are now implementations.",
-    "2026-11-17: stage-client stub dense_lu_reuse.rs pre-seeded for node V18; mod.rs gains its module line."
+    "2026-11-17: stage-client stub dense_lu_reuse.rs pre-seeded for node V18; mod.rs gains its module line.",
+    "2026-11-23: node V21 stage b: opt-in stage client banded_tight.rs with its identity and allocation tests added by the orchestrator session; mod.rs gains its module line and re-export."
   ],
   "epochs": [
     {

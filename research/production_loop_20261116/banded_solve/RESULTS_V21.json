@@ -766,17 +766,184 @@
     }
   },
   "stage_b": {
-    "instruction_measure": "NOT_RUN",
+    "instruction_measure": "PASS",
     "per_cell": {
-      "bruss1d5000": null,
-      "bruss1d50000": null
+      "bruss1d5000": {
+        "cycles_label": "diagnostic_only",
+        "cycles_ratio": 0.6916560931640595,
+        "instructions_ratio": 0.44863046371433796,
+        "measurement": "logs/drive_b1_bruss1d5000.jsonl",
+        "n": 10000,
+        "valid": true
+      },
+      "bruss1d50000": {
+        "cycles_label": "diagnostic_only",
+        "cycles_ratio": 0.7453344010700732,
+        "instructions_ratio": 0.451456637377509,
+        "measurement": "logs/drive_b1_bruss1d50000.jsonl",
+        "n": 100000,
+        "valid": true
+      }
     },
     "thresholds": {
       "KILL": 0.85,
       "PASS": 0.6
     }
   },
-  "stage_b_measurements": [],
+  "stage_b_measurements": [
+    {
+      "band": 64,
+      "budget": 16,
+      "complete": true,
+      "counts_operations_and_state_hash_equal_in_every_run": true,
+      "cycles_authoritative": false,
+      "family": "ac2d",
+      "file": "logs/drive_b1_ac2d64.jsonl",
+      "index": 1,
+      "kernels": {
+        "indexed": {
+          "attempts_of_the_long_run": 16,
+          "cycles_per_attempt": 164849165.66666666,
+          "cycles_ratio_to_indexed": 1.0,
+          "cycles_spread": 0.40844408762622875,
+          "instructions_per_attempt": 878530625.9333333,
+          "instructions_ratio_to_indexed": 1.0,
+          "instructions_spread": 1.531344831133447e-07,
+          "rounds": 7
+        },
+        "tight": {
+          "attempts_of_the_long_run": 16,
+          "cycles_per_attempt": 62710867.93333333,
+          "cycles_ratio_to_indexed": 0.3804136204130864,
+          "cycles_spread": 0.20027784997892012,
+          "instructions_per_attempt": 189375412.73333332,
+          "instructions_ratio_to_indexed": 0.21555926127463648,
+          "instructions_spread": 5.192507935638631e-07,
+          "rounds": 7
+        }
+      },
+      "load_after": 10.69,
+      "load_before": 10.65,
+      "load_ok": false,
+      "n": 4096,
+      "sha256": "26f1ec52482b741343004317184b893a63405b2f6066f70956e494b70002c624",
+      "size": 64
+    },
+    {
+      "band": 256,
+      "budget": 6,
+      "complete": true,
+      "counts_operations_and_state_hash_equal_in_every_run": true,
+      "cycles_authoritative": false,
+      "family": "ac3d",
+      "file": "logs/drive_b1_ac3d16.jsonl",
+      "index": 1,
+      "kernels": {
+        "indexed": {
+          "attempts_of_the_long_run": 6,
+          "cycles_per_attempt": 2005080518.6,
+          "cycles_ratio_to_indexed": 1.0,
+          "cycles_spread": 0.31603242519280234,
+          "instructions_per_attempt": 11638243798.2,
+          "instructions_ratio_to_indexed": 1.0,
+          "instructions_spread": 1.9384367976237237e-08,
+          "rounds": 7
+        },
+        "tight": {
+          "attempts_of_the_long_run": 6,
+          "cycles_per_attempt": 691984316.4,
+          "cycles_ratio_to_indexed": 0.345115475404031,
+          "cycles_spread": 0.23274918489178642,
+          "instructions_per_attempt": 1881686929.6,
+          "instructions_ratio_to_indexed": 0.16168134662130262,
+          "instructions_spread": 1.2159302185350967e-07,
+          "rounds": 7
+        }
+      },
+      "load_after": 8.7,
+      "load_before": 10.69,
+      "load_ok": false,
+      "n": 4096,
+      "sha256": "f9278a15136502d2094d40749d084e6dbd28fee3c2a6f3a096172838d685df2f",
+      "size": 16
+    },
+    {
+      "band": 2,
+      "budget": 40,
+      "complete": true,
+      "counts_operations_and_state_hash_equal_in_every_run": true,
+      "cycles_authoritative": false,
+      "family": "bruss1d",
+      "file": "logs/drive_b1_bruss1d5000.jsonl",
+      "index": 1,
+      "kernels": {
+        "indexed": {
+          "attempts_of_the_long_run": 40,
+          "cycles_per_attempt": 7477610.102564103,
+          "cycles_ratio_to_indexed": 1.0,
+          "cycles_spread": 0.1821711553705863,
+          "instructions_per_attempt": 23822969.025641024,
+          "instructions_ratio_to_indexed": 1.0,
+          "instructions_spread": 1.4810098288826329e-06,
+          "rounds": 7
+        },
+        "tight": {
+          "attempts_of_the_long_run": 40,
+          "cycles_per_attempt": 5171934.58974359,
+          "cycles_ratio_to_indexed": 0.6916560931640595,
+          "cycles_spread": 0.09106628547253579,
+          "instructions_per_attempt": 10687709.641025642,
+          "instructions_ratio_to_indexed": 0.44863046371433796,
+          "instructions_spread": 2.7445855397639014e-06,
+          "rounds": 7
+        }
+      },
+      "load_after": 10.35,
+      "load_before": 10.35,
+      "load_ok": false,
+      "n": 10000,
+      "sha256": "3bf7e066421a1a3b3cc095b4eb7dd4db094efc883c00595889fe350936443554",
+      "size": 5000
+    },
+    {
+      "band": 2,
+      "budget": 40,
+      "complete": true,
+      "counts_operations_and_state_hash_equal_in_every_run": true,
+      "cycles_authoritative": false,
+      "family": "bruss1d",
+      "file": "logs/drive_b1_bruss1d50000.jsonl",
+      "index": 1,
+      "kernels": {
+        "indexed": {
+          "attempts_of_the_long_run": 40,
+          "cycles_per_attempt": 80429986.23076923,
+          "cycles_ratio_to_indexed": 1.0,
+          "cycles_spread": 0.26350295606661855,
+          "instructions_per_attempt": 239534871.76923078,
+          "instructions_ratio_to_indexed": 1.0,
+          "instructions_spread": 5.234503620937779e-08,
+          "rounds": 7
+        },
+        "tight": {
+          "attempts_of_the_long_run": 40,
+          "cycles_per_attempt": 59947235.615384616,
+          "cycles_ratio_to_indexed": 0.7453344010700732,
+          "cycles_spread": 0.1311603406802631,
+          "instructions_per_attempt": 108139607.74358974,
+          "instructions_ratio_to_indexed": 0.451456637377509,
+          "instructions_spread": 3.9123215986292015e-07,
+          "rounds": 7
+        }
+      },
+      "load_after": 10.65,
+      "load_before": 10.35,
+      "load_ok": false,
+      "n": 100000,
+      "sha256": "53fb9e1cdaec155198b40139b5edf059dabed21a3190ba8dc5abbbc162cba7ac",
+      "size": 50000
+    }
+  ],
   "validity": {
     "TA_bit_identical_cases": 78,
     "TA_valid": true,
