@@ -21,8 +21,8 @@
     "crates/vigilode/src/switching.rs": "1db70211ccac93087e281fd869b0f6aeffdcb592",
     "crates/rodas5p-core/src/work.rs": "76577cf6cb0295f859efcad2606150a01961cae7",
     "docs/agent/unified_local_agent_20261109/VIGILODE_UNIFIED_DAG_20261109.json": "ef422f5effab1839cca1f01bb0218c625a54daea",
-    "Cargo.toml": "2eedb77e5cdd4e856e263ea604055d33341c4377",
-    "Cargo.lock": "9bc1afe66b0ff77dc08f76ef9d0532fae81b0df5",
+    "Cargo.toml": "4a12bc83c4ab97b49745861fe8f480862bbd4021",
+    "Cargo.lock": "b89372e46e78d9042cab825f4b866e80df59c195",
     "rust-toolchain.toml": "857955b9997d05c97f71b5356bb2c307eafd6945",
     "crates/rodas5p-integrators/src/source_owned_graph_schur.rs": "5d2c4319143e60117a7804c1f4524b269df358ea",
     "crates/rodas5p-integrators/src/rodas5p_fast.rs": "785d29e83817a53f65e5a8d3237a98760f6817e3",
@@ -127,7 +127,8 @@
     "2026-11-23: node V21 stage b: opt-in stage client banded_tight.rs with its identity and allocation tests added by the orchestrator session; mod.rs gains its module line and re-export.",
     "2026-11-23 wave 2 group 2: nodes V03a, V17 and V16 merged after independent review (run wf_f2599e6f-a4a); 12 implemented source files and 12 evidence files added to or updated in the identity lists (stage_clients/krylov.rs changed by V17). Result files of the banded nodes V19 and V21 are added when their last measurements are in.",
     "2026-11-23: result files of the orchestrator-run nodes V19 (KILL) and V21 (PASS) added to the evidence list after their last measurements.",
-    "2026-11-23: owner decisions OD-L1-9 to OD-L1-12 appended to OWNER_DECISIONS_20261116.json; its identity is updated."
+    "2026-11-23: owner decisions OD-L1-9 to OD-L1-12 appended to OWNER_DECISIONS_20261116.json; its identity is updated.",
+    "2026-11-23: epoch 3 opened. It holds the edits of protected files that the owner approved on 2026-11-23 (OD-L1-9 to OD-L1-12); the pins of epoch 2 are kept in the list of epochs. First edit, under OD-L1-12: workspace version 0.1.0 -> 0.2.0 in Cargo.toml and the six workspace package entries of Cargo.lock that take that version; no dependency changed."
   ],
   "epochs": [
     {
@@ -159,9 +160,39 @@
         "crates/rodas5p-integrators/src/rodas5p_lagged.rs": "cce154680e0398510709caab3b3f5f8a6dd76b50"
       },
       "closed_by": "adoption of the switcher lineage (owner decision OD-L1-5)"
+    },
+    {
+      "epoch": 2,
+      "base_commit": "c63171dcf350cf5e1abb5e875eb7370685efc0af",
+      "protected_blob_sha1": {
+        "fixtures/rodas5p_coefficients_snapshot.json": "bc55da4d43549ffbcee3cb25e31be05658507742",
+        "crates/rodas5p-core/src/coefficients.rs": "c309a3b9d902f8a3865fbedaaf7fad45e5448ea5",
+        "crates/rodas5p-integrators/src/sequential.rs": "1e5e94d7b02e6846bc425036981cb2169a7c0efb",
+        "crates/rodas5p-integrators/src/parallel.rs": "ffdfb1cef258ed43586db0323eb0e7f9de27dd53",
+        "crates/rodas5p-integrators/src/stage_batch.rs": "c2f44c327c53d7c6dfe7ba80b26cd43486d56b43",
+        "crates/rodas5p-integrators/src/ptsw2b.rs": "f491b0a3f5f351d0fe933b06bf9ea30a0c730922",
+        "crates/rodas5p-integrators/src/candidates.rs": "2a6c7a7179a34932938ee4233d48b31457e38cf1",
+        "crates/rodas5p-krylov/src/block_gmres.rs": "68968fc1e764d2dd355373928ed11406c8dc9c1c",
+        "crates/vigilode/src/lib.rs": "355258e433d654b956280804bd255af11981198f",
+        "crates/vigilode/src/automatic.rs": "ff4f5db411b310039b627d66774b24885eb3cf7d",
+        "crates/vigilode/src/switching.rs": "1db70211ccac93087e281fd869b0f6aeffdcb592",
+        "crates/rodas5p-core/src/work.rs": "76577cf6cb0295f859efcad2606150a01961cae7",
+        "docs/agent/unified_local_agent_20261109/VIGILODE_UNIFIED_DAG_20261109.json": "ef422f5effab1839cca1f01bb0218c625a54daea",
+        "Cargo.toml": "2eedb77e5cdd4e856e263ea604055d33341c4377",
+        "Cargo.lock": "9bc1afe66b0ff77dc08f76ef9d0532fae81b0df5",
+        "rust-toolchain.toml": "857955b9997d05c97f71b5356bb2c307eafd6945",
+        "crates/rodas5p-integrators/src/source_owned_graph_schur.rs": "5d2c4319143e60117a7804c1f4524b269df358ea",
+        "crates/rodas5p-integrators/src/rodas5p_fast.rs": "785d29e83817a53f65e5a8d3237a98760f6817e3",
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs": "a3896e3a751cf921f83ac1e5f5e6a20bb64f7676",
+        "crates/rodas5p-integrators/src/adaptive.rs": "f94721da75de6cf6d2bae9171cb33a9f4328077d",
+        "crates/rodas5p-integrators/src/rodas5p_fast_dense.rs": "34a5c7d847151d82767c2ca92194b8f583503984",
+        "crates/rodas5p-integrators/src/client_stage.rs": "beed050b1a55a3041c2e505d307ddbcd3977629a",
+        "crates/rodas5p-integrators/src/rodas5p_lagged.rs": "cce154680e0398510709caab3b3f5f8a6dd76b50"
+      },
+      "closed_by": "owner decisions OD-L1-9 to OD-L1-12 of 2026-11-23 (approved edits of protected files)"
     }
   ],
-  "epoch": 2,
+  "epoch": 3,
   "protected_blobs_changed_by_adoption": [
     "crates/rodas5p-integrators/src/adaptive.rs",
     "crates/rodas5p-integrators/src/rodas5p_fast.rs",
