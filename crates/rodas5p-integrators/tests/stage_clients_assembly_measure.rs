@@ -9,7 +9,8 @@
 //! V08_MODE=failclosed                               the negative controls
 //! V08_MODE=timing     V08_CELL=<id> [V08_BACKEND=protected] [V08_ARMS=seq,t6]
 //!                                                   right-hand-side cost, 2 warm-up + 7 timed rounds
-//! V08_MODE=single     V08_CELL=<id> V08_ARM=<arm>   one solve (for perf stat)
+//! V08_MODE=single     V08_CELL=<id> V08_ARM=<arm> [V08_DUMP=<file>]
+//!                                                   one solve (for perf stat; dumps the last state)
 //! cargo test --release -p rodas5p-integrators --test stage_clients_assembly_measure -- --ignored --nocapture
 //! ```
 //!
@@ -471,13 +472,27 @@ fn single(id: &str) {
     let protected_backend = std::env::var("V08_BACKEND").is_ok_and(|name| name == "protected");
     let config = RunConfig::declared();
     let cell = cell(id, false, protected_backend);
-    let mut record = if arm == "prot" {
-        protected_record(&cell, &run_protected(&cell, &config))
+    let (mut record, t_end, state) = if arm == "prot" {
+        let run = run_protected(&cell, &config);
+        let (t_end, state) = final_state(&run.result, &run.partial);
+        (protected_record(&cell, &run), t_end, state.to_vec())
     } else {
         let (_, run) = run_client(&cell.fd, &spec(&cell, parse_arm(&arm), false), &config);
-        client_record(&cell, &arm, &run.unwrap())
+        let run = run.unwrap();
+        let (t_end, state) = final_state(&run.result, &run.partial);
+        (client_record(&cell, &arm, &run), t_end, state.to_vec())
     };
     record["backend_cell"] = serde_json::json!(cell.backend_name);
+    // The last accepted time and state as little-endian f64 (t, then y),
+    // for the reference solutions.
+    if let Ok(path) = std::env::var("V08_DUMP") {
+        let bytes: Vec<u8> = std::iter::once(t_end)
+            .chain(state)
+            .flat_map(f64::to_le_bytes)
+            .collect();
+        std::fs::write(&path, bytes).unwrap();
+        record["dump"] = serde_json::json!(path);
+    }
     println!("V08_SINGLE_JSON {record}");
 }
 
