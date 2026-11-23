@@ -219,13 +219,25 @@ pub struct PreflightAnalysis {
 /// The preflight analysis of the router.
 pub struct PreflightAnalyzer;
 
-/// Method id that the registry's general surface selects for a declared regime.
+/// Method id that the registry's general surface selects for a declared regime
+/// (`MethodRegistry::general_method`). The catalog is constant, so the two ids are looked
+/// up once.
 pub(super) fn method_id(regime: ProblemRegime) -> &'static str {
-    match MethodRegistry::general_method(regime) {
-        Some(entry) => entry.descriptor.method_id,
-        // the catalog lists one selectable method per regime; these are their ids
-        None if regime == ProblemRegime::Stiff => "rodas5p",
-        None => "dopri5",
+    static IDS: std::sync::OnceLock<[&'static str; 2]> = std::sync::OnceLock::new();
+    let lookup = |regime, listed| {
+        // the catalog lists one selectable method per regime; `listed` is its id
+        MethodRegistry::general_method(regime).map_or(listed, |entry| entry.descriptor.method_id)
+    };
+    let [explicit, implicit] = *IDS.get_or_init(|| {
+        [
+            lookup(ProblemRegime::Nonstiff, "dopri5"),
+            lookup(ProblemRegime::Stiff, "rodas5p"),
+        ]
+    });
+    if regime == ProblemRegime::Stiff {
+        implicit
+    } else {
+        explicit
     }
 }
 
