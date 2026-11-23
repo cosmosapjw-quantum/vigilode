@@ -10,6 +10,7 @@ Usage (from the worktree root):
     python3 -I research/production_loop_20261116/unified_router/build_receipt.py
 """
 
+import fnmatch
 import json
 import re
 import subprocess
@@ -96,15 +97,17 @@ def header(lines, key):
 def parse_tests(lines):
     """Status of every test, records by bare test name, digest lines, totals."""
     statuses, records, digests = {}, {}, []
-    totals = {"passed": 0, "failed": 0, "ignored": 0, "binaries": 0, "doctest_binaries": 0}
+    totals = {"passed": 0, "failed": 0, "ignored": 0, "result_lines": 0, "binaries": 0,
+              "doctest_runs": 0}
     binaries = []
     current = None
     for line in lines:
         running = RUNNING_LINE.match(line)
         if running:
             binaries.append(running.group(1))
+            totals["binaries"] += 1
         if DOCTEST_LINE.match(line):
-            totals["doctest_binaries"] += 1
+            totals["doctest_runs"] += 1
         at = line.find(RECORD)
         if at >= 0:
             record = json.loads(line[at + len(RECORD) :], parse_constant=strict_number)
@@ -127,7 +130,7 @@ def parse_tests(lines):
             totals["passed"] += int(result.group(2))
             totals["failed"] += int(result.group(3))
             totals["ignored"] += int(result.group(4))
-            totals["binaries"] += 1
+            totals["result_lines"] += 1
     return {
         "statuses": statuses,
         "records": records,
@@ -153,7 +156,7 @@ def command_entry(name):
         "loadavg_after": header(lines, "loadavg_after"),
         "exit_code": None if exit_code is None else int(exit_code),
     }
-    if parsed["totals"]["binaries"]:
+    if parsed["totals"]["result_lines"]:
         entry["tests"] = parsed["totals"]
     return entry
 
@@ -425,6 +428,7 @@ def main():
             },
             "verdict": "PASS"
             if by_name["default_path_golden"].get("exit_code") == 0
+            and by_name["golden_diff"].get("exit_code") == 0
             and len(golden_files) == 9 and not golden_diff
             else "FAIL",
         },
@@ -435,6 +439,7 @@ def main():
                 "failed": suite["totals"]["failed"],
                 "ignored": suite["totals"]["ignored"],
                 "test_binaries": suite["totals"]["binaries"],
+                "doctest_runs": suite["totals"]["doctest_runs"],
                 "failed_tests": failed_tests,
             },
             "verdict": "NOT_RUN" if not suite_lines else (
@@ -457,6 +462,9 @@ def main():
             "verdict": "PASS"
             if receipt.get("switching_adapter_neutrality", {}).get("all_identical")
             and len(golden_files) == 9
+            and by_name["protected_diff"].get("exit_code") == 0
+            and not [line for line in (read_log("protected_diff") or [])
+                     if not line.startswith("#")]
             else "FAIL",
         },
     }
@@ -480,11 +488,43 @@ def main():
             continue
         status, path = line.split("\t", 1)
         changed.append({"status": status, "path": path})
+    # the log was written before the last evidence files existed: add what git sees now
+    # (tracked changes against the base and untracked files)
+    listed = {entry["path"] for entry in changed}
+    for line in git("diff", "--name-status", BASE).splitlines():
+        status, path = line.split("\t", 1)
+        if path not in listed:
+            changed.append({"status": status, "path": path})
+            listed.add(path)
+    for line in git("status", "--porcelain", "--untracked-files=all").splitlines():
+        if line.startswith("?? ") and line[3:] not in listed:
+            changed.append({"status": "A", "path": line[3:]})
+            listed.add(line[3:])
+    changed.sort(key=lambda entry: entry["path"])
     receipt["changed_paths"] = changed
-    receipt["changed_paths_outside_the_task_allowlist"] = [
+    outside_task = [
         entry["path"] for entry in changed
         if not any(re.match(pattern, entry["path"]) for pattern in ALLOWED)
     ]
+    receipt["changed_paths_outside_the_task_allowlist"] = outside_task
+    # The loop checker stops at the first path outside the programme allowlist. Its last
+    # loop is repeated here over every changed path, so that the whole list is known.
+    programme = strict_load(ROOT / "docs/agent/production_solver_program_20261112"
+                            / "MUTATION_GATES.json")["active_allowlist"]
+    checkpoint_base = strict_load(HERE.parent / "CHECKPOINT.json")["base_commit"]
+    since_checkpoint = git("diff", "--name-only", checkpoint_base).splitlines()
+    misses = [path for path in since_checkpoint
+              if not any(fnmatch.fnmatchcase(path, pattern) for pattern in programme)]
+    receipt["loop_checker_allowlist"] = {
+        "checker_complaint": next((line for line in checker if "allowlist" in line), None),
+        "paths_outside_the_programme_allowlist": misses,
+        "all_of_them_are_allowed_by_the_task": all(
+            any(re.match(pattern, path) for pattern in ALLOWED) for path in misses
+        ),
+        "checks_passed_before_the_allowlist_step": "strict JSON of the programme and loop "
+            "files, task/DAG structure, ancestry, protected blobs, evidence and implemented "
+            "source identities: the checker reaches its allowlist loop only after them",
+    }
     receipt["protected_paths_diff_against_base"] = [
         line for line in (read_log("protected_diff") or []) if not line.startswith("#")
     ]

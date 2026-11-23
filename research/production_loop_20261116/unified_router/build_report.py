@@ -95,7 +95,8 @@ def main():
       f"{a2['verdict']} |")
     m = a3["measured"]
     w(f"| A3 기존 facade 테스트 전부 통과 | exit {m['exit_code']}, 통과 {m['passed']}, "
-      f"실패 {m['failed']}, 무시 {m['ignored']}, 테스트 바이너리 {m['test_binaries']}개 | "
+      f"실패 {m['failed']}, 무시 {m['ignored']}, 테스트 바이너리 {m['test_binaries']}개와 doc-test "
+      f"{m['doctest_runs']}회 | "
       f"{a3['verdict']} |")
     m = a4["measured"]
     w(f"| A4 다른 frontend의 동작 불변 | `SwitchingSolver`와 `ProductionSolver`의 기록 digest "
@@ -217,8 +218,8 @@ def main():
     entry = stop["fatal_preflight_callback"]
     w(f"| 사전 점검에서 RHS가 치명적 오류 | `{entry['base']}` | `{entry['now']}` |")
     w("")
-    w(f"DOPRI5 구간에서 치명적 오류를 낸 callback에 다시 들어간 횟수(치명적 오류 반환 횟수): "
-      f"{pair(stop['fatal_entries_on_the_explicit_leg'])}.")
+    w(f"`Auto`에서 DOPRI5 구간의 RHS가 치명적 오류를 낸 경우, 치명적 오류를 돌려준 RHS 호출 수"
+      f"(다른 방법이 다시 부르면 2): {pair(stop['fatal_entries_on_the_explicit_leg'])}.")
     w("")
     w("`VigilodeSolution::stop`은 멈춘 driver가 밝힌 값이다: RODAS5P는 `FailureReason`, DOPRI5는 "
       "`Dopri5StopReason`과 callback 실패와 메시지, switching adapter는 자신의 메시지와 멈춘 segment의 "
@@ -301,7 +302,7 @@ def main():
     w("- `SolverStrategy::HighPerformance`: `Auto`와 똑같이 경로를 고른다.")
     w("- `VigilodeWorkspace::new`의 둘째 인자와 `step_into`(고정 간격 Heun 단계): 어떤 solver도 쓰지 않는다.")
     w("- 마지막 구간이 RODAS5P가 아닐 때 `VigilodeSolution::stats`의 driver 전용 필드"
-      "(`driver_work`, `jacobian` 등)는 형식상의 빈 값이다. `Stats`가 RODAS5P 기록 형식이기 때문이다. "
+      "(`driver_work`, `driver_counters`, `adaptive` 등)는 형식상의 빈 값이다. `Stats`가 RODAS5P 기록 형식이기 때문이다. "
       "그 driver의 기록은 `explicit_solution`, `switching_solution`에 있다.")
     w("- `PexprbWindowDriver`의 segment 기록은 `SwitchingMethod::Rodas5p`로 적힌다. `SwitchingMethod`에 "
       "지수 적분 값이 없고 `switching.rs`는 보호 대상이다. 문서에 적었다.")
@@ -436,9 +437,12 @@ def main():
     w("5. **fallback 구간이 거절되는 경로**(앞 구간은 적분했는데 RODAS5P가 입력을 거절)는 구현했지만"
       "(`UnifiedStop::Refused`, 앞 구간 유지), 지금의 경로 규칙으로는 공개 API에서 이 상황을 만들 수 없어 "
       "테스트가 없다.")
-    w("6. **registry를 거치는 비용.** 한 번의 solve에 method catalog를 여러 번 만든다"
+    w("6. **screen 뒤의 거절.** screen이 RHS를 부른 뒤 두 진입점이 모두 적분 전에 오류를 돌려주면 "
+      "`Err`가 반환되고 screen의 호출 수는 보고되지 않는다. screen 전에 DOPRI5의 입력 검증과 RODAS5P의 "
+      "승인을 통과시키므로, 기록을 남기지 않는 driver 내부 오류일 때만 생길 수 있다. 테스트는 없다.")
+    w("7. **registry를 거치는 비용.** 한 번의 solve에 method catalog를 여러 번 만든다"
       "(`MethodRegistry::route`, `solve`). 시간은 재지 않았다.")
-    w("7. **V03 part A에서 넘어온 것은 그대로다.** 일반 sparse-JVP 문제의 sequential 경로 계획은 여전히 "
+    w("8. **V03 part A에서 넘어온 것은 그대로다.** 일반 sparse-JVP 문제의 sequential 경로 계획은 여전히 "
       "실행되지 않는다(`Rodas5p::capabilities`). 이 node의 격자에는 그 조합이 없다.")
     w("")
 
