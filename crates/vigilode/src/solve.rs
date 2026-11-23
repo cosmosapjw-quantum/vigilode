@@ -169,7 +169,6 @@ impl AtolSpec {
     }
 }
 
-/// How the facade will call the drivers, decided before any step.
 /// The smallest half band width at which the banded routes of
 /// [`Rodas5p::solve`] run the Slices kernel of the protected banded driver.
 ///
@@ -178,8 +177,13 @@ impl AtolSpec {
 /// other band on the Indexed kernel. The two kernels perform the same
 /// floating-point operations in the same order, so the results are the same
 /// bits; [`crate::Stats::route`] names the entry point and the driver that
-/// ran. Below this width the Slices kernel is not faster (loop L1 node V22).
-pub const BANDED_SLICES_MIN_HALF_WIDTH: usize = 8;
+/// ran.
+///
+/// The value is the result of the width scan of loop L1 node V22: from this
+/// half band width on the Slices kernel needed at most 0.95 of the
+/// instructions and of the cycles of the Indexed kernel on every scanned
+/// problem; at half band width 5 it needed more cycles.
+pub const BANDED_SLICES_MIN_HALF_WIDTH: usize = 6;
 
 /// The kernel of the facade's banded routes for `band`.
 fn banded_kernel(band: &BandedJacobian) -> BandedKernel {
@@ -190,6 +194,7 @@ fn banded_kernel(band: &BandedJacobian) -> BandedKernel {
     }
 }
 
+/// How the facade will call the drivers, decided before any step.
 enum Plan {
     /// Through the router, with an optional band declaration.
     Routed {
