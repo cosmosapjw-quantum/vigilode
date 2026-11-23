@@ -66,3 +66,39 @@ D2 (threaded arm). faer's own threads are behind the cargo feature "rayon", whic
 1. Read tests/stage_clients_dense_identity.rs and tests/stage_clients_alloc.rs (identity set, counting allocator).
 2. Read choose_lu in rodas5p_fast.rs and the V04 runner (dense problem family, timing protocol).
 3. Write PREDECLARED.json, commit, then the client, the tests, the runner.
+
+== 2026-11-23 21:58 KST: milestone - client, tests, runner, PREDECLARED committed ==
+Commits so far: 5fe32408 notes; 4035c011 client (dense_lu_reuse.rs + dense_lu_reuse/threaded.rs);
+67b5bedf identity test + shared problems module; ca5a8dfe allocation test; 2ebae4d9 PREDECLARED.json
+(predeclared commit, before any measurement); 49d84242 runner + pilot + faer feature evidence.
+
+Decisions taken (all written into PREDECLARED.json):
+D3. Threaded arm: faer's Par::Rayon does not exist in this build (compile probe E0599, cargo tree shows the
+    features linalg, sparse, sparse-linalg, std). The arm as the contract words it is NOT_RUN. A client-side
+    arm that needs no manifest change is built (faer's recursion in the client; panels <= 64 columns by faer's
+    sequential lu_in_place; triangular solve, product and swaps of each level split with rayon::join on a
+    client-owned pool). Both lines are reported; the orchestrator rules which one is the verdict of A2.
+D4. Problems: meanfield (client-kit faer row, any order) and the new family skewnet (full skew coupling,
+    manufactured solution phi = atanh(alpha(t) p + beta(t) q), so the reference is analytic; W is not
+    diagonally dominant, the factorisation moves up to 1393 of 2048 rows).
+D5. Page faults per attempt: read with getrusage in the Jacobian hook at every accepted state; rate per
+    accepted step is an upper bound of the rate per attempt.
+D6. Heap-layout variants: symbolic links of 93, 108 and 124 characters in <target>/hl/ to the runner
+    (own path 89 characters), started with an emptied environment.
+
+Development results seen before the freeze (deterministic, repeated and logged after it):
+- identity test target: 7 passed, 1 ignored; allocation test: protected and kit 6 allocations per attempt
+  (3 n x n matrices + 3 small), reuse 0, threaded 0..1 per run (job queue block of the pool).
+- threaded factors equal the sequential ones bit for bit in every tested case (n = 65..512; 2, 4, 6 workers).
+Sizing pilot (protected only): skewnet.n2048 on [0,1]: 17/26/45 attempts at rtol 1e-4/1e-5/1e-6, about
+0.25 s per attempt on a loaded host; skewnet.n512 on [0,2]: 29/88/340; meanfield.n512: 89 at 1e-6.
+Protected driver minor faults per accepted step in the pilot: about 780 at n = 512, 24.6e3 at n = 2048.
+
+After the freeze (first results, logs/identity.*.jsonl): reuse and kit equal the protected driver in 18 of 18
+runner rows each (n = 128, 512, 2048); the threaded arm (2, 4, 6 workers) is bit-identical in 54 of 54 rows.
+
+== Next steps ==
+1. Background job (build links reference identity tests faults) is running; then parse.
+2. Timing stages under the lock: wall, wp, extra; then perf.
+3. parse_results.py -> RESULTS.json; make_report.py -> REPORT_KO.md; checks (clippy, rustfmt, sentinels,
+   kit tests, loop checker, strict JSON); final commit.
