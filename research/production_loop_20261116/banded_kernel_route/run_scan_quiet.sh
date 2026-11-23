@@ -1,7 +1,8 @@
 #!/bin/sh
 # One series of the width scan of node V22 (PREDECLARED.json), like run_scan.sh, but before
-# each cell the script waits until the 1-minute load is at most 7 (at most 20 minutes; then it
-# measures anyway). The wait looks at the load only, never at a result. Cells whose log of this
+# each cell the script waits until the 1-minute load is at most 7 and the timing lock is free
+# (at most 20 minutes; then it measures anyway). The wait looks at the host only, never at a
+# result. Cells whose log of this
 # tag and index exists are skipped, so an interrupted series can be continued.
 # usage: run_scan_quiet.sh <runner binary> <index> <tag>
 set -eu
@@ -16,10 +17,12 @@ attempts() {
     else echo 12
     fi
 }
+lock=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/timing.lock
 quiet() {
     n=0
     while [ "$n" -lt 80 ]; do
-        if awk '{ exit !($1 <= 7.0) }' /proc/loadavg; then return 0; fi
+        # Quiet: the 1-minute load is at most 7 and no other agent holds the timing lock.
+        if awk '{ exit !($1 <= 7.0) }' /proc/loadavg && flock -n "$lock" true; then return 0; fi
         n=$((n + 1))
         sleep 15
     done

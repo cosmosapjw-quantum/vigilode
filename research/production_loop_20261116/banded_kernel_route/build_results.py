@@ -64,13 +64,17 @@ def scan_table(all_cells):
     table = {}
     for family, sizes in SCAN.items():
         for size, width in sizes.items():
-            mine = [c for c in all_cells if (c["family"], c["size"]) == (family, size)
-                    and "slices" in c["kernels"] and "indexed" in c["kernels"]]
+            taken = sorted((c for c in all_cells if (c["family"], c["size"]) == (family, size)),
+                           key=lambda c: c["index"])
+            # At most three measurements of a cell count (one and two re-measurements); a
+            # measurement without both kernels (interrupted) counts as taken and cannot decide.
+            mine = [c for c in taken[:3] if "slices" in c["kernels"] and "indexed" in c["kernels"]]
             cell, auth = v21.first_authoritative(mine, "cycles_authoritative")
             if cell is None:
                 continue
             entry = ratio_entry(cell, auth)
-            entry["measurements_taken"] = len(mine)
+            entry["measurements_taken"] = len(taken)
+            entry["measurements_beyond_the_third_ignored"] = max(0, len(taken) - 3)
             entry["qualifies"] = bool(auth and entry["instructions_ratio"] <= QUALIFY
                                       and entry["cycles_ratio"] <= QUALIFY)
             table.setdefault(width, {})[family] = entry
