@@ -114,7 +114,7 @@ CHECK in this order and give evidence for each:
 5. Recompute the verdict of each frozen discriminator from the builder's RESULTS.json with a short script of your own and state PASS, FAIL, KILL or NOT_DECIDABLE.
 When something cannot be verified, say so and do not accept it. Verdict "accept" only if the evidence supports every claim of the builder's report; "accept_with_corrections" if the work is sound and specific claims or labels must be corrected (list them); "reject" if a discriminator verdict is unsupported or the scope or protection rules were broken. Keep "summary" under 1200 characters; put the detail in "findings".`
 
-const NODES = [
+const ALL_NODES = [
   { id: 'V23_CAPABILITIES_TRUTH', key: 'v23', prompt: V23, extra: 'For this facade node also re-run the default-path golden oracle, read the full-suite log of the builder and re-run every existing test file the builder edited.', scope: 'Allowed: crates/vigilode/src/{capabilities.rs,solve.rs (validation and refusal only),error.rs}; crates/vigilode/tests/capabilities_contracts.rs, capabilities_truth_contracts.rs with golden/capabilities_truth/**; unified_frontend_contracts.rs, default_path_golden.rs and golden/default_path/** only as discriminator D3 requires; ' + EV + '/capabilities_fix/** except PREDECLARED.json. Task: node V23 of addendum A6; frozen design ' + EV + '/capabilities_fix/PREDECLARED.json.' },
   { id: 'V24_MF_ADAPTIVE_STAGE_SOLVE', key: 'v24', prompt: V24, extra: 'Re-run the unit tests of the column test, the D0 recording, two development cells and four deciding cells (two families, the loosest and the tightest tolerance) with the solve-log audit.', scope: 'Allowed by owner decision OD-L1-11: crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs, crates/rodas5p-krylov/src/gmres_staged.rs, crates/rodas5p-integrators/src/routing.rs (policy of the matrix-free route), one re-export block in crates/rodas5p-integrators/src/lib.rs, the pin and one allowed block in the sentinel test of crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs; new tests mf_adaptive_*.rs and gmres_staged_column_test_*.rs; crates/vigilode/src/{solve.rs,solution.rs} where the driver identifier is named; default_path_golden.rs and golden/default_path/** as discriminator G requires; ' + EV + '/mf_adaptive/** except PREDECLARED.json. Task: node V24 of addendum A6; frozen design ' + EV + '/mf_adaptive/PREDECLARED.json.' },
 ]
@@ -131,7 +131,13 @@ CHECK in this order and give evidence for each:
 6. Claims of REPORT_KO.md and of the PROGRESS entries against the logs: anything stated that the logs do not support (in particular about cycles and about what did not change)?
 When something cannot be verified, say so and do not accept it. Verdict "accept" only if the evidence supports every claim; "accept_with_corrections" if the work is sound and specific claims or labels must be corrected (list them); "reject" if a verdict is unsupported or a pre-registration rule was broken. Use "V22_FACADE_BANDED_KERNEL" as node.`
 
-const orchReview = agent(ORCH_REVIEW, { label: 'review:v22', phase: 'Review', schema: REVIEW_SCHEMA })
+// args.nodes: keys of the builder nodes to run (default both); args.review_v22: also review node V22.
+const RUN = args.nodes || ['v23', 'v24']
+const NODES = ALL_NODES.filter(n => RUN.includes(n.key))
+log('group 5: builders ' + NODES.map(n => n.key).join(', ') + (args.review_v22 ? '; review of V22' : ''))
+const orchReview = args.review_v22
+  ? agent(ORCH_REVIEW, { label: 'review:v22', phase: 'Review', schema: REVIEW_SCHEMA })
+  : Promise.resolve(null)
 
 const results = await pipeline(
   NODES,
