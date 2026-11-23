@@ -1,0 +1,90 @@
+# command: cargo +1.94.1 tree --locked -p rodas5p-integrators -e features -i faer
+faer v0.24.4
+├── faer feature "linalg"
+│   ├── rodas5p-core v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-core)
+│   │   └── rodas5p-core feature "default"
+│   │       ├── rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-integrators)
+│   │       │   └── rodas5p-integrators feature "default" (command-line)
+│   │       └── rodas5p-krylov v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-krylov)
+│   │           └── rodas5p-krylov feature "default"
+│   │               └── rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-integrators) (*)
+│   ├── rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-integrators) (*)
+│   └── rodas5p-krylov v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-krylov) (*)
+│   └── faer feature "sparse-linalg"
+│       ├── rodas5p-core v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-core) (*)
+│       ├── rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-integrators) (*)
+│       └── rodas5p-krylov v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-krylov) (*)
+├── faer feature "sparse"
+│   └── faer feature "sparse-linalg" (*)
+├── faer feature "sparse-linalg" (*)
+└── faer feature "std"
+    ├── rodas5p-core v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-core) (*)
+    ├── rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-integrators) (*)
+    └── rodas5p-krylov v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-krylov) (*)
+# exit: 0
+
+# command: cargo +1.94.1 tree --locked --workspace -e features -i faer (all workspace members)
+faer v0.24.4
+├── faer feature "linalg"
+│   ├── rodas5p-core v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-core)
+│   │   └── rodas5p-core feature "default" (command-line)
+│   │       ├── rodas5p-cli v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-cli)
+│   │       │   └── rodas5p-cli feature "default" (command-line)
+│   │       ├── rodas5p-fair-ab v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-fair-ab)
+│   │       │   └── rodas5p-fair-ab feature "default" (command-line)
+│   │       │       └── rodas5p-cli v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-cli) (*)
+│   │       ├── rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-integrators)
+│   │       │   └── rodas5p-integrators feature "default" (command-line)
+│   │       │       ├── rodas5p-cli v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-cli) (*)
+│   │       │       ├── rodas5p-fair-ab v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-fair-ab) (*)
+│   │       │       ├── vigilode v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/vigilode)
+│   │       │       │   └── vigilode feature "default" (command-line)
+│   │       │       └── vigilode-coupled v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/vigilode-coupled)
+│   │       │           └── vigilode-coupled feature "default" (command-line)
+│   │       ├── rodas5p-krylov v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-krylov)
+│   │       │   └── rodas5p-krylov feature "default" (command-line)
+│   │       │       ├── rodas5p-cli v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-cli) (*)
+│   │       │       ├── rodas5p-fair-ab v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-fair-ab) (*)
+│   │       │       └── rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-integrators) (*)
+│   │       ├── vigilode v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/vigilode) (*)
+│   │       └── vigilode-coupled v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/vigilode-coupled) (*)
+│   ├── rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-integrators) (*)
+│   └── rodas5p-krylov v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-krylov) (*)
+│   └── faer feature "sparse-linalg"
+│       ├── rodas5p-core v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-core) (*)
+│       ├── rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-integrators) (*)
+│       └── rodas5p-krylov v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-krylov) (*)
+├── faer feature "sparse"
+│   └── faer feature "sparse-linalg" (*)
+├── faer feature "sparse-linalg" (*)
+└── faer feature "std"
+    ├── rodas5p-core v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-core) (*)
+    ├── rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-integrators) (*)
+    └── rodas5p-krylov v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18/crates/rodas5p-krylov) (*)
+# exit: 0
+
+# faer entry of Cargo.lock
+[[package]]
+name = "faer"
+version = "0.24.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5ab6df3dd147fe8d702a288b95bcd8fcc499ab572fc80da6828f60cd4d524d67"
+dependencies = [
+ "bytemuck",
+ "dyn-stack",
+ "equator 0.6.0",
+ "faer-traits",
+ "gemm",
+ "generativity",
+ "libm",
+ "nano-gemm",
+ "num-complex",
+ "num-traits",
+ "private-gemm-x86",
+ "pulp",
+# packages of Cargo.lock named spindle or depending on rayon:
+827-name = "rayon"
+897-name = "rodas5p-integrators"
+1113-name = "vigilode"
+# Cargo.toml line 24:
+faer = { version = "0.24.4", default-features = false, features = ["std", "linalg", "sparse-linalg"] }
