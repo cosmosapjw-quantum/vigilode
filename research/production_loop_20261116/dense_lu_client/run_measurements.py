@@ -152,6 +152,8 @@ def meets_quality_rule(name):
     """Load before and after at most 8 and the spread of every arm at most 10 %."""
     walls, before, after = {}, None, None
     for line in (LOGS / name).read_text().splitlines():
+        if not line.startswith("{"):
+            continue
         row = json.loads(line)
         if row["type"] == "header":
             before = row["loadavg_before"][0]
@@ -166,25 +168,36 @@ def meets_quality_rule(name):
 
 
 def measure(stage, base, length, cell, rtol, arms, options=()):
-    """A timing invocation with the re-measurement rule; every try is kept."""
-    for attempt in range(1, MAX_TRIES + 1):
-        wait_for_quiet()
-        name = f"{base}{ROUND_SUFFIX}.try{attempt}.jsonl"
-        code = runner(
-            stage,
-            name,
-            length,
-            "measure",
-            cell,
-            rtol,
-            ["--arms", ",".join(arms), "--warmups", "2", "--reps", "7"] + list(options),
-            TIMING,
-            {"try": attempt, "round": ROUND, "arms": arms},
-        )
-        if code == 0 and meets_quality_rule(name):
-            print(f"  {name}: meets the quality rule", flush=True)
-            return
-        print(f"  {name}: does not meet the quality rule", flush=True)
+    """One more try of a timing invocation.
+
+    Nothing is run when an earlier try of this round meets the quality rule or when the three
+    tries of the re-measurement rule exist. Every try is kept. Calling a timing stage again
+    therefore re-measures exactly the invocations that still miss the rule.
+    """
+    names = [f"{base}{ROUND_SUFFIX}.try{k}.jsonl" for k in range(1, MAX_TRIES + 1)]
+    done = [name for name in names if (LOGS / name).exists()]
+    if any(meets_quality_rule(name) for name in done):
+        print(f"  {base}: an earlier try meets the quality rule", flush=True)
+        return
+    if len(done) == MAX_TRIES:
+        print(f"  {base}: three tries exist, none meets the quality rule", flush=True)
+        return
+    attempt = len(done) + 1
+    name = names[attempt - 1]
+    wait_for_quiet()
+    code = runner(
+        stage,
+        name,
+        length,
+        "measure",
+        cell,
+        rtol,
+        ["--arms", ",".join(arms), "--warmups", "2", "--reps", "7"] + list(options),
+        TIMING,
+        {"try": attempt, "round": ROUND, "arms": arms},
+    )
+    verdict = "meets" if code == 0 and meets_quality_rule(name) else "does not meet"
+    print(f"  {name}: {verdict} the quality rule", flush=True)
 
 
 def stage_build():

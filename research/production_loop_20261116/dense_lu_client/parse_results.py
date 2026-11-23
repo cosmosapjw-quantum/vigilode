@@ -870,7 +870,23 @@ def main():
         "timing_quality_rule": {"load_limit": LOAD_LIMIT, "spread_limit": SPREAD_LIMIT},
         "sources": {
             "manifest_entries": len(MANIFEST),
-            "runner_sha256": sorted({e["runner_sha256"] for e in MANIFEST if "runner_sha256" in e}),
+            "runner_sha256": sorted(
+                {
+                    entry["runner_sha256"]
+                    for stage in ("identity", "reference", "faults", "wall", "wp", "extra")
+                    for entry in last_invocations(stage).values()
+                    if "runner_sha256" in entry
+                }
+            ),
+            "runner_sha256_of_superseded_invocations": sorted(
+                {e["runner_sha256"] for e in MANIFEST if "runner_sha256" in e}
+                - {
+                    entry["runner_sha256"]
+                    for stage in ("identity", "reference", "faults", "wall", "wp", "extra")
+                    for entry in last_invocations(stage).values()
+                    if "runner_sha256" in entry
+                }
+            ),
             "heap_layout_links": [e for e in MANIFEST if e.get("stage") == "links" and "link" in e][-3:],
             "logs": [{"name": p.name, "bytes": p.stat().st_size, "sha256": sha256(p)} for p in logs],
             "invocations_with_non_zero_exit": failed,

@@ -102,3 +102,30 @@ runner rows each (n = 128, 512, 2048); the threaded arm (2, 4, 6 workers) is bit
 2. Timing stages under the lock: wall, wp, extra; then perf.
 3. parse_results.py -> RESULTS.json; make_report.py -> REPORT_KO.md; checks (clippy, rustfmt, sentinels,
    kit tests, loop checker, strict JSON); final commit.
+
+== 2026-11-23 22:20 KST: milestone - identity, allocation and page-fault parts measured ==
+Commit bba4a0fe holds the logs of the non-timing stages, repeated with the final runner binary after a
+clippy fix in the shared problems module (needless_range_loop in the partial_t closure of skewnet; the
+arithmetic is unchanged). The first set of these logs (earlier binary) is in commit 9e1eadef.
+Results (RESULTS.json, parts of the reuse verdict): identity PASS (15 client-kit rows, 18 faer-path test rows
+at n = 128, 512, 2048, 18 runner rows; kit client 18 of 18; threaded arm bit-identical in 54 of 54 rows, up
+to 1393 of 2048 rows moved by pivoting); allocations PASS (reuse 0 per attempt; protected and kit 6 per
+attempt, 6.3 MB at n = 512); page faults PASS (reuse at most 0.29 per accepted step; protected 31..840 at
+n = 512 depending on the run and variant, 24579..25263 at n = 2048).
+
+Incident, recorded in logs/WAIT_BUDGET.json: the first timing stage (wall) was started at 22:01:37 and was
+meant to be stopped at 22:05 for the clippy fix. `kill` stopped only its shell wrapper; the Python script
+kept waiting for a load of at most 8 (it never saw one) until 22:18, when it was found and stopped together
+with a second instance started at 22:17. Neither made a timing run (no wall log existed). The whole
+elapsed time, 17 minutes, is counted against the node's 20 minutes of waiting. The host load was 12 to 27
+in that period (builds of the other agents of the group plus this node's own repeated non-timing stages).
+
+Change to the measurement script after that (no change of the declared rule): one call of a timing stage
+adds one try to every invocation that still misses the quality rule (at most three tries per invocation),
+so the two re-measurements can be made later than the first try instead of back to back.
+
+== Next steps ==
+1. Timing pass 1 (wall, wp, extra) is running (background, started 22:19).
+2. run_checks.sh (cargo; not while a timing invocation runs), then timing pass 2 and 3 for invocations that
+   miss the quality rule, then perf stage.
+3. parse_results.py, make_report.py, final checks, final commit.
