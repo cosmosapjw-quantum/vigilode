@@ -1,0 +1,138 @@
+NOTES of node V03_UNIFIED_FRONTEND part B (truthful unified router), loop L1 wave 2
+worktree /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03b
+branch   research/production-loop-20261116-w2-v03b, base 587a139501729bbe886bb2b8c49b0ef893705d08
+target   /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03b
+
+== entry 1 (2026-11-23, start) ==
+State found: worktree clean at the base commit, no earlier run of this node
+(research/production_loop_20261116/unified_router/ did not exist).
+
+Read so far (file:line of the base commit):
+- crates/vigilode/src/unified/mod.rs:1-9      module doc claims "Nilpotent homotopy sweep", "GCRO-DR",
+                                              "Exponential Actions", "Zero-Allocation Hot Loops": no code behind them.
+- crates/vigilode/src/unified/router.rs:63-75 Tier2MatrixFreeKrylov | Tier4StagedRodas5p | TierProtectedReference |
+                                              Tier3Exponential -> dispatch_rodas5p_tier -> Rodas5p::solve (:193);
+                                              :175-180 only the label string differs (COD-05).
+- router.rs:285-291                           every unsuccessful SwitchingSolution -> Failed(MaxStepsReached) (COD-06).
+- router.rs:267-273                           7 switching counters copied, the rest dropped; :277 empty_stats.
+- router.rs:142                               fixed text instead of the DOPRI5 stop reason.
+- router.rs:222-235                           "fallback" of a JVP problem calls the identical Rodas5p::solve again.
+- router.rs:260-263                           AdaptiveReentrant escalates to DerivativeFallback::AllowFiniteDifference.
+- unified/fallback.rs:44-46                   fallback leg restarts the full max_steps budget; '?' drops the charged
+                                              explicit prefix and route_history; :56 stats cover the fallback leg only.
+- unified/analyzer.rs:113-116                 one RHS call at preflight, not charged; error -> InvalidInput.
+- analyzer.rs:162-198                         dense Jacobian + mu2 (eigen solve); mu2 <= 0 and span <= 100 -> Tier1Explicit,
+                                              is_stiff = !is_contracting (COD-07); not charged.
+- analyzer.rs:210-221                         every finite-difference problem with n <= 10 -> Tier1Explicit.
+- unified/workspace.rs:45-47                  8n, (m+1)n and n*n buffers allocated for every problem; never passed to a driver;
+                                              :123-144 step_into is a Heun step with the VG-1 claim.
+- unified/options.rs:25-52                    profile, max_krylov_restarts, invariant_drift_tol never read.
+- unified/solution.rs:37                      doc says max_t |I(y(t)) - I(y0)|, code computes the endpoint difference.
+- crates/vigilode/tests/unified_production_solver_contracts.rs:204,232,262  assert label strings
+  ("Tier1ExplicitDopri5", "Tier2MatrixFreeKrylov", "ProtectedRODAS5P"), not the executed driver.
+- research/production_loop_20261116/audit/audit_findings.json  COD-05, COD-06, COD-07 (claims, minimal_fix).
+- docs/agent/production_solver_program_20261112/TASK_CONTRACTS.json tasks[28] V03_UNIFIED_FRONTEND (state_note: part B
+  is a node of the next group); PREREGISTRATION.md has no frozen row for part B: the acceptance list of the task text
+  is the criterion, protocol choices go to PREDECLARED.json before the first test run.
+
+Next steps:
+1. read selection.rs / selection/** (V03a: MethodChoice, MethodRegistry::route/solve, SolutionView), production.rs
+   (GeneralOdePolicy), explicit.rs, switching.rs public API, solution.rs (Stats.route, FailureReason), registry.rs.
+2. PREDECLARED.json (test problems, tolerances, work bounds, what "label equals executed driver" compares) -> commit.
+3. unified_router_contracts.rs written first, run against the base sources, failing outputs kept in logs/.
+4. fix router/analyzer/fallback/solution/workspace/options/mod docs; registry.rs typed driver error if in reach.
+5. full facade suite, clippy, fmt, doc, loop checker, RECEIPT.json, REPORT_KO.md (rendered by script).
+
+== entry 2 (2026-11-23) ==
+Commits so far: f360f05f notes; 5192520c PREDECLARED.json (before any run); 8dbbfcd5 contract tests,
+part 1 (public API of the base only) + logs/failing_first_base.log: 20 of 20 fail on the base by
+assertion; e07aa292 implementation: the same 20 pass.
+
+Read in addition (base commit): crates/vigilode/src/selection.rs:30-66 (ProblemRegime, GeneralOdePolicy),
+selection/frontend.rs:255-407 (catalog, ids "dopri5" and "rodas5p"), :830-945 (admit), :1054-1250
+(general_method, route), :1396-1755 (MethodSolution, SolutionView, solve); explicit.rs:141-470;
+switching.rs:466-926, :2613-2839 (Batch, From<BatchOutcome>, run); solve.rs:57-139, :595-746;
+registry.rs:1-590; solution.rs:36-183, :276-522.
+
+Design decisions (all in PREDECLARED.json before the first run):
+- SelectedTier = {Tier1Explicit, TierProtectedReference, Tier5AdaptiveSwitching}; Tier2/3/4 removed
+  (no file outside src/unified names them).
+- label of a leg = driver id of its own run record, written after the leg ran.
+- routing: strategy, declared regime (new option VigilodeOptions::regime), explicit admission by the
+  registry, supplied derivative/band, dimension > 10, else charged stiffness screen (n + 1 rhs calls,
+  Lipschitz lower bound L; evidence iff L * span > 3.3 * B) and a trial of B = min(1000, N/2) attempts.
+- DOPRI5 and RODAS5P legs run through MethodRegistry::route / solve with MethodChoice::Explicit(id);
+  the method of a regime is MethodRegistry::general_method(regime).
+- switching leg: SwitchingSolver::solve on a clone of the problem whose callbacks are forwarded
+  unchanged and whose first fatal error is recorded (the adapter keeps no callback message:
+  registry.rs:281 and :522 "callback failure", dropped at switching.rs:2702).
+- new file crates/vigilode/src/unified/legs.rs (UnifiedLeg, UnifiedStop, CallbackStop).
+- existing files edited: tests/unified_production_solver_contracts.rs (4 label assertions, 2 comments),
+  examples/unified_production_solver.rs (header list, 1 comment). logs/existing_unified_tests_before_edit.log
+  shows that only contract_3 and contract_4 failed before the edit, both on label strings.
+
+Measured (part 1, new code): heat n=64 dense J 328 rhs calls (base 314119); heat n=8 FD 723 (58411);
+scalar dense 48 (600049); scalar FD 74 (600073); Robertson FD max_steps 500: 266 attempts (base 516).
+
+Next steps: part 2 tests (new API) and their compile-fail log on a scratch copy of the base;
+registry.rs typed WindowDriver error (COD-06) if it can be done without touching switching.rs;
+full facade suite, golden oracle, clippy, fmt, doc, loop checker, RECEIPT.json, REPORT_KO.md.
+
+== entry 3 (2026-11-23) ==
+Commits since entry 2: 5870b04e part 2 tests + logs/failing_first_new_api.log (compile failure on a
+scratch copy of the base); 9abb4d5c registry.rs (typed WindowDriverError, BatchOutcome::failure,
+BatchStop::Fatal carries the callback message) + part 3 tests + neutrality digest module +
+logs/switching_digests_base.log; 0736e2c1 method-id lookup cached; 4503b86e run_checks.sh.
+
+registry.rs decisions:
+- BatchStop keeps its five values: switching.rs:2697-2703 matches on them without a wildcard, so a new
+  value would not compile in a protected file. The driver's stop is the new field BatchOutcome::failure.
+- WindowDriver::run -> Result<BatchOutcome, WindowDriverError>; impl From<WindowDriverError> for String
+  keeps `?` in switching.rs:2835-2836 compiling and gives the same text (Display is transparent).
+- not changed: work_units (it would change SwitchingSolver decisions), the Recoverable -> FatalCallback
+  mapping of PexprbWindowDriver, SolverState/next_solver_state.
+
+Neutrality of the switching adapter: the module between the markers ">>> neutrality" / "<<< neutrality"
+of tests/unified_router_contracts.rs uses only base API; it was run on a scratch copy of the base
+(git archive 587a1395 Cargo.toml Cargo.lock rust-toolchain.toml crates, in the session scratch
+directory, built in the node's cargo target directory) and here: 77 of 77 lines identical
+(11 problems x 7 configurations, JSON length and FNV-1a 64 of the full record).
+
+Implementation detail consistent with the predeclared budget rule: with max_steps <= 1 the trial budget
+min(1000, N/2) is 0, no trial is made and RODAS5P runs (RouteBasis::NoBudgetForTrial).
+
+A hook flagged "rm -rf" of the scratch copy as destructive: not run; a fresh directory name was used.
+
+State of the checks at 4503b86e: contracts 36 passed; existing unified/registry/switching targets 86
+passed; golden 11 passed, 9 files identical; clippy, fmt and doc clean when run by hand. The full suite
+is running (logs/full_suite.log). Still to do: clippy/fmt/doc/example/checker/diff through
+run_checks.sh, refresh logs/failing_first_new_api.log with the final test file, RECEIPT.json,
+REPORT_KO.md (build_receipt.py, build_report.py are written).
+
+== entry 4 (2026-11-23, final) ==
+Checks (run_checks.sh; logs/*.log; code identical at 4503b86e and ec0ee46d, only files under
+research/production_loop_20261116/unified_router changed between them):
+- contracts.log            36 passed, 0 failed (20 part 1, 15 parts 2 and 3, 1 digest module)
+- existing_unified_and_registry_tests.log  86 passed, 0 failed (8 targets)
+- default_path_golden.log  11 passed; 9 golden files reported identical; golden_diff.log empty
+- full_suite.log           533 passed, 0 failed, 0 ignored (56 test binaries and the doc-tests);
+                           533 - 36 = 497 tests outside the new binary
+- clippy.log, fmt_check.log, doc.log, example.log  exit 0
+- check_checkpoint.log     exit 1, "ValueError: changed path outside active allowlist:
+                           crates/vigilode/examples/unified_production_solver.rs". The checker stops at
+                           the first path outside the programme allowlist; repeating its last loop gives
+                           12 such paths, all of them code paths that the task allows (listed in
+                           RECEIPT.json, loop_checker_allowlist). Every earlier check of the checker passed.
+- protected_diff.log       empty
+- logs/failing_first_new_api.log was refreshed with the final test file (exit 101, compile errors).
+
+RECEIPT.json is built by build_receipt.py from the logs and git; REPORT_KO.md by build_report.py from
+RECEIPT.json. Rebuild: python3 -I research/production_loop_20261116/unified_router/build_receipt.py &&
+python3 -I research/production_loop_20261116/unified_router/build_report.py
+
+Open (also in REPORT_KO.md section 9): behaviour changes of Auto (supplied Jacobian -> RODAS5P; explicit
+trial limited to 1000 attempts); status is approximate for a switching stop on a DOPRI5 segment that is
+neither a callback failure nor the budget; no permission option for finite-difference Jacobians; the
+Refused path and the refusal-after-screen path have no test; registry items not changed (work_units,
+Pexprb recoverable errors, SolverState without caller); BatchStop::Completed still covers minimum-step
+stops because switching.rs matches the enum exhaustively.

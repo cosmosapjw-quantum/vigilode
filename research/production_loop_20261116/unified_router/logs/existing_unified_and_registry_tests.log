@@ -1,0 +1,143 @@
+# command: taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_production_solver_contracts --test unified_frontend_contracts --test registry_contracts --test switcher_v2_admission_contracts --test switching_economy_contracts --test production_hotloop_allocation_contracts --test sparse_jvp_contracts --test switching_v2_remediation_contracts
+# commit: 4503b86e16a576685a756abb4d51d3d306228db6
+# worktree_dirty_files: 0
+# date: 2026-11-23T22:07:28+09:00
+# loadavg_before: 13.11 12.90 12.74 9/5287 921684
+   Compiling vigilode v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03b/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 1m 07s
+     Running tests/production_hotloop_allocation_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03b/release/deps/production_hotloop_allocation_contracts-b25e8ff57b493893)
+
+running 5 tests
+test test_allocator_positive_control ... ok
+test test_pilot_probe_driver_attempt_instrumentation ... ok
+test test_production_session_stepping_allocation_accounting ... ok
+test test_whole_run_allocation_accounting ... ok
+test test_implicit_collective_stepping_hotloop_zero_allocation ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/registry_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03b/release/deps/registry_contracts-1d66bef9c10490e6)
+
+running 5 tests
+test distinct_routes_have_distinct_provider_epochs ... ok
+test state_machine_batch_stop_coverage ... ok
+test audit_replay_safety_detects_non_deterministic_callbacks ... ok
+test audit_replay_safety_allows_deterministic_callbacks ... ok
+test state_machine_table_driven_all_transitions ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/sparse_jvp_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03b/release/deps/sparse_jvp_contracts-fbf59bd215d8a864)
+
+running 3 tests
+test sparse_jvp_tridiagonal_heat_matches_dense_and_charges_correct_jvps ... ok
+test sparse_jvp_non_banded_dense_row_falls_back_to_matrix_free ... ok
+test sparse_jvp_bit_identity_of_existing_dense_banded_jvp_routes ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/switcher_v2_admission_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03b/release/deps/switcher_v2_admission_contracts-608b10dae561d28f)
+
+running 6 tests
+test bitwise_preservation_of_switching_config_default ... ok
+test pexprb_window_driver_metadata_contract ... ok
+test route_registry_factory_defaults_contract ... ok
+test production_refusal_of_pressure_only_entry_policy ... ok
+test pexprb_window_driver_execution_contract_harmonic_and_decay ... ok
+test b7_route_sized_first_batch_dense_contract ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/switching_economy_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03b/release/deps/switching_economy_contracts-d06c6b65688c5490)
+
+running 13 tests
+test b8_progress_bound_contracts ... ok
+test discarded_probes_back_off_and_are_work_bounded_on_a_persistently_stiff_problem ... ok
+test economical_pilot_is_never_stopped_by_the_ceiling ... ok
+test discarded_pilot_work_is_bounded_by_the_entry_ceiling ... ok
+test b1_loss_margin_backoff_contracts ... ok
+test switching_selector_with_pilots_allocation_is_bounded ... ok
+test e3_jvp_assembled_route_contracts ... ok
+test new_policy_controls_are_validated_before_callbacks ... ok
+test implicit_tenure_coalesces_windows_between_probes_and_seeds_its_step ... ok
+test bounded_pilot_on_a_declared_band_is_discarded_not_refused ... ok
+test return_to_explicit_still_happens_after_a_stiff_to_smooth_transition ... ok
+test explicit_batch_loop_allocation_is_bounded ... ok
+test discarded_pilots_back_off_geometrically_and_rearm_on_a_work_rate_jump ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/switching_v2_remediation_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03b/release/deps/switching_v2_remediation_contracts-c5f483d214b3d07a)
+
+running 17 tests
+test f1_adaptive_evidence_factory_has_no_loss_margin_backoff ... ok
+test f4_progress_reach_upper_bound_boundary_table ... ok
+test f3_route_registry_defaults_to_work_model_v1 ... ok
+test f6_nondeterministic_jvp_disables_competitive_trials ... ok
+test f2_v2_entry_ceiling_stops_losing_rotation_pilots_like_v1 ... ok
+test f4_progress_screen_preserves_entry_decisions ... ok
+test f5_first_explicit_batch_keeps_configured_budget_on_small_dense_routes ... ok
+test f6_replay_audit_charges_deterministic_jvp_calls ... ok
+test f7_tolerance_epoch_is_fnv_stable ... ok
+test f8_declared_entry_policy_must_match_effective_schedule ... ok
+test f9_switcher_route_selection_is_limited_to_legacy_routes ... ok
+test wp02_window_epoch_is_checkpoint_sensitive_sha256_stable ... ok
+test skeleton_helpers_reproduce_registered_counters ... ok
+test x9_hysteresis_band_validation_and_default_neutrality ... ok
+test x5_stiffness_gate_flags_stiff_forced_and_backs_off_on_rotation ... ok
+test f6_replay_mismatch_keeps_explicit_progress_and_disables_pilots ... ok
+test f9_reference_counters_after_remediation ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/unified_frontend_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03b/release/deps/unified_frontend_contracts-9e56bd7e5363fb4e)
+
+running 31 tests
+test auto_ranking_is_transparent_and_refuses_before_any_callback ... ok
+test catalog_extends_the_registry_and_states_what_is_unavailable ... ok
+test cod04b_p2a_starter_endpoint_above_t_end_is_a_success_with_exact_endpoint ... ok
+test cod02_p5_invalid_h0_is_refused_before_any_callback ... ok
+test auto_fallback_is_opt_in_bounded_by_permissions_and_never_silent ... ok
+test cod04c_p4_recoverable_jacobian_error_is_reported_as_itself ... ok
+test cod04cd_p6_fatal_rhs_error_is_reported_as_a_fatal_callback ... ok
+test cod04a_p1_jvp_provider_needs_the_jvp_permission ... ok
+test cod04e_p7_declared_band_is_refused_by_admission_too ... ok
+test cod03_audit_cases_agree_through_route ... ok
+test d2_lawson_adapter_is_bitwise_the_direct_call_and_needs_its_declaration ... ok
+test d3_explicit_refusals_are_typed ... ok
+test d2_dopri5_adapter_and_general_plan_are_bitwise_the_direct_calls ... ok
+test d2_pexprb_adapter_is_bitwise_the_direct_call ... ok
+test d3_solve_refuses_malformed_input_before_any_callback ... ok
+test d2_lagged_rodas5p_adapter_is_bitwise_the_direct_call ... ok
+test d2_radau_adapter_is_bitwise_the_direct_call ... ok
+test d2_rodas5p_adapter_is_bitwise_the_direct_call_on_every_facade_route ... ok
+test cod02_p3_fast_forcing_20_is_error_controlled_or_refused ... ok
+test peer_recoverable_jacobian_error_on_a_peer_step_is_typed_and_stops ... ok
+test d2_bdf_adapter_is_bitwise_the_direct_call ... ok
+test peer_fatal_rhs_error_on_a_peer_step_is_typed_with_prefix ... ok
+test view_reports_typed_failure_with_accepted_prefix_and_work ... ok
+test view_reports_the_executed_route_when_the_capability_query_disagrees ... ok
+test peer_starter_record_and_typed_starter_failure ... ok
+test d2_ppsw1_adapter_is_bitwise_the_direct_call ... ok
+test peer_baseline_digests_of_the_u07_cases ... ok
+test cod02_p3b_fast_forcing_200_is_error_controlled_or_refused ... ok
+test d3_route_is_pure_for_every_choice_over_the_extension_grid ... ok
+test d1_route_general_equals_select_on_the_golden_decision_grid ... ok
+test d1_phase_b_select_equals_the_reference_body_on_the_extension_grid ... ok
+
+test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s
+
+     Running tests/unified_production_solver_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03b/release/deps/unified_production_solver_contracts-9799abf0b9e3b341)
+
+running 6 tests
+test contract_2_workspace_reuse_and_retained_bytes ... ok
+test contract_4_fail_closed_protected_fallback ... ok
+test contract_5_physical_invariant_preservation ... ok
+test contract_6_complete_work_accounting_and_timing_authority ... ok
+test contract_3_autonomous_tier_routing ... ok
+test contract_1_single_api_ergonomics ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+# loadavg_after: 15.08 13.58 12.99 18/5291 926870
+# exit_code: 0

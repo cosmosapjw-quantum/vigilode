@@ -1,52 +1,86 @@
-//! Solution record and trajectory representation for `VigilODE`.
+//! The result of a unified solve: the accepted end point, the executed legs, the total
+//! work and the typed stop.
 
 use serde::{Deserialize, Serialize};
 
+use super::analyzer::PreflightAnalysis;
+use super::legs::{UnifiedLeg, UnifiedStop};
+use crate::explicit::ExplicitSolution;
 use crate::solution::{Solution, Stats, Status};
+use crate::switching::SwitchingSolution;
 
-/// Record of an autonomous polyalgorithm tier transition during integration.
+/// One executed leg in the route history, written after the leg ran.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct RouteTransitionRecord {
-    /// Name of the originating tier/driver.
+    /// Driver identifier of the leg before this one; `preflight` for the first leg.
     pub from_tier: String,
-    /// Name of the destination tier/driver.
+    /// Driver identifier of this leg, as its own run record states it
+    /// ([`UnifiedLeg::driver_id`]). It is not a tier name.
     pub to_tier: String,
-    /// Time $t$ at which the transition occurred.
+    /// Start time of the leg.
     pub time: f64,
-    /// Diagnostic explanation for the transition.
+    /// Why the leg was started: the basis of the analysis, or the stop of the leg before.
     pub reason: String,
-    /// Step index at the transition.
+    /// Accepted steps of the legs before this one.
     pub step_index: usize,
 }
 
-/// Unified solution structure produced by [`super::VigilODE`].
+/// Result of [`super::VigilODE::solve`].
+///
+/// `Ok` does not mean that the end time was reached: check [`VigilodeSolution::success`]
+/// or use [`VigilodeSolution::ensure_success`]. A run that stops early keeps its accepted
+/// prefix (`final_time`, `final_state`), all its work and its typed stop.
 #[derive(Clone, Debug, Serialize)]
 pub struct VigilodeSolution {
-    /// Whether integration reached the final time within configured tolerances.
+    /// Whether the last leg reached the end time.
     pub success: bool,
-    /// Operational status of the integration run.
+    /// `Success`, or `Failed` with the facade reason of [`VigilodeSolution::stop`]
+    /// ([`UnifiedStop::facade_reason`]; it says where the translation is not exact).
     pub status: Status,
-    /// Final physical time reached.
+    /// Last accepted time.
     pub final_time: f64,
-    /// Final state vector $y(t_{\text{final}})$.
+    /// Last accepted state.
     pub final_state: Vec<f64>,
-    /// Accumulated runtime statistics and complete work counters.
+    /// The record of the whole solve in the facade's `Stats` type: the span and the
+    /// initial state of the solve; `counters`, `attempts`, `accepted_steps` and
+    /// `rejected_steps` summed over the preflight and every leg; `route` naming the driver
+    /// of the last leg. When the last leg is RODAS5P, the driver-specific fields
+    /// (`driver_work`, `driver_counters`, `adaptive`, `stop`, `driver_message`) are those
+    /// of that leg; otherwise they are the empty placeholders of the type, and the
+    /// driver's own record is in [`VigilodeSolution::explicit_solution`] or
+    /// [`VigilodeSolution::switching_solution`]. `counters.fallback_steps` counts the
+    /// RODAS5P legs that were started because another route did not finish.
     pub stats: Stats,
-    /// Chronological list of polyalgorithm method transitions.
+    /// One record per executed leg, in order.
     pub route_history: Vec<RouteTransitionRecord>,
-    /// Maximum absolute drift observed for each registered invariant $\max_t |I(y(t)) - I(y_0)|$.
+    /// `|I(y_final) - I(y0)|` for every invariant registered on the problem: the drift
+    /// between the two end points, not a maximum over the trajectory.
     pub invariant_drift: Vec<(String, f64)>,
-    /// Statistical timing authority flag (`"diagnostic_only"` under R2-STAT-01).
+    /// Always `"diagnostic_only"`: the elapsed time below is one unpinned measurement.
     pub timing_authority: &'static str,
-    /// Wall-clock elapsed time in nanoseconds (diagnostic only).
+    /// Wall time of the solve in nanoseconds; diagnostic only.
     pub elapsed_nanos: u128,
-    /// Underlying driver solution (if dense continuous extension or events are attached).
+    /// Why the solve stopped before the end time, as the driver that stopped reported it;
+    /// `None` after a success.
+    pub stop: Option<UnifiedStop>,
+    /// Every executed leg in order, with its driver, its span, its work and its stop.
+    pub legs: Vec<UnifiedLeg>,
+    /// The preflight analysis: the first entry point, why, and what the analysis cost.
+    pub analysis: PreflightAnalysis,
+    /// The solution of the RODAS5P leg, unchanged from `Rodas5p::solve`. It covers that
+    /// leg only: after an explicit trial it starts where the trial stopped.
     #[serde(skip)]
     pub inner_solution: Option<Solution>,
+    /// The solution of the DOPRI5 leg, unchanged from `Dopri5::solve`.
+    #[serde(skip)]
+    pub explicit_solution: Option<ExplicitSolution>,
+    /// The solution of the switching adapter, unchanged from `SwitchingSolver::solve`.
+    #[serde(skip)]
+    pub switching_solution: Option<SwitchingSolution>,
 }
 
 impl VigilodeSolution {
-    /// Returns the final state vector if available.
+    /// The last accepted state.
     pub fn final_state(&self) -> Option<&[f64]> {
         if self.final_state.is_empty() {
             None
@@ -55,10 +89,8 @@ impl VigilodeSolution {
         }
     }
 
-    /// Evaluate the continuous solution at physical time `t` in the span.
-    ///
-    /// If continuous dense output was enabled in [`super::VigilodeOptions`],
-    /// evaluates the Hermite / stage polynomial interpolant.
+    /// The state at `t`: from the continuous extension of the RODAS5P leg when that leg
+    /// ran with dense output and covers `t`, or the final state at the final time.
     pub fn at(&self, t: f64) -> Option<Vec<f64>> {
         if let Some(ref inner) = self.inner_solution {
             inner.at(t)
@@ -69,22 +101,22 @@ impl VigilodeSolution {
         }
     }
 
-    /// Whether the solve completed successfully.
+    /// Whether the solve reached the end time.
     pub fn success(&self) -> bool {
         self.success && self.status == Status::Success
     }
 
-    /// Operational statistics and work counters.
+    /// The record of the whole solve; see [`VigilodeSolution::stats`].
     pub fn stats(&self) -> &Stats {
         &self.stats
     }
 
-    /// Maximum observed drift for all registered physical invariants.
+    /// The end-point drift of every registered invariant.
     pub fn invariant_drift(&self) -> &[(String, f64)] {
         &self.invariant_drift
     }
 
-    /// Maximum invariant drift across all tracked quantities.
+    /// The largest end-point drift over the registered invariants.
     pub fn max_invariant_drift(&self) -> f64 {
         self.invariant_drift
             .iter()
@@ -92,18 +124,55 @@ impl VigilodeSolution {
             .fold(0.0, f64::max)
     }
 
-    /// Require that the run succeeded, otherwise return [`crate::SolveError`].
-    pub fn ensure_success(self) -> Result<Self, crate::SolveError> {
-        if self.success() {
-            Ok(self)
-        } else if let Some(ref inner) = self.inner_solution {
-            inner.clone().ensure_success()?;
-            Ok(self)
+    /// The driver identifiers of the executed legs, in order.
+    pub fn executed_drivers(&self) -> Vec<&str> {
+        self.legs.iter().map(|leg| leg.driver_id.as_str()).collect()
+    }
+
+    /// The route `<method id>/<variant>` of the last executed leg.
+    pub fn executed_route(&self) -> Option<&str> {
+        self.legs.last().map(|leg| leg.route_id.as_str())
+    }
+
+    /// The accepted prefix as a facade [`Solution`]: the solution of the RODAS5P leg when
+    /// it is the only leg, otherwise the two end points with the record of the whole solve.
+    pub fn partial_solution(&self) -> Solution {
+        if let (Some(inner), 1) = (&self.inner_solution, self.legs.len()) {
+            return inner.clone();
+        }
+        let t0 = self.stats.t_span.0;
+        let (t, y) = if self.final_time > t0 {
+            (
+                vec![t0, self.final_time],
+                vec![self.stats.y0.clone(), self.final_state.clone()],
+            )
         } else {
-            Err(crate::SolveError::Driver(format!(
-                "integration stopped at t = {} before final target",
+            (vec![t0], vec![self.stats.y0.clone()])
+        };
+        Solution {
+            t,
+            y,
+            stats: self.stats.clone(),
+            status: self.status.clone(),
+            events: Vec::new(),
+            splices: Vec::new(),
+            extension: None,
+        }
+    }
+
+    /// `Ok(self)` after a success, otherwise [`crate::SolveError::Failed`] with the facade
+    /// reason and the accepted prefix ([`VigilodeSolution::partial_solution`]).
+    pub fn ensure_success(self) -> Result<Self, crate::SolveError> {
+        match &self.status {
+            Status::Success if self.success => Ok(self),
+            Status::Failed(reason) => Err(crate::SolveError::Failed {
+                reason: reason.clone(),
+                partial: Box::new(self.partial_solution()),
+            }),
+            Status::Success => Err(crate::SolveError::Driver(format!(
+                "integration stopped at t = {} before the end time",
                 self.final_time
-            )))
+            ))),
         }
     }
 }

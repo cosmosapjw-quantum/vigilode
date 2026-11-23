@@ -1,0 +1,35 @@
+# command: taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test default_path_golden -- --nocapture --test-threads 1
+# commit: 4503b86e16a576685a756abb4d51d3d306228db6
+# worktree_dirty_files: 0
+# date: 2026-11-23T22:08:36+09:00
+# loadavg_before: 15.08 13.58 12.99 13/5291 926896
+   Compiling vigilode v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03b/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 32.60s
+     Running tests/default_path_golden.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03b/release/deps/default_path_golden-ffa1f3e7a79e95a9)
+
+running 11 tests
+test decision_grid ... golden decision_grid: identical (488690 bytes)
+ok
+test dopri5 ... golden dopri5: identical (86128 bytes)
+ok
+test format_helpers_are_bit_faithful ... ok
+test general_ode ... golden general_ode: identical (286767 bytes)
+ok
+test golden_directory_is_exactly_the_listed_files ... ok
+test production_automatic ... golden production_automatic: identical (402073 bytes)
+ok
+test rodas5p_brusselator ... golden rodas5p_brusselator: identical (564956 bytes)
+ok
+test rodas5p_contracts ... golden rodas5p_contracts: identical (154604 bytes)
+ok
+test rodas5p_hires ... golden rodas5p_hires: identical (170461 bytes)
+ok
+test rodas5p_robertson ... golden rodas5p_robertson: identical (370941 bytes)
+ok
+test rodas5p_vanderpol ... golden rodas5p_vanderpol: identical (158780 bytes)
+ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.08s
+
+# loadavg_after: 15.43 13.85 13.10 11/5299 929521
+# exit_code: 0

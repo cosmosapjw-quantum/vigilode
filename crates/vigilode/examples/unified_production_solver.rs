@@ -2,12 +2,18 @@
 //!
 //! Run with: `cargo run -p vigilode --example unified_production_solver`
 //!
-//! Highlights:
-//! 1. Single concise frontend API (`VigilODE::solve`).
-//! 2. Autonomous multi-tier polyalgorithm routing across nonstiff, stiff, and matrix-free problems.
-//! 3. Physical invariant drift monitoring.
-//! 4. Fail-closed transactional protected fallback.
-//! 5. Zero heap allocation in stepping hot loops (`VG-1`).
+//! What it shows:
+//! 1. One call (`VigilODE::solve`) over `Dopri5::solve`, `Rodas5p::solve` and
+//!    `SwitchingSolver::solve`.
+//! 2. Routing by declared facts: a supplied Jacobian or JVP runs RODAS5P (the facade picks
+//!    the dense or the matrix-free driver family), a small problem that declares nothing
+//!    gets a budgeted DOPRI5 trial.
+//! 3. The end-point drift of registered invariants.
+//! 4. The fallback: RODAS5P continues from the last accepted state of a DOPRI5 trial that
+//!    used up its attempt budget; both legs share `Options::max_steps`.
+//!
+//! "Route taken" prints the driver identifier of each executed leg, read from the leg's
+//! own run record.
 
 use vigilode::prelude::*;
 
@@ -131,9 +137,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Problem 4: Fail-Closed Protected Fallback Demonstration
     // -------------------------------------------------------------------------
     println!("--- 4. Fail-Closed Fallback Demonstration ---");
-    // System with stiff kinetics but without explicit Jacobian:
-    // Starts on explicit DOPRI5, encounters stiffness rejection, and smoothly
-    // rolls back to Protected RODAS5P!
+    // System with stiff kinetics but without explicit Jacobian: nothing is declared and
+    // the Jacobian at t0 is small, so DOPRI5 gets a trial of min(1000, max_steps / 2)
+    // attempts. It does not finish, and RODAS5P (finite-difference Jacobian) continues
+    // from its last accepted state with the attempts that are left.
     let fallback_prob = Problem::new(3, |_t, y, dy| {
         dy[0] = -0.04 * y[0] + 1.0e4 * y[1] * y[2];
         dy[1] = 0.04 * y[0] - 1.0e4 * y[1] * y[2] - 3.0e7 * y[1] * y[1];

@@ -191,7 +191,8 @@ fn contract_2_workspace_reuse_and_retained_bytes() {
 
 #[test]
 fn contract_3_autonomous_tier_routing() {
-    // Nonstiff problem should route to Tier1ExplicitDopri5
+    // A small problem that declares nothing runs DOPRI5. The route history names the
+    // driver that ran, read from its own run record (loop L1, node V03 part B).
     let osc = harmonic_oscillator();
     let osc_sol = VigilODE::solve(&osc, (0.0, 1.0), &[1.0, 0.0], SolverStrategy::Auto)
         .expect("oscillator solve");
@@ -201,7 +202,12 @@ fn contract_3_autonomous_tier_routing() {
         .first()
         .expect("route history")
         .to_tier;
-    assert_eq!(first_tier, "Tier1ExplicitDopri5");
+    let explicit = osc_sol
+        .explicit_solution
+        .as_ref()
+        .expect("the DOPRI5 leg ran");
+    assert_eq!(first_tier, explicit.stats.method);
+    assert!(first_tier.starts_with("dopri5"), "got {first_tier}");
 
     // Stiff Robertson with dense Jacobian should route to Stiff/Protected
     let rob = robertson_problem();
@@ -213,12 +219,13 @@ fn contract_3_autonomous_tier_routing() {
         .first()
         .expect("route history")
         .to_tier;
+    assert_eq!(first_tier_rob, rob_sol.stats().route.driver_id);
     assert!(
-        first_tier_rob.contains("Protected") || first_tier_rob.contains("Staged"),
+        first_tier_rob.starts_with("rodas5p"),
         "expected stiff routing, got {first_tier_rob}"
     );
 
-    // High-dimensional JVP problem should route to Tier2MatrixFreeKrylov
+    // A JVP problem runs the matrix-free driver family of Rodas5p::solve
     let heat = heat_equation_jvp(25);
     let y0 = vec![1.0; 25];
     let heat_sol = VigilODE::solve(&heat, (0.0, 0.01), &y0, SolverStrategy::HighPerformance)
@@ -229,7 +236,11 @@ fn contract_3_autonomous_tier_routing() {
         .first()
         .expect("route history")
         .to_tier;
-    assert_eq!(heat_tier, "Tier2MatrixFreeKrylov");
+    assert_eq!(heat_tier, heat_sol.stats().route.driver_id);
+    assert!(matches!(
+        heat_sol.stats().driver_work,
+        vigilode::DriverWork::MatrixFree { .. }
+    ));
 }
 
 #[test]
@@ -255,14 +266,15 @@ fn contract_4_fail_closed_protected_fallback() {
         sol.success(),
         "solve must succeed via fail-closed protected fallback"
     );
-    // Verify fallback was triggered
-    let has_fallback = sol
-        .route_history
-        .iter()
-        .any(|r| r.to_tier == "ProtectedRODAS5P");
+    // Verify fallback was triggered: a RODAS5P leg, named by its own run record, follows
+    // the DOPRI5 leg
+    let has_fallback = sol.route_history.len() == 2
+        && sol.route_history[0].to_tier.starts_with("dopri5")
+        && sol.route_history[1].to_tier == sol.stats().route.driver_id
+        && sol.route_history[1].to_tier.starts_with("rodas5p");
     assert!(
         has_fallback,
-        "route history must record fallback to ProtectedRODAS5P: {:?}",
+        "route history must record the fallback to RODAS5P: {:?}",
         sol.route_history
     );
     assert!(
