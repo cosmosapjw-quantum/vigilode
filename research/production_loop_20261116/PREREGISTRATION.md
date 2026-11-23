@@ -176,3 +176,7 @@ Reason: owner decisions OD-L1-10 and OD-L1-11. The full designs are `capabilitie
 
 Not changed by these nodes: the stage threshold, the controller constants, the Krylov method and its preconditioning, the drivers that V23 does not name, default method routing, G0.
 
+## Amendment A5.1 (2026-11-23): small-n confirmation of node V22, recorded before any run of a confirmation cell
+
+The confirmation cell of addendum A5 (square Allen-Cahn problem of size 8, 16 or 32, long run of 60 attempts) lasts about 3 ms at size 8. That is too short for a cycle count under the quality rule of the loop. Change: the same problem is integrated 200 times in one process (runner family `ac2dr`), in the long run and in the run with 1 attempt alike; the counts are sums over the repetitions, so the per-attempt measure, the ratios and the thresholds (at most 1.00 in instructions and in cycles) are those of addendum A5. No confirmation cell has been measured. The cells of the width scan are not changed.
+
