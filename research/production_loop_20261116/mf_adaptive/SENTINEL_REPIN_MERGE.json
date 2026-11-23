@@ -1,0 +1,29 @@
+{
+  "schema": "vigilode.loop-l1.sentinel-repin.v1",
+  "node": "V24_MF_ADAPTIVE_STAGE_SOLVE",
+  "date_kst": "2026-11-24",
+  "authority": "owner decision OD-L1-11 (the protected matrix-free driver is edited); done by the orchestrator at the merge, because the second sentinel is outside the write list of the builder (PROTOCOL.json amendment P-1, review finding F9)",
+  "what_changed": "sentinel h2 (ptsw2b_contracts.rs) gets the pin of the edited driver; sentinel g3 (ppsw1_6b_contracts.rs) gets the pin of ptsw2b_contracts.rs, which that edit changed. No other pin changed.",
+  "h2_pin_of_the_driver": {
+    "file": "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+    "old": "a6d138f0da89b4506e2d7bae28621c241c5c0653c3020aad6f2a125d5e891139",
+    "new": "6136f83b304cbfde02b8ccd1a8b4a93466dc5d742e6abcca6061cdfaa4301071",
+    "new_equals_the_pin_set_by_the_builder_in_g3": true
+  },
+  "g3_pin_of_ptsw2b_contracts": {
+    "file": "crates/rodas5p-integrators/tests/ptsw2b_contracts.rs",
+    "old": "e0e54c374503698d465b1aaccc14f1a1d0823e7ce339798a0c3dfec1d963e2fc",
+    "new": "a1d6dc6d8e604dfab0444c85bea557a74232548a51b46ac9dd0211a6a8f0188e"
+  },
+  "files": {
+    "crates/rodas5p-integrators/tests/ptsw2b_contracts.rs": {
+      "sha256_before": "e0e54c374503698d465b1aaccc14f1a1d0823e7ce339798a0c3dfec1d963e2fc",
+      "sha256_after": "a1d6dc6d8e604dfab0444c85bea557a74232548a51b46ac9dd0211a6a8f0188e"
+    },
+    "crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs": {
+      "sha256_before": "8dbb4b4c9f260387062304ec7208297535849d87d4439adc54f9bf8a0ddc161c",
+      "sha256_after": "d4205e029680c4cb8a9b68a2b3339f36299463e750363a0d7183b4af8a7f1c46"
+    }
+  },
+  "correction_of_a_note_of_SENTINEL_REPIN_json": "SENTINEL_REPIN.json says under not_pinned_by_this_sentinel that src/routing.rs and crates/rodas5p-krylov/src/gmres_staged.rs are 'pinned by the loop checkpoint only'. They are not pinned by a hash: they are covered by the allowlist of MUTATION_GATES.json (review finding F5). The checkpoint pins the driver blob (protected_blob_sha1) and the two sentinel test files (implemented sources)."
+}

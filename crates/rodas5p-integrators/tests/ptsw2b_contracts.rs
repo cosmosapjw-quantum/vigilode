@@ -1061,6 +1061,9 @@ fn h2_protected_sources_are_byte_identical() {
     // lib.rs is intentionally absent: it may gain exactly one `pub mod ptsw2b;` line (owner decision).
     // Re-pinned on 2026-11-16 to the tree after the adopted merge of the switcher lineage (owner
     // decision OD-L1-5); old and new pins: research/production_loop_20261116/trial_merge/SENTINEL_REPIN.json.
+    // src/rodas5p_matrix_free_fast.rs re-pinned on 2026-11-24 at the merge of loop L1 node V24 (owner
+    // decision OD-L1-11: policy of the matrix-free stage solve); old and new pins:
+    // research/production_loop_20261116/mf_adaptive/SENTINEL_REPIN_MERGE.json.
     let pinned: [(&str, &str); 12] = [
         (
             "src/sequential.rs",
@@ -1068,7 +1071,7 @@ fn h2_protected_sources_are_byte_identical() {
         ),
         (
             "src/rodas5p_matrix_free_fast.rs",
-            "a6d138f0da89b4506e2d7bae28621c241c5c0653c3020aad6f2a125d5e891139",
+            "6136f83b304cbfde02b8ccd1a8b4a93466dc5d742e6abcca6061cdfaa4301071",
         ),
         (
             "src/collective_rodas5p.rs",

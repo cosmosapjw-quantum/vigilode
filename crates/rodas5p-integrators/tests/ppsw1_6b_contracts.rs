@@ -1656,6 +1656,8 @@ fn g3_protected_sources_are_byte_identical() {
     // src/rodas5p_matrix_free_fast.rs re-pinned on 2026-11-23 for loop L1 node V24 (owner decision
     // OD-L1-11: policy of the matrix-free stage solve); old and new pins:
     // research/production_loop_20261116/mf_adaptive/SENTINEL_REPIN.json.
+    // tests/ptsw2b_contracts.rs re-pinned on 2026-11-24: its sentinel h2 follows the same driver edit;
+    // old and new pins: research/production_loop_20261116/mf_adaptive/SENTINEL_REPIN_MERGE.json.
     let pinned: [(&str, &str); 14] = [
         (
             "src/sequential.rs",
@@ -1711,7 +1713,7 @@ fn g3_protected_sources_are_byte_identical() {
         ),
         (
             "tests/ptsw2b_contracts.rs",
-            "e0e54c374503698d465b1aaccc14f1a1d0823e7ce339798a0c3dfec1d963e2fc",
+            "a1d6dc6d8e604dfab0444c85bea557a74232548a51b46ac9dd0211a6a8f0188e",
         ),
     ];
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
