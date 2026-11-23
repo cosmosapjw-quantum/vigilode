@@ -246,3 +246,21 @@ Evidence: `banded_kernel_route/` (RESULTS.json, REPORT_KO.md, BINARIES.json, log
 | D4 facade speed | PASS | final binary: 0.225 of the instructions and 0.394 of the cycles of the direct Indexed call on Allen-Cahn 64 x 64 (thresholds 0.60 and 0.75), second measurement authoritative, equal counts and state hash |
 
 Frozen verdict: PASS. The facade constant is 6 (commit 1cd674a6; the provisional value 8 of commit a2e8e430 came from an exploratory series). Not changed: the kernels, every existing entry point of the banded driver, the route of a declared band on a dense provider through the router (Indexed). Ledger row L-0334.
+
+## Results, wave 2, group 5: node V24 (appended 2026-11-24; nothing above this line changes)
+
+Builder and reviewer: run `wf_6d64a847-033`; branch head 28e7fca4, merged with 28f3ad86; sentinels h2 and g3 re-pinned by the orchestrator at the merge (9daf78fd). Review: accept with corrections; the frozen verdict and every checked number are reproduced (`mf_adaptive/REVIEW.json`; correction notice at the top of `mf_adaptive/REPORT_KO.md`). Deciding grid: the families V17 finally ran (fhn3d, cusp1d, burgers2d, bruss1d), five tolerances each (erratum A6.1). Variant chosen on the development cells before any run of the grid: P2 (first cycle of 10 columns, doubled after each cycle that does not converge, up to the configured 40). Nodes V23 and the review of V22 of the same group were not launched (pause asked for by the owner on 2026-11-23).
+
+| discriminator | verdict | measured |
+|---|---|---|
+| D0 shipped policy unchanged | PASS | arm S after the edit equals the recording before the edit in 20 of 20 deciding cells and 10 of 10 development cells, in every recorded field |
+| V validity | PASS | 37823 completed stage solves of the adaptive arm, each checked independently: 0 violations, largest residual over threshold 0.99998; 151 solves failed by budget exhaustion and were reported as failures |
+| A accuracy | PASS | largest error ratio 1.401 (cusp1d, rtol 1e-6); threshold 3 |
+| P instructions at matched error | PASS | 0.320, 0.334, 0.201, 0.319 of the shipped policy (the matched-error statistic of V17); largest cell 0.521; thresholds 0.50 and 1.00 |
+| S attempts | PASS | geometric means 1.000, 1.006, 1.000, 1.000; largest cell 1.0257; thresholds 1.05 and 1.15 |
+| B Krylov budget | FAIL | cusp1d, rtol 1e-6: 13 budget-exhausting stage solves against 11 of the shipped policy; the other four cusp1d cells equal (55, 46, 34, 3); none in the other families |
+| T wall time (reported, no threshold) | - | 3.98, 3.21, 6.42, 3.63 times faster at matched error; all 20 cells authoritative |
+| G golden records | NOT_RUN | the default was not switched; no golden file changed |
+| R suites | holds after the merge | on the builder's branch one test failed, the second sentinel h2, which was outside its write list; after the re-pin at the merge: rodas5p-krylov 166, integrators 399, facade 536 passed, 0 failed; rustfmt and clippy clean |
+
+Frozen verdict: FAIL (B fails with V intact). As frozen for this case the adaptive policy stays opt-in, the default of the matrix-free route is not changed and the result is reported. Exploratory, not usable for a verdict: the variant not chosen, P1, has the budget counts of the shipped policy in every cell of the same grid at instruction ratios 0.376, 0.394, 0.231, 0.446. Ledger row L-0335.

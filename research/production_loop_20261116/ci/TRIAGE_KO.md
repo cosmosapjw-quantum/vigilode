@@ -168,3 +168,8 @@ head 1fcf356c의 호스티드 실행(run 45190467664, 45190467441; 2026-11-24 00
 - Ignored long tests: 취소됨. job 제한 60분에 걸렸다. `ppsw1_linear_backend_contracts.rs`의 측정 test `c5_measured_crossover_paired_interleaved` 하나가 46분 넘게 돌고 있었다(892132e5 실행에서는 같은 test가 1678초). job 전체가 취소되면서 음성대조 단계도 건너뛰었다.
 
 조치(OD-L1-12 범위): `ignored-tests.yml`에서 음성대조 두 단계를 긴 전체 workspace 단계 앞으로 옮겼고(각 단계 `if: !cancelled()`), job 제한을 180분으로 늘렸다. 전체 workspace 단계는 호스티드 runner에서 한 번도 끝까지 간 적이 없다(어제까지는 실패하는 test에서, 그 뒤로는 60분 제한에서 멈춤). 처음 완주하는 실행이 필요한 시간을 알려 준다. 남는 결정: 계약형 ignored test는 PR마다, 측정 프로그램은 예약 실행이나 수동 실행으로 나눌지 여부. 도달성 검사는 ignored test 98개 전부 도달로 통과한다(V08, V18 병합으로 2개 늘었다).
+
+head 8f840859(group 3 병합 포함)의 호스티드 실행(run 45203782039, 45203782197; 2026-11-24 01:55 KST에 확인):
+
+- Production CI: fmt, docs, clippy, semver 통과, bench는 같은 이유로 실패. test job 두 단계 모두 끝까지 실행: Facade and light crates 1247 passed, 1 failed, 22 ignored; Integrators 1472 passed, 1 failed, 67 ignored. 실패는 앞 실행과 같은 host 의존 bit anchor 두 개뿐이다(V03b, V08, V18 병합 뒤에도 그대로).
+- Ignored long tests: 도달성 검사와 음성대조 두 단계(kill gate, 병합 hook의 정지 검사 차이)가 runner에서 통과했다. 전체 workspace 단계는 확인 시점에 실행 중이었다(제한 180분). 이 단계가 처음 완주하면 걸린 시간과 그 뒤 test binary들의 결과를 다음 세션에서 읽는다.

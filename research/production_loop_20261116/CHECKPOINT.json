@@ -26,7 +26,7 @@
     "rust-toolchain.toml": "857955b9997d05c97f71b5356bb2c307eafd6945",
     "crates/rodas5p-integrators/src/source_owned_graph_schur.rs": "5d2c4319143e60117a7804c1f4524b269df358ea",
     "crates/rodas5p-integrators/src/rodas5p_fast.rs": "4da691a8bec37cb497d358e38bbae4863c7a6b27",
-    "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs": "a3896e3a751cf921f83ac1e5f5e6a20bb64f7676",
+    "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs": "8c389ca973568402125b48e5574304d31640e9d2",
     "crates/rodas5p-integrators/src/adaptive.rs": "f94721da75de6cf6d2bae9171cb33a9f4328077d",
     "crates/rodas5p-integrators/src/rodas5p_fast_dense.rs": "600f6496f7a898476f25f1b10fc04d23f5da0754",
     "crates/rodas5p-integrators/src/client_stage.rs": "beed050b1a55a3041c2e505d307ddbcd3977629a",
@@ -93,7 +93,13 @@
     "research/production_loop_20261116/dense_lu_client/PREDECLARED.json": "5362482065cd5c5e709c08e03385a2d3b26b69d31f5580ab36d0d6295b63b806",
     "research/production_loop_20261116/dense_lu_client/RESULTS.json": "f7d80cf157ec69f5939003a8159010b34376c195a74e901b9cf0504e92db25d5",
     "research/production_loop_20261116/dense_lu_client/REVIEW.json": "c47ab0ff06057857aaced008be6f244edaf7bd2c1dd242de4c76f9858ad2ce67",
-    "research/production_loop_20261116/banded_kernel_route/RESULTS.json": "2eb06a35484e804729d1b7ea23085357e855b6e3cd68b1ee922f22cc01e02c8f"
+    "research/production_loop_20261116/banded_kernel_route/RESULTS.json": "2eb06a35484e804729d1b7ea23085357e855b6e3cd68b1ee922f22cc01e02c8f",
+    "research/production_loop_20261116/mf_adaptive/RESULTS.json": "c29788bc65a429796e58e6add7725ad83f5beb431dbb39e2728b1ff1e8652278",
+    "research/production_loop_20261116/mf_adaptive/REVIEW.json": "344cb8b69bf71d51ffa1e102baa70cbab8f80feee436e42c7487b6411f990574",
+    "research/production_loop_20261116/mf_adaptive/PROTOCOL.json": "7a51b1d73a86050c9e1ad6dee38f9a4b0544db84c396c7226e8dbe5cd081458b",
+    "research/production_loop_20261116/mf_adaptive/CHOICE.json": "5bb7dcc69a370e2cecf9423c9e360968e483e0a3b0f8586755b78a83cff86390",
+    "research/production_loop_20261116/mf_adaptive/SENTINEL_REPIN.json": "7e06a59f5f8e639d4410c368becc141a86732dd9a94afdd1bbca98ba69e7ec40",
+    "research/production_loop_20261116/mf_adaptive/SENTINEL_REPIN_MERGE.json": "8bfaea34fc86b9efac53bb3528209f3a8f6bfd1a487d75666595e30e8f00ce8c"
   },
   "implemented_source_sha256": {
     "crates/vigilode/tests/default_path_golden.rs": "9ef2b4b7aff1d92b14c7f28c764e5ff791a2823091ec50cf8ffc1167366863ec",
@@ -102,8 +108,8 @@
     "crates/rodas5p-integrators/src/stage_clients/timed.rs": "bfe575492d5e4f9fa9e83f6f38cb005e7ceec0a95b085218aa15c38e91f2554c",
     "crates/rodas5p-integrators/tests/stage_clients_dense_identity.rs": "7769e739736f67690bd38b6e5d1e01e29bdc97e29a5bf3ed91292376fad2ad74",
     "crates/rodas5p-integrators/tests/stage_clients_alloc.rs": "4f23f72ed4ed763dd2c892d9567c4e368a4812bb72293113a8b61e25daa12036",
-    "crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs": "849fc0c7a668309c37650f3dffb9244974fdf337d328a8f02592a1c88f251477",
-    "crates/rodas5p-integrators/tests/ptsw2b_contracts.rs": "e0e54c374503698d465b1aaccc14f1a1d0823e7ce339798a0c3dfec1d963e2fc",
+    "crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs": "d4205e029680c4cb8a9b68a2b3339f36299463e750363a0d7183b4af8a7f1c46",
+    "crates/rodas5p-integrators/tests/ptsw2b_contracts.rs": "a1d6dc6d8e604dfab0444c85bea557a74232548a51b46ac9dd0211a6a8f0188e",
     "crates/rodas5p-core/tests/leja_setup_work_contract.rs": "3aaf3cb192de1da33938e5d59c5ca93d580d13100ad86885e1d876892633eb3b",
     "crates/rodas5p-integrators/src/stage_clients/krylov.rs": "2a6ad8b5c5dbd0e694ab544a0e5d2e3860b464f4fe3a8f14f59bde9e8ee8f1e2",
     "crates/rodas5p-integrators/src/stage_clients/speculative.rs": "af2b07663510bdb686d01c3b2b71f89f20ff813c08b94d626829f234036d4e4e",
@@ -155,7 +161,14 @@
     "crates/rodas5p-integrators/tests/stage_clients_dense_lu_reuse_identity.rs": "86b7b6590ade124c5339cfd501f9ef572cd089927e427bbe8b06da9bbe5c4d93",
     "crates/rodas5p-integrators/tests/stage_clients_dense_lu_reuse_alloc.rs": "316ade90e36fd735448ec4e07daf761451710b5db63ea3bea65f5f253c7495ab",
     "crates/rodas5p-integrators/tests/stage_clients_dense_lu_reuse_problems.rs": "5d3267f19e0dad9cb9f75487c0872c7f2143dccdcf988e99b4d3d77e08f2203d",
-    "crates/vigilode/tests/golden/banded_kernel_route/wide_band.json": "3c5789b309e4a34dcd707a30aa1ee7c80e7f014e67baa2576a0c5a4d532abda5"
+    "crates/vigilode/tests/golden/banded_kernel_route/wide_band.json": "3c5789b309e4a34dcd707a30aa1ee7c80e7f014e67baa2576a0c5a4d532abda5",
+    "crates/rodas5p-krylov/src/gmres_staged.rs": "86760dce4b0a0302e16a494dfd07817d44e8b6f1f0ea11319c11a539ced2d6a1",
+    "crates/rodas5p-integrators/src/routing.rs": "9e1b7f1868c51dcd4d08e0c8bcfb3937e99ac7fe38a159db89b44cfe58e053d8",
+    "crates/rodas5p-integrators/tests/mf_adaptive_contracts.rs": "065f7c1d7e979ec16654418936339b45c9bed9322b65eb1d76c56700278a232a",
+    "crates/rodas5p-integrators/tests/mf_adaptive_measure.rs": "082e6c3efc122290201499ba4e77df50a67e6327f3211c6d9cf2a29f45efef63",
+    "crates/rodas5p-integrators/tests/mf_adaptive_shipped_bits.rs": "df64c707ef36585944f92fa9d3e2ba457bc702c66d23b3af80af9336dd8e4c69",
+    "crates/rodas5p-krylov/tests/gmres_staged_column_test_bits.rs": "7e9181d393dce429be6fa9d08d866b37eab1a3eb229764e8763f16fd97553cbf",
+    "crates/rodas5p-krylov/tests/gmres_staged_column_test_contracts.rs": "46eb7c99be05bf16cdd414bcd638a4b79d5502af91507a011a248be9a1e7b208"
   },
   "preregistration_frozen_part_sha256": "0a5c7e061be57d24f382f24594c7d83a1ec68a4365ec6590c316d1d351ba0c85",
   "notes": [
@@ -178,7 +191,8 @@
     "2026-11-23: node V03 part B (unified router) merged (cfbd2b18): unified_router/PREDECLARED.json, RECEIPT.json and REVIEW.json added to the evidence list and the twelve code paths of the node to the implemented sources (unified/analyzer.rs with the documentation correction of review finding F2); V03_UNIFIED_FRONTEND is COMPLETE_SCOPED in TASK_CONTRACTS.json and RESEARCH_DAG.json.",
     "2026-11-23: node V08 (finite-difference Jacobian assembly client) merged (bc8121cf) and corrected after its review (a7d1e824): jacobian_assembly/PREDECLARED.json, RESULTS.json and REVIEW.json added to the evidence list, the three source files and four test files of the client to the implemented sources; V08_JACOBIAN_ASSEMBLY is COMPLETE_SCOPED.",
     "2026-11-24: node V18 (dense LU client with storage reuse and opt-in worker threads) merged (406b2a3b) and annotated after its review (10356292): dense_lu_client/PREDECLARED.json, RESULTS.json and REVIEW.json added to the evidence list; the identity of the pre-seeded file stage_clients/dense_lu_reuse.rs is updated to the implemented client, and threaded.rs and three test files are added; V18_DENSE_LU_CLIENT is COMPLETE_SCOPED.",
-    "2026-11-24: node V22 decided (commit 1cd674a6): BANDED_SLICES_MIN_HALF_WIDTH = 6; the identity of crates/vigilode/src/solve.rs is updated, the golden file of the banded routes is added to the implemented sources and banded_kernel_route/RESULTS.json to the evidence list; V22_FACADE_BANDED_KERNEL is COMPLETE_SCOPED with its independent review still to run."
+    "2026-11-24: node V22 decided (commit 1cd674a6): BANDED_SLICES_MIN_HALF_WIDTH = 6; the identity of crates/vigilode/src/solve.rs is updated, the golden file of the banded routes is added to the implemented sources and banded_kernel_route/RESULTS.json to the evidence list; V22_FACADE_BANDED_KERNEL is COMPLETE_SCOPED with its independent review still to run.",
+    "2026-11-24: node V24 merged (28f3ad86, 9daf78fd), epoch 3, owner decision OD-L1-11: the protected blob crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs is re-pinned (a3896e3a751cf921f83ac1e5f5e6a20bb64f7676 to 8c389ca973568402125b48e5574304d31640e9d2); it gains the opt-in policy of the stage solve and its shipped policy is bit-identical (discriminator D0). The sentinel test files ppsw1_6b_contracts.rs and ptsw2b_contracts.rs, gmres_staged.rs, routing.rs and five new test files are in the implemented sources; six evidence files of mf_adaptive are added. Frozen verdict FAIL: the default of the matrix-free route is unchanged."
   ],
   "epochs": [
     {

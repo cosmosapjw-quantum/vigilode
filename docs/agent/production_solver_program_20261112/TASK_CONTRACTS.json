@@ -1571,7 +1571,7 @@
       "depends": [
         "V17_MATRIX_FREE_STAGE_SOLVE"
       ],
-      "status": "PLANNED",
+      "status": "COMPLETE_SCOPED",
       "purpose": "The protected matrix-free stage solve tests the residual after every Arnoldi column and ends a cycle at convergence, so that restart length and test cadence follow the solve (owner decision OD-L1-11).",
       "write_allowlist": [
         "research/production_loop_20261116/mf_adaptive/**",
@@ -1585,7 +1585,8 @@
         "crates/vigilode/src/solve.rs",
         "crates/vigilode/src/solution.rs",
         "crates/vigilode/tests/default_path_golden.rs",
-        "crates/vigilode/tests/golden/default_path/**"
+        "crates/vigilode/tests/golden/default_path/**",
+        "crates/rodas5p-integrators/tests/ptsw2b_contracts.rs"
       ],
       "equations_and_design": [
         "After every Arnoldi column the projected residual is compared with the stage threshold; at the first column that meets it the cycle ends and the true residual of the iterate is tested against the same threshold.",
@@ -1612,8 +1613,11 @@
         "stage threshold of the linear solve",
         "every driver other than the matrix-free fast driver"
       ],
-      "evidence": [],
-      "state_note": "Pre-registered 2026-11-23 (addendum A6). Builder node."
+      "evidence": [
+        "research/production_loop_20261116/mf_adaptive/RESULTS.json",
+        "research/production_loop_20261116/mf_adaptive/REVIEW.json"
+      ],
+      "state_note": "Frozen verdict FAIL by the budget rule B (ledger L-0335): the adaptive policy is merged as an opt-in policy (MfStageSolvePolicy), the default of the matrix-free route and every golden file are unchanged; D0, V, A, P and S hold. Sentinels h2 and g3 re-pinned by the orchestrator at the merge (SENTINEL_REPIN_MERGE.json). Reviewer corrections in REVIEW.json. Owner items: whether the default switches despite B, or variant P1 is tested on unseen problems under a new pre-registration; the identifier v2 of an opt-in variant."
     }
   ],
   "execution_policy": "Resume ready bounded tasks; research/implementation may overlap only with disjoint writes. Qualification dependencies restrict promotion, not safe opt-in refactoring.",
