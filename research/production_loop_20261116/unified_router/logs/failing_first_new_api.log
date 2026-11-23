@@ -1,0 +1,800 @@
+# part 2 (API added by this node) against a scratch copy of the base sources
+# scratch copy: git archive 587a139501729bbe886bb2b8c49b0ef893705d08 Cargo.toml Cargo.lock rust-toolchain.toml crates, plus the test file of this node
+# test file sha256 e22a7da2339c952f9c252e95867e86d873dcaca1292c709934cb665323a7d4a9
+# command (in the scratch copy): taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_router_contracts --no-run
+# expected: the test target does not compile, because part 2 names items that the base does not have
+# date 2026-11-23T12:55:15Z
+   Compiling vigilode v0.1.0 (/tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/base_copy_v03b/crates/vigilode)
+error[E0432]: unresolved imports `vigilode::EXPLICIT_TRIAL_ATTEMPT_LIMIT`, `vigilode::EXPLICIT_TRIAL_MAX_DIMENSION`, `vigilode::RouteBasis`, `vigilode::UnifiedStop`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1186:9
+     |
+1186 |         EXPLICIT_TRIAL_ATTEMPT_LIMIT, EXPLICIT_TRIAL_MAX_DIMENSION, FallbackEngine, GeneralOde,
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `EXPLICIT_TRIAL_MAX_DIMENSION` in the root
+     |         |
+     |         no `EXPLICIT_TRIAL_ATTEMPT_LIMIT` in the root
+1187 |         GeneralOdePolicy, MethodChoice, MethodRegistry, PreflightAnalyzer, RouteBasis, StopReason,
+     |                                                                            ^^^^^^^^^^ no `RouteBasis` in the root
+1188 |         UnifiedStop, Unsupported,
+     |         ^^^^^^^^^^^ no `UnifiedStop` in the root
+
+error[E0609]: no field `legs` on type `&vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1262:30
+     |
+1262 |         for leg in &solution.legs {
+     |                              ^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0599]: no variant or associated item named `ALL` found for enum `vigilode::SelectedTier` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:1307:34
+     |
+1307 |         assert_eq!(SelectedTier::ALL.len(), 3);
+     |                                  ^^^ variant or associated item not found in `vigilode::SelectedTier`
+
+error[E0599]: no method named `regime` found for struct `vigilode::VigilodeOptions` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:1355:34
+     |
+1353 |   ...                   let options = VigilodeOptions::default()
+     |  _____________________________________-
+1354 | | ...                       .strategy(strategy)
+1355 | | ...                       .regime(regime)
+     | |                           -^^^^^^ method not found in `vigilode::VigilodeOptions`
+     | |___________________________|
+     |
+
+error[E0609]: no field `analysis` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1375:54
+     |
+1375 | ...                   let analysis = &solution.analysis;
+     |                                                ^^^^^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `legs` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1384:41
+     |
+1384 | ...                   if solution.legs.len() != solution.route_history.len() {
+     |                                   ^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `legs` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1387:58
+     |
+1387 | ...                   for (leg, entry) in solution.legs.iter().zip(&solution.route_history) {
+     |                                                    ^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `legs` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1405:51
+     |
+1405 | ...                   let first = &solution.legs[0];
+     |                                             ^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0282]: type annotations needed
+    --> crates/vigilode/tests/unified_router_contracts.rs:1408:40
+     |
+1408 | ...                   && plan.id() != first.route_id
+     |                          ^^^^ cannot infer type
+
+error[E0609]: no field `stop` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1498:55
+     |
+1498 |                 "stop": serde_json::to_value(&unified.stop).unwrap(),
+     |                                                       ^^^^ unknown field
+     |
+help: one of the expressions' fields has a field of the same name
+     |
+1498 |                 "stop": serde_json::to_value(&unified.stats.stop).unwrap(),
+     |                                                       ++++++
+
+error[E0609]: no field `stop` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1507:21
+     |
+1507 |             unified.stop,
+     |                     ^^^^ unknown field
+     |
+help: one of the expressions' fields has a field of the same name
+     |
+1507 |             unified.stats.stop,
+     |                     ++++++
+
+error[E0609]: no field `stop` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1512:25
+     |
+1512 |         assert!(unified.stop.as_ref().unwrap().is_exact());
+     |                         ^^^^ unknown field
+     |
+help: one of the expressions' fields has a field of the same name
+     |
+1512 |         assert!(unified.stats.stop.as_ref().unwrap().is_exact());
+     |                         ++++++
+
+error[E0599]: no method named `regime` found for struct `vigilode::VigilodeOptions` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:1543:14
+     |
+1542 |           let options = VigilodeOptions::default()
+     |  _______________________-
+1543 | |             .regime(ProblemRegime::Nonstiff)
+     | |             -^^^^^^ method not found in `vigilode::VigilodeOptions`
+     | |_____________|
+     |
+
+error[E0599]: no method named `executed_drivers` found for struct `vigilode::VigilodeSolution` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:1549:36
+     |
+1549 |                 "drivers": unified.executed_drivers(),
+     |                                    ^^^^^^^^^^^^^^^^ method not found in `vigilode::VigilodeSolution`
+
+error[E0609]: no field `stop` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1550:55
+     |
+1550 |                 "stop": serde_json::to_value(&unified.stop).unwrap(),
+     |                                                       ^^^^ unknown field
+     |
+help: one of the expressions' fields has a field of the same name
+     |
+1550 |                 "stop": serde_json::to_value(&unified.stats.stop).unwrap(),
+     |                                                       ++++++
+
+error[E0609]: no field `analysis` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1552:56
+     |
+1552 |                 "basis": serde_json::to_value(&unified.analysis.basis).unwrap(),
+     |                                                        ^^^^^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0599]: no method named `executed_drivers` found for struct `vigilode::VigilodeSolution` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:1558:28
+     |
+1558 |         assert_eq!(unified.executed_drivers(), ["dopri5-5(4)-fsal"]);
+     |                            ^^^^^^^^^^^^^^^^ method not found in `vigilode::VigilodeSolution`
+
+error[E0609]: no field `analysis` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1560:21
+     |
+1560 |             unified.analysis.basis,
+     |                     ^^^^^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `analysis` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1565:26
+     |
+1565 |         assert!(!unified.analysis.fallback_to_rodas5p);
+     |                          ^^^^^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `analysis` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1566:25
+     |
+1566 |         assert!(unified.analysis.screen.is_none() && unified.analysis.rhs_calls == 0);
+     |                         ^^^^^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `analysis` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1566:62
+     |
+1566 |         assert!(unified.analysis.screen.is_none() && unified.analysis.rhs_calls == 0);
+     |                                                              ^^^^^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `stop` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1567:24
+     |
+1567 |         match &unified.stop {
+     |                        ^^^^ unknown field
+     |
+help: one of the expressions' fields has a field of the same name
+     |
+1567 |         match &unified.stats.stop {
+     |                        ++++++
+
+error[E0609]: no field `explicit_solution` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1585:14
+     |
+1585 |             .explicit_solution
+     |              ^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `stop` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1634:59
+     |
+1634 |                 "fatal_stop": serde_json::to_value(&fatal.stop).unwrap(),
+     |                                                           ^^^^ unknown field
+     |
+help: one of the expressions' fields has a field of the same name
+     |
+1634 |                 "fatal_stop": serde_json::to_value(&fatal.stats.stop).unwrap(),
+     |                                                           ++++++
+
+error[E0609]: no field `stop` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1636:61
+     |
+1636 |                 "blowup_stop": serde_json::to_value(&blowup.stop).unwrap(),
+     |                                                             ^^^^ unknown field
+     |
+help: one of the expressions' fields has a field of the same name
+     |
+1636 |                 "blowup_stop": serde_json::to_value(&blowup.stats.stop).unwrap(),
+     |                                                             ++++++
+
+error[E0609]: no field `stop` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1640:22
+     |
+1640 |         match &fatal.stop {
+     |                      ^^^^ unknown field
+     |
+help: one of the expressions' fields has a field of the same name
+     |
+1640 |         match &fatal.stats.stop {
+     |                      ++++++
+
+error[E0609]: no field `stop` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1658:23
+     |
+1658 |         assert!(fatal.stop.as_ref().unwrap().is_exact());
+     |                       ^^^^ unknown field
+     |
+help: one of the expressions' fields has a field of the same name
+     |
+1658 |         assert!(fatal.stats.stop.as_ref().unwrap().is_exact());
+     |                       ++++++
+
+error[E0609]: no field `switching_solution` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1659:23
+     |
+1659 |         assert!(fatal.switching_solution.is_some());
+     |                       ^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `stop` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1660:23
+     |
+1660 |         match &blowup.stop {
+     |                       ^^^^ unknown field
+     |
+help: one of the expressions' fields has a field of the same name
+     |
+1660 |         match &blowup.stats.stop {
+     |                       ++++++
+
+error[E0609]: no field `stop` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1674:24
+     |
+1674 |         assert!(blowup.stop.as_ref().unwrap().is_exact());
+     |                        ^^^^ unknown field
+     |
+help: one of the expressions' fields has a field of the same name
+     |
+1674 |         assert!(blowup.stats.stop.as_ref().unwrap().is_exact());
+     |                        ++++++
+
+error[E0609]: no field `stop` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1675:25
+     |
+1675 |         assert!(!blowup.stop.as_ref().unwrap().is_attempt_budget());
+     |                         ^^^^ unknown field
+     |
+help: one of the expressions' fields has a field of the same name
+     |
+1675 |         assert!(!blowup.stats.stop.as_ref().unwrap().is_attempt_budget());
+     |                         ++++++
+
+error[E0609]: no field `legs` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1686:28
+     |
+1686 |         assert_eq!(unified.legs.len(), 2);
+     |                            ^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `legs` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1687:43
+     |
+1687 |         let (trial, fallback) = (&unified.legs[0], &unified.legs[1]);
+     |                                           ^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `legs` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1687:61
+     |
+1687 |         let (trial, fallback) = (&unified.legs[0], &unified.legs[1]);
+     |                                                             ^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `analysis` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1709:30
+     |
+1709 |         let screen = unified.analysis.screen.expect("the screen ran");
+     |                              ^^^^^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `legs` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1710:36
+     |
+1710 |         let leg_rhs: u64 = unified.legs.iter().map(|leg| leg.counters.rhs_calls).sum();
+     |                                    ^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `legs` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1716:55
+     |
+1716 |                 "legs": serde_json::to_value(&unified.legs).unwrap(),
+     |                                                       ^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `analysis` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1718:48
+     |
+1718 |                 "preflight_rhs_calls": unified.analysis.rhs_calls,
+     |                                                ^^^^^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `analysis` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1761:28
+     |
+1761 |         assert_eq!(unified.analysis.rhs_calls, 4);
+     |                            ^^^^^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0599]: no method named `executed_drivers` found for struct `vigilode::VigilodeSolution` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:1796:36
+     |
+1796 |                 "drivers": unified.executed_drivers(),
+     |                                    ^^^^^^^^^^^^^^^^ method not found in `vigilode::VigilodeSolution`
+
+error[E0609]: no field `legs` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1797:41
+     |
+1797 |                 "leg_attempts": unified.legs.iter().map(|l| l.attempts).collect::<Vec<_>>(),
+     |                                         ^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `legs` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1798:40
+     |
+1798 |                 "leg_budgets": unified.legs.iter().map(|l| l.attempt_budget).collect::<Vec<_>>(),
+     |                                        ^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `stop` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1799:55
+     |
+1799 |                 "stop": serde_json::to_value(&unified.stop).unwrap(),
+     |                                                       ^^^^ unknown field
+     |
+help: one of the expressions' fields has a field of the same name
+     |
+1799 |                 "stop": serde_json::to_value(&unified.stats.stop).unwrap(),
+     |                                                       ++++++
+
+error[E0609]: no field `legs` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1807:28
+     |
+1807 |         assert_eq!(unified.legs.len(), 2);
+     |                            ^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `stop` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1810:21
+     |
+1810 |             unified.stop,
+     |                     ^^^^ unknown field
+     |
+help: one of the expressions' fields has a field of the same name
+     |
+1810 |             unified.stats.stop,
+     |                     ++++++
+
+error[E0609]: no field `legs` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1821:46
+     |
+1821 |         assert!(unified.final_time > unified.legs[0].t_end);
+     |                                              ^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0599]: no method named `regime` found for struct `vigilode::VigilodeOptions` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:1857:48
+     |
+1857 |                     VigilodeOptions::default().regime(regime),
+     |                                                ^^^^^^ method not found in `vigilode::VigilodeOptions`
+
+error[E0599]: no method named `executed_route` found for struct `vigilode::VigilodeSolution` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:1860:43
+     |
+1860 |                 let equal_route = unified.executed_route() == Some(plan.route.id().as_str());
+     |                                           ^^^^^^^^^^^^^^ method not found in `vigilode::VigilodeSolution`
+
+error[E0599]: no method named `executed_route` found for struct `vigilode::VigilodeSolution` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:1865:80
+     |
+1865 |                     "general_route": plan.route.id(), "unified_route": unified.executed_route(),
+     |                                                                                ^^^^^^^^^^^^^^ method not found in `vigilode::VigilodeSolution`
+
+error[E0609]: no field `legs` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1867:37
+     |
+1867 |                     "legs": unified.legs.len(),
+     |                                     ^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `legs` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1870:59
+     |
+1870 |                     equal_route && equal_state && unified.legs.len() == 1,
+     |                                                           ^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `analysis` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1874:29
+     |
+1874 |                     unified.analysis.basis,
+     |                             ^^^^^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `screen` on type `&PreflightAnalysis`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1899:49
+     |
+1899 |             |a: &vigilode::PreflightAnalysis| a.screen.unwrap().lipschitz_lower_bound.unwrap();
+     |                                                 ^^^^^^ unknown field
+     |
+     = note: available fields are: `suggested_tier`, `is_stiff`, `estimated_mu2`, `has_jvp`, `has_band` ... and 2 others
+
+error[E0609]: no field `screen` on type `PreflightAnalysis`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1903:55
+     |
+1903 |                 "scalar": serde_json::to_value(scalar.screen).unwrap(),
+     |                                                       ^^^^^^ unknown field
+     |
+     = note: available fields are: `suggested_tier`, `is_stiff`, `estimated_mu2`, `has_jvp`, `has_band` ... and 2 others
+
+error[E0609]: no field `screen` on type `PreflightAnalysis`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1904:60
+     |
+1904 |                 "heat_span_100": serde_json::to_value(heat.screen).unwrap(),
+     |                                                            ^^^^^^ unknown field
+     |
+     = note: available fields are: `suggested_tier`, `is_stiff`, `estimated_mu2`, `has_jvp`, `has_band` ... and 2 others
+
+error[E0609]: no field `screen` on type `PreflightAnalysis`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1905:59
+     |
+1905 |                 "heat_span_1": serde_json::to_value(short.screen).unwrap(),
+     |                                                           ^^^^^^ unknown field
+     |
+     = note: available fields are: `suggested_tier`, `is_stiff`, `estimated_mu2`, `has_jvp`, `has_band` ... and 2 others
+
+error[E0609]: no field `screen` on type `PreflightAnalysis`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1906:61
+     |
+1906 |                 "robertson": serde_json::to_value(robertson.screen).unwrap(),
+     |                                                             ^^^^^^ unknown field
+     |
+     = note: available fields are: `suggested_tier`, `is_stiff`, `estimated_mu2`, `has_jvp`, `has_band` ... and 2 others
+
+error[E0609]: no field `screen` on type `PreflightAnalysis`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1907:56
+     |
+1907 |                 "oscillator": serde_json::to_value(osc.screen).unwrap(),
+     |                                                        ^^^^^^ unknown field
+     |
+     = note: available fields are: `suggested_tier`, `is_stiff`, `estimated_mu2`, `has_jvp`, `has_band` ... and 2 others
+
+error[E0609]: no field `rhs_calls` on type `PreflightAnalysis`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1913:28
+     |
+1913 |         assert_eq!((scalar.rhs_calls, scalar_entries), (2, 2));
+     |                            ^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `suggested_tier`, `is_stiff`, `estimated_mu2`, `has_jvp`, `has_band` ... and 2 others
+
+error[E0609]: no field `rhs_calls` on type `PreflightAnalysis`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1914:26
+     |
+1914 |         assert_eq!((heat.rhs_calls, heat_entries), (9, 9));
+     |                          ^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `suggested_tier`, `is_stiff`, `estimated_mu2`, `has_jvp`, `has_band` ... and 2 others
+
+error[E0609]: no field `rhs_calls` on type `PreflightAnalysis`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1915:25
+     |
+1915 |         assert_eq!((osc.rhs_calls, osc_entries), (3, 3));
+     |                         ^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `suggested_tier`, `is_stiff`, `estimated_mu2`, `has_jvp`, `has_band` ... and 2 others
+
+error[E0609]: no field `screen` on type `PreflightAnalysis`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1917:27
+     |
+1917 |         assert_eq!(scalar.screen.unwrap().trial_attempts, 1000);
+     |                           ^^^^^^ unknown field
+     |
+     = note: available fields are: `suggested_tier`, `is_stiff`, `estimated_mu2`, `has_jvp`, `has_band` ... and 2 others
+
+error[E0609]: no field `screen` on type `PreflightAnalysis`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1918:27
+     |
+1918 |         assert_eq!(scalar.screen.unwrap().threshold, 3300.0);
+     |                           ^^^^^^ unknown field
+     |
+     = note: available fields are: `suggested_tier`, `is_stiff`, `estimated_mu2`, `has_jvp`, `has_band` ... and 2 others
+
+error[E0609]: no field `screen` on type `&PreflightAnalysis`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1925:27
+     |
+1925 |             assert!(stiff.screen.unwrap().stiffness_evidence);
+     |                           ^^^^^^ unknown field
+     |
+     = note: available fields are: `suggested_tier`, `is_stiff`, `estimated_mu2`, `has_jvp`, `has_band` ... and 2 others
+
+error[E0609]: no field `basis` on type `&PreflightAnalysis`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1927:30
+     |
+1927 |             assert_eq!(stiff.basis, RouteBasis::StiffnessScreen);
+     |                              ^^^^^ unknown field
+     |
+     = note: available fields are: `suggested_tier`, `is_stiff`, `estimated_mu2`, `has_jvp`, `has_band` ... and 2 others
+
+error[E0609]: no field `screen` on type `&PreflightAnalysis`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1930:27
+     |
+1930 |             assert!(!open.screen.unwrap().stiffness_evidence);
+     |                           ^^^^^^ unknown field
+     |
+     = note: available fields are: `suggested_tier`, `is_stiff`, `estimated_mu2`, `has_jvp`, `has_band` ... and 2 others
+
+error[E0609]: no field `basis` on type `&PreflightAnalysis`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1932:29
+     |
+1932 |             assert_eq!(open.basis, RouteBasis::UndeclaredRegimeTrial);
+     |                             ^^^^^ unknown field
+     |
+     = note: available fields are: `suggested_tier`, `is_stiff`, `estimated_mu2`, `has_jvp`, `has_band` ... and 2 others
+
+error[E0609]: no field `fallback_to_rodas5p` on type `&PreflightAnalysis`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1933:26
+     |
+1933 |             assert!(open.fallback_to_rodas5p, "no evidence is not non-stiffness");
+     |                          ^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `suggested_tier`, `is_stiff`, `estimated_mu2`, `has_jvp`, `has_band` ... and 2 others
+
+error[E0609]: no field `first_leg_attempts` on type `&PreflightAnalysis`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1934:29
+     |
+1934 |             assert_eq!(open.first_leg_attempts, 1000);
+     |                             ^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `suggested_tier`, `is_stiff`, `estimated_mu2`, `has_jvp`, `has_band` ... and 2 others
+
+error[E0609]: no field `basis` on type `PreflightAnalysis`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1945:29
+     |
+1945 |         assert_eq!(declared.basis, RouteBasis::SuppliedDerivative);
+     |                             ^^^^^ unknown field
+     |
+     = note: available fields are: `suggested_tier`, `is_stiff`, `estimated_mu2`, `has_jvp`, `has_band` ... and 2 others
+
+error[E0609]: no field `screen` on type `PreflightAnalysis`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1947:26
+     |
+1947 |         assert!(declared.screen.is_none());
+     |                          ^^^^^^ unknown field
+     |
+     = note: available fields are: `suggested_tier`, `is_stiff`, `estimated_mu2`, `has_jvp`, `has_band` ... and 2 others
+
+error[E0599]: no function or associated item named `explicit_trial_attempts` found for struct `FallbackEngine` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:1953:36
+     |
+1953 |         assert_eq!(FallbackEngine::explicit_trial_attempts(100_000), 1000);
+     |                                    ^^^^^^^^^^^^^^^^^^^^^^^ function or associated item not found in `FallbackEngine`
+
+error[E0599]: no function or associated item named `explicit_trial_attempts` found for struct `FallbackEngine` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:1954:36
+     |
+1954 |         assert_eq!(FallbackEngine::explicit_trial_attempts(500), 250);
+     |                                    ^^^^^^^^^^^^^^^^^^^^^^^ function or associated item not found in `FallbackEngine`
+
+error[E0599]: no function or associated item named `explicit_trial_attempts` found for struct `FallbackEngine` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:1955:36
+     |
+1955 |         assert_eq!(FallbackEngine::explicit_trial_attempts(1), 0);
+     |                                    ^^^^^^^^^^^^^^^^^^^^^^^ function or associated item not found in `FallbackEngine`
+
+error[E0599]: no function or associated item named `remaining_attempts` found for struct `FallbackEngine` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:1956:36
+     |
+1956 |         assert_eq!(FallbackEngine::remaining_attempts(500, 250), 250);
+     |                                    ^^^^^^^^^^^^^^^^^^ function or associated item not found in `FallbackEngine`
+
+error[E0599]: no function or associated item named `remaining_attempts` found for struct `FallbackEngine` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:1957:36
+     |
+1957 |         assert_eq!(FallbackEngine::remaining_attempts(500, 600), 0);
+     |                                    ^^^^^^^^^^^^^^^^^^ function or associated item not found in `FallbackEngine`
+
+error[E0599]: no function or associated item named `follows_explicit_stop` found for struct `FallbackEngine` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:1967:39
+     |
+1967 |         .map(|reason| FallbackEngine::follows_explicit_stop(Some(reason), false))
+     |                                       ^^^^^^^^^^^^^^^^^^^^^ function or associated item not found in `FallbackEngine`
+
+error[E0599]: no function or associated item named `follows_explicit_stop` found for struct `FallbackEngine` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:1970:34
+     |
+1970 |         assert!(!FallbackEngine::follows_explicit_stop(
+     |                                  ^^^^^^^^^^^^^^^^^^^^^ function or associated item not found in `FallbackEngine`
+
+error[E0599]: no function or associated item named `follows_explicit_stop` found for struct `FallbackEngine` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:1974:34
+     |
+1974 |         assert!(!FallbackEngine::follows_explicit_stop(None, false));
+     |                                  ^^^^^^^^^^^^^^^^^^^^^ function or associated item not found in `FallbackEngine`
+
+error[E0609]: no field `analysis` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1987:56
+     |
+1987 |                 "basis": serde_json::to_value(&unified.analysis.basis).unwrap(),
+     |                                                        ^^^^^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0599]: no method named `executed_drivers` found for struct `vigilode::VigilodeSolution` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:1988:36
+     |
+1988 |                 "drivers": unified.executed_drivers(),
+     |                                    ^^^^^^^^^^^^^^^^ method not found in `vigilode::VigilodeSolution`
+
+error[E0609]: no field `analysis` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1994:21
+     |
+1994 |             unified.analysis.basis,
+     |                     ^^^^^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `legs` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1997:28
+     |
+1997 |         assert_eq!(unified.legs.len(), 1);
+     |                            ^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `legs` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:1998:25
+     |
+1998 |         assert!(unified.legs[0].driver_id.starts_with("rodas5p"));
+     |                         ^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0599]: no method named `regime` found for struct `vigilode::VigilodeOptions` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:2016:29
+     |
+2016 |             options.clone().regime(ProblemRegime::Nonstiff),
+     |                             ^^^^^^ method not found in `vigilode::VigilodeOptions`
+
+error[E0599]: no method named `executed_drivers` found for struct `vigilode::VigilodeSolution` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:2024:55
+     |
+2024 |                 "declared_nonstiff_drivers": declared.executed_drivers(),
+     |                                                       ^^^^^^^^^^^^^^^^ method not found in `vigilode::VigilodeSolution`
+
+error[E0599]: no method named `executed_drivers` found for struct `vigilode::VigilodeSolution` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:2034:29
+     |
+2034 |         assert_eq!(declared.executed_drivers(), ["dopri5-5(4)-fsal"]);
+     |                             ^^^^^^^^^^^^^^^^ method not found in `vigilode::VigilodeSolution`
+
+error[E0609]: no field `analysis` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:2061:64
+     |
+2061 |                 "suggested_tier": serde_json::to_value(unified.analysis.suggested_tier).unwrap(),
+     |                                                                ^^^^^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `analysis` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:2069:21
+     |
+2069 |             unified.analysis.suggested_tier,
+     |                     ^^^^^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0599]: no method named `executed_drivers` found for struct `vigilode::VigilodeSolution` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:2072:28
+     |
+2072 |         assert_eq!(unified.executed_drivers(), [direct.stats.route.driver_id]);
+     |                            ^^^^^^^^^^^^^^^^ method not found in `vigilode::VigilodeSolution`
+
+error[E0609]: no field `legs` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:2129:30
+     |
+2129 |         assert!(solutions[2].legs.is_empty());
+     |                              ^^^^ unknown field
+     |
+     = note: available fields are: `success`, `status`, `final_time`, `final_state`, `stats` ... and 5 others
+
+error[E0609]: no field `stop` on type `vigilode::VigilodeSolution`
+    --> crates/vigilode/tests/unified_router_contracts.rs:2131:26
+     |
+2131 |             solutions[2].stop,
+     |                          ^^^^ unknown field
+     |
+help: one of the expressions' fields has a field of the same name
+     |
+2131 |             solutions[2].stats.stop,
+     |                          ++++++
+
+error[E0599]: no method named `regime` found for struct `vigilode::VigilodeOptions` in the current scope
+    --> crates/vigilode/tests/unified_router_contracts.rs:2140:54
+     |
+2140 |             let options = VigilodeOptions::default().regime(regime).max_steps(77);
+     |                                                      ^^^^^^ method not found in `vigilode::VigilodeOptions`
+
+error[E0609]: no field `regime` on type `vigilode::VigilodeOptions`
+    --> crates/vigilode/tests/unified_router_contracts.rs:2148:27
+     |
+2148 |         assert_eq!(parsed.regime, ProblemRegime::Unknown);
+     |                           ^^^^^^ unknown field
+     |
+     = note: available fields are: `options`, `strategy`, `profile`, `max_krylov_dim`, `max_krylov_restarts`, `invariant_drift_tol`
+
+error[E0004]: non-exhaustive patterns: `vigilode::SelectedTier::Tier2MatrixFreeKrylov`, `vigilode::SelectedTier::Tier3Exponential` and `vigilode::SelectedTier::Tier4StagedRodas5p` not covered
+    --> crates/vigilode/tests/unified_router_contracts.rs:1297:15
+     |
+1297 |         match tier {
+     |               ^^^^ patterns `vigilode::SelectedTier::Tier2MatrixFreeKrylov`, `vigilode::SelectedTier::Tier3Exponential` and `vigilode::SelectedTier::Tier4StagedRodas5p` not covered
+     |
+note: `vigilode::SelectedTier` defined here
+    --> crates/vigilode/src/unified/analyzer.rs:12:1
+     |
+  12 | pub enum SelectedTier {
+     | ^^^^^^^^^^^^^^^^^^^^^
+...
+  16 |     Tier2MatrixFreeKrylov,
+     |     --------------------- not covered
+  17 |     /// Fused exponential / Leja polynomial action engine.
+  18 |     Tier3Exponential,
+     |     ---------------- not covered
+  19 |     /// Staged vectorized $L^8=0$ causal sweep or banded RODAS5P engine.
+  20 |     Tier4StagedRodas5p,
+     |     ------------------ not covered
+     = note: the matched value is of type `vigilode::SelectedTier`
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern, a match arm with multiple or-patterns as shown, or multiple match arms
+     |
+1300 ~             SelectedTier::Tier5AdaptiveSwitching => "vigilode.switching",
+1301 ~             vigilode::SelectedTier::Tier2MatrixFreeKrylov | vigilode::SelectedTier::Tier3Exponential | vigilode::SelectedTier::Tier4StagedRodas5p => todo!(),
+     |
+
+Some errors have detailed explanations: E0004, E0282, E0432, E0599, E0609.
+For more information about an error, try `rustc --explain E0004`.
+error: could not compile `vigilode` (test "unified_router_contracts") due to 95 previous errors
+exit=101

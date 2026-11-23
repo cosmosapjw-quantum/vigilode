@@ -1173,3 +1173,987 @@ fn p1_matrix_free_solve_allocates_no_dense_matrix() {
         "a single allocation of {largest} bytes was made on a matrix-free route (n*n*8 = {dense})"
     );
 }
+
+// ======================================================================================
+// Part 2: the API that node V03 part B added
+// ======================================================================================
+
+mod part2 {
+    use super::*;
+    use rodas5p_integrators::Dopri5StopReason;
+    use vigilode::coloring::SparsityPattern;
+    use vigilode::{
+        EXPLICIT_TRIAL_ATTEMPT_LIMIT, EXPLICIT_TRIAL_MAX_DIMENSION, FallbackEngine, GeneralOde,
+        GeneralOdePolicy, MethodChoice, MethodRegistry, PreflightAnalyzer, RouteBasis, StopReason,
+        UnifiedStop, Unsupported,
+    };
+
+    type Build = Box<dyn Fn(&Calls) -> Problem>;
+
+    /// Heat equation on a ring (periodic), so that the Jacobian pattern is not banded.
+    fn ring_rhs(n: usize, y: &[f64], dy: &mut [f64]) {
+        let inv_dx2 = ((n + 1) as f64).powi(2);
+        for i in 0..n {
+            dy[i] = (y[(i + n - 1) % n] - 2.0 * y[i] + y[(i + 1) % n]) * inv_dx2;
+        }
+    }
+
+    /// Sparse JVP provider: the tridiagonal heat operator (a banded pattern), or the ring
+    /// (a general pattern).
+    fn heat_sparse_jvp(n: usize, ring: bool, calls: &Calls) -> Problem {
+        let rows: Vec<Vec<usize>> = (0..n)
+            .map(|i| {
+                let mut row = vec![i];
+                if ring {
+                    row.push((i + n - 1) % n);
+                    row.push((i + 1) % n);
+                } else {
+                    if i > 0 {
+                        row.push(i - 1);
+                    }
+                    if i + 1 < n {
+                        row.push(i + 1);
+                    }
+                }
+                row.sort_unstable();
+                row.dedup();
+                row
+            })
+            .collect();
+        let pattern = SparsityPattern::from_rows(n, &rows).expect("a valid pattern");
+        assert_eq!(pattern.is_banded(), !ring);
+        let (rhs, jvp) = (calls.rhs.clone(), calls.jvp.clone());
+        Problem::new(n, move |_t, y: &[f64], dy: &mut [f64]| {
+            rhs.fetch_add(1, Ordering::Relaxed);
+            if ring {
+                ring_rhs(n, y, dy);
+            } else {
+                heat_rhs(n, y, dy);
+            }
+            Ok::<(), CallbackError>(())
+        })
+        .jacobian(Jacobian::sparse_jvp(
+            pattern,
+            move |_t, _y, v: &[f64], out: &mut [f64]| {
+                jvp.fetch_add(1, Ordering::Relaxed);
+                if ring {
+                    ring_rhs(n, v, out);
+                } else {
+                    heat_rhs(n, v, out);
+                }
+                Ok(())
+            },
+        ))
+        .autonomous()
+    }
+
+    /// Replay the legs that a solution reports with direct calls of the entry points it
+    /// names: the final state, the callback entries and the charged right-hand sides.
+    fn replay(
+        build: &dyn Fn(&Calls) -> Problem,
+        y0: &[f64],
+        options: &VigilodeOptions,
+        solution: &VigilodeSolution,
+    ) -> (Vec<u64>, Calls, u64) {
+        let calls = Calls::default();
+        let problem = build(&calls);
+        let mut state = y0.to_vec();
+        let mut charged = 0u64;
+        for leg in &solution.legs {
+            let mut leg_options = options.options.clone();
+            leg_options.max_steps = leg.attempt_budget;
+            let span = (leg.t_start, leg.target);
+            state = match leg.tier {
+                SelectedTier::Tier1Explicit => {
+                    let direct = Dopri5::solve(&problem, span, &state, &leg_options).unwrap();
+                    assert_eq!(direct.stats.method, leg.driver_id);
+                    charged += direct.stats.counters.rhs_calls;
+                    direct.final_state
+                }
+                SelectedTier::TierProtectedReference => {
+                    let direct = Rodas5p::solve(&problem, span, &state, &leg_options).unwrap();
+                    assert_eq!(direct.stats.route.driver_id, leg.driver_id);
+                    charged += direct.stats.counters.rhs_calls;
+                    direct.final_state().unwrap().to_vec()
+                }
+                SelectedTier::Tier5AdaptiveSwitching => {
+                    let config = router_switching_config();
+                    let direct =
+                        SwitchingSolver::solve(&problem, span, &state, &leg_options, &config)
+                            .unwrap();
+                    assert_eq!(direct.schema, leg.driver_id);
+                    charged += direct.stats.rhs_calls;
+                    direct.final_state
+                }
+            };
+        }
+        (bits(&state), calls, charged)
+    }
+
+    /// Prefix of the driver identifier that each value of `SelectedTier` runs. The match
+    /// has no wildcard arm: a value added to the enum does not compile here until it is
+    /// given a driver.
+    fn driver_prefix(tier: SelectedTier) -> &'static str {
+        match tier {
+            SelectedTier::Tier1Explicit => "dopri5",
+            SelectedTier::TierProtectedReference => "rodas5p",
+            SelectedTier::Tier5AdaptiveSwitching => "vigilode.switching",
+        }
+    }
+
+    #[test]
+    fn p2_every_tier_has_a_driver_and_every_report_replays_as_direct_calls() {
+        let test = "p2_every_tier_has_a_driver_and_every_report_replays_as_direct_calls";
+        assert_eq!(SelectedTier::ALL.len(), 3);
+        let providers: Vec<(&str, fn(usize) -> Build)> = vec![
+            ("finite-difference", |n| Box::new(move |c| heat_fd(n, c))),
+            ("fd-declared-band", |n| {
+                Box::new(move |c| heat_fd(n, c).banded(1, 1))
+            }),
+            ("dense", |n| Box::new(move |c| heat_dense(n, c))),
+            ("band-callback", |n| {
+                Box::new(move |c| heat_band_callback(n, c))
+            }),
+            ("jvp", |n| Box::new(move |c| heat_jvp(n, c))),
+            ("sparse-jvp-banded", |n| {
+                Box::new(move |c| heat_sparse_jvp(n, false, c))
+            }),
+            ("sparse-jvp-general", |n| {
+                Box::new(move |c| heat_sparse_jvp(n, true, c))
+            }),
+        ];
+        let strategies = [
+            SolverStrategy::Auto,
+            SolverStrategy::HighPerformance,
+            SolverStrategy::RobustStiff,
+            SolverStrategy::AdaptiveReentrant,
+        ];
+        let regimes = [
+            ProblemRegime::Unknown,
+            ProblemRegime::Nonstiff,
+            ProblemRegime::Stiff,
+        ];
+        let span = (0.0, 0.01);
+        let mut tiers = std::collections::BTreeMap::<String, usize>::new();
+        let mut drivers = std::collections::BTreeMap::<String, usize>::new();
+        let mut routes = std::collections::BTreeMap::<String, usize>::new();
+        let (mut cases, mut solved, mut refused, mut screened) = (0, 0, 0, 0);
+        let mut failures: Vec<String> = Vec::new();
+        for n in [6usize, 12] {
+            let y0 = heat_sine(n);
+            for (provider, build) in &providers {
+                let build = build(n);
+                for strategy in strategies {
+                    for regime in regimes {
+                        for dense_output in [false, true] {
+                            cases += 1;
+                            let name = format!(
+                                "n={n} {provider} {strategy:?} {regime:?} dense_output={dense_output}"
+                            );
+                            let options = VigilodeOptions::default()
+                                .strategy(strategy)
+                                .regime(regime)
+                                .dense_output(dense_output);
+                            let calls = Calls::default();
+                            let problem = build(&calls);
+                            let solution = match VigilODE::solve(&problem, span, &y0, &options) {
+                                Ok(solution) => solution,
+                                Err(error) => {
+                                    // a refusal precedes every callback, and the RODAS5P
+                                    // facade refuses the same request
+                                    refused += 1;
+                                    let entries = calls.rhs() + calls.jacobian() + calls.jvp();
+                                    let facade =
+                                        Rodas5p::solve(&problem, span, &y0, &options.options);
+                                    if entries != 0 || facade.is_ok() {
+                                        failures.push(format!("{name}: refused ({error}) after {entries} callbacks, facade ok = {}", facade.is_ok()));
+                                    }
+                                    continue;
+                                }
+                            };
+                            solved += 1;
+                            let analysis = &solution.analysis;
+                            screened += usize::from(analysis.screen.is_some());
+                            *tiers
+                                .entry(format!("{:?}", analysis.suggested_tier))
+                                .or_default() += 1;
+                            let mut problems = Vec::new();
+                            if !solution.success() {
+                                problems.push("not solved".to_owned());
+                            }
+                            if solution.legs.len() != solution.route_history.len() {
+                                problems.push("history and legs differ in length".to_owned());
+                            }
+                            for (leg, entry) in solution.legs.iter().zip(&solution.route_history) {
+                                *drivers.entry(leg.driver_id.clone()).or_default() += 1;
+                                *routes.entry(leg.route_id.clone()).or_default() += 1;
+                                if entry.to_tier != leg.driver_id {
+                                    problems.push(format!(
+                                        "label {} is not the driver {}",
+                                        entry.to_tier, leg.driver_id
+                                    ));
+                                }
+                                if !leg.driver_id.starts_with(driver_prefix(leg.tier)) {
+                                    problems.push(format!(
+                                        "driver {} under tier {:?}",
+                                        leg.driver_id, leg.tier
+                                    ));
+                                }
+                            }
+                            // the plan of the analysis is the route of the first leg, unless
+                            // the switching adapter refused and RODAS5P ran in its place
+                            let first = &solution.legs[0];
+                            if first.tier == analysis.suggested_tier {
+                                if let Some(plan) = &analysis.planned_route
+                                    && plan.id() != first.route_id
+                                {
+                                    problems.push(format!(
+                                        "planned {} ran {}",
+                                        plan.id(),
+                                        first.route_id
+                                    ));
+                                }
+                            } else if !(analysis.suggested_tier
+                                == SelectedTier::Tier5AdaptiveSwitching
+                                && dense_output
+                                && solution.route_history[0].reason.contains("refused"))
+                            {
+                                problems.push(format!(
+                                    "first leg {:?} under tier {:?}",
+                                    first.tier, analysis.suggested_tier
+                                ));
+                            }
+                            let (replayed, direct_calls, direct_charged) =
+                                replay(&*build, &y0, &options, &solution);
+                            if replayed != bits(&solution.final_state) {
+                                problems.push(
+                                    "the replay of the reported legs gives another state"
+                                        .to_owned(),
+                                );
+                            }
+                            if (calls.rhs(), calls.jacobian(), calls.jvp())
+                                != (
+                                    direct_calls.rhs() + analysis.rhs_calls,
+                                    direct_calls.jacobian(),
+                                    direct_calls.jvp(),
+                                )
+                            {
+                                problems.push(format!(
+                                    "callback entries {:?} differ from the replay {:?} plus {} preflight calls",
+                                    (calls.rhs(), calls.jacobian(), calls.jvp()),
+                                    (direct_calls.rhs(), direct_calls.jacobian(), direct_calls.jvp()),
+                                    analysis.rhs_calls
+                                ));
+                            }
+                            if solution.stats.counters.rhs_calls
+                                != direct_charged + analysis.rhs_calls
+                            {
+                                problems.push(format!(
+                                    "charged rhs {} is not the replay's {} plus {} preflight calls",
+                                    solution.stats.counters.rhs_calls,
+                                    direct_charged,
+                                    analysis.rhs_calls
+                                ));
+                            }
+                            if !problems.is_empty() {
+                                failures.push(format!("{name}: {problems:?}"));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        record(
+            test,
+            json!({
+                "cases": cases, "solved": solved, "refused_before_any_callback": refused,
+                "with_stiffness_screen": screened, "failures": failures.len(),
+                "tiers": tiers, "drivers": drivers, "routes": routes,
+                "first_failures": failures.iter().take(5).collect::<Vec<_>>(),
+            }),
+        );
+        assert!(
+            failures.is_empty(),
+            "{} of {cases} cases: {failures:#?}",
+            failures.len()
+        );
+        assert_eq!(tiers.len(), 3, "every tier must be produced: {tiers:?}");
+        assert!(drivers.len() >= 6, "driver families covered: {drivers:?}");
+    }
+
+    #[test]
+    fn p2_typed_stop_of_a_rodas5p_leg_and_its_prefix() {
+        let test = "p2_typed_stop_of_a_rodas5p_leg_and_its_prefix";
+        let calls = Calls::default();
+        let problem = robertson_dense(&calls);
+        let options = VigilodeOptions::default().max_steps(5);
+        let span = (0.0, 40.0);
+        let y0 = [1.0, 0.0, 0.0];
+        let direct = Rodas5p::solve(&problem, span, &y0, &options.options).unwrap();
+        let unified = VigilODE::solve(&problem, span, &y0, &options).unwrap();
+        let expected = FailureReason::MaxStepsReached { max_steps: 5 };
+        record(
+            test,
+            json!({
+                "stop": serde_json::to_value(&unified.stop).unwrap(),
+                "status": status_text(&unified.status),
+                "final_time": unified.final_time,
+                "direct_final_time": direct.t.last(),
+                "attempts": unified.stats.attempts,
+            }),
+        );
+        assert!(!unified.success());
+        assert_eq!(
+            unified.stop,
+            Some(UnifiedStop::Rodas5p {
+                reason: expected.clone()
+            })
+        );
+        assert!(unified.stop.as_ref().unwrap().is_exact());
+        assert_eq!(unified.status, Status::Failed(expected.clone()));
+        assert_eq!(unified.status, direct.status);
+        assert!(unified.final_time > 0.0 && unified.final_time < 40.0);
+        assert_eq!(
+            unified.final_time.to_bits(),
+            direct.t.last().unwrap().to_bits()
+        );
+        assert_eq!(
+            bits(&unified.final_state),
+            bits(direct.final_state().unwrap())
+        );
+        assert_eq!(unified.stats.attempts, 5);
+        // the typed error keeps the reason and the accepted prefix
+        let final_time = unified.final_time;
+        match unified.ensure_success() {
+            Err(SolveError::Failed { reason, partial }) => {
+                assert_eq!(reason, expected);
+                assert_eq!(*partial.t.last().unwrap(), final_time);
+                assert_eq!(partial.stats.attempts, 5);
+            }
+            other => panic!("expected the typed failure, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn p2_declared_nonstiff_runs_dopri5_with_the_whole_budget_and_no_second_method() {
+        let test = "p2_declared_nonstiff_runs_dopri5_with_the_whole_budget_and_no_second_method";
+        let calls = Calls::default();
+        let problem = scalar_dense(&calls);
+        let options = VigilodeOptions::default()
+            .regime(ProblemRegime::Nonstiff)
+            .max_steps(50);
+        let unified = VigilODE::solve(&problem, (0.0, 1.0), &[1.0], &options).unwrap();
+        record(
+            test,
+            json!({
+                "drivers": unified.executed_drivers(),
+                "stop": serde_json::to_value(&unified.stop).unwrap(),
+                "status": status_text(&unified.status),
+                "basis": serde_json::to_value(&unified.analysis.basis).unwrap(),
+                "final_time": unified.final_time,
+                "attempts": unified.stats.attempts,
+                "jacobian_entries": calls.jacobian(),
+            }),
+        );
+        assert_eq!(unified.executed_drivers(), ["dopri5-5(4)-fsal"]);
+        assert_eq!(
+            unified.analysis.basis,
+            RouteBasis::DeclaredRegime {
+                regime: ProblemRegime::Nonstiff
+            }
+        );
+        assert!(!unified.analysis.fallback_to_rodas5p);
+        assert!(unified.analysis.screen.is_none() && unified.analysis.rhs_calls == 0);
+        match &unified.stop {
+            Some(UnifiedStop::Dopri5 {
+                reason, callback, ..
+            }) => {
+                assert_eq!(*reason, Some(Dopri5StopReason::AttemptBudget));
+                assert!(callback.is_none());
+            }
+            other => panic!("expected the DOPRI5 budget stop, got {other:?}"),
+        }
+        assert_eq!(
+            unified.status,
+            Status::Failed(FailureReason::MaxStepsReached { max_steps: 50 })
+        );
+        assert_eq!(unified.stats.attempts, 50);
+        assert!(unified.final_time > 0.0 && unified.final_time < 1.0);
+        assert_eq!(calls.jacobian(), 0, "DOPRI5 never asks for the Jacobian");
+        assert_eq!(unified.stats.counters.rhs_calls, calls.rhs());
+        let explicit = unified
+            .explicit_solution
+            .as_ref()
+            .expect("the DOPRI5 record");
+        assert_eq!(explicit.stop_reason, Some(Dopri5StopReason::AttemptBudget));
+        assert_eq!(bits(&explicit.final_state), bits(&unified.final_state));
+    }
+
+    #[test]
+    fn p2_typed_stop_of_the_switching_adapter() {
+        let test = "p2_typed_stop_of_the_switching_adapter";
+        // a fatal right-hand side
+        let calls = Calls::default();
+        let fatal = VigilODE::solve(
+            &fatal_rhs_after(&calls),
+            (0.0, 1.0),
+            &[1.0],
+            SolverStrategy::AdaptiveReentrant,
+        )
+        .unwrap();
+        let direct = SwitchingSolver::solve(
+            &fatal_rhs_after(&Calls::default()),
+            (0.0, 1.0),
+            &[1.0],
+            &Options::default(),
+            &router_switching_config(),
+        )
+        .unwrap();
+        // a blow-up: y' = y^2
+        let blowup_problem = || {
+            Problem::new(1, |_t, y: &[f64], dy: &mut [f64]| {
+                dy[0] = y[0] * y[0];
+                Ok::<(), CallbackError>(())
+            })
+            .jacobian(Jacobian::dense(|_t, y: &[f64], jac: &mut [f64]| {
+                jac[0] = 2.0 * y[0];
+                Ok(())
+            }))
+            .autonomous()
+        };
+        let blowup = VigilODE::solve(
+            &blowup_problem(),
+            (0.0, 2.0),
+            &[1.0],
+            SolverStrategy::AdaptiveReentrant,
+        )
+        .unwrap();
+        record(
+            test,
+            json!({
+                "fatal_stop": serde_json::to_value(&fatal.stop).unwrap(),
+                "direct_message": direct.message,
+                "blowup_stop": serde_json::to_value(&blowup.stop).unwrap(),
+                "blowup_status": status_text(&blowup.status),
+            }),
+        );
+        match &fatal.stop {
+            Some(UnifiedStop::Switching {
+                message,
+                callback,
+                attempts,
+                max_steps,
+                accounting_complete,
+                ..
+            }) => {
+                assert_eq!(message, &direct.message, "the adapter's own message");
+                let callback = callback.as_ref().expect("the fatal callback");
+                assert_eq!(callback.callback, Callback::Rhs);
+                assert!(callback.t > 0.3 && callback.message == "sensor offline");
+                assert_eq!((*attempts, *max_steps), (direct.stats.attempts, 100_000));
+                assert!(*accounting_complete);
+            }
+            other => panic!("expected the switching stop, got {other:?}"),
+        }
+        assert!(fatal.stop.as_ref().unwrap().is_exact());
+        assert!(fatal.switching_solution.is_some());
+        match &blowup.stop {
+            Some(UnifiedStop::Switching {
+                driver_stop,
+                callback,
+                method,
+                ..
+            }) => {
+                assert!(callback.is_none());
+                assert_eq!(*method, Some(vigilode::SwitchingMethod::Rodas5p));
+                let stop = driver_stop.as_ref().expect("the RODAS5P stop record");
+                assert_eq!(stop.reason, StopReason::MinimumStep);
+            }
+            other => panic!("expected the switching stop, got {other:?}"),
+        }
+        assert!(blowup.stop.as_ref().unwrap().is_exact());
+        assert!(!blowup.stop.as_ref().unwrap().is_attempt_budget());
+    }
+
+    #[test]
+    fn p2_legs_are_direct_calls_and_their_work_adds_up() {
+        let test = "p2_legs_are_direct_calls_and_their_work_adds_up";
+        let calls = Calls::default();
+        let problem = robertson_fd(&calls).invariant("mass", |y| y[0] + y[1] + y[2]);
+        let options = VigilodeOptions::default().max_steps(500);
+        let y0 = [1.0, 0.0, 0.0];
+        let unified = VigilODE::solve(&problem, (0.0, 10.0), &y0, &options).unwrap();
+        assert_eq!(unified.legs.len(), 2);
+        let (trial, fallback) = (&unified.legs[0], &unified.legs[1]);
+        // the trial is Dopri5::solve with 250 attempts
+        let mut trial_options = options.options.clone();
+        trial_options.max_steps = 250;
+        let direct_calls = Calls::default();
+        let direct_trial = Dopri5::solve(
+            &robertson_fd(&direct_calls),
+            (0.0, 10.0),
+            &y0,
+            &trial_options,
+        )
+        .unwrap();
+        // the fallback is Rodas5p::solve from the trial's last accepted state with the rest
+        let mut rest_options = options.options.clone();
+        rest_options.max_steps = 250;
+        let direct_rest = Rodas5p::solve(
+            &robertson_fd(&direct_calls),
+            (direct_trial.final_time, 10.0),
+            &direct_trial.final_state,
+            &rest_options,
+        )
+        .unwrap();
+        let screen = unified.analysis.screen.expect("the screen ran");
+        let leg_rhs: u64 = unified.legs.iter().map(|leg| leg.counters.rhs_calls).sum();
+        let mass0: f64 = y0.iter().sum();
+        let mass1: f64 = unified.final_state.iter().sum();
+        record(
+            test,
+            json!({
+                "legs": serde_json::to_value(&unified.legs).unwrap(),
+                "screen": serde_json::to_value(screen).unwrap(),
+                "preflight_rhs_calls": unified.analysis.rhs_calls,
+                "leg_rhs_calls": leg_rhs,
+                "total_rhs_calls": unified.stats.counters.rhs_calls,
+                "rhs_entries": calls.rhs(),
+                "direct_rhs_entries": direct_calls.rhs(),
+                "invariant_drift": unified.invariant_drift,
+            }),
+        );
+        assert_eq!(
+            (
+                trial.tier,
+                trial.attempt_budget,
+                trial.attempts,
+                trial.success
+            ),
+            (SelectedTier::Tier1Explicit, 250, 250, false)
+        );
+        assert!(matches!(
+            trial.stop,
+            Some(UnifiedStop::Dopri5 {
+                reason: Some(Dopri5StopReason::AttemptBudget),
+                callback: None,
+                ..
+            })
+        ));
+        assert_eq!(trial.t_end.to_bits(), direct_trial.final_time.to_bits());
+        assert_eq!(
+            (fallback.tier, fallback.attempt_budget, fallback.success),
+            (SelectedTier::TierProtectedReference, 250, true)
+        );
+        assert_eq!(fallback.t_start.to_bits(), trial.t_end.to_bits());
+        assert_eq!(fallback.attempts, direct_rest.stats.attempts);
+        assert_eq!(
+            serde_json::to_value(fallback.counters).unwrap(),
+            serde_json::to_value(direct_rest.stats.counters).unwrap()
+        );
+        assert_eq!(
+            bits(&unified.final_state),
+            bits(direct_rest.final_state().unwrap())
+        );
+        // preflight + legs = total = what the callback boundary saw
+        assert_eq!(screen.rhs_calls, 4, "n + 1 calls for n = 3");
+        assert!(!screen.stiffness_evidence && screen.completed);
+        assert_eq!(unified.analysis.rhs_calls, 4);
+        assert_eq!(leg_rhs + 4, unified.stats.counters.rhs_calls);
+        assert_eq!(unified.stats.counters.rhs_calls, calls.rhs());
+        assert_eq!(calls.rhs(), direct_calls.rhs() + 4);
+        assert_eq!(unified.stats.attempts, 250 + direct_rest.stats.attempts);
+        assert_eq!(unified.stats.counters.fallback_steps, 1);
+        // the solution of the RODAS5P leg is the direct one, and it starts at the checkpoint
+        let inner = unified.inner_solution.as_ref().unwrap();
+        assert_eq!(inner.t[0].to_bits(), trial.t_end.to_bits());
+        // the drift is measured from the initial state of the solve, not from the checkpoint
+        assert_eq!(unified.invariant_drift.len(), 1);
+        assert_eq!(
+            unified.invariant_drift[0].1.to_bits(),
+            (mass1 - mass0).abs().to_bits()
+        );
+    }
+
+    #[test]
+    fn p2_exhausted_shared_budget_reports_the_total_and_keeps_the_leg_stop() {
+        let test = "p2_exhausted_shared_budget_reports_the_total_and_keeps_the_leg_stop";
+        let calls = Calls::default();
+        // 20 attempts: a trial of 10 and, without evidence of stiffness on this span (the
+        // screen gives L = 0.632, and 0.632 * 40 < 3.3 * 10), 10 for RODAS5P, which needs
+        // more to reach t = 40
+        let options = VigilodeOptions::default().max_steps(20);
+        let unified = VigilODE::solve(
+            &robertson_fd(&calls),
+            (0.0, 40.0),
+            &[1.0, 0.0, 0.0],
+            &options,
+        )
+        .unwrap();
+        record(
+            test,
+            json!({
+                "drivers": unified.executed_drivers(),
+                "leg_attempts": unified.legs.iter().map(|l| l.attempts).collect::<Vec<_>>(),
+                "leg_budgets": unified.legs.iter().map(|l| l.attempt_budget).collect::<Vec<_>>(),
+                "stop": serde_json::to_value(&unified.stop).unwrap(),
+                "status": status_text(&unified.status),
+                "final_time": unified.final_time,
+                "rhs_entries": calls.rhs(),
+                "rhs_charged": unified.stats.counters.rhs_calls,
+            }),
+        );
+        assert!(!unified.success());
+        assert_eq!(unified.legs.len(), 2);
+        assert_eq!(unified.stats.attempts, 20);
+        assert_eq!(
+            unified.stop,
+            Some(UnifiedStop::Rodas5p {
+                reason: FailureReason::MaxStepsReached { max_steps: 10 }
+            }),
+            "the stop is the one the driver gave: its own budget"
+        );
+        assert_eq!(
+            unified.status,
+            Status::Failed(FailureReason::MaxStepsReached { max_steps: 20 }),
+            "the status names the budget of the solve"
+        );
+        assert!(unified.final_time > unified.legs[0].t_end);
+        assert_eq!(unified.stats.counters.rhs_calls, calls.rhs());
+    }
+
+    #[test]
+    fn p2_declared_regime_routes_as_the_general_policy_does() {
+        let test = "p2_declared_regime_routes_as_the_general_policy_does";
+        let mut rows = Vec::new();
+        for regime in [ProblemRegime::Stiff, ProblemRegime::Nonstiff] {
+            let policy = GeneralOdePolicy {
+                regime,
+                derivatives: DerivativeFallback::AllowFiniteDifference,
+                max_dense_dimension: usize::MAX,
+                allow_matrix_free: true,
+            };
+            let cases: [(&str, Build, Vec<f64>); 3] = [
+                ("oscillator", Box::new(oscillator), vec![1.0, 0.0]),
+                (
+                    "robertson-dense",
+                    Box::new(robertson_dense),
+                    vec![1.0, 0.0, 0.0],
+                ),
+                ("heat-jvp", Box::new(|c| heat_jvp(12, c)), heat_sine(12)),
+            ];
+            for (name, build, y0) in cases {
+                let span = (0.0, 0.5);
+                let problem = build(&Calls::default());
+                let options = Options::default();
+                let plan =
+                    MethodRegistry::route(&problem, &options, &MethodChoice::General(policy))
+                        .expect("the general policy admits the request");
+                let general = GeneralOde::solve(&problem, span, &y0, &options, &policy).unwrap();
+                let unified = VigilODE::solve(
+                    &problem,
+                    span,
+                    &y0,
+                    VigilodeOptions::default().regime(regime),
+                )
+                .unwrap();
+                let equal_route = unified.executed_route() == Some(plan.route.id().as_str());
+                let equal_state =
+                    bits(&unified.final_state) == bits(general.final_state().unwrap());
+                rows.push(json!({
+                    "regime": format!("{regime:?}"), "problem": name,
+                    "general_route": plan.route.id(), "unified_route": unified.executed_route(),
+                    "equal_route": equal_route, "equal_state_bits": equal_state,
+                    "legs": unified.legs.len(),
+                }));
+                assert!(
+                    equal_route && equal_state && unified.legs.len() == 1,
+                    "{name} {regime:?}"
+                );
+                assert_eq!(
+                    unified.analysis.basis,
+                    RouteBasis::DeclaredRegime { regime }
+                );
+            }
+        }
+        record(test, json!({ "cases": rows }));
+    }
+
+    #[test]
+    fn p2_stiffness_screen_is_a_charged_lower_bound() {
+        let test = "p2_stiffness_screen_is_a_charged_lower_bound";
+        let screen_of = |build: &dyn Fn(&Calls) -> Problem, span: (f64, f64), y0: &[f64]| {
+            let calls = Calls::default();
+            let analysis =
+                PreflightAnalyzer::analyze(&build(&calls), span, y0, &VigilodeOptions::default())
+                    .unwrap();
+            (analysis, calls.rhs())
+        };
+        let (scalar, scalar_entries) = screen_of(&scalar_fd, (0.0, 1.0), &[1.0]);
+        let heat8 = |c: &Calls| heat_fd(8, c);
+        let (heat, heat_entries) = screen_of(&heat8, (0.0, 100.0), &heat_sine(8));
+        let (short, _) = screen_of(&heat8, (0.0, 1.0), &heat_sine(8));
+        let (robertson, _) = screen_of(&robertson_fd, (0.0, 10.0), &[1.0, 0.0, 0.0]);
+        let (osc, osc_entries) = screen_of(&oscillator, (0.0, 1.0), &[1.0, 0.0]);
+        let bound =
+            |a: &vigilode::PreflightAnalysis| a.screen.unwrap().lipschitz_lower_bound.unwrap();
+        record(
+            test,
+            json!({
+                "scalar": serde_json::to_value(scalar.screen).unwrap(),
+                "heat_span_100": serde_json::to_value(heat.screen).unwrap(),
+                "heat_span_1": serde_json::to_value(short.screen).unwrap(),
+                "robertson": serde_json::to_value(robertson.screen).unwrap(),
+                "oscillator": serde_json::to_value(osc.screen).unwrap(),
+                "trial_limit": EXPLICIT_TRIAL_ATTEMPT_LIMIT,
+                "dimension_limit": EXPLICIT_TRIAL_MAX_DIMENSION,
+            }),
+        );
+        // every call is reported, and it is n + 1
+        assert_eq!((scalar.rhs_calls, scalar_entries), (2, 2));
+        assert_eq!((heat.rhs_calls, heat_entries), (9, 9));
+        assert_eq!((osc.rhs_calls, osc_entries), (3, 3));
+        // the threshold is 3.3 times the trial budget min(1000, max_steps / 2)
+        assert_eq!(scalar.screen.unwrap().trial_attempts, 1000);
+        assert_eq!(scalar.screen.unwrap().threshold, 3300.0);
+        // a lower bound: never above the spectral radius, at least the norm over sqrt(n)
+        assert!((bound(&scalar) / 1.0e6 - 1.0).abs() < 1e-6);
+        assert!(bound(&heat) <= 324.0 * (1.0 + 1e-6) && bound(&heat) >= 324.0 / 8f64.sqrt());
+        assert!((bound(&osc) - 1.0).abs() < 1e-6);
+        // evidence moves the request to RODAS5P; no evidence leaves a budgeted trial
+        for stiff in [&scalar, &heat] {
+            assert!(stiff.screen.unwrap().stiffness_evidence);
+            assert_eq!(stiff.suggested_tier, SelectedTier::TierProtectedReference);
+            assert_eq!(stiff.basis, RouteBasis::StiffnessScreen);
+        }
+        for open in [&short, &robertson, &osc] {
+            assert!(!open.screen.unwrap().stiffness_evidence);
+            assert_eq!(open.suggested_tier, SelectedTier::Tier1Explicit);
+            assert_eq!(open.basis, RouteBasis::UndeclaredRegimeTrial);
+            assert!(open.fallback_to_rodas5p, "no evidence is not non-stiffness");
+            assert_eq!(open.first_leg_attempts, 1000);
+        }
+        // a declaration needs no callback
+        let calls = Calls::default();
+        let declared = PreflightAnalyzer::analyze(
+            &heat_dense(64, &calls),
+            (0.0, 10.0),
+            &heat_sine(64),
+            &VigilodeOptions::default(),
+        )
+        .unwrap();
+        assert_eq!(declared.basis, RouteBasis::SuppliedDerivative);
+        assert_eq!(calls.rhs() + calls.jacobian(), 0);
+        assert!(declared.screen.is_none());
+    }
+
+    #[test]
+    fn p2_fallback_rule_and_trial_budget() {
+        let test = "p2_fallback_rule_and_trial_budget";
+        assert_eq!(FallbackEngine::explicit_trial_attempts(100_000), 1000);
+        assert_eq!(FallbackEngine::explicit_trial_attempts(500), 250);
+        assert_eq!(FallbackEngine::explicit_trial_attempts(1), 0);
+        assert_eq!(FallbackEngine::remaining_attempts(500, 250), 250);
+        assert_eq!(FallbackEngine::remaining_attempts(500, 600), 0);
+        let follows: Vec<bool> = [
+            Dopri5StopReason::AttemptBudget,
+            Dopri5StopReason::StepUnderflow,
+            Dopri5StopReason::NonFinite,
+            Dopri5StopReason::Controller,
+            Dopri5StopReason::Callback,
+            Dopri5StopReason::Output,
+        ]
+        .into_iter()
+        .map(|reason| FallbackEngine::follows_explicit_stop(Some(reason), false))
+        .collect();
+        assert_eq!(follows, [true, true, true, true, false, false]);
+        assert!(!FallbackEngine::follows_explicit_stop(
+            Some(Dopri5StopReason::AttemptBudget),
+            true
+        ));
+        assert!(!FallbackEngine::follows_explicit_stop(None, false));
+        // a budget of one attempt leaves no trial: RODAS5P runs, and one attempt is made
+        let calls = Calls::default();
+        let unified = VigilODE::solve(
+            &oscillator(&calls),
+            (0.0, 1.0),
+            &[1.0, 0.0],
+            VigilodeOptions::default().max_steps(1),
+        )
+        .unwrap();
+        record(
+            test,
+            json!({
+                "basis": serde_json::to_value(&unified.analysis.basis).unwrap(),
+                "drivers": unified.executed_drivers(),
+                "attempts": unified.stats.attempts,
+                "status": status_text(&unified.status),
+            }),
+        );
+        assert_eq!(
+            unified.analysis.basis,
+            RouteBasis::NoBudgetForTrial { max_steps: 1 }
+        );
+        assert_eq!(unified.legs.len(), 1);
+        assert!(unified.legs[0].driver_id.starts_with("rodas5p"));
+        assert!(unified.stats.attempts <= 1);
+    }
+
+    #[test]
+    fn p2_unsupported_request_is_refused_before_any_callback() {
+        let test = "p2_unsupported_request_is_refused_before_any_callback";
+        let n = 12;
+        let calls = Calls::default();
+        let problem = heat_jvp(n, &calls);
+        let options = VigilodeOptions::default().atol_vector(vec![1e-9; n]);
+        let refused = VigilODE::solve(&problem, (0.0, 0.01), &heat_sine(n), &options);
+        let entries = calls.rhs() + calls.jvp();
+        // the caller can still declare the regime: DOPRI5 takes a vector tolerance
+        let declared = VigilODE::solve(
+            &problem,
+            (0.0, 0.01),
+            &heat_sine(n),
+            options.clone().regime(ProblemRegime::Nonstiff),
+        )
+        .unwrap();
+        record(
+            test,
+            json!({
+                "refusal": refused.as_ref().err().map(|e| e.to_string()),
+                "callback_entries_before_the_refusal": entries,
+                "declared_nonstiff_drivers": declared.executed_drivers(),
+            }),
+        );
+        assert!(matches!(
+            refused,
+            Err(SolveError::Unsupported(
+                Unsupported::VectorAtolOnMatrixFreeRoute
+            ))
+        ));
+        assert_eq!(entries, 0);
+        assert_eq!(declared.executed_drivers(), ["dopri5-5(4)-fsal"]);
+    }
+
+    #[test]
+    fn p2_a_refusal_of_the_switching_adapter_is_reported_and_rodas5p_runs() {
+        let test = "p2_a_refusal_of_the_switching_adapter_is_reported_and_rodas5p_runs";
+        let span = (0.0, 1.0);
+        let y0 = [1.0, 0.0, 0.0];
+        let direct_calls = Calls::default();
+        let direct = Rodas5p::solve(
+            &robertson_dae(&direct_calls),
+            span,
+            &y0,
+            &Options::default(),
+        )
+        .unwrap();
+        let calls = Calls::default();
+        let unified = VigilODE::solve(
+            &robertson_dae(&calls),
+            span,
+            &y0,
+            SolverStrategy::AdaptiveReentrant,
+        )
+        .unwrap();
+        record(
+            test,
+            json!({
+                "suggested_tier": serde_json::to_value(unified.analysis.suggested_tier).unwrap(),
+                "history": serde_json::to_value(&unified.route_history).unwrap(),
+                "fallback_steps": unified.stats.counters.fallback_steps,
+                "entries": [calls.rhs(), calls.jacobian()],
+                "direct_entries": [direct_calls.rhs(), direct_calls.jacobian()],
+            }),
+        );
+        assert_eq!(
+            unified.analysis.suggested_tier,
+            SelectedTier::Tier5AdaptiveSwitching
+        );
+        assert_eq!(unified.executed_drivers(), [direct.stats.route.driver_id]);
+        assert!(unified.route_history[0].reason.contains("refused"));
+        assert_eq!(unified.stats.counters.fallback_steps, 1);
+        assert_eq!(
+            bits(&unified.final_state),
+            bits(direct.final_state().unwrap())
+        );
+        assert_eq!(
+            (calls.rhs(), calls.jacobian()),
+            (direct_calls.rhs(), direct_calls.jacobian())
+        );
+    }
+
+    #[test]
+    fn p2_records_are_strict_json_and_options_keep_their_file_format() {
+        let test = "p2_records_are_strict_json_and_options_keep_their_file_format";
+        let solutions = [
+            VigilODE::solve(
+                &robertson_fd(&Calls::default()),
+                (0.0, 10.0),
+                &[1.0, 0.0, 0.0],
+                VigilodeOptions::default().max_steps(500),
+            )
+            .unwrap(),
+            VigilODE::solve(
+                &fatal_rhs_after(&Calls::default()),
+                (0.0, 1.0),
+                &[1.0],
+                SolverStrategy::AdaptiveReentrant,
+            )
+            .unwrap(),
+            VigilODE::solve(
+                &fatal_rhs_after(&Calls::default()),
+                (0.5, 1.0),
+                &[1.0],
+                SolverStrategy::Auto,
+            )
+            .unwrap(),
+        ];
+        let mut sizes = Vec::new();
+        for solution in &solutions {
+            let text = serde_json::to_string(solution).expect("the solution serializes");
+            let value: Value = serde_json::from_str(&text).expect("strict JSON");
+            for key in [
+                "stop",
+                "legs",
+                "analysis",
+                "route_history",
+                "stats",
+                "status",
+            ] {
+                assert!(value.get(key).is_some(), "missing {key}");
+            }
+            assert!(!text.contains("NaN") && !text.contains("Infinity"));
+            sizes.push(text.len());
+        }
+        // the third solve stops in the preflight screen: no leg, a typed stop
+        assert!(solutions[2].legs.is_empty());
+        assert!(matches!(
+            solutions[2].stop,
+            Some(UnifiedStop::Preflight { .. })
+        ));
+        // options: every regime round-trips, and a file written before the field existed parses
+        for regime in [
+            ProblemRegime::Unknown,
+            ProblemRegime::Nonstiff,
+            ProblemRegime::Stiff,
+        ] {
+            let options = VigilodeOptions::default().regime(regime).max_steps(77);
+            let text = serde_json::to_string(&options).unwrap();
+            let back: VigilodeOptions = serde_json::from_str(&text).unwrap();
+            assert_eq!(back, options);
+        }
+        let mut old: Value = serde_json::to_value(VigilodeOptions::default()).unwrap();
+        old.as_object_mut().unwrap().remove("regime");
+        let parsed: VigilodeOptions = serde_json::from_value(old).unwrap();
+        assert_eq!(parsed.regime, ProblemRegime::Unknown);
+        assert!(
+            serde_json::from_str::<VigilodeOptions>(
+                &serde_json::to_string(&VigilodeOptions::default())
+                    .unwrap()
+                    .replace("\"unknown\"", "\"sometimes\"")
+            )
+            .is_err()
+        );
+        record(test, json!({ "serialized_bytes": sizes }));
+    }
+}
