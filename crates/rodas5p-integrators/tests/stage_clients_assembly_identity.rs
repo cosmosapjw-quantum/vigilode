@@ -23,7 +23,7 @@
 //! configuration fail closed with a typed error.
 
 use std::collections::BTreeSet;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 
 use rodas5p_core::{CoreError, CoreResult, DenseMatrix, WorkCounters};
@@ -40,8 +40,9 @@ use rodas5p_integrators::{
 mod problems;
 use problems::{
     Arm, ClientRun, ClientSpec, FdProblem, ProtectedRun, Rhs, RunConfig, bits, brusselator,
-    final_state, from_rhs, nlkpp_band, nlkpp_dense, reference_banded_fd, reference_dense_fd, ring,
-    ring_pattern, run_client, run_protected_banded, run_protected_dense,
+    final_state, from_rhs, impure, lower_coupled_chain, nlkpp_band, nlkpp_dense,
+    reference_banded_fd, reference_dense_fd, ring, ring_pattern, run_client, run_protected_banded,
+    run_protected_dense, upper_bidiagonal,
 };
 
 const RTOLS: [f64; 3] = [1.0e-4, 1.0e-6, 1.0e-8];
@@ -623,37 +624,6 @@ fn checks_can_be_switched_off_and_requested() {
     );
 }
 
-/// A chain whose component `i` reads `y_{i-1}`, `y_i` and `y_{i+1}`; rows
-/// `1 ..= n - 2` only read `y_{i-1}`, so that a pattern without the lower
-/// diagonal leaves no row uncovered.
-fn lower_coupled_chain(n: usize) -> FdProblem {
-    let rhs: Rhs = Arc::new(
-        move |_t: f64, y: &[f64], out: &mut [f64]| -> CoreResult<()> {
-            for i in 0..n {
-                let next = if i + 1 < n { y[i + 1] } else { 0.0 };
-                out[i] = -y[i] * y[i] + 0.5 * next.sin();
-                if i >= 1 && i + 1 < n {
-                    out[i] += 0.3 * y[i - 1] * y[i];
-                }
-            }
-            Ok(())
-        },
-    );
-    let y0 = (0..n).map(|i| 0.4 + 0.2 * (0.6 * i as f64).cos()).collect();
-    from_rhs(
-        format!("lower-coupled-chain-n{n}"),
-        rhs,
-        y0,
-        (0.0, 1.0),
-        None,
-    )
-}
-
-/// A pattern with the diagonal and the first upper diagonal only.
-fn upper_bidiagonal(n: usize) -> SparsityPattern {
-    SparsityPattern::banded(n, 0, 1).unwrap()
-}
-
 /// The run must end with `InvalidInput`, nothing built, and a contract
 /// error in the handle.
 fn assert_fails_closed(label: &str, fd: &FdProblem, spec: &ClientSpec) -> AssemblyError {
@@ -801,22 +771,6 @@ fn a_wrong_pattern_fails_closed() {
         ),
         Ok(12)
     );
-}
-
-/// A right-hand side that is not a function of its input: the result
-/// carries the number of the call.
-fn impure(n: usize) -> FdProblem {
-    let calls = AtomicU64::new(0);
-    let rhs: Rhs = Arc::new(
-        move |_t: f64, y: &[f64], out: &mut [f64]| -> CoreResult<()> {
-            let call = calls.fetch_add(1, Ordering::Relaxed);
-            for i in 0..n {
-                out[i] = -y[i] + 1.0e-6 * call as f64;
-            }
-            Ok(())
-        },
-    );
-    from_rhs(format!("impure-n{n}"), rhs, vec![1.0; n], (0.0, 1.0), None)
 }
 
 #[test]

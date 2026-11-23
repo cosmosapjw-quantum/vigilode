@@ -284,6 +284,53 @@ pub fn ring_pattern(n: usize) -> SparsityPattern {
     SparsityPattern::from_rows(n, &rows).unwrap()
 }
 
+/// A chain whose component `i` reads `y_{i-1}`, `y_i` and `y_{i+1}`; rows
+/// `1 ..= n - 2` only read `y_{i-1}`, so that a pattern without the lower
+/// diagonal leaves no row uncovered.
+pub fn lower_coupled_chain(n: usize) -> FdProblem {
+    let rhs: Rhs = Arc::new(
+        move |_t: f64, y: &[f64], out: &mut [f64]| -> CoreResult<()> {
+            for i in 0..n {
+                let next = if i + 1 < n { y[i + 1] } else { 0.0 };
+                out[i] = -y[i] * y[i] + 0.5 * next.sin();
+                if i >= 1 && i + 1 < n {
+                    out[i] += 0.3 * y[i - 1] * y[i];
+                }
+            }
+            Ok(())
+        },
+    );
+    let y0 = (0..n).map(|i| 0.4 + 0.2 * (0.6 * i as f64).cos()).collect();
+    from_rhs(
+        format!("lower-coupled-chain-n{n}"),
+        rhs,
+        y0,
+        (0.0, 1.0),
+        None,
+    )
+}
+
+/// A pattern with the diagonal and the first upper diagonal only.
+pub fn upper_bidiagonal(n: usize) -> SparsityPattern {
+    SparsityPattern::banded(n, 0, 1).unwrap()
+}
+
+/// A right-hand side that is not a function of its input: the result
+/// carries the number of the call.
+pub fn impure(n: usize) -> FdProblem {
+    let calls = AtomicU64::new(0);
+    let rhs: Rhs = Arc::new(
+        move |_t: f64, y: &[f64], out: &mut [f64]| -> CoreResult<()> {
+            let call = calls.fetch_add(1, Ordering::Relaxed);
+            for i in 0..n {
+                out[i] = -y[i] + 1.0e-6 * call as f64;
+            }
+            Ok(())
+        },
+    );
+    from_rhs(format!("impure-n{n}"), rhs, vec![1.0; n], (0.0, 1.0), None)
+}
+
 /// The declared problems of `PREDECLARED.json`, by id.
 pub fn declared(id: &str, counted: bool) -> Option<FdProblem> {
     let problem = match id {
