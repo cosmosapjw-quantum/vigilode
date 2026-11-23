@@ -1,12 +1,12 @@
-# V24_CHECK_BEGIN {"name": "mf_targets", "command": ["cargo", "+1.94.1", "test", "--locked", "-j", "4", "--release", "--no-fail-fast", "-p", "rodas5p-integrators", "--test", "a1_zero_tolerance_scale", "--test", "alg01_coupled_stage_target", "--test", "alg04_alg06", "--test", "audit2_matrix_free_common_w_contracts", "--test", "declared_structure_routing", "--test", "int01_gcrodr_verified_reuse", "--test", "int01_posthoc_tolerance", "--test", "krylov_workspace_driver_contract", "--test", "matrix_free_problem_contracts", "--test", "native_reaudit_cache_contracts", "--test", "p0_partial_contracts", "--test", "residual_acceptance_contract", "--test", "rev03_export", "--test", "rnext01_residual_output", "--test", "rnext02_gmres_into_study", "--test", "rnext03_gcrodr_attribution", "--test", "rnext03_posthoc_invariant", "--test", "rnext07_model_epoch", "--test", "safe_recycle_policy", "--test", "shared_basis_mf_contracts", "--test", "sp01_dupfix_adoption", "--test", "spd04_ls_workspace_study", "--test", "spd07_mf_step_warm_start", "--test", "stage_residual_telemetry", "--test", "thread_transfer_mf_workspace", "--test", "time_fd_workspace_contracts", "--test", "zero_start_policy_holdout"], "cpus": "0-5,12-17", "git_head": "55b35f61b5f9eabbbbd49910ae06e8d0b3e766ef", "git_dirty_tracked": 3, "date": "2026-11-24T00:24:00+0900"}
-    Finished `release` profile [optimized] target(s) in 0.04s
+# V24_CHECK_BEGIN {"name": "mf_targets", "command": ["cargo", "+1.94.1", "test", "--locked", "-j", "4", "--release", "--no-fail-fast", "-p", "rodas5p-integrators", "--test", "a1_zero_tolerance_scale", "--test", "alg01_coupled_stage_target", "--test", "alg04_alg06", "--test", "audit2_matrix_free_common_w_contracts", "--test", "declared_structure_routing", "--test", "int01_gcrodr_verified_reuse", "--test", "int01_posthoc_tolerance", "--test", "krylov_workspace_driver_contract", "--test", "matrix_free_problem_contracts", "--test", "native_reaudit_cache_contracts", "--test", "p0_partial_contracts", "--test", "residual_acceptance_contract", "--test", "rev03_export", "--test", "rnext01_residual_output", "--test", "rnext02_gmres_into_study", "--test", "rnext03_gcrodr_attribution", "--test", "rnext03_posthoc_invariant", "--test", "rnext07_model_epoch", "--test", "safe_recycle_policy", "--test", "shared_basis_mf_contracts", "--test", "sp01_dupfix_adoption", "--test", "spd04_ls_workspace_study", "--test", "spd07_mf_step_warm_start", "--test", "stage_residual_telemetry", "--test", "thread_transfer_mf_workspace", "--test", "time_fd_workspace_contracts", "--test", "zero_start_policy_holdout"], "cpus": "0-5,12-17", "git_head": "94d99ee0887adb2691bada4bcca21b6d723094a7", "git_dirty_tracked": 0, "date": "2026-11-24T00:25:55+0900"}
+    Finished `release` profile [optimized] target(s) in 0.07s
      Running tests/a1_zero_tolerance_scale.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/a1_zero_tolerance_scale-32940eb2aaa0fd55)
 
 running 9 tests
-test fast_small_batch_driver_accepts_a_zero_component_with_zero_atol ... ok
-test fast_small_driver_accepts_a_zero_component_with_zero_atol ... ok
 test fast_banded_driver_accepts_a_zero_component_with_zero_atol ... ok
 test fast_dense_driver_accepts_a_zero_component_with_zero_atol ... ok
+test fast_small_batch_driver_accepts_a_zero_component_with_zero_atol ... ok
+test fast_small_driver_accepts_a_zero_component_with_zero_atol ... ok
 test lagged_driver_refuses_a_zero_richardson_weight_with_a_typed_error ... ok
 test lagged_driver_with_forced_refresh_accepts_a_zero_component_with_zero_atol ... ok
 test matrix_free_fast_driver_accepts_a_zero_component_with_zero_atol ... ok
@@ -26,8 +26,8 @@ test e05_unit_rhs_matches_the_committed_anchor ... ok
 test frontier_grid_is_one_to_ten_decades_in_half_decades ... ok
 test lu_twin_agrees_with_the_matrix_free_u_form_step ... ok
 test staged_policies_refuse_other_solvers ... ok
-test coupled_targets_follow_the_registered_rule ... ok
 test transfer_constants_reproduce_the_pilot_table ... ok
+test coupled_targets_follow_the_registered_rule ... ok
 test staged_policies_integrate_small_cases_without_a_duplicate_residual ... ok
 test legacy_rows_reproduce_the_base_export_on_small_cases ... ok
 test legacy_policy_is_the_gmres_into_driver_bit_for_bit ... ok
@@ -44,12 +44,12 @@ test dup_fix_needs_gmres_into ... ok
 test g3_needs_a_coupled_target ... ok
 test b3_is_coupled_guarded2_where_nothing_fires ... ok
 test g3_charges_the_fallback_residual_to_the_attempt_error ... ok
-test classifying_accepted_guard_aborts_does_not_change_the_run ... ok
-test coupled_guarded2_is_coupled_guarded_above_the_restart_length ... ok
 test g3_rejections_take_the_local_error_path ... ok
+test coupled_guarded2_is_coupled_guarded_above_the_restart_length ... ok
+test classifying_accepted_guard_aborts_does_not_change_the_run ... ok
 test legacy_ladder_at_the_alg04_budget_reproduces_the_alg01_base ... ok
-test dup_fix_is_legacy_without_the_diagnostic_residual ... ok
 test alg04_cells_are_the_alg01_base_cells ... ok
+test dup_fix_is_legacy_without_the_diagnostic_residual ... ok
 test alg06_cells_are_the_alg03_base_cells_and_the_spd07_set ... ok
 test base_references_cover_every_problem ... ok
 
@@ -66,8 +66,8 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 6 tests
 test export_runs ... ignored, recorded run of research/sp03_declared_structure_routing_20261010; release build; set SP03_RUNS
 test the_transcribed_problems_are_consistent ... ok
-test a_dense_declaration_above_eight_records_its_fallback ... ok
 test band_verification_is_charged_and_reported ... ok
+test a_dense_declaration_above_eight_records_its_fallback ... ok
 test every_malformed_declaration_is_refused_before_any_step ... ok
 test routed_equals_its_target_driver_on_quick_cells ... ok
 
@@ -96,8 +96,8 @@ test caller_parity_attempt_and_trajectory ... ok
 test faer_premise_pinned ... ok
 test forced_failure_rollback_gmres_and_lgmres ... ok
 test nonfinite_jvp_rejection_rollback ... ok
-test snapshot_rollback_restores_system_identity_under_same_token ... ok
 test refusal_contracts ... ok
+test snapshot_rollback_restores_system_identity_under_same_token ... ok
 test warmed_krylov_solves_and_snapshot_rollback_allocate_zero ... ok
 test workspace_growth_reuse_and_clone ... ok
 
@@ -114,14 +114,14 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
      Running tests/native_reaudit_cache_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/native_reaudit_cache_contracts-701cae85bd3807e8)
 
 running 8 tests
-test a_nonfinite_time_and_overflowing_error_scale_are_not_admissible ... ok
 test a_cloned_problem_same_state_changed_step_still_reuses_the_cache ... ok
-test a_failed_fresh_callback_cannot_leave_an_old_linearization_reusable ... ok
 test a_failed_time_derivative_refresh_is_also_atomic ... ok
+test a_failed_fresh_callback_cannot_leave_an_old_linearization_reusable ... ok
+test a_nonfinite_time_and_overflowing_error_scale_are_not_admissible ... ok
+test a_same_named_different_callback_is_not_the_same_frozen_problem ... ok
+test nonfinite_or_negative_output_tolerances_are_rejected_before_work ... ok
 test a_reuse_hint_does_not_override_state_or_time_identity ... ok
 test the_public_attempt_cannot_bypass_the_identity_mass_contract ... ok
-test nonfinite_or_negative_output_tolerances_are_rejected_before_work ... ok
-test a_same_named_different_callback_is_not_the_same_frozen_problem ... ok
 
 test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
@@ -133,9 +133,9 @@ test fast_banded_partial_after_a_latched_rhs_failure_and_none_on_success ... ok
 test fast_dense_partial_reports_the_attempt_budget_and_the_last_accepted_state ... ok
 test fast_dense_partial_is_none_on_success_and_the_run_is_bit_identical ... ok
 test router_carries_the_partial_record_of_the_routed_driver ... ok
-test matrix_free_partial_after_a_latched_rhs_failure_and_none_on_success ... ok
 test segment_driver_reports_a_partial_record_on_failure ... ok
 test every_step_sampling_off_is_the_named_driver_and_wfiltered_samples_every_step ... ok
+test matrix_free_partial_after_a_latched_rhs_failure_and_none_on_success ... ok
 test segment_driver_with_output_time_sampling_is_the_named_driver_bit_for_bit ... ok
 
 test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
@@ -147,13 +147,13 @@ test accurate_seam_is_accepted_at_every_scale ... ok
 test finite_scale_control_behaves_as_before ... ok
 test recorded_overflow_counterexample_is_rejected ... ok
 test unrepresentable_inputs_reject ... ok
-test driver_rejects_overflowing_fallback_transactionally ... ok
 test driver_finite_control_is_unchanged ... ok
+test driver_rejects_overflowing_fallback_transactionally ... ok
 test driver_accepts_accurate_fallback_at_finite_and_overflowing_scale ... ok
 test power_of_two_rescaling_into_overflow_never_creates_acceptance ... ok
 test decision_matches_old_rule_wherever_old_intermediates_are_finite ... ok
 
-test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
 
      Running tests/rev03_export.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/rev03_export-9fe8bbff934a2025)
 
@@ -246,7 +246,7 @@ test recorded_step_starts_each_stage_from_its_own_solution ... ok
 test step_indexed_starts_are_used ... ok
 test default_guesses_reproduce_the_base_export ... ok
 
-test result: ok. 4 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.01s
+test result: ok. 4 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.02s
 
      Running tests/stage_residual_telemetry.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/stage_residual_telemetry-02586fa3a2609daa)
 
@@ -258,7 +258,7 @@ test test_d2_epoch_and_generation ... ok
 test test_telemetry_off_and_reserved_capacity_contract ... ok
 test test_r_parity_on_off_and_alg06_anchor ... ok
 
-test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.09s
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.08s
 
      Running tests/thread_transfer_mf_workspace.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/thread_transfer_mf_workspace-c6e4e8a2f4b78856)
 
@@ -291,6 +291,6 @@ test separation_contract_and_telemetry_parity ... ok
 test smoke_all_arms_e_normal ... ok
 test smoke_all_problems ... ok
 
-test result: ok. 10 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 3.09s
+test result: ok. 10 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 3.08s
 
-# V24_CHECK_END {"exit_code": 0, "seconds": 4.984050512313843, "date": "2026-11-24T00:24:05+0900"}
+# V24_CHECK_END {"exit_code": 0, "seconds": 5.003134250640869, "date": "2026-11-24T00:26:00+0900"}
