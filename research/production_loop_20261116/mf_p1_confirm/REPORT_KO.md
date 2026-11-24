@@ -25,7 +25,7 @@ RODAS5P의 행렬 없는(matrix-free) 경로는 단계마다 선형계 `(I - h g
 
 | 판별자 | 뜻 | 결과 |
 |---|---|---|
-| D0 | S와 P1을 명시적으로 고른 실행이 편집 뒤에도 비트 단위로 같음 | 통과 |
+| D0 | S와 P1을 명시적으로 고른 실행이 이 노드의 편집 뒤에도 기록 A와 비트 단위로 같음 | 통과 (이 노드는 드라이버와 라우터를 편집하지 않았고, 판정에 쓴 실행과 시간 측정은 모두 바이너리 하나) |
 | V | P1이 끝낸 모든 단계 풀이의 참 잔차가 임계값 이하 (풀이 로그로 재계산) | 통과 (P1 위반 0, 완료 풀이 9287, 최대 잔차/임계값 0.99991) |
 | B | 예산을 다 쓴 풀이가 어느 셀에서도 S보다 많지 않음 | 실패 |
 | A | 같은 허용오차에서 P1 오차가 S의 3배 이하 | 통과 |
@@ -44,7 +44,9 @@ RODAS5P의 행렬 없는(matrix-free) 경로는 단계마다 선형계 `(I - h g
 | schnakenberg2d | 0.516 | 0.677 | 1.000 | 1.000 / 1.000 | 0 / 0 | 2.053 | 5 / 5 |
 | porous2d | 0.470 | 0.671 | 1.000 | 1.000 / 1.000 | 0 / 0 | 2.252 | 5 / 5 |
 
-명령어 비는 V17의 같은 달성 오차 통계(오차 구간 201점의 기하평균)입니다. 1보다 작을수록 P1이 싸다는 뜻입니다. 벽시계 속도 향상은 S 시간 / P1 시간이며, 고정 코어·교차 실행·준비 2회와 반복 7회·부하 기록 규칙을 만족한 셀만 판정에 씁니다.
+명령어 비는 V17의 같은 달성 오차 통계(오차 구간 201점의 기하평균)입니다. 1보다 작을수록 P1이 싸다는 뜻입니다. 벽시계 속도 향상은 S 시간 / P1 시간(같은 달성 오차)이며, 고정 코어·교차 실행·준비 실행과 반복 실행·1분 부하 8.0 이하·산포 0.10 이하 규칙을 만족한 셀만 판정에 씁니다. 부하가 높았던 셀은 규칙대로 다시 측정했고, 권위 있는 셀은 20개 / 20개입니다.
+
+P1이 싼 이유는 아래 표의 '열/풀이'에 보입니다: S는 재시작 주기마다 항상 재시작 길이만큼 열을 만들고, P1은 임계값을 만족하는 열에서 멈춥니다. 오차와 시도 수는 거의 같으므로(같은 허용오차에서 오차 비 0.834~1.000, 시도 비 1.000~1.059) 절약이 곧 같은 오차에서의 절약입니다. robertson_rd1d는 풀이마다 여러 주기가 필요한 어려운 계라서(Krylov 예산을 다 쓰는 풀이가 두 정책 모두에 있음) 절약이 가장 작습니다.
 
 ### 셀별 (허용오차마다)
 
@@ -90,8 +92,8 @@ RODAS5P의 행렬 없는(matrix-free) 경로는 단계마다 선형계 `(I - h g
 
 ## 5. 판정
 
-- 6단계 전 동결 규칙의 판정: **KEEP** — V holds and ['B'] fail
-- 최종 판정: **KEEP** (G 미실행, R 미실행)
+- 6단계(전환) 전 동결 규칙의 판정: **KEEP** — V는 성립하고 B가 성립하지 않으므로, 동결 규칙에 따라 기본값은 S로 남고 P1은 선택 사항으로 남습니다.
+- 최종 판정: **KEEP** (G 미실행, R 미실행: 전환하지 않았으므로 정의상 실행하지 않음)
 
 - B 실패 셀: robertson_rd1d rtol 1e-3 (S 11, P1 12), robertson_rd1d rtol 1e-4 (S 9, P1 10), robertson_rd1d rtol 1e-7 (S 0, P1 1). 동결 규칙은 셀 하나라도 P1의 예산 소진 풀이가 S보다 많으면 B를 실패로 봅니다.
 - 같은 달성 오차에서 P1의 명령어 수 / S: ac3d 0.198, robertson_rd1d 0.791, schnakenberg2d 0.516, porous2d 0.470 (모두 1.00 미만).
@@ -99,19 +101,30 @@ RODAS5P의 행렬 없는(matrix-free) 경로는 단계마다 선형계 `(I - h g
 - 탐색용 재풀이 (robertson_rd1d P1의 같은 단계 계 1488개): S가 풀고 P1이 예산을 다 쓴 계 0개, S가 예산을 다 쓰고 P1이 푼 계 0개; 예산 소진 수 [S, P1, P2] = [41, 41, 66].
 - 탐색용 재풀이 (robertson_rd1d S의 같은 단계 계 1443개): S가 풀고 P1이 예산을 다 쓴 계 0개, S가 예산을 다 쓰고 P1이 푼 계 0개; 예산 소진 수 [S, P1, P2] = [38, 38, 52].
 
-### 작성 허용 목록 밖에서 바뀌어야 하는 줄 (오케스트레이터/소유자 결정 필요)
+### B 실패를 어떻게 읽어야 하나 (탐색용, 판정에는 쓰지 않음)
 
-- `crates/rodas5p-integrators/tests/mf_adaptive_shipped_bits.rs:182` — pins the enum default to the shipped policy
-- `crates/rodas5p-integrators/tests/mf_adaptive_shipped_bits.rs:250` — pins RoutingOptions::default().matrix_free_policy to the shipped policy
-- `crates/rodas5p-integrators/tests/mf_adaptive_shipped_bits.rs:260` — pins the routed default's driver identifier to v1 and (next lines) its bits to the shipped entry
-- `crates/rodas5p-integrators/tests/mf_adaptive_contracts.rs:411` — pins the candidate identifier of P1, which a switch replaces by rodas5p-mf-fast-transformed-v3
-- `crates/vigilode/tests/capabilities_contracts.rs:116` — pins the identifier of the default matrix-free route
-- `crates/vigilode/tests/facade_contracts.rs:14` — pins the facade's matrix-free driver identifier (and, near these lines, its bits to the shipped entry)
-- `crates/vigilode/tests/facade_contracts.rs:281` — pins the facade's matrix-free driver identifier (and, near these lines, its bits to the shipped entry)
-- `crates/vigilode/tests/facade_contracts.rs:1038` — pins the facade's matrix-free driver identifier (and, near these lines, its bits to the shipped entry)
-- `crates/rodas5p-integrators/src/routing.rs:258` — the default of the route itself
-- `crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:104` — the enum default of MfStageSolvePolicy
-- `crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:148` — the identifier of P1
+- B는 셀마다 '그 실행에서' 예산을 다 쓴 풀이 수를 셉니다. P1의 반복값은 S와 선형 허용오차 수준에서만 다르지만, robertson_rd1d에서는 그 차이로 거부되는 시도가 달라져 두 실행이 서로 다른 단계 계를 풉니다 (B가 실패한 셀에서 시도 수 차이 2개).
+- 같은 단계 계에서 비교하면 (S와 P1 실행의 모든 단계 계 2931개를 세 커널로 다시 풂): S가 풀고 P1이 예산을 다 쓴 계 0개, 그 반대 0개였습니다. 즉 같은 계에서는 P1과 S가 정확히 같은 계에서만 예산을 다 씁니다. 같은 비교에서 P2는 S가 예산 전체의 열로 푼 계를 포함해 40개를 잃었습니다.
+- 따라서 이 B 실패는 P1 커널이 더 약해서가 아니라 궤적이 달라진 결과로 보입니다. 다만 동결 규칙은 실행 단위로 세므로 판정은 바뀌지 않습니다.
+
+### 기본값을 P1로 바꾼다면 바뀌어야 하는 줄 (`OUT_OF_LIST_EDITS.json`)
+
+이 노드의 작성 허용 목록 **밖** (바꾸려면 오케스트레이터/소유자 결정 필요):
+
+- `crates/rodas5p-integrators/tests/mf_adaptive_shipped_bits.rs:182` — 열거형 기본값을 S로 고정
+- `crates/rodas5p-integrators/tests/mf_adaptive_shipped_bits.rs:250` — RoutingOptions::default()의 정책을 S로 고정
+- `crates/rodas5p-integrators/tests/mf_adaptive_shipped_bits.rs:260` — 라우터 기본 경로의 식별자를 v1으로, 비트를 S로 고정
+- `crates/rodas5p-integrators/tests/mf_adaptive_contracts.rs:411` — P1의 후보 식별자를 고정 (전환 시 v3)
+
+작성 허용 목록 **안** (전환 판정이었다면 6단계에서 이 노드가 바꿨을 줄):
+
+- `crates/vigilode/tests/capabilities_contracts.rs:116` — 기본 행렬 없는 경로의 식별자를 고정
+- `crates/vigilode/tests/facade_contracts.rs:14` — 파사드의 행렬 없는 경로 식별자(와 근처의 비트 비교)를 고정
+- `crates/vigilode/tests/facade_contracts.rs:281` — 파사드의 행렬 없는 경로 식별자(와 근처의 비트 비교)를 고정
+- `crates/vigilode/tests/facade_contracts.rs:1038` — 파사드의 행렬 없는 경로 식별자(와 근처의 비트 비교)를 고정
+- `crates/rodas5p-integrators/src/routing.rs:258` — 경로의 기본값 자체
+- `crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:104` — MfStageSolvePolicy의 기본값
+- `crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:148` — P1의 식별자
 
 ## 6. P2 (보고만 함)
 

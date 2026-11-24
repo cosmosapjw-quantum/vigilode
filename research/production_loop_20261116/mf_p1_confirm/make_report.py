@@ -94,7 +94,9 @@ def main():
     w("")
     w("| 판별자 | 뜻 | 결과 |")
     w("|---|---|---|")
-    w(f"| D0 | S와 P1을 명시적으로 고른 실행이 편집 뒤에도 비트 단위로 같음 | {ko(d['D0']['verdict'])} |")
+    d0_note = ("이 노드는 드라이버와 라우터를 편집하지 않았고, 판정에 쓴 실행과 시간 측정은 모두 바이너리 하나"
+               if d["D0"].get("after_the_edit", {}).get("verdict") == "NOT_RUN" else "편집 뒤 d0 실행을 기록 A와 비교")
+    w(f"| D0 | S와 P1을 명시적으로 고른 실행이 이 노드의 편집 뒤에도 기록 A와 비트 단위로 같음 | {ko(d['D0']['verdict'])} ({d0_note}) |")
     w(f"| V | P1이 끝낸 모든 단계 풀이의 참 잔차가 임계값 이하 (풀이 로그로 재계산) | {ko(d['V']['verdict'])} (P1 위반 {d['V']['violations']['P1']}, 완료 풀이 {d['V']['totals_P1']['completed_solves']}, 최대 잔차/임계값 {fmt(d['V']['max_residual_over_threshold'], 5)}) |")
     w(f"| B | 예산을 다 쓴 풀이가 어느 셀에서도 S보다 많지 않음 | {ko(d['B']['verdict'])} |")
     w(f"| A | 같은 허용오차에서 P1 오차가 S의 3배 이하 | {ko(d['A']['verdict'])} |")
@@ -115,7 +117,18 @@ def main():
           f"{fmt(disc['W'].get('speedup_at_matched_error'))} | {disc['W']['authoritative_cells']} / 5 |")
     w("")
     w("명령어 비는 V17의 같은 달성 오차 통계(오차 구간 201점의 기하평균)입니다. 1보다 작을수록 P1이 싸다는 뜻입니다. "
-      "벽시계 속도 향상은 S 시간 / P1 시간이며, 고정 코어·교차 실행·준비 2회와 반복 7회·부하 기록 규칙을 만족한 셀만 판정에 씁니다.")
+      f"벽시계 속도 향상은 S 시간 / P1 시간(같은 달성 오차)이며, 고정 코어·교차 실행·준비 실행과 반복 실행·1분 부하 {fmt(results['frozen_thresholds']['timing_load_max'], 1)} 이하·"
+      f"산포 {fmt(results['frozen_thresholds']['timing_spread_max'], 2)} 이하 규칙을 만족한 셀만 판정에 씁니다. 부하가 높았던 셀은 규칙대로 다시 측정했고, "
+      f"권위 있는 셀은 {sum(fam[f]['discriminators']['W']['authoritative_cells'] for f in FAMILIES)}개 / {len(FAMILIES) * len(RTOLS)}개입니다.")
+    w("")
+    error_ratios = [fam[f]["comparison"]["cells"][label].get("error_ratio") for f in FAMILIES for label in RTOLS]
+    attempt_ratios = [fam[f]["comparison"]["cells"][label].get("attempts_equal_tolerance") for f in FAMILIES for label in RTOLS]
+    error_ratios = [value for value in error_ratios if value is not None]
+    attempt_ratios = [value for value in attempt_ratios if value is not None]
+    w("P1이 싼 이유는 아래 표의 '열/풀이'에 보입니다: S는 재시작 주기마다 항상 재시작 길이만큼 열을 만들고, P1은 임계값을 만족하는 열에서 멈춥니다. "
+      f"오차와 시도 수는 거의 같으므로(같은 허용오차에서 오차 비 {fmt(min(error_ratios))}~{fmt(max(error_ratios))}, "
+      f"시도 비 {fmt(min(attempt_ratios))}~{fmt(max(attempt_ratios))}) 절약이 곧 같은 오차에서의 절약입니다. "
+      "robertson_rd1d는 풀이마다 여러 주기가 필요한 어려운 계라서(Krylov 예산을 다 쓰는 풀이가 두 정책 모두에 있음) 절약이 가장 작습니다.")
     w("")
     w("### 셀별 (허용오차마다)")
     w("")
@@ -142,13 +155,38 @@ def main():
         w("")
     w("## 5. 판정")
     w("")
-    w(f"- 6단계 전 동결 규칙의 판정: **{decision['verdict']}** — {decision['reason']}")
-    w(f"- 최종 판정: **{final['verdict']}** (G {ko(final['G'])}, R {ko(final['R'])})")
+    failing = [name for name, verdict in decision["discriminators"].items() if verdict == "FAIL"]
+    undecided = [name for name, verdict in decision["discriminators"].items() if verdict not in ("PASS", "FAIL")]
+    reason_ko = {
+        "KEEP": f"V는 성립하고 {', '.join(failing)}가 성립하지 않으므로, 동결 규칙에 따라 기본값은 S로 남고 P1은 선택 사항으로 남습니다.",
+        "SWITCH": "D0, V, B, A, S, E, W가 모두 성립합니다.",
+        "KILL": "P1의 단계 풀이에서 V 위반이 있습니다.",
+        "NOT_DECIDABLE": f"실패는 없지만 {', '.join(undecided)}를 판정할 수 없습니다.",
+    }
+    w(f"- 6단계(전환) 전 동결 규칙의 판정: **{decision['verdict']}** — {reason_ko.get(decision['verdict'], decision['reason'])}")
+    w(f"- 최종 판정: **{final['verdict']}** (G {ko(final['G'])}, R {ko(final['R'])}: 전환하지 않았으므로 정의상 실행하지 않음)"
+      if final["verdict"] != "SWITCH" else f"- 최종 판정: **{final['verdict']}** (G {ko(final['G'])}, R {ko(final['R'])})")
     w("")
     notes = results.get("report_notes_ko") or []
     for note in notes:
         w(f"- {note}")
     if notes:
+        w("")
+    replay = (results.get("exploratory") or {}).get("budget_replay", {}).get("totals_by_family_and_arm") or {}
+    if failing == ["B"] and replay:
+        lost = sum(block["shipped_solved_p1_budget"] for block in replay.values())
+        gained = sum(block["shipped_budget_p1_solved"] for block in replay.values())
+        systems = sum(block["systems"] for block in replay.values())
+        lost_p2 = sum(block["shipped_solved_p2_budget"] for block in replay.values())
+        w("### B 실패를 어떻게 읽어야 하나 (탐색용, 판정에는 쓰지 않음)")
+        w("")
+        diffs = [abs((fam[f]["arms"]["P1"][label].get("attempts") or 0) - (fam[f]["arms"]["S"][label].get("attempts") or 0))
+                 for f in FAMILIES for label in RTOLS if fam[f]["discriminators"]["B"]["cells"][label]["verdict"] == "FAIL"]
+        w(f"- B는 셀마다 '그 실행에서' 예산을 다 쓴 풀이 수를 셉니다. P1의 반복값은 S와 선형 허용오차 수준에서만 다르지만, "
+          f"robertson_rd1d에서는 그 차이로 거부되는 시도가 달라져 두 실행이 서로 다른 단계 계를 풉니다 (B가 실패한 셀에서 시도 수 차이 {min(diffs) if min(diffs) == max(diffs) else str(min(diffs)) + '~' + str(max(diffs))}개).")
+        w(f"- 같은 단계 계에서 비교하면 (S와 P1 실행의 모든 단계 계 {systems}개를 세 커널로 다시 풂): S가 풀고 P1이 예산을 다 쓴 계 {lost}개, "
+          f"그 반대 {gained}개였습니다. 즉 같은 계에서는 P1과 S가 정확히 같은 계에서만 예산을 다 씁니다. 같은 비교에서 P2는 S가 예산 전체의 열로 푼 계를 포함해 {lost_p2}개를 잃었습니다.")
+        w("- 따라서 이 B 실패는 P1 커널이 더 약해서가 아니라 궤적이 달라진 결과로 보입니다. 다만 동결 규칙은 실행 단위로 세므로 판정은 바뀌지 않습니다.")
         w("")
     if golden:
         w("### G: 골든 기록")
@@ -163,10 +201,30 @@ def main():
             w(f"  - 실패: `{failure}`")
         w("")
     if edits:
-        w("### 작성 허용 목록 밖에서 바뀌어야 하는 줄 (오케스트레이터/소유자 결정 필요)")
+        reason_text = {
+            "pins the enum default to the shipped policy": "열거형 기본값을 S로 고정",
+            "pins RoutingOptions::default().matrix_free_policy to the shipped policy": "RoutingOptions::default()의 정책을 S로 고정",
+            "pins the routed default's driver identifier to v1 and (next lines) its bits to the shipped entry": "라우터 기본 경로의 식별자를 v1으로, 비트를 S로 고정",
+            "pins the candidate identifier of P1, which a switch replaces by rodas5p-mf-fast-transformed-v3": "P1의 후보 식별자를 고정 (전환 시 v3)",
+            "pins the identifier of the default matrix-free route": "기본 행렬 없는 경로의 식별자를 고정",
+            "pins the facade's matrix-free driver identifier (and, near these lines, its bits to the shipped entry)": "파사드의 행렬 없는 경로 식별자(와 근처의 비트 비교)를 고정",
+            "the default of the route itself": "경로의 기본값 자체",
+            "the enum default of MfStageSolvePolicy": "MfStageSolvePolicy의 기본값",
+            "the identifier of P1": "P1의 식별자",
+        }
+        w("### 기본값을 P1로 바꾼다면 바뀌어야 하는 줄 (`OUT_OF_LIST_EDITS.json`)")
+        w("")
+        w("이 노드의 작성 허용 목록 **밖** (바꾸려면 오케스트레이터/소유자 결정 필요):")
         w("")
         for item in edits.get("lines", []):
-            w(f"- `{item.get('file')}:{item.get('line')}` — {item.get('reason')}")
+            if not item.get("inside_the_write_list_of_V25"):
+                w(f"- `{item.get('file')}:{item.get('line')}` — {reason_text.get(item.get('reason'), item.get('reason'))}")
+        w("")
+        w("작성 허용 목록 **안** (전환 판정이었다면 6단계에서 이 노드가 바꿨을 줄):")
+        w("")
+        for item in edits.get("lines", []):
+            if item.get("inside_the_write_list_of_V25"):
+                w(f"- `{item.get('file')}:{item.get('line')}` — {reason_text.get(item.get('reason'), item.get('reason'))}")
         w("")
     w("## 6. P2 (보고만 함)")
     w("")
