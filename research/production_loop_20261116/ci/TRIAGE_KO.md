@@ -439,3 +439,11 @@ strace 비용(`strace_cost_probe.log`, 이 host, 부하 약 190):
 - 로컬 재현 시도(12회, head 1b0aac36의 dev build): 고정 없이 3회, `taskset -c 0` 3회, `taskset -c 0-3`과 CI의 strace runner로 6회 모두 `4079849b…`, 관측 동시 작업 4다. 로컬에서는 재현되지 않았다.
 - 분류: 이 loop 이전부터 있던 flaky test다(`stage_batch.rs`는 2026-08-19 baseline 이후 바뀌지 않았다). A1 workflow의 workspace 단계가 없어진 뒤 이 test를 hosted에서 돌린 것은 이번이 처음이다. 루프 변경(V25-V29)과 관계없다.
 - 수정은 소유자 결정이다. `stage_batch.rs`는 CHECKPOINT 보호 파일이다. 권고안: probe 작업이 두 번째 작업이 활성이 될 때까지 상한(예: 1초) 안에서 기다리게 해(rendezvous) 결과를 결정적으로 만든다. checksum 구성과 로컬 값은 바뀌지 않는다. 대안: 이 boolean을 checksum에서 빼고 보고서에만 남긴다(checksum 값이 바뀐다).
+
+### 12.2 (2026-11-25 01:21 KST) head a66215e7의 ignored run: 시간 제한 초과, 기준점 없음
+
+- run 45378440571(선택 v2, tools/ci 변경으로 full): `ignored-tests` job이 10:49:42Z에 시작해 16:19:59Z에 취소되었다. annotation: "The job has exceeded the maximum execution time of 5h30m0s". 취소된 단계는 9 "Run the selected ignored tests in the measurement profile"이다. 그 전 단계(도달성 검사, 기준점, 선택, 두 음성대조)는 성공했다.
+- 단계 10 "Keep the outcome and the coverage map for the next run"은 건너뛰어졌다. 그래서 이 run은 다음 run에 기준점을 남기지 않았다.
+- v3 workflow의 저장 단계도 조건이 `if: ${{ !cancelled() }}`다(`.github/workflows/ignored-tests.yml` 136행, `production.yml` 170행과 230행). 시간 제한 초과는 취소이므로 저장 단계가 돌지 않는다.
+- 결과: full 선택 run이 330분 안에 끝나지 않으면 기준점이 생기지 않는다. 그러면 다음 run도 full이 되어 같은 일이 되풀이된다(liveness 결함, M-N7). v3는 v2에 strace를 더하므로 더 느리다. head 7012e9d5의 v3 ignored run(45414722588, 14:29:53Z 시작, 제한 19:59:53Z = 04:59:53 KST)도 단계 11에서 진행 중이다. 같은 head의 Production `test` job(제한 300분, 19:29:53Z)도 진행 중이다. v2의 같은 job은 191분이 걸렸다.
+- 수정안(소유자 결정 대기): (1) selector가 target마다 결과와 측정 입력을 바로 기록하고, 자체 시간 예산(job 제한보다 약 20분 일찍)이 끝나면 새 target을 시작하지 않는다. 저장 단계는 취소되어도 돌게 한다(`always()`). 그러면 끝난 target은 기준점이 되고 남은 target은 다음 run에 '지도 없음'으로 다시 선택된다. full 선택이 여러 run에 걸쳐 수렴하며 job 분할이나 주기적 full run이 필요 없다. (2) ignored job을 package별 matrix로 나눈다. runner 수와 비용이 늘고, 2026-11-24 ruling에 따라 소유자 승인이 필요하다.
