@@ -237,3 +237,9 @@ fn an_exact_warm_start_requires_monitor_consent_and_no_arnoldi_columns() {
     }
     assert_eq!(pc.calls.load(Ordering::Relaxed), 0);
 }
+
+#[cfg(not(target_arch = "x86_64"))]
+#[test]
+fn interval_stage_certificate_fails_closed_on_unqualified_architectures() {
+    assert!(rodas5p_krylov::check_n03_arithmetic().is_err());
+}

@@ -79,11 +79,20 @@ fn run(s: &Spec, arm: usize, tol: f64) -> (Value, f64) {
         ..Options::default()
     };
     if arm == 0 {
-        let sol = Rodas5p::solve(&problem(s), (0.0, s.t_end), &s.y0, &options).unwrap();
+        let sol = match Rodas5p::solve(&problem(s), (0.0, s.t_end), &s.y0, &options) {
+            Ok(solution) => solution,
+            Err(error) => {
+                return (
+                    json!({"success":false, "error":error.to_string(), "accepted":0}),
+                    clock.elapsed().as_secs_f64(),
+                );
+            }
+        };
         let secs = clock.elapsed().as_secs_f64();
-        assert!(sol.is_success() && sol.final_state().is_some() && sol.t.last() == Some(&s.t_end));
+        let success =
+            sol.is_success() && sol.final_state().is_some() && sol.t.last() == Some(&s.t_end);
         return (
-            json!({"y_end":sol.final_state(), "accepted":sol.stats.accepted_steps,
+            json!({"success":success,"stop":format!("{:?}",sol.status),"last_t":sol.t.last(),"y_end":sol.final_state().filter(|_| success), "accepted":sol.stats.accepted_steps,
                        "rejected":sol.stats.rejected_steps, "counters":sol.stats.counters}),
             secs,
         );
@@ -115,10 +124,9 @@ fn run(s: &Spec, arm: usize, tol: f64) -> (Value, f64) {
         )
     };
     let secs = clock.elapsed().as_secs_f64();
-    assert_eq!((flag, done), (0, 2), "CVODE {} {tol}", s.name);
-    assert!(values[s.n..].iter().all(|x| x.is_finite()));
+    let success = (flag, done) == (0, 2) && values[s.n..].iter().all(|x| x.is_finite());
     (
-        json!({"y_end":&values[s.n..],"accepted":stats[0],"rhs":stats[1],
+        json!({"success":success,"flag":flag,"outputs_completed":done,"y_end":success.then_some(&values[s.n..]),"accepted":stats[0],"rhs":stats[1],
             "setups":stats[2],"error_test_failures":stats[3],"nonlinear_iterations":stats[4],
             "nonlinear_convergence_failures":stats[5],"jacobians":stats[6],"linear_rhs":stats[7]}),
         secs,

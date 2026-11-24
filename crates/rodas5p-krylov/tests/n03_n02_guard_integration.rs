@@ -1,3 +1,5 @@
+#![cfg(target_arch = "x86_64")]
+
 //! N03 source-conditional physical error guard attached to N02 opt-in GMRES.
 use rodas5p_core::{
     CoreError, CoreResult, LinearOperator, Preconditioner, PreconditionerSide, WorkCounters,

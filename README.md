@@ -23,25 +23,18 @@
 > [decisions](research/general_ode_selection_20261024/DECISIONS.json), and the
 > [formal general ODE design](docs/general_ode_design_20261024/DESIGN_KO.md).
 
-**Causal, Budgeted Jacobian-Free Polyalgorithms for Stiff and Oscillatory ODEs**
+## Solver entry points
 
-VigilODE is a high-performance numerical ODE library and research platform for stiff, non-stiff, and oscillatory systems. It combines high-order explicit Runge-Kutta (DOPRI5), protected dense and matrix-free Rosenbrock (RODAS5P), and exponential-Rosenbrock candidates with an evidence-driven hybrid automaton that dynamically switches integrators at runtime without breaking error-control, order-of-convergence, or conservation invariants.
+Install this branch as a Cargo workspace path dependency (Rust 1.94.1). The public package is `vigilode`. Protected RODAS5P, the unified Auto dispatcher and the explicit method portfolio have distinct selection contracts.
 
----
+| Call | Selection and evidence |
+|---|---|
+| `Rodas5p::solve` | Protected RODAS5P with dense, banded, JVP or declared sparse assembly as the problem and requested outputs permit. |
+| `VigilODE::solve` | The standard options on this entry point select Auto. Auto can run DOPRI5 or RODAS5P using declarations and a charged trial. Inspect the actual route, accepted prefix and stop. |
+| `VigilODE::solve_method` | Select a registered method using its ID and typed parameters. RHS-only BDF1/2 and Radau IIA3 use finite-difference dense Jacobians and Newton iterations. A Lawson residual requires its declared split. |
+| `VigilODE::solve_cubic_decay`, `solve_coupled_cubic` | The optional `structured` Cargo feature exposes source-declared cubic problems, original residual checks, work limits and partial results. |
 
-## Key Highlights & Performance Gates
-
-1. **Zero-Allocation in Hot Loops (VG-1 / Argon High-Performance Rule):**
-   - Guaranteed zero heap allocations (`Vec`, `Box`, dynamic matrix/vector allocations) inside the entire integration loop, stage equations, event detection, Krylov GMRES/BiCGStab iterations, and zero-step stiffness pre-screening.
-2. **Deterministic Speculative-Work Accounting (VG-3):**
-   - Discarded trials and failed step proposals never corrupt committed physical states or time marks, while all speculative work (`rhs_calls`, `jvp_calls`, `lu_factorizations`, `linear_iterations`) is strictly preserved and cumulatively charged.
-3. **Adaptive Route Dispatch & Verification Architecture:**
-   - **Live Operational Route Controller (`DriveState` in `SwitchingSolver`):** Evaluates work pressure, step rejection ratios, and competitive same-checkpoint pilots to switch dynamically between explicit (DOPRI5) and implicit/matrix-free (RODAS5P Dense / Krylov) at runtime with zero allocations (`VG-1`).
-   - **Discrete Verification Model (`HybridRouteAutomaton`):** Standalone contract reference and formal discrete-event FSM for validating route transitions, anti-chattering dwell/hysteresis, and epoch invalidation.
-4. **Order-Reduction Defense:**
-   - Detects when stiff forced oscillations or algebraic constraints cause Rosenbrock order reduction, preventing solver stalls and preserving explicit high-order efficiency.
-
----
+The protected nonlinear RODAS5P step evaluates the eight stage states in order. Matrix-free linear solves, pure split forcing, modal transfer, parallel spatial rows and parallel peer stages have different prerequisites. The [referee report and executable plan](research/unified_referee_20261124/REPORT_KO.md) give the applicable domains, negative results, and reproducible tests. Package-wide release qualification is **HOLD**.
 
 ## 8-Problem Benchmark Battery (`opt_baseline_battery`, Diagnostic Only)
 
@@ -81,12 +74,11 @@ Dual reference solutions independently verified with Hairer RADAU5 and cross-che
 
 *Protocol Findings & Fail-Closed Reporting:*
 - **Independent Reference Fail-Closed Gate:** On Semilinear Advection-Diffusion 2D/3D grids, cross-family discrepancy at initial tolerance ($rtol=10^{-10}$) exceeded the strict $10^{-10}$ agreement threshold ($1.07 \times 10^{-9}$), correctly triggering `REFERENCE_DISPUTED`. All comparisons against disputed references are fail-closed marked `DIAGNOSTIC_ONLY`.
-- **Matched-Error Work-Precision:** All 953 comparison rows in `ADVERSARIAL_SPATIAL_GRID_V2_REPORT.md` are designated `DIAGNOSTIC_ONLY`. No speedup ratios or solver rankings are admitted for unbracketed error regimes or disputed reference points.
+- **Matched-Error Work-Precision:** The later raw-data audit (EVD-09) counted 1,040 rows across the examined files, including 952 diagnostic and 88 matched rows. Refer to the named dataset and its reference status when comparing costs.
 
-### 3. Allocation Scope Clarification
+### 3. Allocation scope
 
-- **Numerical Integration Hot Loop (`VG-1 Pass`):** Pre-allocated stepper workspaces (`CollectiveRodas5pWorkspace::step_into`) execute with **strictly zero (0) heap allocations** across all spatial geometries and grid dimensions.
-- **Whole-Run & Driver Scope:** Whole-run solve invocations (`ProductionSolver::solve`) and batch driver runs include pre-integration setup, trajectory serialization, and solution return (4 allocations per driver attempt, bounded trajectory storage allocations). These setup/teardown allocations are separate from the zero-allocation numerical stepping hot loop.
+The allocation measurements for `CollectiveRodas5pWorkspace::step_into` concern that kernel and its tested inputs. The unified facade and its drivers allocate route-specific workspace and returned trajectories.
 
 ### 4. Benchmark Artifacts
 
@@ -97,7 +89,7 @@ Dual reference solutions independently verified with Hairer RADAU5 and cross-che
 - **V2 Raw Measurement Data:** `bench/out/adversarial_spatial_grid_v2_results.json` (3.7 MB, SHA-256: `79ec876a...`)
 - **Historical Grid-Clipped Continuity Report:** `bench/out/ADVERSARIAL_SPATIAL_GRID_REPORT.md` (22 KB)
 
-### 5. Expanded Spatial & Spherical PDE Battery with Adaptive Grid Zero-Alloc (`VG-1`)
+### 5. Historical spatial and spherical PDE battery
 
 The spatial benchmark suite has been expanded into a comprehensive 9-problem PDE battery spanning diverse mathematical structures:
 
@@ -109,11 +101,10 @@ The spatial benchmark suite has been expanded into a comprehensive 9-problem PDE
 | **Allen-Cahn-2D** | Phase-Field Interface Dynamics | Rectangular $[-1, 1]^2$ | $N=64$ | $M+1=8$ | Stiff cubic reaction $-(u^3-u)$, diffuse interface motion |
 | **Gray-Scott-2D** | Spot-Dividing Reaction-Diffusion | Rectangular $[0, 1]^2$ | $N=128$ | $M+1=17$ | Turing pattern formation, coupled 2-field nonlinear reaction |
 | **Burgers-2D** | Viscous Burgers Shock Waves | Rectangular $[0, 1]^2$ | $N=72$ | $M+1=13$ | Upwind hyperbolic advection + viscous diffusion shock layer |
-| **Sine-Gordon-2D** | Nonlinear Wave Soliton Dynamics | Rectangular $[-L/2, L/2]^2$ | $N=72$ | $M+1=13$ | Hamiltonian system, exact energy conservation ($dH/dt < 10^{-10}$) |
+| **Sine-Gordon-2D** | Nonlinear Wave Soliton Dynamics | Rectangular $[-L/2, L/2]^2$ | $N=72$ | $M+1=13$ | Hamiltonian system, measured energy drift |
 | **Grid-2D** | Semilinear Advection-Diffusion | Rectangular $(8 \times 12)$ | $N=96$ | $M+1=8$ | Mixed hyperbolic-parabolic boundary layers |
 | **Grid-3D** | Semilinear Advection-Diffusion | Box $(6 \times 6 \times 6)$ | $N=216$ | $M+1=36$ | 3D sparse banded coupling |
 
-- **Runtime-Configurable Resolution & Moving Mesh (MMPDE r-refinement):** Grid dimensions can be configured at runtime with single-allocation arena initialization (`SpatialWorkspace::new`), guaranteeing **strictly zero heap allocations in integration hot loops (`VG-1`)**. Moving mesh coordinate relocation tracks steep shock fronts while keeping state dimension $N$ invariant.
 
 ---
 
@@ -123,7 +114,7 @@ Add VigilODE to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-vigilode = "0.1"
+vigilode = { path = "/path/to/vigilode/crates/vigilode" }
 ```
 
 ### 1. Adaptive Polyalgorithm Integration (`SwitchingSolver`)

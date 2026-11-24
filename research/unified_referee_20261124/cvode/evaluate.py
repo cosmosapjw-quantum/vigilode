@@ -18,16 +18,28 @@ if julia:
     jj = {(p, "julia_rodas5p", t) for p in reference for t in tols | {1e-13}}
     assert len(julia) == len(jj) and {(r["problem"],r["arm"],r["rtol"]) for r in julia} == jj
 
+def wrms(y, ref):
+    terms = [((v - t)/(abs(t)+1e-6))**2 for v, t in zip(y, ref, strict=True)]
+    return math.sqrt(sum(terms)/len(terms))
+
+independent = {r["problem"]:wrms(r["result"]["y_end"],reference[r["problem"]]["y_ref"])
+               for r in julia if r["rtol"] == 1e-13}
 rows = []
 for raw in native + julia:
     ref = reference[raw["problem"]]
-    err = [(v-y)/(abs(y)+1e-6) for v,y in zip(raw["result"]["y_end"],ref["y_ref"],strict=True)]
-    wrms = math.sqrt(sum(x*x for x in err)/len(err))
-    E = wrms + ref["u_ref_wrms"]
-    row = dict(problem=raw["problem"], arm=raw["arm"], rtol=raw["rtol"], E=E,
-               reference_uncertainty=ref["u_ref_wrms"], admissible=ref["u_ref_wrms"]<=0.1*E,
-               accepted=raw["result"]["accepted"])
-    assert math.isfinite(E) and row["accepted"] > 0
+    res = raw["result"]
+    row = dict(problem=raw["problem"], arm=raw["arm"], rtol=raw["rtol"],
+               success=res.get("success", True), accepted=res["accepted"], admissible=False)
+    if row["success"]:
+        error = wrms(res["y_end"], ref["y_ref"])
+        u = ref["u_ref_wrms"]
+        u_alt = max(u, independent.get(raw["problem"], 0.))
+        row.update(wrms=error, E=error+u, reference_uncertainty=u,
+                   admissible=u <= .1*(error+u), E_sensitivity=error+u_alt,
+                   sensitivity_admissible=u_alt <= .1*(error+u_alt))
+        assert math.isfinite(row["E"]) and row["accepted"] > 0
+    else:
+        row["failure"] = res.get("flag", res.get("stop",res.get("error")))
     if "wall_s" in raw:
         assert len(raw["wall_s"]) == 7 and min(raw["wall_s"]) > 0
         row["wall_s"] = statistics.median(raw["wall_s"])
@@ -60,9 +72,21 @@ for name in reference:
         comparisons.append(dict(problem=name,E=E,
             accepted_rodas_over_cvode=interpolate(left,E,"accepted")/interpolate(right,E,"accepted"),
             diagnostic_wall_rodas_over_cvode=interpolate(left,E,"wall_s")/interpolate(right,E,"wall_s")))
+monotonic = {}
+for name in reference:
+    for arm in arms:
+        good=sorted((r for r in rows if r["problem"]==name and r["arm"]==arm and r["admissible"]),
+                    key=lambda r:r["rtol"])
+        monotonic[name+"/"+arm] = all(left["E"]<=right["E"] for left,right in zip(good,good[1:]))
 out = dict(schema="vigilode.u11.external.v1",rows=rows,comparisons=comparisons,
            ratio_direction="protected Rust RODAS5P / native CVODE BDF (accepted steps or wall)",
            wall_status="diagnostic_only_shared_host",julia_cases=len(julia),
+           failure_count=sum(not row["success"] for row in rows),
+           historical_empirical_reference_checked_by_julia=independent,
+           sensitivity_changed_admission=[(r["problem"],r["arm"],r["rtol"]) for r in rows
+              if r["success"] and r["admissible"] != r["sensitivity_admissible"]],
+           achieved_error_monotone_in_tolerance=monotonic,
+           interpolation_note="U11 log-interpolation sorted by achieved error; inspect monotonicity per arm before using aggregate ratios. Julia is an independent endpoint and work check. CVODE may interpolate to the requested endpoint.",
            scope="autonomous endpoint only; no dense-output, event or general speed claim")
 (here / "results.json").write_text(json.dumps(out,indent=2,allow_nan=False)+"\n")
 print(json.dumps(comparisons,indent=1))

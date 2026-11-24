@@ -1,3 +1,5 @@
+#![cfg(target_arch = "x86_64")]
+
 use rodas5p_krylov::{
     CertifiedInterval as Interval, ConditionalStageVerdict, N03SourceStamp as SourceStamp,
     StageIntervalBox,
