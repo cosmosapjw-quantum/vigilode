@@ -1,0 +1,32 @@
+# node V29 log
+# date: 2026-11-25T00:18:34+09:00
+# git head: caf3f7ac459f54b152e85412ff754eedfda2df48
+# git status (tracked changes): 0
+# loadavg at start: 4.82 6.64 5.82 11/6242 1392845
+# command: taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_assembly_default --test stage_clients_assembly_default_alloc -- --nocapture
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v29/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 11.07s
+     Running tests/stage_clients_assembly_default.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v29/release/deps/stage_clients_assembly_default-1c1c3e6a521569bf)
+
+running 5 tests
+test the_limits_stated_for_the_default_are_real ... ok
+test the_default_first_use_check_follows_the_route ... ok
+test the_default_check_runs_once_at_the_first_linearization_on_every_route ... ok
+test a_run_with_the_default_check_keeps_every_bit ... ok
+test the_default_decides_as_the_multi_colouring_check_on_part_of_the_v26_corpus ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/stage_clients_assembly_default_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v29/release/deps/stage_clients_assembly_default_alloc-e87b19e9087c1747)
+
+running 1 test
+STAGE_CLIENTS_ASSEMBLY_DEFAULT_ALLOC_JSON {"case":"ring-n30","client":"ring pattern, dense LU","first_linearization_allocations_default_check":0,"first_linearization_allocations_requested_multi_colouring":12,"first_linearization_allocations_without_check":0}
+STAGE_CLIENTS_ASSEMBLY_DEFAULT_ALLOC_JSON {"case":"bruss1d-n32","client":"band (2, 2), dense LU","first_linearization_allocations_default_check":0,"first_linearization_allocations_requested_multi_colouring":12,"first_linearization_allocations_without_check":0}
+STAGE_CLIENTS_ASSEMBLY_DEFAULT_ALLOC_JSON {"case":"bruss1d-n32","client":"band (2, 2), protected kernel","first_linearization_allocations_default_check":0,"first_linearization_allocations_requested_multi_colouring":12,"first_linearization_allocations_without_check":0}
+STAGE_CLIENTS_ASSEMBLY_DEFAULT_ALLOC_JSON {"case":"nlkpp-band-n96-r4","client":"band (4, 4), tight kernel","first_linearization_allocations_default_check":0,"first_linearization_allocations_requested_multi_colouring":12,"first_linearization_allocations_without_check":0}
+test the_default_check_allocates_nothing_at_the_first_linearization ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+# exit code: 0
+# date at end: 2026-11-25T00:18:45+09:00

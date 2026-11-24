@@ -1,0 +1,2048 @@
+{
+ "schema": "vigilode.loop-l1.v29-results.v1",
+ "node": "V29_ASSEMBLY_DEFAULT_MC",
+ "authority": "owner decision OD-L1-24 (2026-11-24 23:45 KST, '권고사항 수용 및 CI job 유지'): the default first-use check of the opt-in AssemblyStageClient becomes the multi-colouring check MC on the routes where it applies (coloured, banded); the dense route keeps Sample(8); FA, FA_P and MC_P stay selectable; the documentation states the limits of MC (L-0338)",
+ "contract": "docs/agent/production_solver_program_20261112/TASK_CONTRACTS.json, id V29_ASSEMBLY_DEFAULT_MC",
+ "base_commit": "e36fc6f405d619ff2ae5b71581252d8995c1ee92",
+ "head_at_parse": "fbcd44de9a71dc0d94f10b1c135a50ae23c42251",
+ "protocol": {
+  "note": "Implementation of an owner decision, no experiment and no numerical threshold; the discriminators are the equalities of the contract's acceptance checks. The protocol choices (cells, arms, corpus, executions, the two decision paths, the V26 reference arms) were committed before the first run in NOTES.txt entry 1 (ec284167, 2026-11-24 23:56 KST) and in the recording program (f1eb5118, 2026-11-25 00:03 KST); first run 00:03. Deviation of form: no file named PROTOCOL.json was written.",
+  "reference_arms": "A (Sample(8) everywhere): S8@seq, S8@t3 of V26; B coloured: MC@seq for seq, MC@t6 for t6 and t3; B dense: S8@seq, S8@t3; t6 on the dense route: A against B",
+  "decision_paths": "first_use = first linearize of a fresh default client; verify = AssemblyStageClient::verify(t0, y0, options.first_use_check) on a fresh default client (the V26 convention)"
+ },
+ "recordings": {
+  "A": {
+   "identity": {
+    "git head": [
+     "f1eb5118d8ae8bb2ac49f02415581b55c4913599"
+    ],
+    "git status (tracked changes)": [
+     "0"
+    ],
+    "client sources sha256": [
+     "8eef8fe106b0673e8f3a1648442ab21b3b067e106772238715388238d277776b"
+    ],
+    "program source sha256": [
+     "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3"
+    ],
+    "binary sha256": [
+     "4315870c0b80768f586b566e56d6ef7eaae864ae1d386905dfbadf5b06a522fa"
+    ],
+    "exit_codes": [
+     0
+    ]
+   },
+   "corpus": {
+    "git head": [
+     "f1eb5118d8ae8bb2ac49f02415581b55c4913599"
+    ],
+    "git status (tracked changes)": [
+     "0"
+    ],
+    "client sources sha256": [
+     "8eef8fe106b0673e8f3a1648442ab21b3b067e106772238715388238d277776b"
+    ],
+    "program source sha256": [
+     "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3"
+    ],
+    "binary sha256": [
+     "4315870c0b80768f586b566e56d6ef7eaae864ae1d386905dfbadf5b06a522fa"
+    ],
+    "exit_codes": [
+     0
+    ]
+   }
+  },
+  "B": {
+   "identity": {
+    "git head": [
+     "fc185e2af7f40f7dfd384842a2d5f666a68d944b"
+    ],
+    "git status (tracked changes)": [
+     "0"
+    ],
+    "client sources sha256": [
+     "29125f45e0c86734c2af0941e7e19c4b986d04f004ecc99f27c417ff0930ca4e"
+    ],
+    "program source sha256": [
+     "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3"
+    ],
+    "binary sha256": [
+     "da525baba2ec5db18cf68d5a9c586f46190ab6a87612dfd5a32defd647dd2588"
+    ],
+    "exit_codes": [
+     0
+    ]
+   },
+   "corpus": {
+    "git head": [
+     "fc185e2af7f40f7dfd384842a2d5f666a68d944b"
+    ],
+    "git status (tracked changes)": [
+     "0"
+    ],
+    "client sources sha256": [
+     "29125f45e0c86734c2af0941e7e19c4b986d04f004ecc99f27c417ff0930ca4e"
+    ],
+    "program source sha256": [
+     "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3"
+    ],
+    "binary sha256": [
+     "da525baba2ec5db18cf68d5a9c586f46190ab6a87612dfd5a32defd647dd2588"
+    ],
+    "exit_codes": [
+     0
+    ]
+   }
+  }
+ },
+ "recording_checks": {
+  "same_program_source": true,
+  "clean_trees": true,
+  "exit_codes_zero": true
+ },
+ "default_per_route": {
+  "identity_cells": {
+   "nlkpp-dense-n400/dense_lu(faer)": {
+    "route": "dense",
+    "A": [
+     "Sample(8)"
+    ],
+    "B": [
+     "Sample(8)"
+    ]
+   },
+   "bruss1d-n128-dense/dense_lu(in-place)": {
+    "route": "dense",
+    "A": [
+     "Sample(8)"
+    ],
+    "B": [
+     "Sample(8)"
+    ]
+   },
+   "nlkpp-band-n4096-r24/banded_tight": {
+    "route": "coloured",
+    "A": [
+     "Sample(8)"
+    ],
+    "B": [
+     "MultiColouring"
+    ]
+   },
+   "nlkpp-band-n4096-r24/banded_protected": {
+    "route": "coloured",
+    "A": [
+     "Sample(8)"
+    ],
+    "B": [
+     "MultiColouring"
+    ]
+   },
+   "bruss1d-n131072/banded_tight": {
+    "route": "coloured",
+    "A": [
+     "Sample(8)"
+    ],
+    "B": [
+     "MultiColouring"
+    ]
+   },
+   "bruss1d-n128-coloured/banded_tight": {
+    "route": "coloured",
+    "A": [
+     "Sample(8)"
+    ],
+    "B": [
+     "MultiColouring"
+    ]
+   }
+  },
+  "corpus": {
+   "A": {
+    "coloured@seq": [
+     "Sample(8)"
+    ],
+    "coloured@t3": [
+     "Sample(8)"
+    ],
+    "coloured@t6": [
+     "Sample(8)"
+    ],
+    "dense@seq": [
+     "Sample(8)"
+    ],
+    "dense@t3": [
+     "Sample(8)"
+    ],
+    "dense@t6": [
+     "Sample(8)"
+    ]
+   },
+   "B": {
+    "coloured@seq": [
+     "MultiColouring"
+    ],
+    "coloured@t3": [
+     "MultiColouring"
+    ],
+    "coloured@t6": [
+     "MultiColouring"
+    ],
+    "dense@seq": [
+     "Sample(8)"
+    ],
+    "dense@t3": [
+     "Sample(8)"
+    ],
+    "dense@t6": [
+     "Sample(8)"
+    ]
+   }
+  }
+ },
+ "identity": {
+  "runs": [
+   {
+    "cell": "nlkpp-dense-n400",
+    "backend": "dense_lu(faer)",
+    "arm": "prot",
+    "bits_equal": true,
+    "jacobian_fingerprint": "194829b4db8581e9",
+    "state_fingerprint": "f4dfb79dc9fc594f",
+    "final_fingerprint": "3420708b661a5d39",
+    "t_end_bits": "4024000000000000"
+   },
+   {
+    "cell": "nlkpp-dense-n400",
+    "backend": "dense_lu(faer)",
+    "arm": "seq",
+    "route": "dense",
+    "n": 400,
+    "bits_equal": true,
+    "jacobian_fingerprint": "194829b4db8581e9",
+    "state_fingerprint": "f4dfb79dc9fc594f",
+    "final_fingerprint": "3420708b661a5d39",
+    "output_fingerprint": "24d2a951ce94148e",
+    "t_end_bits": "4024000000000000",
+    "attempts": 34,
+    "accepted_steps": 34,
+    "builds": 34,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 0,
+     "B": 0
+    },
+    "verified_columns": {
+     "A": 0,
+     "B": 0
+    },
+    "verification_rhs_calls": {
+     "A": 0,
+     "B": 0
+    },
+    "rhs_calls": {
+     "A": 13906,
+     "B": 13906
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 13906,
+     "B": 13906
+    },
+    "multi_colouring_total_groups": null,
+    "documented_delta_rhs_calls": 0
+   },
+   {
+    "cell": "nlkpp-dense-n400",
+    "backend": "dense_lu(faer)",
+    "arm": "t1",
+    "route": "dense",
+    "n": 400,
+    "bits_equal": true,
+    "jacobian_fingerprint": "194829b4db8581e9",
+    "state_fingerprint": "f4dfb79dc9fc594f",
+    "final_fingerprint": "3420708b661a5d39",
+    "output_fingerprint": "24d2a951ce94148e",
+    "t_end_bits": "4024000000000000",
+    "attempts": 34,
+    "accepted_steps": 34,
+    "builds": 34,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 8
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 9
+    },
+    "rhs_calls": {
+     "A": 13915,
+     "B": 13915
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 13915,
+     "B": 13915
+    },
+    "multi_colouring_total_groups": null,
+    "documented_delta_rhs_calls": 0
+   },
+   {
+    "cell": "nlkpp-dense-n400",
+    "backend": "dense_lu(faer)",
+    "arm": "t2",
+    "route": "dense",
+    "n": 400,
+    "bits_equal": true,
+    "jacobian_fingerprint": "194829b4db8581e9",
+    "state_fingerprint": "f4dfb79dc9fc594f",
+    "final_fingerprint": "3420708b661a5d39",
+    "output_fingerprint": "24d2a951ce94148e",
+    "t_end_bits": "4024000000000000",
+    "attempts": 34,
+    "accepted_steps": 34,
+    "builds": 34,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 8
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 9
+    },
+    "rhs_calls": {
+     "A": 13915,
+     "B": 13915
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 13915,
+     "B": 13915
+    },
+    "multi_colouring_total_groups": null,
+    "documented_delta_rhs_calls": 0
+   },
+   {
+    "cell": "nlkpp-dense-n400",
+    "backend": "dense_lu(faer)",
+    "arm": "t4",
+    "route": "dense",
+    "n": 400,
+    "bits_equal": true,
+    "jacobian_fingerprint": "194829b4db8581e9",
+    "state_fingerprint": "f4dfb79dc9fc594f",
+    "final_fingerprint": "3420708b661a5d39",
+    "output_fingerprint": "24d2a951ce94148e",
+    "t_end_bits": "4024000000000000",
+    "attempts": 34,
+    "accepted_steps": 34,
+    "builds": 34,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 8
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 9
+    },
+    "rhs_calls": {
+     "A": 13915,
+     "B": 13915
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 13915,
+     "B": 13915
+    },
+    "multi_colouring_total_groups": null,
+    "documented_delta_rhs_calls": 0
+   },
+   {
+    "cell": "nlkpp-dense-n400",
+    "backend": "dense_lu(faer)",
+    "arm": "t6",
+    "route": "dense",
+    "n": 400,
+    "bits_equal": true,
+    "jacobian_fingerprint": "194829b4db8581e9",
+    "state_fingerprint": "f4dfb79dc9fc594f",
+    "final_fingerprint": "3420708b661a5d39",
+    "output_fingerprint": "24d2a951ce94148e",
+    "t_end_bits": "4024000000000000",
+    "attempts": 34,
+    "accepted_steps": 34,
+    "builds": 34,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 8
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 9
+    },
+    "rhs_calls": {
+     "A": 13915,
+     "B": 13915
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 13915,
+     "B": 13915
+    },
+    "multi_colouring_total_groups": null,
+    "documented_delta_rhs_calls": 0
+   },
+   {
+    "cell": "bruss1d-n128-dense",
+    "backend": "dense_lu(in-place)",
+    "arm": "prot",
+    "bits_equal": true,
+    "jacobian_fingerprint": "1bdfd9898cbad42b",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "t_end_bits": "4014bca640f5b905"
+   },
+   {
+    "cell": "bruss1d-n128-dense",
+    "backend": "dense_lu(in-place)",
+    "arm": "seq",
+    "route": "dense",
+    "n": 128,
+    "bits_equal": true,
+    "jacobian_fingerprint": "1bdfd9898cbad42b",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "builds": 48,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 0,
+     "B": 0
+    },
+    "verified_columns": {
+     "A": 0,
+     "B": 0
+    },
+    "verification_rhs_calls": {
+     "A": 0,
+     "B": 0
+    },
+    "rhs_calls": {
+     "A": 6576,
+     "B": 6576
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 6576,
+     "B": 6576
+    },
+    "multi_colouring_total_groups": null,
+    "documented_delta_rhs_calls": 0
+   },
+   {
+    "cell": "bruss1d-n128-dense",
+    "backend": "dense_lu(in-place)",
+    "arm": "t1",
+    "route": "dense",
+    "n": 128,
+    "bits_equal": true,
+    "jacobian_fingerprint": "1bdfd9898cbad42b",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "builds": 48,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 8
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 9
+    },
+    "rhs_calls": {
+     "A": 6585,
+     "B": 6585
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 6585,
+     "B": 6585
+    },
+    "multi_colouring_total_groups": null,
+    "documented_delta_rhs_calls": 0
+   },
+   {
+    "cell": "bruss1d-n128-dense",
+    "backend": "dense_lu(in-place)",
+    "arm": "t2",
+    "route": "dense",
+    "n": 128,
+    "bits_equal": true,
+    "jacobian_fingerprint": "1bdfd9898cbad42b",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "builds": 48,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 8
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 9
+    },
+    "rhs_calls": {
+     "A": 6585,
+     "B": 6585
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 6585,
+     "B": 6585
+    },
+    "multi_colouring_total_groups": null,
+    "documented_delta_rhs_calls": 0
+   },
+   {
+    "cell": "bruss1d-n128-dense",
+    "backend": "dense_lu(in-place)",
+    "arm": "t4",
+    "route": "dense",
+    "n": 128,
+    "bits_equal": true,
+    "jacobian_fingerprint": "1bdfd9898cbad42b",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "builds": 48,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 8
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 9
+    },
+    "rhs_calls": {
+     "A": 6585,
+     "B": 6585
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 6585,
+     "B": 6585
+    },
+    "multi_colouring_total_groups": null,
+    "documented_delta_rhs_calls": 0
+   },
+   {
+    "cell": "bruss1d-n128-dense",
+    "backend": "dense_lu(in-place)",
+    "arm": "t6",
+    "route": "dense",
+    "n": 128,
+    "bits_equal": true,
+    "jacobian_fingerprint": "1bdfd9898cbad42b",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "builds": 48,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 8
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 9
+    },
+    "rhs_calls": {
+     "A": 6585,
+     "B": 6585
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 6585,
+     "B": 6585
+    },
+    "multi_colouring_total_groups": null,
+    "documented_delta_rhs_calls": 0
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_protected",
+    "arm": "prot",
+    "bits_equal": true,
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "t_end_bits": "4024000000000000"
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_protected",
+    "arm": "seq",
+    "route": "coloured",
+    "n": 4096,
+    "bits_equal": true,
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "builds": 37,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 8,
+     "B": 150
+    },
+    "rhs_calls": {
+     "A": 2161,
+     "B": 2303
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 2161,
+     "B": 2303
+    },
+    "multi_colouring_total_groups": 150,
+    "documented_delta_rhs_calls": 142
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_protected",
+    "arm": "t1",
+    "route": "coloured",
+    "n": 4096,
+    "bits_equal": true,
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "builds": 37,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 151
+    },
+    "rhs_calls": {
+     "A": 2162,
+     "B": 2304
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 2162,
+     "B": 2304
+    },
+    "multi_colouring_total_groups": 150,
+    "documented_delta_rhs_calls": 142
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_protected",
+    "arm": "t2",
+    "route": "coloured",
+    "n": 4096,
+    "bits_equal": true,
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "builds": 37,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 151
+    },
+    "rhs_calls": {
+     "A": 2162,
+     "B": 2304
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 2162,
+     "B": 2304
+    },
+    "multi_colouring_total_groups": 150,
+    "documented_delta_rhs_calls": 142
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_protected",
+    "arm": "t4",
+    "route": "coloured",
+    "n": 4096,
+    "bits_equal": true,
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "builds": 37,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 151
+    },
+    "rhs_calls": {
+     "A": 2162,
+     "B": 2304
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 2162,
+     "B": 2304
+    },
+    "multi_colouring_total_groups": 150,
+    "documented_delta_rhs_calls": 142
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_protected",
+    "arm": "t6",
+    "route": "coloured",
+    "n": 4096,
+    "bits_equal": true,
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "builds": 37,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 151
+    },
+    "rhs_calls": {
+     "A": 2162,
+     "B": 2304
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 2162,
+     "B": 2304
+    },
+    "multi_colouring_total_groups": 150,
+    "documented_delta_rhs_calls": 142
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_tight",
+    "arm": "prot",
+    "bits_equal": true,
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "t_end_bits": "4024000000000000"
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_tight",
+    "arm": "seq",
+    "route": "coloured",
+    "n": 4096,
+    "bits_equal": true,
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "builds": 37,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 8,
+     "B": 150
+    },
+    "rhs_calls": {
+     "A": 2161,
+     "B": 2303
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 2161,
+     "B": 2303
+    },
+    "multi_colouring_total_groups": 150,
+    "documented_delta_rhs_calls": 142
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_tight",
+    "arm": "t1",
+    "route": "coloured",
+    "n": 4096,
+    "bits_equal": true,
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "builds": 37,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 151
+    },
+    "rhs_calls": {
+     "A": 2162,
+     "B": 2304
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 2162,
+     "B": 2304
+    },
+    "multi_colouring_total_groups": 150,
+    "documented_delta_rhs_calls": 142
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_tight",
+    "arm": "t2",
+    "route": "coloured",
+    "n": 4096,
+    "bits_equal": true,
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "builds": 37,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 151
+    },
+    "rhs_calls": {
+     "A": 2162,
+     "B": 2304
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 2162,
+     "B": 2304
+    },
+    "multi_colouring_total_groups": 150,
+    "documented_delta_rhs_calls": 142
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_tight",
+    "arm": "t4",
+    "route": "coloured",
+    "n": 4096,
+    "bits_equal": true,
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "builds": 37,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 151
+    },
+    "rhs_calls": {
+     "A": 2162,
+     "B": 2304
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 2162,
+     "B": 2304
+    },
+    "multi_colouring_total_groups": 150,
+    "documented_delta_rhs_calls": 142
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_tight",
+    "arm": "t6",
+    "route": "coloured",
+    "n": 4096,
+    "bits_equal": true,
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "builds": 37,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 151
+    },
+    "rhs_calls": {
+     "A": 2162,
+     "B": 2304
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 2162,
+     "B": 2304
+    },
+    "multi_colouring_total_groups": 150,
+    "documented_delta_rhs_calls": 142
+   },
+   {
+    "cell": "bruss1d-n131072",
+    "backend": "banded_tight",
+    "arm": "prot",
+    "bits_equal": true,
+    "jacobian_fingerprint": "054538965049b1a2",
+    "state_fingerprint": "80d1533b1bac2129",
+    "final_fingerprint": "57ec697f9e76eac6",
+    "t_end_bits": "4014a44d0e86bc5d"
+   },
+   {
+    "cell": "bruss1d-n131072",
+    "backend": "banded_tight",
+    "arm": "seq",
+    "route": "coloured",
+    "n": 131072,
+    "bits_equal": true,
+    "jacobian_fingerprint": "054538965049b1a2",
+    "state_fingerprint": "80d1533b1bac2129",
+    "final_fingerprint": "57ec697f9e76eac6",
+    "output_fingerprint": "1132e9fc2989d7ca",
+    "t_end_bits": "4014a44d0e86bc5d",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "builds": 48,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 131072
+    },
+    "verification_rhs_calls": {
+     "A": 8,
+     "B": 59
+    },
+    "rhs_calls": {
+     "A": 680,
+     "B": 731
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 680,
+     "B": 731
+    },
+    "multi_colouring_total_groups": 59,
+    "documented_delta_rhs_calls": 51
+   },
+   {
+    "cell": "bruss1d-n131072",
+    "backend": "banded_tight",
+    "arm": "t1",
+    "route": "coloured",
+    "n": 131072,
+    "bits_equal": true,
+    "jacobian_fingerprint": "054538965049b1a2",
+    "state_fingerprint": "80d1533b1bac2129",
+    "final_fingerprint": "57ec697f9e76eac6",
+    "output_fingerprint": "1132e9fc2989d7ca",
+    "t_end_bits": "4014a44d0e86bc5d",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "builds": 48,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 131072
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 60
+    },
+    "rhs_calls": {
+     "A": 681,
+     "B": 732
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 681,
+     "B": 732
+    },
+    "multi_colouring_total_groups": 59,
+    "documented_delta_rhs_calls": 51
+   },
+   {
+    "cell": "bruss1d-n131072",
+    "backend": "banded_tight",
+    "arm": "t2",
+    "route": "coloured",
+    "n": 131072,
+    "bits_equal": true,
+    "jacobian_fingerprint": "054538965049b1a2",
+    "state_fingerprint": "80d1533b1bac2129",
+    "final_fingerprint": "57ec697f9e76eac6",
+    "output_fingerprint": "1132e9fc2989d7ca",
+    "t_end_bits": "4014a44d0e86bc5d",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "builds": 48,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 131072
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 60
+    },
+    "rhs_calls": {
+     "A": 681,
+     "B": 732
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 681,
+     "B": 732
+    },
+    "multi_colouring_total_groups": 59,
+    "documented_delta_rhs_calls": 51
+   },
+   {
+    "cell": "bruss1d-n131072",
+    "backend": "banded_tight",
+    "arm": "t4",
+    "route": "coloured",
+    "n": 131072,
+    "bits_equal": true,
+    "jacobian_fingerprint": "054538965049b1a2",
+    "state_fingerprint": "80d1533b1bac2129",
+    "final_fingerprint": "57ec697f9e76eac6",
+    "output_fingerprint": "1132e9fc2989d7ca",
+    "t_end_bits": "4014a44d0e86bc5d",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "builds": 48,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 131072
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 60
+    },
+    "rhs_calls": {
+     "A": 681,
+     "B": 732
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 681,
+     "B": 732
+    },
+    "multi_colouring_total_groups": 59,
+    "documented_delta_rhs_calls": 51
+   },
+   {
+    "cell": "bruss1d-n131072",
+    "backend": "banded_tight",
+    "arm": "t6",
+    "route": "coloured",
+    "n": 131072,
+    "bits_equal": true,
+    "jacobian_fingerprint": "054538965049b1a2",
+    "state_fingerprint": "80d1533b1bac2129",
+    "final_fingerprint": "57ec697f9e76eac6",
+    "output_fingerprint": "1132e9fc2989d7ca",
+    "t_end_bits": "4014a44d0e86bc5d",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "builds": 48,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 131072
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 60
+    },
+    "rhs_calls": {
+     "A": 681,
+     "B": 732
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 681,
+     "B": 732
+    },
+    "multi_colouring_total_groups": 59,
+    "documented_delta_rhs_calls": 51
+   },
+   {
+    "cell": "bruss1d-n128-coloured",
+    "backend": "banded_tight",
+    "arm": "prot",
+    "bits_equal": true,
+    "jacobian_fingerprint": "798ab0df41f545fb",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "t_end_bits": "4014bca640f5b905"
+   },
+   {
+    "cell": "bruss1d-n128-coloured",
+    "backend": "banded_tight",
+    "arm": "seq",
+    "route": "coloured",
+    "n": 128,
+    "bits_equal": true,
+    "jacobian_fingerprint": "798ab0df41f545fb",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "builds": 48,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 128
+    },
+    "verification_rhs_calls": {
+     "A": 8,
+     "B": 18
+    },
+    "rhs_calls": {
+     "A": 680,
+     "B": 690
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 680,
+     "B": 690
+    },
+    "multi_colouring_total_groups": 18,
+    "documented_delta_rhs_calls": 10
+   },
+   {
+    "cell": "bruss1d-n128-coloured",
+    "backend": "banded_tight",
+    "arm": "t1",
+    "route": "coloured",
+    "n": 128,
+    "bits_equal": true,
+    "jacobian_fingerprint": "798ab0df41f545fb",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "builds": 48,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 128
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 19
+    },
+    "rhs_calls": {
+     "A": 681,
+     "B": 691
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 681,
+     "B": 691
+    },
+    "multi_colouring_total_groups": 18,
+    "documented_delta_rhs_calls": 10
+   },
+   {
+    "cell": "bruss1d-n128-coloured",
+    "backend": "banded_tight",
+    "arm": "t2",
+    "route": "coloured",
+    "n": 128,
+    "bits_equal": true,
+    "jacobian_fingerprint": "798ab0df41f545fb",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "builds": 48,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 128
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 19
+    },
+    "rhs_calls": {
+     "A": 681,
+     "B": 691
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 681,
+     "B": 691
+    },
+    "multi_colouring_total_groups": 18,
+    "documented_delta_rhs_calls": 10
+   },
+   {
+    "cell": "bruss1d-n128-coloured",
+    "backend": "banded_tight",
+    "arm": "t4",
+    "route": "coloured",
+    "n": 128,
+    "bits_equal": true,
+    "jacobian_fingerprint": "798ab0df41f545fb",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "builds": 48,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 128
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 19
+    },
+    "rhs_calls": {
+     "A": 681,
+     "B": 691
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 681,
+     "B": 691
+    },
+    "multi_colouring_total_groups": 18,
+    "documented_delta_rhs_calls": 10
+   },
+   {
+    "cell": "bruss1d-n128-coloured",
+    "backend": "banded_tight",
+    "arm": "t6",
+    "route": "coloured",
+    "n": 128,
+    "bits_equal": true,
+    "jacobian_fingerprint": "798ab0df41f545fb",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "builds": 48,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 128
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 19
+    },
+    "rhs_calls": {
+     "A": 681,
+     "B": 691
+    },
+    "rhs_calls_counted_by_the_callback": {
+     "A": 681,
+     "B": 691
+    },
+    "multi_colouring_total_groups": 18,
+    "documented_delta_rhs_calls": 10
+   }
+  ],
+  "mismatches_A_B": [],
+  "commit_A_against_v08": {
+   "runs_compared": 36,
+   "mismatches": []
+  }
+ },
+ "corpus": {
+  "case_set": {
+   "cases_v26": 4846,
+   "cases_A": 4846,
+   "cases_B": 4846,
+   "same_case_ids": true,
+   "field_mismatches": [],
+   "field_mismatch_count": 0
+  },
+  "per_group": [
+   {
+    "group": "controls",
+    "cases": 4,
+    "wrong": 4,
+    "A_misses_seq": 0,
+    "B_misses_seq": 0,
+    "B_misses_t6": 0,
+    "v26_MC_misses_seq": 0,
+    "v26_S8_misses_seq": 0,
+    "B_equal_to_v26_reference": 11,
+    "B_compared_with_v26": 11,
+    "A_equal_to_v26_reference": 8,
+    "A_compared_with_v26": 8
+   },
+   {
+    "group": "ring",
+    "cases": 13,
+    "wrong": 13,
+    "A_misses_seq": 6,
+    "B_misses_seq": 0,
+    "B_misses_t6": 0,
+    "v26_MC_misses_seq": 0,
+    "v26_S8_misses_seq": 6,
+    "B_equal_to_v26_reference": 26,
+    "B_compared_with_v26": 26,
+    "A_equal_to_v26_reference": 13,
+    "A_compared_with_v26": 13
+   },
+   {
+    "group": "omit128",
+    "cases": 508,
+    "wrong": 508,
+    "A_misses_seq": 48,
+    "B_misses_seq": 0,
+    "B_misses_t6": 0,
+    "v26_MC_misses_seq": 0,
+    "v26_S8_misses_seq": 48,
+    "B_equal_to_v26_reference": 1016,
+    "B_compared_with_v26": 1016,
+    "A_equal_to_v26_reference": 508,
+    "A_compared_with_v26": 508
+   },
+   {
+    "group": "omit1024",
+    "cases": 4092,
+    "wrong": 4092,
+    "A_misses_seq": 497,
+    "B_misses_seq": 1,
+    "B_misses_t6": 1,
+    "v26_MC_misses_seq": 1,
+    "v26_S8_misses_seq": 497,
+    "B_equal_to_v26_reference": 8184,
+    "B_compared_with_v26": 8184,
+    "A_equal_to_v26_reference": 4092,
+    "A_compared_with_v26": 4092
+   },
+   {
+    "group": "omit131072",
+    "cases": 200,
+    "wrong": 200,
+    "A_misses_seq": 25,
+    "B_misses_seq": 0,
+    "B_misses_t6": 0,
+    "v26_MC_misses_seq": 0,
+    "v26_S8_misses_seq": 25,
+    "B_equal_to_v26_reference": 400,
+    "B_compared_with_v26": 400,
+    "A_equal_to_v26_reference": 200,
+    "A_compared_with_v26": 200
+   },
+   {
+    "group": "narrow",
+    "cases": 6,
+    "wrong": 6,
+    "A_misses_seq": 0,
+    "B_misses_seq": 0,
+    "B_misses_t6": 0,
+    "v26_MC_misses_seq": 0,
+    "v26_S8_misses_seq": 0,
+    "B_equal_to_v26_reference": 12,
+    "B_compared_with_v26": 12,
+    "A_equal_to_v26_reference": 6,
+    "A_compared_with_v26": 6
+   },
+   {
+    "group": "correct",
+    "cases": 23,
+    "wrong": 0,
+    "A_misses_seq": 0,
+    "B_misses_seq": 0,
+    "B_misses_t6": 0,
+    "v26_MC_misses_seq": 0,
+    "v26_S8_misses_seq": 0,
+    "B_equal_to_v26_reference": 44,
+    "B_compared_with_v26": 44,
+    "A_equal_to_v26_reference": 23,
+    "A_compared_with_v26": 23
+   }
+  ],
+  "mismatches": [],
+  "decisions_compared_with_v26": {
+   "A": 4850,
+   "B": 9693
+  },
+  "decision_mismatches_with_v26": [],
+  "first_use_and_verify_disagree": [],
+  "dense_route_A_B_disagree": [],
+  "default_checks": {
+   "A": {
+    "coloured@seq": [
+     "Sample(8)"
+    ],
+    "coloured@t3": [
+     "Sample(8)"
+    ],
+    "coloured@t6": [
+     "Sample(8)"
+    ],
+    "dense@seq": [
+     "Sample(8)"
+    ],
+    "dense@t3": [
+     "Sample(8)"
+    ],
+    "dense@t6": [
+     "Sample(8)"
+    ]
+   },
+   "B": {
+    "coloured@seq": [
+     "MultiColouring"
+    ],
+    "coloured@t3": [
+     "MultiColouring"
+    ],
+    "coloured@t6": [
+     "MultiColouring"
+    ],
+    "dense@seq": [
+     "Sample(8)"
+    ],
+    "dense@t3": [
+     "Sample(8)"
+    ],
+    "dense@t6": [
+     "Sample(8)"
+    ]
+   }
+  },
+  "misses_A": {
+   "count": 1152,
+   "seq": 576,
+   "t6": 576
+  },
+  "misses_B": {
+   "count": 2,
+   "list": [
+    [
+     "omit1024/e3072-r768-c769",
+     "seq"
+    ],
+    [
+     "omit1024/e3072-r768-c769",
+     "t6"
+    ]
+   ]
+  },
+  "first_use_path_misses_B": {
+   "note": "wrong cases that pass the first linearization of a default client; the sequential dense route makes no first-use check (unchanged), so the impure dense control passes there",
+   "count": 3,
+   "list": [
+    [
+     "controls/impure16-dense",
+     "seq"
+    ],
+    [
+     "omit1024/e3072-r768-c769",
+     "seq"
+    ],
+    [
+     "omit1024/e3072-r768-c769",
+     "t6"
+    ]
+   ],
+   "count_A": 1153
+  },
+  "misses_B_evidence": [
+   {
+    "case": "omit1024/e3072-r768-c769",
+    "execution": "seq",
+    "rounding_limited": true,
+    "states": [
+     "build: group 1 of the client's colouring (256 columns)",
+     "check: group 4 of further colouring 1 (204 columns)",
+     "check: group 1 of further colouring 2 (171 columns)",
+     "check: group 6 of further colouring 3 (146 columns)",
+     "check: group 10 of further colouring 4 (93 columns)"
+    ],
+    "v26_MC_seq": [
+     "pass",
+     1024
+    ],
+    "v26_FA_seq": [
+     "pass",
+     1024
+    ]
+   },
+   {
+    "case": "omit1024/e3072-r768-c769",
+    "execution": "t6",
+    "rounding_limited": true,
+    "states": [
+     "build: group 1 of the client's colouring (256 columns)",
+     "check: group 4 of further colouring 1 (204 columns)",
+     "check: group 1 of further colouring 2 (171 columns)",
+     "check: group 6 of further colouring 3 (146 columns)",
+     "check: group 10 of further colouring 4 (93 columns)"
+    ],
+    "v26_MC_seq": [
+     "pass",
+     1024
+    ],
+    "v26_FA_seq": [
+     "pass",
+     1024
+    ]
+   }
+  ],
+  "detected_by_A_not_by_B": [],
+  "A_misses_detected_by_B": 1150,
+  "v26_MC_misses_seq": [
+   "omit1024/e3072-r768-c769"
+  ],
+  "correct_rejected": []
+ },
+ "limits_of_mc_l0338_from_the_review_probe_logs": [
+  {
+   "probe": "cancel",
+   "case": "cancel-B-tridiagonal-n60",
+   "S8@seq": false,
+   "MC@seq": false,
+   "FA@seq": true,
+   "FA_P@t6": true
+  },
+  {
+   "probe": "cancel",
+   "case": "cancel-G-ring-n84",
+   "S8@seq": false,
+   "MC@seq": false,
+   "FA@seq": true,
+   "FA_P@t6": true
+  },
+  {
+   "probe": "cancel",
+   "case": "control-B-tridiagonal-n60-unpaired",
+   "S8@seq": false,
+   "MC@seq": true,
+   "FA@seq": true,
+   "FA_P@t6": true
+  },
+  {
+   "probe": "collapse",
+   "case": "collapse trial 10",
+   "S8@seq": true,
+   "MC@seq": false,
+   "FA@seq": true,
+   "FA_P@t6": true
+  },
+  {
+   "probe": "collapse",
+   "case": "collapse trial 11",
+   "S8@seq": true,
+   "MC@seq": false,
+   "FA@seq": true,
+   "FA_P@t6": true
+  },
+  {
+   "probe": "collapse",
+   "case": "collapse trial 18",
+   "S8@seq": true,
+   "MC@seq": false,
+   "FA@seq": true,
+   "FA_P@t6": true
+  }
+ ],
+ "unit_tests_of_this_node": {
+  "git_head": "caf3f7ac459f54b152e85412ff754eedfda2df48",
+  "tracked_changes": "0",
+  "exit_codes": [
+   0
+  ],
+  "tests": [
+   {
+    "name": "the_limits_stated_for_the_default_are_real",
+    "result": "ok"
+   },
+   {
+    "name": "the_default_first_use_check_follows_the_route",
+    "result": "ok"
+   },
+   {
+    "name": "the_default_check_runs_once_at_the_first_linearization_on_every_route",
+    "result": "ok"
+   },
+   {
+    "name": "a_run_with_the_default_check_keeps_every_bit",
+    "result": "ok"
+   },
+   {
+    "name": "the_default_decides_as_the_multi_colouring_check_on_part_of_the_v26_corpus",
+    "result": "ok"
+   },
+   {
+    "name": "the_default_check_allocates_nothing_at_the_first_linearization",
+    "result": "ok"
+   }
+  ],
+  "passed": 6,
+  "failed": 0,
+  "allocation": [
+   {
+    "case": "ring-n30",
+    "client": "ring pattern, dense LU",
+    "first_linearization_allocations_default_check": 0,
+    "first_linearization_allocations_requested_multi_colouring": 12,
+    "first_linearization_allocations_without_check": 0
+   },
+   {
+    "case": "bruss1d-n32",
+    "client": "band (2, 2), dense LU",
+    "first_linearization_allocations_default_check": 0,
+    "first_linearization_allocations_requested_multi_colouring": 12,
+    "first_linearization_allocations_without_check": 0
+   },
+   {
+    "case": "bruss1d-n32",
+    "client": "band (2, 2), protected kernel",
+    "first_linearization_allocations_default_check": 0,
+    "first_linearization_allocations_requested_multi_colouring": 12,
+    "first_linearization_allocations_without_check": 0
+   },
+   {
+    "case": "nlkpp-band-n96-r4",
+    "client": "band (4, 4), tight kernel",
+    "first_linearization_allocations_default_check": 0,
+    "first_linearization_allocations_requested_multi_colouring": 12,
+    "first_linearization_allocations_without_check": 0
+   }
+  ]
+ },
+ "tests": {
+  "changed_paths_since_base": [
+   "crates/rodas5p-integrators/src/stage_clients/assembly.rs",
+   "crates/rodas5p-integrators/src/stage_clients/assembly/engine.rs",
+   "crates/rodas5p-integrators/tests/stage_clients_assembly_default.rs",
+   "crates/rodas5p-integrators/tests/stage_clients_assembly_default_alloc.rs",
+   "crates/rodas5p-integrators/tests/stage_clients_assembly_default_record.rs",
+   "crates/rodas5p-integrators/tests/stage_clients_assembly_identity.rs",
+   "research/production_loop_20261116/assembly_default/NOTES.txt",
+   "research/production_loop_20261116/assembly_default/checker_all.py",
+   "research/production_loop_20261116/assembly_default/logs/checks.log",
+   "research/production_loop_20261116/assembly_default/logs/corpus_A_controls.log",
+   "research/production_loop_20261116/assembly_default/logs/corpus_A_correct.log",
+   "research/production_loop_20261116/assembly_default/logs/corpus_A_narrow.log",
+   "research/production_loop_20261116/assembly_default/logs/corpus_A_omit1024.log",
+   "research/production_loop_20261116/assembly_default/logs/corpus_A_omit128.log",
+   "research/production_loop_20261116/assembly_default/logs/corpus_A_omit131072.log",
+   "research/production_loop_20261116/assembly_default/logs/corpus_A_ring.log",
+   "research/production_loop_20261116/assembly_default/logs/corpus_B_controls.log",
+   "research/production_loop_20261116/assembly_default/logs/corpus_B_correct.log",
+   "research/production_loop_20261116/assembly_default/logs/corpus_B_narrow.log",
+   "research/production_loop_20261116/assembly_default/logs/corpus_B_omit1024.log",
+   "research/production_loop_20261116/assembly_default/logs/corpus_B_omit128.log",
+   "research/production_loop_20261116/assembly_default/logs/corpus_B_omit131072.log",
+   "research/production_loop_20261116/assembly_default/logs/corpus_B_ring.log",
+   "research/production_loop_20261116/assembly_default/logs/identity_A_bruss1d-n128-coloured.log",
+   "research/production_loop_20261116/assembly_default/logs/identity_A_bruss1d-n128-dense.log",
+   "research/production_loop_20261116/assembly_default/logs/identity_A_bruss1d-n131072.log",
+   "research/production_loop_20261116/assembly_default/logs/identity_A_nlkpp-band-n4096-r24.log",
+   "research/production_loop_20261116/assembly_default/logs/identity_A_nlkpp-dense-n400.log",
+   "research/production_loop_20261116/assembly_default/logs/identity_B_bruss1d-n128-coloured.log",
+   "research/production_loop_20261116/assembly_default/logs/identity_B_bruss1d-n128-dense.log",
+   "research/production_loop_20261116/assembly_default/logs/identity_B_bruss1d-n131072.log",
+   "research/production_loop_20261116/assembly_default/logs/identity_B_nlkpp-band-n4096-r24.log",
+   "research/production_loop_20261116/assembly_default/logs/identity_B_nlkpp-dense-n400.log",
+   "research/production_loop_20261116/assembly_default/logs/unit.log",
+   "research/production_loop_20261116/assembly_default/parse_results.py",
+   "research/production_loop_20261116/assembly_default/run.sh"
+  ],
+  "paths_outside_the_write_allowlist": [],
+  "edited_lines_of_existing_tests": [
+   {
+    "file": "crates/rodas5p-integrators/tests/stage_clients_assembly_identity.rs",
+    "line": 608,
+    "removed": "    // The default first-use check runs once, at the first linearization.",
+    "added": "    // The first-use check (spec() names Sample(8)) runs once, at the first linearization.",
+    "reason": "comment that called Sample(8) the default first-use check; the block configures Sample(8) explicitly through spec() (unchanged assertions (1, 8)), and Sample(8) is no longer the default of the coloured route"
+   }
+  ],
+  "edited_lines_without_reason": [],
+  "new_test_files": {
+   "crates/rodas5p-integrators/tests/stage_clients_assembly_default.rs": [
+    "the_default_first_use_check_follows_the_route",
+    "the_default_check_runs_once_at_the_first_linearization_on_every_route",
+    "a_run_with_the_default_check_keeps_every_bit",
+    "the_default_decides_as_the_multi_colouring_check_on_part_of_the_v26_corpus",
+    "the_limits_stated_for_the_default_are_real"
+   ],
+   "crates/rodas5p-integrators/tests/stage_clients_assembly_default_alloc.rs": [
+    "the_default_check_allocates_nothing_at_the_first_linearization"
+   ],
+   "crates/rodas5p-integrators/tests/stage_clients_assembly_default_record.rs": [
+    "v29_record"
+   ]
+  }
+ },
+ "checks": {
+  "git_head": "caf3f7ac459f54b152e85412ff754eedfda2df48",
+  "tracked_changes": "0",
+  "checks": [
+   {
+    "binaries": 29,
+    "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_*",
+    "exit_code": 0,
+    "failed": 0,
+    "ignored": 14,
+    "last_line": "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "name": "stage client tests",
+    "passed": 91
+   },
+   {
+    "binaries": 2,
+    "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test ppsw1_6b_contracts --test ptsw2b_contracts",
+    "exit_code": 0,
+    "failed": 0,
+    "ignored": 0,
+    "last_line": "test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "name": "sentinels",
+    "passed": 61
+   },
+   {
+    "command": "taskset -c 0-5,12-17 cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --test stage_clients_assembly_alloc --test stage_clients_assembly_check_corpus --test stage_clients_assembly_check_mc --test stage_clients_assembly_check_measure --test stage_clients_assembly_default_alloc --test stage_clients_assembly_default_record --test stage_clients_assembly_default --test stage_clients_assembly_identity --test stage_clients_assembly_measure --test stage_clients_assembly_problems --no-deps -- -D warnings",
+    "exit_code": 0,
+    "last_line": "Finished `release` profile [optimized] target(s) in 18.13s",
+    "name": "clippy"
+   },
+   {
+    "command": "cargo +1.94.1 fmt -p rodas5p-integrators -- --check",
+    "exit_code": 0,
+    "last_line": "",
+    "name": "fmt"
+   },
+   {
+    "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+    "exit_code": 1,
+    "last_line": "ValueError: implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/src/stage_clients/assembly.rs",
+    "name": "loop checker"
+   }
+  ]
+ },
+ "loop_checker": {
+  "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+  "exit_code": 1,
+  "last_line": "ValueError: implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/src/stage_clients/assembly.rs",
+  "name": "loop checker"
+ },
+ "loop_checker_every_complaint": {
+  "git_head": "fbcd44de9a71dc0d94f10b1c135a50ae23c42251",
+  "tracked_changes": "0",
+  "exit_codes": [
+   0
+  ],
+  "complaints": [
+   "implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/src/stage_clients/assembly.rs",
+   "implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/src/stage_clients/assembly/engine.rs",
+   "implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/tests/stage_clients_assembly_identity.rs"
+  ],
+  "only_pinned_files_this_node_changes": true
+ },
+ "discriminators": [
+  {
+   "name": "bits unchanged",
+   "criterion": "TASK_CONTRACTS V29 acceptance 1: the Jacobian and trajectory bits of the V08 identity cells equal commit A; only the counters of the first-use check change, by the documented amount",
+   "measured": "36 runs (5 cells, both band back ends of nlkpp-band-n4096-r24, arms prot, seq, t1, t2, t4, t6): 36 equal to commit A in Jacobian, linearization-point, output and final-state fingerprints, steps and every counter but the check's; 0 mismatches; coloured cells change only verification RHS (8 -> total_groups, +1 threaded), verified columns (8 -> n) and rhs_calls by the same amount; dense cells unchanged; commit A equals the V08 identity logs in 36 runs (0 mismatches)",
+   "verdict": "PASS"
+  },
+  {
+   "name": "default per route",
+   "criterion": "TASK_CONTRACTS V29 acceptance 3 (new tests: the default per route) and OD-L1-24",
+   "measured": "identity cells: bruss1d-n128-coloured/banded_tight ['Sample(8)'] -> ['MultiColouring']; bruss1d-n128-dense/dense_lu(in-place) ['Sample(8)'] -> ['Sample(8)']; bruss1d-n131072/banded_tight ['Sample(8)'] -> ['MultiColouring']; nlkpp-band-n4096-r24/banded_protected ['Sample(8)'] -> ['MultiColouring']; nlkpp-band-n4096-r24/banded_tight ['Sample(8)'] -> ['MultiColouring']; nlkpp-dense-n400/dense_lu(faer) ['Sample(8)'] -> ['Sample(8)']; corpus: {\"coloured@seq\": [\"MultiColouring\"], \"coloured@t3\": [\"MultiColouring\"], \"coloured@t6\": [\"MultiColouring\"], \"dense@seq\": [\"Sample(8)\"], \"dense@t3\": [\"Sample(8)\"], \"dense@t6\": [\"Sample(8)\"]}; tests the_default_first_use_check_follows_the_route ok, the_default_check_runs_once_at_the_first_linearization_on_every_route ok",
+   "verdict": "PASS"
+  },
+  {
+   "name": "corpus detection of the default",
+   "criterion": "TASK_CONTRACTS V29 acceptance 3: the default detects the corpus cases that MC detects",
+   "measured": "4846 V26 cases, same ids and fields: True; decisions of B equal to the V26 reference arm in 9693 of 9693 (MC@seq/MC@t6 coloured, S8@seq/S8@t3 dense); misses of B 2 (case, execution) = the V26 MC miss ['omit1024/e3072-r768-c769'], rounding-limited; misses of A (Sample(8)) 1152 (576 seq), of which 1150 detected by B; detected by A and not by B: 0; correct patterns rejected: 0",
+   "verdict": "PASS"
+  },
+  {
+   "name": "suites",
+   "criterion": "TASK_CONTRACTS V29 acceptance 2 and 4: existing tests pass (edits only with a listed reason), clippy -D warnings and fmt",
+   "measured": "stage client tests: exit 0, 91 passed / 0 failed / 14 ignored in 29 binaries; sentinels: exit 0, 61 passed / 0 failed / 0 ignored in 2 binaries; clippy: exit 0; fmt: exit 0; loop checker: exit 1; edited lines without reason: 0",
+   "verdict": "PASS"
+  }
+ ]
+}
