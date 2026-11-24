@@ -16,7 +16,10 @@
 //! pattern minus one entry), `narrow` (bands one too narrow), `correct` (the
 //! true patterns and the patterns of the four cost cells).
 //!
-//! Arms: `S8` (`CheckColumns::Sample(8)`), `FA` (`CheckColumns::All`).
+//! Arms: `S8` (`CheckColumns::Sample(8)`), `FA` (`CheckColumns::All`),
+//! `FA_P` (`CheckColumns::AllPooled`), `MC` (`CheckColumns::MultiColouring`),
+//! `MC_P` (`CheckColumns::MultiColouringPooled`); the last three exist from
+//! the client edit of node V26 on (commit A recorded `S8` and `FA` before it).
 //! Executions: `seq` (sequential client) and `t<P>` (threaded client with
 //! `P` workers).
 //!
@@ -36,8 +39,8 @@ use std::time::Instant;
 use rodas5p_core::WorkCounters;
 use rodas5p_integrators::stage_clients::DenseLuMode;
 use rodas5p_integrators::stage_clients::assembly::{
-    AssemblyError, AssemblyOptions, AssemblyStageClient, CheckColumns, ColumnRoute, LinearBackend,
-    RhsPurity, SparsityPattern, colour_columns,
+    AssemblyError, AssemblyOptions, AssemblyStageClient, CheckColourings, CheckColumns,
+    ColumnRoute, LinearBackend, RhsPurity, SparsityPattern, colour_columns,
 };
 
 #[path = "stage_clients_assembly_problems.rs"]
@@ -89,6 +92,9 @@ fn parse_arm(text: &str) -> ArmSpec {
     let check = match name {
         "S8" => CheckColumns::Sample(AssemblyOptions::DEFAULT_CHECK_COLUMNS),
         "FA" => CheckColumns::All,
+        "FA_P" => CheckColumns::AllPooled,
+        "MC" => CheckColumns::MultiColouring,
+        "MC_P" => CheckColumns::MultiColouringPooled,
         _ => panic!("unknown arm {name}"),
     };
     let execution = match execution {
@@ -459,9 +465,33 @@ fn decision(result: &Result<usize, AssemblyError>) -> serde_json::Value {
     match result {
         Ok(columns) => serde_json::json!({"outcome": "pass", "columns": columns}),
         Err(error) => {
+            let mut colouring = None;
             let (kind, row, column, colour) = match error {
                 AssemblyError::UncoveredRowChanged { row, colour } => {
                     ("UncoveredRowChanged", Some(*row), None, Some(*colour))
+                }
+                AssemblyError::MultiColouringUncoveredRow {
+                    row,
+                    colouring: index,
+                    group,
+                } => {
+                    colouring = Some(*index);
+                    ("MultiColouringUncoveredRow", Some(*row), None, Some(*group))
+                }
+                AssemblyError::MultiColouringEntryDiffers {
+                    row,
+                    column,
+                    colouring: index,
+                    group,
+                    ..
+                } => {
+                    colouring = Some(*index);
+                    (
+                        "MultiColouringEntryDiffers",
+                        Some(*row),
+                        Some(*column),
+                        Some(*group),
+                    )
                 }
                 AssemblyError::UndeclaredEntry { row, column } => {
                     ("UndeclaredEntry", Some(*row), Some(*column), None)
@@ -482,6 +512,7 @@ fn decision(result: &Result<usize, AssemblyError>) -> serde_json::Value {
                 "row": row,
                 "column": column,
                 "colour": colour,
+                "colouring": colouring,
                 "contract_violation": error.is_contract_violation(),
                 "typed": format!("{error:?}"),
             })
@@ -545,8 +576,17 @@ fn single_columns(check: CheckColumns, n: usize) -> Vec<usize> {
                 })
                 .collect()
         }
-        CheckColumns::All => (0..n).collect(),
+        CheckColumns::All | CheckColumns::AllPooled => (0..n).collect(),
+        CheckColumns::MultiColouring | CheckColumns::MultiColouringPooled => Vec::new(),
     }
+}
+
+/// Whether an arm is a multi-colouring check.
+fn multi_colouring(check: CheckColumns) -> bool {
+    matches!(
+        check,
+        CheckColumns::MultiColouring | CheckColumns::MultiColouringPooled
+    )
 }
 
 /// Row `i` at `y0` with the columns `shifted` carrying their increments,
@@ -573,8 +613,9 @@ fn row_with_and_without(fd: &FdProblem, shifted: &[usize], i: usize, k: usize) -
 /// The rounding-limited evidence of a miss of `arm` on `case`: for every
 /// omitted entry `(i, k)` (at most [`EVIDENCE_ENTRIES_MAX`]), the bits of row
 /// `i` with and without the shift of `k` at every state the arm evaluated
-/// with `k` shifted (the group of `k` in the client's colouring, and the
-/// column `k` alone if the arm checked it).
+/// with `k` shifted (the group of `k` in the client's colouring; the
+/// column `k` alone if the arm checked it; the group of `k` in every
+/// further colouring of a multi-colouring check).
 fn miss_evidence(
     fd: &FdProblem,
     case: &Case,
@@ -586,6 +627,7 @@ fn miss_evidence(
     };
     let (colour, _) = colour_columns(declared);
     let singles = single_columns(arm.check, fd.n);
+    let plan = multi_colouring(arm.check).then(|| CheckColourings::of(declared).unwrap());
     let mut entries = Vec::new();
     let mut all_limited = true;
     for &(i, k) in missing.iter().take(EVIDENCE_ENTRIES_MAX) {
@@ -607,6 +649,19 @@ fn miss_evidence(
                 "bits_equal": with.to_bits() == without.to_bits(),
             }));
         }
+        if let Some(plan) = &plan {
+            for r in 0..plan.colourings() {
+                let g = plan.colour(r, k);
+                let columns = plan.columns(r, g);
+                let (with, without) = row_with_and_without(fd, &columns, i, k);
+                states.push(serde_json::json!({
+                    "state": format!("check: group {g} of further colouring {} ({} columns)", r + 1, columns.len()),
+                    "row_with_shift": with,
+                    "row_without_shift": without,
+                    "bits_equal": with.to_bits() == without.to_bits(),
+                }));
+            }
+        }
         let limited = states.iter().all(|state| state["bits_equal"] == true);
         all_limited &= limited;
         entries.push(serde_json::json!({
@@ -623,6 +678,21 @@ fn miss_evidence(
         "rounding_limited": all_limited && entries.len() == missing.len(),
         "entries": entries,
     })
+}
+
+/// The further colourings of the multi-colouring check of `pattern`.
+fn colourings_record(pattern: &SparsityPattern) -> serde_json::Value {
+    match CheckColourings::of(pattern) {
+        Ok(plan) => serde_json::json!({
+            "construction": format!("{:?}", plan.construction()),
+            "colourings": plan.colourings(),
+            "groups": (0..plan.colourings()).map(|r| plan.groups(r)).collect::<Vec<_>>(),
+            "total_groups": plan.total_groups(),
+            "total_groups_band": plan.total_groups_band(),
+            "total_groups_refinement": plan.total_groups_refinement(),
+        }),
+        Err(error) => serde_json::json!({"error": format!("{error:?}")}),
+    }
 }
 
 fn run_group(name: &str, arms: &[ArmSpec]) {
@@ -643,12 +713,17 @@ fn run_group(name: &str, arms: &[ArmSpec]) {
                 .omitted
                 .as_ref()
                 .is_some_and(|missing| !missing.is_empty());
-            if passed && wrong && arm.name == "FA" {
+            if passed && wrong && arm.name != "S8" {
                 let missing = case.omitted.as_ref().unwrap();
                 evidence.insert(arm.label.clone(), miss_evidence(fd, case, arm, missing));
             }
             decisions.insert(arm.label.clone(), record);
         }
+        let with_multi = arms.iter().any(|arm| multi_colouring(arm.check));
+        let check_colourings = match &case.route {
+            ColumnRoute::Coloured(pattern) if with_multi => colourings_record(pattern),
+            _ => serde_json::Value::Null,
+        };
         let (declared_nnz, colours) = match &case.route {
             ColumnRoute::Dense => (None, None),
             ColumnRoute::Coloured(pattern) => {
@@ -673,6 +748,7 @@ fn run_group(name: &str, arms: &[ArmSpec]) {
                 "controls": case.controls,
                 "note": case.note,
                 "arms": decisions,
+                "check_colourings": check_colourings,
                 "miss_evidence": evidence,
             })
         );

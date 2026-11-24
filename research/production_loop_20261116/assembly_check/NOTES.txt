@@ -100,3 +100,79 @@ PLAN OF WORK (order is part of the evidence)
 3. Corpus with every arm (E, D, F).
 4. Cost cells (RHS counts, instructions:u, wall under the timing lock).
 5. parse_results.py -> RESULTS.json and REPORT_KO.md (Korean, rendered by script).
+
+== 2026-11-24, entry 2 (commit A recorded; client edit; unit tests) ==
+
+COMMIT A (58e2d425, before any edit of the client): tests/stage_clients_assembly_check_corpus.rs and the logs
+logs/corpus_A_<group>.log (binary built from 23fc3f39, 0 tracked changes). S8 misses 6 ring cases (n = 34, 64,
+100, 127, 128, 1000), 48 of 508 omissions at n = 128, 497 of 4092 at n = 1024, 25 of 200 at n = 131072; FA
+misses one case (omit1024, entry (768, 769): u_384 = 1 + sin(2 pi 385/513) is about 1e-5, so the term u^2 v moves
+row 768 by about 5e-18 under the shift of v_384, below half an ulp of 1.79), rounding-limited by direct
+evaluation at both states FA evaluated (its build group and the column alone). Every correct pattern passes
+S8, FA and FA on 6 workers; every declared control fails under every arm.
+
+CLIENT EDIT (this commit)
+- assembly/multi.rs: CheckColourings (constructions B and G of PREDECLARED mc_construction, the choice by the
+  smaller total of non-empty groups with B on a tie, the injectivity check of the colour tuples with c1
+  included; a failure is AssemblyError::Configuration). Groups are generated on the fly: j = g, g + m, ..
+  (B) or a stride p through the members of one c1 class (G).
+- engine.rs: Engine::verify dispatches CheckColumns::{Sample, All} to the unchanged comparisons (moved into
+  ColumnCheck::check, statement for statement), AllPooled to the same comparisons on the pool, MultiColouring
+  and MultiColouringPooled to GroupCheck (coloured route only; the dense route is refused with
+  AssemblyError::Configuration, by the constructor when MC is the first-use check). The threaded base
+  re-evaluation stays in front of every check.
+- run_pooled: P scratch buffers (state, f1, row marks) allocated at the first pooled check; items (columns or
+  groups) are taken in increasing order from one atomic counter; the failure of the smallest failing item is
+  returned. Why this decides as the sequential order: an item is taken only after every smaller item has
+  been taken, a taken item is always finished, and a thread stops after its first failure (its later items
+  are larger), so the smallest failing item is always found; the comparisons inside an item are the
+  sequential ones on the same state (y with the same columns shifted by the same increments), so its
+  failure is the sequential failure. Items above a failure already found are skipped: a failing check may
+  enter fewer right-hand sides than all, a passing check enters exactly the sequential number.
+- assembly.rs: CheckColumns::{AllPooled, MultiColouring, MultiColouringPooled}; AssemblyError::
+  {MultiColouringUncoveredRow { row, colouring, group }, MultiColouringEntryDiffers { row, column, colouring,
+  group, assembled, recomputed }} (colouring 0 is the client's own; both are contract violations). The
+  default first-use check stays Sample(8); nothing in the build changed.
+
+PROOF OF THE CLAIM (PREDECLARED mc_construction.claim_to_be_tested), in the precise form it holds
+Setting: declared pattern P; client colouring c_0 (CPR) and further colourings c_1 .. c_R, all valid for P (two
+declared columns of one row never share a group) with injective tuples j -> (c_0(j), .., c_R(j)). The
+right-hand side is pure and its row i reads only the columns T_i: f_i(z) = f_i(z') when z, z' agree on T_i.
+(i, k) is an undeclared dependency (k in T_i, k not in P_i) and the only one of row i (true in every wrong
+declaration of the corpus; the parser checks it). Write S(G) = y + sum_{j in G} delta_j e_j, f0 = f(y),
+and E_j(G) = (f_i(S(G)) - f0_i) / delta_j in floating point (the entry formula of the build).
+(a) Build: either the c_0 group of k holds no declared column of row i, and the uncovered-row test of the
+    build compares f_i(S({k})) with f0_i; or it holds exactly one, j0 (validity), and the assembled entry is
+    A(i, j0) = E_j0({j0, k}) while every other declared entry of row i is clean, A(i, j) = E_j({j}).
+(b) Further colouring r: either the group of k holds no declared column of row i, and the uncovered-row test
+    of MC compares f_i(S({k})) with f0_i; or it holds exactly one, j_r, and MC recomputes
+    R_r(i, j_r) = E_jr({j_r, k}) and R_r(i, j) = E_j({j}) for the other declared j of row i.
+(c) If j0 exists, injectivity gives an r >= 1 with c_r(j0) != c_r(k), so R_r(i, j0) = E_j0({j0}) is compared
+    with A(i, j0) = E_j0({j0, k}).
+So MC detects (i, k) if and only if (U) some colouring, c_0 included, leaves row i uncovered in the group of
+k and f_i(S({k})) != f0_i; or (X) E_j0({j0}) != E_j0({j0, k}); or (Y) for a partner j_r != j0,
+E_jr({j_r, k}) != E_jr({j_r}) (compared with the clean A(i, j_r): c_0(j_r) != c_0(j0) = c_0(k)).
+FA detects (i, k) if and only if f_i(S({k})) != f0_i (column k alone: row i is undeclared there, or the
+build's uncovered-row test) or (X) (column j0 alone against A(i, j0)).
+Consequences. MC performs FA's comparison (X) whenever j0 exists, and FA's raw comparison whenever some
+colouring leaves row i uncovered. A case FA detects and MC misses therefore needs: every colouring pairs k
+with a declared column of row i, f_i(S({k})) != f0_i, and every compared pair of entries equal. If the row
+values themselves are equal at every combined state, f_i(S({j_r, k})) = f_i(S({j_r})) for every partner
+(j0 included), the case is rounding-limited for MC by the pre-declared rule. The one remaining possibility
+is an entry collapse: the row values differ at a combined state but the subtraction of f0_i and the
+division by delta_j round both entries to the same number. That needs |d f_i / d y_k| delta_k at the level
+of one ulp of f_i; it is not excused by the pre-declared rule and would count as a miss of MC (D fails).
+The same collapse can hide (X) from FA. Symmetrically, a case MC detects and FA misses needs (Y) with (X)
+and the raw comparison failing. Rows with several undeclared dependencies are outside this proof (their
+contaminations can combine); the corpus has none. An impure right-hand side is caught because every
+recomputed entry comes from a new call.
+
+UNIT TESTS (tests/stage_clients_assembly_check_mc.rs)
+- every band of order 1 to 40 (all lower, upper < n; right-hand side sum a_ij y_j (1 + y_j / 10), |a| in
+  [0.5, 1.5]): 14528268 single-entry omissions, 14478458 detected at the build (so by every check), the other
+  49810 detected by both FA and MC; no difference, no miss. 124 s on 6 threads.
+- two seeded random sparse patterns (n = 48 and 120, the review probe's terms and starts): 723 omissions, 389
+  at the build, 693 by both, 30 by neither (all rounding-limited for FA), none by one check only.
+- pooled = calling thread for FA and MC on 1, 2, 3, 6 workers (Brusselator 16 cells, every omission; rings;
+  a random pattern); true patterns pass every check, the Jacobian keeps its bits, right-hand sides counted
+  as Sample k, n or the total of groups (+1 base evaluation with threads); MC refuses the dense route.

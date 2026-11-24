@@ -68,6 +68,15 @@
 //!   evaluation on the calling thread as well. The sequential dense route
 //!   has nothing to compare with and makes no check unless one is
 //!   requested.
+//! - Opt-in checks of loop node V26: [`CheckColumns::AllPooled`] (every
+//!   column, the evaluations on the client's pool),
+//!   [`CheckColumns::MultiColouring`] (coloured route: every group of a few
+//!   further colourings of the pattern whose colour tuples tell every two
+//!   columns apart, [`CheckColourings`]; every declared entry compared bit
+//!   for bit with the client's colouring and the uncovered-row test in every
+//!   group) and [`CheckColumns::MultiColouringPooled`]. The pooled checks
+//!   report the failure the order of the check on the calling thread meets
+//!   first.
 //!
 //! A failed check is an [`AssemblyError`]: the driver receives
 //! [`CoreError::InvalidInput`] (fatal, the run ends with `Err`) and the
@@ -76,7 +85,9 @@
 //! is exactly zero at every checked state, and, with sampled check columns,
 //! an undeclared entry that shares its row with a declared column of the
 //! same colour in columns that were not sampled ([`CheckColumns::All`]
-//! closes the second gap at the cost of `n` right-hand sides).
+//! closes the second gap at the cost of `n` right-hand sides,
+//! [`CheckColumns::MultiColouring`] at the cost of the groups of the further
+//! colourings).
 //!
 //! # Counters and allocation
 //!
@@ -88,6 +99,7 @@
 //! threaded routes leave allocation to rayon.
 
 mod engine;
+mod multi;
 mod pattern;
 
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
@@ -95,6 +107,7 @@ use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 use rodas5p_core::{CoreError, CoreResult, DenseMatrix, WorkCounters};
 
 use self::engine::{BuildFailure, Engine, Tally, TargetLayout};
+pub use self::multi::{CheckColourings, CheckConstruction};
 pub use self::pattern::{SparsityPattern, colour_columns, colouring_is_valid};
 use super::{BandedTightStageLu, DenseLuMode, DenseLuStageClient};
 use crate::{BandedJacobian, BandedJacobianFn, BandedStageLu, OdeProblem, StageLinearSystem};
@@ -143,6 +156,40 @@ pub enum AssemblyError {
          base evaluation) differs between the assembly and a repeated evaluation"
     )]
     NotReproducible { row: usize, column: Option<usize> },
+    /// Multi-colouring check ([`CheckColumns::MultiColouring`]): `row`
+    /// changed in the evaluation of group `group` of further colouring
+    /// `colouring` (1, 2, ..; the client's own colouring is 0), although no
+    /// column of the group declares an entry in that row.
+    #[error(
+        "the declared sparsity pattern is wrong: row {row} changed in the evaluation of group \
+         {group} of check colouring {colouring}, none of whose columns declares an entry in that \
+         row (or the right-hand side is not a function of its input)"
+    )]
+    MultiColouringUncoveredRow {
+        row: usize,
+        colouring: usize,
+        group: usize,
+    },
+    /// Multi-colouring check: entry `(row, column)` computed from group
+    /// `group` of further colouring `colouring` differs from the entry the
+    /// client's own colouring (colouring 0) assembled. An undeclared
+    /// dependency of the row shares a group with `column` in one of the two
+    /// colourings and not in the other (wrong pattern), or the right-hand
+    /// side is not a function of its input.
+    #[error(
+        "entry ({row}, {column}) assembled from the client's colouring is {assembled:e} but group \
+         {group} of check colouring {colouring} gives {recomputed:e}: an undeclared dependency of \
+         row {row} is aliased into the entry in one of the two colourings (wrong pattern) or the \
+         right-hand side is not a function of its input"
+    )]
+    MultiColouringEntryDiffers {
+        row: usize,
+        column: usize,
+        colouring: usize,
+        group: usize,
+        assembled: f64,
+        recomputed: f64,
+    },
     /// A back end asked for the Jacobian at a state it was not assembled
     /// for.
     #[error("the assembled Jacobian was requested for a state it was not assembled at")]
@@ -163,6 +210,8 @@ impl AssemblyError {
                 | Self::UndeclaredEntry { .. }
                 | Self::AliasedEntry { .. }
                 | Self::NotReproducible { .. }
+                | Self::MultiColouringUncoveredRow { .. }
+                | Self::MultiColouringEntryDiffers { .. }
         )
     }
 }
@@ -204,16 +253,38 @@ pub enum ColumnRoute {
     Coloured(SparsityPattern),
 }
 
-/// The columns a check evaluates one at a time.
+/// What a check evaluates after a build (module documentation). The
+/// default of the first-use check is `Sample(8)`
+/// ([`AssemblyOptions::DEFAULT_CHECK_COLUMNS`]).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CheckColumns {
     /// No check.
     None,
     /// This many columns (at most `n`), evenly spread: column
-    /// `floor((2 s + 1) n / (2 k))` for `s = 0 .. k`.
+    /// `floor((2 s + 1) n / (2 k))` for `s = 0 .. k`, one at a time on the
+    /// calling thread.
     Sample(usize),
-    /// Every column.
+    /// Every column, one at a time on the calling thread: `n` right-hand
+    /// sides.
     All,
+    /// Every column with the comparisons of [`CheckColumns::All`], the `n`
+    /// single-column evaluations handed to the threads of the client's pool
+    /// (threaded execution; a sequential client runs them on the calling
+    /// thread). Decides as [`CheckColumns::All`]: the failure of the
+    /// smallest failing column is reported.
+    AllPooled,
+    /// The multi-colouring check of loop node V26 (coloured route only;
+    /// [`CheckColourings`]): every group of every further colouring of the
+    /// declared pattern is evaluated once on the calling thread, every
+    /// declared entry is compared bit for bit with the entry of the
+    /// client's own colouring, and every row a group does not cover must
+    /// keep its bits. [`CheckColourings::total_groups`] right-hand sides,
+    /// for example 59 for a band `(2, 2)` of order 131072.
+    MultiColouring,
+    /// [`CheckColumns::MultiColouring`] with the groups handed to the
+    /// threads of the client's pool; decides as the check on the calling
+    /// thread.
+    MultiColouringPooled,
 }
 
 /// The linear algebra behind the assembled Jacobian: a client of the kit,
@@ -430,7 +501,8 @@ pub struct AssemblyStageClient {
 impl AssemblyStageClient {
     /// A client of order `n`. Refuses `n == 0`, the dense route on a banded
     /// back end, a pattern of another order or outside the band, a band
-    /// outside the matrix and zero workers.
+    /// outside the matrix, zero workers and the multi-colouring check as the
+    /// first-use check of the dense route.
     pub fn new(
         n: usize,
         backend: LinearBackend,
@@ -439,6 +511,17 @@ impl AssemblyStageClient {
         if n == 0 {
             return Err(AssemblyError::Configuration(
                 "the assembly client needs a positive order".into(),
+            ));
+        }
+        let multi_colouring = matches!(
+            options.first_use_check,
+            CheckColumns::MultiColouring | CheckColumns::MultiColouringPooled
+        );
+        if multi_colouring && options.route == ColumnRoute::Dense {
+            return Err(AssemblyError::Configuration(
+                "the multi-colouring check needs the coloured route: the dense route declares no \
+                 pattern"
+                    .into(),
             ));
         }
         let pattern = match &options.route {
