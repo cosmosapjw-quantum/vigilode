@@ -3,12 +3,15 @@ use rodas5p_integrators::{
     certify_collective_actual_k_homotopy,
 };
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let args: Vec<_> = std::env::args().skip(1).collect();
-    let linear = match args.as_slice() {
-        [] => false,
-        [flag] if flag == "--linear" => true,
-        _ => return Err("usage: actual_k_homotopy_run [--linear]".into()),
-    };
+    let mut linear = false;
+    let mut direct = false;
+    for arg in std::env::args().skip(1) {
+        match arg.as_str() {
+            "--linear" => linear = true,
+            "--direct" => direct = true,
+            _ => return Err("usage: actual_k_homotopy_run [--linear] [--direct]".into()),
+        }
+    }
     let model = if linear {
         CollectiveModel::new(
             vec![0.5],
@@ -32,7 +35,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     let config = ActualKHomotopyConfig {
         h: 1.0 / 1024.0,
-        lambdas: vec![0.0, 0.5, 1.0],
+        lambdas: if direct {
+            vec![1.0]
+        } else {
+            vec![0.0, 0.5, 1.0]
+        },
         rounds_per_stage: 10,
         tube_radius: 1e-3,
         stage_output_tolerance: 1e-9,

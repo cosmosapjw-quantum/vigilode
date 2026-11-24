@@ -1,0 +1,80 @@
+{
+  "source": "Native frozen-J actual-K CollectiveModel common tube; independent of cubic BE R5. No ODE truncation or throughput claim.",
+  "jvp_used": true,
+  "tests": {
+    "binaries": [
+      "actual_k_homotopy_contracts",
+      "nonlinear_homotopy_contracts"
+    ],
+    "passed": [
+      3,
+      7
+    ]
+  },
+  "pairs": {
+    "nonlinear": {
+      "direct": {
+        "candidate_rhs": 80,
+        "certificate_rhs": 9,
+        "max_output_radius": 5.6367254415943615e-11,
+        "frozen_jvp_columns": 4,
+        "work": {
+          "candidate_rhs_calls": 80,
+          "candidate_rounds": 10,
+          "certificate_rhs_evaluations": 9,
+          "frozen_jvp_columns": 4,
+          "inverse_constructions": 1,
+          "positive_series_terms": 9,
+          "retained_alpha_beta_entries": 128
+        }
+      },
+      "continued": {
+        "candidate_rhs": 240,
+        "certificate_rhs": 9,
+        "max_output_radius": 5.6367254415943615e-11,
+        "frozen_jvp_columns": 4,
+        "work": {
+          "candidate_rhs_calls": 240,
+          "candidate_rounds": 30,
+          "certificate_rhs_evaluations": 9,
+          "frozen_jvp_columns": 4,
+          "inverse_constructions": 1,
+          "positive_series_terms": 9,
+          "retained_alpha_beta_entries": 128
+        }
+      }
+    },
+    "linear": {
+      "direct": {
+        "candidate_rhs": 80,
+        "certificate_rhs": 9,
+        "max_output_radius": 4.9520506425862754e-11,
+        "frozen_jvp_columns": 2,
+        "work": {
+          "candidate_rhs_calls": 80,
+          "candidate_rounds": 10,
+          "certificate_rhs_evaluations": 9,
+          "frozen_jvp_columns": 2,
+          "inverse_constructions": 1,
+          "positive_series_terms": 9,
+          "retained_alpha_beta_entries": 128
+        }
+      },
+      "continued": {
+        "candidate_rhs": 240,
+        "certificate_rhs": 9,
+        "max_output_radius": 4.9520506425862754e-11,
+        "frozen_jvp_columns": 2,
+        "work": {
+          "candidate_rhs_calls": 240,
+          "candidate_rounds": 30,
+          "certificate_rhs_evaluations": 9,
+          "frozen_jvp_columns": 2,
+          "inverse_constructions": 1,
+          "positive_series_terms": 9,
+          "retained_alpha_beta_entries": 128
+        }
+      }
+    }
+  }
+}
