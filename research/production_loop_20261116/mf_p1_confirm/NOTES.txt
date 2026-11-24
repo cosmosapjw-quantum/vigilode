@@ -155,3 +155,25 @@ STEP 5: P2 (40 runs, logs/p2); timing try 1 of the 20 cells (18:26-18:36, one in
   replay (PROTOCOL.json amendment P-1) answers which kernel loses which system.
 - Timing try 2 for the nine cells that missed the rule started 18:36 (load 12.2 at that moment; waits up to 19 minutes).
 - Loop checker (18:38): PASS.
+
+== 2026-11-24 19:05 KST: end of the node ==
+- Timing try 2 (18:45-18:49 after a wait of 9 minutes; 10 minutes of the 20-minute waiting budget used in total) for
+  the nine cells that missed the rule in try 1: all nine authoritative. All 20 wall cells are authoritative; P1 is
+  faster at matched achieved error in every cell (per family 6.47, 1.25, 2.05, 2.25 times). W holds.
+- Exploratory replay (amendment P-1, binary 0260bfde of commit 4a234880, logs/shadow, robertson_rd1d only: the other
+  families have no budget-exhausting solve in any run): on 2931 identical stage systems of the S and P1 runs, the
+  shipped kernel and P1 exhaust the budget on exactly the same systems (0 lost, 0 gained); P2 loses 40 systems that the
+  shipped kernel solves, among them those solved with the whole budget. The replay of the driver's own kernel
+  reproduces the driver in every system. The B failure therefore follows the diverging trajectories of the two runs;
+  the frozen B counts per run, so the verdict does not change.
+- Frozen verdict: KEEP. Step 6 is not carried out: no default, identifier, golden file or sentinel changes; G and R
+  (defined only after a switch) are NOT_RUN. The only source files of the node are tests/mf_confirm_*.rs.
+- OUT_OF_LIST_EDITS.json lists the lines a later switch would change (4 of them in V24 test files outside this node's
+  write list).
+- Checks (run_checks.py, logs/checks, CHECKS.json): rustfmt clean; clippy -D warnings clean on the integrators library
+  and the mf_confirm targets, on rodas5p-krylov and on vigilode (all targets); integrators targets mf_confirm_*,
+  mf_adaptive_*, both sentinels and stage_clients_*: 153 passed, 0 failed, 13 ignored; rodas5p-krylov 166 passed;
+  facade golden oracle 11 passed; facade suite 536 passed, 0 failed (59 result lines); loop checker PASS.
+- Session side effects removed: type-checker caches that a session hook created in mf_adaptive/, mf_stage_solve/,
+  mf_stage_solve/reference/ and this directory (git-ignored) and a bytecode cache in reference/ were moved to
+  $CARGO_TARGET_DIR/v25-bins/moved_out/.
