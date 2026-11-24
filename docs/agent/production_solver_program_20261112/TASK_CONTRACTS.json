@@ -1718,7 +1718,7 @@
       "depends": [
         "V03_UNIFIED_FRONTEND"
       ],
-      "status": "IN_PROGRESS",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Auto route of the unified router with as few hyperparameters as possible (owner decision OD-L1-17): a census of every constant and rule of the route, a design that removes or replaces the tunable ones, presented to the owner before implementation.",
       "write_allowlist": [
         "research/production_loop_20261116/router_hyperparameter_free/**",
@@ -1751,8 +1751,11 @@
         "tolerances/controller constants",
         "stage threshold of the linear solve"
       ],
-      "evidence": [],
-      "state_note": "Design approved 2026-11-24 19:59 KST (OD-L1-22); pre-registered by addendum A8; implementation phase 1 launched (no evaluation run before the pre-registration is on origin)."
+      "evidence": [
+        "research/production_loop_20261116/router_hyperparameter_free/RESULTS.json",
+        "research/production_loop_20261116/router_hyperparameter_free/REVIEW.json"
+      ],
+      "state_note": "Frozen decision KEEP today's Auto route (ledger L-0339): E1, E3 and E7 fail, E2, E4, E5, E6, E8, E9 and E10 pass; independent review accept_with_corrections. E1 fails on a tie of both maxima at a declared case (robertson_40 declared Nonstiff, 522.8) although the geometric means are 0.526 (callbacks) and 0.443 (operations) and the worst ratio over undeclared cases is 1.98 against 54.2; E3 fails only on N2, where it contradicts owner decision D1 and E8; E7 fails on P_scalar_fd (50.6 and 3.53 times the error of Rodas5p::solve, within tolerance). The FBP code stays on branch w3-v27 (60d67729) and as fbp_implementation.patch."
     },
     {
       "id": "V28_MF_P1_BUDGET_FOLLOWUP",

@@ -1,0 +1,203 @@
+{
+  "schema": "vigilode.loop.review.v1",
+  "node": "V27_ROUTER_HYPERPARAMETER_FREE",
+  "run_id": "wf_8a59cef2-f94",
+  "builder_head": "60d6772927f3cf5552809f0935f04b8b0e1cf3cb",
+  "merged_into": "not merged (frozen decision: keep today's Auto route); evidence copied to the loop branch and the code change kept as fbp_implementation.patch",
+  "review": {
+    "node": "V27_ROUTER_HYPERPARAMETER_FREE (phase 1 code and phase 2 evidence), branch research/production-loop-20261116-w3-v27 at 60d67729, base 1ffbda20",
+    "verdict": "accept_with_corrections",
+    "summary": "V27 at 60d67729 (base 1ffbda20) reviewed by rebuilding and rerunning. Scope, order, protection hold: code only in session.rs, unified/**, the two contract files, example doc comments; 23 protected blobs, golden and Cargo files unchanged; commit A precedes the code, its base log shows 5 assertion failures; PREDECLARED unchanged, on origin 23:29:40 KST, first deciding run 23:49:52. Code matches design; 33 pilots' t_D and H are bit-identical to DOPRI5 replays; mutations M1 (linear pilot times) and M2 (no h0 = H) are caught by U1 and U4. My runner builds are byte-identical to the builder's (T from the base checkout); 152/152 N and T reruns equal the raw lines; contract tests 36/13 and golden 11 pass. My own script reproduces every verdict: E1 FAIL (max tie 522.8 cb / 286.0 op on robertson_40 declared Nonstiff), E3 FAIL (N2 under D1), E7 FAIL (P_scalar_fd 50.6 and 3.53; closed-form reference re-derived), E2, E4, E5, E6, E8, E9, E10 PASS; keep T is supported. Minor corrections: the 760 = 76x4x3 wording, ft_calls counted as callbacks, E5 and E10 rest on disclosed readings (E5-i, R6).",
+    "scope_ok": true,
+    "protected_ok": true,
+    "predeclared_before_results": true,
+    "reran": [
+      {
+        "command": "CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/review-target taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_router_contracts --test unified_breakeven_contracts --test default_path_golden (in the V27 worktree at 60d67729)",
+        "exit_code": 0,
+        "result": "unified_router_contracts 36 passed, unified_breakeven_contracts 13 passed, default_path_golden 11 passed; log review-scratch/tests_run.log"
+      },
+      {
+        "command": "cargo +1.94.1 build --locked -j 4 --release of reviewer copies of runner/ (N: --features pilots, path dep = V27 worktree crates/vigilode, target w3-v27/review-target; T: path dep = base checkout w3-v27base, target w3-v27base/review-target)",
+        "exit_code": 0,
+        "result": "binaries sha256 06e5782d... (N) and 0c845965... (T): byte-identical to the builder's binaries, so T was built from the base checkout 1ffbda20 and N from the current crates; log review-scratch/runner_build.log"
+      },
+      {
+        "command": "python3 -I review-scratch/rerun.py N,T all (builder's fresh-process command of every case with the reviewer's binaries)",
+        "exit_code": 0,
+        "result": "152 of 152 output lines equal the builder's raw p1 and p2 lines in every field except pid/repeat (counters, attempts, bits, route digests, entries, e5). Named cases at A: robertson_40 N 385/36 att vs T 6233; lorenz96_40 N 3233 vs T 33467; F2 N success 49 vs T fail; N2 N fatal pilot 33 vs T fail at t0; P_heat_fd N 945 vs T 723; P_scalar_fd N 145 vs T 74; osc_1000 N 35582 vs T 41406; arenstorf N 1369 vs T 4343"
+      },
+      {
+        "command": "python3 -I review-scratch/recompute.py (independent E1-E10 and sanity from raw/*.jsonl and references.json; also recomputes operations3 from counters)",
+        "exit_code": 0,
+        "result": "all builder verdicts reproduced; operations3 equal to the formula in every first run; E6 304/304 triples identical; sanity 152/152"
+      },
+      {
+        "command": "mutation M1 in scratch copy (git archive HEAD): breakeven.rs due = due.saturating_add(b) instead of saturating_mul(2); cargo test --test unified_breakeven_contracts",
+        "exit_code": 101,
+        "result": "u1 FAILS: 'osc_10: 14 pilots after 63 DOPRI5 attempts' (pilot-count bound); other 12 tests pass"
+      },
+      {
+        "command": "mutation M2 in scratch copy: router.rs handover leg without options.h0 = h; cargo test --test unified_breakeven_contracts",
+        "exit_code": 101,
+        "result": "u4 FAILS: 'robertson_40: h0 = H'; other 12 tests pass"
+      },
+      {
+        "command": "v27-runner --arm D --max-steps A and A-b replays for 33 pilots of robertson_40, P_heat_fd, osc_1000, lorenz96_40, lin_3400, vdp_1000 (A)",
+        "exit_code": 0,
+        "result": "33/33 pilot t equal to Dopri5::solve's accepted time after A attempts and H = t(A) - t(A-b) bit for bit; first pilot after b located attempts, later ones at exactly b*2^k; window_attempts = b"
+      },
+      {
+        "command": "mpmath (dps 60) re-derivation of closed-form references (P_scalar_fd also by quadrature, heat by expm, oscillators, damped_osc, nonnormal, F2) and v27-runner --arm R --problem robertson_40 --rtol 1e-12 --atol 1e-14",
+        "exit_code": 0,
+        "result": "all y_bits identical to references.json; robertson_40 reference identical (22577 attempts)"
+      },
+      {
+        "command": "copy of parse_results.py + logs/phase2 into review-scratch/regen; python3 -I parse_results.py; cmp",
+        "exit_code": 0,
+        "result": "RESULTS.json and REPORT_KO.md byte-identical to the committed files; decision keep T"
+      },
+      {
+        "command": "git rev-parse HEAD:<path> for the 23 protected_blob_sha1 entries of CHECKPOINT.json; git diff 1ffbda20..HEAD on golden, Cargo, lib.rs, automatic.rs, switching.rs, solve.rs; git reflog of origin tracking ref",
+        "exit_code": 0,
+        "result": "0 mismatches, 0 changed protected/golden/Cargo files; 1ffbda20 reached origin with push at 23:29:40 KST, A8.3 at 23:48:00, first run 23:49:52 KST; worktree and base checkout clean after review"
+      }
+    ],
+    "discriminator_checks": [
+      {
+        "name": "E1_economy",
+        "builder_value": "FAIL: GM N/T cb 0.5258, op 0.4434; max N = T = 522.8 cb, 286.0 op on robertson_40|A|regime=nonstiff",
+        "reviewer_value": "FAIL: 71 cases; GM cb 0.52579, op 0.44337; max cb N 522.83 = T 522.83, op N 286.04 = T 286.04 (robertson_40|A|regime=nonstiff), strict < fails; break-even route only N 1.978/1.875 vs T 54.15/54.28",
+        "reviewer_verdict": "FAIL",
+        "agrees": true
+      },
+      {
+        "name": "E2_no_new_failure",
+        "builder_value": "PASS: T 72, N 73; only N: F2; neither: N2, P_fatal, P_blowup",
+        "reviewer_value": "PASS: same sets",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "E3_neutrality",
+        "builder_value": "FAIL: (a) 39/40, N2 fails (fatal pilot, D1); (b) 10/10 equal T",
+        "reviewer_value": "FAIL: (a) 40 break-even runs without handover, only N2 fails (bits, DOPRI5 counters, attempts, callbacks, operations); (b) 10 declared runs equal T in all run fields except pilots []/null and digest",
+        "reviewer_verdict": "FAIL",
+        "agrees": true
+      },
+      {
+        "name": "E4_budget",
+        "builder_value": "PASS: all 76 N runs within budget, tightest robertson_40|A|max_steps=50 36/50",
+        "reviewer_value": "PASS: legs+spare pilots = record attempts <= max_steps in 76 runs; tightest 36/50; no exhaustion",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "E5_callbacks",
+        "builder_value": "PASS (frozen wording; pre-run formula would FAIL on 5 N runs, erratum E5-i)",
+        "reviewer_value": "PASS: no entry above its charged counter in any run of any arm; 68 DOPRI5-first N runs: split true, parts add up, no FD entry in DOPRI5 part, no non-DOPRI5 entry at t0 (also at_t0(N) = at_t0(D), at_t0_not_y0 = 0); ft_calls > entries only in P_mass, P_scalar_fd A/L/S, kt_vanishing for N, T, R",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "E6_determinism",
+        "builder_value": "PASS: 304 triples equal",
+        "reviewer_value": "PASS: 304 triples identical in every field except pid/repeat",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "E7_accuracy",
+        "builder_value": "FAIL: P_scalar_fd A ratio 50.6, L 3.53",
+        "reviewer_value": "FAIL: 72 cases; P_scalar_fd A 0.004119 vs 3x8.133e-5 (50.65), L 2.874e-7 vs 3x8.133e-8 (3.534); next highest 1.023 (hires A); closed-form reference re-derived bit-identical; R's final state identical at A and L (6 attempts)",
+        "reviewer_verdict": "FAIL",
+        "agrees": true
+      },
+      {
+        "name": "E8_callback_cases",
+        "builder_value": "PASS",
+        "reviewer_value": "PASS: F2 success 49 rhs; P_fatal CallbackFailed rhs 'sensor offline'; N2 one pilot (index 0, fatal) at t 9.79e-4, 33 rhs",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "E9_v03b_bounded_work",
+        "builder_value": "PASS: P_heat_fd 945, P_scalar_fd 145, handovers recorded",
+        "reviewer_value": "PASS: 945 <= 5890 (handover t 1.146 after 112 DOPRI5 attempts), 145 <= 181818 (t 1.82e-5); L and S also within",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "E10_pilot_accounting",
+        "builder_value": "PASS: 62 runs with pilots, max spend 0.534 cb, 0.964 op; 14 without pilot (R6)",
+        "reviewer_value": "PASS on 62 runs with pilots (max 0.5342 kt_vanishing, 0.9641 heat_64_fd); of 14 runs without pilot, 8 have A_D = 0 where the bound is undefined",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "sanity_D_R_across_builds",
+        "builder_value": "PASS 152/152",
+        "reviewer_value": "PASS 152/152 identical lines",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "frozen_decision",
+        "builder_value": "keep today's Auto route (T); FBP stays on its branch",
+        "reviewer_value": "keep T: E1, E3 and E7 fail, so not all of E1-E10 pass",
+        "reviewer_verdict": "FAIL",
+        "agrees": true
+      }
+    ],
+    "findings": [
+      {
+        "id": "R1",
+        "severity": "minor",
+        "claim": "The builder's summary and REPORT_KO.md header state '76 cases x arms T, N, D, R x 3 runs = 760 processes'; 76 x 4 x 3 is 912 runs, not 760.",
+        "evidence": "RUNS_INDEX.jsonl has 760 rows: 608 deciding processes (per case and arm one --repeat 2 and one --repeat 1 process) plus 152 sanity processes (D and R from the T build); 1064 JSON lines = 912 deciding runs + 152 sanity runs.",
+        "correction": "Write: 912 deciding runs (76 cases x 4 arms x 3) in 608 processes, plus 152 sanity processes, 760 processes in all."
+      },
+      {
+        "id": "R2",
+        "severity": "minor",
+        "claim": "The callback unit cb = rhs + jvp + ft + Jacobian callbacks adds counters.ft_calls also where no time-derivative callback exists, so 'callbacks' counts finite-difference time-derivative computations twice on P_scalar_fd, kt_vanishing and P_mass.",
+        "evidence": "P_scalar_fd|A N: rhs_calls 145 = rhs entries 145 (FD time-derivative calls included), ft_calls 9, time-derivative entries 0; cost table shows 154 (T 80 vs 74, R 78 vs 72). Without ft: GM_cb 0.52614 instead of 0.52579, E1 maxima unchanged, no verdict changes.",
+        "correction": "State that cb is the sum of charged counters (ft_calls for FD problems are not callback entries), or drop ft_calls where the problem has no time-derivative callback; the decision does not change."
+      },
+      {
+        "id": "R3",
+        "severity": "minor",
+        "claim": "E5 PASS rests on erratum E5-i, a change of the builder's own computation rule after the deciding runs; the pre-run formula of PHASE2_NOTES section 6 gives FAIL on 5 N runs.",
+        "evidence": "Reviewer check: no entry count exceeds its charged counter in any run of any arm, so 'uncharged entries = 0' (the frozen text) holds; the only gaps are counters above entries via ft_calls, identical in N, T, R. Erratum committed 23:59:05 KST in 76b5db08, disclosed in RESULTS.json and REPORT_KO.md.",
+        "correction": "None beyond the existing disclosure; E5 does not affect the decision."
+      },
+      {
+        "id": "R4",
+        "severity": "minor",
+        "claim": "E10 ('on every run') cannot be evaluated as written for the 8 N runs that start RODAS5P by a declared fact: A_D = 0 makes 1 + floor(log2(A_D/b)) undefined. The builder applies reading R6 and reports PASS without naming this obstacle next to the verdict.",
+        "evidence": "14 N runs without a pilot: 8 with A_D = 0, 6 with A_D > 0 whose bound is >= 0 (reviewer check, none negative). R6 is in addendum 0b, committed 23:48:12 before the first run 23:49:52.",
+        "correction": "List the 8 A_D = 0 runs as not evaluable for the count bound next to the E10 verdict; the decision does not depend on E10."
+      },
+      {
+        "id": "R5",
+        "severity": "minor",
+        "claim": "IMPLEMENTATION_NOTES section 6 says 'No run of a problem of the deciding set was made', but the phase-1 tests ran deciding problems (F2, robertson_40, lorenz96_40, osc_1000, arenstorf, 8 non-stiff problems in U1, P_heat_fd in U4, N2 in D1) and the notes record their counters.",
+        "evidence": "failing_first_base.log (20:34 KST), breakeven_contracts_records.log and IMPLEMENTATION_NOTES section 4 (385, 3233, 35582, 1369, 49, 945; N2 33 calls). The frozen order_of_work places these tests in phase 1, after PREDECLARED was committed (20:04:58), so this is not an order violation.",
+        "correction": "Write: no runner (arm) run of the deciding set; the phase-1 tests of the order of work ran deciding problems."
+      },
+      {
+        "id": "R6",
+        "severity": "minor",
+        "claim": "One router-contract edit goes beyond removing names: the label case 'heat n=16, finite differences, Auto' now declares regime Stiff.",
+        "evidence": "p1_label_equals_executed_driver_on_every_rodas5p_driver_family (commit 1715dd64); justified in IMPLEMENTATION_NOTES section 5 as a consequence of removing EXPLICIT_TRIAL_MAX_DIMENSION, which D5 names; design section 7 does not list it. All other edits match D4 (bound W plus recorded handover, same W formula) and D5 (removed names and UnifiedStop::Preflight).",
+        "correction": "None required; record it for the owner as a D5 consequence."
+      }
+    ]
+  },
+  "orchestrator_actions": [
+    "Evidence of phases 1 and 2 copied from branch research/production-loop-20261116-w3-v27 (head 60d67729) into router_hyperparameter_free/; the code is not merged.",
+    "The code change against the base 1ffbda20 is kept as fbp_implementation.patch so that it can be audited from origin.",
+    "Correction notice (review R1-R6 and the wording conflicts of E1 and E3) rendered into REPORT_KO.md by parse_results.py; RESULTS.json unchanged.",
+    "Ledger row of the frozen decision (FAIL of the adoption claim)."
+  ]
+}

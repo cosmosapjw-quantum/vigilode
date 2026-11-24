@@ -1,0 +1,30 @@
+# V27 evaluation runner (node V27_ROUTER_HYPERPARAMETER_FREE): one (arm, problem, tolerance,
+# options) case per process, one JSON line of raw counters on stdout.
+#
+# Arm N: this package as it is, built with `--features pilots` against the crates of this
+# worktree. Arm T: a copy whose `vigilode` path points at the base checkout (see build_t.sh);
+# it is built without the feature. Arms D and R run in both builds.
+[package]
+name = "v27-runner"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+vigilode = { path = "../../../../crates/vigilode" }
+serde_json = "1"
+
+[features]
+# VigilodeSolution::pilots exists only in the implementation of node V27 (arm N)
+pilots = []
+
+# the release profile of the repository workspace, so that the runner is built with the
+# flags of the facade suite
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+
+# a workspace of its own: the repository workspace does not list this package
+[workspace]
