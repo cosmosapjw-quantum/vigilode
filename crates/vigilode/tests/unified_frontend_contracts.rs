@@ -2588,7 +2588,7 @@ fn d3_explicit_refusals_are_typed() {
         ppsw1::METHOD_ID,
     ] {
         let registry = |r| Reason::Registry(r);
-        let checks: Vec<(&str, Vec<Reason>, Vec<Reason>)> = vec![
+        let mut checks: Vec<(&str, Vec<Reason>, Vec<Reason>)> = vec![
             (
                 "mass",
                 refusal(&mass, &options, id),
@@ -2614,12 +2614,14 @@ fn d3_explicit_refusals_are_typed() {
                 refusal(&banded, &options, id),
                 vec![registry(RegistryRefusal::ProviderFormUnsupported)],
             ),
-            (
+        ];
+        if matches!(id, METHOD_ID_RODAS5P_LAGGED | ppsw1::METHOD_ID) {
+            checks.push((
                 "finite-difference provider",
                 refusal(&finite_difference, &options, id),
                 vec![registry(RegistryRefusal::ProviderFormUnsupported)],
-            ),
-        ];
+            ));
+        }
         for (what, got, expected) in checks {
             assert_eq!(got, expected, "{id}: {what}");
             rows.push(json!({"method": id, "request": what, "reasons": format!("{got:?}")}));

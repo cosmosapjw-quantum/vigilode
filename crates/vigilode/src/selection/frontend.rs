@@ -305,14 +305,14 @@ impl MethodRegistry {
             entry(
                 next(),
                 AdapterKind::Bdf,
-                &[Dense, Jvp],
+                &[Dense, Jvp, FiniteDifference],
                 "rodas5p_integrators::integrate_bdf_adaptive_observed(ode, span, y0, \
                  BdfConfig::default(), adaptive, [t0, t1])",
             ),
             entry(
                 next(),
                 AdapterKind::Radau,
-                &[Dense, Jvp],
+                &[Dense, Jvp, FiniteDifference],
                 "rodas5p_integrators::integrate_radau_adaptive_observed(ode, span, y0, \
                  RadauConfig::default(), adaptive, [t0, t1])",
             ),
@@ -484,7 +484,8 @@ pub enum MethodFallback {
     Never,
     /// Run the next ranked admitted method from `t0`, up to `max_attempts` attempts in
     /// total. Only methods admitted under [`MethodAutoPolicy::allowed`] are tried, every
-    /// attempt is kept in the solution, and its work stays in the totals.
+    /// attempt is kept in the solution, and its work stays in the totals. Fatal callbacks,
+    /// malformed callback outputs and unclassified driver errors terminate the chain.
     NextAdmitted {
         /// Largest number of attempts, the first one included.
         max_attempts: usize,
@@ -916,6 +917,7 @@ fn admit(
             let label = match (entry.kind, facts.jacobian) {
                 (AdapterKind::Pexprb, _) => "jvp-phi-krylov",
                 (AdapterKind::Lagged, _) => "explicit-jacobian-dense-lagged-lu",
+                (_, JacobianForm::FiniteDifference) => "finite-difference-dense-newton",
                 (_, JacobianForm::Dense) => "explicit-jacobian-dense-newton",
                 (_, _) => "jvp-columns-dense-newton",
             };
@@ -1318,6 +1320,33 @@ pub enum MethodFailure {
     DriverError(String),
 }
 
+impl MethodFailure {
+    /// Whether the method reported a numerical stop that another admitted method may retry.
+    fn permits_fallback(&self) -> bool {
+        match self {
+            Self::Explicit { stop, callback, .. } => {
+                crate::FallbackEngine::follows_explicit_stop(*stop, callback.is_some())
+            }
+            Self::Driver(reason) => matches!(
+                reason,
+                FailureReason::MaxStepsReached { .. }
+                    | FailureReason::StepSizeTooSmall { .. }
+                    | FailureReason::LinearSolveFailed { .. }
+                    | FailureReason::NonFinite { .. }
+                    | FailureReason::NonlinearSolveFailed { .. }
+            ),
+            Self::Peer(reason) => !matches!(
+                reason,
+                PeerFailure::Callback {
+                    recoverable: false,
+                    ..
+                }
+            ),
+            Self::DriverError(_) => false,
+        }
+    }
+}
+
 impl fmt::Display for MethodFailure {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -1711,8 +1740,7 @@ fn execute(
 }
 
 impl MethodRegistry {
-    /// Execute a plan. The primary route runs first; after an attempt that does not reach
-    /// the end time, the plan's fallback routes (if the policy asked for them) run in
+    /// Execute a plan. The primary route runs first; after a retryable numerical stop, the plan's fallback routes (if the policy asked for them) run in
     /// order, each from `t0`. Every attempt is kept in the solution.
     ///
     /// `Err` means nothing was integrated: the plan does not belong to this problem, or
@@ -1746,7 +1774,11 @@ impl MethodRegistry {
                     break;
                 }
             }
-            if solution.view().is_success() {
+            if !solution
+                .view()
+                .failure()
+                .is_some_and(|stop| stop.permits_fallback())
+            {
                 break;
             }
         }

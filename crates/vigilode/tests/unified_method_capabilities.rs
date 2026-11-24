@@ -109,6 +109,14 @@ fn spec() -> Vec<SpecMethod> {
                     false,
                     false,
                 ),
+                (
+                    "finite-difference-dense-newton",
+                    2 | 16 | 32,
+                    2 | 16 | 32,
+                    false,
+                    false,
+                    false,
+                ),
             ],
         ),
         (
@@ -126,6 +134,14 @@ fn spec() -> Vec<SpecMethod> {
                 (
                     "jvp-columns-dense-newton",
                     1 | 16 | 32,
+                    0,
+                    false,
+                    false,
+                    false,
+                ),
+                (
+                    "finite-difference-dense-newton",
+                    2 | 16 | 32,
                     0,
                     false,
                     false,

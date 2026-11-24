@@ -1,4 +1,9 @@
-//! # One call over three entry points
+//! # Unified solve and registered method selection
+//!
+//! [`VigilODE::solve_method`] selects and executes any admitted registry method in one
+//! call. [`crate::MethodChoice::Auto`] applies the caller's capabilities, qualification
+//! requirements and optional fallback policy. Its result keeps all attempts and work.
+//! [`VigilODE::solve`] retains the routing policy below.
 //!
 //! [`VigilODE::solve`] picks one of three existing entry points of this crate, runs it and
 //! reports what ran. It has no integrator of its own.
@@ -72,7 +77,53 @@ use crate::problem::Problem;
 #[derive(Clone, Copy, Debug, Default)]
 pub struct VigilODE;
 
+/// Failure to select or start a method through [`VigilODE::solve_method`].
+#[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
+pub enum PortfolioError {
+    /// A declared Lawson flow changes the supplied RHS to the residual of the split.
+    #[error("a declared Lawson residual requires the explicit Lawson method")]
+    SplitRequiresLawson,
+    /// No method satisfied the requested choice and declared capabilities.
+    #[error(transparent)]
+    Route(#[from] crate::MethodRouteRefusal),
+    /// The admitted driver could not start.
+    #[error(transparent)]
+    Solve(#[from] crate::MethodSolveError),
+}
+
 impl VigilODE {
+    /// Select and run a registered integrator, preserving the driver's native result,
+    /// route, work and typed stop. Use [`crate::MethodParams::default`] for ordinary
+    /// ODEs. A Lawson split requires its declared flow and residual RHS.
+    ///
+    /// The optional portfolio fallback retries an admitted method from the initial
+    /// state after a numerical stop, so the callback must support replay. Each method
+    /// receives the configured per-run step budget. Inspect [`crate::MethodSolution::attempts`]
+    /// and [`crate::MethodSolution::total_work`] for the costs of all attempts.
+    pub fn solve_method(
+        problem: &Problem,
+        span: (f64, f64),
+        y0: &[f64],
+        options: &crate::Options,
+        choice: crate::MethodChoice<'_>,
+        params: &crate::MethodParams,
+    ) -> Result<crate::MethodSolution, PortfolioError> {
+        // Only Lawson reconstructs the full ODE from this residual and the declared flow.
+        if params.lawson_flow.is_some()
+            && !matches!(
+                choice,
+                crate::MethodChoice::Explicit(crate::METHOD_ID_LAWSON)
+            )
+        {
+            return Err(PortfolioError::SplitRequiresLawson);
+        }
+        let plan = crate::MethodRegistry::route_with(problem, options, &choice, params)?;
+        Ok(crate::MethodRegistry::solve(
+            problem, span, y0, options, &plan,
+        )?)
+    }
+
     /// Solve `y' = f(t, y)` (or `M y' = f(t, y)`) over `span` from `y0`.
     ///
     /// The entry point is chosen by [`PreflightAnalyzer::analyze`]. `Err` means that

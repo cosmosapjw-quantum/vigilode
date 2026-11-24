@@ -146,7 +146,10 @@ pub struct MethodObservedRun {
     /// Work counters: the driver's record, or (when the driver returned no record) the
     /// callback entries of `callbacks_entered` only.
     pub counters: WorkRecord,
-    /// `true` when `counters` is the driver's own record.
+    /// Extra RHS work in the facade's dense finite-difference provider, included in
+    /// `counters`. A successful full build in dimension `n` uses `n + 1` RHS calls.
+    pub finite_difference: crate::FiniteDifferenceWork,
+    /// `true` when the native driver returned its work record, including failed attempts.
     pub counters_from_driver: bool,
     /// Step attempts, accepted and rejected.
     pub attempts: usize,
@@ -261,6 +264,7 @@ pub(super) fn run_observed(
 
     let callbacks_entered = counters.snapshot();
     let callback_outcomes = guard.callback_work();
+    let finite_difference = guard.fd_work();
     let fatal = guard.fatal().map(|fatal| FailureReason::CallbackFailed {
         callback: fatal.callback,
         t: fatal.t,
@@ -268,6 +272,9 @@ pub(super) fn run_observed(
     });
     match outcome {
         Ok((observed, attempts)) => {
+            let mut work = observed.counters;
+            work.rhs_calls += finite_difference.rhs_calls;
+            work.rhs_evaluations += finite_difference.rhs_calls;
             let failure = if observed.success {
                 None
             } else if fatal.is_some() {
@@ -289,7 +296,7 @@ pub(super) fn run_observed(
                 message: observed.message,
                 failure,
                 driver_error: None,
-                counters: (&observed.counters).into(),
+                counters: (&work).into(),
                 counters_from_driver: true,
                 attempts,
                 accepted_steps: observed.counters.accepted_steps,
@@ -298,6 +305,7 @@ pub(super) fn run_observed(
                 output_clipped_steps: observed.output_clipped_steps,
                 callbacks_entered,
                 callback_outcomes,
+                finite_difference,
             })
         }
         Err(error) => {
@@ -310,7 +318,7 @@ pub(super) fn run_observed(
             let work = WorkCounters {
                 rhs_calls: callbacks_entered.rhs,
                 rhs_evaluations: callbacks_entered.rhs,
-                jacobian_builds: callbacks_entered.jacobian,
+                jacobian_builds: callbacks_entered.jacobian + finite_difference.jacobian_builds,
                 jvp_calls: callbacks_entered.jvp,
                 jvp_vectors: callbacks_entered.jvp,
                 ft_calls: callbacks_entered.time_derivative,
@@ -333,6 +341,7 @@ pub(super) fn run_observed(
                 output_clipped_steps: 0,
                 callbacks_entered,
                 callback_outcomes,
+                finite_difference,
             })
         }
     }

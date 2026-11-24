@@ -539,13 +539,13 @@ fn variant(
 pub struct MethodRegistry;
 
 /// Version of the registry entries.
-pub const METHOD_REGISTRY_VERSION: &str = "u06-2026-11-15";
+pub const METHOD_REGISTRY_VERSION: &str = "u06-fd-2026-11-24";
 
 impl MethodRegistry {
     /// All descriptors. Requirements were read from the implementations: RODAS5P per
     /// `capabilities.rs`; PPSW1 per `ppsw1.rs`/`ppsw1_linear_backend.rs` (dense J or `n`
     /// JVP columns, dense starter with simplified Newton); BDF and Radau assemble a dense
-    /// Jacobian (explicit or from `n` JVPs) and run Newton.
+    /// Jacobian (provided, from `n` JVPs, or by RHS differences) and run Newton.
     pub fn descriptors() -> Vec<MethodDescriptor> {
         let none = CapabilitySet::NONE;
         let v = METHOD_REGISTRY_VERSION;
@@ -672,6 +672,12 @@ impl MethodRegistry {
                         caps(true, false, false, true, true),
                         (false, false, false),
                     ),
+                    variant(
+                        "finite-difference-dense-newton",
+                        caps(false, false, true, true, true),
+                        caps(false, false, true, true, true),
+                        (false, false, false),
+                    ),
                 ],
                 qualification: MethodQualification::ImplementedUnqualified,
                 access: MethodAccess::ExplicitApiOnly,
@@ -699,6 +705,12 @@ impl MethodRegistry {
                     variant(
                         "jvp-columns-dense-newton",
                         caps(true, false, false, true, true),
+                        none,
+                        (false, false, false),
+                    ),
+                    variant(
+                        "finite-difference-dense-newton",
+                        caps(false, false, true, true, true),
                         none,
                         (false, false, false),
                     ),

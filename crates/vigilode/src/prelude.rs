@@ -16,6 +16,7 @@ pub use crate::unified::{
     VigilodeSolution, VigilodeWorkspace,
 };
 pub use crate::{
-    Atol, CallbackError, FailureReason, InteriorError, Jacobian, Options, Problem, ProblemRegime,
+    Atol, CallbackError, FailureReason, InteriorError, Jacobian, MethodAutoPolicy, MethodChoice,
+    MethodFallback, MethodParams, MethodSolution, Options, PortfolioError, Problem, ProblemRegime,
     Rodas5p, Solution, SolveError, Status, StopRecord, Tier,
 };
