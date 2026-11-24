@@ -233,3 +233,18 @@ Refinements of section 6 (computation only; criteria unchanged):
   * E3 (a) "pilots' counters": the records carry pilot_attempts, pilot_callbacks (charged rhs +
     ft) and pilot_operations per pilot; the check uses these three and the DOPRI5 leg's counters
     field by field against D, as in section 6.
+
+---------------------------------------------------------------------------------------------
+ERRATUM E5-i (2026-11-25 ~00:20 KST, AFTER the deciding runs; reported in RESULTS.json and
+REPORT_KO.md next to the verdict; it does not change the frozen decision)
+---------------------------------------------------------------------------------------------
+Section 6 wrote E5 (i) as "entries - charged counter = 0" for every kind, with the time-derivative
+kind mapped to counters.ft_calls. The deciding runs show ft_calls > time-derivative closure
+entries on P_scalar_fd (A, L, S), kt_vanishing and P_mass, identically in arms N, R and T:
+ft_calls counts every time-derivative computation of the driver, also those without a
+time-derivative callback (finite-difference ones, whose right-hand-side calls are charged as
+rhs_calls and equal the rhs entries, and those of P_mass). A counter above the entries is not an
+"uncharged entry", which is the frozen criterion. The parser therefore computes uncharged entries
+per kind as max(0, entries - charged) (all 0 in every run of every arm) and reports, as well, the
+result under the formula first written here (5 failing N runs, verdict FAIL) and every case with
+a counter above its entries. The cb unit (rhs + jvp + ft + Jacobian callbacks) is unchanged.
