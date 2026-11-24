@@ -17,6 +17,10 @@ working-tree change) and evaluates it twice:
   cli         the real `select` subcommand in the clone on the unrestricted workspace, where rule 5
               adds every unmeasured target; recorded as counts and as the presence of the expected
               targets.
+The fix round added the cases of the reviews of b0d4bc97 (S-N1, S-N3, S-N4, M-N2). A case may add
+sets to a map entry (`extra`, for a measurement a local run cannot make, such as a directory that
+only a pull-request merge tree has), require a classification (`want_class`) or require the mode
+of the select subcommand (`cli_mode`).
 """
 
 import argparse
@@ -205,8 +209,8 @@ def cases(st, repo, base, cmap):
                         key=lambda f: (len(fair[f]), f))
     if candidates:
         f = candidates[0]
-        out.append(dict(id="M-N2", desc=f"body change in the fair-ab source {f} (fair-ab is in the production scope "
-                                        "now); executed by " + ", ".join(sorted(fair[f])),
+        out.append(dict(id="M-N2", desc=f"body change in the fair-ab source {f} (fair-ab and cli have the job "
+                                        "test-cli-fair-ab now); executed by " + ", ".join(sorted(fair[f])),
                         edits={f: insert_in_first_body(st, show(repo, base, f), "let _ci_v3_probe = 0u8;")},
                         expect=sorted(f"{k.split('::')[0]}:{k.split('::')[1]}" for k in fair[f]),
                         only="executed+readers+unit-tests+doc", body_file=f, body_pkg="rodas5p-fair-ab"))

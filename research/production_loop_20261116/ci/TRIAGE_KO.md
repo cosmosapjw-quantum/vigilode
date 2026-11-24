@@ -351,7 +351,7 @@ v1/v2 검토(`SELECTION_REVIEW.json`, 지적 26건)는 정적 규칙(package 단
 | build script 입력 | `rerun-if-changed` 입력은 기록하지 않는다. fair-ab는 HEAD와 dirty 표시만 넣고 test 결과는 그 값에 의존하지 않는다(v1 검토 확인) | build script가 코드를 생성하게 되면 입력 기록이 필요하다 |
 | `--skip`한 test | 걸러진 test의 입력은 측정되지 않는다. 선언한 음성대조 두 개는 따로 측정한다 | 새 skip은 `--control`로 선언 |
 | strace가 못 보는 읽기 | io_uring, 다른 process(daemon)를 통한 읽기, 추적 전에 연 descriptor. workspace에는 없다 | 없음 |
-| hosted full 실행 시간 | coverage와 strace를 함께 쓴 full 실행은 hosted에서 재지 않았다. 300·330분을 넘기면 outcome이 없어 다음 run도 full이다. strace 없는 v2 full 실행 두 개는 13:26Z에 157분째 진행 중이었다(11.6) | 첫 hosted full 실행으로 확인. 넘으면 job 분할 |
+| hosted full 실행 시간 | coverage와 strace를 함께 쓴 full 실행은 hosted에서 재지 않았다. 300·330분을 넘기면 outcome이 없어 다음 run도 full이다. strace 없는 v2 full 실행 두 개는 13:46Z에 177분째 진행 중이었다(11.6) | 첫 hosted full 실행으로 확인. 넘으면 job 분할 |
 | 첫 run | schema와 `tools/ci/`가 바뀌었으므로 두 job의 첫 v3 run은 full이다 | 한 번뿐 |
 | merge commit 검사 | PR은 merge commit을 검사하고 head끼리 diff한다. base sha가 같을 때만 맞으므로 base가 바뀌면 full | 소유자 선택 |
 
@@ -369,7 +369,7 @@ strace 비용(`strace_cost_probe.log`, 이 host, 부하 약 190):
 무엇을 바꿨나:
 1. 기준점(M-N1): hosted runner는 같은 시각에 image version 두 개를 섞어 준다. run 45358324432에서 08:41:48Z에 함께 시작한 `fmt`는 20261116.88.1, `clippy`는 20261116.202.1이었다(job 로그로 확인). 그대로면 run 10개 중 약 3개가 코드 변경 없이 full이다. 이제 기준점은 같은 runner image(`ImageOS`, `ImageVersion`)에서 돈 가장 새로운 완료 run이다. 이 image의 run이 하나도 없을 때만 다른 image의 run을 기준점으로 쓰고, 규칙 1에 따라 full이다. "image가 바뀌면 full"이라는 소유자 규칙은 그대로이고 image마다 기준점 사슬이 따로 이어진다. 조상인 완료 run은 어느 것이든 올바른 기준점이다: 그 뒤의 변경이 모두 diff에 들어간다(R24).
 2. 기준점 후보는 같은 event, 같은 저장소(`head_repository`)의 run뿐이다(M-N3, M-N5, R25). 기록하는 PR base는 checkout한 merge commit의 첫 부모다(S-F8, M-F-04의 남은 가정, R26).
-3. rodas5p-cli, rodas5p-fair-ab의 test job(M-N2): A1에서 지운 workspace test 단계가 이 두 package의 일반 test를 돌리던 유일한 곳이었다(hosted run 45358324393, coverage 없는 debug: cli 08:55-09:06, 그중 `triage_cli` 438 s; fair-ab 09:07-09:10). production.yml에 job `test-cli-fair-ab`를 더했다. 같은 selector와 측정, 자기 artifact(`ci-test-outcome-test-cli-fair-ab`), 대기 concurrency, 120분 제한. 처음에는 `test` job의 scope에 넣었으나(1288945b) 되돌렸다: 그 job의 v2 full 실행이 strace 없이도 157분을 넘겼고 300분 제한은 고정이며, production gate는 production crate만 맡는 것이 낫다(R27, R36).
+3. rodas5p-cli, rodas5p-fair-ab의 test job(M-N2): A1에서 지운 workspace test 단계가 이 두 package의 일반 test를 돌리던 유일한 곳이었다(hosted run 45358324393, coverage 없는 debug: cli 08:55-09:06, 그중 `triage_cli` 438 s; fair-ab 09:07-09:10). production.yml에 job `test-cli-fair-ab`를 더했다. 같은 selector와 측정, 자기 artifact(`ci-test-outcome-test-cli-fair-ab`), 대기 concurrency, 120분 제한. 처음에는 `test` job의 scope에 넣었으나(1288945b) 되돌렸다: 그 job의 v2 full 실행이 strace 없이도 177분을 넘겼고 300분 제한은 고정이며, production gate는 production crate만 맡는 것이 낫다(R27, R36).
 4. trigger의 path filter 제거(S-N2, M-N4, S-F14 일부): 측정한 입력은 `docs/`, `research/`, `fixtures/`, `tools/`에도 있다(`docs/CONSTANTS_PROVENANCE.toml`, `FROZEN_ZETA34_POLICY.json`, `fixtures/rodas5p_coefficients_snapshot.json` 등). 두 test workflow는 모든 PR과 main push에서 돈다. 영향받는 test가 없으면 선택 단계에서 끝난다(R28).
 5. tokenizer(S-N1): 사이에 아무것도 없는 두 구두점 사이에 표시 token을 넣는다. `&&`→`& &`, `=>`→`= >`, `..`→`. .`, `->`→`- >`, `+=`→`+ =`는 이제 noop이 아니다. 검토자 사례(`integrate.rs`의 `success & &collector`)는 body로 분류되고, 그 파일을 실행한 cli `alg02_predictive_controller`를 고른다(R29).
 6. 추가된 경로가 만드는 디렉터리를 읽거나 연 target도 고른다(S-N3, R30). `.gitattributes`는 어느 깊이든 전역 파일이다(S-N4, R31).
@@ -396,15 +396,25 @@ strace 비용(`strace_cost_probe.log`, 이 host, 부하 약 190):
 | M-N4 | 해결 | S-N2와 같다(R28) |
 | M-N5 | 해결 | 같은 저장소의 run만(R25) |
 | M-N6 | 해결 | strace 설치 단계에 `continue-on-error: true`(R34) |
-| M-N7 | 미해결(기록) | v2 hosted full 실행 두 개가 13:26Z에 157분째 진행 중이었다(완료된 v1 full 실행은 92-109분). 제한 300·330분은 설계대로 유지. 첫 v3 full 실행이 제한의 2/3를 넘으면 full mode 분할을 소유자에게 묻는다(R36) |
+| M-N7 | 미해결(기록) | v2 hosted full 실행 두 개가 13:46Z에 177분째 진행 중이었다(완료된 v1 full 실행은 92-109분). 제한 300·330분은 설계대로 유지. 첫 v3 full 실행이 제한의 2/3를 넘으면 full mode 분할을 소유자에게 묻는다(R36) |
 | M-N8 | 해결 | A1 workflow가 있을 때만 검사(R35) |
 
 검증(`v3_logs/fix_*`):
 - self-test(`fix_self_test.log`) 통과. 새 사례: 구두점 9쌍, `.gitattributes`, 새 추적 호출 12줄과 인자 분리, 만들어진 디렉터리 규칙, 가짜 `gh`로 같은 image 기준점·대체·fork·다른 event, merge commit의 base, `check_sources` 탐침 workspace, workflow 변형(path filter, strace 설치, scope, artifact 이름, A1 없음).
 - 같은 workflow 점검을 b0d4bc97의 workflow에 돌리면 6건을 지적한다(`fix_checks_against_b0d4bc97_workflows.log`).
 - strace 6.8 탐침(`fix_strace_calls_probe.log`): 늘린 호출 목록을 `--seccomp-bpf`와 함께 받아들이고, 해석 결과가 기대와 같다. 탐침은 지우거나 바꾸는 호출을 모두 없는 경로에 대고 하므로 아무것도 지우지 않는다.
-- tokenizer 탐침(`fix_tokenizer_probe.log`).
-<!-- E2E -->
+- tokenizer 탐침(`fix_tokenizer_probe.log`): 검토자 사례 `integrate.rs`의 `success & &collector`는 body이고, 그 파일을 실행한 cli `alg02_predictive_controller`를 고른다. 검토자의 탐침 스크립트 두 개도 고친 selector로 다시 돌렸다(`fix_reviewer_probes.log`): S-N3 사례는 이제 target을 고르고, 구두점 5쌍은 noop이 아니다.
+- 측정 실행(`fix_e2e_run.log`, `fix_e2e_outcome.json`, `fix_e2e_map.json`, `fix_e2e_selection.json`): rodas5p-fair-ab 전체(lib, test 20개, doc, example 3개 컴파일)와 rodas5p-cli 전체(bin unit test 2개, test 14개), integrators `constants_provenance_contracts`, `generic_scope_contracts`, core `residual_gain_contract`를 coverage와 늘린 strace 호출 목록으로 실행했다. debug, cores 0-5,12-17, 12 core. 전부 통과, 측정 실패 0, 지도 항목 43개, wall 1315 s(build와 측정 포함). 실행 중에 이 worktree의 추적 파일을 고쳐서 fair-ab build script가 다시 돌았고 fair-ab와 cli가 target마다 다시 compile되었다. CI에서는 실행 중에 작업 트리가 바뀌지 않는다.
+
+| 묶음 | libtest 시간 | 비고 |
+|---|---|---|
+| fair-ab(lib, test 20개) | 463 s | `two_arm_v3_campaign_contracts` 435 s(hosted A1, coverage 없음: 172 s) |
+| cli(bin 2개, test 14개) | 592 s | `triage_cli` 256 s(probe worker 8개; hosted는 4개로 438 s), `me01_cli_contracts` 94 s |
+| `triage_cli`의 측정량 | - | 자식 process마다 coverage profile 하나: 686개, 1.9 GB, trace 파일 719개, 추적 호출 50697개. 모든 test가 끝난 뒤의 측정 단계까지 디스크에 남는다 |
+| 늘린 strace 목록 | - | 전후를 모두 잰 target은 추적 호출이 16개씩 늘었다(`generic_scope_contracts` 1007→1023, `residual_gain_contract` 95→111, `alg02_predictive_controller` 105→121). 모든 target의 absent 집합은 비어 있다 |
+
+- 선택 사례(`fix_selection_cases.log`, `fix_selection_cases.json`): 처음 측정한 지도에 이번 측정을 겹친 지도(`fix_map_merged.json`, 항목 49개)로 21개 사례가 모두 통과했다. 이전 15개(F1-F7, F11, N1, N2, C1, S1 등)는 그대로 통과하고, 새 사례는 S-N1(body, cli `alg02_predictive_controller`와 integrate.rs를 실행한 fair-ab target 선택), S-N3(목록 규칙으로 `generic_scope_contracts`), S-N3-unlisted(아무것도 고르지 않음), S-N4(`select` 명령이 full), M-N2(fair-ab 본문 변경: 그 파일을 실행한 `external_comparator_contracts`와 자기 lib, 읽는 target, doc만), M-N2-cli(cli `main.rs` 본문 변경: 그 binary를 실행한 cli target 11개와 `constants_provenance_contracts`).
+- compile 입력 sweep(`fix_sweep_v3.json`, 검토자 스크립트에 `test-cli-fair-ab` scope를 더한 사본): w2-v24 dep-info의 unit 588개, 연결 1040개. 놓치는 것은 noop 변경 때의 자기 crate lib·bin unit test뿐이다(R8, 의도한 것).
 - 도달성 검사 99/99, workflow YAML 3개 구문 통과, loop 검사기 통과(`fix_checks.log`).
 
 남는 틈과 비용(11.5에 더해):

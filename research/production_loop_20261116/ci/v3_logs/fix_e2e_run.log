@@ -1,0 +1,739 @@
+# fix-round measured run, started 2026-11-24T13:23:57Z, selector of 1288945bc9d527ef3c57c8119921d9fb98f73626
+# env: CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3 RUSTFLAGS=-C instrument-coverage RUSTDOCFLAGS=-C instrument-coverage CARGO_BUILD_JOBS=4 CARGO_TERM_COLOR=always taskset -c 0-5,12-17 VIGILODE_LLVM_BIN=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-llvm/rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin
+# cargo: cargo 1.94.1 (29ea6fb6a 2026-03-24), rustc: rustc 1.94.1 (e408947bf 2026-03-25), strace: strace -- version 6.8, llvm-cov:   LLVM version 21.1.8-rust-1.94.1-stable
+# note: tracked files of this worktree were edited and committed while the run was going; the fair-ab build script reruns on any change of a tracked file or of the git index, so fair-ab and then cli were compiled again before most targets. In CI the tree does not change during a run.
++ cargo test --locked --no-run --message-format=json-diagnostic-rendered-ansi -p rodas5p-core --test residual_gain_contract
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.13s
++ cargo test --locked --no-run --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test constants_provenance_contracts --test generic_scope_contracts
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.08s
++ cargo test --locked --no-run --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab
+[1m[92m   Compiling[0m serde v1.0.229
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m   Compiling[0m rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-core)
+[1m[92m   Compiling[0m rodas5p-krylov v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-krylov)
+[1m[92m   Compiling[0m rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-integrators)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 1m 13s
++ cargo test --locked --no-run --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m   Compiling[0m rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-cli)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 52.22s
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-core --test residual_gain_contract
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 2.90s
+[1m[92m     Running[0m tests/residual_gain_contract.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/residual_gain_contract-f07b9aac19213566)
+
+running 7 tests
+test export_runs ... ignored
+test test_transport_two_sided_gain_scaling ... ok
+test test_assembly_uncertainty_validation ... ok
+test test_case_d_positives ... ok
+test test_vg1_zero_allocation_hot_path ... ok
+test test_case_a_retained_oracle_and_parity ... ok
+test test_case_c_negatives ... ok
+
+test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test constants_provenance_contracts
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.29s
+[1m[92m     Running[0m tests/constants_provenance_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/constants_provenance_contracts-d92d76e498cca015)
+
+running 2 tests
+test constants_provenance_table_matches_source ... ok
+test source_artifact_hashes_are_current ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test generic_scope_contracts
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+[1m[92m     Running[0m tests/generic_scope_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/generic_scope_contracts-417f9d99cdfa9a46)
+
+running 4 tests
+test required_vectorized_jf_modules_exist_in_the_generic_base ... ok
+test bdf_v2_semantic_baseline_explicitly_retires_the_legacy_source_byte_freeze ... ok
+test radau3_cell_g_baseline_has_embedded_semantics_instead_of_a_source_byte_claim ... ok
+test generic_solver_core_does_not_embed_physical_client_bindings ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.11s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --lib
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 9.24s
+[1m[92m     Running[0m unittests src/lib.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/rodas5p_fair_ab-dbb15f1870b361f0)
+
+running 10 tests
+test adaptive_global_error::tests::dense_core_preserves_dense_error_reason_as_invalid_input ... ok
+test scientific_validity_v2_campaign::tests::failed_pair_retains_raw_arms_but_has_no_scientific_metric ... ok
+test adaptive_global_error::tests::adaptive_max_step_is_independent_of_output_spacing ... ok
+test scientific_validity_v2_campaign::tests::dense_arm_error_does_not_discard_a_completed_clipped_arm ... ok
+test adapters::tests::admitted_solver_and_diagnostic_failures_remain_charged_and_preserve_the_error ... ok
+test adapters::tests::solver_refusal_counts_the_attempt_without_entering_the_callback ... ok
+test adapters::tests::external_diagnostic_refusal_counts_the_attempt_without_false_certification ... ok
+test global_error::r2_not_evaluated_tests::unknown_vector_cost_is_listed_as_not_evaluated ... ok
+test scientific_validity_v2_campaign::tests::branch_fixed_arm_restarts_and_deduplicates_the_exact_boundary ... ok
+test adaptive_global_error::tests::scientific_checksum_covers_output_modes_and_pair_classification ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test adaptive_global_error_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 23.93s
+[1m[92m     Running[0m tests/adaptive_global_error_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/adaptive_global_error_contracts-b2accc1f7d8a8530)
+
+running 4 tests
+test g1_adaptive_screen_is_limited_to_the_transactional_decision_set ... ok
+test every_adaptive_comparator_row_serializes_comparator_fidelity ... ok
+test adaptive_screen_covers_every_current_family_and_preserves_every_run_row ... ok
+test adaptive_screen_is_scientifically_identical_in_one_and_four_threads ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.92s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test external_comparator_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 2.01s
+[1m[92m     Running[0m tests/external_comparator_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/external_comparator_contracts-d2b55ac0d84cfb9e)
+
+running 10 tests
+test external_runner_dependency_closure_is_ordered_domain_separated_and_golden ... ok
+test a_missing_evidence_file_is_not_synthesized_into_an_external_run ... ok
+test valid_sundials_success_preserves_cvode_native_work_without_rust_counter_mapping ... ok
+test valid_scipy_evidence_is_loaded_without_executing_the_runner ... ok
+test sundials_probe_requires_exact_one_to_one_target_findings ... ok
+test python_generated_scipy_and_sundials_fixtures_cross_the_strict_rust_loader ... ok
+test unavailable_and_not_run_sundials_are_typed_and_cannot_carry_substitute_work ... ok
+test mass_cases_fail_closed_unless_a_transformed_identity_is_pinned ... ok
+test scipy_solver_failure_preserves_native_work_and_an_authenticated_prefix ... ok
+test every_runner_problem_policy_checksum_and_lineage_mutation_is_rejected ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test fair_ab_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.67s
+[1m[92m     Running[0m tests/fair_ab_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/fair_ab_contracts-64120325a0c0dda3)
+
+running 6 tests
+test external_certificate_and_hard_budget_cover_diagnostic_work ... ok
+test recycle_reset_preserves_solver_workspace_but_clears_algorithmic_state ... ok
+test deterministic_trace_roundtrip_preserves_every_identity ... ok
+test every_rust_solver_consumes_the_same_immutable_trace_and_certifies_residuals ... ok
+test recycle_lifetimes_have_distinct_and_auditable_reset_semantics ... ok
+test comparison_randomizes_order_but_keeps_paired_trace_identity ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.62s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test global_error_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.76s
+[1m[92m     Running[0m tests/global_error_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/global_error_contracts-fdd3d13ee9c5ea34)
+
+running 9 tests
+test exact_and_known_perturbed_trajectories_have_expected_external_errors ... ok
+test common_grid_rejects_missing_output_times_instead_of_interpolating ... ok
+test pareto_and_target_selection_preserve_failures_and_choose_true_nondominated_points ... ok
+test output_policy_gap_uses_the_tight_reference_weight_table ... ok
+test output_policy_dominance_is_strict_at_ten_percent_and_excludes_only_the_policy_row ... ok
+test every_fixed_anchor_comparator_row_serializes_comparator_fidelity ... ok
+test pareto_screen_stores_only_common_outputs_and_retains_paired_output_policy_evidence ... ok
+test operator_application_cost_axis_counts_vectors_without_double_counting_block_calls ... ok
+test fixed_anchor_screen_is_thread_deterministic_and_exposes_all_five_candidates ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.55s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test numerical_reference_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 1.87s
+[1m[92m     Running[0m tests/numerical_reference_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/numerical_reference_contracts-3093143600144525)
+
+running 6 tests
+test reference_dominance_is_strict_at_ten_percent_and_excludes_pareto_success ... ok
+test legacy_analytic_provenance_deserializes_without_changing_its_wire_shape ... ok
+test numerical_reference_and_reference_dominated_wire_spellings_are_stable ... ok
+test pinned_numerical_reference_manifest_is_present_for_fair_ab_consumption ... ok
+test checked_in_artifacts_load_for_each_holdout_and_preserve_numerical_provenance ... ok
+test loader_rejects_bad_q_nonfinite_convergence_runtime_pin_grid_checksum_and_canonical_source ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test numerical_reference_v2_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 2.32s
+[1m[92m     Running[0m tests/numerical_reference_v2_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/numerical_reference_v2_contracts-353ca23d44fb4e47)
+
+running 7 tests
+test every_v2_comparison_uses_the_tight_reference_state_as_the_only_wrms_anchor ... ok
+test v2_grid_and_state_payload_checksums_remain_v1_compatible ... ok
+test checked_in_python_not_run_manifest_is_bit_for_bit_semantically_equal_to_the_rust_layout ... ok
+test v2_layout_is_exactly_twenty_two_physical_artifacts_and_sixty_six_case_bindings ... ok
+test historical_v1_manifest_and_artifact_bytes_remain_pinned ... ok
+test v2_manifest_rejects_missing_extra_duplicate_unreferenced_misbound_and_v1_shapes ... ok
+test v1_loader_remains_live_while_v2_loader_dispatches_by_exact_case_id_and_is_lazy ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test output_accuracy_assessment_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.63s
+[1m[92m     Running[0m tests/output_accuracy_assessment_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/output_accuracy_assessment_contracts-7cfa7f2ece9665fc)
+
+running 9 tests
+test boundary_and_lower_bound_are_distinct ... ok
+test accurate_but_policy_sensitive_is_not_accuracy_failure ... ok
+test missing_budget_is_not_pass ... ok
+test equal_bad_trajectories_do_not_certify_accuracy ... ok
+test nonfinite_negative_and_overflow_rejected ... ok
+test uncertain_reference_does_not_pass_boundary ... ok
+test scalar_error_gap_is_not_trajectory_distance ... ok
+test signed_zero_zero_budget_is_well_defined ... ok
+test paired_assessment_preserves_evidence_and_legacy_sensitivity ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test packet_benchmark_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 1.40s
+[1m[92m     Running[0m tests/packet_benchmark_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/packet_benchmark_contracts-d895bf6438c9685b)
+
+running 5 tests
+test test_negative_parameter_gates ... ok
+test test_refuse_unhoisted_unfair_baseline ... ok
+test test_vg3_hoisted_ode_problem_structure ... ok
+test test_vg1_zero_online_solver_counters_on_candidate ... ok
+test test_nominal_tolerance_and_agreement_do_not_promote_physical_accuracy ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test paired_timing_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 2.97s
+[1m[92m     Running[0m tests/paired_timing_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/paired_timing_contracts-1ac6b86d7c871fbb)
+
+running 13 tests
+test abba_order_is_seeded_mirrored_and_balanced ... ok
+test batch_size_is_calibrated_from_the_minimum_warmup ... ok
+test measured_case_uses_warmups_minimum_calibration_and_abba_pairs ... ok
+test protocol_and_cases_below_the_minimum_are_rejected ... ok
+test host_metadata_records_every_field_or_unknown ... ok
+test true_speedup_of_0_90_blocks ... ok
+test pairs_of_one_process_are_not_resampled_as_independent ... ok
+test true_speedup_of_1_30_with_five_percent_noise_promotes ... ok
+test threshold_speedup_with_the_v36_recorded_spread_is_inconclusive ... ok
+test identical_arms_give_an_aa_interval_containing_one ... ok
+test same_seed_reproduces_identical_interval_bits ... ok
+test replicating_cases_does_not_narrow_a_session_level_interval ... ok
+test one_shared_process_is_one_session_however_many_cases ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.56s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test r2_timing_authority_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.92s
+[1m[92m     Running[0m tests/r2_timing_authority_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/r2_timing_authority_contracts-3de435c50887a385)
+
+running 5 tests
+test the_resampled_interval_matches_the_exact_six_session_bootstrap ... ok
+test the_interval_reports_its_simulation_band ... ok
+test a_producer_without_a_session_is_never_authoritative ... ok
+test an_aa_control_in_other_sessions_confers_no_authority ... ok
+test a_preview_protocol_or_an_inconsistent_record_never_gates ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.47s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test r2_work_coverage_consumer_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 1.46s
+[1m[92m     Running[0m tests/r2_work_coverage_consumer_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/r2_work_coverage_consumer_contracts-6be02cea23f7fc84)
+
+running 1 test
+test a_merged_legacy_segment_leaves_the_vector_cost_unevaluated ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test r3_aa_batch_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 1.34s
+[1m[92m     Running[0m tests/r3_aa_batch_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/r3_aa_batch_contracts-e93d809066f0c1bb)
+
+running 1 test
+test the_aa_control_keeps_its_own_batch_across_sessions ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.58s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test r3_monte_carlo_gate_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 1.79s
+[1m[92m     Running[0m tests/r3_monte_carlo_gate_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/r3_monte_carlo_gate_contracts-fe427283417d6d78)
+
+running 2 tests
+test atoms_equal_samples_and_the_minimum_resample_count ... ok
+test the_gate_contains_the_exact_conditional_probability ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test r3_raw_protocol_admission_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 2.24s
+[1m[92m     Running[0m tests/r3_raw_protocol_admission_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/r3_raw_protocol_admission_contracts-fdb5cf1b3257c894)
+
+running 3 tests
+test singleton_session_runs_cannot_restart_the_order_every_pair ... ok
+test a_valid_receipt_promotes_and_survives_serialization ... ok
+test malformed_raw_protocols_are_rejected_before_assessment ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.01s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test r3_timing_design_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 2.56s
+[1m[92m     Running[0m tests/r3_timing_design_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/r3_timing_design_contracts-6f7c8cab3b85a6af)
+
+running 4 tests
+test the_simulator_follows_the_declared_design ... ok
+test duplicating_a_session_does_not_add_an_independent_session ... ok
+test the_study_is_deterministic_and_thread_count_free ... ok
+test multiplying_pairs_within_a_session_changes_no_bit ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.75s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test r4_statistics_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 4.51s
+[1m[92m     Running[0m tests/r4_statistics_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/r4_statistics_contracts-81a360682e69cf16)
+
+running 5 tests
+test the_exact_design_table_enumerations_controls_and_invalid_inputs_reproduce ... ok
+test the_two_estimands_differ_off_the_symmetric_family ... ok
+test every_raw_cell_is_validated_before_merging ... ok
+test authority_comes_from_the_registry_and_forgeries_fail ... ok
+test published_campaigns_stay_valid_and_keep_their_estimand ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.91s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test scientific_validity_v2_campaign_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 2.46s
+[1m[92m     Running[0m tests/scientific_validity_v2_campaign_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/scientific_validity_v2_campaign_contracts-e04c1c264b9f81bd)
+
+running 2 tests
+test one_real_calibration_case_runs_independent_clipped_and_dense_arms ... ok
+test calibration_execution_surface_is_exactly_six_by_three_by_three ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test stable_operator_id_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 1.53s
+[1m[92m     Running[0m tests/stable_operator_id_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/stable_operator_id_contracts-c23acd4a83d76e5b)
+
+running 3 tests
+test hex_digest_prefix_sets_the_token ... ok
+test non_ascii_operator_id_is_a_typed_error_not_a_panic ... ok
+test short_operator_id_is_a_typed_error_not_a_panic ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test two_arm_admissibility_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 2.02s
+[1m[92m     Running[0m tests/two_arm_admissibility_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/two_arm_admissibility_contracts-71273e767b3086bf)
+
+running 9 tests
+test arm_budget_bands_are_decided_on_the_exact_sum_and_difference ... ok
+test arm_budget_has_three_bands_with_reference_uncertainty ... ok
+test case_tolerance_uncertainty_is_rounded_upward ... ok
+test gap_triangle_is_an_integrity_assertion ... ok
+test protocol_id_declares_budget_and_interpolant_limit_before_any_run ... ok
+test row_status_order_is_reference_then_budget_then_interpolant ... ok
+test case_tolerance_basis_scales_exactly_when_weights_are_proportional ... ok
+test two_arm_classification_holds_the_triangle_on_random_trajectories ... ok
+test audit_records_classify_as_predeclared_under_the_new_protocol ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --test two_arm_v3_campaign_contracts
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 1.36s
+[1m[92m     Running[0m tests/two_arm_v3_campaign_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/two_arm_v3_campaign_contracts-621145c8c5ef42e9)
+
+running 2 tests
+test v3_record_is_reproducible_bit_for_bit has been running for over 60 seconds
+test v3_record_runs_all_three_parts_on_unchanged_v2_arms has been running for over 60 seconds
+test v3_record_runs_all_three_parts_on_unchanged_v2_arms ... ok
+test v3_record_is_reproducible_bit_for_bit ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 434.75s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-fair-ab --doc
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 1.85s
+[1m[92m   Doc-tests[0m rodas5p_fair_ab
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli --bin rodas5p
+[1m[92m   Compiling[0m rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+[1m[92m   Compiling[0m rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-cli)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 2.88s
+[1m[92m     Running[0m unittests src/main.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/rodas5p-55146d95f21cc470)
+
+running 24 tests
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test unified_assessment_tests::document_status_exposes_uncertified_reference_rows ... ok
+test unified_assessment_tests::linear_candidate_id_covers_every_strict_cell ... ok
+test unified_assessment_tests::nonlinear_batch_depth_advantage_does_not_replace_wall_speedup ... ok
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test unified_assessment_tests::relative_gates_against_a_reference_only_comparator_are_not_evaluated ... ok
+test unified_assessment_tests::smoke_and_single_sample_wall_blockers_are_not_evaluated ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test scientific_validity_v2_producer_tests::calibration_record_loop_attempts_all_fifty_four_cases_after_individual_failures ... ok
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test unified_assessment_tests::v37_failed_hard_gate_refuses_to_create_authority_output ... ok
+test unified_assessment_tests::the_published_poly03_campaign_keeps_its_numbers_under_an_authority_hold ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test unified_assessment_tests::tier_l_wall_decisions_come_only_from_a_paired_assessment ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+
+test result: ok. 20 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 29.52s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli --bin rodas5p-allocation-audit
+[1m[92m   Compiling[0m rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-cli)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.94s
+[1m[92m     Running[0m unittests src/bin/allocation_audit.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/rodas5p_allocation_audit-05b475eda36b5041)
+
+running 15 tests
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+
+test result: ok. 11 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 29.01s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli --test a1_tolerance_receipt_cli_contracts
+[1m[92m   Compiling[0m rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-cli)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 2.44s
+[1m[92m     Running[0m tests/a1_tolerance_receipt_cli_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/a1_tolerance_receipt_cli_contracts-642112ea6ef3d0d8)
+
+running 2 tests
+error: invalid value 'unknown-arm' for '--arm <ARM>'
+  [possible values: legacy-fixed, outer-scaled-numeric-parity]
+
+For more information, try '--help'.
+error: invalid value 'unknown-family' for '--family <FAMILY>'
+  [possible values: robertson-ramped, hires-ramped, van-der-pol-ramped, rotating-nonnormal, nonautonomous-stiff-forcing, semilinear-advection-diffusion-ramped]
+
+For more information, try '--help'.
+error: unexpected argument '--profile' found
+
+Usage: rodas5p a1-two-arm-receipt-cell --family <FAMILY> --arm <ARM> --repository <REPOSITORY> --pull-request <PULL_REQUEST> --scientific-execution-head-sha <SCIENTIFIC_EXECUTION_HEAD_SHA> --scientific-execution-head-tree <SCIENTIFIC_EXECUTION_HEAD_TREE> --base-sha <BASE_SHA> --base-tree <BASE_TREE> --tested-execution-merge-sha <TESTED_EXECUTION_MERGE_SHA> --tested-execution-merge-tree <TESTED_EXECUTION_MERGE_TREE> --execution-workflow-run-id <EXECUTION_WORKFLOW_RUN_ID> --execution-workflow-run-attempt <EXECUTION_WORKFLOW_RUN_ATTEMPT> --rust-version <RUST_VERSION> --cargo-version <CARGO_VERSION> --output <OUTPUT>
+
+For more information, try '--help'.
+test receipt_cli_rejects_unknown_arm_family_and_profile_surface ... ok
+test receipt_cli_emits_one_deterministic_candidate_cell_without_late_bound_fields ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.76s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli --test alg02_predictive_controller
+[1m[92m   Compiling[0m rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-cli)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 2.65s
+[1m[92m     Running[0m tests/alg02_predictive_controller.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/alg02_predictive_controller-c4d45a1b1d861603)
+
+running 19 tests
+test export_base ... ignored, base export of research/alg02_predictive_controller_20261008; release build; set ALG02_BASE
+test export_runs ... ignored, run export of research/alg02_predictive_controller_20261008; release build; set ALG02_RUNS
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test the_arms_differ_only_in_the_registered_field ... ok
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test ladders_and_cells_are_the_registered_ones ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+
+test result: ok. 13 passed; 0 failed; 6 ignored; 0 measured; 0 filtered out; finished in 29.49s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli --test alg05_predictive_controller_v2
+[1m[92m   Compiling[0m rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-cli)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.89s
+[1m[92m     Running[0m tests/alg05_predictive_controller_v2.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/alg05_predictive_controller_v2-c7dd60fe7507e919)
+
+running 19 tests
+test export_base ... ignored, base export of research/alg05_predictive_controller_v2_20261010; release build; set ALG05_BASE
+test export_runs ... ignored, run export of research/alg05_predictive_controller_v2_20261010; release build; set ALG05_RUNS
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test the_arms_differ_only_in_the_controller ... ok
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test ladders_seeds_and_cells_are_the_registered_ones ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+
+test result: ok. 13 passed; 0 failed; 6 ignored; 0 measured; 0 filtered out; finished in 30.06s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli --test allocation_cli_contracts
+[1m[92m   Compiling[0m rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-cli)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 3.09s
+[1m[92m     Running[0m tests/allocation_cli_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/allocation_cli_contracts-062b7a7079d7f3b4)
+
+running 1 test
+test allocation_audit_reports_end_to_end_solver_allocations_and_work ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.62s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli --test cli_contracts
+[1m[92m   Compiling[0m rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-cli)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.77s
+[1m[92m     Running[0m tests/cli_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/cli_contracts-9c259db23434ff58)
+
+running 25 tests
+test early_flow_defect_fields_are_backward_compatible_and_legacy_rows_fail_closed ... ok
+test generic_policy_redesign_atlas_command_is_registered ... ok
+test generic_policy_redesign_actual_prefix_command_is_registered ... ok
+test generic_policy_redesign_attempt_trace_command_is_registered ... ok
+test enforced_prefix_budget_cli_is_registered ... ok
+test generic_policy_redesign_level2_prefix_command_is_registered ... ok
+test homotopy_design_check_is_deterministic_and_exposes_required_screens ... ok
+test generic_q1_q2_gate_is_deterministic_and_strictly_matrix_free ... ok
+test native_integrator_gates_command_emits_deterministic_bdf_and_radau_rows ... ok
+test homotopy_path_controller_cli_is_deterministic_and_emits_schedule_telemetry ... ok
+test stage_growth_safety_cli_exposes_independent_calibration192_profile ... ok
+test adaptive_global_error_command_emits_current_family_report ... ok
+test global_error_pareto_command_emits_deterministic_method_independent_report ... ok
+test stage_batch_feasibility_cli_emits_deterministic_within_step_report ... ok
+test generic_q1_q2_adaptive_cli_emits_bounded_decision_report ... ok
+test early_defect_attempt_geometry_cli_is_threshold_free_and_machine_readable ... ok
+test homotopy_rhs_telemetry_cli_is_deterministic_and_read_only ... ok
+test enforced_prefix_budget_cli_emits_transactional_fields ... ok
+test tolerance_scaled_early_defect_cli_is_threshold_free_and_machine_readable ... ok
+test stage_growth_safety_audit_cli_emits_explicit_budget_and_audit_fields ... ok
+test homotopy_experiment_screen_emits_deterministic_safety_and_control_rows ... ok
+test validate_trace_and_benchmark_commands_emit_machine_readable_artifacts ... ok
+test homotopy_order_policy_screen_is_deterministic_and_thread_count_independent ... ok
+test unified_candidate_screen_combines_linear_and_nonlinear_tiers ... ok
+test matrix_free_common_w_cli_emits_strict_jf_report ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 30.08s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli --test controller_grid_holdout
+[1m[92m   Compiling[0m rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-cli)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 1.45s
+[1m[92m     Running[0m tests/controller_grid_holdout.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/controller_grid_holdout-111651959ff756fb)
+
+running 18 tests
+test export_runs ... ignored, run export of research/ct01_controller_grid_holdout_20261010; release build; set CT01_RUNS
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test telemetry_parity_on_registered_cells ... ok
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test grid_seeds_ladders_and_cells_are_the_registered_ones ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+
+test result: ok. 13 passed; 0 failed; 5 ignored; 0 measured; 0 filtered out; finished in 29.27s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli --test ct01_controller_telemetry_parity
+[1m[92m   Compiling[0m rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-cli)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.89s
+[1m[92m     Running[0m tests/ct01_controller_telemetry_parity.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/ct01_controller_telemetry_parity-f480b3b7e395511a)
+
+running 17 tests
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test traced_decisions_replay_through_the_controller ... ok
+test telemetry_on_and_off_runs_are_bitwise_identical ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+
+test result: ok. 13 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 28.74s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli --test frozen_full_e_shadow_cli_contracts
+[1m[92m   Compiling[0m rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-cli)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.30s
+[1m[92m     Running[0m tests/frozen_full_e_shadow_cli_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/frozen_full_e_shadow_cli_contracts-81eaa32c9421d051)
+
+running 2 tests
+test paired_economics_rejects_a_non_measurement_binary_before_writing_output ... ok
+test frozen_full_e_shadow_command_emits_the_dedicated_v36_schema ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.49s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli --test holdout_hygiene_cli_contracts
+[1m[92m   Compiling[0m rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-cli)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.25s
+[1m[92m     Running[0m tests/holdout_hygiene_cli_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/holdout_hygiene_cli_contracts-6b00222b1a97099e)
+
+running 1 test
+test replayed_k1_table_is_refused_on_holdout_profiles ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli --test me01_cli_contracts
+[1m[92m   Compiling[0m rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-cli)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.82s
+[1m[92m     Running[0m tests/me01_cli_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/me01_cli_contracts-4459209e8853cd2b)
+
+running 20 tests
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test me01_arms_are_known_and_opt_in ... ok
+test me01_profile_run_repetitions_zero ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test me01_cli_stiff_profile_run_repetitions_zero_binary ... ok
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test me01_ct01_grid_arms_run ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+test me01_identity_candidates_parity has been running for over 60 seconds
+test me01_identity_candidates_parity ... ok
+
+test result: ok. 16 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 93.62s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli --test paired_timing_campaign_cli_contracts
+[1m[92m   Compiling[0m rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-cli)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.73s
+[1m[92m     Running[0m tests/paired_timing_campaign_cli_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/paired_timing_campaign_cli_contracts-c81e4a29c4f45461)
+
+running 1 test
+test six_sessions_in_six_processes_form_a_verifiable_receipt ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 25.25s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli --test scientific_validity_v2_cli_contracts
+[1m[92m   Compiling[0m rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-cli)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.57s
+[1m[92m     Running[0m tests/scientific_validity_v2_cli_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/scientific_validity_v2_cli_contracts-00f8a70ce8a984fd)
+
+running 11 tests
+test checked_in_smoke_artifacts_verify_under_the_current_source_bound_protocol ... ok
+test canonical_raw_freeze_is_rejected_before_input_access ... ok
+test canonical_calibration_requires_a_distinct_direct_freeze_output ... ok
+test canonical_freeze_rejects_bare_unbound_rows_before_creating_authority ... ok
+test canonical_raw_holdout_replay_is_rejected_before_any_input_access ... ok
+test oregonator_producer_rejects_smoke_before_opening_freeze_or_reference ... ok
+test oregonator_producer_rejects_freeze_before_reference_or_holdout_access ... ok
+test corrupt_freeze_is_rejected_before_the_holdout_input_is_opened ... ok
+test replay_command_preserves_dominated_evidence_and_refuses_overwrite ... ok
+test invalid_freeze_writes_failure_preserving_rows_then_returns_nonzero ... ok
+test freeze_command_is_profile_bound_and_refuses_overwrite_or_family_selection ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli --test triage_cli
+[1m[92m   Compiling[0m rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-cli)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.89s
+[1m[92m     Running[0m tests/triage_cli.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/triage_cli-5226745dca3785d2)
+
+running 30 tests
+test refusal_typing_keeps_mid_run_errors_as_error ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test profile_run_reports_the_first_run_and_accepts_zero_repetitions ... ok
+test parity_samples_are_hex_with_the_analytic_jacobian ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test probes_are_listed_apart_with_unique_ids ... ok
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test allocation_audit_triage_prints_raw_windows ... ok
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test prothero_robinson_nl_matches_its_exact_solution_at_rtol_1e_8 ... ok
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test wired_arms_have_distinct_component_sets ... ok
+test work_counter_fields_include_the_skipped_ones ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test seq_direct_on_robertson_gives_101_finite_states ... ok
+test triage_list_parses_with_unique_ids ... ok
+test pexprb_is_never_refused_on_its_applicable_problems ... ok
+test usage_errors_exit_with_code_2 ... ok
+test every_wired_arm_yields_a_schema_valid_row ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+test segmented_problems_drop_unrequested_breakpoints ... ok
+test probe_sweep_fails_closed_or_documents_findings has been running for over 60 seconds
+test probe_sweep_fails_closed_or_documents_findings ... ok
+
+test result: ok. 26 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 256.36s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli --test v37_continuation_transaction_cli_contracts
+[1m[92m   Compiling[0m rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-cli)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.26s
+[1m[92m     Running[0m tests/v37_continuation_transaction_cli_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/v37_continuation_transaction_cli_contracts-a958c4e466a8dca2)
+
+running 1 test
+test v37_command_emits_dedicated_schema_without_mutating_v36_fields ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.47s
+
+# exit 0, wall 1315 s, finished 2026-11-24T13:45:52Z

@@ -176,8 +176,9 @@ in `v3_logs/`.
 
 - **R24 Baseline on the same runner image (M-N1, major).** Confirmed: the set-up logs of run
   45358324432 show job `fmt` on image version 20261116.88.1 and job `clippy` on 20261116.202.1,
-  both started at 08:41:48Z (read with `gh api .../jobs/<id>/logs`); the reviewer counted 7 of 39
-  ubuntu-latest jobs on .88.1. With an exact comparison, about 3 runs in 10 would be full without a
+  both started at 08:41:48Z (read with `gh api .../jobs/<id>/logs`); in the reviewer's samples of
+  11-23 and 11-24, 6 of the 39 jobs on the 20261116 image ran on .88.1 and 33 on .202.1 (the
+  reviewer counted 7). With an exact comparison, about one run in four would be full without a
   code change. The owner's rule (a change of the runner image since the baseline means a full run)
   stays literal, with both `ImageOS` and `ImageVersion`; what changes is which run is the baseline:
   the newest qualifying run (complete, at an ancestor of the head) on the same image. Runs on other
@@ -212,10 +213,18 @@ in `v3_logs/`.
   selector, measurement and rules, its own outcome artifact `ci-test-outcome-test-cli-fair-ab`, a
   queued concurrency group and a 120-minute limit. Not adopted: adding the two packages to the
   scope of the `test` job (the first version of this fix, commit 1288945b), because the full run
-  of that job already runs longer than 157 minutes on hosted runners without strace (R36) and its
+  of that job already runs longer than 177 minutes on hosted runners without strace (R36) and its
   limit of 300 minutes is fixed; a job of its own also keeps the production gate to the production
   crates. Cost: a second coverage build of the workspace on another runner when the job selects
-  anything; with an empty selection it ends after the selection step. `check_workflows` asserts
+  anything; with an empty selection it ends after the selection step. Measured locally
+  (`fix_e2e_run.log`, debug, coverage and the extended strace list, 12 cores, every target of both
+  packages): all pass, 0 entries lost; the fair-ab targets took 463 s of libtest time
+  (`two_arm_v3_campaign_contracts` 435 s, 172 s in the hosted A1 run without coverage), the cli
+  targets 592 s (`triage_cli` 256 s with 8 probe workers, 438 s hosted with 4). `triage_cli` starts
+  one process per probe and arm, and each writes its own coverage profile: 686 profiles, 1.9 GB,
+  719 trace files and 50697 traced calls, all kept until the measurement step after the last test.
+  A hosted full run of the job is expected to take well under its 120-minute limit (a build plus
+  about half an hour of tests). `check_workflows` asserts
   that the selecting jobs of each workflow together cover every workspace member and that each
   job looks up the artifact it uploads, under a name no other job uses. For the owner: these two
   research crates now have a change-based CI test job; the alternative is to accept that their
@@ -260,8 +269,11 @@ in `v3_logs/`.
   a failed `chdir` is recorded as `absent` and leaves the cwd. Arguments are split at top-level
   commas with quoted strings and `<...>` annotations kept whole. Probe with strace 6.8:
   `fix_strace_calls_probe.log` (non-destructive: every remove, rename, link, chmod and truncate
-  targets a missing path). Cost: these calls stop the tracee as well; the traced-call counts of
-  the measured run are in `fix_e2e_outcome.json`.
+  targets a missing path). Cost: these calls stop the tracee as well. In the measured run the
+  targets measured before and after the change show 16 more traced calls each (startup of the test
+  process and of the coverage runtime): `generic_scope_contracts` 1023 (1007), `residual_gain_contract`
+  111 (95), `alg02_predictive_controller` 121 (105); per-target counts are in `fix_e2e_outcome.json`.
+  Every measured target's `absent` set stayed empty: no test probes a missing repository path.
 - **R33 The source facts of R8 and R10 are checked (S-N6).** `check_sources` (part of the
   self-test, so of both CI test jobs) scans the package sources (`src/**/*.rs` of every member)
   and fails on `line!()`, `column!()`, `Location::caller`, `track_caller` (a comment-only change
@@ -279,8 +291,8 @@ in `v3_logs/`.
   the file exists, so renaming or removing that workflow cannot fail the test jobs.
 - **R36 Hosted duration (M-N7): recorded, limits unchanged.** The live v2 full runs (coverage, one
   command per target, no strace), test job of run 45378440406 and ignored-tests job of run
-  45378440571, started 10:49:59Z and 10:49:42Z; at 13:26:48Z both were still in their run step
-  (157 minutes), longer than every completed v1 full run (test 92-109, ignored 94-97 minutes). The
+  45378440571, started 10:49:59Z and 10:49:42Z; at 13:46:46Z both were still in their run step
+  (177 minutes), longer than every completed v1 full run (test 92-109, ignored 94-97 minutes). The
   limits stay 300 and 330 minutes (design). If the first v3 full run uses more than about two
   thirds of its limit, the next step is to split the full mode across jobs (an owner decision);
   a job that times out leaves no outcome, so the next run is full again.

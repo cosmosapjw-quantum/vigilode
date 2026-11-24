@@ -1,0 +1,68 @@
+{
+ "base": null,
+ "baseline_failures_added": [],
+ "baseline_failures_dropped": [],
+ "changed": [],
+ "classified": {},
+ "controls": [],
+ "environment": {
+  "image_os": null,
+  "image_version": null,
+  "pr_base": null,
+  "pr_base_payload": null
+ },
+ "head": "1288945bc9d527ef3c57c8119921d9fb98f73626",
+ "mode": "selected",
+ "notes": [],
+ "owners": {},
+ "packages": {
+  "rodas5p-cli": {
+   "all": true,
+   "doc": false,
+   "examples": [],
+   "lib": false,
+   "targets": [],
+   "why": {}
+  },
+  "rodas5p-core": {
+   "all": false,
+   "doc": false,
+   "examples": [],
+   "lib": false,
+   "targets": [
+    "residual_gain_contract"
+   ],
+   "why": {}
+  },
+  "rodas5p-fair-ab": {
+   "all": true,
+   "doc": true,
+   "examples": [],
+   "lib": true,
+   "targets": [],
+   "why": {}
+  },
+  "rodas5p-integrators": {
+   "all": false,
+   "doc": false,
+   "examples": [],
+   "lib": false,
+   "targets": [
+    "constants_provenance_contracts",
+    "generic_scope_contracts"
+   ],
+   "why": {}
+  }
+ },
+ "reasons": [
+  "hand-made selection of the fix-round measured run (task ci-v3, reviews M-N2 and S-N5)"
+ ],
+ "schema": "vigilode.ci.test-selection.v3",
+ "scope": [
+  "rodas5p-core",
+  "rodas5p-krylov",
+  "rodas5p-integrators",
+  "rodas5p-fair-ab",
+  "rodas5p-cli"
+ ]
+}
