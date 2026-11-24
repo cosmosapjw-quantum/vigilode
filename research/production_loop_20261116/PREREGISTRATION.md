@@ -302,3 +302,12 @@ Two points of `router_hyperparameter_free/PREDECLARED.json` are fixed in `router
 ## Erratum A8.3 (2026-11-24 23:30 KST): time of amendment A8.2
 
 The heading of amendment A8.2 and the field date_kst of router_hyperparameter_free/AMENDMENT_A8_2.json read 23:40 KST; the time was typed in error. The amendment was committed at 2026-11-24 23:29:26 +0900 (commit 7012e9d5) and pushed at 23:29:45 KST, before any run of the deciding set. Nothing else changes.
+
+## Addendum A9 (2026-11-24 23:47 KST): node V28, frozen by this commit before any run; node V29 recorded
+
+Reason: owner decisions OD-L1-23, OD-L1-24 and OD-L1-25 of 2026-11-24 (verbatim "권고사항 수용 및 CI job 유지" in `docs/agent/production_solver_program_20261112/OWNER_DECISIONS_20261116.json`). Frozen design of V28: `mf_p1_budget/PREDECLARED.json` (sha256 fce3ba98b0878107f0eb58d6b4663cd64601066b3e5d4d342c0a8245834467b2). The frozen part and the earlier addenda are unchanged.
+
+| node | switch or outcome | keep or kill |
+|---|---|---|
+| V28 rule B of the matrix-free stage solve P1, tested alone on the 40 deciding cells of V25 and V24 | SWITCH if K (no replayed identical stage system on which P1 exhausts the Krylov budget and S does not), V (0 residual violations of completed P1 solves in the replay) and T (one-sided exact binomial test over 320 pairs of perturbed trajectories, P(X >= W) >= 0.05) hold; then step 6 of V25 with D0, G and R, else HOLD | KEEP if K or T fails and V holds; KILL if V fails |
+| V29 default first-use pattern check of the opt-in assembly client | implementation of OD-L1-24: MC by default where it applies, Sample(8) on the dense route; Jacobian bits of the V08 identity cells unchanged | the default stays Sample(8) if the bits change or the suites fail |

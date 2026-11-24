@@ -1,0 +1,38 @@
+{
+  "schema": "vigilode.loop.predeclared.v1",
+  "node": "V28_MF_P1_BUDGET_FOLLOWUP",
+  "date_kst": "2026-11-24 23:47 KST",
+  "status": "frozen by the commit that adds this file; no run of this node before that commit is on origin/research/production-loop-20261116",
+  "authority": "owner decision OD-L1-23 (2026-11-24 23:45 KST, verbatim '권고사항 수용 및 CI job 유지'): the recommendation to pre-register a test of rule B alone, by totals over several trajectories per cell and by a replay of identical stage systems, and to make P1 the default if it passes",
+  "question": "Does the adaptive stage solve P1 of the matrix-free RODAS5P driver exhaust the Krylov budget more often than the shipped policy S, once the divergence of the two trajectories is removed (identical systems) or averaged (perturbed trajectories)? Node V25 failed rule B on robertson_rd1d by one budget-exhausting solve in three cells (L-0336); its exploratory replay found S and P1 exhausting on the same 2931 identical systems.",
+  "prior_data": "V25 (mf_p1_confirm/RESULTS.json, REVIEW.json) and V24 (mf_adaptive/RESULTS.json): every other gate of P1 holds (V, A, S, E, W). This node tests rule B only; the economy and accuracy results of V25 stand and are not re-tested.",
+  "policies": {
+    "S": "MfStageSolvePolicy::Shipped (rodas5p-mf-fast-transformed-v1)",
+    "P1": "MfStageSolvePolicy::ColumnTested; the Krylov budget, the stage threshold, the restart length 40, preconditioning, the controller constants and the tolerances are those of the shipped driver and do not change"
+  },
+  "cells": {
+    "rule": "the 20 deciding cells of V25 (mf_p1_confirm/PROTOCOL.json: ac3d, robertson_rd1d, schnakenberg2d, porous2d; five tolerances rtol = atol = 1e-3 ... 1e-7) and the 20 deciding cells of V24 (mf_adaptive/PROTOCOL.json deciding_grid: fhn3d, cusp1d, burgers2d, bruss1d; its tolerances); sizes, spans, generators and tolerances exactly as in those protocols",
+    "count": 40
+  },
+  "measurements": {
+    "K_replay": "for every cell, the stage systems of the unperturbed run of S and of the unperturbed run of P1 are each solved again by both kernels from the same start (the SHADOW mode of mf_confirm_measure.rs, adapted to the V24 families as needed); per system: which kernel exhausts the budget, and for every completed solve of P1 the true residual against the stage threshold",
+    "T_ensemble": "for every cell and j = 1..8: the initial state is perturbed componentwise, y0_i <- y0_i (1 + 1e-8 xi_ij), with xi_ij in [-1, 1] from splitmix64 seeded by (cell index, j, i) and mapped linearly; S and P1 run from the same perturbed state; per run the number of stage solves that exhaust the budget, the attempts and the end state are recorded (320 pairs)",
+    "design_constants": "M = 8 perturbed trajectories per cell and the relative size 1e-8 are experiment design constants, chosen before any run; they are not parameters of the solver"
+  },
+  "discriminators": {
+    "K": "there is no replayed stage system on which P1 exhausts the Krylov budget and S does not (subset), in any cell, along either trajectory",
+    "V": "0 violations of the stage threshold by a completed P1 solve in the replay",
+    "T": "over the 320 pairs, d = exhausting solves of P1 minus those of S; with W = number of pairs with d > 0 and n = number of pairs with d != 0, the one-sided exact binomial probability P(X >= W), X ~ Bin(n, 1/2), is at least 0.05 (if n = 0, T holds). The level 0.05 is the conventional one and is fixed here",
+    "report_without_rule": "totals of exhausting solves per family and arm; the attempts ratio and the error ratio per pair"
+  },
+  "verdicts": {
+    "SWITCH": "K, V and T hold: the step 6 of node V25 is executed unchanged (mf_p1_confirm/PREDECLARED.json verdicts.SWITCH and discriminators D0, G, R): the default policy of the matrix-free route becomes P1 in the driver and in routing.rs, with the identifier rodas5p-mf-fast-transformed-v3; S stays selectable with rodas5p-mf-fast-transformed-v1 and P2 opt-in with -v2; D0 (S and P1 selected explicitly keep their bits), G (golden records of the matrix-free route within the bounds of addendum A6, every other record unchanged) and R (suites) must then hold, else the switch is taken back and the verdict is HOLD",
+    "KEEP": "K or T fails and V holds: the shipped policy stays the default and P1 stays opt-in",
+    "KILL": "V fails: no default changes; the documentation of P1 states the violation"
+  },
+  "protected_edits_on_SWITCH": "as for V25 (owner decisions OD-L1-11, OD-L1-15 and OD-L1-23): crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs (default policy and identifier only), routing.rs (default of the matrix-free route), one re-export block in src/lib.rs if needed, the sentinel pins of tests/ppsw1_6b_contracts.rs (g3) and tests/ptsw2b_contracts.rs (h2) with SENTINEL_REPIN.json, the four lines of V24 tests listed in mf_p1_confirm/OUT_OF_LIST_EDITS.json, crates/vigilode/src/{solve.rs,solution.rs} where the identifier is named, the default-path golden files as G requires, and lines of facade tests that pin the matrix-free identifier or bits (each listed with its reason)",
+  "not_changed": [
+    "the Krylov budget and method, the stage threshold, preconditioning, the restart length, the controller constants, the tolerances",
+    "the default of any other route"
+  ]
+}

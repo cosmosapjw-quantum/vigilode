@@ -1753,6 +1753,76 @@
       ],
       "evidence": [],
       "state_note": "Design approved 2026-11-24 19:59 KST (OD-L1-22); pre-registered by addendum A8; implementation phase 1 launched (no evaluation run before the pre-registration is on origin)."
+    },
+    {
+      "id": "V28_MF_P1_BUDGET_FOLLOWUP",
+      "depends": [
+        "V25_MF_P1_CONFIRMATION"
+      ],
+      "status": "PLANNED",
+      "purpose": "Rule B of the matrix-free stage solve P1 tested alone (owner decision OD-L1-23): replay of identical stage systems (K) and perturbed trajectory ensembles (T) on the 40 deciding cells of V25 and V24; SWITCH of the default to P1 if K, V and T hold, then G and R as in V25.",
+      "write_allowlist": [
+        "research/production_loop_20261116/mf_p1_budget/**",
+        "crates/rodas5p-integrators/tests/mf_budget_*.rs",
+        "on SWITCH only: the protected edits listed in mf_p1_budget/PREDECLARED.json"
+      ],
+      "equations_and_design": [
+        "mf_p1_budget/PREDECLARED.json (addendum A9)"
+      ],
+      "acceptance_checks": [
+        "K, V, T of mf_p1_budget/PREDECLARED.json; on SWITCH also D0, G and R of mf_p1_confirm/PREDECLARED.json"
+      ],
+      "completion_requires": [
+        "PREDECLARED.json on origin before any run",
+        "RESULTS.json from executed runs",
+        "independent review"
+      ],
+      "failure_action": "KEEP: the shipped policy stays the default and P1 stays opt-in.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [],
+      "state_note": "Pre-registered 2026-11-24 (addendum A9). Builder node."
+    },
+    {
+      "id": "V29_ASSEMBLY_DEFAULT_MC",
+      "depends": [
+        "V26_ASSEMBLY_FULL_CHECK"
+      ],
+      "status": "PLANNED",
+      "purpose": "Owner decision OD-L1-24: the default first-use pattern check of the opt-in AssemblyStageClient becomes the multi-colouring check on the routes where it applies; the dense route keeps Sample(8); FA, FA_P and MC_P stay selectable; the documentation states the limits of MC (L-0338).",
+      "write_allowlist": [
+        "crates/rodas5p-integrators/src/stage_clients/assembly.rs",
+        "crates/rodas5p-integrators/src/stage_clients/assembly/**",
+        "crates/rodas5p-integrators/tests/stage_clients_assembly_*.rs",
+        "research/production_loop_20261116/assembly_default/**"
+      ],
+      "equations_and_design": [
+        "Implementation of an owner decision; no experiment. The arithmetic of the assembled Jacobian does not change."
+      ],
+      "acceptance_checks": [
+        "The Jacobian and trajectory bits of the V08 identity cells are unchanged.",
+        "Existing tests pass; lines that pin the default check or its counts are edited only with a listed reason.",
+        "New tests: the default per route; the default detects the corpus cases that MC detects.",
+        "clippy -D warnings and fmt."
+      ],
+      "completion_requires": [
+        "independent review"
+      ],
+      "failure_action": "The default stays Sample(8).",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [],
+      "state_note": "Recorded 2026-11-24 (OD-L1-24). Builder node."
     }
   ],
   "execution_policy": "Resume ready bounded tasks; research/implementation may overlap only with disjoint writes. Qualification dependencies restrict promotion, not safe opt-in refactoring.",
