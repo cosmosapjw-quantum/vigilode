@@ -33,6 +33,7 @@ ROOT = os.path.abspath(os.path.join(NODE, "..", "..", ".."))
 V17 = os.path.join(NODE, "..", "mf_stage_solve")
 
 _spec = importlib.util.spec_from_file_location("v17_parse_results", os.path.join(V17, "parse_results.py"))
+assert _spec is not None and _spec.loader is not None, "mf_stage_solve/parse_results.py (node V17) is needed"
 v17 = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(v17)
 

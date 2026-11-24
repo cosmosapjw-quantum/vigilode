@@ -1,7 +1,7 @@
 {
  "schema": "vigilode.loop-l1.v25.results.v1",
  "node": "V25_MF_P1_CONFIRMATION",
- "generated": "2026-11-24T18:36:14+0900",
+ "generated": "2026-11-24T18:49:23+0900",
  "predeclared_sha256": "6b2ca034e361238a6db71c83fc8ce89784658ecdf449d9a4ce5ed90a544f617e",
  "protocol_sha256": "c45ec0d360159046eeb0664d9496d0250fbedb7d5e5a06431b7d50fdb9e8981e",
  "frozen_thresholds": {
@@ -3059,15 +3059,15 @@
        "slower": false
       },
       "1e-7": {
-       "timing_label": "diagnostic_only",
-       "used_try": 1,
-       "ratio": 0.08873701293678646,
+       "timing_label": "authoritative",
+       "used_try": 2,
+       "ratio": 0.0908994937831608,
        "kind": "matched error at the error of arm S",
        "timing_cells_used": [
         "1e-6",
         "1e-7"
        ],
-       "authoritative": false,
+       "authoritative": true,
        "slower": false
       }
      },
@@ -3078,14 +3078,14 @@
        1.1894686584949498e-10,
        1.7575197466103069e-06
       ],
-      "geometric_mean_ratio": 0.1540187116918005,
-      "min_ratio": 0.08873701293678646,
+      "geometric_mean_ratio": 0.15465637350751957,
+      "min_ratio": 0.09089949378316077,
       "max_ratio": 0.3142889277921421
      },
-     "speedup_at_matched_error": 6.492717599151539,
+     "speedup_at_matched_error": 6.465947554055242,
      "speedup_min": 3.181785648717982,
-     "speedup_max": 11.269254698852322,
-     "authoritative_cells": 4,
+     "speedup_max": 11.001161374842013,
+     "authoritative_cells": 5,
      "slower_authoritative_cells": [],
      "verdict": "PASS"
     }
@@ -3539,24 +3539,97 @@
        "misses": [
         "arm P1: spread 0.150 above 0.1"
        ]
+      },
+      {
+       "try": 2,
+       "logs": [
+        "logs/timing/ac3d__1e-7__try2.log"
+       ],
+       "invocations": 1,
+       "process_complete": true,
+       "load_before": [
+        "3.78 6.67 7.53 6/6116 4151940"
+       ],
+       "load_after": [
+        "4.53 6.59 7.47 8/6117 4153194"
+       ],
+       "dates": [
+        "2026-11-24T18:45:24+0900"
+       ],
+       "binaries": [
+        "9582b047669995dcfc3830f0675d39823f28ba7ba528d558d4625047c49f469f"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 30.075745105743408,
+       "longest_process_seconds_under_the_lock": 30.028471753,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          3.03251558,
+          3.04695827
+         ],
+         "walls": [
+          3.112944208,
+          3.092144931,
+          3.132045658,
+          3.057508923,
+          3.030574643,
+          3.028556833,
+          3.009778131
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 3.057508923,
+         "min": 3.009778131,
+         "max": 3.132045658,
+         "spread": 0.03998926252683907,
+         "median_thread_cpu": 3.0566749500000014,
+         "spread_thread_cpu": 0.03882967045612726
+        },
+        "P1": {
+         "warm_up_walls": [
+          0.274652116,
+          0.274196502
+         ],
+         "walls": [
+          0.283497743,
+          0.27614117,
+          0.277927366,
+          0.279587337,
+          0.269918313,
+          0.268258824,
+          0.279543681
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.277927366,
+         "min": 0.268258824,
+         "max": 0.283497743,
+         "spread": 0.05483058116702339,
+         "median_thread_cpu": 0.27799432600000173,
+         "spread_thread_cpu": 0.05733717745016613
+        }
+       },
+       "load_1min_max": 4.53,
+       "meets_rule": true,
+       "misses": []
       }
      ],
-     "measurements": 1,
-     "label": "diagnostic_only",
-     "used_try": 1,
+     "measurements": 2,
+     "label": "authoritative",
+     "used_try": 2,
      "median_wall": {
-      "S": 3.091564984,
-      "P1": 0.274337442
+      "S": 3.057508923,
+      "P1": 0.277927366
      },
      "spread": {
-      "S": 0.04964729960209697,
-      "P1": 0.14984580559003685
+      "S": 0.03998926252683907,
+      "P1": 0.05483058116702339
      },
      "median_thread_cpu": {
-      "S": 3.090808354,
-      "P1": 0.2739838270000021
+      "S": 3.0566749500000014,
+      "P1": 0.27799432600000173
      },
-     "speedup_equal_tolerance": 11.269205404342875
+     "speedup_equal_tolerance": 11.00110783261264
     }
    },
    "P2_reported_only": {
@@ -6808,25 +6881,25 @@
       "1e-6": {
        "timing_label": "authoritative",
        "used_try": 1,
-       "ratio": 0.7791604391621701,
+       "ratio": 0.7791603319590995,
        "kind": "matched error at the error of arm S",
        "timing_cells_used": [
         "1e-6",
         "1e-7"
        ],
-       "authoritative": false,
+       "authoritative": true,
        "slower": false
       },
       "1e-7": {
-       "timing_label": "diagnostic_only",
-       "used_try": 1,
-       "ratio": 0.7791410768204255,
+       "timing_label": "authoritative",
+       "used_try": 2,
+       "ratio": 0.7728325169042591,
        "kind": "matched error at the error of arm S",
        "timing_cells_used": [
         "1e-6",
         "1e-7"
        ],
-       "authoritative": false,
+       "authoritative": true,
        "slower": false
       }
      },
@@ -6837,14 +6910,14 @@
        3.7505023915349326e-07,
        1.4527819015912304e-05
       ],
-      "geometric_mean_ratio": 0.7978793298717332,
-      "min_ratio": 0.7775007296241714,
+      "geometric_mean_ratio": 0.7972665427597371,
+      "min_ratio": 0.7728325169042591,
       "max_ratio": 0.9074307542880863
      },
-     "speedup_at_matched_error": 1.2533223540967777,
+     "speedup_at_matched_error": 1.2542856703085787,
      "speedup_min": 1.1020124624104655,
-     "speedup_max": 1.2861724264662495,
-     "authoritative_cells": 3,
+     "speedup_max": 1.293941414377474,
+     "authoritative_cells": 5,
      "slower_authoritative_cells": [],
      "verdict": "PASS"
     }
@@ -7298,24 +7371,97 @@
        "misses": [
         "1-minute load average 8.28 above 8.0"
        ]
+      },
+      {
+       "try": 2,
+       "logs": [
+        "logs/timing/robertson_rd1d__1e-7__try2.log"
+       ],
+       "invocations": 1,
+       "process_complete": true,
+       "load_before": [
+        "4.53 6.59 7.47 8/6117 4153197"
+       ],
+       "load_after": [
+        "4.59 6.49 7.43 9/6119 4153890"
+       ],
+       "dates": [
+        "2026-11-24T18:45:54+0900"
+       ],
+       "binaries": [
+        "9582b047669995dcfc3830f0675d39823f28ba7ba528d558d4625047c49f469f"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 15.640458345413208,
+       "longest_process_seconds_under_the_lock": 15.599992042,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          1.003639349,
+          0.984223536
+         ],
+         "walls": [
+          0.979005516,
+          0.989324342,
+          0.994792166,
+          0.999575325,
+          0.995124962,
+          1.014077812,
+          1.006241517
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.995124962,
+         "min": 0.979005516,
+         "max": 1.014077812,
+         "spread": 0.035244112387163753,
+         "median_thread_cpu": 0.9959972589999992,
+         "spread_thread_cpu": 0.036445653511582556
+        },
+        "P1": {
+         "warm_up_walls": [
+          0.737972913,
+          0.730394086
+         ],
+         "walls": [
+          0.729888733,
+          0.730629547,
+          0.738394678,
+          0.748737205,
+          0.745833552,
+          0.740872395,
+          0.730045544
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.738394678,
+         "min": 0.729888733,
+         "max": 0.748737205,
+         "spread": 0.025526283655040033,
+         "median_thread_cpu": 0.7379636609999993,
+         "spread_thread_cpu": 0.025842409332404344
+        }
+       },
+       "load_1min_max": 4.59,
+       "meets_rule": true,
+       "misses": []
       }
      ],
-     "measurements": 1,
-     "label": "diagnostic_only",
-     "used_try": 1,
+     "measurements": 2,
+     "label": "authoritative",
+     "used_try": 2,
      "median_wall": {
-      "S": 1.018931253,
-      "P1": 0.764626906
+      "S": 0.995124962,
+      "P1": 0.738394678
      },
      "spread": {
-      "S": 0.042788175229325306,
-      "P1": 0.03216586521740845
+      "S": 0.035244112387163753,
+      "P1": 0.025526283655040033
      },
      "median_thread_cpu": {
-      "S": 1.0186928549999994,
-      "P1": 0.7648412009999994
+      "S": 0.9959972589999992,
+      "P1": 0.7379636609999993
      },
-     "speedup_equal_tolerance": 1.3325861868114801
+     "speedup_equal_tolerance": 1.3476870725766525
     }
    },
    "P2_reported_only": {
@@ -10414,15 +10560,15 @@
     "W": {
      "cells": {
       "1e-3": {
-       "timing_label": "diagnostic_only",
-       "used_try": 1,
-       "ratio": 0.6698231384258484,
+       "timing_label": "authoritative",
+       "used_try": 2,
+       "ratio": 0.6707580073444348,
        "kind": "matched error at the error of arm S",
        "timing_cells_used": [
         "1e-3",
         "1e-4"
        ],
-       "authoritative": false,
+       "authoritative": true,
        "slower": false
       },
       "1e-4": {
@@ -10436,7 +10582,7 @@
         "1e-5",
         "1e-6"
        ],
-       "authoritative": false,
+       "authoritative": true,
        "slower": false
       },
       "1e-5": {
@@ -10450,7 +10596,7 @@
         "1e-5",
         "1e-6"
        ],
-       "authoritative": false,
+       "authoritative": true,
        "slower": false
       },
       "1e-6": {
@@ -10466,15 +10612,15 @@
        "slower": false
       },
       "1e-7": {
-       "timing_label": "diagnostic_only",
-       "used_try": 1,
-       "ratio": 0.3102527565249948,
+       "timing_label": "authoritative",
+       "used_try": 2,
+       "ratio": 0.3111070132897873,
        "kind": "matched error at the error of arm S",
        "timing_cells_used": [
         "1e-6",
         "1e-7"
        ],
-       "authoritative": false,
+       "authoritative": true,
        "slower": false
       }
      },
@@ -10485,14 +10631,14 @@
        0.0013229363810707895,
        1.864146256948222
       ],
-      "geometric_mean_ratio": 0.4868047378931542,
-      "min_ratio": 0.3102527565249949,
-      "max_ratio": 0.6698231384258484
+      "geometric_mean_ratio": 0.4870420727616099,
+      "min_ratio": 0.31110701328978735,
+      "max_ratio": 0.6707580073444348
      },
-     "speedup_at_matched_error": 2.0542117242488382,
-     "speedup_min": 1.4929314062665862,
-     "speedup_max": 3.223178453595583,
-     "authoritative_cells": 1,
+     "speedup_at_matched_error": 2.0532107099697425,
+     "speedup_min": 1.4908506332396254,
+     "speedup_max": 3.214328052027964,
+     "authoritative_cells": 5,
      "slower_authoritative_cells": [],
      "verdict": "PASS"
     }
@@ -10574,24 +10720,97 @@
        "misses": [
         "1-minute load average 8.28 above 8.0"
        ]
+      },
+      {
+       "try": 2,
+       "logs": [
+        "logs/timing/schnakenberg2d__1e-3__try2.log"
+       ],
+       "invocations": 1,
+       "process_complete": true,
+       "load_before": [
+        "4.59 6.49 7.43 2/6107 4153894"
+       ],
+       "load_after": [
+        "5.18 6.32 7.31 5/6139 4156932"
+       ],
+       "dates": [
+        "2026-11-24T18:46:09+0900"
+       ],
+       "binaries": [
+        "9582b047669995dcfc3830f0675d39823f28ba7ba528d558d4625047c49f469f"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 55.672791481018066,
+       "longest_process_seconds_under_the_lock": 55.661331842,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          3.632996359,
+          3.7241682799999998
+         ],
+         "walls": [
+          3.69763682,
+          3.7149356080000002,
+          3.719173529,
+          3.741510534,
+          3.742592042,
+          3.719167154,
+          3.638745826
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 3.719167154,
+         "min": 3.638745826,
+         "max": 3.742592042,
+         "spread": 0.027921900710569676,
+         "median_thread_cpu": 3.7177812529999983,
+         "spread_thread_cpu": 0.027758527728526904
+        },
+        "P1": {
+         "warm_up_walls": [
+          2.466276859,
+          2.453403561
+         ],
+         "walls": [
+          2.475886399,
+          2.477710781,
+          2.494661155,
+          2.494859898,
+          2.496512171,
+          2.515085942,
+          2.428265075
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 2.494661155,
+         "min": 2.428265075,
+         "max": 2.515085942,
+         "spread": 0.034802669222626224,
+         "median_thread_cpu": 2.494734607999998,
+         "spread_thread_cpu": 0.03472317685505233
+        }
+       },
+       "load_1min_max": 5.18,
+       "meets_rule": true,
+       "misses": []
       }
      ],
-     "measurements": 1,
-     "label": "diagnostic_only",
-     "used_try": 1,
+     "measurements": 2,
+     "label": "authoritative",
+     "used_try": 2,
      "median_wall": {
-      "S": 3.694120358,
-      "P1": 2.474407297
+      "S": 3.719167154,
+      "P1": 2.494661155
      },
      "spread": {
-      "S": 0.01761681231069406,
-      "P1": 0.020978452117780072
+      "S": 0.027921900710569676,
+      "P1": 0.034802669222626224
      },
      "median_thread_cpu": {
-      "S": 3.6933909169999986,
-      "P1": 2.4732022710000017
+      "S": 3.7177812529999983,
+      "P1": 2.494734607999998
      },
-     "speedup_equal_tolerance": 1.4929314032005945
+     "speedup_equal_tolerance": 1.4908506297722024
     },
     "1e-4": {
      "tries": [
@@ -10948,24 +11167,97 @@
        "misses": [
         "1-minute load average 10.26 above 8.0"
        ]
+      },
+      {
+       "try": 2,
+       "logs": [
+        "logs/timing/schnakenberg2d__1e-7__try2.log"
+       ],
+       "invocations": 1,
+       "process_complete": true,
+       "load_before": [
+        "5.18 6.32 7.31 5/6148 4156944"
+       ],
+       "load_after": [
+        "6.01 6.41 7.27 3/6109 4160326"
+       ],
+       "dates": [
+        "2026-11-24T18:47:05+0900"
+       ],
+       "binaries": [
+        "9582b047669995dcfc3830f0675d39823f28ba7ba528d558d4625047c49f469f"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 77.2911765575409,
+       "longest_process_seconds_under_the_lock": 77.271365973,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          6.488635564,
+          6.43938701
+         ],
+         "walls": [
+          6.489591063,
+          6.578273294,
+          6.589527333,
+          6.538846534,
+          6.592288931,
+          6.621227944,
+          6.45037997
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 6.578273294,
+         "min": 6.45037997,
+         "max": 6.621227944,
+         "spread": 0.025971553075459678,
+         "median_thread_cpu": 6.575237629000004,
+         "spread_thread_cpu": 0.025924196602140258
+        },
+        "P1": {
+         "warm_up_walls": [
+          2.070407322,
+          2.041527544
+         ],
+         "walls": [
+          2.033579387,
+          2.039579736,
+          2.073891323,
+          2.046509137,
+          2.074447906,
+          2.094064426,
+          2.007646284
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 2.046509137,
+         "min": 2.007646284,
+         "max": 2.094064426,
+         "spread": 0.042227098055707485,
+         "median_thread_cpu": 2.0459411660000058,
+         "spread_thread_cpu": 0.04187736843259582
+        }
+       },
+       "load_1min_max": 6.01,
+       "meets_rule": true,
+       "misses": []
       }
      ],
-     "measurements": 1,
-     "label": "diagnostic_only",
-     "used_try": 1,
+     "measurements": 2,
+     "label": "authoritative",
+     "used_try": 2,
      "median_wall": {
-      "S": 6.971539119,
-      "P1": 2.162917891
+      "S": 6.578273294,
+      "P1": 2.046509137
      },
      "spread": {
-      "S": 0.07511106558563088,
-      "P1": 0.06351974643682844
+      "S": 0.025971553075459678,
+      "P1": 0.042227098055707485
      },
      "median_thread_cpu": {
-      "S": 6.967212711000002,
-      "P1": 2.1617342820000047
+      "S": 6.575237629000004,
+      "P1": 2.0459411660000058
      },
-     "speedup_equal_tolerance": 3.223210251303987
+     "speedup_equal_tolerance": 3.214387453770747
     }
    },
    "P2_reported_only": {
@@ -14022,62 +14314,62 @@
     "W": {
      "cells": {
       "1e-3": {
-       "timing_label": "diagnostic_only",
-       "used_try": 1,
-       "ratio": 0.656739824338543,
+       "timing_label": "authoritative",
+       "used_try": 2,
+       "ratio": 0.6655162140884466,
        "kind": "matched error at the error of arm S",
        "timing_cells_used": [
         "1e-3",
         "1e-4"
        ],
-       "authoritative": false,
+       "authoritative": true,
        "slower": false
       },
       "1e-4": {
-       "timing_label": "diagnostic_only",
-       "used_try": 1,
-       "ratio": 0.5748790180699668,
+       "timing_label": "authoritative",
+       "used_try": 2,
+       "ratio": 0.5683607337192239,
        "kind": "matched error at the error of arm S",
        "timing_cells_used": [
         "1e-4",
         "1e-5"
        ],
-       "authoritative": false,
+       "authoritative": true,
        "slower": false
       },
       "1e-5": {
-       "timing_label": "diagnostic_only",
-       "used_try": 1,
-       "ratio": 0.4740722963260356,
+       "timing_label": "authoritative",
+       "used_try": 2,
+       "ratio": 0.4862458830574854,
        "kind": "matched error at the error of arm S",
        "timing_cells_used": [
         "1e-4",
         "1e-5"
        ],
-       "authoritative": false,
+       "authoritative": true,
        "slower": false
       },
       "1e-6": {
-       "timing_label": "diagnostic_only",
-       "used_try": 1,
-       "ratio": 0.35762701052421103,
+       "timing_label": "authoritative",
+       "used_try": 2,
+       "ratio": 0.35550176043951853,
        "kind": "matched error at the error of arm S",
        "timing_cells_used": [
         "1e-6",
         "1e-7"
        ],
-       "authoritative": false,
+       "authoritative": true,
        "slower": false
       },
       "1e-7": {
-       "timing_label": "diagnostic_only",
-       "used_try": 1,
-       "ratio": 0.2191391643629965,
+       "timing_label": "authoritative",
+       "used_try": 2,
+       "ratio": 0.22936958380378134,
        "kind": "equal tolerance (outside the matched range)",
        "timing_cells_used": [
         "1e-7"
        ],
-       "authoritative": false,
+       "authoritative": true,
        "slower": false
       }
      },
@@ -14088,14 +14380,14 @@
        6.88406395235839e-09,
        3.735497839625202e-06
       ],
-      "geometric_mean_ratio": 0.4400801651510993,
-      "min_ratio": 0.2191408588988631,
-      "max_ratio": 0.656739824338543
+      "geometric_mean_ratio": 0.4441414483588758,
+      "min_ratio": 0.22937115608598044,
+      "max_ratio": 0.6655162140884466
      },
-     "speedup_at_matched_error": 2.2723132719618366,
-     "speedup_min": 1.5226730022154247,
-     "speedup_max": 4.563274986804335,
-     "authoritative_cells": 0,
+     "speedup_at_matched_error": 2.251534964131469,
+     "speedup_min": 1.5025929929741737,
+     "speedup_max": 4.35974608605603,
+     "authoritative_cells": 5,
      "slower_authoritative_cells": [],
      "verdict": "PASS"
     }
@@ -14177,24 +14469,97 @@
        "misses": [
         "1-minute load average 10.32 above 8.0"
        ]
+      },
+      {
+       "try": 2,
+       "logs": [
+        "logs/timing/porous2d__1e-3__try2.log"
+       ],
+       "invocations": 1,
+       "process_complete": true,
+       "load_before": [
+        "6.01 6.41 7.27 3/6109 4160329"
+       ],
+       "load_after": [
+        "7.70 6.74 7.37 4/6096 4160569"
+       ],
+       "dates": [
+        "2026-11-24T18:48:22+0900"
+       ],
+       "binaries": [
+        "9582b047669995dcfc3830f0675d39823f28ba7ba528d558d4625047c49f469f"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 5.822116851806641,
+       "longest_process_seconds_under_the_lock": 5.814484625,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          0.386963419,
+          0.386152803
+         ],
+         "walls": [
+          0.386629349,
+          0.387341728,
+          0.386639612,
+          0.386915634,
+          0.387193083,
+          0.390709609,
+          0.390549621
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.387193083,
+         "min": 0.386629349,
+         "max": 0.390709609,
+         "spread": 0.010538049823581178,
+         "median_thread_cpu": 0.3869836270000002,
+         "spread_thread_cpu": 0.012834248411237809
+        },
+        "P1": {
+         "warm_up_walls": [
+          0.256091833,
+          0.256268334
+         ],
+         "walls": [
+          0.256021464,
+          0.25635591,
+          0.263357858,
+          0.256361395,
+          0.257683266,
+          0.258006593,
+          0.264046858
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.257683266,
+         "min": 0.256021464,
+         "max": 0.264046858,
+         "spread": 0.031144412769124163,
+         "median_thread_cpu": 0.2579841649999999,
+         "spread_thread_cpu": 0.0309356002528303
+        }
+       },
+       "load_1min_max": 7.7,
+       "meets_rule": true,
+       "misses": []
       }
      ],
-     "measurements": 1,
-     "label": "diagnostic_only",
-     "used_try": 1,
+     "measurements": 2,
+     "label": "authoritative",
+     "used_try": 2,
      "median_wall": {
-      "S": 0.429474076,
-      "P1": 0.28205272
+      "S": 0.387193083,
+      "P1": 0.257683266
      },
      "spread": {
-      "S": 0.08213922788671413,
-      "P1": 0.0522718944174692
+      "S": 0.010538049823581178,
+      "P1": 0.031144412769124163
      },
      "median_thread_cpu": {
-      "S": 0.428690306,
-      "P1": 0.28188724600000015
+      "S": 0.3869836270000002,
+      "P1": 0.2579841649999999
      },
-     "speedup_equal_tolerance": 1.522673052045022
+     "speedup_equal_tolerance": 1.502593043818375
     },
     "1e-4": {
      "tries": [
@@ -14274,24 +14639,97 @@
         "arm S: spread 0.103 above 0.1",
         "arm P1: spread 0.113 above 0.1"
        ]
+      },
+      {
+       "try": 2,
+       "logs": [
+        "logs/timing/porous2d__1e-4__try2.log"
+       ],
+       "invocations": 1,
+       "process_complete": true,
+       "load_before": [
+        "7.70 6.74 7.37 3/6096 4160572"
+       ],
+       "load_after": [
+        "7.25 6.66 7.34 2/6120 4160896"
+       ],
+       "dates": [
+        "2026-11-24T18:48:28+0900"
+       ],
+       "binaries": [
+        "9582b047669995dcfc3830f0675d39823f28ba7ba528d558d4625047c49f469f"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 6.7736592292785645,
+       "longest_process_seconds_under_the_lock": 6.73015852,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          0.481964154,
+          0.477869072
+         ],
+         "walls": [
+          0.474609786,
+          0.475758705,
+          0.475120579,
+          0.478193483,
+          0.475982313,
+          0.476760867,
+          0.475447365
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.475758705,
+         "min": 0.474609786,
+         "max": 0.478193483,
+         "spread": 0.007532593649547614,
+         "median_thread_cpu": 0.4759756390000005,
+         "spread_thread_cpu": 0.006365262739843391
+        },
+        "P1": {
+         "warm_up_walls": [
+          0.272530013,
+          0.271552831
+         ],
+         "walls": [
+          0.269683859,
+          0.26982767,
+          0.271578356,
+          0.271468841,
+          0.270402505,
+          0.270949871,
+          0.269230112
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.270402505,
+         "min": 0.269230112,
+         "max": 0.271578356,
+         "spread": 0.008684253868136314,
+         "median_thread_cpu": 0.27097989499999997,
+         "spread_thread_cpu": 0.010980777743674942
+        }
+       },
+       "load_1min_max": 7.7,
+       "meets_rule": true,
+       "misses": []
       }
      ],
-     "measurements": 1,
-     "label": "diagnostic_only",
-     "used_try": 1,
+     "measurements": 2,
+     "label": "authoritative",
+     "used_try": 2,
      "median_wall": {
-      "S": 0.514032345,
-      "P1": 0.29550634
+      "S": 0.475758705,
+      "P1": 0.270402505
      },
      "spread": {
-      "S": 0.10304226089118984,
-      "P1": 0.11288486060908207
+      "S": 0.007532593649547614,
+      "P1": 0.008684253868136314
      },
      "median_thread_cpu": {
-      "S": 0.5129901969999997,
-      "P1": 0.2949143030000001
+      "S": 0.4759756390000005,
+      "P1": 0.27097989499999997
      },
-     "speedup_equal_tolerance": 1.7394968412522045
+     "speedup_equal_tolerance": 1.7594463668152778
     },
     "1e-5": {
      "tries": [
@@ -14370,24 +14808,97 @@
         "1-minute load average 10.93 above 8.0",
         "arm P1: spread 0.159 above 0.1"
        ]
+      },
+      {
+       "try": 2,
+       "logs": [
+        "logs/timing/porous2d__1e-5__try2.log"
+       ],
+       "invocations": 1,
+       "process_complete": true,
+       "load_before": [
+        "7.25 6.66 7.34 2/6120 4160899"
+       ],
+       "load_after": [
+        "6.51 6.52 7.28 2/6113 4161132"
+       ],
+       "dates": [
+        "2026-11-24T18:48:35+0900"
+       ],
+       "binaries": [
+        "9582b047669995dcfc3830f0675d39823f28ba7ba528d558d4625047c49f469f"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 8.424788475036621,
+       "longest_process_seconds_under_the_lock": 8.385243957,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          0.624847235,
+          0.624412478
+         ],
+         "walls": [
+          0.63036426,
+          0.630859945,
+          0.627251765,
+          0.624773897,
+          0.624519916,
+          0.6261456,
+          0.626305373
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.626305373,
+         "min": 0.624519916,
+         "max": 0.630859945,
+         "spread": 0.010122903735650963,
+         "median_thread_cpu": 0.6259448910000005,
+         "spread_thread_cpu": 0.011192082722822776
+        },
+        "P1": {
+         "warm_up_walls": [
+          0.303964838,
+          0.304323641
+         ],
+         "walls": [
+          0.307219243,
+          0.307217883,
+          0.304539073,
+          0.304542723,
+          0.304140432,
+          0.30451748,
+          0.304165254
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.304539073,
+         "min": 0.304140432,
+         "max": 0.307219243,
+         "spread": 0.010109740499538328,
+         "median_thread_cpu": 0.30498589900000006,
+         "spread_thread_cpu": 0.00987674843288578
+        }
+       },
+       "load_1min_max": 7.25,
+       "meets_rule": true,
+       "misses": []
       }
      ],
-     "measurements": 1,
-     "label": "diagnostic_only",
-     "used_try": 1,
+     "measurements": 2,
+     "label": "authoritative",
+     "used_try": 2,
      "median_wall": {
-      "S": 0.704980587,
-      "P1": 0.33421252
+      "S": 0.626305373,
+      "P1": 0.304539073
      },
      "spread": {
-      "S": 0.04557892599104998,
-      "P1": 0.15880453251721377
+      "S": 0.010122903735650963,
+      "P1": 0.010109740499538328
      },
      "median_thread_cpu": {
-      "S": 0.7046466860000011,
-      "P1": 0.33376048299999983
+      "S": 0.6259448910000005,
+      "P1": 0.30498589900000006
      },
-     "speedup_equal_tolerance": 2.1093781495678257
+     "speedup_equal_tolerance": 2.056568199378475
     },
     "1e-6": {
      "tries": [
@@ -14465,24 +14976,97 @@
        "misses": [
         "1-minute load average 11.1 above 8.0"
        ]
+      },
+      {
+       "try": 2,
+       "logs": [
+        "logs/timing/porous2d__1e-6__try2.log"
+       ],
+       "invocations": 1,
+       "process_complete": true,
+       "load_before": [
+        "6.51 6.52 7.28 2/6113 4161135"
+       ],
+       "load_after": [
+        "6.29 6.48 7.26 7/6176 4161523"
+       ],
+       "dates": [
+        "2026-11-24T18:48:43+0900"
+       ],
+       "binaries": [
+        "9582b047669995dcfc3830f0675d39823f28ba7ba528d558d4625047c49f469f"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 10.780909061431885,
+       "longest_process_seconds_under_the_lock": 10.725433439,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          0.865610071,
+          0.875218405
+         ],
+         "walls": [
+          0.884251687,
+          0.872451457,
+          0.881757671,
+          0.878202859,
+          0.874751966,
+          0.888332809,
+          0.883380512
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.881757671,
+         "min": 0.872451457,
+         "max": 0.888332809,
+         "spread": 0.01801101654379592,
+         "median_thread_cpu": 0.8809288019999997,
+         "spread_thread_cpu": 0.017021655968060826
+        },
+        "P1": {
+         "warm_up_walls": [
+          0.306800387,
+          0.3068226
+         ],
+         "walls": [
+          0.316032242,
+          0.315222965,
+          0.311047894,
+          0.324364469,
+          0.313160009,
+          0.313466596,
+          0.313258922
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.313466596,
+         "min": 0.311047894,
+         "max": 0.324364469,
+         "spread": 0.04248163973427012,
+         "median_thread_cpu": 0.31398709700000005,
+         "spread_thread_cpu": 0.04137632445450272
+        }
+       },
+       "load_1min_max": 6.51,
+       "meets_rule": true,
+       "misses": []
       }
      ],
-     "measurements": 1,
-     "label": "diagnostic_only",
-     "used_try": 1,
+     "measurements": 2,
+     "label": "authoritative",
+     "used_try": 2,
      "median_wall": {
-      "S": 0.910332014,
-      "P1": 0.325559519
+      "S": 0.881757671,
+      "P1": 0.313466596
      },
      "spread": {
-      "S": 0.07587323519086957,
-      "P1": 0.07169123505186155
+      "S": 0.01801101654379592,
+      "P1": 0.04248163973427012
      },
      "median_thread_cpu": {
-      "S": 0.909778567,
-      "P1": 0.3259114590000003
+      "S": 0.8809288019999997,
+      "P1": 0.31398709700000005
      },
-     "speedup_equal_tolerance": 2.796207639070753
+     "speedup_equal_tolerance": 2.8129238721181
     },
     "1e-7": {
      "tries": [
@@ -14560,24 +15144,97 @@
        "misses": [
         "1-minute load average 11.1 above 8.0"
        ]
+      },
+      {
+       "try": 2,
+       "logs": [
+        "logs/timing/porous2d__1e-7__try2.log"
+       ],
+       "invocations": 1,
+       "process_complete": true,
+       "load_before": [
+        "6.29 6.48 7.26 7/6175 4161526"
+       ],
+       "load_after": [
+        "6.60 6.53 7.27 8/6094 4162035"
+       ],
+       "dates": [
+        "2026-11-24T18:48:54+0900"
+       ],
+       "binaries": [
+        "9582b047669995dcfc3830f0675d39823f28ba7ba528d558d4625047c49f469f"
+       ],
+       "longest_invocation_seconds_including_the_wait_for_the_lock": 14.635945796966553,
+       "longest_process_seconds_under_the_lock": 14.584561739,
+       "arms": {
+        "S": {
+         "warm_up_walls": [
+          1.323074095,
+          1.328558231
+         ],
+         "walls": [
+          1.311644586,
+          1.321500105,
+          1.314802926,
+          1.310362913,
+          1.3125078399999999,
+          1.311408941,
+          1.3408680689999999
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 1.3125078399999999,
+         "min": 1.310362913,
+         "max": 1.3408680689999999,
+         "spread": 0.023241884787522347,
+         "median_thread_cpu": 1.3129427049999993,
+         "spread_thread_cpu": 0.023220720815840448
+        },
+        "P1": {
+         "warm_up_walls": [
+          0.299352576,
+          0.298805271
+         ],
+         "walls": [
+          0.301049377,
+          0.298825737,
+          0.298623967,
+          0.300484234,
+          0.301584985,
+          0.302032026,
+          0.307704829
+         ],
+         "repetitions": 7,
+         "states_equal_instruction_run": true,
+         "median": 0.301049377,
+         "min": 0.298623967,
+         "max": 0.307704829,
+         "spread": 0.030164028540740087,
+         "median_thread_cpu": 0.3009825030000002,
+         "spread_thread_cpu": 0.03315755534134841
+        }
+       },
+       "load_1min_max": 6.6,
+       "meets_rule": true,
+       "misses": []
       }
      ],
-     "measurements": 1,
-     "label": "diagnostic_only",
-     "used_try": 1,
+     "measurements": 2,
+     "label": "authoritative",
+     "used_try": 2,
      "median_wall": {
-      "S": 1.425859859,
-      "P1": 0.312461738
+      "S": 1.3125078399999999,
+      "P1": 0.301049377
      },
      "spread": {
-      "S": 0.08263375622526727,
-      "P1": 0.058350309118487924
+      "S": 0.023241884787522347,
+      "P1": 0.030164028540740087
      },
      "median_thread_cpu": {
-      "S": 1.4249599450000012,
-      "P1": 0.31198819899999997
+      "S": 1.3129427049999993,
+      "P1": 0.3009825030000002
      },
-     "speedup_equal_tolerance": 4.563310273208556
+     "speedup_equal_tolerance": 4.359775971235442
     }
    },
    "P2_reported_only": {
@@ -14761,16 +15418,16 @@
    },
    "verdict": "PASS",
    "speedup_at_matched_error": {
-    "ac3d": 6.492717599151539,
-    "robertson_rd1d": 1.2533223540967777,
-    "schnakenberg2d": 2.0542117242488382,
-    "porous2d": 2.2723132719618366
+    "ac3d": 6.465947554055242,
+    "robertson_rd1d": 1.2542856703085787,
+    "schnakenberg2d": 2.0532107099697425,
+    "porous2d": 2.251534964131469
    },
    "authoritative_cells": {
-    "ac3d": 4,
-    "robertson_rd1d": 3,
-    "schnakenberg2d": 1,
-    "porous2d": 0
+    "ac3d": 5,
+    "robertson_rd1d": 5,
+    "schnakenberg2d": 5,
+    "porous2d": 5
    }
   },
   "V": {
@@ -15706,8 +16363,846 @@
   "budget_replay": {
    "label": "exploratory, added after the deciding runs (PROTOCOL.json amendment P-1); decides nothing",
    "note": "paired on identical stage systems: the systems of the run of the named arm, each solved again by the shipped kernel, P1 and P2 with their own operator; kernel order [shipped, P1, P2]",
-   "runs": {},
-   "totals_by_family_and_arm": {}
+   "runs": {
+    "robertson_rd1d__1e-3__P1": {
+     "log": "logs/shadow/robertson_rd1d__1e-3__P1.log",
+     "exit_code": 0,
+     "binary_sha256": "0260bfde8fff7387c84c9a1136dd2011382fc3935533620e83eaba2216bb7cb6",
+     "family": "robertson_rd1d",
+     "rtol": 0.001,
+     "arm": "P1",
+     "success": true,
+     "attempts": 37,
+     "state_sha256": "b4b66f24788adfba98b865c766ee0f61a950381140abaf819d9ae6e9c8aea5b8",
+     "systems": 264,
+     "driver_completed": 252,
+     "driver_failed": 12,
+     "replay_differs_from_driver": 0,
+     "solved": [
+      252,
+      252,
+      245
+     ],
+     "budget": [
+      12,
+      12,
+      19
+     ],
+     "other": [
+      0,
+      0,
+      0
+     ],
+     "columns_of_solved": [
+      28840,
+      24007,
+      23571
+     ],
+     "all_solved": 245,
+     "columns_where_all_solved": [
+      27440,
+      22687,
+      23571
+     ],
+     "shipped_solved_p1_budget": 0,
+     "shipped_budget_p1_solved": 0,
+     "shipped_solved_p2_budget": 7,
+     "shipped_budget_p2_solved": 0,
+     "shipped_solved_with_the_whole_budget": 34,
+     "disagreements_first_40": [
+      [
+       11,
+       1,
+       "4045a13dcd906671",
+       200,
+       195,
+       -1
+      ],
+      [
+       11,
+       2,
+       "4045a13dcd906671",
+       200,
+       190,
+       -1
+      ],
+      [
+       13,
+       0,
+       "4045a13dcd90666e",
+       200,
+       176,
+       -1
+      ],
+      [
+       21,
+       6,
+       "4045a13dcd90666a",
+       200,
+       196,
+       -1
+      ],
+      [
+       25,
+       7,
+       "4045a13dcd90666a",
+       200,
+       191,
+       -1
+      ],
+      [
+       34,
+       5,
+       "405015f5ca9d0cb8",
+       200,
+       184,
+       -1
+      ],
+      [
+       34,
+       6,
+       "405015f5ca9d0cb8",
+       200,
+       188,
+       -1
+      ]
+     ]
+    },
+    "robertson_rd1d__1e-3__S": {
+     "log": "logs/shadow/robertson_rd1d__1e-3__S.log",
+     "exit_code": 0,
+     "binary_sha256": "0260bfde8fff7387c84c9a1136dd2011382fc3935533620e83eaba2216bb7cb6",
+     "family": "robertson_rd1d",
+     "rtol": 0.001,
+     "arm": "S",
+     "success": true,
+     "attempts": 35,
+     "state_sha256": "b9c00bdd59d67cadade7fbbe21eae768852cc053364126cba909e103916abc70",
+     "systems": 240,
+     "driver_completed": 229,
+     "driver_failed": 11,
+     "replay_differs_from_driver": 0,
+     "solved": [
+      229,
+      229,
+      224
+     ],
+     "budget": [
+      11,
+      11,
+      16
+     ],
+     "other": [
+      0,
+      0,
+      0
+     ],
+     "columns_of_solved": [
+      24400,
+      20108,
+      19935
+     ],
+     "all_solved": 224,
+     "columns_where_all_solved": [
+      23400,
+      19153,
+      19935
+     ],
+     "shipped_solved_p1_budget": 0,
+     "shipped_budget_p1_solved": 0,
+     "shipped_solved_p2_budget": 5,
+     "shipped_budget_p2_solved": 0,
+     "shipped_solved_with_the_whole_budget": 20,
+     "disagreements_first_40": [
+      [
+       15,
+       5,
+       "4045a13dcd8b7aec",
+       200,
+       190,
+       -1
+      ],
+      [
+       15,
+       6,
+       "4045a13dcd8b7aec",
+       200,
+       197,
+       -1
+      ],
+      [
+       17,
+       6,
+       "4045a13dcd8b7aec",
+       200,
+       193,
+       -1
+      ],
+      [
+       19,
+       6,
+       "4045a13dcd8b7aec",
+       200,
+       181,
+       -1
+      ],
+      [
+       30,
+       5,
+       "40520b19f8008af2",
+       200,
+       194,
+       -1
+      ]
+     ]
+    },
+    "robertson_rd1d__1e-4__P1": {
+     "log": "logs/shadow/robertson_rd1d__1e-4__P1.log",
+     "exit_code": 0,
+     "binary_sha256": "0260bfde8fff7387c84c9a1136dd2011382fc3935533620e83eaba2216bb7cb6",
+     "family": "robertson_rd1d",
+     "rtol": 0.0001,
+     "arm": "P1",
+     "success": true,
+     "attempts": 36,
+     "state_sha256": "01d991c2075e86fdcbbc61170cbb659389d1fc5deefe25db044e15d35a4d6359",
+     "systems": 260,
+     "driver_completed": 250,
+     "driver_failed": 10,
+     "replay_differs_from_driver": 0,
+     "solved": [
+      250,
+      250,
+      245
+     ],
+     "budget": [
+      10,
+      10,
+      15
+     ],
+     "other": [
+      0,
+      0,
+      0
+     ],
+     "columns_of_solved": [
+      26640,
+      22229,
+      22126
+     ],
+     "all_solved": 245,
+     "columns_where_all_solved": [
+      25640,
+      21262,
+      22126
+     ],
+     "shipped_solved_p1_budget": 0,
+     "shipped_budget_p1_solved": 0,
+     "shipped_solved_p2_budget": 5,
+     "shipped_budget_p2_solved": 0,
+     "shipped_solved_with_the_whole_budget": 24,
+     "disagreements_first_40": [
+      [
+       20,
+       6,
+       "40471f37030af698",
+       200,
+       199,
+       -1
+      ],
+      [
+       22,
+       6,
+       "40471f37030af698",
+       200,
+       187,
+       -1
+      ],
+      [
+       22,
+       7,
+       "40471f37030af698",
+       200,
+       198,
+       -1
+      ],
+      [
+       29,
+       1,
+       "4055aafecb36a750",
+       200,
+       188,
+       -1
+      ],
+      [
+       29,
+       3,
+       "4055aafecb36a750",
+       200,
+       195,
+       -1
+      ]
+     ]
+    },
+    "robertson_rd1d__1e-4__S": {
+     "log": "logs/shadow/robertson_rd1d__1e-4__S.log",
+     "exit_code": 0,
+     "binary_sha256": "0260bfde8fff7387c84c9a1136dd2011382fc3935533620e83eaba2216bb7cb6",
+     "family": "robertson_rd1d",
+     "rtol": 0.0001,
+     "arm": "S",
+     "success": true,
+     "attempts": 34,
+     "state_sha256": "6e8eafb30cab5dbac255a60d9a5f4a836156a370d289e034eb762f364f2d72a3",
+     "systems": 254,
+     "driver_completed": 245,
+     "driver_failed": 9,
+     "replay_differs_from_driver": 0,
+     "solved": [
+      245,
+      245,
+      239
+     ],
+     "budget": [
+      9,
+      9,
+      15
+     ],
+     "other": [
+      0,
+      0,
+      0
+     ],
+     "columns_of_solved": [
+      26080,
+      21295,
+      20836
+     ],
+     "all_solved": 239,
+     "columns_where_all_solved": [
+      24880,
+      20131,
+      20836
+     ],
+     "shipped_solved_p1_budget": 0,
+     "shipped_budget_p1_solved": 0,
+     "shipped_solved_p2_budget": 6,
+     "shipped_budget_p2_solved": 0,
+     "shipped_solved_with_the_whole_budget": 26,
+     "disagreements_first_40": [
+      [
+       14,
+       5,
+       "40471f3701a21e7a",
+       200,
+       193,
+       -1
+      ],
+      [
+       16,
+       7,
+       "40471f3701a21e74",
+       200,
+       200,
+       -1
+      ],
+      [
+       17,
+       0,
+       "4052f828735e1d24",
+       200,
+       186,
+       -1
+      ],
+      [
+       17,
+       1,
+       "4052f828735e1d24",
+       200,
+       194,
+       -1
+      ],
+      [
+       17,
+       2,
+       "4052f828735e1d24",
+       200,
+       194,
+       -1
+      ],
+      [
+       33,
+       7,
+       "404b5850b1ec2708",
+       200,
+       197,
+       -1
+      ]
+     ]
+    },
+    "robertson_rd1d__1e-5__P1": {
+     "log": "logs/shadow/robertson_rd1d__1e-5__P1.log",
+     "exit_code": 0,
+     "binary_sha256": "0260bfde8fff7387c84c9a1136dd2011382fc3935533620e83eaba2216bb7cb6",
+     "family": "robertson_rd1d",
+     "rtol": 1e-05,
+     "arm": "P1",
+     "success": true,
+     "attempts": 40,
+     "state_sha256": "012b2d4c1948e5ce898477a53b575b07bf016cc8de69cbd2d73afbb5d5690029",
+     "systems": 317,
+     "driver_completed": 307,
+     "driver_failed": 10,
+     "replay_differs_from_driver": 0,
+     "solved": [
+      307,
+      307,
+      299
+     ],
+     "budget": [
+      10,
+      10,
+      18
+     ],
+     "other": [
+      0,
+      0,
+      0
+     ],
+     "columns_of_solved": [
+      32640,
+      26839,
+      26249
+     ],
+     "all_solved": 299,
+     "columns_where_all_solved": [
+      31040,
+      25341,
+      26249
+     ],
+     "shipped_solved_p1_budget": 0,
+     "shipped_budget_p1_solved": 0,
+     "shipped_solved_p2_budget": 8,
+     "shipped_budget_p2_solved": 0,
+     "shipped_solved_with_the_whole_budget": 23,
+     "disagreements_first_40": [
+      [
+       18,
+       7,
+       "40457575b9ce21ae",
+       200,
+       195,
+       -1
+      ],
+      [
+       19,
+       5,
+       "404cc323905856a0",
+       200,
+       194,
+       -1
+      ],
+      [
+       21,
+       5,
+       "404cc323905856a4",
+       200,
+       182,
+       -1
+      ],
+      [
+       23,
+       5,
+       "404cc323905856a4",
+       200,
+       185,
+       -1
+      ],
+      [
+       25,
+       5,
+       "404cc323905856a4",
+       200,
+       185,
+       -1
+      ],
+      [
+       29,
+       6,
+       "404cc323905856a4",
+       200,
+       188,
+       -1
+      ],
+      [
+       31,
+       6,
+       "404cc323905856a0",
+       200,
+       185,
+       -1
+      ],
+      [
+       33,
+       6,
+       "404cc323905856a4",
+       200,
+       184,
+       -1
+      ]
+     ]
+    },
+    "robertson_rd1d__1e-5__S": {
+     "log": "logs/shadow/robertson_rd1d__1e-5__S.log",
+     "exit_code": 0,
+     "binary_sha256": "0260bfde8fff7387c84c9a1136dd2011382fc3935533620e83eaba2216bb7cb6",
+     "family": "robertson_rd1d",
+     "rtol": 1e-05,
+     "arm": "S",
+     "success": true,
+     "attempts": 40,
+     "state_sha256": "f5b8f9940a9e2969fef28d626b278927063e1769fec95d62a1e14e4b71b0af08",
+     "systems": 318,
+     "driver_completed": 308,
+     "driver_failed": 10,
+     "replay_differs_from_driver": 0,
+     "solved": [
+      308,
+      308,
+      305
+     ],
+     "budget": [
+      10,
+      10,
+      13
+     ],
+     "other": [
+      0,
+      0,
+      0
+     ],
+     "columns_of_solved": [
+      31040,
+      24925,
+      25645
+     ],
+     "all_solved": 305,
+     "columns_where_all_solved": [
+      30440,
+      24351,
+      25645
+     ],
+     "shipped_solved_p1_budget": 0,
+     "shipped_budget_p1_solved": 0,
+     "shipped_solved_p2_budget": 3,
+     "shipped_budget_p2_solved": 0,
+     "shipped_solved_with_the_whole_budget": 23,
+     "disagreements_first_40": [
+      [
+       19,
+       5,
+       "404cc3237d137ce0",
+       200,
+       194,
+       -1
+      ],
+      [
+       23,
+       6,
+       "404cc3237d137ce0",
+       200,
+       196,
+       -1
+      ],
+      [
+       31,
+       6,
+       "404cc3237d137cdc",
+       200,
+       184,
+       -1
+      ]
+     ]
+    },
+    "robertson_rd1d__1e-6__P1": {
+     "log": "logs/shadow/robertson_rd1d__1e-6__P1.log",
+     "exit_code": 0,
+     "binary_sha256": "0260bfde8fff7387c84c9a1136dd2011382fc3935533620e83eaba2216bb7cb6",
+     "family": "robertson_rd1d",
+     "rtol": 1e-06,
+     "arm": "P1",
+     "success": true,
+     "attempts": 43,
+     "state_sha256": "7c8eb28256ddc08be099a00cd9e4315caed548afc642a95e5842374f8d449366",
+     "systems": 343,
+     "driver_completed": 335,
+     "driver_failed": 8,
+     "replay_differs_from_driver": 0,
+     "solved": [
+      335,
+      335,
+      331
+     ],
+     "budget": [
+      8,
+      8,
+      12
+     ],
+     "other": [
+      0,
+      0,
+      0
+     ],
+     "columns_of_solved": [
+      32160,
+      25652,
+      25718
+     ],
+     "all_solved": 331,
+     "columns_where_all_solved": [
+      31360,
+      24906,
+      25718
+     ],
+     "shipped_solved_p1_budget": 0,
+     "shipped_budget_p1_solved": 0,
+     "shipped_solved_p2_budget": 4,
+     "shipped_budget_p2_solved": 0,
+     "shipped_solved_with_the_whole_budget": 18,
+     "disagreements_first_40": [
+      [
+       29,
+       7,
+       "4043beac5ef1f950",
+       200,
+       186,
+       -1
+      ],
+      [
+       32,
+       6,
+       "404cc4e92e5b9dfc",
+       200,
+       188,
+       -1
+      ],
+      [
+       34,
+       6,
+       "404cc4e92e5b9df8",
+       200,
+       188,
+       -1
+      ],
+      [
+       36,
+       6,
+       "404cc4e92e5b9df4",
+       200,
+       184,
+       -1
+      ]
+     ]
+    },
+    "robertson_rd1d__1e-6__S": {
+     "log": "logs/shadow/robertson_rd1d__1e-6__S.log",
+     "exit_code": 0,
+     "binary_sha256": "0260bfde8fff7387c84c9a1136dd2011382fc3935533620e83eaba2216bb7cb6",
+     "family": "robertson_rd1d",
+     "rtol": 1e-06,
+     "arm": "S",
+     "success": true,
+     "attempts": 43,
+     "state_sha256": "c53909d91c21d013870588ec4be71374de8e91d97a71faef5d5c2ccc652b8b08",
+     "systems": 343,
+     "driver_completed": 335,
+     "driver_failed": 8,
+     "replay_differs_from_driver": 0,
+     "solved": [
+      335,
+      335,
+      336
+     ],
+     "budget": [
+      8,
+      8,
+      7
+     ],
+     "other": [
+      0,
+      0,
+      0
+     ],
+     "columns_of_solved": [
+      30280,
+      23460,
+      25017
+     ],
+     "all_solved": 335,
+     "columns_where_all_solved": [
+      30280,
+      23460,
+      24820
+     ],
+     "shipped_solved_p1_budget": 0,
+     "shipped_budget_p1_solved": 0,
+     "shipped_solved_p2_budget": 0,
+     "shipped_budget_p2_solved": 1,
+     "shipped_solved_with_the_whole_budget": 17,
+     "disagreements_first_40": [
+      [
+       30,
+       6,
+       "404e54765c54d2f8",
+       -1,
+       -1,
+       197
+      ]
+     ]
+    },
+    "robertson_rd1d__1e-7__P1": {
+     "log": "logs/shadow/robertson_rd1d__1e-7__P1.log",
+     "exit_code": 0,
+     "binary_sha256": "0260bfde8fff7387c84c9a1136dd2011382fc3935533620e83eaba2216bb7cb6",
+     "family": "robertson_rd1d",
+     "rtol": 1e-07,
+     "arm": "P1",
+     "success": true,
+     "attempts": 38,
+     "state_sha256": "2ff9dc325e697c812bb11674cf8c8c115d97f4d825c87ebb80d44a2617c4381b",
+     "systems": 304,
+     "driver_completed": 303,
+     "driver_failed": 1,
+     "replay_differs_from_driver": 0,
+     "solved": [
+      303,
+      303,
+      302
+     ],
+     "budget": [
+      1,
+      1,
+      2
+     ],
+     "other": [
+      0,
+      0,
+      0
+     ],
+     "columns_of_solved": [
+      23800,
+      18050,
+      18831
+     ],
+     "all_solved": 302,
+     "columns_where_all_solved": [
+      23600,
+      17861,
+      18831
+     ],
+     "shipped_solved_p1_budget": 0,
+     "shipped_budget_p1_solved": 0,
+     "shipped_solved_p2_budget": 1,
+     "shipped_budget_p2_solved": 0,
+     "shipped_solved_with_the_whole_budget": 7,
+     "disagreements_first_40": [
+      [
+       33,
+       7,
+       "40456d89813fb1b8",
+       200,
+       189,
+       -1
+      ]
+     ]
+    },
+    "robertson_rd1d__1e-7__S": {
+     "log": "logs/shadow/robertson_rd1d__1e-7__S.log",
+     "exit_code": 0,
+     "binary_sha256": "0260bfde8fff7387c84c9a1136dd2011382fc3935533620e83eaba2216bb7cb6",
+     "family": "robertson_rd1d",
+     "rtol": 1e-07,
+     "arm": "S",
+     "success": true,
+     "attempts": 36,
+     "state_sha256": "7117bf9dc0d245001ba83a33751d9eb4d17a6dc5c13c77151e8f9fc456bca443",
+     "systems": 288,
+     "driver_completed": 288,
+     "driver_failed": 0,
+     "replay_differs_from_driver": 0,
+     "solved": [
+      288,
+      288,
+      287
+     ],
+     "budget": [
+      0,
+      0,
+      1
+     ],
+     "other": [
+      0,
+      0,
+      0
+     ],
+     "columns_of_solved": [
+      21600,
+      15947,
+      16557
+     ],
+     "all_solved": 287,
+     "columns_where_all_solved": [
+      21400,
+      15749,
+      16557
+     ],
+     "shipped_solved_p1_budget": 0,
+     "shipped_budget_p1_solved": 0,
+     "shipped_solved_p2_budget": 1,
+     "shipped_budget_p2_solved": 0,
+     "shipped_solved_with_the_whole_budget": 3,
+     "disagreements_first_40": [
+      [
+       34,
+       7,
+       "4048d0544c88acd0",
+       200,
+       198,
+       -1
+      ]
+     ]
+    }
+   },
+   "totals_by_family_and_arm": {
+    "robertson_rd1d P1": {
+     "systems": 1488,
+     "budget": [
+      41,
+      41,
+      66
+     ],
+     "shipped_solved_p1_budget": 0,
+     "shipped_budget_p1_solved": 0,
+     "shipped_solved_p2_budget": 25,
+     "shipped_budget_p2_solved": 0,
+     "replay_differs_from_driver": 0,
+     "shipped_solved_with_the_whole_budget": 106
+    },
+    "robertson_rd1d S": {
+     "systems": 1443,
+     "budget": [
+      38,
+      38,
+      52
+     ],
+     "shipped_solved_p1_budget": 0,
+     "shipped_budget_p1_solved": 0,
+     "shipped_solved_p2_budget": 15,
+     "shipped_budget_p2_solved": 1,
+     "replay_differs_from_driver": 0,
+     "shipped_solved_with_the_whole_budget": 89
+    }
+   }
   },
   "reference_rounding_probe": {
    "label": "exploratory; u_ref stays the frozen V17 statistic",
@@ -15731,11 +17226,13 @@
  "report_notes_ko": [
   "B \uc2e4\ud328 \uc140: robertson_rd1d rtol 1e-3 (S 11, P1 12), robertson_rd1d rtol 1e-4 (S 9, P1 10), robertson_rd1d rtol 1e-7 (S 0, P1 1). \ub3d9\uacb0 \uaddc\uce59\uc740 \uc140 \ud558\ub098\ub77c\ub3c4 P1\uc758 \uc608\uc0b0 \uc18c\uc9c4 \ud480\uc774\uac00 S\ubcf4\ub2e4 \ub9ce\uc73c\uba74 B\ub97c \uc2e4\ud328\ub85c \ubd05\ub2c8\ub2e4.",
   "\uac19\uc740 \ub2ec\uc131 \uc624\ucc28\uc5d0\uc11c P1\uc758 \uba85\ub839\uc5b4 \uc218 / S: ac3d 0.198, robertson_rd1d 0.791, schnakenberg2d 0.516, porous2d 0.470 (\ubaa8\ub450 1.00 \ubbf8\ub9cc).",
-  "V: P1\uc774 \ub05d\ub0b8 \ub2e8\uacc4 \ud480\uc774 9287\uac1c\ub97c \ud480\uc774 \ub85c\uadf8\ub85c \ub2e4\uc2dc \uc138\uc5c8\uace0 \uc704\ubc18 0\uac1c, \uac00\uc7a5 \ud070 \uc794\ucc28/\uc784\uacc4\uac12 0.999909."
+  "V: P1\uc774 \ub05d\ub0b8 \ub2e8\uacc4 \ud480\uc774 9287\uac1c\ub97c \ud480\uc774 \ub85c\uadf8\ub85c \ub2e4\uc2dc \uc138\uc5c8\uace0 \uc704\ubc18 0\uac1c, \uac00\uc7a5 \ud070 \uc794\ucc28/\uc784\uacc4\uac12 0.999909.",
+  "\ud0d0\uc0c9\uc6a9 \uc7ac\ud480\uc774 (robertson_rd1d P1\uc758 \uac19\uc740 \ub2e8\uacc4 \uacc4 1488\uac1c): S\uac00 \ud480\uace0 P1\uc774 \uc608\uc0b0\uc744 \ub2e4 \uc4f4 \uacc4 0\uac1c, S\uac00 \uc608\uc0b0\uc744 \ub2e4 \uc4f0\uace0 P1\uc774 \ud47c \uacc4 0\uac1c; \uc608\uc0b0 \uc18c\uc9c4 \uc218 [S, P1, P2] = [41, 41, 66].",
+  "\ud0d0\uc0c9\uc6a9 \uc7ac\ud480\uc774 (robertson_rd1d S\uc758 \uac19\uc740 \ub2e8\uacc4 \uacc4 1443\uac1c): S\uac00 \ud480\uace0 P1\uc774 \uc608\uc0b0\uc744 \ub2e4 \uc4f4 \uacc4 0\uac1c, S\uac00 \uc608\uc0b0\uc744 \ub2e4 \uc4f0\uace0 P1\uc774 \ud47c \uacc4 0\uac1c; \uc608\uc0b0 \uc18c\uc9c4 \uc218 [S, P1, P2] = [38, 38, 52]."
  ],
  "user_impact_ko": [
   "\ud589\ub82c \uc5c6\ub294 \uacbd\ub85c\uc758 \uae30\ubcf8\uac12\uc740 \ubc14\ub00c\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4: \ub77c\uc6b0\ud130\uc640 \ud30c\uc0ac\ub4dc\ub294 \uacc4\uc18d S(rodas5p-mf-fast-transformed-v1)\ub97c \uc501\ub2c8\ub2e4. \uace8\ub4e0 \uae30\ub85d\uacfc \uae30\uc874 \uacb0\uacfc\ub3c4 \uadf8\ub300\ub85c\uc785\ub2c8\ub2e4.",
   "P1\uc740 \uacc4\uc18d \uc120\ud0dd \uc0ac\ud56d(opt-in)\uc785\ub2c8\ub2e4: RoutingOptions { matrix_free_policy: MfStageSolvePolicy::ColumnTested, .. } \ub610\ub294 integrate_rodas5p_mf_fast_observed_with_stage_solve_policy(.., MfStageSolvePolicy::ColumnTested, ..)\ub85c \uace0\ub974\uba74, \uc774 \uc2dc\ud5d8\uc758 \ub124 \ubb38\uc81c\uc871\uc5d0\uc11c \uac19\uc740 \ub2ec\uc131 \uc624\ucc28\uc758 \uba85\ub839\uc5b4 \uc218\uac00 S\uc758 0.20, 0.79, 0.52, 0.47\ubc30\uc600\uc2b5\ub2c8\ub2e4 (\uc2dd\ubcc4\uc790 rodas5p-mf-fast-transformed-v2-candidate-p1).",
-  "\uae30\ubcf8\uac12\uc744 P1\ub85c \ubc14\uafc0\uc9c0\ub294 \uc18c\uc720\uc790 \uacb0\uc815\uc785\ub2c8\ub2e4. \ubc14\uafb8\ub824\uba74 \ub3d9\uacb0 \uaddc\uce59 B\ub97c \ub118\uc5b4\uc11c\ub294 \uacb0\uc815\uc774 \ud544\uc694\ud558\uace0, \uc791\uc131 \ud5c8\uc6a9 \ubaa9\ub85d \ubc16\uc758 V24 \ud14c\uc2a4\ud2b8 \ub450 \uc904 \ubb36\uc74c(OUT_OF_LIST_EDITS.json)\ub3c4 \ud568\uaed8 \ubc14\ub00c\uc5b4\uc57c \ud569\ub2c8\ub2e4."
+  "\uae30\ubcf8\uac12\uc744 P1\ub85c \ubc14\uafc0\uc9c0\ub294 \uc18c\uc720\uc790 \uacb0\uc815\uc785\ub2c8\ub2e4. \ubc14\uafb8\ub824\uba74 \ub3d9\uacb0 \uaddc\uce59 B\ub97c \ub118\uc5b4\uc11c\ub294 \uacb0\uc815\uc774 \ud544\uc694\ud558\uace0, \uc774 \ub178\ub4dc\uc758 \uc791\uc131 \ud5c8\uc6a9 \ubaa9\ub85d \ubc16\uc5d0 \uc788\ub294 V24 \ud14c\uc2a4\ud2b8 \uc904 4\uac1c(OUT_OF_LIST_EDITS.json: mf_adaptive_shipped_bits.rs, mf_adaptive_contracts.rs)\ub3c4 \ud568\uaed8 \ubc14\ub00c\uc5b4\uc57c \ud569\ub2c8\ub2e4."
  ]
 }
