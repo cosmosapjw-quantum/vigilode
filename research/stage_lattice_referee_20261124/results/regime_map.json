@@ -1,0 +1,974 @@
+{
+ "schema": "vigilode.referee2.regime-map.v1",
+ "source": "research/production_loop_20261116/cost_anatomy/AMDAHL.json",
+ "dominant_by_structure": {
+  "dense": {
+   "stage_solves": 4,
+   "jacobian": 10,
+   "rhs": 6,
+   "factorisation": 7
+  },
+  "banded_1d": {
+   "stage_solves": 8,
+   "rhs": 2
+  },
+  "banded_2d": {
+   "factorisation": 9
+  },
+  "banded_3d": {
+   "factorisation": 3
+  },
+  "matrix_free_2d": {
+   "stage_solves": 6
+  },
+  "matrix_free_3d": {
+   "stage_solves": 4
+  }
+ },
+ "cells": [
+  {
+   "cell": "dense.hires.n8.analytic.x1",
+   "structure": "dense",
+   "n": 8,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.03730917579699215,
+    "stage_solves": 0.3785790795863374,
+    "factorisation": 0.10845280009990922,
+    "jacobian": 0.008740519431862393
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.233485996646542,
+   "bound_two_way_P2_factor_and_solves": 1.3219049186477556,
+   "bound_spike_P8": 1.4953420721853117
+  },
+  {
+   "cell": "dense.hires.n8.fd.x1",
+   "structure": "dense",
+   "n": 8,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.03387459227644503,
+    "stage_solves": 0.3437280961433861,
+    "factorisation": 0.09846892369354888,
+    "jacobian": 0.09964346757871607
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.207531200247386,
+   "bound_two_way_P2_factor_and_solves": 1.2838594003656658,
+   "bound_spike_P8": 1.430128397355712
+  },
+  {
+   "cell": "dense.bruss1d.n32.analytic.x1",
+   "structure": "dense",
+   "n": 32,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.07440180198056504,
+    "stage_solves": 0.4064687264572133,
+    "factorisation": 0.26167793086229696,
+    "jacobian": 0.010451007563128738
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.2550742073317078,
+   "bound_two_way_P2_factor_and_solves": 1.5016668396647919,
+   "bound_spike_P8": 1.551975991752241
+  },
+  {
+   "cell": "dense.bruss1d.n32.fd.x1",
+   "structure": "dense",
+   "n": 32,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.05093725419535212,
+    "stage_solves": 0.2782782176084989,
+    "factorisation": 0.17915097385851475,
+    "jacobian": 0.32244061240280336
+   },
+   "dominant": "jacobian",
+   "bound_two_way_P2": 1.1616278660434707,
+   "bound_two_way_P2_factor_and_solves": 1.2965369167733942,
+   "bound_spike_P8": 1.3218656035693548
+  },
+  {
+   "cell": "dense.bruss1d.n32.analytic.x10",
+   "structure": "dense",
+   "n": 32,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.44744414357274814,
+    "stage_solves": 0.24264740769619023,
+    "factorisation": 0.15621244007741164,
+    "jacobian": 0.006238880700883165
+   },
+   "dominant": "rhs",
+   "bound_two_way_P2": 1.1380755397402011,
+   "bound_two_way_P2_factor_and_solves": 1.2491098903609306,
+   "bound_spike_P8": 1.269545416161053
+  },
+  {
+   "cell": "dense.bruss1d.n32.analytic.x100",
+   "structure": "dense",
+   "n": 32,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.8896203680379382,
+    "stage_solves": 0.04847171782999657,
+    "factorisation": 0.03120530068241248,
+    "jacobian": 0.0012462909362166168
+   },
+   "dominant": "rhs",
+   "bound_two_way_P2": 1.0248378249359003,
+   "bound_two_way_P2_factor_and_solves": 1.0414914674669398,
+   "bound_spike_P8": 1.0442912677028702
+  },
+  {
+   "cell": "dense.bruss1d.n128.analytic.x1",
+   "structure": "dense",
+   "n": 128,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.031373614768294915,
+    "stage_solves": 0.2973001126419391,
+    "factorisation": 0.5819626768701528,
+    "jacobian": 0.004802696424484151
+   },
+   "dominant": "factorisation",
+   "bound_two_way_P2": 1.1746051167614955,
+   "bound_two_way_P2_factor_and_solves": 1.7845396595061822,
+   "bound_spike_P8": 1.3516026737620204
+  },
+  {
+   "cell": "dense.bruss1d.n128.fd.x1",
+   "structure": "dense",
+   "n": 128,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.016664247715909537,
+    "stage_solves": 0.16109084477258923,
+    "factorisation": 0.3142943909623736,
+    "jacobian": 0.46269094111573383
+   },
+   "dominant": "jacobian",
+   "bound_two_way_P2": 1.0876013066304342,
+   "bound_two_way_P2_factor_and_solves": 1.311806790067476,
+   "bound_spike_P8": 1.1640826794389671
+  },
+  {
+   "cell": "dense.bruss1d.n512.analytic.x1",
+   "structure": "dense",
+   "n": 512,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.005896494765387867,
+    "stage_solves": 0.06255975480195136,
+    "factorisation": 0.9034215850275307,
+    "jacobian": 0.011550115308498898
+   },
+   "dominant": "factorisation",
+   "bound_two_way_P2": 1.032289901563161,
+   "bound_two_way_P2_factor_and_solves": 1.9342010710620872,
+   "bound_spike_P8": 1.0579097529010737
+  },
+  {
+   "cell": "dense.bruss1d.n512.fd.x1",
+   "structure": "dense",
+   "n": 512,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.0022470587462491967,
+    "stage_solves": 0.0228134092895291,
+    "factorisation": 0.3333556553296937,
+    "jacobian": 0.6350228185945327
+   },
+   "dominant": "jacobian",
+   "bound_two_way_P2": 1.0115383188398681,
+   "bound_two_way_P2_factor_and_solves": 1.216670131309288,
+   "bound_spike_P8": 1.020368320098415
+  },
+  {
+   "cell": "dense.bruss1d.n2048.analytic.x1",
+   "structure": "dense",
+   "n": 2048,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.0009770011864571712,
+    "stage_solves": 0.011330288427144373,
+    "factorisation": 0.9786886125033784,
+    "jacobian": 0.0030901080317532435
+   },
+   "dominant": "factorisation",
+   "bound_two_way_P2": 1.0056974209247564,
+   "bound_two_way_P2_factor_and_solves": 1.9802350775105135,
+   "bound_spike_P8": 1.0100132739959158
+  },
+  {
+   "cell": "dense.bruss1d.n2048.fd.x1",
+   "structure": "dense",
+   "n": 2048,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.0003659010011668123,
+    "stage_solves": 0.004164967127542328,
+    "factorisation": 0.3964814444357354,
+    "jacobian": 0.5941099379132979
+   },
+   "dominant": "jacobian",
+   "bound_two_way_P2": 1.0020868293515963,
+   "bound_two_way_P2_factor_and_solves": 1.2505052131435719,
+   "bound_spike_P8": 1.0036576760746367
+  },
+  {
+   "cell": "dense.radnet.n8.analytic.x1",
+   "structure": "dense",
+   "n": 8,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.21564096527728946,
+    "stage_solves": 0.26993765993940266,
+    "factorisation": 0.10967906639720922,
+    "jacobian": 0.029177227380708517
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.1560277070304577,
+   "bound_two_way_P2_factor_and_solves": 1.2342758855306921,
+   "bound_spike_P8": 1.3092354624015654
+  },
+  {
+   "cell": "dense.radnet.n32.analytic.x1",
+   "structure": "dense",
+   "n": 32,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.2116121806983962,
+    "stage_solves": 0.29137583749010826,
+    "factorisation": 0.3581087445266986,
+    "jacobian": 0.029880907220203777
+   },
+   "dominant": "factorisation",
+   "bound_two_way_P2": 1.1705324341557306,
+   "bound_two_way_P2_factor_and_solves": 1.4809160809039277,
+   "bound_spike_P8": 1.3421987489960328
+  },
+  {
+   "cell": "dense.radnet.n32.fd.x1",
+   "structure": "dense",
+   "n": 32,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.10915469263122123,
+    "stage_solves": 0.15029872040649728,
+    "factorisation": 0.18472117157129495,
+    "jacobian": 0.49955602296419305
+   },
+   "dominant": "jacobian",
+   "bound_two_way_P2": 1.081255671964247,
+   "bound_two_way_P2_factor_and_solves": 1.201215552284138,
+   "bound_spike_P8": 1.1514255654950838
+  },
+  {
+   "cell": "dense.radnet.n128.analytic.x1",
+   "structure": "dense",
+   "n": 128,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.14434951008423957,
+    "stage_solves": 0.1959255404188043,
+    "factorisation": 0.6126697267299486,
+    "jacobian": 0.019822026206514118
+   },
+   "dominant": "factorisation",
+   "bound_two_way_P2": 1.1086016928948084,
+   "bound_two_way_P2_factor_and_solves": 1.6786906622518092,
+   "bound_spike_P8": 1.2069056940483327
+  },
+  {
+   "cell": "dense.radnet.n128.analytic.x10",
+   "structure": "dense",
+   "n": 128,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.6174269416905444,
+    "stage_solves": 0.08765390036405783,
+    "factorisation": 0.27081367838192094,
+    "jacobian": 0.009205240796851371
+   },
+   "dominant": "rhs",
+   "bound_two_way_P2": 1.045835793207487,
+   "bound_two_way_P2_factor_and_solves": 1.2183737427934158,
+   "bound_spike_P8": 1.0830682629035158
+  },
+  {
+   "cell": "dense.radnet.n128.analytic.x100",
+   "structure": "dense",
+   "n": 128,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.9398642245710476,
+    "stage_solves": 0.013916585494452289,
+    "factorisation": 0.041274374828612376,
+    "jacobian": 0.0014436273946728474
+   },
+   "dominant": "rhs",
+   "bound_two_way_P2": 1.0070070498513866,
+   "bound_two_way_P2_factor_and_solves": 1.0283786012904552,
+   "bound_spike_P8": 1.0123271197971333
+  },
+  {
+   "cell": "dense.radnet.n128.fd.x1",
+   "structure": "dense",
+   "n": 128,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.042904699004330846,
+    "stage_solves": 0.05895082293682063,
+    "factorisation": 0.18129857976251457,
+    "jacobian": 0.7088637380210039
+   },
+   "dominant": "jacobian",
+   "bound_two_way_P2": 1.0303705973209878,
+   "bound_two_way_P2_factor_and_solves": 1.1365246888211664,
+   "bound_spike_P8": 1.0543873781833417
+  },
+  {
+   "cell": "dense.radnet.n128.fd.x10",
+   "structure": "dense",
+   "n": 128,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.055728662615673635,
+    "stage_solves": 0.007776916198196549,
+    "factorisation": 0.031875134329502904,
+    "jacobian": 0.9035848554043079
+   },
+   "dominant": "jacobian",
+   "bound_two_way_P2": 1.003903637228897,
+   "bound_two_way_P2_factor_and_solves": 1.0202270472129058,
+   "bound_spike_P8": 1.006851424256669
+  },
+  {
+   "cell": "dense.radnet.n128.fd.x100",
+   "structure": "dense",
+   "n": 128,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.057950606145721194,
+    "stage_solves": 0.0009021607857865495,
+    "factorisation": 0.002951164661764454,
+    "jacobian": 0.9381267683329512
+   },
+   "dominant": "jacobian",
+   "bound_two_way_P2": 1.0004512839582385,
+   "bound_two_way_P2_factor_and_solves": 1.001930381918661,
+   "bound_spike_P8": 1.0007900143175086
+  },
+  {
+   "cell": "dense.radnet.n512.analytic.x1",
+   "structure": "dense",
+   "n": 512,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.09635751845808824,
+    "stage_solves": 0.10034942452713969,
+    "factorisation": 0.7861398521480601,
+    "jacobian": 0.013748274244411293
+   },
+   "dominant": "factorisation",
+   "bound_two_way_P2": 1.052825201551691,
+   "bound_two_way_P2_factor_and_solves": 1.7961210054881702,
+   "bound_spike_P8": 1.0962577281325934
+  },
+  {
+   "cell": "dense.radnet.n512.fd.x1",
+   "structure": "dense",
+   "n": 512,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.012689751734502385,
+    "stage_solves": 0.013895660991331688,
+    "factorisation": 0.1509360144920887,
+    "jacobian": 0.820566786887276
+   },
+   "dominant": "jacobian",
+   "bound_two_way_P2": 1.006996440578881,
+   "bound_two_way_P2_factor_and_solves": 1.0898182871191613,
+   "bound_spike_P8": 1.0123083570294769
+  },
+  {
+   "cell": "dense.radnet.n512.analytic.x10",
+   "structure": "dense",
+   "n": 512,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.5049303179967976,
+    "stage_solves": 0.05487566144011989,
+    "factorisation": 0.42959092322561954,
+    "jacobian": 0.008474274751134273
+   },
+   "dominant": "rhs",
+   "bound_two_way_P2": 1.0282119041709943,
+   "bound_two_way_P2_factor_and_solves": 1.3196673724009491,
+   "bound_spike_P8": 1.050438047317357
+  },
+  {
+   "cell": "dense.radnet.n512.analytic.x100",
+   "structure": "dense",
+   "n": 512,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.9009102973900196,
+    "stage_solves": 0.010300888740775635,
+    "factorisation": 0.08563249944993152,
+    "jacobian": 0.0025420400201961965
+   },
+   "dominant": "rhs",
+   "bound_two_way_P2": 1.0051771087811647,
+   "bound_two_way_P2_factor_and_solves": 1.0503834201995428,
+   "bound_spike_P8": 1.009095255713203
+  },
+  {
+   "cell": "dense.radnet.n2048.analytic.x1",
+   "structure": "dense",
+   "n": 2048,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.05527763010828881,
+    "stage_solves": 0.06056249844687299,
+    "factorisation": 0.8632626872936937,
+    "jacobian": 0.01692621481463763
+   },
+   "dominant": "factorisation",
+   "bound_two_way_P2": 1.0312268368526305,
+   "bound_two_way_P2_factor_and_solves": 1.858434125664142,
+   "bound_spike_P8": 1.0559574961953848
+  },
+  {
+   "cell": "banded_1d.bruss1d.n1000.analytic.x1",
+   "structure": "banded_1d",
+   "n": 1000,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.053639848404568216,
+    "stage_solves": 0.6970014181041767,
+    "factorisation": 0.11285549867070555,
+    "jacobian": 0.007371656225305374
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.5349210872432886,
+   "bound_two_way_P2_factor_and_solves": 1.6804702125229225,
+   "bound_spike_P8": 2.563289152540011
+  },
+  {
+   "cell": "banded_1d.bruss1d.n1000.fd.x1",
+   "structure": "banded_1d",
+   "n": 1000,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.04918318681899243,
+    "stage_solves": 0.6424176436817846,
+    "factorisation": 0.10500060127777017,
+    "jacobian": 0.08334164622225897
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.4732071249246574,
+   "bound_two_way_P2_factor_and_solves": 1.5967021649101227,
+   "bound_spike_P8": 2.2837069111059036
+  },
+  {
+   "cell": "banded_1d.bruss1d.n10000.analytic.x1",
+   "structure": "banded_1d",
+   "n": 10000,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.052914866603742026,
+    "stage_solves": 0.6779886816480774,
+    "factorisation": 0.11715463694616388,
+    "jacobian": 0.008444565916559989
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.512846351794694,
+   "bound_two_way_P2_factor_and_solves": 1.6599484659590489,
+   "bound_spike_P8": 2.458452741415738
+  },
+  {
+   "cell": "banded_1d.bruss1d.n10000.fd.x1",
+   "structure": "banded_1d",
+   "n": 10000,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.04733213552427703,
+    "stage_solves": 0.6258518341416938,
+    "factorisation": 0.10581398452733284,
+    "jacobian": 0.08649147891263999
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.4554471269484837,
+   "bound_two_way_P2_factor_and_solves": 1.576871481852855,
+   "bound_spike_P8": 2.210532703613208
+  },
+  {
+   "cell": "banded_1d.bruss1d.n100000.analytic.x1",
+   "structure": "banded_1d",
+   "n": 100000,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.05050768441123198,
+    "stage_solves": 0.6540432681375978,
+    "factorisation": 0.12260274723032223,
+    "jacobian": 0.019570253413485953
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.4859318673881865,
+   "bound_two_way_P2_factor_and_solves": 1.634849786017981,
+   "bound_spike_P8": 2.338021079112888
+  },
+  {
+   "cell": "banded_1d.bruss1d.n100000.fd.x1",
+   "structure": "banded_1d",
+   "n": 100000,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.046750187763238624,
+    "stage_solves": 0.6076724283708937,
+    "factorisation": 0.11346809214125872,
+    "jacobian": 0.09290901969388039
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.436443578905703,
+   "bound_two_way_P2_factor_and_solves": 1.563893478586836,
+   "bound_spike_P8": 2.1354442903965025
+  },
+  {
+   "cell": "banded_1d.bruss1d.n10000.analytic.x10",
+   "structure": "banded_1d",
+   "n": 10000,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.35138541503417403,
+    "stage_solves": 0.46941839010142083,
+    "factorisation": 0.07907401023205043,
+    "jacobian": 0.006001150722183923
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.306692819948703,
+   "bound_two_way_P2_factor_and_solves": 1.3778777324069695,
+   "bound_spike_P8": 1.6970468928028768
+  },
+  {
+   "cell": "banded_1d.bruss1d.n10000.analytic.x100",
+   "structure": "banded_1d",
+   "n": 10000,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.8441690920104431,
+    "stage_solves": 0.11282938491581669,
+    "factorisation": 0.018994212341359163,
+    "jacobian": 0.0014567226501763322
+   },
+   "dominant": "rhs",
+   "bound_two_way_P2": 1.0597875910179873,
+   "bound_two_way_P2_factor_and_solves": 1.0705627140261673,
+   "bound_spike_P8": 1.1095401401039173
+  },
+  {
+   "cell": "banded_1d.bruss1d.n10000.fd.x10",
+   "structure": "banded_1d",
+   "n": 10000,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.27669207149311936,
+    "stage_solves": 0.3683211932938126,
+    "factorisation": 0.06253323082951759,
+    "jacobian": 0.21875014845923493
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.2257314318112214,
+   "bound_two_way_P2_factor_and_solves": 1.27457900066577,
+   "bound_spike_P8": 1.475537892723334
+  },
+  {
+   "cell": "banded_1d.bruss1d.n10000.fd.x100",
+   "structure": "banded_1d",
+   "n": 10000,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.5342310533268467,
+    "stage_solves": 0.07132726921062618,
+    "factorisation": 0.012063566523694903,
+    "jacobian": 0.36784456330769366
+   },
+   "dominant": "rhs",
+   "bound_two_way_P2": 1.0369825673749393,
+   "bound_two_way_P2_factor_and_solves": 1.0435095674637824,
+   "bound_spike_P8": 1.0665658242153275
+  },
+  {
+   "cell": "banded_2d.ac2d.g32.analytic.x1",
+   "structure": "banded_2d",
+   "n": 1024,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.007882185116610551,
+    "stage_solves": 0.252815656723956,
+    "factorisation": 0.7244795404873963,
+    "jacobian": 0.004089164151318832
+   },
+   "dominant": "factorisation",
+   "bound_two_way_P2": 1.1446989023779346,
+   "bound_two_way_P2_factor_and_solves": 1.9555985212414422,
+   "bound_spike_P8": 1.2840492950753584
+  },
+  {
+   "cell": "banded_2d.ac2d.g64.analytic.x1",
+   "structure": "banded_2d",
+   "n": 4096,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.0021548130987067244,
+    "stage_solves": 0.152974930652086,
+    "factorisation": 0.8360102154401059,
+    "jacobian": 0.006160582594152991
+   },
+   "dominant": "factorisation",
+   "bound_two_way_P2": 1.0828223358690487,
+   "bound_two_way_P2_factor_and_solves": 1.9782103025188342,
+   "bound_spike_P8": 1.1545385185893178
+  },
+  {
+   "cell": "banded_2d.ac2d.g64.fd.x1",
+   "structure": "banded_2d",
+   "n": 4096,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.002042322618707617,
+    "stage_solves": 0.14450142574632566,
+    "factorisation": 0.7814120276167752,
+    "jacobian": 0.06835254368591831
+   },
+   "dominant": "factorisation",
+   "bound_two_way_P2": 1.0778774113606893,
+   "bound_two_way_P2_factor_and_solves": 1.8620473427046014,
+   "bound_spike_P8": 1.1447394182952189
+  },
+  {
+   "cell": "banded_2d.ac2d.g64.analytic.x10",
+   "structure": "banded_2d",
+   "n": 4096,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.02192989494492292,
+    "stage_solves": 0.13883930496143762,
+    "factorisation": 0.832647002959697,
+    "jacobian": 0.0036212852931129793
+   },
+   "dominant": "factorisation",
+   "bound_two_way_P2": 1.074598236106937,
+   "bound_two_way_P2_factor_and_solves": 1.944553597490311,
+   "bound_spike_P8": 1.1382837034573283
+  },
+  {
+   "cell": "banded_2d.ac2d.g64.analytic.x100",
+   "structure": "banded_2d",
+   "n": 4096,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.17506197139606214,
+    "stage_solves": 0.12434231268569516,
+    "factorisation": 0.6925450043441272,
+    "jacobian": 0.005195877321585678
+   },
+   "dominant": "factorisation",
+   "bound_two_way_P2": 1.066292646854841,
+   "bound_two_way_P2_factor_and_solves": 1.6904560561205761,
+   "bound_spike_P8": 1.122081985457948
+  },
+  {
+   "cell": "banded_2d.ac2d.g128.analytic.x1",
+   "structure": "banded_2d",
+   "n": 16384,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.0005623138473741023,
+    "stage_solves": 0.11829057954078175,
+    "factorisation": 0.8745179426925572,
+    "jacobian": 0.0045766718623739665
+   },
+   "dominant": "factorisation",
+   "bound_two_way_P2": 1.0628633615023906,
+   "bound_two_way_P2_factor_and_solves": 1.9857197406344076,
+   "bound_spike_P8": 1.1154542650288075
+  },
+  {
+   "cell": "banded_2d.bruss2d.g32.analytic.x1",
+   "structure": "banded_2d",
+   "n": 2048,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.0014501546014584654,
+    "stage_solves": 0.15075209613765148,
+    "factorisation": 0.8382386292792733,
+    "jacobian": 0.006222713052627482
+   },
+   "dominant": "factorisation",
+   "bound_two_way_P2": 1.0815207608578545,
+   "bound_two_way_P2_factor_and_solves": 1.9782212194094555,
+   "bound_spike_P8": 1.1519517480897115
+  },
+  {
+   "cell": "banded_2d.bruss2d.g64.analytic.x1",
+   "structure": "banded_2d",
+   "n": 8192,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.00038754283864101476,
+    "stage_solves": 0.10105121873664424,
+    "factorisation": 0.8945610603715148,
+    "jacobian": 0.002611488689770824
+   },
+   "dominant": "factorisation",
+   "bound_two_way_P2": 1.0532142939997653,
+   "bound_two_way_P2_factor_and_solves": 1.9912628941979802,
+   "bound_spike_P8": 1.0969962028407092
+  },
+  {
+   "cell": "banded_3d.ac3d.g8.analytic.x1",
+   "structure": "banded_3d",
+   "n": 512,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.0034854190832477017,
+    "stage_solves": 0.16074018231701656,
+    "factorisation": 0.8290255972221526,
+    "jacobian": 0.002469890287746718
+   },
+   "dominant": "factorisation",
+   "bound_two_way_P2": 1.0873939509642034,
+   "bound_two_way_P2_factor_and_solves": 1.9797389154840501,
+   "bound_spike_P8": 1.1636670465690928
+  },
+  {
+   "cell": "banded_3d.ac3d.g16.analytic.x1",
+   "structure": "banded_3d",
+   "n": 4096,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.00020581304317995126,
+    "stage_solves": 0.05776410993378354,
+    "factorisation": 0.9396630684080296,
+    "jacobian": 0.0018284514862427184
+   },
+   "dominant": "factorisation",
+   "bound_two_way_P2": 1.0297410372392068,
+   "bound_two_way_P2_factor_and_solves": 1.994867561532475,
+   "bound_spike_P8": 1.0532342464481232
+  },
+  {
+   "cell": "banded_3d.ac3d.g16.fd.x1",
+   "structure": "banded_3d",
+   "n": 4096,
+   "admissibility": "authoritative",
+   "fractions": {
+    "rhs": 0.0002005032712790811,
+    "stage_solves": 0.05632887375081446,
+    "factorisation": 0.9068807667108558,
+    "jacobian": 0.03602178025387607
+   },
+   "dominant": "factorisation",
+   "bound_two_way_P2": 1.0289806608690615,
+   "bound_two_way_P2_factor_and_solves": 1.9290302823519463,
+   "bound_spike_P8": 1.0518429895957933
+  },
+  {
+   "cell": "matrix_free_2d.ac2d.g64.jvp.x1",
+   "structure": "matrix_free_2d",
+   "n": 4096,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.0013100487687426922,
+    "stage_solves": 0.9985634056661211,
+    "factorisation": 0.0,
+    "jacobian": 0.0
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.9971309330176124,
+   "bound_two_way_P2_factor_and_solves": 1.9971309330176124,
+   "bound_spike_P8": 7.920351673643213
+  },
+  {
+   "cell": "matrix_free_2d.ac2d.g128.jvp.x1",
+   "structure": "matrix_free_2d",
+   "n": 16384,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.0010316606892668693,
+    "stage_solves": 0.9988571587565372,
+    "factorisation": 0.0,
+    "jacobian": 0.0
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.9977169267033998,
+   "bound_two_way_P2_factor_and_solves": 1.9977169267033998,
+   "bound_spike_P8": 7.936508812797409
+  },
+  {
+   "cell": "matrix_free_2d.ac2d.g128.jvp.x10",
+   "structure": "matrix_free_2d",
+   "n": 16384,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.01069728479987793,
+    "stage_solves": 0.9891999536301139,
+    "factorisation": 0.0,
+    "jacobian": 0.0
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.9786306967264742,
+   "bound_two_way_P2_factor_and_solves": 1.9786306967264742,
+   "bound_spike_P8": 7.437706941056747
+  },
+  {
+   "cell": "matrix_free_2d.ac2d.g128.jvp.x100",
+   "structure": "matrix_free_2d",
+   "n": 16384,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.0930344482039403,
+    "stage_solves": 0.9068718239882649,
+    "factorisation": 0.0,
+    "jacobian": 0.0
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.8296116081253855,
+   "bound_two_way_P2_factor_and_solves": 1.8296116081253855,
+   "bound_spike_P8": 4.842916281127454
+  },
+  {
+   "cell": "matrix_free_2d.ac2d.g256.jvp.x1",
+   "structure": "matrix_free_2d",
+   "n": 65536,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.0005938444657862167,
+    "stage_solves": 0.9993523635098013,
+    "factorisation": 0.0,
+    "jacobian": 0.0
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.998705565342721,
+   "bound_two_way_P2_factor_and_solves": 1.998705565342721,
+   "bound_spike_P8": 7.963896032277441
+  },
+  {
+   "cell": "matrix_free_2d.bruss2d.g128.jvp.x1",
+   "structure": "matrix_free_2d",
+   "n": 32768,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.0008555376266177251,
+    "stage_solves": 0.9988612731831283,
+    "factorisation": 0.0,
+    "jacobian": 0.0
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.9977251368139712,
+   "bound_two_way_P2_factor_and_solves": 1.9977251368139712,
+   "bound_spike_P8": 7.936735584460884
+  },
+  {
+   "cell": "matrix_free_3d.ac3d.g16.jvp.x1",
+   "structure": "matrix_free_3d",
+   "n": 4096,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.0015704100708606196,
+    "stage_solves": 0.9983086911279078,
+    "factorisation": 0.0,
+    "jacobian": 0.0
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.9966230936474898,
+   "bound_two_way_P2_factor_and_solves": 1.9966230936474898,
+   "bound_spike_P8": 7.906394909008901
+  },
+  {
+   "cell": "matrix_free_3d.ac3d.g32.jvp.x1",
+   "structure": "matrix_free_3d",
+   "n": 32768,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.0016215298879721362,
+    "stage_solves": 0.9982435209783738,
+    "factorisation": 0.0,
+    "jacobian": 0.0
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.9964932015746149,
+   "bound_two_way_P2_factor_and_solves": 1.9964932015746149,
+   "bound_spike_P8": 7.902831891004088
+  },
+  {
+   "cell": "matrix_free_3d.ac3d.g32.jvp.x10",
+   "structure": "matrix_free_3d",
+   "n": 32768,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.01617045236095975,
+    "stage_solves": 0.9837050685090976,
+    "factorisation": 0.0,
+    "jacobian": 0.0
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.9679326719321568,
+   "bound_two_way_P2_factor_and_solves": 1.9679326719321568,
+   "bound_spike_P8": 7.180912643072813
+  },
+  {
+   "cell": "matrix_free_3d.ac3d.g32.jvp.x100",
+   "structure": "matrix_free_3d",
+   "n": 32768,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.14158765980233434,
+    "stage_solves": 0.858301884086934,
+    "factorisation": 0.0,
+    "jacobian": 0.0
+   },
+   "dominant": "stage_solves",
+   "bound_two_way_P2": 1.7517765617056416,
+   "bound_two_way_P2_factor_and_solves": 1.7517765617056416,
+   "bound_spike_P8": 4.01629246915465
+  },
+  {
+   "cell": "dense.radnet.n2048.fd.x1",
+   "structure": "dense",
+   "n": 2048,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.004385400213143072,
+    "stage_solves": 0.004924711402423415,
+    "factorisation": 0.06515423427673993,
+    "jacobian": 0.9253688489504478
+   },
+   "dominant": "jacobian",
+   "bound_two_way_P2": 1.0024684338634082,
+   "bound_two_way_P2_factor_and_solves": 1.0363118198655152,
+   "bound_spike_P8": 1.0043277713740242
+  },
+  {
+   "cell": "banded_2d.bruss2d.g128.analytic.x1",
+   "structure": "banded_2d",
+   "n": 32768,
+   "admissibility": "diagnostic_only",
+   "fractions": {
+    "rhs": 0.00010024778420972016,
+    "stage_solves": 0.06793677594212034,
+    "factorisation": 0.9267540895897567,
+    "jacobian": 0.003781361181469121
+   },
+   "dominant": "factorisation",
+   "bound_two_way_P2": 1.0351628120116245,
+   "bound_two_way_P2_factor_and_solves": 1.9894378071657894,
+   "bound_spike_P8": 1.0632016826856636
+  }
+ ]
+}

@@ -1,0 +1,2108 @@
+{
+ "schema": "vigilode.referee2.integrator-inventory.v1",
+ "statuses": [
+  "default",
+  "facade-opt-in",
+  "integrator-only",
+  "research-gate",
+  "negative"
+ ],
+ "summary": [
+  {
+   "crate": "rodas5p-core",
+   "status": "facade-opt-in",
+   "modules": 9,
+   "lines": 2833
+  },
+  {
+   "crate": "rodas5p-core",
+   "status": "integrator-only",
+   "modules": 23,
+   "lines": 21326
+  },
+  {
+   "crate": "rodas5p-core",
+   "status": "research-gate",
+   "modules": 3,
+   "lines": 1590
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "status": "default",
+   "modules": 5,
+   "lines": 10140
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "status": "facade-opt-in",
+   "modules": 32,
+   "lines": 24214
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "status": "integrator-only",
+   "modules": 57,
+   "lines": 41652
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "status": "negative",
+   "modules": 3,
+   "lines": 3167
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "status": "research-gate",
+   "modules": 31,
+   "lines": 26758
+  },
+  {
+   "crate": "rodas5p-krylov",
+   "status": "integrator-only",
+   "modules": 18,
+   "lines": 10237
+  },
+  {
+   "crate": "vigilode-coupled",
+   "status": "facade-opt-in",
+   "modules": 4,
+   "lines": 3872
+  },
+  {
+   "crate": "vigilode-coupled",
+   "status": "integrator-only",
+   "modules": 13,
+   "lines": 8129
+  },
+  {
+   "crate": "vigilode-coupled",
+   "status": "research-gate",
+   "modules": 1,
+   "lines": 288
+  },
+  {
+   "crate": "vigilode-hybrid",
+   "status": "integrator-only",
+   "modules": 6,
+   "lines": 1467
+  }
+ ],
+ "modules": [
+  {
+   "crate": "rodas5p-integrators",
+   "module": "a1_two_arm_receipt.rs",
+   "lines": 400,
+   "public_items": 7,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "actual_k_homotopy.rs",
+   "lines": 483,
+   "public_items": 20,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "actual-k comparison"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "adaptive.rs",
+   "lines": 1411,
+   "public_items": 15,
+   "facade_named_items": [
+    "AdaptiveControllerState",
+    "AdaptiveFailureKind",
+    "AdaptiveStepConfig",
+    "ControllerKind"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "adaptive_exponential.rs",
+   "lines": 392,
+   "public_items": 7,
+   "facade_named_items": [
+    "integrate_pexprb54s4_fused_adaptive_observed"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "registry PEXPRB54s4"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "adaptive_output.rs",
+   "lines": 352,
+   "public_items": 1,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "affine_error.rs",
+   "lines": 251,
+   "public_items": 9,
+   "facade_named_items": [
+    "AffineErrorNorm"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "affine_event_certificate.rs",
+   "lines": 705,
+   "public_items": 49,
+   "facade_named_items": [
+    "AFFINE_EVENT_CLOCK_ID",
+    "AffineEventBinding",
+    "AffineEventCertificate",
+    "AffineEventSign",
+    "AffineEventSpec",
+    "AffineEventStatus",
+    "AffineScalarModel"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "Solution::certified_affine_event_windows"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "affine_transport.rs",
+   "lines": 208,
+   "public_items": 14,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "audit2_bateman_real_client_research.rs",
+   "lines": 1314,
+   "public_items": 29,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "audit2_matrix_free_research.rs",
+   "lines": 1000,
+   "public_items": 17,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "audit2_research.rs",
+   "lines": 1814,
+   "public_items": 27,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "audit2_reusable_transaction_research.rs",
+   "lines": 1336,
+   "public_items": 31,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "audit2_stage_certificate_research.rs",
+   "lines": 968,
+   "public_items": 24,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "banded_exact_tests.rs",
+   "lines": 152,
+   "public_items": 0,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "bdf.rs",
+   "lines": 1094,
+   "public_items": 28,
+   "facade_named_items": [
+    "BdfConfig",
+    "integrate_bdf_adaptive_observed"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "registry; RHS-only FD + Newton"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "block.rs",
+   "lines": 748,
+   "public_items": 24,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "bound_collective.rs",
+   "lines": 284,
+   "public_items": 4,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "bound_pr101.rs",
+   "lines": 867,
+   "public_items": 21,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "candidates.rs",
+   "lines": 372,
+   "public_items": 19,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "causal_majorant.rs",
+   "lines": 621,
+   "public_items": 19,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "causal majorant; no solve path"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "certification.rs",
+   "lines": 398,
+   "public_items": 6,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "certified_budget.rs",
+   "lines": 255,
+   "public_items": 6,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "chart_transport.rs",
+   "lines": 490,
+   "public_items": 13,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "client_stage.rs",
+   "lines": 60,
+   "public_items": 1,
+   "facade_named_items": [
+    "StageLinearSystem"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "collective_direct.rs",
+   "lines": 555,
+   "public_items": 10,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "collective_model.rs",
+   "lines": 515,
+   "public_items": 23,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "collective_rodas5p.rs",
+   "lines": 368,
+   "public_items": 12,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "common_w_gate.rs",
+   "lines": 915,
+   "public_items": 5,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "comparator_fidelity.rs",
+   "lines": 135,
+   "public_items": 6,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "conditioned_polynomial.rs",
+   "lines": 1633,
+   "public_items": 54,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "Chebyshev/Leja actions"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "conservative_remap.rs",
+   "lines": 449,
+   "public_items": 6,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "controller_telemetry.rs",
+   "lines": 182,
+   "public_items": 5,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "damped_packet.rs",
+   "lines": 641,
+   "public_items": 21,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "dense_output_v2.rs",
+   "lines": 3568,
+   "public_items": 20,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "directional_quadratic.rs",
+   "lines": 251,
+   "public_items": 7,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "dopri5.rs",
+   "lines": 1320,
+   "public_items": 35,
+   "facade_named_items": [
+    "Dopri5Config",
+    "Dopri5Session",
+    "Dopri5StopReason",
+    "NativeSessionAdvance",
+    "NativeSessionIdentity",
+    "NativeSessionMethod",
+    "integrate_dopri5_dense_observed",
+    "integrate_dopri5_dense_observed_with_norm",
+    "integrate_dopri5_observed",
+    "integrate_dopri5_observed_with_norm",
+    "last_batch_min_secant_h_lambda"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "Dopri5, SwitchingSolver, Dopri5Ensemble"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "dopri5_dense.rs",
+   "lines": 323,
+   "public_items": 1,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "dopri5_stiffness.rs",
+   "lines": 605,
+   "public_items": 16,
+   "facade_named_items": [
+    "dopri5_stability_limited"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "switching secant estimate"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "exact_band_cache.rs",
+   "lines": 97,
+   "public_items": 0,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "exponential.rs",
+   "lines": 3849,
+   "public_items": 60,
+   "facade_named_items": [
+    "FusedPhiKrylovConfig"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "registry PEXPRB54s4"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "fixed_point_continuation.rs",
+   "lines": 556,
+   "public_items": 21,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "PORTED_BLOCKED (P14)"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "fourier_path_candidate.rs",
+   "lines": 315,
+   "public_items": 5,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "fourier_path_certificate.rs",
+   "lines": 1137,
+   "public_items": 41,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "g1_transactional_gate.rs",
+   "lines": 449,
+   "public_items": 7,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "g2_exponential_gate.rs",
+   "lines": 678,
+   "public_items": 13,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "g3_fused_adaptive_gate.rs",
+   "lines": 887,
+   "public_items": 12,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "g4_prefix_kernel_gate.rs",
+   "lines": 673,
+   "public_items": 6,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "g4_s5b0_inner_tolerance.rs",
+   "lines": 307,
+   "public_items": 30,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "g4_s5b0_regime_atlas.rs",
+   "lines": 6067,
+   "public_items": 38,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "g4_s5b0_trace_authority.rs",
+   "lines": 167,
+   "public_items": 2,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "g4_s5b3_attempt_geometry.rs",
+   "lines": 1116,
+   "public_items": 12,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "generic_verified.rs",
+   "lines": 473,
+   "public_items": 17,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "global_budget.rs",
+   "lines": 743,
+   "public_items": 37,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "gray_scott.rs",
+   "lines": 319,
+   "public_items": 5,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "gray_scott_verified.rs",
+   "lines": 219,
+   "public_items": 7,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "homotopy.rs",
+   "lines": 1838,
+   "public_items": 52,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "R5 continuation 2.66-6.94x slower than LU"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "homotopy_experiments.rs",
+   "lines": 878,
+   "public_items": 10,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "homotopy_order_policy.rs",
+   "lines": 868,
+   "public_items": 9,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "homotopy_policy.rs",
+   "lines": 260,
+   "public_items": 11,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "integrate.rs",
+   "lines": 1287,
+   "public_items": 14,
+   "facade_named_items": [
+    "IntegrationMethod"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "lib.rs",
+   "lines": 646,
+   "public_items": 0,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "mol/mod.rs",
+   "lines": 3,
+   "public_items": 0,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "n01_frozen_source_bundle.rs",
+   "lines": 196,
+   "public_items": 8,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "n01_mass_action_client.rs",
+   "lines": 174,
+   "public_items": 2,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "native_gates.rs",
+   "lines": 215,
+   "public_items": 3,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "nonlinear.rs",
+   "lines": 370,
+   "public_items": 8,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "nonlinear_homotopy.rs",
+   "lines": 748,
+   "public_items": 17,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "homotopy family"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "output.rs",
+   "lines": 1628,
+   "public_items": 12,
+   "facade_named_items": [
+    "MaxStepPolicy",
+    "ObservedIntegrationResult",
+    "OutputSamplingPlan",
+    "OutputSchedule"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "outward_certificate.rs",
+   "lines": 1959,
+   "public_items": 48,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "packet_curve.rs",
+   "lines": 1091,
+   "public_items": 16,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "packet_curve_output.rs",
+   "lines": 645,
+   "public_items": 20,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "packet_trajectory.rs",
+   "lines": 1938,
+   "public_items": 39,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "packet_verified_trajectory.rs",
+   "lines": 736,
+   "public_items": 27,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "packet_window.rs",
+   "lines": 2151,
+   "public_items": 0,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "packet_work.rs",
+   "lines": 269,
+   "public_items": 5,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "parallel.rs",
+   "lines": 130,
+   "public_items": 8,
+   "facade_named_items": [
+    "ParallelExecution",
+    "rayon",
+    "sequential"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "path_controller.rs",
+   "lines": 763,
+   "public_items": 9,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "physical_error_budget.rs",
+   "lines": 574,
+   "public_items": 32,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "policy_redesign_v25.rs",
+   "lines": 179,
+   "public_items": 15,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "polynomial_resolvent.rs",
+   "lines": 936,
+   "public_items": 32,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "ppsw1.rs",
+   "lines": 1317,
+   "public_items": 56,
+   "facade_named_items": [
+    "FORMAL_ORDER",
+    "METHOD_ID",
+    "STAGES",
+    "Session"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "PeerOde; G0 holdout HOLD"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "ppsw1_linear_backend.rs",
+   "lines": 406,
+   "public_items": 12,
+   "facade_named_items": [
+    "LinearBackend"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "pr101_verified.rs",
+   "lines": 563,
+   "public_items": 17,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "problem.rs",
+   "lines": 1238,
+   "public_items": 53,
+   "facade_named_items": [
+    "JacobianIntoFn",
+    "OdeProblem",
+    "ProblemStructure",
+    "StructureDeclaration"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "problems.rs",
+   "lines": 824,
+   "public_items": 10,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "ptsw2b.rs",
+   "lines": 1013,
+   "public_items": 10,
+   "facade_named_items": [
+    "FORMAL_ORDER",
+    "METHOD_ID",
+    "STAGES"
+   ],
+   "status": "integrator-only",
+   "evidence": "PTSW2B"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "quadratic_branch.rs",
+   "lines": 176,
+   "public_items": 3,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "quotient_flow.rs",
+   "lines": 1196,
+   "public_items": 22,
+   "facade_named_items": [
+    "DampedRotationBlock",
+    "DampedRotationFlow",
+    "QuotientWork",
+    "integrate_affine_lawson_dopri5_observed",
+    "integrate_affine_lawson_dopri5_observed_with_norm",
+    "integrate_lawson_dopri5_observed",
+    "integrate_lawson_dopri5_observed_with_norm"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "registry Lawson"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "radau.rs",
+   "lines": 968,
+   "public_items": 16,
+   "facade_named_items": [
+    "RadauConfig",
+    "integrate_radau_adaptive_observed"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "registry; RHS-only FD + Newton"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "raw_stage_target.rs",
+   "lines": 399,
+   "public_items": 17,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "rhs_telemetry.rs",
+   "lines": 1149,
+   "public_items": 15,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "rodas5p_fast.rs",
+   "lines": 3224,
+   "public_items": 25,
+   "facade_named_items": [
+    "BandedJacobian",
+    "BandedKernel",
+    "BandedWork",
+    "DriverPartial",
+    "DriverStopReason",
+    "Rodas5pFastLu",
+    "Rodas5pFastResult"
+   ],
+   "status": "default",
+   "evidence": "protected dense/banded fast drivers"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "rodas5p_fast_dense.rs",
+   "lines": 764,
+   "public_items": 26,
+   "facade_named_items": [
+    "FastDenseSegments",
+    "FastInteriorControl",
+    "FastInteriorWork",
+    "integrate_rodas5p_fast_banded_dense_observed",
+    "integrate_rodas5p_fast_banded_dense_observed_with_atol",
+    "integrate_rodas5p_fast_banded_dense_observed_with_atol_and_kernel",
+    "integrate_rodas5p_fast_banded_dense_observed_with_kernel",
+    "integrate_rodas5p_fast_dense_observed",
+    "integrate_rodas5p_fast_dense_observed_with_atol"
+   ],
+   "status": "default",
+   "evidence": "dense-output fast drivers"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "rodas5p_fast_small.rs",
+   "lines": 994,
+   "public_items": 9,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "rodas5p_fast_small_batch.rs",
+   "lines": 609,
+   "public_items": 4,
+   "facade_named_items": [],
+   "status": "negative",
+   "evidence": "lane batch 0.93"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "rodas5p_lagged.rs",
+   "lines": 1474,
+   "public_items": 25,
+   "facade_named_items": [
+    "RODAS5P_LAGGED_DRIVER_ID",
+    "Rodas5pLaggedOptions",
+    "integrate_rodas5p_lagged_observed"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "registry; lagged LU killed on HIRES"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "rodas5p_matrix_free_fast.rs",
+   "lines": 4156,
+   "public_items": 135,
+   "facade_named_items": [
+    "MfStageSolvePolicy"
+   ],
+   "status": "default",
+   "evidence": "JVP route; P1/P2 opt-in (L-0318, L-0335)"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "routing.rs",
+   "lines": 720,
+   "public_items": 23,
+   "facade_named_items": [
+    "BandReference",
+    "BandVerification",
+    "RoutedDriver",
+    "RoutedRun",
+    "RoutingError",
+    "RoutingFallback",
+    "RoutingOptions",
+    "RoutingReason",
+    "RoutingRecord",
+    "integrate_rodas5p_routed_observed_with_options"
+   ],
+   "status": "default",
+   "evidence": "router of Rodas5p::solve"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "sabr.rs",
+   "lines": 409,
+   "public_items": 7,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "SABR"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "scientific_corpus_v2.rs",
+   "lines": 1426,
+   "public_items": 17,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "scientific_validity_v2_gate.rs",
+   "lines": 664,
+   "public_items": 19,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "sequential.rs",
+   "lines": 1276,
+   "public_items": 23,
+   "facade_named_items": [],
+   "status": "default",
+   "evidence": "mass matrix / Enforce route"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "source_owned_graph_schur/path_scan.rs",
+   "lines": 93,
+   "public_items": 1,
+   "facade_named_items": [
+    "GraphPathScan"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "source_owned_graph_schur.rs",
+   "lines": 772,
+   "public_items": 6,
+   "facade_named_items": [
+    "CooperativeCubicOwner",
+    "GraphSchurTelemetry"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "structured feature; C5 2.24x slower (negative perf)"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "stage_batch.rs",
+   "lines": 850,
+   "public_items": 5,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "stage_chart_candidate.rs",
+   "lines": 329,
+   "public_items": 6,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "stage_clients/assembly/engine.rs",
+   "lines": 1214,
+   "public_items": 0,
+   "facade_named_items": [],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "stage_clients/assembly/multi.rs",
+   "lines": 343,
+   "public_items": 13,
+   "facade_named_items": [],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "stage_clients/assembly/pattern.rs",
+   "lines": 191,
+   "public_items": 10,
+   "facade_named_items": [],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "stage_clients/assembly.rs",
+   "lines": 860,
+   "public_items": 31,
+   "facade_named_items": [
+    "LinearBackend"
+   ],
+   "status": "integrator-only",
+   "evidence": "parallel FD assembly; strict rule FAIL L-0331"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "stage_clients/banded_tight.rs",
+   "lines": 364,
+   "public_items": 3,
+   "facade_named_items": [
+    "BandedTightStageLu"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "BandedStagePolicy::Tight (this run); V21 same bits"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "stage_clients/banded_two_way.rs",
+   "lines": 750,
+   "public_items": 6,
+   "facade_named_items": [
+    "BANDED_TWO_WAY_CLIENT_ID",
+    "BandedTwoWayStageLu",
+    "TwoWayExecution"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "BandedStagePolicy::TwoWay (this run)"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "stage_clients/dense_lu.rs",
+   "lines": 266,
+   "public_items": 9,
+   "facade_named_items": [],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "stage_clients/dense_lu_reuse/threaded.rs",
+   "lines": 318,
+   "public_items": 3,
+   "facade_named_items": [],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "stage_clients/dense_lu_reuse.rs",
+   "lines": 412,
+   "public_items": 10,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "same bits; wall NOT_DECIDABLE"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "stage_clients/krylov/step_tied.rs",
+   "lines": 99,
+   "public_items": 9,
+   "facade_named_items": [],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "stage_clients/krylov.rs",
+   "lines": 1305,
+   "public_items": 31,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "per-stage GMRES client PASS L-0318"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "stage_clients/mod.rs",
+   "lines": 21,
+   "public_items": 0,
+   "facade_named_items": [],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "stage_clients/sparse_lu.rs",
+   "lines": 1,
+   "public_items": 0,
+   "facade_named_items": [],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "stage_clients/speculative.rs",
+   "lines": 557,
+   "public_items": 26,
+   "facade_named_items": [],
+   "status": "negative",
+   "evidence": "V07 L-0316"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "stage_clients/timed.rs",
+   "lines": 194,
+   "public_items": 12,
+   "facade_named_items": [],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "stage_target.rs",
+   "lines": 257,
+   "public_items": 12,
+   "facade_named_items": [
+    "sequential"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "stage_target_policy.rs",
+   "lines": 751,
+   "public_items": 23,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "transaction.rs",
+   "lines": 928,
+   "public_items": 53,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "transactional_q1_q2.rs",
+   "lines": 2001,
+   "public_items": 41,
+   "facade_named_items": [],
+   "status": "negative",
+   "evidence": "R7 4.75x slower"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "unified_gates.rs",
+   "lines": 964,
+   "public_items": 6,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "unified_screen.rs",
+   "lines": 955,
+   "public_items": 11,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-integrators",
+   "module": "v38d_performance_tournament.rs",
+   "lines": 202,
+   "public_items": 16,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-krylov",
+   "module": "accounting.rs",
+   "lines": 92,
+   "public_items": 3,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-krylov",
+   "module": "block_gmres.rs",
+   "lines": 635,
+   "public_items": 5,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-krylov",
+   "module": "common.rs",
+   "lines": 120,
+   "public_items": 8,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-krylov",
+   "module": "gcrodr.rs",
+   "lines": 1310,
+   "public_items": 18,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-krylov",
+   "module": "gmres.rs",
+   "lines": 931,
+   "public_items": 15,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-krylov",
+   "module": "gmres_givens.rs",
+   "lines": 757,
+   "public_items": 14,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-krylov",
+   "module": "gmres_into.rs",
+   "lines": 927,
+   "public_items": 16,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-krylov",
+   "module": "gmres_into_triggered.rs",
+   "lines": 293,
+   "public_items": 1,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-krylov",
+   "module": "gmres_staged.rs",
+   "lines": 1626,
+   "public_items": 26,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-krylov",
+   "module": "kernels.rs",
+   "lines": 202,
+   "public_items": 8,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-krylov",
+   "module": "lgmres.rs",
+   "lines": 289,
+   "public_items": 6,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-krylov",
+   "module": "lgmres_into.rs",
+   "lines": 646,
+   "public_items": 19,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-krylov",
+   "module": "lib.rs",
+   "lines": 76,
+   "public_items": 0,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-krylov",
+   "module": "secant_preconditioner.rs",
+   "lines": 846,
+   "public_items": 10,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-krylov",
+   "module": "shared_basis.rs",
+   "lines": 392,
+   "public_items": 9,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-krylov",
+   "module": "small.rs",
+   "lines": 511,
+   "public_items": 10,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-krylov",
+   "module": "stage_interval_certificate.rs",
+   "lines": 292,
+   "public_items": 16,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-krylov",
+   "module": "workspace.rs",
+   "lines": 292,
+   "public_items": 15,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "binary_scaling.rs",
+   "lines": 161,
+   "public_items": 5,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "bordered.rs",
+   "lines": 329,
+   "public_items": 7,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "coefficients.rs",
+   "lines": 261,
+   "public_items": 8,
+   "facade_named_items": [
+    "rodas5p_coefficients"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "complex_shift_jet.rs",
+   "lines": 711,
+   "public_items": 30,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "damped_moments.rs",
+   "lines": 876,
+   "public_items": 28,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "directed.rs",
+   "lines": 556,
+   "public_items": 34,
+   "facade_named_items": [
+    "Interval",
+    "add_up",
+    "div_down",
+    "mul_up"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "error.rs",
+   "lines": 23,
+   "public_items": 2,
+   "facade_named_items": [
+    "CoreError",
+    "CoreResult"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "hash.rs",
+   "lines": 17,
+   "public_items": 3,
+   "facade_named_items": [
+    "sha256_bytes"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "invariant_module.rs",
+   "lines": 442,
+   "public_items": 15,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "laguerre_adjoint.rs",
+   "lines": 479,
+   "public_items": 17,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "leja_action.rs",
+   "lines": 4313,
+   "public_items": 18,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "leja_setup_work.rs",
+   "lines": 791,
+   "public_items": 8,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "lib.rs",
+   "lines": 113,
+   "public_items": 0,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "low_rank_bordered.rs",
+   "lines": 249,
+   "public_items": 9,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "matrix.rs",
+   "lines": 395,
+   "public_items": 32,
+   "facade_named_items": [
+    "DenseMatrix",
+    "zeros"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "matrix_functions.rs",
+   "lines": 473,
+   "public_items": 8,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "n01_affine_owner.rs",
+   "lines": 464,
+   "public_items": 9,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "n01_mass_action_owner.rs",
+   "lines": 674,
+   "public_items": 13,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "n01_source_owner.rs",
+   "lines": 452,
+   "public_items": 7,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "nonnormal_certificate.rs",
+   "lines": 886,
+   "public_items": 19,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "nonnormal_observers.rs",
+   "lines": 1356,
+   "public_items": 65,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "norms.rs",
+   "lines": 157,
+   "public_items": 5,
+   "facade_named_items": [
+    "error_scale",
+    "step_error_wrms"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "operator.rs",
+   "lines": 841,
+   "public_items": 29,
+   "facade_named_items": [
+    "Preconditioner"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "polynomial_action/router.rs",
+   "lines": 890,
+   "public_items": 42,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "polynomial_action.rs",
+   "lines": 3477,
+   "public_items": 11,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "polynomial_router.rs",
+   "lines": 464,
+   "public_items": 18,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "residual_gain.rs",
+   "lines": 1924,
+   "public_items": 51,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "shared_shift_jet.rs",
+   "lines": 424,
+   "public_items": 17,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "shared_shift_policy.rs",
+   "lines": 840,
+   "public_items": 17,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "solver_types.rs",
+   "lines": 108,
+   "public_items": 7,
+   "facade_named_items": [
+    "InitialGuess",
+    "LinearMethod",
+    "LinearSolverConfig",
+    "PreconditionerKind"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "sparse_direct.rs",
+   "lines": 222,
+   "public_items": 10,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "taylor_phi.rs",
+   "lines": 298,
+   "public_items": 13,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "taylor_phi_total.rs",
+   "lines": 1048,
+   "public_items": 55,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "transform_bound.rs",
+   "lines": 560,
+   "public_items": 19,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "rodas5p-core",
+   "module": "work.rs",
+   "lines": 475,
+   "public_items": 9,
+   "facade_named_items": [
+    "WorkCounters"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "vigilode-coupled",
+   "module": "adaptive.rs",
+   "lines": 486,
+   "public_items": 7,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "vigilode-coupled",
+   "module": "algebra.rs",
+   "lines": 369,
+   "public_items": 0,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "vigilode-coupled",
+   "module": "causal.rs",
+   "lines": 417,
+   "public_items": 0,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "vigilode-coupled",
+   "module": "certified_fastfirst.rs",
+   "lines": 494,
+   "public_items": 12,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "vigilode-coupled",
+   "module": "coupled_inverse_be.rs",
+   "lines": 620,
+   "public_items": 12,
+   "facade_named_items": [
+    "Attempt",
+    "Config",
+    "Order",
+    "Source"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "vigilode-coupled",
+   "module": "cyclic_closure.rs",
+   "lines": 1087,
+   "public_items": 34,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "vigilode-coupled",
+   "module": "fallback.rs",
+   "lines": 165,
+   "public_items": 4,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "vigilode-coupled",
+   "module": "lib.rs",
+   "lines": 366,
+   "public_items": 12,
+   "facade_named_items": [
+    "Attempt",
+    "Config"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "vigilode-coupled",
+   "module": "n01_derivative_free.rs",
+   "lines": 288,
+   "public_items": 6,
+   "facade_named_items": [],
+   "status": "research-gate",
+   "evidence": "classified by file name"
+  },
+  {
+   "crate": "vigilode-coupled",
+   "module": "nonlinear_be.rs",
+   "lines": 448,
+   "public_items": 11,
+   "facade_named_items": [
+    "Attempt",
+    "Config",
+    "Source"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "vigilode-coupled",
+   "module": "raw_step.rs",
+   "lines": 669,
+   "public_items": 12,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "vigilode-coupled",
+   "module": "residual_first.rs",
+   "lines": 208,
+   "public_items": 0,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "vigilode-coupled",
+   "module": "rhs_homotopy.rs",
+   "lines": 2438,
+   "public_items": 63,
+   "facade_named_items": [
+    "CubicDecayAccuracyPlan",
+    "CubicDecayAccuracyResult",
+    "CubicStageSolver",
+    "RhsAcceleration",
+    "integrate_cubic_decay_accuracy_with_solver"
+   ],
+   "status": "facade-opt-in",
+   "evidence": "named by the facade source"
+  },
+  {
+   "crate": "vigilode-coupled",
+   "module": "solver.rs",
+   "lines": 618,
+   "public_items": 0,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "vigilode-coupled",
+   "module": "structural_mean_field.rs",
+   "lines": 1011,
+   "public_items": 23,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "vigilode-coupled",
+   "module": "switching.rs",
+   "lines": 1217,
+   "public_items": 6,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "vigilode-coupled",
+   "module": "trace_certificate.rs",
+   "lines": 559,
+   "public_items": 5,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "vigilode-coupled",
+   "module": "trace_quotient.rs",
+   "lines": 829,
+   "public_items": 15,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "vigilode-hybrid",
+   "module": "bounds.rs",
+   "lines": 476,
+   "public_items": 28,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "vigilode-hybrid",
+   "module": "kernel.rs",
+   "lines": 18,
+   "public_items": 1,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "vigilode-hybrid",
+   "module": "lib.rs",
+   "lines": 9,
+   "public_items": 0,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "vigilode-hybrid",
+   "module": "model.rs",
+   "lines": 462,
+   "public_items": 23,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "vigilode-hybrid",
+   "module": "native.rs",
+   "lines": 214,
+   "public_items": 2,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  },
+  {
+   "crate": "vigilode-hybrid",
+   "module": "trajectory.rs",
+   "lines": 288,
+   "public_items": 6,
+   "facade_named_items": [],
+   "status": "integrator-only",
+   "evidence": "not named by the facade source"
+  }
+ ]
+}

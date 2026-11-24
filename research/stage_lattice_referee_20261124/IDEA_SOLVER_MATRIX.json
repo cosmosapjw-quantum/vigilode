@@ -1,0 +1,187 @@
+{
+ "schema": "vigilode.referee2.idea-solver-matrix.v1",
+ "base_commit": "abf2982540a44ab0fd8693ede35b0e6546b766a2",
+ "statuses": {
+  "default": "runs on a default route of the facade",
+  "opt-in": "public facade entry point the caller must select",
+  "crate-only": "code in an integrator-side crate, not named by the facade",
+  "separate-crate": "vigilode-coupled or vigilode-hybrid, outside the default dependency graph",
+  "research-record": "documents or scripts only",
+  "design": "specified, not implemented",
+  "negative": "implemented and measured; verdict negative or kill",
+  "not-applicable": "the idea has no meaning for the family"
+ },
+ "families": ["rodas5p_dense", "rodas5p_banded", "rodas5p_matrix_free", "bdf", "radau", "dopri5", "exponential_lawson", "peer_ppsw1", "structured_coupled", "modal", "spatial_sphere"],
+ "ideas": [
+  {
+   "id": "causality",
+   "name": "causal stage budgets, transactional stages, causal light cones",
+   "cells": {
+    "rodas5p_dense": {"status": "crate-only", "where": "causal_majorant.rs; facade causal_budget.rs is public but no solve path uses it", "next": "SL-N9: wire the causal budget as a typed observer of the shipped driver (no control), record the bound beside the embedded error"},
+    "rodas5p_banded": {"status": "design", "where": "THEORY.md SL-1: the (stage, row) lattice is a causal cone; alternating orientation pipelines stage i+1 behind stage i", "next": "SL-N3 wavefront driver with a row-streaming RHS contract"},
+    "rodas5p_matrix_free": {"status": "negative", "where": "transactional_q1_q2.rs (R7 4.75x slower)", "next": "keep as evidence; only costly RHS with measured opportunity"},
+    "bdf": {"status": "not-applicable", "where": "multistep history is causal by construction", "next": "none"},
+    "radau": {"status": "design", "where": "stage-block coupling is simultaneous, not causal", "next": "prior plan radau-blocks"},
+    "dopri5": {"status": "research-record", "where": "METHODS.json: causal error seeds for truncated trials", "next": "only with propagation to physical output"},
+    "exponential_lawson": {"status": "not-applicable", "where": "", "next": "none"},
+    "peer_ppsw1": {"status": "opt-in", "where": "stages depend on the previous step only (PeerOde)", "next": "SL-N10 holdout with changed starter"},
+    "structured_coupled": {"status": "separate-crate", "where": "vigilode-coupled/causal.rs", "next": "none this loop"},
+    "modal": {"status": "not-applicable", "where": "independent modes", "next": "none"},
+    "spatial_sphere": {"status": "design", "where": "row-local stencils give finite light cones per stage", "next": "SL-N3 on S^2 rings"}
+   }
+  },
+  {
+   "id": "jacobian_free",
+   "name": "JVP and Krylov without an assembled Jacobian",
+   "cells": {
+    "rodas5p_dense": {"status": "not-applicable", "where": "dense route assembles J", "next": "none"},
+    "rodas5p_banded": {"status": "default", "where": "banded sparse-JVP pattern assembled by colouring (colors + 1 JVPs)", "next": "none"},
+    "rodas5p_matrix_free": {"status": "default", "where": "Jacobian::Jvp route; P1/P2 GMRES policies opt-in via solve_matrix_free / solve_stages", "next": "prior plan gmres-path (V25 Robertson 38 vs 41)"},
+    "bdf": {"status": "design", "where": "Newton-Krylov residual solves", "next": "SL-N11 after facade spec"},
+    "radau": {"status": "design", "where": "block Krylov per real/complex stage block", "next": "prior plan radau-blocks"},
+    "dopri5": {"status": "not-applicable", "where": "explicit", "next": "none"},
+    "exponential_lawson": {"status": "opt-in", "where": "PEXPRB fused phi Krylov actions", "next": "prior plan exponential"},
+    "peer_ppsw1": {"status": "crate-only", "where": "ppsw1_linear_backend.rs", "next": "none"},
+    "structured_coupled": {"status": "separate-crate", "where": "source-owned operators", "next": "none"},
+    "modal": {"status": "opt-in", "where": "declared spectrum, no J", "next": "prior plan modal-modes"},
+    "spatial_sphere": {"status": "opt-in", "where": "DiffusionGrid::problem exact JVP; LongitudeLinePreconditioner", "next": "SL-N5 exact separable stage solver"}
+   }
+  },
+  {
+   "id": "derivative_free",
+   "name": "user supplies f only",
+   "cells": {
+    "rodas5p_dense": {"status": "default", "where": "finite-difference Jacobian, n + 1 RHS", "next": "V26 pooled check stays opt-in"},
+    "rodas5p_banded": {"status": "default", "where": "Problem::banded + FD band, colours + 1 RHS; now also under BandedStagePolicy", "next": "none"},
+    "rodas5p_matrix_free": {"status": "default", "where": "FD JVP through the router when no JVP is declared", "next": "none"},
+    "bdf": {"status": "opt-in", "where": "registry FD dense Newton (counted)", "next": "none"},
+    "radau": {"status": "opt-in", "where": "registry FD dense Newton (counted)", "next": "none"},
+    "dopri5": {"status": "default", "where": "explicit", "next": "none"},
+    "exponential_lawson": {"status": "opt-in", "where": "declared linear part", "next": "none"},
+    "peer_ppsw1": {"status": "opt-in", "where": "PeerOde with FD", "next": "none"},
+    "structured_coupled": {"status": "separate-crate", "where": "N01 derivative-free coupled (repaired after counterexample)", "next": "none"},
+    "modal": {"status": "not-applicable", "where": "", "next": "none"},
+    "spatial_sphere": {"status": "not-applicable", "where": "linear operator supplied", "next": "none"}
+   }
+  },
+  {
+   "id": "newton_free",
+   "name": "no Newton iteration",
+   "cells": {
+    "rodas5p_dense": {"status": "default", "where": "linearly implicit stages", "next": "none"},
+    "rodas5p_banded": {"status": "default", "where": "linearly implicit stages; two-way client keeps it", "next": "none"},
+    "rodas5p_matrix_free": {"status": "default", "where": "linearly implicit stages", "next": "none"},
+    "bdf": {"status": "design", "where": "inverse-Picard at the original BDF residual inside a certified contraction chart", "next": "prior plan implicit-roots"},
+    "radau": {"status": "design", "where": "same as BDF on the collocation residual", "next": "prior plan implicit-roots"},
+    "dopri5": {"status": "default", "where": "explicit", "next": "none"},
+    "exponential_lawson": {"status": "opt-in", "where": "explicit stages on actions", "next": "none"},
+    "peer_ppsw1": {"status": "opt-in", "where": "W-method stages; starter uses Newton", "next": "SL-N10 starter change"},
+    "structured_coupled": {"status": "separate-crate", "where": "coupled inverse BE / Picard", "next": "none"},
+    "modal": {"status": "opt-in", "where": "rational recurrences", "next": "none"},
+    "spatial_sphere": {"status": "default", "where": "linear problem", "next": "none"}
+   }
+  },
+  {
+   "id": "homotopy_roots",
+   "name": "homotopy / continuation root finders",
+   "cells": {
+    "rodas5p_dense": {"status": "negative", "where": "R5 native 8-stage: certified, 2.38-6.94x slower than LU", "next": "keep as certificate, not as solver"},
+    "rodas5p_banded": {"status": "not-applicable", "where": "stage equations are linear", "next": "none"},
+    "rodas5p_matrix_free": {"status": "crate-only", "where": "fixed_point_continuation.rs (PORTED_BLOCKED)", "next": "none"},
+    "bdf": {"status": "design", "where": "original history-dependent residual, fold detection by transversality", "next": "prior plan implicit-roots"},
+    "radau": {"status": "design", "where": "collocation residual", "next": "prior plan implicit-roots"},
+    "dopri5": {"status": "not-applicable", "where": "", "next": "none"},
+    "exponential_lawson": {"status": "not-applicable", "where": "", "next": "none"},
+    "peer_ppsw1": {"status": "not-applicable", "where": "", "next": "none"},
+    "structured_coupled": {"status": "opt-in", "where": "solve_cubic_decay / solve_coupled_cubic (structured feature)", "next": "prior plan singular-geometry"},
+    "modal": {"status": "not-applicable", "where": "", "next": "none"},
+    "spatial_sphere": {"status": "not-applicable", "where": "", "next": "none"}
+   }
+  },
+  {
+   "id": "parallel_eight_stages",
+   "name": "shorten the critical path of the eight RODAS5P stages without changing them",
+   "cells": {
+    "rodas5p_dense": {"status": "design", "where": "factorisation dominates (f_LU 0.79-0.98): parallel blocked LU; DenseLuReuse threaded client crate-only", "next": "SL-N8 StagePolicy::Dense(threaded)"},
+    "rodas5p_banded": {"status": "opt-in", "where": "BandedStagePolicy::TwoWay (this run): critical path 16n -> 8n, unrestricted pivoting", "next": "SL-N2 fixed-offset two-way kernel + persistent pool, owner-host protocol; SL-N3 wavefront; SL-N4 SPIKE-P with fallback"},
+    "rodas5p_matrix_free": {"status": "design", "where": "eight GMRES solves stay sequential; parallel matvec rows lost on the 2-vCPU host", "next": "owner-host replay of SpatialRows::Parallel"},
+    "bdf": {"status": "design", "where": "two-way client applies to I - h beta J", "next": "SL-N11"},
+    "radau": {"status": "design", "where": "two-way on the real block of the transformed system", "next": "SL-N11"},
+    "dopri5": {"status": "opt-in", "where": "Dopri5Ensemble across trajectories", "next": "none"},
+    "exponential_lawson": {"status": "research-record", "where": "independent actions per stage clock", "next": "none"},
+    "peer_ppsw1": {"status": "opt-in", "where": "PeerOde stage-parallel; U11 G0 HOLD", "next": "SL-N10"},
+    "structured_coupled": {"status": "negative", "where": "graph-Schur prefix scan C5 2.24x slower; Blelloch opt-in", "next": "prior plan graph-transport"},
+    "modal": {"status": "opt-in", "where": "solve_modal: independent modes", "next": "prior plan modal-modes"},
+    "spatial_sphere": {"status": "design", "where": "DFT in longitude + tridiagonal per mode: modes independent", "next": "SL-N5"}
+   }
+  },
+  {
+   "id": "split_forcing",
+   "name": "precompute the time-only part of the RHS at the six distinct stage clocks",
+   "cells": {
+    "rodas5p_dense": {"status": "opt-in", "where": "split_forcing.rs", "next": "prior plan split-attempts"},
+    "rodas5p_banded": {"status": "opt-in", "where": "split_forcing.rs", "next": "prior plan split-attempts"},
+    "rodas5p_matrix_free": {"status": "opt-in", "where": "split_forcing.rs", "next": "prior plan split-attempts"},
+    "bdf": {"status": "not-applicable", "where": "one clock per step", "next": "none"},
+    "radau": {"status": "design", "where": "three collocation clocks", "next": "none"},
+    "dopri5": {"status": "design", "where": "six distinct clocks of DOPRI5", "next": "none"},
+    "exponential_lawson": {"status": "design", "where": "stage clocks", "next": "none"},
+    "peer_ppsw1": {"status": "design", "where": "peer clocks", "next": "none"},
+    "structured_coupled": {"status": "not-applicable", "where": "", "next": "none"},
+    "modal": {"status": "not-applicable", "where": "homogeneous", "next": "none"},
+    "spatial_sphere": {"status": "not-applicable", "where": "autonomous", "next": "none"}
+   }
+  },
+  {
+   "id": "symbolic_routing",
+   "name": "symbolic dynamics of route histories and hybrid guards",
+   "cells": {
+    "rodas5p_dense": {"status": "opt-in", "where": "SwitchingSolver DOPRI5<->RODAS5P; hybrid automaton offline verifier", "next": "V27 forward break-even pilots (owner approval pending)"},
+    "rodas5p_banded": {"status": "opt-in", "where": "same", "next": "SL-N7 StagePolicy candidates in Auto only after qualification"},
+    "rodas5p_matrix_free": {"status": "opt-in", "where": "same", "next": "same"},
+    "bdf": {"status": "opt-in", "where": "MethodChoice::Auto registry fallback", "next": "none"},
+    "radau": {"status": "opt-in", "where": "MethodChoice::Auto registry fallback", "next": "none"},
+    "dopri5": {"status": "opt-in", "where": "secant stiffness estimate drives switching", "next": "none"},
+    "exponential_lawson": {"status": "opt-in", "where": "registry", "next": "none"},
+    "peer_ppsw1": {"status": "opt-in", "where": "registry", "next": "none"},
+    "structured_coupled": {"status": "not-applicable", "where": "", "next": "none"},
+    "modal": {"status": "opt-in", "where": "solve_modal falls back to protected path", "next": "none"},
+    "spatial_sphere": {"status": "not-applicable", "where": "", "next": "none"}
+   }
+  },
+  {
+   "id": "algebraic_singular_geometry",
+   "name": "polynomial closures, trace quotients, cofactor charts, folds",
+   "cells": {
+    "rodas5p_dense": {"status": "research-record", "where": "REFEREE_THEORY fold counterexample", "next": "none"},
+    "rodas5p_banded": {"status": "not-applicable", "where": "", "next": "none"},
+    "rodas5p_matrix_free": {"status": "not-applicable", "where": "", "next": "none"},
+    "bdf": {"status": "design", "where": "fold detection for implicit roots", "next": "prior plan singular-geometry"},
+    "radau": {"status": "design", "where": "same", "next": "prior plan singular-geometry"},
+    "dopri5": {"status": "not-applicable", "where": "", "next": "none"},
+    "exponential_lawson": {"status": "not-applicable", "where": "", "next": "none"},
+    "peer_ppsw1": {"status": "not-applicable", "where": "", "next": "none"},
+    "structured_coupled": {"status": "separate-crate", "where": "cyclic_closure.rs, trace_quotient.rs, cofactor_chart.rs (24/12 admitted cells)", "next": "prior plan singular-geometry"},
+    "modal": {"status": "not-applicable", "where": "", "next": "none"},
+    "spatial_sphere": {"status": "not-applicable", "where": "", "next": "none"}
+   }
+  },
+  {
+   "id": "topology_geometry",
+   "name": "discrete topology and geometry of spatial operators (S^2, 2D, 3D)",
+   "cells": {
+    "rodas5p_dense": {"status": "not-applicable", "where": "", "next": "none"},
+    "rodas5p_banded": {"status": "opt-in", "where": "natural-ordered 2D/3D grids are banded: two-way applies (Allen-Cahn 2D measured)", "next": "SL-N2"},
+    "rodas5p_matrix_free": {"status": "opt-in", "where": "DiffusionGrid periodic box and sphere; longitude preconditioner", "next": "prior plan sphere-lines"},
+    "bdf": {"status": "not-applicable", "where": "", "next": "none"},
+    "radau": {"status": "not-applicable", "where": "", "next": "none"},
+    "dopri5": {"status": "not-applicable", "where": "", "next": "none"},
+    "exponential_lawson": {"status": "design", "where": "spherical-harmonic actions", "next": "prior plan modal-modes"},
+    "peer_ppsw1": {"status": "not-applicable", "where": "", "next": "none"},
+    "structured_coupled": {"status": "research-record", "where": "P04 incidence/Hodge test only", "next": "prior plan discrete-topology"},
+    "modal": {"status": "opt-in", "where": "declared spectra", "next": "none"},
+    "spatial_sphere": {"status": "design", "where": "exact separable stage solver (DFT longitude x tridiagonal colatitude); C4 verified spectrum", "next": "SL-N5"}
+   }
+  }
+ ]
+}

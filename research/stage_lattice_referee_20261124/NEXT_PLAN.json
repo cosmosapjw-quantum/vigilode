@@ -1,0 +1,243 @@
+{
+ "schema": "vigilode.followup.v2",
+ "branch": "research/stage-lattice-referee-20261124",
+ "base": "abf2982540a44ab0fd8693ede35b0e6546b766a2",
+ "date": "2026-11-24",
+ "rules": [
+  "Default routes change only through an owner decision recorded in the task (owner_decision: true).",
+  "A performance verdict needs a preregistered protocol committed before the first timed run, an isolated host (load <= 8 before and after, arm spread <= 10%) and achieved-error matching; shared-host numbers are diagnostic.",
+  "Keep research/LEDGER.jsonl append-only; add rows only with the script named in docs/agent/switcher_v2_remediation/DESIGN.md section 13.2.",
+  "Use a fresh CARGO_TARGET_DIR per worktree; a shared target directory across source revisions produced stale artifacts in this run (unresolved imports after a baseline clippy).",
+  "Never force-push; never merge to main; push research branches only."
+ ],
+ "first_parallel": ["SL-N1", "SL-N6", "SL-N7"],
+ "priority": ["SL-N1", "SL-N12", "SL-N2", "SL-N7", "SL-N6", "SL-N5"],
+ "tasks": [
+  {
+   "id": "SL-N1",
+   "title": "Reproduce this run on the pinned toolchain and the owner host",
+   "depends_on": [],
+   "owner_decision": false,
+   "files": ["research/stage_lattice_referee_20261124/owner_host/**"],
+   "question": "Do the 577/0/1 facade result, the stage-client suites and the diagnostic two-way ratios reproduce on Rust 1.94.1 and a Ryzen 9 5900X?",
+   "implementation": "Fresh clone of the branch, CARGO_TARGET_DIR per worktree, rust-toolchain.toml honoured. Run the commands below; then the ignored measurement test three times with nothing else running.",
+   "acceptance": [
+    "cargo test --locked -p vigilode --features structured --release --no-fail-fast: 0 failed",
+    "cargo test --locked -p rodas5p-integrators --release --lib --test stage_clients_banded_two_way --test stage_clients_banded_tight_identity: 0 failed",
+    "python3 -I research/stage_lattice_referee_20261124/verify.py exits 0",
+    "three timing JSONL files under owner_host/ with host description, load and spread"
+   ],
+   "kill": "none (reproduction task); record any mismatch as a finding",
+   "fallback": "keep this run's numbers labelled diagnostic",
+   "commands": [
+    "cargo test --locked -p vigilode --features structured --release --no-fail-fast",
+    "cargo test --locked -p rodas5p-integrators --release --lib --test stage_clients_banded_two_way --test stage_clients_banded_tight_identity",
+    "cargo test --locked -p rodas5p-integrators --release --test stage_clients_banded_two_way -- --ignored --nocapture measure"
+   ]
+  },
+  {
+   "id": "SL-N12",
+   "title": "Owner decision: promote the same-bits tight kernel to the default banded route for half widths below 6",
+   "depends_on": ["SL-N1"],
+   "owner_decision": true,
+   "files": ["crates/vigilode/src/solve.rs", "crates/vigilode/tests/banded_kernel_route_contracts.rs", "crates/vigilode/tests/default_path_golden.rs"],
+   "question": "Tight (BandedTightStageLu) returns the protected banded driver's bits (V21 stage b, this run's facade tests). Should the facade's banded route use it where it currently runs the Indexed kernel?",
+   "implementation": "Route Plan::Banded with min(lower, upper) < BANDED_SLICES_MIN_HALF_WIDTH to the client driver with BandedTightStageLu; keep the entry-point and driver identifiers of the record honest (new identifiers, documented); the band operation counters of DriverWork::Banded are not produced by the client, so either extend the client to count them or record their absence explicitly.",
+   "acceptance": [
+    "default_path_golden: 0 changed values (the record identifiers are the only allowed difference and must be listed)",
+    "stage_clients_banded_tight_identity: 16 of 16 identity cells bit-identical",
+    "owner-host preregistered whole-solve cells: instructions <= 0.60 and cycles <= 0.80 of the Indexed route at n >= 1e4"
+   ],
+   "kill": "any changed state bit or counter in the golden files",
+   "fallback": "keep BandedStagePolicy::Tight opt-in",
+   "commands": ["cargo test --locked -p vigilode --release --test default_path_golden --test banded_stage_policy --test banded_kernel_route_contracts"]
+  },
+  {
+   "id": "SL-N2",
+   "title": "Two-way client: fixed-offset kernel for l = u = 2, persistent pool, preregistered owner-host measurement",
+   "depends_on": ["SL-N1"],
+   "owner_decision": false,
+   "files": ["crates/rodas5p-integrators/src/stage_clients/banded_two_way.rs", "crates/rodas5p-integrators/tests/stage_clients_banded_two_way.rs", "crates/vigilode/src/solve.rs", "research/stage_lattice_referee_20261124/n2/**"],
+   "question": "Does the two-way client beat the same-bits tight kernel on whole solves once each front runs the tight kernel's fixed-offset loops and the pool is reused across solves?",
+   "implementation": "Write the two fronts' factor/forward/backward with the carried-value loops of BandedTightStageLu::factor_fixed2/solve_fixed2 (the bottom front in reversed orientation); keep the general loops for other bands. Add a pool owned by the client (or a caller-provided rayon::ThreadPool through BandedStagePolicy) so a solve does not build a pool. Preregister cells: 1D Brusselator n in {2e4, 2e5, 2e6}, 2D Allen-Cahn bands 32/64/128, rtol 1e-6 and 1e-8; arms tight, two-way serial, two-way join.",
+   "acceptance": [
+    "fixed-offset two-way equals general two-way bit for bit on every unit and whole-IVP case",
+    "serial equals join bit for bit",
+    "whole-solve cycles of two-way join <= 0.80 of tight on every authoritative cell with n >= 2e5 or band >= 64"
+   ],
+   "kill": "two-way join >= 0.95 of tight on every authoritative cell",
+   "fallback": "keep BandedStagePolicy::TwoWay opt-in with the measured scope; record the negative",
+   "commands": ["cargo test --locked -p rodas5p-integrators --release --lib stage_clients::banded_two_way --test stage_clients_banded_two_way"]
+  },
+  {
+   "id": "SL-N3",
+   "title": "Stage wavefront driver: alternating LU/UL orientation with a row-streaming RHS",
+   "depends_on": ["SL-N2"],
+   "owner_decision": false,
+   "files": ["crates/rodas5p-integrators/src/stage_wavefront.rs", "crates/rodas5p-integrators/tests/stage_wavefront_*.rs", "research/stage_lattice_referee_20261124/n3/**"],
+   "question": "Can the 9n lattice depth of THEORY.md SL-1 be realised on a real banded problem with a row-local RHS, and does it beat two-way at two workers or combine with it at four?",
+   "implementation": "Research driver only. New callback contract RowRhsFn(t, y, rows, out) with declared stencil half width w; odd stages factored LU, even stages UL (one factorisation of W and one of its flip per attempt, both from the same W), stage i+1 streams behind stage i in row blocks guarded by per-block completion counters. First build the serial alternating-orientation driver and prove the pipelined one equals it bit for bit.",
+   "acceptance": [
+    "pipelined driver equals the serial alternating driver bit for bit (states, attempts, counters)",
+    "alternating serial driver agrees with the protected driver within 1e-2 tolerance units on the SL test problems",
+    "measured critical-path proxy (row blocks on the longest chain) matches stage_lattice_dag.py within 5%"
+   ],
+   "kill": "pipelined wall >= two-way join wall on every owner-host cell",
+   "fallback": "keep SL-1 as a theory result; no driver change",
+   "commands": ["python3 -I research/stage_lattice_referee_20261124/scripts/stage_lattice_dag.py /tmp/lattice.json"]
+  },
+  {
+   "id": "SL-N4",
+   "title": "SPIKE-P stage client with residual verification and two-way fallback",
+   "depends_on": ["SL-N2"],
+   "owner_decision": false,
+   "files": ["crates/rodas5p-integrators/src/stage_clients/banded_spike.rs", "research/stage_lattice_referee_20261124/n4/**"],
+   "question": "With P = 4, 8 blocks, restricted pivoting and a per-solve residual check (V19 arm CV), how often does the check fail, and does the verified client beat two-way at P >= 4 cores?",
+   "implementation": "Port V19 arms C(P)/CV(P) from research/production_loop_20261116/banded_solve/runner into a StageLinearSystem client; on a failed residual check or a block pivot error re-factor with the two-way client in the same attempt and charge both.",
+   "acceptance": [
+    "V19 suites S1-S5: no silent failure (eta > 1e-12 without error)",
+    "fallback counts reported per suite",
+    "owner host: verified SPIKE-8 <= 0.6 of two-way join per stage pattern at n >= 2e5"
+   ],
+   "kill": "fallback in more than 10% of the stage patterns of any IVP of the SL suite",
+   "fallback": "two-way only",
+   "commands": []
+  },
+  {
+   "id": "SL-N5",
+   "title": "Exact separable stage solver on S^2 (DFT in longitude, two-way tridiagonal per mode)",
+   "depends_on": [],
+   "owner_decision": true,
+   "files": ["crates/vigilode/src/spatial.rs", "crates/vigilode/src/spatial/separable.rs", "crates/vigilode/tests/spatial_separable.rs"],
+   "question": "For DiffusionGrid::sphere with a ring-constant diagonal reaction, W = I/(h gamma) - J is block-diagonalised by the DFT in longitude; is the mode-parallel exact solve faster than P1 GMRES with the longitude preconditioner at matched achieved error?",
+   "implementation": "Owner decision: add an FFT dependency or write an internal radix-2 + Bluestein FFT. Implement the per-mode tridiagonal systems from the Ring coefficients (north, south, azimuth, area), solve each with the two-way tridiagonal elimination, modes in parallel; expose as a stage policy of the matrix-free sphere route that verifies the original unpreconditioned residual and falls back to P1 GMRES when the Jacobian is not ring-constant.",
+   "acceptance": [
+    "relative residual of the original W <= 1e-12 on every stage",
+    "constant null mode and area mass preserved to round-off",
+    "whole IVP error against the sparse expm reference of research/spatial_review_20261124 within the recorded envelope",
+    "cost per accepted step below P1 + longitude preconditioner at matched error on 32x64 and 64x128"
+   ],
+   "kill": "slower than P1 + preconditioner on every cell",
+   "fallback": "longitude preconditioner + P1 GMRES",
+   "commands": ["cargo test --locked -p vigilode --release --test spatial_diffusion --test longitude_preconditioner"]
+  },
+  {
+   "id": "SL-N6",
+   "title": "Package consolidation: research gates out of the production build",
+   "depends_on": [],
+   "owner_decision": true,
+   "files": ["crates/rodas5p-integrators/Cargo.toml", "crates/rodas5p-integrators/src/lib.rs", "crates/rodas5p-core/src/lib.rs", "crates/vigilode-coupled/src/lib.rs"],
+   "question": "Can the 35 research-gate modules (28,636 lines; results/INTEGRATOR_INVENTORY.json) leave the default build without changing any facade result?",
+   "implementation": "Owner decision between a cargo feature `research-gates` (smallest change) and a new crate `vigilode-research`. Gate every module with status research-gate behind it; tests and examples that need them get required-features. The facade must not need the feature.",
+   "acceptance": [
+    "cargo build -p vigilode without the feature succeeds",
+    "default_path_golden byte-identical; facade suite unchanged",
+    "every existing test target still runs with --features research-gates",
+    "compile time and compiled line count of the default build reported before and after"
+   ],
+   "kill": "a facade route needs a research-gate module",
+   "fallback": "reclassify that module in the inventory and keep it in the default build",
+   "commands": ["python3 -I research/stage_lattice_referee_20261124/scripts/integrator_inventory.py . /tmp/inventory.json"]
+  },
+  {
+   "id": "SL-N7",
+   "title": "Single frontend: SolveSpec over every entry point",
+   "depends_on": [],
+   "owner_decision": false,
+   "files": ["crates/vigilode/src/unified/spec.rs", "crates/vigilode/src/unified/mod.rs", "crates/vigilode/tests/solve_spec.rs"],
+   "question": "Can one call cover solve, solve_method, solve_stages (matrix-free, banded), solve_modal and the structured solvers without changing any of them?",
+   "implementation": "VigilODE::plan_spec(problem, options, &SolveSpec) -> Result<SpecPlan, Refusal> without callbacks, and VigilODE::solve_spec(...) -> SpecSolution (enum over the native solution types). SolveSpec { method: Auto | Rodas5p | Registry(id), stages: StagePolicy, structure: None | Modal(...) | Cubic(...), fallback }. Every combination maps to exactly one existing entry point.",
+   "acceptance": [
+    "table-driven test: each SolveSpec equals its direct entry point bit for bit (states, counters, records)",
+    "every refusal happens before any callback (counting callbacks)",
+    "VigilODE::solve and Rodas5p::solve unchanged (golden)"
+   ],
+   "kill": "a combination needs behaviour that no entry point has",
+   "fallback": "document the combination as refused",
+   "commands": ["cargo test --locked -p vigilode --release --test solve_spec --test default_path_golden"]
+  },
+  {
+   "id": "SL-N8",
+   "title": "Dense stage policy: expose the same-bits DenseLuReuse client (and its threaded LU) as StagePolicy::Dense",
+   "depends_on": ["SL-N7"],
+   "owner_decision": false,
+   "files": ["crates/vigilode/src/solve.rs", "crates/vigilode/src/unified/mod.rs", "crates/vigilode/tests/dense_stage_policy.rs"],
+   "question": "Does the dense route gain from the reuse client's zero allocation per attempt and its threaded factorisation at n >= 512 on the owner host?",
+   "implementation": "Mirror BandedStagePolicy: DenseStagePolicy { Shipped, Reuse, ReuseThreaded { workers } }; refuse outside the dense fast route.",
+   "acceptance": ["Reuse equals the protected dense driver bit for bit (L-0332 cells)", "owner-host wall >= 1.5x at n = 2048 with 6 workers on authoritative cells"],
+   "kill": "wall < 1.2x at every n",
+   "fallback": "keep Reuse opt-in only",
+   "commands": []
+  },
+  {
+   "id": "SL-N9",
+   "title": "Causal stage budget as an observer of the shipped driver",
+   "depends_on": ["SL-N7"],
+   "owner_decision": false,
+   "files": ["crates/vigilode/src/causal_budget.rs", "crates/vigilode/tests/causal_budget_contracts.rs"],
+   "question": "Does the causal stage-error budget predict the embedded error on the U11 problems when recorded beside it (no control)?",
+   "implementation": "Record the budget per accepted step through an observer hook; never feed it to the controller.",
+   "acceptance": ["shipped results bit-identical with the observer attached", "rank correlation between budget and embedded error reported per problem"],
+   "kill": "none (observation)",
+   "fallback": "leave causal_budget unused",
+   "commands": []
+  },
+  {
+   "id": "SL-N10",
+   "title": "Peer methods: changed starter and new large holdout (carried from the prior plan 'peer')",
+   "depends_on": ["SL-N1"],
+   "owner_decision": false,
+   "files": ["crates/rodas5p-integrators/src/ppsw1.rs", "research/stage_lattice_referee_20261124/n10/**"],
+   "question": "As in research/unified_referee_20261124/NEXT_PLAN.json task peer.",
+   "implementation": "As in the prior plan.",
+   "acceptance": ["historic G0 as a conjunction on a new holdout"],
+   "kill": "G0 fails again",
+   "fallback": "PeerOde stays opt-in",
+   "commands": []
+  },
+  {
+   "id": "SL-N11",
+   "title": "Banded Newton matrices for BDF and Radau with the two-way client",
+   "depends_on": ["SL-N2", "SL-N7"],
+   "owner_decision": false,
+   "files": ["crates/rodas5p-integrators/src/bdf.rs", "crates/rodas5p-integrators/src/radau.rs"],
+   "question": "BDF and Radau currently use dense Newton matrices; with a declared band, can they factor I - h beta J (BDF) and the real block of Radau with the banded (two-way) client?",
+   "implementation": "Add a banded linear backend to both drivers behind an explicit option; complex Radau block stays dense or uses a complex banded LU in a later task.",
+   "acceptance": ["same Newton iterates as the dense backend to rounding on banded problems", "work-precision against the dense backend and CVODE on the U11 Brusselator"],
+   "kill": "no gain at n >= 1e3",
+   "fallback": "dense Newton",
+   "commands": []
+  },
+  {
+   "id": "SL-N13",
+   "title": "Auto routing over stage policies",
+   "depends_on": ["SL-N12", "SL-N2", "SL-N7"],
+   "owner_decision": true,
+   "files": ["crates/vigilode/src/unified/router.rs", "crates/vigilode/src/selection/frontend.rs"],
+   "question": "Which stage policies may MethodChoice::Auto pick, and on which declared facts?",
+   "implementation": "Tight may be chosen wherever it is bitwise (after SL-N12). TwoWay only with a declared worker budget >= 2 and the owner-host evidence of SL-N2 attached as MethodCostEvidence; never by default.",
+   "acceptance": ["default oracle unchanged", "held-out regret against the best admitted policy reported"],
+   "kill": "any default result changes without an owner decision",
+   "fallback": "existing Auto",
+   "commands": []
+  },
+  {
+   "id": "SL-N14",
+   "title": "Release qualification",
+   "depends_on": ["SL-N1", "SL-N2", "SL-N5", "SL-N6", "SL-N7", "SL-N12", "SL-N13"],
+   "owner_decision": true,
+   "files": ["docs/agent/production_solver_program_20261112/RELEASE_GATE_MATRIX.json"],
+   "question": "Which combinations have earned inclusion in a release?",
+   "implementation": "Re-run the release matrix on the pinned toolchain and two hosts; version the support matrix of StagePolicy and SolveSpec.",
+   "acceptance": ["existing G0 and release axes for every claim made"],
+   "kill": "any axis NOT_MET for a default route",
+   "fallback": "no release tag; publish the measured fronts",
+   "commands": []
+  }
+ ],
+ "carried_over": {
+  "source": "research/unified_referee_20261124/NEXT_PLAN.json",
+  "tasks": ["gmres-path", "sphere-lines", "modal-modes", "split-attempts", "implicit-roots", "radau-blocks", "exponential", "graph-transport", "routing", "singular-geometry", "discrete-topology"],
+  "note": "unchanged by this run; SL-N10 replaces 'peer', SL-N14 replaces 'release'"
+ }
+}

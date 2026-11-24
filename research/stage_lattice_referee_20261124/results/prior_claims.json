@@ -1,0 +1,81 @@
+{
+ "checks": {
+  "C1_six_distinct_clocks": {
+   "abscissae": [
+    0.0,
+    0.6358126895828704,
+    0.4095798393397535,
+    0.9769306725060716,
+    0.4288403609558664,
+    1.0,
+    1.0,
+    1.0
+   ],
+   "distinct": 6,
+   "pass": true
+  },
+  "C2_nonnormal_amplification": {
+   "pass": true,
+   "ratio": "250",
+   "x": [
+    "1/4",
+    "1/2000"
+   ]
+  },
+  "C3_backward_euler_fold": {
+   "discriminant": "1 - 2*tau",
+   "fold": "[{tau: 1/2, u: 2}]",
+   "pass": true,
+   "transversality": "1"
+  },
+  "C4_sphere_longitude_line_ratio": {
+   "pass": true,
+   "rows": [
+    {
+     "alternating_eigen_residual": 2.7751207201913156e-16,
+     "computed_top": 25.604029784733676,
+     "gershgorin": 25.604029784733683,
+     "kappa": 1.0,
+     "n_theta": 8,
+     "null_eigenvalue": 1.2106892817338572e-15,
+     "predicted_ratio": 8.681208935420102,
+     "predicted_top": 25.604029784733676,
+     "radius": 1.0,
+     "ratio": 8.681208935420099,
+     "sigma": 0.3
+    },
+    {
+     "alternating_eigen_residual": 1.1780174430566265e-14,
+     "computed_top": 46.443956306424376,
+     "gershgorin": 46.44395630642479,
+     "kappa": 0.7,
+     "n_theta": 32,
+     "null_eigenvalue": -9.3218593636745e-16,
+     "predicted_ratio": 186.77582522569747,
+     "predicted_top": 46.44395630642437,
+     "radius": 2.5,
+     "ratio": 186.7758252256975,
+     "sigma": 4.0
+    },
+    {
+     "alternating_eigen_residual": 8.416081947469e-14,
+     "computed_top": 70026.95202202679,
+     "gershgorin": 70026.9520220327,
+     "kappa": 3.0,
+     "n_theta": 96,
+     "null_eigenvalue": -2.758238082378739e-12,
+     "predicted_ratio": 701.2695202202681,
+     "predicted_top": 70026.9520220268,
+     "radius": 0.4,
+     "ratio": 701.2695202202679,
+     "sigma": 0.01
+    }
+   ]
+  },
+  "C5_manufactured_solution": {
+   "pass": true
+  }
+ },
+ "failed": [],
+ "schema": "vigilode.referee2.prior-claims.v1"
+}

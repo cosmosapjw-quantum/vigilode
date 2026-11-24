@@ -1,0 +1,589 @@
+{
+ "schema": "vigilode.referee2.two-way-timing-summary.v1",
+ "host": "2 vCPU Intel Xeon @ 2.10GHz (cloud sandbox), rustc 1.97.0 stable, profile measurement",
+ "status": "diagnostic: not preregistered, shared host, three tries",
+ "note": "try 1 used the first kernel revision (no contiguous back-substitution slices; whole-solve protected arm with the Indexed kernel); tries 2-3 the final revision with the facade's kernel choice for the protected whole solve",
+ "rows": [
+  {
+   "kind": "stage-pattern",
+   "case": "allen-cahn-2d-32",
+   "n": 1024,
+   "arm": "protected-kernel-client",
+   "ratios_by_try": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "ratio_min": 1.0,
+   "ratio_max": 1.0,
+   "ratio_median": 1.0,
+   "band": 32,
+   "ns_per_row_min": 3301.01
+  },
+  {
+   "kind": "stage-pattern",
+   "case": "allen-cahn-2d-32",
+   "n": 1024,
+   "arm": "tight",
+   "ratios_by_try": [
+    0.3549,
+    0.3401,
+    0.3572
+   ],
+   "ratio_min": 0.3401,
+   "ratio_max": 0.3572,
+   "ratio_median": 0.3549,
+   "band": 32,
+   "ns_per_row_min": 1153.684
+  },
+  {
+   "kind": "stage-pattern",
+   "case": "allen-cahn-2d-32",
+   "n": 1024,
+   "arm": "two-way-join-2",
+   "ratios_by_try": [
+    0.3194,
+    0.2864,
+    0.293
+   ],
+   "ratio_min": 0.2864,
+   "ratio_max": 0.3194,
+   "ratio_median": 0.293,
+   "band": 32,
+   "ns_per_row_min": 967.284
+  },
+  {
+   "kind": "stage-pattern",
+   "case": "allen-cahn-2d-32",
+   "n": 1024,
+   "arm": "two-way-serial",
+   "ratios_by_try": [
+    0.4669,
+    0.4036,
+    0.3492
+   ],
+   "ratio_min": 0.3492,
+   "ratio_max": 0.4669,
+   "ratio_median": 0.4036,
+   "band": 32,
+   "ns_per_row_min": 1152.765
+  },
+  {
+   "kind": "stage-pattern",
+   "case": "allen-cahn-2d-64",
+   "n": 4096,
+   "arm": "protected-kernel-client",
+   "ratios_by_try": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "ratio_min": 1.0,
+   "ratio_max": 1.0,
+   "ratio_median": 1.0,
+   "band": 64,
+   "ns_per_row_min": 11305.153
+  },
+  {
+   "kind": "stage-pattern",
+   "case": "allen-cahn-2d-64",
+   "n": 4096,
+   "arm": "tight",
+   "ratios_by_try": [
+    0.3579,
+    0.3538,
+    0.3521
+   ],
+   "ratio_min": 0.3521,
+   "ratio_max": 0.3579,
+   "ratio_median": 0.3538,
+   "band": 64,
+   "ns_per_row_min": 3999.945
+  },
+  {
+   "kind": "stage-pattern",
+   "case": "allen-cahn-2d-64",
+   "n": 4096,
+   "arm": "two-way-join-2",
+   "ratios_by_try": [
+    0.3256,
+    0.2459,
+    0.2434
+   ],
+   "ratio_min": 0.2434,
+   "ratio_max": 0.3256,
+   "ratio_median": 0.2459,
+   "band": 64,
+   "ns_per_row_min": 2779.589
+  },
+  {
+   "kind": "stage-pattern",
+   "case": "allen-cahn-2d-64",
+   "n": 4096,
+   "arm": "two-way-serial",
+   "ratios_by_try": [
+    0.4491,
+    0.3578,
+    0.3827
+   ],
+   "ratio_min": 0.3578,
+   "ratio_max": 0.4491,
+   "ratio_median": 0.3827,
+   "band": 64,
+   "ns_per_row_min": 4044.48
+  },
+  {
+   "kind": "stage-pattern",
+   "case": "brusselator-1d-1000",
+   "n": 2000,
+   "arm": "protected-kernel-client",
+   "ratios_by_try": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "ratio_min": 1.0,
+   "ratio_max": 1.0,
+   "ratio_median": 1.0,
+   "band": 2,
+   "ns_per_row_min": 112.172
+  },
+  {
+   "kind": "stage-pattern",
+   "case": "brusselator-1d-1000",
+   "n": 2000,
+   "arm": "tight",
+   "ratios_by_try": [
+    0.5377,
+    0.697,
+    0.6807
+   ],
+   "ratio_min": 0.5377,
+   "ratio_max": 0.697,
+   "ratio_median": 0.6807,
+   "band": 2,
+   "ns_per_row_min": 76.361
+  },
+  {
+   "kind": "stage-pattern",
+   "case": "brusselator-1d-1000",
+   "n": 2000,
+   "arm": "two-way-join-2",
+   "ratios_by_try": [
+    0.8378,
+    0.9185,
+    0.6403
+   ],
+   "ratio_min": 0.6403,
+   "ratio_max": 0.9185,
+   "ratio_median": 0.8378,
+   "band": 2,
+   "ns_per_row_min": 71.828
+  },
+  {
+   "kind": "stage-pattern",
+   "case": "brusselator-1d-1000",
+   "n": 2000,
+   "arm": "two-way-serial",
+   "ratios_by_try": [
+    0.7274,
+    1.161,
+    0.9255
+   ],
+   "ratio_min": 0.7274,
+   "ratio_max": 1.161,
+   "ratio_median": 0.9255,
+   "band": 2,
+   "ns_per_row_min": 103.82
+  },
+  {
+   "kind": "stage-pattern",
+   "case": "brusselator-1d-10000",
+   "n": 20000,
+   "arm": "protected-kernel-client",
+   "ratios_by_try": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "ratio_min": 1.0,
+   "ratio_max": 1.0,
+   "ratio_median": 1.0,
+   "band": 2,
+   "ns_per_row_min": 119.133
+  },
+  {
+   "kind": "stage-pattern",
+   "case": "brusselator-1d-10000",
+   "n": 20000,
+   "arm": "tight",
+   "ratios_by_try": [
+    0.6878,
+    0.6589,
+    0.6913
+   ],
+   "ratio_min": 0.6589,
+   "ratio_max": 0.6913,
+   "ratio_median": 0.6878,
+   "band": 2,
+   "ns_per_row_min": 82.362
+  },
+  {
+   "kind": "stage-pattern",
+   "case": "brusselator-1d-10000",
+   "n": 20000,
+   "arm": "two-way-join-2",
+   "ratios_by_try": [
+    0.8073,
+    0.612,
+    0.8156
+   ],
+   "ratio_min": 0.612,
+   "ratio_max": 0.8156,
+   "ratio_median": 0.8073,
+   "band": 2,
+   "ns_per_row_min": 85.793
+  },
+  {
+   "kind": "stage-pattern",
+   "case": "brusselator-1d-10000",
+   "n": 20000,
+   "arm": "two-way-serial",
+   "ratios_by_try": [
+    1.0144,
+    0.9273,
+    0.9257
+   ],
+   "ratio_min": 0.9257,
+   "ratio_max": 1.0144,
+   "ratio_median": 0.9273,
+   "band": 2,
+   "ns_per_row_min": 110.284
+  },
+  {
+   "kind": "stage-pattern",
+   "case": "brusselator-1d-100000",
+   "n": 200000,
+   "arm": "protected-kernel-client",
+   "ratios_by_try": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "ratio_min": 1.0,
+   "ratio_max": 1.0,
+   "ratio_median": 1.0,
+   "band": 2,
+   "ns_per_row_min": 138.553
+  },
+  {
+   "kind": "stage-pattern",
+   "case": "brusselator-1d-100000",
+   "n": 200000,
+   "arm": "tight",
+   "ratios_by_try": [
+    0.7156,
+    0.7696,
+    0.7052
+   ],
+   "ratio_min": 0.7052,
+   "ratio_max": 0.7696,
+   "ratio_median": 0.7156,
+   "band": 2,
+   "ns_per_row_min": 106.636
+  },
+  {
+   "kind": "stage-pattern",
+   "case": "brusselator-1d-100000",
+   "n": 200000,
+   "arm": "two-way-join-2",
+   "ratios_by_try": [
+    0.5952,
+    0.6105,
+    0.5377
+   ],
+   "ratio_min": 0.5377,
+   "ratio_max": 0.6105,
+   "ratio_median": 0.5952,
+   "band": 2,
+   "ns_per_row_min": 84.586
+  },
+  {
+   "kind": "stage-pattern",
+   "case": "brusselator-1d-100000",
+   "n": 200000,
+   "arm": "two-way-serial",
+   "ratios_by_try": [
+    0.9639,
+    0.9106,
+    0.768
+   ],
+   "ratio_min": 0.768,
+   "ratio_max": 0.9639,
+   "ratio_median": 0.9106,
+   "band": 2,
+   "ns_per_row_min": 126.171
+  },
+  {
+   "kind": "whole-solve",
+   "case": "allen-cahn-2d-32",
+   "n": 1024,
+   "arm": "client-tight",
+   "ratios_by_try": [
+    0.344,
+    0.9595,
+    0.9464
+   ],
+   "ratio_min": 0.344,
+   "ratio_max": 0.9595,
+   "ratio_median": 0.9464,
+   "attempts": [
+    18
+   ],
+   "difference_in_tolerance_units_max": 0.0
+  },
+  {
+   "kind": "whole-solve",
+   "case": "allen-cahn-2d-32",
+   "n": 1024,
+   "arm": "client-two-way-join-2",
+   "ratios_by_try": [
+    0.3727,
+    0.91,
+    1.2913
+   ],
+   "ratio_min": 0.3727,
+   "ratio_max": 1.2913,
+   "ratio_median": 0.91,
+   "attempts": [
+    18
+   ],
+   "difference_in_tolerance_units_max": 1.09e-09
+  },
+  {
+   "kind": "whole-solve",
+   "case": "allen-cahn-2d-32",
+   "n": 1024,
+   "arm": "client-two-way-serial",
+   "ratios_by_try": [
+    0.4526,
+    1.0762,
+    1.1228
+   ],
+   "ratio_min": 0.4526,
+   "ratio_max": 1.1228,
+   "ratio_median": 1.0762,
+   "attempts": [
+    18
+   ],
+   "difference_in_tolerance_units_max": 1.09e-09
+  },
+  {
+   "kind": "whole-solve",
+   "case": "allen-cahn-2d-32",
+   "n": 1024,
+   "arm": "protected-banded-driver",
+   "ratios_by_try": [
+    1.0
+   ],
+   "ratio_min": 1.0,
+   "ratio_max": 1.0,
+   "ratio_median": 1.0,
+   "attempts": [
+    18
+   ],
+   "difference_in_tolerance_units_max": 0.0
+  },
+  {
+   "kind": "whole-solve",
+   "case": "allen-cahn-2d-32",
+   "n": 1024,
+   "arm": "protected-banded-driver-facade-kernel",
+   "ratios_by_try": [
+    1.0,
+    1.0
+   ],
+   "ratio_min": 1.0,
+   "ratio_max": 1.0,
+   "ratio_median": 1.0,
+   "attempts": [
+    18
+   ],
+   "difference_in_tolerance_units_max": 0.0
+  },
+  {
+   "kind": "whole-solve",
+   "case": "brusselator-1d-1000",
+   "n": 2000,
+   "arm": "client-tight",
+   "ratios_by_try": [
+    0.7566,
+    0.7218,
+    0.7437
+   ],
+   "ratio_min": 0.7218,
+   "ratio_max": 0.7566,
+   "ratio_median": 0.7437,
+   "attempts": [
+    92
+   ],
+   "difference_in_tolerance_units_max": 0.0
+  },
+  {
+   "kind": "whole-solve",
+   "case": "brusselator-1d-1000",
+   "n": 2000,
+   "arm": "client-two-way-join-2",
+   "ratios_by_try": [
+    1.0364,
+    0.9849,
+    1.0175
+   ],
+   "ratio_min": 0.9849,
+   "ratio_max": 1.0364,
+   "ratio_median": 1.0175,
+   "attempts": [
+    92
+   ],
+   "difference_in_tolerance_units_max": 8.272e-09
+  },
+  {
+   "kind": "whole-solve",
+   "case": "brusselator-1d-1000",
+   "n": 2000,
+   "arm": "client-two-way-serial",
+   "ratios_by_try": [
+    0.9939,
+    0.9682,
+    0.9794
+   ],
+   "ratio_min": 0.9682,
+   "ratio_max": 0.9939,
+   "ratio_median": 0.9794,
+   "attempts": [
+    92
+   ],
+   "difference_in_tolerance_units_max": 8.272e-09
+  },
+  {
+   "kind": "whole-solve",
+   "case": "brusselator-1d-1000",
+   "n": 2000,
+   "arm": "protected-banded-driver",
+   "ratios_by_try": [
+    1.0
+   ],
+   "ratio_min": 1.0,
+   "ratio_max": 1.0,
+   "ratio_median": 1.0,
+   "attempts": [
+    92
+   ],
+   "difference_in_tolerance_units_max": 0.0
+  },
+  {
+   "kind": "whole-solve",
+   "case": "brusselator-1d-1000",
+   "n": 2000,
+   "arm": "protected-banded-driver-facade-kernel",
+   "ratios_by_try": [
+    1.0,
+    1.0
+   ],
+   "ratio_min": 1.0,
+   "ratio_max": 1.0,
+   "ratio_median": 1.0,
+   "attempts": [
+    92
+   ],
+   "difference_in_tolerance_units_max": 0.0
+  },
+  {
+   "kind": "whole-solve",
+   "case": "brusselator-1d-10000",
+   "n": 20000,
+   "arm": "client-tight",
+   "ratios_by_try": [
+    0.6354,
+    0.785,
+    0.8057
+   ],
+   "ratio_min": 0.6354,
+   "ratio_max": 0.8057,
+   "ratio_median": 0.785,
+   "attempts": [
+    92
+   ],
+   "difference_in_tolerance_units_max": 0.0
+  },
+  {
+   "kind": "whole-solve",
+   "case": "brusselator-1d-10000",
+   "n": 20000,
+   "arm": "client-two-way-join-2",
+   "ratios_by_try": [
+    0.6435,
+    0.8202,
+    0.9107
+   ],
+   "ratio_min": 0.6435,
+   "ratio_max": 0.9107,
+   "ratio_median": 0.8202,
+   "attempts": [
+    92
+   ],
+   "difference_in_tolerance_units_max": 7.195e-08
+  },
+  {
+   "kind": "whole-solve",
+   "case": "brusselator-1d-10000",
+   "n": 20000,
+   "arm": "client-two-way-serial",
+   "ratios_by_try": [
+    0.7956,
+    1.0803,
+    0.9873
+   ],
+   "ratio_min": 0.7956,
+   "ratio_max": 1.0803,
+   "ratio_median": 0.9873,
+   "attempts": [
+    92
+   ],
+   "difference_in_tolerance_units_max": 7.195e-08
+  },
+  {
+   "kind": "whole-solve",
+   "case": "brusselator-1d-10000",
+   "n": 20000,
+   "arm": "protected-banded-driver",
+   "ratios_by_try": [
+    1.0
+   ],
+   "ratio_min": 1.0,
+   "ratio_max": 1.0,
+   "ratio_median": 1.0,
+   "attempts": [
+    92
+   ],
+   "difference_in_tolerance_units_max": 0.0
+  },
+  {
+   "kind": "whole-solve",
+   "case": "brusselator-1d-10000",
+   "n": 20000,
+   "arm": "protected-banded-driver-facade-kernel",
+   "ratios_by_try": [
+    1.0,
+    1.0
+   ],
+   "ratio_min": 1.0,
+   "ratio_max": 1.0,
+   "ratio_median": 1.0,
+   "attempts": [
+    92
+   ],
+   "difference_in_tolerance_units_max": 0.0
+  }
+ ]
+}

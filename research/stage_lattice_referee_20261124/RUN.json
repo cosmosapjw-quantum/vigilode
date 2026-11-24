@@ -1,0 +1,78 @@
+{
+ "schema_version": 1,
+ "workflow_version": "1.0.0",
+ "task": "both",
+ "unit_id": "VIGILODE-STAGE-LATTICE-20261124",
+ "objective": "Audit the unified-referee head, qualify production status, research the parallelisation of the eight RODAS5P stages without changing them, implement what can be implemented locally, unify the stage-solver entry points, and hand over a machine-readable plan.",
+ "scope": "Banded stage linear algebra of the protected RODAS5P fast driver; facade entry points for stage policies; inventory of the integrator crates. Default routes unchanged. No performance claim admitted.",
+ "status": "complete",
+ "base": {
+  "branch": "research/unified-solver-referee-20261124",
+  "commit": "abf2982540a44ab0fd8693ede35b0e6546b766a2",
+  "user_supplied_head": "a8d196b4 (35 commits below the base; V27 design phase)"
+ },
+ "environment": {
+  "host": "cloud sandbox, 2 vCPU Intel Xeon @ 2.10GHz, 7 GiB RAM, shared",
+  "toolchain": "rustc 1.97.0 / cargo 1.97.0 stable (the pinned 1.94.1 could not be downloaded: rustup channel fetch refused by the egress proxy); RUSTUP_TOOLCHAIN=stable as CLAUDE.md prescribes",
+  "python": "3.13 with numpy 2.5.3, scipy 1.18.1, sympy 1.14.0, mpmath 1.3.0",
+  "profile": "measurement (release without fat LTO)"
+ },
+ "evidence": [
+  {"id": "prior", "locator": "results/prior_claims.json"},
+  {"id": "lattice", "locator": "results/stage_lattice_dag.json"},
+  {"id": "gepp", "locator": "results/twoway_gepp.json"},
+  {"id": "regimes", "locator": "results/regime_map.json"},
+  {"id": "inventory", "locator": "results/INTEGRATOR_INVENTORY.json"},
+  {"id": "timing", "locator": "results/two_way_timing_summary.json"},
+  {"id": "tests", "locator": "results/test_runs.json"},
+  {"id": "theory", "locator": "THEORY.md"},
+  {"id": "matrix", "locator": "IDEA_SOLVER_MATRIX.json"},
+  {"id": "plan", "locator": "NEXT_PLAN.json"},
+  {"id": "report", "locator": "REPORT_KO.md"},
+  {"id": "handoff", "locator": "CODING_AGENT_KO.txt"}
+ ],
+ "stages": [
+  {"id": "R1", "status": "complete", "evidence_refs": ["prior", "tests"], "reason": "Restored the lineage (370 heads, 190 PRs indexed by the prior run; newest branch research/unified-solver-referee-20261124 at abf29825 contains the supplied a8d196b4); reproduced the base: entry tests and facade suite 571/0/1; re-derived five closed-form claims of the prior run (C1-C5 PASS)."},
+  {"id": "R2", "status": "complete", "evidence_refs": ["theory"], "reason": "Prior art for elimination from both ends (two-way / twisted / BABE) and for SPIKE; placed the run's contribution as the stage-solver placement, not a new linear solver."},
+  {"id": "R3", "status": "complete", "evidence_refs": ["regimes"], "reason": "Separated what dominates a RODAS5P step per regime from the V04 cost anatomy: RHS only with an expensive RHS; sweeps in 1D banded; factorisation in 2D/3D banded and dense; Krylov in matrix-free."},
+  {"id": "R4", "status": "complete", "evidence_refs": ["theory", "matrix"], "reason": "Hypothesis space for exact-stage parallelism: two-way, alternating-orientation wavefront, SPIKE-P with fallback, separable sphere solver, parallel dense LU; mapped each project idea to each solver family."},
+  {"id": "R5", "status": "complete", "evidence_refs": ["lattice", "gepp"], "reason": "Derived SL-1 (stage-row lattice depths 16n, 9n+c, 8n+c, 16n/P+c) and SL-2 (two-way = partial pivoting of a reordered matrix)."},
+  {"id": "R6", "status": "complete", "evidence_refs": ["lattice", "gepp", "prior"], "reason": "Checked SL-1 on 30 exact affine fits and SL-2 on 30 seeded systems against an independent dense elimination and LAPACK gbsv."},
+  {"id": "R7", "status": "complete", "evidence_refs": ["timing"], "reason": "Discriminating measurement: stage pattern and whole solves of tight, two-way serial and two-way join against the protected kernel, three tries, diagnostic host."},
+  {"id": "R8", "status": "complete", "evidence_refs": ["report", "timing"], "reason": "Decisions: two-way KEEP opt-in (HOLD for default); tight exposed opt-in and proposed for default by owner decision; no performance claim admitted; package-wide HOLD retained."},
+  {"id": "R9", "status": "complete", "evidence_refs": ["theory", "plan"], "reason": "Formal contracts of BandedStagePolicy and StagePolicy (refusal predicates, records, executed tier); SolveSpec design for the single frontend."},
+  {"id": "R10", "status": "complete", "evidence_refs": ["plan", "handoff"], "reason": "Machine-readable follow-up DAG SL-N1..SL-N14 with acceptance, kill and fallback; coding-agent prompt."},
+  {"id": "C1", "status": "complete", "evidence_refs": ["inventory"], "reason": "Source lock and module inventory: 155,673 lines in the integrator-side crates, 10,140 on default routes, 28,636 research gates."},
+  {"id": "C2", "status": "complete", "evidence_refs": ["tests"], "reason": "Baseline on the base commit: entry tests of the prior plan and the full facade suite with the structured feature."},
+  {"id": "C3", "status": "complete", "evidence_refs": ["tests"], "reason": "Defect probes: split forcing versus the ordinary composite RHS on out-of-domain trial states (no defect; contract tests added); pre-existing clippy failure in ppsw1_independent_qualification fixed."},
+  {"id": "C4", "status": "complete", "evidence_refs": ["theory"], "reason": "Bounded design: three alternatives (SPIKE-P, wavefront driver, two-way client); two-way chosen because it needs no driver or callback change and keeps partial pivoting."},
+  {"id": "C5", "status": "complete", "evidence_refs": ["tests"], "reason": "Implemented BandedTwoWayStageLu (serial and joined fronts, tight-kernel delegation below threshold, no allocation after construction)."},
+  {"id": "C6", "status": "complete", "evidence_refs": ["tests"], "reason": "Facade wiring: BandedStagePolicy, VigilODE::solve_banded, StagePolicy, VigilODE::solve_stages, DriverWork::BandedClient, Unsupported::BandedPolicyRequiresBandedRoute; default routes untouched."},
+  {"id": "C7", "status": "complete", "evidence_refs": ["tests"], "reason": "Software validation: unit, integration, facade and golden tests; clippy -D warnings on both crates; rustfmt on changed files."},
+  {"id": "C8", "status": "complete", "evidence_refs": ["timing", "gepp"], "reason": "Numerical validation: backward error, serial/join bit identity, whole-IVP agreement in tolerance units; diagnostic timing."},
+  {"id": "C9", "status": "complete", "evidence_refs": ["tests"], "reason": "Self-review of the diff (pivot windows, middle-block indexing, refusal before callbacks, tier record). An independent reviewer was not dispatched: recorded as NOT_RUN for independence."},
+  {"id": "C10", "status": "complete", "evidence_refs": ["plan", "handoff", "report"], "reason": "Closeout: research branch commit and push, plan and prompt."}
+ ],
+ "claims": [
+  {"id": "SL-1", "statement": "Stage-row lattice depth of one banded attempt: 16n (one orientation), 9n+c (alternating), 8n+c (two-way), 16n/P+c (SPIKE-P).", "basis": ["derived", "script-checked"], "evidence_refs": ["lattice"]},
+  {"id": "SL-2", "statement": "Two-way elimination is partial pivoting of Q W Q^T; no pivot is restricted.", "basis": ["derived", "numerically checked"], "evidence_refs": ["gepp"]},
+  {"id": "SL-3", "statement": "BandedStagePolicy::TwoWay returns the same bits with one and two workers and tracks the protected driver within 1e-2 tolerance units on the tested problems.", "basis": ["implementation-verified"], "evidence_refs": ["tests"]},
+  {"id": "SL-4", "statement": "Two-way stage pattern 0.54-0.61 of the protected kernel at n = 2e5 with two threads; whole-solve gain over the tight kernel not shown.", "basis": ["measured, diagnostic"], "evidence_refs": ["timing"]}
+ ],
+ "checks": [
+  {"id": "facade", "domain": "implementation", "result": "pass", "reason": "Facade suite with the structured feature after the change: 0 failures (see results/test_runs.json)."},
+  {"id": "golden", "domain": "implementation", "result": "pass", "reason": "default_path_golden 11/11 unchanged."},
+  {"id": "workspace_other_crates", "domain": "implementation", "result": "not_run", "reason": "The run of the remaining workspace suites was stopped by an environment restart; only the touched integrator targets were re-run."},
+  {"id": "independent_review", "domain": "process", "result": "not_run", "reason": "No independent reviewer dispatched in this session; self-review only."}
+ ],
+ "decisions": [
+  {"id": "two-way", "decision": "KEEP opt-in (BandedStagePolicy::TwoWay); HOLD for any default route until SL-N2 on the owner host."},
+  {"id": "tight", "decision": "Expose opt-in now (BandedStagePolicy::Tight, bit-identical); propose default promotion as owner decision SL-N12."},
+  {"id": "release", "decision": "Package-wide HOLD retained; no release tag; main untouched."}
+ ],
+ "failures": [
+  {"id": "env-toolchain", "class": "environment", "next_action": "SL-N1 on the pinned 1.94.1"},
+  {"id": "env-restart", "class": "environment", "next_action": "re-run the non-facade workspace suites in SL-N1"},
+  {"id": "stale-target", "class": "process", "next_action": "fresh CARGO_TARGET_DIR per worktree (rule in NEXT_PLAN.json)"}
+ ]
+}
