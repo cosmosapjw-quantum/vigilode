@@ -65,6 +65,7 @@ pub use analyzer::{
 pub use fallback::{EXPLICIT_TRIAL_ATTEMPT_LIMIT, FallbackEngine};
 pub use legs::{CallbackStop, UnifiedLeg, UnifiedStop};
 pub use options::{PerformanceProfile, SolverStrategy, VigilodeOptions};
+pub use rodas5p_integrators::MfStageSolvePolicy;
 pub use router::VigilodeRouter;
 pub use solution::{RouteTransitionRecord, VigilodeSolution};
 pub use workspace::VigilodeWorkspace;
@@ -93,6 +94,39 @@ pub enum PortfolioError {
 }
 
 impl VigilODE {
+    /// Solve with an explicitly selected GMRES stage policy on the actual matrix-free
+    /// RODAS5P route. A supplied JVP (or general, nonbanded sparse JVP pattern) is
+    /// required. The scope is identity mass, scalar absolute tolerance and endpoints.
+    /// Ineligible combinations return a typed refusal before entering user code.
+    ///
+    /// `Shipped` follows the protected method. Column-tested policies opt into the
+    /// performance tier and use the driver's true residual test before returning each
+    /// stage. `stats.route.driver_id` identifies the executed policy, and
+    /// `stats.counters` includes all charged JVPs and linear work. `options.tier`
+    /// records the input option. The explicit policy determines the executed tier.
+    pub fn solve_matrix_free(
+        problem: &Problem,
+        span: (f64, f64),
+        y0: &[f64],
+        options: &crate::Options,
+        policy: MfStageSolvePolicy,
+    ) -> Result<crate::Solution, SolveError> {
+        let caps =
+            crate::Rodas5p::capabilities(problem, options).map_err(SolveError::Unsupported)?;
+        // General sparse JVPs can be assembled into a dense matrix for dense output
+        // or vector tolerances even when the capability query reports matrix-free.
+        if caps.route != crate::FacadeRoute::MatrixFree
+            || problem.band.is_some()
+            || options.dense_output
+            || matches!(&options.atol, crate::Atol::Vector(_))
+        {
+            return Err(SolveError::Unsupported(
+                crate::Unsupported::MatrixFreePolicyRequiresJvpRoute,
+            ));
+        }
+        crate::Rodas5p::solve_with_stage_policy(problem, span, y0, options, &[], None, policy)
+    }
+
     /// Select and run a registered integrator, preserving the driver's native result,
     /// route, work and typed stop. Use [`crate::MethodParams::default`] for ordinary
     /// ODEs. A Lawson split requires its declared flow and residual RHS.

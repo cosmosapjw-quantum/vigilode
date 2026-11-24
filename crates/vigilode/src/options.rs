@@ -40,10 +40,11 @@ pub enum Tier {
     /// P0: only the protected RODAS5P drivers run.
     #[default]
     Protected,
-    /// P1: the tier that may run admitted candidates under the P0
+    /// P1: the performance tier. The explicit [`crate::VigilODE::solve_matrix_free`] entry point records this tier for adaptive candidate policies.
+    /// The ordinary facade may run admitted candidates under the P0
     /// acceptance test.
     ///
-    /// In this release no candidate is attached, so a `Performance` run
+    /// On [`crate::Rodas5p::solve`] no candidate is attached, so a `Performance` run
     /// executes exactly the `Protected` drivers (bit for bit); the record
     /// keeps both the requested and the executed tier
     /// ([`crate::Stats::tier_requested`], [`crate::Stats::tier_executed`]).

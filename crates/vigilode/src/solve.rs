@@ -261,6 +261,26 @@ impl Rodas5p {
         interior: &[f64],
         work_ceiling: Option<u64>,
     ) -> Result<Solution, SolveError> {
+        Self::solve_with_stage_policy(
+            problem,
+            t_span,
+            y0,
+            opts,
+            interior,
+            work_ceiling,
+            crate::MfStageSolvePolicy::Shipped,
+        )
+    }
+
+    pub(crate) fn solve_with_stage_policy(
+        problem: &Problem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        opts: &Options,
+        interior: &[f64],
+        work_ceiling: Option<u64>,
+        stage_policy: crate::MfStageSolvePolicy,
+    ) -> Result<Solution, SolveError> {
         let atol = validate(problem, t_span, y0, opts)?;
         let adaptive = AdaptiveStepConfig {
             rtol: opts.rtol,
@@ -336,6 +356,7 @@ impl Rodas5p {
                 // solve); `driver_work.krylov_workspace` records the choice.
                 let routing = RoutingOptions {
                     krylov_ls_workspace: true,
+                    matrix_free_policy: stage_policy,
                     ..RoutingOptions::default()
                 };
                 let routed = integrate_rodas5p_routed_observed_with_options(
@@ -742,8 +763,12 @@ impl Rodas5p {
             time_derivative: problem.time_derivative.is_some(),
             jacobian: jacobian_record,
             tier_requested: opts.tier,
-            // No candidate driver is attached in this release.
-            tier_executed: Tier::Protected,
+            // The named matrix-free entry point explicitly opts into the candidate.
+            tier_executed: if stage_policy.is_adaptive() {
+                Tier::Performance
+            } else {
+                Tier::Protected
+            },
             route: run.route,
             attempts: run.attempts,
             accepted_steps: run.accepted_steps,

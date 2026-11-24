@@ -428,7 +428,7 @@ pub struct Stats {
     pub jacobian: JacobianRecord,
     /// The tier the options requested.
     pub tier_requested: Tier,
-    /// The tier that executed (always `Protected` in this release).
+    /// The tier that executed. An explicitly selected adaptive GMRES policy executes in the performance tier.
     pub tier_executed: Tier,
     /// The driver that ran.
     pub route: RouteRecord,

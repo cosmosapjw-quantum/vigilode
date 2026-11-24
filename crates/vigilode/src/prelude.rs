@@ -12,8 +12,8 @@ pub use crate::production::{
 };
 pub use crate::switching::{SwitchingConfig, SwitchingSolution, SwitchingSolver};
 pub use crate::unified::{
-    PerformanceProfile, PreflightAnalysis, SelectedTier, SolverStrategy, VigilODE, VigilodeOptions,
-    VigilodeSolution, VigilodeWorkspace,
+    MfStageSolvePolicy, PerformanceProfile, PreflightAnalysis, SelectedTier, SolverStrategy,
+    VigilODE, VigilodeOptions, VigilodeSolution, VigilodeWorkspace,
 };
 pub use crate::{
     Atol, CallbackError, FailureReason, InteriorError, Jacobian, MethodAutoPolicy, MethodChoice,

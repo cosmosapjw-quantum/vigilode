@@ -39,6 +39,11 @@ pub enum CallbackError {
 #[serde(rename_all = "kebab-case")]
 #[non_exhaustive]
 pub enum Unsupported {
+    /// An explicitly selected matrix-free policy needs a genuine JVP route throughout.
+    #[error(
+        "matrix-free policy requires unbanded JVPs, identity mass, scalar atol and endpoint output"
+    )]
+    MatrixFreePolicyRequiresJvpRoute,
     /// A mass matrix or dense output on a JVP-only problem.
     #[error(
         "a mass matrix or dense output on a JVP-only problem: the stage matrix \
