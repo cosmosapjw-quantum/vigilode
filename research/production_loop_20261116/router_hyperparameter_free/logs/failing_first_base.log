@@ -1,0 +1,107 @@
+# failing-first run of crates/vigilode/tests/unified_breakeven_contracts.rs against the base sources
+# HEAD dbcde43b361894665f6ad937cfad8fdf41316c2e (base sources: crates/vigilode/src unchanged since 1ffbda20)
+# git diff --stat 1ffbda20 -- crates/vigilode/src: 0 lines
+# command: taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_breakeven_contracts -- --nocapture --test-threads=1
+# date: 2026-11-24T20:34:36+09:00
+   Compiling bytemuck v1.25.2
+   Compiling num-traits v0.2.19
+   Compiling bitflags v2.13.1
+   Compiling cfg-if v1.0.4
+   Compiling libm v0.2.16
+   Compiling raw-cpuid v11.6.0
+   Compiling reborrow v0.5.5
+   Compiling pulp-wasm-simd-flag v0.1.1
+   Compiling dyn-stack v0.13.2
+   Compiling once_cell v1.21.4
+   Compiling num-complex v0.4.6
+   Compiling nano-gemm-core v0.2.1
+   Compiling typenum v1.20.1
+   Compiling libc v0.2.189
+   Compiling pulp v0.22.3
+   Compiling generic-array v0.14.7
+   Compiling num_cpus v1.17.0
+   Compiling nano-gemm-f32 v0.2.1
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling equator v0.2.2
+   Compiling nano-gemm-f64 v0.2.1
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling gemm-common v0.19.0
+   Compiling gemm-c64 v0.19.0
+   Compiling gemm-f64 v0.19.0
+   Compiling gemm-c32 v0.19.0
+   Compiling gemm-f32 v0.19.0
+   Compiling qd v0.8.0
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling crossbeam-utils v0.8.22
+   Compiling serde_core v1.0.229
+   Compiling generativity v1.2.1
+   Compiling faer-traits v0.24.0
+   Compiling equator v0.6.0
+   Compiling crossbeam-epoch v0.9.20
+   Compiling private-gemm-x86 v0.1.20
+   Compiling gemm v0.19.0
+   Compiling digest v0.10.7
+   Compiling zmij v1.0.23
+   Compiling memchr v2.8.3
+   Compiling cpufeatures v0.2.17
+   Compiling itoa v1.0.18
+   Compiling serde_json v1.0.151
+   Compiling sha2 v0.10.9
+   Compiling thiserror v2.0.19
+   Compiling serde v1.0.229
+   Compiling crossbeam-deque v0.8.7
+   Compiling hex v0.4.3
+   Compiling rayon-core v1.13.0
+   Compiling either v1.17.0
+   Compiling rayon v1.12.0
+   Compiling nano-gemm v0.2.2
+   Compiling faer v0.24.4
+   Compiling rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/crates/rodas5p-integrators)
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 4m 44s
+     Running tests/unified_breakeven_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/deps/unified_breakeven_contracts-bd74af83d3aa1bb7)
+
+running 5 tests
+test arenstorf_has_no_rodas5p_leg ... V27_RECORD {"fields":{"final_state":[0.993986145812641,-0.00003439814678084954,-0.0056592705506134456,-2.003723623465022],"legs":[{"attempts":360,"driver":"rodas5p-fast-transformed-v2","rhs_calls":4338,"success":true,"t_end":17.065216560157964,"t_start":0.0,"tier":"TierProtectedReference"}],"status":"Success","unified":{"callbacks":4343,"dopri5_attempts":0,"operations":301536.0,"rodas5p_attempts":360}},"test":"arenstorf_has_no_rodas5p_leg"}
+
+thread 'arenstorf_has_no_rodas5p_leg' (531897) panicked at crates/vigilode/tests/unified_breakeven_contracts.rs:459:5:
+the Arenstorf orbit is not stiff, yet a RODAS5P leg ran: [{"attempts":360,"driver":"rodas5p-fast-transformed-v2","rhs_calls":4338,"success":true,"t_end":17.065216560157964,"t_start":0.0,"tier":"TierProtectedReference"}]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test f2_fatal_above_one_completes_under_auto ... V27_RECORD {"fields":{"direct":{"fatal_entries":0,"rhs_entries":49,"success":true},"fatal_entries":1,"final_time":0.0,"legs":[],"outcome":"Failed(CallbackFailed { callback: Rhs, t: 0.0, message: \"F2: the state left [0, 1]\" })","rhs_entries":2},"test":"f2_fatal_above_one_completes_under_auto"}
+
+thread 'f2_fatal_above_one_completes_under_auto' (531905) panicked at crates/vigilode/tests/unified_breakeven_contracts.rs:298:5:
+F2 must complete under Auto as it does under Dopri5::solve, got Failed(CallbackFailed { callback: Rhs, t: 0.0, message: "F2: the state left [0, 1]" })
+FAILED
+test lorenz96_40_has_no_rodas5p_leg_and_costs_at_most_twice_dopri5 ... V27_RECORD {"fields":{"callback_ratio":11.019756338491932,"dopri5":{"callbacks":3037,"dopri5_attempts":506,"operations":1052480.0,"rodas5p_attempts":0},"legs":[{"attempts":749,"driver":"rodas5p-fast-transformed-v2","rhs_calls":33467,"success":true,"t_end":10.0,"t_start":0.0,"tier":"TierProtectedReference"}],"operation_ratio":54.26897739941218,"rhs_entries":33467,"status":"Success","unified":{"callbacks":33467,"dopri5_attempts":0,"operations":57117013.333333336,"rodas5p_attempts":749}},"test":"lorenz96_40_has_no_rodas5p_leg_and_costs_at_most_twice_dopri5"}
+
+thread 'lorenz96_40_has_no_rodas5p_leg_and_costs_at_most_twice_dopri5' (531906) panicked at crates/vigilode/tests/unified_breakeven_contracts.rs:336:5:
+Lorenz-96 n = 40 is not stiff, yet a RODAS5P leg ran: [{"attempts":749,"driver":"rodas5p-fast-transformed-v2","rhs_calls":33467,"success":true,"t_end":10.0,"t_start":0.0,"tier":"TierProtectedReference"}]
+FAILED
+test oscillator_1000_has_no_rodas5p_leg ... V27_RECORD {"fields":{"final_state_bits":[4603240449742308619,13828995027295664976],"legs":[{"attempts":1000,"driver":"dopri5-5(4)-fsal","rhs_calls":6001,"success":false,"t_end":168.70415901607973,"t_start":0.0,"tier":"Tier1Explicit"},{"attempts":3462,"driver":"rodas5p-fast-transformed-v2","rhs_calls":35402,"success":true,"t_end":1000.0,"t_start":168.70415901607973,"tier":"TierProtectedReference"}],"status":"Success","unified":{"callbacks":41406,"dopri5_attempts":1000,"operations":1252640.0,"rodas5p_attempts":3462}},"test":"oscillator_1000_has_no_rodas5p_leg"}
+
+thread 'oscillator_1000_has_no_rodas5p_leg' (531922) panicked at crates/vigilode/tests/unified_breakeven_contracts.rs:430:5:
+the harmonic oscillator is not stiff, yet a RODAS5P leg ran: [{"attempts":1000,"driver":"dopri5-5(4)-fsal","rhs_calls":6001,"success":false,"t_end":168.70415901607973,"t_start":0.0,"tier":"Tier1Explicit"},{"attempts":3462,"driver":"rodas5p-fast-transformed-v2","rhs_calls":35402,"success":true,"t_end":1000.0,"t_start":168.70415901607973,"tier":"TierProtectedReference"}]
+FAILED
+test robertson_40_charges_at_most_two_direct_rodas5p_plus_window_and_pilots ... V27_RECORD {"fields":{"b":4,"bound_callbacks":974,"bound_operations":45204.0,"legs":[{"attempts":1000,"driver":"dopri5-5(4)-fsal","rhs_calls":6001,"success":false,"t_end":1.4368824023273907,"t_start":0.0,"tier":"Tier1Explicit"},{"attempts":19,"driver":"rodas5p-fast-transformed-v2","rhs_calls":228,"success":true,"t_end":40.0,"t_start":1.4368824023273907,"tier":"TierProtectedReference"}],"max_pilots":8,"rhs_entries":6233,"rodas5p":{"callbacks":415,"dopri5_attempts":0,"operations":19722.0,"rodas5p_attempts":35},"status":"Success","unified":{"callbacks":6233,"dopri5_attempts":1000,"operations":166716.0,"rodas5p_attempts":19}},"test":"robertson_40_charges_at_most_two_direct_rodas5p_plus_window_and_pilots"}
+
+thread 'robertson_40_charges_at_most_two_direct_rodas5p_plus_window_and_pilots' (531925) panicked at crates/vigilode/tests/unified_breakeven_contracts.rs:392:5:
+6233 charged callbacks above 2 x 415 (direct RODAS5P) + 2 b c_D + 8 pilots = 974
+FAILED
+
+failures:
+
+failures:
+    arenstorf_has_no_rodas5p_leg
+    f2_fatal_above_one_completes_under_auto
+    lorenz96_40_has_no_rodas5p_leg_and_costs_at_most_twice_dopri5
+    oscillator_1000_has_no_rodas5p_leg
+    robertson_40_charges_at_most_two_direct_rodas5p_plus_window_and_pilots
+
+test result: FAILED. 0 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+error: test failed, to rerun pass `-p vigilode --test unified_breakeven_contracts`
+exit 101
