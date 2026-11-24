@@ -1,0 +1,14 @@
+# command: taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test mf_budget_measure
+# git head ed3df512e682da9a24fd3a2acd266e1bd9c38fd3, dirty tracked 0
+
+running 4 tests
+test v28_run ... ignored, measurement program: run with --ignored --nocapture and the V28_* variables
+test the_cell_table_is_the_declared_one ... ok
+test the_perturbation_is_the_declared_one ... ok
+test the_replay_reproduces_the_driver_on_development_problems ... ok
+
+test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+    Finished `release` profile [optimized] target(s) in 0.09s
+     Running tests/mf_budget_measure.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v28/release/deps/mf_budget_measure-9d8b4469af30c7f3)
+# exit code 0 after 0.4 s
