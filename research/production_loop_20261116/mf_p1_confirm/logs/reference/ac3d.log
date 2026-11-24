@@ -1,0 +1,30 @@
+# V25_REFERENCE_BEGIN {"family": "ac3d", "date": "2026-11-24T18:08:27+0900", "git_head": "43d0880a902b816069e46cfd3a18a7f6fa3318a9", "command": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 taskset -c 0-5,12-17 python3 -I reference/make_reference.py --family ac3d --out reference/ac3d.json", "loadavg": "16.98 16.04 9.50 6/6104 3808012"}
+family ac3d n 4096 span [0.0, 1.0] (PROTOCOL.json families (final spans after the sizing pilot))
+reference {'method': 'DOP853', 'rtol': 1e-13, 'atol': 1e-13, 'rhs_evaluations': 1181, 'nfev': 1181, 'njev': 0, 'nlu': 0, 'wall_seconds': 0.11589193344116211}
+cross-check 1 {'method': 'DOP853', 'rtol': 1e-11, 'atol': 1e-11, 'rhs_evaluations': 785, 'nfev': 785, 'njev': 0, 'nlu': 0, 'wall_seconds': 0.08666825294494629, 'difference': {'max_abs': 5.95523630408934e-13, 'max_scaled_1_plus_abs': 2.977665737397059e-13, 'rms': 1.8517823655508135e-13}}
+cross-check 2 {'method': 'Radau', 'rtol': 1e-11, 'atol': 1e-11, 'rhs_evaluations': 6492, 'nfev': 6447, 'njev': 3, 'nlu': 46, 'wall_seconds': 11.695698022842407, 'difference': {'max_abs': 1.4921397450962104e-13, 'max_scaled_1_plus_abs': 7.460817954999355e-14, 'rms': 2.2986664535394314e-14}}
+wrote reference/ac3d.json: uncertainty 2.978e-13
+	Command being timed: "taskset -c 0-5,12-17 python3 -I reference/make_reference.py --family ac3d --out reference/ac3d.json"
+	User time (seconds): 11.81
+	System time (seconds): 0.36
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:12.18
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 159268
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 171193
+	Voluntary context switches: 5
+	Involuntary context switches: 93
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 392
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+# V25_REFERENCE_END {"exit_code": 0, "date": "2026-11-24T18:08:39+0900"}
