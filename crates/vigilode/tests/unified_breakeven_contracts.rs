@@ -553,3 +553,475 @@ fn session_quota_one_advances_keep_the_bits_and_counters_of_dopri5_solve() {
     }
     record(test, json!({ "cases": rows }));
 }
+
+// ======================================================================================
+// Part 3: the properties U1-U5 of DESIGN_RECOMMENDED.md 4.1 and owner decision D1
+// ======================================================================================
+
+use std::sync::Mutex;
+
+/// Every right-hand-side entry `(t, y)` in call order.
+type Log = Arc<Mutex<Vec<(f64, Vec<f64>)>>>;
+
+/// A problem whose right-hand side `f` records every entry in `log` and counts it.
+fn logged(
+    n: usize,
+    calls: &Calls,
+    log: &Log,
+    f: impl Fn(&[f64], &mut [f64]) + Send + Sync + 'static,
+) -> Problem {
+    let (rhs, log) = (calls.rhs.clone(), log.clone());
+    Problem::new(n, move |t: f64, y: &[f64], dy: &mut [f64]| {
+        rhs.fetch_add(1, Ordering::Relaxed);
+        log.lock().unwrap().push((t, y.to_vec()));
+        f(y, dy);
+        Ok::<(), CallbackError>(())
+    })
+    .autonomous()
+}
+
+fn damped_oscillator(y: &[f64], dy: &mut [f64]) {
+    dy[0] = y[1];
+    dy[1] = -1.0e4 * y[0] - 0.2 * y[1];
+}
+
+fn nonnormal(y: &[f64], dy: &mut [f64]) {
+    dy[0] = -y[0] + 1.0e3 * y[1];
+    dy[1] = -2.0 * y[1];
+}
+
+fn robertson_rhs(y: &[f64], dy: &mut [f64]) {
+    dy[0] = -0.04 * y[0] + 1.0e4 * y[1] * y[2];
+    dy[1] = 0.04 * y[0] - 1.0e4 * y[1] * y[2] - 3.0e7 * y[1] * y[1];
+    dy[2] = 3.0e7 * y[1] * y[1];
+}
+
+type Rhs = fn(&[f64], &mut [f64]);
+
+/// The non-stiff problems of PREDECLARED.json used for U1 (no handover expected).
+fn non_stiff_cases() -> Vec<(&'static str, usize, Rhs, Vec<f64>, (f64, f64))> {
+    fn osc(y: &[f64], dy: &mut [f64]) {
+        dy[0] = y[1];
+        dy[1] = -y[0];
+    }
+    fn lv(y: &[f64], dy: &mut [f64]) {
+        dy[0] = 1.5 * y[0] - y[0] * y[1];
+        dy[1] = -3.0 * y[1] + y[0] * y[1];
+    }
+    fn l96(y: &[f64], dy: &mut [f64]) {
+        let n = y.len();
+        for i in 0..n {
+            dy[i] = (y[(i + 1) % n] - y[(i + n - 2) % n]) * y[(i + n - 1) % n] - y[i] + 8.0;
+        }
+    }
+    fn aren(y: &[f64], dy: &mut [f64]) {
+        let mu = 0.012277471;
+        let mup = 1.0 - mu;
+        let d1 = ((y[0] + mu).powi(2) + y[1] * y[1]).powf(1.5);
+        let d2 = ((y[0] - mup).powi(2) + y[1] * y[1]).powf(1.5);
+        dy[0] = y[2];
+        dy[1] = y[3];
+        dy[2] = y[0] + 2.0 * y[3] - mup * (y[0] + mu) / d1 - mu * (y[0] - mup) / d2;
+        dy[3] = y[1] - 2.0 * y[2] - mup * y[1] / d1 - mu * y[1] / d2;
+    }
+    vec![
+        ("osc_1", 2, osc, vec![1.0, 0.0], (0.0, 1.0)),
+        ("osc_10", 2, osc, vec![1.0, 0.0], (0.0, 10.0)),
+        ("osc_1000", 2, osc, vec![1.0, 0.0], (0.0, 1000.0)),
+        ("lotka_volterra", 2, lv, vec![1.0, 1.0], (0.0, 100.0)),
+        ("arenstorf", 4, aren, ARENSTORF_Y0.to_vec(), (0.0, ARENSTORF_PERIOD)),
+        ("lorenz96_40", 40, l96, lorenz96_y0(40), (0.0, 10.0)),
+        ("damped_osc", 2, damped_oscillator, vec![1.0, 0.0], (0.0, 10.0)),
+        ("nonnormal", 2, nonnormal, vec![1.0, 1.0], (0.0, 10.0)),
+    ]
+}
+
+fn pilot_sums(solution: &VigilodeSolution) -> (usize, u64, f64) {
+    solution.pilots.iter().fold((0, 0, 0.0), |(a, c, o), p| {
+        (a + p.pilot_attempts, c + p.pilot_callbacks, o + p.pilot_operations)
+    })
+}
+
+#[test]
+fn break_even_length_is_the_table_of_the_design() {
+    let n = [1usize, 2, 3, 4, 8, 10, 28, 40, 64, 100, 1000];
+    let b: Vec<usize> = n.iter().map(|&n| vigilode::break_even_length(n)).collect();
+    record(
+        "break_even_length_is_the_table_of_the_design",
+        json!({ "n": n, "b": b }),
+    );
+    assert_eq!(b, [3, 4, 4, 5, 7, 8, 23, 37, 78, 166, 13170]);
+    for n in 1..=2000u64 {
+        assert_eq!(vigilode::break_even_length(n as usize) as u64, break_even(n));
+        // the operation unit binds: c_R <= b c_D in callbacks (n + 11 <= 6 b) as well
+        assert!(n + 11 <= 6 * break_even(n));
+    }
+}
+
+#[test]
+fn u1_a_run_without_handover_is_dopri5_solve_plus_its_pilots_within_twice_its_cost() {
+    let test = "u1_a_run_without_handover_is_dopri5_solve_plus_its_pilots_within_twice_its_cost";
+    let mut rows = Vec::new();
+    let mut lost_pilots = 0usize;
+    for (name, n, f, y0, span) in non_stiff_cases() {
+        let log: Log = Arc::default();
+        let direct_calls = Calls::default();
+        let direct = Dopri5::solve(&logged(n, &direct_calls, &log, f), span, &y0, &Options::default())
+            .expect("direct DOPRI5");
+        let calls = Calls::default();
+        let unified = VigilODE::solve(&logged(n, &calls, &log, f), span, &y0, SolverStrategy::Auto)
+            .expect("unified solve");
+        let (cost, reference) = (unified_cost(n, &unified), dopri5_cost(n, &direct));
+        let (pilot_attempts, pilot_callbacks, pilot_operations) = pilot_sums(&unified);
+        let b = vigilode::break_even_length(n);
+        let explicit = unified.explicit_solution.as_ref().expect("the DOPRI5 record");
+        let equal_record = serde_json::to_value(&explicit.stats).unwrap()
+            == serde_json::to_value(&direct.stats).unwrap();
+        rows.push(json!({
+            "case": name, "b": b, "pilots": unified.pilots.len(),
+            "verdicts": unified.pilots.iter().map(|p| format!("{:?}", p.verdict)).collect::<Vec<_>>(),
+            "unified": cost.json(), "dopri5": reference.json(),
+            "pilot_callbacks": pilot_callbacks, "pilot_operations": pilot_operations,
+            "bits_equal": bits(&unified.final_state) == bits(&direct.final_state),
+            "dopri5_record_equal": equal_record,
+        }));
+        assert!(unified.success() && direct.success, "{name}");
+        assert!(!has_rodas5p_leg(&unified), "{name}: handed over");
+        lost_pilots += unified.pilots.len();
+        // the trajectory, the bits and the DOPRI5 record of Dopri5::solve
+        assert_eq!(bits(&unified.final_state), bits(&direct.final_state), "{name}");
+        assert!(equal_record, "{name}: the DOPRI5 record differs from Dopri5::solve");
+        // plus exactly the pilots' work
+        assert_eq!(
+            unified.stats.attempts,
+            direct.stats.attempts + pilot_attempts,
+            "{name}"
+        );
+        assert_eq!(
+            cost.callbacks,
+            reference.callbacks + pilot_callbacks,
+            "{name}"
+        );
+        assert_eq!(calls.rhs(), cost.callbacks, "{name}: uncharged callbacks");
+        assert!(
+            unified.pilots.iter().all(|p| p.verdict == vigilode::PilotVerdict::Lost),
+            "{name}"
+        );
+        // at most twice the cost of Dopri5::solve in each unit (U1), and the pilots'
+        // number and spend of E10
+        assert!(cost.callbacks <= 2 * reference.callbacks, "{name}");
+        assert!(cost.ops3 <= 2 * reference.ops3, "{name}");
+        let a_d = direct.stats.attempts as u64;
+        assert!(
+            unified.pilots.len() as u64 <= max_pilots(a_d, b as u64),
+            "{name}: {} pilots after {a_d} DOPRI5 attempts",
+            unified.pilots.len()
+        );
+        assert!(pilot_callbacks <= reference.callbacks, "{name}");
+        assert!(pilot_operations <= reference.ops3 as f64 / 3.0, "{name}");
+    }
+    record(test, json!({ "cases": rows, "lost_pilots": lost_pilots }));
+    assert!(lost_pilots > 0, "no case made a pilot: the test shows nothing");
+}
+
+#[test]
+fn u2_dopri5_pilots_and_rodas5p_share_one_attempt_budget() {
+    let test = "u2_dopri5_pilots_and_rodas5p_share_one_attempt_budget";
+    let mut rows = Vec::new();
+    for max_steps in [100_000usize, 500, 50, 36, 35, 20, 9, 8, 5, 1] {
+        let calls = Calls::default();
+        let unified = VigilODE::solve(
+            &robertson_fd(&calls),
+            (0.0, 40.0),
+            &[1.0, 0.0, 0.0],
+            VigilodeOptions::default().max_steps(max_steps),
+        )
+        .expect("unified solve");
+        let counters = &unified.stats.counters;
+        let in_counters = counters.accepted_steps + counters.rejected_steps;
+        let legs: usize = unified.legs.iter().map(|leg| leg.attempts).sum();
+        let (pilot_attempts, _, _) = pilot_sums(&unified);
+        let accepted_pilot = unified
+            .pilots
+            .last()
+            .filter(|p| p.verdict == vigilode::PilotVerdict::Accepted)
+            .map_or(0, |p| p.pilot_attempts);
+        rows.push(json!({
+            "max_steps": max_steps, "success": unified.success(),
+            "status": format!("{:?}", unified.status), "attempts": unified.stats.attempts,
+            "leg_attempts": legs, "pilot_attempts": pilot_attempts, "pilots": unified.pilots.len(),
+            "legs": leg_summary(&unified),
+        }));
+        assert!(unified.stats.attempts <= max_steps, "{max_steps}");
+        assert_eq!(unified.stats.attempts as u64, in_counters, "{max_steps}");
+        // every attempt is in a leg or in a pilot that is not part of a leg
+        assert_eq!(
+            unified.stats.attempts,
+            legs + pilot_attempts - accepted_pilot,
+            "{max_steps}"
+        );
+        assert_eq!(counters.rhs_calls, calls.rhs(), "{max_steps}");
+        if !unified.success() {
+            assert_eq!(unified.stats.attempts, max_steps, "{max_steps}");
+            assert_eq!(
+                unified.status,
+                Status::Failed(FailureReason::MaxStepsReached { max_steps }),
+                "{max_steps}"
+            );
+        }
+    }
+    record(test, json!({ "cases": rows }));
+}
+
+/// Check the entry sequence of a unified run against the one of `Dopri5::solve`: the
+/// unified sequence is DOPRI5's with the pilots' blocks inserted, up to the handover; after
+/// an accepted pilot every entry is at or after the pilot's end. Returns the number of
+/// entries in pilot blocks.
+fn check_entries(
+    name: &str,
+    direct: &[(f64, Vec<f64>)],
+    unified: &[(f64, Vec<f64>)],
+    solution: &VigilodeSolution,
+) -> usize {
+    let same = |a: &(f64, Vec<f64>), b: &(f64, Vec<f64>)| {
+        a.0.to_bits() == b.0.to_bits() && bits(&a.1) == bits(&b.1)
+    };
+    let (t0, y0) = (solution.stats.t_span.0, &solution.stats.y0);
+    assert!(
+        same(&unified[0], &(t0, y0.clone())),
+        "{name}: the first entry is not DOPRI5's first stage at (t0, y0)"
+    );
+    let at_t0: Vec<_> = unified.iter().filter(|(t, _)| *t == t0).collect();
+    assert!(
+        at_t0.iter().all(|(_, y)| bits(y) == bits(y0)),
+        "{name}: an entry at t0 that is not DOPRI5's first stage"
+    );
+    let (mut i, mut j, mut in_pilots) = (0usize, 0usize, 0usize);
+    let mut pilots = solution.pilots.iter();
+    while i < unified.len() {
+        if j < direct.len() && same(&unified[i], &direct[j]) {
+            i += 1;
+            j += 1;
+            continue;
+        }
+        let pilot = pilots
+            .next()
+            .unwrap_or_else(|| panic!("{name}: entry {i} is neither DOPRI5's nor a pilot's"));
+        let block = &unified[i..i + pilot.pilot_callbacks as usize];
+        assert!(
+            block.iter().all(|(t, _)| *t >= pilot.t && *t <= pilot.t + pilot.h),
+            "{name}: a pilot entry outside [t_D, t_D + H]"
+        );
+        assert!(
+            block
+                .iter()
+                .any(|(t, y)| t.to_bits() == pilot.t.to_bits() && y.len() == y0.len()),
+            "{name}: the pilot made no call at its start t_D"
+        );
+        in_pilots += block.len();
+        i += block.len();
+        if pilot.verdict == vigilode::PilotVerdict::Accepted {
+            let end = pilot.t + pilot.h;
+            assert!(
+                unified[i..].iter().all(|(t, _)| *t >= end * (1.0 - 1e-15)),
+                "{name}: an entry before the end of the accepted pilot"
+            );
+            return in_pilots;
+        }
+    }
+    assert_eq!(j, direct.len(), "{name}: DOPRI5 entries are missing");
+    assert!(pilots.next().is_none(), "{name}: a pilot made no entry");
+    in_pilots
+}
+
+#[test]
+fn u3_no_callback_before_dopri5s_first_stage_and_every_other_entry_is_a_pilots() {
+    let test = "u3_no_callback_before_dopri5s_first_stage_and_every_other_entry_is_a_pilots";
+    let mut cases = non_stiff_cases();
+    cases.push(("robertson_40", 3, robertson_rhs, vec![1.0, 0.0, 0.0], (0.0, 40.0)));
+    let mut rows = Vec::new();
+    for (name, n, f, y0, span) in cases {
+        let (direct_log, log): (Log, Log) = (Arc::default(), Arc::default());
+        Dopri5::solve(&logged(n, &Calls::default(), &direct_log, f), span, &y0, &Options::default())
+            .expect("direct DOPRI5");
+        let calls = Calls::default();
+        let unified = VigilODE::solve(&logged(n, &calls, &log, f), span, &y0, SolverStrategy::Auto)
+            .expect("unified solve");
+        let (direct_log, log) = (direct_log.lock().unwrap(), log.lock().unwrap());
+        let in_pilots = check_entries(name, &direct_log, &log, &unified);
+        rows.push(json!({
+            "case": name, "entries": log.len(), "in_pilot_blocks": in_pilots,
+            "pilots": unified.pilots.len(), "charged": unified.stats.counters.rhs_calls,
+        }));
+        assert_eq!(log.len() as u64, unified.stats.counters.rhs_calls, "{name}: uncharged");
+    }
+    // F2: no entry above 1, so no fatal error
+    let calls = Calls::default();
+    let solution = VigilODE::solve(&f2(&calls), (0.0, 1.0), &[1.0], SolverStrategy::Auto).unwrap();
+    rows.push(json!({ "case": "f2", "fatal_entries": calls.fatal(), "success": solution.success() }));
+    record(test, json!({ "cases": rows }));
+    assert!(solution.success() && calls.fatal() == 0);
+}
+
+fn heat_fd(n: usize, calls: &Calls) -> Problem {
+    let rhs = calls.rhs.clone();
+    Problem::new(n, move |_t, y: &[f64], dy: &mut [f64]| {
+        rhs.fetch_add(1, Ordering::Relaxed);
+        let inv_dx2 = ((n + 1) as f64).powi(2);
+        for i in 0..n {
+            let left = if i == 0 { 0.0 } else { y[i - 1] };
+            let right = if i + 1 == n { 0.0 } else { y[i + 1] };
+            dy[i] = (left - 2.0 * y[i] + right) * inv_dx2;
+        }
+        Ok::<(), CallbackError>(())
+    })
+    .autonomous()
+}
+
+fn heat_sine(n: usize) -> Vec<f64> {
+    (1..=n)
+        .map(|i| (std::f64::consts::PI * i as f64 / (n + 1) as f64).sin())
+        .collect()
+}
+
+#[test]
+fn u4_a_handover_follows_an_accepted_pilot_and_is_recorded() {
+    let test = "u4_a_handover_follows_an_accepted_pilot_and_is_recorded";
+    type Case = (&'static str, usize, Box<dyn Fn(&Calls) -> Problem>, Vec<f64>, (f64, f64));
+    let cases: Vec<Case> = vec![
+        ("robertson_40", 3, Box::new(robertson_fd), vec![1.0, 0.0, 0.0], (0.0, 40.0)),
+        ("heat_fd_8", 8, Box::new(|c| heat_fd(8, c)), heat_sine(8), (0.0, 100.0)),
+    ];
+    let mut rows = Vec::new();
+    for (name, n, build, y0, span) in cases {
+        let calls = Calls::default();
+        let unified = VigilODE::solve(&build(&calls), span, &y0, SolverStrategy::Auto).unwrap();
+        let pilot = unified.pilots.last().expect("a pilot").clone();
+        let b = vigilode::break_even_length(n);
+        let inner = unified.inner_solution.as_ref().expect("the RODAS5P run");
+        rows.push(json!({
+            "case": name, "pilots": serde_json::to_value(&unified.pilots).unwrap(),
+            "legs": leg_summary(&unified),
+            "history": serde_json::to_value(&unified.route_history).unwrap(),
+            "fallback_steps": unified.stats.counters.fallback_steps,
+            "callbacks": unified.stats.counters.rhs_calls,
+        }));
+        assert!(unified.success(), "{name}");
+        assert_eq!(pilot.verdict, vigilode::PilotVerdict::Accepted, "{name}");
+        assert!(unified.pilots[..unified.pilots.len() - 1]
+            .iter()
+            .all(|p| p.verdict == vigilode::PilotVerdict::Lost));
+        // the evidence: one RODAS5P attempt covered H after b DOPRI5 attempts that cost at
+        // least as much in every unit
+        assert_eq!(pilot.window_attempts, b, "{name}");
+        assert_eq!(pilot.pilot_attempts, 1, "{name}");
+        assert!(pilot.h > 0.0 && pilot.t > span.0, "{name}");
+        assert!(pilot.window_callbacks >= pilot.pilot_callbacks, "{name}");
+        assert!(pilot.window_operations >= pilot.pilot_operations, "{name}");
+        assert!(pilot.dopri5_attempts >= b, "{name}");
+        // the legs: DOPRI5 to t_D, then RODAS5P from t_D starting with the pilot's step
+        assert_eq!(unified.legs.len(), 2, "{name}");
+        let (dopri5, rodas5p) = (&unified.legs[0], &unified.legs[1]);
+        assert_eq!(dopri5.tier, SelectedTier::Tier1Explicit);
+        assert_eq!(dopri5.t_end.to_bits(), pilot.t.to_bits(), "{name}");
+        assert_eq!(dopri5.attempts, pilot.dopri5_attempts, "{name}");
+        assert_eq!(rodas5p.tier, SelectedTier::TierProtectedReference);
+        assert_eq!(rodas5p.t_start.to_bits(), pilot.t.to_bits(), "{name}");
+        assert!(inner.t[0] > pilot.t && inner.t[0] <= pilot.t + pilot.h * (1.0 + 1e-15));
+        assert_eq!(inner.stats.options.h0.to_bits(), pilot.h.to_bits(), "{name}: h0 = H");
+        // the route history records the handover
+        assert_eq!(unified.route_history.len(), 2, "{name}");
+        let entry = &unified.route_history[1];
+        assert_eq!(entry.time.to_bits(), pilot.t.to_bits(), "{name}");
+        assert!(entry.reason.starts_with("handover"), "{}", entry.reason);
+        assert_eq!(unified.stats.counters.fallback_steps, 1, "{name}");
+        assert_eq!(unified.stats.counters.rhs_calls, calls.rhs(), "{name}");
+    }
+    record(test, json!({ "cases": rows }));
+}
+
+#[test]
+fn u5_same_inputs_give_the_same_route_counters_and_bits() {
+    let test = "u5_same_inputs_give_the_same_route_counters_and_bits";
+    let digest = |solution: &VigilodeSolution| {
+        json!({
+            "legs": serde_json::to_value(&solution.legs).unwrap(),
+            "pilots": serde_json::to_value(&solution.pilots).unwrap(),
+            "history": serde_json::to_value(&solution.route_history).unwrap(),
+            "counters": serde_json::to_value(solution.stats.counters).unwrap(),
+            "status": serde_json::to_value(&solution.status).unwrap(),
+            "final_time": solution.final_time.to_bits(),
+            "final_state": bits(&solution.final_state),
+        })
+    };
+    let mut rows = Vec::new();
+    for (name, n, f, y0, span) in non_stiff_cases()
+        .into_iter()
+        .chain([("robertson_40", 3, robertson_rhs as Rhs, vec![1.0, 0.0, 0.0], (0.0, 40.0))])
+    {
+        let run = || {
+            let log: Log = Arc::default();
+            let solution =
+                VigilODE::solve(&logged(n, &Calls::default(), &log, f), span, &y0, SolverStrategy::Auto)
+                    .unwrap();
+            digest(&solution)
+        };
+        let (first, second) = (run(), run());
+        rows.push(json!({ "case": name, "equal": first == second }));
+        assert_eq!(first, second, "{name}");
+    }
+    record(test, json!({ "cases": rows }));
+}
+
+#[test]
+fn d1_a_fatal_callback_inside_a_pilot_ends_the_solve_with_the_accepted_prefix() {
+    let test = "d1_a_fatal_callback_inside_a_pilot_ends_the_solve_with_the_accepted_prefix";
+    // N2: y1' = 0, y2' = -1000 y2, y0 = (1, 1); fatal whenever y1 > 1, which only a
+    // finite-difference column reaches
+    let calls = Calls::default();
+    let (rhs, fatal) = (calls.rhs.clone(), calls.fatal.clone());
+    let problem = Problem::new(2, move |_t, y: &[f64], dy: &mut [f64]| {
+        rhs.fetch_add(1, Ordering::Relaxed);
+        if y[0] > 1.0 {
+            fatal.fetch_add(1, Ordering::Relaxed);
+            return Err(CallbackError::Fatal("N2: y1 left [0, 1]".into()));
+        }
+        dy[0] = 0.0;
+        dy[1] = -1000.0 * y[1];
+        Ok(())
+    })
+    .autonomous();
+    let unified = VigilODE::solve(&problem, (0.0, 1.0), &[1.0, 1.0], SolverStrategy::Auto).unwrap();
+    record(
+        test,
+        json!({
+            "status": format!("{:?}", unified.status),
+            "stop": serde_json::to_value(&unified.stop).unwrap(),
+            "pilots": serde_json::to_value(&unified.pilots).unwrap(),
+            "legs": leg_summary(&unified),
+            "final_time": unified.final_time,
+            "fatal_entries": calls.fatal(),
+            "rhs_entries": calls.rhs(),
+            "rhs_charged": unified.stats.counters.rhs_calls,
+        }),
+    );
+    assert!(!unified.success());
+    let pilot = unified.pilots.last().expect("a pilot");
+    assert_eq!(unified.pilots.len(), 1, "the first pilot ends the solve");
+    assert_eq!(pilot.verdict, vigilode::PilotVerdict::Fatal);
+    match &unified.status {
+        Status::Failed(FailureReason::CallbackFailed {
+            callback, message, ..
+        }) => {
+            assert_eq!(*callback, vigilode::Callback::Rhs);
+            assert!(message.contains("N2"), "{message}");
+        }
+        other => panic!("expected the callback failure, got {other:?}"),
+    }
+    // the accepted prefix: DOPRI5 up to the pilot's start
+    assert_eq!(unified.legs.len(), 1);
+    assert_eq!(unified.final_time.to_bits(), pilot.t.to_bits());
+    assert!(unified.final_time > 0.0);
+    assert_eq!(calls.fatal(), 1, "a fatal callback is not called again");
+    assert_eq!(unified.stats.counters.rhs_calls, calls.rhs(), "the failing call is charged");
+}
