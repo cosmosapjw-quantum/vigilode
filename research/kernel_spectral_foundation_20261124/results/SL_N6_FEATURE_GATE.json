@@ -1,0 +1,97 @@
+{
+ "rodas5p-integrators": {
+  "source_lines": 106396,
+  "research_gates_modules": [
+   "a1_two_arm_receipt",
+   "candidates",
+   "common_w_gate",
+   "g1_transactional_gate",
+   "g2_exponential_gate",
+   "g3_fused_adaptive_gate",
+   "g4_prefix_kernel_gate",
+   "g4_s5b0_regime_atlas",
+   "g4_s5b0_trace_authority",
+   "g4_s5b3_attempt_geometry",
+   "n01_frozen_source_bundle",
+   "n01_mass_action_client",
+   "native_gates",
+   "policy_redesign_v25",
+   "rhs_telemetry",
+   "scientific_corpus_v2",
+   "scientific_validity_v2_gate",
+   "unified_gates",
+   "unified_screen",
+   "v38d_performance_tournament"
+  ],
+  "research_gates_lines": 17868,
+  "other_feature_modules": [
+   "audit2_bateman_real_client_research",
+   "audit2_matrix_free_research",
+   "audit2_research",
+   "audit2_reusable_transaction_research",
+   "audit2_stage_certificate_research",
+   "chart_transport"
+  ],
+  "other_feature_lines": 6928,
+  "default_build_lines": 81600,
+  "default_build_lines_before_sl_n6": 99468
+ },
+ "rodas5p-core": {
+  "source_lines": 25788,
+  "research_gates_modules": [
+   "n01_affine_owner",
+   "n01_mass_action_owner",
+   "n01_source_owner"
+  ],
+  "research_gates_lines": 1593,
+  "other_feature_modules": [],
+  "other_feature_lines": 0,
+  "default_build_lines": 24195,
+  "default_build_lines_before_sl_n6": 25788
+ },
+ "vigilode-coupled": {
+  "source_lines": 12308,
+  "research_gates_modules": [
+   "n01_derivative_free"
+  ],
+  "research_gates_lines": 289,
+  "other_feature_modules": [],
+  "other_feature_lines": 0,
+  "default_build_lines": 12019,
+  "default_build_lines_before_sl_n6": 12308
+ },
+ "reclassified_to_default": {
+  "comparator_fidelity": "bdf.rs and radau.rs (facade opt-in comparators) import ComparatorFidelity",
+  "controller_telemetry": "rodas5p_fast.rs (protected driver) imports ControllerTelemetry and ControllerDecision",
+  "g4_s5b0_inner_tolerance": "sequential.rs (mass-matrix and Enforce route) imports the inner forcing constants",
+  "problems": "path_controller.rs and homotopy_order_policy.rs (integrator-only) import the manufactured problems",
+  "homotopy_experiments": "homotopy_order_policy.rs (integrator-only) imports the experiment profiles"
+ },
+ "lib_build_seconds": [
+  {
+   "rep": 1,
+   "features": "",
+   "lib_build_s": 43.15
+  },
+  {
+   "rep": 1,
+   "features": "research-gates",
+   "lib_build_s": 61.28
+  },
+  {
+   "rep": 2,
+   "features": "",
+   "lib_build_s": 43.15
+  },
+  {
+   "rep": 2,
+   "features": "research-gates",
+   "lib_build_s": 59.67
+  }
+ ],
+ "host": {
+  "vcpus": 2,
+  "toolchain": "stable 1.97.0 (pinned 1.94.1 not installable here)",
+  "profile": "release"
+ }
+}

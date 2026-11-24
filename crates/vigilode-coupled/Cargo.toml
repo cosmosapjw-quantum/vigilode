@@ -6,10 +6,17 @@ rust-version = "1.94.1"
 license = "MIT"
 description = "Opt-in research coupled matrix-free Rosenbrock stage solver"
 
+[features]
+default = []
+# Research-gate modules (stage-lattice task SL-N6): off in the production build; the
+# self dev-dependency turns them on for this crate's own tests, examples and benches.
+research-gates = ["rodas5p-integrators/research-gates"]
+
 [dependencies]
 rodas5p-core = { path = "../rodas5p-core" }
 rodas5p-integrators = { path = "../rodas5p-integrators" }
 serde.workspace = true
 
 [dev-dependencies]
+vigilode-coupled = { path = ".", features = ["research-gates"] }
 serde_json.workspace = true

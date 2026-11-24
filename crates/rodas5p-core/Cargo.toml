@@ -5,6 +5,12 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 
+[features]
+default = []
+# Research-gate modules (stage-lattice task SL-N6): off in the production build; the
+# self dev-dependency turns them on for this crate's own tests, examples and benches.
+research-gates = []
+
 [dependencies]
 faer.workspace = true
 serde.workspace = true
@@ -12,3 +18,6 @@ serde_json.workspace = true
 thiserror.workspace = true
 sha2.workspace = true
 hex.workspace = true
+
+[dev-dependencies]
+rodas5p-core = { path = ".", features = ["research-gates"] }

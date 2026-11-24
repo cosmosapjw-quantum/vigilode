@@ -14,6 +14,7 @@ pub mod certified_fastfirst;
 pub mod coupled_inverse_be;
 pub mod cyclic_closure;
 mod fallback;
+#[cfg(feature = "research-gates")]
 pub mod n01_derivative_free;
 pub mod nonlinear_be;
 pub mod rhs_homotopy;

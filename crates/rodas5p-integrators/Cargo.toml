@@ -10,6 +10,9 @@ default = []
 audit2-research = []
 audit2-bateman-authority = ["audit2-research", "dep:serde_json"]
 audit2-stage-certificate = ["audit2-research", "dep:serde_json", "dep:sha2"]
+# Research-gate modules (stage-lattice task SL-N6): off in the production build; the
+# self dev-dependency turns them on for this crate's own tests, examples and benches.
+research-gates = ["rodas5p-core/research-gates"]
 
 [dependencies]
 faer.workspace = true
@@ -22,6 +25,7 @@ sha2 = { workspace = true, optional = true }
 thiserror.workspace = true
 
 [dev-dependencies]
+rodas5p-integrators = { path = ".", features = ["research-gates"] }
 serde_json.workspace = true
 sha2.workspace = true
 

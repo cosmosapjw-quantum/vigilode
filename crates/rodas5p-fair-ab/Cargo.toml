@@ -8,7 +8,8 @@ license.workspace = true
 [dependencies]
 rodas5p-core = { path = "../rodas5p-core" }
 rodas5p-krylov = { path = "../rodas5p-krylov" }
-rodas5p-integrators = { path = "../rodas5p-integrators" }
+# The fair A/B harness runs the research-gate corpora and gates (SL-N6).
+rodas5p-integrators = { path = "../rodas5p-integrators", features = ["research-gates"] }
 serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true

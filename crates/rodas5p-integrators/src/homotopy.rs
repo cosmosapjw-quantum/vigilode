@@ -516,6 +516,8 @@ pub struct HomotopyStepReport {
     pub fallback_reason: Option<String>,
 }
 
+// Read only by the research-gate module rhs_telemetry (SL-N6).
+#[cfg_attr(not(feature = "research-gates"), allow(dead_code))]
 pub(crate) struct HomotopyBatchEvent<'a> {
     pub phase: &'a str,
     pub round: usize,
@@ -1179,6 +1181,8 @@ pub fn run_fixed_homotopy_path(
     run_fixed_homotopy_path_internal(block, config, counters, &mut observer)
 }
 
+// Read only by the research-gate module rhs_telemetry (SL-N6).
+#[cfg_attr(not(feature = "research-gates"), allow(dead_code))]
 pub(crate) fn run_fixed_homotopy_path_observed(
     block: &StructuredBlockSystem<'_, '_>,
     config: &HomotopyPathConfig,

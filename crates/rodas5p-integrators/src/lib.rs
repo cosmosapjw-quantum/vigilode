@@ -11,6 +11,7 @@ mod audit2_reusable_transaction_research;
 #[cfg(feature = "audit2-stage-certificate")]
 pub mod audit2_stage_certificate_research;
 
+#[cfg(feature = "research-gates")]
 mod a1_two_arm_receipt;
 mod adaptive;
 mod adaptive_exponential;
@@ -27,6 +28,7 @@ pub use pr101_verified::{
     Pr101Bound, Pr101Model, Pr101Output, Pr101Run, Pr101VerifiedError, Pr101VerifiedSegment,
 };
 mod affine_error;
+#[cfg(feature = "research-gates")]
 mod candidates;
 mod causal_majorant;
 mod certification;
@@ -35,6 +37,7 @@ mod client_stage;
 pub mod collective_direct;
 pub mod collective_model;
 pub mod collective_rodas5p;
+#[cfg(feature = "research-gates")]
 mod common_w_gate;
 mod comparator_fidelity;
 pub mod conservative_remap;
@@ -71,13 +74,20 @@ mod exponential;
 pub mod fixed_point_continuation;
 pub mod fourier_path_candidate;
 pub mod fourier_path_certificate;
+#[cfg(feature = "research-gates")]
 mod g1_transactional_gate;
+#[cfg(feature = "research-gates")]
 mod g2_exponential_gate;
+#[cfg(feature = "research-gates")]
 mod g3_fused_adaptive_gate;
+#[cfg(feature = "research-gates")]
 mod g4_prefix_kernel_gate;
 mod g4_s5b0_inner_tolerance;
+#[cfg(feature = "research-gates")]
 mod g4_s5b0_regime_atlas;
+#[cfg(feature = "research-gates")]
 mod g4_s5b0_trace_authority;
+#[cfg(feature = "research-gates")]
 mod g4_s5b3_attempt_geometry;
 pub mod gray_scott;
 mod homotopy;
@@ -85,8 +95,11 @@ mod homotopy_experiments;
 mod homotopy_order_policy;
 mod homotopy_policy;
 mod integrate;
+#[cfg(feature = "research-gates")]
 pub mod n01_frozen_source_bundle;
+#[cfg(feature = "research-gates")]
 pub mod n01_mass_action_client;
+#[cfg(feature = "research-gates")]
 mod native_gates;
 mod nonlinear;
 mod output;
@@ -96,6 +109,7 @@ pub mod packet_window;
 pub mod packet_work;
 mod parallel;
 mod path_controller;
+#[cfg(feature = "research-gates")]
 mod policy_redesign_v25;
 pub mod polynomial_resolvent;
 pub mod ppsw1;
@@ -104,6 +118,7 @@ mod problems;
 pub mod ptsw2b;
 mod radau;
 mod raw_stage_target;
+#[cfg(feature = "research-gates")]
 mod rhs_telemetry;
 mod rodas5p_fast;
 mod rodas5p_fast_dense;
@@ -113,7 +128,9 @@ mod rodas5p_lagged;
 mod rodas5p_matrix_free_fast;
 mod routing;
 mod sabr;
+#[cfg(feature = "research-gates")]
 mod scientific_corpus_v2;
+#[cfg(feature = "research-gates")]
 mod scientific_validity_v2_gate;
 mod sequential;
 #[expect(clippy::neg_cmp_op_on_partial_ord, clippy::needless_range_loop)]
@@ -124,8 +141,11 @@ mod stage_chart_candidate;
 mod stage_target;
 pub mod transaction;
 mod transactional_q1_q2;
+#[cfg(feature = "research-gates")]
 mod unified_gates;
+#[cfg(feature = "research-gates")]
 mod unified_screen;
+#[cfg(feature = "research-gates")]
 mod v38d_performance_tournament;
 
 // Loop L1 (2026-11-16) opt-in modules.
@@ -230,6 +250,7 @@ pub use bound_collective::BoundCollectiveProblem;
 pub use bound_pr101::{
     BoundPr101Problem, Pr101Error, Pr101OutputEnclosure, Pr101SegmentCertificate,
 };
+#[cfg(feature = "research-gates")]
 pub use candidates::{
     CandidateCatalog, CandidateExecution, CandidateFamily, CandidateRecycleLifetime, CandidateSpec,
     CandidateStatus, HomotopyPredictorVariant, SabrBlockVariant, SabrPredictorVariant,
@@ -251,6 +272,7 @@ pub use client_stage::StageLinearSystem;
 pub use collective_model::{
     CollectiveAdmissionError, CollectiveModel, verify_collective_admission,
 };
+#[cfg(feature = "research-gates")]
 pub use common_w_gate::{
     MatrixFreeCommonWCase, MatrixFreeCommonWProfile, MatrixFreeCommonWReport, MatrixFreeCommonWRow,
     run_matrix_free_common_w_gate,
@@ -316,20 +338,24 @@ pub use exponential::{
     pexprb54s4_quadratic_remainder_drift, pexprb54s4_remainder_vector_geometry, pexprb54s4_step,
     pexprb54s4_tableau,
 };
+#[cfg(feature = "research-gates")]
 pub use g1_transactional_gate::{
     G1TransactionalCase, G1TransactionalGateProfile, G1TransactionalGateReport,
     G1TransactionalGateSummary, G1TransactionalRow, run_g1_transactional_gate,
 };
+#[cfg(feature = "research-gates")]
 pub use g2_exponential_gate::{
     ExponentialCoefficientAuthority, ExponentialOrderConditionRow, ExponentialOrderRow,
     G2ExponentialGateProfile, G2ExponentialGateReport, G2ExponentialGateSummary,
     OscillatoryExponentialRow, PhiOracleRow, StiffLinearExponentialRow, run_g2_exponential_gate,
 };
+#[cfg(feature = "research-gates")]
 pub use g3_fused_adaptive_gate::{
     G3AdaptiveRow, G3DenseReferenceStatus, G3FreshJvpRow, G3FusedAdaptiveProfile,
     G3FusedAdaptiveReport, G3FusedAdaptiveSummary, G3PhiFusionComparison, G3PhiFusionRow,
     compare_fused_phi_to_dense_reference, g3_gate_status, run_g3_fused_adaptive_gate,
 };
+#[cfg(feature = "research-gates")]
 pub use g4_prefix_kernel_gate::{
     G4PrefixKernelProfile, G4PrefixKernelReport, G4PrefixKernelRow, G4PrefixKernelSummary,
     run_g4_prefix_kernel_gate,
@@ -343,6 +369,7 @@ pub use g4_s5b0_inner_tolerance::{
     committed_g4_s5b0_linear_tolerance_arm, rodas5p_inner_forcing_error_limit,
     rodas5p_inner_forcing_target,
 };
+#[cfg(feature = "research-gates")]
 pub use g4_s5b0_regime_atlas::{
     G4S5B0ActualLevel1PrefixReport, G4S5B0ActualLevel1PrefixRow, G4S5B0ActualLevel2PrefixReport,
     G4S5B0ActualLevel2PrefixRow, G4S5B0AttemptTraceReport, G4S5B0AttemptWork, G4S5B0Family,
@@ -364,9 +391,11 @@ pub use g4_s5b0_regime_atlas::{
     run_g4_s5b0_v37_continuation_transaction_family,
     run_g4_s5b0_v37_continuation_transaction_family_with_cap,
 };
+#[cfg(feature = "research-gates")]
 pub use g4_s5b0_trace_authority::{
     g4_s5b0_rjf_trace_digest, run_g4_s5b0_rjf_attempt_trace_family_with_linear_tolerance_arm,
 };
+#[cfg(feature = "research-gates")]
 pub use g4_s5b3_attempt_geometry::{
     G4S5B3AttemptGeometryReport, G4S5B3AttemptRow, G4S5B3CalibrationRow, G4S5B3HardGateSummary,
     G4S5B3OverheadArm, G4S5B3OverheadPair, G4S5B3OverheadReport, G4S5B3Profile,
@@ -402,6 +431,7 @@ pub use integrate::{
     integrate_transactional_q1_q2_adaptive_observed,
     integrate_transactional_q1_q2_adaptive_observed_with_admission,
 };
+#[cfg(feature = "research-gates")]
 pub use native_gates::{
     NativeIntegratorGateReport, NativeIntegratorGateRow, run_native_integrator_gates,
 };
@@ -460,6 +490,7 @@ pub use raw_stage_target::{
     raw_coefficient_digest, raw_relative_residual_budget, raw_residual_transport_bound,
     raw_stage_allowance, residual_scale_digest, sequential_gamma,
 };
+#[cfg(feature = "research-gates")]
 pub use rhs_telemetry::{
     BackendRecommendationSummary, CommonWBackendChoice, HomotopyRhsTelemetryCase,
     HomotopyRhsTelemetryProfile, HomotopyRhsTelemetryReport, RhsBatchAnalysis,
@@ -544,11 +575,13 @@ pub use routing::{
     route_problem, verify_declared_band,
 };
 pub use sabr::{PredictorKind, SabrConfig, StageHistory, sabr_step};
+#[cfg(feature = "research-gates")]
 pub use scientific_corpus_v2::{
     CorpusPartition, ScientificCaseSpec, ScientificCorpusV2, ScientificFamily,
     ScientificProblemCase, ScientificProblemSegment, ScientificSourceProvenance,
     v2_diversity_multiplier,
 };
+#[cfg(feature = "research-gates")]
 pub use scientific_validity_v2_gate::{
     V2_THRESHOLD_DERIVATION_ID, V2CalibrationFreezeEnvelope, V2CalibrationFreezePayload,
     V2CampaignBinding, V2EvidenceAuthority, V2GateProfile, V2GateRow, V2GateRowStatus,
@@ -592,27 +625,32 @@ pub use transactional_q1_q2::{
     TransactionalQ1Q2StepReport, WitnessCapability, transactional_q1_q2_step,
     transactional_q1_q2_step_with_admission, transactional_q1_q2_step_with_execution,
 };
+#[cfg(feature = "research-gates")]
 pub use unified_gates::{
     CandidateGateReport, CandidateGateVerdict, CandidateOrderGateRow, CandidateStiffGateRow,
     UnifiedScientificGateReport, run_unified_scientific_gates,
 };
+#[cfg(feature = "research-gates")]
 pub use unified_screen::{
     ReferenceCertificateSource, UnifiedCandidateOutcome, UnifiedCandidateRow,
     UnifiedCaseDescriptor, UnifiedNonlinearScreen, UnifiedNonlinearSummary, UnifiedScreenProfile,
     run_unified_nonlinear_screen,
 };
 
+#[cfg(feature = "research-gates")]
 pub use v38d_performance_tournament::{
     V38D_EXPLORATORY_PROBE_SCHEMA, V38D_EXPLORATORY_PROBE_STATUS, V38D_MEASURED_REPETITIONS,
     V38D_WARMUP_REPETITIONS, V38dCandidateId, V38dProbeCaseId, V38dProbeReport, V38dProbeSample,
     run_v38d_probe,
 };
 
+#[cfg(feature = "research-gates")]
 pub use a1_two_arm_receipt::{
     A1_TWO_ARM_RECEIPT_PROFILE, A1_TWO_ARM_RECEIPT_SCHEMA, A1ScientificExecutionIdentity,
     A1ToleranceReceiptCell, A1ToleranceReceiptEventRow, A1ToleranceReceiptRecommendationRow,
     run_a1_two_arm_receipt_cell,
 };
+#[cfg(feature = "research-gates")]
 pub use policy_redesign_v25::{
     CausalRjfStep, PersistenceLatch, PointFeature, PrefixBudget, ProbeAction, causal_feature_value,
 };

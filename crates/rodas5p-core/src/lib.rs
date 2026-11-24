@@ -15,11 +15,15 @@ pub mod leja_setup_work;
 pub mod low_rank_bordered;
 mod matrix;
 mod matrix_functions;
+#[cfg(feature = "research-gates")]
 pub mod n01_affine_owner;
+#[cfg(feature = "research-gates")]
 pub mod n01_mass_action_owner;
+#[cfg(feature = "research-gates")]
 pub mod n01_source_owner;
 pub mod nonnormal_certificate;
 pub mod nonnormal_observers;
+#[cfg(feature = "research-gates")]
 pub use n01_mass_action_owner::{
     N01MassActionJvpReport, N01MassActionOwner, N01MassActionReport, N01MassActionTrial,
 };
