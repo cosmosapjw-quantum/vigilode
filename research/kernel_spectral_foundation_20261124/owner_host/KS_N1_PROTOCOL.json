@@ -1,0 +1,72 @@
+{
+  "schema": "vigilode.ks-n1-protocol.v1",
+  "task": "KS-N1",
+  "written_kst": "2026-11-25 07:05",
+  "status": "frozen before any measured cell; committed and pushed before the series starts",
+  "plan": {
+    "path": "research/kernel_spectral_foundation_20261124/PLAN.json",
+    "sha256": "fb33a4184fcdcbc049c29d105d4632829f664e79169c089e49e6081c19295abd",
+    "on_origin_since": "19f6d004288371aca57356cb310a7ec2e6897a45 (2026-11-25 01:51:12 +0900)",
+    "question": "Does the SL-N12 acceptance hold on the owner host: instructions <= 0.60 and cycles <= 0.80 of the Indexed route at n >= 1e4?",
+    "acceptance": ["both ratios inside the preregistered bounds at n = 1e4 and 1e5", "the identity assertions of the measurement pass"],
+    "kill": "cycles ratio above 0.95 at both sizes",
+    "fallback": "keep the promotion (bits are identical) and record the negative performance cell"
+  },
+  "host": {
+    "cpu": "AMD Ryzen 9 5900X 12-Core Processor, 24 hardware threads",
+    "scaling_governor": "performance",
+    "kernel": "7.0.0-43-generic",
+    "perf": "perf version 7.0.14, kernel.perf_event_paranoid = 1",
+    "core": 3,
+    "note": "owner host; another project's single-process batch job (python, scripts.r105.commander_ensemble) was running when this protocol was written; the agent does not touch it"
+  },
+  "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25), pinned by rust-toolchain.toml",
+  "case": {
+    "source": "brusselator_strip(1, rows) of crates/rodas5p-integrators/tests/banded_kernel_entry_identity.rs (sha256 f6a4d7a43dca054c75ad935a4c969b7d23cd0fa1d7607739b54088b79452b441) with adaptive(10_000_000) (atol 1e-8, rtol 1e-6, initial step 1e-4, min step 1e-14, max step 10) and output times [0, t1 = 0.5]; band lower = upper = 2",
+    "copied_into": "owner_host/ks_n1_probe/src/main.rs (sha256 46aae4e923cb8cf858b78a54257db76c6b8087e13d1869b6205cb4d5be60b772)",
+    "driver_source": "crates/rodas5p-integrators/src/rodas5p_fast.rs (sha256 50635d9e0cd838764c3319eb75271c880f8dbb26e4a7f60e8883575f73920e82), entry integrate_rodas5p_fast_banded_observed_with_kernel"
+  },
+  "arms": {
+    "indexed": "BandedKernel::Indexed (the facade's (2, 2) banded route before SL-N12)",
+    "fixed2": "BandedKernel::FixedWidth2 (the route after SL-N12, commit 3f9762a1)"
+  },
+  "cells": [
+    {"id": "n1e4", "rows": 5000, "n": 10000, "N": 100},
+    {"id": "n1e5", "rows": 50000, "n": 100000, "N": 12}
+  ],
+  "probe_build": {
+    "command": "CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/ks-n1-probe cargo +1.94.1 build --release --locked --offline --manifest-path research/kernel_spectral_foundation_20261124/owner_host/ks_n1_probe/Cargo.toml",
+    "profile": "opt-level 3, lto fat, codegen-units 1, panic abort (the workspace release profile)",
+    "manifest_sha256": "2a0fb997fd04fd069161944af6f5ff6fdf04ddff1ed21a117b17fcea8ad09a95",
+    "lock_sha256": "e0834cd7c9bb6307b335ed54e3be11cde42c7ad95c493deac8ef661fe42d2a40",
+    "lock_origin": "the workspace Cargo.lock copied, then pruned by cargo build (no hand edit); the workspace Cargo.lock is unchanged"
+  },
+  "why_a_probe": "The diagnostic test measure_fixed_width_against_indexed_whole_solves alternates both kernels inside one process, so perf stat over it counts both arms together and gives no ratio. The probe runs one kernel per process. The test itself is still run three times under perf stat (diagnostic_runs) for its identity assertions; its counts and wall medians are reported only.",
+  "process": "perf stat -x, -e instructions:u,cycles:u,task-clock -o <csv> -- taskset -c 3 <probe> <arm> <rows> <solves>",
+  "per_solve": "for each round, cell and arm: (C(1 + N) - C(1)) / N for instructions:u and cycles:u, where C(s) is the count of the process with s solves",
+  "rounds": 3,
+  "order": "cells n1e4 then n1e5; rounds 1 and 3: indexed then fixed2; round 2: fixed2 then indexed; within an arm: solves 1 then 1 + N",
+  "quiet_rule": "before each process: wait until the 1-minute load average is <= 3.0 (checked every 5 s, at most 600 s) and record it; the agent starts no other process or tool call during the series",
+  "statistic": "per cell and metric: ratio = median over rounds of per-solve fixed2 / median over rounds of per-solve indexed; the per-round ratios fixed2/indexed are reported",
+  "identity": [
+    "within each cell every probe line (both arms, both solve counts, all rounds) has equal attempts, accepted, rejected, jacobian_reuses, lu, work, partial, success, message, counters, internal_steps, output_clipped_steps, outputs and state_fnv1a; the driver id differs by design",
+    "the non-ignored tests of banded_kernel_entry_identity pass (cargo test --locked -p rodas5p-integrators --release --test banded_kernel_entry_identity)",
+    "each of the three diagnostic runs passes (its assert_same_banded on the FixedWidth2 and Indexed results at both sizes)"
+  ],
+  "diagnostic_runs": "three runs, after the series, of the test binary of banded_kernel_entry_identity (built by the command of PLAN.json KS-N1 before the series): perf stat -x, -e instructions:u,cycles:u,task-clock -o <csv> -- taskset -c 3 <test binary> measure_fixed_width_against_indexed_whole_solves --exact --ignored --nocapture; reported only",
+  "verdict": {
+    "INVALID": "an identity item fails",
+    "PASS": "identity holds, cycles decidable, and at both cells instructions ratio <= 0.60 and cycles ratio <= 0.80",
+    "KILL": "identity holds, cycles decidable, and cycles ratio > 0.95 at both cells",
+    "FAIL": "identity holds and neither PASS nor KILL; with undecidable cycles: an instructions ratio > 0.60 at any cell",
+    "NOT_DECIDABLE": "cycles undecidable and every instructions ratio <= 0.60",
+    "cycles_undecidable_if": "a process of the series started with a 1-minute load average > 3.0 after the wait, or in some cell the per-round cycles ratios spread by more than 0.10 (max / min - 1)",
+    "fallback_on_any_verdict_but_PASS": "PLAN.json: keep the promotion (bits are identical) and record the negative performance cell"
+  },
+  "pilot_before_this_protocol": "plumbing only: smoke runs of both arms at rows = 100 (n = 200: 18 attempts, equal work and counters in both arms) and one indexed solve per deciding size to choose N (process wall 0.035 s at n = 1e4 and 0.298 s at n = 1e5); no fixed2 run at a deciding size",
+  "outputs": {
+    "raw": "research/kernel_spectral_foundation_20261124/owner_host/logs/ks_n1/ (env.json, <tag>.meta.json, <tag>.perf.csv, <tag>.out.json, identity_tests.log, diag_<k>.perf.csv, diag_<k>.out.txt)",
+    "parser": "python3 -I research/kernel_spectral_foundation_20261124/owner_host/parse_ks_n1.py",
+    "results": ["research/kernel_spectral_foundation_20261124/results/KS_N1_OWNER_HOST.jsonl (one line per process)", "research/kernel_spectral_foundation_20261124/results/KS_N1_OWNER_HOST.json (cells, ratios, verdict)"]
+  }
+}
