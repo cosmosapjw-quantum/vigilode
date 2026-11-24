@@ -4,7 +4,7 @@
 //! which method a declared regime selects, whether the explicit method admits the request
 //! and which driver family of the RODAS5P facade is planned; it keeps no rule of its own
 //! about drivers. A request that declares nothing runs the break-even route
-//! ([`super::breakeven`]): DOPRI5 with forward break-even pilots of RODAS5P.
+//! (`super::breakeven`): DOPRI5 with forward break-even pilots of RODAS5P.
 //!
 //! The analysis does not classify a problem as stiff or non-stiff. The logarithmic norm is
 //! not computed: a contractive problem (the heat equation, `y' = -1e6 y`) is the standard
@@ -85,8 +85,9 @@ pub enum RouteBasis {
     /// use it, and nothing shows that the problem is non-stiff (owner decision D2: the
     /// request starts on RODAS5P).
     SuppliedDerivative,
-    /// Nothing is declared: DOPRI5 with forward break-even pilots ([`super::breakeven`]);
-    /// RODAS5P continues after an accepted pilot or after a numerical DOPRI5 stop.
+    /// Nothing is declared: DOPRI5 with forward break-even pilots of RODAS5P (the
+    /// [module documentation](super) and [`super::PilotRecord`]); RODAS5P continues after an
+    /// accepted pilot or after a numerical DOPRI5 stop.
     BreakEven {
         /// The break-even length of the dimension ([`super::break_even_length`]).
         b: usize,

@@ -176,3 +176,22 @@ Choices fixed in the runner where PREDECLARED.json leaves them open: the start-r
 of their V03b fixtures (P_heat_dense (0, 10) with y0 = sin(pi x); P_scalar_dense (0, 1); P_heat_jvp and
 P_heat_banded (0, 0.01) with y0 = 1); P_mass is the V03b DAE fixture on (0, 1); P_blowup on (0, 2); the scalar
 fixtures and kt_vanishing are non-autonomous, all others autonomous. `check_toy.py` is the phase-1 plumbing check.
+
+## 8. Open issues for the orchestrator and phase 2
+
+1. The exploratory arms N_prod (threshold `ceil(sqrt(b_cb b_op))`) and N_cont (D1 = continue) of PREDECLARED.json
+   `arms` are not built. Each needs a variant of the router; within the allowed paths that is either a public
+   option (excluded by D6) or a re-implementation in the runner on the public session API, which cannot be exact
+   (the attempt record `trial_h`, `requested_h`, `clipped` is crate-private). To be decided before phase 2.
+2. Fixture choices of the runner where PREDECLARED.json says "their V03b spans" for n = 8 fixtures that V03b used
+   with other dimensions (section 7). To be confirmed before phase 2 (the runner then needs no change).
+3. `crates/vigilode/examples/unified_production_solver.rs` (lines 8-13, 139-142) and the comment of
+   `contract_4_fail_closed_protected_fallback` still describe the screened DOPRI5 trial in prose. They use no
+   removed name, so the task did not allow an edit; both run unchanged.
+4. The tests `p1_preflight_callbacks_are_charged_*` and `p1_preflight_callback_failure_is_a_typed_stop_not_invalid_input`
+   keep their names although no preflight call exists any more (DESIGN_RECOMMENDED.md 7 proposed rewriting them;
+   the task requires the unchanged tests to pass unchanged, and they do).
+5. `CHECKPOINT.json` pins of the eight unified sources and of `unified_router_contracts.rs` are stale by design
+   (the loop checker reports them, section 6); the orchestrator records the new pins at merge time.
+6. PREDECLARED.json must be on origin before any run of the deciding set (phase 2). No such run was made here: the
+   runner ran the toy problem only.

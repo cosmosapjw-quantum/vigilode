@@ -345,7 +345,8 @@ pub(super) fn run(
                 if fatal {
                     record.verdict = PilotVerdict::Fatal;
                     pilots.push(record);
-                    let stop = leg.stop.unwrap_or_else(|| UnifiedStop::Rodas5p {
+                    // the run record's stop; `fatal` says its status is the callback failure
+                    let stop = leg.stop.unwrap_or(UnifiedStop::Rodas5p {
                         reason: match native.status {
                             Status::Failed(reason) => reason,
                             Status::Success => FailureReason::MaxStepsReached { max_steps: 1 },

@@ -630,8 +630,11 @@ fn robertson_rhs(y: &[f64], dy: &mut [f64]) {
 
 type Rhs = fn(&[f64], &mut [f64]);
 
+/// A named problem: dimension, right-hand side, initial state, span.
+type NamedCase = (&'static str, usize, Rhs, Vec<f64>, (f64, f64));
+
 /// The non-stiff problems of PREDECLARED.json used for U1 (no handover expected).
-fn non_stiff_cases() -> Vec<(&'static str, usize, Rhs, Vec<f64>, (f64, f64))> {
+fn non_stiff_cases() -> Vec<NamedCase> {
     fn osc(y: &[f64], dy: &mut [f64]) {
         dy[0] = y[1];
         dy[1] = -y[0];
