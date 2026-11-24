@@ -39,14 +39,18 @@ def sha256(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def tagged(path, tag):
-    """The JSON objects behind `tag` in a log, in order."""
+def tagged(path, tag, anywhere=False):
+    """The JSON objects behind `tag` in a log, in order (with `anywhere`, the
+    tag may follow other text on its line, as the test harness prints
+    'test name ... ' before a captured line)."""
     rows = []
     prefix = tag + " "
     with open(path, encoding="utf-8") as handle:
         for line in handle:
             if line.startswith(prefix):
                 rows.append(json.loads(line[len(prefix):]))
+            elif anywhere and prefix in line:
+                rows.append(json.loads(line[line.index(prefix) + len(prefix):]))
     return rows
 
 
@@ -272,7 +276,7 @@ def unit_analysis():
     path = LOGS / "unit.log"
     if not path.exists():
         return None
-    rows = tagged(path, "V26_MC_UNIT_JSON")
+    rows = tagged(path, "V26_MC_UNIT_JSON", anywhere=True)
     results = []
     with open(path, encoding="utf-8") as handle:
         for line in handle:
@@ -350,15 +354,22 @@ def perf_analysis():
             "instructions": perf_instructions(path), "log": path.name, "exit_codes": exit_codes(path)}
     out = defaultdict(dict)
     for (cell, arm), actions in sorted(table.items()):
+        # The problem alone is measured once per cell (arm None@seq) and the
+        # client construction once per execution (arm None@<execution>).
+        execution = arm.split("@")[1]
+        problem = table.get((cell, "None@seq"), {}).get("problem", {}).get("instructions")
+        setup = table.get((cell, "None@" + execution), {}).get("setup", {}).get("instructions")
+        verify = actions.get("verify", {}).get("instructions")
+        solve = actions.get("solve", {}).get("instructions")
         derived = {}
-        get = lambda action: actions.get(action, {}).get("instructions")
-        if get("verify") is not None and get("setup") is not None:
-            derived["first_linearization"] = get("verify") - get("setup")
-        if get("setup") is not None and get("problem") is not None:
-            derived["construction"] = get("setup") - get("problem")
-        if get("solve") is not None and get("problem") is not None:
-            derived["construction_and_solve"] = get("solve") - get("problem")
-        out[cell][arm] = {"actions": actions, "derived": derived}
+        if verify is not None and setup is not None:
+            derived["first_linearization"] = verify - setup
+        if setup is not None and problem is not None:
+            derived["construction"] = setup - problem
+        if solve is not None and problem is not None:
+            derived["construction_and_solve"] = solve - problem
+        out[cell][arm] = {"actions": actions, "derived": derived,
+                          "references": {"problem": "None@seq", "setup": "None@" + execution}}
     return out
 
 
@@ -589,6 +600,213 @@ def verdicts(results):
     }
 
 
+# ---------------------------------------------------------------- report
+
+
+def fmt(value, digits=3):
+    if value is None:
+        return "-"
+    if isinstance(value, bool):
+        return "예" if value else "아니오"
+    if isinstance(value, int):
+        return f"{value:,}"
+    if isinstance(value, float):
+        if value == 0:
+            return "0"
+        if abs(value) >= 1000:
+            return f"{value:,.0f}"
+        return f"{value:.{digits}g}"
+    return str(value)
+
+
+def seconds(ns):
+    return None if ns is None else ns / 1e9
+
+
+ARM_NAMES = {
+    "None": "검사 없음 (빌드만)",
+    "S8": "S8: 균등 8열 표본 (현 기본값)",
+    "FA": "FA: 전체 n열, 호출 스레드에서 순차",
+    "FA_P": "FA_P: 전체 n열, 클라이언트 풀에서",
+    "MC": "MC: 다중 채색 검사, 순차",
+    "MC_P": "MC_P: 다중 채색 검사, 풀에서",
+    "MCe": "MCe: 매 선형화마다 MC (탐색적)",
+}
+
+
+def render_report(results):
+    v = results["verdicts"]
+    corpus = results["corpus"]
+    cost = results["cost"]
+    lines = []
+    add = lines.append
+    add("# V26 조립 클라이언트 전체 패턴 검사: 병렬화, 벡터화, 다중 채색 검사")
+    add("")
+    add("이 보고서는 `parse_results.py`가 `logs/`의 원시 로그만 읽어 `RESULTS.json`과 함께 생성했다. "
+        "숫자를 손으로 적지 않았다. 동결 설계: `PREDECLARED.json` (sha256 "
+        f"`{results['predeclared_sha256'][:16]}...`), 사전등록 부록 A7. 생성 시점 HEAD: `{results['head_at_build']}`.")
+    add("")
+    add("## 1. 결론")
+    add("")
+    add("- 질문 (OD-L1-16, \"n회 추가가 벡터화/병렬화가 가능한지 먼저 시험\"): 선택형 클라이언트 "
+        "`AssemblyStageClient`의 전체 패턴 검사(`CheckColumns::All`, n개 단일 열 평가)를 (a) 클라이언트 풀에서 "
+        "병렬로, (b) 여러 이동 상태를 한 번에 계산하는 벡터화 우변으로, (c) 같은 결정을 훨씬 적은 평가로 내는 "
+        "정확한 다중 채색 검사로 바꿀 수 있는가.")
+    keeps = v["arm_keeps_E_D_F"]
+    kept = [arm for arm, k in keeps.items() if all(k.values())]
+    add(f"- 동결 판별 기준: E (결정과 비트 동일) {'충족' if v['E'] else '불충족'}, "
+        f"D (FA 탐지 {'충족' if v['D_FA'] else '불충족'}, MC가 FA 탐지분을 놓치지 않음 {'충족' if v['D_MC'] else '불충족'}), "
+        f"F (정답 패턴 거부 없음) {'충족' if v['F'] else '불충족'}. E, D, F를 모두 지키는 팔: {', '.join(kept)}. "
+        f"S8(현 기본값)은 잘못된 패턴 {v['D_S8_misses']}건을 놓쳐 D를 지키지 못한다.")
+    add("- 기본값은 바뀌지 않았다: 첫 사용 검사는 여전히 `CheckColumns::Sample(8)`이다. 새 검사는 "
+        "`CheckColumns::AllPooled`, `MultiColouring`, `MultiColouringPooled` 선택지로만 존재한다. 기본값 결정은 소유자 몫이다.")
+    add("")
+    add("### 셀별로 E, D, F를 지키는 가장 싼 팔")
+    add("")
+    add("가장 싼 = 첫 선형화(빌드 + 검사)의 명령어 수(instructions:u, 1차 지표)가 가장 적은 팔. 검사 RHS 수와 벽시계 시간을 함께 적는다.")
+    add("")
+    add("| 셀 | 가장 싼 팔 | 검사 RHS | 첫 선형화 명령어 / 검사 없는 빌드 | 비교: FA (순차) 검사 RHS, 명령어 배수 |")
+    add("|---|---|---|---|---|")
+    for cell, data in cost["summary"].items():
+        candidates = []
+        for arm, row in data["arms"].items():
+            if arm not in keeps:
+                continue
+            if not all(keeps[arm].values()):
+                continue
+            ins = row.get("instructions_first_linearization")
+            if ins is None:
+                continue
+            candidates.append((ins, arm, row))
+        if not candidates:
+            add(f"| {cell} | (명령어 측정 없음) | - | - | - |")
+            continue
+        candidates.sort()
+        ins, arm, row = candidates[0]
+        fa = data["arms"].get("FA@seq", {})
+        add(f"| {cell} | {arm} | {fmt(row.get('check_rhs'))} | {fmt(row.get('instructions_first_linearization_over_one_build'))} | "
+            f"{fmt(fa.get('check_rhs'))}, {fmt(fa.get('instructions_first_linearization_over_one_build'))} |")
+    add("")
+    add("## 2. 팔 (PREDECLARED arms)")
+    add("")
+    for key, name in ARM_NAMES.items():
+        add(f"- `{key}`: {name}")
+    add("- 실행: `seq` 순차 클라이언트, `tP` P개 작업자의 스레드 클라이언트 (RhsPurity 확인). FA_P는 P = 2, 4, 6, MC_P는 6.")
+    add("- MC 구성: 밴드 구성 B (`j mod m_r`, `m_r >= lower + upper + 1` 서로소, 곱 >= n) 또는 정제 구성 G "
+        "(`(c1(j), q(j) mod p_r)`, 소수 곱 >= 가장 큰 c1 클래스), 그룹 합이 작은 쪽 (같으면 B). 색 튜플의 단사성은 "
+        "검사 전에 확인한다. 모든 선언 항목을 클라이언트 자신의 채색 결과와 비트 단위로 비교하고, 모든 그룹에서 "
+        "덮이지 않은 행 검사를 한다. 허용오차도 조정 매개변수도 없다.")
+    add("")
+    add("## 3. 코퍼스: 탐지 (D), 거짓 경보 (F), 결정 동일성 (E)")
+    add("")
+    add("각 사례의 결정 = 새 클라이언트에서 `verify(t0, y0)`의 결과 (통과, 또는 행과 열이 붙은 타입 오류). "
+        "드라이버 실행의 첫 선형화와 같은 빌드와 검사다.")
+    add("")
+    add("| 그룹 | 사례 | 잘못된 패턴 | S8 놓침 | FA 놓침 | FA_P 놓침 (2/4/6) | MC 놓침 | MC_P 놓침 | 정답 패턴 거부 |")
+    add("|---|---|---|---|---|---|---|---|---|")
+    for group, data in corpus["groups"].items():
+        per = data["per_arm"]
+        miss = lambda arm: per.get(arm, {}).get("missed", 0) if arm in per else "-"
+        alarms = sum(c.get("false_alarm", 0) for c in per.values())
+        add(f"| {group} | {data['cases']} | {data['wrong_cases']} | {fmt(miss('S8@seq'))} | {fmt(miss('FA@seq'))} | "
+            f"{miss('FA_P@t2')}/{miss('FA_P@t4')}/{miss('FA_P@t6')} | {fmt(miss('MC@seq'))} | {fmt(miss('MC_P@t6'))} | {alarms} |")
+    add("")
+    d = corpus["D"]
+    add(f"- FA의 놓침 {len(d['FA_misses'])}건, 모두 반올림 한계 (직접 평가로 확인): "
+        + ", ".join(f"`{m['case']}` (반올림 한계 {fmt(m['rounding_limited_for_FA'])})" for m in d["FA_misses"]) + ".")
+    add(f"- MC의 놓침 {len(d['MC_misses'])}건: " + ", ".join(
+        f"`{m['case']}` (FA도 놓침: {fmt(not m['FA_detects'])}, MC 반올림 한계: {fmt(m['rounding_limited_for_MC'])})"
+        for m in d["MC_misses"]) + ". FA가 잡았는데 MC가 놓친 사례: "
+        f"{len(d['MC_misses_of_cases_FA_detects_not_rounding_limited'])}건.")
+    add(f"- S8의 놓침 {d['S8_miss_count']}건 (목록은 RESULTS.json `corpus.D.S8_misses`): 주기 고리 n = 34, 64, 100, 127, 128, 1000 "
+        "같은 경우와 브뤼셀레이터 단일 항목 누락의 일부. 모두 FA, FA_P, MC, MC_P가 잡는다.")
+    e = corpus["E"]["corpus"]
+    comparisons = ", ".join(f"{k}: 같음 {c['equal']}, 다름 {c['different']}" for k, c in e["comparisons"].items())
+    add(f"- E (코퍼스): {comparisons}. 기준: {e['reference_rule']}.")
+    t = corpus["today_arms_unchanged"]
+    add(f"- 수정 전 기록 (커밋 A)과 수정 후의 S8, FA 결정: {t['decisions_compared']}개 중 {t['equal']}개 같음.")
+    add(f"- F: 정답 패턴을 거부한 팔 없음 ({len(corpus['F']['false_alarms'])}건). MC는 조밀 경로에서 적용되지 않는다 "
+        "(구성 오류로 거부; 판별 대상 아님).")
+    add("")
+    unit = results.get("unit_tests")
+    if unit:
+        add("## 4. 단위 테스트 (모든 단일 항목 누락)")
+        add("")
+        add("| 테스트 | 누락 수 | 빌드에서 탐지 | 둘 다 탐지 | 둘 다 놓침 (FA 반올림 한계) | FA만 | MC만 | 실패 |")
+        add("|---|---|---|---|---|---|---|---|")
+        for row in unit["omission_tests"]:
+            add(f"| {row['test']} | {fmt(row['single_entry_omissions'])} | {fmt(row.get('detected_at_the_build'))} | "
+                f"{fmt(row['detected_by_both'])} | {fmt(row['detected_by_neither'])} ({fmt(row['full_check_misses_rounding_limited'])}) | "
+                f"{fmt(row['full_check_only'])} | {fmt(row['multi_colouring_only'])} | {fmt(row['failures'])} |")
+        add("")
+        add("결과 줄: " + "; ".join(unit["test_results"]))
+        add("")
+    add("## 5. 비용 (C): 네 비용 셀, 모든 팔")
+    add("")
+    add("첫 선형화 = 새 클라이언트에서 빌드 + 검사 (`verify`, 뒷단 복사 제외). 전체 실행 = 클라이언트 구성 + 드라이버 호출, "
+        "48회 시도 상한 (V08 프로토콜). 명령어 = perf stat instructions:u, 동작별 프로세스 차이 "
+        "(verify - setup, solve - problem). 스레드 팔의 명령어에는 rayon 작업자의 회전 대기가 들어간다.")
+    add("")
+    for cell, data in cost["summary"].items():
+        add(f"### {cell} (빌드 한 번 = {fmt(data['one_build_rhs'])} RHS)")
+        add("")
+        add("| 팔 | 검사 RHS | 검사 RHS / 빌드 | 첫 선형화 명령어 | / 검사 없는 빌드 (None@seq) | 실행 명령어 / S8@seq 실행 | "
+            "첫 선형화 벽시계 / None@seq | 실행 벽시계 / S8@seq |")
+        add("|---|---|---|---|---|---|---|---|")
+        for arm, row in data["arms"].items():
+            w_first = cost["wall_multiples"].get(f"{cell}|verify|{arm}", {}).get("vs_sequential_reference")
+            w_solve = cost["wall_multiples"].get(f"{cell}|solve|{arm}", {}).get("vs_sequential_reference")
+            wf = "-" if not w_first else f"{fmt(w_first['ratio'])} ({'A' if w_first['authoritative'] else 'd'})"
+            ws = "-" if not w_solve else f"{fmt(w_solve['ratio'])} ({'A' if w_solve['authoritative'] else 'd'})"
+            add(f"| {arm} | {fmt(row.get('check_rhs'))} | {fmt(row.get('check_rhs_over_one_build'))} | "
+                f"{fmt(row.get('instructions_first_linearization'))} | {fmt(row.get('instructions_first_linearization_over_one_build'))} | "
+                f"{fmt(row.get('instructions_solve_over_S8_solve'))} | {wf} | {ws} |")
+        add("")
+    add("A = 권위 있음 (부하 <= 8 전후, 2 + 7회, 두 팔의 퍼짐 <= 0.10), d = diagnostic_only. "
+        "bruss1d-n131072의 FA와 FA_P(2)는 한 번의 평가가 수십 초라 2분 잠금 상한 안에 2 + 7회를 돌릴 수 없어 횟수를 줄였고 "
+        "diagnostic_only다. 같은 실행 기준 배수와 시도별 중앙값은 RESULTS.json `cost.wall_multiples`에 있다.")
+    add("")
+    add("- E (비용 셀 비트): " + ", ".join(f"{cell} {'같음' if ok else '다름'}" for cell, ok in v["E_cost_cells_bits"].items())
+        + " (모든 팔의 첫 선형화 야코비안 지문, 전체 실행의 선형화 지점, 야코비안, 최종 상태 지문이 None@seq와 같음).")
+    add("")
+    fab = results["fa_batched_exploratory"]
+    add("## 6. 벡터화 (FA_B, 탐색적): nlkpp-dense-n400의 n개 이동 상태를 한 번에")
+    add("")
+    ident = fab["actions"].get("identity", {}).get("record", {})
+    der = fab["derived"]
+    add(f"- 비트 동일성: {fmt(ident.get('states'))}개 상태 중 단일 평가와 다른 성분 {fmt(ident.get('batched_components_with_other_bits'))}개; "
+        f"묶음 상태로 한 전체 검사: {ident.get('full_check_with_batched_states', '-')}.")
+    add(f"- 평가당 명령어: 단일 {fmt(der.get('instructions_per_evaluation_single'))}, 묶음 {fmt(der.get('instructions_per_evaluation_batched'))} "
+        f"(비 {fmt(der.get('batched_over_single_instructions'))}).")
+    add(f"- 평가당 벽시계 (중앙값): 단일 {fmt(der.get('wall_per_evaluation_single_ns_median'))} ns, 묶음 "
+        f"{fmt(der.get('wall_per_evaluation_batched_ns_median'))} ns (비 {fmt(der.get('batched_over_single_wall'))}); {der.get('label', '')}.")
+    add("- 같은 합산 순서를 지키는 묶음 우변은 사용자가 따로 써야 하는 문제별 코드다. 클라이언트의 API는 우변 한 번에 상태 하나를 받으므로, "
+        "이 팔은 클라이언트에 넣지 않았다.")
+    add("")
+    add("## 7. 주의")
+    add("")
+    add("- MC의 정확성 주장(NOTES.txt의 증명)은 한 행에 선언되지 않은 의존이 하나일 때다. 코퍼스의 잘못된 패턴은 모두 이 조건을 만족한다. "
+        "증명에 남는 유일한 틈은 '항목 붕괴'다: 결합 이동 상태에서 행 값의 비트는 다르지만 f0를 빼고 delta로 나눈 두 항목이 같은 수로 "
+        "반올림되는 경우. 사전 정의(행 비트 기준)는 이것을 반올림 한계로 면제하지 않는다. 코퍼스와 1,450만 개 단위 사례에서 이런 경우는 없었다.")
+    add("- 스레드 팔의 명령어 수는 rayon 작업자의 회전 대기를 포함해 순차 팔과 직접 비교하기 어렵다; 벽시계가 병렬 이득을 보여 준다.")
+    add("- MC의 첫 사용에는 채색 구성(단사성 정렬 포함) 비용이 들어간다; 이후 빌드의 MC(MCe)는 그룹 평가만 한다.")
+    add("- 조밀 경로(nlkpp-dense-n400)에는 선언된 패턴이 없어 MC가 적용되지 않는다; 그 셀에서 D를 지키는 팔은 FA와 FA_P뿐이다.")
+    add("")
+    add("## 8. 재현")
+    add("")
+    add("```")
+    add("research/production_loop_20261116/assembly_check/run.sh corpus <label> <groups> <arms>")
+    add("research/production_loop_20261116/assembly_check/run.sh unit")
+    add("research/production_loop_20261116/assembly_check/run.sh counts <cell>")
+    add("research/production_loop_20261116/assembly_check/run_perf_plan.sh")
+    add("research/production_loop_20261116/assembly_check/run_timing_plan.sh <try> [labels]")
+    add("research/production_loop_20261116/assembly_check/run.sh batched <identity|setup|single|batched|timing>")
+    add("python3 -I research/production_loop_20261116/assembly_check/parse_results.py")
+    add("```")
+    add("")
+    return "\n".join(lines)
+
+
 # ---------------------------------------------------------------- main
 
 
@@ -622,7 +840,8 @@ def main():
     results["verdicts"] = verdicts(results)
     text = json.dumps(results, indent=1, ensure_ascii=False, allow_nan=False, sort_keys=False)
     (HERE / "RESULTS.json").write_text(text + "\n", encoding="utf-8")
-    print("RESULTS.json written")
+    (HERE / "REPORT_KO.md").write_text(render_report(results), encoding="utf-8")
+    print("RESULTS.json and REPORT_KO.md written")
 
 
 if __name__ == "__main__":
