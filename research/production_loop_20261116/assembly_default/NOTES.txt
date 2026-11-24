@@ -145,3 +145,37 @@ PROTOCOL FORM
 
 NEXT
 - run.sh unit and run.sh checks (logs), parse_results.py -> RESULTS.json and REPORT_KO.md.
+
+== 2026-11-25 00:26, entry 3 (checks, results; final state of this builder session) ==
+
+CHECKS (logs/checks.log at caf3f7ac, 0 tracked changes; logs/unit.log; logs/checker_all.log at fbcd44de)
+- cargo test --test 'stage_clients_*': exit 0, 29 binaries, 91 passed, 0 failed, 14 ignored (V26 had 26 binaries,
+  85/0/13; this node adds 3 binaries: 5 + 1 tests and the ignored recording program).
+- sentinels ppsw1_6b_contracts + ptsw2b_contracts: 61 passed. clippy -D warnings on the library and all eleven
+  stage_clients_assembly_* targets: exit 0. fmt: exit 0. rustdoc of the crate: no warning in the assembly files.
+- loop checker: exit 1, "ValueError: implementation changed; rerun affected tests/update checkpoint:
+  crates/rodas5p-integrators/src/stage_clients/assembly.rs". The non-stopping copy (checker_all.py, which reads the
+  checker and replaces its require() in memory) lists three complaints, all pinned files this node is allowed to
+  change: assembly.rs, assembly/engine.rs, tests/stage_clients_assembly_identity.rs; everything else passes.
+
+RESULTS (parse_results.py -> RESULTS.json, REPORT_KO.md; all four discriminators PASS)
+- bits unchanged: 36 runs (5 cells, both band back ends of nlkpp-band-n4096-r24, prot + 5 arms): Jacobian,
+  linearization-point, output and final-state fingerprints, steps and every counter except the first-use check's
+  equal between A and B; the coloured cells change verification RHS 8 -> 18 / 59 / 150 (+1 threaded), verified
+  columns 8 -> n and rhs_calls by the same amount; the dense cells do not change. Commit A equals the V08 identity
+  logs in all 36 runs.
+- default per route: Sample(8) everywhere before; MultiColouring on every coloured cell and corpus case (seq, t3,
+  t6), Sample(8) on the dense ones after; the two per-route unit tests pass.
+- corpus detection of the default: the 4846 transcribed cases equal the V26 cases in id and fields; B's decisions
+  equal the V26 reference arm in 9693 of 9693 comparisons; B misses only omit1024/e3072-r768-c769 (seq and t6), the
+  rounding-limited case that FA and MC missed in V26; Sample(8) (A) passes 576 wrong declarations per execution,
+  B detects all of them except that one; nothing A detects is missed by B; no correct pattern is rejected.
+- suites: as above.
+
+OPEN / FOR THE OWNER
+- MC is not a superset of Sample(8) outside the corpus: the three constructed collapse cases of L-0338 are caught by
+  Sample(8) (column 41 sampled) and passed by MC; stated in the rustdoc and pinned by a unit test.
+- PROTOCOL.json was not written (choices fixed in entry 1 and the program before the first run).
+- The V08 facade runner (outside this node's paths) uses the default options; its banded case now runs MC at first
+  use (verification counters change); not re-run here.
+- Independent review is required by the contract (completion_requires).
