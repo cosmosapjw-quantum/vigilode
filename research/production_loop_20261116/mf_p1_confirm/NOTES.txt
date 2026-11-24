@@ -1,0 +1,110 @@
+NOTES of node V25_MF_P1_CONFIRMATION (loop L1, wave 3; owner decisions OD-L1-15 and OD-L1-11; addendum A7)
+worktree /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v25
+branch   research/production-loop-20261116-w3-v25, base 80ba83881503c4b3253268df61c53b269740d6d3
+target   CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v25
+frozen   mf_p1_confirm/PREDECLARED.json (sha256 6b2ca034e361238a6db71c83fc8ce89784658ecdf449d9a4ce5ed90a544f617e per A7); not edited
+
+== 2026-11-24 17:50 KST: step 0 (written before any edit of a source file and before any run) ==
+State found: mf_p1_confirm/ holds only the frozen PREDECLARED.json. Host: 1-minute load 7.1 at 17:44, no rustc.
+
+1. WHERE THE DEFAULT POLICY AND THE IDENTIFIERS LIVE (base 80ba8388)
+
+   crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs
+     :75       RODAS5P_MF_FAST_DRIVER_ID = "rodas5p-mf-fast-transformed-v1" (shipped policy S)
+     :81       RODAS5P_MF_FAST_ADAPTIVE_DRIVER_ID = "rodas5p-mf-fast-transformed-v2" (P2, opt-in since V24)
+     :98-117   enum MfStageSolvePolicy {Shipped (#[default], :104-105), ColumnTested (= P1), ColumnTestedDoubling (= P2)}
+     :145-151  driver_id(): Shipped -> v1, ColumnTested -> "rodas5p-mf-fast-transformed-v2-candidate-p1" (:148),
+               ColumnTestedDoubling -> v2
+     :1704     Rodas5pMfFastWorkspace::new sets stage_solve_policy: MfStageSolvePolicy::Shipped (explicit, not Default)
+     :1714     set_stage_solve_policy
+     :3576     integrate_rodas5p_mf_fast_observed_gmres_into (shipped entry; workspace default = Shipped)
+     :3599     integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace (shipped entry, ls workspace)
+     :3632     integrate_rodas5p_mf_fast_observed_with_stage_solve_policy(.., policy, ls_workspace) (explicit policy)
+   crates/rodas5p-integrators/src/routing.rs
+     :239      RoutingOptions::matrix_free_policy
+     :258      RoutingOptions::default(): matrix_free_policy: MfStageSolvePolicy::Shipped   <- default of the route
+     :486      routing record driver_id = options.matrix_free_policy.driver_id()
+     :511-529  Shipped -> the shipped entries; otherwise the explicit-policy entry
+   crates/rodas5p-integrators/src/lib.rs:142-146  the V24 re-export block (last "// Loop L1" block)
+   crates/vigilode/src/solve.rs:337-343  the facade calls the router with RoutingOptions { krylov_ls_workspace: true,
+               ..RoutingOptions::default() }: it follows the routed default.
+   Pins of the identifier or of the default outside the driver and the router:
+     crates/vigilode/tests/capabilities_contracts.rs:116 ("rodas5p-mf-fast-transformed-v1"),
+     crates/vigilode/tests/facade_contracts.rs:14, :281, :1038 (RODAS5P_MF_FAST_DRIVER_ID) and the facade-vs-shipped-entry
+       bit comparisons (V24 PROTOCOL.json known_obstacle: :258-281, :929-971)        -> in the write list of this node
+     crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs (g3: pins src/rodas5p_matrix_free_fast.rs at :1667 and
+       tests/ptsw2b_contracts.rs at :1715), crates/rodas5p-integrators/tests/ptsw2b_contracts.rs (h2: :1073)
+                                                                                     -> in the write list (step 6 only)
+     crates/rodas5p-integrators/tests/mf_adaptive_shipped_bits.rs:182 (MfStageSolvePolicy::default() == Shipped),
+       :250 (RoutingOptions::default().matrix_free_policy == Shipped) and :260 (routed driver id v1);
+     crates/rodas5p-integrators/tests/mf_adaptive_contracts.rs:410-411 (ColumnTested.driver_id() ==
+       "rodas5p-mf-fast-transformed-v2-candidate-p1")                                 -> NOT in the write list
+
+   KNOWN OBSTACLE, found before any run: a switch as specified (router default P1, identifier v3 for P1) makes the V24
+   tests above fail (mf_adaptive_shipped_bits: the router default and, if the enum default moves, the enum default;
+   mf_adaptive_contracts: the candidate identifier of P1). Both files are matrix-free targets of R
+   ("--test 'mf_adaptive_*'") and neither is in the write list of this node. If the measurements give SWITCH, the
+   switch is made in a separate commit, R is run and every failing test is listed verbatim; R then cannot hold inside
+   the write list, so by the frozen rule the switch is taken back (git revert, nothing rewritten) and the verdict is
+   HOLD with this reason. The exact lines the orchestrator would have to change are written to the evidence
+   directory. This is reported, not worked around. (It is listed again in PROTOCOL.json before any run.)
+
+   Reading of "default policy of the driver" for step 6 (decided now, before any run): the workspace keeps its
+   explicit initial value Shipped (:1704) and the shipped entries (:3576, :3599) keep the shipped policy, because they
+   are named entries of the shipped kernel that dozens of research tests pin bit for bit; the default of the route is
+   RoutingOptions::default().matrix_free_policy (routing.rs:258) and the enum's #[default] (:104) follows it, so that
+   a caller who does not choose gets P1 in the router, in the facade and from MfStageSolvePolicy::default().
+
+2. PLAN OF THE FILES
+
+   crates/rodas5p-integrators/tests/mf_confirm_problems.rs   generators of the four families (module of the targets)
+   crates/rodas5p-integrators/tests/mf_confirm_measure.rs    measurement target (one process does one thing, chosen by
+       V25_MODE: SETUP, RHS0, CONSIST (20 states: y, v, f(y), J(y) v as hex), RUN (arm S | P1 | P2 through an entry),
+       TIMING); prints V25_*_JSON lines; nothing judged inside. Entries: route (S: the shipped gmres_into entry; P1/P2:
+       the explicit-policy entry), router (the router with RoutingOptions.matrix_free_policy set explicitly), router_ls
+       (the same with krylov_ls_workspace = true: the facade's call with the policy named), audit (workspace + solve
+       log + the driver's stage-solve records + ProtectedAudit of V17 unchanged + an own per-solve recorder that writes
+       every completed stage solve, independent residual and threshold and the driver's reported residual and threshold,
+       to a file, so that V can be recounted from the repository; review finding F3 of V24).
+   crates/rodas5p-integrators/tests/mf_confirm_contracts.rs  contract tests (small instances: JVP against a
+       difference quotient, symmetry/conservation facts, the entries agree; after a switch: the default is P1 with v3)
+   mf_p1_confirm/reference/families.py        independent numpy right-hand sides and JVPs of the four families
+   mf_p1_confirm/reference/consistency.py     the frozen consistency check (20 states, 1e-12) against the Rust CONSIST
+                                              output; log in logs/consistency/
+   mf_p1_confirm/reference/make_reference.py  DOP853 rtol 1e-13 + the two cross-checks + the Radau fallback of V17
+   mf_p1_confirm/run_measurements.py          executes every run, one process per run, raw logs under logs/<phase>/
+   mf_p1_confirm/parse_results.py             RECORDING_A.json, RESULTS.json (verdict by the frozen rules); the matched-
+                                              error functions are imported from mf_stage_solve/parse_results.py (V17)
+   mf_p1_confirm/make_report.py               renders REPORT_KO.md from the result files
+   mf_p1_confirm/PROTOCOL.json                every choice the frozen file leaves open, final spans, before any P1/P2 run
+
+3. HOW THE FAMILIES ARE GENERATED (PREDECLARED.json families.list; no earlier node ran any of them)
+
+   ac3d            m = 16, n = 4096: u_t = D lap(u) + lam (u - u^3), D = 0.1, lam = 10, unit cube, cell-centred,
+                   7-point Laplacian m^2 (sum of the 6 neighbours - 6 u), a neighbour outside the cube is the cell
+                   itself; index i + m (j + m k); u0 = 0.4 cos(2 pi x) cos(pi y) + 0.3 cos(3 pi x) cos(pi z) + 0.05.
+                   JVP: D lap(v) + lam (1 - 3 u^2) v.
+   robertson_rd1d  the V06 generator robertson_rd1d (stage_clients_krylov_problems.rs:252) with 400 cells, n = 1200,
+                   its rates, diffusion 1e-5 / dx^2 and start unchanged; reached through #[path] (the file is not
+                   edited). Tolerance: the frozen "atol: equal to rtol" applies to every family, so the generator's
+                   atol_over_rtol = 1e-4 (a V06 protocol choice, not a rate, diffusion or start) is replaced by 1.0.
+   schnakenberg2d  m = 32, n = 2048: u_t = du lap(u) + gam (a - u + u^2 v), v_t = dv lap(v) + gam (b - u^2 v),
+                   du = 0.01, dv = 0.4, gam = 100, a = 0.1, b = 0.9; 5-point Laplacian m^2, zero flux (ghost = cell);
+                   interleaved, index 2 (i + m j) + s; u0 = a + b + 0.05 cos(2 pi x) cos(2 pi y),
+                   v0 = b/(a + b)^2 + 0.05 sin(2 pi x) sin(3 pi y). JVP analytic.
+   porous2d        m = 48, n = 2304: u_t = lap(u^2), 5-point Laplacian m^2 of w = u^2, zero flux (ghost = cell);
+                   index i + m j (layout not stated in the frozen file; written to PROTOCOL.json);
+                   u0 = 0.1 + exp(-50 ((x - 0.5)^2 + (y - 0.5)^2)). JVP lap(2 u v).
+   Every generator is JVP-only, autonomous, allocation-free in its callbacks and supplies the analytic Jacobian
+   diagonal (the Family struct of V06 needs one; no run of this node uses a preconditioner).
+   Spans: provisional (1, 40, 1, 0.1); the measurement target takes the end time from V25_T1 so that one binary
+   serves the pilot and the deciding runs; the parser checks every run's span against PROTOCOL.json and the reference.
+   Sizing pilot (frozen spans_rule), executed as: arm S alone, entry route, rtol = atol = 1e-7, work partition;
+   T = provisional end; loop: run at T; wall > 60 s -> T = T/2 and run again; wall < 1 s and fewer than three
+   doublings so far -> T = 2 T and run again; otherwise stop. Wall = the run's own clock around the solve
+   (wall_seconds_diagnostic_only). Logs under logs/sizing/, labelled sizing; no pilot number enters a verdict.
+
+4. ORDER (the order is part of the evidence): NOTES (this commit) -> generators, numpy side, consistency log (commit)
+   -> sizing pilot of S, PROTOCOL.json with the final spans (commit, before any P1/P2 run) -> references (commit)
+   -> commit A: S and P1, each selected explicitly, on the 20 cells (RECORDING_A.json) -> deciding grid S, P1, P2 with
+   V, B, A, S, E, W; parser, RESULTS.json (commit) -> step 6 only on SWITCH -> final RESULTS.json and REPORT_KO.md.
