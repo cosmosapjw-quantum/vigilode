@@ -690,19 +690,25 @@ def trace_events(lines, initial_cwd):
             yield "read", lexical
 
 
-def trace_sets(trace_dir, repo, initial_cwd):
-    """{'read', 'dirs', 'absent'} repository paths from the strace files in trace_dir, or None."""
+def trace_sets(trace_dir, repo, initial_cwd, stats=None):
+    """{'read', 'dirs', 'absent'} repository paths from the strace files in trace_dir, or None.
+    stats, when given, receives the number of trace files and traced system calls."""
     files = sorted(glob.glob(os.path.join(glob.escape(trace_dir), "t.*")))
     if not files:
         return None
     sets = {"read": set(), "dirs": set(), "absent": set()}
     name = {"read": "read", "dir": "dirs", "absent": "absent"}
+    calls = 0
     for path in files:
         with open(path, encoding="utf-8", errors="surrogateescape") as f:
-            for kind, full in trace_events(f, initial_cwd):
-                rel = repo.rel(full)
-                if rel is not None:
-                    sets[name[kind]].add(rel)
+            lines = f.readlines()
+        calls += sum(1 for line in lines if TRACE_LINE.match(line))
+        for kind, full in trace_events(lines, initial_cwd):
+            rel = repo.rel(full)
+            if rel is not None:
+                sets[name[kind]].add(rel)
+    if stats is not None:
+        stats.update(trace_files=len(files), traced_calls=calls)
     return {k: sorted(v) for k, v in sets.items()}
 
 
@@ -966,8 +972,8 @@ def select(args):
     reasons = full_reasons(str(args.full).lower() == "true", base,
                            bool(base) and is_ancestor(root, base, head), cmap is not None,
                            env_now, baseline.get("environment") or {})
-    if reasons and not base and baseline.get("note"):
-        reasons = [baseline["note"]]
+    if reasons == ["no baseline run with a complete outcome"] and baseline.get("note"):
+        reasons = [f"no baseline: {baseline['note']}"]
     selection = {"schema": SCHEMA_SELECTION, "head": head, "base": base, "scope": scope,
                  "baseline_run": baseline.get("run_id"), "mode": "selected", "reasons": reasons,
                  "environment": env_now, "changed": [], "packages": {}, "notes": [], "classified": {},
@@ -1148,6 +1154,16 @@ def stream(cmd, cwd, env, artifacts=None):
     return proc.wait(), "".join(lines)
 
 
+def failed_controls(path):
+    """The failed negative controls that the control steps wrote ('<pkg>:<target>' per line) as
+    outcome.failed entries; none when the file does not exist."""
+    if not path or not os.path.exists(path):
+        return []
+    with open(path, encoding="utf-8") as f:
+        lines = sorted({x.strip() for x in f if ":" in x})
+    return [dict(zip(("package", "target"), line.split(":", 1)), negative_control=True) for line in lines]
+
+
 def failed_targets(text):
     failed = set()
     for m in RERUN.finditer(text):
@@ -1157,8 +1173,9 @@ def failed_targets(text):
     return failed
 
 
-def measure_unit(repo, llvm, strace_ok, unit, bins, prof_dir, trace_dir, initial_cwd, workdir):
-    """(entry without head, None) or (None, reasons) for one test unit that ran."""
+def measure_unit(repo, llvm, strace_ok, unit, bins, prof_dir, trace_dir, initial_cwd, workdir, stats=None):
+    """(entry without head, None) or (None, reasons) for one test unit that ran; stats, when given,
+    receives the trace statistics."""
     reasons = []
     if unit is None or unit.get("compile") is None:
         reasons.append("no dep-info of its artifact")
@@ -1172,7 +1189,7 @@ def measure_unit(repo, llvm, strace_ok, unit, bins, prof_dir, trace_dir, initial
         executed, err = covered_files(repo, llvm, profraws, unit["exe"], sorted(bins), workdir)
         if executed is None:
             reasons.append(err)
-    traced = trace_sets(trace_dir, repo, initial_cwd) if strace_ok else None
+    traced = trace_sets(trace_dir, repo, initial_cwd, stats) if strace_ok else None
     if traced is None:
         reasons.append("no strace output" if strace_ok else "strace unavailable")
     if reasons:
@@ -1209,12 +1226,9 @@ def run(args):
             status = 1
         return code, not broken
 
-    if args.failed_controls and os.path.exists(args.failed_controls):
-        with open(args.failed_controls, encoding="utf-8") as f:
-            for line in sorted({x.strip() for x in f if ":" in x}):
-                pkg, target = line.split(":", 1)
-                outcome["failed"].append({"package": pkg, "target": target, "negative_control": True})
-                outcome["negative_controls_failed"].append(line)
+    for item in failed_controls(args.failed_controls):
+        outcome["failed"].append(item)
+        outcome["negative_controls_failed"].append(f"{item['package']}:{item['target']}")
 
     if not args.measure:
         for cmd in commands(selection, packages, args.mode, args.profile, args.skip):
@@ -1259,14 +1273,17 @@ def run(args):
             _, ran = execute(cmd, env=env)
             jobs.append((key, name, target, workdir, prof_dir, trace_dir, ran))
 
+        stats = {}
+
         def measure(job):
             key, name, target, workdir, prof_dir, trace_dir, ran = job
+            stats[key] = {}
             try:
                 if not ran:
                     return key, None, ["its command did not run its tests"]
                 item, why = measure_unit(repo, llvm, strace_ok, arts.units.get((name, target)),
                                          arts.bins.get(name, set()), prof_dir, trace_dir,
-                                         os.path.join(repo.real, packages[name]["dir"]), workdir)
+                                         os.path.join(repo.real, packages[name]["dir"]), workdir, stats[key])
                 return key, item, why
             except Exception as exc:  # a measurement error must not lose the outcome
                 return key, None, [f"measurement error: {exc!r}"]
@@ -1281,6 +1298,7 @@ def run(args):
                     lost.append({"target": key, "why": why})
                 else:
                     measured[key] = item
+                    stats[key].update({s: len(item[s]) for s in SETS})
         for (name, example), deps in sorted(arts.examples.items()):
             key = f"{name}::example:{example}"
             if deps is None:
@@ -1306,7 +1324,8 @@ def run(args):
         outcome["measurement"] = {
             "refreshed": len(measured), "lost": lost, "map_targets": len(cmap),
             "packages_recorded": sorted(recorded), "packages_lost": sorted(arts.inputs_failed),
-            "llvm_bin": llvm, "strace": strace, "strace_note": strace_note, "work_dir": work}
+            "llvm_bin": llvm, "strace": strace, "strace_note": strace_note, "work_dir": work,
+            "stats": stats}
     write_json(args.outcome, outcome)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
@@ -1463,9 +1482,10 @@ def baseline(args):
                            note=f"run {r['id']} ran its selection to the end at {outcome['head'][:8]}")
                 break
             else:
-                skipped = ", ".join(f"{v} {k}" for k, v in counts.items() if v)
-                out["note"] = ("no earlier run of this job on this branch has a complete outcome"
-                               + (f" ({skipped})" if skipped else ""))
+                out["note"] = "no earlier run of this job on this branch has a complete outcome"
+            skipped = ", ".join(f"{v} {k}" for k, v in counts.items() if v)
+            if skipped:
+                out["note"] += f" (newer runs skipped: {skipped})" if out["base"] else f" ({skipped})"
             if out["errors"]:
                 print("\n".join(out["errors"]), file=sys.stderr, flush=True)
                 out["note"] += f"; {len(out['errors'])} artifact downloads failed"
@@ -1515,6 +1535,9 @@ def check_workflows(root):
     for job in ("fmt", "clippy", "docs", "semver", "bench"):
         if "cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}" not in job_block(prod, job):
             problems.append(f"production.yml: job {job} does not cancel on non-main refs")
+    for text, name, job, minutes in ((prod, "production.yml", "test", 300), (ign, "ignored-tests.yml", "ignored-tests", 330)):
+        if f"timeout-minutes: {minutes}\n" not in job_block(text, job):
+            problems.append(f"{name}: job {job} has not the time limit of {minutes} minutes (F-10)")
     if "select_tests.py has" in ign and "|| exit 1" not in ign:
         problems.append("ignored-tests.yml: a failing has call does not fail its step")
     if ign.count("select_tests.py control") != 2 or "--failed-controls" not in ign:
@@ -1827,6 +1850,66 @@ impl S {
                                pk, scope, "h")
     assert sorted(targets) == ["int::t_ok", "int::t_ok#kill", "vig::lib"] and targets["vig::lib"]["head"] == "h", targets
     assert pkgs == {"core": {"compile": ["z"], "head": "h"}}, pkgs
+    # failed negative controls go to outcome.failed, so rule 6 selects them again (F9, F-03)
+    with tempfile.TemporaryDirectory() as d:
+        path = os.path.join(d, "failed-controls.txt")
+        assert failed_controls(path) == []
+        with open(path, "w") as f:
+            f.write("rodas5p-integrators:dense_wfiltered_contracts\nrodas5p-integrators:dense_wfiltered_contracts\n")
+        fc = failed_controls(path)
+        assert fc == [{"package": "rodas5p-integrators", "target": "dense_wfiltered_contracts",
+                       "negative_control": True}], fc
+    # baseline lookup with a fake gh: newer, non-ancestor, incomplete and undownloadable runs are
+    # skipped; a failing listing or download has its own note (F-09); the branch is data (F-12)
+    with tempfile.TemporaryDirectory() as d:
+        repo, fake = os.path.join(d, "repo"), os.path.join(d, "bin")
+        ident = ["-c", "user.name=ci", "-c", "user.email=ci@localhost", "-c", "commit.gpgsign=false"]
+        sh(GIT + ["init", "-q", repo])
+        heads = []
+        for i in range(3):
+            sh(GIT + ident + ["-C", repo, "commit", "-q", "--allow-empty", "-m", f"c{i}"])
+            heads.append(sh(GIT + ["-C", repo, "rev-parse", "HEAD"]).stdout.strip())
+        other = sh(GIT + ident + ["-C", repo, "commit-tree", "-p", heads[0], "-m", "side",
+                                  sh(GIT + ["-C", repo, "rev-parse", "HEAD^{tree}"]).stdout.strip()]).stdout.strip()
+        os.makedirs(fake)
+        runs = {"workflow_runs": [{"id": i, "created_at": f"2026-11-24T0{i - 100}:00:00Z"} for i in range(101, 107)]}
+        with open(os.path.join(d, "listing.json"), "w") as f:
+            json.dump(runs, f)
+        outcomes = {104: {"head": other, "complete": True}, 103: {"head": heads[1], "complete": False},
+                    101: {"head": heads[0], "complete": True, "failed": [{"package": "p", "target": "t"}],
+                          "environment": {"pr_base": "b"}}}
+        for run_id, o in outcomes.items():
+            os.makedirs(os.path.join(d, "art", str(run_id)))
+            with open(os.path.join(d, "art", str(run_id), "outcome.json"), "w") as f:
+                json.dump(dict({"schema": SCHEMA_OUTCOME, "failed": []}, **o), f)
+        with open(os.path.join(d, "art", "101", "map.json"), "w") as f:
+            json.dump({"schema": SCHEMA_MAP, "targets": {}, "packages": {}}, f)
+        with open(os.path.join(fake, "gh"), "w") as f:
+            f.write('#!/bin/sh\nD="$(dirname "$0")/.."\n'
+                    'if [ "$1" = api ]; then [ -f "$D/fail" ] && { echo "HTTP 403: rate limited" >&2; exit 1; }; '
+                    'cat "$D/listing.json"; exit 0; fi\n'
+                    'id="$3"; while [ $# -gt 0 ]; do [ "$1" = -D ] && dest="$2"; shift; done\n'
+                    '[ "$id" = 102 ] && { echo "HTTP 502: Bad Gateway" >&2; exit 1; }\n'
+                    '[ -f "$D/art/$id/outcome.json" ] && { cp "$D/art/$id/"* "$dest/"; exit 0; }\n'
+                    'echo "no valid artifacts found to download" >&2; exit 1\n')
+        os.chmod(os.path.join(fake, "gh"), 0o755)
+        env = dict(os.environ, PATH=fake + os.pathsep + os.environ.get("PATH", ""), GITHUB_REPOSITORY="o/r")
+
+        def lookup(name):
+            out = os.path.join(d, name)
+            r = subprocess.run([sys.executable, "-I", os.path.abspath(__file__), "baseline", "--workflow", "w.yml",
+                                "--artifact", "a", "--branch", "x;$(false)", "--run-id", "105", "--head", heads[2],
+                                "--out", out], cwd=repo, env=env, capture_output=True, text=True)
+            assert r.returncode == 0, r.stderr
+            return load_json(out)
+        got = lookup("b1.json")
+        assert got["base"] == heads[0] and got["run_id"] == 101 and got["failed"] == [{"package": "p", "target": "t"}], got
+        assert got["environment"] == {"pr_base": "b"} and got["map_path"], got
+        assert got["errors"] == ["download of run 102 failed (exit 1): HTTP 502: Bad Gateway"], got
+        assert "1 not complete, 1 not an ancestor" in got["note"], got
+        open(os.path.join(d, "fail"), "w").close()
+        got = lookup("b2.json")
+        assert got["base"] is None and got["note"].startswith("the run listing failed (exit 1): HTTP 403"), got
     # has / selected
     sel = {"packages": {"int": dict(new_entry(), targets=["t_ok"], doc=True, examples=["ex"])}}
     assert selected(sel, "int", "t_ok") and selected(sel, "int", "doc") and selected(sel, "int", "example:ex")
