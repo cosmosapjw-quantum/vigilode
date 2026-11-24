@@ -254,10 +254,10 @@ v1/v2 검토(`SELECTION_REVIEW.json`, 지적 26건)는 정적 규칙(package 단
 
 ### 11.2 규칙
 
-1. full: 요청(workflow_dispatch의 full, main), 기준점이나 지도가 없음, 기준점 head가 head의 조상이 아님, runner image(`ImageOS`, `ImageVersion`)나 PR base sha가 기준점과 다름, 전역 파일 변경(`Cargo.toml`, `Cargo.lock`, `rust-toolchain*`, `.cargo/`, `tools/ci/`, 그 job의 workflow).
+1. full: 요청(workflow_dispatch의 full, main), 기준점이나 지도가 없음, 기준점 head가 head의 조상이 아님, runner image(`ImageOS`, `ImageVersion`)나 PR base sha가 기준점과 다름, 전역 파일 변경(`Cargo.toml`, `Cargo.lock`, `rust-toolchain*`, `.cargo/`, `tools/ci/`, 어느 깊이든 `.gitattributes`, 그 job의 workflow). 기준점은 같은 event, 같은 저장소, 같은 runner image에서 돈 run을 먼저 고른다(11.6).
 2. 변경 경로: `git diff -z --name-status -M base head`. rename은 옛 경로 삭제와 새 경로 추가 둘 다.
-3. 변경 경로가 compile, executed, read 중 하나에 있으면 그 target을 고른다. 추가·삭제된 경로는 목록이 바뀌는 디렉터리(양쪽에 있는 가장 가까운 조상)를 연 target, 그 변경이 만들거나 없애는 디렉터리를 조회한 target, 추가된 경로를 조회했던 target도 고른다.
-4. package source(`Cargo.toml`, `build.rs`, `src/**/*.rs`, 기록된 lib·bin 입력)는 v2 분류를 유지한다. 구조 변경: package와 그에 의존하는 package 전체. 본문 변경: 규칙 3과 package 및 의존 package의 doc test. noop(주석, 공백): package 규칙 없음. 규칙 3은 모든 target의 read 집합과, 그 package 자신의 unit test가 아닌 target의 compile 집합만 센다. 파일을 text로 쓰는 쪽(`include_str!`, `include_bytes!`, 실행 시간 읽기)은 dep-info나 strace에 반드시 나타나므로 빠지지 않고, Rust 코드로 compile하는 쪽은 같은 token을 본다(R8).
+3. 변경 경로가 compile, executed, read 중 하나에 있으면 그 target을 고른다. 추가·삭제된 경로는 목록이 바뀌는 디렉터리(양쪽에 있는 가장 가까운 조상)를 연 target, 그 변경이 만들거나 없애는 디렉터리를 조회하거나 읽거나 연 target, 추가된 경로를 조회했던 target도 고른다.
+4. package source(`Cargo.toml`, `build.rs`, `src/**/*.rs`, 기록된 lib·bin 입력)는 v2 분류를 유지한다. 구조 변경: package와 그에 의존하는 package 전체. 본문 변경: 규칙 3과 package 및 의존 package의 doc test. noop(주석, 공백; 붙어 있던 구두점을 떼거나 떨어진 구두점을 붙이면 noop이 아니다): package 규칙 없음. 규칙 3은 모든 target의 read 집합과, 그 package 자신의 unit test가 아닌 target의 compile 집합만 센다. 파일을 text로 쓰는 쪽(`include_str!`, `include_bytes!`, 실행 시간 읽기)은 dep-info나 strace에 반드시 나타나므로 빠지지 않고, Rust 코드로 compile하는 쪽은 같은 token을 본다(R8).
 5. 지도 항목이 없는 target(새 target, 측정 실패)과 항목이 없는 음성대조의 target은 diff가 비어 있지 않으면 실행한다. lib·bin 입력이 기록되지 않은 package는 구조 변경으로 본다.
 6. 기준점에서 실패한 target(실패한 음성대조 포함)은 지금도 있고 required-features가 기본으로 켜지면 다시 실행한다. 아니면 note와 함께 뺀다.
 7. compile 집합에 변경 경로가 있는 example은 컴파일한다.

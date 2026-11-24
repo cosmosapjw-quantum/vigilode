@@ -176,6 +176,48 @@ def cases(st, repo, base, cmap):
                     + "\npub const CI_V3_PROBE: u32 = 1;\n"},
              expect=["rodas5p-core:*", "rodas5p-krylov:*", f"{INT}:*", "rodas5p-cli:*"]),
     ]
+    # Fix round: cases of the reviews of b0d4bc97 (soundness S-N1, S-N3, S-N4; mechanics M-N2)
+    integrate = "crates/rodas5p-integrators/src/integrate.rs"
+    joined = "if success && collector.is_complete()"
+    merge_only = "research/ci_v3_merge_only"
+    out += [
+        dict(id="S-N1", desc="whitespace that splits the operator && in integrate.rs, which cli "
+                             "alg02_predictive_controller and the integrators lib unit tests execute",
+             edits={integrate: show(repo, base, integrate).replace(joined, "if success & &collector.is_complete()", 1)},
+             expect=["rodas5p-cli:alg02_predictive_controller", f"{INT}:lib"], want_class={integrate: "body"}),
+        dict(id="S-N3", desc="new file in a directory that a test listed and the head trees lack (the tested "
+                             "merge tree had it through the pull-request base; simulated by a map entry)",
+             extra={f"{INT}::generic_scope_contracts": {"dirs": [merge_only]}},
+             edits={f"{merge_only}/x.json": "{}\n"},
+             expect=[f"{INT}:generic_scope_contracts"], only=[f"{INT}:generic_scope_contracts", f"{INT}:doc"]),
+        dict(id="S-N3-unlisted", desc="the same new file when no test listed that directory",
+             edits={f"{merge_only}/x.json": "{}\n"}, expect=[], only=[]),
+        dict(id="S-N4", desc="a new .gitattributes rule, which changes the checked-out bytes of unchanged files",
+             edits={".gitattributes": "*.json text eol=crlf\n"}, expect=[], cli_mode="full"),
+    ]
+    fair = {}
+    for key, item in cmap.items():
+        if key.startswith("rodas5p-fair-ab::") and "#" not in key:
+            for f in item.get("executed", []):
+                if f.startswith("crates/rodas5p-fair-ab/src/") and f.endswith(".rs"):
+                    fair.setdefault(f, set()).add(key)
+    candidates = sorted((f for f in fair if any(not k.endswith("::lib") for k in fair[f])),
+                        key=lambda f: (len(fair[f]), f))
+    if candidates:
+        f = candidates[0]
+        out.append(dict(id="M-N2", desc=f"body change in the fair-ab source {f} (fair-ab is in the production scope "
+                                        "now); executed by " + ", ".join(sorted(fair[f])),
+                        edits={f: insert_in_first_body(st, show(repo, base, f), "let _ci_v3_probe = 0u8;")},
+                        expect=sorted(f"{k.split('::')[0]}:{k.split('::')[1]}" for k in fair[f]),
+                        only="executed+readers+unit-tests+doc", body_file=f, body_pkg="rodas5p-fair-ab"))
+    cli_main_exec = sorted(k for k, v in cmap.items()
+                           if k.startswith("rodas5p-cli::") and "#" not in k and cli_main in v.get("executed", []))
+    if cli_main_exec:
+        out.append(dict(id="M-N2-cli", desc="body change in crates/rodas5p-cli/src/main.rs (the cli tests run the "
+                                            "binary); executed by " + ", ".join(cli_main_exec),
+                        edits={cli_main: insert_in_first_body(st, show(repo, base, cli_main), "let _ci_v3_probe = 0u8;")},
+                        expect=sorted(f"rodas5p-cli:{k.split('::')[1]}" for k in cli_main_exec)
+                        + [f"{INT}:constants_provenance_contracts"], want_class={cli_main: "body"}))
     return out
 
 
@@ -220,23 +262,31 @@ def main():
         head = commit_with(repo, args.base, case["edits"], f"ci-v3 selection case {case['id']}")
         changes = st.changed_entries(repo, args.base, head)
         drop = set(case.get("drop", []))
+        # extra: sets added to an entry for this case only (a measurement the local run cannot make)
+        case_map = {k: v for k, v in cmap.items() if k not in drop}
+        for key, sets in case.get("extra", {}).items():
+            case_map[key] = dict(case_map.get(key, {}), **{s: sorted(set(case_map.get(key, {}).get(s, [])) | set(v))
+                                                           for s, v in sets.items()})
         measured_scope = [p for p in SCOPE if p in pmap]
-        sel = st.decide(changes, restricted(drop), measured_scope, {k: v for k, v in cmap.items() if k not in drop}, pmap,
+        sel = st.decide(changes, restricted(drop), measured_scope, case_map, pmap,
                         lambda path: st.classify_source_change(repo, args.base, head, path),
                         lambda side, dirs: st.existing_dirs(repo, args.base if side == "base" else head, dirs))
         got = chosen(sel)
         missing = [t for t in case["expect"] if t not in got and t.split(":")[0] + ":*" not in got]
         problems = [f"not selected: {t}" for t in missing]
+        for path, want in case.get("want_class", {}).items():
+            if sel["classified"].get(path) != want:
+                problems.append(f"{path} classified {sel['classified'].get(path)}, expected {want}")
         only = case.get("only")
         if only == "executed+readers+unit-tests+doc":
-            f = case["body_file"]
+            f, own = case["body_file"], case.get("body_pkg", INT)
             allowed = set()
             for key, item in cmap.items():
                 pkg, target, control = st.split_key(key)
                 if control:
                     continue
                 if f in item.get("executed", []) or f in item.get("read", []) or (
-                        target == "lib" and pkg == INT and f in item.get("compile", [])):
+                        (target == "lib" or target.startswith("bin:")) and pkg == own and f in item.get("compile", [])):
                     allowed.add(f"{pkg}:{target}")
             extra = sorted(t for t in got if not t.endswith(":doc") and t not in allowed)
             problems += [f"selected beyond executed, readers, unit tests and doc tests: {t}" for t in extra]
@@ -250,9 +300,13 @@ def main():
         why = {f"{p}:{t}": w for p, e in sel["packages"].items() for t, w in e["why"].items()}
         # the real subcommand on the unrestricted workspace
         with tempfile.TemporaryDirectory() as d:
+            map_path = os.path.abspath(args.map)
+            if case.get("extra") or drop:
+                map_path = os.path.join(d, "case_map.json")
+                st.write_json(map_path, dict(measured, targets=case_map))
             base_json = os.path.join(d, "baseline.json")
             with open(base_json, "w") as fh:
-                json.dump({"base": args.base, "run_id": "local", "failed": [], "map_path": os.path.abspath(args.map),
+                json.dump({"base": args.base, "run_id": "local", "failed": [], "map_path": map_path,
                            "environment": {}, "note": "local e2e map"}, fh)
             out_json = os.path.join(d, "selection.json")
             env = {k: v for k, v in os.environ.items() if k not in ("ImageOS", "ImageVersion")}
@@ -272,6 +326,8 @@ def main():
                            classified=cli_sel["classified"], changed=cli_sel["changed"])
                 if not cli["expected_selected"]:
                     problems.append("the select subcommand did not select every expected target")
+                if case.get("cli_mode") and cli_sel["mode"] != case["cli_mode"]:
+                    problems.append(f"the select subcommand chose mode {cli_sel['mode']}, expected {case['cli_mode']}")
             else:
                 problems.append("the select subcommand failed: " + r.stderr[-300:])
         failures += bool(problems)

@@ -32,6 +32,7 @@ or records where the implementation reads the design in a particular way. The re
   `strace -ff --seccomp-bpf -qq -y -o <work>/<target>/trace/t -e trace=<the list above>`, where the
   legacy and newer names carry strace's `?` qualifier (an unknown name is not an error: the legacy
   calls do not exist on aarch64). `-e status` keeps its default (successful and failed calls).
+  The fix round adds the calls that create, remove, rename or change paths (R32).
   A successful open is recorded under both its lexical path and the resolved path from `-y`
   (a symlink and its target both count).
 - **R4 Package inputs.** The dep-info of a test artifact lists only that crate's files; a test that
@@ -68,7 +69,8 @@ or records where the implementation reads the design in a particular way. The re
   (deleted). This is a superset of the stated rule (parent directory in `dirs`): a file added in a
   new directory changes the listing of the first existing ancestor, not of its (new) parent.
 - **R8 Noop rule, exactly.** For a modified package source F whose tokens are unchanged (only
-  whitespace and comments that are not doc comments changed), rule 3 counts: the `read` set of every
+  whitespace and comments that are not doc comments changed, and no two punctuation characters
+  split apart or joined: R29), rule 3 counts: the `read` set of every
   target; the `compile` set of every target except the unit-test targets (`lib`, `bin:*`) of the
   packages that own F; no `executed` set; no package rule. Why this is sound for text consumers:
   rustc records every file opened by `include_str!`/`include_bytes!` in the dep-info of the crate
@@ -118,10 +120,12 @@ or records where the implementation reads the design in a particular way. The re
   baseline failure of such a target (or of a deleted target) is dropped with a note (F10, F-02).
 - **R15 Image and base (rule 1).** The selection and the outcome record `environment: {image_os,
   image_version, pr_base}` (`ImageOS`, `ImageVersion` of the runner, `--pr-base` from
-  `github.event.pull_request.base.sha`); a difference from the baseline's values is a full run (an
-  empty string equals a missing value). The pull-request checkout stays GitHub's merge commit; with
-  the base fixed, the merge trees of two heads differ only where the heads differ, so the head diff
-  is sound for the merge commit (the owner chose this over checking out the head, F8/F-04).
+  `github.event.pull_request.base.sha`; since the fix round the recorded `pr_base` is the first
+  parent of the checked-out merge commit, R26); a difference from the baseline's values is a full
+  run (an empty string equals a missing value). The pull-request checkout stays GitHub's merge
+  commit; with the base fixed, the merge trees of two heads differ only where the heads differ, so
+  the head diff is sound for the merge commit (the owner chose this over checking out the head,
+  F8/F-04). Which earlier run is the baseline: R24, R25.
 
 ## Mechanics
 
@@ -133,7 +137,9 @@ or records where the implementation reads the design in a particular way. The re
   available at once). Only runs with a smaller run id than the current one count. An outcome whose
   head is not an ancestor of the head is skipped and the search continues (v2 fell back to a full
   run). A failed run listing has its own note ("the run listing failed ..."); a failed download other
-  than "no valid artifacts found" is listed in `errors` and counted in the note (F-09).
+  than "no valid artifacts found" is listed in `errors` and counted in the note (F-09). Since the
+  fix round only runs of the same event and repository qualify, and a run on the same runner image
+  is preferred (R24, R25).
 - **R18 Measurement failure.** The run step probes strace first (`strace ... true`); when it cannot
   trace (missing, ptrace refused), the tests run without the runner and every target loses its entry
   (rule 5 runs them next time), and the outcome says why. A target without dep-info, profile or
@@ -147,7 +153,8 @@ or records where the implementation reads the design in a particular way. The re
   (git only, about a second). It includes text checks of the workflow mechanics that the review asked
   for (`check_workflows`), so a later workflow edit that reintroduces a cancelling group, a selector
   step without `-u`, an upload without `overwrite`, a head_ref expansion in a script, a missing
-  strace install or a schedule fails the job.
+  strace install or a schedule fails the job. The fix round adds the checks of R27, R28, R33, R34
+  and R35.
 - **R21 Branch and expressions through env.** `BRANCH`, `HEAD_SHA`, `PR_BASE` and `FULL` are job
   environment variables; the scripts use `"$BRANCH"` etc. (F-12). `--branch` is URL-encoded in the
   REST query.
@@ -155,4 +162,125 @@ or records where the implementation reads the design in a particular way. The re
   (`--jobs`, default: the CPUs available to the process); locally `--jobs 2` (memory).
 - **R23 Workflow file names.** Artifact names (`ci-test-outcome-test`,
   `ci-test-outcome-ignored-tests`), the full-mode inputs, the time limits (300, 330 min) and the
-  coverage instrumentation are unchanged. No schedule (OD-L1-21 point 4).
+  coverage instrumentation are unchanged. No schedule (OD-L1-21 point 4). The fix round adds the
+  job `test-cli-fair-ab` with the artifact `ci-test-outcome-test-cli-fair-ab` (R27) and removes the
+  path filters of the two test workflows (R28).
+
+## Fix round (two adversarial reviews of b0d4bc97)
+
+Reviewers: soundness of the selection (findings S-N1 to S-N6, earlier findings S-F1 to S-F14) and
+CI mechanics (M-N1 to M-N8, earlier M-F-01 to M-F-12). The task text carried the mechanics review
+only in part (it was cut at 14000 characters); its full JSON was read from the workflow journal of
+this run. Every finding below was reproduced before it was fixed; the logs are the `fix_*` files
+in `v3_logs/`.
+
+- **R24 Baseline on the same runner image (M-N1, major).** Confirmed: the set-up logs of run
+  45358324432 show job `fmt` on image version 20261116.88.1 and job `clippy` on 20261116.202.1,
+  both started at 08:41:48Z (read with `gh api .../jobs/<id>/logs`); the reviewer counted 7 of 39
+  ubuntu-latest jobs on .88.1. With an exact comparison, about 3 runs in 10 would be full without a
+  code change. The owner's rule (a change of the runner image since the baseline means a full run)
+  stays literal, with both `ImageOS` and `ImageVersion`; what changes is which run is the baseline:
+  the newest qualifying run (complete, at an ancestor of the head) on the same image. Runs on other
+  images are passed over; when none on this image qualifies (the first run on a new image), the
+  newest qualifying run on any image is the baseline and rule 1 runs the whole suite, as before.
+  Sound because any complete earlier run at an ancestor is a valid baseline: the diff from it holds
+  every change since, and its outcome and map describe its own tree; the runs of one image form a
+  chain of their own, and a failure seen only on the other image is selected again by the next run
+  on that image (rule 6 of its chain). Not adopted: comparing `ImageOS` only (the reviewer's first
+  option), because a new image version can change system libraries (libm) that bit-exact anchors
+  depend on (F14). Cost: one artifact download per passed-over run, at most the 100 listed runs,
+  and the long scan only on the first run on a new image, which is full anyway.
+- **R25 Same event, same repository (M-N3, M-N5).** The run listing asks for `event=<the current
+  event>` and keeps only runs with that event and with `head_repository.full_name` equal to
+  `GITHUB_REPOSITORY`. A dispatch run (branch tree, no base) is no longer the baseline of a
+  pull-request run (merge tree), which forced a full run through the base trigger, and the reverse;
+  a fork's run with the same branch name never steers the selection. Self-test: a fake listing with
+  a dispatch run and a fork run, both complete on the current image, neither chosen.
+- **R26 Tested pull-request base (S-F8 and M-F-04 residual).** The recorded `pr_base` is the first
+  parent of the checked-out commit when its second parent is the pull-request head (GitHub's merge
+  commit), else the payload's `base.sha`; the payload value is kept as `pr_base_payload` and a
+  difference gets a note. This removes the assumption that the payload base equals the base of the
+  tested merge commit.
+- **R27 rodas5p-cli and rodas5p-fair-ab get a test job (M-N2, major).** Confirmed: the removed A1
+  step (`cargo test --workspace --all-targets --locked`) was the only non-ignored test run of
+  rodas5p-cli (2 binaries, 14 test targets) and rodas5p-fair-ab (lib, 20 test targets, doc tests);
+  besides it, A1 runs 2 cli targets and `tools/check-audit2-readiness.sh` 2 fair-ab targets. In the
+  hosted A1 run 45358324393 those tests took 08:55-09:06 (cli, `triage_cli` 438 s) and 09:07-09:10
+  (fair-ab), debug without coverage. OD-L1-21(3) removed the step on the premise (v1 review F-05)
+  that the production and ignored-tests jobs cover the workspace; this makes the premise true. The
+  new job `test-cli-fair-ab` in production.yml selects from these two packages with the same
+  selector, measurement and rules, its own outcome artifact `ci-test-outcome-test-cli-fair-ab`, a
+  queued concurrency group and a 120-minute limit. Not adopted: adding the two packages to the
+  scope of the `test` job (the first version of this fix, commit 1288945b), because the full run
+  of that job already runs longer than 157 minutes on hosted runners without strace (R36) and its
+  limit of 300 minutes is fixed; a job of its own also keeps the production gate to the production
+  crates. Cost: a second coverage build of the workspace on another runner when the job selects
+  anything; with an empty selection it ends after the selection step. `check_workflows` asserts
+  that the selecting jobs of each workflow together cover every workspace member and that each
+  job looks up the artifact it uploads, under a name no other job uses. For the owner: these two
+  research crates now have a change-based CI test job; the alternative is to accept that their
+  tests run only in the full suite before a release.
+- **R28 No path filter on the test workflows (S-N2, M-N4, S-F14 in part).** Confirmed: the filters
+  (`production.yml` and `ignored-tests.yml`, `crates/**`, manifests, toolchain, `tools/ci/**`, the
+  workflow) left out measured inputs: `docs/CONSTANTS_PROVENANCE.toml` (compile set of
+  `constants_provenance_contracts`), research files (read sets), `fixtures/rodas5p_coefficients_snapshot.json`
+  (core library input), `tools/reference_v2/generate_references_v2.py` (fair-ab library input). Both
+  workflows now trigger on every pull request and every push to main. Not adopted: a longer list
+  of directories, because a measured input can be any tracked file and the map changes at every
+  run. Cost: a pull request that touches no measured input runs these jobs up to the selection step
+  (toolchain, strace, self-test, baseline, select: a few minutes), and the other jobs of
+  production.yml run too. The path filter of a pull request compared the whole pull-request diff,
+  so a pull request that had touched `crates/**` already ran at every later push; the new runs are
+  data-only pull requests and pushes to main (always full; the last push to main is from
+  2026-08-26). `check_workflows` rejects a path filter on these triggers. The periodic full run
+  stays out (OD-L1-21 point 4).
+- **R29 Operator spacing (S-N1).** Confirmed with the reviewer's script: `success && collector` ->
+  `success & &collector` in `integrate.rs` was noop and selected only the three text readers. The
+  tokenizer now puts a `('j', '')` marker between two punctuation tokens with nothing between them,
+  so whitespace or a comment that splits or joins `&&`, `=>`, `..`, `->`, `+=` changes the token
+  stream: such an edit is body or structural, never noop (`fix_tokenizer_probe.log`: the
+  integrate.rs edit is body and selects cli `alg02_predictive_controller`, which executes the file).
+  Over-selection only: `Vec<Vec<u8>>` and `Vec<Vec<u8> >` are the same program and are no longer
+  noop.
+- **R30 Directories an added path creates (S-N3).** For an added path, every directory it creates
+  (missing on the head trees) is also checked against `read` and `dirs`, as for deletions. The
+  directory rule still decides existence on the head trees; a directory missing there but present
+  in the tested merge tree (through the base) is among the created directories, so a test that
+  listed or observed it is selected. Self-test and selection case S-N3.
+- **R31 `.gitattributes` is global (S-N4).** A `.gitattributes` at any depth is a global file (rule
+  1): it changes the checked-out bytes (eol, filters, `ident`, `working-tree-encoding`) of files
+  whose blobs did not change. Confirmed with the reviewer's scratch repository
+  (`review-soundness/gitattr_probe_1`). Selection case S-N4: full.
+- **R32 Calls that change paths are traced (S-N5).** The runner also traces `mkdir, mkdirat,
+  rename, renameat, renameat2, link, linkat, symlink, symlinkat, unlink, unlinkat, rmdir, mknod,
+  mknodat, utimensat, utime, utimes, futimesat, chmod, fchmodat, fchmodat2, truncate, statfs,
+  getxattr, lgetxattr, listxattr, llistxattr` (`?` where an architecture may lack the call). Every
+  path argument counts: both paths of rename and link, the new path of symlink (its target is the
+  link's content). Success counts as `read`, ENOENT or ENOTDIR as `absent`, another error as `read`;
+  a failed `chdir` is recorded as `absent` and leaves the cwd. Arguments are split at top-level
+  commas with quoted strings and `<...>` annotations kept whole. Probe with strace 6.8:
+  `fix_strace_calls_probe.log` (non-destructive: every remove, rename, link, chmod and truncate
+  targets a missing path). Cost: these calls stop the tracee as well; the traced-call counts of
+  the measured run are in `fix_e2e_outcome.json`.
+- **R33 The source facts of R8 and R10 are checked (S-N6).** `check_sources` (part of the
+  self-test, so of both CI test jobs) scans the package sources (`src/**/*.rs` of every member)
+  and fails on `line!()`, `column!()`, `Location::caller`, `track_caller` (a comment-only change
+  shifts the positions they report), `include_str!`/`include_bytes!` of a `.rs` path (a crate that
+  reads its own source as text), and file access (`fs::`, `File::`, `include_*!`, `read_to_string`,
+  `read_dir`, `current_dir`) inside a code block of a `///` or `//!` doc comment (doc tests are not
+  measured). Today it finds nothing in 264 files. When a later change trips it, the test jobs fail
+  at the self-test, and the remedy is the code or the rule (classify the noop changes of such a
+  file as body). Limits: patterns on single lines; block doc comments are not scanned.
+- **R34 strace is optional at installation (M-N6).** Both install steps have
+  `continue-on-error: true`; without strace the selector runs every selected test, says "strace is
+  not installed" in the outcome and leaves those targets unmapped (R18), so the next run measures
+  them again. Checked by `check_workflows`.
+- **R35 The A1 check is conditional (M-N8).** `check_workflows` checks the A1 workflow only while
+  the file exists, so renaming or removing that workflow cannot fail the test jobs.
+- **R36 Hosted duration (M-N7): recorded, limits unchanged.** The live v2 full runs (coverage, one
+  command per target, no strace), test job of run 45378440406 and ignored-tests job of run
+  45378440571, started 10:49:59Z and 10:49:42Z; at 13:26:48Z both were still in their run step
+  (157 minutes), longer than every completed v1 full run (test 92-109, ignored 94-97 minutes). The
+  limits stay 300 and 330 minutes (design). If the first v3 full run uses more than about two
+  thirds of its limit, the next step is to split the full mode across jobs (an owner decision);
+  a job that times out leaves no outcome, so the next run is full again.

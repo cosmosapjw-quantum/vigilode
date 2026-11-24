@@ -1716,17 +1716,41 @@ def check_workflows(root, members=None):
     prod, ign = read("production.yml"), read("ignored-tests.yml")
     if re.search(r"^concurrency:", prod, re.M):
         problems.append("production.yml: a workflow-level concurrency group cancels the test job")
-    for text, name, job in ((prod, "production.yml", "test"), (ign, "ignored-tests.yml", "ignored-tests")):
-        block = job_block(text, job)
+    # The selecting jobs of each workflow: together they must select from every workspace member
+    # (M-N2), and each keeps its own outcome artifact (two jobs uploading one name in one run
+    # would overwrite each other's baseline).
+    selecting = {"production.yml": (prod, ("test", "test-cli-fair-ab")), "ignored-tests.yml": (ign, ("ignored-tests",))}
+    artifacts = {}
+    for name, (text, jobs) in selecting.items():
         trigger = re.search(r"^on:\n(.*?)(?=^\S)", text, re.M | re.S)
         if trigger and re.search(r"^\s+paths(?:-ignore)?:", trigger.group(1), re.M):
             problems.append(f"{name}: a path filter on the triggers leaves out measured inputs (S-N2, M-N4)")
-        if not re.search(r"- name: Install strace\n\s+continue-on-error: true\n", block):
-            problems.append(f"{name}: a failed strace installation fails the job (M-N6)")
-        scope = re.search(r"select_tests\.py select .*--scope ([^\n]+)", block)
-        missing = sorted(set(members or {}) - set(scope.group(1).split() if scope else []))
+        scoped = set()
+        for job in jobs:
+            block = job_block(text, job)
+            if not block:
+                continue  # reported below
+            scope = re.search(r"select_tests\.py select .*--scope ([^\n]+)", block)
+            scoped |= set(scope.group(1).split() if scope else [])
+            uploaded = re.findall(r"uses: actions/upload-artifact@\S+\n\s+with:\n\s+name: (\S+)", block)
+            looked_up = re.findall(r"select_tests\.py baseline .*--artifact (\S+)", block)
+            if len(uploaded) != 1 or looked_up != uploaded:
+                problems.append(f"{name}: job {job} does not look up the artifact it uploads ({looked_up} vs {uploaded})")
+            for a in uploaded:
+                if a in artifacts:
+                    problems.append(f"{name}: jobs {artifacts[a]} and {job} upload the same artifact {a}")
+                artifacts[a] = job
+        missing = sorted(set(members or {}) - scoped)
         if missing:
-            problems.append(f"{name}: job {job} does not select from the members {', '.join(missing)} (M-N2)")
+            problems.append(f"{name}: no job selects from the members {', '.join(missing)} (M-N2)")
+    for text, name, job in ((prod, "production.yml", "test"), (prod, "production.yml", "test-cli-fair-ab"),
+                            (ign, "ignored-tests.yml", "ignored-tests")):
+        block = job_block(text, job)
+        if not block:
+            problems.append(f"{name}: no job {job}")
+            continue
+        if not re.search(r"- name: Install strace\n\s+continue-on-error: true\n", block):
+            problems.append(f"{name}: a failed strace installation fails the job {job} (M-N6)")
         if not re.search(r"concurrency:\s*\n\s+group: .*\n\s+cancel-in-progress: false", block):
             problems.append(f"{name}: job {job} does not queue (cancel-in-progress false)")
         for line in block.splitlines():
@@ -2264,8 +2288,10 @@ fn g() -> usize {
             assert probe("production.yml", "", "") == []  # no A1 workflow: nothing to check (M-N8)
             assert "path filter" in str(probe("production.yml", "  pull_request:\n", "  pull_request:\n    paths:\n      - 'crates/**'\n"))
             assert "strace installation" in str(probe("ignored-tests.yml", "continue-on-error: true\n", ""))
-            assert "rodas5p-cli (M-N2)" in str(probe("production.yml", "rodas5p-fair-ab rodas5p-cli vigilode",
-                                                     "rodas5p-fair-ab vigilode"))
+            assert "rodas5p-cli (M-N2)" in str(probe("production.yml", "--scope rodas5p-fair-ab rodas5p-cli",
+                                                     "--scope rodas5p-fair-ab"))
+            assert "the same artifact" in str(probe("production.yml", "name: ci-test-outcome-test-cli-fair-ab",
+                                                    "name: ci-test-outcome-test"))
     print("self-test passed", flush=True)
     return 0
 
