@@ -39,7 +39,7 @@
     "research/production_loop_20261116/logs/baseline_facade_core_krylov.log": "ed0c5f161bdb6aec720dd616bfee06dccf71dd6a3e54eb7de90d7c5413bc4287",
     "research/production_loop_20261116/logs/baseline_integrators_peer.log": "9e640c014ac989152463e1a9745da31623391ed63fb008b4e83c74302e619ebe",
     "research/production_loop_20261116/logs/baseline_sp02_flake_probe.log": "d03595d085e964d82e7a3b26cf054d6e72dc9c5fc64768966850e1d4069940a1",
-    "docs/agent/production_solver_program_20261112/OWNER_DECISIONS_20261116.json": "38a6850a0f90dfcd1007c8077faf62289ade347de30d90080a53e5c80a8f9392",
+    "docs/agent/production_solver_program_20261112/OWNER_DECISIONS_20261116.json": "cd7f3adf9570a4961405da221ddd26be60cdde26372658d0d5c2bec2a2e4a4ec",
     "research/production_loop_20261116/audit/audit_findings.json": "95a21595eaa997a27d68b627a1dadddbad77ec2c545b761b9ad7e0d3fbe6ede4",
     "research/production_loop_20261116/audit/R_GATE_PROPOSAL.json": "6f6c66030b190dad22a1c2a42f8724cf09857e1b4641596499c5c3a1ce755cbc",
     "research/production_loop_20261116/theory/RESULTS.json": "4055eb85735c3b7aaef2f8e51c7d1a5836a0e8bfc8442c024709cfb30afd1dc9",
@@ -99,7 +99,9 @@
     "research/production_loop_20261116/mf_adaptive/PROTOCOL.json": "7a51b1d73a86050c9e1ad6dee38f9a4b0544db84c396c7226e8dbe5cd081458b",
     "research/production_loop_20261116/mf_adaptive/CHOICE.json": "5bb7dcc69a370e2cecf9423c9e360968e483e0a3b0f8586755b78a83cff86390",
     "research/production_loop_20261116/mf_adaptive/SENTINEL_REPIN.json": "7e06a59f5f8e639d4410c368becc141a86732dd9a94afdd1bbca98ba69e7ec40",
-    "research/production_loop_20261116/mf_adaptive/SENTINEL_REPIN_MERGE.json": "8bfaea34fc86b9efac53bb3528209f3a8f6bfd1a487d75666595e30e8f00ce8c"
+    "research/production_loop_20261116/mf_adaptive/SENTINEL_REPIN_MERGE.json": "8bfaea34fc86b9efac53bb3528209f3a8f6bfd1a487d75666595e30e8f00ce8c",
+    "research/production_loop_20261116/mf_p1_confirm/PREDECLARED.json": "6b2ca034e361238a6db71c83fc8ce89784658ecdf449d9a4ce5ed90a544f617e",
+    "research/production_loop_20261116/assembly_check/PREDECLARED.json": "b8e75141d59f6627106f24085efe40443f3cd36c334fd2166331cd6561df7e80"
   },
   "implemented_source_sha256": {
     "crates/vigilode/tests/default_path_golden.rs": "9ef2b4b7aff1d92b14c7f28c764e5ff791a2823091ec50cf8ffc1167366863ec",
@@ -192,7 +194,8 @@
     "2026-11-23: node V08 (finite-difference Jacobian assembly client) merged (bc8121cf) and corrected after its review (a7d1e824): jacobian_assembly/PREDECLARED.json, RESULTS.json and REVIEW.json added to the evidence list, the three source files and four test files of the client to the implemented sources; V08_JACOBIAN_ASSEMBLY is COMPLETE_SCOPED.",
     "2026-11-24: node V18 (dense LU client with storage reuse and opt-in worker threads) merged (406b2a3b) and annotated after its review (10356292): dense_lu_client/PREDECLARED.json, RESULTS.json and REVIEW.json added to the evidence list; the identity of the pre-seeded file stage_clients/dense_lu_reuse.rs is updated to the implemented client, and threaded.rs and three test files are added; V18_DENSE_LU_CLIENT is COMPLETE_SCOPED.",
     "2026-11-24: node V22 decided (commit 1cd674a6): BANDED_SLICES_MIN_HALF_WIDTH = 6; the identity of crates/vigilode/src/solve.rs is updated, the golden file of the banded routes is added to the implemented sources and banded_kernel_route/RESULTS.json to the evidence list; V22_FACADE_BANDED_KERNEL is COMPLETE_SCOPED with its independent review still to run.",
-    "2026-11-24: node V24 merged (28f3ad86, 9daf78fd), epoch 3, owner decision OD-L1-11: the protected blob crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs is re-pinned (a3896e3a751cf921f83ac1e5f5e6a20bb64f7676 to 8c389ca973568402125b48e5574304d31640e9d2); it gains the opt-in policy of the stage solve and its shipped policy is bit-identical (discriminator D0). The sentinel test files ppsw1_6b_contracts.rs and ptsw2b_contracts.rs, gmres_staged.rs, routing.rs and five new test files are in the implemented sources; six evidence files of mf_adaptive are added. Frozen verdict FAIL: the default of the matrix-free route is unchanged."
+    "2026-11-24: node V24 merged (28f3ad86, 9daf78fd), epoch 3, owner decision OD-L1-11: the protected blob crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs is re-pinned (a3896e3a751cf921f83ac1e5f5e6a20bb64f7676 to 8c389ca973568402125b48e5574304d31640e9d2); it gains the opt-in policy of the stage solve and its shipped policy is bit-identical (discriminator D0). The sentinel test files ppsw1_6b_contracts.rs and ptsw2b_contracts.rs, gmres_staged.rs, routing.rs and five new test files are in the implemented sources; six evidence files of mf_adaptive are added. Frozen verdict FAIL: the default of the matrix-free route is unchanged.",
+    "2026-11-24: owner decisions OD-L1-15 to OD-L1-18 appended to OWNER_DECISIONS_20261116.json (identity updated); nodes V25 and V26 pre-registered (addendum A7, mf_p1_confirm/PREDECLARED.json and assembly_check/PREDECLARED.json added to the evidence list); node V27 is a design phase."
   ],
   "epochs": [
     {

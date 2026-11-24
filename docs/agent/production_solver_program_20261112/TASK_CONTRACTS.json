@@ -1618,6 +1618,125 @@
         "research/production_loop_20261116/mf_adaptive/REVIEW.json"
       ],
       "state_note": "Frozen verdict FAIL by the budget rule B (ledger L-0335): the adaptive policy is merged as an opt-in policy (MfStageSolvePolicy), the default of the matrix-free route and every golden file are unchanged; D0, V, A, P and S hold. Sentinels h2 and g3 re-pinned by the orchestrator at the merge (SENTINEL_REPIN_MERGE.json). Reviewer corrections in REVIEW.json. Owner items: whether the default switches despite B, or variant P1 is tested on unseen problems under a new pre-registration; the identifier v2 of an opt-in variant."
+    },
+    {
+      "id": "V25_MF_P1_CONFIRMATION",
+      "depends": [
+        "V24_MF_ADAPTIVE_STAGE_SOLVE"
+      ],
+      "status": "IN_PROGRESS",
+      "purpose": "Confirm the adaptive policy P1 of the matrix-free stage solve on families no earlier node used, and switch the default of the matrix-free route to it if it is as safe as the shipped policy and cheaper at matched achieved error (owner decision OD-L1-15).",
+      "write_allowlist": [
+        "research/production_loop_20261116/mf_p1_confirm/**",
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+        "crates/rodas5p-integrators/src/routing.rs",
+        "crates/rodas5p-integrators/src/lib.rs",
+        "crates/rodas5p-integrators/tests/mf_confirm_*.rs",
+        "crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs",
+        "crates/rodas5p-integrators/tests/ptsw2b_contracts.rs",
+        "crates/vigilode/src/solve.rs",
+        "crates/vigilode/src/solution.rs",
+        "crates/vigilode/tests/default_path_golden.rs",
+        "crates/vigilode/tests/golden/default_path/**",
+        "crates/vigilode/tests/capabilities_contracts.rs",
+        "crates/vigilode/tests/facade_contracts.rs",
+        "crates/vigilode/tests/unified_router_contracts.rs"
+      ],
+      "equations_and_design": [
+        "Arms: S (shipped policy), P1 (residual test after every Arnoldi column, cycle bound = configured restart length), P2 reported only.",
+        "Families ac3d, robertson_rd1d, schnakenberg2d, porous2d (n >= 1000), five tolerances; reference, error metric, matched-error statistic and timing of node V17.",
+        "If the default switches, P1 reports the driver identifier rodas5p-mf-fast-transformed-v3; the shipped policy keeps v1 and stays selectable."
+      ],
+      "acceptance_checks": [
+        "D0: S and P1 unchanged by the edits. V: 0 residual violations. B: no cell with more budget-exhausting solves than S.",
+        "A: error at most 3 times S. S: attempts at most 1.05 per family, 1.15 per cell (thresholds of A6). E: fewer instructions than S at matched error in every family, not more in any cell. W: no authoritative wall cell slower than S.",
+        "After a switch: G (golden records of the route within the bounds of A6, other routes byte-identical) and R (suites, sentinels re-pinned)."
+      ],
+      "completion_requires": [
+        "mf_p1_confirm/PREDECLARED.json before any run",
+        "PROTOCOL.json with the final spans before any run of P1",
+        "mf_p1_confirm/RESULTS.json from executed runs",
+        "independent review"
+      ],
+      "failure_action": "KEEP: the shipped policy stays the default and P1 stays opt-in. KILL (a residual violation): no default changes.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [],
+      "state_note": "Pre-registered 2026-11-24 (addendum A7). Builder node."
+    },
+    {
+      "id": "V26_ASSEMBLY_FULL_CHECK",
+      "depends": [
+        "V08_JACOBIAN_ASSEMBLY"
+      ],
+      "status": "IN_PROGRESS",
+      "purpose": "Test whether the full pattern check of the assembly client (n right-hand sides) can be parallelized or vectorized, and test an exact multi-colouring check that needs far fewer evaluations (owner decision OD-L1-16). The default of the check is decided by the owner after the report.",
+      "write_allowlist": [
+        "research/production_loop_20261116/assembly_check/**",
+        "crates/rodas5p-integrators/src/stage_clients/assembly.rs",
+        "crates/rodas5p-integrators/src/stage_clients/assembly/**",
+        "crates/rodas5p-integrators/tests/stage_clients_assembly_*.rs"
+      ],
+      "equations_and_design": [
+        "Arms S8 (default), FA (all columns), FA_P (all columns on the pool, P = 2, 4, 6), MC and MC_P (multi-colouring check), exploratory MC at every build and a batched right-hand side for the dense cell.",
+        "Multi-colouring check: valid colourings whose colour tuples identify every column; declared entries compared bit for bit across colourings and the uncovered-row test in every group; no tolerance and no tunable parameter."
+      ],
+      "acceptance_checks": [
+        "E: parallel arms decide as their sequential arms; Jacobians and trajectories bit-identical with and without a check.",
+        "D: FA detects every corpus case that is not rounding-limited; MC misses no case FA detects unless rounding-limited for MC. F: no false alarm. C: cost per arm reported."
+      ],
+      "completion_requires": [
+        "assembly_check/PREDECLARED.json before any edit",
+        "the corpus decisions of FA and S8 recorded before the new arms are implemented",
+        "assembly_check/RESULTS.json from executed runs",
+        "independent review"
+      ],
+      "failure_action": "Descriptive node: the default of the check does not change in this node.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [],
+      "state_note": "Pre-registered 2026-11-24 (addendum A7). Builder node."
+    },
+    {
+      "id": "V27_ROUTER_HYPERPARAMETER_FREE",
+      "depends": [
+        "V03_UNIFIED_FRONTEND"
+      ],
+      "status": "PLANNED",
+      "purpose": "Auto route of the unified router with as few hyperparameters as possible (owner decision OD-L1-17): a census of every constant and rule of the route, a design that removes or replaces the tunable ones, presented to the owner before implementation.",
+      "write_allowlist": [
+        "research/production_loop_20261116/router_hyperparameter_free/**"
+      ],
+      "equations_and_design": [
+        "Design phase: read-only design agents and a judge; the implementation is a later node after the owner's approval."
+      ],
+      "acceptance_checks": [
+        "A design document with the census, the proposed algorithm, the hyperparameters that remain and why, and an evaluation plan for pre-registration."
+      ],
+      "completion_requires": [
+        "design document",
+        "owner approval before any implementation"
+      ],
+      "failure_action": "The current Auto route stays as it is.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [],
+      "state_note": "Design phase started 2026-11-24."
     }
   ],
   "execution_policy": "Resume ready bounded tasks; research/implementation may overlap only with disjoint writes. Qualification dependencies restrict promotion, not safe opt-in refactoring.",

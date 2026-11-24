@@ -1,0 +1,56 @@
+{
+  "schema": "vigilode.loop-l1.v26-predeclared.v1",
+  "node": "V26_ASSEMBLY_FULL_CHECK",
+  "date_kst": "2026-11-24",
+  "authority": "owner decision OD-L1-16 (2026-11-24 17:18 KST), verbatim: \"n회 추가가 벡터화/병렬화가 가능한지 먼저 시험\" (first test whether the n additional right-hand sides of the full pattern check can be vectorized or parallelized); the default of the check is decided by the owner after this test",
+  "frozen_before": "any edit of the assembly client for this node and any run of its corpus or of its cost cells",
+  "question": "Can the full first-use check of the opt-in client AssemblyStageClient (CheckColumns::All: one forward difference per column, n right-hand sides, every entry compared bit for bit with the assembled Jacobian) be made cheap enough to be the default, (a) by running its evaluations on the client's worker pool, (b) by evaluating several shifted states in one call of a vectorized right-hand side, or (c) by replacing the n single-column shifts with a few combined shifts that keep the check exact?",
+  "background": {
+    "source": "jacobian_assembly/RESULTS.json and REVIEW.json (node V08)",
+    "facts": "the default check of 8 evenly spread columns is fail-closed on the seven declared controls only: a periodic ring declared tridiagonal runs to success with a wrong Jacobian for n = 34 to 1000, and 9 to 13 percent of single-entry omissions of the Brusselator pattern pass (review finding F-01); CheckColumns::All caught every case tried except one whose finite difference is exactly zero at the checked state. The check has no tolerance: every comparison is bit for bit (engine.rs, fn verify).",
+    "cost_scale": "the full check costs n right-hand sides: 400 on nlkpp-dense-n400, 4096 on nlkpp-band-n4096-r24, 131072 on bruss1d-n131072, against colours + 1 = 50 and 6 right-hand sides for one build of the two coloured cells"
+  },
+  "arms": {
+    "S8": "CheckColumns::Sample(8), sequential (today's default)",
+    "FA": "CheckColumns::All, sequential (today's option)",
+    "FA_P": "CheckColumns::All with the n single-column evaluations on the client's worker pool, P in {2, 4, 6} (threaded clients, RhsPurity acknowledged); every comparison as in FA",
+    "MC": "multi-colouring check (new, exact, no tunable parameter): build the coloured Jacobian under further valid colourings of the declared pattern, chosen so that the tuple of colours of a column identifies the column; compare every declared entry bit for bit with the build of the client's own colouring and apply the uncovered-row test (a row with no declared column in a group keeps its bits) in every group; construction and claim below",
+    "MC_P": "MC with the groups of every colouring evaluated on the client's pool with 6 workers",
+    "MC_every_build_exploratory": "MC repeated at every linearization of a whole capped solve: cost per build, reported only",
+    "FA_B_exploratory": "CheckColumns::All with the shifted states of nlkpp-dense-n400 evaluated k = n at a time by a batched right-hand side written for this test that keeps the summation order of the single evaluation for every state (vectorized across states, bit-identical to the single evaluation: checked); cost per evaluation against the single evaluation; reported only"
+  },
+  "mc_construction": {
+    "c1": "the client's colouring: greedy first fit in natural column order (Curtis-Powell-Reid)",
+    "construction_B_band": "with lower and upper the largest distances below and above the diagonal among the declared entries (every pattern has them): further colourings c_r(j) = j mod m_r, with m_r the smallest integers that are at least lower + upper + 1 (so every c_r is valid) and pairwise coprime, taken in increasing order until their product is at least n; by the Chinese remainder theorem these colourings alone already give every column its own tuple",
+    "construction_G_refinement": "c_r(j) = (c1(j), q(j) mod p_r) with q(j) the rank of column j inside its c1 class and p_r the primes 2, 3, 5, ... in increasing order until their product is at least the size of the largest c1 class; every c_r refines c1 and is therefore valid",
+    "choice": "the construction with the smaller total number of non-empty groups is used (equal: B); the choice is computed from the pattern, not set by hand",
+    "injectivity": "the map from a column to its tuple of colours (c1 included) is checked to be injective before the check runs; a failure is a defect of the construction, not a verdict",
+    "claim_to_be_tested": "with valid colourings whose colour tuples are injective, every undeclared dependency (i, k) that changes the bits of row i under the shift of column k is detected, either by the uncovered-row test or by a bitwise difference of a declared entry of row i between two colourings, unless the bits of row i are unchanged at the combined shifted state (rounding-limited). Sketch: if in some colouring the group of k holds no declared column of row i, the uncovered-row test sees row i change; otherwise every colouring r puts k together with exactly one declared column j_r of row i (validity); by injectivity not all j_r are equal, and for j_r != j_s the entry (i, j_r) is contaminated in colouring r and clean in colouring s, because colouring s puts k with j_s, and j_s and j_r have different colours there.",
+    "cost_note_not_a_threshold": "the number of evaluations is the total of the group counts, for example about 59 instead of 131072 on bruss1d-n131072 (band 2 and 2: moduli 5, 6, 7, 11, 13, 17) and about 150 instead of 4096 on nlkpp-band-n4096-r24 (band 24 and 24: moduli 49, 50, 51) under construction B"
+  },
+  "corpus": {
+    "declared_controls": "the seven negative controls of jacobian_assembly/PREDECLARED.json",
+    "ring": "the periodic ring of the V08 review (review-scratch/rv_probe of node V08, copied into this node's test target) declared tridiagonal, n in {12, 13, 14, 15, 16, 32, 33, 34, 64, 100, 127, 128, 1000}",
+    "brusselator_single_omissions": "the true pattern of the Brusselator problem of V08 minus one declared entry: every entry at n = 128 and at n = 1024; at n = 131072 the entries number floor(s nnz / 200) for s = 0 .. 199 in row-major order",
+    "too_narrow_bands": "nlkpp-band-n4096-r24 and the Brusselator problem at n = 128 and n = 1024 declared with (lower - 1, upper) and with (lower, upper - 1)",
+    "correct_patterns": "the true pattern of every problem above and of the four cost cells; these must pass",
+    "rounding_limited_case": "a case is rounding-limited for an arm if at every state that the arm evaluates for it the bits of the rows of the omitted entry are the same with and without the shift of the omitted column; shown by direct evaluation, listed, and not counted as a miss of that arm"
+  },
+  "cost_cells": {
+    "cells": "the four timed cells of node V08 (nlkpp-dense-n400 on the dense route, where MC does not apply; nlkpp-band-n4096-r24, bruss1d-n131072 and bruss1d-n128 on the coloured route), its tolerances and its run length of 48 attempts",
+    "measures": "right-hand-side evaluations of the check (deterministic), user-mode instructions (perf stat -e instructions:u) and wall time of the first linearization, and of the whole capped solve, for every arm; as multiples of one build without check and of the whole capped solve with S8",
+    "timing": "the timing protocol and quality rule of node V08 and of this loop (pinned cores, timing lock, interleaved arms, 2 warm-ups and 7 repetitions, 1-minute load at most 8 before and after, spread at most 0.10, at most two re-measurements, the first measurement that meets the rule decides); measured when no other agent of the loop builds or times, when this can be waited for"
+  },
+  "discriminators": {
+    "E_equal_decisions_and_bits": "FA_P equals FA, and MC_P equals MC, in the decision (pass, or the typed error with its row and column) on every corpus case; the assembled Jacobians and trajectories of every cost cell are bit-identical with and without any check",
+    "D_detection": "FA detects every corpus case that is not rounding-limited for FA; MC misses no case that FA detects unless the case is rounding-limited for MC (shown); the misses of S8 are listed",
+    "F_no_false_alarm": "no arm rejects a correct pattern",
+    "C_cost": "reported per arm and cell as defined in cost_cells; no threshold"
+  },
+  "outcome": "descriptive. The report names the cheapest arm that keeps E, D and F on every cell. This node does not change the default of the client's check (Sample(8)); the owner decides the default after the report.",
+  "not_changed": [
+    "the arithmetic of the assembled Jacobian",
+    "the protected drivers and every client of the kit",
+    "the facade's own finite-difference routes"
+  ]
+}

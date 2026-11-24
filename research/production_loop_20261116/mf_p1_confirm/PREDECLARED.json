@@ -1,0 +1,114 @@
+{
+  "schema": "vigilode.loop-l1.v25-predeclared.v1",
+  "node": "V25_MF_P1_CONFIRMATION",
+  "date_kst": "2026-11-24",
+  "authority": "owner decision OD-L1-15 (2026-11-24 17:18 KST), verbatim: \"P1을 새 문제로 재시험 후 결과에 따라 경제적인 방향으로 adaptive로 전환여부 결정.\" (re-test P1 on new problems, then decide by the results, in the economical direction, whether the matrix-free route switches to the adaptive policy); owner decision OD-L1-11 (the protected matrix-free driver may be edited for the adaptive stage solve)",
+  "frozen_before": "any run of the policy P1 or P2 on a family of this node, any run of the shipped policy on it other than the sizing pilot below, and any edit of a default",
+  "question": "On problem families that no earlier node has used for the matrix-free route, is the adaptive policy P1 as safe as the shipped policy and cheaper at matched achieved error? If it is, P1 becomes the default of the matrix-free route.",
+  "prior_data": {
+    "source": "mf_adaptive/RESULTS.json and mf_adaptive/REVIEW.json (node V24)",
+    "P1_on_the_grid_of_V24_exploratory": "instructions at matched achieved error 0.376, 0.394, 0.231, 0.446 of the shipped policy on fhn3d, cusp1d, burgers2d, bruss1d; budget-exhausting stage solves equal to the shipped policy in every cell; 0 audit violations; largest error ratio at equal tolerance 2.602 (cusp1d)",
+    "why_a_new_grid": "those numbers come from a grid that had been seen when P1 was looked at, so they cannot decide a default (review finding F10 of V24)",
+    "P2": "the variant chosen by V24 failed its rule B (13 against 11 budget-exhausting solves in one cell); it stays opt-in and is only reported here"
+  },
+  "policies": {
+    "S": "MfStageSolvePolicy::Shipped: restart length 40, the true residual is tested once per cycle; today's default, driver identifier rodas5p-mf-fast-transformed-v1",
+    "P1": "MfStageSolvePolicy::ColumnTested: the projected residual is tested after every Arnoldi column; a cycle ends at the first column that meets the stage threshold; the true residual of the iterate is then tested against the same threshold and a failed test continues the solve; the upper bound of every cycle is the configured restart length (40)",
+    "P2_exploratory": "MfStageSolvePolicy::ColumnTestedDoubling (opt-in since V24): run on the same cells, reported, decides nothing",
+    "hyperparameters": "P1 adds no constant: its only bound is the configured restart length of the driver. The stage threshold, the Krylov budget, the controller constants and the linear method are those of the shipped driver."
+  },
+  "families": {
+    "rule": "four families that no earlier node used for the matrix-free route. Used so far: bruss1d, grayscott2d, adr2d (V06); fhn3d, cusp1d, burgers2d, bruss1d (V17 and V24); bruss1d and adr2d (development cells of V24); bruss1d_stiff (exploratory, V06). ac3d was declared by V17 and robertson_rd1d by V06; neither was run.",
+    "list": [
+      {
+        "id": "ac3d",
+        "description": "3D Allen-Cahn equation u_t = D lap(u) + lam (u - u^3) on the unit cube, zero-flux boundaries, m^3 cell-centred finite volumes with the 7-point Laplacian (a neighbour outside the cube is the cell itself): the definition of id ac3d in mf_stage_solve/PREDECLARED.json with m = 16",
+        "m": 16,
+        "n": 4096,
+        "D": 0.1,
+        "lam": 10.0,
+        "layout": "index i + m (j + m k), cell centre ((i + 0.5)/m, (j + 0.5)/m, (k + 0.5)/m)",
+        "initial_state": "u = 0.4 cos(2 pi x) cos(pi y) + 0.3 cos(3 pi x) cos(pi z) + 0.05",
+        "t_span_provisional": [
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "id": "robertson_rd1d",
+        "description": "Robertson kinetics with diffusion on [0, 1], three species per cell: the generator robertson_rd1d of crates/rodas5p-integrators/tests/stage_clients_krylov_problems.rs unchanged (its rates, its diffusion 1e-5 / dx^2 and its initial state)",
+        "cells": 400,
+        "n": 1200,
+        "t_span_provisional": [
+          0.0,
+          40.0
+        ]
+      },
+      {
+        "id": "schnakenberg2d",
+        "description": "Schnakenberg reaction-diffusion system on the unit square: u_t = du lap(u) + gam (a - u + u^2 v), v_t = dv lap(v) + gam (b - u^2 v); m^2 cell-centred finite volumes, 5-point Laplacian, zero flux (a neighbour outside the square is the cell itself); species interleaved per cell, index 2 (i + m j) + s",
+        "m": 32,
+        "n": 2048,
+        "du": 0.01,
+        "dv": 0.4,
+        "gam": 100.0,
+        "a": 0.1,
+        "b": 0.9,
+        "initial_state": "u = a + b + 0.05 cos(2 pi x) cos(2 pi y), v = b / (a + b)^2 + 0.05 sin(2 pi x) sin(3 pi y) at the cell centres",
+        "t_span_provisional": [
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "id": "porous2d",
+        "description": "porous medium equation u_t = lap(u^2) on the unit square: m^2 cell-centred finite volumes, 5-point Laplacian of w = u^2, zero flux (a neighbour outside the square is the cell itself); Jacobian-vector product lap(2 u v)",
+        "m": 48,
+        "n": 2304,
+        "initial_state": "u = 0.1 + exp(-50 ((x - 0.5)^2 + (y - 0.5)^2)) at the cell centres",
+        "t_span_provisional": [
+          0.0,
+          0.1
+        ]
+      }
+    ],
+    "jacobian": "Jacobian-vector product only (analytic), no matrix and no preconditioner, as on the matrix-free route in V17 and V24",
+    "spans_rule": "the spans above are provisional. A sizing pilot runs the shipped policy alone at rtol 1e-7: if one run of a family lasts more than 60 s its span is halved until it does not; if it lasts less than 1 s its span is doubled, at most three times. The pilot logs are kept and labelled sizing; no pilot number enters a verdict. The final spans are written to PROTOCOL.json and committed before any run of P1 or P2."
+  },
+  "tolerances": {
+    "rtol": [
+      0.001,
+      0.0001,
+      1e-05,
+      1e-06,
+      1e-07
+    ],
+    "atol": "equal to rtol"
+  },
+  "controller": "the configuration of the matrix-free route in V24 except rtol and atol",
+  "reference_error_metric_matched_error_rule_and_timing": "those of mf_stage_solve/PREDECLARED.json (node V17), unchanged: reference by SciPy DOP853 at rtol 1e-13 on an independent numpy right-hand side, the two cross-checks and the Radau fallback of that file, the uncertainty u_ref per family, the reference-limited rule, the error metric, the matched-error statistic, the instruction measure (perf stat -e instructions:u) and the timing protocol; the timing quality rule of this loop (1-minute load at most 8 before and after, spread at most 0.10, at most two re-measurements, the first measurement that meets the rule decides)",
+  "consistency_of_the_two_right_hand_sides": "before any reference is computed, the numpy and the Rust right-hand sides and Jacobian-vector products of each family agree at 20 deterministic states to 1e-12 in the max norm relative to 1 + |value|",
+  "discriminators": {
+    "D0_policies_unchanged": "S and P1, each selected explicitly, give after every edit of this node the bits of the end state, the step counts and every counter recorded before the first edit (commit A), on every deciding cell",
+    "V_validity": "in every completed stage solve of P1 the true residual of the returned iterate meets the stage threshold of the shipped driver, checked independently from a solve log; a solve that ends by the budget is reported as a failure the shipped way; violations: 0",
+    "B_budget": "in no cell does P1 have more stage solves that exhaust the Krylov budget than S",
+    "A_accuracy": "in every cell the achieved error of P1 at equal tolerance is at most 3 times that of S (threshold frozen in addendum A6)",
+    "S_steps": "per family the geometric mean of the attempts of P1 over the five tolerances is at most 1.05 of S, and in no cell above 1.15 (thresholds frozen in addendum A6)",
+    "E_economy": "P1 needs fewer user-mode instructions than S at matched achieved error in every family (the matched-error statistic of V17 below 1.00) and not more in any cell (the instructions of P1 at the achieved error of S in that cell at most 1.00 of S)",
+    "W_wall_guard": "no authoritative wall cell in which P1 is slower than S at matched achieved error; wall cells that are not authoritative are reported and decide nothing",
+    "G_golden": "only after a switch: the golden records of the matrix-free route are re-pinned and a difference report lists every changed record; in each the end state differs from the old record by at most 10 (atol + rtol |y|) in every component and the attempts by at most 20 percent; records of every other route keep their bytes (bounds frozen in addendum A6)",
+    "R_suites": "only after a switch: the two sentinels (re-pinned with old and new pins recorded), the stage-client targets, the matrix-free targets of the integrators, rodas5p-krylov and the facade suite pass; clippy and rustfmt clean"
+  },
+  "verdicts": {
+    "SWITCH": "D0, V, B, A, S, E and W hold. The default policy of the matrix-free route then becomes P1 in the driver and in the router (routing.rs), and with them in the facade; P1 reports the driver identifier rodas5p-mf-fast-transformed-v3; S stays selectable as MfStageSolvePolicy::Shipped with rodas5p-mf-fast-transformed-v1 and P2 stays opt-in with rodas5p-mf-fast-transformed-v2. G and R must then hold; if one of them does not, the switch is taken back and the verdict is HOLD with the reason.",
+    "KEEP": "V holds and one of D0, B, A, S, E or W does not: the shipped policy stays the default, P1 stays opt-in with its candidate identifier, and the result is reported.",
+    "KILL": "V is violated in any solve of P1: no default changes and the documentation of P1 states the violation.",
+    "economic_direction": "OD-L1-15 asks for the economical direction. The economy gate E is therefore 'cheaper' (ratio below 1.00), not a margin chosen by the loop; D0, V, B and W are comparisons without a threshold; A and S keep the thresholds frozen in addendum A6, so that this node chooses no new threshold."
+  },
+  "not_changed": [
+    "the stage threshold of the linear solve, the Krylov method, its budget and its preconditioning",
+    "the controller constants and the tolerances",
+    "every other driver and route",
+    "the research gate G0"
+  ]
+}
