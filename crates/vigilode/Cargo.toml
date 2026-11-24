@@ -6,7 +6,11 @@ rust-version.workspace = true
 license.workspace = true
 description = "Production facade over the protected RODAS5P drivers: one Problem / Options / Solve / Solution surface."
 
+[features]
+structured = ["dep:vigilode-coupled"]
+
 [dependencies]
+vigilode-coupled = { path = "../vigilode-coupled", optional = true }
 rodas5p-core = { path = "../rodas5p-core" }
 rodas5p-integrators = { path = "../rodas5p-integrators" }
 serde.workspace = true
