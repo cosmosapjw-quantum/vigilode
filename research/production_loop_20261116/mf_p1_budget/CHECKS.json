@@ -1,0 +1,66 @@
+{
+ "schema": "vigilode.loop-l1.v28.checks.v1",
+ "git_head": "ed3df512e682da9a24fd3a2acd266e1bd9c38fd3",
+ "git_dirty_tracked": 0,
+ "checks": [
+  {
+   "name": "contract_tests",
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test mf_budget_measure",
+   "exit_code": 0,
+   "last_lines": [
+    "test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.33s",
+    "    Finished `release` profile [optimized] target(s) in 0.09s",
+    "     Running tests/mf_budget_measure.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v28/release/deps/mf_budget_measure-9d8b4469af30c7f3)"
+   ],
+   "log": "logs/checks/contract_tests.log"
+  },
+  {
+   "name": "clippy",
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 clippy --locked -j 4 --release --no-deps -p rodas5p-integrators --lib --test mf_budget_measure -- -D warnings",
+   "exit_code": 0,
+   "last_lines": [
+    "    Checking rodas5p-krylov v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v28/crates/rodas5p-krylov)",
+    "    Checking rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v28/crates/rodas5p-integrators)",
+    "    Finished `release` profile [optimized] target(s) in 17.21s"
+   ],
+   "log": "logs/checks/clippy.log"
+  },
+  {
+   "name": "fmt",
+   "command": "cargo +1.94.1 fmt -p rodas5p-integrators -p vigilode -- --check",
+   "exit_code": 0,
+   "last_lines": [],
+   "log": "logs/checks/fmt.log"
+  },
+  {
+   "name": "loop_checker",
+   "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+   "exit_code": 0,
+   "last_lines": [
+    "PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities",
+    "Scope: checkpoint reproducibility. Production HOLD; no new numerical qualification."
+   ],
+   "log": "logs/checks/loop_checker.log"
+  },
+  {
+   "name": "strict_json",
+   "command": "python3 -I -c import json,sys\ndef reject(constant):\n    raise ValueError(constant)\nfor path in sys.argv[1:]:\n    with open(path, encoding='utf-8') as handle:\n        json.load(handle, parse_constant=reject)\n    print('strict JSON:', path)\n research/production_loop_20261116/mf_p1_budget/PREDECLARED.json research/production_loop_20261116/mf_p1_budget/PROTOCOL.json research/production_loop_20261116/mf_p1_budget/RESULTS.json",
+   "exit_code": 0,
+   "last_lines": [
+    "strict JSON: research/production_loop_20261116/mf_p1_budget/PREDECLARED.json",
+    "strict JSON: research/production_loop_20261116/mf_p1_budget/PROTOCOL.json",
+    "strict JSON: research/production_loop_20261116/mf_p1_budget/RESULTS.json"
+   ],
+   "log": "logs/checks/strict_json.log"
+  },
+  {
+   "name": "results_regenerate",
+   "command": "python3 -I research/production_loop_20261116/mf_p1_budget/parse_results.py --check",
+   "exit_code": 0,
+   "last_lines": [
+    "RESULTS.json identical: True; REPORT_KO.md identical: True"
+   ],
+   "log": "logs/checks/results_regenerate.log"
+  }
+ ]
+}

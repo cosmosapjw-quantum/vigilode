@@ -1,0 +1,13 @@
+# command: python3 -I -c import json,sys
+def reject(constant):
+    raise ValueError(constant)
+for path in sys.argv[1:]:
+    with open(path, encoding='utf-8') as handle:
+        json.load(handle, parse_constant=reject)
+    print('strict JSON:', path)
+ research/production_loop_20261116/mf_p1_budget/PREDECLARED.json research/production_loop_20261116/mf_p1_budget/PROTOCOL.json research/production_loop_20261116/mf_p1_budget/RESULTS.json
+# git head ed3df512e682da9a24fd3a2acd266e1bd9c38fd3, dirty tracked 0
+strict JSON: research/production_loop_20261116/mf_p1_budget/PREDECLARED.json
+strict JSON: research/production_loop_20261116/mf_p1_budget/PROTOCOL.json
+strict JSON: research/production_loop_20261116/mf_p1_budget/RESULTS.json
+# exit code 0 after 0.0 s
