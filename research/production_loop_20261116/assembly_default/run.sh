@@ -7,6 +7,7 @@
 #                                                logs/identity_<label>_<cell>.log
 #   run.sh corpus <label> <groups> <executions>  the V26 corpus decisions of the default check,
 #                                                logs/corpus_<label>_<first group>.log
+#   run.sh unit                                  the tests of this node with their output, logs/unit.log
 #   run.sh checks                                tests, sentinels, clippy, fmt, loop checker, logs/checks.log
 #
 # Labels: A = commit A (the code before the change), B = after the change.
@@ -84,6 +85,24 @@ corpus)
         run env V29_MODE=corpus V29_GROUP="$groups" V29_EXECUTIONS="$executions" taskset -c "$CPUS" \
             "$bin" --ignored --nocapture --exact v29_record
         echo "# loadavg at end: $(cat /proc/loadavg)"
+        echo "# date at end: $(date --iso-8601=seconds)"
+    } >"$log" 2>&1
+    echo "$log"
+    ;;
+unit)
+    # The tests of this node with their printed lines.
+    cd "$ROOT"
+    log="$LOGS/unit.log"
+    cmd="taskset -c $CPUS cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_assembly_default --test stage_clients_assembly_default_alloc -- --nocapture"
+    {
+        echo "# node V29 log"
+        echo "# date: $(date --iso-8601=seconds)"
+        echo "# git head: $(git -C "$ROOT" rev-parse HEAD)"
+        echo "# git status (tracked changes): $(git -C "$ROOT" status --porcelain --untracked-files=no | wc -l)"
+        echo "# loadavg at start: $(cat /proc/loadavg)"
+        echo "# command: $cmd"
+        run taskset -c "$CPUS" cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators \
+            --test stage_clients_assembly_default --test stage_clients_assembly_default_alloc -- --nocapture
         echo "# date at end: $(date --iso-8601=seconds)"
     } >"$log" 2>&1
     echo "$log"

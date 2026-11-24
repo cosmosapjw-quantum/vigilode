@@ -80,3 +80,68 @@ PLAN (order is part of the evidence)
 4. Recording again with the changed code (same program), the V26 corpus decisions of the default against the V26
    MC and S8 decisions, checks (stage_clients_* tests, sentinels, clippy, fmt, loop checker), RESULTS.json and
    REPORT_KO.md from a parser.
+
+== 2026-11-25 00:18, entry 2 (commit A recorded; the change; recordings after it) ==
+
+COMMITS SO FAR
+- ec284167 (23:56) this file, entry 1: the plan and the protocol choices (cells, arms, corpus, executions, the two
+  decision paths, the references of the comparison), before anything was run or edited.
+- f1eb5118 (00:03) tests/stage_clients_assembly_default_record.rs (recording program, source sha256 43f68080..) and
+  run.sh; nothing of the client edited.
+- fcb9b130 (00:05) commit A: logs/identity_A_<cell>.log (5 cells) and logs/corpus_A_<group>.log (7 groups), binary
+  built from f1eb5118 with 0 tracked changes. Today's default is Sample(8) on every route; on the corpus it passes
+  576 wrong declarations (ring 6, omit128 48, omit1024 497, omit131072 25), as Sample(8) did in node V26. The
+  coloured identity cells have the fingerprints of the V08 identity logs.
+- fc185e2a (00:14) the change and the tests (below).
+- 02203c8b (00:17) logs/identity_B_<cell>.log and logs/corpus_B_<group>.log with the same program (same source
+  sha256), binary rebuilt at fc185e2a, 0 tracked changes.
+
+THE CHANGE (assembly.rs, assembly/engine.rs)
+- AssemblyOptions::default_first_use_check(route): Coloured -> MultiColouring, Dense -> Sample(DEFAULT_CHECK_COLUMNS).
+  dense() and coloured(pattern) take it (coloured() no longer inherits the dense default through ..Self::dense()).
+  threaded(), with_fingerprints() keep it, with_first_use_check() replaces it. DEFAULT_CHECK_COLUMNS stays 8 and
+  public (five test targets name it).
+- MC is the default also with threaded execution (on the calling thread); MC_P stays selectable, as FA and FA_P
+  (owner decision: "FA, FA_P and MC_P stay selectable").
+- Decision taken in the change (entry 1 left it open): a client whose first-use check is MultiColouring or
+  MultiColouringPooled builds the further colourings in AssemblyStageClient::new (Engine::prepare_multi, now
+  pub(super)), not at the first linearization. Reason: the module doc promises that the sequential routes allocate
+  nothing after new(); with MC as the default the lazy construction would allocate at the first linearization of
+  every coloured client. A defect of the construction (non-injective tuples; impossible by the Chinese remainder
+  theorem) is then a Configuration error of new(). No right-hand side is evaluated there; counters and bits do not
+  change. A requested MC check (handle, verify) still builds them at its first use.
+- Rustdoc: module doc (Checks, Counters and allocation), CheckColumns (what each check detects: FA/FA_P exact up to
+  rounding; MC on the frozen V26 corpus; MC's misses of ledger L-0338 with the review probe subcommands cancel and
+  collapse; Sample's misses), CheckColumns::Sample and ::MultiColouring, AssemblyOptions::first_use_check,
+  DEFAULT_CHECK_COLUMNS, default_first_use_check, dense(), coloured(), AssemblyStageClient::new.
+- The arithmetic of the assembled Jacobian is untouched (no line of the build, of the entry formula or of the
+  comparisons changed).
+
+TESTS
+- New: tests/stage_clients_assembly_default.rs (5 tests): the default per route (coloured with dense LU and with
+  both band kernels, dense; sequential and threaded) and the selectability of every other check; the default
+  check runs once at the first linearization with total_groups (+1 with threads) right-hand sides on the coloured
+  route and 8 (+1) on the threaded dense route, Jacobian bits equal to a client without a check; whole runs with
+  the default equal runs without a check in every output bit, linearization point and Jacobian, the counters
+  differing by the check's right-hand sides alone; on 527 cases of the V26 corpus (controls, rings, every omission
+  of order 128) the default decides as the explicit MC (coloured) or Sample(8) (dense) and detects every wrong
+  declaration, the 54 that Sample(8) passes included; the L-0338 limits are real for the default (cancel B n=60,
+  cancel G n=84, the first collapse hit of the probe: the default passes, FA and FA_P detect; Sample(8) passes the
+  cancelling rows and detects the collapse because column 41 is one of its samples).
+- New: tests/stage_clients_assembly_default_alloc.rs (1 test, own binary): the first linearization of a sequential
+  coloured client with the default check allocates as much as one without a check (0 on the four cases), a
+  requested MC check allocates at that linearization (12): the counter-example.
+- Edited: tests/stage_clients_assembly_identity.rs:608, a comment only ("The default first-use check runs once"
+  -> "The first-use check (spec() names Sample(8)) runs once"): spec() configures Sample(8) explicitly, which is no
+  longer the default of the coloured route. No assertion changed: every existing test names its check.
+- A NOTE ON THE DIRECTION OF THE CHANGE (for the owner, from the V26 review logs, not new): on the frozen corpus MC
+  detects every case Sample(8) detects; outside it, in the three constructed collapse cases of L-0338, Sample(8)
+  detected (column 41 sampled) and MC passes. MC is not a superset of Sample(8) in general.
+
+PROTOCOL FORM
+- The task asks for PROTOCOL.json before the first run. The choices were committed before the first run in entry 1
+  of this file (ec284167) and in the recording program (f1eb5118), not in a file named PROTOCOL.json; nothing was
+  chosen after the runs. Reported as a deviation of form in RESULTS.json.
+
+NEXT
+- run.sh unit and run.sh checks (logs), parse_results.py -> RESULTS.json and REPORT_KO.md.
