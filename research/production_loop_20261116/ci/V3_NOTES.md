@@ -44,7 +44,12 @@ or records where the implementation reads the design in a particular way. The re
   library). These files are package sources of that package (rule 4): a non-Rust file among them is a
   structural change (its bytes are a constant of the crate), a `.rs` file is classified. A package
   in scope, or a dependency of one, whose inputs are not recorded counts as structurally changed
-  whenever the diff is not empty (rule 5 for packages).
+  whenever the diff is not empty (rule 5 for packages). A selected run unites the inputs it
+  records with the carried-over entry instead of replacing it: one `cargo test -p` per package
+  means a library may be built under another package's feature unification, and that must not
+  drop a feature-gated input (no workspace package enables features of another today, so the sets
+  agree; the union is a guard). A full run starts from an empty map, so a removed input stays at
+  most until the next full run (over-selection only).
 - **R5 Build scripts.** `build.rs` stays structural. The `rerun-if-changed` inputs of build scripts
   are not recorded: the integrators build script depends on itself only; the fair-ab build script
   reruns on every tracked file but embeds only the HEAD revision and the dirty flag, which its tests

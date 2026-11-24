@@ -1356,9 +1356,11 @@ def update_map(base_targets, base_packages, measured, lost, recorded, packages_l
         pkg, target, _ = split_key(key)
         if pkg in scope and pkg in packages and is_current(packages[pkg], target):
             keep[key] = item
+    # Library inputs are united with the carried-over entry: a run may build a library only under
+    # another package's feature unification, which must not drop an input; a full run starts empty.
     pkgs = {k: v for k, v in base_packages.items() if k in packages and k not in packages_lost}
     for name, files in recorded.items():
-        pkgs[name] = {"compile": files, "head": head}
+        pkgs[name] = {"compile": sorted(set(pkgs.get(name, {}).get("compile", [])) | set(files)), "head": head}
     return keep, pkgs
 
 
@@ -1859,7 +1861,7 @@ impl S {
                                {"vig::lib": {"compile": ["c"]}}, ["int::t_base"], {"core": ["z"]}, ["int"],
                                pk, scope, "h")
     assert sorted(targets) == ["int::t_ok", "int::t_ok#kill", "vig::lib"] and targets["vig::lib"]["head"] == "h", targets
-    assert pkgs == {"core": {"compile": ["z"], "head": "h"}}, pkgs
+    assert pkgs == {"core": {"compile": ["y", "z"], "head": "h"}}, pkgs
     # failed negative controls go to outcome.failed, so rule 6 selects them again (F9, F-03)
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "failed-controls.txt")
