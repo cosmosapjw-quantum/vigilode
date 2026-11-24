@@ -286,8 +286,9 @@ pub(super) struct Engine {
     shifted_values: Vec<f64>,
     threaded: Option<Threaded>,
     workers: Option<usize>,
-    /// The further colourings of the multi-colouring check, built at its
-    /// first use.
+    /// The further colourings of the multi-colouring check
+    /// ([`Engine::prepare_multi`]): built with the client when the check is
+    /// its first-use check, otherwise at the first use of the check.
     multi: Option<CheckColourings>,
     /// Row marks of the multi-colouring check on the calling thread.
     mark: Vec<usize>,
@@ -796,10 +797,12 @@ impl Engine {
         }
     }
 
-    /// The further colourings of the multi-colouring check, built at its
-    /// first use from the client's colouring and the band of the declared
-    /// entries. The dense route declares no pattern and is refused.
-    fn prepare_multi(&mut self) -> Result<(), AssemblyError> {
+    /// The further colourings of the multi-colouring check, built once from
+    /// the client's colouring and the band of the declared entries: by
+    /// [`super::AssemblyStageClient::new`] when the check is the first-use
+    /// check, otherwise at the first use of the check. The dense route
+    /// declares no pattern and is refused. No right-hand side is evaluated.
+    pub(super) fn prepare_multi(&mut self) -> Result<(), AssemblyError> {
         if self.multi.is_some() {
             return Ok(());
         }

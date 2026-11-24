@@ -605,7 +605,7 @@ fn checks_can_be_switched_off_and_requested() {
         Ok(fd.n)
     );
 
-    // The default first-use check runs once, at the first linearization.
+    // The first-use check (spec() names Sample(8)) runs once, at the first linearization.
     let mut client = spec(route, Arm::Seq, backend).build(fd.n);
     let handle = client.handle();
     for _ in 0..3 {
