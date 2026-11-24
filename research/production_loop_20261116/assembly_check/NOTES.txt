@@ -1,0 +1,102 @@
+NOTES of node V26_ASSEMBLY_FULL_CHECK (loop L1, wave 3), builder worktree w3-v26
+branch research/production-loop-20261116-w3-v26, base 80ba83881503c4b3253268df61c53b269740d6d3
+Frozen design: PREDECLARED.json of this directory (sha256 b8e75141...; addendum A7 of PREREGISTRATION.md).
+All times KST. Newest entry last.
+
+== 2026-11-24, entry 1 (start; nothing edited, nothing run) ==
+
+HOW THE CHECK WORKS TODAY (file:line, base 80ba8388)
+- crates/rodas5p-integrators/src/stage_clients/assembly.rs:207-217  enum CheckColumns { None, Sample(k), All }.
+  Sample(k): column floor((2 s + 1) n / (2 k)) for s = 0 .. k (engine.rs:665-670); All: every column.
+- assembly.rs:250-262  AssemblyOptions::dense()/coloured(): first_use_check = Sample(DEFAULT_CHECK_COLUMNS = 8).
+- assembly.rs:737-768  linearize: the pending request of the handle, else at the first linearization the
+  first-use check (only on the coloured route or with threads, :750-752); assemble(...) at :754.
+- assembly.rs:583-604  verify(problem, t, y, columns): one build + the check, without a driver.
+- assembly.rs:608-668  assemble: engine.build (:621-623), then engine.verify on the built target (:624-630);
+  bookkeeping: verified_columns += returned count, verification_rhs_calls += tally.verification (:647-657);
+  a failed build or check: failed_builds, last_error (:659-665).
+- engine.rs:620-715  Engine::verify:
+  * count = 0 / min(k, n) / n (:632-639);
+  * threaded engines repeat the base evaluation on the CALLING thread and require the bits of the pooled
+    base (slot 0), else NotReproducible { row, column: None } (:648-663); sequential engines use f0 of the build;
+  * then, ONE COLUMN AT A TIME ON THE CALLING THREAD (:664-713): shift y_j by increment(y_j) (:671-672),
+    one right-hand side into f1 (:673-675), restore (:676), the RHS error is returned (:677);
+    dense route: every row, (f1[i] - base[i]) / delta must have the bits of target[i n + j], else
+    NotReproducible { row, column: Some(j) } (:679-689);
+    coloured route: declared rows of column j (column_entries, rows increasing): (f1[i] - base[i]) / delta
+    must have the bits of the assembled entry, else AliasedEntry { row, column, assembled, single_column };
+    every other row: f1[i] must have the bits of base[i], else UndeclaredEntry { row, column } (:690-711);
+  * the first failure in (column, row) order ends the check; returns count.
+- No tolerance anywhere: every comparison is to_bits() equality.
+
+HOW THE GROUPS OF A COLOURING ARE EVALUATED TODAY
+- Colouring: pattern.rs:152-175 colour_columns = greedy first fit in natural column order (Curtis-Powell-Reid).
+  Group tables (columns, entries by column then row, covered rows) built once in Coloured::new (engine.rs:145-213).
+- Sequential client: engine.rs:451-492 build_coloured_sequential, on the calling thread: base f0 (:463-465),
+  then colour by colour in increasing order: shift the group's columns (:468-473), one RHS (:474-476),
+  restore (:477-479), the declared entries (:481-488), the uncovered-row test (:489, fn at :720-741: every row
+  that no column of the group declares must keep the bits of f0, else UncoveredRowChanged { row, colour }).
+- Threaded client: engine.rs:502-605 build_threaded, inside one pool.install of the client's own rayon pool
+  (exactly `workers` threads, engine.rs:322-330; the global pool is never used): pass 1 every RHS (base and one
+  per group) into its own slot from the slot's own copy of the state (:523-537, with_max_len(1)); pass 2 the
+  entries and the uncovered-row test of every group (:543-563); pass 3 the target by rows (:567-590);
+  failures in task order, base first (:592-604). Slot buffers (state + out per task) are allocated once in
+  Engine::new (:331-346), capped at 1 GiB (:23, :311-321). The calling thread waits.
+- So today the build of a threaded client is parallel but its check is sequential (n RHS on the calling
+  thread for CheckColumns::All).
+
+PLAN OF THE ARMS (frozen definitions in PREDECLARED.json "arms"; this is how they are realised)
+- S8: CheckColumns::Sample(8) (today's default; unchanged).
+- FA: CheckColumns::All (today's option; unchanged code path).
+- FA_P (new option): the n single-column evaluations of CheckColumns::All on the client's pool; P = 2, 4, 6
+  workers (threaded clients carry the RhsPurity acknowledgement). The base re-evaluation on the calling thread
+  stays as today. Every comparison is the comparison of FA. Columns are handed out in increasing order from
+  an atomic counter to P workers with one (state, f1) scratch each; the reported failure is that of the
+  smallest failing column (and inside it the first row in FA's order), which is the failure FA meets first,
+  so the decision is FA's by construction (tested, discriminator E). Workers skip columns above the smallest
+  failure found so far (changes only the number of evaluations of a failing check, not the decision).
+- MC (new option, coloured route only): the multi-colouring check of PREDECLARED.json mc_construction:
+  construction B (moduli m_r >= lower + upper + 1, pairwise coprime, increasing, until the product >= n) and
+  construction G (c1 refined by q(j) mod p_r, primes until the product >= the largest c1 class); the one with
+  the smaller total of non-empty groups (equal: B); the tuple map (c1 included) checked injective before the
+  check runs (failure = a configuration defect, not a verdict); for every further colouring and every group:
+  shift the group, one RHS, restore, every declared entry of the group compared bit for bit with the
+  client's assembled entry (from c1), and the uncovered-row test; typed errors name the row, the column (for
+  entries) or the group (for uncovered rows), and the colourings. Groups are generated on the fly (j mod m,
+  or a stride through a c1 class), not stored. Columns checked = n.
+- MC_P (new option): MC with the groups of every colouring handed out to the pool's workers (6); the
+  reported failure is that of the first (colouring, group) in MC's sequential order, so the decision is MC's.
+- On a sequential client the pooled options run on the calling thread (no pool and no purity
+  acknowledgement exist there).
+- MC every build (exploratory): a wrapper in the measurement target requests MC before every linearization.
+- FA_B (exploratory): a batched right-hand side of nlkpp-dense-n400 written in the measurement target:
+  k shifted states per call, each state's convolution summed in the order of the single evaluation
+  (vectorised across states), bits checked against the single evaluation; cost per evaluation reported.
+
+READINGS FIXED NOW (before any run), where the frozen text leaves a choice
+- Decision of an arm on a corpus case = the outcome of AssemblyStageClient::verify(problem, t0, y0, check)
+  on a fresh client: Ok(columns) or the typed AssemblyError (Debug text, row, column/colour). The first
+  linearization of a driver run is a build and the first-use check at (t0, y0), so this is the first-use
+  decision of the arm without the driver.
+- E for FA_P: the reference is FA on the same client execution. For a pure right-hand side the threaded
+  client's FA and the sequential client's FA decide alike (same build bits, same comparisons; the extra base
+  re-evaluation passes), so FA_P(P) is compared with FA of the sequential client on every corpus case, and on
+  the declared controls (which include the impure right-hand side of control 3) also with FA on the threaded
+  client of the same P (today's code, check on the calling thread). Same for MC_P against MC.
+- MC on the dense route (nlkpp-dense-n400, bruss1d-n128-dense): does not apply (PREDECLARED cost_cells);
+  verify returns AssemblyError::Configuration and the client constructor refuses it as a first-use check.
+- Construction B as written: its first modulus is lower + upper + 1; for a full band that colouring equals
+  c1 as a partition and only repeats the build (it can catch an impure right-hand side, nothing else). It is
+  kept (the frozen cost note counts it: 5 + 6 + 7 + 11 + 13 + 17 = 59); the count without it is reported as
+  exploratory arithmetic only.
+
+PLAN OF WORK (order is part of the evidence)
+0. this file (commit).
+1. Commit A, before any edit of the client: tests/stage_clients_assembly_check_corpus.rs (ignored program,
+   env-driven, JSON lines) builds every corpus case and records S8 and FA (and FA on threaded clients for the
+   declared controls) with today's code, plus the rounding-limited evidence of FA's misses; logs/ + commit.
+2. Client edit: FA_P, MC, MC_P; proof of the MC claim in this file; unit tests (every band with n <= 40, two
+   seeded random patterns, every single-entry omission); FA_B exploratory.
+3. Corpus with every arm (E, D, F).
+4. Cost cells (RHS counts, instructions:u, wall under the timing lock).
+5. parse_results.py -> RESULTS.json and REPORT_KO.md (Korean, rendered by script).
