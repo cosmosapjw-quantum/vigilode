@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "scipy": "1.17.0",
+  "numpy": "2.3.5",
+  "problem": "x=1/4+sin(t); f(t,y)=-80*y-y^3+cos(t)+80*x+x^3; t=0..1",
+  "reference": "analytic x(1)",
+  "config": {
+    "first_step": 0.05,
+    "atol_over_rtol": 0.01,
+    "jacobian": "analytic -80-3*y^2"
+  },
+  "scope": "SciPy implementation counts and endpoint errors; no cross-host timing. The solver object exposes accepted steps and work, not every rejection.",
+  "rows": [
+    {
+      "method": "BDF",
+      "rtol": 0.0001,
+      "accepted": 12,
+      "nfev": 35,
+      "njev": 2,
+      "nlu": 5,
+      "endpoint_error": 8.56896511525207e-08
+    },
+    {
+      "method": "BDF",
+      "rtol": 1e-06,
+      "accepted": 23,
+      "nfev": 63,
+      "njev": 3,
+      "nlu": 9,
+      "endpoint_error": 6.172482303057336e-09
+    },
+    {
+      "method": "BDF",
+      "rtol": 1e-08,
+      "accepted": 40,
+      "nfev": 98,
+      "njev": 2,
+      "nlu": 12,
+      "endpoint_error": 2.969069434755056e-10
+    },
+    {
+      "method": "Radau",
+      "rtol": 0.0001,
+      "accepted": 3,
+      "nfev": 25,
+      "njev": 2,
+      "nlu": 6,
+      "endpoint_error": 8.202207006480222e-06
+    },
+    {
+      "method": "Radau",
+      "rtol": 1e-06,
+      "accepted": 7,
+      "nfev": 62,
+      "njev": 4,
+      "nlu": 12,
+      "endpoint_error": 6.353194859087807e-09
+    },
+    {
+      "method": "Radau",
+      "rtol": 1e-08,
+      "accepted": 22,
+      "nfev": 191,
+      "njev": 8,
+      "nlu": 22,
+      "endpoint_error": 2.5961144345387765e-10
+    }
+  ]
+}

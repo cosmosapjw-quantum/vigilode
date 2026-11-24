@@ -188,10 +188,6 @@ pub mod affine_events;
 mod automatic;
 mod capabilities;
 pub mod causal_budget;
-#[cfg(feature = "structured")]
-pub mod graph_schur;
-#[cfg(feature = "structured")]
-pub mod structured;
 mod cofactor_chart;
 pub mod coloring;
 mod error;
@@ -200,6 +196,8 @@ pub mod execution_policy;
 mod explicit;
 mod explicit_ensemble;
 mod fd;
+#[cfg(feature = "structured")]
+pub mod graph_schur;
 pub mod hermite_splice;
 pub mod hybrid_automaton;
 mod lawson;
@@ -213,12 +211,14 @@ mod records;
 pub mod registry;
 mod selection;
 pub mod selection_evidence;
-pub mod split_forcing;
 mod session;
 mod solution;
 mod solve;
-mod switching;
 pub mod spatial;
+pub mod split_forcing;
+#[cfg(feature = "structured")]
+pub mod structured;
+mod switching;
 pub mod unified;
 pub mod work_model;
 

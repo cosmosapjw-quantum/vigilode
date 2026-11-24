@@ -1,0 +1,54 @@
+{
+  "schema": "vigilode.referee.named-matrix-free.v1",
+  "commit": "6d4565fac15c343a79461c9111081cdb55fc434f",
+  "execution": "cargo test --offline -p vigilode --test matrix_free_portfolio -- --nocapture",
+  "test_passed": 2,
+  "refused_combinations": 9,
+  "rates": [
+    2,
+    30,
+    100,
+    500
+  ],
+  "formula": "y_i(t)=exp(-a_i*t), y_i(0)=1",
+  "final_t": 0.02,
+  "rtol": 0.000001,
+  "atol": 1e-9,
+  "rows": [
+    {
+      "policy": "mf-stage-solve-shipped-v1",
+      "error_linf": 2.0369363239582192e-11,
+      "attempts": 25,
+      "accepted": 24,
+      "jvp": 1200,
+      "rhs": 199,
+      "linear_iterations": 800,
+      "linear_solves": 200
+    },
+    {
+      "policy": "mf-stage-solve-column-tested-v1",
+      "error_linf": 2.0369343127631893e-11,
+      "attempts": 25,
+      "accepted": 24,
+      "jvp": 1128,
+      "rhs": 199,
+      "linear_iterations": 728,
+      "linear_solves": 200
+    },
+    {
+      "policy": "mf-stage-solve-column-tested-doubling-v1",
+      "error_linf": 2.0369343127631893e-11,
+      "attempts": 25,
+      "accepted": 24,
+      "jvp": 1128,
+      "rhs": 199,
+      "linear_iterations": 728,
+      "linear_solves": 200
+    }
+  ],
+  "assertions": [
+    "zero dense Jacobian builds, direct factorizations and Newton iterations in all arms",
+    "external JVP callback counter equals the native counters",
+    "direct protected vs explicit Shipped endpoint rows and serialized Stats exactly equal"
+  ]
+}

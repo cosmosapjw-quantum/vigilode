@@ -1,0 +1,204 @@
+{
+  "schema": 1,
+  "source_commit": "42a13f05e33f5baf2e41a69ea7a1563388dd15af",
+  "source_sha256": {
+    "crates/vigilode/src/split_forcing.rs": "f7fa72a24ce752d64c6175a5f449935b3d10287cf260ee4b20fbf5ef28220a9f",
+    "crates/vigilode/tests/split_forcing_contracts.rs": "cc2bd994b9fe4840ab706ac7558a5e2a28fd7fc08dce02f6ab75f650a8875d84"
+  },
+  "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25), Cargo 1.94.1, x86_64-unknown-linux-gnu, Linux 7.0.0-43-generic, AMD Ryzen 9 5900X, 24 logical CPUs",
+  "command": "cargo test --locked --offline --release -p vigilode --test split_forcing_contracts -- --include-ignored --test-threads=1 --nocapture",
+  "tests": {
+    "passed": 7,
+    "failed": 0,
+    "ignored": 0,
+    "elapsed_seconds": 0.75,
+    "process_exit_code": 0
+  },
+  "request_timing_eligible": false,
+  "timing_note": "1-minute host load observed at 60.17 before campaign and 59.28 after final run (24 logical CPUs). Timing is an exploratory sample. No general speedup, holdout or release pass. Source/direct baseline, one warm-up plus 12 timed paired rounds. Pool setup amortized. Nonempty state/forcing validation and counters enabled in every arm.",
+  "manufactured": [
+    {
+      "accepted": 4,
+      "case": "manufactured",
+      "endpoint_error": 0.000006802423075491504,
+      "rejected": 0,
+      "rtol": 0.0001
+    },
+    {
+      "accepted": 13,
+      "case": "manufactured",
+      "endpoint_error": 1.327762300107338e-8,
+      "rejected": 1,
+      "rtol": 0.000001
+    },
+    {
+      "accepted": 42,
+      "case": "manufactured",
+      "endpoint_error": 2.9603985929327337e-10,
+      "rejected": 1,
+      "rtol": 1e-8
+    }
+  ],
+  "timing": [
+    {
+      "arms": [
+        "direct",
+        "cache1",
+        "cache2",
+        "cache4"
+      ],
+      "endpoint_bits": "4595833202325754491",
+      "modes": 8,
+      "samples_ns": [
+        [
+          5240,
+          5580,
+          5260,
+          5400,
+          5500,
+          5110,
+          5160,
+          5541,
+          5520,
+          5430,
+          5200,
+          5681
+        ],
+        [
+          6553,
+          5851,
+          5330,
+          5581,
+          10210,
+          5531,
+          5350,
+          6302,
+          6051,
+          6061,
+          5711,
+          5991
+        ],
+        [
+          1989736,
+          1688556,
+          981368,
+          2995730,
+          1377718,
+          636906,
+          1978896,
+          926323,
+          2955854,
+          980877,
+          2982365,
+          2996562
+        ],
+        [
+          276003,
+          1002077,
+          988140,
+          605927,
+          2059247,
+          295940,
+          56297,
+          57428,
+          1984737,
+          2020705,
+          970456,
+          26330
+        ]
+      ],
+      "median_ns": [
+        5415,
+        5921,
+        1833726,
+        788191.5
+      ],
+      "source_over_median": [
+        1,
+        0.9145414625907786,
+        0.002953003883895413,
+        0.006870157823320855
+      ]
+    },
+    {
+      "arms": [
+        "direct",
+        "cache1",
+        "cache2",
+        "cache4"
+      ],
+      "endpoint_bits": "4595833556879354695",
+      "modes": 100000,
+      "samples_ns": [
+        [
+          13312327,
+          10530852,
+          10348437,
+          9906009,
+          12047773,
+          26513814,
+          22390439,
+          22418252,
+          25407118,
+          18474638,
+          21956057,
+          9456499
+        ],
+        [
+          17245402,
+          8028446,
+          8161468,
+          8075375,
+          14272865,
+          14189527,
+          14245924,
+          16571395,
+          14350792,
+          16581614,
+          7828097,
+          7440092
+        ],
+        [
+          14774955,
+          7744328,
+          7108134,
+          10520232,
+          11856812,
+          8307214,
+          12304219,
+          14044322,
+          8583065,
+          11609443,
+          12204590,
+          14940319
+        ],
+        [
+          19996608,
+          14588102,
+          5590731,
+          8919703,
+          8103096,
+          13414060,
+          14470068,
+          17067966,
+          11748848,
+          8017946,
+          12038906,
+          9253594
+        ]
+      ],
+      "median_ns": [
+        15893482.5,
+        14217725.5,
+        11733127.5,
+        11893877
+      ],
+      "source_over_median": [
+        1,
+        1.1178639297825803,
+        1.3545819305210822,
+        1.3362743283792156
+      ]
+    }
+  ]
+}

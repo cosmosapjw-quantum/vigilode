@@ -1,0 +1,58 @@
+{
+  "schema": "vigilode.referee.independent-review.v1",
+  "date_kst": "2026-11-24",
+  "reviewed": {
+    "split_clock": "fde6181847821a49a0916179e4998839953324ba",
+    "external_comparison": "fc8b5a5ac74417ee538ce919bae6ae6ac82451af",
+    "named_matrix_free": "6d4565fac15c343a79461c9111081cdb55fc434f"
+  },
+  "split_findings": [
+    {
+      "finding": "Zero-initialized forcing buffers accepted omitted writes and invisible speculative work was external to RHS counters",
+      "correction": "53d274b3, 310d271b in integrated worktree: NaN and finite check both state and forcing; separate hit/miss telemetry; honor speculative failure only upon consumed clock"
+    }
+  ],
+  "reference": {
+    "model_reuse": "Spec, RHS, analytic Jacobians and IC source unchanged after normalizing visibility markers when extracting U11 functions",
+    "jacobi_check": "Center-difference each column on y0 plus y_i=y0_i+0.071*k*cos(i+1), k=0,1,2. h_j=2e-6*(1+abs(y_j)); scaled discrepancy abs(J-FD)/(1+abs(J)). Source Rust compiled and executed",
+    "jacobian_max": [
+      {
+        "problem": "hires",
+        "directions": 24,
+        "max": 3.582010368195068e-11
+      },
+      {
+        "problem": "oregonator",
+        "directions": 9,
+        "max": 5.1895203791783014e-11
+      },
+      {
+        "problem": "brusselator_mol32",
+        "directions": 192,
+        "max": 4.659365829985723e-11
+      }
+    ],
+    "tight_julia_endpoint_wrms": {
+      "hires": 4.047607595191533e-13,
+      "oregonator": 4.455300979280524e-13,
+      "brusselator_mol32": 2.5041862729056476e-14
+    },
+    "empirical_ref_uncertainty_sensitivity": "Zero changes among 29 completed native rows using max(old U_ref, Julia 1e-13 discrepancy). All six arm vs tolerance series monotone on successful interval.",
+    "completion": "30 recorded, CVODE Oregonator rtol 1e-4 flag -3 after 640 accepted. No endpoint inference for this row.",
+    "endpoint_contract": "CVODE serial CV_ONE_STEP can pass t_end and uses CVodeGetDky to output the endpoint; VigilODE clips to t_end. Counters describe each algorithm's native endpoint API."
+  },
+  "named_matrix_free_final_golden": {
+    "test_binaries": [
+      "default_path_golden",
+      "matrix_free_portfolio"
+    ],
+    "passed": [
+      11,
+      2
+    ],
+    "failed": [
+      0,
+      0
+    ]
+  }
+}

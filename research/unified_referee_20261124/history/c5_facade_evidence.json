@@ -1,0 +1,44 @@
+{
+  "schema": "vigilode.source-bound-graph-frontend.v1",
+  "tested_commit": "8cd568323dd30d0f00bd2129af6b5fe9a5d6a33b",
+  "feature": "structured",
+  "public_api": "VigilODE::solve_graph_cubic",
+  "command": "RAYON_NUM_THREADS=2 cargo +1.94.1 test --offline --locked -p vigilode --features structured --test graph_schur_frontend -- --nocapture",
+  "exit": 0,
+  "tests_passed": 3,
+  "source_bound_to_callbacks": "source_owned_cooperative_cubic_problem",
+  "original_step_driver": "integrate_rodas5p_fast_client_observed_with_atol",
+  "traveling_mode": {
+    "n": 33,
+    "t": [
+      0,
+      0.01,
+      0.03,
+      0.05
+    ],
+    "rtol": 1e-08,
+    "atol": 1e-10,
+    "formula": "theta=4pi/33; y_i(t)=exp((-1.25+24(cos(theta)-1))*t)*cos(i*theta-24*sin(theta)*t)",
+    "max_abs_grid_errors": {
+      "Sequential": 2.1949109196839345e-12,
+      "HillisSteele": 2.195021941986397e-12,
+      "Blelloch": 2.195243986591322e-12
+    },
+    "original_stage_checks_each": 56,
+    "full_band_fallback_each": 0
+  },
+  "full_band_fallback": {
+    "input": "coupling c[1,0]=1e24; all other couplings zero; k=(1,1); g=(0,0); zero initial state; h=tf=0.01. Nonsingular triangular W whose sufficient graph contraction margin rounds to zero.",
+    "successful": true,
+    "factorizations": 1,
+    "stages": 8,
+    "returned_state": [
+      0.0,
+      0.0
+    ]
+  },
+  "other_controls": [
+    "unsupported cyclic graph without feedback vertex returns structured CoreError",
+    "max_attempts=1 returns accepted partial state, explicit AttemptBudget and positive charged stage checks"
+  ]
+}

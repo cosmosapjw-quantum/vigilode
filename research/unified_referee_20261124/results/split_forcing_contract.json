@@ -1,0 +1,46 @@
+{
+  "objective": "Determine which work can be scheduled across a classical eight-stage RODAS5P attempt when state forcing remains nonlinear.",
+  "claim": "For pure additive f=N(t,y)+g(t), six distinct forcing clocks suffice for eight classical stages. The nonlinear state stages retain depth eight. The kernel is algebraically equivalent to a direct sum with the same evaluation/addition order and finite values.",
+  "implementation": "vigilode::split_forcing::SplitForcing::{new,direct_problem,prepare_rodas5p_trial}; returns ordinary Problem. Each prepared grid is immutable; all nonmatching clocks evaluate g directly.",
+  "source_commit": "42a13f05e33f5baf2e41a69ea7a1563388dd15af",
+  "primary_source": "https://doi.org/10.1007/s10543-023-00967-x",
+  "code_clock_source": "fixtures/rodas5p_coefficients_snapshot.json",
+  "distinct_c": [
+    0.0,
+    0.6358126895828704,
+    0.4095798393397535,
+    0.9769306725060716,
+    0.4288403609558664,
+    1.0
+  ],
+  "endpoint_reuse_stages": [
+    6,
+    7,
+    8
+  ],
+  "safeguards": [
+    "immutable model while Problem lives; callbacks deterministic and side-effect-free",
+    "on-miss exact-time evaluation, including every unclipped, retry or finite-difference probe",
+    "computed failures deferred to matching request; state callback errors preserve precedence",
+    "dense analytic derivative must be partial_t N+g'; FD sees composite",
+    "NaN sentinel for every state and forcing component: invalid complete outputs produce a fatal facade-contract error, including only at consumption for a speculative forcing row",
+    "ForcingWork counts prepared + misses = actual forcing evaluations; hits include requested rows with cached errors. failed_evaluations counts actual failures once. Snapshot after parallel activity stops."
+  ],
+  "comparison": [
+    "direct composite, cached serial, cached 2 and 4 local workers",
+    "public production Rodas5p::solve called from fixture",
+    "charge table preparation and full native solve; pool construction amortized",
+    "record actual final bits, 1 accepted, 0 rejected in timing cohort",
+    "fixed manufactured g, analytic independent endpoint vs SciPy BDF and Radau, three requested tolerances"
+  ],
+  "next": {
+    "experiment": "Consume every actually proposed/limited trial grid prior to stage one under an opt-in adaptive hook. Keep current off-grid rejection-safe implementation.",
+    "acceptance": "Analytic and FD time-derivative bits; rejections, clipping, error precedence, true callback counts including speculative work; held-out expensive physical forcing. Compare serial dedup and direct composition in paired counterbalanced runs under existing load limit, before any Auto/default consideration."
+  },
+  "exclusions": [
+    "full-stage parallelism for arbitrary RHS",
+    "general wall speedup or production promotion",
+    "equivalence under mutable model epoch, random or side-effecting g",
+    "adaptive refreshing beyond the user-proposed trial"
+  ]
+}

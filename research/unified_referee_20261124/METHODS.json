@@ -1,0 +1,91 @@
+{
+  "schema": "vigilode.method-transfer.v1",
+  "semantics": {
+    "user_derivative_free": "The user supplies no derivatives. FD still evaluates derivatives numerically.",
+    "matrix_free": "Applies the linearized operator or a preconditioner without assembling the state Jacobian on the specified path.",
+    "newton_free": "No nonlinear Newton iterations on that path, including startup if claiming a whole solve.",
+    "causal": "Trial adaptation can only use available data; algebraic dependence, callback purity and time ordering are distinct."
+  },
+  "methods": [
+    {
+      "family": "RODAS5P (arbitrary RHS)",
+      "contract": "Eight ordered nonlinear stage arguments. Newton-free stage solves. User RHS alone invokes finite-difference assembly; a declared JVP permits GMRES without forming J.",
+      "reuse_and_research": "Shared factor at fixed linearization, independent stencil rows or ensemble; pure time forcing can be prefetched at six distinct clocks. Explicit P1 uses original true residual.",
+      "fallback_and_limit": "Protected shipped solve; fatal callbacks stop. Reject a capability mismatch before work.",
+      "evidence_key": "V25-B",
+      "task": "gmres-path"
+    },
+    {
+      "family": "RODAS5P (homogeneous spectral)",
+      "contract": "Frozen real nonpositive diagonal spectrum, identity mass, amplitudes already expressed in an orthonormal or explicitly norm-compatible basis.",
+      "reuse_and_research": "Two rational charts for endpoint and embedded error, independent arithmetic on modes; step rejection uses same physical state and tolerance scale.",
+      "fallback_and_limit": "General problems and requests requiring dense output use the protected problem. Transform, rounding and transfer overhead count.",
+      "evidence_key": "modal",
+      "task": "modal-modes"
+    },
+    {
+      "family": "BDF1/2",
+      "contract": "Implicit multistep residual, history and starter; supplied J or RHS finite differences served by the public registry.",
+      "reuse_and_research": "Independent columns/linear algebra; within an eligible contraction chart test inverse-Picard at the original BDF residual before Newton. Step changes require re-evaluating the certificate.",
+      "fallback_and_limit": "Dense Newton BDF on current admitted problem. Account every trial and history reset.",
+      "evidence_key": "portfolio",
+      "task": "implicit-roots"
+    },
+    {
+      "family": "Radau IIA3",
+      "contract": "Coupled collocation residual. Native dense Newton uses analytic J or RHS finite differences.",
+      "reuse_and_research": "For linear or frozen semilinear systems transform stage matrix; precondition coupled Krylov per block and retain full original residual and nonlinear outer stop.",
+      "fallback_and_limit": "Native dense Radau, or explicit admission failure. Count transform, correction and setup.",
+      "evidence_key": "portfolio",
+      "task": "radau-blocks"
+    },
+    {
+      "family": "DOPRI5 / ensemble",
+      "contract": "Explicit stage DAG, no J or Newton. Independence across trajectories requires pure per-trajectory inputs.",
+      "reuse_and_research": "Use the existing parallel ensemble and FSAL. Use causal error seeds for truncated trials only when propagated to physical output.",
+      "fallback_and_limit": "Explicit rejection or current shared-budget DOPRI→RODAS path.",
+      "evidence_key": "V27",
+      "task": "routing"
+    },
+    {
+      "family": "Peer W / PPSW1 / PTSW2B",
+      "contract": "Previous-step stage history permits parallel RHS/solves; starter and variable-step history carry independent costs.",
+      "reuse_and_research": "Large stage workloads or independent physical cells. Compare a cheaper starter and measure warm/cold/reset costs.",
+      "fallback_and_limit": "Explicit opt-in. U11 G0 failed; preserve a complete trajectory on restart.",
+      "evidence_key": "U11",
+      "task": "peer"
+    },
+    {
+      "family": "PEXPRB54s4 / Lawson / Leja / Chebyshev",
+      "contract": "Declared linear action or split, distinct nonlinear remainder and operator semantics.",
+      "reuse_and_research": "Matrix-function actions, independent vectors or polynomial evaluations; a state/time-dependent split needs an appropriate method model.",
+      "fallback_and_limit": "Refuse invalid split; resume only from a valid full RHS, never integrate the residual alone.",
+      "evidence_key": "portfolio",
+      "task": "exponential"
+    },
+    {
+      "family": "Source-owned coupled BE / midpoint / continuation",
+      "contract": "Cooperative dissipative cubic network or scalar polynomial with an original residual and a source-certified domain. BE order 1, midpoint is a different target.",
+      "reuse_and_research": "Per-component polynomial inverse/Picard; finite homotopy endpoint λ=1, interval residual/branch identity. Score continuation versus direct λ=1 at identical target.",
+      "fallback_and_limit": "Bounded algebraic repair, explicit exhausted attempt/accepted prefix. Separate trajectory and stage error.",
+      "evidence_key": "homotopy",
+      "task": "implicit-roots"
+    },
+    {
+      "family": "Graph-Schur / path solve",
+      "contract": "Ordered scalar affine forest W-subproblem plus bounded feedback core on an eligible source.",
+      "reuse_and_research": "Sequential forward substitution; work-efficient parallel prefix on long paths; original W residual after reordering.",
+      "fallback_and_limit": "Source-matched protected full-band LU. Topological mismatch is a typed refusal.",
+      "evidence_key": "P12",
+      "task": "graph-transport"
+    },
+    {
+      "family": "Periodic 2D/3D and full S² diffusion",
+      "contract": "Discrete conservative spatial operator, correct cell areas, polar no-flux, periodic longitude; declared RHS/JVP matrix-free.",
+      "reuse_and_research": "Independent row partitions, geometry-specific preconditioning and modal actions on known separable operators.",
+      "fallback_and_limit": "Serial rows; explicit small-grid FD for dense output. Use full model if normal-mode assumptions fail.",
+      "evidence_key": "spatial",
+      "task": "sphere-lines"
+    }
+  ]
+}

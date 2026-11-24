@@ -1,0 +1,7 @@
+cosmosapjw-quantum/vigilode의 research/unified-solver-referee-20261124 브랜치를 fetch하고, 현재 HEAD와 작업트리 상태를 확인한 뒤 그 HEAD에서 새 연구 브랜치를 만들어라. research/unified_referee_20261124의 REPORT_KO.md, NEXT_PLAN.json, METHODS.json, RUN.json 및 관련 원시 기록을 읽어라.
+
+첫 두 실험은 독립적으로 진행하라. (1) 구면 유한체적 열방정식의 경도선 전처리기를 실제 adaptive RODAS5P stage의 GMRES에 연결하라. sigma, 반지름, 격자, 계수 epoch로 재사용을 제한하고 원래 비전처리 W 잔차, 면적질량, 극축, constant mode, 거절·재시도까지 검증하라. shipped/P1/P2, 전처리/비전처리, 분리 가능한 경우 정확 이산 전파기를 같은 물리 출력을 대상으로 비교하라. (2) V25 Robertson의 38 대 41 budget exhaustion이 처음 갈라지는 accepted state, h, error estimate, W와 RHS를 기록하라. 동결 선형계 재생에서 S/P1이 같은 실패를 낸 기록을 기준으로 폐루프 원인을 찾아라. fallback에 소비한 probe와 JVP도 전부 계수하고 기존 B 규칙으로 다시 판정하라.
+
+이어 NEXT_PLAN.json의 독립 노드와 선행조건을 따라라. 일반 비선형 RODAS5P의 8개 상태 의존 RHS는 기준으로 보존하고, 시간 forcing·정상모드·공간 prefix·peer의 병렬성을 각각 실측하라. BDF/Radau/BE/ROW의 원래 residual과 차수, Lawson의 residual/full RHS 의미를 보존하라. 공식별 허용오차, interpolation, 실제 달성오차, 원가 및 실패 셀을 기록하라. 새 방법은 반드시 단일 vigilode facade의 실제 호출로 비교하고, 기본 경로 golden, 직접해 또는 독립 solver 및 기존 release matrix를 검증하라.
+
+각 노드의 입력 SHA, 실행 명령, 원시 결과, 실패 원인, 적용 범위와 machine-readable 판정을 저장하라. 새 결과를 원래 G0/릴리스 기준으로 판정하고, 구현·검증된 변경만 연구 브랜치에 커밋해 push한 뒤 원격 SHA를 확인하라. release tag와 main 병합은 별도 결정으로 남겨라.

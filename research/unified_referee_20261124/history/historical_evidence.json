@@ -1,0 +1,92 @@
+{
+  "schema": "vigilode.recovered-experiment-lineage.v1",
+  "date": "2026-11-24",
+  "scope": {
+    "library_title_records": 560,
+    "title_pages": 6,
+    "project_folder_items": 182,
+    "handoff_or_source_files_read": 24,
+    "archive": "PPSW1 six raw trajectory payloads and paired timings directly recovered and checked; historical experiments not rerun unless stated below",
+    "chat_history": "Unavailable in this session. No claim of exhaustive historical chat access."
+  },
+  "historical": [
+    {
+      "pr": 110,
+      "commit": "6c99864b9826070adfaf4da759efa5328f54f45a",
+      "what": "N02 triggered right flexible GMRES after Givens opportunity; original residual and stage budget guard required.",
+      "evidence": "PR112 handoff records 3/3 scoped native tests on PR110."
+    },
+    {
+      "pr": 112,
+      "commit": "b8ace433fd8558ff725b3ad9ef4375e6af94a738",
+      "tested": "8ee28f79dae36a1649ba34e7c90c34e895e1952b",
+      "science_ci": 40854556822,
+      "what": "N03 physical stage-error conditional on source- and epoch-owned J,b intervals with weighted matrix measure. Native N02 guard integration.",
+      "historical_tests": "13/13; synthetic rational positive/adversarial trials",
+      "unresolved": "No independently established physical33 enclosure or matched-error adaptive IVP timing."
+    },
+    {
+      "pr": 152,
+      "commit": "c89c639cb67e0528db733598fd654fa538ce8182",
+      "what": "Source-certified affine contraction fast-first. Three median speedups 1.206, 1.321, 1.887 on n=1/256 homogeneous and n=256 heterogeneous.",
+      "scope": "Fixed-point map, not a complete general stiff IVP."
+    },
+    {
+      "pr": 154,
+      "commit": "93b2f238f693033ee2d83efc270124c5fef6af84",
+      "what": "Native scalar cubic BE full IVP: reported fast-first wall ratios 1.01659,1.02310,1.01339. Negligible all-in separation."
+    },
+    {
+      "pr": 156,
+      "commit": "bde853af2cd5fc1ac670a15cca6227b84ac20b8f",
+      "what": "Cooperative nonnegative cubic inverse Picard, q_i=h C_i/[1+h(k_i+C_i)]<1 under source hypotheses. Raw source calls 346→270, 635→507, 688→546 and 384→384 on linear control. Same requested budget nonlinear speedup 1.22–1.25.",
+      "scope": "Only 2/4 reached 1% achieved accuracy parity under that comparison."
+    },
+    {
+      "pr": 160,
+      "commit": "cf690ad5ec723052e9eb6f71335f7cb3b43607a6",
+      "science_ci": 41186122032,
+      "what": "43008 exact-rational Bernstein continuous reference panels; frozen selected parent pairs 4/4 certified within 1% (16/20 same-alpha pairs). Use existing reference bits and frontier, with paired same-machine times.",
+      "inherited_measured_baseline_over_fast_at_certified_caps": {
+        "asymmetric_2:8e-4": 1.24426046,
+        "asymmetric_2_refined:4e-4": 1.24419423,
+        "coupled_3_cubic:2e-4": 1.24742856,
+        "linear_exchange_control:1e-4": 1.3214418,
+        "linear_exchange_control:2e-4": 0.9958257
+      }
+    },
+    {
+      "pr": 163,
+      "tested": "c0ca2286cf9f00ce12b4ec7eaeeef8fd0e4f21a3",
+      "what": "16/16 original native RODAS5P full-IVPs and 16 independent error audits. This evidence alone cannot compare wall time with BE runs recorded on another runner."
+    },
+    {
+      "pr": 170,
+      "commit": "f5904e1e799ca50199361f270fab8515fa6f273e",
+      "what": "Exact Bernstein 9→12 elevation yielded nonincreasing defect bounds for 768/768 panels, strict on 764. Offline study; HOL kernel not run."
+    },
+    {
+      "pr": 183,
+      "commit": "0e4b3830dc45b73b36d050c076e1cf7c280e3fe2",
+      "peer_source": "0caa3ed21fcbd5c3fdb19f873734d86ffeba5853",
+      "receipt": "https://github.com/cosmosapjw-quantum/vigilode/pull/183#issuecomment-6908113356",
+      "what": "F05 centered point-IVP, imported PPSW1-6B, full H/He rank-three W. 46080 cells, 184320 variables, eight time steps, six W factorizations and 36 solves; startup RK4 charged. Three times per arm, shared original residual 6.144476522185765e-14.",
+      "acquired": "Original cold archive SHA and six raw trajectory SHA values recomputed during this audit; timing samples recovered from original paired/BENCHMARK.json, historical executions.",
+      "compressed_archive_sha256": "293dbed68fa26aba7df0552aa524e142676bd6f3d0dabf87393397648fb73e25",
+      "archive_bytes": 254457952,
+      "all_six_sha256": "7154ea71a1e298ddc5392ab3c5e5ad0e94e6e88396199ee271cf29026b008c04",
+      "raw_seconds_1_thread": [
+        3.427075782,
+        3.368278323,
+        3.28806058
+      ],
+      "raw_seconds_6_threads": [
+        2.762564404,
+        2.730647652,
+        2.669587423
+      ],
+      "elapsed_ratio": 0.8106953731685432,
+      "scope": "Single point-IVP on the frozen closure, three runs per arm. Official tick 161 withheld, native final uncertainty interval ledgers not run. This is peer-stage parallelism; the identical RODAS5P eight-stage nonlinear DAG is separate."
+    }
+  ]
+}

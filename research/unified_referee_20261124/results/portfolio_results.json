@@ -1,0 +1,143 @@
+{
+  "schema": "vigilode.referee.portfolio.v1",
+  "date_kst": "2026-11-24",
+  "tested_code": "261ac5609bb1c35b2de340dd26db0fd2f5225084",
+  "tested_baseline": "ab4907172e716a139ff0cde83c5e7e70564b47f2",
+  "published_base_at_start": "a66215e7f1d61dfd1a49f6e7ddfbd57c21f37563",
+  "implementation_commit": "5b70ce6832a57e79c9db5d1839b13d73e5715c35",
+  "host": "cosmosapjw",
+  "rustc": "1.94.1 (e408947bf 2026-03-25)",
+  "commands": [
+    "cargo test --offline -p vigilode --test portfolio -- --nocapture",
+    "cargo test --offline -p vigilode --test unified_method_capabilities",
+    "cargo test --offline -p vigilode --test unified_frontend_contracts auto_fallback_is_opt_in_bounded_by_permissions_and_never_silent"
+  ],
+  "red_green": {
+    "method": "unknown-regime explicit registry trial on one state; first callback Fatal, subsequent callbacks would succeed; next admitted method available",
+    "baseline_actual_attempts": 2,
+    "required": 1,
+    "after_actual_attempts": 1,
+    "external_callback_entries_after": 1
+  },
+  "linear": {
+    "equation": "y_i'=-a_i*y_i",
+    "rate_constants": [
+      1,
+      300
+    ],
+    "y0": [
+      1,
+      1
+    ],
+    "t_span": [
+      0,
+      0.04
+    ],
+    "reference": "exp(-a_i*t)",
+    "rtol": 1e-06,
+    "atol": 1e-09,
+    "rows": [
+      {
+        "method": "bdf1-bdf2-variable",
+        "error_linf": 3.233049196282855e-08,
+        "rhs": 2595,
+        "fd_rhs": 1557,
+        "jacobian_builds": 519,
+        "newton_iterations": 519
+      },
+      {
+        "method": "radau-iia3",
+        "error_linf": 6.3971087533305055e-12,
+        "rhs": 800,
+        "fd_rhs": 240,
+        "jacobian_builds": 80,
+        "newton_iterations": 80
+      }
+    ]
+  },
+  "nonlinear": {
+    "equation": "y_i'=-a_i*y_i*(1+y_i)",
+    "y0": [
+      1,
+      1
+    ],
+    "t_span": [
+      0,
+      0.1
+    ],
+    "reference": "exp(-a_i*t)/(2-exp(-a_i*t))",
+    "rows": [
+      {
+        "method": "bdf1-bdf2-variable",
+        "rate_constants": [
+          1,
+          50
+        ],
+        "rtol": 0.0001,
+        "atol": 1.0000000000000001e-07,
+        "error_linf": 1.6518908243895979e-06,
+        "rhs": 4438
+      },
+      {
+        "method": "bdf1-bdf2-variable",
+        "rate_constants": [
+          1,
+          50
+        ],
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "error_linf": 1.885149826649432e-08,
+        "rhs": 38058
+      },
+      {
+        "method": "bdf1-bdf2-variable",
+        "rate_constants": [
+          1,
+          50
+        ],
+        "rtol": 1e-08,
+        "atol": 1.0000000000000001e-11,
+        "error_linf": 6.024835075280066e-10,
+        "rhs": 152576
+      },
+      {
+        "method": "radau-iia3",
+        "rate_constants": [
+          1,
+          50
+        ],
+        "rtol": 0.0001,
+        "atol": 1.0000000000000001e-07,
+        "error_linf": 1.3969997425360148e-08,
+        "rhs": 439
+      },
+      {
+        "method": "radau-iia3",
+        "rate_constants": [
+          1,
+          50
+        ],
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "error_linf": 4.2542458271455086e-11,
+        "rhs": 1124
+      },
+      {
+        "method": "radau-iia3",
+        "rate_constants": [
+          1,
+          50
+        ],
+        "rtol": 1e-08,
+        "atol": 1.0000000000000001e-11,
+        "error_linf": 1.4937703851636286e-13,
+        "rhs": 3025
+      }
+    ]
+  },
+  "reported_levels": {
+    "bdf1-bdf2-variable": "implemented-unqualified",
+    "radau-iia3": "reference-implementation-only"
+  },
+  "scope": "RHS-only API. Both arms approximate and assemble a dense Jacobian and run Newton internally. No automatic protected-default promotion. Values are finite-grid numerical checks."
+}

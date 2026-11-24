@@ -1,0 +1,105 @@
+{
+  "schema": "vigilode.graph-schur-p12.v1",
+  "base": "a66215e7f1d61dfd1a49f6e7ddfbd57c21f37563",
+  "scope": "Explicit C5 original Rosenbrock W stage solver for frozen cooperative cubic owner with one-feedback-vertex path forest. Networks operate over spatial degrees of freedom inside each stage.",
+  "algorithm": {
+    "form": "Each vertex maps u to a_i u+b_i. With f_R after f_L, (a_R a_L,b_R+a_R b_L) preserves ordered real-arithmetic composition. Up-sweep reduces neighboring subtrees, down-sweep fills non-power-of-two inclusive prefixes using disjoint Rayon blocks for at least 16 pair tasks per level.",
+    "cost": "For m>=1 path vertices, up work m-popcount(m), down m-floor(log2(m))-1, total 2m-popcount(m)-floor(log2(m))-1. The up sum counts all complete dyadic blocks; the down sum computes each prefix ending at a non-power-of-two position exactly once, using its 2-adic valuation. Each level has disjoint writes and depth at most 2 ceil(log2(m)). The scalar recurrence uses m-1 updates. All paths still require eight sequential nonlinear stage RHS evaluations for a full attempt.",
+    "fallback": "Original residual test on complete W solution, unchanged full-band protected stage fallback. Floating-point reassociation is allowed only subject to this check."
+  },
+  "evidence": {
+    "host": "x86_64 Linux, Rust 1.94.1, unoptimized test build, RAYON_NUM_THREADS=2. Host shared; one wall sample per arm in fixed order.",
+    "command": "RAYON_NUM_THREADS=2 cargo +1.94.1 test --offline --locked -p rodas5p-integrators --test c5_source_owned_graph_contract -- --nocapture",
+    "exit": 0,
+    "test_count": 8,
+    "coverage": "Ring size 48 or 96, heterogeneous directed positive rates, nonlinear damping, signed initial field, rtol 1e-7, atol 1e-9, [0,0.02], outputs 0,0.01,0.02. Same-family protected direct trajectory checks implementation parity only.",
+    "comparison": "Sequential computes one scalar affine update per edge. HillisSteele and Blelloch compute an affine pair composition per counted operation. One factor column and one path per stage. Wall observations include full solve; no release or speedup promotion.",
+    "rows": [
+      {
+        "ring_nodes": 48,
+        "mode": "Sequential",
+        "update_count": 2070,
+        "original_residual_checks": 40,
+        "factor_calls": 5,
+        "max_stage_residual_over_min_margin": 5.842866136627031e-19,
+        "max_direct_grid_difference": 4.5102810375396984e-17,
+        "wall_us_diagnostic": 20054,
+        "fallback_stages": 0
+      },
+      {
+        "ring_nodes": 48,
+        "mode": "HillisSteele",
+        "update_count": 9855,
+        "original_residual_checks": 40,
+        "factor_calls": 5,
+        "max_stage_residual_over_min_margin": 9.898084918883629e-19,
+        "max_direct_grid_difference": 3.469446951953614e-17,
+        "wall_us_diagnostic": 39208,
+        "fallback_stages": 0
+      },
+      {
+        "ring_nodes": 48,
+        "mode": "Blelloch",
+        "update_count": 3735,
+        "original_residual_checks": 40,
+        "factor_calls": 5,
+        "max_stage_residual_over_min_margin": 9.162820265372997e-19,
+        "max_direct_grid_difference": 2.2551405187698492e-17,
+        "wall_us_diagnostic": 92194,
+        "fallback_stages": 0
+      },
+      {
+        "ring_nodes": 96,
+        "mode": "Sequential",
+        "update_count": 4230,
+        "original_residual_checks": 40,
+        "factor_calls": 5,
+        "max_stage_residual_over_min_margin": 9.858584718624654e-19,
+        "max_direct_grid_difference": 3.642919299551295e-17,
+        "wall_us_diagnostic": 67703,
+        "fallback_stages": 0
+      },
+      {
+        "ring_nodes": 96,
+        "mode": "HillisSteele",
+        "update_count": 24210,
+        "original_residual_checks": 40,
+        "factor_calls": 5,
+        "max_stage_residual_over_min_margin": 1.4787877119914628e-18,
+        "max_direct_grid_difference": 3.642919299551295e-17,
+        "wall_us_diagnostic": 68861,
+        "fallback_stages": 0
+      },
+      {
+        "ring_nodes": 96,
+        "mode": "Blelloch",
+        "update_count": 7965,
+        "original_residual_checks": 40,
+        "factor_calls": 5,
+        "max_stage_residual_over_min_margin": 9.85858472813748e-19,
+        "max_direct_grid_difference": 3.642919299551295e-17,
+        "wall_us_diagnostic": 178305,
+        "fallback_stages": 0
+      }
+    ],
+    "exact_rational_crosscheck": {
+      "prefixes": 5974,
+      "inputs": "signed dyadic rational coefficients with unequal shifts, lengths 0..99,127,128,129,191,192,257; every prefix agrees with a serial recurrence in exact arithmetic"
+    },
+    "lib_checks": {
+      "command": "RAYON_NUM_THREADS=2 cargo +1.94.1 test --offline --locked -p rodas5p-integrators --lib source_owned_graph_schur",
+      "exit": 0,
+      "passed": 7,
+      "failed": 0,
+      "filtered_out": 136,
+      "include": [
+        "signed noncommuting affine maps, ragged prefixes",
+        "deliberate corrupted Schur candidate restores original full-band W under each scan mode",
+        "stale source epoch, unsupported graph and callback mismatch"
+      ]
+    }
+  },
+  "decision": "Operation-count improvement over legacy network. Short ring work and diagnostic wall favor a serial scalar recurrence; broad performance and release qualification open.",
+  "rdc_source_only_commit": "a891daee81f2fede788afd8963410b666964e07e",
+  "rdc_source_only_tree": "9475e94769c1aaafd111cdf3720a75c4852736f1"
+}

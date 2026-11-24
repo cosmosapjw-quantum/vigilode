@@ -1,0 +1,789 @@
+{
+  "schema": "vigilode.history-reconciliation.v1",
+  "base_commit": "a66215e7f1d61dfd1a49f6e7ddfbd57c21f37563",
+  "main_commit": "8d0c79184e09efb5bdadc24a6315c60a71a44264",
+  "base_pr": 190,
+  "supplied_head": "a8d196b4",
+  "changed_since_supplied": [
+    "research/production_loop_20261116/PROGRESS.md",
+    "research/production_loop_20261116/audit/INTEGRATION_STATUS_20261124_KO.md",
+    "research/production_loop_20261116/audit/integration_reach_scan.py",
+    "research/production_loop_20261116/audit/integration_reach_scan.txt"
+  ],
+  "github_coverage": {
+    "heads": 370,
+    "prs": 190,
+    "all_pr_rest_heads_equal_to_git": true,
+    "merged_prs": 24
+  },
+  "historical_inventory": [
+    "docs/agent/solver_consolidation_20261108/HISTORY_MATRIX.json",
+    "research/production_unification_20261115/HISTORY_RECOVERY.json",
+    "docs/agent/solver_consolidation_20261108/NEGATIVE_EVIDENCE_INDEX.json"
+  ],
+  "families": [
+    {
+      "name": "Original stiff solver, matrix-free and reuse",
+      "pr_numbers": [
+        1,
+        18,
+        19,
+        20,
+        31,
+        33,
+        35,
+        38,
+        43,
+        44,
+        46,
+        56,
+        65,
+        71,
+        73,
+        76
+      ],
+      "source": "research/production_loop_20261116/mf_stage_solve/RESULTS.json",
+      "sha256_at_audited_head": "0e5ad5a3ad42a50a85e461bb3f8f2a5011db804a65522dfb66b80e13256982aa",
+      "finding": "Shared shifted operator / JVP and residual-controlled GMRES are implemented. V17 reduces instruction counts. A common-W approximation failed parity under PR65.",
+      "next_discriminator": "Keep the actual residual for each stage. Measure achieved-error full-IVP with sparse and expensive JVP separately."
+    },
+    {
+      "name": "Causal transactions and stage enclosures",
+      "pr_numbers": [
+        39,
+        40,
+        41,
+        42,
+        50,
+        60,
+        62,
+        74,
+        75,
+        86,
+        87,
+        91,
+        92,
+        105,
+        109,
+        119,
+        125,
+        126,
+        128,
+        129,
+        131,
+        179,
+        182
+      ],
+      "source": "research/vigilode_r7_native_transactional_discriminant_20261101/RESULTS.json",
+      "sha256_at_audited_head": "583e2fada6050a25dfcebd89b682edf45929a8da717b9a2385f628bed47094d4",
+      "finding": "R7 accepted 8 q1 and 113 q2 steps without fallback, but the transactional method took 4.746 times protected wall at matched achieved error on the three independent small source problems. Source substitution is a concrete N01 counterexample repaired with a frozen source.",
+      "next_discriminator": "Reserve transaction for costly RHS with a measured opportunity and tail-bound witness on the original stage equation. Multiplier includes failed attempts, speculative work and callback cost."
+    },
+    {
+      "name": "Flexible Krylov, conditional interval source boxes and events",
+      "pr_numbers": [
+        101,
+        102,
+        105,
+        106,
+        107,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115
+      ],
+      "source": "research/production_loop_20261116/port_plan/SOURCE_STATUS.json",
+      "sha256_at_audited_head": "1acb2c45a6558d8b21ff734c7a98532e4df98649f9dac370dd7dc8dfcf8dee13",
+      "finding": "P09/P10 have native source on historical REI branch 6844c8fe; new port has its own verification record. P11 has a native scalar-affine implementation on 8357faa5. An interval box does not itself establish its model membership.",
+      "next_discriminator": "Measure flexible JVP work at equal true residual. Validate source epoch, norm, roundoff and operator on every interval adoption. P11 requires event missed-crossing and localization tests."
+    },
+    {
+      "name": "Nonlinear algebraic homotopy & monotone cooperative systems",
+      "pr_numbers": [
+        74,
+        91,
+        92,
+        115,
+        117,
+        119,
+        120,
+        123,
+        125,
+        150,
+        152,
+        154,
+        156,
+        158,
+        177
+      ],
+      "source": "research/derivative_free_causal_homotopy_20261027/RESULTS.json",
+      "sha256_at_audited_head": "178c472ee4470c6b328edcda2fe778d1e9611f6d9cefa224d648432c24607625",
+      "finding": "RHS-only stage roots, nonlinear BE inverse-Picard, and rowwise monotone root recovery are available on restricted domains. Original RODAS stages are linear systems; a BE-stage solution alone does not compute the same RODAS step.",
+      "next_discriminator": "Check the actual original residual in its physical norm and bounded inverse, retain full-IVP achieved-order and work versus protected RODAS and BDF. Test near loss of monotonicity."
+    },
+    {
+      "name": "Algebraic/singular geometry and trace with multiplicity",
+      "pr_numbers": [
+        77,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103
+      ],
+      "source": "research/production_rvj_nag_20261028/RESULTS.json",
+      "sha256_at_audited_head": "92e251a5188b66c197ebfb8167fc138656ce209799c829261c1860ce824a9b10",
+      "finding": "Bounded polynomial cyclic-closure example: 24 passing and 12 nonadmitted cells retained. Trace over all complex roots counts algebraic multiplicity. Median paired trajectory ratio 1.00837, 4 faster vs 3 slower. Selected-real-root semantics and multivariate closure remain open.",
+      "next_discriminator": "Detect cofactor/regularity, retain multiplicity under coalescence and fallback on vanishing chart denominators; compare near repeated root and over an entire time slab under original RHS."
+    },
+    {
+      "name": "ODE dynamical systems & symbolic route dynamics",
+      "pr_numbers": [
+        94,
+        97,
+        98,
+        100,
+        104,
+        108,
+        176,
+        188,
+        190
+      ],
+      "source": "research/dynamics_symbolic_validation_20261028/RESULTS.json",
+      "sha256_at_audited_head": "7597f7d5b77a636d262c6eafc28a56d674a20ceaba1ff6449113ea17241aca49",
+      "finding": "Nonnormal weighted logarithmic norms, bounded symbolic cells and hybrid guard traces are present. The route automaton is an offline verifier. Product-norm bounds for long guarded words can be orders of magnitude too loose.",
+      "next_discriminator": "Before using a runtime switch, replay rejected and accepted steps chronologically with dwell/failure costs, and compare weighted lognorm vs eigenvalue on a nonnormal Jordan block and MOL operator."
+    },
+    {
+      "name": "Algebraic topology, spatial MOL, global geometry",
+      "pr_numbers": [
+        77,
+        79,
+        80,
+        81,
+        116,
+        159,
+        166,
+        176,
+        188,
+        190
+      ],
+      "source": "research/production_loop_20261116/port_plan/port_contracts.json",
+      "sha256_at_audited_head": "e9251903b4f01167cdffd34b490c213a957c3379c303c168723af34edaea4661",
+      "finding": "Incidence/Hodge check in a test; sphere manufactured data exist in the research/bench layers. Several BASS PRs are trajectory postprocessing with no new IVP. Individual physical artifacts are not external validation of a spatial solver.",
+      "next_discriminator": "Require exact incidence composition zero, area/mass weighting, a constant nullspace and mesh refinement. Exercise sphere, planar and volume fixtures with temporal and spatial errors separated."
+    },
+    {
+      "name": "Rosenbrock stage dependency, structural alternatives and graph solvers",
+      "pr_numbers": [
+        135,
+        179,
+        182,
+        184,
+        185,
+        186,
+        187,
+        188,
+        190
+      ],
+      "source": "research/production_loop_20261116/theory/RESULTS.json",
+      "sha256_at_audited_head": "4055eb85735c3b7aaef2f8e51c7d1a5836a0e8bfc8442c024709cfb30afd1dc9",
+      "finding": "Two exact tableau scripts recover causal depth 8 for the opaque RHS and nilpotency index 7 for the transformed k coupling. PR186 proves a source-specific affine path scan; PR187 measured path length 1 and no useful scan work. Different depth-5/6 tableaux did not win on their matched-error cells.",
+      "next_discriminator": "Exploit declared separable/affine structure or change tableau with independently checked order, stability, intermediate stage growth and achieved-error cost. For path scan require real long paths, synchronized workers and residual checks."
+    },
+    {
+      "name": "Shared basis, FD assembly, linear solvers and practical work recovery",
+      "pr_numbers": [
+        19,
+        33,
+        43,
+        44,
+        48,
+        73,
+        90,
+        190
+      ],
+      "source": "research/production_loop_20261116/shared_krylov/RESULTS.json",
+      "sha256_at_audited_head": "8ae1b7873f4578df2d4966cf9348f0407739cf97fa93ee41498de4cf89562d23",
+      "finding": "B/C (per-stage/shared JVP) improved in every recorded nonlinear cell; stage-a criterion only passed for Gray-Scott. Generic admission failed. FD likewise sped up dense expensive RHS but lost for narrow colored bands.",
+      "next_discriminator": "Gate reuse by measured overlap and charge orthogonalization, sparse matvec and fallback. Isolate RHS evaluation throughput from whole-IVP achieved-error wall."
+    },
+    {
+      "name": "Peer-W, unified facade and production verdict",
+      "pr_numbers": [
+        64,
+        71,
+        90,
+        94,
+        176,
+        188,
+        190
+      ],
+      "source": "research/production_unification_20261115/production_holdout/EVALUATION.json",
+      "sha256_at_audited_head": "0a15ec281ef463e8b5a644546dfe0e94e4b27b69c976ee438b9171bbbd6e74b7",
+      "finding": "PPSW1 depth passed in U11. Steps reached 7.1 times protected; median relative six-thread speed 0.006 on small holdouts. Dense J and starter Newton violate its target fast-path requirements. Protected RODAS is the fallback; no new production admission.",
+      "next_discriminator": "Use method-specific contracts including dense output and startup. Require held-out matched-error and external comparator runs to change the broad qualification."
+    }
+  ],
+  "historical_port_crosswalk": [
+    {
+      "id": "P01",
+      "theme": "parallel/Krylov",
+      "name": "Shared Krylov basis across the 8 stage solves",
+      "source": "switcher 933922495045 (arrives by V02 merge if adopted, else blob-identical port): crates/rodas5p-krylov/src/shared_basis.rs + hook in rodas5p_matrix_free_fast.rs",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "paths": [
+            "crates/rodas5p-krylov/src/shared_basis.rs"
+          ]
+        }
+      ],
+      "paths_at_examined_base": {
+        "crates/rodas5p-krylov/src/shared_basis.rs": true,
+        "crates/rodas5p-integrators/src/stage_clients/krylov.rs": true
+      },
+      "historical_status_on_2026_11_17": "PORTED_AND_MEASURED",
+      "next_discriminator_from_source": "none for the shared basis; see V17 for the two leads"
+    },
+    {
+      "id": "P02",
+      "theme": "Jacobian",
+      "name": "Coloured (Curtis-Powell-Reid) and threaded Jacobian assembly",
+      "source": "switcher 933922495045 (arrives by V02 merge if adopted, else blob-identical port): crates/vigilode/src/coloring.rs; banded grouping already in crates/vigilode/src/fd.rs:366",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "paths": [
+            "crates/vigilode/src/coloring.rs"
+          ]
+        }
+      ],
+      "paths_at_examined_base": {
+        "crates/vigilode/src/coloring.rs": true,
+        "crates/rodas5p-integrators/src/stage_clients/assembly.rs": true
+      },
+      "historical_status_on_2026_11_17": "PORTED_NOT_WIRED",
+      "next_discriminator_from_source": "V08 frozen gate (wall >= 1.5x on finite-difference problems, n >= 64, right-hand side >= 50 microseconds; bitwise equal Jacobian)"
+    },
+    {
+      "id": "P03",
+      "theme": "geometry",
+      "name": "Spatial PDE battery v3 with sphere surface diffusion",
+      "source": "switcher 933922495045 (arrives by V02 merge if adopted, else blob-identical port): crates/vigilode-bench/src/pde_models/{spherical,gray_scott,allen_cahn,burgers,sine_gordon}.rs, spatial_grid.rs",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "paths": [
+            "crates/vigilode-bench/src/pde_models/spherical.rs",
+            "crates/vigilode-bench/src/pde_models/gray_scott.rs",
+            "crates/vigilode-bench/src/pde_models/allen_cahn.rs",
+            "crates/vigilode-bench/src/pde_models/burgers.rs",
+            "crates/vigilode-bench/src/pde_models/sine_gordon.rs",
+            "crates/vigilode-bench/src/spatial_grid.rs"
+          ]
+        }
+      ],
+      "paths_at_examined_base": {
+        "crates/vigilode-bench/src/pde_models/spherical.rs": true,
+        "crates/vigilode-bench/src/spatial_grid.rs": true,
+        "crates/rodas5p-integrators/src/mol/mod.rs": true
+      },
+      "historical_status_on_2026_11_17": "PORTED_NOT_WIRED",
+      "next_discriminator_from_source": "V11 gate (second-order convergence, conservation <= 1e-12, matched-error table)"
+    },
+    {
+      "id": "P04",
+      "theme": "algebraic topology",
+      "name": "Oriented incidence operators D0, D1 and Hodge Laplacians",
+      "source": "074a5699: crates/vigilode-coupled/tests/structure_certificate_transfer.rs (test t1 only)",
+      "source_refs": [
+        {
+          "rev": "074a5699",
+          "paths": [
+            "crates/vigilode-coupled/tests/structure_certificate_transfer.rs"
+          ]
+        }
+      ],
+      "paths_at_examined_base": {
+        "crates/vigilode-coupled/tests/structure_certificate_transfer.rs": true,
+        "crates/rodas5p-integrators/src/mol/complex.rs": false
+      },
+      "historical_status_on_2026_11_17": "TEST_ONLY",
+      "next_discriminator_from_source": "as written (first 16 Laplace-Beltrami eigenvalues at two refinements)"
+    },
+    {
+      "id": "P05",
+      "theme": "dynamics",
+      "name": "DOPRI5 secant stiffness estimate",
+      "source": "switcher 933922495045 (arrives by V02 merge if adopted, else blob-identical port): crates/rodas5p-integrators/src/dopri5_stiffness.rs",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "paths": [
+            "crates/rodas5p-integrators/src/dopri5_stiffness.rs"
+          ]
+        }
+      ],
+      "paths_at_examined_base": {
+        "crates/rodas5p-integrators/src/dopri5_stiffness.rs": true
+      },
+      "historical_status_on_2026_11_17": "PORTED_NOT_MEASURED",
+      "next_discriminator_from_source": "as written; run on the battery of V11 with labels from a stiff/non-stiff reference solver pair"
+    },
+    {
+      "id": "P06",
+      "theme": "dynamics",
+      "name": "Nonnormal observers (weighted logarithmic norm, transient growth)",
+      "source": "switcher 933922495045 (arrives by V02 merge if adopted, else blob-identical port): crates/rodas5p-core/src/nonnormal_observers.rs (+ authority fix on 612063db)",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "paths": [
+            "crates/rodas5p-core/src/nonnormal_observers.rs"
+          ]
+        },
+        {
+          "rev": "612063db",
+          "paths": [
+            "crates/rodas5p-core/src/nonnormal_observers.rs",
+            "crates/rodas5p-core/tests/nonnormal_observers_contracts.rs"
+          ]
+        }
+      ],
+      "paths_at_examined_base": {
+        "crates/rodas5p-core/src/nonnormal_observers.rs": true
+      },
+      "historical_status_on_2026_11_17": "PORTED_NOT_MEASURED",
+      "next_discriminator_from_source": "as written"
+    },
+    {
+      "id": "P07",
+      "theme": "symbolic dynamics",
+      "name": "Hybrid route automaton (dwell time, hysteresis, epoch invalidation)",
+      "source": "switcher 933922495045 (arrives by V02 merge if adopted, else blob-identical port): crates/vigilode/src/hybrid_automaton.rs, margin.rs",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "paths": [
+            "crates/vigilode/src/hybrid_automaton.rs",
+            "crates/vigilode/src/margin.rs"
+          ]
+        }
+      ],
+      "paths_at_examined_base": {
+        "crates/vigilode/src/hybrid_automaton.rs": true,
+        "crates/vigilode/src/margin.rs": true
+      },
+      "historical_status_on_2026_11_17": "PORTED_NOT_WIRED",
+      "next_discriminator_from_source": "as written (replay of recorded switching traces)"
+    },
+    {
+      "id": "P08",
+      "theme": "Krylov",
+      "name": "Secant preconditioner",
+      "source": "switcher 933922495045 (arrives by V02 merge if adopted, else blob-identical port): crates/rodas5p-krylov/src/secant_preconditioner.rs",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "paths": [
+            "crates/rodas5p-krylov/src/secant_preconditioner.rs"
+          ]
+        }
+      ],
+      "paths_at_examined_base": {
+        "crates/rodas5p-krylov/src/secant_preconditioner.rs": true
+      },
+      "historical_status_on_2026_11_17": "PORTED_NOT_MEASURED",
+      "next_discriminator_from_source": "as written; the Krylov stage client of V06/V17 is the place to measure it"
+    },
+    {
+      "id": "P09",
+      "theme": "Krylov",
+      "name": "N02 triggered flexible GMRES",
+      "source": "rei 6844c8fe: crates/rodas5p-krylov/src/gmres_into_triggered.rs",
+      "source_refs": [
+        {
+          "rev": "6844c8fe",
+          "paths": [
+            "crates/rodas5p-krylov/src/gmres_into_triggered.rs"
+          ]
+        }
+      ],
+      "paths_at_examined_base": {
+        "crates/rodas5p-krylov/src/gmres_into_triggered.rs": false
+      },
+      "historical_status_on_2026_11_17": "NOT_PORTED",
+      "next_discriminator_from_source": "as written"
+    },
+    {
+      "id": "P10",
+      "theme": "certificates",
+      "name": "N03 stage interval certificate",
+      "source": "rei 6844c8fe: crates/rodas5p-krylov/src/stage_interval_certificate.rs",
+      "source_refs": [
+        {
+          "rev": "6844c8fe",
+          "paths": [
+            "crates/rodas5p-krylov/src/stage_interval_certificate.rs"
+          ]
+        }
+      ],
+      "paths_at_examined_base": {
+        "crates/rodas5p-krylov/src/stage_interval_certificate.rs": false
+      },
+      "historical_status_on_2026_11_17": "NOT_PORTED",
+      "next_discriminator_from_source": "as written"
+    },
+    {
+      "id": "P11",
+      "theme": "events",
+      "name": "Affine event certificate",
+      "source": "origin/research/sym02-native-affine 8357faa5 (PR102/103): crates/rodas5p-integrators/src/affine_event_certificate.rs",
+      "source_refs": [
+        {
+          "rev": "8357faa5",
+          "paths": [
+            "crates/rodas5p-integrators/src/affine_event_certificate.rs"
+          ]
+        }
+      ],
+      "paths_at_examined_base": {
+        "crates/rodas5p-integrators/src/affine_event_certificate.rs": false
+      },
+      "historical_status_on_2026_11_17": "NOT_PORTED",
+      "next_discriminator_from_source": "as written"
+    },
+    {
+      "id": "P12",
+      "theme": "parallel",
+      "name": "Work-efficient (Blelloch) and chain-parallel affine scan",
+      "source": "research/vigilode-dyn-symbolic-c8-20261102 3336d682: R4_CANDIDATES_AND_ROUTER.md sections A.4-A.5",
+      "source_refs": [
+        {
+          "rev": "3336d682",
+          "paths": [
+            "research/vigilode_dynamical_symbolic_router_20261102/R4_CANDIDATES_AND_ROUTER.md"
+          ]
+        }
+      ],
+      "paths_at_examined_base": {},
+      "historical_status_on_2026_11_17": "DESIGN_ONLY",
+      "next_discriminator_from_source": "as written"
+    },
+    {
+      "id": "P13",
+      "theme": "algebraic",
+      "name": "Chebyshev-product resolvent and complex Leja points",
+      "source": "switcher 933922495045 (arrives by V02 merge if adopted, else blob-identical port) and 612063db: conditioned_polynomial.rs, leja_action.rs",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "paths": [
+            "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+            "crates/rodas5p-core/src/leja_action.rs"
+          ]
+        },
+        {
+          "rev": "612063db",
+          "paths": [
+            "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+            "crates/rodas5p-core/src/leja_action.rs",
+            "crates/rodas5p-core/tests/leja_total_contract.rs",
+            "crates/rodas5p-integrators/tests/conditioned_polynomial_contracts.rs"
+          ]
+        }
+      ],
+      "paths_at_examined_base": {
+        "crates/rodas5p-integrators/src/conditioned_polynomial.rs": true,
+        "crates/rodas5p-core/src/leja_action.rs": true
+      },
+      "historical_status_on_2026_11_17": "PORTED_NOT_MEASURED",
+      "next_discriminator_from_source": "as written"
+    },
+    {
+      "id": "P14",
+      "theme": "homotopy",
+      "name": "Preconditioned fixed-point homotopy",
+      "source": "switcher 933922495045 (arrives by V02 merge if adopted, else blob-identical port) and 612063db: crates/vigilode-coupled/src/rhs_homotopy.rs",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "paths": [
+            "crates/vigilode-coupled/src/rhs_homotopy.rs"
+          ]
+        },
+        {
+          "rev": "612063db",
+          "paths": [
+            "crates/vigilode-coupled/src/rhs_homotopy.rs",
+            "crates/vigilode-coupled/src/lib.rs",
+            "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs"
+          ]
+        }
+      ],
+      "paths_at_examined_base": {
+        "crates/vigilode-coupled/src/rhs_homotopy.rs": true
+      },
+      "historical_status_on_2026_11_17": "PORTED_BLOCKED",
+      "next_discriminator_from_source": "as written"
+    },
+    {
+      "id": "P15",
+      "theme": "causal",
+      "name": "RVJ N3R/N3H/N4 represented-clock envelopes",
+      "source": "PR139-147 branches: research/rvj_n3r_represented_upper_20261030/rust, research/rvj_n4_cert_kernel_rawu8_20261030/rust",
+      "source_refs": [
+        {
+          "rev": "origin/research/rvj-n4b-two-window-20261031",
+          "paths": [
+            "research/rvj_n3r_represented_upper_20261030/rust",
+            "research/rvj_n4_cert_kernel_rawu8_20261030/rust"
+          ]
+        }
+      ],
+      "paths_at_examined_base": {},
+      "historical_status_on_2026_11_17": "NOT_PORTED",
+      "next_discriminator_from_source": "as written"
+    },
+    {
+      "id": "P16",
+      "theme": "symbolic dynamics",
+      "name": "Guarded transition words with product-norm bounds",
+      "source": "lineage PORT_SYMBOLIC (design only)",
+      "source_refs": [],
+      "paths_at_examined_base": {},
+      "historical_status_on_2026_11_17": "DESIGN_ONLY",
+      "next_discriminator_from_source": "as written"
+    },
+    {
+      "id": "P17",
+      "theme": "algebraic geometry",
+      "name": "Whole-slab trace certificate in time",
+      "source": "074a5699: crates/vigilode-coupled/src/trace_certificate.rs::certify_trace_path",
+      "source_refs": [
+        {
+          "rev": "074a5699",
+          "paths": [
+            "crates/vigilode-coupled/src/trace_certificate.rs"
+          ]
+        }
+      ],
+      "paths_at_examined_base": {
+        "crates/vigilode-coupled/src/trace_certificate.rs": true
+      },
+      "historical_status_on_2026_11_17": "PORTED_NOT_MEASURED",
+      "next_discriminator_from_source": "as written"
+    },
+    {
+      "id": "P18",
+      "theme": "algebraic geometry",
+      "name": "Cyclic closure and cofactor chart certificate boundary",
+      "source": "074a5699: crates/vigilode-coupled/src/cyclic_closure.rs, crates/vigilode/src/cofactor_chart.rs",
+      "source_refs": [
+        {
+          "rev": "074a5699",
+          "paths": [
+            "crates/vigilode-coupled/src/cyclic_closure.rs",
+            "crates/vigilode/src/cofactor_chart.rs"
+          ]
+        }
+      ],
+      "paths_at_examined_base": {
+        "crates/vigilode-coupled/src/cyclic_closure.rs": true,
+        "crates/vigilode/src/cofactor_chart.rs": true
+      },
+      "historical_status_on_2026_11_17": "PORTED_NOT_WIRED",
+      "next_discriminator_from_source": "as written"
+    },
+    {
+      "id": "P19",
+      "theme": "archive",
+      "name": "RVJ archive members (shift_jet, fusion, fft_bridge, witness_lift, fourier_volterra)",
+      "source": "vigilode_RVJ_full_history_20261004.tar.zst (sha256 de25f591...)",
+      "source_refs": [
+        {
+          "rev": "074a5699",
+          "paths": [
+            "research/production_unification_20261115/HISTORY_RECOVERY.json"
+          ]
+        }
+      ],
+      "paths_at_examined_base": {},
+      "historical_status_on_2026_11_17": "ARCHIVE",
+      "next_discriminator_from_source": "as written"
+    },
+    {
+      "id": "P20",
+      "theme": "matrix-free",
+      "name": "PR33 matrix-free W correction; residual_gain/polynomial_action extensions",
+      "source": "981bf1bc (origin/research/audit2-matrix-free-w); 76e59c69 (origin/audit/rvj-reaudit-remaining-20261011)",
+      "source_refs": [
+        {
+          "rev": "981bf1bc",
+          "paths": [
+            "crates/rodas5p-integrators/src/audit2_research/matrix_free.rs",
+            "crates/rodas5p-integrators/tests/audit2_matrix_free_contracts.rs"
+          ]
+        },
+        {
+          "rev": "76e59c69",
+          "paths": []
+        }
+      ],
+      "paths_at_examined_base": {
+        "crates/rodas5p-integrators/src/audit2_matrix_free_research.rs": true
+      },
+      "historical_status_on_2026_11_17": "SUPERSEDED",
+      "next_discriminator_from_source": "none"
+    }
+  ],
+  "reparsed_archived_measurements": {
+    "method": "Re-evaluated preserved raw samples; these are not fresh wall-clock measurements.",
+    "R7": {
+      "analysis_head": "8fd2ac31d65df5e70e3bbb266d51b397562edfb5",
+      "run": "python research/vigilode_r7_native_transactional_discriminant_20261101/analyze.py",
+      "raw_sha256": "7af04f4bf9494f5ec914fa1fda16bad1e87abca40d7ee1864f7665d0def0a889",
+      "result_sha256": "583e2fada6050a25dfcebd89b682edf45929a8da717b9a2385f628bed47094d4",
+      "observed_full_native_rows": 24,
+      "matched_median_protected_over_transactional": 0.21069269165444293,
+      "first_attempt_on_new_head": "historical source-lock correctly refused a different rodas5p_matrix_free_fast.rs; reran on PR182 with unchanged source locks"
+    },
+    "C5": {
+      "run": "python research/vigilode_c5_native_graph_schur_20261102/analyze.py",
+      "raw_sha256": "eeaf4da684bfd145b4f4bf8c3a5c656eefd9c0dc5a1d92ced7c8d60a4335b356",
+      "result_sha256": "88b7126b3016806f37a27d4de588bf3e2efc7dac37a865791df2318afaf53bff",
+      "observed_native_rows": 36,
+      "comparable_work_precision_pairs": 12,
+      "median_graph_over_fast_direct": 2.242032452000776
+    },
+    "V24": {
+      "run": "python research/production_loop_20261116/mf_adaptive/parse_results.py results",
+      "scientific_verdict": "FAIL",
+      "budget_cusp1d_rtol_1e_6": {
+        "shipped": 11,
+        "adaptive_P2": 13
+      },
+      "audited_stages": 37823,
+      "independent_residual_violations": 0,
+      "rerun_nonidentical_metadata": [
+        "generated",
+        "changed_since_the_base"
+      ],
+      "archived_r_suite_failed_test": "ptsw2b_contracts::h2_protected_sources_are_byte_identical; later merger repinned sentinels in 9daf78fd"
+    },
+    "V06": {
+      "ratio": "per-stage/shared JVP; greater than 1 means fewer JVPs for shared",
+      "stage_a_threshold": {
+        "stage_a_jvp_ratio_min": 1.5,
+        "stage_a_step_ratio_max": 1.05,
+        "stage_a_families_needed": 2,
+        "stage_a_cancel_median_below": 1.2,
+        "final_jvp_fraction_max": 0.5,
+        "final_instruction_fraction_max": 0.8,
+        "final_families_needed": 3,
+        "final_error_band_max": 1.25
+      },
+      "cells": [
+        {
+          "family": "bruss1d",
+          "rtol": 0.0001,
+          "jvp_ratio": 1.1217278381518694,
+          "step_ratio": 1.0,
+          "passes": false
+        },
+        {
+          "family": "bruss1d",
+          "rtol": 1e-06,
+          "jvp_ratio": 1.275514673674989,
+          "step_ratio": 1.0,
+          "passes": false
+        },
+        {
+          "family": "grayscott2d",
+          "rtol": 0.0001,
+          "jvp_ratio": 1.783195020746888,
+          "step_ratio": 1.0,
+          "passes": true
+        },
+        {
+          "family": "grayscott2d",
+          "rtol": 1e-06,
+          "jvp_ratio": 1.699588477366255,
+          "step_ratio": 1.0,
+          "passes": true
+        },
+        {
+          "family": "adr2d",
+          "rtol": 0.0001,
+          "jvp_ratio": 1.4536326048434731,
+          "step_ratio": 1.0,
+          "passes": false
+        },
+        {
+          "family": "adr2d",
+          "rtol": 1e-06,
+          "jvp_ratio": 1.4961149961149962,
+          "step_ratio": 1.0,
+          "passes": false
+        }
+      ],
+      "status": {
+        "verdict": "NOT_RUN",
+        "reason": "the final discriminator is defined for the v2 kernel, which is built only if stage a passes",
+        "stage_a_verdict": "FAIL"
+      },
+      "correction": "port_contracts P01 numerator was reversed; reported ranges refer to per-stage/shared; final separate gate is shared/per-stage <=0.5",
+      "run": "python research/production_loop_20261116/shared_krylov/parse_results.py",
+      "stage_a_cell_instruction_ratio_shared_over_per_stage": [
+        {
+          "family": "bruss1d",
+          "rtol": 0.0001,
+          "ratio": 375.6899372463701
+        },
+        {
+          "family": "bruss1d",
+          "rtol": 1e-06,
+          "ratio": 329.18726907224953
+        },
+        {
+          "family": "grayscott2d",
+          "rtol": 0.0001,
+          "ratio": 188.77039175411383
+        },
+        {
+          "family": "grayscott2d",
+          "rtol": 1e-06,
+          "ratio": 128.09119589546594
+        },
+        {
+          "family": "adr2d",
+          "rtol": 0.0001,
+          "ratio": 155.14384758999535
+        },
+        {
+          "family": "adr2d",
+          "rtol": 1e-06,
+          "ratio": 64.01613112609341
+        }
+      ]
+    }
+  },
+  "production_verdict": {
+    "legacy_new_method_gate": "HOLD",
+    "archived_release": "Six NOT_MET and two PARTIAL at 2dc9a2c5; current coding subset cannot establish whole-package release.",
+    "sources": [
+      "research/production_loop_20261116/audit/R_GATE_PROPOSAL.json",
+      "research/production_unification_20261115/production_holdout/EVALUATION.json"
+    ]
+  }
+}

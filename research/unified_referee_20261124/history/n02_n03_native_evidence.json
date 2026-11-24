@@ -1,0 +1,103 @@
+{
+  "schema": "vigilode.n02_n03.replay.v1",
+  "source_commit": "6844c8fe18361f3c2243ee2db95bbf3d68a6ce7b",
+  "applied_base": "a66215e7f1d61dfd1a49f6e7ddfbd57c21f37563",
+  "compiler": "rustc +1.94.1",
+  "target": "x86_64-unknown-linux-gnu",
+  "profile": "debug",
+  "focus": {
+    "command": "cargo +1.94.1 test --offline --locked -p rodas5p-krylov --test n02_flexible_trigger_contracts --test n03_stage_interval_contracts --test n03_n02_guard_integration",
+    "exit": 0,
+    "groups": {
+      "N02": 4,
+      "N03": 11,
+      "integration": 2
+    },
+    "log_sha256": "91955156d059159d2ce4ec707daee1859073275f9f2072bf0c1a5062c9b693bb",
+    "repair": "Offer exact initial guess to original-residual/admissibility monitor with column 0, no operator basis construction. Output is committed only on monitor acceptance.",
+    "N03_scope": "Only given outward J and b enclosures, nonnegative shift and positive weighted inverse margin. Proof of physical membership and concurrency serialization supplied by caller."
+  },
+  "stage_experiment": {
+    "command": "cargo +1.94.1 test --offline --locked -p rodas5p-krylov --test n02_shifted_diffusion -- --nocapture",
+    "exit": 0,
+    "log_sha256": "dd3520ae713a6951f50bccdf84694f8d189280256e41451ce002e5fae6251558",
+    "test_file_sha256": "d29ca110946b0de5ddb157b482f1f1cf69c655765f166a193475137b1ed72d05",
+    "operator": "W = I + theta (2I - S - S*) on periodic grid n=64; stationary right identity preconditioner. For semidiscrete diffusion theta=gamma*h*D/dx^2. One manufactured RHS per theta.",
+    "measurement": "Every actual product through accepted solve counted, including trigger residual checks; common post-hoc residual/error measurement excluded equally. Same unweighted relative residual threshold 1e-10, independent manufactured x*. Lower errors for baseline; not a matched-achieved-error comparison or full IVP speedup.",
+    "rows": [
+      {
+        "theta": 0.05,
+        "arm": "gmres_into_default",
+        "iterations": 20,
+        "products": 22,
+        "relative_residual": 4.652879793713439e-16,
+        "error_l2": 3.1344144321241515e-15
+      },
+      {
+        "theta": 0.05,
+        "arm": "N02_flexible_triggered",
+        "iterations": 8,
+        "products": 9,
+        "relative_residual": 8.772661210530473e-12,
+        "error_l2": 5.665462146198428e-11
+      },
+      {
+        "theta": 1,
+        "arm": "gmres_into_default",
+        "iterations": 40,
+        "products": 43,
+        "relative_residual": 5.926505628862994e-17,
+        "error_l2": 2.6981503274991466e-16
+      },
+      {
+        "theta": 1,
+        "arm": "N02_flexible_triggered",
+        "iterations": 25,
+        "products": 28,
+        "relative_residual": 4.305514398689371e-11,
+        "error_l2": 2.419062042566025e-10
+      },
+      {
+        "theta": 5,
+        "arm": "gmres_into_default",
+        "iterations": 60,
+        "products": 64,
+        "relative_residual": 1.874591770788307e-12,
+        "error_l2": 2.3763135738585786e-11
+      },
+      {
+        "theta": 5,
+        "arm": "N02_flexible_triggered",
+        "iterations": 51,
+        "products": 56,
+        "relative_residual": 9.717815099693024e-11,
+        "error_l2": 8.824070847220132e-10
+      },
+      {
+        "theta": 20,
+        "arm": "gmres_into_default",
+        "iterations": 120,
+        "products": 127,
+        "relative_residual": 3.3804205469752547e-12,
+        "error_l2": 8.821555816166963e-11
+      },
+      {
+        "theta": 20,
+        "arm": "N02_flexible_triggered",
+        "iterations": 104,
+        "products": 115,
+        "relative_residual": 9.921906019200675e-11,
+        "error_l2": 4.624586633665087e-09
+      }
+    ]
+  },
+  "krylov_crate": {
+    "command": "cargo +1.94.1 test --offline --locked -p rodas5p-krylov",
+    "exit": 0,
+    "passed": 183,
+    "failed": 0,
+    "ignored": 0,
+    "log_sha256": "b3669cc83e15e052db1b987dbd4ae33e17cf335a3449a8f1a85d7c3a8ba370ef",
+    "note": "Crate-wide invocation started before addition of shifted-diffusion test, which was run separately."
+  }
+}

@@ -1,0 +1,182 @@
+{
+  "schema": "vigilode.followup.v1",
+  "branch": "research/unified-solver-referee-20261124",
+  "date": "2026-11-24",
+  "first_parallel": [
+    "gmres-path",
+    "sphere-lines",
+    "modal-modes",
+    "split-attempts",
+    "implicit-roots",
+    "peer",
+    "exponential",
+    "graph-transport"
+  ],
+  "priority": [
+    "sphere-lines",
+    "gmres-path",
+    "split-attempts",
+    "modal-modes"
+  ],
+  "baseline": {
+    "public_input": "a66215e7f1d61dfd1a49f6e7ddfbd57c21f37563",
+    "local_input": "ab4907172e716a139ff0cde83c5e7e70564b47f2",
+    "v25": "3768dac50f7d4c380f26cb1b51a85effb1f2d9cd",
+    "v26": "de7f18ac14aab75c563ac96689e1501384e221ee"
+  },
+  "tasks": [
+    {
+      "id": "gmres-path",
+      "depends_on": [],
+      "question": "Why do closed-loop Robertson trajectories exhaust the 200-column budget 38 vs 41 times even though either policy fails on exactly the same frozen systems?",
+      "implementation": "Record first diverging accepted state, step size, error estimate and W/RHS identity. Compare original P1 with same-trial stage-budget fallback; charge all expended products. Use a domain-derived predictor only if it is available at decision time.",
+      "experiment": "Rebuild V25 from mf_p1_confirm/PROTOCOL.json and compare four families before one unseen variable-coefficient system. Replay frozen S-path and P1-path stage pairs.",
+      "success": "Reapply original D0/V/B/A/S/E/W; a scoped route may separately report membership and eligible/noneligible cost.",
+      "on_failure": "KEEP shipped and expose P1 explicitly. A failed B gate cannot be repaired retrospectively by deleting the cell."
+    },
+    {
+      "id": "sphere-lines",
+      "depends_on": [],
+      "question": "Can geometry-specific preconditioning rescue end-to-end matrix-free stiffness?",
+      "implementation": "For positive σ, discretize A=I−σL and solve longitude lines for P=I−σLφ. Bind R, grid, diffusion and step to the factor key. Recompute the physical unpreconditioned residual and account line setup.",
+      "experiment": "Cross nθ, nφ, diffusion, variable reaction, and broken longitude symmetry. Include constant, polar, zonal and nonzonal inputs; compare shipped/P1/no-preconditioner and direct/native alternatives at overlapping error with memory.",
+      "success": "Retain constant null mode, area mass, semidiscrete convergence and U11/V25-style work budget. Qualify only across measured domain with reference uncertainty below error.",
+      "on_failure": "Serial matrix-free spatial operator; return to ordinary linear solver on invalid factors or out-of-class operator."
+    },
+    {
+      "id": "modal-modes",
+      "depends_on": [],
+      "question": "Which workloads benefit after including basis changes and the exact exponential comparator?",
+      "implementation": "Use the declared-spectrum path for homogeneous intervals. Implement forced diagonal φ-functions only when time dependence and f_t are declared; compare with direct exact/ETD actions.",
+      "experiment": "Freeze eigenmodes/frequencies, IC, tolerance, h adaptation and basis transform cost. Include diffusion on periodic lattice and spherical harmonics; extrapolation across norm-incompatible bases is disallowed.",
+      "success": "At matched physical error incl inverse transform, report vs exact exponential, protected band and external BDF/Radau; preserve dense-output fallback.",
+      "on_failure": "Protected original model. Mark dominance of exact propagation explicitly if measured."
+    },
+    {
+      "id": "split-attempts",
+      "depends_on": [],
+      "question": "When does pure nonlinear split forcing pay off across adaptive retries?",
+      "implementation": "Bind a persistent pool and a per-attempt cache to t,h,forcing epoch and dimension. Precompute only source-declared history-independent g; preserve state error precedence, stale-cache refusal, off-grid f_t and complete costs.",
+      "experiment": "Compare direct/cache-1/cache-P within same process for cheap/expensive forcing, rejection-heavy inputs, late/panicking or invalid callback contracts as supported. Retain off-grid and unused-call counters.",
+      "success": "Correct endpoints, same accepted decisions within existing contract, and positive end-to-end matched-error advantage in a declared workload.",
+      "on_failure": "Use direct g at actual query time. Keep generic nonlinear 8-stage depth."
+    },
+    {
+      "id": "implicit-roots",
+      "depends_on": [],
+      "question": "Can certified value-only homotopy beat a direct solve on an implicit target that actually needs continuation?",
+      "implementation": "Re-use physical root charts, inverse/conditioning bounds, and warm checkpoints. For BDF use exact original history-dependent residual; for ROW keep signed linear W. Separate λ-progress from physical time. Detect fold via transversality; refuse bounded chart when σmin is unbounded below.",
+      "experiment": "Compare direct λ=1, continuation, inverse-Picard and Newton on the same residual, cost to physical accuracy, restart cost, branch ambiguity and adversarial compact domains.",
+      "success": "Original residual and outward error/branch checks pass, all trial work counted. Claim a continuation advantage only on achieved-error overlap.",
+      "on_failure": "Certified scalar repair or ordinary Newton/ROW; no unchecked branch substitution."
+    },
+    {
+      "id": "radau-blocks",
+      "depends_on": [
+        "implicit-roots"
+      ],
+      "question": "Can stage-parallel Radau amortize transforms and corrected outer solves?",
+      "implementation": "Implement real/paired-complex stage block preconditioner with supplied JVP and nonnormal monitor. Derive variable-step block transform and true coupled defect; never identify the transformed tableau with RODAS5P.",
+      "experiment": "Compare dense Radau, block Krylov, CVODE and protected ROW on the same mesh, stiff van der Pol and nonnormal diffusion.",
+      "success": "Verified original nonlinear residual, aligned output schedule, work-precision and memory crossover.",
+      "on_failure": "Revert to declared native Radau/dense path with full rejected-work accounting."
+    },
+    {
+      "id": "peer",
+      "depends_on": [],
+      "question": "Can large workloads reproduce PR183 speed after starter and restarts?",
+      "implementation": "Retain independent peer stages; profile starter and variable-step ratio control. Use a changed starter or computational workload as the explicit new mechanism.",
+      "experiment": "Blind new large-cells holdout including U11 and PR183 point-IVP. Report startup/Newton/J work, step ratio, equal achieved error, scalar vs parallel, cold/warm timings.",
+      "success": "Apply historic G0 as a conjunction and separate scoped throughput claim from production.",
+      "on_failure": "Keep explicit Peer method and original U11 negative."
+    },
+    {
+      "id": "exponential",
+      "depends_on": [],
+      "question": "Where do declared linear actions beat stiff direct and Krylov arms?",
+      "implementation": "Validate full versus residual split identity; compare Chebyshev/Leja interval enclosures to true exp-action and physical defect; rebind on model change.",
+      "experiment": "Normal and nonnormal operators with known spectra/transient amplification; include basis/restarts and interpolated outputs.",
+      "success": "Original ODE matched-error controls and charge every matrix-function action.",
+      "on_failure": "Use valid full RHS through protected integrator when supplied, otherwise typed refusal."
+    },
+    {
+      "id": "graph-transport",
+      "depends_on": [],
+      "question": "Does a sparse representation make graph-Schur/P12 competitive on long causal paths?",
+      "implementation": "Replace the dense source/verification scans that dominate graph work with source-owned CSR; keep row margin and original residual probe. Choose serial chains vs intra-chain prefix by measured costs.",
+      "experiment": "Use asymmetric signed maps, nonpower-of-two lengths and invalid forests. Compare protected band LU, sequential recurrence, Hillis–Steele, Blelloch across path widths, feedback-core sizes and time grids.",
+      "success": "True W residual and complete ODE trajectory within reference envelope; significant matched-error advantage over serial recurrence on prespecified classes.",
+      "on_failure": "Original full-band LU. Reduced inner depth alone does not qualify a solver."
+    },
+    {
+      "id": "routing",
+      "depends_on": [
+        "gmres-path",
+        "split-attempts"
+      ],
+      "question": "Can forward break-even pilots and symbolic route histories improve the public Auto entry?",
+      "implementation": "Implement V27 on the opt-in research arm. Reuse hybrid guards and epoch invalidation; one shared attempt budget, no pre-trial state mutation. Calibrate only on designated training cases; measure cost of rejected pilots.",
+      "experiment": "Use V27 frozen design and documented counterexamples incl oscillator growth ramp, Lorenz, Lotka–Volterra, Robertson and changes of stiffness.",
+      "success": "No fatal callback replay; recover a valid accepted state, preserve default oracle, compare held-out regret to best admitted solver.",
+      "on_failure": "Existing Auto; preserve explicit trials/results."
+    },
+    {
+      "id": "singular-geometry",
+      "depends_on": [
+        "implicit-roots"
+      ],
+      "question": "Can a physical real solution be isolated through a near-singular polynomial family where complex trace and branch-specific outputs differ?",
+      "implementation": "Carry the original polynomial and physical domain with the chart. Isolate real roots in bounded intervals, track discriminant sign, multiplicity and transversality. Compare quotient trace with signed original residual and physical observables; refuse ambiguous events.",
+      "experiment": "Replay historical 24 admitted/12 nonadmitted cyclic cells. Add a known fold normal form and a coupled polynomial held out of fitting, comparing direct isolation, certified continuation and generic implicit solve.",
+      "success": "Correct physical branch or explicit ambiguity on both sides of a fold; error and total cost supported by an independent high-precision control.",
+      "on_failure": "Preserve the trace as a distinct observable; return to a model-approved safeguarded solver or an explicit branch ambiguity."
+    },
+    {
+      "id": "discrete-topology",
+      "depends_on": [
+        "sphere-lines"
+      ],
+      "question": "Can incidence and a positive discrete Hodge inner product support geometry beyond scalar latitude-longitude diffusion?",
+      "implementation": "Orient mesh entities; check integer boundary compositions and expected Betti numbers. State the discrete inner products and boundary conditions. Distinguish topological exactness from scalar or one-form approximation.",
+      "experiment": "Start with the first 16 scalar sphere eigenvalues on nested grids. Add rotated/irregular sphere and periodic 2D/3D complexes with harmonic representatives, and one-form manufactured diffusion before routing.",
+      "success": "Correct complex and null dimensions, physical mass and refinement law with independent comparison; original supported trajectories recover on uniform grids.",
+      "on_failure": "Limit the domain to the verified scalar finite-volume families; publish sign/degeneracy or consistency counterexamples."
+    },
+    {
+      "id": "release",
+      "depends_on": [
+        "sphere-lines",
+        "modal-modes",
+        "split-attempts",
+        "gmres-path",
+        "graph-transport",
+        "routing",
+        "implicit-roots",
+        "radau-blocks",
+        "peer",
+        "exponential",
+        "singular-geometry",
+        "discrete-topology"
+      ],
+      "question": "Which methods have earned production inclusion?",
+      "implementation": "Expose only independently qualified combinations through normal Auto; version source/feature and support matrix.",
+      "experiment": "Freeze bounded candidate and output contract. Run repository release matrix, golden checks, clean build, independent hardware and same achieved-error external comparisons.",
+      "success": "Apply existing G0 and release axes for the claims made. Explicit opt-in research paths may coexist without becoming default.",
+      "on_failure": "Keep bounded working fronts and publish measured failures; no release tag."
+    }
+  ],
+  "environment": {
+    "compiler": "Rust 1.94.1 (use rust-toolchain.toml)",
+    "comparison": "same physical output, independent reference uncertainty, no extrapolation; isolated wall for speed promotion",
+    "git": "derive precise start via git rev-parse HEAD at branch, preserve prior raw outputs and decisions",
+    "workspace_tests": "Use a fresh per-worktree CARGO_TARGET_DIR when qualifying an integration tree; shared target directories across different source revisions produced stale dependencies on this workstation."
+  },
+  "entry_commands": [
+    "cargo test --locked -p vigilode --features structured --test structured_frontend --test graph_schur_frontend --test matrix_free_portfolio --test spatial_diffusion --test longitude_preconditioner --test portfolio --test default_path_golden",
+    "cargo test --locked -p vigilode --test split_forcing_contracts -- --include-ignored",
+    "cargo test --locked -p rodas5p-krylov --test n02_shifted_diffusion --test n03_stage_interval_contracts --test n02_flexible_trigger_contracts",
+    "cargo run --locked --profile measurement -p vigilode --example modal_work_precision",
+    "python3 research/unified_referee_20261124/cvode/evaluate.py",
+    "python3 research/unified_referee_20261124/verify.py"
+  ]
+}

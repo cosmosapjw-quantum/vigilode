@@ -1,0 +1,671 @@
+{
+  "schema_version": 1,
+  "workflow_version": "1.0.0",
+  "task": "both",
+  "unit_id": "VIGILODE-UNIFIED-20261124",
+  "objective": "Audit and implement a unified structured-solver research candidate, recover source-based failures, and decide its production eligibility.",
+  "scope": "Bounded referee cycle on the 2026-11-24 production lineage. General release, universal performance and unrestricted stage parallelism remain unqualified.",
+  "status": "complete",
+  "dependencies": [
+    {
+      "id": "source",
+      "identity": "ab4907172e716a139ff0cde83c5e7e70564b47f2",
+      "description": "Local production head on public parent a66215e7 before changes."
+    },
+    {
+      "id": "v25",
+      "identity": "3768dac50f7d4c380f26cb1b51a85effb1f2d9cd",
+      "description": "Frozen P1 closed-loop confirmation."
+    },
+    {
+      "id": "v26",
+      "identity": "de7f18ac14aab75c563ac96689e1501384e221ee",
+      "description": "Frozen assembly corroboration."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "lineage",
+      "kind": "review",
+      "locator": "history/lineage_audit.json",
+      "scope": "Remote history, archive replay and ratio reversal",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "history",
+      "kind": "source",
+      "locator": "history/historical_evidence.json",
+      "scope": "Experiment- and archive-specific evidence",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "theory",
+      "kind": "derivation",
+      "locator": "REFEREE_THEORY.md",
+      "scope": "Black-box stage causality, split forcing, nonnormality and method-family distinction",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "methods",
+      "kind": "decision",
+      "locator": "METHODS.json",
+      "scope": "Contracts, model identities and fallback per method",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "modal",
+      "kind": "calculation",
+      "locator": "../modal_transfer_20261124/adaptive_work_precision.json",
+      "scope": "Original normal modes and exact propagation control",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "oracle",
+      "kind": "calculation",
+      "locator": "../modal_transfer_20261124/oracle.json",
+      "scope": "Exact rational reconstruction",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "spatial",
+      "kind": "calculation",
+      "locator": "../spatial_review_20261124/RESULTS.json",
+      "scope": "Native and independent method-of-lines checks",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "sphere",
+      "kind": "derivation",
+      "locator": "../spatial_review_20261124/polar_lines.json",
+      "scope": "Weighted conditioning, Fourier and Krylov tests",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "sphere-native",
+      "kind": "implementation",
+      "locator": "../spatial_review_20261124/native_polar.log",
+      "scope": "True W residual for the native line preconditioner",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "cv",
+      "kind": "calculation",
+      "locator": "cvode/results.json",
+      "scope": "U11 native CVODE / Rust and independent Julia reference",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "p1",
+      "kind": "implementation",
+      "locator": "results/matrix_free_results.json",
+      "scope": "Guarded JVP frontend",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "root",
+      "kind": "calculation",
+      "locator": "r5_cubic_stages/RESULT.json",
+      "scope": "Full signed stage path with fallback",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "forcing",
+      "kind": "calculation",
+      "locator": "results/split_forcing_native.json",
+      "scope": "True forcing calls, finite failure and matched-problem comparisons",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "p12",
+      "kind": "implementation",
+      "locator": "history/p12_native_evidence.json",
+      "scope": "Ordered graph prefix counts and actual native IVP",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "port",
+      "kind": "implementation",
+      "locator": "results/portfolio_results.json",
+      "scope": "Fatal replay regression and RHS-only BDF/Radau",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "krylov",
+      "kind": "implementation",
+      "locator": "history/n02_n03_native_evidence.json",
+      "scope": "Old branch N02/N03 recovered and tested",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "independent",
+      "kind": "review",
+      "locator": "results/independent_review.json",
+      "scope": "Numerical derivative checks, source comparison and cross-review",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "full",
+      "kind": "calculation",
+      "locator": "results/facade_all.json",
+      "scope": "Full unignored 537 facade cases on scoped portfolio head",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "v25data",
+      "kind": "calculation",
+      "locator": "../production_loop_20261116/mf_p1_confirm/RESULTS.json",
+      "scope": "Frozen closed-loop and shadow replay",
+      "dependency_ids": [
+        "v25"
+      ]
+    },
+    {
+      "id": "v26data",
+      "kind": "calculation",
+      "locator": "../production_loop_20261116/assembly_check/RESULTS.json",
+      "scope": "FD detection corpus and rounding failure",
+      "dependency_ids": [
+        "v26"
+      ]
+    },
+    {
+      "id": "run",
+      "kind": "decision",
+      "locator": "REPORT_KO.md",
+      "scope": "Scoped disposition/release axes",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "actions",
+      "kind": "artifact",
+      "locator": "NEXT_PLAN.json",
+      "scope": "Runnable follow-up with acceptance and fallback",
+      "dependency_ids": [
+        "source"
+      ]
+    },
+    {
+      "id": "handoff",
+      "kind": "artifact",
+      "locator": "CODING_AGENT_KO.txt",
+      "scope": "Copyable agent handoff",
+      "dependency_ids": [
+        "source"
+      ]
+    }
+  ],
+  "stages": [
+    {
+      "id": "R1",
+      "status": "complete",
+      "evidence_refs": [
+        "lineage",
+        "v25data",
+        "v26data"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Pinned the correct production/side branch identities and existing G0 contract.",
+      "reuse": null
+    },
+    {
+      "id": "R2",
+      "status": "complete",
+      "evidence_refs": [
+        "history",
+        "lineage"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Compared reachable code, superseded claims, PR heads and archival trajectory bytes.",
+      "reuse": null
+    },
+    {
+      "id": "R3",
+      "status": "complete",
+      "evidence_refs": [
+        "methods",
+        "theory"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Separated allowed model structure, floating precision, derivative interface, stage residual, trajectory error and nonlinear solve.",
+      "reuse": null
+    },
+    {
+      "id": "R4",
+      "status": "complete",
+      "evidence_refs": [
+        "theory",
+        "sphere",
+        "methods"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Constructed competing modal, forcing, graph, certified root and polar-line candidates alongside original baselines.",
+      "reuse": null
+    },
+    {
+      "id": "R5",
+      "status": "complete",
+      "evidence_refs": [
+        "oracle",
+        "root",
+        "sphere"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Derived modal rational endpoint plus embedded estimator, original signed M-matrix residual bound, and longitude-line weighted spectrum.",
+      "reuse": null
+    },
+    {
+      "id": "R6",
+      "status": "complete",
+      "evidence_refs": [
+        "oracle",
+        "independent",
+        "cv"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Compared independent rational/closed-form computations, high-precision Taylor and SciPy/Julia against native outputs.",
+      "reuse": null
+    },
+    {
+      "id": "R7",
+      "status": "complete",
+      "evidence_refs": [
+        "forcing",
+        "root",
+        "cv",
+        "v25data"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Used manufactured counterexample, original eight-stage R5 data, oversolved Krylov comparators and work-precision holdouts to discriminate claims.",
+      "reuse": null
+    },
+    {
+      "id": "R8",
+      "status": "complete",
+      "evidence_refs": [
+        "run",
+        "modal",
+        "spatial"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Retained HOLD, scoped eligibility and explicit fallback for each survivor.",
+      "reuse": null
+    },
+    {
+      "id": "R9",
+      "status": "complete",
+      "evidence_refs": [
+        "methods",
+        "port",
+        "p1",
+        "sphere-native"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Mapped assumptions to typed APIs, residual monitors and capability checks.",
+      "reuse": null
+    },
+    {
+      "id": "R10",
+      "status": "complete",
+      "evidence_refs": [
+        "run",
+        "actions",
+        "handoff"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Delivered resolved scope, surviving hypotheses and discriminating downstream tests.",
+      "reuse": null
+    },
+    {
+      "id": "C1",
+      "status": "complete",
+      "evidence_refs": [
+        "lineage",
+        "v25data",
+        "v26data"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Rebased the review on the actual local production source plus completed V25/V26 siblings.",
+      "reuse": null
+    },
+    {
+      "id": "C2",
+      "status": "complete",
+      "evidence_refs": [
+        "oracle",
+        "theory",
+        "spatial"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Tied frozen stage coefficients and semidiscrete face matrices to implementation and reference.",
+      "reuse": null
+    },
+    {
+      "id": "C3",
+      "status": "complete",
+      "evidence_refs": [
+        "forcing",
+        "port",
+        "p1",
+        "root"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Implemented definite source/epoch contracts, refusal and stage/step rollback, typed fatal-stop semantics.",
+      "reuse": null
+    },
+    {
+      "id": "C4",
+      "status": "complete",
+      "evidence_refs": [
+        "cv",
+        "forcing",
+        "modal"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Ran bounded independent native/Julia/SciPy comparisons on the workstation; timing under concurrent load labeled diagnostic.",
+      "reuse": null
+    },
+    {
+      "id": "C5",
+      "status": "complete",
+      "evidence_refs": [
+        "port",
+        "p1",
+        "p12",
+        "spatial",
+        "root"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Wired portfolio, normal modes, per-stage GMRES, source-aware roots, graph paths, geometry and affine events.",
+      "reuse": null
+    },
+    {
+      "id": "C6",
+      "status": "complete",
+      "evidence_refs": [
+        "krylov",
+        "p12",
+        "full",
+        "port"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Ran real fallback triggers, mismatched capabilities, boundary cases and earlier exact warm starts.",
+      "reuse": null
+    },
+    {
+      "id": "C7",
+      "status": "complete",
+      "evidence_refs": [
+        "spatial",
+        "sphere-native",
+        "root",
+        "oracle"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Validated conservation, original-W residual, closed IVP solutions and sparse matrix exponential.",
+      "reuse": null
+    },
+    {
+      "id": "C8",
+      "status": "complete",
+      "evidence_refs": [
+        "modal",
+        "cv",
+        "root",
+        "forcing"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Compared tolerances, modal and native U11 work precision, high-precision trajectory references and partitioned solver cost.",
+      "reuse": null
+    },
+    {
+      "id": "C9",
+      "status": "complete",
+      "evidence_refs": [
+        "independent",
+        "port",
+        "forcing"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Reproduced fatal callback replay, checked the FFI orientation and original equations, corrected malformed split forcing output and verified accounting.",
+      "reuse": null
+    },
+    {
+      "id": "C10",
+      "status": "complete",
+      "evidence_refs": [
+        "run",
+        "actions",
+        "handoff"
+      ],
+      "dependency_ids": [
+        "source"
+      ],
+      "reason": "Published patched candidate and reproducible handoff with scoped release disposition.",
+      "reuse": null
+    }
+  ],
+  "claims": [
+    {
+      "id": "bounded",
+      "statement": "Declared structural routes preserve the original model and achieve scoped benefits; no package-wide superiority established.",
+      "scope": "Implemented and tested solver families described in METHODS.json",
+      "basis": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "evidence_refs": [
+        "theory",
+        "modal",
+        "cv",
+        "forcing",
+        "p12",
+        "root"
+      ],
+      "obligations": [
+        "Independent holdout/hardware, integrated geometry-preconditioned adaptive timings, and complete release matrix."
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "native_u11",
+      "domain": "numerics",
+      "result": "partial",
+      "evidence_refs": [
+        "cv"
+      ],
+      "reason": "29/30 native arms complete; CVODE error is retained.",
+      "execution_ref": "U11"
+    },
+    {
+      "id": "facade",
+      "domain": "implementation",
+      "result": "pass_scoped",
+      "evidence_refs": [
+        "full"
+      ],
+      "reason": "Whole original unignored facade sweep on the tested portfolio revision.",
+      "execution_ref": "facility"
+    },
+    {
+      "id": "math",
+      "domain": "math",
+      "result": "pass_scoped",
+      "evidence_refs": [
+        "oracle",
+        "theory"
+      ],
+      "reason": "Exact rational reconstruction on the declared real dissipative modes."
+    }
+  ],
+  "executions": [
+    {
+      "id": "U11",
+      "status": "completed",
+      "command": "python3 research/unified_referee_20261124/cvode/evaluate.py",
+      "environment": "Python on the user workstation; native Rust 1.94.1 and CVODE 6.4.1, Julia run recorded separately in raw files",
+      "evidence_refs": [
+        "cv"
+      ],
+      "exit_code": 0,
+      "reason": "All planned cells adjudicated including the native flag -3 failure."
+    },
+    {
+      "id": "matrix",
+      "status": "completed",
+      "command": "cargo test --offline --locked -p vigilode --test matrix_free_portfolio",
+      "environment": "Native rustc 1.94.1, Linux",
+      "evidence_refs": [
+        "p1"
+      ],
+      "exit_code": 0,
+      "reason": "Guarded routes and callback accounting."
+    },
+    {
+      "id": "facility",
+      "status": "completed",
+      "command": "cargo test --offline -p vigilode --tests --no-fail-fast",
+      "environment": "261ac560, native Rust 1.94.1",
+      "evidence_refs": [
+        "full"
+      ],
+      "exit_code": 0,
+      "reason": "537 passed on the portfolio revision."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "release",
+      "decision": "HOLD package-wide release; retain protected defaults and explicit structured methods.",
+      "evidence_refs": [
+        "run",
+        "cv"
+      ]
+    }
+  ],
+  "overrides": [
+    {
+      "id": "v06",
+      "previous": "Archived P01 wording reverses ratio.",
+      "replacement": "Per-stage GMRES JVP divided by shared JVP exceeds unity.",
+      "impact": "Claim basis corrected; existing FAIL and gate retained.",
+      "evidence_refs": [
+        "lineage"
+      ]
+    }
+  ],
+  "failures": [
+    {
+      "id": "external",
+      "class": "numerics",
+      "evidence_refs": [
+        "cv"
+      ],
+      "next_action": "Probe Oregonator phase sensitivity; retain CVODE flag -3 and all successful cells."
+    },
+    {
+      "id": "exhaust",
+      "class": "numerics",
+      "evidence_refs": [
+        "v25data"
+      ],
+      "next_action": "Trace adaptive trajectory divergence in NEXT_PLAN.json/gmres-path."
+    },
+    {
+      "id": "split",
+      "class": "implementation",
+      "evidence_refs": [
+        "forcing",
+        "independent"
+      ],
+      "next_action": "Malformed-success callbacks now fail fatally at consumption; retain regression."
+    }
+  ],
+  "next_actions": [
+    {
+      "id": "sphere-lines",
+      "evidence_refs": [
+        "sphere-native",
+        "actions"
+      ],
+      "action": "Wire true-residual native preconditioner into adaptive stage driver."
+    }
+  ]
+}
