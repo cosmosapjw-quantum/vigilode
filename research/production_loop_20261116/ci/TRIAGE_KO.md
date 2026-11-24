@@ -447,3 +447,17 @@ strace 비용(`strace_cost_probe.log`, 이 host, 부하 약 190):
 - v3 workflow의 저장 단계도 조건이 `if: ${{ !cancelled() }}`다(`.github/workflows/ignored-tests.yml` 136행, `production.yml` 170행과 230행). 시간 제한 초과는 취소이므로 저장 단계가 돌지 않는다.
 - 결과: full 선택 run이 330분 안에 끝나지 않으면 기준점이 생기지 않는다. 그러면 다음 run도 full이 되어 같은 일이 되풀이된다(liveness 결함, M-N7). v3는 v2에 strace를 더하므로 더 느리다. head 7012e9d5의 v3 ignored run(45414722588, 14:29:53Z 시작, 제한 19:59:53Z = 04:59:53 KST)도 단계 11에서 진행 중이다. 같은 head의 Production `test` job(제한 300분, 19:29:53Z)도 진행 중이다. v2의 같은 job은 191분이 걸렸다.
 - 수정안(소유자 결정 대기): (1) selector가 target마다 결과와 측정 입력을 바로 기록하고, 자체 시간 예산(job 제한보다 약 20분 일찍)이 끝나면 새 target을 시작하지 않는다. 저장 단계는 취소되어도 돌게 한다(`always()`). 그러면 끝난 target은 기준점이 되고 남은 target은 다음 run에 '지도 없음'으로 다시 선택된다. full 선택이 여러 run에 걸쳐 수렴하며 job 분할이나 주기적 full run이 필요 없다. (2) ignored job을 package별 matrix로 나눈다. runner 수와 비용이 늘고, 2026-11-24 ruling에 따라 소유자 승인이 필요하다.
+
+### 12.3 (2026-11-25 05:04 KST) head 7012e9d5의 v3 run 결과 (M-N7)
+
+| job | 시간 | 결과 | 기준점 |
+|---|---|---|---|
+| `test` (full 선택: 이 job의 완전한 이전 결과 없음) | 14:29:53Z → 19:06:10Z, 276분(제한 300분) | 실패: host 의존 bit anchor 3개만(krylov `gmres_staged_column_test_bits`, `staged_solve_telemetry`, integrators `stage_residual_telemetry`) | 저장됨: outcome `complete=true`, 명령 475개, 측정한 target 557개. 5개는 "no coverage data found"로 지도에 빠졌다(integrators `audit2_matrix_free_common_w_contracts`, `audit2_reusable_preconditioner_transaction_contracts`, `native_reaudit_chart_transport`, `rnext05_chart_provider`, `rvj_integration_boundaries`) |
+| `test-cli-fair-ab` | 40분 40초 | 실패: 12.1의 flaky test | 저장됨 |
+| `ignored-tests` (full) | 14:29:53Z → 20:00:09Z, 330분 제한 초과로 취소 | - | 없음 (12.2와 같다) |
+| `bench` | 1분 37초 | 실패(알려진 원인, 2절) | - |
+
+- 같은 코드의 flaky 확인: 다음 head 1b0aac36의 `test-cli-fair-ab` run(45431605937, 33분)은 V29의 `assembly.rs` 구조 변경으로 cli와 fair-ab의 모든 test를 골랐고, `stage_batch_feasibility_cli_emits_deterministic_within_step_report`가 통과했다. `stage_batch.rs`는 두 run에서 같다.
+- 기준점이 생긴 뒤의 선택: head af266914의 `test-cli-fair-ab`(45436319949)는 1b0aac36 이후 바뀐 경로 5개(모두 `research/…/ci/`)가 어떤 target의 입력도 아니어서 아무것도 고르지 않고 34초에 끝났다.
+- queue 동작: 실행 중인 test job은 취소되지 않는다. 기다리던 job은 새 push가 들어오면 취소되고 새 head의 job으로 바뀐다(1b0aac36과 a7fb9ca3의 `test`). 설계대로다.
+- ignored job: head af266914의 run(45436319869)은 20:00:11Z에 full로 시작했다. 12.2의 수정 전에는 push마다 330분 run이 기준점 없이 끝난다. 저장소가 공개라 hosted 사용 시간 비용은 없다.
