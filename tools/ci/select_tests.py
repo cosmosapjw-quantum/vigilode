@@ -1,64 +1,78 @@
 #!/usr/bin/env python3
-"""Change-based selection of the tests that the CI test jobs run (owner decisions OD-L1-19, OD-L1-20).
+"""Change-based selection of the tests that the CI test jobs run, version 3 (owner decisions
+OD-L1-19, OD-L1-20, OD-L1-21).
 
-A test job does not re-run the whole suite at every push. It runs the tests that the changes
-since its baseline can affect, the tests that are new, and the tests that failed in the baseline
-run. The whole suite runs when it is asked for (workflow_dispatch with full), on the main branch,
-when no baseline is known, and when a file changed that every test depends on. The owner runs the
-whole suite before a release.
+A test job does not re-run the whole suite at every push. It runs the test targets whose measured
+inputs changed since its baseline, the targets that have no measurement yet, and the targets that
+failed in the baseline run. The owner runs the whole suite before a release.
 
-Baseline: the head of the most recent earlier run of the same job, on the same branch, whose
-outcome file says that its selection ran to the end ("complete"). A cancelled run or a run that
-broke before its tests ran leaves no complete outcome, so its changes stay in the next difference.
-The baseline run also hands over its coverage map (below).
+Baseline: the newest earlier run of the same job on the same branch whose outcome says that its
+selection ran to the end ("complete") at a head that is an ancestor of this head. It hands over its
+outcome (failed targets, runner image, pull-request base) and its input map.
 
-Coverage map (OD-L1-20): every run executes its selected test targets with coverage
-instrumentation and records, per target, the workspace source files that the target executed.
-The entry of a target is replaced whenever the target runs; entries of targets that did not run
-are carried over from the baseline. A target that ran without leaving a profile loses its entry.
+Input map: every run measures, for every test target that it runs, the repository files the target
+depends on and replaces the target's entry; entries of targets that did not run are carried over.
+A target whose measurement fails loses its entry (rule 5 runs it next time).
+  compile   files in the rustc dep-info of the target's own artifact (integration tests, lib and
+            bin unit tests, examples): mod, #[path], include!, include_str!, include_bytes!
+  executed  files with a covered region (-C instrument-coverage; the package's binaries included)
+  read      paths the test process and its children opened, stat'ed, accessed, read as a link or
+            executed successfully (strace attached through cargo's target runner)
+  dirs      directories they opened as directories (their listing was read)
+  absent    paths they probed that did not exist (ENOENT, ENOTDIR)
+Per package the map also records the inputs of the library and binaries as other crates link them
+(the dep-info of the non-test artifacts). Paths outside the repository, under the cargo target
+directory, under .git or under the measurement directory are dropped. Doc tests are not measured.
 
-Selection rules, in this order; none of them has a tunable number:
-1. FULL when asked, when there is no baseline, when the baseline is not an ancestor of the head,
-   or when a global file changed: the workspace manifest and lock file, the toolchain file,
-   .cargo/, this tool, and the job's own workflow file.
-2. A changed file inside a workspace package: src/**/*.rs, build.rs and Cargo.toml are package
-   sources; examples/ and benches/ change the package without its dependents; tests/**/*.rs are
-   test sources of the package; any other file is a data file.
-3. A modified package source file is classified with a Rust tokenizer: unchanged tokens (only
-   whitespace or comments that are not doc comments changed) have no effect; if every changed line
-   (old and new side) lies inside the body of a function that is not a const fn, it is a body
-   change; anything else is a structural change (items, signatures, consts, statics, types,
-   traits, macros, attributes, doc comments, const fn bodies). An added, deleted or renamed
-   source file, Cargo.toml and build.rs are structural.
-4. A data file: a test can read a file at run time only through a path written in a string
-   literal. Every path-like string literal of the Rust sources of the packages is compared with
-   the changed file and its parent directories (equal, or a suffix after a '/'). A matching
-   literal in a package source makes a structural change of that package; a matching literal in
-   tests/ changes that test source. Without a match no test reads the file.
-5. A structural change: the package and every package that depends on it (normal, dev or build
-   dependency, transitively) run all their tests (unit, integration, binary and doc tests).
-6. A body change of a package P, with a coverage map: the targets whose map entry lists a changed
-   file run, and so does every target of P and of its dependents that has no map entry; the doc
-   tests of P and its dependents run (doc tests have no coverage on the stable toolchain).
-   Without a coverage map a body change is treated as structural.
-7. A changed test source of a package that does not run all its tests: the test targets whose
-   dep-info (written by cargo when it builds the test binaries) lists the file run; if no target
-   lists it, every test target of the package runs.
-8. Targets that failed in the baseline run are added.
-9. Only packages in the job's scope are selected.
+Selection rules, in this order; none has a tunable number:
+1. FULL when asked (workflow_dispatch with full, main), when there is no baseline or no input map,
+   when the baseline head is not an ancestor of the head, when the runner image (ImageOS,
+   ImageVersion) or the pull-request base sha differs from the baseline's, or when a global file
+   changed: Cargo.toml, Cargo.lock, rust-toolchain*, .cargo/, tools/ci/ and the job's workflow.
+2. The changed paths come from `git diff -z --name-status -M base head`; a rename is the deletion
+   of its old path and the addition of its new path.
+3. A changed path selects every mapped target whose compile, executed or read set contains it. An
+   added or deleted path also selects every target that listed the directory whose listing changed
+   (its nearest ancestor that exists on both sides), every target that probed or observed a
+   directory that the change creates or removes, and (added) every target that probed the path.
+4. Package sources of P: P/Cargo.toml, P/build.rs, P/src/**/*.rs and the recorded library and
+   binary inputs of P. Cargo.toml, build.rs, an added, deleted or renamed .rs file and a non-Rust
+   input (include_str!, include_bytes!) are structural. A modified .rs file is classified by a Rust
+   tokenizer: noop (only whitespace and comments that are not doc comments changed), body (every
+   changed line, old and new side, lies inside the body of a function that is not a const fn) or
+   structural (anything else). Structural: every target of P and of every package that depends on
+   P. Body: rule 3 and the doc tests of P and of its dependents. Noop: no package rule; rule 3
+   counts the read sets and the compile sets of every target except the unit tests of P itself:
+   text consumers (include_str!, include_bytes!, include!, #[path] from another crate or test
+   crate) see the new bytes, the crate that compiles the file as a module sees the same tokens.
+5. A target in scope without a map entry (new, or its measurement failed) runs whenever the diff is
+   not empty; so does the target of a declared negative control that has no map entry. A package
+   whose library and binary inputs are not recorded counts as structurally changed then.
+6. Targets that failed in the baseline run (negative controls included) run again if they still
+   exist and their required features are enabled; others are dropped with a note.
+7. An example whose compile set contains a changed path is compiled (`cargo test --no-run
+   --example`); a package that runs whole compiles all its examples.
+8. Doc tests run whenever their package runs whole or has a selected target, and for body changes
+   of the package or of a dependency (rule 4).
+9. Only packages in the job's scope are selected; a target whose required features are not
+   enabled by default is never named.
 
 Subcommands:
-  baseline  --workflow <file> --artifact <name> --branch <b> --run-id <id> --out <json>
-  select    --baseline <json> --head <sha> --scope <pkg ...> --workflow-file <path>
-            [--full <true|false>] [--profile <p>] --out <json>
+  baseline  --workflow <file> --artifact <name> --branch <b> --run-id <id> [--head <sha>] --out <json>
+  select    --baseline <json> --head <sha> [--pr-base <sha>] --scope <pkg ...> --workflow-file <path>
+            [--full <true|false>] [--control <pkg>:<target>#<test> ...] --out <json>
   run       --selection <json> --mode normal|ignored [--profile <p>] [--skip <test> ...]
-            --outcome <json> [--coverage --baseline <json> --map-out <json>]
+            --outcome <json> [--measure --baseline <json> --map-out <json> [--work-dir <dir>]
+            [--control-maps <json> ...] [--failed-controls <file>] [--jobs <n>]]
+  control   --selection <json> --target <pkg>:<target> --test <name> --signature <text>
+            [--profile <p>] --map-out <json> --failed-file <file> [--work-dir <dir>]
   has       --selection <json> --target <package>:<target>   (prints yes or no)
   self-test
 """
 
 import argparse
 import concurrent.futures
+import filecmp
 import glob
 import json
 import os
@@ -67,55 +81,138 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import urllib.parse
 
-SCHEMA_SELECTION = "vigilode.ci.test-selection.v2"
-SCHEMA_OUTCOME = "vigilode.ci.test-outcome.v1"
-SCHEMA_MAP = "vigilode.ci.coverage-map.v1"
-GLOBAL_FILES = ("Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "rust-toolchain")
-GLOBAL_PREFIXES = (".cargo/", "tools/ci/")
+SCHEMA_SELECTION = "vigilode.ci.test-selection.v3"
+SCHEMA_OUTCOME = "vigilode.ci.test-outcome.v2"
+SCHEMA_MAP = "vigilode.ci.coverage-map.v2"
+SCHEMA_CONTROL = "vigilode.ci.control-measurement.v1"
+GLOBAL_FILES = ("Cargo.toml", "Cargo.lock")
+GLOBAL_PREFIXES = (".cargo/", "tools/ci/", "rust-toolchain")
+SETS = ("compile", "executed", "read", "dirs", "absent")
+TRACED = ("open,openat,openat2,creat,execve,execveat,stat,lstat,newfstatat,statx,access,faccessat,"
+          "faccessat2,readlink,readlinkat,chdir,fchdir")
+MESSAGES = "--message-format=json-diagnostic-rendered-ansi"
 RERUN = re.compile(r"`-p (\S+) (--lib|--doc|--test (\S+)|--bin (\S+))`")
 ORDER = ("rodas5p-core", "rodas5p-krylov", "rodas5p-integrators", "rodas5p-fair-ab", "rodas5p-cli",
          "vigilode", "vigilode-coupled")
+LIB_KINDS = ("lib", "rlib", "dylib", "cdylib", "staticlib", "proc-macro")
+GIT = ["git", "-c", "core.quotePath=false", "-c", "color.ui=false"]
 
 
-def sh(args, cwd=None, check=True, env=None):
-    result = subprocess.run(args, cwd=cwd, capture_output=True, text=True, env=env)
+def sh(args, cwd=None, check=True, env=None, stdin=None):
+    result = subprocess.run(args, cwd=cwd, capture_output=True, env=env, input=stdin,
+                            encoding="utf-8", errors="surrogateescape")
     if check and result.returncode != 0:
         raise SystemExit(f"command failed ({result.returncode}): {' '.join(args)}\n{result.stderr}")
     return result
 
 
+def git(root, *args, check=True, stdin=None):
+    return sh(GIT + list(args), cwd=root, check=check, stdin=stdin)
+
+
 def repo_root():
-    return sh(["git", "rev-parse", "--show-toplevel"]).stdout.strip()
+    return sh(GIT + ["rev-parse", "--show-toplevel"]).stdout.strip()
+
+
+def load_json(path):
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def write_json(path, data):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=1, sort_keys=True)
+        f.write("\n")
+
+
+def is_ancestor(root, base, head):
+    return git(root, "merge-base", "--is-ancestor", base, head, check=False).returncode == 0
 
 
 # ---------------------------------------------------------------------------- workspace
 
 
-def workspace(root):
-    """Workspace packages: name -> dir (relative), workspace dependencies, runnable targets."""
-    meta = json.loads(sh(["cargo", "metadata", "--format-version", "1", "--no-deps", "--locked"],
-                         cwd=root).stdout)
+def default_features(features):
+    """The features that a build without --features enables (the closure of 'default')."""
+    on, stack = set(), ["default"]
+    while stack:
+        name = stack.pop()
+        if name in on or name not in features:
+            continue
+        on.add(name)
+        stack += [x for x in features[name] if not x.startswith("dep:") and "/" not in x]
+    return on
+
+
+def packages_from_metadata(meta, root):
+    """Workspace packages: dir, workspace dependencies, runnable targets, examples, doc tests and
+    the targets left out because their required features are not enabled by default."""
     names = {p["name"] for p in meta["packages"]}
     packages = {}
     for p in meta["packages"]:
-        targets = []
+        enabled = default_features(p.get("features", {}))
+        info = {"dir": os.path.relpath(os.path.dirname(p["manifest_path"]), root),
+                "deps": sorted({d["name"] for d in p["dependencies"] if d["name"] in names}),
+                "lib": False, "doc": False, "bins": [], "tests": [], "examples": [], "unmet": {}}
         for t in p["targets"]:
-            if not t.get("test", True):
-                continue
-            if "test" in t["kind"]:
-                targets.append(t["name"])
-            elif "bin" in t["kind"]:
-                targets.append("bin:" + t["name"])
-            elif any(k in ("lib", "rlib", "dylib", "cdylib", "staticlib") for k in t["kind"]):
-                targets.append("lib")
-        packages[p["name"]] = {
-            "dir": os.path.relpath(os.path.dirname(p["manifest_path"]), root),
-            "deps": sorted({d["name"] for d in p["dependencies"] if d["name"] in names}),
-            "tests": sorted(t["name"] for t in p["targets"] if "test" in t["kind"]),
-            "targets": sorted(set(targets)),
-        }
+            kinds, name = t["kind"], t["name"]
+            if "test" in kinds:
+                key = name
+            elif "example" in kinds:
+                key = "example:" + name
+            elif "bin" in kinds:
+                key = "bin:" + name
+            elif any(k in LIB_KINDS for k in kinds):
+                key = "lib"
+            else:
+                continue  # build scripts and benches are not test targets
+            missing = sorted(f for f in t.get("required-features", []) if f not in enabled)
+            if missing:
+                info["unmet"][key] = missing
+            elif key == "lib":
+                info["lib"] = bool(t.get("test", True))
+                info["doc"] = bool(t.get("doctest", True))
+            elif key.startswith("example:"):
+                info["examples"].append(name)
+            elif t.get("test", True):
+                (info["bins"] if key.startswith("bin:") else info["tests"]).append(name)
+        for k in ("bins", "tests", "examples"):
+            info[k] = sorted(info[k])
+        packages[p["name"]] = info
     return packages
+
+
+def workspace(root):
+    """(packages, cargo target directory)."""
+    meta = json.loads(sh(["cargo", "metadata", "--format-version", "1", "--no-deps", "--locked"],
+                         cwd=root).stdout)
+    return packages_from_metadata(meta, root), meta["target_directory"]
+
+
+def unit_keys(info):
+    """The runnable test targets of a package: 'lib', 'bin:<name>' and integration tests."""
+    return (["lib"] if info["lib"] else []) + ["bin:" + b for b in info["bins"]] + list(info["tests"])
+
+
+def is_current(info, target):
+    if target == "lib":
+        return info["lib"]
+    if target == "doc":
+        return info["doc"]
+    if target.startswith("bin:"):
+        return target[4:] in info["bins"]
+    if target.startswith("example:"):
+        return target[8:] in info["examples"]
+    return target in info["tests"]
+
+
+def split_key(key):
+    """(package, target, control test or None) of a map key '<package>::<target>[#<test>]'."""
+    pkg, rest = key.split("::", 1)
+    target, _, control = rest.partition("#")
+    return pkg, target, control or None
 
 
 def dependents_closure(changed, packages):
@@ -135,7 +232,7 @@ def dependencies_closure(name, packages):
     """Every package that `name` depends on, transitively."""
     seen, stack = set(), [name]
     while stack:
-        for dep in packages[stack.pop()]["deps"]:
+        for dep in packages.get(stack.pop(), {}).get("deps", []):
             if dep not in seen:
                 seen.add(dep)
                 stack.append(dep)
@@ -151,21 +248,13 @@ def package_of(path, packages):
     return best
 
 
-def classify(path, packages):
-    """('global'|'package'|'package_local'|'test_source'|'data'|'other_rust', package or None)."""
-    if path in GLOBAL_FILES or path.startswith(GLOBAL_PREFIXES):
-        return "global", None
-    name = package_of(path, packages)
-    if name is None:
-        return ("other_rust" if path.endswith(".rs") else "data"), None
-    inner = path[len(packages[name]["dir"].rstrip("/")) + 1:]
-    if inner in ("Cargo.toml", "build.rs") or (inner.startswith("src/") and inner.endswith(".rs")):
-        return "package", name
-    if inner.startswith(("examples/", "benches/")):
-        return "package_local", name
-    if inner.startswith("tests/") and inner.endswith(".rs"):
-        return "test_source", name
-    return "data", name
+def is_package_source(path, directory):
+    inner = path[len(directory.rstrip("/")) + 1:]
+    return inner in ("Cargo.toml", "build.rs") or (inner.startswith("src/") and inner.endswith(".rs"))
+
+
+def is_global(path, workflow):
+    return path in GLOBAL_FILES or path.startswith(GLOBAL_PREFIXES) or path == workflow
 
 
 # ---------------------------------------------------------------------------- Rust tokens
@@ -320,61 +409,87 @@ def classify_texts(old_text, new_text, diff_text):
 
 
 def classify_source_change(root, base, head, path):
-    old = sh(["git", "show", f"{base}:{path}"], cwd=root, check=False)
-    new = sh(["git", "show", f"{head}:{path}"], cwd=root, check=False)
+    old = git(root, "show", f"{base}:{path}", check=False)
+    new = git(root, "show", f"{head}:{path}", check=False)
     if old.returncode != 0 or new.returncode != 0:
         return "structural"
-    diff = sh(["git", "diff", "-U0", "--no-color", base, head, "--", path], cwd=root).stdout
+    diff = git(root, "diff", "--no-ext-diff", "-U0", "--no-color", base, head, "--", path).stdout
     return classify_texts(old.stdout, new.stdout, diff)
 
 
-# ---------------------------------------------------------------------------- string literals
+# ---------------------------------------------------------------------------- git paths
 
 
-def rust_string_literals(text):
-    """The contents of the string literals of a Rust source (comments and char literals skipped)."""
-    out = []
-    for kind, value, _ in rust_tokens(text):
-        if kind != "lit" or value.startswith("'"):
-            continue
-        m = re.match(r'^(?:b|c)?(?:r(#*))?"(.*)"(#*)$', value, re.S)
-        if m:
-            out.append(m.group(2))
-    return out
+def parse_name_status_z(data):
+    """[(status letter, path)] from `git diff -z --name-status -M`. A rename gives the deletion of
+    its old path (D) and the addition of its new path (A); a copy gives the addition."""
+    parts = data.split("\0")
+    out, i = [], 0
+    while i < len(parts) and parts[i]:
+        letter = parts[i][0]
+        if letter in "RC":
+            if letter == "R":
+                out.append(("D", parts[i + 1]))
+            out.append(("A", parts[i + 2]))
+            i += 3
+        else:
+            out.append((letter, parts[i + 1]))
+            i += 2
+    return sorted(set(out), key=lambda e: (e[1], e[0]))
 
 
-def normalise_literal(literal):
-    """A path-like literal as a relative path without ./, ../, leading or trailing '/'."""
-    cut = literal.split("{", 1)[0]
-    if "/" not in cut and "." not in cut:
-        return None
-    parts = [p for p in cut.replace("\\", "/").split("/") if p not in ("", ".", "..")]
-    return "/".join(parts) or None
+def changed_entries(root, base, head):
+    return parse_name_status_z(git(root, "diff", "--no-ext-diff", "-z", "--name-status", "-M",
+                                   base, head).stdout)
 
 
-def literal_matches(changed_path, literal):
-    norm = normalise_literal(literal)
-    if not norm:
-        return False
-    candidates = [changed_path]
-    head = changed_path
+def ancestors(path):
+    """The directories above a repository-relative path, nearest first, ending with '.'."""
+    out, head = [], path
     while "/" in head:
         head = head.rsplit("/", 1)[0]
-        candidates.append(head)
-    return any(c == norm or c.endswith("/" + norm) for c in candidates)
+        out.append(head)
+    return out + ["."]
 
 
-def rust_sources(root, packages):
-    files = []
-    for info in packages.values():
-        base = os.path.join(root, info["dir"])
-        for directory, dirs, names in os.walk(base):
-            dirs[:] = [d for d in dirs if d != "target"]
-            files += [os.path.relpath(os.path.join(directory, f), root) for f in names if f.endswith(".rs")]
-    return sorted(files)
+def existing_dirs(root, commit, dirs):
+    """The members of `dirs` ('.' is the root) that are directories at `commit`."""
+    query = sorted(d for d in set(dirs) if "\n" not in d)
+    if not query:
+        return set()
+    text = "".join(f"{commit}:{'' if d == '.' else d}\n" for d in query)
+    out = git(root, "cat-file", "--batch-check", stdin=text, check=False).stdout.splitlines()
+    return {d for d, line in zip(query, out) if line.split(" ")[1:2] == ["tree"]}
 
 
-# ---------------------------------------------------------------------------- cargo artifacts
+# ---------------------------------------------------------------------------- repository paths
+
+
+class Repo:
+    """Turns absolute or root-relative paths into repository-relative ones, dropping paths outside
+    the repository, under .git, under the cargo target directory and under measurement dirs."""
+
+    def __init__(self, root, target_dir=None, drop=()):
+        self.root = os.path.abspath(root)
+        self.real = os.path.realpath(root)
+        self.drop = [os.path.realpath(p) for p in [target_dir, *drop] if p]
+        self.drop.append(os.path.join(self.real, ".git"))
+
+    def rel(self, path, base=None):
+        p = os.path.normpath(os.path.join(base or self.root, path))
+        for top in (self.root, self.real):
+            if p == top:
+                return "."
+            if p.startswith(top + os.sep):
+                inner = p[len(top) + 1:]
+                full = os.path.join(self.real, inner)
+                if any(full == d or full.startswith(d + os.sep) for d in self.drop):
+                    return None
+                return inner
+        return None
+
+
+# ---------------------------------------------------------------------------- dep-info
 
 
 def parse_dep_info(text):
@@ -402,257 +517,526 @@ def parse_dep_info(text):
     return out
 
 
+HASHED = re.compile(r"-[0-9a-f]{16}$")
+
+
+def dep_info_file(msg):
+    """The rustc dep-info file of a cargo compiler-artifact message, or None."""
+    for f in list(msg.get("filenames") or []) + [msg.get("executable")]:
+        if not f:
+            continue
+        directory, base = os.path.split(f)
+        stem = re.sub(r"\.(rlib|rmeta|so|dylib|a|dll|exe|wasm)$", "", base)
+        if stem != base and stem.startswith("lib"):
+            stem = stem[3:]
+        if HASHED.search(stem) and os.path.exists(os.path.join(directory, stem + ".d")):
+            return os.path.join(directory, stem + ".d")
+    # A non-test binary or example is uplifted: a hard link (or copy) of the hashed artifact.
+    exe = msg.get("executable")
+    if not exe or not os.path.exists(exe):
+        return None
+    st = os.stat(exe)
+    directory, base = os.path.split(exe)
+    candidates = []
+    for d in (directory, os.path.join(directory, "deps")):
+        pattern = os.path.join(glob.escape(d), glob.escape(base.replace("-", "_")) + "-*")
+        candidates += [g for g in glob.glob(pattern)
+                       if HASHED.search(os.path.basename(g)) and os.path.exists(g + ".d")]
+    for g in candidates:
+        s = os.stat(g)
+        if (s.st_ino, s.st_dev) == (st.st_ino, st.st_dev):
+            return g + ".d"
+    for g in candidates:
+        if os.path.getsize(g) == st.st_size and filecmp.cmp(g, exe, shallow=False):
+            return g + ".d"
+    return None
+
+
 def target_key(target):
-    """'lib', 'bin:<name>' or the test name, from a cargo artifact target."""
+    """'lib', 'bin:<name>', 'example:<name>' or the test name, from a cargo artifact target."""
     kinds = target["kind"]
     if "test" in kinds:
         return target["name"]
+    if "example" in kinds:
+        return "example:" + target["name"]
     if "bin" in kinds:
         return "bin:" + target["name"]
     return "lib"
 
 
-def build_artifacts(root, package, profile, filters, env=None):
-    """Build the test executables of a package (with target filters) and return
-    ({key: (executable, dep-info sources)}, [non-test binaries], exit code)."""
-    args = ["cargo", "test", "--locked", "--no-run", "--message-format=json", "-p", package]
-    if profile and profile != "dev":
-        args += ["--profile", profile]
-    args += filters
-    result = sh(args, cwd=root, check=False, env=env)
-    tests, bins = {}, []
-    for line in result.stdout.splitlines():
-        try:
-            msg = json.loads(line)
-        except ValueError:
+class Artifacts:
+    """Compile sets read from cargo's compiler-artifact messages."""
+
+    def __init__(self, repo, packages):
+        self.repo = repo
+        self.by_dir = {os.path.normpath(info["dir"]): name for name, info in packages.items()}
+        self.units = {}          # (package, key) -> {"exe": path, "compile": [...] or None}
+        self.examples = {}       # (package, name) -> [...] or None
+        self.inputs = {}         # package -> set of library and binary inputs
+        self.inputs_failed = set()
+        self.bins = {}           # package -> {non-test binary}
+
+    def compile_set(self, msg):
+        path = dep_info_file(msg)
+        if not path:
+            return None
+        with open(path, encoding="utf-8", errors="surrogateescape") as f:
+            deps = parse_dep_info(f.read())
+        return sorted({r for r in (self.repo.rel(d) for d in deps) if r})
+
+    def add(self, msg):
+        if msg.get("reason") != "compiler-artifact" or not msg.get("manifest_path"):
+            return
+        name = self.by_dir.get(self.repo.rel(os.path.dirname(msg["manifest_path"])) or "")
+        target = msg.get("target", {})
+        if name is None or "custom-build" in target.get("kind", []):
+            return
+        key = target_key(target)
+        deps = self.compile_set(msg)
+        if key.startswith("example:"):
+            self.examples[(name, key[8:])] = deps
+        elif msg.get("profile", {}).get("test"):
+            self.units[(name, key)] = {"exe": msg.get("executable"), "compile": deps}
+        else:
+            if deps is None:
+                self.inputs_failed.add(name)
+            else:
+                self.inputs.setdefault(name, set()).update(deps)
+            if key.startswith("bin:") and msg.get("executable"):
+                self.bins.setdefault(name, set()).add(msg["executable"])
+
+
+# ---------------------------------------------------------------------------- strace
+
+
+TRACE_LINE = re.compile(r'^(?P<sc>[a-z0-9_]+)\((?P<args>.*)\)\s+=\s+(?P<ret>-?\d+|\?)'
+                        r'(?:<(?P<rpath>(?:[^<>\\]|\\.)*)>)?(?:\s+(?P<err>E[A-Z0-9]+))?')
+AT_ARGS = re.compile(r'^(?:AT_FDCWD|-?\d+)(?:<(?P<dir>(?:[^<>\\]|\\.)*)>)?,\s*"(?P<path>(?:[^"\\]|\\.)*)"')
+PLAIN_ARGS = re.compile(r'^"(?P<path>(?:[^"\\]|\\.)*)"')
+FD_ARG = re.compile(r'^-?\d+<(?P<dir>(?:[^<>\\]|\\.)*)>')
+AT_SYSCALLS = {"openat", "openat2", "newfstatat", "statx", "faccessat", "faccessat2", "readlinkat", "execveat"}
+OPEN_SYSCALLS = {"open", "openat", "openat2", "creat"}
+ESCAPES = {"n": 10, "t": 9, "r": 13, "v": 11, "f": 12, "a": 7, "b": 8, "\\": 92, '"': 34, "'": 39,
+           "<": 60, ">": 62}
+
+
+def unescape(text):
+    """A string as strace prints it (C escapes, octal and hex bytes) -> str (surrogateescape)."""
+    out, i = bytearray(), 0
+    while i < len(text):
+        c = text[i]
+        if c == "\\" and i + 1 < len(text):
+            nxt = text[i + 1]
+            hexed = re.match(r"x([0-9a-fA-F]{2})", text[i + 1:i + 4])
+            octal = re.match(r"[0-7]{1,3}", text[i + 1:i + 4])
+            if hexed:
+                out.append(int(hexed.group(1), 16))
+                i += 4
+                continue
+            if octal:
+                out.append(int(octal.group(0), 8) & 0xFF)
+                i += 1 + len(octal.group(0))
+                continue
+            if nxt in ESCAPES:
+                out.append(ESCAPES[nxt])
+                i += 2
+                continue
+        out += c.encode("utf-8", "surrogateescape")
+        i += 1
+    return out.decode("utf-8", "surrogateescape")
+
+
+def trace_events(lines, initial_cwd):
+    """(kind, absolute path) for the file-system observations in one `strace -ff -y` output file:
+    'read' (opened, stat'ed, accessed, executed), 'dir' (opened as a directory), 'absent'."""
+    cwd = initial_cwd
+    for line in lines:
+        m = TRACE_LINE.match(line)
+        if not m or m.group("ret") == "?":
             continue
-        if msg.get("reason") != "compiler-artifact":
+        sc, args, ok = m.group("sc"), m.group("args"), not m.group("ret").startswith("-")
+        if sc in ("chdir", "fchdir"):
+            a = (PLAIN_ARGS if sc == "chdir" else FD_ARG).match(args)
+            if ok and a:
+                given = unescape(a.group("path") if sc == "chdir" else a.group("dir"))
+                cwd = os.path.normpath(os.path.join(cwd, given))
             continue
-        exe = msg.get("executable")
-        if not exe:
+        if sc in AT_SYSCALLS:
+            a = AT_ARGS.match(args)
+            if not a:
+                continue
+            base = cwd if a.group("dir") is None else unescape(a.group("dir"))
+            if args.startswith("AT_FDCWD") and a.group("dir") is not None:
+                cwd = base
+        else:
+            a = PLAIN_ARGS.match(args)
+            if not a:
+                continue
+            base = cwd
+        given = unescape(a.group("path"))
+        if not given:
+            continue  # AT_EMPTY_PATH: the descriptor itself, already recorded when it was opened
+        lexical = os.path.normpath(os.path.join(base, given))
+        if not ok:
+            yield ("absent" if m.group("err") in ("ENOENT", "ENOTDIR") else "read"), lexical
             continue
-        if msg.get("profile", {}).get("test"):
-            deps = []
-            if os.path.exists(exe + ".d"):
-                with open(exe + ".d") as f:
-                    deps = sorted({os.path.relpath(d, root) for d in parse_dep_info(f.read())})
-            tests[target_key(msg["target"])] = (exe, deps)
-        elif "bin" in msg["target"]["kind"]:
-            bins.append(exe)
-    return tests, sorted(set(bins)), result.returncode
+        if sc in OPEN_SYSCALLS:
+            resolved = unescape(m.group("rpath")) if m.group("rpath") else lexical
+            kind = "dir" if "O_DIRECTORY" in args or os.path.isdir(resolved) else "read"
+            yield kind, lexical
+            if resolved != lexical:
+                yield kind, resolved
+        else:
+            yield "read", lexical
 
 
-# ---------------------------------------------------------------------------- select
+def trace_sets(trace_dir, repo, initial_cwd):
+    """{'read', 'dirs', 'absent'} repository paths from the strace files in trace_dir, or None."""
+    files = sorted(glob.glob(os.path.join(glob.escape(trace_dir), "t.*")))
+    if not files:
+        return None
+    sets = {"read": set(), "dirs": set(), "absent": set()}
+    name = {"read": "read", "dir": "dirs", "absent": "absent"}
+    for path in files:
+        with open(path, encoding="utf-8", errors="surrogateescape") as f:
+            for kind, full in trace_events(f, initial_cwd):
+                rel = repo.rel(full)
+                if rel is not None:
+                    sets[name[kind]].add(rel)
+    return {k: sorted(v) for k, v in sets.items()}
 
 
-def changed_entries(root, base, head):
-    """(status letter, path) for every changed path; both sides of a rename."""
-    out = sh(["git", "diff", "--name-status", "-M", base, head], cwd=root).stdout
-    entries = []
-    for line in out.splitlines():
-        parts = line.split("\t")
-        entries += [(parts[0][0], p) for p in parts[1:]]
-    return sorted(set(entries), key=lambda e: e[1])
+def strace_runner(strace, trace_dir):
+    """The value of CARGO_TARGET_<host>_RUNNER that traces a test executable and its children."""
+    if re.search(r"\s", strace + trace_dir):
+        raise ValueError(f"cargo splits the runner at whitespace: {strace} {trace_dir}")
+    return f"{strace} -ff --seccomp-bpf -qq -y -o {trace_dir}/t -e trace={TRACED}"
+
+
+def strace_works(strace, work):
+    """strace path and version when it can trace a child here, else (None, reason)."""
+    if not strace:
+        return None, "strace is not installed"
+    probe = os.path.join(work, "_strace_probe")
+    os.makedirs(probe, exist_ok=True)
+    r = sh(strace_runner(strace, probe).split() + ["true"], check=False)
+    if r.returncode != 0 or not glob.glob(os.path.join(probe, "t.*")):
+        return None, f"strace cannot trace here (exit {r.returncode}): {r.stderr.strip()[-300:]}"
+    return sh([strace, "-V"], check=False).stdout.splitlines()[0], None
+
+
+def host_triple():
+    return re.search(r"^host: (\S+)", sh(["rustc", "-vV"]).stdout, re.M).group(1)
+
+
+# ---------------------------------------------------------------------------- coverage
+
+
+def llvm_bin():
+    override = os.environ.get("VIGILODE_LLVM_BIN")
+    if override:
+        return override
+    sysroot = sh(["rustc", "--print", "sysroot"]).stdout.strip()
+    return os.path.join(sysroot, "lib", "rustlib", host_triple(), "bin")
+
+
+def covered_files(repo, llvm, profraws, exe, objects, workdir):
+    """(repository files with an executed region, None) or (None, reason)."""
+    merged = os.path.join(workdir, "merged.profdata")
+    r = sh([os.path.join(llvm, "llvm-profdata"), "merge", "-sparse", "-o", merged] + profraws, check=False)
+    if r.returncode != 0:
+        return None, "llvm-profdata failed: " + r.stderr.strip()[-300:]
+    args = [os.path.join(llvm, "llvm-cov"), "export", "-summary-only", "-instr-profile", merged,
+            "-ignore-filename-regex", r"(/\.cargo/registry/|/\.rustup/|^/rustc/)", exe]
+    for o in objects:
+        args += ["-object", o]
+    r = sh(args, check=False)
+    if r.returncode != 0:
+        return None, "llvm-cov failed: " + r.stderr.strip()[-300:]
+    files = set()
+    for block in json.loads(r.stdout).get("data", []):
+        for f in block.get("files", []):
+            if f.get("summary", {}).get("regions", {}).get("covered", 0) > 0:
+                rel = repo.rel(f["filename"])
+                if rel is not None:
+                    files.add(rel)
+    return sorted(files), None
+
+
+# ---------------------------------------------------------------------------- selection rules
+
+
+def new_entry():
+    return {"all": False, "lib": False, "doc": False, "targets": [], "examples": [], "why": {}}
+
+
+def match_inputs(sets, status, path, cls, own_crate, created=(), listing=None):
+    """Why a changed path selects a target with the given input sets ('' if it does not)."""
+    why = []
+    if path in sets["read"]:
+        why.append(f"reads {path}")
+    if path in sets["compile"] and not (cls == "noop" and own_crate):
+        why.append(f"compiles {path}")
+    if path in sets["executed"] and cls != "noop":
+        why.append(f"executed {path}")
+    if status == "A":
+        probed = [d for d in [path, *created] if d in sets["absent"]]
+        if probed:
+            why.append(f"probed {probed[0]}, which the change adds")
+    if status == "D":
+        seen = [d for d in created if d in sets["read"] or d in sets["dirs"]]
+        if seen:
+            why.append(f"observed {seen[0]}, which the change removes")
+    if status in ("A", "D") and listing is not None and listing in sets["dirs"]:
+        why.append(f"lists {listing}")
+    return "; ".join(why)
+
+
+def decide(changes, packages, scope, cmap, pmap, classify_fn, exists_fn, failed=(), controls=()):
+    """Rules 3-9 for the changes [(status, path)] since the baseline. classify_fn(path) classifies
+    a modified .rs package source; exists_fn('base'|'head', dirs) returns the dirs that exist."""
+    scope = [s for s in scope if s in packages]
+    sel = {"packages": {}, "classified": {}, "owners": {}, "notes": [],
+           "baseline_failures_added": [], "baseline_failures_dropped": []}
+
+    def add(pkg, target, why):
+        if pkg not in scope:
+            return
+        e = sel["packages"].setdefault(pkg, new_entry())
+        if e["all"]:
+            return
+        if target == "lib":
+            e["lib"] = True
+        elif target == "doc":
+            e["doc"] = True
+        elif target.startswith("example:"):
+            e["examples"].append(target[8:])
+        else:
+            e["targets"].append(target)
+        e["why"].setdefault(target, []).append(why)
+
+    inputs = {p: set(v.get("compile", [])) for p, v in pmap.items()}
+    needed = set(scope).union(*[dependencies_closure(p, packages) for p in scope])
+    structural, body, analysed = {}, {}, []
+    for status, path in changes:
+        owners = {p for p, files in inputs.items() if path in files and p in packages}
+        name = package_of(path, packages)
+        if name and is_package_source(path, packages[name]["dir"]):
+            owners.add(name)
+        cls = None
+        if owners:
+            manifests = {packages[p]["dir"].rstrip("/") + "/" + f for p in owners for f in ("Cargo.toml", "build.rs")}
+            if path in manifests or not path.endswith(".rs") or status != "M":
+                cls = "structural"
+            else:
+                cls = classify_fn(path)
+            sel["classified"][path] = cls
+            sel["owners"][path] = sorted(owners)
+            for p in owners:
+                if cls == "structural":
+                    structural.setdefault(p, []).append(f"structural change: {path}")
+                elif cls == "body":
+                    body.setdefault(p, []).append(path)
+        analysed.append((status, path, owners, cls))
+    if changes:
+        for p in sorted(needed):
+            if p in packages and p not in inputs:
+                structural.setdefault(p, []).append("the inputs of its library and binaries are not in the map")
+
+    # Rule 4, structural: the package and every package that depends on it run whole.
+    for p in sorted(dependents_closure(set(structural), packages)):
+        if p in scope:
+            reasons = structural.get(p) or ["depends on " + ", ".join(
+                sorted(set(structural) & dependencies_closure(p, packages)))]
+            sel["packages"][p] = dict(new_entry(), all=True, lib=packages[p]["lib"], doc=packages[p]["doc"],
+                                      why={"*": reasons})
+
+    # Rule 3 (and 7 for examples): measured inputs.
+    adds = [p for s, p, _, _ in analysed if s == "A"]
+    dels = [p for s, p, _, _ in analysed if s == "D"]
+    at_base = exists_fn("base", {a for p in adds for a in ancestors(p)}) if adds else set()
+    at_head = exists_fn("head", {a for p in dels for a in ancestors(p)}) if dels else set()
+    mapped = []
+    for key, item in sorted(cmap.items()):
+        pkg, target, control = split_key(key)
+        if pkg in scope and is_current(packages[pkg], target):
+            mapped.append((pkg, target, control, {s: set(item.get(s, [])) for s in SETS}))
+    for status, path, owners, cls in analysed:
+        created, listing = [], None
+        if status in ("A", "D"):
+            exists = at_base if status == "A" else at_head
+            for a in ancestors(path):
+                if a == "." or a in exists:
+                    listing = a
+                    break
+                created.append(a)
+        hit = False
+        for pkg, target, control, sets in mapped:
+            own_crate = pkg in owners and (target == "lib" or target.startswith("bin:"))
+            why = match_inputs(sets, status, path, cls, own_crate, created, listing)
+            if why:
+                hit = True
+                add(pkg, target, f"negative control {control}: {why}" if control else why)
+        if not hit and not owners:
+            sel["notes"].append(f"no mapped target compiles, executes or reads {path}")
+
+    # Rule 5: targets and negative controls without a map entry.
+    if changes:
+        for pkg in scope:
+            info = packages[pkg]
+            for t in unit_keys(info) + ["example:" + e for e in info["examples"]]:
+                if f"{pkg}::{t}" not in cmap:
+                    add(pkg, t, "no map entry")
+        for c in controls:
+            label, _, test = c.partition("#")
+            pkg, _, target = label.partition(":")
+            if pkg in scope and is_current(packages[pkg], target) and f"{pkg}::{target}#{test}" not in cmap:
+                add(pkg, target, f"negative control {test} has no map entry")
+
+    # Rule 4, body: doc tests of the package and of its dependents (doc tests are not measured).
+    for p in sorted(dependents_closure(set(body), packages)):
+        if p in scope and packages[p]["doc"]:
+            files = sorted({f for q in body if q == p or q in dependencies_closure(p, packages) for f in body[q]})
+            add(p, "doc", "body change: " + ", ".join(files))
+
+    # Rule 6: baseline failures that still exist.
+    for item in failed:
+        pkg, target = item.get("package"), item.get("target")
+        if pkg not in scope:
+            continue
+        label = f"{pkg}:{target}"
+        info = packages.get(pkg)
+        if info is None or not target or not is_current(info, target):
+            unmet = info and info["unmet"].get(target)
+            why = f"requires the features {', '.join(unmet)}" if unmet else "no longer a test target"
+            sel["baseline_failures_dropped"].append(f"{label}: {why}")
+            continue
+        add(pkg, target, "failed in the baseline run" + (" (negative control)" if item.get("negative_control") else ""))
+        sel["baseline_failures_added"].append(label)
+
+    # Rule 8: doc tests run with every package that has a selected target.
+    for pkg, e in sel["packages"].items():
+        if not e["all"] and (e["lib"] or e["targets"]) and packages[pkg]["doc"] and not e["doc"]:
+            e["doc"] = True
+            e["why"].setdefault("doc", []).append("its package has a selected target (doc tests are not measured)")
+    for e in sel["packages"].values():
+        e["targets"] = sorted(set(e["targets"]))
+        e["examples"] = sorted(set(e["examples"]))
+    return sel
+
+
+def full_reasons(asked, base, ancestor, map_ok, env_now, env_base):
+    """Rule 1 without the global files: why the whole suite runs ([] when it does not)."""
+    if asked:
+        return ["the whole suite was asked for"]
+    if not base:
+        return ["no baseline run with a complete outcome"]
+    if not ancestor:
+        return [f"the baseline {base} is not an ancestor of the head"]
+    if not map_ok:
+        return ["the baseline run left no input map"]
+    reasons = []
+    for field, label in (("image_os", "runner image"), ("image_version", "runner image version"),
+                         ("pr_base", "pull-request base")):
+        if (env_now.get(field) or None) != (env_base.get(field) or None):
+            reasons.append(f"{label} changed since the baseline: {env_base.get(field)} -> {env_now.get(field)}")
+    return reasons
 
 
 def load_map(path):
     if not path or not os.path.exists(path):
         return None
-    with open(path) as f:
-        data = json.load(f)
-    return data.get("targets") if data.get("schema") == SCHEMA_MAP else None
-
-
-def entry_of(selection, name):
-    return selection["packages"].setdefault(
-        name, {"all": False, "targets": [], "lib": False, "doc": False, "why": {}})
+    data = load_json(path)
+    return data if data.get("schema") == SCHEMA_MAP and isinstance(data.get("targets"), dict) else None
 
 
 def select(args):
     root = repo_root()
-    with open(args.baseline) as f:
-        baseline = json.load(f)
-    head, base, scope = args.head, baseline.get("base"), list(args.scope)
-    reasons, full = [], False
-    if str(args.full).lower() == "true":
-        full, reasons = True, ["the whole suite was asked for"]
-    elif not base:
-        full, reasons = True, [baseline.get("note") or "no baseline run with a complete outcome"]
-    elif sh(["git", "merge-base", "--is-ancestor", base, head], cwd=root, check=False).returncode != 0:
-        full, reasons = True, [f"the baseline {base} is not an ancestor of the head {head}"]
-    packages = workspace(root)
-    cmap = load_map(baseline.get("map_path"))
+    baseline = load_json(args.baseline)
+    packages, _ = workspace(root)
+    scope = list(dict.fromkeys(args.scope))
+    unknown = [s for s in scope if s not in packages]
+    if unknown:
+        raise SystemExit("not workspace packages: " + ", ".join(unknown))
+    head, base = args.head, baseline.get("base")
+    env_now = {"image_os": os.environ.get("ImageOS") or None,
+               "image_version": os.environ.get("ImageVersion") or None,
+               "pr_base": args.pr_base or None}
+    cmap = load_map(baseline.get("map_path")) if base else None
+    reasons = full_reasons(str(args.full).lower() == "true", base,
+                           bool(base) and is_ancestor(root, base, head), cmap is not None,
+                           env_now, baseline.get("environment") or {})
+    if reasons and not base and baseline.get("note"):
+        reasons = [baseline["note"]]
     selection = {"schema": SCHEMA_SELECTION, "head": head, "base": base, "scope": scope,
-                 "baseline_run": baseline.get("run_id"), "mode": "full" if full else "selected",
-                 "reasons": reasons, "changed_files": [], "packages": {}, "notes": [],
-                 "classified": {}, "coverage_map_targets": None if cmap is None else len(cmap),
-                 "baseline_failures_added": []}
-    entries = []
-    if not full:
-        entries = changed_entries(root, base, head)
-        selection["changed_files"] = sorted({p for _, p in entries})
+                 "baseline_run": baseline.get("run_id"), "mode": "selected", "reasons": reasons,
+                 "environment": env_now, "changed": [], "packages": {}, "notes": [], "classified": {},
+                 "owners": {}, "map_targets": None if cmap is None else len(cmap["targets"]),
+                 "controls": list(args.control), "baseline_failures_added": [],
+                 "baseline_failures_dropped": []}
+    changes = []
+    if not reasons:
+        changes = changed_entries(root, base, head)
         workflow = os.path.normpath(args.workflow_file)
-        globals_changed = sorted({p for _, p in entries if classify(p, packages)[0] == "global" or p == workflow})
-        if globals_changed:
-            full = True
-            selection["mode"] = "full"
-            selection["reasons"] = [f"global file changed: {p}" for p in globals_changed]
-    if full:
+        reasons = [f"global file changed: {p}" for p in sorted({p for _, p in changes if is_global(p, workflow)})]
+    selection["changed"] = [{"status": s, "path": p} for s, p in changes]
+    if reasons:
+        selection.update(mode="full", reasons=reasons)
         for name in scope:
-            selection["packages"][name] = {"all": True, "targets": [], "lib": True, "doc": True,
-                                           "why": selection["reasons"]}
+            selection["packages"][name] = dict(new_entry(), all=True, lib=packages[name]["lib"],
+                                               doc=packages[name]["doc"], why={"*": reasons})
         return finish(selection, args.out)
-
-    why_pkg = {}
-    structural, local_pkgs, body_files, test_sources, data = set(), set(), {}, {}, []
-    for status, path in entries:
-        kind, name = classify(path, packages)
-        if kind == "package":
-            cls = "structural"
-            if status == "M" and path.endswith(".rs"):
-                cls = classify_source_change(root, base, head, path)
-            selection["classified"][path] = cls
-            if cls == "structural":
-                structural.add(name)
-                why_pkg.setdefault(name, []).append(f"structural change: {path}")
-            elif cls == "body":
-                body_files.setdefault(name, set()).add(path)
-        elif kind == "package_local":
-            local_pkgs.add(name)
-            why_pkg.setdefault(name, []).append(f"example or bench changed: {path}")
-        elif kind == "test_source":
-            test_sources.setdefault(name, {}).setdefault(path, []).append("changed")
-        elif kind == "data":
-            data.append(path)
-    if data:
-        literals = {}
-        for src in rust_sources(root, packages):
-            with open(os.path.join(root, src), encoding="utf-8", errors="replace") as f:
-                literals[src] = rust_string_literals(f.read())
-        for path in data:
-            hits = sorted(src for src, lits in literals.items() if any(literal_matches(path, x) for x in lits))
-            if not hits:
-                selection["notes"].append(f"read by no test: {path}")
-            for src in hits:
-                kind, name = classify(src, packages)
-                if kind == "test_source":
-                    test_sources.setdefault(name, {}).setdefault(src, []).append(f"reads {path}")
-                elif kind in ("package", "package_local"):
-                    (structural if kind == "package" else local_pkgs).add(name)
-                    why_pkg.setdefault(name, []).append(f"{src} reads {path}")
-    if body_files and cmap is None:
-        for name, files in body_files.items():
-            structural.add(name)
-            why_pkg.setdefault(name, []).append(
-                "body change without a coverage map: " + ", ".join(sorted(files)))
-        selection["notes"].append("no coverage map from the baseline: body changes use the package rule")
-        body_files = {}
-    affected = dependents_closure(structural, packages) | local_pkgs
-    for name in sorted(affected):
-        if name in scope:
-            reasons_here = why_pkg.get(name) or ["depends on changed package(s): " + ", ".join(
-                sorted(structural & dependencies_closure(name, packages)))]
-            selection["packages"][name] = {"all": True, "targets": [], "lib": True, "doc": True,
-                                           "why": reasons_here}
-    for name, files in sorted(body_files.items()):
-        reach = dependents_closure({name}, packages)
-        for key, item in sorted(cmap.items()):
-            pkg, target = key.split("::", 1)
-            if pkg not in scope or pkg in affected or pkg not in reach:
-                continue
-            hit = sorted(set(item.get("files", [])) & files)
-            if hit:
-                entry = entry_of(selection, pkg)
-                if target == "lib":
-                    entry["lib"] = True
-                else:
-                    entry["targets"].append(target)
-                entry["why"].setdefault(target, []).append("executed a changed file: " + ", ".join(hit))
-        for pkg in sorted(reach):
-            if pkg not in scope or pkg in affected:
-                continue
-            entry = entry_of(selection, pkg)
-            entry["doc"] = True
-            entry["why"].setdefault("doc", []).append(f"doc tests; body change in {name}")
-            for target in packages[pkg]["targets"]:
-                if f"{pkg}::{target}" not in cmap:
-                    if target == "lib":
-                        entry["lib"] = True
-                    else:
-                        entry["targets"].append(target)
-                    entry["why"].setdefault(target, []).append("no coverage entry yet")
-    build_env = dict(os.environ, LLVM_PROFILE_FILE=os.path.join(tempfile.mkdtemp(prefix="ci-build-"), "%p-%m.profraw"))
-    for name, files in sorted(test_sources.items()):
-        if name in affected or name not in scope:
-            continue
-        built, _, code = build_artifacts(root, name, args.profile, [], env=build_env)
-        targets, unlisted = {}, []
-        for path, how in sorted(files.items()):
-            listing = [t for t, (_, deps) in built.items() if path in deps]
-            for t in listing:
-                targets.setdefault(t, []).append(f"{path}: {', '.join(how)}")
-            if not listing:
-                unlisted.append(path)
-        if unlisted or code != 0:
-            for t in packages[name]["tests"]:
-                targets.setdefault(t, []).append(
-                    "every test target: " + "; ".join([f"listed by no target: {p}" for p in unlisted]
-                                                      + ([f"cargo test --no-run exited {code}"] if code else [])))
-        entry = entry_of(selection, name)
-        for t, why in targets.items():
-            if t == "lib":
-                entry["lib"] = True
-            else:
-                entry["targets"].append(t)
-            entry["why"].setdefault(t, []).extend(why)
-    for item in baseline.get("failed", []):
-        name, target = item.get("package"), item.get("target")
-        if name not in scope or name not in packages:
-            continue
-        entry = entry_of(selection, name)
-        if entry["all"]:
-            continue
-        if target == "lib":
-            entry["lib"] = True
-        elif target == "doc":
-            entry["doc"] = True
-        else:
-            entry["targets"].append(target)
-        if isinstance(entry["why"], dict):
-            entry["why"].setdefault(target, []).append("failed in the baseline run")
-        selection["baseline_failures_added"].append(f"{name}:{target}")
-    for entry in selection["packages"].values():
-        entry["targets"] = sorted(set(entry["targets"]))
+    selection.update(decide(
+        changes, packages, scope, cmap["targets"], cmap.get("packages", {}),
+        lambda path: classify_source_change(root, base, head, path),
+        lambda side, dirs: existing_dirs(root, base if side == "base" else head, dirs),
+        baseline.get("failed", []), args.control))
     return finish(selection, args.out)
 
 
 def finish(selection, out):
-    with open(out, "w") as f:
-        json.dump(selection, f, indent=2)
-        f.write("\n")
+    write_json(out, selection)
     lines = [f"### Test selection: {selection['mode']}",
-             f"base `{selection['base']}`, head `{selection['head']}`, "
-             f"{len(selection['changed_files'])} changed files, coverage map: "
-             f"{selection.get('coverage_map_targets')} targets"]
+             f"base `{selection['base']}`, head `{selection['head']}`, {len(selection['changed'])} changed "
+             f"paths, input map: {selection.get('map_targets')} entries"]
     lines += [f"- {r}" for r in selection["reasons"]]
     if not selection["packages"]:
         lines.append("- no test is affected by the changes")
     for name, entry in sorted(selection["packages"].items()):
         if entry["all"]:
             lines.append(f"- `{name}`: every test")
-        else:
-            parts = (["lib"] if entry["lib"] else []) + entry["targets"] + (["doc"] if entry.get("doc") else [])
-            lines.append(f"- `{name}`: {', '.join(parts) if parts else 'nothing'}")
+            continue
+        parts = (["lib"] if entry["lib"] else []) + entry["targets"] + (["doc"] if entry["doc"] else [])
+        parts += [f"example {e} (compiled)" for e in entry["examples"]]
+        lines.append(f"- `{name}`: {', '.join(parts) if parts else 'nothing'}")
+        for target, why in sorted(entry["why"].items()):
+            lines.append(f"  - {target}: {'; '.join(sorted(set(why)))[:400]}")
     lines += [f"- {path}: {cls}" for path, cls in sorted(selection.get("classified", {}).items())]
     lines += [f"- added from the baseline failures: {x}" for x in selection["baseline_failures_added"]]
+    lines += [f"- dropped from the baseline failures: {x}" for x in selection["baseline_failures_dropped"]]
     lines += [f"- note: {n}" for n in selection["notes"]]
     text = "\n".join(lines) + "\n"
-    print(text)
+    print(text, flush=True)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
-        with open(summary, "a") as f:
+        with open(summary, "a", encoding="utf-8") as f:
             f.write(text)
     return 0
+
+
+def selected(selection, pkg, target):
+    entry = selection["packages"].get(pkg)
+    if not entry:
+        return False
+    if entry["all"]:
+        return True
+    if target == "lib":
+        return entry["lib"]
+    if target == "doc":
+        return entry["doc"]
+    if target.startswith("example:"):
+        return target[8:] in entry.get("examples", [])
+    return target in entry["targets"]
 
 
 # ---------------------------------------------------------------------------- run
@@ -665,203 +1049,365 @@ def target_args(target):
         return ["--doc"]
     if target.startswith("bin:"):
         return ["--bin", target[4:]]
+    if target.startswith("example:"):
+        return ["--example", target[8:]]
     return ["--test", target]
 
 
-def harness_args(mode, skips):
+def harness_args(mode, skips, exact=None):
     if mode != "ignored":
         return []
     out = ["--", "--ignored"]
     for s in skips:
         out += ["--skip", s]
-    return out
+    return out + (["--exact", exact] if exact else [])
+
+
+def profile_args(profile):
+    return ["--profile", profile] if profile and profile != "dev" else []
 
 
 def ordered(names):
     return sorted(names, key=lambda n: (ORDER.index(n) if n in ORDER else len(ORDER), n))
 
 
-def commands(selection, mode, profile, skips):
-    """One cargo test per package (without coverage)."""
-    cmds = []
-    for name in ordered(selection["packages"]):
-        entry = selection["packages"][name]
-        base = ["cargo", "test", "--locked", "--no-fail-fast"] + (["--profile", profile] if profile and profile != "dev" else [])
-        if entry["all"]:
-            cmds.append(base + ["-p", name] + harness_args(mode, skips))
-            continue
-        filters = (["--lib"] if entry["lib"] else []) + [a for t in entry["targets"] for a in target_args(t)]
-        if filters:
-            cmds.append(base + ["-p", name] + filters + harness_args(mode, skips))
-        if entry.get("doc"):
-            cmds.append(base + ["-p", name, "--doc"] + harness_args(mode, skips))
-    return cmds
-
-
 def units(selection, packages):
-    """(package, target) for every unit that runs; 'doc' for doc tests."""
+    """(package, target) for every unit that runs; 'doc' for doc tests. Examples are only built."""
     out = []
     for name in ordered(selection["packages"]):
-        entry = selection["packages"][name]
-        if entry["all"]:
-            out += [(name, t) for t in packages[name]["targets"]] + [(name, "doc")]
+        entry, info = selection["packages"][name], packages.get(name)
+        if info is None:
             continue
-        out += ([(name, "lib")] if entry["lib"] else []) + [(name, t) for t in entry["targets"]]
-        if entry.get("doc"):
+        if entry["all"]:
+            out += [(name, t) for t in unit_keys(info)] + ([(name, "doc")] if info["doc"] else [])
+            continue
+        out += ([(name, "lib")] if entry["lib"] and info["lib"] else [])
+        out += [(name, t) for t in entry["targets"] if is_current(info, t)]
+        if entry["doc"] and info["doc"]:
             out.append((name, "doc"))
     return out
 
 
-def llvm_bin():
-    override = os.environ.get("VIGILODE_LLVM_BIN")
-    if override:
-        return override
-    sysroot = sh(["rustc", "--print", "sysroot"]).stdout.strip()
-    host = re.search(r"^host: (\S+)", sh(["rustc", "-vV"]).stdout, re.M).group(1)
-    return os.path.join(sysroot, "lib", "rustlib", host, "bin")
+def build_filters(entry, info):
+    """cargo test --no-run filters for one package ([] builds every target, None nothing)."""
+    if entry["all"]:
+        return []
+    filters = (["--lib"] if entry["lib"] and info["lib"] else [])
+    filters += [a for t in entry["targets"] if is_current(info, t) for a in target_args(t)]
+    filters += [a for e in entry.get("examples", []) if e in info["examples"] for a in ("--example", e)]
+    return filters or None
 
 
-def covered_files(root, llvm, profraws, exe, objects, workdir):
-    """Workspace files with an executed region in the given profiles, or None on failure."""
-    merged = os.path.join(workdir, "merged.profdata")
-    r = sh([os.path.join(llvm, "llvm-profdata"), "merge", "-sparse", "-o", merged] + profraws, check=False)
-    if r.returncode != 0:
-        return None
-    args = [os.path.join(llvm, "llvm-cov"), "export", "-summary-only", "-instr-profile", merged,
-            "-ignore-filename-regex", r"(/\.cargo/registry/|/\.rustup/|^/rustc/)", exe]
-    for o in objects:
-        args += ["-object", o]
-    r = sh(args, check=False)
-    if r.returncode != 0:
-        return None
-    files = set()
-    for block in json.loads(r.stdout).get("data", []):
-        for f in block.get("files", []):
-            if f.get("summary", {}).get("regions", {}).get("covered", 0) > 0:
-                rel = os.path.relpath(f["filename"], root)
-                if not rel.startswith(".."):
-                    files.add(rel)
-    return sorted(files)
+def commands(selection, packages, mode, profile, skips):
+    """One cargo test per package (the unmeasured mode)."""
+    cmds = []
+    for name in ordered(selection["packages"]):
+        entry, info = selection["packages"][name], packages.get(name)
+        if info is None:
+            continue
+        base = ["cargo", "test", "--locked", "--no-fail-fast"] + profile_args(profile) + ["-p", name]
+        if entry["all"]:
+            cmds.append(base + harness_args(mode, skips))
+            continue
+        filters = build_filters(dict(entry, examples=[]), info)
+        if filters:
+            cmds.append(base + filters + harness_args(mode, skips))
+        if entry.get("examples"):
+            cmds.append(["cargo", "test", "--locked", "--no-run"] + profile_args(profile) + ["-p", name]
+                        + [a for e in entry["examples"] if e in info["examples"] for a in ("--example", e)])
+        if entry.get("doc") and info["doc"]:
+            cmds.append(base + ["--doc"] + harness_args(mode, skips))
+    return cmds
+
+
+def stream(cmd, cwd, env, artifacts=None):
+    """Run a command, echo its output line by line (cargo JSON messages are consumed: artifacts are
+    recorded, diagnostics printed rendered) and return (exit code, text output)."""
+    print("+ " + " ".join(cmd), flush=True)
+    proc = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env,
+                            encoding="utf-8", errors="surrogateescape")
+    lines = []
+    for line in proc.stdout:
+        if line.startswith('{"reason":'):
+            try:
+                msg = json.loads(line)
+            except ValueError:
+                msg = None
+            if isinstance(msg, dict):
+                if msg.get("reason") == "compiler-artifact" and artifacts is not None:
+                    artifacts.add(msg)
+                elif msg.get("reason") == "compiler-message":
+                    rendered = (msg.get("message") or {}).get("rendered") or ""
+                    sys.stdout.write(rendered)
+                    sys.stdout.flush()
+                    lines.append(rendered)
+                continue
+        sys.stdout.write(line)
+        sys.stdout.flush()
+        lines.append(line)
+    return proc.wait(), "".join(lines)
+
+
+def failed_targets(text):
+    failed = set()
+    for m in RERUN.finditer(text):
+        target = "lib" if m.group(2) == "--lib" else "doc" if m.group(2) == "--doc" else (
+            m.group(3) or "bin:" + m.group(4))
+        failed.add((m.group(1), target))
+    return failed
+
+
+def measure_unit(repo, llvm, strace_ok, unit, bins, prof_dir, trace_dir, initial_cwd, workdir):
+    """(entry without head, None) or (None, reasons) for one test unit that ran."""
+    reasons = []
+    if unit is None or unit.get("compile") is None:
+        reasons.append("no dep-info of its artifact")
+    profraws = sorted(glob.glob(os.path.join(glob.escape(prof_dir), "*.profraw")))
+    executed = None
+    if not profraws:
+        reasons.append("no coverage profile")
+    elif not unit or not unit.get("exe"):
+        reasons.append("no test executable")
+    else:
+        executed, err = covered_files(repo, llvm, profraws, unit["exe"], sorted(bins), workdir)
+        if executed is None:
+            reasons.append(err)
+    traced = trace_sets(trace_dir, repo, initial_cwd) if strace_ok else None
+    if traced is None:
+        reasons.append("no strace output" if strace_ok else "strace unavailable")
+    if reasons:
+        return None, reasons
+    return dict({"compile": unit["compile"], "executed": executed}, **traced), None
 
 
 def run(args):
     root = repo_root()
-    with open(args.selection) as f:
-        selection = json.load(f)
+    selection = load_json(args.selection)
+    packages, target_dir = workspace(root)
     outcome = {"schema": SCHEMA_OUTCOME, "head": selection["head"], "mode": args.mode,
                "selection_mode": selection["mode"], "complete": True, "commands": [], "failed": [],
-               "coverage": None}
+               "negative_controls_failed": [], "measurement": None,
+               "environment": selection.get("environment", {})}
     status = 0
+    work = os.path.abspath(args.work_dir or tempfile.mkdtemp(prefix="ci-measure-"))
+    os.makedirs(work, exist_ok=True)
+    repo = Repo(root, target_dir, drop=[work])
+    arts = Artifacts(repo, packages)
 
-    def execute(cmd, env=None):
+    def execute(cmd, env=None, build=False):
         nonlocal status
-        print("+ " + " ".join(cmd), flush=True)
-        proc = subprocess.Popen(cmd, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
-        lines = []
-        for line in proc.stdout:
-            sys.stdout.write(line)
-            lines.append(line)
-        code = proc.wait()
-        failed = set()
-        for m in RERUN.finditer("".join(lines)):
-            target = "lib" if m.group(2) == "--lib" else "doc" if m.group(2) == "--doc" else (
-                m.group(3) or "bin:" + m.group(4))
-            failed.add((m.group(1), target))
+        code, text = stream(cmd, root, env, arts)
+        failed = failed_targets(text)
         broken = code != 0 and not failed
         outcome["commands"].append({"command": " ".join(cmd), "exit_code": code,
                                     "failed_targets": sorted(f"{p}:{t}" for p, t in failed),
-                                    "did_not_run_its_tests": broken})
+                                    "did_not_run_its_tests": broken, "build": build})
         outcome["failed"] += [{"package": p, "target": t} for p, t in sorted(failed)]
         if broken:
             outcome["complete"] = False
         if code != 0:
             status = 1
-        return code
+        return code, not broken
 
-    if not args.coverage:
-        for cmd in commands(selection, args.mode, args.profile, args.skip):
+    if args.failed_controls and os.path.exists(args.failed_controls):
+        with open(args.failed_controls, encoding="utf-8") as f:
+            for line in sorted({x.strip() for x in f if ":" in x}):
+                pkg, target = line.split(":", 1)
+                outcome["failed"].append({"package": pkg, "target": target, "negative_control": True})
+                outcome["negative_controls_failed"].append(line)
+
+    if not args.measure:
+        for cmd in commands(selection, packages, args.mode, args.profile, args.skip):
             execute(cmd)
     else:
-        packages = workspace(root)
+        base_targets, base_packages = {}, {}
+        if selection["mode"] != "full" and args.baseline:
+            previous = load_map(load_json(args.baseline).get("map_path"))
+            if previous:
+                base_targets, base_packages = previous["targets"], previous.get("packages", {})
         llvm = llvm_bin()
-        base_map = {}
-        if args.baseline and selection["mode"] != "full":
-            with open(args.baseline) as f:
-                base_map = load_map(json.load(f).get("map_path")) or {}
-        cmap = dict(base_map)
-        covdir = args.coverage_dir or tempfile.mkdtemp(prefix="ci-coverage-")
-        junk = os.path.join(covdir, "_build", "%p-%m.profraw")
-        env = dict(os.environ, LLVM_PROFILE_FILE=junk)
-        prof = ["--profile", args.profile] if args.profile and args.profile != "dev" else []
-        plan = units(selection, packages)
-        executables, bins = {}, {}
-        for name in ordered({p for p, _ in plan}):
-            filters = [] if selection["packages"][name]["all"] else [
-                a for p, t in plan if p == name and t != "doc" for a in target_args(t)]
-            if not filters and not selection["packages"][name]["all"]:
+        strace, strace_note = strace_works(shutil.which(args.strace), work)
+        strace_ok = strace is not None
+        clean_env = {k: v for k, v in os.environ.items()
+                     if not (k.startswith("CARGO_TARGET_") and k.endswith("_RUNNER"))}
+        build_env = dict(clean_env, LLVM_PROFILE_FILE=os.path.join(work, "_unused", "%p-%m.profraw"))
+        runner_var = "CARGO_TARGET_" + host_triple().upper().replace("-", "_") + "_RUNNER"
+        prof = profile_args(args.profile)
+        for name in ordered(selection["packages"]):
+            if name not in packages:
                 continue
-            built, pkg_bins, code = build_artifacts(root, name, args.profile, filters, env=env)
-            for key, (exe, _) in built.items():
-                executables[(name, key)] = exe
-            bins[name] = pkg_bins
-            if code != 0:
-                execute(["cargo", "test", "--locked", "--no-run"] + prof + ["-p", name] + filters, env=env)
+            filters = build_filters(selection["packages"][name], packages[name])
+            if filters is not None:
+                execute(["cargo", "test", "--locked", "--no-run", MESSAGES] + prof + ["-p", name] + filters,
+                        env=build_env, build=True)
         jobs = []
-        for name, target in plan:
+        for name, target in units(selection, packages):
+            cmd = (["cargo", "test", "--locked", "--no-fail-fast", MESSAGES] + prof + ["-p", name]
+                   + target_args(target) + harness_args(args.mode, args.skip))
+            if target == "doc":
+                execute(cmd, env=build_env)
+                continue
             key = f"{name}::{target}"
-            workdir = os.path.join(covdir, re.sub(r"[^A-Za-z0-9_.-]", "_", key))
+            workdir = os.path.join(work, re.sub(r"[^A-Za-z0-9_.-]", "_", key))
             shutil.rmtree(workdir, ignore_errors=True)
-            os.makedirs(workdir)
-            run_env = dict(os.environ, LLVM_PROFILE_FILE=junk if target == "doc"
-                           else os.path.join(workdir, "%p-%m.profraw"))
-            execute(["cargo", "test", "--locked", "--no-fail-fast"] + prof + ["-p", name]
-                    + target_args(target) + harness_args(args.mode, args.skip), env=run_env)
-            if target != "doc":
-                jobs.append((key, workdir, executables.get((name, target)), bins.get(name, [])))
+            prof_dir, trace_dir = os.path.join(workdir, "profiles"), os.path.join(workdir, "trace")
+            os.makedirs(prof_dir)
+            os.makedirs(trace_dir)
+            env = dict(clean_env, LLVM_PROFILE_FILE=os.path.join(prof_dir, "%p-%m.profraw"))
+            if strace_ok:
+                env[runner_var] = strace_runner(strace, trace_dir)
+            _, ran = execute(cmd, env=env)
+            jobs.append((key, name, target, workdir, prof_dir, trace_dir, ran))
 
-        def export(job):
-            key, workdir, exe, objects = job
-            profraws = sorted(glob.glob(os.path.join(workdir, "*.profraw")))
-            files = covered_files(root, llvm, profraws, exe, objects, workdir) if profraws and exe else None
-            shutil.rmtree(workdir, ignore_errors=True)
-            return key, files
+        def measure(job):
+            key, name, target, workdir, prof_dir, trace_dir, ran = job
+            try:
+                if not ran:
+                    return key, None, ["its command did not run its tests"]
+                item, why = measure_unit(repo, llvm, strace_ok, arts.units.get((name, target)),
+                                         arts.bins.get(name, set()), prof_dir, trace_dir,
+                                         os.path.join(repo.real, packages[name]["dir"]), workdir)
+                return key, item, why
+            except Exception as exc:  # a measurement error must not lose the outcome
+                return key, None, [f"measurement error: {exc!r}"]
+            finally:
+                shutil.rmtree(workdir, ignore_errors=True)
 
-        # The exports are independent; they run after the tests, one per processor.
-        refreshed, lost = [], []
-        with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count() or 1) as pool:
-            for key, files in pool.map(export, jobs):
-                if files is None:
-                    cmap.pop(key, None)
-                    lost.append(key)
+        measured, lost = {}, []
+        workers = args.jobs or len(os.sched_getaffinity(0))
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
+            for key, item, why in pool.map(measure, jobs):
+                if item is None:
+                    lost.append({"target": key, "why": why})
                 else:
-                    cmap[key] = {"files": files, "head": selection["head"]}
-                    refreshed.append(key)
-        outcome["coverage"] = {"refreshed": len(refreshed), "lost": lost, "map_targets": len(cmap),
-                               "llvm_bin": llvm}
-        with open(args.map_out, "w") as f:
-            json.dump({"schema": SCHEMA_MAP, "head": selection["head"], "mode": args.mode, "targets": cmap}, f)
-            f.write("\n")
-    with open(args.outcome, "w") as f:
-        json.dump(outcome, f, indent=2)
-        f.write("\n")
+                    measured[key] = item
+        for (name, example), deps in sorted(arts.examples.items()):
+            key = f"{name}::example:{example}"
+            if deps is None:
+                lost.append({"target": key, "why": ["no dep-info of its artifact"]})
+            else:
+                measured[key] = {"compile": deps}
+        for path in args.control_maps:
+            if not os.path.exists(path):
+                continue
+            fragment = load_json(path)
+            if fragment.get("schema") != SCHEMA_CONTROL:
+                continue
+            if fragment.get("entry") is None:
+                lost.append({"target": fragment["key"], "why": fragment.get("why") or ["not measured"]})
+            else:
+                measured[fragment["key"]] = fragment["entry"]
+        recorded = {n: sorted(files) for n, files in arts.inputs.items() if n not in arts.inputs_failed}
+        cmap, pmap = update_map(base_targets, base_packages, measured, [x["target"] for x in lost],
+                                recorded, sorted(arts.inputs_failed), packages, selection["scope"],
+                                selection["head"])
+        write_json(args.map_out, {"schema": SCHEMA_MAP, "head": selection["head"], "mode": args.mode,
+                                  "targets": cmap, "packages": pmap})
+        outcome["measurement"] = {
+            "refreshed": len(measured), "lost": lost, "map_targets": len(cmap),
+            "packages_recorded": sorted(recorded), "packages_lost": sorted(arts.inputs_failed),
+            "llvm_bin": llvm, "strace": strace, "strace_note": strace_note, "work_dir": work}
+    write_json(args.outcome, outcome)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
-        with open(summary, "a") as f:
+        with open(summary, "a", encoding="utf-8") as f:
             f.write(f"### Test outcome ({args.mode}): {len(outcome['commands'])} commands, "
                     f"{len(outcome['failed'])} failing targets, complete: {outcome['complete']}\n")
-            if outcome["coverage"]:
-                f.write(f"- coverage map: {outcome['coverage']['refreshed']} entries refreshed, "
-                        f"{len(outcome['coverage']['lost'])} lost, {outcome['coverage']['map_targets']} in all\n")
+            m = outcome["measurement"]
+            if m:
+                f.write(f"- input map: {m['refreshed']} entries measured, {len(m['lost'])} lost, "
+                        f"{m['map_targets']} in all; strace: {m['strace'] or m['strace_note']}\n")
+                f.writelines(f"- lost `{x['target']}`: {'; '.join(x['why'])}\n" for x in m["lost"])
             f.writelines(f"- failed `{x['package']}` `{x['target']}`\n" for x in outcome["failed"])
     return status
 
 
+def update_map(base_targets, base_packages, measured, lost, recorded, packages_lost, packages, scope, head):
+    """The next input map: measured entries replace, lost entries go, the rest carries over; entries
+    of targets that are no longer current or not in scope are pruned."""
+    targets = dict(base_targets)
+    for key in lost:
+        targets.pop(key, None)
+    for key, item in measured.items():
+        targets[key] = dict(item, head=head)
+    keep = {}
+    for key, item in targets.items():
+        pkg, target, _ = split_key(key)
+        if pkg in scope and pkg in packages and is_current(packages[pkg], target):
+            keep[key] = item
+    pkgs = {k: v for k, v in base_packages.items() if k in packages and k not in packages_lost}
+    for name, files in recorded.items():
+        pkgs[name] = {"compile": files, "head": head}
+    return keep, pkgs
+
+
+# ---------------------------------------------------------------------------- negative controls
+
+
+def control(args):
+    """Run one negative control (a test that fails by design) with measurement, when its target is
+    selected. The step passes only while the test fails with its recorded signature."""
+    root = repo_root()
+    selection = load_json(args.selection)
+    pkg, target = args.target.split(":", 1)
+    key = f"{pkg}::{target}#{args.test}"
+    if not selected(selection, pkg, target):
+        print("not affected by the changes since the baseline: not run", flush=True)
+        return 0
+    packages, target_dir = workspace(root)
+    work = os.path.abspath(args.work_dir or tempfile.mkdtemp(prefix="ci-control-"))
+    os.makedirs(work, exist_ok=True)
+    repo = Repo(root, target_dir, drop=[work])
+    arts = Artifacts(repo, packages)
+    prof = profile_args(args.profile)
+    clean_env = {k: v for k, v in os.environ.items()
+                 if not (k.startswith("CARGO_TARGET_") and k.endswith("_RUNNER"))}
+    build_env = dict(clean_env, LLVM_PROFILE_FILE=os.path.join(work, "_unused", "%p-%m.profraw"))
+    strace, strace_note = strace_works(shutil.which(args.strace), work)
+    prof_dir, trace_dir = os.path.join(work, "profiles"), os.path.join(work, "trace")
+    os.makedirs(prof_dir, exist_ok=True)
+    os.makedirs(trace_dir, exist_ok=True)
+    env = dict(clean_env, LLVM_PROFILE_FILE=os.path.join(prof_dir, "%p-%m.profraw"))
+    if strace:
+        env["CARGO_TARGET_" + host_triple().upper().replace("-", "_") + "_RUNNER"] = strace_runner(strace, trace_dir)
+    build_code, _ = stream(["cargo", "test", "--locked", "--no-run", MESSAGES] + prof + ["-p", pkg, "--test", target],
+                           root, build_env, arts)
+    code, text = stream(["cargo", "test", "--locked", MESSAGES] + prof + ["-p", pkg, "--test", target]
+                        + harness_args("ignored", [], exact=args.test), root, env, arts)
+    verdict = None
+    if build_code != 0:
+        verdict = "the target did not build"
+    elif code == 0:
+        verdict = "the test passed: the negative control no longer fails"
+    elif args.signature not in text:
+        verdict = "the test failed without its recorded signature"
+    item, why = None, None
+    if build_code == 0:
+        try:
+            item, why = measure_unit(repo, llvm_bin(), strace is not None, arts.units.get((pkg, target)),
+                                     arts.bins.get(pkg, set()), prof_dir, trace_dir,
+                                     os.path.join(repo.real, packages[pkg]["dir"]), work)
+        except Exception as exc:
+            why = [f"measurement error: {exc!r}"]
+    else:
+        why = ["the target did not build"]
+    if why and strace is None:
+        why.append(strace_note)
+    write_json(args.map_out, {"schema": SCHEMA_CONTROL, "head": selection["head"], "key": key,
+                              "entry": item, "why": why, "verdict": verdict or "fails with its recorded signature"})
+    if verdict:
+        with open(args.failed_file, "a", encoding="utf-8") as f:
+            f.write(f"{pkg}:{target}\n")
+        print(verdict, flush=True)
+        return 1
+    print(f"{args.test} fails with its recorded signature", flush=True)
+    return 0
+
+
 def has(args):
-    with open(args.selection) as f:
-        selection = json.load(f)
+    selection = load_json(args.selection)
     package, target = args.target.split(":", 1)
-    entry = selection["packages"].get(package)
-    print("yes" if entry and (entry["all"] or target in entry["targets"]) else "no")
+    print("yes" if selected(selection, package, target) else "no")
     return 0
 
 
@@ -869,110 +1415,117 @@ def has(args):
 
 
 def baseline(args):
-    repo = os.environ.get("GITHUB_REPOSITORY")
-    out = {"base": None, "run_id": None, "failed": [], "map_path": None, "note": ""}
-    if not repo or not shutil.which("gh"):
+    out = {"base": None, "run_id": None, "failed": [], "map_path": None, "environment": {}, "note": "",
+           "errors": []}
+    repository = os.environ.get("GITHUB_REPOSITORY")
+    if not repository or not shutil.which("gh"):
         out["note"] = "no GitHub repository or gh in this environment"
     else:
-        api = (f"repos/{repo}/actions/workflows/{args.workflow}/runs"
-               f"?branch={args.branch}&status=completed&per_page=100")
-        listing = sh(["gh", "api", api], check=False)
-        runs = json.loads(listing.stdout).get("workflow_runs", []) if listing.returncode == 0 else []
-        runs = sorted((r for r in runs if str(r["id"]) != str(args.run_id)),
-                      key=lambda r: r["created_at"], reverse=True)
-        for r in runs:
-            tmp = tempfile.mkdtemp()
-            got = sh(["gh", "run", "download", str(r["id"]), "-R", repo, "-n", args.artifact, "-D", tmp],
+        root = repo_root()
+        query = urllib.parse.urlencode({"branch": args.branch, "per_page": 100})
+        listing = sh(["gh", "api", f"repos/{repository}/actions/workflows/{args.workflow}/runs?{query}"],
                      check=False)
-            path = os.path.join(tmp, "outcome.json")
-            if got.returncode != 0 or not os.path.exists(path):
-                continue
-            with open(path) as f:
-                outcome = json.load(f)
-            if outcome.get("schema") != SCHEMA_OUTCOME or not outcome.get("complete"):
-                continue
-            map_path = os.path.join(tmp, "map.json")
-            if os.path.exists(map_path):
-                keep = os.path.join(os.path.dirname(os.path.abspath(args.out)), "baseline_map.json")
-                shutil.copyfile(map_path, keep)
-                out["map_path"] = keep
-            out.update(base=outcome["head"], run_id=r["id"], failed=outcome.get("failed", []),
-                       note=f"run {r['id']} ran its selection to the end at {outcome['head'][:8]}")
-            break
+        if listing.returncode != 0:
+            print(listing.stderr, file=sys.stderr, flush=True)
+            out["note"] = f"the run listing failed (exit {listing.returncode}): {listing.stderr.strip()[-400:]}"
         else:
-            out["note"] = "no earlier run of this job on this branch has a complete outcome"
-    with open(args.out, "w") as f:
-        json.dump(out, f, indent=2)
-        f.write("\n")
-    print(json.dumps(out, indent=2))
+            current = int(args.run_id) if str(args.run_id).isdigit() else None
+            runs = [r for r in json.loads(listing.stdout).get("workflow_runs", [])
+                    if str(r["id"]) != str(args.run_id) and (current is None or r["id"] < current)]
+            runs.sort(key=lambda r: (r["created_at"], r["id"]), reverse=True)
+            counts = {"without the artifact": 0, "not complete": 0, "not an ancestor": 0}
+            for r in runs:
+                tmp = tempfile.mkdtemp(prefix="ci-baseline-")
+                got = sh(["gh", "run", "download", str(r["id"]), "-R", repository, "-n", args.artifact,
+                          "-D", tmp], check=False)
+                path = os.path.join(tmp, "outcome.json")
+                if got.returncode != 0 or not os.path.exists(path):
+                    if got.returncode == 0 or "no valid artifacts found" in got.stderr:
+                        counts["without the artifact"] += 1
+                    else:
+                        out["errors"].append(f"download of run {r['id']} failed (exit {got.returncode}): "
+                                             f"{got.stderr.strip()[-300:]}")
+                    continue
+                outcome = load_json(path)
+                if outcome.get("schema") != SCHEMA_OUTCOME or not outcome.get("complete"):
+                    counts["not complete"] += 1
+                    continue
+                if args.head and not is_ancestor(root, outcome["head"], args.head):
+                    counts["not an ancestor"] += 1
+                    continue
+                map_path = os.path.join(tmp, "map.json")
+                if os.path.exists(map_path):
+                    keep = os.path.join(os.path.dirname(os.path.abspath(args.out)), "baseline_map.json")
+                    shutil.copyfile(map_path, keep)
+                    out["map_path"] = keep
+                out.update(base=outcome["head"], run_id=r["id"], failed=outcome.get("failed", []),
+                           environment=outcome.get("environment") or {},
+                           note=f"run {r['id']} ran its selection to the end at {outcome['head'][:8]}")
+                break
+            else:
+                skipped = ", ".join(f"{v} {k}" for k, v in counts.items() if v)
+                out["note"] = ("no earlier run of this job on this branch has a complete outcome"
+                               + (f" ({skipped})" if skipped else ""))
+            if out["errors"]:
+                print("\n".join(out["errors"]), file=sys.stderr, flush=True)
+                out["note"] += f"; {len(out['errors'])} artifact downloads failed"
+    write_json(args.out, out)
+    print(json.dumps(out, indent=2), flush=True)
     return 0
 
 
 # ---------------------------------------------------------------------------- self-test
 
 
+def check_workflows(root):
+    """Text checks of the CI mechanics that the review asked for (F-01, F-03, F-05, F-06, F-07,
+    F-11, F-12, F8/F-04, F14). Returns the list of problems."""
+    problems = []
+    wf = os.path.join(root, ".github", "workflows")
+
+    def read(name):
+        with open(os.path.join(wf, name), encoding="utf-8") as f:
+            return f.read()
+
+    def job_block(text, job):
+        m = re.search(rf"^  {re.escape(job)}:\n(.*?)(?=^  [A-Za-z0-9_-]+:\n|\Z)", text, re.M | re.S)
+        return m.group(1) if m else ""
+
+    prod, ign, a1 = read("production.yml"), read("ignored-tests.yml"), read("a1-inner-tolerance-parity.yml")
+    if re.search(r"^concurrency:", prod, re.M):
+        problems.append("production.yml: a workflow-level concurrency group cancels the test job")
+    for text, name, job in ((prod, "production.yml", "test"), (ign, "ignored-tests.yml", "ignored-tests")):
+        block = job_block(text, job)
+        if not re.search(r"concurrency:\s*\n\s+group: .*\n\s+cancel-in-progress: false", block):
+            problems.append(f"{name}: job {job} does not queue (cancel-in-progress false)")
+        for line in block.splitlines():
+            code = line.split("#", 1)[0] if line.lstrip().startswith("#") else line
+            if "tools/ci/select_tests.py" in code and "python3 -u tools/ci/select_tests.py" not in code:
+                problems.append(f"{name}: selector step without python3 -u: {line.strip()}")
+            if "${{ github.head_ref" in code and not re.match(r"\s+BRANCH: ", code):
+                problems.append(f"{name}: github.head_ref expanded outside the env block: {line.strip()}")
+        if "overwrite: true" not in block:
+            problems.append(f"{name}: upload-artifact without overwrite")
+        if "--pr-base" not in block or "pull_request.base.sha" not in block:
+            problems.append(f"{name}: the pull-request base is not recorded")
+        if "strace" not in block:
+            problems.append(f"{name}: strace is not installed")
+        if re.search(r"^\s+schedule:", text, re.M):
+            problems.append(f"{name}: has a schedule (owner decision OD-L1-21: no periodic full run)")
+    for job in ("fmt", "clippy", "docs", "semver", "bench"):
+        if "cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}" not in job_block(prod, job):
+            problems.append(f"production.yml: job {job} does not cancel on non-main refs")
+    if "select_tests.py has" in ign and "|| exit 1" not in ign:
+        problems.append("ignored-tests.yml: a failing has call does not fail its step")
+    if ign.count("select_tests.py control") != 2 or "--failed-controls" not in ign:
+        problems.append("ignored-tests.yml: negative controls are not measured or not merged into the outcome")
+    if "Run the workspace test closure" in a1 or "cargo test --workspace --all-targets --locked\n" in a1:
+        problems.append("a1-inner-tolerance-parity.yml: still runs the workspace test closure")
+    return problems
+
+
 def self_test():
-    src = r'''
-    // "tests/golden/in_a_comment.json"
-    /* "fixtures/in_a_block.json" /* nested */ */
-    let a = "tests/golden/default_path";
-    let b = r#"research/x_2026/RESULTS.json"#;
-    let c = '"';
-    let d = b"fixtures/bytes.bin";
-    fn f<'a>(x: &'a str) -> &'a str { x }
-    let e = "escaped \" quote/inside.txt";
-    let g = concat!(env!("CARGO_MANIFEST_DIR"), "/../../fixtures/rodas5p_coefficients_snapshot.json");
-    let h = format!("research/{}/cases.json", name);
-    '''
-    lits = rust_string_literals(src)
-    assert "tests/golden/default_path" in lits, lits
-    assert "research/x_2026/RESULTS.json" in lits, lits
-    assert "fixtures/bytes.bin" in lits, lits
-    assert not any("in_a_comment" in s or "in_a_block" in s for s in lits), lits
-    assert any(s.endswith("rodas5p_coefficients_snapshot.json") for s in lits), lits
-    assert literal_matches("crates/vigilode/tests/golden/default_path/dopri5.txt", "tests/golden/default_path")
-    assert literal_matches("fixtures/rodas5p_coefficients_snapshot.json",
-                           "/../../fixtures/rodas5p_coefficients_snapshot.json")
-    assert literal_matches("research/abc/cases.json", "research/{}/cases.json")
-    assert not literal_matches("research/production_loop_20261116/PROGRESS.md",
-                               "research/production_loop_20261116/mf_adaptive")
-    assert literal_matches("research/production_loop_20261116/mf_adaptive/RECORDING_A.json",
-                           "research/production_loop_20261116/mf_adaptive")
-    assert not literal_matches("docs/x.md", "hello world")
-    deps = parse_dep_info("/t/deps/a-1: /r/tests/a.rs /r/tests/common/mod.rs /r/tests/my\\ file.rs\n\n"
-                          "/r/tests/a.rs:\n")
-    assert deps == ["/r/tests/a.rs", "/r/tests/common/mod.rs", "/r/tests/my file.rs"], deps
-    pk = {"core": {"deps": []}, "kry": {"deps": ["core"]}, "int": {"deps": ["core", "kry"]},
-          "vig": {"deps": ["core", "int"]}, "cpl": {"deps": ["core", "int"]}}
-    assert dependents_closure({"int"}, pk) == {"int", "vig", "cpl"}
-    assert dependents_closure({"vig"}, pk) == {"vig"}
-    assert dependents_closure({"core"}, pk) == set(pk)
-    assert dependencies_closure("vig", pk) == {"core", "int", "kry"}
-    pk2 = {"vigilode": {"dir": "crates/vigilode", "deps": []},
-           "rodas5p-core": {"dir": "crates/rodas5p-core", "deps": []}}
-    assert classify("crates/vigilode/src/solve.rs", pk2) == ("package", "vigilode")
-    assert classify("crates/vigilode/Cargo.toml", pk2) == ("package", "vigilode")
-    assert classify("crates/vigilode/tests/a.rs", pk2) == ("test_source", "vigilode")
-    assert classify("crates/vigilode/tests/golden/x.json", pk2) == ("data", "vigilode")
-    assert classify("crates/vigilode/src/data.json", pk2) == ("data", "vigilode")
-    assert classify("crates/vigilode/examples/e.rs", pk2) == ("package_local", "vigilode")
-    assert classify("Cargo.lock", pk2) == ("global", None)
-    assert classify("tools/ci/select_tests.py", pk2) == ("global", None)
-    assert classify("research/x/RESULTS.json", pk2) == ("data", None)
-    assert classify("research/x/runner/src/main.rs", pk2) == ("other_rust", None)
-    m = RERUN.findall("error: test failed, to rerun pass `-p rodas5p-integrators --test stage_residual_telemetry`\n"
-                      "    `-p vigilode --lib`\n    `-p vigilode --doc`")
-    assert [x[0] for x in m] == ["rodas5p-integrators", "vigilode", "vigilode"], m
-    sel = {"packages": {"vigilode": {"all": True, "targets": [], "lib": True, "doc": True},
-                        "rodas5p-core": {"all": False, "targets": ["a", "b"], "lib": False, "doc": True},
-                        "rodas5p-krylov": {"all": False, "targets": [], "lib": False, "doc": False}}}
-    cmds = commands(sel, "ignored", "measurement", ["kill"])
-    assert len(cmds) == 3, cmds
-    assert cmds[0] == ["cargo", "test", "--locked", "--no-fail-fast", "--profile", "measurement", "-p",
-                       "rodas5p-core", "--test", "a", "--test", "b", "--", "--ignored", "--skip", "kill"], cmds
-    assert cmds[1][-6:] == ["rodas5p-core", "--doc", "--", "--ignored", "--skip", "kill"], cmds
-    assert cmds[2][-5:] == ["vigilode", "--", "--ignored", "--skip", "kill"], cmds
-    # change classification
+    # Rust tokens and change classification (OD-L1-20)
     old = """use x::y;
 
 /// Doc of f.
@@ -993,13 +1546,15 @@ impl S {
     }
 }
 """
+
     def diff_of(a, b):
         with tempfile.TemporaryDirectory() as d:
             pa, pb = os.path.join(d, "a.rs"), os.path.join(d, "b.rs")
-            open(pa, "w").write(a)
-            open(pb, "w").write(b)
-            return subprocess.run(["git", "diff", "--no-index", "-U0", "--no-color", pa, pb],
-                                  capture_output=True, text=True).stdout
+            with open(pa, "w") as f:
+                f.write(a)
+            with open(pb, "w") as f:
+                f.write(b)
+            return sh(GIT + ["diff", "--no-index", "--no-ext-diff", "-U0", "--no-color", pa, pb], check=False).stdout
     cases = [
         (old.replace("// twice", "// two times"), "noop"),
         (old.replace("a * 2.0", "a * 3.0"), "body"),
@@ -1018,7 +1573,273 @@ impl S {
     assert [(s, e, c) for s, e, c in spans] == [(4, 7, False), (11, 13, True), (16, 18, False)], spans
     toks = rust_tokens("let s = r#\"a \"quoted\" b\"#; let c = b'x'; fn q<'a>() {}")
     assert ("lit", 'r#"a "quoted" b"#', 1) in toks, toks
-    print("self-test passed")
+
+    # dep-info: first rule, escaped spaces, entries resolved against the root, not the cwd (F13)
+    deps = parse_dep_info("/t/deps/a-1.d: /r/tests/a.rs crates/c/tests/../../../research/x/w.rs /r/tests/my\\ file.rs\n\n"
+                          "/t/deps/a-1: /r/tests/a.rs\n")
+    assert deps == ["/r/tests/a.rs", "crates/c/tests/../../../research/x/w.rs", "/r/tests/my file.rs"], deps
+    with tempfile.TemporaryDirectory() as d:
+        r = Repo(d, os.path.join(d, "target"), drop=[os.path.join(d, "measure")])
+        here = os.getcwd()
+        try:
+            os.chdir(tempfile.gettempdir())
+            assert r.rel(deps[1]) == "research/x/w.rs", r.rel(deps[1])
+        finally:
+            os.chdir(here)
+        assert r.rel(os.path.join(d, "crates/c/src/lib.rs")) == "crates/c/src/lib.rs"
+        assert r.rel(os.path.join(d, "target/debug/build/x/out/gen.rs")) is None
+        assert r.rel(os.path.join(d, ".git/index")) is None
+        assert r.rel(os.path.join(d, "measure/u/trace/t.1")) is None
+        assert r.rel("/usr/lib/libc.so.6") is None
+        assert r.rel(d) == "."
+
+    # git diff -z: quotes, tabs and non-ASCII names come back verbatim; a rename gives both sides (F13)
+    z = "M\0a \"q\".rs\0R087\0old\tname.rs\0new name.rs\0D\0dir/é.json\0A\0z.txt\0"
+    assert parse_name_status_z(z) == [("M", 'a "q".rs'), ("D", "dir/é.json"), ("A", "new name.rs"),
+                                      ("D", "old\tname.rs"), ("A", "z.txt")], parse_name_status_z(z)
+    with tempfile.TemporaryDirectory() as d:
+        ident = ["-c", "user.name=ci", "-c", "user.email=ci@localhost", "-c", "commit.gpgsign=false"]
+        sh(GIT + ["init", "-q", d])
+        names = ['quote"d.rs', "tab\there.json", "é/ü.txt", "keep.rs"]
+        for n in names:
+            os.makedirs(os.path.join(d, os.path.dirname(n)), exist_ok=True)
+            with open(os.path.join(d, n), "w") as f:
+                f.write(f"{n}\n" * 20)
+        sh(GIT + ["-C", d, "add", "--"] + names)
+        sh(GIT + ident + ["-C", d, "commit", "-q", "-m", "a"])
+        base = sh(GIT + ["-C", d, "rev-parse", "HEAD"]).stdout.strip()
+        with open(os.path.join(d, 'quote"d.rs'), "a") as f:
+            f.write("more\n")
+        sh(GIT + ["-C", d, "mv", "é/ü.txt", "é/ö.txt"])
+        sh(GIT + ["-C", d, "rm", "-q", "tab\there.json"])
+        sh(GIT + ident + ["-C", d, "commit", "-q", "-a", "-m", "b"])
+        head = sh(GIT + ["-C", d, "rev-parse", "HEAD"]).stdout.strip()
+        got = changed_entries(d, base, head)
+        assert got == [("M", 'quote"d.rs'), ("D", "tab\there.json"), ("A", "é/ö.txt"), ("D", "é/ü.txt")], got
+        assert existing_dirs(d, base, {".", "é", "nope"}) == {".", "é"}
+
+    # strace -ff -y lines: resolved descriptors, relative probes, directories, chdir, escapes
+    lines = [
+        'openat(AT_FDCWD</r/crates/i>, "../../docs/T.toml", O_RDONLY|O_CLOEXEC) = 3</r/docs/T.toml>',
+        'openat(AT_FDCWD</r/crates/i>, "../../research/gone.json", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)',
+        'openat(AT_FDCWD</r/crates/i>, "/r/crates", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 4</r/crates>',
+        'statx(AT_FDCWD</r/crates/i>, "/r/crates/x/src", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL}) = 0',
+        'newfstatat(AT_FDCWD</r/crates/i>, "/r/crates/y/src", 0x7ffe, 0) = -1 ENOENT (No such file or directory)',
+        'statx(3</r/docs/T.toml>, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_ALL, {stx_mask=STATX_ALL}) = 0',
+        'chdir("/r/research")                    = 0',
+        'access("q \\"x\\"/\\303\\251.py", R_OK) = 0',
+        'execve("/usr/bin/python3", ["python3", "s.py"], 0x7ffd /* 9 vars */) = 0',
+        'openat(5</r/research/d>, "f.json", O_RDONLY) = 6</r/research/d/f.json>',
+        'readlink("/proc/self/exe", "/t/debug/deps/x-1", 4096) = 17',
+        '+++ exited with 0 +++',
+    ]
+    events = list(trace_events(lines, "/r/crates/i"))
+    assert ("read", "/r/docs/T.toml") in events, events
+    assert ("absent", "/r/research/gone.json") in events, events
+    assert ("dir", "/r/crates") in events, events
+    assert ("read", "/r/crates/x/src") in events, events
+    assert ("absent", "/r/crates/y/src") in events, events
+    assert ("read", '/r/research/q "x"/é.py') in events, events
+    assert ("read", "/r/research/d/f.json") in events, events
+    assert not any(p == "/r/docs/T.toml" and k != "read" for k, p in events), events
+    assert len(events) == 9, events
+    assert unescape(r"a\x41\101\n\"") == 'aAA\n"', unescape(r"a\x41\101\n\"")
+    assert strace_runner("/usr/bin/strace", "/w/t").startswith("/usr/bin/strace -ff --seccomp-bpf -qq -y -o /w/t/t -e trace=")
+    try:
+        strace_runner("/usr/bin/strace", "/w w/t")
+        raise AssertionError("whitespace in the runner was accepted")
+    except ValueError:
+        pass
+
+    # required features never named; default-feature closure (F10, F-02)
+    meta = {"packages": [
+        {"name": "core", "manifest_path": "/r/crates/core/Cargo.toml", "dependencies": [], "features": {},
+         "targets": [{"name": "core", "kind": ["lib"], "test": True, "doctest": True},
+                     {"name": "c1", "kind": ["test"], "test": True}]},
+        {"name": "int", "manifest_path": "/r/crates/int/Cargo.toml",
+         "dependencies": [{"name": "core"}, {"name": "sha2"}],
+         "features": {"default": ["base"], "base": [], "audit": ["dep:x"]},
+         "targets": [{"name": "int", "kind": ["lib"], "test": True, "doctest": True},
+                     {"name": "build-script-build", "kind": ["custom-build"], "test": False},
+                     {"name": "t_ok", "kind": ["test"], "test": True},
+                     {"name": "t_base", "kind": ["test"], "test": True, "required-features": ["base"]},
+                     {"name": "audit2_x", "kind": ["test"], "test": True, "required-features": ["audit"]},
+                     {"name": "ex", "kind": ["example"], "test": False},
+                     {"name": "ex_audit", "kind": ["example"], "test": False, "required-features": ["audit"]}]},
+        {"name": "cli", "manifest_path": "/r/crates/cli/Cargo.toml",
+         "dependencies": [{"name": "int"}, {"name": "core"}], "features": {},
+         "targets": [{"name": "cli", "kind": ["bin"], "test": True},
+                     {"name": "alg02", "kind": ["test"], "test": True}]},
+        {"name": "vig", "manifest_path": "/r/crates/vig/Cargo.toml", "dependencies": [{"name": "core"}],
+         "features": {}, "targets": [{"name": "vig", "kind": ["lib"], "test": True, "doctest": True}]},
+    ]}
+    pk = packages_from_metadata(meta, "/r")
+    assert pk["int"]["tests"] == ["t_base", "t_ok"] and pk["int"]["unmet"] == {
+        "audit2_x": ["audit"], "example:ex_audit": ["audit"]}, pk["int"]
+    assert pk["int"]["examples"] == ["ex"] and pk["int"]["deps"] == ["core"], pk["int"]
+    assert pk["cli"]["bins"] == ["cli"] and not pk["cli"]["lib"] and not pk["cli"]["doc"], pk["cli"]
+    assert unit_keys(pk["int"]) == ["lib", "t_base", "t_ok"]
+    assert dependents_closure({"core"}, pk) == {"core", "int", "cli", "vig"}
+    assert dependencies_closure("cli", pk) == {"int", "core"}
+    sel_all = {"packages": {"int": dict(new_entry(), all=True), "cli": dict(new_entry(), all=True)}}
+    plan = units(sel_all, pk)
+    assert ("int", "audit2_x") not in plan and ("cli", "doc") not in plan and ("int", "doc") in plan, plan
+    assert build_filters(dict(new_entry(), targets=["t_ok", "audit2_x"], examples=["ex", "ex_audit"]), pk["int"]) == [
+        "--test", "t_ok", "--example", "ex"]
+    assert build_filters(dict(new_entry(), doc=True), pk["int"]) is None
+    cmds = commands({"packages": {"cli": dict(new_entry(), doc=True, targets=["alg02"]),
+                                  "core": dict(new_entry(), targets=["c1"], doc=True)}},
+                    pk, "ignored", "measurement", ["kill"])
+    assert cmds == [["cargo", "test", "--locked", "--no-fail-fast", "--profile", "measurement", "-p", "cli",
+                     "--test", "alg02", "--", "--ignored", "--skip", "kill"],
+                    ["cargo", "test", "--locked", "--no-fail-fast", "--profile", "measurement", "-p", "core",
+                     "--test", "c1", "--", "--ignored", "--skip", "kill"],
+                    ["cargo", "test", "--locked", "--no-fail-fast", "--profile", "measurement", "-p", "core",
+                     "--doc", "--", "--ignored", "--skip", "kill"]], cmds
+    assert is_global("Cargo.lock", "w.yml") and is_global("rust-toolchain.toml", "w.yml")
+    assert is_global(".cargo/config.toml", "w.yml") and is_global("tools/ci/select_tests.py", "w.yml")
+    assert is_global(".github/workflows/p.yml", ".github/workflows/p.yml")
+    assert not is_global("crates/int/Cargo.toml", "w.yml") and not is_global("tools/x.py", "w.yml")
+
+    # selection rules 3-8 on a synthetic input map (findings F1-F7, F10, F11)
+    pk["core"]["dir"], pk["int"]["dir"], pk["cli"]["dir"], pk["vig"]["dir"] = (
+        "crates/core", "crates/int", "crates/cli", "crates/vig")
+
+    def entry(**sets):
+        return {s: sorted(sets.get(s, [])) for s in SETS}
+    cmap = {
+        "core::lib": entry(compile=["crates/core/src/lib.rs", "crates/core/src/a.rs"],
+                           executed=["crates/core/src/lib.rs"]),
+        "core::c1": entry(compile=["crates/core/tests/c1.rs", "research/r/gain_witness.rs"],
+                          executed=["crates/core/src/a.rs", "research/r/gain_witness.rs"]),
+        "int::lib": entry(compile=["crates/int/src/lib.rs", "crates/int/tests/support/a02.rs"],
+                          executed=["crates/int/src/lib.rs"]),
+        "int::t_ok": entry(compile=["crates/int/tests/t_ok.rs", "docs/TABLE.toml", "crates/cli/src/main.rs"],
+                           executed=["crates/int/src/lib.rs", "crates/core/src/lib.rs"],
+                           read=["research/z/FROZEN.json", "crates/int/tests/u.rs", "crates/vig/src/lib.rs"],
+                           dirs=["crates", "crates/core/src", "crates/hyb/src"],
+                           absent=["research/new/probe.json"]),
+        "int::t_base": entry(compile=["crates/int/tests/t_base.rs"], executed=["crates/int/src/lib.rs"]),
+        "int::example:ex": entry(compile=["crates/int/examples/ex.rs", "crates/int/tests/common/mod.rs"]),
+        "int::t_ok#kill": entry(compile=["crates/int/tests/t_ok.rs"], executed=["crates/int/src/kill.rs"]),
+        "cli::bin:cli": entry(compile=["crates/cli/src/main.rs"], executed=["crates/cli/src/main.rs"]),
+        "cli::alg02": entry(compile=["crates/cli/tests/alg02.rs", "crates/int/tests/rnext/mod.rs"],
+                            executed=["crates/cli/src/main.rs"]),
+        "vig::lib": entry(compile=["crates/vig/src/lib.rs"], executed=["crates/vig/src/lib.rs"]),
+    }
+    pmap = {"core": {"compile": ["crates/core/src/lib.rs", "crates/core/src/a.rs", "fixtures/coef.json"]},
+            "int": {"compile": ["crates/int/src/lib.rs", "crates/int/src/kill.rs"]},
+            "cli": {"compile": ["crates/cli/src/main.rs"]}, "vig": {"compile": ["crates/vig/src/lib.rs"]}}
+    scope = ["core", "int", "cli", "vig"]
+    tree = {"base": {".", "crates", "crates/core", "crates/core/src", "research", "crates/hyb", "crates/hyb/src"},
+            "head": {".", "crates", "crates/core", "research", "crates/hyb", "crates/hyb/src"}}
+
+    def pick(changes, cls=None, failed=(), controls=(), the_map=None, the_pmap=None):
+        return decide(changes, pk, scope, cmap if the_map is None else the_map, pmap if the_pmap is None else the_pmap,
+                      lambda path: (cls or {}).get(path, "structural"),
+                      lambda side, dirs: set(dirs) & tree[side], failed, controls)
+
+    def chosen(sel):
+        out = set()
+        for name, e in sel["packages"].items():
+            if e["all"]:
+                out.add(f"{name}:*")
+                continue
+            out |= ({f"{name}:lib"} if e["lib"] else set()) | {f"{name}:{t}" for t in e["targets"]}
+            out |= {f"{name}:doc"} if e["doc"] else set()
+            out |= {f"{name}:example:{x}" for x in e["examples"]}
+        return out
+    # F1: a .rs file outside the members that a test compiles through #[path]
+    assert chosen(pick([("M", "research/r/gain_witness.rs")])) == {"core:c1", "core:doc"}
+    # F2: a body change of the cli binary selects the integrators test that include_str!s it
+    s = pick([("M", "crates/cli/src/main.rs")], cls={"crates/cli/src/main.rs": "body"})
+    assert chosen(s) == {"cli:bin:cli", "cli:alg02", "int:t_ok", "int:doc"}, chosen(s)
+    # ... and a comment-only change still selects the text consumer, not the crate that compiles it
+    s = pick([("M", "crates/cli/src/main.rs")], cls={"crates/cli/src/main.rs": "noop"})
+    assert chosen(s) == {"int:t_ok", "int:doc"}, chosen(s)
+    # F3: a test helper of one package compiled by a test of another package
+    assert chosen(pick([("M", "crates/int/tests/rnext/mod.rs")])) == {"cli:alg02"}
+    # F4: a test source read (hashed) at run time by another target
+    assert chosen(pick([("M", "crates/int/tests/u.rs")])) == {"int:t_ok", "int:doc"}
+    # F5: a tests/ file that the lib unit tests include!
+    assert chosen(pick([("M", "crates/int/tests/support/a02.rs")])) == {"int:lib", "int:doc"}
+    # F6: a file named only in a table that a test reads
+    assert chosen(pick([("M", "research/z/FROZEN.json")])) == {"int:t_ok", "int:doc"}
+    # F7: a new source file in a non-member crate that a test lists; a member's source it reads
+    s = pick([("A", "crates/hyb/src/new.rs")])
+    assert chosen(s) == {"int:t_ok", "int:doc"} and "lists crates/hyb/src" in s["packages"]["int"]["why"]["t_ok"][0], s
+    assert chosen(pick([("M", "crates/vig/src/lib.rs")], cls={"crates/vig/src/lib.rs": "noop"})) == {"int:t_ok", "int:doc"}
+    # an added path that a test probed; a deleted directory that a test listed
+    assert chosen(pick([("A", "research/new/probe.json")])) == {"int:t_ok", "int:doc"}
+    s = pick([("D", "crates/core/src/old.rs")], cls={})
+    assert chosen(s) >= {"core:*", "int:*", "cli:*", "vig:*"}, chosen(s)
+    s = pick([("D", "crates/core/src/x/old.txt")])
+    assert chosen(s) == {"int:t_ok", "int:doc"} and "observed crates/core/src" in str(s["packages"]["int"]["why"]), s
+    # body change: only the targets that executed the file, plus doc tests of the package and dependents
+    s = pick([("M", "crates/core/src/a.rs")], cls={"crates/core/src/a.rs": "body"})
+    assert chosen(s) == {"core:lib", "core:c1", "core:doc", "int:doc", "vig:doc"}, chosen(s)
+    # structural change: the package and its dependents run whole
+    s = pick([("M", "crates/int/src/lib.rs")], cls={"crates/int/src/lib.rs": "structural"})
+    assert chosen(s) == {"int:*", "cli:*"}, chosen(s)
+    # a non-Rust input of a library is structural for its package (include_str!)
+    assert chosen(pick([("M", "fixtures/coef.json")])) == {"core:*", "int:*", "cli:*", "vig:*"}
+    # noop change in a file no target reads or includes textually: nothing
+    s = pick([("M", "crates/vig/src/lib.rs")], cls={"crates/vig/src/lib.rs": "noop"},
+             the_map={k: v for k, v in cmap.items() if k != "int::t_ok"} | {"int::t_ok": entry()})
+    assert chosen(s) == set(), chosen(s)
+    # a negative control's own inputs select its target
+    s = pick([("M", "crates/int/src/kill.rs")], cls={"crates/int/src/kill.rs": "body"})
+    assert "int:t_ok" in chosen(s) and "negative control kill" in str(s["packages"]["int"]["why"]["t_ok"]), s
+    # F11: an example whose compile set contains the changed path is compiled
+    assert chosen(pick([("M", "crates/int/tests/common/mod.rs")])) == {"int:example:ex"}
+    # rule 5: unmapped targets and controls run when the diff is not empty, not otherwise
+    small = {k: v for k, v in cmap.items() if k not in ("vig::lib", "int::t_ok#kill")}
+    s = pick([("M", "README.md")], the_map=small, controls=["int:t_ok#kill"])
+    assert chosen(s) == {"vig:lib", "vig:doc", "int:t_ok", "int:doc"}, chosen(s)
+    assert "no mapped target compiles, executes or reads README.md" in s["notes"], s["notes"]
+    assert chosen(pick([], the_map=small)) == set()
+    # rule 5: a package whose library inputs are not recorded counts as structurally changed
+    assert chosen(pick([("M", "README.md")], the_pmap={k: v for k, v in pmap.items() if k != "vig"})) == {"vig:*"}
+    # rule 6: baseline failures filtered to current targets (F10, F-02)
+    s = pick([], failed=[{"package": "int", "target": "t_ok"}, {"package": "int", "target": "gone"},
+                         {"package": "int", "target": "audit2_x"}, {"package": "vig", "target": "doc"},
+                         {"package": "out", "target": "x"},
+                         {"package": "int", "target": "t_base", "negative_control": True}])
+    assert chosen(s) == {"int:t_ok", "int:t_base", "int:doc", "vig:doc"}, chosen(s)
+    assert s["baseline_failures_dropped"] == ["int:gone: no longer a test target",
+                                              "int:audit2_x: requires the features audit"], s
+    assert all("audit2_x" not in str(e) for e in pick([("M", "x")], the_map={})["packages"].values())
+    # rule 1: full-mode triggers (image and pull-request base: F8/F-04, F14)
+    env = {"image_os": "ubuntu24", "image_version": "20261117.1", "pr_base": "aaa"}
+    assert full_reasons(False, "b", True, True, env, dict(env)) == []
+    assert full_reasons(True, "b", True, True, env, env) == ["the whole suite was asked for"]
+    assert full_reasons(False, None, False, False, env, {}) == ["no baseline run with a complete outcome"]
+    assert "not an ancestor" in full_reasons(False, "b", False, True, env, env)[0]
+    assert full_reasons(False, "b", True, False, env, env) == ["the baseline run left no input map"]
+    assert "runner image version" in full_reasons(False, "b", True, True, env, dict(env, image_version="x"))[0]
+    assert "pull-request base" in full_reasons(False, "b", True, True, env, dict(env, pr_base="bbb"))[0]
+    assert full_reasons(False, "b", True, True, {"pr_base": None}, {"pr_base": ""}) == []
+    # the next map: measured entries replace, lost ones go, the rest carries over and is pruned
+    targets, pkgs = update_map({"int::t_ok": {"compile": ["a"]}, "int::gone": {}, "int::t_base": {"compile": ["b"]},
+                                "out::x": {}, "int::t_ok#kill": {}},
+                               {"int": {"compile": ["x"]}, "core": {"compile": ["y"]}},
+                               {"vig::lib": {"compile": ["c"]}}, ["int::t_base"], {"core": ["z"]}, ["int"],
+                               pk, scope, "h")
+    assert sorted(targets) == ["int::t_ok", "int::t_ok#kill", "vig::lib"] and targets["vig::lib"]["head"] == "h", targets
+    assert pkgs == {"core": {"compile": ["z"], "head": "h"}}, pkgs
+    # has / selected
+    sel = {"packages": {"int": dict(new_entry(), targets=["t_ok"], doc=True, examples=["ex"])}}
+    assert selected(sel, "int", "t_ok") and selected(sel, "int", "doc") and selected(sel, "int", "example:ex")
+    assert not selected(sel, "int", "lib") and not selected(sel, "core", "c1")
+    m = RERUN.findall("error: test failed, to rerun pass `-p rodas5p-integrators --test stage_residual_telemetry`\n"
+                      "    `-p vigilode --lib`\n    `-p vigilode --doc`")
+    assert [x[0] for x in m] == ["rodas5p-integrators", "vigilode", "vigilode"], m
+    # the workflows (F-01, F-03, F-05, F-06, F-07, F-11, F-12, F8/F-04, F14)
+    root = repo_root()
+    if os.path.isdir(os.path.join(root, ".github", "workflows")):
+        problems = check_workflows(root)
+        assert not problems, problems
+    print("self-test passed", flush=True)
     return 0
 
 
@@ -1030,14 +1851,17 @@ def main():
     b.add_argument("--artifact", required=True)
     b.add_argument("--branch", required=True)
     b.add_argument("--run-id", required=True)
+    b.add_argument("--head")
     b.add_argument("--out", required=True)
     s = sub.add_parser("select")
     s.add_argument("--baseline", required=True)
     s.add_argument("--head", required=True)
+    s.add_argument("--pr-base", default="")
     s.add_argument("--scope", nargs="+", required=True)
     s.add_argument("--workflow-file", required=True)
     s.add_argument("--full", default="false")
-    s.add_argument("--profile", default="dev")
+    s.add_argument("--control", action="append", default=[])
+    s.add_argument("--profile", default="dev")  # accepted for compatibility; selection needs no build
     s.add_argument("--out", required=True)
     r = sub.add_parser("run")
     r.add_argument("--selection", required=True)
@@ -1045,16 +1869,30 @@ def main():
     r.add_argument("--profile", default="dev")
     r.add_argument("--skip", action="append", default=[])
     r.add_argument("--outcome", required=True)
-    r.add_argument("--coverage", action="store_true")
+    r.add_argument("--measure", action="store_true")
     r.add_argument("--baseline")
     r.add_argument("--map-out", default="map.json")
-    r.add_argument("--coverage-dir")
+    r.add_argument("--work-dir")
+    r.add_argument("--control-maps", nargs="*", default=[])
+    r.add_argument("--failed-controls")
+    r.add_argument("--strace", default="strace")
+    r.add_argument("--jobs", type=int, default=0)
+    c = sub.add_parser("control")
+    c.add_argument("--selection", required=True)
+    c.add_argument("--target", required=True)
+    c.add_argument("--test", required=True)
+    c.add_argument("--signature", required=True)
+    c.add_argument("--profile", default="dev")
+    c.add_argument("--map-out", required=True)
+    c.add_argument("--failed-file", required=True)
+    c.add_argument("--work-dir")
+    c.add_argument("--strace", default="strace")
     h = sub.add_parser("has")
     h.add_argument("--selection", required=True)
     h.add_argument("--target", required=True)
     sub.add_parser("self-test")
     args = parser.parse_args()
-    handlers = {"baseline": baseline, "select": select, "run": run, "has": has,
+    handlers = {"baseline": baseline, "select": select, "run": run, "control": control, "has": has,
                 "self-test": lambda _a: self_test()}
     return handlers[args.cmd](args)
 

@@ -2,16 +2,19 @@ name: Ignored long tests
 
 # Every #[ignore]d test is reachable from this job (audit F-003): in full mode
 # it runs the ignored tests of the whole workspace in the measurement profile.
-# It does not re-run them at every push (owner decision OD-L1-19):
-# tools/ci/select_tests.py runs the ignored tests that the changes since the
-# last complete run of this job can affect, new ones and the ones that failed
-# in that run. Full mode: workflow_dispatch with full, main, no baseline, or a
-# global file changed (workspace manifest or lock file, toolchain, tools/ci/,
-# this file). The owner runs the whole suite before a release.
+# It does not re-run them at every push (owner decisions OD-L1-19, OD-L1-20,
+# OD-L1-21): tools/ci/select_tests.py runs the targets whose measured inputs
+# (rustc dep-info, coverage, files opened by the test processes) changed since
+# the last complete run of this job, targets without a measurement and the
+# ones that failed in that run. Full mode: workflow_dispatch with full, main,
+# no baseline or map, a changed runner image or pull-request base, or a
+# global file changed (workspace manifest or lock file, toolchain, .cargo/,
+# tools/ci/, this file). The owner runs the whole suite before a release.
 # Two ignored tests fail by design and are negative controls: the recorded
 # kill gate and the stopping-test difference of the merged stage hook. Each
-# runs in a step of its own, when its target is selected, and passes only
-# while the test fails with its recorded signature.
+# runs, measured, in a step of its own when its target is selected, and passes
+# only while the test fails with its recorded signature. A failed control is
+# written to the outcome as a failed target, so the next run selects it again.
 # tools/check_ignored_tests_in_ci.py fails if a new ignored test is not
 # reachable from a workflow.
 
@@ -51,12 +54,23 @@ jobs:
     # The whole-workspace run took 67 and 95 minutes on hosted runners
     # (2026-11-23) without coverage instrumentation; a selection is shorter.
     timeout-minutes: 330
+    # Queued, never cancelled (OD-L1-21): a cancelled run leaves no outcome,
+    # so the next run would repeat its selection. GitHub keeps the newest
+    # pending run of the group, so pushes coalesce.
+    concurrency:
+      group: ignored-tests-${{ github.ref }}
+      cancel-in-progress: false
     # Coverage instrumentation (OD-L1-20): every selected target records the
-    # source files it executes; the map is the input of the next selection.
+    # source files it executes. Branch, heads and the full flag reach the
+    # scripts through the environment, never expanded inside a script.
     env:
       RUSTFLAGS: '-C instrument-coverage'
       RUSTDOCFLAGS: '-C instrument-coverage'
       LLVM_PROFILE_FILE: '${{ github.workspace }}/../coverage-unused/%p-%m.profraw'
+      BRANCH: ${{ github.head_ref || github.ref_name }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      PR_BASE: ${{ github.event.pull_request.base.sha }}
+      FULL: ${{ (github.event_name == 'workflow_dispatch' && inputs.full) || github.ref == 'refs/heads/main' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -65,76 +79,59 @@ jobs:
         run: |
           rustup toolchain install 1.94.1 --profile minimal --component llvm-tools
           rustup override set 1.94.1
+      # The selector traces the files that the test processes open (OD-L1-21).
+      - name: Install strace
+        run: |
+          command -v strace >/dev/null || { sudo apt-get update && sudo apt-get install -y strace; }
+          strace -V | head -n 1
       - name: Every ignored test is reachable from CI
-        run: python3 tools/check_ignored_tests_in_ci.py
+        run: python3 -u tools/check_ignored_tests_in_ci.py
+      - name: Self-test of the test selection
+        run: python3 -u tools/ci/select_tests.py self-test
       - name: Baseline of the test selection
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 tools/ci/select_tests.py baseline --workflow ignored-tests.yml --artifact ci-test-outcome-ignored-tests --branch "${{ github.head_ref || github.ref_name }}" --run-id "${{ github.run_id }}" --out baseline.json
+        run: python3 -u tools/ci/select_tests.py baseline --workflow ignored-tests.yml --artifact ci-test-outcome-ignored-tests --branch "$BRANCH" --run-id "$GITHUB_RUN_ID" --head "$HEAD_SHA" --out baseline.json
+      # The pull-request base and the runner image (ImageOS, ImageVersion) are
+      # recorded; a change of either since the baseline runs the whole suite.
+      # The two negative controls are declared: a control without a
+      # measurement selects its target.
       - name: Select the tests
-        run: python3 tools/ci/select_tests.py select --baseline baseline.json --head "${{ github.event.pull_request.head.sha || github.sha }}" --workflow-file .github/workflows/ignored-tests.yml --profile measurement --full "${{ (github.event_name == 'workflow_dispatch' && inputs.full) || github.ref == 'refs/heads/main' }}" --out selection.json --scope rodas5p-core rodas5p-krylov rodas5p-integrators rodas5p-fair-ab rodas5p-cli vigilode vigilode-coupled
+        run: python3 -u tools/ci/select_tests.py select --baseline baseline.json --head "$HEAD_SHA" --pr-base "$PR_BASE" --workflow-file .github/workflows/ignored-tests.yml --full "$FULL" --control rodas5p-integrators:dense_wfiltered_contracts#prothero_robinson_wfiltered_enforce_kill_gate --control rodas5p-integrators:stage_clients_krylov_contracts#merged_hook_solution_meets_the_protected_threshold --out selection.json --scope rodas5p-core rodas5p-krylov rodas5p-integrators rodas5p-fair-ab rodas5p-cli vigilode vigilode-coupled
       # Negative control (research/qualification/negative_controls/
       # negative_fixture_manifest.json): the kill gate failed on 2026-10-21 and
-      # its threshold is frozen. The step passes only if the test still fails
-      # with the recorded signature; a pass of the test, or another failure,
-      # fails the step.
+      # its threshold is frozen. When its target is selected, the step runs the
+      # test with measurement and passes only if the test still fails with the
+      # recorded signature; a pass of the test, another failure or an error of
+      # the selector fails the step and writes the target to
+      # failed-controls.txt, which the run step merges into the outcome.
       - name: The recorded kill gate still fails
+        id: kill-gate
         if: ${{ !cancelled() }}
         env:
           RAYON_NUM_THREADS: '1'
         run: |
-          if [ "$(python3 tools/ci/select_tests.py has --selection selection.json --target rodas5p-integrators:dense_wfiltered_contracts)" != yes ]; then
-            echo "not affected by the changes since the baseline: not run"
-            exit 0
-          fi
-          set +e
-          out=$(cargo test --profile measurement --locked -p rodas5p-integrators --test dense_wfiltered_contracts -- --ignored --exact prothero_robinson_wfiltered_enforce_kill_gate 2>&1)
-          code=$?
-          echo "$out" | tail -n 25
-          if [ "$code" -eq 0 ]; then
-            echo "the kill gate passed: the negative control no longer fails"
-            exit 1
-          fi
-          if ! echo "$out" | grep -q 'KILL GATE: 2.143x the Off accepted-step count > 1.3x'; then
-            echo "the kill gate failed without its recorded signature"
-            exit 1
-          fi
-          echo "the kill gate fails with its recorded signature"
+          python3 -u tools/ci/select_tests.py control --selection selection.json --target rodas5p-integrators:dense_wfiltered_contracts --test prothero_robinson_wfiltered_enforce_kill_gate --signature 'KILL GATE: 2.143x the Off accepted-step count > 1.3x' --profile measurement --work-dir "$RUNNER_TEMP/ci-control-kill-gate" --map-out control-kill-gate.json --failed-file failed-controls.txt
       # Negative control of loop L1 node V06 (crates/rodas5p-integrators/tests/
       # stage_clients_krylov_contracts.rs): the merged stage hook accepts a
       # stage solution whose residual is above the threshold of the protected
       # driver. The test states that fact as a failing assertion. The step
       # passes only if the test still fails with that message.
       - name: The recorded stopping-test difference of the merged hook still fails
+        id: stop-diff
         if: ${{ !cancelled() }}
         env:
           RAYON_NUM_THREADS: '1'
         run: |
-          if [ "$(python3 tools/ci/select_tests.py has --selection selection.json --target rodas5p-integrators:stage_clients_krylov_contracts)" != yes ]; then
-            echo "not affected by the changes since the baseline: not run"
-            exit 0
-          fi
-          set +e
-          out=$(cargo test --profile measurement --locked -p rodas5p-integrators --test stage_clients_krylov_contracts -- --ignored --exact merged_hook_solution_meets_the_protected_threshold 2>&1)
-          code=$?
-          echo "$out" | tail -n 25
-          if [ "$code" -eq 0 ]; then
-            echo "the test passed: the negative control no longer fails"
-            exit 1
-          fi
-          if ! echo "$out" | grep -q 'the merged hook accepted a stage solution with residual'; then
-            echo "the test failed without its recorded signature"
-            exit 1
-          fi
-          echo "the stopping-test difference fails with its recorded signature"
+          python3 -u tools/ci/select_tests.py control --selection selection.json --target rodas5p-integrators:stage_clients_krylov_contracts --test merged_hook_solution_meets_the_protected_threshold --signature 'the merged hook accepted a stage solution with residual' --profile measurement --work-dir "$RUNNER_TEMP/ci-control-stop-diff" --map-out control-stop-diff.json --failed-file failed-controls.txt
       # The two tests that fail by design are skipped here; the two steps above
-      # run them. One cargo test --no-fail-fast per package.
+      # run them. One cargo test --no-fail-fast per target, measured.
       - name: Run the selected ignored tests in the measurement profile
         if: ${{ !cancelled() }}
         env:
           RAYON_NUM_THREADS: '1'
-        run: python3 tools/ci/select_tests.py run --selection selection.json --mode ignored --profile measurement --skip prothero_robinson_wfiltered_enforce_kill_gate --skip merged_hook_solution_meets_the_protected_threshold --coverage --baseline baseline.json --map-out map.json --outcome outcome.json
-      - name: Keep the outcome and the coverage map for the next run
+        run: python3 -u tools/ci/select_tests.py run --selection selection.json --mode ignored --profile measurement --skip prothero_robinson_wfiltered_enforce_kill_gate --skip merged_hook_solution_meets_the_protected_threshold --measure --baseline baseline.json --work-dir "$RUNNER_TEMP/ci-measure" --control-maps control-kill-gate.json control-stop-diff.json --failed-controls failed-controls.txt --map-out map.json --outcome outcome.json
+      - name: Keep the outcome and the input map for the next run
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
@@ -144,3 +141,4 @@ jobs:
             selection.json
             map.json
           if-no-files-found: ignore
+          overwrite: true

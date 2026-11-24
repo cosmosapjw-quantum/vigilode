@@ -1,0 +1,28 @@
+# python3 -I tools/ci/select_tests.py self-test, run against the v2 workflows (before the workflow edits)
+# date: 2026-11-24T11:44:32Z; head 1ffbda20 with the v3 selector in the working tree
+exit: assertion in check_workflows; problems found: 25
+- production.yml: a workflow-level concurrency group cancels the test job
+- production.yml: job test does not queue (cancel-in-progress false)
+- production.yml: selector step without python3 -u: run: python3 tools/ci/select_tests.py baseline --workflow production.yml --artifact ci-test-outcome-test --branch "${{ github.head_ref || github.ref_name }}" --run-id "${{ github.run_id }}" --out baseline.json
+- production.yml: github.head_ref expanded inside a run script
+- production.yml: selector step without python3 -u: run: python3 tools/ci/select_tests.py select --baseline baseline.json --head "${{ github.event.pull_request.head.sha || github.sha }}" --workflow-file .github/workflows/production.yml --full "${{ (github.event_name == 'workflow_dispatch' && inputs.full) || github.ref == 'refs/heads/main' }}" --out selection.json --scope rodas5p-core rodas5p-krylov rodas5p-integrators vigilode vigilode-coupled
+- production.yml: selector step without python3 -u: run: python3 tools/ci/select_tests.py run --selection selection.json --mode normal --coverage --baseline baseline.json --map-out map.json --outcome outcome.json
+- production.yml: upload-artifact without overwrite
+- production.yml: the pull-request base is not recorded
+- production.yml: strace is not installed
+- ignored-tests.yml: job ignored-tests does not queue (cancel-in-progress false)
+- ignored-tests.yml: selector step without python3 -u: run: python3 tools/ci/select_tests.py baseline --workflow ignored-tests.yml --artifact ci-test-outcome-ignored-tests --branch "${{ github.head_ref || github.ref_name }}" --run-id "${{ github.run_id }}" --out baseline.json
+- ignored-tests.yml: github.head_ref expanded inside a run script
+- ignored-tests.yml: selector step without python3 -u: run: python3 tools/ci/select_tests.py select --baseline baseline.json --head "${{ github.event.pull_request.head.sha || github.sha }}" --workflow-file .github/workflows/ignored-tests.yml --profile measurement --full "${{ (github.event_name == 'workflow_dispatch' && inputs.full) || github.ref == 'refs/heads/main' }}" --out selection.json --scope rodas5p-core rodas5p-krylov rodas5p-integrators rodas5p-fair-ab rodas5p-cli vigilode vigilode-coupled
+- ignored-tests.yml: selector step without python3 -u: run: python3 tools/ci/select_tests.py run --selection selection.json --mode ignored --profile measurement --skip prothero_robinson_wfiltered_enforce_kill_gate --skip merged_hook_solution_meets_the_protected_threshold --coverage --baseline baseline.json --map-out map.json --outcome outcome.json
+- ignored-tests.yml: upload-artifact without overwrite
+- ignored-tests.yml: the pull-request base is not recorded
+- ignored-tests.yml: strace is not installed
+- production.yml: job fmt does not cancel on non-main refs
+- production.yml: job clippy does not cancel on non-main refs
+- production.yml: job docs does not cancel on non-main refs
+- production.yml: job semver does not cancel on non-main refs
+- production.yml: job bench does not cancel on non-main refs
+- ignored-tests.yml: a failing has call does not fail its step
+- ignored-tests.yml: negative controls are not measured or not merged into the outcome
+- a1-inner-tolerance-parity.yml: still runs the workspace test closure
