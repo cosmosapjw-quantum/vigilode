@@ -33,7 +33,7 @@
         "crates/rodas5p-integrators/tests/stage_clients_krylov_contracts.rs"
       ],
       "status_20261117": "PORTED_AND_MEASURED",
-      "result_this_loop": "V06 stage a FAIL on executed runs: JVP ratio of the shared basis to per-stage GMRES 1.12-1.78 on the three nonlinear families against the frozen 0.5 (research/production_loop_20261116/shared_krylov/RESULTS.json, ledger L-0315). The v2 kernel was not built. Leads moved to node V17 (residual test after every Arnoldi column; linear tolerance tied to the step tolerance).",
+      "result_this_loop": "V06 stage a FAIL on executed runs: per-stage GMRES JVP count divided by shared-basis JVP count was 1.12-1.78. Only Gray-Scott passed the stage-a threshold of 1.5 at both tolerances; two of three nonlinear families were required. The final separate gate asks for shared/per-stage <=0.5 (research/production_loop_20261116/shared_krylov/RESULTS.json, ledger L-0315). The v2 kernel was not built. Leads moved to node V17 (residual test after every Arnoldi column; linear tolerance tied to the step tolerance).",
       "next_discriminator": "none for the shared basis; see V17 for the two leads"
     },
     {
