@@ -1,0 +1,82 @@
+NOTES of node V29_ASSEMBLY_DEFAULT_MC (loop L1, wave 3, group 9), builder worktree w3-v29
+branch research/production-loop-20261116-w3-v29, base e36fc6f4
+Authority: owner decision OD-L1-24 (2026-11-24 23:45 KST, "권고사항 수용 및 CI job 유지"): the default first-use
+check of the opt-in AssemblyStageClient becomes the multi-colouring check MC on the routes where it applies
+(coloured, banded); the dense route keeps Sample(8); FA, FA_P and MC_P stay selectable; the documentation states
+the limits of MC found by the review of V26 (ledger L-0338). Contract: TASK_CONTRACTS.json tasks[40].
+Implementation of an owner decision, no experiment: the arithmetic of the assembled Jacobian does not change.
+Failure action of the contract: the default stays Sample(8).
+All times KST. Newest entry last.
+
+== 2026-11-24 23:56, entry 1 (start; nothing edited, nothing run) ==
+
+WHERE THE DEFAULT IS SET (file:line at e36fc6f4)
+- crates/rodas5p-integrators/src/stage_clients/assembly.rs:321-323  AssemblyOptions::DEFAULT_CHECK_COLUMNS = 8
+  ("Check columns of the first linearization unless stated otherwise").
+- assembly.rs:325-333  AssemblyOptions::dense(): first_use_check = CheckColumns::Sample(DEFAULT_CHECK_COLUMNS).
+- assembly.rs:335-341  AssemblyOptions::coloured(pattern) = { route: Coloured(pattern), ..Self::dense() }: inherits
+  Sample(8). threaded() (:343-347) and with_fingerprints() (:355-359) keep the check; with_first_use_check()
+  (:349-353) replaces it.
+- The documentation that names the default: CheckColumns rustdoc (:256-258, "The default of the first-use check is
+  Sample(8)"), module doc (:61-70 "8 evenly spread ones by default"; :84-90 what the checks cannot see),
+  AssemblyOptions::first_use_check (:312-314, "Not applied to the sequential dense route").
+- Where the default acts: StageLinearSystem::linearize (:820-851). first_use = (!first_use_done && (colours() is
+  Some || workers() is Some)).then_some(first_use_check) (:833-835): the first linearization of a client on the
+  coloured route (any execution) and on the threaded dense route; the sequential dense route makes no first-use
+  check. A pending request of the handle (:832) wins over the first-use check (:836).
+- MC on the dense route: refused by AssemblyStageClient::new when it is the first-use check (:516-526,
+  Configuration), and by Engine::prepare_multi when a check is requested (engine.rs:799-827).
+- MC is prepared lazily: Engine::verify calls prepare_multi at the first MC check (engine.rs:717-719), which builds
+  CheckColourings::from_parts (multi.rs:153-244; allocates c1, rank, members, offsets, the injectivity sort) and
+  the row marks (engine.rs:825). The module doc (assembly.rs:92-99) promises that the sequential routes allocate
+  nothing after AssemblyStageClient::new; with MC as the default first-use check that promise would break at the
+  first linearization unless the colourings are prepared in new(). To be decided in the change (entry 2).
+
+HOW A ROUTE IS KNOWN AT CONSTRUCTION
+- AssemblyOptions.route: ColumnRoute::{Dense, Coloured(SparsityPattern)} (assembly.rs:246-254, :310), fixed by the
+  constructor the caller uses (dense() or coloured(pattern)), i.e. when the options are made, before the client.
+- "Banded" is the coloured route with a band back end: LinearBackend::{BandedProtected, BandedTight}
+  (assembly.rs:293-305); AssemblyStageClient::new refuses the dense route on a band back end (:539-557) and a
+  pattern outside the band. So MC applies to the coloured and the banded clients (a declared pattern exists) and
+  not to the dense route (no pattern). The back end is only known at AssemblyStageClient::new(n, backend, options).
+
+WHICH TESTS DEPEND ON THE DEFAULT
+- No existing test reads the implicit default of a constructor and then asserts on the check: the shared helper
+  ClientSpec::options (tests/stage_clients_assembly_problems.rs:586-602) always calls with_first_use_check with an
+  explicit check; check_corpus.rs:523-533, check_measure.rs:206-221 and check_mc.rs:184 set CheckColumns::None.
+- Tests that name today's default explicitly, CheckColumns::Sample(AssemblyOptions::DEFAULT_CHECK_COLUMNS):
+  identity.rs:57 (spec() of the V08 contract tests), alloc.rs:162 (spec() of the allocation test), measure.rs:126
+  and :256 (the V08 measurement program; frozen evidence of V08, not to be edited), check_measure.rs:128 and
+  check_corpus.rs:93 (the arm S8 of V26). They keep passing: they configure Sample(8) themselves.
+- A comment that calls Sample(8) the default: identity.rs:608 ("The default first-use check runs once, at the
+  first linearization.", block :608-622 asserts (verifications, verified_columns) = (1, 8) for a client built by
+  spec(), i.e. with an explicit Sample(8) on the coloured route).
+- The implicit default without an assertion on the check: identity.rs:1034-1060 (refused configurations; :1060 a
+  coloured client on a wider band is accepted). The outcome stays as long as new() accepts the coloured default.
+- Outside this node's write paths: research/production_loop_20261116/jacobian_assembly/runner/src/main.rs:133-142
+  (V08 facade-identity runner) builds AssemblyOptions::dense()/coloured() without with_first_use_check; its banded
+  case will run MC at first use after the change (its verification_rhs_calls change, its bit comparison with the
+  facade does not).
+
+PLAN (order is part of the evidence)
+0. this file (commit).
+1. Commit A, before any edit of the client: a recording program tests/stage_clients_assembly_default_record.rs
+   (ignored test, env-driven, JSON lines) that builds every client with the DEFAULT options (dense()/coloured(),
+   threaded(), with_fingerprints(); never with_first_use_check) and records
+   (a) the five V08 identity cells (arms prot, seq, t1, t2, t4, t6; nlkpp-band-n4096-r24 on both band back ends):
+       fingerprints of every linearization point and assembled Jacobian, final state and time bits, every counter
+       of the run (WorkCounters) and of the client (AssemblyStats), the default check in use;
+   (b) the decision of the default first-use check on the V26 corpus (the cases of check_corpus.rs:117-460,
+       transcribed; equality of case ids, orders, declared entries and omissions with the V26 logs checked by the
+       parser): the first linearization of a fresh default client (what a driver run does) and verify(t0, y0,
+       options.first_use_check) on a fresh default client (the V26 convention), executions seq and t6 on every
+       group, t3 on the controls.
+   Logs under assembly_default/logs/ with the binary's sha256; the program file is not changed after commit A.
+2. The change (assembly.rs, assembly/engine.rs if needed): the default per route, rustdoc of the default and of
+   CheckColumns (what MC detects on the frozen V26 corpus, what it misses: pairwise cancelling undeclared couplings
+   and entry collapse, ledger L-0338, review_probe), FA or FA_P as the exact choice up to rounding.
+3. New tests (tests/stage_clients_assembly_default.rs): the default per route (coloured, banded, dense), the
+   default detects what MC detects (small corpus), bits of the default equal to an unchecked client.
+4. Recording again with the changed code (same program), the V26 corpus decisions of the default against the V26
+   MC and S8 decisions, checks (stage_clients_* tests, sentinels, clippy, fmt, loop checker), RESULTS.json and
+   REPORT_KO.md from a parser.
