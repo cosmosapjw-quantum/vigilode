@@ -9,6 +9,7 @@
 #                                                logs/corpus_<label>_<first group>.log
 #   run.sh unit                                  the tests of this node with their output, logs/unit.log
 #   run.sh checks                                tests, sentinels, clippy, fmt, loop checker, logs/checks.log
+#   run.sh checker-all                           every complaint of the loop checker, logs/checker_all.log
 #
 # Labels: A = commit A (the code before the change), B = after the change.
 # Cells: nlkpp-dense-n400 nlkpp-band-n4096-r24 bruss1d-n131072 bruss1d-n128-dense bruss1d-n128-coloured
@@ -104,6 +105,20 @@ unit)
         run taskset -c "$CPUS" cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators \
             --test stage_clients_assembly_default --test stage_clients_assembly_default_alloc -- --nocapture
         echo "# date at end: $(date --iso-8601=seconds)"
+    } >"$log" 2>&1
+    echo "$log"
+    ;;
+checker-all)
+    # The loop checker without stopping at its first complaint (checker_all.py).
+    cd "$ROOT"
+    log="$LOGS/checker_all.log"
+    {
+        echo "# node V29 log"
+        echo "# date: $(date --iso-8601=seconds)"
+        echo "# git head: $(git -C "$ROOT" rev-parse HEAD)"
+        echo "# git status (tracked changes): $(git -C "$ROOT" status --porcelain --untracked-files=no | wc -l)"
+        echo "# command: python3 -I research/production_loop_20261116/assembly_default/checker_all.py"
+        run python3 -I research/production_loop_20261116/assembly_default/checker_all.py
     } >"$log" 2>&1
     echo "$log"
     ;;
