@@ -1097,25 +1097,22 @@ where
     let next = AtomicUsize::new(0);
     let first_failure = AtomicUsize::new(usize::MAX);
     pool.install(|| {
-        scratch
-            .par_iter_mut()
-            .with_max_len(1)
-            .for_each(|worker| {
-                worker.state.copy_from_slice(items.y);
-                worker.mark.fill(0);
-                loop {
-                    let item = next.fetch_add(1, Ordering::Relaxed);
-                    if item >= items.count || item > first_failure.load(Ordering::Relaxed) {
-                        break;
-                    }
-                    worker.evaluations += 1;
-                    if let Err(failure) = check(item, worker) {
-                        first_failure.fetch_min(item, Ordering::Relaxed);
-                        worker.failure = Some((item, failure));
-                        break;
-                    }
+        scratch.par_iter_mut().with_max_len(1).for_each(|worker| {
+            worker.state.copy_from_slice(items.y);
+            worker.mark.fill(0);
+            loop {
+                let item = next.fetch_add(1, Ordering::Relaxed);
+                if item >= items.count || item > first_failure.load(Ordering::Relaxed) {
+                    break;
                 }
-            });
+                worker.evaluations += 1;
+                if let Err(failure) = check(item, worker) {
+                    first_failure.fetch_min(item, Ordering::Relaxed);
+                    worker.failure = Some((item, failure));
+                    break;
+                }
+            }
+        });
     });
     let mut first: Option<(usize, BuildFailure)> = None;
     for worker in scratch.iter_mut() {
