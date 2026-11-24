@@ -619,8 +619,8 @@ def fmt(value, digits=3):
     return str(value)
 
 
-def seconds(ns):
-    return None if ns is None else ns / 1e9
+def millis(ns):
+    return None if ns is None else ns / 1e6
 
 
 ARM_NAMES = {
@@ -661,31 +661,81 @@ def render_report(results):
     add("- 기본값은 바뀌지 않았다: 첫 사용 검사는 여전히 `CheckColumns::Sample(8)`이다. 새 검사는 "
         "`CheckColumns::AllPooled`, `MultiColouring`, `MultiColouringPooled` 선택지로만 존재한다. 기본값 결정은 소유자 몫이다.")
     add("")
+    add("### 핵심 숫자 (첫 선형화 = 빌드 + 검사, 셀마다)")
+    add("")
+    add("| 셀 | n | 빌드 RHS | S8 검사 RHS | FA 검사 RHS | MC 검사 RHS | 명령어 배수 (빌드 대비) S8 / FA / MC | "
+        "벽시계 S8 / FA / FA_P(6) / MC (ms) |")
+    add("|---|---|---|---|---|---|---|---|")
+    timing_medians = {}
+    for key, row in cost["wall_multiples"].items():
+        cell, what, arm = key.split("|")
+        ref = row.get("vs_sequential_reference")
+        if what == "verify" and ref:
+            timing_medians[(cell, arm)] = ref
+    for cell, data in cost["summary"].items():
+        arms = data["arms"]
+        n = results["cost"]["counts"][cell]["first_linearization"].get("FA@seq", {}).get("verified_columns")
+        def rhs(arm):
+            return fmt(arms.get(arm, {}).get("check_rhs"))
+        def mult(arm):
+            return fmt(arms.get(arm, {}).get("instructions_first_linearization_over_one_build"))
+        def wall(arm):
+            w = timing_medians.get((cell, arm))
+            return "-" if not w else f"{fmt(millis(w['arm_median_ns']))}{'' if w['authoritative'] else ' d'}"
+        mc = "MC@seq" if "MC@seq" in arms else None
+        add(f"| {cell} | {fmt(n)} | {fmt(data['one_build_rhs'])} | {rhs('S8@seq')} | {rhs('FA@seq')} | "
+            f"{rhs(mc) if mc else '적용 안 됨'} | {mult('S8@seq')} / {mult('FA@seq')} / {mult(mc) if mc else '-'} | "
+            f"{wall('S8@seq')} / {wall('FA@seq')} / {wall('FA_P@t6')} / {wall(mc) if mc else '-'} |")
+    add("")
+    add("d = diagnostic_only (품질 규칙 미충족 또는 2분 상한 때문에 횟수를 줄인 측정). 전체 실행(48회 시도)에 대한 배수는 5절.")
+    add("")
     add("### 셀별로 E, D, F를 지키는 가장 싼 팔")
     add("")
-    add("가장 싼 = 첫 선형화(빌드 + 검사)의 명령어 수(instructions:u, 1차 지표)가 가장 적은 팔. 검사 RHS 수와 벽시계 시간을 함께 적는다.")
+    add("후보 = E, D, F를 모두 지키는 팔 (FA, FA_P, MC, MC_P; MC는 선언된 패턴이 있는 경로에서만). "
+        "세 가지 척도로 따로 고른다: 검사가 부르는 우변 수 (결정적), 첫 선형화의 명령어 수 (instructions:u, 1차 지표; "
+        "스레드 팔은 rayon 회전 대기를 포함), 첫 선형화의 벽시계 중앙값 (A = 권위, d = diagnostic_only).")
     add("")
-    add("| 셀 | 가장 싼 팔 | 검사 RHS | 첫 선형화 명령어 / 검사 없는 빌드 | 비교: FA (순차) 검사 RHS, 명령어 배수 |")
+    add("| 셀 | 우변 수 최소 | 명령어 최소 | 벽시계 최소 | FA (순차): 우변 수, 명령어 / 빌드, 벽시계 / 빌드 |")
     add("|---|---|---|---|---|")
+    cheapest = results["verdicts"].setdefault("cheapest", {})
     for cell, data in cost["summary"].items():
-        candidates = []
+        rows = []
         for arm, row in data["arms"].items():
-            if arm not in keeps:
+            if arm not in keeps or not all(keeps[arm].values()) or row.get("check_rhs") is None:
                 continue
-            if not all(keeps[arm].values()):
-                continue
-            ins = row.get("instructions_first_linearization")
-            if ins is None:
-                continue
-            candidates.append((ins, arm, row))
-        if not candidates:
-            add(f"| {cell} | (명령어 측정 없음) | - | - | - |")
+            wall = cost["wall_multiples"].get(f"{cell}|verify|{arm}", {}).get("vs_sequential_reference")
+            rows.append((arm, row, wall))
+        if not rows:
+            add(f"| {cell} | - | - | - | - |")
             continue
-        candidates.sort()
-        ins, arm, row = candidates[0]
-        fa = data["arms"].get("FA@seq", {})
-        add(f"| {cell} | {arm} | {fmt(row.get('check_rhs'))} | {fmt(row.get('instructions_first_linearization_over_one_build'))} | "
-            f"{fmt(fa.get('check_rhs'))}, {fmt(fa.get('instructions_first_linearization_over_one_build'))} |")
+        by_rhs = min(rows, key=lambda r: (r[1]["check_rhs"], r[0]))
+        with_ins = [r for r in rows if r[1].get("instructions_first_linearization") is not None]
+        by_ins = min(with_ins, key=lambda r: r[1]["instructions_first_linearization"]) if with_ins else None
+        with_wall = [r for r in rows if r[2] is not None]
+        by_wall = min(with_wall, key=lambda r: r[2]["arm_median_ns"]) if with_wall else None
+        fa = next((r for r in rows if r[0] == "FA@seq"), None)
+        cheapest[cell] = {
+            "by_check_rhs": by_rhs[0],
+            "by_instructions": by_ins[0] if by_ins else None,
+            "by_wall": by_wall[0] if by_wall else None,
+            "by_wall_label": by_wall[2]["label"] if by_wall else None,
+        }
+        def wall_text(r):
+            if r is None:
+                return "-"
+            w = r[2]
+            return f"{r[0]} ({fmt(millis(w['arm_median_ns']))} ms, {'A' if w['authoritative'] else 'd'})"
+        fa_text = "-"
+        if fa:
+            w = fa[2]
+            fa_text = (f"{fmt(fa[1]['check_rhs'])}, {fmt(fa[1].get('instructions_first_linearization_over_one_build'))}, "
+                       f"{fmt(w['ratio']) if w else '-'}")
+        add(f"| {cell} | {by_rhs[0]} ({fmt(by_rhs[1]['check_rhs'])}) | "
+            f"{by_ins[0] + ' (' + fmt(by_ins[1].get('instructions_first_linearization_over_one_build')) + ' x 빌드)' if by_ins else '-'} | "
+            f"{wall_text(by_wall)} | {fa_text} |")
+    add("")
+    add("모든 셀에 적용되는 하나의 팔로 읽으면 MC는 조밀 경로(선언된 패턴 없음)에 적용되지 않으므로 FA와 FA_P만 남는다. "
+        "셀별 선택은 표에 있다.")
     add("")
     add("## 2. 팔 (PREDECLARED arms)")
     add("")
