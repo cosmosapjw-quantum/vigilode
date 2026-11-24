@@ -1,0 +1,109 @@
+NOTES of node V28_MF_P1_BUDGET_FOLLOWUP (loop L1, wave 3, group 9; owner decision OD-L1-23; addendum A9)
+worktree /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v28
+branch   research/production-loop-20261116-w3-v28, base e36fc6f4
+target   CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v28
+frozen   mf_p1_budget/PREDECLARED.json (sha256 fce3ba98b0878107f0eb58d6b4663cd64601066b3e5d4d342c0a8245834467b2 per A9);
+         not edited
+
+== 2026-11-24 23:56 KST: step 0 (written before any edit of a source file and before any run) ==
+State found: mf_p1_budget/ holds only the frozen PREDECLARED.json; tree clean at e36fc6f4. Host: 1-minute load 4.0,
+two rustc processes of other agents.
+
+1. WHAT IS TESTED
+
+   Rule B of the adaptive stage solve P1 (MfStageSolvePolicy::ColumnTested) alone, against the shipped policy S
+   (MfStageSolvePolicy::Shipped), on the 40 deciding cells of V25 (ac3d, robertson_rd1d, schnakenberg2d, porous2d)
+   and V24 (fhn3d, cusp1d, burgers2d, bruss1d), five tolerances each, rtol = atol.
+   K: no replayed stage system on which P1 exhausts the Krylov budget and S does not (both trajectories, every cell).
+   V: 0 threshold violations by a completed P1 solve in the replay.
+   T: 320 pairs of perturbed runs; W = #pairs with d > 0, n = #pairs with d != 0, d = budget-exhausting solves of P1
+      minus those of S; T holds iff P(X >= W) >= 0.05, X ~ Bin(n, 1/2) (n = 0: holds).
+   SWITCH iff K, V and T hold (then step 6 of V25 with D0, G, R; HOLD if G or R fails); KEEP if K or T fails and V
+   holds; KILL if V fails.
+
+2. WHERE THE BUDGET EXHAUSTION IS COUNTED (reused, not re-derived)
+
+   Driver (the count of discriminator B of V24/V25 and of T here):
+     crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs
+       :185-187   MfStageSolveStatistics::budget_exhausted_solves ("attempts that failed in a stage solve whose Krylov
+                  budget was used up (the kernel error `GMRES exhausted ...`)")
+       :1747-1756 Rodas5pMfFastWorkspace::note_linear_failure: an attempt whose outcome is
+                  Err(CoreError::LinearSolve(text)) with text starting "GMRES exhausted" adds 1 to
+                  budget_exhausted_solves, any other LinearSolve error adds 1 to other_linear_failures
+       :2891, :2913 the two call sites (after every attempt, telemetry off / on)
+       :2429      the statistics are reset at the start of every integration
+       :1730      stage_solve_policy_statistics() returns them
+   Kernel error texts: crates/rodas5p-krylov/src/gmres_into.rs:309 (shipped kernel, solve_gmres_into_with_accounting)
+     and crates/rodas5p-krylov/src/gmres_staged.rs:1187 (column-tested kernel, solve_column_tested_into), both
+     "GMRES exhausted {} Arnoldi vectors".
+   V25 read the count from policy_statistics.budget_exhausted_solves of its audit runs
+     (mf_p1_confirm/parse_results.py:301, :370); this node reads the same field of the same statistics.
+   Replay classification (K): Replay::of of crates/rodas5p-integrators/tests/mf_confirm_measure.rs:889-898, unchanged:
+     Ok -> Solved(columns), Err(LinearSolve(text)) with text starting "GMRES exhausted" -> Budget, other Err -> Other.
+     "P1 exhausts and S does not" = P1 is Budget and S is Solved or Other.
+
+3. HOW THE V24 FAMILIES ENTER THE TARGET
+
+   crates/rodas5p-integrators/tests/mf_budget_measure.rs includes the V25 generators with
+   #[path = "mf_confirm_problems.rs"] mod problems; that module already includes the V17/V24 generators as
+   `pub mod v17` (#[path = "stage_clients_krylov_v17_problems.rs"]), which in turn includes the V06 generators
+   (`v17::v06`). So:
+     V25 cells: problems::declared(id) with the final span of mf_p1_confirm/PROTOCOL.json (problems::with_end), as
+                mf_confirm_measure.rs::family does with V25_T1 (ac3d 1.0, robertson_rd1d 320.0, schnakenberg2d 1.0,
+                porous2d 0.1);
+     V24 cells: problems::v17::declared(id), as mf_adaptive_measure.rs::family does (spans of the generator: fhn3d 40,
+                cusp1d 0.7, burgers2d 0.5, bruss1d 10).
+   The integrator configuration of both sets is the same function, problems::adaptive (= v17::adaptive), and the linear
+   configuration RoutingOptions::default().matrix_free (GMRES, restart 40, budget 200, rtol 1e-10, atol 1e-14, zero
+   start, no preconditioner). The 40 cells get a fixed index 0..39 in a table of the target (V25 cells 0-19 in the
+   order ac3d, robertson_rd1d, schnakenberg2d, porous2d x rtol 1e-3..1e-7, then V24 cells 20-39 in the order fhn3d,
+   cusp1d, burgers2d, bruss1d x rtol 1e-3..1e-7); a run names only V28_CELL, the target derives family, span and
+   tolerance from the table, and PROTOCOL.json lists the same table.
+
+4. HOW THE PERTURBATION IS GENERATED (T)
+
+   For cell index c (0..39), trajectory j (1..8) and component i (0..n-1):
+     seed  = (c << 48) | (j << 32) | i                       (injective for c, j < 2^16, i < 2^32)
+     z     = first output of SplitMix64 started at state seed (problems::SplitMix64::next_u64 of
+             mf_confirm_problems.rs:386-392, unchanged: state += 0x9e3779b97f4a7c15, then the two xor-shift-multiply
+             rounds)
+     xi    = 2 ((z >> 11) 2^-53) - 1                         (problems::SplitMix64::symmetric, :395-398: linear map of
+             the top 53 bits onto [-1, 1))
+     y0_i <- y0_i * (1.0 + 1.0e-8 * xi)                      (f64, this order of operations)
+   j = 0 is the unperturbed start (no draw); it is used only for the reproduction check below, not for T.
+   S and P1 of a pair start from the bitwise same perturbed state; the log records the sha256 of that state.
+
+5. PLAN OF THE FILES AND THE ORDER OF WORK
+
+   crates/rodas5p-integrators/tests/mf_budget_measure.rs   (new) measurement target, modes:
+     CELLS   prints the table of the 40 cells (index, family, n, span, rtol, atol) from the generators
+     SETUP   builds the cell (nothing else)
+     RUN     one arm (S or P1, named explicitly) of one cell from the start perturbed with V28_J (0 = unperturbed),
+             through the workspace configured as the policy entry (gmres_into on, policy named, no observer);
+             prints the run record with MfStageSolveStatistics (budget_exhausted_solves), attempts, counters, the
+             sha256 of the start and of the end state, and the end state as hex
+     SHADOW  one arm of one cell (unperturbed) through the workspace with the solve log and an attempt observer that
+             rebuilds every stage system of the run (completed solves and the solve in which an attempt failed; the
+             replay of V25, mf_confirm_measure.rs:913-1226, in substance unchanged) and solves each again with the
+             shipped kernel and the P1 kernel from the zero start; for every system it writes one line to a
+             per-system log (gzip, kept): outcome of both kernels, the independent true residual
+             ||rhs - (U - h gamma J U)||_2 of every returned iterate and the stage threshold
+             max(gamma atol_lin rounded down, rtol_lin ||rhs||_2) (the formula of ProtectedAudit / SolveRecorder);
+             the run prints a summary with the same counts for a cross-check.
+   research/production_loop_20261116/mf_p1_budget/
+     PROTOCOL.json            the 40 cells, the commands, the generator code, the binary hash; committed before any run
+     run_measurements.py      one process per run, raw logs under logs/<phase>/ (the runner of V25, adapted)
+     parse_results.py         RESULTS.json from the raw logs only; renders REPORT_KO.md (Korean) by a script
+     logs/plumbing/           toy-problem check before the protocol commit (dev_* instances only, outside the 40 cells)
+     logs/replay/             K and V (80 SHADOW runs: 40 cells x trajectories S, P1)
+     logs/ensemble/           T (640 RUN runs: 40 cells x j = 1..8 x arms S, P1) and the reproduction check (j = 0)
+   Order: NOTES (this commit) -> target + PROTOCOL.json (+ plumbing on dev_* only) -> replay -> ensemble -> parser,
+   RESULTS.json, REPORT_KO.md -> step 6 only on SWITCH -> checks.
+
+   Reproduction check (reported, decides nothing): the driver's run inside each SHADOW run and the j = 0 RUN runs
+   must reproduce the recorded end-state sha256, attempts and budget counts of V25 (mf_p1_confirm/logs/record_a,
+   audit runs) and V24 (mf_adaptive/logs/d0 for S, mf_adaptive/logs/exploratory for P1).
+   Error ratio per pair (report without rule): the V17 metric E = max_i |y_i - ref_i| / (1 + |ref_i|) of each run of a
+   pair against the unperturbed reference of its family (V25: mf_p1_confirm/reference/<id>.json; V24:
+   mf_stage_solve/reference/<id>.json), ratio E_P1 / E_S; the perturbation of the start (relative 1e-8) is not
+   removed from the reference, which is stated next to the numbers.
