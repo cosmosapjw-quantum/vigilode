@@ -1762,7 +1762,7 @@
       "depends": [
         "V25_MF_P1_CONFIRMATION"
       ],
-      "status": "PLANNED",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Rule B of the matrix-free stage solve P1 tested alone (owner decision OD-L1-23): replay of identical stage systems (K) and perturbed trajectory ensembles (T) on the 40 deciding cells of V25 and V24; SWITCH of the default to P1 if K, V and T hold, then G and R as in V25.",
       "write_allowlist": [
         "research/production_loop_20261116/mf_p1_budget/**",
@@ -1788,15 +1788,18 @@
         "tolerances/controller constants",
         "stage threshold of the linear solve"
       ],
-      "evidence": [],
-      "state_note": "Pre-registered 2026-11-24 (addendum A9). Builder node."
+      "evidence": [
+        "research/production_loop_20261116/mf_p1_budget/RESULTS.json",
+        "research/production_loop_20261116/mf_p1_budget/REVIEW.json"
+      ],
+      "state_note": "Frozen verdict KEEP (ledger L-0340): K PASS (0 of 94126 replayed stage systems on which only P1 exhausts the Krylov budget, 0 the other way, 377 exhausted by both), V PASS (0 violations in 93749 completed P1 solves, largest residual/threshold 0.999991), T FAIL (320 perturbed pairs, W = 25 of n = 30 non-zero pairs, all in robertson_rd1d, P = 1.62e-4 < 0.05). D0, G and R not run. P1 stays opt-in; no default, protected or library file changed. Independent review accept_with_corrections (F1-F5 minor, notice in REPORT_KO.md). Merged (2f214eb1)."
     },
     {
       "id": "V29_ASSEMBLY_DEFAULT_MC",
       "depends": [
         "V26_ASSEMBLY_FULL_CHECK"
       ],
-      "status": "PLANNED",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Owner decision OD-L1-24: the default first-use pattern check of the opt-in AssemblyStageClient becomes the multi-colouring check on the routes where it applies; the dense route keeps Sample(8); FA, FA_P and MC_P stay selectable; the documentation states the limits of MC (L-0338).",
       "write_allowlist": [
         "crates/rodas5p-integrators/src/stage_clients/assembly.rs",
@@ -1824,8 +1827,11 @@
         "tolerances/controller constants",
         "stage threshold of the linear solve"
       ],
-      "evidence": [],
-      "state_note": "Recorded 2026-11-24 (OD-L1-24). Builder node."
+      "evidence": [
+        "research/production_loop_20261116/assembly_default/RESULTS.json",
+        "research/production_loop_20261116/assembly_default/REVIEW.json"
+      ],
+      "state_note": "PASS (ledger L-0341): the default first-use check of the assembly client is MultiColouring on the coloured route (band back ends included, any execution) and Sample(8) on the dense route; the 36 identity runs of node V08 keep their Jacobian, state and output bits, only the first-use check counters change (18, 59, 150 right-hand sides, +1 threaded); on the V26 corpus the default decides as MC in 9693 of 9693 decisions; suites, clippy and fmt pass. Independent review accept_with_corrections (F1-F7 minor; F4: MC can cost more than n right-hand sides on wide declared bands, stated in the rustdoc by 0b24be8c; taking All there is an owner decision). Merged (2eb2aeed)."
     }
   ],
   "execution_policy": "Resume ready bounded tasks; research/implementation may overlap only with disjoint writes. Qualification dependencies restrict promotion, not safe opt-in refactoring.",

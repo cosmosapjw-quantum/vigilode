@@ -8,10 +8,13 @@ logs of node V08 (jacobian_assembly/logs/identity_<cell>.log), the corpus logs o
 base commit to list the edited test lines. Writes RESULTS.json (strict JSON) and REPORT_KO.md.
 
     python3 -I research/production_loop_20261116/assembly_default/parse_results.py
+    python3 -I research/production_loop_20261116/assembly_default/parse_results.py --report-only
+        (re-renders REPORT_KO.md from the committed RESULTS.json; RESULTS.json is not rewritten)
 """
 import json
 import re
 import subprocess
+import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -132,11 +135,13 @@ def compare_identity(a_runs, b_runs, cells_b):
             mismatches.append({"key": list(key), "field": "missing in B"})
             continue
         if arm == "prot":
+            # Review correction F7 (2026-11-25): the label is computed from this row's mismatches.
+            before_prot = len(mismatches)
             for field in PROTECTED_FIELDS:
                 if a.get(field) != b.get(field):
                     mismatches.append({"key": list(key), "field": field, "A": a.get(field), "B": b.get(field)})
             rows.append({
-                "cell": cell, "backend": backend, "arm": arm, "bits_equal": True,
+                "cell": cell, "backend": backend, "arm": arm, "bits_equal": len(mismatches) == before_prot,
                 "jacobian_fingerprint": a["jacobian_fingerprint"], "state_fingerprint": a["state_fingerprint"],
                 "final_fingerprint": a["final_fingerprint"], "t_end_bits": a["t_end_bits"],
             })
@@ -549,6 +554,13 @@ def edited_lines():
 # ---------------------------------------------------------------------------------------------
 
 def main():
+    if "--report-only" in sys.argv[1:]:
+        # Re-render REPORT_KO.md from the committed RESULTS.json (added 2026-11-25 for the review's correction
+        # notice); RESULTS.json is not rewritten.
+        results = json.loads((HERE / "RESULTS.json").read_text(encoding="utf-8"))
+        (HERE / "REPORT_KO.md").write_text(render(results), encoding="utf-8")
+        print("REPORT_KO.md rendered from the committed RESULTS.json")
+        return
     a_runs, a_cells, a_headers = identity_records("A")
     b_runs, b_cells, b_headers = identity_records("B")
     identity_rows, identity_mismatches = compare_identity(a_runs, b_runs, b_cells)
@@ -743,6 +755,31 @@ def render(results):
     add("이 보고서는 `parse_results.py`가 `logs/`의 원시 로그(기록 A와 B, unit.log, checks.log), V08 동일성 로그, "
         "V26 코퍼스 로그와 L-0338 리뷰 probe 로그만 읽어 `RESULTS.json`과 함께 생성했다. 숫자를 손으로 적지 않았다. "
         f"기준 커밋 `{results['base_commit'][:8]}`, 생성 시점 HEAD `{results['head_at_parse'][:8]}`.")
+    add("")
+    add("**정정 고지 (2026-11-25, 독립 리뷰 `REVIEW.json`, 판정 accept_with_corrections).** 리뷰어가 원시 로그에서 네 "
+        "판별 기준(비트 불변, 경로별 기본값, 코퍼스 검출, 테스트 묶음)을 다시 계산해 모두 PASS로 같게 얻었습니다. 아래 일곱 "
+        "가지를 바로잡습니다. 아래 수치는 리뷰의 확인입니다.")
+    add("")
+    add("1. clippy는 `stage_clients_assembly_*` 대상 10개(11개가 아님)에 대해 실행되었습니다(경고 0).")
+    add("2. V26 기준 arm의 대응(seq는 MC@seq, t6과 t3은 MC@t6, 조밀 경로는 S8@seq와 S8@t3)은 실행 뒤 이 파서(`fbcd44de`)에서 "
+        "처음 고정되었습니다. NOTES 1항목은 'V26의 MC와 S8 결정'만 적었습니다. B의 채색 경로 결정은 MC@seq와도 MC@t6과도 "
+        "9689/9689 같으므로 결과에 영향이 없습니다. PROTOCOL.json은 쓰지 않았습니다.")
+    add("3. '기존 테스트는 모두 검사를 명시한다'는 문장은 틀렸습니다. `stage_clients_assembly_identity.rs:1034-1060`은 검사를 "
+        "명시하지 않고 클라이언트를 만듭니다. 검사나 그 횟수를 단언하지 않으므로 고칠 필요가 없었습니다. 맞는 문장: 검사나 그 "
+        "횟수를 단언하는 기존 테스트는 모두 검사를 명시합니다.")
+    add("4. 넓은 선언 밴드에서는 MC의 그룹 수(우변 평가 수)가 `n`을 넘을 수 있습니다. 리뷰의 무작위 밴드 패턴 75개(반폭 0.2n~0.45n) "
+        "중 59개에서 넘었고 최대 1.85n이었습니다(주 세션이 리뷰 probe로 재현). 이때는 전체 검사 `All`이 더 싸고 반올림 범위에서 "
+        "정확합니다. 병합 뒤 문서 커밋에서 rustdoc에 이 사실을 적었습니다. 이 경우 기본값을 `All`로 바꿀지는 소유자 결정입니다.")
+    add("5. CI에서 도는 테스트 `the_default_decides_as_the_multi_colouring_check_on_part_of_the_v26_corpus`는 4846개 중 527개 "
+        "사례만 다룹니다. 전체 코퍼스 대조는 `run.sh`로 재현할 수 있는 1회 기록(무시된 프로그램 `v29_record`와 이 파서)입니다. "
+        "CI의 ignored-tests job은 `v29_record`를 `V29_MODE` 없이 실행하므로 사용법만 출력합니다.")
+    add("6. '유일한 미검출은 알려진 반올림 한계 사례'는 verify 경로에 대한 말입니다. 첫 사용 경로에서는 `controls/impure16-dense`도 "
+        "seq에서 통과합니다. 순차 조밀 경로는 첫 사용 검사를 하지 않기 때문이고, 이 동작은 바뀌지 않았습니다"
+        "(`RESULTS.json`의 `corpus.first_use_path_misses_B`, 3건).")
+    add("7. 이 파서는 prot 행의 `bits_equal`을 무조건 true로 적었습니다. 불일치는 여전히 `bits_ok`에 들어가고 리뷰의 전수 비교에서 "
+        "prot 차이는 없었으므로 보고된 결과는 틀리지 않았습니다. 파서는 이제 그 행의 불일치 수로 계산합니다. 커밋된 "
+        "`RESULTS.json`은 다시 만들지 않았습니다. 전체 재실행은 `head_at_parse`와 실행 시점의 루프 검사기 필드를 바꾸기 때문입니다. "
+        "이 보고서는 `parse_results.py --report-only`로 커밋된 `RESULTS.json`에서 다시 렌더링했습니다.")
     add("")
     add("## 1. 결론")
     add("")

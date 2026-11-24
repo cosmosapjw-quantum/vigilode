@@ -1,0 +1,126 @@
+{
+ "schema": "vigilode.loop.build-return.v1",
+ "node": "V28_MF_P1_BUDGET_FOLLOWUP",
+ "run_id": "wf_57f3f273-576",
+ "build": {
+  "status": "done",
+  "summary": "V28 ran as pre-registered and gave the frozen verdict KEEP: V holds, T fails. No default or protected file changed, and step 6 of V25 was not run.\n\nK PASS: none of the 94,126 replayed stage systems had P1 exhausting the budget while S did not. Both kernels exhausted it on the same 377 systems (robertson_rd1d and cusp1d).\nV PASS: 93,749 completed P1 solves with 0 violations; the largest residual-to-threshold ratio was 0.999991.\nT FAIL: over 320 pairs, d was nonzero only in robertson_rd1d. W=25, n=30, P(X>=25)=1.62e-4, below 0.05. cusp1d had d=0 in all 40 pairs.\n\nThe unperturbed runs matched the V25 and V24 recordings in all 80 rows. PROTOCOL.json was committed at 1db2ca36, before any cell run, and all 801 logs use one binary (d80edd53). All checks pass.",
+  "checks": [
+   {
+    "name": "contract tests of mf_budget_measure (development instances only)",
+    "command": "cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test mf_budget_measure",
+    "exit_code": 0,
+    "result": "3 passed, 1 ignored (v28_run)"
+   },
+   {
+    "name": "clippy -D warnings, library + new target",
+    "command": "cargo +1.94.1 clippy --locked -j 4 --release --no-deps -p rodas5p-integrators --lib --test mf_budget_measure -- -D warnings",
+    "exit_code": 0,
+    "result": "clean"
+   },
+   {
+    "name": "rustfmt",
+    "command": "cargo +1.94.1 fmt -p rodas5p-integrators -p vigilode -- --check",
+    "exit_code": 0,
+    "result": "clean"
+   },
+   {
+    "name": "loop checker",
+    "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+    "exit_code": 0,
+    "result": "PASS, no complaint"
+   },
+   {
+    "name": "strict JSON",
+    "command": "json.load with NaN/Infinity rejected on PREDECLARED.json, PROTOCOL.json, RESULTS.json, CHECKS.json",
+    "exit_code": 0,
+    "result": "all strict"
+   },
+   {
+    "name": "RESULTS.json regenerates identically",
+    "command": "python3 -I research/production_loop_20261116/mf_p1_budget/parse_results.py --check",
+    "exit_code": 0,
+    "result": "RESULTS.json and REPORT_KO.md byte-identical"
+   },
+   {
+    "name": "cell table",
+    "command": "run_measurements.py cells (V28_MODE=CELLS)",
+    "exit_code": 0,
+    "result": "40 cells built, 0 mismatches with PROTOCOL.json"
+   }
+  ],
+  "discriminators": [
+   {
+    "name": "K identical-system replay",
+    "frozen_threshold": "no replayed system on which P1 exhausts the budget and S does not",
+    "measured": "0 of 94126 systems (80 runs); 0 the other way round; 377 exhausted by both; 0 coverage issues",
+    "verdict": "PASS"
+   },
+   {
+    "name": "V threshold violations of P1 in replay",
+    "frozen_threshold": "0 violations",
+    "measured": "0 of 93749 completed P1 solves (independent residual and kernel report); max ratio 0.999991",
+    "verdict": "PASS"
+   },
+   {
+    "name": "T perturbed ensemble, one-sided binomial",
+    "frozen_threshold": "P(X>=W) >= 0.05, X~Bin(n,1/2)",
+    "measured": "320 pairs, W=25, n=30 (all robertson_rd1d), P=174437/1073741824=1.62e-4",
+    "verdict": "FAIL"
+   },
+   {
+    "name": "D0 after switch",
+    "measured": "not run: verdict is not SWITCH",
+    "verdict": "NOT_RUN"
+   },
+   {
+    "name": "G golden records",
+    "measured": "not run: verdict is not SWITCH",
+    "verdict": "NOT_RUN"
+   },
+   {
+    "name": "R suites after switch",
+    "measured": "not run: verdict is not SWITCH",
+    "verdict": "NOT_RUN"
+   }
+  ],
+  "verdict": "KEEP (frozen: V holds, T fails). Shipped policy S stays the default of the matrix-free route; P1 stays opt-in; no default or protected file changed.",
+  "open_issues": [
+   "The node directory is 41 MB, mostly end-state hex in logs/ensemble (23 MB). The parser needs it to compute the per-pair error ratios.",
+   "Plumbing (development instances only, before the protocol commit): the first contract-test run failed because dev_cusp1d had 2 attempts end on a non-finite stage right-hand side, a failure class not covered yet. The class 'elsewhere' was added and the tests passed. This is recorded in NOTES.txt.",
+   "Per-pair error ratios on cusp1d are dominated by the trajectory: the S error at rtol 1e-4 ranges from 1.4e-5 to 8e-4 across the 8 perturbations. These ratios are reported without a rule.",
+   "Observation, not a rule: the kernels behave identically on the same systems; P1's extra budget exhaustions on robertson_rd1d come with its trajectories (attempts ratio about 1.06)."
+  ],
+  "branch": "research/production-loop-20261116-w3-v28",
+  "head_commit": "3ecb11749f30ca60ffd68f3be40635c966d8793c",
+  "protocol_commit": "1db2ca366b4736988f504af8975df2079aa24f73",
+  "files_written": [
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v28/crates/rodas5p-integrators/tests/mf_budget_measure.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v28/research/production_loop_20261116/mf_p1_budget/NOTES.txt",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v28/research/production_loop_20261116/mf_p1_budget/PROTOCOL.json",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v28/research/production_loop_20261116/mf_p1_budget/build_protocol.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v28/research/production_loop_20261116/mf_p1_budget/run_measurements.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v28/research/production_loop_20261116/mf_p1_budget/parse_results.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v28/research/production_loop_20261116/mf_p1_budget/RESULTS.json",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v28/research/production_loop_20261116/mf_p1_budget/REPORT_KO.md",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v28/research/production_loop_20261116/mf_p1_budget/run_checks.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v28/research/production_loop_20261116/mf_p1_budget/CHECKS.json",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v28/research/production_loop_20261116/mf_p1_budget/logs/ (plumbing, cells, replay with *.systems.txt.gz, ensemble, reproduction, checks)"
+  ],
+  "key_numbers": [
+   "K: 0/94126 systems where only P1 exhausts the budget; 0 where only S does; 377 exhausted by both",
+   "V: 0 violations in 93749 completed P1 solves; max residual/threshold 0.999991",
+   "T: W=25, n=30, d<0 in 5 pairs, d=0 in 290; P(X>=25)=1.62e-4 < 0.05",
+   "robertson_rd1d budget-exhausting solves over the ensemble: S 290, P1 336; cusp1d: 1192 each",
+   "Reproduction: 80/80 unperturbed rows equal V25/V24 recordings",
+   "Binary sha256 d80edd53 (built at 41ab625b) for all 801 logs"
+  ],
+  "rulings": [
+   "Seed: (cell<<48)|(j<<32)|i; xi = first SplitMix64 output mapped to [-1,1) via the top 53 bits; start y0_i*(1+1e-8*xi). Cells indexed 0-19 (V25) and 20-39 (V24).",
+   "RUN and SHADOW use the policy-entry workspace configuration. The budget count comes from the driver's MfStageSolveStatistics (rodas5p_matrix_free_fast.rs:1747-1756).",
+   "K counts a system as a failure when P1 exhausts the budget and S either solves it or ends with another error. Replay coverage failures make K or V NOT_DECIDABLE, not FAIL.",
+   "For T, a run that ends with an error still counts with its statistics; a missing run or mismatched starts make T NOT_DECIDABLE. The 0.05 level is applied as the exact fraction 1/20.",
+   "Error ratio (reported without rule) is measured against the unperturbed V25/V17 references."
+  ]
+ }
+}

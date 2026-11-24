@@ -664,6 +664,22 @@ def report_text(results):
         "",
         "이 보고서는 `parse_results.py`가 `RESULTS.json`에서 만든 것입니다. 모든 수치는 실행된 원시 로그에서 계산되었습니다.",
         "",
+        "**정정 고지 (2026-11-25, 독립 리뷰 `REVIEW.json`, 판정 accept_with_corrections).** 리뷰어가 원시 로그를 자기 "
+        "스크립트로 다시 세어 동결 판정 KEEP(K PASS, V PASS, T FAIL)을 같게 얻었습니다. 아래 다섯 가지를 바로잡습니다. "
+        "아래 수치는 리뷰의 재계산입니다.",
+        "",
+        "1. K와 V의 '범위 문제 0건'은 재생할 계가 있는 단계에 대한 말입니다. cusp1d에서 시도를 끝낸 단계 69개(S 33, P1 36)는 "
+        "단계 우변이 유한하지 않아 선형 풀이가 시도되지 않았고, 재생할 계가 없었습니다. 이들은 해시로 고정된 측정 코드에 따라 "
+        "별도 부류(elsewhere, 드라이버의 nonfinite_step_failures와 같음)로 세며 재구성 실패가 아닙니다. K와 V는 그대로입니다.",
+        "2. 기록된 '엄격 JSON' 검사(`logs/checks/strict_json.log`)는 PREDECLARED.json, PROTOCOL.json, RESULTS.json 세 파일만 "
+        "다뤘습니다. CHECKS.json은 검사 뒤에 쓰였고, 리뷰가 따로 엄격 JSON임을 확인했습니다.",
+        "3. 노드 디렉터리 '41 MB'에는 추적되지 않는 `.mypy_cache`(9.0 MB)가 들어 있습니다. 커밋된 파일은 약 31.6 MB입니다"
+        "(ensemble 23 MB, replay 5.6 MB, reproduction 2.9 MB).",
+        "4. 빌더 작업 트리의 읽기 전용 경로(`mf_p1_confirm/`, `mf_stage_solve/`)에 git이 무시하는 `.mypy_cache`가 생겼습니다"
+        "(도구 hook으로 보임). 커밋되지 않았고 결과에 영향이 없습니다.",
+        "5. 실패한 첫 plumbing 실행(개발 인스턴스 dev_cusp1d, 유한하지 않은 단계 우변)의 출력은 보존되지 않았습니다. "
+        "프로토콜 커밋 전이었고 결정 셀은 관여하지 않았습니다. 내용은 `NOTES.txt` 1단계에 있습니다.",
+        "",
         "## 결론",
         "",
         f"- 동결된 판정: **{verdict['frozen_verdict']}** (K {verdict['discriminators']['K']}, "
