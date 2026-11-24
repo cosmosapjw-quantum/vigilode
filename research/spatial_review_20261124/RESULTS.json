@@ -19,6 +19,11 @@
     },
     "spatial_rows_example": {
       "cargo_check": "pass"
+    },
+    "longitude_preconditioner": {
+      "passed": 3,
+      "failed": 0,
+      "raw": "native_polar.log"
     }
   },
   "matrix_free_modes": [
@@ -334,6 +339,30 @@
       "other_linear_failures": 0,
       "policy": "mf-stage-solve-column-tested-doubling-v1",
       "rejected_steps": 1
+    }
+  ],
+  "native_polar_single_stage": [
+    {
+      "case": "inverse",
+      "sparse_direct_error_inf": 1.5543122344752192e-15,
+      "weighted_norm_ratio": 0.8799983689787343,
+      "weighted_relative_true_residual": 3.3512455338093254e-16
+    },
+    {
+      "arnoldi_columns": 90,
+      "case": "native_gmres",
+      "matvecs": 93,
+      "policy": "identity",
+      "preconditioner_apps": 93,
+      "true_relative_residual": 1.8562486078577122e-10
+    },
+    {
+      "arnoldi_columns": 30,
+      "case": "native_gmres",
+      "matvecs": 31,
+      "policy": "longitude",
+      "preconditioner_apps": 31,
+      "true_relative_residual": 5.858041911923475e-15
     }
   ]
 }

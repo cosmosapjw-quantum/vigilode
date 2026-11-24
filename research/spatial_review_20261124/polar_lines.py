@@ -85,3 +85,22 @@ if __name__ == "__main__":
     rows = [compare(nt, 0.1) for nt in (8,16,32)]
     out = dict(numpy=np.__version__,scipy=scipy.__version__,rows=rows)
     Path(__file__).with_name("polar_lines.json").write_text(json.dumps(out,indent=2)+"\n")
+
+    # Independent cyclic sparse-direct oracle for the native linear-time ring solver.
+    from scipy.sparse import block_diag
+    from scipy.sparse.linalg import spsolve
+    nt, nlon, sigma, k, radius = 8, 15, 0.1, 0.5, 1.0
+    b, p = np.pi/nt, 2*np.pi/nlon
+    shift = np.roll(np.eye(nlon),1,axis=1)
+    mat = 2*np.eye(nlon)-shift-shift.T
+    blocks=[]
+    for i in range(nt):
+        area = radius**2*p*(np.cos(i*b)-np.cos((i+1)*b))
+        coef = sigma*k*b/(area*np.sin((i+0.5)*b)*p)
+        blocks.append(np.eye(nlon)+coef*mat)
+    q = np.arange(nt*nlon)
+    rhs = np.sin(0.23*q)+0.2*np.cos(1.93*q)
+    x = spsolve(block_diag(blocks,format="csc"),rhs)
+    fixture = dict(n_theta=nt,n_phi=nlon,shift=sigma,kappa=k,radius=radius,inverse=x.tolist())
+    dest = Path(__file__).resolve().parents[2]/"crates/vigilode/tests/fixtures/longitude_inverse.json"
+    dest.write_text(json.dumps(fixture,indent=2)+"\n")

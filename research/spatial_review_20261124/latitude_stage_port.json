@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "scope": "Source-owned constant-coefficient spherical finite-volume diffusion, real positive Rosenbrock shift, identity mass",
+  "implemented": {
+    "geometry": "DiffusionGrid::sphere",
+    "native_left_inverse": "DiffusionGrid::longitude_preconditioner(sigma, rows)",
+    "native_krylov_interface": "rodas5p_core::Preconditioner",
+    "tested_native_consumer": "rodas5p_krylov::solve_gmres",
+    "complexity_per_application": "4 passes over every latitude with O(N) work; serial action uses output scratch only",
+    "independent_reference": "scipy.sparse.linalg.spsolve on a periodic block-diagonal matrix",
+    "one_stage_reference": "research/spatial_review_20261124/polar_lines.py"
+  },
+  "adaptive_driver": {
+    "state": "open",
+    "owner": "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+    "current_contract": "Protected JVP-only driver sets the identity preconditioner. The source-owned latitude operator cannot be recovered from an opaque JVP.",
+    "next_change": "Introduce an explicit opt-in factory on the typed spherical problem and an adaptive matrix-free driver entry that receives the factory. Build P from the current attempt's sigma=gamma*h, reuse across its stage solves, charge setup and applications, pass it through every GMRES branch; retain the underlying unpreconditioned true-residual check.",
+    "rollback": "Rebuild on any changed shift or geometry identity including a rejected attempt; discard unconfirmed stage state. A failed candidate can retry with the protected identity preconditioner from the same accepted checkpoint within the original work budget.",
+    "qualification": [
+      "Align RHS, Jacobian action, PI parameters, stage threshold, and output schedule with the protected route; verify final time, error, true residuals and rejection accounting.",
+      "Include nonzonal/multimode data; compare native identity GMRES, line-GMRES with both column policies, a separable direct solve and sparse external time solvers at matched achieved error.",
+      "Report Fourier setup or recurrence setup, O(N) work, preconditioner applications, end-to-end wall distributions, peak memory, finite factor validation and serial-versus-parallel crossover.",
+      "Test sigma=0, zero diffusivity, polar rings, wrong grid, nonfinite/negative shift, geometry changes, rejection with a new h, and explicit fallback with no leftover recycle state.",
+      "Use weighted SPD/PCG bounds only for this symmetric diffusion class. Retain identity/other routed solvers on nonnormal advection or mixed source terms until a separate argument and holdouts exist."
+    ]
+  }
+}

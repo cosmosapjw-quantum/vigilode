@@ -1,0 +1,13 @@
+   Compiling vigilode v0.2.0 (/tmp/vigilode-spatial-review-20261124/crates/vigilode)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.40s
+     Running tests/longitude_preconditioner.rs (/tmp/vigilode-spatial-review-target-20261124/debug/deps/longitude_preconditioner-c771448a9e2b00e8)
+
+running 3 tests
+test edge_shifts_wraparound_and_input_validation ... ok
+POLAR {"case":"inverse","sparse_direct_error_inf":1.5543122344752192e-15,"weighted_norm_ratio":0.8799983689787343,"weighted_relative_true_residual":3.3512455338093254e-16}
+test sphere_line_inverse_matches_sparse_direct_and_contracts_area_norm ... ok
+POLAR {"arnoldi_columns":90,"case":"native_gmres","matvecs":93,"policy":"identity","preconditioner_apps":93,"true_relative_residual":1.8562486078577122e-10}
+POLAR {"arnoldi_columns":30,"case":"native_gmres","matvecs":31,"policy":"longitude","preconditioner_apps":31,"true_relative_residual":5.858041911923475e-15}
+test native_gmres_applies_line_preconditioner_to_the_true_spherical_stage ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s

@@ -265,3 +265,6 @@ impl DiffusionGrid {
             .autonomous()
     }
 }
+
+mod longitude;
+pub use longitude::LongitudeLinePreconditioner;
