@@ -1,0 +1,51 @@
+{
+  "schema": "vigilode.scalar-affine-native-events.v1",
+  "native_test_command": "cargo test --locked --offline -p rodas5p-integrators --test affine_event_certificate_contracts -p vigilode --test certified_affine_events -- --nocapture",
+  "rust": "1.94.1",
+  "base": "ab490717",
+  "donor_commit": "8357faa5b42724a8be24609d4d2f16aec8a6eb3a",
+  "scope": "Postprocessing on native fast-dense segments, caller-declared scalar affine source, constant positive relaxation, finite nonnegative initial error. Unique-crossing windows have two opposite proven signs, all ambiguous slabs remain in full. No in-loop early stopping claim.",
+  "validated": [
+    {
+      "lambda": 1.0,
+      "forcing": 0.0,
+      "x0": 1.0,
+      "threshold": 0.51,
+      "accepted_steps": 13,
+      "certified_window_f64": [
+        "0.67334380336160848390392175133456476032733917236328125",
+        "0.6733453064404562038447465965873561799526214599609375"
+      ],
+      "reference_decimal90": "0.673344553263765578975939923198071770947393894507809643237544369346639832390976125168752958",
+      "width": 1.5030788477199408e-06
+    },
+    {
+      "lambda": 12.0,
+      "forcing": 24.0,
+      "x0": 0.2,
+      "threshold": 1.1,
+      "accepted_steps": 13,
+      "certified_window_f64": [
+        "0.057762225293367920608833543383298092521727085113525390625",
+        "0.057762304625156045412293082108590169809758663177490234375"
+      ],
+      "reference_decimal90": "0.0577622650466621168279847922406577600445863430991334897267434804613824318038577381025308762",
+      "width": 7.933178812480346e-08
+    },
+    {
+      "lambda": 800.0,
+      "forcing": -240.0,
+      "x0": 0.8,
+      "threshold": 0.11,
+      "accepted_steps": 19,
+      "certified_window_f64": [
+        "0.0012336343621487185114038442890205260482616722583770751953125",
+        "0.00123363638659942042273554019260473069152794778347015380859375"
+      ],
+      "reference_decimal90": "0.00123363537386013557903873436472777590931372090997965196725529119610939564947927676860878661",
+      "width": 2.0244507019113317e-09
+    }
+  ],
+  "reference": "90-digit Decimal from exact binary64 model inputs; analytic x=b/lambda+(x0-b/lambda)*exp(-lambda*t).",
+  "raw_solver_run": "P11_NATIVE_TESTS.log"
+}

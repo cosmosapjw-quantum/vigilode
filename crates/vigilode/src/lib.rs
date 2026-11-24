@@ -184,6 +184,7 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+pub mod affine_events;
 mod automatic;
 mod capabilities;
 pub mod causal_budget;
