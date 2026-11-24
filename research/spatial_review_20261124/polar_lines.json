@@ -1,0 +1,90 @@
+{
+  "numpy": "2.3.5",
+  "scipy": "1.17.0",
+  "rows": [
+    {
+      "n_theta": 8,
+      "n_longitude": 16,
+      "kappa": 0.5,
+      "radius": 1.0,
+      "sigma": 0.1,
+      "symmetric_condition": 35.94005413002012,
+      "preconditioned_condition": 2.2802014892366844,
+      "predicted_condition": 2.280201489236684,
+      "single_stage": {
+        "identity": {
+          "arnoldi_columns": 33,
+          "true_relative_residual": 6.127506139120948e-10
+        },
+        "longitude_lines": {
+          "arnoldi_columns": 15,
+          "true_relative_residual": 1.364330652118278e-10
+        },
+        "weighted_pcg_longitude_lines": {
+          "iterations": 14,
+          "true_relative_residual": 1.6453871616885713e-10
+        },
+        "fourier_tridiagonal_direct": {
+          "meridional_solves": 9,
+          "true_relative_residual": 9.674731557983773e-16
+        }
+      }
+    },
+    {
+      "n_theta": 16,
+      "n_longitude": 32,
+      "kappa": 0.5,
+      "radius": 1.0,
+      "sigma": 0.1,
+      "symmetric_condition": 544.4242447921902,
+      "preconditioned_condition": 6.17096721677506,
+      "predicted_condition": 6.1709672167750576,
+      "single_stage": {
+        "identity": {
+          "arnoldi_columns": 167,
+          "true_relative_residual": 8.850988874335787e-10
+        },
+        "longitude_lines": {
+          "arnoldi_columns": 31,
+          "true_relative_residual": 3.965756376032307e-11
+        },
+        "weighted_pcg_longitude_lines": {
+          "iterations": 26,
+          "true_relative_residual": 8.346616097628784e-10
+        },
+        "fourier_tridiagonal_direct": {
+          "meridional_solves": 17,
+          "true_relative_residual": 2.8421224508670485e-15
+        }
+      }
+    },
+    {
+      "n_theta": 32,
+      "n_longitude": 64,
+      "kappa": 0.5,
+      "radius": 1.0,
+      "sigma": 0.1,
+      "symmetric_condition": 8633.48411083861,
+      "preconditioned_condition": 21.733909065368092,
+      "predicted_condition": 21.733909065368028,
+      "single_stage": {
+        "identity": {
+          "arnoldi_columns": 2386,
+          "true_relative_residual": 9.937019480321913e-10
+        },
+        "longitude_lines": {
+          "arnoldi_columns": 54,
+          "true_relative_residual": 8.614567677561925e-10
+        },
+        "weighted_pcg_longitude_lines": {
+          "iterations": 52,
+          "true_relative_residual": 5.958630357684847e-10
+        },
+        "fourier_tridiagonal_direct": {
+          "meridional_solves": 33,
+          "true_relative_residual": 5.0984025018097894e-15
+        }
+      }
+    }
+  ]
+}
