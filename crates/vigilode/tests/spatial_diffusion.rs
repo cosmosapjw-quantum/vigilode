@@ -190,11 +190,8 @@ fn nonzonal_spherical_harmonic_refines_in_the_area_norm() {
     }
 }
 
-#[test]
-fn multimode_endpoints_match_independent_face_assembly_exponential() {
-    let reference: serde_json::Value =
-        serde_json::from_str(include_str!("fixtures/spatial_expm.json")).unwrap();
-    let cases = [
+fn mixed_grids() -> [(&'static str, DiffusionGrid); 3] {
+    [
         (
             "box2",
             DiffusionGrid::periodic_box([6, 5], [2.0, 1.0], [0.2, 0.08]).unwrap(),
@@ -204,11 +201,21 @@ fn multimode_endpoints_match_independent_face_assembly_exponential() {
             DiffusionGrid::periodic_box([4, 4, 5], [1.0, 2.0, 3.0], [0.1, 0.2, 0.3]).unwrap(),
         ),
         ("sphere", DiffusionGrid::sphere(6, 12, 1.3, 0.15).unwrap()),
-    ];
-    for (name, grid) in cases {
-        let y0: Vec<_> = (0..grid.dimension())
-            .map(|i| (0.23 * i as f64).sin() + 0.2 * (1.93 * i as f64).cos())
-            .collect();
+    ]
+}
+
+fn mixed_initial(n: usize) -> Vec<f64> {
+    (0..n)
+        .map(|i| (0.23 * i as f64).sin() + 0.2 * (1.93 * i as f64).cos())
+        .collect()
+}
+
+#[test]
+fn multimode_endpoints_match_independent_face_assembly_exponential() {
+    let reference: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/spatial_expm.json")).unwrap();
+    for (name, grid) in mixed_grids() {
+        let y0 = mixed_initial(grid.dimension());
         let opts = VigilodeOptions::default()
             .strategy(SolverStrategy::Auto)
             .rtol(reference["rtol"].as_f64().unwrap())
@@ -231,5 +238,93 @@ fn multimode_endpoints_match_independent_face_assembly_exponential() {
             "rhs_calls":s.stats.counters.rhs_calls,"jvp_vectors":s.stats.counters.jvp_vectors,
             "direct_factorizations":s.stats.counters.direct_factorizations})
         );
+    }
+}
+
+#[test]
+fn stage_gmres_policies_on_independently_referenced_diffusion() {
+    use rodas5p_core::CoreError;
+    use rodas5p_integrators::{
+        AdaptiveStepConfig, MfStageSolvePolicy, OdeProblem, OutputSchedule, Rodas5pMfFastWorkspace,
+        RoutingOptions,
+    };
+    use std::sync::Arc;
+
+    let reference: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/spatial_expm.json")).unwrap();
+    let tf = reference["final_time"].as_f64().unwrap();
+    let schedule = OutputSchedule::new(vec![0.0, tf]).unwrap();
+    let defaults = vigilode::Options::default();
+    let config = AdaptiveStepConfig {
+        rtol: reference["rtol"].as_f64().unwrap(),
+        atol: reference["atol"].as_f64().unwrap(),
+        initial_step: defaults.h0,
+        max_attempts: defaults.max_steps,
+        ..Default::default()
+    };
+    for (name, g) in mixed_grids() {
+        let n = g.dimension();
+        let op = g.clone();
+        let p = OdeProblem::new(
+            name,
+            n,
+            Arc::new(move |_, u, out| {
+                op.apply(u, out, SpatialRows::Serial)
+                    .map_err(|e| CoreError::Dimension(e.to_string()))
+            }),
+            None,
+            None,
+            Some(Arc::new(move |_, _, v, out| {
+                g.apply(v, out, SpatialRows::Serial)
+                    .map_err(|e| CoreError::Dimension(e.to_string()))
+            })),
+            None,
+            true,
+            None,
+            None,
+        )
+        .unwrap();
+        let y0 = mixed_initial(n);
+        for policy in [
+            MfStageSolvePolicy::Shipped,
+            MfStageSolvePolicy::ColumnTested,
+            MfStageSolvePolicy::ColumnTestedDoubling,
+        ] {
+            let mut ws =
+                Rodas5pMfFastWorkspace::new(&p, &RoutingOptions::default().matrix_free).unwrap();
+            ws.set_gmres_into(true);
+            ws.set_stage_solve_policy(policy).unwrap();
+            let result = ws
+                .integrate_observed_with_observer(
+                    &p,
+                    (0.0, tf),
+                    &y0,
+                    &config,
+                    &schedule,
+                    &mut |_, _, _, _, _| {},
+                )
+                .unwrap()
+                .0
+                .observed;
+            let stats = ws.stage_solve_policy_statistics();
+            assert!(result.success && result.t.last() == Some(&tf));
+            let exact = reference["cases"][name]["endpoint"].as_array().unwrap();
+            let actual = result.y.last().unwrap();
+            assert_eq!(exact.len(), actual.len());
+            let err = exact
+                .iter()
+                .zip(actual)
+                .map(|(a, b)| (a.as_f64().unwrap() - b).abs())
+                .fold(0.0_f64, f64::max);
+            let c = &result.counters;
+            assert!(err < 2e-7 && c.direct_factorizations == 0);
+            println!(
+                "SPATIAL {}",
+                serde_json::json!({"case":"v24_spatial","geometry":name,"policy":policy.id(),
+                    "accepted_steps":c.accepted_steps, "rejected_steps":c.rejected_steps,
+                    "budget_exhausted_solves":stats.budget_exhausted_solves,"other_linear_failures":stats.other_linear_failures,"failed_confirmations":stats.failed_confirmations, "arnoldi_columns":stats.columns,"linear_solve_failures":c.linear_solve_failures, "jvp_vectors":c.jvp_vectors,
+                    "endpoint_max_error":err, "direct_factorizations":c.direct_factorizations})
+            );
+        }
     }
 }

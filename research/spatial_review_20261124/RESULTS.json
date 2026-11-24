@@ -7,7 +7,7 @@
   },
   "tests": {
     "spatial_diffusion": {
-      "passed": 6,
+      "passed": 7,
       "failed": 0,
       "command": "cargo test --locked --offline -p vigilode --test spatial_diffusion -- --nocapture",
       "raw": "native.log"
@@ -198,5 +198,142 @@
       "paired_median_serial_over_parallel": 0.29889693000476464
     }
   ],
-  "performance_interpretation": "No parallel default. Four-worker geometries lost on one loaded host. Needs matched-error end-to-end tests on dedicated threads."
+  "performance_interpretation": "No parallel default. Four-worker geometries lost on one loaded host. Needs matched-error end-to-end tests on dedicated threads.",
+  "matrix_free_stage_policy_comparison": [
+    {
+      "accepted_steps": 17,
+      "arnoldi_columns": 4316,
+      "budget_exhausted_solves": 0,
+      "case": "v24_spatial",
+      "direct_factorizations": 0,
+      "endpoint_max_error": 4.7196573038643663e-11,
+      "failed_confirmations": 0,
+      "geometry": "box2",
+      "jvp_vectors": 4604,
+      "linear_solve_failures": 0,
+      "other_linear_failures": 0,
+      "policy": "mf-stage-solve-shipped-v1",
+      "rejected_steps": 1
+    },
+    {
+      "accepted_steps": 17,
+      "arnoldi_columns": 705,
+      "budget_exhausted_solves": 0,
+      "case": "v24_spatial",
+      "direct_factorizations": 0,
+      "endpoint_max_error": 4.7268742739414726e-11,
+      "failed_confirmations": 0,
+      "geometry": "box2",
+      "jvp_vectors": 993,
+      "linear_solve_failures": 0,
+      "other_linear_failures": 0,
+      "policy": "mf-stage-solve-column-tested-v1",
+      "rejected_steps": 1
+    },
+    {
+      "accepted_steps": 17,
+      "arnoldi_columns": 705,
+      "budget_exhausted_solves": 0,
+      "case": "v24_spatial",
+      "direct_factorizations": 0,
+      "endpoint_max_error": 4.7268742739414726e-11,
+      "failed_confirmations": 0,
+      "geometry": "box2",
+      "jvp_vectors": 993,
+      "linear_solve_failures": 0,
+      "other_linear_failures": 0,
+      "policy": "mf-stage-solve-column-tested-doubling-v1",
+      "rejected_steps": 1
+    },
+    {
+      "accepted_steps": 17,
+      "arnoldi_columns": 5440,
+      "budget_exhausted_solves": 0,
+      "case": "v24_spatial",
+      "direct_factorizations": 0,
+      "endpoint_max_error": 3.931313607985487e-11,
+      "failed_confirmations": 0,
+      "geometry": "box3",
+      "jvp_vectors": 5712,
+      "linear_solve_failures": 0,
+      "other_linear_failures": 0,
+      "policy": "mf-stage-solve-shipped-v1",
+      "rejected_steps": 0
+    },
+    {
+      "accepted_steps": 17,
+      "arnoldi_columns": 660,
+      "budget_exhausted_solves": 0,
+      "case": "v24_spatial",
+      "direct_factorizations": 0,
+      "endpoint_max_error": 3.939365500471581e-11,
+      "failed_confirmations": 0,
+      "geometry": "box3",
+      "jvp_vectors": 932,
+      "linear_solve_failures": 0,
+      "other_linear_failures": 0,
+      "policy": "mf-stage-solve-column-tested-v1",
+      "rejected_steps": 0
+    },
+    {
+      "accepted_steps": 17,
+      "arnoldi_columns": 660,
+      "budget_exhausted_solves": 0,
+      "case": "v24_spatial",
+      "direct_factorizations": 0,
+      "endpoint_max_error": 3.939365500471581e-11,
+      "failed_confirmations": 0,
+      "geometry": "box3",
+      "jvp_vectors": 932,
+      "linear_solve_failures": 0,
+      "other_linear_failures": 0,
+      "policy": "mf-stage-solve-column-tested-doubling-v1",
+      "rejected_steps": 0
+    },
+    {
+      "accepted_steps": 16,
+      "arnoldi_columns": 5440,
+      "budget_exhausted_solves": 0,
+      "case": "v24_spatial",
+      "direct_factorizations": 0,
+      "endpoint_max_error": 2.846821112179043e-10,
+      "failed_confirmations": 0,
+      "geometry": "sphere",
+      "jvp_vectors": 5712,
+      "linear_solve_failures": 0,
+      "other_linear_failures": 0,
+      "policy": "mf-stage-solve-shipped-v1",
+      "rejected_steps": 1
+    },
+    {
+      "accepted_steps": 16,
+      "arnoldi_columns": 741,
+      "budget_exhausted_solves": 0,
+      "case": "v24_spatial",
+      "direct_factorizations": 0,
+      "endpoint_max_error": 2.848321578596824e-10,
+      "failed_confirmations": 0,
+      "geometry": "sphere",
+      "jvp_vectors": 1013,
+      "linear_solve_failures": 0,
+      "other_linear_failures": 0,
+      "policy": "mf-stage-solve-column-tested-v1",
+      "rejected_steps": 1
+    },
+    {
+      "accepted_steps": 16,
+      "arnoldi_columns": 741,
+      "budget_exhausted_solves": 0,
+      "case": "v24_spatial",
+      "direct_factorizations": 0,
+      "endpoint_max_error": 2.848321578596824e-10,
+      "failed_confirmations": 0,
+      "geometry": "sphere",
+      "jvp_vectors": 1013,
+      "linear_solve_failures": 0,
+      "other_linear_failures": 0,
+      "policy": "mf-stage-solve-column-tested-doubling-v1",
+      "rejected_steps": 1
+    }
+  ]
 }
