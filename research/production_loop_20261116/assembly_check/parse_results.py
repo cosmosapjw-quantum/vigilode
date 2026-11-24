@@ -209,9 +209,13 @@ def corpus_analysis():
                 continue
             evidence = case.get("miss_evidence", {})
             if "S8@seq" in arms and arms["S8@seq"]["outcome"] == "pass":
-                s8_misses.append({"case": ident, "omitted_entries": case["omitted_entries"],
+                others = ["FA@seq", "FA_P@t2", "FA_P@t4", "FA_P@t6", "MC@seq", "MC_P@t6"]
+                s8_misses.append({"case": ident, "group": group, "n": case["n"],
+                                  "omitted_entries": case["omitted_entries"],
                                   "omitted_first": case["omitted_first"],
-                                  "FA@seq": decision_key(arms["FA@seq"]) if "FA@seq" in arms else None})
+                                  "FA@seq": decision_key(arms["FA@seq"]) if "FA@seq" in arms else None,
+                                  "detected_by_every_other_arm": all(
+                                      arm in arms and detected(arms[arm]) for arm in others)})
             if "FA@seq" in arms and arms["FA@seq"]["outcome"] == "pass":
                 ev = evidence.get("FA@seq", {})
                 d_fa_misses.append({"case": ident, "rounding_limited_for_FA": bool(ev.get("rounding_limited")),
@@ -284,6 +288,44 @@ def unit_analysis():
                 results.append(line.strip())
     return {"log": path.name, "header": header(path), "exit_codes": exit_codes(path),
             "omission_tests": rows, "test_results": results}
+
+
+# ---------------------------------------------------------------- checks
+
+
+def checks_analysis():
+    """The sections of logs/checks.log: command, test result lines, exit code."""
+    path = LOGS / "checks.log"
+    if not path.exists():
+        return None
+    sections = []
+    current = None
+    with open(path, encoding="utf-8") as handle:
+        for line in handle:
+            line = line.rstrip("\n")
+            if line.startswith("## "):
+                current = {"check": line[3:], "command": None, "results": [], "exit_code": None, "output": []}
+                sections.append(current)
+            elif current is None:
+                continue
+            elif line.startswith("# command: "):
+                current["command"] = line[len("# command: "):]
+            elif line.startswith("# exit code: "):
+                current["exit_code"] = int(line.split(": ", 1)[1])
+            elif line.startswith("test result:"):
+                current["results"].append(line)
+            elif line.strip() and not line.startswith("#") and not line.strip().startswith("Running"):
+                current["output"].append(line.strip())
+    for section in sections:
+        passed = failed = ignored = 0
+        for result in section["results"]:
+            parts = result.replace(";", "").split()
+            passed += int(parts[parts.index("passed") - 1])
+            failed += int(parts[parts.index("failed") - 1])
+            ignored += int(parts[parts.index("ignored") - 1])
+        section["tests"] = {"passed": passed, "failed": failed, "ignored": ignored, "binaries": len(section["results"])}
+        section["output"] = section["output"][-4:]
+    return {"log": path.name, "header": header(path), "sections": sections}
 
 
 # ---------------------------------------------------------------- cost cells
@@ -408,6 +450,10 @@ def timing_analysis():
             }
         rhs_cost = tagged(path, "V26_RHS_COST_JSON")
         hdr = header(path)
+        duration = None
+        if hdr.get("date") and hdr.get("date at end"):
+            from datetime import datetime
+            duration = (datetime.fromisoformat(hdr["date at end"]) - datetime.fromisoformat(hdr["date"])).total_seconds()
         out[path.stem] = {
             "log": path.name,
             "cell": meta[0]["cell"] if meta else None,
@@ -420,6 +466,7 @@ def timing_analysis():
             "protocol_2_plus_7": all(arm["timed"] == 7 and arm["warm_up"] == 2 for arm in arms.values()),
             "arms": arms,
             "rhs_cost_median_ns": statistics.median(rhs_cost[0]["per_call_ns"]) if rhs_cost else None,
+            "duration_s": duration,
             "exit_codes": exit_codes(path),
         }
     return out
@@ -454,7 +501,7 @@ def batched_analysis():
         derived["batched_over_single_wall"] = statistics.median(batched_ns) / statistics.median(single_ns)
         derived["spread_single"] = spread(single_ns)
         derived["spread_batched"] = spread(batched_ns)
-        derived["label"] = "exploratory, diagnostic_only (no quality rule frozen for FA_B)"
+        derived["label"] = "탐색적, diagnostic_only (FA_B에는 동결된 품질 규칙이 없음)"
     return {"actions": out, "derived": derived}
 
 
@@ -768,8 +815,15 @@ def render_report(results):
         f"`{m['case']}` (FA도 놓침: {fmt(not m['FA_detects'])}, MC 반올림 한계: {fmt(m['rounding_limited_for_MC'])})"
         for m in d["MC_misses"]) + ". FA가 잡았는데 MC가 놓친 사례: "
         f"{len(d['MC_misses_of_cases_FA_detects_not_rounding_limited'])}건.")
-    add(f"- S8의 놓침 {d['S8_miss_count']}건 (목록은 RESULTS.json `corpus.D.S8_misses`): 주기 고리 n = 34, 64, 100, 127, 128, 1000 "
-        "같은 경우와 브뤼셀레이터 단일 항목 누락의 일부. 모두 FA, FA_P, MC, MC_P가 잡는다.")
+    by_group = Counter(miss["group"] for miss in d["S8_misses"])
+    ring_orders = sorted(miss["n"] for miss in d["S8_misses"] if miss["group"] == "ring")
+    covered = sum(1 for miss in d["S8_misses"] if miss["detected_by_every_other_arm"])
+    add(f"- S8의 놓침 {d['S8_miss_count']}건 (목록은 RESULTS.json `corpus.D.S8_misses`): 그룹별 "
+        + ", ".join(f"{g} {c}" for g, c in sorted(by_group.items()))
+        + f"; 고리는 n = {', '.join(str(n) for n in ring_orders)}. 이 중 FA, FA_P(2, 4, 6), MC, MC_P가 모두 잡은 사례: "
+        f"{covered}건; 나머지: "
+        + (", ".join(f"`{miss['case']}`" for miss in d["S8_misses"] if not miss["detected_by_every_other_arm"]) or "없음")
+        + " (위 FA, MC 놓침 목록 참조).")
     e = corpus["E"]["corpus"]
     comparisons = ", ".join(f"{k}: 같음 {c['equal']}, 다름 {c['different']}" for k, c in e["comparisons"].items())
     add(f"- E (코퍼스): {comparisons}. 기준: {e['reference_rule']}.")
@@ -812,9 +866,13 @@ def render_report(results):
                 f"{fmt(row.get('instructions_first_linearization'))} | {fmt(row.get('instructions_first_linearization_over_one_build'))} | "
                 f"{fmt(row.get('instructions_solve_over_S8_solve'))} | {wf} | {ws} |")
         add("")
-    add("A = 권위 있음 (부하 <= 8 전후, 2 + 7회, 두 팔의 퍼짐 <= 0.10), d = diagnostic_only. "
-        "bruss1d-n131072의 FA와 FA_P(2)는 한 번의 평가가 수십 초라 2분 잠금 상한 안에 2 + 7회를 돌릴 수 없어 횟수를 줄였고 "
-        "diagnostic_only다. 같은 실행 기준 배수와 시도별 중앙값은 RESULTS.json `cost.wall_multiples`에 있다.")
+    reduced = sorted(name for name, entry in cost["timing"].items() if not entry["protocol_2_plus_7"])
+    long_runs = sorted(f"{name} ({fmt(entry['duration_s'])} s)" for name, entry in cost["timing"].items()
+                       if entry.get("duration_s") is not None and entry["duration_s"] > 120)
+    add("A = 권위 있음 (부하 <= 8 전후, 2 + 7회, 두 팔의 퍼짐 <= 0.10), d = diagnostic_only. 한 번의 평가가 수십 초인 "
+        "bruss1d-n131072의 전체 검사는 2분 잠금 상한 안에 2 + 7회를 돌릴 수 없어 횟수를 줄였다 (따라서 diagnostic_only): "
+        + ", ".join(reduced) + ". 2분을 넘긴 호출: " + (", ".join(long_runs) if long_runs else "없음")
+        + ". 재측정은 한 번(try2) 했다. 같은 실행 기준 배수와 시도별 중앙값은 RESULTS.json `cost.wall_multiples`에 있다.")
     add("")
     add("- E (비용 셀 비트): " + ", ".join(f"{cell} {'같음' if ok else '다름'}" for cell, ok in v["E_cost_cells_bits"].items())
         + " (모든 팔의 첫 선형화 야코비안 지문, 전체 실행의 선형화 지점, 야코비안, 최종 상태 지문이 None@seq와 같음).")
@@ -835,14 +893,34 @@ def render_report(results):
     add("")
     add("## 7. 주의")
     add("")
-    add("- MC의 정확성 주장(NOTES.txt의 증명)은 한 행에 선언되지 않은 의존이 하나일 때다. 코퍼스의 잘못된 패턴은 모두 이 조건을 만족한다. "
-        "증명에 남는 유일한 틈은 '항목 붕괴'다: 결합 이동 상태에서 행 값의 비트는 다르지만 f0를 빼고 delta로 나눈 두 항목이 같은 수로 "
-        "반올림되는 경우. 사전 정의(행 비트 기준)는 이것을 반올림 한계로 면제하지 않는다. 코퍼스와 1,450만 개 단위 사례에서 이런 경우는 없었다.")
+    unit_rows = (results.get("unit_tests") or {}).get("omission_tests", [])
+    unit_total = sum(row["single_entry_omissions"] for row in unit_rows)
+    unit_one_sided = sum(row["full_check_only"] + row["multi_colouring_only"] for row in unit_rows)
+    add("- MC의 정확성 주장(NOTES.txt의 증명)은 한 행에 선언되지 않은 의존이 하나일 때다. 코퍼스의 잘못된 패턴에서 한 행에 누락 항목이 둘 이상인 사례: "
+        f"{len(d['rows_with_two_omitted_entries'])}건. 증명에 남는 틈은 '항목 붕괴'다: 결합 이동 상태에서 행 값의 비트는 다르지만 f0를 빼고 "
+        "delta로 나눈 두 항목이 같은 수로 반올림되는 경우이며, 사전 정의(행 비트 기준)는 이것을 반올림 한계로 면제하지 않는다. "
+        f"코퍼스에서 FA가 잡고 MC가 놓친 사례 {len(d['MC_misses_of_cases_FA_detects_not_rounding_limited'])}건, "
+        f"단위 사례 {fmt(unit_total)}개 중 한쪽만 잡은 사례 {fmt(unit_one_sided)}건.")
     add("- 스레드 팔의 명령어 수는 rayon 작업자의 회전 대기를 포함해 순차 팔과 직접 비교하기 어렵다; 벽시계가 병렬 이득을 보여 준다.")
     add("- MC의 첫 사용에는 채색 구성(단사성 정렬 포함) 비용이 들어간다; 이후 빌드의 MC(MCe)는 그룹 평가만 한다.")
     add("- 조밀 경로(nlkpp-dense-n400)에는 선언된 패턴이 없어 MC가 적용되지 않는다; 그 셀에서 D를 지키는 팔은 FA와 FA_P뿐이다.")
     add("")
-    add("## 8. 재현")
+    checks = results.get("checks")
+    if checks:
+        add("## 8. 점검 (logs/checks.log)")
+        add("")
+        add("| 점검 | 종료 코드 | 테스트 (통과/실패/무시, 바이너리) | 출력 끝 |")
+        add("|---|---|---|---|")
+        for section in checks["sections"]:
+            t = section["tests"]
+            tests = f"{t['passed']}/{t['failed']}/{t['ignored']}, {t['binaries']}" if t["binaries"] else "-"
+            tail = section["output"][-1] if section["output"] else "-"
+            add(f"| {section['check']} | {section['exit_code']} | {tests} | {tail} |")
+        add("")
+        add("루프 점검기의 종료 코드 1은 위 마지막 줄의 불만 때문이다: 이 노드가 고치도록 허용된 클라이언트 파일의 구현 해시가 "
+            "CHECKPOINT.json의 기록과 다르다 (CHECKPOINT.json은 병합 때 조정자가 갱신한다).")
+        add("")
+    add("## 9. 재현")
     add("")
     add("```")
     add("research/production_loop_20261116/assembly_check/run.sh corpus <label> <groups> <arms>")
@@ -884,6 +962,7 @@ def main():
             "timing": timing_analysis(),
         },
         "fa_batched_exploratory": batched_analysis(),
+        "checks": checks_analysis(),
     }
     results["cost"]["summary"] = cost_summary(results)
     results["cost"]["wall_multiples"] = wall_table(results["cost"]["timing"])

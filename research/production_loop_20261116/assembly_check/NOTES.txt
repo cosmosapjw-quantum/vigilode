@@ -176,3 +176,64 @@ UNIT TESTS (tests/stage_clients_assembly_check_mc.rs)
 - pooled = calling thread for FA and MC on 1, 2, 3, 6 workers (Brusselator 16 cells, every omission; rings;
   a random pattern); true patterns pass every check, the Jacobian keeps its bits, right-hand sides counted
   as Sample k, n or the total of groups (+1 base evaluation with threads); MC refuses the dense route.
+
+== 2026-11-24, entry 3 (corpus with every arm, counts, instructions, timing; results in RESULTS.json) ==
+
+CORPUS WITH EVERY ARM (logs/corpus_B_<group>.log; corpus binary sha256 5ee27bab.., built at commit B)
+- E: FA_P on 2, 4 and 6 workers decides as FA in every case (4846 comparisons each; reference: FA of the
+  sequential client for a pure right-hand side, FA of the same threaded client with the check on the calling
+  thread for the impure controls); MC_P on 6 workers decides as MC in every case (4846). FA_P@t6 against FA@t6
+  and MC_P@t6 against MC@t6 (same client) also equal everywhere.
+- The decisions of S8 and FA after the client edit equal the commit A recording in every (case, arm) pair.
+- D: FA misses one case, omit1024 entry (768, 769), rounding-limited; MC misses the same case only,
+  rounding-limited at all five states it evaluated with column 769 shifted (the build group and the group of
+  column 769 in each of its four further colourings, moduli 5, 6, 7, 11). S8 misses 576 wrong cases.
+  Every wrong declaration of the corpus omits at most one entry per row (checked by the parser), the setting
+  of the proof in entry 2.
+- F: no arm rejects a correct pattern; MC and MC_P on the two dense-route cases return
+  AssemblyError::Configuration (not applicable: no declared pattern).
+
+COST CELLS
+- Counts (logs/counts_<cell>.log): first linearization and capped solve of every arm, with fingerprints. The
+  Jacobian of the first linearization and the whole trajectory (linearization points, Jacobians, final state,
+  steps, assembly calls) are bit-identical to None@seq for every arm on every cell (E, bits).
+  Check right-hand sides: S8 8 (+1 with threads); FA and FA_P n (+1); MC 150 (nlkpp-band, moduli 49 50 51),
+  59 (bruss1d-n131072, moduli 5 6 7 11 13 17), 18 (bruss1d-n128, moduli 5 6 7); MC_P the same + 1.
+- Instructions (logs/perf_<cell>_<arm>_<action>.log, one action per process under the lock): first
+  linearization = verify - setup of the execution, capped solve = solve - problem. FA on bruss1d-n131072
+  costs about 17900 builds (the O(n^2) row comparisons of n single columns dominate besides the n
+  right-hand sides); MC 18 builds there, 4 on nlkpp-band, 5 on bruss1d-n128. Threaded arms include the
+  spinning of the rayon workers.
+- Timing: run_timing_plan.sh (waits for load <= 4 and no compiler before each invocation, 20 minutes in
+  total; logs/timing_wait.log), every invocation below 2 minutes under the lock. The full checks of
+  bruss1d-n131072 (FA about 25-50 s, FA_P@t2 about 15-25 s per first linearization) cannot run 2 + 7 rounds
+  in 2 minutes: FA and FA_P@t2 (and the FA_P@t4 solve) run with fewer rounds and are diagnostic_only by
+  construction. Quality labels per invocation by parse_results.py.
+- FA_B (exploratory, logs/batched_*.log): the batched right-hand side of nlkpp-dense-n400 reproduces the
+  single evaluation bit for bit in all 400 x 400 components, the full check with the batched states passes,
+  and it needs 0.366 of the instructions per evaluation. It is problem-specific code written by the user of
+  the client (the client's right-hand side takes one state per call), so it was not added to the client.
+- Timing outcome: the waiting budget (20 checks of one minute, logs/timing_wait.log) was used up during the
+  first pass; try1 ran 19:03-19:31 at 1-minute loads 1.8-6.5, try2 (the one re-measurement used) of nine
+  invocations ran 19:31-19:38 while another workload on the host drove the load to 26, so most of try2 is
+  diagnostic_only. A third measurement was not taken: at 19:45 the host was at load 27 from unrelated jobs and
+  the waiting budget was spent. Three invocations ran longer than the 2-minute guidance of the orchestrator
+  (b131k-verify-fap4 124 s and b131k-solve-fap6 121 s by about 2 + 7 rounds of 10-14 s checks, dense-solve-thr
+  try2 139 s under the load spike); listed in REPORT_KO.md section 5.
+- Read the walls of the cheap arms with care: a single first linearization of bruss1d-n128 takes microseconds
+  and of None@seq on bruss1d-n131072 about 3 ms, so their spread often exceeds 0.10 and the ratios against
+  them stay diagnostic_only even when the expensive arm is stable (FA_P@t6 on bruss1d-n131072: 10.5-11.0 s).
+
+WHAT THE OWNER GETS (numbers in RESULTS.json / REPORT_KO.md, all parsed from logs)
+- (a) parallel: FA_P decides exactly as FA and divides the check by about the worker count where the right-hand
+  side is expensive (nlkpp-dense-n400: the 400-column check falls from about one sequential build to about a
+  third of one at 6 workers); it does not change the n right-hand sides or the O(n^2) row comparisons, so on
+  bruss1d-n131072 the first linearization still takes about 11 s at 6 workers (about 45 s sequential).
+- (b) vectorised: possible only with a problem-specific batched right-hand side (FA_B, exploratory): bit-identical,
+  0.37 of the instructions per evaluation on nlkpp-dense-n400; the client's interface takes one state per call.
+- (c) multi-colouring: MC detects every corpus case FA detects (and the same single rounding-limited miss) with
+  150 instead of 4096 and 59 instead of 131072 right-hand sides; first linearization about 4 builds
+  (nlkpp-band) and about 18 builds (bruss1d-n131072, where one build is only 6 right-hand sides); whole
+  capped solve +4 to +9 percent. It needs a declared pattern (coloured route); on the dense route only FA and
+  FA_P keep D.
+- Default unchanged (Sample(8)); the owner decides.
