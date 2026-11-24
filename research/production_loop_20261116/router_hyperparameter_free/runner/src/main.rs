@@ -4,20 +4,25 @@
 //!
 //! ```text
 //! v27-runner --arm <N|T|D|R> --problem <id> [--rtol x --atol y] [--max-steps k]
-//!            [--regime unknown|stiff|nonstiff] [--no-log]
+//!            [--regime unknown|stiff|nonstiff] [--no-log] [--repeat k]
 //! ```
 //!
 //! * `N` and `T` run `VigilODE::solve` (strategy Auto with the declared regime). The binary
 //!   built with the feature `pilots` against this worktree is arm N; the binary built
 //!   without it against the base checkout is arm T; each refuses the other's arm.
 //! * `D` runs `Dopri5::solve`, `R` runs `Rodas5p::solve`, with the same options.
+//! * `--repeat k` (phase 2) runs the case `k` times in this process, each time with a fresh
+//!   problem and fresh entry counters, and prints one line per run (`repeat`, `pid`).
 //!
 //! The line holds: status, typed stop, success, final time and state (values and bits), the
 //! charged counters, attempts and steps, callback entries counted inside the closures by
 //! callback, the right-hand-side entries classified as stage, finite-difference column or
 //! finite-difference time derivative, operations by the one formula of `PREDECLARED.json`,
 //! the legs, route history and pilot records (arm N), and an FNV-1a 64 digest of the route.
-//! No wall time is measured. Only names that exist in both APIs are used outside the
+//! Arm N with the entry log also carries `e5`, the split of its entries into those of
+//! `Dopri5::solve`, of each replayed pilot and of the replayed RODAS5P run after a handover
+//! ([`e5_split`]); the replays run on fresh copies of the problem and are not charged to the
+//! case. No wall time is measured. Only names that exist in both APIs are used outside the
 //! `pilots` feature.
 
 use std::collections::HashMap;
@@ -43,6 +48,7 @@ struct Args {
     max_steps: Option<usize>,
     regime: ProblemRegime,
     log: bool,
+    repeat: usize,
 }
 
 fn parse_args() -> Result<Args, String> {
@@ -54,6 +60,7 @@ fn parse_args() -> Result<Args, String> {
         max_steps: None,
         regime: ProblemRegime::Unknown,
         log: true,
+        repeat: 1,
     };
     let mut it = std::env::args().skip(1);
     while let Some(flag) = it.next() {
@@ -75,6 +82,12 @@ fn parse_args() -> Result<Args, String> {
                 }
             }
             "--no-log" => args.log = false,
+            "--repeat" => {
+                args.repeat = value()?.parse().map_err(|e| format!("repeat: {e}"))?;
+                if args.repeat == 0 {
+                    return Err("--repeat must be at least 1".into());
+                }
+            }
             other => return Err(format!("unknown argument {other}")),
         }
     }
@@ -274,6 +287,41 @@ fn build(id: &str, entries: &Entries) -> Option<Case> {
     match id {
         // plumbing check of phase 1, outside the deciding set
         "toy" => case(auto(1, plain(|y, dy| dy[0] = -y[0])), (0.0, 1.0), vec![1.0]),
+        // plumbing checks of the phase-2 runner change (handover, lost pilots, time
+        // derivative, fatal pilot), outside the deciding set
+        "toy_stiff" => case(auto(1, plain(|y, dy| dy[0] = -5000.0 * y[0])), (0.0, 1.0), vec![1.0]),
+        "toy_osc" => case(
+            auto(
+                2,
+                plain(|y, dy| {
+                    dy[0] = y[1];
+                    dy[1] = -4.0 * y[0];
+                }),
+            ),
+            (0.0, 30.0),
+            vec![1.0, 0.0],
+        ),
+        "toy_ft" => case(
+            counted(1, entries, timed(|t, y, dy| dy[0] = -5000.0 * (y[0] - t.sin()))),
+            (0.0, 1.0),
+            vec![0.0],
+        ),
+        "toy_fatal" => case(
+            auto(
+                2,
+                guarded(
+                    |y, dy| {
+                        dy[0] = 0.0;
+                        dy[1] = -2000.0 * y[1];
+                    },
+                    |_t, y| y[0] > 1.0,
+                    "toy: y1 > 1",
+                    fatal,
+                ),
+            ),
+            (0.0, 1.0),
+            vec![1.0, 1.0],
+        ),
         // stiff or late stiff
         "P_scalar_fd" => case(scalar_fd(entries), (0.0, 1.0), vec![1.0]),
         "lin_2000" | "lin_3200" | "lin_3400" => {
@@ -563,6 +611,16 @@ fn build(id: &str, entries: &Entries) -> Option<Case> {
     }
 }
 
+/// Whether [`build`] gives the problem a Jacobian callback (dense or banded): its entries are
+/// `entries.jacobian`, charged as `counters.jacobian_builds`. The other problems build their
+/// Jacobian by finite differences of the right-hand side (or take a JVP).
+fn jacobian_callback(id: &str) -> bool {
+    matches!(
+        id,
+        "P_blowup" | "P_mass" | "P_heat_dense" | "P_scalar_dense" | "P_heat_banded"
+    )
+}
+
 // ----------------------------------------------------------------- classification
 
 /// The facade's forward-difference shift of component `y_j` (`crates/vigilode/src/fd.rs`,
@@ -580,8 +638,9 @@ fn fd_shift(yj: f64) -> f64 {
 /// state of an adjacent entry, bit for bit, at a time within twice `sqrt(eps) max(|t|, 1)` of
 /// it (the driver calls `f(t + e, y)` and `f(t - e, y)` in a row). Every other entry is a
 /// stage (the first-stage call `f(t, y)` of an attempt included). Deterministic: the kind of
-/// an entry depends only on the entries at its own time and on its neighbours.
-fn classify(n: usize, flat: &[f64], t0: f64, y0: &[f64]) -> Value {
+/// an entry depends only on the entries at its own time and on its neighbours. Returns the
+/// counts and the kind of every entry ([`STAGE`], [`COLUMN`], [`TIME_DERIVATIVE`]).
+fn classify(n: usize, flat: &[f64], t0: f64, y0: &[f64]) -> (Value, Vec<u8>) {
     let width = n + 1;
     let count = flat.len() / width;
     let time = |i: usize| flat[i * width];
@@ -620,9 +679,11 @@ fn classify(n: usize, flat: &[f64], t0: f64, y0: &[f64]) -> Value {
     }
     let eps = f64::EPSILON.sqrt();
     let (mut stages, mut columns, mut time_derivatives) = (0u64, 0u64, 0u64);
+    let mut kinds = vec![STAGE; count];
     for i in 0..count {
         if column[i] {
             columns += 1;
+            kinds[i] = COLUMN;
             continue;
         }
         let (t, y) = (time(i), state(i));
@@ -635,6 +696,7 @@ fn classify(n: usize, flat: &[f64], t0: f64, y0: &[f64]) -> Value {
             });
         if derivative {
             time_derivatives += 1;
+            kinds[i] = TIME_DERIVATIVE;
         } else {
             stages += 1;
         }
@@ -644,15 +706,23 @@ fn classify(n: usize, flat: &[f64], t0: f64, y0: &[f64]) -> Value {
         .filter(|&i| time(i) == t0 && !same(state(i), y0))
         .count();
     let first_is_t0_y0 = count > 0 && time(0) == t0 && same(state(0), y0);
-    json!({
+    let counts = json!({
         "stage": stages,
         "fd_column": columns,
         "fd_time_derivative": time_derivatives,
         "at_t0": at_t0,
         "at_t0_not_y0": at_t0_other_state,
         "first_is_t0_y0": first_is_t0_y0,
-    })
+    });
+    (counts, kinds)
 }
+
+/// Kinds of a right-hand-side entry ([`classify`]).
+const STAGE: u8 = 0;
+/// See [`STAGE`].
+const COLUMN: u8 = 1;
+/// See [`STAGE`].
+const TIME_DERIVATIVE: u8 = 2;
 
 // ------------------------------------------------------------------------- reporting
 
@@ -750,6 +820,258 @@ fn main() {
             std::process::exit(2);
         }
     };
+    for repeat in 1..=args.repeat {
+        println!("{}", run_case(&args, repeat));
+    }
+}
+
+fn bits(x: f64) -> String {
+    format!("{:016x}", x.to_bits())
+}
+
+/// A fresh copy of the problem with its own entry counters (and log), for the replays of
+/// [`e5_split`]; nothing of it is charged to the case's run.
+#[cfg(feature = "pilots")]
+fn fresh(problem: &str, log: bool) -> (Entries, Case) {
+    let mut entries = Entries::default();
+    if log {
+        entries.log = Some(Arc::default());
+    }
+    let case = build(problem, &entries).expect("the problem was built for the case already");
+    (entries, case)
+}
+
+#[cfg(feature = "pilots")]
+fn taken(entries: &Entries) -> Vec<f64> {
+    entries
+        .log
+        .as_ref()
+        .map(|log| log.lock().unwrap().clone())
+        .unwrap_or_default()
+}
+
+/// E5 of `PREDECLARED.json` by replay (arm N; the route must start with DOPRI5). The case's
+/// right-hand-side entries are split, bit for bit and in order, into
+///
+/// * a prefix of the entries of `Dopri5::solve` with the same options (DOPRI5's stages);
+/// * for each pilot, the entries of `Rodas5p::solve` with `h0 = H` and `max_steps = 1` from
+///   the point `Dopri5::solve` has accepted after the pilot's DOPRI5 attempts (`max_steps` =
+///   the record's `dopri5_attempts`: its final time and state are the last accepted point);
+/// * after a handover, the entries of `Rodas5p::solve` with the attempts left, from the
+///   replayed accepted pilot's end point with `h0 = H`, or, after a numerical DOPRI5 stop, from
+///   the last accepted point of `Dopri5::solve` with the user's `h0`; nothing of DOPRI5 may
+///   follow an accepted or fatal pilot.
+///
+/// The replays run on fresh copies of the problem. The result says whether the split exists,
+/// where it fails, and the entries of each part by kind and at `t0`.
+#[cfg(feature = "pilots")]
+fn e5_split(args: &Args, options: &Options, n_log: &[f64], solution: &VigilodeSolution) -> Value {
+    use vigilode::PilotVerdict;
+    let starts_with_dopri5 = solution
+        .legs
+        .first()
+        .is_some_and(|leg| leg.tier == SelectedTier::Tier1Explicit);
+    if !starts_with_dopri5 {
+        return json!({ "applicable": false });
+    }
+    let (d_entries, d_case) = fresh(&args.problem, true);
+    let n = d_case.y0.len();
+    let width = n + 1;
+    let (t0, t1) = d_case.span;
+    let dopri5 = Dopri5::solve(&d_case.problem, d_case.span, &d_case.y0, options);
+    let d_log = taken(&d_entries);
+    let d_final = match &dopri5 {
+        Ok(s) => (s.final_time, s.final_state.clone()),
+        Err(error) => {
+            return json!({
+                "applicable": true, "split": false,
+                "mismatch": format!("Dopri5::solve refused: {error}"),
+            });
+        }
+    };
+
+    // the pilots, replayed
+    let mut blocks: Vec<Vec<f64>> = Vec::new();
+    let mut pilot_rows = Vec::new();
+    let mut accepted_end: Option<(f64, Vec<f64>)> = None;
+    for pilot in &solution.pilots {
+        let (_, pre_case) = fresh(&args.problem, false);
+        let mut pre_options = options.clone();
+        pre_options.max_steps = pilot.dopri5_attempts;
+        let pre = Dopri5::solve(&pre_case.problem, pre_case.span, &pre_case.y0, &pre_options);
+        let Ok(pre) = pre else {
+            pilot_rows.push(json!({ "index": pilot.index, "replay": "Dopri5::solve refused" }));
+            blocks.push(Vec::new());
+            continue;
+        };
+        let (t_p, y_p) = (pre.final_time, pre.final_state.clone());
+        let (p_entries, p_case) = fresh(&args.problem, true);
+        let mut p_options = options.clone();
+        p_options.h0 = pilot.h;
+        p_options.max_steps = 1;
+        let replay = Rodas5p::solve(&p_case.problem, (t_p, t1), &y_p, &p_options);
+        let block = taken(&p_entries);
+        let end = replay
+            .as_ref()
+            .ok()
+            .and_then(|s| Some((*s.t.last()?, s.final_state()?.to_vec())));
+        if pilot.verdict == PilotVerdict::Accepted {
+            accepted_end = end.clone();
+        }
+        pilot_rows.push(json!({
+            "index": pilot.index,
+            "verdict": pilot.verdict,
+            "record_t_bits": bits(pilot.t),
+            "dopri5_solve_t_bits": bits(t_p),
+            "dopri5_solve_attempts": pre.stats.attempts,
+            "start_equals_record": t_p.to_bits() == pilot.t.to_bits(),
+            "start_after_t0": t_p > t0,
+            "replay_status": replay
+                .as_ref()
+                .map(|s| json!(s.status))
+                .unwrap_or_else(|e| json!(e.to_string())),
+            "replay_end_t_bits": end.as_ref().map(|(t, _)| bits(*t)),
+            "block_entries": block.len() / width,
+        }));
+        blocks.push(block);
+    }
+
+    // the RODAS5P run after a handover, replayed
+    let last_verdict = solution.pilots.last().map(|p| p.verdict);
+    let accepted_last = last_verdict == Some(PilotVerdict::Accepted);
+    let fatal_last = last_verdict == Some(PilotVerdict::Fatal);
+    let used = solution.legs[0].attempts
+        + solution
+            .pilots
+            .iter()
+            .map(|p| p.pilot_attempts)
+            .sum::<usize>();
+    let remaining = options.max_steps.saturating_sub(used);
+    let mut tail_row = Value::Null;
+    let mut tail: Option<Vec<f64>> = None;
+    if solution.legs.len() >= 2 && remaining > 0 {
+        let (kind, start, h0) = if accepted_last {
+            ("accepted-pilot", accepted_end.clone(), solution.pilots.last().map(|p| p.h))
+        } else {
+            ("dopri5-stop", Some(d_final.clone()), None)
+        };
+        if let Some((ts, ys)) = start {
+            let (tl_entries, tl_case) = fresh(&args.problem, true);
+            let mut tl_options = options.clone();
+            tl_options.max_steps = remaining;
+            if let Some(h) = h0 {
+                tl_options.h0 = h;
+            }
+            let replay = Rodas5p::solve(&tl_case.problem, (ts, t1), &ys, &tl_options);
+            let entries = taken(&tl_entries);
+            tail_row = json!({
+                "kind": kind,
+                "start_t_bits": bits(ts),
+                "remaining": remaining,
+                "h0_bits": bits(tl_options.h0),
+                "replay_status": replay
+                    .as_ref()
+                    .map(|s| json!(s.status))
+                    .unwrap_or_else(|e| json!(e.to_string())),
+                "entries": entries.len() / width,
+            });
+            tail = Some(entries);
+        }
+    }
+
+    // the split: 0 = DOPRI5, 1 = a pilot, 2 = the RODAS5P run after the handover
+    let count = n_log.len() / width;
+    let d_count = d_log.len() / width;
+    let same = |a: &[f64], i: usize, b: &[f64], j: usize| {
+        (0..width).all(|k| a[i * width + k].to_bits() == b[j * width + k].to_bits())
+    };
+    let block_at = |pos: usize, block: &[f64]| {
+        let m = block.len() / width;
+        pos + m <= count && (0..m).all(|k| same(n_log, pos + k, block, k))
+    };
+    let mut part = vec![0u8; count];
+    let (mut pos, mut d) = (0usize, 0usize);
+    let mut mismatch: Option<String> = None;
+    'split: {
+        for (q, block) in blocks.iter().enumerate() {
+            if block.is_empty() {
+                mismatch = Some(format!("pilot {q}: no replay"));
+                break 'split;
+            }
+            loop {
+                if block_at(pos, block) {
+                    let m = block.len() / width;
+                    part[pos..pos + m].fill(1);
+                    pos += m;
+                    break;
+                }
+                if pos < count && d < d_count && same(n_log, pos, &d_log, d) {
+                    pos += 1;
+                    d += 1;
+                    continue;
+                }
+                mismatch = Some(format!(
+                    "entry {pos}: neither entry {d} of Dopri5::solve nor the start of pilot {q}"
+                ));
+                break 'split;
+            }
+        }
+        if let Some(tail) = &tail {
+            loop {
+                if block_at(pos, tail) {
+                    let m = tail.len() / width;
+                    part[pos..pos + m].fill(2);
+                    pos += m;
+                    break;
+                }
+                // after an accepted pilot nothing of DOPRI5 may come before the RODAS5P run
+                if !accepted_last && pos < count && d < d_count && same(n_log, pos, &d_log, d) {
+                    pos += 1;
+                    d += 1;
+                    continue;
+                }
+                mismatch = Some(format!("entry {pos}: not the start of the RODAS5P run"));
+                break 'split;
+            }
+        } else if !accepted_last && !fatal_last {
+            while pos < count && d < d_count && same(n_log, pos, &d_log, d) {
+                pos += 1;
+                d += 1;
+            }
+        }
+        if pos != count {
+            mismatch = Some(format!("entry {pos} of {count} is left after the split"));
+        }
+    }
+    let (_, kinds) = classify(n, n_log, t0, &d_case.y0);
+    let part_row = |which: u8| {
+        let members: Vec<usize> = (0..count).filter(|&i| part[i] == which).collect();
+        let kind = |k: u8| members.iter().filter(|&&i| kinds[i] == k).count();
+        json!({
+            "entries": members.len(),
+            "stage": kind(STAGE),
+            "fd_column": kind(COLUMN),
+            "fd_time_derivative": kind(TIME_DERIVATIVE),
+            "at_t0": members.iter().filter(|&&i| n_log[i * width] == t0).count(),
+        })
+    };
+    json!({
+        "applicable": true,
+        "split": mismatch.is_none(),
+        "mismatch": mismatch,
+        "entries": count,
+        "dopri5_solve_entries": d_count,
+        "dopri5_entries": d,
+        "dopri5_is_all_of_dopri5_solve": d == d_count,
+        "first_entry_is_dopri5_solve_first": count > 0 && d_count > 0 && same(n_log, 0, &d_log, 0),
+        "pilots": pilot_rows,
+        "rodas5p_run": tail_row,
+        "parts": { "dopri5": part_row(0), "pilots": part_row(1), "rodas5p_run": part_row(2) },
+    })
+}
+
+/// One run of the case: its JSON line.
+fn run_case(args: &Args, repeat: usize) -> Value {
     let mut entries = Entries::default();
     if args.log {
         entries.log = Some(Arc::default());
@@ -770,13 +1092,26 @@ fn main() {
         options.max_steps = max_steps;
     }
     let (problem, span, y0) = (&case.problem, case.span, &case.y0);
+    #[allow(unused_mut)]
+    let mut e5 = Value::Null;
     let run: Value = match args.arm.as_str() {
         "N" | "T" => {
             let opts = VigilodeOptions::new(options.clone())
                 .strategy(SolverStrategy::Auto)
                 .regime(args.regime);
             match VigilODE::solve(problem, span, y0, opts) {
-                Ok(solution) => unified_fields(n, &solution),
+                Ok(solution) => {
+                    #[cfg(feature = "pilots")]
+                    {
+                        if args.arm == "N"
+                            && let Some(log) = &entries.log
+                        {
+                            let log = log.lock().unwrap().clone();
+                            e5 = e5_split(args, &options, &log, &solution);
+                        }
+                    }
+                    unified_fields(n, &solution)
+                }
                 Err(error) => json!({ "error": error.to_string() }),
             }
         }
@@ -832,15 +1167,20 @@ fn main() {
     let classified = entries
         .log
         .as_ref()
-        .map(|log| classify(n, &log.lock().unwrap(), span.0, y0))
+        .map(|log| classify(n, &log.lock().unwrap(), span.0, y0).0)
         .unwrap_or(Value::Null);
-    let line = json!({
+    json!({
         "schema": "vigilode.v27.runner.v1",
         "build": BUILD,
         "arm": args.arm,
         "problem": args.problem,
+        "repeat": repeat,
+        "pid": std::process::id(),
         "n": n,
         "span": [span.0, span.1],
+        "span_bits": [bits(span.0), bits(span.1)],
+        "y0_bits": state_bits(y0),
+        "jacobian_callback": jacobian_callback(&args.problem),
         "options": options,
         "regime": format!("{:?}", args.regime),
         "entries": {
@@ -852,6 +1192,6 @@ fn main() {
             "rhs_by_kind": classified,
         },
         "run": run,
-    });
-    println!("{line}");
+        "e5": e5,
+    })
 }

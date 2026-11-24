@@ -190,3 +190,46 @@ references.py -> logs/phase2/references.json; run_phase2.py -> logs/phase2/raw/*
 parse_results.py -> RESULTS.json (strict JSON) and REPORT_KO.md (Korean; rendered by the script);
 step 4 logs under logs/phase2/ (contracts tests and the example). The run of step 5 regenerates
 RESULTS.json and REPORT_KO.md and compares bytes.
+
+---------------------------------------------------------------------------------------------
+ADDENDUM 0b (2026-11-24 ~23:50 KST, before any run of the deciding set or of a reference)
+---------------------------------------------------------------------------------------------
+Runner change (runner/src/main.rs, both copies through runner/build.sh, --locked; log
+logs/phase2/runner_build.log; binaries N 06e5782d..., T 0c8459657...; main.rs 82dc5058...):
+  --repeat k, fields repeat, pid, span_bits, y0_bits, jacobian_callback, and for arm N with the
+  entry log the field e5 (function e5_split). Four plumbing problems outside the deciding set:
+  toy_stiff (y' = -5000 y, [0,1]), toy_osc (y'' = -4 y, [0,30]), toy_ft (y' = -5000 (y - sin t),
+  [0,1]), toy_fatal (y1' = 0, y2' = -2000 y2, fatal for y1 > 1). Plumbing check on toy and the
+  four toy_* problems (logs/phase2/runner_toy_phase2.jsonl, 60 lines): repeats equal, D and R
+  equal across the builds, the split exists for every arm-N run (lost, accepted and fatal pilots,
+  FD time derivatives). Nothing of what a run computes changed.
+
+Refinements of section 6 (computation only; criteria unchanged):
+  * Charged Jacobian callbacks = counters.jacobian_builds when the problem has a Jacobian
+    callback (runner field jacobian_callback: P_blowup, P_mass, P_heat_dense, P_scalar_dense,
+    P_heat_banded), else 0 (finite-difference builds are charged as rhs_calls).
+    cb = rhs_calls + jvp_calls + ft_calls + charged Jacobian callbacks.
+  * E5 (iii) is decided by the replay split of the runner (field e5, arm N, run on fresh
+    uncharged copies of the problem), because Solution records only t0 and t1 without dense
+    output, so "a point of its recorded solution" is not available: the entries of the case,
+    bit for bit and in order, must be a prefix of the entries of Dopri5::solve (same options)
+    with, inserted, each pilot's entries = Rodas5p::solve with h0 = H, max_steps = 1 from the
+    last accepted point of Dopri5::solve with max_steps = the record's dopri5_attempts (its time
+    must equal the record's t and be > t0), and after a handover the entries of Rodas5p::solve
+    from the replayed accepted pilot's end point with h0 = H and the attempts left (after a
+    numerical DOPRI5 stop: from DOPRI5's last accepted point with the user's h0); nothing of
+    DOPRI5 after an accepted or fatal pilot. E5 (iii) holds for a run iff e5.split is true, every
+    pilot row has start_equals_record and start_after_t0, and e5.parts.dopri5 has no entry
+    classified fd_column or fd_time_derivative. E5 (ii) additionally needs
+    e5.first_entry_is_dopri5_solve_first and e5.parts.pilots.at_t0 = e5.parts.rodas5p_run.at_t0 = 0.
+    The runner's classifier labels by kind are reported as measures; its adjacency rule also
+    labels the first stage f(t, y) of a RODAS5P attempt as a time derivative when an FD
+    time-derivative call f(t +- e, y) is next to it (seen on toy_ft); no decision uses the labels
+    of the RODAS5P parts.
+  * E10 reading R6: the bound counts pilots; it is evaluated on every N run with at least one
+    pilot. A run without a pilot has nothing to count or bound (for A_D < b/2, e.g. a run that
+    starts RODAS5P with A_D = 0, the formula 1 + floor(log2(A_D/b)) is below 0 or undefined);
+    such runs are reported as "no pilot".
+  * E3 (a) "pilots' counters": the records carry pilot_attempts, pilot_callbacks (charged rhs +
+    ft) and pilot_operations per pilot; the check uses these three and the DOPRI5 leg's counters
+    field by field against D, as in section 6.
