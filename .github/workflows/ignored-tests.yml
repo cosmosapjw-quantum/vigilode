@@ -9,7 +9,8 @@ name: Ignored long tests
 # ones that failed in that run. Full mode: workflow_dispatch with full, main,
 # no baseline or map, a changed runner image or pull-request base, or a
 # global file changed (workspace manifest or lock file, toolchain, .cargo/,
-# tools/ci/, this file). The owner runs the whole suite before a release.
+# tools/ci/, a .gitattributes file, this file). The owner runs the whole suite
+# before a release.
 # Two ignored tests fail by design and are negative controls: the recorded
 # kill gate and the stopping-test difference of the merged stage hook. Each
 # runs, measured, in a step of its own when its target is selected, and passes
@@ -17,24 +18,15 @@ name: Ignored long tests
 # written to the outcome as a failed target, so the next run selects it again.
 # tools/check_ignored_tests_in_ci.py fails if a new ignored test is not
 # reachable from a workflow.
+#
+# No path filter on the triggers: a measured input can be any tracked file
+# (research/, docs/, fixtures/, tools/ and more), and a run whose changes
+# affect no test ends after the selection step.
 
 on:
   pull_request:
-    paths:
-      - '.github/workflows/ignored-tests.yml'
-      - 'crates/**'
-      - 'research/generic_timing_replication_continuation_transaction_v37/results/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - 'tools/check_ignored_tests_in_ci.py'
-      - 'tools/ci/**'
   push:
     branches: [main]
-    paths:
-      - 'crates/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - 'tools/ci/**'
   workflow_dispatch:
     inputs:
       full:
@@ -80,7 +72,11 @@ jobs:
           rustup toolchain install 1.94.1 --profile minimal --component llvm-tools
           rustup override set 1.94.1
       # The selector traces the files that the test processes open (OD-L1-21).
+      # Without strace it still runs every selected test, records why it could
+      # not trace and leaves those targets unmapped, so the next run measures
+      # them again: a failed installation does not stop the job.
       - name: Install strace
+        continue-on-error: true
         run: |
           command -v strace >/dev/null || { sudo apt-get update && sudo apt-get install -y strace; }
           strace -V | head -n 1
@@ -88,14 +84,19 @@ jobs:
         run: python3 -u tools/check_ignored_tests_in_ci.py
       - name: Self-test of the test selection
         run: python3 -u tools/ci/select_tests.py self-test
+      # The baseline is the newest complete run of this job on this branch, of
+      # the same event and repository, at an ancestor of the head, that ran on
+      # the same runner image (hosted runners serve several image versions at
+      # once); with none on this image, the newest on another image, and the
+      # selection runs the whole suite.
       - name: Baseline of the test selection
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 -u tools/ci/select_tests.py baseline --workflow ignored-tests.yml --artifact ci-test-outcome-ignored-tests --branch "$BRANCH" --run-id "$GITHUB_RUN_ID" --head "$HEAD_SHA" --out baseline.json
-      # The pull-request base and the runner image (ImageOS, ImageVersion) are
-      # recorded; a change of either since the baseline runs the whole suite.
-      # The two negative controls are declared: a control without a
-      # measurement selects its target.
+      # The pull-request base of the checked-out merge commit and the runner
+      # image (ImageOS, ImageVersion) are recorded; a change of either since
+      # the baseline runs the whole suite. The two negative controls are
+      # declared: a control without a measurement selects its target.
       - name: Select the tests
         run: python3 -u tools/ci/select_tests.py select --baseline baseline.json --head "$HEAD_SHA" --pr-base "$PR_BASE" --workflow-file .github/workflows/ignored-tests.yml --full "$FULL" --control rodas5p-integrators:dense_wfiltered_contracts#prothero_robinson_wfiltered_enforce_kill_gate --control rodas5p-integrators:stage_clients_krylov_contracts#merged_hook_solution_meets_the_protected_threshold --out selection.json --scope rodas5p-core rodas5p-krylov rodas5p-integrators rodas5p-fair-ab rodas5p-cli vigilode vigilode-coupled
       # Negative control (research/qualification/negative_controls/

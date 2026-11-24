@@ -1,0 +1,9 @@
+# review S-N1 replay with the fix-round selector (2026-11-24T13:22:59Z): the reviewer's script review-soundness/scripts/joint_punct_decide.py (integrate.rs: 'success && collector' -> 'success & &collector', measured map map_e2e_plus_control.json), then the reviewer's five probe pairs
+class: body
+executed by: ['rodas5p-cli::alg02_predictive_controller', 'rodas5p-integrators::lib']
+selected: {'rodas5p-cli': (['alg02_predictive_controller'], False, False), 'rodas5p-integrators': (['generic_scope_contracts', 'ppsw1_6b_contracts', 'ptsw2b_contracts'], True, True), 'rodas5p-fair-ab': ([], False, True)}
+'fn f() { let v = match x { 1 => 2, _ => 3 }; }' -> 'fn f() { let v = match x { 1 = > 2, _ => 3 }; }': structural
+'fn f() { let b = check(x) && check(x); }' -> 'fn f() { let b = check(x) & &check(x); }': structural
+'fn f() { for i in (0..5) {} }' -> 'fn f() { for i in (0. .5) {} }': structural
+'fn f() -> usize { 1 }' -> 'fn f() - > usize { 1 }': structural
+'fn f() { n += 1; }' -> 'fn f() { n + = 1; }': structural

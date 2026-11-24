@@ -6,9 +6,11 @@ A test job does not re-run the whole suite at every push. It runs the test targe
 inputs changed since its baseline, the targets that have no measurement yet, and the targets that
 failed in the baseline run. The owner runs the whole suite before a release.
 
-Baseline: the newest earlier run of the same job on the same branch whose outcome says that its
-selection ran to the end ("complete") at a head that is an ancestor of this head. It hands over its
-outcome (failed targets, runner image, pull-request base) and its input map.
+Baseline: the newest earlier run of the same job on the same branch, of the same event and from the
+same repository, whose outcome says that its selection ran to the end ("complete") at a head that
+is an ancestor of this head and that ran on the same runner image (when no run on this image
+qualifies, the newest qualifying run on another image, and rule 1 runs the whole suite). It hands
+over its outcome (failed targets, runner image, pull-request base) and its input map.
 
 Input map: every run measures, for every test target that it runs, the repository files the target
 depends on and replaces the target's entry; entries of targets that did not run are carried over.
@@ -16,10 +18,11 @@ A target whose measurement fails loses its entry (rule 5 runs it next time).
   compile   files in the rustc dep-info of the target's own artifact (integration tests, lib and
             bin unit tests, examples): mod, #[path], include!, include_str!, include_bytes!
   executed  files with a covered region (-C instrument-coverage; the package's binaries included)
-  read      paths the test process and its children opened, stat'ed, accessed, read as a link or
-            executed successfully (strace attached through cargo's target runner)
+  read      paths the test process and its children opened, stat'ed, accessed, read as a link,
+            executed, created, removed, renamed or changed (strace attached through cargo's target
+            runner)
   dirs      directories they opened as directories (their listing was read)
-  absent    paths they probed that did not exist (ENOENT, ENOTDIR)
+  absent    paths they probed that did not exist (ENOENT, ENOTDIR), a failed chdir included
 Per package the map also records the inputs of the library and binaries as other crates link them
 (the dep-info of the non-test artifacts). Paths outside the repository, under the cargo target
 directory, under .git or under the measurement directory are dropped. Doc tests are not measured.
@@ -27,8 +30,9 @@ directory, under .git or under the measurement directory are dropped. Doc tests 
 Selection rules, in this order; none has a tunable number:
 1. FULL when asked (workflow_dispatch with full, main), when there is no baseline or no input map,
    when the baseline head is not an ancestor of the head, when the runner image (ImageOS,
-   ImageVersion) or the pull-request base sha differs from the baseline's, or when a global file
-   changed: Cargo.toml, Cargo.lock, rust-toolchain*, .cargo/, tools/ci/ and the job's workflow.
+   ImageVersion) or the pull-request base sha (the first parent of the checked-out merge commit)
+   differs from the baseline's, or when a global file changed: Cargo.toml, Cargo.lock,
+   rust-toolchain*, .cargo/, tools/ci/, a .gitattributes file at any depth and the job's workflow.
 2. The changed paths come from `git diff -z --name-status -M base head`; a rename is the deletion
    of its old path and the addition of its new path.
 3. A changed path selects every mapped target whose compile, executed or read set contains it. An
@@ -38,7 +42,8 @@ Selection rules, in this order; none has a tunable number:
 4. Package sources of P: P/Cargo.toml, P/build.rs, P/src/**/*.rs and the recorded library and
    binary inputs of P. Cargo.toml, build.rs, an added, deleted or renamed .rs file and a non-Rust
    input (include_str!, include_bytes!) are structural. A modified .rs file is classified by a Rust
-   tokenizer: noop (only whitespace and comments that are not doc comments changed), body (every
+   tokenizer: noop (only whitespace and comments that are not doc comments changed, and no two
+   punctuation characters were split apart or joined, which would change an operator), body (every
    changed line, old and new side, lies inside the body of a function that is not a const fn) or
    structural (anything else). Structural: every target of P and of every package that depends on
    P. Body: rule 3 and the doc tests of P and of its dependents. Noop: no package rule; rule 3
@@ -89,11 +94,19 @@ SCHEMA_MAP = "vigilode.ci.coverage-map.v2"
 SCHEMA_CONTROL = "vigilode.ci.control-measurement.v1"
 GLOBAL_FILES = ("Cargo.toml", "Cargo.lock")
 GLOBAL_PREFIXES = (".cargo/", "tools/ci/", "rust-toolchain")
+# A .gitattributes file at any depth changes the checked-out bytes of files whose blobs did not
+# change (eol, filters, ident), which no diff of those files shows (review S-N4).
+GLOBAL_NAMES = (".gitattributes",)
 SETS = ("compile", "executed", "read", "dirs", "absent")
 # '?' makes a name that this architecture or strace does not know non-fatal (the legacy calls do
-# not exist on aarch64; openat2, faccessat2, execveat and statx are newer).
+# not exist on aarch64; openat2, faccessat2, execveat, statx and fchmodat2 are newer). The calls
+# after fchdir create, remove, rename or change files and directories: their result depends on
+# whether the path exists, so they count like a probe (review S-N5).
 TRACED = ("openat,?open,?openat2,?creat,execve,?execveat,?stat,?lstat,newfstatat,?statx,?access,faccessat,"
-          "?faccessat2,?readlink,readlinkat,chdir,fchdir")
+          "?faccessat2,?readlink,readlinkat,chdir,fchdir,"
+          "?mkdir,mkdirat,?rename,?renameat,?renameat2,?link,linkat,?symlink,symlinkat,?unlink,unlinkat,"
+          "?rmdir,?mknod,mknodat,utimensat,?utime,?utimes,?futimesat,?chmod,fchmodat,?fchmodat2,?truncate,"
+          "?statfs,?getxattr,?lgetxattr,?listxattr,?llistxattr")
 MESSAGES = "--message-format=json-diagnostic-rendered-ansi"
 RERUN = re.compile(r"`-p (\S+) (--lib|--doc|--test (\S+)|--bin (\S+))`")
 ORDER = ("rodas5p-core", "rodas5p-krylov", "rodas5p-integrators", "rodas5p-fair-ab", "rodas5p-cli",
@@ -256,7 +269,8 @@ def is_package_source(path, directory):
 
 
 def is_global(path, workflow):
-    return path in GLOBAL_FILES or path.startswith(GLOBAL_PREFIXES) or path == workflow
+    return (path in GLOBAL_FILES or path.startswith(GLOBAL_PREFIXES) or path == workflow
+            or path.rsplit("/", 1)[-1] in GLOBAL_NAMES)
 
 
 # ---------------------------------------------------------------------------- Rust tokens
@@ -264,8 +278,12 @@ def is_global(path, workflow):
 
 def rust_tokens(text):
     """Tokens (kind, value, line) of a Rust source. Whitespace and comments that are not doc
-    comments are dropped; doc comments are tokens of kind 'doc'; literals are kind 'lit'."""
+    comments are dropped; doc comments are tokens of kind 'doc'; literals are kind 'lit'. Two
+    punctuation characters with nothing between them are separated by a ('j', '', line) marker:
+    the lexer joins them into one operator ('&&', '=>', '..', '->', '+='), so whitespace or a
+    comment that splits or joins them changes the program (review S-N1)."""
     toks, i, n, line = [], 0, len(text), 1
+    p_end = -1  # offset just after the last punctuation token
     while i < n:
         c = text[i]
         if c == "\n":
@@ -339,8 +357,11 @@ def rust_tokens(text):
             toks.append(("num", m.group(0), line))
             i += m.end()
             continue
+        if p_end == i:
+            toks.append(("j", "", line))
         toks.append(("p", c, line))
         i += 1
+        p_end = i
     return toks
 
 
@@ -613,10 +634,26 @@ class Artifacts:
 
 TRACE_LINE = re.compile(r'^(?P<sc>[a-z0-9_]+)\((?P<args>.*)\)\s+=\s+(?P<ret>-?\d+|\?)'
                         r'(?:<(?P<rpath>(?:[^<>\\]|\\.)*)>)?(?:\s+(?P<err>E[A-Z0-9]+))?')
-AT_ARGS = re.compile(r'^(?:AT_FDCWD|-?\d+)(?:<(?P<dir>(?:[^<>\\]|\\.)*)>)?,\s*"(?P<path>(?:[^"\\]|\\.)*)"')
-PLAIN_ARGS = re.compile(r'^"(?P<path>(?:[^"\\]|\\.)*)"')
-FD_ARG = re.compile(r'^-?\d+<(?P<dir>(?:[^<>\\]|\\.)*)>')
-AT_SYSCALLS = {"openat", "openat2", "newfstatat", "statx", "faccessat", "faccessat2", "readlinkat", "execveat"}
+STRING_ARG = re.compile(r'^"(?P<path>(?:[^"\\]|\\.)*)"')
+FD_ARG = re.compile(r'^(?P<fd>AT_FDCWD|-?\d+)(?:<(?P<dir>(?:[^<>\\]|\\.)*)>)?')
+# The path arguments of every traced call: (index of its directory descriptor or None, index of
+# the path). A symlink's target is the link's content, not a path that the call looks up.
+PATH_ARGS = {
+    "open": [(None, 0)], "creat": [(None, 0)], "openat": [(0, 1)], "openat2": [(0, 1)],
+    "execve": [(None, 0)], "execveat": [(0, 1)],
+    "stat": [(None, 0)], "lstat": [(None, 0)], "newfstatat": [(0, 1)], "statx": [(0, 1)],
+    "access": [(None, 0)], "faccessat": [(0, 1)], "faccessat2": [(0, 1)],
+    "readlink": [(None, 0)], "readlinkat": [(0, 1)], "chdir": [(None, 0)],
+    "mkdir": [(None, 0)], "mkdirat": [(0, 1)], "rmdir": [(None, 0)],
+    "rename": [(None, 0), (None, 1)], "renameat": [(0, 1), (2, 3)], "renameat2": [(0, 1), (2, 3)],
+    "link": [(None, 0), (None, 1)], "linkat": [(0, 1), (2, 3)],
+    "symlink": [(None, 1)], "symlinkat": [(1, 2)], "unlink": [(None, 0)], "unlinkat": [(0, 1)],
+    "mknod": [(None, 0)], "mknodat": [(0, 1)],
+    "utimensat": [(0, 1)], "utime": [(None, 0)], "utimes": [(None, 0)], "futimesat": [(0, 1)],
+    "chmod": [(None, 0)], "fchmodat": [(0, 1)], "fchmodat2": [(0, 1)], "truncate": [(None, 0)],
+    "statfs": [(None, 0)], "getxattr": [(None, 0)], "lgetxattr": [(None, 0)],
+    "listxattr": [(None, 0)], "llistxattr": [(None, 0)],
+}
 OPEN_SYSCALLS = {"open", "openat", "openat2", "creat"}
 ESCAPES = {"n": 10, "t": 9, "r": 13, "v": 11, "f": 12, "a": 7, "b": 8, "\\": 92, '"': 34, "'": 39,
            "<": 60, ">": 62}
@@ -648,48 +685,81 @@ def unescape(text):
     return out.decode("utf-8", "surrogateescape")
 
 
+def split_args(text):
+    """The top-level arguments of a traced call. Quoted strings, the <path> annotations of -y and
+    bracketed groups stay whole, so a comma inside a path does not split it."""
+    out, buf, depth, i, n = [], [], 0, 0, len(text)
+    while i < n:
+        c = text[i]
+        if c in '"<':
+            close, j = ('"' if c == '"' else ">"), i + 1
+            while j < n and text[j] != close:
+                j += 2 if text[j] == "\\" else 1
+            buf.append(text[i:j + 1])
+            i = j + 1
+            continue
+        if c in "[{(":
+            depth += 1
+        elif c in "]})":
+            depth -= 1
+        elif c == "," and depth == 0:
+            out.append("".join(buf).strip())
+            buf, i = [], i + 1
+            continue
+        buf.append(c)
+        i += 1
+    if buf or out:
+        out.append("".join(buf).strip())
+    return out
+
+
 def trace_events(lines, initial_cwd):
     """(kind, absolute path) for the file-system observations in one `strace -ff -y` output file:
-    'read' (opened, stat'ed, accessed, executed), 'dir' (opened as a directory), 'absent'."""
+    'read' (opened, stat'ed, accessed, executed, created, removed, renamed, changed), 'dir'
+    (opened as a directory), 'absent' (a call that failed with ENOENT or ENOTDIR, a failed chdir
+    included)."""
     cwd = initial_cwd
     for line in lines:
         m = TRACE_LINE.match(line)
         if not m or m.group("ret") == "?":
             continue
-        sc, args, ok = m.group("sc"), m.group("args"), not m.group("ret").startswith("-")
-        if sc in ("chdir", "fchdir"):
-            a = (PLAIN_ARGS if sc == "chdir" else FD_ARG).match(args)
-            if ok and a:
-                given = unescape(a.group("path") if sc == "chdir" else a.group("dir"))
-                cwd = os.path.normpath(os.path.join(cwd, given))
+        sc, ok = m.group("sc"), not m.group("ret").startswith("-")
+        args = split_args(m.group("args"))
+        if sc == "fchdir":
+            a = FD_ARG.match(args[0]) if args else None
+            if ok and a and a.group("dir") is not None:
+                cwd = os.path.normpath(os.path.join(cwd, unescape(a.group("dir"))))
             continue
-        if sc in AT_SYSCALLS:
-            a = AT_ARGS.match(args)
-            if not a:
-                continue
-            base = cwd if a.group("dir") is None else unescape(a.group("dir"))
-            if args.startswith("AT_FDCWD") and a.group("dir") is not None:
-                cwd = base
-        else:
-            a = PLAIN_ARGS.match(args)
-            if not a:
-                continue
-            base = cwd
-        given = unescape(a.group("path"))
-        if not given:
-            continue  # AT_EMPTY_PATH: the descriptor itself, already recorded when it was opened
-        lexical = os.path.normpath(os.path.join(base, given))
-        if not ok:
-            yield ("absent" if m.group("err") in ("ENOENT", "ENOTDIR") else "read"), lexical
-            continue
-        if sc in OPEN_SYSCALLS:
-            resolved = unescape(m.group("rpath")) if m.group("rpath") else lexical
-            kind = "dir" if "O_DIRECTORY" in args or os.path.isdir(resolved) else "read"
-            yield kind, lexical
-            if resolved != lexical:
-                yield kind, resolved
-        else:
-            yield "read", lexical
+        for fd_index, path_index in PATH_ARGS.get(sc, ()):
+            s = STRING_ARG.match(args[path_index]) if path_index < len(args) else None
+            if not s:
+                continue  # NULL or not a string
+            given, base = unescape(s.group("path")), cwd
+            if not given:
+                continue  # AT_EMPTY_PATH: the descriptor itself, already recorded when it was opened
+            if fd_index is not None:
+                a = FD_ARG.match(args[fd_index]) if fd_index < len(args) else None
+                if not a:
+                    continue
+                if a.group("dir") is not None:
+                    base = unescape(a.group("dir"))
+                    if a.group("fd") == "AT_FDCWD":
+                        cwd = base
+                elif a.group("fd") != "AT_FDCWD" and not given.startswith("/"):
+                    continue  # relative to a descriptor whose path strace did not print
+            lexical = os.path.normpath(os.path.join(base, given))
+            if not ok:
+                yield ("absent" if m.group("err") in ("ENOENT", "ENOTDIR") else "read"), lexical
+            elif sc == "chdir":
+                cwd = lexical
+            elif sc in OPEN_SYSCALLS:
+                resolved = unescape(m.group("rpath")) if m.group("rpath") else lexical
+                kind = "dir" if "O_DIRECTORY" in m.group("args") or os.path.isdir(resolved) else "read"
+                yield kind, lexical
+                if resolved != lexical:
+                    yield kind, resolved
+            else:
+                yield "read", lexical
 
 
 def trace_sets(trace_dir, repo, initial_cwd, stats=None):
@@ -791,6 +861,12 @@ def match_inputs(sets, status, path, cls, own_crate, created=(), listing=None):
         probed = [d for d in [path, *created] if d in sets["absent"]]
         if probed:
             why.append(f"probed {probed[0]}, which the change adds")
+        # A directory missing from the head trees can exist in the tested merge tree (through the
+        # pull-request base) or be made by the test itself: a test that observed it sees the
+        # change (review S-N3).
+        seen = [d for d in created if d in sets["read"] or d in sets["dirs"]]
+        if seen:
+            why.append(f"observed {seen[0]}, which the change adds to")
     if status == "D":
         seen = [d for d in created if d in sets["read"] or d in sets["dirs"]]
         if seen:
@@ -951,6 +1027,18 @@ def full_reasons(asked, base, ancestor, map_ok, env_now, env_base):
     return reasons
 
 
+def tested_pr_base(root, head, payload):
+    """The base of the tree a pull-request run tests: the first parent of the checked-out merge
+    commit when its second parent is the pull-request head, else the payload's base sha. A run
+    records it, and a different base since the baseline means a full run (rule 1)."""
+    if not payload:
+        return None
+    parents = git(root, "rev-list", "--parents", "-n", "1", "HEAD", check=False).stdout.split()
+    if len(parents) == 3 and parents[2] == head:
+        return parents[1]
+    return payload
+
+
 def load_map(path):
     if not path or not os.path.exists(path):
         return None
@@ -969,7 +1057,8 @@ def select(args):
     head, base = args.head, baseline.get("base")
     env_now = {"image_os": os.environ.get("ImageOS") or None,
                "image_version": os.environ.get("ImageVersion") or None,
-               "pr_base": args.pr_base or None}
+               "pr_base": tested_pr_base(root, head, args.pr_base or None),
+               "pr_base_payload": args.pr_base or None}
     cmap = load_map(baseline.get("map_path")) if base else None
     reasons = full_reasons(str(args.full).lower() == "true", base,
                            bool(base) and is_ancestor(root, base, head), cmap is not None,
@@ -982,6 +1071,10 @@ def select(args):
                  "owners": {}, "map_targets": None if cmap is None else len(cmap["targets"]),
                  "controls": list(args.control), "baseline_failures_added": [],
                  "baseline_failures_dropped": []}
+    first_notes = []
+    if env_now["pr_base"] != env_now["pr_base_payload"]:
+        first_notes.append(f"the checked-out merge commit has the base {env_now['pr_base']}, the event "
+                           f"payload names {env_now['pr_base_payload']}: the tested base is recorded")
     changes = []
     if not reasons:
         changes = changed_entries(root, base, head)
@@ -989,7 +1082,7 @@ def select(args):
         reasons = [f"global file changed: {p}" for p in sorted({p for _, p in changes if is_global(p, workflow)})]
     selection["changed"] = [{"status": s, "path": p} for s, p in changes]
     if reasons:
-        selection.update(mode="full", reasons=reasons)
+        selection.update(mode="full", reasons=reasons, notes=first_notes)
         for name in scope:
             selection["packages"][name] = dict(new_entry(), all=True, lib=packages[name]["lib"],
                                                doc=packages[name]["doc"], why={"*": reasons})
@@ -999,6 +1092,7 @@ def select(args):
         lambda path: classify_source_change(root, base, head, path),
         lambda side, dirs: existing_dirs(root, base if side == "base" else head, dirs),
         baseline.get("failed", []), args.control))
+    selection["notes"] = first_notes + selection["notes"]
     return finish(selection, args.out)
 
 
@@ -1438,15 +1532,30 @@ def has(args):
 # ---------------------------------------------------------------------------- baseline
 
 
+def runner_image(env):
+    """(image_os, image_version) of an outcome's environment; an empty string counts as missing."""
+    return (env.get("image_os") or None, env.get("image_version") or None)
+
+
 def baseline(args):
+    """The baseline: the newest earlier run of this job on this branch, of the same event and from
+    this repository, whose outcome is complete at an ancestor of the head and that ran on the same
+    runner image. Hosted runners serve more than one image version at a time (review M-N1), so
+    runs on another image are passed over; when no run on this image qualifies, the newest
+    qualifying run on another image is the baseline and rule 1 makes the selection full."""
     out = {"base": None, "run_id": None, "failed": [], "map_path": None, "environment": {}, "note": "",
            "errors": []}
     repository = os.environ.get("GITHUB_REPOSITORY")
+    event = os.environ.get("GITHUB_EVENT_NAME") or None
+    image_now = (os.environ.get("ImageOS") or None, os.environ.get("ImageVersion") or None)
     if not repository or not shutil.which("gh"):
         out["note"] = "no GitHub repository or gh in this environment"
     else:
         root = repo_root()
-        query = urllib.parse.urlencode({"branch": args.branch, "per_page": 100})
+        params = {"branch": args.branch, "per_page": 100}
+        if event:
+            params["event"] = event
+        query = urllib.parse.urlencode(params)
         listing = sh(["gh", "api", f"repos/{repository}/actions/workflows/{args.workflow}/runs?{query}"],
                      check=False)
         if listing.returncode != 0:
@@ -1457,9 +1566,21 @@ def baseline(args):
             runs = [r for r in json.loads(listing.stdout).get("workflow_runs", [])
                     if str(r["id"]) != str(args.run_id) and (current is None or r["id"] < current)]
             runs.sort(key=lambda r: (r["created_at"], r["id"]), reverse=True)
-            counts = {"without the artifact": 0, "not complete": 0, "not an ancestor": 0}
+            counts = {"of another event": 0, "from another repository": 0, "without the artifact": 0,
+                      "not complete": 0, "not an ancestor": 0, "on another runner image": 0}
+            chosen, fallback, scratch = None, None, []
             for r in runs:
+                # Pull-request, push and dispatch runs test different trees (merge commit, branch)
+                # and record different bases (review M-N3); a fork's run with the same branch name
+                # must not steer this repository's selection (review M-N5).
+                if event and r.get("event") != event:
+                    counts["of another event"] += 1
+                    continue
+                if ((r.get("head_repository") or {}).get("full_name")) != repository:
+                    counts["from another repository"] += 1
+                    continue
                 tmp = tempfile.mkdtemp(prefix="ci-baseline-")
+                scratch.append(tmp)
                 got = sh(["gh", "run", "download", str(r["id"]), "-R", repository, "-n", args.artifact,
                           "-D", tmp], check=False)
                 path = os.path.join(tmp, "outcome.json")
@@ -1477,6 +1598,17 @@ def baseline(args):
                 if args.head and not is_ancestor(root, outcome["head"], args.head):
                     counts["not an ancestor"] += 1
                     continue
+                if runner_image(outcome.get("environment") or {}) != image_now:
+                    counts["on another runner image"] += 1
+                    fallback = fallback or (r, outcome, tmp)
+                    continue
+                chosen = (r, outcome, tmp)
+                break
+            if chosen is None and fallback is not None:
+                chosen = fallback
+                counts["on another runner image"] -= 1
+            if chosen is not None:
+                r, outcome, tmp = chosen
                 map_path = os.path.join(tmp, "map.json")
                 if os.path.exists(map_path):
                     keep = os.path.join(os.path.dirname(os.path.abspath(args.out)), "baseline_map.json")
@@ -1485,12 +1617,17 @@ def baseline(args):
                 out.update(base=outcome["head"], run_id=r["id"], failed=outcome.get("failed", []),
                            environment=outcome.get("environment") or {},
                            note=f"run {r['id']} ran its selection to the end at {outcome['head'][:8]}")
-                break
+                if chosen is fallback:
+                    image = runner_image(out["environment"])
+                    out["note"] += (f"; no complete run on the runner image {image_now[0]} {image_now[1]}, "
+                                    f"this one ran on {image[0]} {image[1]}")
             else:
                 out["note"] = "no earlier run of this job on this branch has a complete outcome"
+            for tmp in scratch:
+                shutil.rmtree(tmp, ignore_errors=True)
             skipped = ", ".join(f"{v} {k}" for k, v in counts.items() if v)
             if skipped:
-                out["note"] += f" (newer runs skipped: {skipped})" if out["base"] else f" ({skipped})"
+                out["note"] += f" (runs passed over: {skipped})" if out["base"] else f" ({skipped})"
             if out["errors"]:
                 print("\n".join(out["errors"]), file=sys.stderr, flush=True)
                 out["note"] += f"; {len(out['errors'])} artifact downloads failed"
@@ -1502,9 +1639,69 @@ def baseline(args):
 # ---------------------------------------------------------------------------- self-test
 
 
-def check_workflows(root):
-    """Text checks of the CI mechanics that the review asked for (F-01, F-03, F-05, F-06, F-07,
-    F-11, F-12, F8/F-04, F14). Returns the list of problems."""
+def workspace_members(root):
+    """{package name: member directory} from the workspace manifests, without cargo."""
+    try:
+        import tomllib
+    except ImportError:  # Python before 3.11: the two fields by pattern
+        tomllib = None
+
+    def manifest(directory):
+        with open(os.path.join(root, directory, "Cargo.toml"), "rb") as f:
+            data = f.read()
+        if tomllib:
+            return tomllib.loads(data.decode("utf-8"))
+        text = data.decode("utf-8")
+        members = re.search(r"^members\s*=\s*\[(.*?)\]", text, re.M | re.S)
+        name = re.search(r"^\[package\][^\[]*?^name\s*=\s*\"([^\"]+)\"", text, re.M | re.S)
+        return {"workspace": {"members": re.findall(r"\"([^\"]+)\"", members.group(1)) if members else []},
+                "package": {"name": name.group(1)} if name else {}}
+
+    out = {}
+    for directory in manifest(".").get("workspace", {}).get("members", []):
+        out[manifest(directory).get("package", {}).get("name", directory)] = directory
+    return out
+
+
+SPAN_SENSITIVE = re.compile(r"\b(?:line|column)!\s*\(|Location::caller|track_caller")
+RS_AS_TEXT = re.compile(r"\binclude_(?:str|bytes)!\s*\(\s*\"[^\"]*\.rs\"")
+DOC_FILE_ACCESS = re.compile(r"\b(?:fs::|File::|include_str!|include_bytes!|include!|read_to_string|read_dir|current_dir)")
+
+
+def check_sources(root, members):
+    """The facts that the noop rule (R8) and the unmeasured doc tests (R10) rely on, checked in the
+    package sources of every workspace member (review S-N6): no source position (line!, column!,
+    Location::caller, #[track_caller]) whose value a comment-only change could shift, no .rs file
+    included as text by its own crate, no file access in a doc test. Returns the problems."""
+    problems = []
+    for directory in sorted(members.values()):
+        listed = git(root, "ls-files", "-z", "--", f"{directory}/src").stdout.split("\0")
+        for rel in sorted(p for p in listed if p.endswith(".rs")):
+            with open(os.path.join(root, rel), encoding="utf-8", errors="replace") as f:
+                lines = f.read().splitlines()
+            fence = False
+            for number, line in enumerate(lines, 1):
+                s = line.strip()
+                if s.startswith(("///", "//!")):
+                    body = s[3:].strip()
+                    if body.startswith("```"):
+                        fence = not fence
+                    elif fence and DOC_FILE_ACCESS.search(body):
+                        problems.append(f"{rel}:{number}: a doc test accesses files (R10: doc tests are not measured)")
+                    continue
+                fence = False
+                code = s.split("//", 1)[0]
+                if SPAN_SENSITIVE.search(code):
+                    problems.append(f"{rel}:{number}: uses a source position (R8: a comment-only change "
+                                    "would not select the targets that observe it)")
+                if RS_AS_TEXT.search(code):
+                    problems.append(f"{rel}:{number}: includes a .rs file as text (R8)")
+    return problems
+
+
+def check_workflows(root, members=None):
+    """Text checks of the CI mechanics that the reviews asked for (F-01, F-03, F-05, F-06, F-07,
+    F-11, F-12, F8/F-04, F14; S-N2, M-N2, M-N4, M-N6, M-N8). Returns the list of problems."""
     problems = []
     wf = os.path.join(root, ".github", "workflows")
 
@@ -1516,11 +1713,20 @@ def check_workflows(root):
         m = re.search(rf"^  {re.escape(job)}:\n(.*?)(?=^  [A-Za-z0-9_-]+:\n|\Z)", text, re.M | re.S)
         return m.group(1) if m else ""
 
-    prod, ign, a1 = read("production.yml"), read("ignored-tests.yml"), read("a1-inner-tolerance-parity.yml")
+    prod, ign = read("production.yml"), read("ignored-tests.yml")
     if re.search(r"^concurrency:", prod, re.M):
         problems.append("production.yml: a workflow-level concurrency group cancels the test job")
     for text, name, job in ((prod, "production.yml", "test"), (ign, "ignored-tests.yml", "ignored-tests")):
         block = job_block(text, job)
+        trigger = re.search(r"^on:\n(.*?)(?=^\S)", text, re.M | re.S)
+        if trigger and re.search(r"^\s+paths(?:-ignore)?:", trigger.group(1), re.M):
+            problems.append(f"{name}: a path filter on the triggers leaves out measured inputs (S-N2, M-N4)")
+        if not re.search(r"- name: Install strace\n\s+continue-on-error: true\n", block):
+            problems.append(f"{name}: a failed strace installation fails the job (M-N6)")
+        scope = re.search(r"select_tests\.py select .*--scope ([^\n]+)", block)
+        missing = sorted(set(members or {}) - set(scope.group(1).split() if scope else []))
+        if missing:
+            problems.append(f"{name}: job {job} does not select from the members {', '.join(missing)} (M-N2)")
         if not re.search(r"concurrency:\s*\n\s+group: .*\n\s+cancel-in-progress: false", block):
             problems.append(f"{name}: job {job} does not queue (cancel-in-progress false)")
         for line in block.splitlines():
@@ -1547,8 +1753,12 @@ def check_workflows(root):
         problems.append("ignored-tests.yml: a failing has call does not fail its step")
     if ign.count("select_tests.py control") != 2 or "--failed-controls" not in ign:
         problems.append("ignored-tests.yml: negative controls are not measured or not merged into the outcome")
-    if "Run the workspace test closure" in a1 or "cargo test --workspace --all-targets --locked\n" in a1:
-        problems.append("a1-inner-tolerance-parity.yml: still runs the workspace test closure")
+    # The A1 workflow is checked only while it exists: renaming or removing it must not fail the
+    # test jobs, whose self-test runs these checks (review M-N8).
+    if os.path.exists(os.path.join(wf, "a1-inner-tolerance-parity.yml")):
+        a1 = read("a1-inner-tolerance-parity.yml")
+        if "Run the workspace test closure" in a1 or "cargo test --workspace --all-targets --locked\n" in a1:
+            problems.append("a1-inner-tolerance-parity.yml: still runs the workspace test closure")
     return problems
 
 
@@ -1601,6 +1811,29 @@ impl S {
     assert [(s, e, c) for s, e, c in spans] == [(4, 7, False), (11, 13, True), (16, 18, False)], spans
     toks = rust_tokens("let s = r#\"a \"quoted\" b\"#; let c = b'x'; fn q<'a>() {}")
     assert ("lit", 'r#"a "quoted" b"#', 1) in toks, toks
+    # whitespace or a comment that splits or joins an operator is a change (review S-N1)
+    ops = """fn f(a: bool, b: bool) -> usize {
+    let c = a && b;
+    let r = (0..5).len();
+    let mut n = r;
+    n += 1;
+    match c { true => n, false => 0 }
+}
+
+fn g() -> usize {
+    1
+}
+"""
+    for before, after, want in (("a && b", "a & &b", "body"), ("(0..5)", "(0. .5)", "body"),
+                                ("n += 1", "n + = 1", "body"), ("true => n", "true = > n", "body"),
+                                ("a && b", "a &/**/& b", "body"), ("fn g() -> usize", "fn g() - > usize", "structural"),
+                                ("a && b", "a  &&  b", "noop"), ("(0..5)", "( 0..5 )", "noop"),
+                                ("n += 1", "n +=  1 /* one */", "noop")):
+        new = ops.replace(before, after, 1)
+        got = classify_texts(ops, new, diff_of(ops, new))
+        assert got == want, (before, after, want, got)
+    assert [t for t in rust_tokens("a&&b") if t[0] in "pj"] == [("p", "&", 1), ("j", "", 1), ("p", "&", 1)]
+    assert [t for t in rust_tokens("a& &b") if t[0] in "pj"] == [("p", "&", 1), ("p", "&", 1)]
 
     # dep-info: first rule, escaped spaces, entries resolved against the root, not the cwd (F13)
     deps = parse_dep_info("/t/deps/a-1.d: /r/tests/a.rs crates/c/tests/../../../research/x/w.rs /r/tests/my\\ file.rs\n\n"
@@ -1671,6 +1904,31 @@ impl S {
     assert ("read", "/r/research/d/f.json") in events, events
     assert not any(p == "/r/docs/T.toml" and k != "read" for k, p in events), events
     assert len(events) == 9, events
+    # calls that create, remove, rename or change paths count like probes; a failed chdir is a
+    # probe and leaves the cwd (review S-N5)
+    lines = [
+        'mkdir("/r/research/out", 0777)          = 0',
+        'mkdirat(AT_FDCWD</r/research>, "made", 0777) = -1 EEXIST (File exists)',
+        'renameat2(AT_FDCWD</r/research>, "a.json", AT_FDCWD</r/research>, "b.json", RENAME_NOREPLACE) = -1 EEXIST (File exists)',
+        'rename("/r/research/c.json", "/r/research/d,e.json") = -1 ENOENT (No such file or directory)',
+        'unlinkat(AT_FDCWD</r/research>, "old.json", 0) = 0',
+        'symlinkat("../target", AT_FDCWD</r/research>, "lnk") = 0',
+        'linkat(AT_FDCWD</r/research>, "x", 7</r/research/sub>, "y", 0) = 0',
+        'utimensat(3</r/research/out>, NULL, NULL, 0) = 0',
+        'chdir("/r/nowhere")                     = -1 ENOENT (No such file or directory)',
+        'unlink("rel.txt")                       = -1 ENOENT (No such file or directory)',
+        'getxattr("/r/research/b.json", "user.x", 0x7ffd, 64) = -1 ENODATA (No data available)',
+        'truncate("/r/research/t.bin", 0)        = 0',
+    ]
+    events = list(trace_events(lines, "/r/crates/i"))
+    assert events == [("read", "/r/research/out"), ("read", "/r/research/made"), ("read", "/r/research/a.json"),
+                      ("read", "/r/research/b.json"), ("absent", "/r/research/c.json"),
+                      ("absent", "/r/research/d,e.json"), ("read", "/r/research/old.json"),
+                      ("read", "/r/research/lnk"), ("read", "/r/research/x"), ("read", "/r/research/sub/y"),
+                      ("absent", "/r/nowhere"), ("absent", "/r/research/rel.txt"), ("read", "/r/research/b.json"),
+                      ("read", "/r/research/t.bin")], events
+    assert split_args('AT_FDCWD</r/a,b>, "x, y", [1, 2], {a=1, b=2}, 0') == [
+        "AT_FDCWD</r/a,b>", '"x, y"', "[1, 2]", "{a=1, b=2}", "0"]
     assert unescape(r"a\x41\101\n\"") == 'aAA\n"', unescape(r"a\x41\101\n\"")
     with tempfile.TemporaryDirectory() as d:
         assert strace_works(None, d) == (None, None, "strace is not installed")
@@ -1735,6 +1993,9 @@ impl S {
     assert is_global(".cargo/config.toml", "w.yml") and is_global("tools/ci/select_tests.py", "w.yml")
     assert is_global(".github/workflows/p.yml", ".github/workflows/p.yml")
     assert not is_global("crates/int/Cargo.toml", "w.yml") and not is_global("tools/x.py", "w.yml")
+    # .gitattributes at any depth changes checked-out bytes without a blob change (review S-N4)
+    assert is_global(".gitattributes", "w.yml") and is_global("research/r/.gitattributes", "w.yml")
+    assert not is_global("research/r/x.gitattributes", "w.yml")
 
     # selection rules 3-8 on a synthetic input map (findings F1-F7, F10, F11)
     pk["core"]["dir"], pk["int"]["dir"], pk["cli"]["dir"], pk["vig"]["dir"] = (
@@ -1810,6 +2071,12 @@ impl S {
     assert chosen(s) >= {"core:*", "int:*", "cli:*", "vig:*"}, chosen(s)
     s = pick([("D", "crates/core/src/x/old.txt")])
     assert chosen(s) == {"int:t_ok", "int:doc"} and "observed crates/core/src" in str(s["packages"]["int"]["why"]), s
+    # a directory that the head trees lack but the tested merge tree had, listed by a test: a file
+    # added there selects the test (review S-N3)
+    merge_map = dict(cmap, **{"int::t_ok": dict(cmap["int::t_ok"], dirs=cmap["int::t_ok"]["dirs"] + ["research/merged"])})
+    s = pick([("A", "research/merged/x.json")], the_map=merge_map)
+    assert chosen(s) == {"int:t_ok", "int:doc"} and "observed research/merged" in str(s["packages"]["int"]["why"]), s
+    assert chosen(pick([("A", "research/merged/x.json")])) == set()
     # body change: only the targets that executed the file, plus doc tests of the package and dependents
     s = pick([("M", "crates/core/src/a.rs")], cls={"crates/core/src/a.rs": "body"})
     assert chosen(s) == {"core:lib", "core:c1", "core:doc", "int:doc", "vig:doc"}, chosen(s)
@@ -1884,18 +2151,27 @@ impl S {
         other = sh(GIT + ident + ["-C", repo, "commit-tree", "-p", heads[0], "-m", "side",
                                   sh(GIT + ["-C", repo, "rev-parse", "HEAD^{tree}"]).stdout.strip()]).stdout.strip()
         os.makedirs(fake)
-        runs = {"workflow_runs": [{"id": i, "created_at": f"2026-11-24T0{i - 100}:00:00Z"} for i in range(101, 107)]}
+        # run 97 is a dispatch run, 98 comes from a fork, 100 has no artifact; 97-99 ran on images
+        runs = {"workflow_runs": [{"id": i, "created_at": f"2026-11-24T{i - 90:02d}:00:00Z",
+                                   "event": "workflow_dispatch" if i == 97 else "pull_request",
+                                   "head_repository": {"full_name": "f/r" if i == 98 else "o/r"}}
+                                  for i in range(97, 107)]}
         with open(os.path.join(d, "listing.json"), "w") as f:
             json.dump(runs, f)
+        image2 = {"pr_base": "b", "image_os": "ubuntu26", "image_version": "2"}
+        image3 = dict(image2, image_version="3")
         outcomes = {104: {"head": other, "complete": True}, 103: {"head": heads[1], "complete": False},
                     101: {"head": heads[0], "complete": True, "failed": [{"package": "p", "target": "t"}],
-                          "environment": {"pr_base": "b"}}}
+                          "environment": {"pr_base": "b"}},
+                    99: {"head": heads[0], "complete": True, "environment": image2},
+                    98: {"head": heads[0], "complete": True, "environment": image3},
+                    97: {"head": heads[0], "complete": True, "environment": image3}}
         for run_id, o in outcomes.items():
             os.makedirs(os.path.join(d, "art", str(run_id)))
             with open(os.path.join(d, "art", str(run_id), "outcome.json"), "w") as f:
                 json.dump(dict({"schema": SCHEMA_OUTCOME, "failed": []}, **o), f)
-        with open(os.path.join(d, "art", "101", "map.json"), "w") as f:
-            json.dump({"schema": SCHEMA_MAP, "targets": {}, "packages": {}}, f)
+            with open(os.path.join(d, "art", str(run_id), "map.json"), "w") as f:
+                json.dump({"schema": SCHEMA_MAP, "targets": {}, "packages": {}, "run": run_id}, f)
         with open(os.path.join(fake, "gh"), "w") as f:
             f.write('#!/bin/sh\nD="$(dirname "$0")/.."\n'
                     'if [ "$1" = api ]; then [ -f "$D/fail" ] && { echo "HTTP 403: rate limited" >&2; exit 1; }; '
@@ -1905,23 +2181,41 @@ impl S {
                     '[ -f "$D/art/$id/outcome.json" ] && { cp "$D/art/$id/"* "$dest/"; exit 0; }\n'
                     'echo "no valid artifacts found to download" >&2; exit 1\n')
         os.chmod(os.path.join(fake, "gh"), 0o755)
-        env = dict(os.environ, PATH=fake + os.pathsep + os.environ.get("PATH", ""), GITHUB_REPOSITORY="o/r")
+        env = {k: v for k, v in os.environ.items() if k not in ("ImageOS", "ImageVersion", "GITHUB_EVENT_NAME")}
+        env.update(PATH=fake + os.pathsep + os.environ.get("PATH", ""), GITHUB_REPOSITORY="o/r",
+                   GITHUB_EVENT_NAME="pull_request")
 
-        def lookup(name):
+        def lookup(name, **image):
             out = os.path.join(d, name)
             r = subprocess.run([sys.executable, "-I", os.path.abspath(__file__), "baseline", "--workflow", "w.yml",
                                 "--artifact", "a", "--branch", "x;$(false)", "--run-id", "105", "--head", heads[2],
-                                "--out", out], cwd=repo, env=env, capture_output=True, text=True)
+                                "--out", out], cwd=repo, env=dict(env, **image), capture_output=True, text=True)
             assert r.returncode == 0, r.stderr
             return load_json(out)
         got = lookup("b1.json")
         assert got["base"] == heads[0] and got["run_id"] == 101 and got["failed"] == [{"package": "p", "target": "t"}], got
-        assert got["environment"] == {"pr_base": "b"} and got["map_path"], got
+        assert got["environment"] == {"pr_base": "b"} and load_json(got["map_path"])["run"] == 101, got
         assert got["errors"] == ["download of run 102 failed (exit 1): HTTP 502: Bad Gateway"], got
         assert "1 not complete, 1 not an ancestor" in got["note"], got
+        # the newest run on the same runner image is the baseline, an older one included (M-N1)
+        got = lookup("b3.json", ImageOS="ubuntu26", ImageVersion="2")
+        assert got["run_id"] == 99 and got["environment"] == image2 and load_json(got["map_path"])["run"] == 99, got
+        assert "1 on another runner image" in got["note"], got
+        # no run on this image: the newest qualifying run, and rule 1 runs the whole suite; a fork's run
+        # (M-N5) and a run of another event (M-N3) never qualify, although they ran on this image
+        got = lookup("b4.json", ImageOS="ubuntu26", ImageVersion="3")
+        assert got["run_id"] == 101 and "no complete run on the runner image ubuntu26 3" in got["note"], got
+        assert "1 of another event, 1 from another repository" in got["note"], got
+        assert any("runner image" in x for x in full_reasons(False, got["base"], True, True, image3, got["environment"]))
         open(os.path.join(d, "fail"), "w").close()
         got = lookup("b2.json")
         assert got["base"] is None and got["note"].startswith("the run listing failed (exit 1): HTTP 403"), got
+        # the tested pull-request base is the first parent of the checked-out merge commit (F8)
+        merge = sh(GIT + ident + ["-C", repo, "commit-tree", "-p", heads[2], "-p", other, "-m", "merge",
+                                  sh(GIT + ["-C", repo, "rev-parse", "HEAD^{tree}"]).stdout.strip()]).stdout.strip()
+        sh(GIT + ["-C", repo, "checkout", "-q", "--detach", merge])
+        assert tested_pr_base(repo, other, "payload") == heads[2]
+        assert tested_pr_base(repo, heads[1], "payload") == "payload" and tested_pr_base(repo, other, None) is None
     # has / selected
     sel = {"packages": {"int": dict(new_entry(), targets=["t_ok"], doc=True, examples=["ex"])}}
     assert selected(sel, "int", "t_ok") and selected(sel, "int", "doc") and selected(sel, "int", "example:ex")
@@ -1929,11 +2223,49 @@ impl S {
     m = RERUN.findall("error: test failed, to rerun pass `-p rodas5p-integrators --test stage_residual_telemetry`\n"
                       "    `-p vigilode --lib`\n    `-p vigilode --doc`")
     assert [x[0] for x in m] == ["rodas5p-integrators", "vigilode", "vigilode"], m
-    # the workflows (F-01, F-03, F-05, F-06, F-07, F-11, F-12, F8/F-04, F14)
+    # the source facts of R8 and R10 on a probe workspace (review S-N6)
+    with tempfile.TemporaryDirectory() as d:
+        sh(GIT + ["init", "-q", d])
+        os.makedirs(os.path.join(d, "m", "src"))
+        with open(os.path.join(d, "Cargo.toml"), "w") as f:
+            f.write('[workspace]\nmembers = [\n  "m",\n]\n')
+        with open(os.path.join(d, "m", "Cargo.toml"), "w") as f:
+            f.write('[package]\nname = "probe-m"\nversion = "0.1.0"\n')
+        with open(os.path.join(d, "m", "src", "lib.rs"), "w") as f:
+            f.write('/// ```\n/// let s = std::fs::read_to_string("x").unwrap();\n/// ```\n'
+                    'pub fn f() -> u32 { line!() }\n#[track_caller]\npub fn g() {}\n'
+                    'const SRC: &str = include_str!("lib.rs");\n// line!() in a comment\n'
+                    '/// prose that names std::fs::read\npub fn h() {}\n')
+        sh(GIT + ["-C", d, "add", "--", "Cargo.toml", "m"])
+        members = workspace_members(d)
+        assert members == {"probe-m": "m"}, members
+        found = [p.split(": ", 1)[0] for p in check_sources(d, members)]
+        assert found == ["m/src/lib.rs:2", "m/src/lib.rs:4", "m/src/lib.rs:5", "m/src/lib.rs:7"], check_sources(d, members)
+    # the workflows (F-01, F-03, F-05, F-06, F-07, F-11, F-12, F8/F-04, F14; S-N2, M-N2, M-N4, M-N6,
+    # M-N8) and the source facts of the workspace (S-N6)
     root = repo_root()
-    if os.path.isdir(os.path.join(root, ".github", "workflows")):
-        problems = check_workflows(root)
+    if os.path.isdir(os.path.join(root, ".github", "workflows")) and os.path.exists(os.path.join(root, "Cargo.toml")):
+        members = workspace_members(root)
+        problems = check_workflows(root, members) + check_sources(root, members)
         assert not problems, problems
+        with tempfile.TemporaryDirectory() as d:
+            wf = os.path.join(d, ".github", "workflows")
+            os.makedirs(wf)
+            texts = {}
+            for name in ("production.yml", "ignored-tests.yml"):
+                with open(os.path.join(root, ".github", "workflows", name), encoding="utf-8") as f:
+                    texts[name] = f.read()
+
+            def probe(name, old, new):
+                for n, t in texts.items():
+                    with open(os.path.join(wf, n), "w", encoding="utf-8") as f:
+                        f.write(t.replace(old, new, 1) if n == name else t)
+                return check_workflows(d, members)
+            assert probe("production.yml", "", "") == []  # no A1 workflow: nothing to check (M-N8)
+            assert "path filter" in str(probe("production.yml", "  pull_request:\n", "  pull_request:\n    paths:\n      - 'crates/**'\n"))
+            assert "strace installation" in str(probe("ignored-tests.yml", "continue-on-error: true\n", ""))
+            assert "rodas5p-cli (M-N2)" in str(probe("production.yml", "rodas5p-fair-ab rodas5p-cli vigilode",
+                                                     "rodas5p-fair-ab vigilode"))
     print("self-test passed", flush=True)
     return 0
 
