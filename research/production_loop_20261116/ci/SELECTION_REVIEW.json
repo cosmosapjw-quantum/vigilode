@@ -1,0 +1,244 @@
+{
+  "schema": "vigilode.loop.ci-selection-review.v1",
+  "run_id": "wf_366e2423-622",
+  "reviewed_commit": "a4c891ebbc9f2453cd3b78ae479324a406c35d54",
+  "note": "Verbatim structured returns of the two read-and-run reviewers of the change-based CI test selection (v1, commit a4c891eb). Their scratch files (prototype select_tests_fixed.py, harness.py, sweep.txt) stay outside the repository under the cargo target directories of the loop (w3-ci-review). Findings are handled in later commits; see PROGRESS.md and ci/TRIAGE_KO.md.",
+  "result": {
+    "results": [
+      {
+        "lens": "soundness of the selection",
+        "verdict": "unsound",
+        "summary": "Unsound as committed. A sweep of every compile-time input of 480 test targets + 6 libs (dep-info driving the selector's own select()) finds 4 links it never selects: core residual_gain_contract <- research/.../gain_witness.rs (other_rust dropped silently; replaying real commit 95d589e86 selects nothing); integrators constants_provenance_contracts <- rodas5p-cli/src/main.rs (real commit ee138227: Production selects nothing); cli alg02_predictive_controller <- integrators tests/rnext_common/mod.rs (dep-info read only for the owner); integrators lib unit tests <- tests/support/a02_packet_counter_contract.rs (only kind test mapped). Runtime reads add 3: sha256 pins of test sources (ptsw2b/ppsw1_6b), artifacts named only in docs/CONSTANTS_PROVENANCE.toml, generic_scope_contracts scanning crates/*/src. Workflow: PRs test the merge commit but diff PR heads; negative-control failures are not recorded; required-features or deleted targets abort the package and freeze the baseline. A scratch prototype (literal matcher on all non-global paths + one indirection) selects every literal-reachable case.",
+        "findings": [
+          {
+            "id": "F1",
+            "severity": "major",
+            "claim": "A changed .rs file outside the workspace members is classified other_rust and dropped with no note, although workspace targets compile it through #[path]. A change can therefore flip a test that is never selected.",
+            "evidence": "select_tests.py:131 returns 'other_rust'; select() at lines 324-335 handles only package, package_local, test_source and data. crates/rodas5p-core/tests/residual_gain_contract.rs:25 has #[path = \"../../../research/reaudit_accuracy_speed_20261010/gain_witness.rs\"] (7 tests, 1 ignored); line 1 of the rustc dep-info /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/debug/deps/residual_gain_contract-03f0c7d19e3dd1aa.d lists that file. Real CLI: `select_tests.py select --baseline .../w3-ci-review/baseline_95d589e86.json --head 95d589e86 ...` for both scopes printed 'no test is affected by the changes' with no note. 95d589e86 is a one-file commit that turns the identity negative fixture into [[1.0,1.0],[0.0,1.0]]. At that commit the file was compiled by the integrators example reaudit_20261010.rs:21; core's test has included it since 7c9541362. The same result holds for crates/vigilode-hybrid/src/*.rs, and for research/local_frontier_native_diffsol_20261024/test_external_reference.rs, which crates/vigilode/examples/local_bottleneck_suite.rs:627 compiles.",
+            "fix": "Remove the other_rust class: route such files through the data path so the #[path]/include! literal is matched. Never drop a path without a note. With the prototype at .../w3-ci-review/select_tests_fixed.py, a change of gain_witness.rs selects core residual_gain_contract and integrators as a whole (its example)."
+          },
+          {
+            "id": "F2",
+            "severity": "major",
+            "claim": "A package-source change selects only that package and its dependents, and never goes through the literal matcher. A test that include_str!s the source of a package depending on its own package is therefore never selected.",
+            "evidence": "crates/rodas5p-integrators/tests/constants_provenance_contracts.rs:9 has `const CLI: &str = include_str!(\"../../rodas5p-cli/src/main.rs\")`, and lines 91-95 assert bit equality of the constants located there (docs/CONSTANTS_PROVENANCE.toml:116,131). Real CLI on ee138227 (a cli-only commit that edits src/main.rs): Production 'no test is affected'; ignored-tests only 'rodas5p-cli: every test'. Since a94849dbd, 10 commits changed cli main.rs and touched no integrators, core-src, krylov-src or global file. The harness sweep (.../w3-ci-review/sweep.txt) reports MISS constants_provenance_contracts <- crates/rodas5p-cli/src/main.rs in both jobs.",
+            "fix": "Run the literal matcher on every non-global changed path (package and test sources too), not only on data files. For .rs paths, count only literals that contain a '/' to keep false positives down. The prototype then selects constants_provenance_contracts."
+          },
+          {
+            "id": "F3",
+            "severity": "major",
+            "claim": "Rule 5 reads dep-info only for the package that owns the changed test source. A test target in another package that #[path]-includes that file is never selected.",
+            "evidence": "crates/rodas5p-cli/tests/alg02_predictive_controller.rs:28 has #[path = \"../../rodas5p-integrators/tests/rnext_common/mod.rs\"] and uses common::brusselator and common::linear_config; the file has 2 #[ignore] tests, and cli is in the ignored-tests scope. Its dep-info alg02_predictive_controller-ed049c3a0fb8e3c2.d lists crates/rodas5p-cli/tests/../../rodas5p-integrators/tests/rnext_common/mod.rs. select_tests.py:361-364 calls test_target_sources(root, name) for the owning package only. Harness scenario (ignored-tests): 10 integrators targets selected, 'dep-info consulted for: rodas5p-integrators', and no cli target.",
+            "fix": "Look the changed file up in the test dep-info of every scoped package, not only the owner. The literal-matcher fix of F2 also catches it through the #[path] literal: with the prototype, cli alg02_predictive_controller is selected."
+          },
+          {
+            "id": "F4",
+            "severity": "major",
+            "claim": "A changed test source goes only to the dep-info lookup. Other targets that read it at run time, here sha256 pins of protected files, are not selected.",
+            "evidence": "crates/rodas5p-integrators/tests/ptsw2b_contracts.rs:1101 and 1116-1125, and ppsw1_6b_contracts.rs:1695, 1715 and 1717-1722, hash tests/unified_candidate_contracts.rs and tests/ptsw2b_contracts.rs and assert 'protected file changed: {rel}'. Harness: a change of crates/rodas5p-integrators/tests/unified_candidate_contracts.rs selects only unified_candidate_contracts in both jobs.",
+            "fix": "The F2 fix: test-source paths also go through the literal matcher. The prototype then selects ppsw1_6b_contracts and ptsw2b_contracts."
+          },
+          {
+            "id": "F5",
+            "severity": "major",
+            "claim": "Lib unit tests that compile a tests/ file are never selected. Two reasons: test_target_sources keeps only artifacts of kind 'test', and a test-source selection always sets lib=false.",
+            "evidence": "crates/rodas5p-integrators/src/packet_trajectory.rs:1679-1687 has a #[cfg(test)] include!(concat!(env!(\"CARGO_MANIFEST_DIR\"), \"/tests/support/a02_packet_counter_contract.rs\")), with 9 call sites (e.g. line 1739). The lib test dep-info rodas5p_integrators-4dfef9d4478e3bb9.d lists the file. select_tests.py:269-270 skips non-'test' kinds, and line 377 sets lib False. Harness, both jobs: only production_audit_verified_trajectory is selected. The sweep reports MISS rodas5p-integrators:lib.",
+            "fix": "Also map unit-test artifacts (kind lib or bin with profile.test == true). Set entry['lib']=True, or add 'bin:<name>', when their dep-info lists the changed file."
+          },
+          {
+            "id": "F6",
+            "severity": "major",
+            "claim": "Rule 3 assumes every path a test reads is written in a Rust literal. constants_provenance_contracts hashes files whose paths appear only as rows of a TOML table.",
+            "evidence": "constants_provenance_contracts.rs:141-156 reads format!(\"{root}/{}\", row[\"source_artifact\"]) and compares its sha256 with the row. docs/CONSTANTS_PROVENANCE.toml:43, 88 and 103 name research/generic_enforced_prefix_budget_v35/reports/PHYS_MATH_AUDIT.md, research/generic_policy_redesign_v33/results/calibration_analysis/FROZEN_ZETA34_POLICY.json and research/generic_timing_replication_continuation_transaction_v37/contracts/V37_TIMING_REPLICATION_CONTINUATION_TRANSACTION_CONTRACT.md. Harness: a change of FROZEN_ZETA34_POLICY.json gives 'read by no test' in both jobs.",
+            "fix": "Add one level of indirection: a tracked text file that names the changed path (git grep -lF) and that a test reads through an exact-file literal counts as changed. The prototype then selects constants_provenance_contracts. Without the exact-file restriction it over-selects: 186 files name cli main.rs, mostly under bench/out."
+          },
+          {
+            "id": "F7",
+            "severity": "major",
+            "claim": "A test that walks crates/*/src reads every crate's sources at run time. A change in a package that does not depend on integrators, or in a non-member crate, can flip it while it stays unselected.",
+            "evidence": "crates/rodas5p-integrators/tests/generic_scope_contracts.rs:66-100 calls read_dir on crates/ and fails if any crates/*/src/**/*.rs contains a token such as \"rec_bianchi\". Harness: a change of crates/vigilode/src/lib.rs selects only vigilode; a change of crates/vigilode-hybrid/src/lib.rs selects nothing. Its literals ('crates', 'src') are bare names, which normalise_literal drops.",
+            "fix": "Add a short table in select_tests.py of tree-scanning targets with the prefix each scans (rodas5p-integrators:generic_scope_contracts <- crates/). Select the target whenever a changed path starts with that prefix. The test is cheap."
+          },
+          {
+            "id": "F8",
+            "severity": "major",
+            "claim": "On pull_request the jobs test the merge commit but diff PR heads. Base-branch commits that enter the tested tree between two runs never enter the diff, so tests they affect in combination with the PR's earlier changes are not selected.",
+            "evidence": "production.yml:101-103 and ignored-tests.yml:55-57 run actions/checkout without ref, which on pull_request checks out refs/pull/N/merge (github.sha). production.yml:119 and ignored-tests.yml:69 pass --head github.event.pull_request.head.sha, and run() stores that head as the next base (select_tests.py:457). Example: main changes package A after run 1; run 2 diffs head1..head2 only, so A's tests are not selected although they now run against the PR's earlier changes.",
+            "fix": "Check out the PR head in both test jobs (with: ref: ${{ github.event.pull_request.head.sha || github.sha }}), so the tested tree is exactly the diffed head."
+          },
+          {
+            "id": "F9",
+            "severity": "major",
+            "claim": "A failing negative-control step is not recorded in the outcome. Rule 6 never re-adds it, so the next run with unrelated changes prints 'not run' and passes.",
+            "evidence": "ignored-tests.yml:75-123 run the two negative controls outside the selector, and line 130 runs the selection with --skip for both. outcome.json is written only by run (select_tests.py:457-484), so failed[] lacks them while complete stays true and the baseline advances. On the next run `has` answers 'no' when the target is unaffected (lines 80-83 and 107-110).",
+            "fix": "Have each negative-control step append its target to a small file that the run step merges into outcome.failed, or mark the outcome incomplete when such a step failed."
+          },
+          {
+            "id": "F10",
+            "severity": "major",
+            "claim": "The 'every target' fallback and rule 6 name targets cargo refuses to run. Cargo then aborts the whole package command, the outcome stays incomplete, and every later run on the branch repeats it until a full run. This is a liveness defect: the job goes red, not silent.",
+            "evidence": "The fallback uses packages[name]['tests'] from cargo metadata (select_tests.py:87 and 372-376), which includes the 4 required-features targets of rodas5p-integrators (audit0930_*, audit2_*). Harness: a change of tests/audit2_structured_correction_contracts.rs, or deleting or renaming any integrators test file (listed by no target), yields `cargo test --locked --no-fail-fast -p rodas5p-integrators ... --test audit0930_reuse_certificate_contracts`. In the real workspace cargo answers: 'error: target `audit0930_reuse_certificate_contracts` in package `rodas5p-integrators` requires the features: `audit2-research`'. Rule 6 (lines 378-393) re-adds deleted targets too; the probe crate gives 'error: no test target named `gone`'.",
+            "fix": "Drop targets whose required-features are not enabled (cargo metadata lists them) from the fallback, and filter baseline failures against the current target list."
+          },
+          {
+            "id": "F11",
+            "severity": "minor",
+            "claim": "Selections with --test filters no longer compile examples. The old whole-package test job compiled every example on every run.",
+            "evidence": "crates/rodas5p-integrators/examples/sp01_dupfix_profile.rs:15 and sp02_workspace_profile.rs:12 #[path]-include tests/alg01_common/mod.rs. Harness: a change of that helper selects 5 integration targets only. The docs job compiles only vigilode examples (production.yml:154-155).",
+            "fix": "When an example's dep-info lists the changed file, add --examples (or --example <name>) to that package's command."
+          },
+          {
+            "id": "F12",
+            "severity": "minor",
+            "claim": "normalise_literal, literal_matches and rust_string_literals miss several literal shapes. This is latent: no file read in the repository uses them today.",
+            "evidence": "Direct calls: 'tests/golden/case_{n}.json' normalises to 'tests/golden/case_' and matches nothing; '{}/fixtures/x.json' gives None; 'crates/vigilode/../rodas5p-core/tests/data/x.json' keeps 'crates/vigilode/rodas5p-core/...'; globs and bare names such as 'LICENSE' never match. rust_string_literals keeps backslash-newline continuations and skips doc-comment code (lines 150-153 and 196-214). Raw strings, byte strings, char and byte-char literals, nested comments, lifetimes and escaped quotes parse correctly.",
+            "fix": "Cut back to the last '/' before a '{'; also try the text after the last '}'; apply posixpath.normpath before stripping leading '..'; strip backslash-newline plus following whitespace."
+          },
+          {
+            "id": "F13",
+            "severity": "minor",
+            "claim": "changed_files parses git output without -z, and relative dep-info entries are resolved against the Python cwd.",
+            "evidence": "select_tests.py:284: paths containing quotes, control bytes or non-ASCII come back C-quoted (core.quotePath), so they are misclassified as unread data (0 such tracked paths today). Line 276: os.path.relpath(d, root) resolves rustc's relative entries (e.g. 'crates/rodas5p-core/tests/../../../research/...') against the cwd. This is correct in CI but over-selects when run from a subdirectory.",
+            "fix": "Use git diff -z --name-status -M, and os.path.normpath(os.path.join(root, d))."
+          },
+          {
+            "id": "F14",
+            "severity": "minor",
+            "claim": "A missed change is never revisited on a branch: a complete outcome moves the baseline past it, PR branches get no periodic full run, and main runs full only when its push path filter matches. Runner-image changes, which affect the known host-dependent bit anchors, are never seen by selection.",
+            "evidence": "baseline() (select_tests.py:506-538) takes the newest complete outcome. The production.yml:30-38 push filter does not include research/**, docs/** or fixtures/**.",
+            "fix": "Add a scheduled full run of both jobs (schedule: with full), alongside the full suite before release."
+          }
+        ],
+        "checked": [
+          "python3 tools/ci/select_tests.py self-test: passed; python3 tools/check_ignored_tests_in_ci.py: 99 ignored tests, 99 reachable",
+          "Real CLI selections with baselines written to scratch: 95d589e86 (both scopes: nothing, F1) and ee138227 (Production nothing; ignored-tests cli only; F2)",
+          "Harness .../w3-ci-review/harness.py runs the selector's own select() with chosen change lists; test_target_sources is emulated from read-only dep-info in w2-v24/debug/deps (worktree 28e7fca4, an ancestor of a4c891eb)",
+          "Sweep of every tracked compile-time input of 480 integration-test targets and 6 libs: 4 distinct misses (sweep.txt); every include_str!/include_bytes! data file, including concat!(env!(\"CARGO_MANIFEST_DIR\"), ...), is matched",
+          "#[path] and include! across packages (F1, F3, F5); constants in shared helpers (thread_transfer_common ROOT_ORACLE) select correctly",
+          "build.rs: integrators embeds only the cargo profile; fair-ab reruns on every tracked file and embeds HEAD/dirty, used only for runtime self-consistency checks, so outcomes do not depend on which files changed",
+          "Env-var paths (INT05_CASES, PY05_*, PP16_*, Q_GIVENS_*) are exporters gated by unset env vars and skip in CI",
+          "Doc tests run only when a package is selected whole; the docs job runs vigilode and coupled doc tests every run; examples compile only in whole-package mode (F11); no harness=false targets",
+          "Features: one -p per command in both modes, and no workspace package enables integrators features; required-features targets break explicit --test runs (F10)",
+          "Dev-dependencies: none between workspace packages; cargo metadata deps include dev and build kinds",
+          "Non-src files under packages: README/EXPLICIT/SWITCHING are not read; vigilode/data/work_model_v2.toml is matched through include_str!; no #[doc = include_str!]",
+          "Deleted and renamed paths: both sides listed (-M); a deleted test source triggers the fallback (F10)",
+          "Runtime readers inspected: generic_scope_contracts (F7), constants_provenance (F2, F6), ptsw2b/ppsw1_6b pins (F4); other fs::read call sites use full path literals",
+          "String parser: raw strings, byte strings, char and byte-char literals, nested comments, lifetimes and escaped quotes are correct; latent false negatives in F12",
+          "Dep-info: the first rule holds all sources (real .d files checked); escaped spaces handled; relative entries resolved through the cwd (F13)",
+          "Level-1 mapping when cargo test --no-run fails: falls back to every integration target, never lib, and hits F10",
+          "Outcome parsing: under --no-fail-fast a compile error stops all tests and the outcome is marked incomplete (correct); in a multi-member workspace with CARGO_TERM_COLOR=always the rerun hints `-p pa --lib` and `-p pa --test t` parse",
+          "Replays of 9daf78fd and 66c558a0 match TRIAGE_KO.md section 9",
+          "Fix prototype .../w3-ci-review/select_tests_fixed.py selects every literal-reachable case (F1-F4, F6); F5 and F7 need their own fixes",
+          "Review worktree left clean (git status empty, HEAD a4c891eb)"
+        ]
+      },
+      {
+        "lens": "CI mechanics",
+        "verdict": "sound_with_fixes",
+        "summary": "Reviewed a4c891eb; worktree unchanged. Working: run listing and exclusion, download layout, missing-artifact path, rerun-line parsing (forced colour, hosted logs), compile error -> incomplete, scope check. Hosted ignored run 45361598298 ran full, wrote a complete outcome (failed vigilode-coupled:lib) and uploaded it. Defects: (1) cancel-in-progress killed the Production bootstrap run after 106 min when a66215e7 was pushed; it kept no outcome, so the next run is full again; ignored-tests.yml has no concurrency group (3 runs overlapped). (2) A selection naming a target cargo rejects (rule-5 fallback lists the 4 required-features targets of rodas5p-integrators; deleted baseline targets) exits 101, stays incomplete and repeats every run (reproduced; same code at 52eb089f). (3) Negative-control failures never reach the outcome, so the next run is green. (4) PR runs test merge 70dbc244 but diff a4c891eb. (5) A1 still runs cargo test --workspace at every push. Minor: unflushed log, has errors read as 'not affected', non-member crates reachable, hidden API errors, 120-min margin, re-run upload, head_ref.",
+        "findings": [
+          {
+            "id": "F-01",
+            "severity": "critical",
+            "claim": "Cancelled and overlapping runs stop the baseline from advancing. On this branch's push rhythm the Production test job never gets past its full bootstrap run, so runs stay cumulative.",
+            "evidence": "production.yml:46-50 sets `cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}`, so PR refs cancel. A cancelled run skips the upload (production.yml:127 `!cancelled()`) and writes no outcome (select_tests.py:482 writes it only at the end). Hosted run 45361598301 (a4c891eb): the test job ran the full bootstrap from 09:04:37 to 10:49:52 UTC. core and krylov had finished; the integrators command had been running 100 min when the push of a66215e7 at 10:49:39 cancelled it. 'Keep the outcome for the next run' was skipped, and run 45378440406 starts full again. Branch history (gh api .../workflows/production.yml/runs): 12 of the 29 earlier runs were cancelled, push gaps are mostly 2-40 min, and a full test job takes 92-109 min. ignored-tests.yml has no concurrency group. Runs 45358053941, 45358324454 and 45361598298 (80ba8388, 2f663808, a4c891eb) were in progress together at 09:11 UTC. A running run is invisible to the baseline of the others (status=completed, select_tests.py:513), so each re-runs the same cumulative selection.",
+            "fix": "production.yml: set cancel-in-progress to false, or move the concurrency group into the test job with cancel-in-progress false and give the short jobs their own cancelling groups. GitHub keeps only the newest pending run per group, so pushes coalesce and the queued run's baseline is the run that just finished. ignored-tests.yml: add `concurrency: {group: ignored-tests-${{ github.ref }}, cancel-in-progress: false}`."
+          },
+          {
+            "id": "F-02",
+            "severity": "major",
+            "claim": "A selection that names a test target cargo rejects fails before any test runs. It is marked incomplete and repeats on every later run until a full run.",
+            "evidence": "Cause: select_tests.py:372-376 is the fallback for a changed test source that no built target lists, or for a failed `cargo test --no-run`. It passes every name in packages[name]['tests'] as --test (line 444). That list comes from cargo metadata, which includes targets with required-features. Lines 378-393 add baseline-failure targets without checking that they still exist. cargo metadata shows 4 such targets in rodas5p-integrators: audit0930_reuse_certificate_contracts, audit2_real_client_authority_contracts, audit2_stage_certificate_contracts and audit2_structured_correction_contracts. `cargo +1.94.1 test --locked -p rodas5p-integrators --test dense_wfiltered_contracts --test audit0930_reuse_certificate_contracts --no-run` exits 101 with 'requires the features: audit2-research' before building anything. Lines 473-479 then set did_not_run_its_tests and complete=False. baseline() (527) skips incomplete outcomes, so the next run gets the same base, the same diff and the same error. Reproduced in a scratch two-package workspace: (a) editing a required-features test file gives `cargo test ... --test t_feat`, 'requires the features', outcome complete False, failed [], exit 1; (b) a baseline failure a:t_gone after deleting tests/t_gone.rs gives 'no test target named t_gone' and complete False. Triggers: editing one of the 4 audit2 test files, deleting or renaming a test file that failed in the baseline, a failed --no-run build. The same code is at the branch head 52eb089f (lines 596-623).",
+            "fix": "In the fallback, mark the package whole (all: True; cargo then skips the feature-gated targets itself), or name only targets present in the --no-run mapping. Drop baseline-failure targets that are not current test targets without required-features, and record a note for each."
+          },
+          {
+            "id": "F-03",
+            "severity": "major",
+            "claim": "Negative-control failures never enter the outcome. The next run's baseline moves past them, and the job turns green while the control is still broken.",
+            "evidence": "ignored-tests.yml:75-123: the two negative-control steps exit 1 on a regression. outcome.json is written only by `run` (select_tests.py:453-491), and that step skips both tests (ignored-tests.yml:130). The upload (131-139, `!cancelled()`) still stores a complete outcome without them. The next baseline starts at that head (select_tests.py:527-531). `has` (ignored-tests.yml:80-83, 107-110) then answers no unless the next diff touches rodas5p-integrators, so the step prints 'not run' and passes.",
+            "fix": "Give both steps an id and upload only when neither failed: `if: ${{ !cancelled() && steps.kill-gate.outcome != 'failure' && steps.stop-diff.outcome != 'failure' }}`. Alternatively, append their targets to outcome.failed. The next diff then still holds the breaking change and selects them again."
+          },
+          {
+            "id": "F-04",
+            "severity": "major",
+            "claim": "Pull-request runs test the merge commit but record and diff the PR head. Changes that reach the tested tree through the base branch are never selected.",
+            "evidence": "Hosted logs of jobs 138332904404 and 138332758580: 'HEAD is now at 70dbc244 Merge a4c891eb... into 074a5699...'. This is the default checkout for pull_request; the checkouts at production.yml:101-103 and ignored-tests.yml:55-57 set no ref. select gets `--head github.event.pull_request.head.sha` (production.yml:119, ignored-tests.yml:69). The uploaded selection.json records head a4c891eb, and the next run diffs from that PR head (select_tests.py:283-288, 309). Commits on the base branch research/production-unification-20261115 (PR #190; no workflow runs on pushes there) never enter the diff. That includes a changed Cargo.lock or toolchain file, so full mode is not triggered either. Latent while the base stays at 074a5699, which has not changed since 2026-11-16.",
+            "fix": "Check out the recorded head in both test jobs: `with: ref: ${{ github.event.pull_request.head.sha || github.sha }}`. Alternatively, record github.event.pull_request.base.sha in the outcome and run full when it differs."
+          },
+          {
+            "id": "F-05",
+            "severity": "major",
+            "claim": "The owner instruction is not applied to the largest per-push test run: A1 still runs the whole workspace suite at every PR push.",
+            "evidence": "The change does not touch a1-inner-tolerance-parity.yml. Its lines 3-22 trigger on pull_request for crates/rodas5p-integrators/** and crates/rodas5p-cli/**, and lines 75-76 run `cargo test --workspace --all-targets --locked`. It ran for 80ba8388, 2f663808, a4c891eb and a66215e7. At fc70e0ab its step 'Run the workspace test closure' ran from 17:10 to 18:23 UTC, when the 90-min job limit cancelled it (run 45221471384). Smaller per-push test runs also remain: the docs job's doc tests and examples, and `cargo test -p rodas5p-krylov --all-targets` in A2+A3.",
+            "fix": "Remove 'Run the workspace test closure' from a1-inner-tolerance-parity.yml, since Production CI and Ignored long tests cover the workspace. Alternatively, run it through select_tests.py with its own artifact name."
+          },
+          {
+            "id": "F-06",
+            "severity": "minor",
+            "claim": "`run` does not flush test output. The hosted log shows a command's output only when the next command starts or the buffer fills, and the tail is lost on cancel or timeout.",
+            "evidence": "select_tests.py:465 writes with sys.stdout.write and never flushes; only the '+ cargo test' line at 461 uses flush=True. On the runner, stdout is a pipe. In hosted job 138332904404, the integrators command started at 09:09:28. Its 'Finished `test` profile ... in 2m 09s' line and all 2,124 lines after it carry the timestamps 10:09:19-20. Nothing reached the log in the 40 min before the cancel at 10:49:52, so the log does not show which test was running. Still present at 52eb089f:762.",
+            "fix": "Flush after each line (`sys.stdout.write(line); sys.stdout.flush()`), or invoke the steps with `python3 -u`."
+          },
+          {
+            "id": "F-07",
+            "severity": "minor",
+            "claim": "A failed `has` call is reported as 'not affected', so the negative-control step passes.",
+            "evidence": "ignored-tests.yml:80 and 107 compare the stdout of `has` with yes. These steps run on `!cancelled()`. When the reachability, baseline or select step failed, selection.json is missing; `has` dies with a traceback on stderr, and the step prints 'not affected by the changes since the baseline: not run' and exits 0. Simulated with `bash --noprofile --norc -eo pipefail`: step exit 0. Same pattern at 52eb089f (lines 86 and 113).",
+            "fix": "`sel=$(python3 tools/ci/select_tests.py has --selection selection.json --target ...) || exit 1`, then `if [ \"$sel\" != yes ]; then echo ...; exit 0; fi`."
+          },
+          {
+            "id": "F-08",
+            "severity": "minor",
+            "claim": "The reachability checker counts ignored tests of crates outside the workspace as reachable.",
+            "evidence": "check_ignored_tests_in_ci.py:34 scans crates/**, which includes crates/vigilode-bench and crates/vigilode-hybrid; both have their own workspaces. Line 93 treats any command containing --workspace as covering every test, and line 76 now adds such a command for the selector. Probe in a scratch copy: an #[ignore] test in crates/vigilode-bench/tests gives '100 ignored tests: 100 reachable from CI', yet no workflow runs that crate with --ignored (production.yml:226). The rule predates this change but now also covers the synthetic selector command. Correct case: a scope without vigilode-coupled is refused (97 unreachable, exit 1).",
+            "fix": "Count --workspace coverage only for tests under the member directories that workspace_packages() reads."
+          },
+          {
+            "id": "F-09",
+            "severity": "minor",
+            "claim": "Errors in the baseline lookup are reported as 'no earlier run has a complete outcome'.",
+            "evidence": "select_tests.py:514-515: a failing `gh api` gives runs = [], and the for-else at 532-533 writes 'no earlier run of this job on this branch has a complete outcome'. stderr is dropped. A missing permission or a rate limit therefore turns every run into a full run with a wrong reason. A failing download is likewise read as a missing artifact (523). Same handling at 52eb089f:880.",
+            "fix": "When listing.returncode != 0, print listing.stderr and set a distinct note such as 'run listing failed: ...'."
+          },
+          {
+            "id": "F-10",
+            "severity": "minor",
+            "claim": "At a4c891eb the full-mode bootstrap is only about 10 min inside the 120-min job limit. A timeout leaves no outcome, so every next run is full again.",
+            "evidence": "production.yml:99 sets timeout-minutes: 120. Earlier full test jobs took 92 min (run 45203782039) and 109 min (45221470766, of which the integrators step took 101.5 min). At a4c891eb the integrators command alone had run 100 min when it was cancelled. A timeout cancels the job, so the outcome is neither written (select_tests.py:482) nor uploaded. The branch head 52eb089f raises this limit to 300 min.",
+            "fix": "Raise timeout-minutes of the test job, as 52eb089f does."
+          },
+          {
+            "id": "F-11",
+            "severity": "minor",
+            "claim": "A re-run of the job may fail at the upload step because the artifact name already exists in the run.",
+            "evidence": "production.yml:128-134 and ignored-tests.yml:133-139 use actions/upload-artifact@v4 without overwrite. v4 refuses a name that already exists in the workflow run (409 Conflict), and a re-run attempt uploads the same name. Plausible but not reproduced: the repository history has no re-run of a job that uploads an artifact.",
+            "fix": "Add `overwrite: true` to both upload steps."
+          },
+          {
+            "id": "F-12",
+            "severity": "minor",
+            "claim": "github.head_ref is expanded directly inside run scripts.",
+            "evidence": "production.yml:114 and ignored-tests.yml:67 contain `--branch \"${{ github.head_ref || github.ref_name }}\"`. A branch name may contain `\";$(...)`, which makes this a script-injection pattern. The impact is low under pull_request, where the token is read-only.",
+            "fix": "Pass it through env (`BRANCH: ${{ github.head_ref || github.ref_name }}`) and use `--branch \"$BRANCH\"`."
+          }
+        ],
+        "checked": [
+          "select_tests.py self-test passes and check_ignored_tests_in_ci.py reports 99/99 at a4c891eb; worktree /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci-review left unchanged (git status empty, HEAD a4c891eb)",
+          "REST listing (live gh api): production.yml and ignored-tests.yml on research/production-loop-20261116 return 29 and 25 completed pull_request runs; status=completed already excludes the running run, so the run-id filter is redundant but harmless",
+          "First run: a live `baseline` call made 1 listing and 29 downloads and wrote the note 'no earlier run ...'; the hosted baseline steps took 9-11 s; both hosted selections were full",
+          "`gh run download -n NAME -D dir` puts the files at the top of dir (checked on artifact audit2-readiness-45361598248); a run without the artifact exits 1 with 'no valid artifacts found to download' and is skipped; artifact retention is 90 days",
+          "Permissions: `actions: read` with GH_TOKEN is enough (the hosted baseline steps succeeded)",
+          "fetch-depth 0 fetches all branch heads and the merge ref (hosted fetch line), so the PR head and earlier PR heads exist in the clone; a force-pushed baseline head makes is-ancestor exit 128, which falls back to full (safe)",
+          "--full expression: false for pull_request, true for a push to main, inputs.full (boolean) for workflow_dispatch",
+          "The rerun-line regex matches cargo 1.94.1 output with CARGO_TERM_COLOR=always (escape codes only around 'error') and the hosted logs (4 targets at fc70e0ab; `-p vigilode-coupled --lib` at a4c891eb)",
+          "A compile error under --no-fail-fast stops cargo before any test runs: no rerun line, did_not_run_its_tests set, complete=False (scratch repro); this is correct",
+          "Hosted ignored run 45361598298: 7 per-package commands; both negative controls ran and passed in full mode; outcome complete=True with failed=[vigilode-coupled:lib]; artifact ci-test-outcome-ignored-tests uploaded (1031 bytes)",
+          "Reachability checker probes: a scope without vigilode-coupled leaves 97 tests unreachable (exit 1); an extra --skip on the selector run leaves that test unreachable (exit 1)",
+          "Artifact names are distinct per job; the upload runs on !cancelled(), so a cancelled or timed-out run uploads nothing",
+          "Branch head is now a66215e7, and 52eb089f rewrote select_tests.py. A grep there finds the F-02 fallback and baseline-failure code, the F-06 unflushed write, the F-07 has pattern, the F-09 listing handling, cancel-in-progress, and still no concurrency group or overwrite in ignored-tests.yml. The test timeout is now 300 min. Nothing else of that commit was reviewed",
+          "Scratch files are only under /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci-review (mini workspace, workflow copies, logs, downloaded artifacts); I made no GitHub writes and dispatched no workflow"
+        ]
+      }
+    ]
+  }
+}
