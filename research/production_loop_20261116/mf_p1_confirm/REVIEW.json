@@ -1,0 +1,209 @@
+{
+  "schema": "vigilode.loop.review.v1",
+  "node": "V25_MF_P1_CONFIRMATION",
+  "run_id": "wf_2abb3b68-197",
+  "builder_head": "3768dac50f7d4c380f26cb1b51a85effb1f2d9cd",
+  "merged_into": "research/production-loop-20261116 (merge commits 1e53d5f9 for V25, 68b6688c for V26)",
+  "review": {
+    "node": "V25_MF_P1_CONFIRMATION",
+    "verdict": "accept_with_corrections",
+    "summary": "KEEP reproduced; work sound. Scope: only tests/mf_confirm_*.rs and mf_p1_confirm/** changed; no protected/Cargo file; tree clean; PREDECLARED 6b2ca034 unchanged; PROTOCOL.json (spans, E/W fallback, atol=rtol) committed 18:03, first P1 run 18:13:53; parser committed before record_a, later edits exploratory only; sizing ran S only. Deciding binary 9582b047: 24/24 re-runs (robertson, ac3d at 1e-3/1e-7, S/P1 route+audit; D0 2 cells x 4 entries) bitwise equal to logs and RECORDING_A, instructions within 1e-7; HEAD-source binary 8/8 equal. Own numpy RHS/JVP vs Rust <= 5.2e-13. Own parser on raw logs: V PASS (9287 solves, 0 viol, max 0.99991), B FAIL (robertson 11/12, 9/10, 0/1), A PASS (1.000025), S PASS (1.034/1.059), E PASS (0.198/0.791/0.516/0.470; worst 0.905), W PASS (20/20 authoritative; 6.47/1.25/2.05/2.25). Replay 2931/0/0 confirmed. RESULTS.json, REPORT_KO.md regenerate identically. 2 timing cells re-run within 1.2%. Minor corrections: robertson 1e-7 P1 columns/solve 59.6 (not 60.2); checker log at 8a4557f0 (re-run at HEAD PASS); D0 vacuous; E/W fallback in 3 cells.",
+    "scope_ok": true,
+    "protected_ok": true,
+    "predeclared_before_results": true,
+    "discriminator_checks": [
+      {
+        "name": "D0 policies unchanged",
+        "builder_value": "PASS: no driver/router edit, one binary 9582b047 for all deciding and timing runs",
+        "reviewer_value": "git diff base..HEAD touches no src file; RESULTS binaries {9582b047:120}, timing binaries 9582b047 only; re-run of robertson 1e-3 and ac3d 1e-7, S and P1, entries route/router/router_ls/audit: 16/16 equal to RECORDING_A in every field; PASS is vacuous (no edit was made)",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "V validity",
+        "builder_value": "PASS: 9287 P1 solves, 0 violations, max residual/threshold 0.99991, 41 budget failures",
+        "reviewer_value": "own recount of the 20 P1 per-solve logs: 9287 S-lines, 0 independent and 0 driver-record violations, max 0.9999092, recorder threshold == driver threshold bitwise in every solve, coverage (lines = linear_solves = ProtectedAudit checks = records; failed attempts = linear_solve_failures = budget 41 + other 0) holds, audit run = route run in every cell",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "B budget",
+        "builder_value": "FAIL: robertson_rd1d S/P1 11/12, 9/10, 10/10, 8/8, 0/1; other families 0/0",
+        "reviewer_value": "same counts from policy_statistics of the audit logs; re-runs of robertson 1e-3 and 1e-7 reproduce 11/12 and 0/1",
+        "reviewer_verdict": "FAIL",
+        "agrees": true
+      },
+      {
+        "name": "A accuracy",
+        "builder_value": "PASS: max error ratio 1.0000247 (porous2d), min 0.834",
+        "reviewer_value": "max 1.0000247 (porous2d 1e-7), min 0.8335 (robertson 1e-4); threshold 3",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "S steps",
+        "builder_value": "PASS: geo-means 1.000/1.034/1.000/1.000, max cell 1.059",
+        "reviewer_value": "1.000000/1.033922/1.000000/1.000000; max cell 36/34 = 1.0588 (robertson 1e-4); thresholds 1.05/1.15",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "E economy",
+        "builder_value": "PASS: 0.198, 0.791, 0.516, 0.470; worst cell 0.905",
+        "reviewer_value": "own matched-error code: 0.198125, 0.791154, 0.515871, 0.470088; worst cells 0.3504, 0.9047, 0.6767, 0.6713; 3 cells by the pre-declared equal-tolerance fallback (bounds 0.303, 0.605, undefined)",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "W wall guard",
+        "builder_value": "PASS: 20/20 authoritative, max ratio 0.911, speed-ups 6.47/1.25/2.05/2.25",
+        "reviewer_value": "own timing parse: 20/20 authoritative (load <= 8, spread <= 0.10, 2+7, rotation, flock+taskset 6-11, states equal), max 0.9110, speed-ups 6.4659/1.2543/2.0532/2.2515; reviewer re-timing ac3d 1e-3 0.310 vs 0.314, robertson 1e-7 0.744 vs 0.742 (equal tolerance), both authoritative",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "G golden",
+        "builder_value": "NOT_RUN (no switch)",
+        "reviewer_value": "no switch; no golden file changed",
+        "reviewer_verdict": "NOT_RUN",
+        "agrees": true
+      },
+      {
+        "name": "R suites",
+        "builder_value": "NOT_RUN (no switch); hygiene suites pass",
+        "reviewer_value": "no switch; check logs recount 153/0/13, 166/0, 11/0, 536/0; reviewer re-ran mf_confirm targets, rustfmt, clippy, loop checker: all pass",
+        "reviewer_verdict": "NOT_RUN",
+        "agrees": true
+      },
+      {
+        "name": "Frozen verdict",
+        "builder_value": "KEEP",
+        "reviewer_value": "KEEP (V holds, B fails); unchanged even if the 3 fallback cells of E/W were read NOT_DECIDABLE",
+        "reviewer_verdict": "FAIL",
+        "agrees": true
+      }
+    ],
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "minor",
+        "claim": "Builder key number: 'Columns per solve S vs P1 at rtol 1e-7: ... robertson_rd1d 75.0 vs 60.2'",
+        "evidence": "RESULTS.json exploratory.stage_solve_profile robertson_rd1d 1e-7 P1 columns_per_solve = 59.57 (18050 columns / 303 completed solves, recomputed from the per-solve log). 60.2 = linear_iterations 18250 / 303 and counts the 200 columns of the one budget-exhausted solve. REPORT_KO.md column '열/풀이' uses the same mixed definition in robertson cells with budget failures (e.g. 1e-6: 95.2/81.3 vs 90.4/76.6 per completed solve).",
+        "correction": "Report 59.6 columns per completed solve, or label 60.2 as 'Arnoldi columns including failed solves per completed solve'."
+      },
+      {
+        "id": "F2",
+        "severity": "minor",
+        "claim": "Check 'loop checker: PASS at head 3768dac5 (no complaint)'",
+        "evidence": "logs/checks/loop_checker.log header git_head 8a4557f0 (later commits touch only mf_p1_confirm files). Reviewer re-ran python3 -I -B research/production_loop_20261116/check_checkpoint.py at 3768dac5: PASS, exit 0.",
+        "correction": "State that the logged run was at 8a4557f0; PASS at 3768dac5 is now confirmed by the review."
+      },
+      {
+        "id": "F3",
+        "severity": "minor",
+        "claim": "D0 PASS",
+        "evidence": "The frozen D0 compares S and P1 after every edit against commit A; no edit was made, so the comparison is vacuous. Reviewer re-ran 2 cells x 4 entries x 2 arms with the deciding binary and 2 cells x 2 entries x 2 arms with the binary cargo builds from HEAD: all identical to RECORDING_A and the logs, including per-solve log sha256.",
+        "correction": "Label D0 'PASS (vacuous: no edit; recording reproduced)'."
+      },
+      {
+        "id": "F4",
+        "severity": "minor",
+        "claim": "E and W cell parts PASS in every cell",
+        "evidence": "In ac3d 1e-3, robertson_rd1d 1e-3 and porous2d 1e-7 the error of S lies outside P1's error range, so the frozen cell statistic (P1 at S's achieved error, no extrapolation) is undefined; the equal-tolerance fallback was pre-declared in PROTOCOL.json at 43d0880a (before any P1 run) and gives E 0.350/0.905/0.263, W 0.314/0.911/0.229; conservative bound 0.303/0.605/undefined. Reading these cells NOT_DECIDABLE would make E and W NOT_DECIDABLE, and the verdict would still be KEEP.",
+        "correction": "Keep the disclosure that the PASS of E and W rests on the pre-declared fallback in 3 cells."
+      },
+      {
+        "id": "F5",
+        "severity": "minor",
+        "claim": "Exploratory replay shows the B failure 'comes from diverging trajectories'",
+        "evidence": "Replay verified: 2931 systems (S run 1443, P1 run 1488), shipped and P1 kernels exhaust the budget on the same systems (0/0), replay equals the driver, P2 loses 40. But the three B-failing robertson cells are exactly the cells where P1 also takes 2 more attempts (35/37, 34/36, 36/38); with one trajectory per cell the replay cannot show that P1's trajectories are not systematically more exposed to budget-exhausting systems.",
+        "correction": "Present the replay as kernel-level equivalence only. A switch past the frozen B failure needs its own pre-registered test, for example more trajectories per cell."
+      },
+      {
+        "id": "F6",
+        "severity": "minor",
+        "claim": "References by the V17 rule with stated uncertainty",
+        "evidence": "Rule followed (DOP853 1e-13; cross-checks DOP853 1e-11 and Radau 1e-11 with jac_sparsity; u_ref = max). For schnakenberg2d the BLAS-thread rounding probe gives 4.68e-9 > u_ref 3.35e-9, and S/P1 errors at rtol 1e-3..1e-5 are O(1) (1.86, 0.79, 0.79). No verdict is affected: the matched range starts at 1.32e-3, far above 10 u_ref, and S and P1 errors are equal at equal tolerance.",
+        "correction": "None needed (disclosed as exploratory); note that u_ref understates the reference sensitivity for schnakenberg2d."
+      },
+      {
+        "id": "F7",
+        "severity": "minor",
+        "claim": "The four families were not used by V06, V17 or V24 for the matrix-free route",
+        "evidence": "Holds for deciding and declared-size runs: no V06, V17 or V24 log, PROTOCOL or RESULTS entry runs any of them, and P1 never ran on them before V25. The frozen text 'neither was run' is imprecise: V17 ran a reduced ac3d (m=8, arm A, console only) for sizing, V06 ran dev_robertson_rd1d in contract tests and computed a robertson_rd1d reference at n=1026. Schnakenberg appears only in pre-loop benchmark catalogues (local_frontier_20261024).",
+        "correction": "None for the builder; informational for the orchestrator."
+      },
+      {
+        "id": "F8",
+        "severity": "minor",
+        "claim": "Process: P1 and P2 run only after PROTOCOL.json",
+        "evidence": "Contract test the_entries_of_the_measurement_program_agree (commit 956b578d) ran S, P1 and P2 on reduced dev_* instances at rtol 1e-5 before the PROTOCOL.json commit. It only asserts that the entries agree and prints no comparison. The first P1 run on a declared instance was 18:13:53, after PROTOCOL.json (18:03:10) and the parser (18:13:04).",
+        "correction": "None; informational."
+      },
+      {
+        "id": "F9",
+        "severity": "minor",
+        "claim": "Reviewer side effect (read-only rule)",
+        "evidence": "A file-read hook of this review session created git-ignored .mypy_cache directories in mf_p1_confirm/, mf_p1_confirm/reference/ and mf_stage_solve/ (19:05 to 19:07). They were moved to review-scratch/moved_out_mypy/; git status --short --ignored of the worktree is empty again at 3768dac5. The task text names the branch '...-w2-v25'; the worktree's actual branch is research/production-loop-20261116-w3-v25, as the builder reported.",
+        "correction": "None for the builder."
+      }
+    ],
+    "reran": [
+      {
+        "command": "git -C <worktree> diff --name-only 80ba8838..HEAD; git status --short --ignored; per-commit file listing",
+        "exit_code": 0,
+        "result": "Changes are 3 new tests/mf_confirm_*.rs plus mf_p1_confirm/** (PREDECLARED.json unchanged, sha 6b2ca034); tree clean. Order: PROTOCOL.json 43d0880a (18:03:10), parser bd0f87a2 (18:13:04), first P1 run 18:13:53. Later PROTOCOL change is amendment P-1 only; later parser changes are exploratory and report text."
+      },
+      {
+        "command": "python3 -I -B research/production_loop_20261116/check_checkpoint.py (at 3768dac5)",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test mf_confirm_contracts --test mf_confirm_measure --test mf_confirm_problems",
+        "exit_code": 0,
+        "result": "Fresh build; 5 passed, 0 failed, 1 ignored (v25_run)"
+      },
+      {
+        "command": "cargo +1.94.1 fmt -p rodas5p-integrators -- --check; cargo +1.94.1 clippy --locked -j 4 --release --no-deps -p rodas5p-integrators --test mf_confirm_* -- -D warnings",
+        "exit_code": 0,
+        "result": "clean"
+      },
+      {
+        "command": "review-scratch/consistency_review.py <deciding binary> (own numpy from the frozen text, CONSIST and RHS0 modes)",
+        "exit_code": 0,
+        "result": "4/4 families: max |rust-numpy|/(1+|numpy|) <= 5.2e-13 (f) and 7.1e-14 (Jv); y0 bitwise equal; builder families.py bitwise equal to Rust"
+      },
+      {
+        "command": "review-scratch/rerun.py run --bin mf_confirm_measure.956b578d: 4 cells (robertson_rd1d, ac3d at 1e-3 and 1e-7) S/P1 route+audit, plus D0 router/router_ls on robertson 1e-3 and ac3d 1e-7",
+        "exit_code": 0,
+        "result": "24/24 runs identical to the builder logs and RECORDING_A in every field (end-state bits, counters, audit blocks, per-solve log sha256); instructions:u ratios 1.00000; B counts 11/12 and 0/1 reproduced"
+      },
+      {
+        "command": "review-scratch/rerun.py run --bin release/deps/mf_confirm_measure-3bcf52590fdda3f2 (built by cargo from HEAD sources) on robertson 1e-3 and ac3d 1e-7, S/P1 route+audit",
+        "exit_code": 0,
+        "result": "8/8 identical in every field; instructions within 6e-5"
+      },
+      {
+        "command": "review-scratch/rerun.py timing (flock timing.lock taskset -c 6-11, 9 rounds) ac3d 1e-3 and robertson_rd1d 1e-7",
+        "exit_code": 0,
+        "result": "Load 2.75 to 3.08, spread <= 0.013, states equal to the instruction runs. P1/S at equal tolerance 0.310 (builder 0.314) and 0.744 (builder 0.742)"
+      },
+      {
+        "command": "review-scratch/recompute.py (own parser and matched-error code on the builder's raw logs)",
+        "exit_code": 0,
+        "result": "V PASS (9287/41/0, max 0.99991); B FAIL (robertson only); A, S, E, W PASS. Every builder number reproduced: E 0.198125/0.791154/0.515871/0.470088, W 6.4659/1.2543/2.0532/2.2515, 20/20 authoritative"
+      },
+      {
+        "command": "parse_results.py results and make_report.py on a scratch copy of mf_p1_confirm",
+        "exit_code": 0,
+        "result": "RESULTS.json identical except the 'generated' timestamp; REPORT_KO.md byte-identical"
+      }
+    ]
+  },
+  "orchestrator_actions": [
+    "Merged with --no-ff on 2026-11-24.",
+    "Correction notice added to make_report.py and REPORT_KO.md regenerated (findings F1-F6).",
+    "Frozen verdict KEEP recorded as ledger FAIL row of the switch hypothesis; P1 stays opt-in; the owner decides whether a follow-up test of rule B is pre-registered."
+  ]
+}

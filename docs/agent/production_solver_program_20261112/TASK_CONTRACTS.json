@@ -1624,7 +1624,7 @@
       "depends": [
         "V24_MF_ADAPTIVE_STAGE_SOLVE"
       ],
-      "status": "IN_PROGRESS",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Confirm the adaptive policy P1 of the matrix-free stage solve on families no earlier node used, and switch the default of the matrix-free route to it if it is as safe as the shipped policy and cheaper at matched achieved error (owner decision OD-L1-15).",
       "write_allowlist": [
         "research/production_loop_20261116/mf_p1_confirm/**",
@@ -1666,15 +1666,18 @@
         "tolerances/controller constants",
         "stage threshold of the linear solve"
       ],
-      "evidence": [],
-      "state_note": "Pre-registered 2026-11-24 (addendum A7). Builder node."
+      "evidence": [
+        "research/production_loop_20261116/mf_p1_confirm/RESULTS.json",
+        "research/production_loop_20261116/mf_p1_confirm/REVIEW.json"
+      ],
+      "state_note": "Frozen verdict KEEP (ledger L-0336): rule B fails on robertson_rd1d (budget-exhausting stage solves S/P1 11/12, 9/10, 0/1 in three cells); V, A, S, E and W hold (0 violations in 9287 P1 solves; instructions at matched error 0.198, 0.791, 0.516, 0.470; wall 6.47, 1.25, 2.05, 2.25 times faster, 20 of 20 cells authoritative). P1 stays opt-in; no default changed. Review accept_with_corrections (mf_p1_confirm/REVIEW.json). Owner decision open: a pre-registered follow-up test of rule B."
     },
     {
       "id": "V26_ASSEMBLY_FULL_CHECK",
       "depends": [
         "V08_JACOBIAN_ASSEMBLY"
       ],
-      "status": "IN_PROGRESS",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Test whether the full pattern check of the assembly client (n right-hand sides) can be parallelized or vectorized, and test an exact multi-colouring check that needs far fewer evaluations (owner decision OD-L1-16). The default of the check is decided by the owner after the report.",
       "write_allowlist": [
         "research/production_loop_20261116/assembly_check/**",
@@ -1704,8 +1707,11 @@
         "tolerances/controller constants",
         "stage threshold of the linear solve"
       ],
-      "evidence": [],
-      "state_note": "Pre-registered 2026-11-24 (addendum A7). Builder node."
+      "evidence": [
+        "research/production_loop_20261116/assembly_check/RESULTS.json",
+        "research/production_loop_20261116/assembly_check/REVIEW.json"
+      ],
+      "state_note": "Descriptive (ledger L-0337 PASS on the frozen corpus, L-0338 FAIL of the general claim): FA, FA_P (2, 4, 6 workers), MC and MC_P keep E, D and F on 4846 corpus cases; the default Sample(8) misses 576 wrong declarations; MC needs 150 instead of 4096 and 59 instead of 131072 right-hand sides; the review refuted the general exactness of MC with constructed rows whose undeclared couplings cancel in pairs and with entry collapse (assembly_check/review_probe). Default unchanged (Sample(8)); the owner decides the default."
     },
     {
       "id": "V27_ROUTER_HYPERPARAMETER_FREE",

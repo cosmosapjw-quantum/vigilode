@@ -1,0 +1,211 @@
+{
+  "schema": "vigilode.loop.review.v1",
+  "node": "V26_ASSEMBLY_FULL_CHECK",
+  "run_id": "wf_2abb3b68-197",
+  "builder_head": "de7f18ac14aab75c563ac96689e1501384e221ee",
+  "merged_into": "research/production-loop-20261116 (merge commits 1e53d5f9 for V25, 68b6688c for V26)",
+  "review": {
+    "node": "V26_ASSEMBLY_FULL_CHECK",
+    "verdict": "accept_with_corrections",
+    "summary": "Scope, protection, order OK: 13 non-log paths + 185 logs, all allowed; no protected file; clean tree; PREDECLARED (b8e75141) in base, commit-A logs before the client edit. Re-ran tests (26 bins 85/0/13), sentinels 61, clippy, fmt; loop checker names only allowed assembly.rs/engine.rs. Recounted all 4846 corpus cases; re-ran 43,066 (case, arm) decisions: 0 differences (FA arms on 91 omit131072 cases not re-run: host load 165); counts of 3 cost cells identical; instructions:u within 7 ppm; RESULTS regenerates identically; timing labels re-derived, 0 mismatches. E, D-FA, D-MC, F PASS on the frozen corpus; S8 576 misses; FA's one miss rounding-limited (independent Python check). But MC's general claim fails: rows with four undeclared O(1) couplings cancelling in pairs pass MC/MC_P under construction B (n=60) and G (ring n=84) while FA/FA_P detect, and single-dependency entry collapse occurs (3 of 18 trials); none is rounding-limited by the frozen rule. Corrections: scope \"exact\" and \"detects every case FA detects\" to the corpus; state E's same-client reading for the impure control; minor items in findings.",
+    "scope_ok": true,
+    "protected_ok": true,
+    "predeclared_before_results": true,
+    "discriminator_checks": [
+      {
+        "name": "E decisions and bits",
+        "builder_value": "PASS: FA_P t2/t4/t6 = FA 4846/4846 each; MC_P = MC 4846/4846; S8/FA after edit = commit A 14354/14354; all arms bit-identical to None@seq in 4 cells",
+        "reviewer_value": "Recount from logs identical (14354/14354 A vs B; pooled = reference everywhere under the pre-declared reading); 43,066 re-run decisions equal; every arm's first-linearization and trajectory fingerprints equal None@seq in all 4 cells and equal V08 identity logs. Under the literal arm text (FA = sequential client) FA_P differs from FA@seq on controls/impure16-dense in the typed error only (column None vs Some(0)); same-client reading fixed in NOTES 23fc3f39 before the first run",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "D detection (FA)",
+        "builder_value": "1 miss, omit1024 (768,769), rounding-limited",
+        "reviewer_value": "1 miss confirmed; independent Python transcription of row 768: bits equal at both FA states (u_384=4.69e-6, u^2*dv=9.8e-19 < half ulp 1.1e-16)",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "D detection (MC)",
+        "builder_value": "0 misses of FA-detected cases; only miss rounding-limited at all 5 MC states",
+        "reviewer_value": "Confirmed on the frozen corpus (5 MC states bit-equal, also in Python). Outside the corpus the claim fails: constructed multi-dependency cancellation (B and G) and single-dependency entry collapse pass MC while FA detects, not rounding-limited by the frozen rule (finding F1, F2)",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "D S8 misses listed",
+        "builder_value": "576 (ring 6, omit128 48, omit1024 497, omit131072 25)",
+        "reviewer_value": "576 recounted from logs, same split, all listed in RESULTS corpus.D.S8_misses; re-run S8 decisions identical",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "F no false alarm",
+        "builder_value": "0 of 23 correct rejected; MC n/a on 2 dense-route cases",
+        "reviewer_value": "0 false alarms in logs and re-run; MC returns Configuration (n/a) on the 2 dense-route cases",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "C cost (reported, no threshold)",
+        "builder_value": "RHS counts, instructions:u, walls; MC 150 vs 4096, 59 vs 131072; FL/build FA 80.8, MC 4.09 (band), 17867 vs 18.4 (b131k); solve/S8 MC 1.025-1.091",
+        "reviewer_value": "Counts of 3 cells re-run: 1020 deterministic fields identical; instructions:u re-measured (5 actions, nlkpp-band) within 6.3 ppm, ratios 4.0936 and 80.759; 8 key numbers traced to raw perf/count lines; timing labels re-derived: 0 mismatches (63 authoritative, 40 diagnostic_only + 8 self-references)",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      }
+    ],
+    "reran": [
+      {
+        "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test 'stage_clients_*'",
+        "exit_code": 0,
+        "result": "26 binaries, 85 passed, 0 failed, 13 ignored (no rebuild); review-scratch/logs/stage_clients_tests.log"
+      },
+      {
+        "command": "cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test ppsw1_6b_contracts --test ptsw2b_contracts",
+        "exit_code": 0,
+        "result": "37 + 24 = 61 passed"
+      },
+      {
+        "command": "cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --test stage_clients_assembly_{alloc,identity,measure,problems,check_corpus,check_mc,check_measure} --no-deps -- -D warnings",
+        "exit_code": 0,
+        "result": "no warnings"
+      },
+      {
+        "command": "cargo +1.94.1 fmt -p rodas5p-integrators -- --check",
+        "exit_code": 0,
+        "result": "clean"
+      },
+      {
+        "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+        "exit_code": 1,
+        "result": "ValueError: implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/src/stage_clients/assembly.rs. Non-stopping copy (review-scratch/checker_all.py): only assembly.rs and assembly/engine.rs; 23 protected blobs and 69 evidence hashes unchanged; strict JSON ok; no path outside the allowlist"
+      },
+      {
+        "command": "V26_MODE=corpus V26_GROUP=<each group> V26_ARMS=<builder's arm lists> taskset -c 0-5,12-17 stage_clients_assembly_check_corpus-bdab728e059a0a71 (HEAD build)",
+        "exit_code": 0,
+        "result": "43,066 (case, arm) decisions over all 4846 cases equal to corpus_B logs, 0 different; passing-check counters identical; omit131072 all-arm run stopped after 109 cases at load 165 (exit 143), S8/MC arms re-run for all 200"
+      },
+      {
+        "command": "V26_MODE=counts V26_CELL={bruss1d-n128-coloured,nlkpp-band-n4096-r24,bruss1d-n131072 (cheap arms)} stage_clients_assembly_check_measure",
+        "exit_code": 0,
+        "result": "1020 deterministic fields (outcomes, RHS counts, attempts, fingerprints) identical to the builder's counts logs"
+      },
+      {
+        "command": "flock timing.lock taskset -c 6-11 perf stat -e instructions:u (nlkpp-band None setup/verify, S8, MC, FA verify)",
+        "exit_code": 0,
+        "result": "within 6.3 ppm of the logs; MC 4.0936 and FA 80.759 x one build"
+      },
+      {
+        "command": "stage_clients_assembly_check_mc --nocapture --exact the_multi_colouring_check_detects_what_the_full_check_detects_on_random_patterns",
+        "exit_code": 0,
+        "result": "723 omissions, 389 at build, 693 both, 30 neither (FA rounding-limited), 0 one-sided: identical to unit.log; band count 14,528,268 = sum of nnz over all bands n<=40"
+      },
+      {
+        "command": "python3 -I parse_results.py (copy of logs in review-scratch/regen)",
+        "exit_code": 0,
+        "result": "RESULTS.json identical except head_at_build; REPORT_KO.md differs only in the HEAD line"
+      },
+      {
+        "command": "review-scratch/probe-target/release/v26-review-probe cancel",
+        "exit_code": 0,
+        "result": "B (tridiagonal n=60) and G (ring n=84): FA/FA_P detect UndeclaredEntry, build/S8/MC/MC@t6/MC_P pass; not rounding-limited; unpaired control detected by MC"
+      },
+      {
+        "command": "v26-review-probe collapse",
+        "exit_code": 0,
+        "result": "3 hits in 18 trials: FA detects UndeclaredEntry{20,41}, MC/MC_P pass, row bits differ at all MC states"
+      },
+      {
+        "command": "v26-review-probe multi / single-g",
+        "exit_code": 0,
+        "result": "6376 generic 2-3-omission cases (989 under G) and 2831 single omissions (829 under G): 0 one-sided, pooled = sequential"
+      },
+      {
+        "command": "v26-review-probe constructions + python3 -I check_constructions.py",
+        "exit_code": 0,
+        "result": "113 patterns (49 B, 64 G): CPR c1, moduli, primes, totals, choice rule (tie->B), validity, injectivity, membership all match the frozen construction"
+      },
+      {
+        "command": "python3 -I check_timing.py logs RESULTS.json; python3 -I recompute_verdicts.py RESULTS.json",
+        "exit_code": 0,
+        "result": "0 label/ratio mismatches; E, D-FA, D-MC, F PASS, S8 576 listed"
+      },
+      {
+        "command": "timing re-measurement of a cost cell",
+        "result": "NOT_RUN: 1-minute load 25-166 from unrelated jobs throughout the review"
+      }
+    ],
+    "findings": [
+      {
+        "id": "F1-MC-GENERAL",
+        "severity": "major",
+        "claim": "Builder summary: MC is a new 'exact' check that 'detects every case FA detects' (frozen claim_to_be_tested: every undeclared dependency that changes row bits is detected unless rounding-limited).",
+        "evidence": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/review-scratch/probe/src/main.rs (cancel), logs/probe_cancel.log: declared tridiagonal n=60 (construction B, moduli 3,4,5), row 30 also reads (y0-y45)+(y1-y16) with equal values: FA@seq, FA_P@t2, FA_P@t6 -> UndeclaredEntry{row 30, column 0}; build, S8, MC@seq, MC@t6, MC_P@t3, MC_P@t6 pass. True ring n=84 (construction G, primes 2,3,5), row 40 reads (y0-y30)+(y3-y63): same. Row bits differ with/without each omitted column at all 4 MC states (not rounding-limited by the frozen rule); couplings have coefficient 1. Unpaired control (0,44,1,17): MC detects. Generic rows with 2-3 omissions (logs/probe_multi.log, 6376 cases): no one-sided result, so the blind spot needs pairwise cancellation under every colouring.",
+        "correction": "Scope 'exact' and 'detects every case FA detects' to the frozen corpus (one undeclared dependency per row, all wrong cases under construction B). State in REPORT/RESULTS that the general claim is refuted: a row whose several undeclared couplings cancel pairwise at the checked state under every colouring passes MC (and S8) but not FA. This matters for the owner's default decision."
+      },
+      {
+        "id": "F2-MC-COLLAPSE",
+        "severity": "minor",
+        "claim": "NOTES/REPORT section 7 treat the 'entry collapse' gap as theoretical.",
+        "evidence": "review-scratch/logs/probe_collapse.log: tridiagonal n=60, row 20 = c0(y20-s20)+c1(y21-s21)+0.75(y19-s19)+d(y41-s41), d about 1.7e-16 to 3.1e-16. In 3 of 18 random trials FA/FA_P detect UndeclaredEntry{row 20, column 41} while MC, MC@t6 and MC_P pass; row 20's bits differ with/without column 41 at all 4 MC states. Single dependency, entry about 1e-16 (practically harmless).",
+        "correction": "Report that the collapse occurs (constructed), so D for MC is not guaranteed outside the corpus even with one dependency per row."
+      },
+      {
+        "id": "F3-E-READING",
+        "severity": "minor",
+        "claim": "FA_P decides exactly as FA in all 4846 cases.",
+        "evidence": "corpus_B_controls.log, controls/impure16-dense: FA@seq NotReproducible{row 0, column Some(0)}; FA_P@t2/t4/t6 and FA@t6 NotReproducible{row 0, column None}. RESULTS compares impure cases only with FA@tP, a reading fixed in NOTES entry 1 (commit 23fc3f39, 17:48) before the first run (17:55).",
+        "correction": "State that E PASS rests on the pre-declared same-client reading, and list the 3 typed-error differences (both detect) under the literal arm definition."
+      },
+      {
+        "id": "F4-CORPUS-G",
+        "severity": "minor",
+        "claim": "Corpus evidence covers both MC constructions.",
+        "evidence": "check_colourings in corpus_B logs: every wrong case uses construction B; G is chosen only for 7 correct ring cases. Detection under G rests on unit tests and the reviewer's sweeps (probe_single.log: 829 single omissions under G, MC = FA).",
+        "correction": "Note in the report that the corpus never exercises detection under G."
+      },
+      {
+        "id": "F5-NOTES-PROMISE",
+        "severity": "minor",
+        "claim": "NOTES entry 1: the MC count without B's first modulus is reported as exploratory arithmetic.",
+        "evidence": "Absent from REPORT_KO.md and RESULTS.json. For full-band cells c1 = j mod (l+u+1) equals that colouring, which can only catch impurity: 5 of 59, 49 of 150 and 5 of 18 RHS; without it 54, 101 and 13.",
+        "correction": "Add the exploratory count, or drop the promise."
+      },
+      {
+        "id": "F6-TIMING",
+        "severity": "minor",
+        "claim": "Wall cells labelled by the quality rule.",
+        "evidence": "Labels and ratios re-derived from the raw timing logs (review-scratch/check_timing.py): 0 mismatches, 63 authoritative and 40 diagnostic_only. Three lock holds above 2 min (124, 121, 139 s) are disclosed. The reviewer could not re-time: load 25-166.",
+        "correction": "None beyond the existing disclosure; wall numbers stay the builder's."
+      },
+      {
+        "id": "F7-POOLED-COUNTERS",
+        "severity": "minor",
+        "claim": "Counters of the pooled arms.",
+        "evidence": "Re-run vs builder logs: 1,879 of 18,490 failing pooled records differ in rhs_calls and failed_build_rhs_calls. All passing checks and all decisions are identical (behaviour documented in run_pooled).",
+        "correction": "Label the RHS counts of failing pooled checks non-deterministic wherever they are quoted."
+      },
+      {
+        "id": "F8-PROVENANCE",
+        "severity": "minor",
+        "claim": "Results provenance and NOTES numbers.",
+        "evidence": "RESULTS/REPORT record head_at_build b71abd08, the parent of de7f18ac whose parser produced them; scratch regeneration matches except head_at_build. NOTES entry 2 gives u_384 about 1e-5 and a shift of about 5e-18; independent evaluation gives 4.69e-6 and 9.8e-19, still below half an ulp (1.1e-16).",
+        "correction": "Cosmetic: regenerate at the final head; correct the two NOTES figures."
+      },
+      {
+        "id": "F9-SINGLE-ARM",
+        "severity": "minor",
+        "claim": "PREDECLARED outcome: the report names the cheapest arm that keeps E, D and F on every cell.",
+        "evidence": "REPORT gives per-cell winners and says only FA/FA_P remain under the single-arm reading, but names neither. FA wins by RHS and instructions; FA_P@t6 by wall on the dense cell.",
+        "correction": "Name the single arm explicitly per measure."
+      }
+    ]
+  },
+  "orchestrator_actions": [
+    "Merged with --no-ff on 2026-11-24; checkpoint pins of assembly.rs and assembly/engine.rs updated after the merge verification.",
+    "Correction notice added to the report renderer of parse_results.py and REPORT_KO.md re-rendered from the unchanged RESULTS.json (findings F1-F9).",
+    "The reviewer's counterexample probe (review-scratch/probe) and its logs copied to assembly_check/review_probe/ with repository-relative path dependencies; the general exactness claim of MC is recorded as a separate ledger FAIL row.",
+    "The default first-use check stays Sample(8); the default is the owner's decision."
+  ]
+}

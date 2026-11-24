@@ -289,3 +289,8 @@ No measurement run of the deciding set may start before this commit is on origin
 ## Erratum A8.1 (2026-11-24 20:15 KST): date field of the V27 pre-registration
 
 The field date_kst of router_hyperparameter_free/PREDECLARED.json reads "2026-11-24 20:20"; it was typed in error. The file was committed at 2026-11-24 20:04:58 KST (commit 1ffbda20) and has not changed since. Nothing else changes.
+
+## Results, wave 3, group 6: nodes V25 and V26 (appended 2026-11-24; nothing above this line changes)
+
+- V25 (addendum A7): frozen verdict KEEP. V (0 residual violations in 9287 P1 stage solves), A (error ratio at most 1.0000247), S (geometric means 1.000, 1.034, 1.000, 1.000; worst cell 1.059), E (instructions at matched error 0.198, 0.791, 0.516, 0.470; worst cell 0.905) and W (20 of 20 cells authoritative, P1 faster in each) hold; B fails on robertson_rd1d (budget-exhausting solves S/P1 11/12 at 1e-3, 9/10 at 1e-4, 0/1 at 1e-7). P1 stays opt-in and no default changed (G and R not run). Independent review: accept with corrections (mf_p1_confirm/REVIEW.json). Ledger L-0336.
+- V26 (addendum A7, descriptive): E, D (FA and MC) and F hold on the frozen corpus of 4846 cases for FA, FA_P (2, 4, 6 workers), MC and MC_P; Sample(8) misses 576 wrong declarations; MC needs 150 instead of 4096 (nlkpp-band) and 59 instead of 131072 (bruss1d n 131072) right-hand sides and its capped solve costs 1.05 and 1.09 of the Sample(8) solve. Independent review: accept with corrections; the general claim that MC detects every undeclared dependency that changes row bits unless rounding-limited is refuted by constructed counterexamples (assembly_check/review_probe). The default stays Sample(8). Ledger L-0337 (corpus, PASS) and L-0338 (general claim, FAIL).
