@@ -208,6 +208,7 @@ mod records;
 pub mod registry;
 mod selection;
 pub mod selection_evidence;
+pub mod split_forcing;
 mod session;
 mod solution;
 mod solve;
