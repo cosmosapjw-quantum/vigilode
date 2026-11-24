@@ -189,6 +189,8 @@ mod automatic;
 mod capabilities;
 pub mod causal_budget;
 #[cfg(feature = "structured")]
+pub mod graph_schur;
+#[cfg(feature = "structured")]
 pub mod structured;
 mod cofactor_chart;
 pub mod coloring;
