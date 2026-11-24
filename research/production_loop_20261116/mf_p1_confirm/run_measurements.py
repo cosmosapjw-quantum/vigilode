@@ -290,7 +290,7 @@ def wait_for_quiet(minutes, threshold=4.0):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("phase", choices=["sizing", "setup", "record_a", "p2", "timing", "d0", "exploratory"])
+    parser.add_argument("phase", choices=["sizing", "setup", "record_a", "p2", "timing", "d0", "exploratory", "shadow"])
     parser.add_argument("--bin", required=True, help="the mf_confirm_measure test binary")
     parser.add_argument("--families", default="")
     parser.add_argument("--rtols", default=",".join(RTOLS))
@@ -337,6 +337,17 @@ def main():
         entries = [(entry, entry == "route") for entry in names]
         for arm in [a for a in args.arms.split(",") if a]:
             runner.run_many(cell_jobs(families, spans, rtols, arm, entries, "exploratory"), args.jobs)
+    elif args.phase == "shadow":
+        # Exploratory replay (PROTOCOL.json amendment P-1): every stage system
+        # of the run of the arm, solved again by the three kernels.
+        jobs = []
+        for arm in [a for a in (args.arms or "S,P1").split(",") if a]:
+            for family in families:
+                for rtol in rtols:
+                    jobs.append((f"{family}__{rtol}__{arm}", {"V25_FAMILY": family, "V25_T1": end_text(spans[family]),
+                                                             "V25_RTOL": rtol, "V25_MODE": "SHADOW", "V25_ARM": arm,
+                                                             "V25_LABEL": "exploratory replay"}, False, False))
+        runner.run_many(jobs, args.jobs)
     return 0
 
 

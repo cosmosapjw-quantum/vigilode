@@ -1088,7 +1088,13 @@ def build_results():
                       "integrate_rodas5p_mf_fast_observed_with_stage_solve_policy(.., MfStageSolvePolicy::ColumnTested, ..)로 고르면, 이 시험의 네 문제족에서 "
                       "같은 달성 오차의 명령어 수가 S의 " + ", ".join(f"{numbers[family]:.2f}" for family in FAMILIES if numbers[family] is not None)
                       + "배였습니다 (식별자 rodas5p-mf-fast-transformed-v2-candidate-p1).")
-        impact.append("기본값을 P1로 바꿀지는 소유자 결정입니다. 바꾸려면 동결 규칙 B를 넘어서는 결정이 필요하고, 작성 허용 목록 밖의 V24 테스트 두 줄 묶음(OUT_OF_LIST_EDITS.json)도 함께 바뀌어야 합니다.")
+        pins = os.path.join(NODE, "OUT_OF_LIST_EDITS.json")
+        outside = None
+        if os.path.exists(pins):
+            with open(pins, encoding="utf-8") as handle:
+                outside = json.load(handle).get("outside_the_write_list")
+        impact.append("기본값을 P1로 바꿀지는 소유자 결정입니다. 바꾸려면 동결 규칙 B를 넘어서는 결정이 필요하고, 이 노드의 작성 허용 목록 밖에 있는 "
+                      f"V24 테스트 줄 {outside if outside is not None else '-'}개(OUT_OF_LIST_EDITS.json: mf_adaptive_shipped_bits.rs, mf_adaptive_contracts.rs)도 함께 바뀌어야 합니다.")
     elif final == "SWITCH":
         impact.append("행렬 없는 경로의 기본값이 P1(rodas5p-mf-fast-transformed-v3)이 됩니다; S는 MfStageSolvePolicy::Shipped로 계속 고를 수 있습니다.")
     results["report_notes_ko"] = notes
