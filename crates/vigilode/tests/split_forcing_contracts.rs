@@ -245,3 +245,62 @@ fn manufactured_nonlinear_solution_with_analytic_reference() {
         }
     }
 }
+
+#[test]
+fn incomplete_forcing_is_delayed_and_rejected_on_hit_miss_and_direct() {
+    use vigilode::split_forcing::ForcingWork;
+    let split = SplitForcing::new(
+        2,
+        2,
+        |_t, _y, out| {
+            out.fill(1.0);
+            Ok(())
+        },
+        |t, out| {
+            out[0] = 1.0;
+            if t == 0.0 {
+                out[1] = 2.0;
+            }
+            Ok(())
+        },
+    )
+    .unwrap();
+    let ready = split.prepare_rodas5p_trial(0.0, 1.0).unwrap();
+    let mut out = [0.0; 2];
+    (ready.rhs_fn())(0.0, &[1.0; 2], &mut out).unwrap();
+    assert_eq!(out, [2.0, 3.0]);
+    for (p, t) in [(&ready, 1.0), (&ready, 0.3), (&split.direct_problem(), 0.3)] {
+        let e = (p.rhs_fn())(t, &[0.0; 2], &mut out).unwrap_err();
+        assert!(matches!(e, CallbackError::Recoverable(_)));
+    }
+    assert_eq!(
+        split.work(),
+        ForcingWork {
+            prepared: 6,
+            hits: 2,
+            misses: 2,
+            failed_evaluations: 7
+        }
+    );
+}
+
+#[test]
+fn incomplete_state_takes_precedence_and_does_not_consume_row() {
+    let split = SplitForcing::new(
+        2,
+        1,
+        |_t, _y, out| {
+            out[0] = 0.0;
+            Ok(())
+        },
+        |_t, _out| Err(CallbackError::Fatal("unavailable".into())),
+    )
+    .unwrap();
+    let p = split.prepare_rodas5p_trial(0.0, 1.0).unwrap();
+    let mut out = [1.0; 2];
+    assert!(matches!(
+        (p.rhs_fn())(0.0, &[1.0; 2], &mut out),
+        Err(CallbackError::Recoverable(_))
+    ));
+    assert_eq!(split.work().hits, 0);
+}
