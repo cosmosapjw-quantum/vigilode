@@ -298,3 +298,7 @@ The field date_kst of router_hyperparameter_free/PREDECLARED.json reads "2026-11
 ## Amendment A8.2 (2026-11-24 23:40 KST): node V27, recorded before any run of the deciding set
 
 Two points of `router_hyperparameter_free/PREDECLARED.json` are fixed in `router_hyperparameter_free/AMENDMENT_A8_2.json` before phase 2 starts (phase 1 ran only the toy problem y' = -y): (1) the spans of the start-rule and callback fixtures, because "their V03b spans" names no single span (the V03b contracts use several sizes and spans); the phase-1 runner's choices are adopted unchanged; (2) the exploratory arms N_prod and N_cont are not run, because each needs a router variant that owner decision D6 excludes as a public option and that the runner cannot reproduce exactly; they carried no rule. No discriminator, threshold or decision rule changes.
+
+## Erratum A8.3 (2026-11-24 23:30 KST): time of amendment A8.2
+
+The heading of amendment A8.2 and the field date_kst of router_hyperparameter_free/AMENDMENT_A8_2.json read 23:40 KST; the time was typed in error. The amendment was committed at 2026-11-24 23:29:26 +0900 (commit 7012e9d5) and pushed at 23:29:45 KST, before any run of the deciding set. Nothing else changes.
