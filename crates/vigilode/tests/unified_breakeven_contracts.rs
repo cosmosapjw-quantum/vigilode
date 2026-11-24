@@ -462,3 +462,94 @@ fn arenstorf_has_no_rodas5p_leg() {
         leg_summary(&unified)
     );
 }
+
+// ======================================================================================
+// Part 2: the DOPRI5 session that the break-even route drives
+// ======================================================================================
+
+fn lotka_volterra(calls: &Calls) -> Problem {
+    let rhs = calls.rhs.clone();
+    Problem::new(2, move |_t, y: &[f64], dy: &mut [f64]| {
+        rhs.fetch_add(1, Ordering::Relaxed);
+        dy[0] = 1.5 * y[0] - y[0] * y[1];
+        dy[1] = -3.0 * y[1] + y[0] * y[1];
+        Ok::<(), CallbackError>(())
+    })
+    .autonomous()
+}
+
+/// One DOPRI5 run through the public session with a quota of one attempt per call, as the
+/// break-even route drives it, and the direct `Dopri5::solve` with the same options.
+fn quota_one_and_direct(
+    build: &dyn Fn(&Calls) -> Problem,
+    span: (f64, f64),
+    y0: &[f64],
+    options: &Options,
+) -> (ExplicitSolution, ExplicitSolution, usize, u64, u64) {
+    let direct_calls = Calls::default();
+    let direct = Dopri5::solve(&build(&direct_calls), span, y0, options).expect("direct DOPRI5");
+    let calls = Calls::default();
+    let problem = build(&calls);
+    let (advances, session) = Dopri5::with_session(
+        &problem,
+        span,
+        y0,
+        options,
+        &[span.0, span.1],
+        vigilode::SessionEpochs::default(),
+        |session| {
+            let mut advances = 0usize;
+            loop {
+                let before = session.checkpoint().attempts;
+                let outcome = session
+                    .advance_to(span.1, 1, vigilode::SessionEpochs::default())
+                    .expect("a registered target");
+                advances += 1;
+                assert!(session.checkpoint().attempts <= before + 1, "quota of one");
+                if outcome != vigilode::SessionAdvance::Yield {
+                    break advances;
+                }
+            }
+        },
+    )
+    .expect("session run");
+    (session, direct, advances, calls.rhs(), direct_calls.rhs())
+}
+
+#[test]
+fn session_quota_one_advances_keep_the_bits_and_counters_of_dopri5_solve() {
+    let test = "session_quota_one_advances_keep_the_bits_and_counters_of_dopri5_solve";
+    type Case = (&'static str, Box<dyn Fn(&Calls) -> Problem>, (f64, f64), Vec<f64>, usize);
+    let cases: Vec<Case> = vec![
+        ("oscillator", Box::new(oscillator), (0.0, 10.0), vec![1.0, 0.0], 100_000),
+        ("lotka-volterra", Box::new(lotka_volterra), (0.0, 100.0), vec![1.0, 1.0], 100_000),
+        ("f2", Box::new(f2), (0.0, 1.0), vec![1.0], 100_000),
+        // the session's own attempt budget ends the run
+        ("robertson-budget-300", Box::new(robertson_fd), (0.0, 40.0), vec![1.0, 0.0, 0.0], 300),
+    ];
+    let mut rows = Vec::new();
+    for (name, build, span, y0, max_steps) in &cases {
+        let options = Options {
+            max_steps: *max_steps,
+            ..Options::default()
+        };
+        let (session, direct, advances, entries, direct_entries) =
+            quota_one_and_direct(&**build, *span, y0, &options);
+        let equal_stats = serde_json::to_value(&session.stats).unwrap()
+            == serde_json::to_value(&direct.stats).unwrap();
+        rows.push(json!({
+            "case": name, "advances": advances, "attempts": session.stats.attempts,
+            "direct_attempts": direct.stats.attempts, "success": session.success,
+            "stop_reason": format!("{:?}", session.stop_reason),
+            "final_state_bits_equal": bits(&session.final_state) == bits(&direct.final_state),
+            "stats_equal": equal_stats, "rhs_entries": [entries, direct_entries],
+        }));
+        assert_eq!(session.success, direct.success, "{name}");
+        assert_eq!(session.stop_reason, direct.stop_reason, "{name}");
+        assert_eq!(session.final_time.to_bits(), direct.final_time.to_bits(), "{name}");
+        assert_eq!(bits(&session.final_state), bits(&direct.final_state), "{name}");
+        assert!(equal_stats, "{name}: the work record differs");
+        assert_eq!(entries, direct_entries, "{name}: callback entries differ");
+    }
+    record(test, json!({ "cases": rows }));
+}

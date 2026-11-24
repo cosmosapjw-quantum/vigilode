@@ -8,7 +8,8 @@ use std::cell::{Cell, RefCell};
 
 use rodas5p_core::{CoreError, CoreResult, WorkCounters};
 use rodas5p_integrators::{
-    Dopri5Session, NativeSessionAdvance, NativeSessionIdentity, NativeSessionMethod, OutputSchedule,
+    Dopri5Attempt, Dopri5Session, NativeSessionAdvance, NativeSessionIdentity, NativeSessionMethod,
+    OutputSchedule,
 };
 use serde::Serialize;
 
@@ -163,6 +164,26 @@ impl ExplicitSession<'_> {
     /// Cumulative callback diagnostics, including unsuccessful calls.
     pub fn callback_work(&self) -> ExplicitCallbackWork {
         self.work.get()
+    }
+
+    /// Turn the native scalar attempt telemetry on or off; a pass-through to
+    /// `Dopri5Session::set_attempt_telemetry`. It makes no callback and changes neither the
+    /// step sequence nor the work counters. Changing it clears the last attempt record.
+    pub(crate) fn set_attempt_telemetry(&mut self, enabled: bool) {
+        self.native.set_attempt_telemetry(enabled);
+    }
+
+    /// The record of the most recent attempt since the telemetry was turned on; a
+    /// pass-through to `Dopri5Session::last_attempt`. A quota yield before a trial leaves it
+    /// unchanged.
+    pub(crate) fn last_attempt(&self) -> Option<Dopri5Attempt> {
+        self.native.last_attempt()
+    }
+
+    /// The largest growth factor of the session's step controller
+    /// (`AdaptiveStepConfig::max_factor` of the configuration the session was built with).
+    pub(crate) fn max_factor(&self) -> f64 {
+        self.adaptive.max_factor
     }
 
     /// Clone the fatal callback detail, if present.
