@@ -565,71 +565,85 @@ fn build(id: &str, entries: &Entries) -> Option<Case> {
 
 // ----------------------------------------------------------------- classification
 
-/// Classify the right-hand-side entries: a finite-difference column differs from an entry
-/// at the same time in exactly one component, by at most twice the facade's increment
-/// `sqrt(eps) max(|y_j|, 1)`; a finite-difference time derivative has the state of an
-/// adjacent entry and a time within twice `sqrt(eps) max(|t|, 1)` of it; every other entry
-/// is a stage (the first stage `f(t, y)` of an attempt included).
+/// The facade's forward-difference shift of component `y_j` (`crates/vigilode/src/fd.rs`,
+/// `increment`): `y_j + sqrt(eps) max(|y_j|, 1)`, or `y_j - sqrt(eps) max(|y_j|, 1)` where
+/// the forward shift overflows.
+fn fd_shift(yj: f64) -> f64 {
+    let raw = f64::EPSILON.sqrt() * yj.abs().max(1.0);
+    let forward = yj + raw;
+    if forward.is_finite() { forward } else { yj - raw }
+}
+
+/// Classify the right-hand-side entries. A finite-difference column is an entry whose state
+/// is, bit for bit, another entry's state at the same time with one component shifted by the
+/// facade's increment ([`fd_shift`]). A finite-difference time derivative is an entry with the
+/// state of an adjacent entry, bit for bit, at a time within twice `sqrt(eps) max(|t|, 1)` of
+/// it (the driver calls `f(t + e, y)` and `f(t - e, y)` in a row). Every other entry is a
+/// stage (the first-stage call `f(t, y)` of an attempt included). Deterministic: the kind of
+/// an entry depends only on the entries at its own time and on its neighbours.
 fn classify(n: usize, flat: &[f64], t0: f64, y0: &[f64]) -> Value {
     let width = n + 1;
     let count = flat.len() / width;
-    let entry = |i: usize| (flat[i * width], &flat[i * width + 1..(i + 1) * width]);
-    let bits = |y: &[f64]| y.iter().map(|v| v.to_bits()).collect::<Vec<u64>>();
-    let eps = f64::EPSILON.sqrt();
-    // entries by time, and the most frequent state at each time (the base of a column)
+    let time = |i: usize| flat[i * width];
+    let state = |i: usize| &flat[i * width + 1..(i + 1) * width];
+    let same = |a: &[f64], b: &[f64]| a.iter().zip(b).all(|(x, y)| x.to_bits() == y.to_bits());
     let mut by_time: HashMap<u64, Vec<usize>> = HashMap::new();
     for i in 0..count {
-        by_time.entry(entry(i).0.to_bits()).or_default().push(i);
+        by_time.entry(time(i).to_bits()).or_default().push(i);
     }
-    let mut base: HashMap<u64, Vec<u64>> = HashMap::new();
-    for (t, members) in &by_time {
-        // states in order of first occurrence with their frequency; the base is the most
-        // frequent one, the earliest on a tie (deterministic: no hash order is read)
-        let mut states: Vec<(Vec<u64>, usize)> = Vec::new();
-        for &i in members {
-            let state = bits(entry(i).1);
-            match states.iter_mut().find(|(s, _)| *s == state) {
-                Some((_, frequency)) => *frequency += 1,
-                None => states.push((state, 1)),
+    let mut column = vec![false; count];
+    for members in by_time.values() {
+        for &e in members {
+            let ye = state(e);
+            'base: for &b in members {
+                if b == e {
+                    continue;
+                }
+                let yb = state(b);
+                let mut differing = None;
+                for j in 0..n {
+                    if ye[j].to_bits() != yb[j].to_bits() {
+                        if differing.is_some() {
+                            continue 'base;
+                        }
+                        differing = Some(j);
+                    }
+                }
+                if let Some(j) = differing
+                    && ye[j].to_bits() == fd_shift(yb[j]).to_bits()
+                {
+                    column[e] = true;
+                    break;
+                }
             }
         }
-        let best = states
-            .iter()
-            .enumerate()
-            .max_by(|(ia, a), (ib, b)| a.1.cmp(&b.1).then(ib.cmp(ia)))
-            .map(|(_, (state, _))| state.clone())
-            .unwrap_or_default();
-        base.insert(*t, best);
     }
+    let eps = f64::EPSILON.sqrt();
     let (mut stages, mut columns, mut time_derivatives) = (0u64, 0u64, 0u64);
     for i in 0..count {
-        let (t, y) = entry(i);
-        let b = &base[&t.to_bits()];
-        let differing: Vec<usize> = (0..n).filter(|&j| y[j].to_bits() != b[j]).collect();
-        if differing.len() == 1 {
-            let j = differing[0];
-            let reference = f64::from_bits(b[j]);
-            if (y[j] - reference).abs() <= 2.0 * eps * reference.abs().max(1.0) {
-                columns += 1;
-                continue;
-            }
+        if column[i] {
+            columns += 1;
+            continue;
         }
-        let adjacent = [i.wrapping_sub(1), i + 1].into_iter().filter(|&k| k < count);
-        let derivative = adjacent.into_iter().any(|k| {
-            let (tk, yk) = entry(k);
-            tk != t && bits(yk) == bits(y) && (tk - t).abs() <= 4.0 * eps * t.abs().max(1.0)
-        });
+        let (t, y) = (time(i), state(i));
+        let derivative = [i.wrapping_sub(1), i + 1]
+            .into_iter()
+            .filter(|&k| k < count)
+            .any(|k| {
+                let tk = time(k);
+                tk != t && same(state(k), y) && (tk - t).abs() <= 4.0 * eps * t.abs().max(1.0)
+            });
         if derivative {
             time_derivatives += 1;
         } else {
             stages += 1;
         }
     }
-    let at_t0 = (0..count).filter(|&i| entry(i).0 == t0).count();
+    let at_t0 = (0..count).filter(|&i| time(i) == t0).count();
     let at_t0_other_state = (0..count)
-        .filter(|&i| entry(i).0 == t0 && bits(entry(i).1) != bits(y0))
+        .filter(|&i| time(i) == t0 && !same(state(i), y0))
         .count();
-    let first_is_t0_y0 = count > 0 && entry(0).0 == t0 && bits(entry(0).1) == bits(y0);
+    let first_is_t0_y0 = count > 0 && time(0) == t0 && same(state(0), y0);
     json!({
         "stage": stages,
         "fd_column": columns,
