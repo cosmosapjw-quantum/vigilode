@@ -1715,19 +1715,29 @@
       "status": "IN_PROGRESS",
       "purpose": "Auto route of the unified router with as few hyperparameters as possible (owner decision OD-L1-17): a census of every constant and rule of the route, a design that removes or replaces the tunable ones, presented to the owner before implementation.",
       "write_allowlist": [
-        "research/production_loop_20261116/router_hyperparameter_free/**"
+        "research/production_loop_20261116/router_hyperparameter_free/**",
+        "crates/vigilode/src/session.rs",
+        "crates/vigilode/src/unified/**",
+        "crates/vigilode/tests/unified_breakeven_*.rs",
+        "crates/vigilode/tests/unified_router_contracts.rs"
       ],
       "equations_and_design": [
-        "Design phase: read-only design agents and a judge; the implementation is a later node after the owner's approval."
+        "Design phase: read-only design agents and a judge (run wf_c957bd0e-1ed); design router_hyperparameter_free/DESIGN_RECOMMENDED.md approved by OD-L1-22.",
+        "Implementation: forward break-even pilots (sections 3 and 7 of the design); evaluation frozen in router_hyperparameter_free/PREDECLARED.json (addendum A8)."
       ],
       "acceptance_checks": [
-        "A design document with the census, the proposed algorithm, the hyperparameters that remain and why, and an evaluation plan for pre-registration."
+        "A design document with the census, the proposed algorithm, the hyperparameters that remain and why, and an evaluation plan for pre-registration.",
+        "Implementation: failing-first tests fail on the base sources by assertion and pass after the change; default-path golden files unchanged; full facade suite, clippy, fmt.",
+        "Evaluation: E1-E10 of router_hyperparameter_free/PREDECLARED.json; the Auto route changes iff all pass."
       ],
       "completion_requires": [
         "design document",
-        "owner approval before any implementation"
+        "owner approval before any implementation (OD-L1-22, 2026-11-24)",
+        "PREDECLARED.json on origin before any run of the deciding set",
+        "RESULTS.json from executed runs",
+        "independent review"
       ],
-      "failure_action": "The current Auto route stays as it is.",
+      "failure_action": "Today's Auto route stays; the implementation stays on its builder branch and is not merged.",
       "protected": [
         "official G0",
         "reference/holdout bytes",
@@ -1736,7 +1746,7 @@
         "stage threshold of the linear solve"
       ],
       "evidence": [],
-      "state_note": "Design phase started 2026-11-24; design finished 19:14 KST (run wf_c957bd0e-1ed, router_hyperparameter_free/DESIGN_RECOMMENDED.md); awaiting the owner approval before any implementation."
+      "state_note": "Design approved 2026-11-24 19:59 KST (OD-L1-22); pre-registered by addendum A8; implementation phase 1 launched (no evaluation run before the pre-registration is on origin)."
     }
   ],
   "execution_policy": "Resume ready bounded tasks; research/implementation may overlap only with disjoint writes. Qualification dependencies restrict promotion, not safe opt-in refactoring.",

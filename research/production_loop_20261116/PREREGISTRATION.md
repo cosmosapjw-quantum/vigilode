@@ -275,3 +275,13 @@ Reason: owner decisions OD-L1-15 and OD-L1-16 of 2026-11-24 (verbatim in `docs/a
 | V26 full pattern check of the assembly client | descriptive: arms S8, FA, FA_P (2, 4, 6 workers), MC and MC_P (exact multi-colouring check), exploratory MC at every build and a batched right-hand side; E (parallel arms decide as sequential ones; bits unchanged), D (FA detects every corpus case not rounding-limited; MC misses no case FA detects unless rounding-limited for MC), F (no false alarm) must hold for an arm to be named; cost per arm reported; the report names the cheapest arm that keeps E, D and F | no default changes in this node; the owner decides the default |
 
 Node V27 (OD-L1-17, router with as few hyperparameters as possible) is a design phase; it is pre-registered after the owner has approved the design.
+
+## Addendum A8 (2026-11-24): node V27 implementation and evaluation, frozen by this commit before any edit of the router and any run of the deciding set
+
+Reason: owner decision OD-L1-22 of 2026-11-24 (verbatim in `docs/agent/production_solver_program_20261112/OWNER_DECISIONS_20261116.json`) approves the design `router_hyperparameter_free/DESIGN_RECOMMENDED.md` (forward break-even pilots, FBP) with its owner decisions D1-D6. Contract `V27_ROUTER_HYPERPARAMETER_FREE` in `TASK_CONTRACTS.json`. Frozen design of the evaluation: `router_hyperparameter_free/PREDECLARED.json` (sha256 325c9d67bccae6e0fc403877e5a80f64c62e62aa7db6dbd63c150716624862ff). The frozen part and the earlier addenda are unchanged.
+
+| node | adopt | keep today's route |
+|---|---|---|
+| V27 FBP Auto route (arms T = today's Auto, N = FBP; references D = Dopri5::solve, R = Rodas5p::solve; 35 problems in four groups, three tolerance pairs; counters only) | iff E1 (geometric mean of cost(N)/cost(T) < 1 in callbacks and operations, and a smaller worst ratio to the better single method than T), E2 (no new failure), E3 (neutrality without handover, cost <= 2 D), E4 (one attempt budget), E5 (no callback before DOPRI5's first stage, none at t0 except its stages, no uncharged entry), E6 (determinism over three runs), E7 (error <= 3 x the better of D and R), E8 (F2 succeeds, P_fatal typed, N2 ends at its first pilot), E9 (V03b work bounds 5890 and 181818 with a recorded handover) and E10 (pilot count and spend bounds) all pass | otherwise; E3, E4, E5, E6 or E10 failing refutes the unconditional properties, E1 the economic claim, E2 blocks adoption |
+
+No measurement run of the deciding set may start before this commit is on origin/research/production-loop-20261116.

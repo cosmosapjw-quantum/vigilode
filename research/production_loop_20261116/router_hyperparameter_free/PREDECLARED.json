@@ -1,0 +1,2119 @@
+{
+  "schema": "vigilode.loop.predeclared.v1",
+  "node": "V27_ROUTER_HYPERPARAMETER_FREE, implementation and evaluation phase",
+  "date_kst": "2026-11-24 20:20",
+  "status": "frozen by the commit that adds this file; no measurement run of the deciding set before this commit is on origin/research/production-loop-20261116",
+  "owner_decision": "OD-L1-22 (2026-11-24 19:59 KST, verbatim '전부 승인'): the recommended design of router_hyperparameter_free/DESIGN_RECOMMENDED.md (forward break-even pilots, FBP) with D1 = a fatal callback inside a pilot ends the solve with CallbackFailed and the accepted prefix; D2 = a supplied Jacobian, JVP or band starts RODAS5P; D3 = one-way DOPRI5 -> RODAS5P (a return path is a later node); D4 = the V03b assertion 'no DOPRI5 leg' for P_heat_fd and P_scalar_fd is replaced by the existing work bound W and a recorded handover; D5 = the public names of today's route are removed; D6 = no declared-price option and no operation counting in the protected dense kernel in this node; the doubling base 2 is the one remaining tunable number; the declared losses below are accepted.",
+  "design": {
+    "document": "research/production_loop_20261116/router_hyperparameter_free/DESIGN_RECOMMENDED.md",
+    "sha256": "e7f811e50e12542dce2873d06808ff899aeda7b383b7edc99cab46a0d14f71bf",
+    "sections": "3 (algorithm), 4 (properties U1-U5, B1-B5), 7 (code changes), 8 (evaluation plan)",
+    "model": {
+      "file": "research/production_loop_20261116/router_hyperparameter_free/judge_model.py",
+      "sha256": "3f43e3251b040b5e8f9d318bca21fed9a4b3ee5b0c4241bf7c9697f72ebc01bd",
+      "note": "Python model of both drivers; its numbers are expectations without a rule, not evidence"
+    }
+  },
+  "algorithm": {
+    "declared_rules_unchanged": [
+      "strategy RobustStiff or declared regime Stiff -> RODAS5P leg with max_steps",
+      "strategy AdaptiveReentrant -> switching adapter (unchanged)",
+      "DOPRI5 not admitted (mass matrix, dense output, events) -> RODAS5P leg",
+      "declared regime Nonstiff -> DOPRI5 alone",
+      "supplied Jacobian, JVP or band -> RODAS5P leg (D2)",
+      "both entry points validated before any callback; a refusal is Err before any callback"
+    ],
+    "break_even_length": "b = ceil((2 n^2 + 54 n + 384) / 156) in integer arithmetic, from c_D = (6, 52 n) and c_R = (n + 9 [+2 non-autonomous without f_t], (2 n^3 + 54 n^2 + 384 n) / 3); b = 3, 4, 4, 5, 7, 8, 78 for n = 1, 2, 3, 4, 8, 10, 64",
+    "located_rule": "DOPRI5 attempts count only after its first accepted attempt that was not growth-capped (proposed next step != trial step * max_factor, exact equality) or that followed a rejection",
+    "pilot_times": "when the DOPRI5 attempt count first reaches b * 2^k (k = 0, 1, ...) and at least b located attempts exist",
+    "pilot": "H = t_D - (time before the oldest of the last b attempts); if 0, H = that attempt's requested step; if t1 - t_D <= H pilots stop (horizon); otherwise one RODAS5P attempt from DOPRI5's accepted state with h0 = H and max_steps = 1 (Rodas5p::solve_observed_bounded), charged to the counters and to max_steps",
+    "handover": "accepted pilot -> legs [DOPRI5 t0..t_D, RODAS5P pilot step t_D..t_D+H], then the RODAS5P leg from (t_D + H, y_pilot) with h0 = H and the attempts left; lost pilot -> the DOPRI5 session continues bit-identically",
+    "fatal": "a fatal callback inside a pilot ends the solve with CallbackFailed and the accepted prefix (D1); a recoverable error rejects the pilot's attempt",
+    "dopri5_stops": "a numerical DOPRI5 stop (StepUnderflow, NonFinite, Controller) hands over to RODAS5P from the last accepted state with the attempts left, as today; exhaustion of max_steps is MaxStepsReached{max_steps}"
+  },
+  "arms": {
+    "T": "today's Auto route, built from a checkout of the commit that adds this file (the implementation removes it)",
+    "N": "FBP, built from the implementation head",
+    "D": "Dopri5::solve with the same options",
+    "R": "Rodas5p::solve with the same options",
+    "exploratory_without_rule": {
+      "N_prod": "pilot threshold ceil(sqrt(b_cb * b_op)) instead of b",
+      "N_cont": "D1 = continue (a fatal callback in a pilot loses the pilot and DOPRI5 continues)"
+    },
+    "sanity": "D and R built from both checkouts must agree bit for bit; a disagreement is reported and stops the evaluation"
+  },
+  "problems": {
+    "note": "finite-difference Jacobian unless stated; definitions are those of judge_model.py problems() where named there; y0 and spans fixed here",
+    "stiff_or_late_stiff": [
+      {
+        "id": "P_scalar_fd",
+        "def": "fixture scalar_fd of crates/vigilode/tests/unified_router_contracts.rs (y' = -1e6 (y - cos t), y0 = 1), its V03b span"
+      },
+      {
+        "id": "lin_2000",
+        "def": "y' = -2000 y, y0 = 1, span [0, 1]"
+      },
+      {
+        "id": "lin_3200",
+        "def": "y' = -3200 y, y0 = 1, span [0, 1]"
+      },
+      {
+        "id": "lin_3400",
+        "def": "y' = -3400 y, y0 = 1, span [0, 1]"
+      },
+      {
+        "id": "P_heat_fd",
+        "def": "fixture heat_fd(8) of unified_router_contracts.rs (Dirichlet heat, dx = 1/9, y0 = sin(pi x)), span [0, 100]"
+      },
+      {
+        "id": "robertson_40",
+        "def": "Robertson (k1 0.04, k2 3e7, k3 1e4), y0 = (1, 0, 0), span [0, 40]"
+      },
+      {
+        "id": "robertson_1e5",
+        "def": "Robertson, span [0, 1e5]"
+      },
+      {
+        "id": "hires",
+        "def": "HIRES as in judge_model.py, span [0, 321.8122]"
+      },
+      {
+        "id": "orego",
+        "def": "OREGO as in judge_model.py, y0 = (1, 2, 3), span [0, 360]"
+      },
+      {
+        "id": "vdp_1000",
+        "def": "y1' = y2, y2' = 1000 (1 - y1^2) y2 - y1, y0 = (2, 0), span [0, 1]"
+      },
+      {
+        "id": "flame_1e-2",
+        "def": "y' = y^2 - y^3, y0 = 1e-2, span [0, 200]"
+      },
+      {
+        "id": "flame_1e-3",
+        "def": "y0 = 1e-3, span [0, 2000]"
+      },
+      {
+        "id": "flame_1e-4",
+        "def": "y0 = 1e-4, span [0, 20000]"
+      },
+      {
+        "id": "heat_64_fd",
+        "def": "Dirichlet heat n = 64, dx = 1/65, y0 = sin(pi x), span [0, 10]"
+      },
+      {
+        "id": "kt_vanishing",
+        "def": "y' = -k(t) (y - sin t), k(t) = 1e4 exp(-20 t) + 1, y0 = 0, span [0, 10], non-autonomous",
+        "role": "report only for E1 and E7 (stiffness that disappears, property B5); every other discriminator applies"
+      }
+    ],
+    "non_stiff": [
+      {
+        "id": "osc_1",
+        "def": "y1' = y2, y2' = -y1, y0 = (1, 0), span [0, 1]"
+      },
+      {
+        "id": "osc_10",
+        "def": "span [0, 10]"
+      },
+      {
+        "id": "osc_1000",
+        "def": "span [0, 1000]"
+      },
+      {
+        "id": "lotka_volterra",
+        "def": "y1' = 1.5 y1 - y1 y2, y2' = -3 y2 + y1 y2, y0 = (1, 1), span [0, 100]"
+      },
+      {
+        "id": "lorenz",
+        "def": "sigma 10, rho 28, beta 8/3, y0 = (1, 1, 1), span [0, 10]"
+      },
+      {
+        "id": "arenstorf",
+        "def": "restricted three-body problem as in judge_model.py, mu = 0.012277471, y0 = (0.994, 0, 0, -2.00158510637908252240537862224), one period 17.0652165601579625588917206249"
+      },
+      {
+        "id": "brusselator_2",
+        "def": "y1' = 1 + y1^2 y2 - 4 y1, y2' = 3 y1 - y1^2 y2, y0 = (1.5, 3), span [0, 20]"
+      },
+      {
+        "id": "vdp_1",
+        "def": "Van der Pol mu = 1, y0 = (2, 0), span [0, 20]"
+      },
+      {
+        "id": "damped_osc",
+        "def": "y1' = y2, y2' = -1e4 y1 - 0.2 y2 (omega 100, zeta 1e-3), y0 = (1, 0), span [0, 10]"
+      },
+      {
+        "id": "nonnormal",
+        "def": "y1' = -y1 + 1e3 y2, y2' = -2 y2, y0 = (1, 1), span [0, 10]"
+      },
+      {
+        "id": "lorenz96_40",
+        "def": "y_i' = (y_{i+1} - y_{i-2}) y_{i-1} - y_i + 8 (cyclic), n = 40, y0 = 8 with y0[19] = 8.01 (0-based), span [0, 10]"
+      },
+      {
+        "id": "pleiades",
+        "def": "Hairer-Norsett-Wanner pleiades, 7 bodies, masses m_j = j, x(0) = (3, 3, -1, -3, 2, -2, 2), y(0) = (3, -3, 2, 0, 0, -4, 4), x'(0) = (0, 0, 0, 0, 0, 1.75, -1.5), y'(0) = (0, 0, 0, -1.25, 1, 0, 0), first-order system n = 28, span [0, 3]"
+      }
+    ],
+    "callback_budget_declared": [
+      {
+        "id": "F2",
+        "def": "y' = -y, y0 = 1, span [0, 1]; the right-hand side returns a fatal error whenever y > 1"
+      },
+      {
+        "id": "N2",
+        "def": "y1' = 0, y2' = -1000 y2, y0 = (1, 1), span [0, 1]; fatal error whenever y1 > 1 (reached only at finite-difference columns)"
+      },
+      {
+        "id": "P_fatal",
+        "def": "fixture fatal_rhs_after of unified_router_contracts.rs (message 'sensor offline')"
+      },
+      {
+        "id": "P_blowup",
+        "def": "fixture blowup of unified_router_contracts.rs"
+      },
+      {
+        "id": "P_mass",
+        "def": "the mass-matrix fixture of unified_router_contracts.rs used by V03b"
+      },
+      {
+        "id": "start_rule",
+        "def": "fixtures heat_dense(8), scalar_dense, heat_jvp(8), heat_band_callback(8) of unified_router_contracts.rs with their V03b spans"
+      },
+      {
+        "id": "declared",
+        "def": "robertson_40 and osc_10, each with declared regime Stiff and with declared regime Nonstiff"
+      },
+      {
+        "id": "budget",
+        "def": "robertson_40 with max_steps 500 and with max_steps 50"
+      }
+    ]
+  },
+  "tolerances": {
+    "all": [
+      [
+        1e-06,
+        1e-09
+      ]
+    ],
+    "also": {
+      "pairs": [
+        [
+          0.001,
+          1e-06
+        ],
+        [
+          1e-08,
+          1e-11
+        ]
+      ],
+      "problems": "every non_stiff problem, P_scalar_fd, P_heat_fd, lin_3200, robertson_40, vdp_1000"
+    }
+  },
+  "options": "Options defaults (h0 1e-3, max_steps 100000) unless stated",
+  "measures": [
+    "charged callbacks by kind and callback entries counted inside the closures (stage, finite-difference column, time derivative)",
+    "operations by one formula for all arms: 52 n per DOPRI5 attempt, 128 n per RODAS5P attempt, 2 n^3/3 per factorization, 2 n^2 per solve pair and per finite-difference build",
+    "attempts",
+    "pilots: number, lost or accepted, H, window cost, pilot cost",
+    "handover time and DOPRI5 attempts before it",
+    "status and typed stop",
+    "error at t1 against a reference: exact where closed-form (linear problems, oscillator, heat), else Rodas5p::solve at rtol 1e-12, atol 1e-14; norm: weighted RMS with weights atol + rtol * |y_ref_i| of the run's tolerances",
+    "final-state bits of three runs (two in one process, one in a fresh process) and the route digest"
+  ],
+  "discriminators": {
+    "E1_economy": "over all cases (problem x tolerance x options) where T and N succeed, excluding kt_vanishing: geometric mean of cost(N)/cost(T) < 1 in callbacks and in operations; and max over cases of cost(N)/min(cost(D), cost(R)) < the same maximum for T, in each unit (min over those of D and R that succeed)",
+    "E2_no_new_failure": "no case where T succeeds and N does not, at the same max_steps",
+    "E3_neutrality": "every N run without a handover has the final-state bits and the DOPRI5 counters of D plus exactly the pilots' counters, and cost <= 2 cost(D) in each unit; every run decided by a declared fact equals T bit for bit",
+    "E4_budget": "attempts over all legs and pilots <= max_steps; exhaustion reports MaxStepsReached{max_steps}",
+    "E5_callbacks": "no closure entry before DOPRI5's first stage; no entry with t = t0 except DOPRI5's stages; every entry that is not a stage is a finite-difference column or time-derivative call of a RODAS5P attempt that starts at an accepted state; uncharged entries = 0",
+    "E6_determinism": "the three runs have equal digests, counters and bits",
+    "E7_accuracy": "err(N) <= 3 max(err(D), err(R)) over those of D and R that succeed, excluding kt_vanishing",
+    "E8_callback_cases": "F2 succeeds under N; P_fatal reports CallbackFailed{Rhs, 'sensor offline'}; N2 ends with CallbackFailed at its first pilot (D1)",
+    "E9_v03b_bounded_work": "P_heat_fd <= 5890 and P_scalar_fd <= 181818 charged right-hand sides (the V03b bound W), with a recorded handover",
+    "E10_pilot_accounting": "pilots <= 1 + floor(log2(A_D / b)) and pilot spend <= DOPRI5 spend in each unit, on every run"
+  },
+  "declared_expected_losses": "not failures: P_scalar_fd (model 145 vs 74 charged right-hand sides), P_heat_fd (945 vs 723), lin_3400 (687 vs 436), heat_64_fd (3328 vs 2993), short non-stiff runs +0.3 to +26 percent in callbacks (up to +46 percent in operations at rtol 1e-3)",
+  "frozen_decision": "the Auto route becomes N iff E1 to E10 all pass; otherwise today's route stays (the implementation is kept on its branch and is not merged). E3, E4, E5, E6 or E10 failing refutes the unconditional properties (design or implementation defect); E1 failing refutes the economic claim; E2 failing blocks adoption.",
+  "run_settings": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode for the suites; the evaluation runner is a standalone cargo package under router_hyperparameter_free/runner (empty [workspace], path dependencies), built once against each checkout; node-owned CARGO_TARGET_DIR; counters only, no wall time; failing-first logs kept",
+  "order_of_work": [
+    "phase 1 (before this file is on origin is allowed): failing-first tests against the base API (F2 succeeds under Auto; lorenz96_40 has no RODAS5P leg and costs at most 2x Dopri5::solve; robertson_40 charges at most 2 cost(R) + 2 b c_D + pilots; osc_1000 and arenstorf have no RODAS5P leg), each failing today by assertion, committed with its log; session pass-through with a bit-identity test; breakeven.rs and the router changes; contract changes per D4 and D5; full facade suite, clippy, fmt, doc; default-path golden unchanged; the runner built and checked on a toy problem outside the deciding set",
+    "phase 2 (only after this file is on origin): every arm on the deciding set, RESULTS.json from a parser that reads raw runner output, REPORT_KO.md, independent review"
+  ],
+  "expectations_without_rule": {
+    "source": "research/production_loop_20261116/router_hyperparameter_free/judge_model_results.jsonl (runs v3_*), arms renamed T, N (=Fpareto), D, R, N_prod (=F), N_cont (=Fpareto_cont)",
+    "rows": [
+      {
+        "problem": "scalar_fd -1e6(y-cos t) [0,1]",
+        "n": 1,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_stiff",
+        "T": {
+          "cb": 74,
+          "op": 879,
+          "att": 6,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 145,
+          "op": 1632,
+          "att": 15,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 360001,
+          "op": 3120000,
+          "att": 60000,
+          "status": "max-steps"
+        },
+        "R": {
+          "cb": 72,
+          "op": 879,
+          "att": 6,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 145,
+          "op": 1632,
+          "att": 15,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "y'=-2000 y [0,1]",
+        "n": 1,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_stiff",
+        "T": {
+          "cb": 4023,
+          "op": 34840,
+          "att": 670,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 687,
+          "op": 6605,
+          "att": 107,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 4021,
+          "op": 34840,
+          "att": 670,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 434,
+          "op": 6449,
+          "att": 44,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 687,
+          "op": 6605,
+          "att": 107,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "y'=-3200 y [0,1]",
+        "n": 1,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_stiff",
+        "T": {
+          "cb": 6043,
+          "op": 52586,
+          "att": 1004,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 687,
+          "op": 6605,
+          "att": 107,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 6259,
+          "op": 54236,
+          "att": 1043,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 434,
+          "op": 6449,
+          "att": 44,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 687,
+          "op": 6605,
+          "att": 107,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "y'=-3400 y [0,1]",
+        "n": 1,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_stiff",
+        "T": {
+          "cb": 436,
+          "op": 6449,
+          "att": 44,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 687,
+          "op": 6605,
+          "att": 107,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 6631,
+          "op": 57460,
+          "att": 1105,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 434,
+          "op": 6449,
+          "att": 44,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 687,
+          "op": 6605,
+          "att": 107,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "heat n=8 FD [0,100]",
+        "n": 8,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_stiff",
+        "T": {
+          "cb": 723,
+          "op": 105727,
+          "att": 42,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 945,
+          "op": 86869,
+          "att": 128,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 58429,
+          "op": 4051008,
+          "att": 9738,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 714,
+          "op": 105727,
+          "att": 42,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 855,
+          "op": 88661,
+          "att": 102,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Robertson FD [0,40]",
+        "n": 3,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_stiff",
+        "T": {
+          "cb": 6233,
+          "op": 166716,
+          "att": 1019,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 385,
+          "op": 17040,
+          "att": 36,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 216973,
+          "op": 5641272,
+          "att": 36162,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 415,
+          "op": 19722,
+          "att": 35,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 397,
+          "op": 17100,
+          "att": 39,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "flame d=1e-3 [0,2000]",
+        "n": 1,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_stiff",
+        "T": {
+          "cb": 2457,
+          "op": 21268,
+          "att": 409,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 1263,
+          "op": 11597,
+          "att": 203,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 2455,
+          "op": 21268,
+          "att": 409,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 1008,
+          "op": 15371,
+          "att": 105,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 1263,
+          "op": 11597,
+          "att": 203,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Van der Pol mu=1000 [0,1]",
+        "n": 2,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_stiff",
+        "T": {
+          "cb": 5698,
+          "op": 98696,
+          "att": 949,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 292,
+          "op": 6328,
+          "att": 41,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 5695,
+          "op": 98696,
+          "att": 949,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 223,
+          "op": 6983,
+          "att": 21,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 244,
+          "op": 5496,
+          "att": 33,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "HIRES [0,321.8122]",
+        "n": 8,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_stiff",
+        "T": {
+          "cb": 2651,
+          "op": 415573,
+          "att": 166,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 2444,
+          "op": 329130,
+          "att": 225,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 64543,
+          "op": 4474912,
+          "att": 10757,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 2642,
+          "op": 415573,
+          "att": 166,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 2327,
+          "op": 328277,
+          "att": 198,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "OREGO [0,360]",
+        "n": 3,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_stiff",
+        "T": {
+          "cb": 10825,
+          "op": 514446,
+          "att": 913,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 10870,
+          "op": 512670,
+          "att": 933,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 360001,
+          "op": 9360000,
+          "att": 60000,
+          "status": "max-steps"
+        },
+        "R": {
+          "cb": 10821,
+          "op": 514446,
+          "att": 913,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 10834,
+          "op": 511986,
+          "att": 926,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "oscillator [0,1]",
+        "n": 2,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_ns",
+        "T": {
+          "cb": 58,
+          "op": 936,
+          "att": 9,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 55,
+          "op": 936,
+          "att": 9,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 55,
+          "op": 936,
+          "att": 9,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 77,
+          "op": 2333,
+          "att": 7,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 55,
+          "op": 936,
+          "att": 9,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "oscillator [0,10]",
+        "n": 2,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_ns",
+        "T": {
+          "cb": 382,
+          "op": 6552,
+          "att": 63,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 423,
+          "op": 7885,
+          "att": 67,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 379,
+          "op": 6552,
+          "att": 63,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 467,
+          "op": 14944,
+          "att": 45,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 474,
+          "op": 14192,
+          "att": 51,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "oscillator [0,1000]",
+        "n": 2,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_ns",
+        "T": {
+          "cb": 41406,
+          "op": 1252640,
+          "att": 4462,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 35582,
+          "op": 618306,
+          "att": 5921,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 35461,
+          "op": 614640,
+          "att": 5910,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 42580,
+          "op": 1381551,
+          "att": 4164,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 42587,
+          "op": 1380799,
+          "att": 4170,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Lotka-Volterra [0,100]",
+        "n": 2,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_ns",
+        "T": {
+          "cb": 6180,
+          "op": 109333,
+          "att": 1016,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 6143,
+          "op": 107602,
+          "att": 1017,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 6055,
+          "op": 104936,
+          "att": 1009,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 18431,
+          "op": 582629,
+          "att": 1753,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 6154,
+          "op": 107936,
+          "att": 1018,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "damped osc w=100 z=1e-3 [0,10]",
+        "n": 2,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_ns",
+        "T": {
+          "cb": 42575,
+          "op": 1381535,
+          "att": 4164,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 35582,
+          "op": 618306,
+          "att": 5921,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 35461,
+          "op": 614640,
+          "att": 5910,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 42572,
+          "op": 1381535,
+          "att": 4164,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 42555,
+          "op": 1376575,
+          "att": 4182,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "nonnormal [[-1,1e3],[0,-2]] [0,10]",
+        "n": 2,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_ns",
+        "T": {
+          "cb": 487,
+          "op": 14666,
+          "att": 44,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 423,
+          "op": 7885,
+          "att": 67,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 379,
+          "op": 6552,
+          "att": 63,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 484,
+          "op": 14666,
+          "att": 44,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 434,
+          "op": 8218,
+          "att": 68,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Arenstorf-like (Lorenz) [0,10]",
+        "n": 3,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_ns",
+        "T": {
+          "cb": 2129,
+          "op": 55224,
+          "att": 354,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 2209,
+          "op": 59172,
+          "att": 361,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 2125,
+          "op": 55224,
+          "att": 354,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 5342,
+          "op": 251508,
+          "att": 446,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 2209,
+          "op": 59172,
+          "att": 361,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Arenstorf orbit [0,T]",
+        "n": 4,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_ns",
+        "T": {
+          "cb": 4343,
+          "op": 301535,
+          "att": 360,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 1369,
+          "op": 49776,
+          "att": 221,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 1291,
+          "op": 44720,
+          "att": 215,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 4338,
+          "op": 301535,
+          "att": 360,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 1382,
+          "op": 50618,
+          "att": 222,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Brusselator n=2 [0,20]",
+        "n": 2,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_ns",
+        "T": {
+          "cb": 982,
+          "op": 16952,
+          "att": 163,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 1045,
+          "op": 18952,
+          "att": 169,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 979,
+          "op": 16952,
+          "att": 163,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 2450,
+          "op": 77752,
+          "att": 234,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 1045,
+          "op": 18952,
+          "att": 169,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Van der Pol mu=1 [0,20]",
+        "n": 2,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_ns",
+        "T": {
+          "cb": 1438,
+          "op": 24856,
+          "att": 239,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 1501,
+          "op": 26856,
+          "att": 245,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 1435,
+          "op": 24856,
+          "att": 239,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 3472,
+          "op": 112797,
+          "att": 340,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 1512,
+          "op": 27189,
+          "att": 246,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "heat n=64 FD [0,10]",
+        "n": 64,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_extra",
+        "T": {
+          "cb": 2993,
+          "op": 10523989,
+          "att": 41,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 3328,
+          "op": 10276864,
+          "att": 119,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 314131,
+          "op": 174237440,
+          "att": 52355,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 2993,
+          "op": 10523989,
+          "att": 41,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 3119,
+          "op": 10377130,
+          "att": 73,
+          "status": "ok"
+        },
+        "N_cont": {
+          "cb": 3328,
+          "op": 10276864,
+          "att": 119,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Lorenz-96 n=40 [0,10]",
+        "n": 40,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_extra",
+        "T": {
+          "cb": 33467,
+          "op": 57117013,
+          "att": 749,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 3233,
+          "op": 1358826,
+          "att": 510,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 3037,
+          "op": 1052480,
+          "att": 506,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 33467,
+          "op": 57117013,
+          "att": 749,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 3282,
+          "op": 1435413,
+          "att": 511,
+          "status": "ok"
+        },
+        "N_cont": {
+          "cb": 3233,
+          "op": 1358826,
+          "att": 510,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "F2 guarded y'=-y fatal y>1 [0,1]",
+        "n": 1,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_extra",
+        "T": {
+          "cb": 0,
+          "op": 0,
+          "att": 0,
+          "status": "callback-failed"
+        },
+        "N": {
+          "cb": 49,
+          "op": 416,
+          "att": 8,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 49,
+          "op": 416,
+          "att": 8,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 0,
+          "op": 0,
+          "att": 0,
+          "status": "callback-failed"
+        },
+        "N_prod": {
+          "cb": 49,
+          "op": 416,
+          "att": 8,
+          "status": "ok"
+        },
+        "N_cont": {
+          "cb": 49,
+          "op": 416,
+          "att": 8,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "N2 fatal at FD column only, stiff [0,1]",
+        "n": 2,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_extra",
+        "T": {
+          "cb": 0,
+          "op": 0,
+          "att": 0,
+          "status": "callback-failed"
+        },
+        "N": {
+          "cb": 31,
+          "op": 520,
+          "att": 5,
+          "status": "callback-failed@pilot t=0.000979"
+        },
+        "D": {
+          "cb": 2161,
+          "op": 37440,
+          "att": 360,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 0,
+          "op": 0,
+          "att": 0,
+          "status": "callback-failed"
+        },
+        "N_prod": {
+          "cb": 25,
+          "op": 416,
+          "att": 4,
+          "status": "callback-failed@pilot t=0.000731"
+        },
+        "N_cont": {
+          "cb": 2161,
+          "op": 37440,
+          "att": 360,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Robertson FD [0,40]",
+        "n": 3,
+        "rtol": 1e-06,
+        "atol": 1e-09,
+        "model_run": "v3_budget",
+        "T": {
+          "cb": 6233,
+          "op": 166716,
+          "att": 1019,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 385,
+          "op": 17040,
+          "att": 36,
+          "status": "ok"
+        },
+        "T_max_steps_500": {
+          "cb": 1769,
+          "op": 51408,
+          "att": 272,
+          "status": "ok"
+        },
+        "N_max_steps_500": {
+          "cb": 385,
+          "op": 17040,
+          "att": 36,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "scalar_fd -1e6(y-cos t) [0,1]",
+        "n": 1,
+        "rtol": 0.001,
+        "atol": 1e-06,
+        "model_run": "v3_loose",
+        "T": {
+          "cb": 74,
+          "op": 879,
+          "att": 6,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 139,
+          "op": 1580,
+          "att": 14,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 360001,
+          "op": 3120000,
+          "att": 60000,
+          "status": "max-steps"
+        },
+        "R": {
+          "cb": 72,
+          "op": 879,
+          "att": 6,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 139,
+          "op": 1580,
+          "att": 14,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "y'=-3200 y [0,1]",
+        "n": 1,
+        "rtol": 0.001,
+        "atol": 1e-06,
+        "model_run": "v3_loose",
+        "T": {
+          "cb": 6033,
+          "op": 52440,
+          "att": 1003,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 173,
+          "op": 2090,
+          "att": 22,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 6049,
+          "op": 52416,
+          "att": 1008,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 154,
+          "op": 2342,
+          "att": 16,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 173,
+          "op": 2090,
+          "att": 22,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "heat n=8 FD [0,100]",
+        "n": 8,
+        "rtol": 0.001,
+        "atol": 1e-06,
+        "model_run": "v3_loose",
+        "T": {
+          "cb": 281,
+          "op": 40277,
+          "att": 16,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 323,
+          "op": 41066,
+          "att": 28,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 59077,
+          "op": 4095936,
+          "att": 9846,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 272,
+          "op": 40277,
+          "att": 16,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 299,
+          "op": 39402,
+          "att": 24,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Robertson FD [0,40]",
+        "n": 3,
+        "rtol": 0.001,
+        "atol": 1e-06,
+        "model_run": "v3_loose",
+        "T": {
+          "cb": 6149,
+          "op": 162768,
+          "att": 1012,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 181,
+          "op": 7956,
+          "att": 17,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 299401,
+          "op": 7784400,
+          "att": 49900,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 199,
+          "op": 9570,
+          "att": 17,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 175,
+          "op": 7800,
+          "att": 16,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "oscillator [0,10]",
+        "n": 2,
+        "rtol": 0.001,
+        "atol": 1e-06,
+        "model_run": "v3_loose",
+        "T": {
+          "cb": 94,
+          "op": 1560,
+          "att": 15,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 113,
+          "op": 2226,
+          "att": 17,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 91,
+          "op": 1560,
+          "att": 15,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 143,
+          "op": 4333,
+          "att": 13,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 113,
+          "op": 2226,
+          "att": 17,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Lotka-Volterra [0,100]",
+        "n": 2,
+        "rtol": 0.001,
+        "atol": 1e-06,
+        "model_run": "v3_loose",
+        "T": {
+          "cb": 1942,
+          "op": 33592,
+          "att": 323,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 2016,
+          "op": 35925,
+          "att": 330,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 1939,
+          "op": 33592,
+          "att": 323,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 6369,
+          "op": 211680,
+          "att": 639,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 2016,
+          "op": 35925,
+          "att": 330,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "damped osc w=100 z=1e-3 [0,10]",
+        "n": 2,
+        "rtol": 0.001,
+        "atol": 1e-06,
+        "model_run": "v3_loose",
+        "T": {
+          "cb": 9001,
+          "op": 272666,
+          "att": 818,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 6310,
+          "op": 110640,
+          "att": 1044,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 6211,
+          "op": 107640,
+          "att": 1035,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 8998,
+          "op": 272666,
+          "att": 818,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 6310,
+          "op": 110640,
+          "att": 1044,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "nonnormal [[-1,1e3],[0,-2]] [0,10]",
+        "n": 2,
+        "rtol": 0.001,
+        "atol": 1e-06,
+        "model_run": "v3_loose",
+        "T": {
+          "cb": 157,
+          "op": 4666,
+          "att": 14,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 160,
+          "op": 3184,
+          "att": 24,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 127,
+          "op": 2184,
+          "att": 21,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 154,
+          "op": 4666,
+          "att": 14,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 136,
+          "op": 3624,
+          "att": 15,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Arenstorf-like (Lorenz) [0,10]",
+        "n": 3,
+        "rtol": 0.001,
+        "atol": 1e-06,
+        "model_run": "v3_loose",
+        "T": {
+          "cb": 719,
+          "op": 18564,
+          "att": 119,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 775,
+          "op": 21384,
+          "att": 124,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 715,
+          "op": 18564,
+          "att": 119,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 1485,
+          "op": 75654,
+          "att": 135,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 787,
+          "op": 21948,
+          "att": 125,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Arenstorf orbit [0,T]",
+        "n": 4,
+        "rtol": 0.001,
+        "atol": 1e-06,
+        "model_run": "v3_loose",
+        "T": {
+          "cb": 1558,
+          "op": 114229,
+          "att": 137,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 431,
+          "op": 16474,
+          "att": 67,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 379,
+          "op": 13104,
+          "att": 63,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 1553,
+          "op": 114229,
+          "att": 137,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 444,
+          "op": 17317,
+          "att": 68,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Brusselator n=2 [0,20]",
+        "n": 2,
+        "rtol": 0.001,
+        "atol": 1e-06,
+        "model_run": "v3_loose",
+        "T": {
+          "cb": 424,
+          "op": 7280,
+          "att": 70,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 476,
+          "op": 8946,
+          "att": 75,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 421,
+          "op": 7280,
+          "att": 70,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 861,
+          "op": 28807,
+          "att": 87,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 475,
+          "op": 8946,
+          "att": 75,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Van der Pol mu=1 [0,20]",
+        "n": 2,
+        "rtol": 0.001,
+        "atol": 1e-06,
+        "model_run": "v3_loose",
+        "T": {
+          "cb": 460,
+          "op": 7904,
+          "att": 76,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 512,
+          "op": 9570,
+          "att": 81,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 457,
+          "op": 7904,
+          "att": 76,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 1035,
+          "op": 34759,
+          "att": 105,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 512,
+          "op": 9570,
+          "att": 81,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "scalar_fd -1e6(y-cos t) [0,1]",
+        "n": 1,
+        "rtol": 1e-08,
+        "atol": 1e-11,
+        "model_run": "v3_tight",
+        "T": {
+          "cb": 86,
+          "op": 1026,
+          "att": 7,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 169,
+          "op": 1925,
+          "att": 17,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 360001,
+          "op": 3120000,
+          "att": 60000,
+          "status": "max-steps"
+        },
+        "R": {
+          "cb": 84,
+          "op": 1026,
+          "att": 7,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 169,
+          "op": 1925,
+          "att": 17,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "y'=-3200 y [0,1]",
+        "n": 1,
+        "rtol": 1e-08,
+        "atol": 1e-11,
+        "model_run": "v3_tight",
+        "T": {
+          "cb": 6053,
+          "op": 52733,
+          "att": 1005,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 1273,
+          "op": 11744,
+          "att": 204,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 6739,
+          "op": 58396,
+          "att": 1123,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 964,
+          "op": 14222,
+          "att": 97,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 1273,
+          "op": 11744,
+          "att": 204,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "heat n=8 FD [0,100]",
+        "n": 8,
+        "rtol": 1e-08,
+        "atol": 1e-11,
+        "model_run": "v3_tight",
+        "T": {
+          "cb": 1590,
+          "op": 234112,
+          "att": 93,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 1566,
+          "op": 125909,
+          "att": 237,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 58447,
+          "op": 4052256,
+          "att": 9741,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 1581,
+          "op": 234112,
+          "att": 93,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 1267,
+          "op": 111871,
+          "att": 178,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Robertson FD [0,40]",
+        "n": 3,
+        "rtol": 1e-08,
+        "atol": 1e-11,
+        "model_run": "v3_tight",
+        "T": {
+          "cb": 6833,
+          "op": 194916,
+          "att": 1069,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 1107,
+          "op": 48384,
+          "att": 109,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 214045,
+          "op": 5565144,
+          "att": 35674,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 1230,
+          "op": 59112,
+          "att": 105,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 1208,
+          "op": 50898,
+          "att": 125,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "oscillator [0,10]",
+        "n": 2,
+        "rtol": 1e-08,
+        "atol": 1e-11,
+        "model_run": "v3_tight",
+        "T": {
+          "cb": 838,
+          "op": 14456,
+          "att": 139,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 901,
+          "op": 16456,
+          "att": 145,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 835,
+          "op": 14456,
+          "att": 139,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 1042,
+          "op": 32594,
+          "att": 98,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 901,
+          "op": 16456,
+          "att": 145,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Lotka-Volterra [0,100]",
+        "n": 2,
+        "rtol": 1e-08,
+        "atol": 1e-11,
+        "model_run": "v3_tight",
+        "T": {
+          "cb": 30045,
+          "op": 840440,
+          "att": 3211,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 14073,
+          "op": 245341,
+          "att": 2337,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 13963,
+          "op": 242008,
+          "att": 2327,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 42169,
+          "op": 1291999,
+          "att": 3879,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 14073,
+          "op": 245341,
+          "att": 2337,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "damped osc w=100 z=1e-3 [0,10]",
+        "n": 2,
+        "rtol": 1e-08,
+        "atol": 1e-11,
+        "model_run": "v3_tight",
+        "T": {
+          "cb": 101024,
+          "op": 3173096,
+          "att": 9543,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 81541,
+          "op": 1415072,
+          "att": 13580,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 81409,
+          "op": 1411072,
+          "att": 13568,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 101021,
+          "op": 3173096,
+          "att": 9543,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 101038,
+          "op": 3171600,
+          "att": 9555,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "nonnormal [[-1,1e3],[0,-2]] [0,10]",
+        "n": 2,
+        "rtol": 1e-08,
+        "atol": 1e-11,
+        "model_run": "v3_tight",
+        "T": {
+          "cb": 1147,
+          "op": 34666,
+          "att": 104,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 955,
+          "op": 17392,
+          "att": 154,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 889,
+          "op": 15392,
+          "att": 148,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 1144,
+          "op": 34666,
+          "att": 104,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 1114,
+          "op": 33415,
+          "att": 103,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Arenstorf-like (Lorenz) [0,10]",
+        "n": 3,
+        "rtol": 1e-08,
+        "atol": 1e-11,
+        "model_run": "v3_tight",
+        "T": {
+          "cb": 4895,
+          "op": 127140,
+          "att": 815,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 4987,
+          "op": 131652,
+          "att": 823,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 4891,
+          "op": 127140,
+          "att": 815,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 13636,
+          "op": 641760,
+          "att": 1138,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 4999,
+          "op": 132216,
+          "att": 824,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Arenstorf orbit [0,T]",
+        "n": 4,
+        "rtol": 1e-08,
+        "atol": 1e-11,
+        "model_run": "v3_tight",
+        "T": {
+          "cb": 10134,
+          "op": 667274,
+          "att": 793,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 2912,
+          "op": 103658,
+          "att": 477,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 2821,
+          "op": 97760,
+          "att": 470,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 10129,
+          "op": 667274,
+          "att": 793,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 2925,
+          "op": 104501,
+          "att": 478,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Brusselator n=2 [0,20]",
+        "n": 2,
+        "rtol": 1e-08,
+        "atol": 1e-11,
+        "model_run": "v3_tight",
+        "T": {
+          "cb": 2026,
+          "op": 35048,
+          "att": 337,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 2100,
+          "op": 37381,
+          "att": 344,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 2023,
+          "op": 35048,
+          "att": 337,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 5526,
+          "op": 169832,
+          "att": 510,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 2100,
+          "op": 37381,
+          "att": 344,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Van der Pol mu=1 [0,20]",
+        "n": 2,
+        "rtol": 1e-08,
+        "atol": 1e-11,
+        "model_run": "v3_tight",
+        "T": {
+          "cb": 2980,
+          "op": 51584,
+          "att": 496,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 3054,
+          "op": 53917,
+          "att": 503,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 2977,
+          "op": 51584,
+          "att": 496,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 7909,
+          "op": 248384,
+          "att": 747,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 3065,
+          "op": 54250,
+          "att": 504,
+          "status": "ok"
+        }
+      },
+      {
+        "problem": "Van der Pol mu=1000 [0,1]",
+        "n": 2,
+        "rtol": 1e-08,
+        "atol": 1e-11,
+        "model_run": "v3_tight",
+        "T": {
+          "cb": 5842,
+          "op": 101192,
+          "att": 973,
+          "status": "ok"
+        },
+        "N": {
+          "cb": 495,
+          "op": 9989,
+          "att": 74,
+          "status": "ok"
+        },
+        "D": {
+          "cb": 5839,
+          "op": 101192,
+          "att": 973,
+          "status": "ok"
+        },
+        "R": {
+          "cb": 432,
+          "op": 13317,
+          "att": 40,
+          "status": "ok"
+        },
+        "N_prod": {
+          "cb": 399,
+          "op": 8325,
+          "att": 58,
+          "status": "ok"
+        }
+      }
+    ]
+  }
+}
