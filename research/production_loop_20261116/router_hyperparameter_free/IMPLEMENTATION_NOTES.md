@@ -150,9 +150,21 @@ the accepted pilot leave the RODAS5P run 10 attempts, so its own stop is again `
 final time 0, one entry, charged), `p1_preflight_callbacks_are_charged_*` (their names keep the word "preflight";
 there is no preflight call any more, and nothing is uncharged).
 
-## 6. Log
+## 6. Log of step 5 and step 6 (all logs in `router_hyperparameter_free/logs/`)
 
-* Step 5 results: see the end of this section (filled in after the runs).
+| Check | Commit | Result | Log |
+|---|---|---|---|
+| Facade suite `taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --no-fail-fast` | `1715dd64` | exit 0: 60 test binaries (doctests included), 549 passed, 0 failed, 0 ignored, no warning; `default_path_golden` 11 passed (file unchanged), `unified_router_contracts` 36, `unified_breakeven_contracts` 13, `unified_production_solver_contracts` 6, `unified_frontend_contracts` 31 | `suite_vigilode.log` |
+| Clippy `cargo +1.94.1 clippy --locked -j 4 --release -p vigilode --all-targets --no-deps -- -D warnings` | `c00cfe2f` | exit 0 (two findings of the first run fixed in `c00cfe2f`: `unnecessary_lazy_evaluations` in breakeven.rs, `type_complexity` in the new test file) | `clippy.log` |
+| Rustdoc `RUSTDOCFLAGS=-D warnings cargo +1.94.1 doc -j 4 -p vigilode --no-deps --locked` | `c00cfe2f` | exit 0: no warning (a public doc link to the private `breakeven` module was removed in `c00cfe2f`) | `doc.log` |
+| `cargo +1.94.1 fmt -p vigilode -- --check` | `c00cfe2f` | exit 0 | `fmt.log` |
+| Router targets and the golden test after `c00cfe2f` (it changed `unwrap_or_else` to `unwrap_or` in breakeven.rs and documentation only) | `c00cfe2f` | `default_path_golden` 11, `unified_breakeven_contracts` 13, `unified_frontend_contracts` 31, `unified_production_solver_contracts` 6, `unified_router_contracts` 36: all passed | `router_targets_after_fixes.log` |
+| Records of the break-even tests (`--nocapture`) | `c00cfe2f` | 13 `V27_RECORD` lines | `breakeven_contracts_records.log` |
+| Runner build `runner/build.sh lock`, then `runner/build.sh` | `c00cfe2f`, `7e31d454` | exit 0; the two `Cargo.lock` files are byte-identical (sha256 `8a162410...`); binaries N `a4f55f7c...`, T `9468733f...` | `runner_build.log` |
+| Runner plumbing `runner/check_toy.py` (toy y' = -y on [0, 1] only) | `7e31d454` | 12 lines, no problem: repeated runs equal; D and R equal across the two builds; N: 8 attempts, 49 entries, all stages, no pilot, first entry (t0, y0); T: 51 entries, the screen's column at t0 visible (`fd_column` 1, `at_t0_not_y0` 1); R: 7 columns = 7 finite-difference builds | `runner_toy.jsonl` |
+| Loop checker `python3 -I research/production_loop_20261116/check_checkpoint.py` | `7e31d454` | exit 1 with `ValueError: implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/analyzer.rs` (verbatim). The same checks with every failure collected: 9, all `implementation changed; rerun affected tests/update checkpoint:` for the eight unified sources (analyzer, fallback, legs, mod, options, router, solution, workspace) and `crates/vigilode/tests/unified_router_contracts.rs`: the expected pins of the sources this task changes. No protected file, no evidence file, no path outside the allowlist, strict JSON | `check_checkpoint.log` |
+
+No run of a problem of the deciding set was made (PREDECLARED.json `order_of_work`, phase 2).
 
 ## 7. The evaluation runner (step 6)
 

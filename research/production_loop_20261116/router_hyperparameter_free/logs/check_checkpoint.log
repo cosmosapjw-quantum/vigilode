@@ -1,0 +1,25 @@
+# command: python3 -I research/production_loop_20261116/check_checkpoint.py
+# commit: 7e31d454203967ac6f08135791609cd631c6f36d
+# worktree_dirty_files: 0
+# date: 2026-11-24T21:40:01+09:00
+Traceback (most recent call last):
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/check_checkpoint.py", line 95, in <module>
+    main()
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/check_checkpoint.py", line 82, in main
+    require(hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == expected,
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/check_checkpoint.py", line 28, in require
+    raise ValueError(message)
+ValueError: implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/analyzer.rs
+# exit_code: 1
+
+# the same checks with every failure collected (the checker's require() replaced in memory by one that appends; the checker file is not modified):
+FAILURES (9):
+  implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/analyzer.rs
+  implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/fallback.rs
+  implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/legs.rs
+  implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/mod.rs
+  implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/options.rs
+  implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/router.rs
+  implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/solution.rs
+  implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/workspace.rs
+  implementation changed; rerun affected tests/update checkpoint: crates/vigilode/tests/unified_router_contracts.rs
