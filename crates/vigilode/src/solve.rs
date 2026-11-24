@@ -18,9 +18,13 @@ use rodas5p_integrators::{
     integrate_rodas5p_fast_banded_dense_observed_with_kernel,
     integrate_rodas5p_fast_banded_observed, integrate_rodas5p_fast_banded_observed_with_atol,
     integrate_rodas5p_fast_banded_observed_with_atol_and_kernel,
-    integrate_rodas5p_fast_banded_observed_with_kernel, integrate_rodas5p_fast_dense_observed,
+    integrate_rodas5p_fast_banded_observed_with_kernel,
+    integrate_rodas5p_fast_client_observed_with_atol, integrate_rodas5p_fast_dense_observed,
     integrate_rodas5p_fast_dense_observed_with_atol, integrate_rodas5p_fast_observed_with_atol,
     integrate_rodas5p_routed_observed_with_options,
+    stage_clients::{
+        BANDED_TWO_WAY_CLIENT_ID, BandedTightStageLu, BandedTwoWayStageLu, TwoWayExecution,
+    },
 };
 
 use crate::{
@@ -62,6 +66,10 @@ const ENTRY_FAST_BANDED_DENSE_KERNEL: &str =
     "integrate_rodas5p_fast_banded_dense_observed_with_kernel";
 const ENTRY_FAST_BANDED_DENSE_ATOL_KERNEL: &str =
     "integrate_rodas5p_fast_banded_dense_observed_with_atol_and_kernel";
+/// The fast driver with a client-owned banded stage solver ([`BandedStagePolicy`]).
+const ENTRY_BANDED_CLIENT: &str = "integrate_rodas5p_fast_client_observed_with_atol";
+/// Identifier of the same-bits banded stage client (loop L1 node V21).
+const BANDED_TIGHT_CLIENT_ID: &str = "rodas5p-fast-client-banded-tight-v21";
 /// Dense output under a mass matrix or `InteriorError::Enforce`.
 const ENTRY_SEQUENTIAL_DENSE: &str = "integrate_adaptive_dense_observed_with_segments";
 /// The same driver without the segment sink (mass matrix, no dense output).
@@ -185,6 +193,56 @@ impl AtolSpec {
 /// problem; at half band width 5 it needed more cycles.
 pub const BANDED_SLICES_MIN_HALF_WIDTH: usize = 6;
 
+/// Stage linear algebra of the banded fast route, selected explicitly through
+/// [`crate::VigilODE::solve_banded`]. Nothing but [`BandedStagePolicy::Shipped`] is ever
+/// selected by a default route.
+///
+/// | Policy | Stage solver | Relation to the protected banded driver |
+/// | --- | --- | --- |
+/// | `Shipped` | the protected banded driver | identical: it is that driver |
+/// | `Tight` | `BandedTightStageLu` | the same floating-point operations in the same order; states, step counts and callback counters are the protected driver's bit for bit (loop L1 node V21); the counted band operations are not kept |
+/// | `TwoWay` | `BandedTwoWayStageLu` | partial pivoting of a reordered matrix with two independent elimination fronts; states agree to rounding, not bit for bit; with two workers the fronts run concurrently |
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum BandedStagePolicy {
+    /// The protected banded driver, exactly as [`Rodas5p::solve`] runs it.
+    #[default]
+    Shipped,
+    /// The opt-in stage client with the bits of the protected kernel.
+    Tight,
+    /// The opt-in stage client with two elimination fronts.
+    TwoWay {
+        /// Threads of the stage solver: `1` runs the two fronts one after the other, `2`
+        /// runs them concurrently in a pool owned by the solve. Any other value is refused.
+        workers: usize,
+    },
+}
+
+impl BandedStagePolicy {
+    /// Identifier recorded in [`DriverWork::BandedClient`]; `None` for the shipped driver,
+    /// whose identifier is in [`RouteRecord::driver_id`].
+    pub fn client_id(self) -> Option<&'static str> {
+        match self {
+            Self::Shipped => None,
+            Self::Tight => Some(BANDED_TIGHT_CLIENT_ID),
+            Self::TwoWay { .. } => Some(BANDED_TWO_WAY_CLIENT_ID),
+        }
+    }
+
+    /// Worker threads of the stage solver.
+    pub fn workers(self) -> usize {
+        match self {
+            Self::TwoWay { workers } => workers,
+            Self::Shipped | Self::Tight => 1,
+        }
+    }
+
+    /// Whether the policy replaces the protected driver's stage linear algebra.
+    pub fn is_candidate(self) -> bool {
+        self != Self::Shipped
+    }
+}
+
 /// The kernel of the facade's banded routes for `band`.
 fn banded_kernel(band: &BandedJacobian) -> BandedKernel {
     if band.lower.min(band.upper) >= BANDED_SLICES_MIN_HALF_WIDTH {
@@ -281,6 +339,31 @@ impl Rodas5p {
         work_ceiling: Option<u64>,
         stage_policy: crate::MfStageSolvePolicy,
     ) -> Result<Solution, SolveError> {
+        Self::solve_with_policies(
+            problem,
+            t_span,
+            y0,
+            opts,
+            interior,
+            work_ceiling,
+            stage_policy,
+            BandedStagePolicy::Shipped,
+        )
+    }
+
+    /// [`Self::solve_with_stage_policy`] with an explicit banded stage policy. A candidate
+    /// policy is refused before any callback unless the plan is the banded fast driver.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn solve_with_policies(
+        problem: &Problem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        opts: &Options,
+        interior: &[f64],
+        work_ceiling: Option<u64>,
+        stage_policy: crate::MfStageSolvePolicy,
+        banded_policy: BandedStagePolicy,
+    ) -> Result<Solution, SolveError> {
         let atol = validate(problem, t_span, y0, opts)?;
         let adaptive = AdaptiveStepConfig {
             rtol: opts.rtol,
@@ -329,6 +412,15 @@ impl Rodas5p {
             (Plan::Routed { declaration: None }, AtolSpec::Vector(_)) => Plan::DenseFast,
             (plan, _) => plan,
         };
+        // A candidate banded stage policy replaces the stage solver of the banded fast
+        // driver only. No callback has run yet.
+        if banded_policy.is_candidate()
+            && (!matches!(plan, Plan::Banded(_)) || !(1..=2).contains(&banded_policy.workers()))
+        {
+            return Err(SolveError::Unsupported(
+                Unsupported::BandedPolicyRequiresBandedRoute,
+            ));
+        }
         if let Some(ceiling) = work_ceiling {
             // The ceiling bounds driver work. A declared band on a dense
             // provider is verified before any step with a band fill and a
@@ -533,6 +625,77 @@ impl Rodas5p {
                     observed: fast.observed,
                     partial: result.partial,
                     segments: Some(Extension::Fast(result.segments)),
+                }
+            }
+            Plan::Banded(band) if banded_policy.is_candidate() => {
+                let n = problem.dimension;
+                let workers = banded_policy.workers();
+                let client: Box<dyn rodas5p_integrators::StageLinearSystem> = match banded_policy {
+                    BandedStagePolicy::Tight => Box::new(
+                        BandedTightStageLu::new(n, &band).map_err(|e| driver_error(e, &guard))?,
+                    ),
+                    _ => Box::new(
+                        BandedTwoWayStageLu::new(
+                            n,
+                            &band,
+                            if workers == 2 {
+                                TwoWayExecution::Join
+                            } else {
+                                TwoWayExecution::Serial
+                            },
+                        )
+                        .map_err(|e| driver_error(e, &guard))?,
+                    ),
+                };
+                // The client driver takes a vector; equal entries give the scalar's run
+                // bit for bit.
+                let component_atol = match &atol {
+                    AtolSpec::Scalar(value) => vec![*value; n],
+                    AtolSpec::Vector(values) => values.to_vec(),
+                };
+                let run = || {
+                    integrate_rodas5p_fast_client_observed_with_atol(
+                        &ode,
+                        client,
+                        t_span,
+                        y0,
+                        &adaptive,
+                        &schedule,
+                        &component_atol,
+                    )
+                };
+                let outcome = if workers == 2 {
+                    // The join of the two fronts must start on a pool thread.
+                    rayon::ThreadPoolBuilder::new()
+                        .num_threads(2)
+                        .build()
+                        .map_err(|e| SolveError::Driver(e.to_string()))?
+                        .install(run)
+                } else {
+                    run()
+                };
+                let (fast, partial, _client) = outcome.map_err(|e| driver_error(e, &guard))?;
+                Run {
+                    route: RouteRecord {
+                        entry_point: ENTRY_BANDED_CLIENT,
+                        driver_id: fast.driver,
+                        routing: None,
+                    },
+                    observed: fast.observed,
+                    attempts: fast.attempts,
+                    accepted_steps: fast.accepted_steps,
+                    rejected_steps: fast.rejected_steps,
+                    matrix_free: false,
+                    driver_work: DriverWork::BandedClient {
+                        jacobian_reuses: fast.jacobian_reuses,
+                        lu: (&fast.lu).into(),
+                        client: banded_policy
+                            .client_id()
+                            .expect("a candidate policy has a client"),
+                        workers,
+                    },
+                    partial,
+                    segments: None,
                 }
             }
             Plan::Banded(band) => {
@@ -764,7 +927,7 @@ impl Rodas5p {
             jacobian: jacobian_record,
             tier_requested: opts.tier,
             // The named matrix-free entry point explicitly opts into the candidate.
-            tier_executed: if stage_policy.is_adaptive() {
+            tier_executed: if stage_policy.is_adaptive() || banded_policy.is_candidate() {
                 Tier::Performance
             } else {
                 Tier::Protected

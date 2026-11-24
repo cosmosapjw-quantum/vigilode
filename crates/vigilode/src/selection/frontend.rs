@@ -713,7 +713,8 @@ fn union(a: CapabilitySet, b: CapabilitySet) -> CapabilitySet {
 fn executed_facade_route(driver_work: &DriverWork) -> FacadeRoute {
     match driver_work {
         DriverWork::Dense { .. } => FacadeRoute::DenseFast,
-        DriverWork::Banded { .. } => FacadeRoute::BandedFast,
+        // A banded stage client runs the banded fast route's driver family.
+        DriverWork::Banded { .. } | DriverWork::BandedClient { .. } => FacadeRoute::BandedFast,
         DriverWork::MatrixFree { .. } => FacadeRoute::MatrixFree,
         DriverWork::FastDense { banded: false, .. } => FacadeRoute::FastDense,
         DriverWork::FastDense { banded: true, .. } => FacadeRoute::FastBandedDense,

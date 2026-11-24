@@ -44,6 +44,12 @@ pub enum Unsupported {
         "matrix-free policy requires unbanded JVPs, identity mass, scalar atol and endpoint output"
     )]
     MatrixFreePolicyRequiresJvpRoute,
+    /// An explicitly selected banded stage policy needs the banded fast route throughout.
+    #[error(
+        "banded stage policy requires a band Jacobian or a finite-difference band, identity \
+         mass and endpoint output, and one or two workers"
+    )]
+    BandedPolicyRequiresBandedRoute,
     /// A mass matrix or dense output on a JVP-only problem.
     #[error(
         "a mass matrix or dense output on a JVP-only problem: the stage matrix \

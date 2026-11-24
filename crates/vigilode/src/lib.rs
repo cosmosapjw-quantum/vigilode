@@ -252,7 +252,7 @@ pub use solution::{
     JacobianRecord, KrylovStartRecord, RouteRecord, STATS_SCHEMA, Solution, Stats, Status,
     StopRecord,
 };
-pub use solve::{BANDED_SLICES_MIN_HALF_WIDTH, Rodas5p};
+pub use solve::{BANDED_SLICES_MIN_HALF_WIDTH, BandedStagePolicy, Rodas5p};
 pub use switching::*;
 pub use work_model::*;
 

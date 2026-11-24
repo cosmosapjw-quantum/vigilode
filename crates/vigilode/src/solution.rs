@@ -299,6 +299,20 @@ pub enum DriverWork {
         /// Counted band factor and solve operations and storage.
         banded: BandedWorkRecord,
     },
+    /// The fast driver with a client-owned banded stage solver
+    /// (`integrate_rodas5p_fast_client_observed_with_atol`), selected through
+    /// [`crate::VigilODE::solve_banded`]. The counted band operations of
+    /// [`DriverWork::Banded`] are not kept by the clients.
+    BandedClient {
+        /// Attempts that reused the Jacobian of a rejected attempt.
+        jacobian_reuses: usize,
+        /// The LU variant that ran (`Client`).
+        lu: LuRecord,
+        /// Identifier of the stage client ([`crate::BandedStagePolicy::client_id`]).
+        client: &'static str,
+        /// Worker threads of the stage client.
+        workers: usize,
+    },
     /// The matrix-free U-form driver (`Rodas5pMfFastResult`).
     MatrixFree {
         /// Attempts that reused `f(t, y)`, `f_t` and the JVP operator of a
