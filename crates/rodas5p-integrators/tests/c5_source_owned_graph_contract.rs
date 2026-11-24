@@ -279,3 +279,104 @@ fn native_ring12_ring24_path_scan_executes_real_compositions() {
         assert_eq!(telemetry.fallback_stage_solves, 0);
     }
 }
+
+#[test]
+fn ring48_ring96_compare_spatial_scan_networks_inside_original_rodas() {
+    use rodas5p_integrators::source_owned_graph_schur::{
+        GraphPathScan, source_owned_cooperative_cubic_problem,
+    };
+    use std::time::Instant;
+    let atol_value = 1e-9;
+    for n in [48_usize, 96] {
+        let mut c = vec![vec![0.0; n]; n];
+        for (i, row) in c.iter_mut().enumerate() {
+            row[(i + n - 1) % n] = 31.0 + ((i * 11) % 17) as f64;
+        }
+        let source = CooperativeCubicOwner {
+            name: format!("P12_ring_{n}"),
+            epoch: 19,
+            k: (0..n).map(|i| 4. + (i % 5) as f64).collect(),
+            g: vec![2.; n],
+            c,
+            feedback: vec![0],
+        };
+        let y0: Vec<f64> = (0..n)
+            .map(|i| 0.015 * (i as f64 * 0.43).sin() + 0.001 * (i % 3) as f64)
+            .collect();
+        let output = OutputSchedule::new(vec![0., 0.01, 0.02]).unwrap();
+        let config = AdaptiveStepConfig {
+            rtol: 1e-7,
+            atol: atol_value,
+            initial_step: 0.002,
+            max_step: 0.01,
+            ..AdaptiveStepConfig::default()
+        };
+        let atol = vec![atol_value; n];
+        let reference = original_problem(&source, false, 19);
+        let (gold, _) = integrate_rodas5p_fast_observed_with_atol(
+            &reference,
+            (0., 0.02),
+            &y0,
+            &config,
+            &output,
+            &atol,
+        )
+        .unwrap();
+        assert!(gold.observed.success);
+        let mut work = Vec::new();
+        for mode in [
+            GraphPathScan::Sequential,
+            GraphPathScan::HillisSteele,
+            GraphPathScan::Blelloch,
+        ] {
+            let telemetry = Arc::new(Mutex::new(GraphSchurTelemetry::default()));
+            let (p, client) =
+                source_owned_cooperative_cubic_problem(source.clone(), Arc::clone(&telemetry))
+                    .unwrap();
+            let start = Instant::now();
+            let (result, _, _) = integrate_rodas5p_fast_client_observed_with_atol(
+                &p,
+                Box::new(client.with_path_scan(mode)),
+                (0., 0.02),
+                &y0,
+                &config,
+                &output,
+                &atol,
+            )
+            .unwrap();
+            let wall_us = start.elapsed().as_micros();
+            assert!(result.observed.success);
+            assert_eq!(result.observed.t, gold.observed.t);
+            let difference = result
+                .observed
+                .y
+                .iter()
+                .flatten()
+                .zip(gold.observed.y.iter().flatten())
+                .map(|(x, y)| (x - y).abs())
+                .fold(0.0, f64::max);
+            assert!(difference < 1e-11, "mode={mode:?} discrepancy={difference}");
+            let t = telemetry.lock().unwrap();
+            assert_eq!(t.original_residual_checks, t.certified_stage_solves);
+            assert!(t.certified_stage_solves > 0);
+            assert_eq!(t.fallback_stage_solves, 0);
+            println!(
+                "P12_RING n={n} mode={mode:?} pairs={} checks={} factors={} max_stage_bound={} direct_difference={difference} wall_us={wall_us}",
+                t.affine_pair_compositions,
+                t.original_residual_checks,
+                t.factorization_attempts,
+                t.max_stage_residual_bound
+            );
+            work.push((
+                t.affine_pair_compositions,
+                t.original_residual_checks,
+                t.factorization_attempts,
+            ));
+        }
+        assert_eq!((work[0].1, work[0].2), (work[2].1, work[2].2));
+        assert_eq!((work[1].1, work[1].2), (work[2].1, work[2].2));
+        assert!(work[0].0 < work[2].0 && work[2].0 < work[1].0);
+        // One path per core column during factorization and per accepted candidate.
+        assert!(work[2].0 <= 2 * (n - 1) as u64 * (work[2].1 + work[2].2));
+    }
+}

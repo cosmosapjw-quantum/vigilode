@@ -3,6 +3,9 @@
 //! Unscaled `W = inv_h_gamma I - J`.  Source owner is immutable, with an epoch.
 //! Unsupported graph is refused at construction; numerical candidate failure
 //! delegates to the existing BandedStageLu (full-band, original W) and charges work.
+mod path_scan;
+pub use path_scan::GraphPathScan;
+
 use crate::{BandedJacobian, BandedStageLu, OdeProblem, StageLinearSystem};
 use rodas5p_core::{CoreError, CoreResult, WorkCounters};
 use serde::Serialize;
@@ -121,6 +124,7 @@ impl GraphChains {
 pub struct GraphSchurStageClient {
     owner: Arc<CooperativeCubicOwner>,
     graph: GraphChains,
+    path_scan: GraphPathScan,
     telemetry: Arc<Mutex<GraphSchurTelemetry>>,
     protected: BandedStageLu,
     saved_problem: Option<OdeProblem>,
@@ -181,6 +185,7 @@ impl GraphSchurStageClient {
         Ok(Self {
             owner: frozen,
             graph,
+            path_scan: GraphPathScan::HillisSteele,
             telemetry,
             protected,
             saved_problem: None,
@@ -196,6 +201,12 @@ impl GraphSchurStageClient {
             last_stage_bound: 0.,
         })
     }
+    /// Select the path-forest prefix algorithm. All arms use the original W residual gate.
+    pub fn with_path_scan(mut self, scan: GraphPathScan) -> Self {
+        self.path_scan = scan;
+        self
+    }
+
     fn bump(&self, f: impl FnOnce(&mut GraphSchurTelemetry)) {
         if let Ok(mut t) = self.telemetry.lock() {
             f(&mut t);
@@ -223,6 +234,17 @@ impl GraphSchurStageClient {
             if chain.is_empty() {
                 continue;
             }
+            if self.path_scan == GraphPathScan::Sequential {
+                let root = chain[0];
+                out[root] = z[root];
+                for edge in chain.windows(2) {
+                    let (parent, vertex) = (edge[0], edge[1]);
+                    let w = self.t_matrix[vertex * self.graph.n + parent];
+                    out[vertex] = z[vertex] + w * out[parent];
+                    total += 1;
+                }
+                continue;
+            }
             let mut pair = Vec::with_capacity(chain.len());
             for (i, &vertex) in chain.iter().enumerate() {
                 let w = if i == 0 {
@@ -232,17 +254,11 @@ impl GraphSchurStageClient {
                 };
                 pair.push((w, z[vertex]));
             }
-            let mut stride = 1;
-            while stride < chain.len() {
-                let prev = pair.clone();
-                for i in stride..chain.len() {
-                    let (a, b) = prev[i];
-                    let (c, d) = prev[i - stride];
-                    pair[i] = (a * c, b + a * d);
-                    total += 1;
-                }
-                stride *= 2;
-            }
+            total += match self.path_scan {
+                GraphPathScan::HillisSteele => path_scan::hillis_steele(&mut pair),
+                GraphPathScan::Blelloch => path_scan::blelloch(&mut pair),
+                GraphPathScan::Sequential => unreachable!(),
+            };
             for (i, &vertex) in chain.iter().enumerate() {
                 out[vertex] = pair[i].1;
             }
@@ -613,25 +629,31 @@ mod c5_source_scoped_tests {
 
     #[test]
     fn actually_falls_back_to_original_full_band_w_on_residual_failure() {
-        let o = owner();
-        let p = native_problem(&o, false, 29);
-        let mut c = owned();
-        let mut work = WorkCounters::default();
-        c.linearize(&p, 0., &[0.2, 0.12], &mut work).unwrap();
-        c.factor(300., &mut work).unwrap();
-        // Deliberate same-author adversarial corruption of opt-in candidate
-        // after the actual source factorization, not a physics-source change.
-        c.small_inverse[0] = 0.;
-        let mut rhs = vec![1., -2.];
-        c.solve_in_place(&mut rhs, &mut work).unwrap();
-        let w00 = 300. + 4. + 12. + 3. * 20. * 0.2 * 0.2;
-        let w11 = 300. + 7. + 8. + 3. * 40. * 0.12 * 0.12;
-        assert!((w00 * rhs[0] - 12. * rhs[1] - 1.).abs() < 1e-12);
-        assert!((-8. * rhs[0] + w11 * rhs[1] + 2.).abs() < 1e-12);
-        assert_eq!(c.telemetry().candidate_failure_count, 1);
-        assert_eq!(c.telemetry().fallback_stage_solves, 1);
-        assert_eq!(c.telemetry().fallback_factorizations, 1);
-        assert!(work.direct_factorizations >= 2);
+        for scan in [
+            GraphPathScan::HillisSteele,
+            GraphPathScan::Sequential,
+            GraphPathScan::Blelloch,
+        ] {
+            let o = owner();
+            let p = native_problem(&o, false, 29);
+            let mut c = owned().with_path_scan(scan);
+            let mut work = WorkCounters::default();
+            c.linearize(&p, 0., &[0.2, 0.12], &mut work).unwrap();
+            c.factor(300., &mut work).unwrap();
+            // Deliberate same-author adversarial corruption of opt-in candidate
+            // after the actual source factorization, not a physics-source change.
+            c.small_inverse[0] = 0.;
+            let mut rhs = vec![1., -2.];
+            c.solve_in_place(&mut rhs, &mut work).unwrap();
+            let w00 = 300. + 4. + 12. + 3. * 20. * 0.2 * 0.2;
+            let w11 = 300. + 7. + 8. + 3. * 40. * 0.12 * 0.12;
+            assert!((w00 * rhs[0] - 12. * rhs[1] - 1.).abs() < 1e-12);
+            assert!((-8. * rhs[0] + w11 * rhs[1] + 2.).abs() < 1e-12);
+            assert_eq!(c.telemetry().candidate_failure_count, 1);
+            assert_eq!(c.telemetry().fallback_stage_solves, 1);
+            assert_eq!(c.telemetry().fallback_factorizations, 1);
+            assert!(work.direct_factorizations >= 2);
+        }
     }
 
     #[test]
