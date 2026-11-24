@@ -30,6 +30,7 @@ import time
 
 import numpy as np
 
+sys.dont_write_bytecode = True
 HERE = os.path.dirname(os.path.abspath(__file__))
 NODE = os.path.dirname(HERE)
 ROOT = os.path.abspath(os.path.join(NODE, "..", "..", ".."))
