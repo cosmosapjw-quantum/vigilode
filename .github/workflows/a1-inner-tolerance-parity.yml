@@ -72,9 +72,6 @@ jobs:
       - name: Compile every workspace target
         run: cargo test --workspace --all-targets --no-run --locked
 
-      - name: Run the workspace test closure
-        run: cargo test --workspace --all-targets --locked
-
       - name: Lint the workspace
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
 

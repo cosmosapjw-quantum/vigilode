@@ -1,0 +1,10 @@
+# check_workflows of the fix-round selector on the workflows of b0d4bc97 (the reviewed head), 2026-11-24T13:30:49Z
+problems found: 6
+- production.yml: a path filter on the triggers leaves out measured inputs (S-N2, M-N4)
+- production.yml: no job selects from the members rodas5p-cli, rodas5p-fair-ab (M-N2)
+- ignored-tests.yml: a path filter on the triggers leaves out measured inputs (S-N2, M-N4)
+- production.yml: a failed strace installation fails the job test (M-N6)
+- production.yml: no job test-cli-fair-ab
+- ignored-tests.yml: a failed strace installation fails the job ignored-tests (M-N6)
+# the same check on the fix-round workflows: []
+# check_sources on the workspace (R8/R10 facts, 7 members): []

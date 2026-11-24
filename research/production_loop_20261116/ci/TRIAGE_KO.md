@@ -230,3 +230,200 @@ head 8f840859(group 3 병합 포함)의 호스티드 실행(run 45203782039, 452
   - 계측 상태에서 doc test(RUSTFLAGS, RUSTDOCFLAGS 모두 설정)도 통과했다.
 
 비용: full 실행은 target마다 cargo test를 한 번씩 돌리고 지도 export를 병렬로 하므로 길어진다. timeout은 test job 300분, ignored job 330분으로 올렸다.
+
+## 11. 2026-11-24: 선택 v3, 측정한 입력 (소유자 결정 OD-L1-21, "전부 승인")
+
+v1/v2 검토(`SELECTION_REVIEW.json`, 지적 26건)는 정적 규칙(package 단위 규칙, 문자열 literal 대조)이 test의 입력을 다 알지 못한다는 것을 보였다. v3는 입력을 추측하지 않고 매 run 측정한다. 구현: `tools/ci/select_tests.py`(v3), `production.yml`, `ignored-tests.yml`, `a1-inner-tolerance-parity.yml`, `tools/check_ignored_tests_in_ci.py`. 설계가 열어 둔 선택은 `V3_NOTES.md`의 R1-R23에, 검토 두 건을 반영한 수정 라운드의 결정은 R24-R36에 적었다(11.6). 로그는 `v3_logs/`.
+
+### 11.1 무엇을 측정하는가
+
+매 run은 실행한 target마다 아래 집합을 지도(`vigilode.ci.coverage-map.v2`)에 새로 기록한다. 실행하지 않은 target의 항목은 기준점 지도에서 그대로 넘긴다. 측정에 실패한 target은 항목을 잃고 다음 run에서 다시 실행된다.
+
+| 집합 | 출처 | 잡는 연결 (검토 지적) |
+|---|---|---|
+| compile | target 자신의 artifact의 rustc dep-info: integration test, lib·bin unit test(profile.test), example | `mod`, `#[path]`, `include!`, `include_str!`, `include_bytes!` (F1, F2, F3, F5, F11) |
+| executed | coverage에서 실행 영역이 있는 파일(package의 binary 포함) | 함수 본문 변경 (OD-L1-20) |
+| read | test process와 자식 process가 성공적으로 open, stat, access, readlink, execve한 경로 | 실행 시간 읽기: hash 고정, 표에 적힌 파일 (F4, F6, F7) |
+| dirs | 디렉터리로 연 경로(`O_DIRECTORY`): 목록을 읽었다 | 파일 추가·삭제 (F7) |
+| absent | `ENOENT`, `ENOTDIR`로 실패한 조회 | 없던 파일이 생기는 경우 |
+
+- package마다 다른 crate가 link하는 non-test lib·bin의 dep-info도 기록한다. test artifact의 dep-info에는 link하는 library의 파일이 없기 때문이다. 이 집합의 Rust가 아닌 파일은 구조 변경이다. 로컬 실행에서는 두 개였다: core의 `fixtures/rodas5p_coefficients_snapshot.json`, fair-ab의 `tools/reference_v2/generate_references_v2.py`.
+- strace는 cargo의 target runner(`CARGO_TARGET_<host>_RUNNER`)로 test 실행 파일과 그 자식에만 붙는다. seccomp filter 때문에 위 집합에 필요한 system call에서만 멈춘다. `-y`로 상대 경로와 descriptor 경로를 푼다.
+- 저장소 밖, cargo target 디렉터리, `.git`, 측정 디렉터리의 경로는 버린다. doc test는 측정하지 않는다.
+- 음성대조 두 개는 `select_tests.py control`로 같은 측정을 하며 실행하고 `<pkg>::<target>#<test>` 항목을 남긴다(R11). selector 자신의 run은 음성대조를 `--skip`하므로 그 target에서 test를 하나도 실행하지 않는다. 로컬 확인: 그 target의 항목은 executed 0개, kill gate 항목은 executed 17개.
+
+### 11.2 규칙
+
+1. full: 요청(workflow_dispatch의 full, main), 기준점이나 지도가 없음, 기준점 head가 head의 조상이 아님, runner image(`ImageOS`, `ImageVersion`)나 PR base sha가 기준점과 다름, 전역 파일 변경(`Cargo.toml`, `Cargo.lock`, `rust-toolchain*`, `.cargo/`, `tools/ci/`, 어느 깊이든 `.gitattributes`, 그 job의 workflow). 기준점은 같은 event, 같은 저장소, 같은 runner image에서 돈 run을 먼저 고른다(11.6).
+2. 변경 경로: `git diff -z --name-status -M base head`. rename은 옛 경로 삭제와 새 경로 추가 둘 다.
+3. 변경 경로가 compile, executed, read 중 하나에 있으면 그 target을 고른다. 추가·삭제된 경로는 목록이 바뀌는 디렉터리(양쪽에 있는 가장 가까운 조상)를 연 target, 그 변경이 만들거나 없애는 디렉터리를 조회하거나 읽거나 연 target, 추가된 경로를 조회했던 target도 고른다.
+4. package source(`Cargo.toml`, `build.rs`, `src/**/*.rs`, 기록된 lib·bin 입력)는 v2 분류를 유지한다. 구조 변경: package와 그에 의존하는 package 전체. 본문 변경: 규칙 3과 package 및 의존 package의 doc test. noop(주석, 공백; 붙어 있던 구두점을 떼거나 떨어진 구두점을 붙이면 noop이 아니다): package 규칙 없음. 규칙 3은 모든 target의 read 집합과, 그 package 자신의 unit test가 아닌 target의 compile 집합만 센다. 파일을 text로 쓰는 쪽(`include_str!`, `include_bytes!`, 실행 시간 읽기)은 dep-info나 strace에 반드시 나타나므로 빠지지 않고, Rust 코드로 compile하는 쪽은 같은 token을 본다(R8).
+5. 지도 항목이 없는 target(새 target, 측정 실패)과 항목이 없는 음성대조의 target은 diff가 비어 있지 않으면 실행한다. lib·bin 입력이 기록되지 않은 package는 구조 변경으로 본다.
+6. 기준점에서 실패한 target(실패한 음성대조 포함)은 지금도 있고 required-features가 기본으로 켜지면 다시 실행한다. 아니면 note와 함께 뺀다.
+7. compile 집합에 변경 경로가 있는 example은 컴파일한다.
+8. doc test는 package가 전체 실행되거나 선택된 target이 있을 때, 그리고 본문 변경 때 돈다.
+9. literal 대조는 없앴다(R12). 아무 target도 고르지 않은 경로에는 지도 기준 note가 붙는다.
+
+동작: 두 test job은 취소하지 않고 대기한다(job 단위 concurrency, `cancel-in-progress: false`). workflow 단위 group은 test job까지 취소하므로 없앴고, 짧은 job은 각자의 group으로 non-main ref에서 계속 취소한다. 음성대조가 실패하면 그 target이 outcome의 `failed`에 들어가므로 기준점이 넘어가도 다음 run이 다시 고른다. selector 단계는 모두 `python3 -u`, branch·head·base는 env로 넘기고, upload는 `overwrite: true`. 두 job은 먼저 self-test를 돈다. A1 workflow의 "Run the workspace test closure" 단계는 지웠다. 주기적 full 실행은 넣지 않았다(OD-L1-21 4항).
+
+### 11.3 검토 지적 처리
+
+| 지적 | 상태 | 방법 |
+|---|---|---|
+| F1 | 해결 | `other_rust` 분류를 없앴다. `#[path]`로 들어간 파일은 test의 compile 집합에 있다. 사례 F1(95d589e86 재현)이 `residual_gain_contract`를 고른다 |
+| F2 | 해결 | `include_str!`한 cli `main.rs`가 `constants_provenance_contracts`의 compile 집합에 있다. 구조, 본문, 주석만 바꾼 경우 모두 고른다 |
+| F3 | 해결 | 규칙 3은 모든 package의 target을 본다. `alg02_predictive_controller`의 compile 집합에 `rnext_common/mod.rs` |
+| F4 | 해결 | sha256 고정은 strace의 read 집합으로 잡힌다(`ptsw2b_contracts`, `ppsw1_6b_contracts`) |
+| F5 | 해결 | lib·bin unit test artifact도 지도에 들어간다. integrators `lib`의 compile 집합에 `tests/support/a02_packet_counter_contract.rs` |
+| F6 | 해결 | TOML 표가 가리키는 파일도 read 집합에 있다(`FROZEN_ZETA34_POLICY.json` 등 3개) |
+| F7 | 해결 | `generic_scope_contracts`의 read 집합 308개, dirs 20개. 비회원 crate(`vigilode-hybrid`, `vigilode-bench`)도 포함. 새 파일은 목록 규칙으로 고른다 |
+| F8, F-04 | 해결 | PR base sha를 기록하고 바뀌면 full(소유자 선택). checkout은 merge commit 유지 |
+| F9, F-03 | 해결 | 실패한 음성대조를 outcome의 `failed`에 합친다. 음성대조 자체도 측정한다(R11) |
+| F10, F-02 | 해결 | required-features가 꺼진 target은 이름으로 부르지 않는다. 기준점 실패는 현재 target으로 거르고 없어진 것은 note와 함께 뺀다 |
+| F11 | 해결 | example의 compile 집합을 기록하고 해당 example을 `--example`로 컴파일한다 |
+| F12 | 해당 없음 | literal 대조를 없앴다 |
+| F13 | 해결 | `git diff -z`. dep-info 경로는 저장소 root 기준으로 정규화 |
+| F14 | 해결(나머지는 소유자 결정) | runner image가 바뀌면 full. 주기적 full 실행은 OD-L1-21 4항에 따라 넣지 않았다. 놓친 변경은 release 전 full suite가 다시 본다 |
+| F-01 | 해결 | test job은 대기, 짧은 job만 취소 |
+| F-05 | 해결 | A1의 workspace test 단계 삭제 |
+| F-06 | 해결 | `python3 -u`와 줄마다 flush |
+| F-07 | 해결 | workflow는 `has`를 쓰지 않는다. 음성대조 단계는 `control`이 오류면 실패한다. `has`는 선택 파일이 없으면 exit 1 |
+| F-08 | 해결 | `--workspace`는 회원 crate의 test에만 센다 |
+| F-09 | 해결 | 목록 조회 실패와 다운로드 실패에 각각 note |
+| F-10 | 해결(기존 조치 유지) | 제한 300분, 330분 유지. strace를 더한 full 실행의 hosted 시간은 아직 모른다(11.5) |
+| F-11 | 해결 | `overwrite: true` |
+| F-12 | 해결 | branch는 env로 넘기고 REST query에서 URL 인코딩 |
+
+### 11.4 로컬 검증 (`v3_logs/`)
+
+- self-test(`self_test.log`): 분류 9개, dep-info 정규화, `-z` 경로(따옴표, tab, 비ASCII, rename), strace 줄 해석, required-features, 기준점 실패 거르기, image·base 촉발, 지도 규칙 3-8(F1-F7, F11, 음성대조, 측정 없는 target과 package), 가짜 `gh`로 기준점 조회(F-09), workflow 점검(F-01, F-03, F-05, F-06, F-07, F-10, F-11, F-12, F14) 통과. 같은 workflow 점검을 v2 workflow에 돌리면 25건을 지적한다(`self_test_against_v2_workflows.log`).
+- 측정 실행(`e2e_run.log`, `e2e_outcome.json`, `e2e_map.json`): coverage와 strace로 target 7개와 example 1개를 실행. 전부 통과, 측정 실패 0. debug profile, cores 0-5,12-17, host 부하 약 190(24 CPU). 시간은 libtest 보고값이다.
+
+| target | 결과 | 시간 | compile | executed | read | dirs | 추적 호출 |
+|---|---|---|---|---|---|---|---|
+| core `residual_gain_contract` | 6 통과, 1 ignored | 0.03 s | 2 | 7 | 0 | 0 | 95 |
+| integrators `lib` (unit test) | 141 통과, 1 ignored | 14.9 s | 119 | 76 | 0 | 0 | 106 |
+| integrators `constants_provenance_contracts` | 2 통과 | 0.05 s | 4 | 3 | 3 | 0 | 97 |
+| integrators `generic_scope_contracts` | 4 통과 | 1.7 s | 2 | 10 | 308 | 20 | 1007 |
+| integrators `ppsw1_6b_contracts` | 37 통과 | 70.6 s | 1 | 9 | 15 | 0 | 126 |
+| integrators `ptsw2b_contracts` | 24 통과 | 0.19 s | 1 | 8 | 12 | 0 | 120 |
+| cli `alg02_predictive_controller` | 13 통과, 6 ignored | 192 s | 3 | 32 | 1 | 0 | 105 |
+| integrators example `sp01_dupfix_profile` | 컴파일 | - | 3 | - | - | - | - |
+
+- 측정이 찾은, 검토에 없던 연결: `alg02_predictive_controller`가 `research/stiff_native_benchmark_20261001/NATIVE.json`을 읽고, example `sp01_dupfix_profile`이 `alg01_common`을 거쳐 `rnext_common/mod.rs`도 compile한다.
+- 첫 측정 시도는 selector 오류로 멈췄다(`e2e_attempt1_strace_works_bug.log`): strace 확인 함수가 경로 대신 버전 문자열을 돌려줬다. 고쳤고 self-test가 이 계약을 검사한다.
+- 선택 사례(`selection_cases.log`, `selection_cases.json`): 위 지도에 음성대조 측정(`control_smoke.log`)을 더한 지도(`map_e2e_plus_control.json`)로, scratch clone(공유 object, sparse checkout)에 사례마다 commit을 만들고 selector 규칙을 실제 diff·분류·지도에 적용했다. target과 package 범위는 측정한 것으로 제한했다(CI에서는 첫 full run 뒤 모든 target에 항목이 있다). 15개 전부 통과.
+
+| 사례 | 변경 | 선택 |
+|---|---|---|
+| F1 | `gain_witness.rs` identity fixture (95d589e86 재현) | core `residual_gain_contract` (+ core doc) |
+| F2 | cli `main.rs` 주석만 | `constants_provenance_contracts`, `generic_scope_contracts` (+ doc). cli 자신의 crate는 고르지 않음 |
+| F3 | `rnext_common/mod.rs`에 helper 추가 | cli `alg02_predictive_controller`, example `sp01_dupfix_profile` |
+| F4 | `unified_candidate_contracts.rs`에 test 추가 | `ptsw2b_contracts`, `ppsw1_6b_contracts` (+ doc) |
+| F5 | `tests/support/a02_packet_counter_contract.rs` | integrators `lib` (+ doc) |
+| F6 | `FROZEN_ZETA34_POLICY.json` 값 변경 | `constants_provenance_contracts` (+ doc) |
+| F7 | `crates/rodas5p-krylov/src`에 새 파일 | krylov 구조 변경: krylov, integrators, fair-ab, cli 전체 (`generic_scope_contracts` 포함) |
+| F7-hybrid | 비회원 `vigilode-hybrid/src`에 새 파일 | `generic_scope_contracts` (목록 규칙) |
+| F7-vigilode | `vigilode/src/lib.rs` 주석만 | `generic_scope_contracts` (read) |
+| F11 | `tests/alg01_common/mod.rs`에 helper 추가 | example `sp01_dupfix_profile` 컴파일 |
+| N1 | `rodas5p-krylov/src/lib.rs` 주석만 | `generic_scope_contracts`(이 파일을 text로 읽는 유일한 target) + doc. 실행하거나 compile한 target은 고르지 않음 |
+| N1-no-reader | N1, 그 reader를 뺀 지도 | 없음 |
+| N2 | `ppsw1_linear_backend.rs` 함수 본문 | `ppsw1_6b_contracts`(실행), `generic_scope_contracts`(읽기), integrators `lib`(자기 crate compile, R9), doc(integrators, fair-ab). 나머지 target은 고르지 않음 |
+| C1 | `dense_output_v2.rs` 함수 본문(kill gate가 실행) | `dense_wfiltered_contracts`(음성대조 항목으로), `lib`, `generic_scope_contracts`, doc |
+| S1 | core `lib.rs`에 const 추가 | core와 의존 package 전체 |
+
+- 음성 사례 두 개에 대한 정직한 판정: member의 `src` 파일은 모두 `generic_scope_contracts`가 text로 읽으므로 "아무 target도 읽지 않는 파일"은 member source에 없다. 그래서 주석 변경은 그 reader 하나만 고르고(N1), reader를 빼면 아무것도 고르지 않는다(N1-no-reader). 본문 변경은 실행한 target과 doc test 외에 그 reader와 자기 package의 lib unit test(R9: compile 집합에 crate의 모든 source가 있다)를 고른다(N2).
+- 같은 사례를 실제 `select` 명령(제한 없는 workspace)으로도 돌렸다. 기대한 target을 모두 골랐고, 측정하지 않은 target 448-449개와 lib 입력이 기록되지 않은 package 2개(`vigilode`, `vigilode-coupled`)를 규칙 5가 더했다. 로컬 지도는 target 10개만 측정했으므로 예상한 결과다.
+- `control` 명령(`control_smoke.log`): kill gate가 기록된 서명으로 실패하므로 통과(debug에서도 `KILL GATE: 2.143x the Off accepted-step count > 1.3x`), 틀린 서명이면 단계가 실패하고 `failed-controls.txt`에 target을 쓴다, 선택되지 않으면 실행하지 않는다. run 단계는 음성대조 조각을 지도에 합치고 실패를 outcome `failed`에 `negative_control`로 넣는다.
+- 기준점 조회(`baseline_probe_f09.log`, 가짜 `gh`): 더 새 run, 조상이 아닌 head, 미완료 outcome, 다운로드 실패(HTTP 502)를 건너뛰고 완료된 run을 고른다. 목록 조회 실패는 자체 note를 남긴다. shell 문법이 든 branch 이름은 데이터로만 다뤄진다.
+- 도달성 검사(`check_ignored_tests_in_ci.log`): ignored test 99개 전부 도달. 탐침(`checker_probe_f08.log`): `crates/vigilode-bench`의 ignored test는 이제 미도달로 잡히고, control 단계를 지우면 음성대조 두 개가 미도달로 잡힌다.
+- workflow YAML 3개 구문 통과(`workflows_yaml.log`, python yaml; actionlint는 설치되어 있지 않다). loop 검사기 통과.
+
+### 11.5 남는 틈과 비용
+
+| 틈 | 영향 | 막는 방법과 그 비용 |
+|---|---|---|
+| doc test는 측정하지 않는다 | 실행 시간에 저장소 파일을 읽는 doc test는, 그 package에서 아무것도 선택되지 않으면 돌지 않는다. member의 doc 주석에서 파일 접근은 찾지 못했다(grep) | cargo 1.94.1은 runner를 doc test에도 넘기므로 `doc` 단위로 측정할 수 있다. 비용: doc test마다 strace, 설계 변경 |
+| noop 변경의 span | 주석만 바꿔도 아래 줄 번호가 바뀐다. `line!()`, panic 위치, `Location::caller()`를 비교하는 test는 선택되지 않는다 | 줄 수가 바뀌는 noop을 본문 변경으로 보면 막힌다. 비용: 그 파일을 실행한 target 실행 |
+| 본문 변경과 auto trait | `impl Trait`, `async fn`의 auto trait가 본문 변경으로 바뀌어 선택되지 않은 target의 컴파일이 깨질 수 있다(10절) | 의존 package의 `cargo check --tests`. 비용: 컴파일 시간 |
+| 비결정적 입력 | 어떤 run에서만 읽는 파일(시각, thread 순서, 난수에 따른 경로)은 빠질 수 있다 | 없음. release full suite |
+| 저장소 밖 입력 | env 변수, 네트워크, 시각. image, toolchain, lock 파일은 full 촉발이다 | 없음 |
+| build script 입력 | `rerun-if-changed` 입력은 기록하지 않는다. fair-ab는 HEAD와 dirty 표시만 넣고 test 결과는 그 값에 의존하지 않는다(v1 검토 확인) | build script가 코드를 생성하게 되면 입력 기록이 필요하다 |
+| `--skip`한 test | 걸러진 test의 입력은 측정되지 않는다. 선언한 음성대조 두 개는 따로 측정한다 | 새 skip은 `--control`로 선언 |
+| strace가 못 보는 읽기 | io_uring, 다른 process(daemon)를 통한 읽기, 추적 전에 연 descriptor. workspace에는 없다 | 없음 |
+| hosted full 실행 시간 | coverage와 strace를 함께 쓴 full 실행은 hosted에서 재지 않았다. 300·330분을 넘기면 outcome이 없어 다음 run도 full이다. strace 없는 v2 full 실행 두 개는 13:46Z에 177분째 진행 중이었다(11.6) | 첫 hosted full 실행으로 확인. 넘으면 job 분할 |
+| 첫 run | schema와 `tools/ci/`가 바뀌었으므로 두 job의 첫 v3 run은 full이다 | 한 번뿐 |
+| merge commit 검사 | PR은 merge commit을 검사하고 head끼리 diff한다. base sha가 같을 때만 맞으므로 base가 바뀌면 full | 소유자 선택 |
+
+strace 비용(`strace_cost_probe.log`, 이 host, 부하 약 190):
+- seccomp filter 덕분에 추적하지 않는 system call은 멈추지 않는다: `getppid` 2만 번은 strace 유무와 상관없이 0.03-0.11 s.
+- 추적하는 호출은 한 번에 약 0.2-0.4 ms였다(`stat` 2만 번: 없이 0.22-0.38 s, strace로 4.6-7.6 s). 대부분 context switch 대기라서 부하가 없는 runner에서는 더 작다.
+- 로컬 target은 추적 호출이 95-126개(loader, libtest 시작, 파일 읽기), `generic_scope_contracts`만 1007개였다. 0.4 ms로 잡아도 target당 0.05 s 이하, `generic_scope_contracts` 0.4 s.
+- python3를 띄우는 target 8개(integrators `production_audit_*` 5개, `all_dag_*` 2개, krylov `givens_production_differential_contracts`)는 import 때문에 호출이 수천 개일 수 있다: target당 수 초.
+- 따라서 full 실행(약 500 target)의 strace 비용은 수십 초 수준으로, 92-109분인 full test job에 비해 작다. 그 밖에 thread마다 trace 파일이 생기고(integrators `lib` 154개) Python이 그것을 해석하는 시간이 든다.
+
+### 11.6 수정 라운드: b0d4bc97에 대한 검토 두 건
+
+두 검토자가 b0d4bc97을 검토했다. 건전성 검토는 새 지적 S-N1~S-N6(모두 minor)과 이전 지적 S-F1~S-F14의 상태를, CI 동작 검토는 새 지적 M-N1~M-N8(M-N1, M-N2가 major)과 이전 지적 M-F-01~M-F-12의 상태를 냈다. 작업 지시문에는 CI 동작 검토가 14000자에서 잘려 있었으므로 이 run의 workflow journal에서 전체 JSON을 읽었다. 고치기 전에 지적마다 재현했다. 규칙은 `V3_NOTES.md`의 R24~R36, 로그는 `v3_logs/fix_*`.
+
+무엇을 바꿨나:
+1. 기준점(M-N1): hosted runner는 같은 시각에 image version 두 개를 섞어 준다. run 45358324432에서 08:41:48Z에 함께 시작한 `fmt`는 20261116.88.1, `clippy`는 20261116.202.1이었다(job 로그로 확인). 그대로면 run 10개 중 약 3개가 코드 변경 없이 full이다. 이제 기준점은 같은 runner image(`ImageOS`, `ImageVersion`)에서 돈 가장 새로운 완료 run이다. 이 image의 run이 하나도 없을 때만 다른 image의 run을 기준점으로 쓰고, 규칙 1에 따라 full이다. "image가 바뀌면 full"이라는 소유자 규칙은 그대로이고 image마다 기준점 사슬이 따로 이어진다. 조상인 완료 run은 어느 것이든 올바른 기준점이다: 그 뒤의 변경이 모두 diff에 들어간다(R24).
+2. 기준점 후보는 같은 event, 같은 저장소(`head_repository`)의 run뿐이다(M-N3, M-N5, R25). 기록하는 PR base는 checkout한 merge commit의 첫 부모다(S-F8, M-F-04의 남은 가정, R26).
+3. rodas5p-cli, rodas5p-fair-ab의 test job(M-N2): A1에서 지운 workspace test 단계가 이 두 package의 일반 test를 돌리던 유일한 곳이었다(hosted run 45358324393, coverage 없는 debug: cli 08:55-09:06, 그중 `triage_cli` 438 s; fair-ab 09:07-09:10). production.yml에 job `test-cli-fair-ab`를 더했다. 같은 selector와 측정, 자기 artifact(`ci-test-outcome-test-cli-fair-ab`), 대기 concurrency, 120분 제한. 처음에는 `test` job의 scope에 넣었으나(1288945b) 되돌렸다: 그 job의 v2 full 실행이 strace 없이도 177분을 넘겼고 300분 제한은 고정이며, production gate는 production crate만 맡는 것이 낫다(R27, R36).
+4. trigger의 path filter 제거(S-N2, M-N4, S-F14 일부): 측정한 입력은 `docs/`, `research/`, `fixtures/`, `tools/`에도 있다(`docs/CONSTANTS_PROVENANCE.toml`, `FROZEN_ZETA34_POLICY.json`, `fixtures/rodas5p_coefficients_snapshot.json` 등). 두 test workflow는 모든 PR과 main push에서 돈다. 영향받는 test가 없으면 선택 단계에서 끝난다(R28).
+5. tokenizer(S-N1): 사이에 아무것도 없는 두 구두점 사이에 표시 token을 넣는다. `&&`→`& &`, `=>`→`= >`, `..`→`. .`, `->`→`- >`, `+=`→`+ =`는 이제 noop이 아니다. 검토자 사례(`integrate.rs`의 `success & &collector`)는 body로 분류되고, 그 파일을 실행한 cli `alg02_predictive_controller`를 고른다(R29).
+6. 추가된 경로가 만드는 디렉터리를 읽거나 연 target도 고른다(S-N3, R30). `.gitattributes`는 어느 깊이든 전역 파일이다(S-N4, R31).
+7. strace는 경로를 만들고 지우고 이름을 바꾸고 속성을 바꾸는 호출(`mkdir`, `rename`, `link`, `symlink`, `unlink`, `rmdir`, `utimensat`, `chmod`, `truncate`, `statfs`, `getxattr` 등)도 추적한다. 성공은 read, ENOENT·ENOTDIR은 absent. 실패한 `chdir`은 absent이고 cwd를 바꾸지 않는다(S-N5, R32).
+8. self-test의 `check_sources`가 R8, R10의 전제를 member의 `src/`에서 검사한다: `line!()`, `column!()`, `Location::caller`, `track_caller`, 자기 `.rs`의 text include, doc test 안의 파일 접근. 지금은 264개 파일에서 0건(S-N6, R33).
+9. strace 설치 실패가 job을 멈추지 않는다(M-N6, R34). A1 workflow가 없어도 self-test가 실패하지 않는다(M-N8, R35).
+
+| 지적 | 상태 | 방법 |
+|---|---|---|
+| S-F1~S-F7, S-F9~S-F11, S-F13 | 해결 | 검토자가 v3에서 원래 사례를 재현해 닫혔음을 확인했다. 이번 변경 뒤에도 선택 사례 F1-F7, F11이 같은 target을 고른다 |
+| S-F8 | 해결 | 검토자 확인. 남은 가정(payload의 base = merge의 base)은 merge commit의 첫 부모를 기록해 없앴다(R26) |
+| S-F12 | 해당 없음 | literal 대조가 없다 |
+| S-F14 | 해결 | image 촉발(검토자 확인)에 더해 trigger의 path filter를 없앴다(R28). 주기적 full 실행은 OD-L1-21 4항에 따라 넣지 않았다 |
+| S-N1 | 해결 | 붙은 구두점 표시(R29). self-test 9개 쌍, 검토자 사례 재현(`fix_tokenizer_probe.log`) |
+| S-N2 | 해결 | path filter 제거(R28). 다시 넣으면 self-test가 실패한다 |
+| S-N3 | 해결 | 추가 경로가 만드는 디렉터리를 read, dirs와도 대조(R30). self-test, 사례 S-N3 |
+| S-N4 | 해결 | `.gitattributes`는 전역(R31). self-test, 사례 S-N4(full) |
+| S-N5 | 해결 | 추적 호출 확대, 실패한 chdir은 absent(R32). strace 6.8 탐침(`fix_strace_calls_probe.log`) |
+| S-N6 | 해결 | `check_sources`(R33) |
+| M-F-01~M-F-12 | 해결 | 검토자가 재현해 닫혔음을 확인했다 |
+| M-N1 | 해결 | 같은 image의 run을 기준점으로(R24). self-test: 오래된 같은 image run 선택, 같은 image run이 없을 때의 대체와 full |
+| M-N2 | 해결 | job `test-cli-fair-ab`(R27). self-test: 각 workflow의 선택 job이 모든 member를 덮고 artifact 이름이 겹치지 않는지 검사 |
+| M-N3 | 해결 | 같은 event의 run만(R25) |
+| M-N4 | 해결 | S-N2와 같다(R28) |
+| M-N5 | 해결 | 같은 저장소의 run만(R25) |
+| M-N6 | 해결 | strace 설치 단계에 `continue-on-error: true`(R34) |
+| M-N7 | 미해결(기록) | v2 hosted full 실행 두 개가 13:46Z에 177분째 진행 중이었다(완료된 v1 full 실행은 92-109분). 제한 300·330분은 설계대로 유지. 첫 v3 full 실행이 제한의 2/3를 넘으면 full mode 분할을 소유자에게 묻는다(R36) |
+| M-N8 | 해결 | A1 workflow가 있을 때만 검사(R35) |
+
+검증(`v3_logs/fix_*`):
+- self-test(`fix_self_test.log`) 통과. 새 사례: 구두점 9쌍, `.gitattributes`, 새 추적 호출 12줄과 인자 분리, 만들어진 디렉터리 규칙, 가짜 `gh`로 같은 image 기준점·대체·fork·다른 event, merge commit의 base, `check_sources` 탐침 workspace, workflow 변형(path filter, strace 설치, scope, artifact 이름, A1 없음).
+- 같은 workflow 점검을 b0d4bc97의 workflow에 돌리면 6건을 지적한다(`fix_checks_against_b0d4bc97_workflows.log`).
+- strace 6.8 탐침(`fix_strace_calls_probe.log`): 늘린 호출 목록을 `--seccomp-bpf`와 함께 받아들이고, 해석 결과가 기대와 같다. 탐침은 지우거나 바꾸는 호출을 모두 없는 경로에 대고 하므로 아무것도 지우지 않는다.
+- tokenizer 탐침(`fix_tokenizer_probe.log`): 검토자 사례 `integrate.rs`의 `success & &collector`는 body이고, 그 파일을 실행한 cli `alg02_predictive_controller`를 고른다. 검토자의 탐침 스크립트 두 개도 고친 selector로 다시 돌렸다(`fix_reviewer_probes.log`): S-N3 사례는 이제 target을 고르고, 구두점 5쌍은 noop이 아니다.
+- 측정 실행(`fix_e2e_run.log`, `fix_e2e_outcome.json`, `fix_e2e_map.json`, `fix_e2e_selection.json`): rodas5p-fair-ab 전체(lib, test 20개, doc, example 3개 컴파일)와 rodas5p-cli 전체(bin unit test 2개, test 14개), integrators `constants_provenance_contracts`, `generic_scope_contracts`, core `residual_gain_contract`를 coverage와 늘린 strace 호출 목록으로 실행했다. debug, cores 0-5,12-17, 12 core. 전부 통과, 측정 실패 0, 지도 항목 43개, wall 1315 s(build와 측정 포함). 실행 중에 이 worktree의 추적 파일을 고쳐서 fair-ab build script가 다시 돌았고 fair-ab와 cli가 target마다 다시 compile되었다. CI에서는 실행 중에 작업 트리가 바뀌지 않는다.
+
+| 묶음 | libtest 시간 | 비고 |
+|---|---|---|
+| fair-ab(lib, test 20개) | 463 s | `two_arm_v3_campaign_contracts` 435 s(hosted A1, coverage 없음: 172 s) |
+| cli(bin 2개, test 14개) | 592 s | `triage_cli` 256 s(probe worker 8개; hosted는 4개로 438 s), `me01_cli_contracts` 94 s |
+| `triage_cli`의 측정량 | - | 자식 process마다 coverage profile 하나: 686개, 1.9 GB, trace 파일 719개, 추적 호출 50697개. 모든 test가 끝난 뒤의 측정 단계까지 디스크에 남는다 |
+| 늘린 strace 목록 | - | 전후를 모두 잰 target은 추적 호출이 16개씩 늘었다(`generic_scope_contracts` 1007→1023, `residual_gain_contract` 95→111, `alg02_predictive_controller` 105→121). 모든 target의 absent 집합은 비어 있다 |
+
+- 선택 사례(`fix_selection_cases.log`, `fix_selection_cases.json`): 처음 측정한 지도에 이번 측정을 겹친 지도(`fix_map_merged.json`, 항목 49개)로 21개 사례가 모두 통과했다. 이전 15개(F1-F7, F11, N1, N2, C1, S1 등)는 그대로 통과하고, 새 사례는 S-N1(body, cli `alg02_predictive_controller`와 integrate.rs를 실행한 fair-ab target 선택), S-N3(목록 규칙으로 `generic_scope_contracts`), S-N3-unlisted(아무것도 고르지 않음), S-N4(`select` 명령이 full), M-N2(fair-ab 본문 변경: 그 파일을 실행한 `external_comparator_contracts`와 자기 lib, 읽는 target, doc만), M-N2-cli(cli `main.rs` 본문 변경: 그 binary를 실행한 cli target 11개와 `constants_provenance_contracts`).
+- compile 입력 sweep(`fix_sweep_v3.json`, 검토자 스크립트에 `test-cli-fair-ab` scope를 더한 사본): w2-v24 dep-info의 unit 588개, 연결 1040개. 놓치는 것은 noop 변경 때의 자기 crate lib·bin unit test뿐이다(R8, 의도한 것).
+- 도달성 검사 99/99, workflow YAML 3개 구문 통과, loop 검사기 통과(`fix_checks.log`).
+
+남는 틈과 비용(11.5에 더해):
+
+| 틈 또는 비용 | 내용 |
+|---|---|
+| image마다 기준점 사슬 | 새 image version의 첫 run은 full이다(전과 같다). 그 run은 같은 image의 run을 찾으려고 목록의 run artifact를 최대 100개 받는다 |
+| path filter 없음 | 측정한 입력에 닿지 않는 PR도 두 workflow를 선택 단계까지 돌린다(수 분). production.yml의 다른 job(fmt, clippy, docs, semver, bench)도 돈다. PR의 path filter는 PR 전체 diff를 보므로 `crates/**`를 한 번 건드린 PR은 전에도 매 push마다 돌았다. 새로 도는 것은 data만 바꾸는 PR과 main push다 |
+| `test-cli-fair-ab` | 무언가를 고르면 다른 runner에서 workspace를 coverage로 한 번 더 build한다. 아무것도 고르지 않으면 선택 단계에서 끝난다 |
+| 늘린 추적 호출 | 파일을 많이 만들고 지우는 test는 호출마다 약 0.2-0.4 ms(이 host)를 더 쓴다 |
+| `check_sources`의 한계 | 한 줄 pattern이다. 여러 줄에 걸친 구문, 다른 crate의 macro 뒤의 사용, block doc 주석(`/** */`)은 보지 않는다. 걸리면 두 test job이 self-test에서 실패하고, 고칠 것은 코드나 규칙이다 |
+| 소유자 확인 | `test-cli-fair-ab`는 연구 crate 두 개에 새 CI job을 준다. 대안은 그 test를 release 전 full suite에서만 돌리는 것이다(R27) |
