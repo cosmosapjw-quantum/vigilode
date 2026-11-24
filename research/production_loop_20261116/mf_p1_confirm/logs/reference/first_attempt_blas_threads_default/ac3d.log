@@ -1,0 +1,30 @@
+# V25_REFERENCE_BEGIN {"family": "ac3d", "date": "2026-11-24T18:03:20+0900", "git_head": "43d0880a902b816069e46cfd3a18a7f6fa3318a9", "command": "taskset -c 0-5,12-17 python3 -I reference/make_reference.py --family ac3d --out reference/ac3d.json", "loadavg": "3.72 4.00 3.85 6/6100 3781072"}
+family ac3d n 4096 span [0.0, 1.0] (PROTOCOL.json families (final spans after the sizing pilot))
+reference {'method': 'DOP853', 'rtol': 1e-13, 'atol': 1e-13, 'rhs_evaluations': 1181, 'nfev': 1181, 'njev': 0, 'nlu': 0, 'wall_seconds': 0.15997767448425293}
+cross-check 1 {'method': 'DOP853', 'rtol': 1e-11, 'atol': 1e-11, 'rhs_evaluations': 785, 'nfev': 785, 'njev': 0, 'nlu': 0, 'wall_seconds': 0.10627412796020508, 'difference': {'max_abs': 6.397105067890152e-13, 'max_scaled_1_plus_abs': 3.1986036500525504e-13, 'rms': 1.8985091141671757e-13}}
+cross-check 2 {'method': 'Radau', 'rtol': 1e-11, 'atol': 1e-11, 'rhs_evaluations': 6492, 'nfev': 6447, 'njev': 3, 'nlu': 46, 'wall_seconds': 34.1969268321991, 'difference': {'max_abs': 1.4943601911454607e-13, 'max_scaled_1_plus_abs': 7.471920362670485e-14, 'rms': 2.3096844569067985e-14}}
+wrote reference/ac3d.json: uncertainty 3.199e-13
+	Command being timed: "taskset -c 0-5,12-17 python3 -I reference/make_reference.py --family ac3d --out reference/ac3d.json"
+	User time (seconds): 52.71
+	System time (seconds): 76.47
+	Percent of CPU this job got: 370%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:34.89
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 146336
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 120
+	Minor (reclaiming a frame) page faults: 191552
+	Voluntary context switches: 1116
+	Involuntary context switches: 57563507
+	Swaps: 0
+	File system inputs: 20232
+	File system outputs: 400
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+# V25_REFERENCE_END {"exit_code": 0, "date": "2026-11-24T18:03:55+0900"}
