@@ -1,0 +1,489 @@
+{
+ "schema": "vigilode.ks-n1-review.v1",
+ "task": "KS-N1",
+ "run_id": "wf_88621c7a-4c1",
+ "reviewed_head": "af12afd82cc0cff87383ada4558c00b077b7c657",
+ "reviewers": "two independent read-and-run agents (statistics and protocol lens; probe-equivalence lens); no repository edits",
+ "reviews": [
+  {
+   "lens": "statistics and protocol adherence",
+   "verdict": "confirm",
+   "summary": "PASS holds. I recomputed every number from the 24 series processes, the 3 diagnostic runs and the identity log with my own script, which uses exact rational arithmetic and does not use parse_ks_n1.py. Every per-solve value, ratio of medians, per-round ratio and cycles spread in results/KS_N1_OWNER_HOST.json matches. The only differences are about 1e-16 of float rounding in the reported instructions spreads.\n\nRecomputed results:\n- n=1e4: instructions ratio 0.465635, cycles ratio 0.654872, cycles spread 0.015608.\n- n=1e5: instructions ratio 0.469248, cycles ratio 0.669980, cycles spread 0.088028.\n- Quiet rule: highest load1_before is 2.97 across all 24 processes. No wait reached the 600 s timeout.\n- Identity: 12 probe lines per cell with 0 mismatches. The 5 non-ignored identity tests passed (I re-ran them: exit 0). All 3 diagnostic runs show 'test result: ok. 1 passed' and 'exit 0'.\n\nProtocol checks (a) to (f) all pass:\n- (a) The protocol file is byte-identical at 3dff0183, at af12afd8 and in the worktree.\n- (b) All six pinned sha256 values match at both commits.\n- (c) The commit is at 07:05:30. The reflog records the push at 07:05:49, and origin's head is still 3dff0183. Everything measured came later: identity tests 07:08:07, env 07:08:14, first measured process 07:12:05.\n- (d) File mtimes (nanosecond resolution) follow the protocol order exactly, and no two processes overlap.\n- (e) env.json records rustc 1.94.1, core 3 and governor performance. Both binaries carry the rustc 1.94.1 marker.\n- (f) The frozen parser gives the same verdict and numbers. Its output differs from the committed results only by the three n=1e4 wall_medians entries.\n\nInstruction counts reproduce: one replica run on core 5 matched the series to within 2e-8 relative. The main statistical caveat is the cycles spread at n=1e5 (0.088 against the 0.10 cap). Round 1 there was disturbed. Had the spread crossed the cap, the frozen rules would give NOT_DECIDABLE, not FAIL. The cycles ratios themselves stay far below 0.80 however the rounds are combined.",
+   "findings": [
+    {
+     "id": "F1",
+     "severity": "note",
+     "claim": "My own script reproduces every number in the results and the PASS verdict under the frozen rules.",
+     "evidence": "recompute.py reads all 24 <tag>.perf.csv, meta.json and out.json files with exact Fraction arithmetic and N from the protocol (100 and 12). Per-solve medians: n1e4 instructions indexed 440430605.8 and fixed2 205080075.02; n1e4 cycles 129838281.58 and 85027397.49; n1e5 instructions 4189369306.75 and 1965853636.58; n1e5 cycles 1330120716.5 and 891154491.83. Ratios of medians: 0.4656353857 and 0.6548715560 (n1e4); 0.4692481117 and 0.6699801610 (n1e5). Per-round cycles ratios: [0.648201, 0.649396, 0.658318] and [0.617973, 0.672372, 0.664559]. Cycles spreads: 0.015608 and 0.088028. Instructions spreads: 6.4e-9 and 3.3e-8 (the producer's floats differ only by about 1e-16 absolute). All 24 perf lines run at 100.00% (no multiplexing, nothing marked not counted). The event run-time fields agree, the units are right (raw counts; task-clock in msec), and no per-solve value is negative. The JSONL rows equal the raw files. Both cells pass instructions <= 0.60 and cycles <= 0.80, so the verdict is PASS."
+    },
+    {
+     "id": "F2",
+     "severity": "note",
+     "claim": "Protocol adherence items (a) to (e) hold.",
+     "evidence": "(a) sha256 of KS_N1_PROTOCOL.json is 973ee056... at 3dff0183, at af12afd8 and in the worktree; the diff is empty. (b) At both commits and in the worktree the hashes match the protocol: PLAN.json fb33a418..., test file f6a4d7a4..., main.rs 46aae4e9..., Cargo.toml 2a0fb997..., Cargo.lock e0834cd7..., rodas5p_fast.rs 50635d9e.... (c) The commit is at 2026-11-25 07:05:30 +0900. The reflog of refs/remotes/origin/... shows 'update by push' at 07:05:49 +0900, and git ls-remote shows origin's head is 3dff0183. Everything measured came later: identity_tests.log 07:08:07, env.json 07:08:14, first measured process r1_n1e4_indexed_s1 at 07:12:05.149 after a 230 s wait. The test binary's mtime is 07:08:07.017, also after the push. The probe binary (07:01:51) is older than the commit, which matches the protocol's pilot note, and no crate or probe source is newer than it. (d) Meta-file mtimes increase strictly in the order of the frozen run script (round, then cell n1e4 before n1e5, then arm indexed before fixed2 except fixed2 first in round 2, then solves 1 before 1+N). Every out.json mtime comes before the next meta.json. (e) env.json: rustc 1.94.1 (e408947bf 2026-03-25), core 3, governor performance, kernel 7.0.0-43-generic, perf 7.0.14, head 3dff0183. The binary hashes a988aaa7 (probe) and 2684fcac (test) equal the current files, and readelf .comment on both shows 'rustc version 1.94.1 (e408947bf 2026-03-25)'. kernel.perf_event_paranoid is 1."
+    },
+    {
+     "id": "F3",
+     "severity": "note",
+     "claim": "The parser change after the series touches only the reported-only diagnostic wall_medians field and cannot change the verdict.",
+     "evidence": "git diff 3dff0183 af12afd8 shows one changed line: the startswith filter became the regex \\{\"sl_n12\".*?\\}. The diagnostic 'passed' flag and every verdict input are untouched. I ran both parser versions on a scratch copy of the logs. Both print the same ratios, spreads and verdict PASS. The af12afd8 parser's output is byte-identical to the committed results JSON and JSONL. The 3dff0183 parser's output differs from the committed JSON only by the three missing n=10000 wall_medians objects, and its JSONL is identical."
+    },
+    {
+     "id": "F4",
+     "severity": "minor",
+     "claim": "The cycles-decidability gate passed with little room at n1e5 (spread 0.0880 against a 0.10 cap) because round 1 was disturbed. Under the frozen rules PASS stands, and the 0.80 bound is not at risk.",
+     "evidence": "Round-1 indexed per-solve cycles at n1e5 are 8.4% and 12.7% above rounds 2 and 3 (1442.1M against 1330.1M and 1279.0M). The user-cycle rate of that s13 process (cycles:u / task-clock) was 4.40 GHz, against 4.66 and 4.71 GHz in rounds 2 and 3. Right after it the load rose above 3.0 again, so the next process waited 90 s. Per-round task-clock ratios at n1e5 spread by 0.146; this is not a protocol statistic. Had the cycles spread exceeded 0.10, the frozen verdict would be NOT_DECIDABLE (all instructions ratios are <= 0.60), not FAIL. The cycles bound itself holds however the rounds are combined: pairing the worst fixed2 round with the best indexed round gives 0.667 (n1e4) and 0.699 (n1e5); the median of per-round ratios is 0.649 and 0.665; rounds 2 and 3 alone give 0.654 and 0.669. The three diagnostic runs alternate both arms in one process and give wall-time ratios of 0.6526 to 0.6551 (n=1e4) and 0.6547 to 0.6571 (n=1e5)."
+    },
+    {
+     "id": "F5",
+     "severity": "minor",
+     "claim": "The PLAN asked for nothing else running. The protocol, frozen before any data, replaced this with a load gate of <= 3.0 while another project's batch job ran unpinned. Nothing kept the SMT sibling of core 3 free. This adds noise to cycles only.",
+     "evidence": "PLAN.json KS-N1 implementation says 'three times, nothing else running'; protocol host.note acknowledges the batch job. ps shows PID 2284565 (.venv/bin/python -m scripts.r105.commander_ensemble) started 06:58:45, still running, single-threaded, affinity 0-23 (taskset -p gives ffffff). CPU 3's thread_siblings_list is 3,15, and at review time the job was running on CPU 15. Instruction counts do not depend on this (spread across rounds is about 1e-8), so it cannot affect the instructions verdict. Its likely effect on cycles is the round-1 n1e5 disturbance in F4."
+    },
+    {
+     "id": "F6",
+     "severity": "note",
+     "claim": "Using a probe instead of the PLAN's 'test under perf stat' was registered before any data, with a reason. The probe runs the same case as the test, and the diagnostic runs agree with it.",
+     "evidence": "The protocol's why_a_probe explains that whole-process perf stat cannot split an alternating test into per-arm counts. brusselator_strip in main.rs is byte-identical to the test file's. case() differs only by the unused Case.name field. adaptive(10_000_000) is copied value for value. Both report the same attempts (18 and 17). Predicted from the probe's per-solve medians (16 solves per arm at n=1e4, 8 per arm at n=1e5), a diagnostic run should take 59.570G instructions:u; the measured runs took 59.5406G (-0.049%). Measured cycles are within 0.2% of the prediction from round 3."
+    },
+    {
+     "id": "F7",
+     "severity": "note",
+     "claim": "An independent replica on core 5 reproduces the instruction counts and probe lines exactly. Its cycles ratio is higher, but still under 0.80, when the host is heavily loaded.",
+     "evidence": "I ran 8 processes under perf stat with taskset -c 5 at load1 12.7 to 13.5, while the facade test suite was running. Per-solve instructions differed from the series medians by +5.8, +3.6, -59 and +73 instructions (under 2e-8 relative). Instructions ratios were 0.465635 and 0.469248, equal to the series to 6 digits. Probe lines are identical to the series in every field except arm, solves and driver (state_fnv1a 65f83f600a55e274 and 259689109a197dae). Cycles ratios were 0.7404 (n1e4) and 0.6999 (n1e5), against 0.655 and 0.670 in the series. This run is outside the protocol, but it shows the cycles margin depends on host conditions and stayed within 0.80 even under heavy contention."
+    },
+    {
+     "id": "F8",
+     "severity": "note",
+     "claim": "I found no subtraction artifact. The one-time cost implied in instructions is the same in both arms. The cycles intercepts only show about 2% noise between processes.",
+     "evidence": "The implied one-time cost C(1) minus the per-solve value, in instructions: n1e4 indexed 1820380, 1820201, 1819905 and fixed2 1820456, 1820426, 1819835; n1e5 indexed 9290247, 9289829, 9290444 and fixed2 9290300, 9290341, 9290418. C(1) differs between arms only by the cost of one solve. In cycles one intercept is negative (n1e4 round 2 indexed, -528665), meaning that 101-solve process ran about 2% slow. This lies inside the reported spread. IPC is plausible (indexed about 3.4 and 3.15, fixed2 about 2.44 and 2.21)."
+    },
+    {
+     "id": "F9",
+     "severity": "note",
+     "claim": "The push time in the brief, 07:05:53, is 4 s later than the local reflog's 07:05:49. This does not matter.",
+     "evidence": "git reflog refs/remotes/origin/research/stage-lattice-referee-20261124 shows 3dff0183 at 2026-11-25 07:05:49 +0900 'update by push'. 07:05:53 appears in no committed file. Either time is before the series."
+    },
+    {
+     "id": "F10",
+     "severity": "note",
+     "claim": "The protocol's order text can be read two ways (cell-major or round-major). The frozen script in the same commit settles it, and the series follows the script exactly.",
+     "evidence": "The order text puts 'cells n1e4 then n1e5' before the arm rules. run_ks_n1.sh at 3dff0183 loops round, then cell, then arm, then solves. The observed sequence is r1 n1e4, r1 n1e5, r2 n1e4, r2 n1e5, r3 n1e4, r3 n1e5, with arms counterbalanced as specified."
+    },
+    {
+     "id": "F11",
+     "severity": "note",
+     "claim": "The logs cannot verify the protocol clause 'the agent starts no other process or tool call during the series'.",
+     "evidence": "There is no process accounting for 07:08 to 07:16:33. The load gate was respected: 24 of 24 processes had load1 <= 2.97, waits were 230, 90 and 130 s, and none hit the 600 s timeout."
+    }
+   ],
+   "ran": [
+    {
+     "command": "git log --oneline -5; git status --short; ls research/.../owner_host research/.../results (worktree)",
+     "exit_code": 0,
+     "result": "head af12afd8 over 3dff0183; only ignored __pycache__ and .mypy_cache are untracked"
+    },
+    {
+     "command": "ls -la / cat logs/ks_n1/{env.json,end.json,identity_tests.log,diag_*.{meta.json,out.txt,perf.csv},r*.meta.json,r*.perf.csv,sample out.json}",
+     "exit_code": 0,
+     "result": "24 series processes, 3 diag runs; identity log 5 passed, 0 failed, 1 ignored, exit 0"
+    },
+    {
+     "command": "git show --stat 3dff0183 / af12afd8; git reflog show --date=iso refs/remotes/origin/research/stage-lattice-referee-20261124",
+     "exit_code": 0,
+     "result": "commit 07:05:30 +0900; reflog 'update by push' 07:05:49 +0900; af12afd8 adds logs and results and changes the parser by 5 lines"
+    },
+    {
+     "command": "sha256 of KS_N1_PROTOCOL.json and the 6 pinned files at 3dff0183, af12afd8 and worktree (git show | sha256sum)",
+     "exit_code": 0,
+     "result": "protocol identical (973ee056...); all 6 pinned hashes equal the protocol values at both commits"
+    },
+    {
+     "command": "git diff 3dff0183 af12afd8 -- .../parse_ks_n1.py",
+     "exit_code": 0,
+     "result": "one line: wall_medians extraction switched from startswith to regex; comment added"
+    },
+    {
+     "command": "python3 -I scratchpad/ks_n1_review_statistics/recompute.py <unit> recompute_out.json",
+     "exit_code": 0,
+     "result": "all numbers match the producer; verdict PASS; order checks pass; no flags"
+    },
+    {
+     "command": "sha256sum + readelf -p .comment on ks-n1-probe and banded_kernel_entry_identity-519bc46678f9d2b9; stat mtimes",
+     "exit_code": 0,
+     "result": "a988aaa7... and 2684fcac... equal env.json; both built by rustc 1.94.1 (e408947bf 2026-03-25); probe 07:01:51, test binary 07:08:07.017"
+    },
+    {
+     "command": "GIT_TERMINAL_PROMPT=0 timeout 30 git ls-remote origin refs/heads/research/stage-lattice-referee-20261124",
+     "exit_code": 0,
+     "result": "3dff01839ac46114424743ee4fb6e6c711862a1b"
+    },
+    {
+     "command": "find crates Cargo.toml Cargo.lock rust-toolchain.toml -newer <probe binary>",
+     "exit_code": 0,
+     "result": "no files newer than the probe binary"
+    },
+    {
+     "command": "diff brusselator_strip and case() between test file and probe main.rs (awk extraction)",
+     "exit_code": 0,
+     "result": "brusselator_strip identical; case() differs only by the unused Case.name field"
+    },
+    {
+     "command": "for 8 processes: perf stat -x, -e instructions:u,cycles:u,task-clock -o <csv> -- taskset -c 5 ks-n1-probe <arm> <rows> <solves> (n1e4 1/101, n1e5 1/13, both arms)",
+     "exit_code": 0,
+     "result": "all 8 exit 0; instructions per solve within 73 of series medians; ratios 0.465635 and 0.469248; cycles ratios 0.740 and 0.700 at load about 13"
+    },
+    {
+     "command": "taskset -c 5 banded_kernel_entry_identity-519bc46678f9d2b9 (non-ignored tests)",
+     "exit_code": 0,
+     "result": "test result: ok. 5 passed; 0 failed; 1 ignored"
+    },
+    {
+     "command": "python3 -I parse_ks_n1.py (3dff0183 version and af12afd8 version) on a scratch copy of logs and protocol",
+     "exit_code": 0,
+     "result": "both PASS with identical numbers; af12afd8 output byte-identical to the committed JSON and JSONL; 3dff0183 output differs only by the 3 n=10000 wall_medians entries"
+    },
+    {
+     "command": "ps / taskset -p 2284565 / cat thread_siblings_list / perf_event_paranoid",
+     "exit_code": 0,
+     "result": "commander_ensemble batch job since 06:58:45, affinity 0-23, single-threaded, on CPU 15 (sibling of CPU 3) at review time; paranoid 1"
+    },
+    {
+     "command": "python3 -I cross-check of diag whole-process counts against probe per-solve medians, and cycles-ratio robustness",
+     "exit_code": 0,
+     "result": "diag instructions -0.049% from prediction; cycles within 0.2% of the round-3 prediction; worst cross-round pairing 0.667 and 0.699; rounds 2-3 only 0.654 and 0.669"
+    }
+   ],
+   "recomputed": {
+    "n1e4": {
+     "N": 100,
+     "per_solve_instructions": {
+      "indexed": [
+       440430605.55,
+       440430605.8,
+       440430616.98
+      ],
+      "fixed2": [
+       205080075.02,
+       205080074.64,
+       205080079.03
+      ]
+     },
+     "per_solve_cycles": {
+      "indexed": [
+       129838281.58,
+       132619994.75,
+       129158557.16
+      ],
+      "fixed2": [
+       84161324.08,
+       86122891.16,
+       85027397.49
+      ]
+     },
+     "instructions_ratio": 0.4656353857,
+     "cycles_ratio": 0.654871556,
+     "cycles_ratio_per_round": [
+      0.648201,
+      0.649396,
+      0.658318
+     ],
+     "cycles_spread": 0.015608,
+     "instructions_spread": 6.4e-09,
+     "worst_pairing_cycles_ratio": 0.6668,
+     "task_clock_ratio": 0.65032
+    },
+    "n1e5": {
+     "N": 12,
+     "per_solve_instructions": {
+      "indexed": [
+       4189369331.42,
+       4189369306.75,
+       4189369192.08
+      ],
+      "fixed2": [
+       1965853713.58,
+       1965853636.58,
+       1965853606.33
+      ]
+     },
+     "per_solve_cycles": {
+      "indexed": [
+       1442061009.83,
+       1330120716.5,
+       1279014289.33
+      ],
+      "fixed2": [
+       891154491.83,
+       894335543.33,
+       849980198.25
+      ]
+     },
+     "instructions_ratio": 0.4692481117,
+     "cycles_ratio": 0.669980161,
+     "cycles_ratio_per_round": [
+      0.617973,
+      0.672372,
+      0.664559
+     ],
+     "cycles_spread": 0.088028,
+     "instructions_spread": 3.33e-08,
+     "worst_pairing_cycles_ratio": 0.6992,
+     "task_clock_ratio_per_round_spread": 0.14585
+    },
+    "quiet_rule": {
+     "processes": 24,
+     "max_load1_before": 2.97,
+     "above_3": [],
+     "waits_s": {
+      "r1_n1e4_indexed_s1": 230,
+      "r1_n1e5_fixed2_s1": 90,
+      "r3_n1e4_indexed_s1": 130
+     },
+     "cycles_decidable": true
+    },
+    "identity": {
+     "n1e4": {
+      "lines": 12,
+      "mismatches": 0,
+      "attempts": 18,
+      "state_fnv1a": "65f83f600a55e274"
+     },
+     "n1e5": {
+      "lines": 12,
+      "mismatches": 0,
+      "attempts": 17,
+      "state_fnv1a": "259689109a197dae"
+     },
+     "identity_tests": "5 passed, 0 failed, 1 ignored, exit 0 (log and reviewer rerun)",
+     "diagnostic_runs": "3 of 3 test result ok, 1 passed, exit 0"
+    },
+    "verdict": "PASS",
+    "replica_core5_heavy_load": {
+     "instructions_ratio": [
+      0.465635,
+      0.469248
+     ],
+     "cycles_ratio": [
+      0.7404,
+      0.6999
+     ]
+    },
+    "scratch": "/tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/ks_n1_review_statistics/"
+   }
+  },
+  {
+   "lens": "probe_identity: does the ks_n1_probe measure the SL-N12 question (facade (2,2) route, FixedWidth2 vs Indexed), and do its identity claims hold",
+   "verdict": "confirm",
+   "summary": "The probe answers the SL-N12 question at the level of the driver entry point. Its case is byte-identical to the test's brusselator_strip. Tolerances, span, output schedule, entry point and kernels are the same as in the test's run closure. The only code difference is the unused `name` field of Case. Everything else that differs is process structure or build configuration, and none of it changes the arithmetic. After SL-N12 the facade's (2,2) route calls integrate_rodas5p_fast_banded_observed_with_kernel(..., FixedWidth2), the same call as the probe's fixed2 arm. Before SL-N12 the route ran integrate_rodas5p_fast_banded_observed, which is integrate_banded(..., Indexed, &[], NoSink) behind one wrapper, the same driver call as the probe's indexed arm. SL-N12 did not change the Indexed kernel or the driver loop, and rodas5p_fast.rs is unchanged from 3f9762a1 to af12afd8. By reading the code, FixedWidth2 performs Indexed's operations in the same order for l = u = 2. The facade also wraps every callback (finite checks, NaN pre-fill, atomic charge). The probe leaves this out. The work is the same in both arms, so a facade-level ratio would be slightly worse than the probe's. My estimate is 0.48-0.49 instead of 0.466 for instructions at n=1e4. The verdict would only change if that overhead reached 33% or more of the Indexed per-solve instructions, or 65% or more of its cycles. I reran the 8 processes under perf stat (instructions:u) on core 5. Every count is within 3,977 of the logged count for the same tag. The per-solve instruction ratios are 0.465635 and 0.469248, equal to the logged values to 6 digits. All 16 probe lines per cell (my 4 plus 12 logged) agree on all 16 identity fields; only the driver id differs, by design. The non-ignored tests pass (ok. 5 passed; 0 failed; 1 ignored). The pivoting unit test is not ignored and runs in the lib unit tests. It compares FixedWidth2 with Slices, not with Indexed, so identity with Indexed under pivoting is covered only through a chain of tests (see F6). Every number the producer claims matches my recomputation from the raw logs.",
+   "findings": [
+    {
+     "id": "F1",
+     "severity": "note",
+     "claim": "The probe's case, tolerances, span, output schedule, entry point and kernels are those of brusselator_strip(1, rows), adaptive(10_000_000) and the run closure of measure_fixed_width_against_indexed_whole_solves. The only code difference is the missing `name` field of Case. The other differences are process and build structure, and none changes the arithmetic.",
+     "evidence": "diff of test lines 147-234 against probe main.rs lines 61-148 (brusselator_strip): identical, diff exit 0. diff of case() (test 50-74 against probe 34-57): exit 1, and the only difference is the struct field `name,`; the name still goes into OdeProblem::new. adaptive fields are identical (probe 174-182, test 301-311): atol 1e-8, rtol 1e-6, h0 1e-4, min_step 1e-14, max_step 10, max_attempts 10_000_000, the rest default. CELL = 1/64 and the Callback types are identical. Span is (0.0, case.t1 = 0.5) and output is OutputSchedule::new(vec![0.0, case.t1]) in both. Entry point integrate_rodas5p_fast_banded_observed_with_kernel; kernels Indexed and FixedWidth2. The non-arithmetic differences: (a) one kernel per process, `solves` repeats, with the previous result kept alive until it is replaced (`last = Some(black_box(result))`); the test alternates both arms in one process and drops each result at once. (b) No in-process cross-arm assertion: identity is checked afterwards from the printed fields and a 64-bit FNV-1a hash over the output-time and state bits, and `partial` is printed only as a boolean (None in every run). (c) The probe is a standalone crate with the workspace release profile (opt-level 3, fat LTO, codegen-units 1, panic=abort) and without research-gates, which matches the facade's dependency. The test binary is a libtest build with unwind and research-gates enabled through its self dev-dependency. (d) The per-solve statistic (C(1+N)-C(1))/N excludes the cold first solve. Provenance checks: the sha256 of the test file, main.rs, rodas5p_fast.rs, the probe Cargo.toml/Cargo.lock and PLAN.json all equal the protocol values. The probe binary sha a988aaa7... and the test binary sha 2684fcac... equal env.json. The probe dep-info points only at the worktree crates. The probe was built at 07:01:51, after the last source edit (07:00:43). All 88 packages in the probe Cargo.lock have the same version and checksum in the workspace lock. The workspace edition is 2024, the same as the probe."
+    },
+    {
+     "id": "F2",
+     "severity": "note",
+     "claim": "The facade's (2,2) banded route after SL-N12 runs exactly the driver call of the probe's fixed2 arm. Before SL-N12 the route ran the Indexed kernel through an entry point that is the same driver call as the probe's indexed arm. FixedWidth2's arithmetic order matches Indexed for l = u = 2.",
+     "evidence": "crates/vigilode/src/solve.rs:257-265 banded_kernel(): min(l,u) >= 6 gives Slices, (2,2) gives FixedWidth2, otherwise Indexed. solve.rs:799-825 Plan::Banded with a scalar atol and kernel != Indexed calls integrate_rodas5p_fast_banded_observed_with_kernel(&ode,&band,t_span,y0,&adaptive,&schedule,kernel). At 3f9762a1^, BANDED_SLICES_MIN_HALF_WIDTH = 6 and (2,2) mapped to Indexed, then ENTRY_BANDED integrate_rodas5p_fast_banded_observed (solve.rs:703-705 at that commit). That function is _with_options(default) and then integrate_banded(..., Rodas5pFastOptions::default(), BandedKernel::Indexed, &[], &mut NoSink) (rodas5p_fast.rs:2130-2179), identical to _with_kernel(Indexed) (2185-2212) except for one wrapper layer. Both arms report driver ids from the same integrate_fast_in loop (2844-2852). git diff 3f9762a1^ 3f9762a1 on rodas5p_fast.rs touches only the FixedWidth2 functions, docs and `use std::cell::Cell`. git diff 3f9762a1 af12afd8 on rodas5p_fast.rs is empty. Code reading of factor_fixed2 (569-651), factor_fixed2_column (654-698) and solve_fixed2 (765-836) against the Indexed factor/solve (379-441, 532-562) shows the same order. Assembly is (-J)+inv on the diagonal. The pivot search runs k, k+1, k+2 with strict >. Swaps cover the same 5 entries (j = k..k+4). Each row update does 4 multiply-subtracts in the same order and skips zero multipliers. The forward sweep carries w0..w2 with the same swaps. The back sweep runs s -= r[3]x1 ... r[6]x4 and then /r[2]. The counted work is 9 per update and 13n-26 per solve, matching Indexed's per-operation charges (also confirmed by equal BandedWork in every probe line)."
+    },
+    {
+     "id": "F3",
+     "severity": "minor",
+     "claim": "The facade route adds work around the driver that the probe leaves out. This work is the same in both arms, so facade-level ratios would be slightly worse (closer to 1) than the probe's. The estimated effect is far too small to change PASS. The result should be read as a driver-entry (route-kernel) cell, not a Rodas5p::solve cell. The PLAN's own implementation also measures at the driver entry, through the test.",
+     "evidence": "The RHS goes through Guard::vector_call for every call (fd.rs:103-135, wrapped at solve.rs:1232-1237): t/y finiteness check over n, out.fill(NaN), the user call, an out finiteness check over n, then an atomic fetch_add/load in charge(). The band fill goes through guard.call_charged plus finite(out) over n(l+u+1) = 5n (solve.rs:1345-1353). Each solve also does O(n) validation and record assembly. band_as_dense is never called on this route (the driver reads the band). The callback counts are the same in both arms: 140 RHS calls and 14 Jacobian builds per solve at n=1e4, 133 and 14 at n=1e5. AdaptiveStepConfig: the facade uses max_step = f64::MAX against the probe's 10.0. The cap cannot bind here because h_next <= 5 x 0.5 < 10. Break-even ratios F/D_Indexed for the verdict to flip: 0.336 (instructions, n=1e4), 0.327 (instructions, n=1e5), 0.726 (cycles, n=1e4), 0.650 (cycles, n=1e5). Estimate: (140x3 + 14x5)n element visits at 3-4 instructions each is 14.7-19.6M, or 3.3-4.5% of D_i = 440.43M. That gives a facade instruction ratio of about 0.483-0.488. Even 10 instructions per visit gives 0.519. Cycles at n=1e5: an estimated 25-50M against about 1330M per solve. Not measured: running facade binaries was outside the allowed binaries. Also not covered by KS-N1, though SL-N12 changed them too: the vector-atol (2,2) route, the dense-output (2,2) route (also on FixedWidth2), and finite-difference bands (5 grouped RHS per Jacobian, which means more shared work and more dilution).",
+     "correction": "Optional wording: 'FixedWidth2 needs 0.466/0.469 of the instructions and 0.655/0.670 of the cycles of Indexed in whole solves through the driver entry point; the facade's callback guards add arm-independent work, which would move facade-level ratios slightly toward 1 (estimated well inside the bounds).'"
+    },
+    {
+     "id": "F4",
+     "severity": "note",
+     "claim": "The instructions:u rerun on core 5 reproduces the logged counts and ratios. Every probe line agrees on the identity fields in both arms.",
+     "evidence": "8 processes (perf stat -x, -e instructions:u -- taskset -c 5 probe ...), all exit 0. Largest difference from the logged count of the same tag across rounds 1-3: 529, 3977, 755, 1397 (n=1e4: indexed s1, s101, fixed2 s1, s101) and 1103, 860, 891, 2756 (n=1e5); the largest relative difference is 3.65e-6. Per solve, mine against the logged median: indexed 1e4 440,430,643 vs 440,430,606; fixed2 1e4 205,080,094 vs 205,080,075; indexed 1e5 4,189,369,205 vs 4,189,369,307; fixed2 1e5 1,965,853,766 vs 1,965,853,637. Ratios: mine 0.465635 and 0.469248, logged 0.465635 and 0.469248. Identity: per cell, 16 lines (4 mine + 12 logged) have equal rows, n, attempts, accepted, rejected, jacobian_reuses, lu, work, partial, success, message, counters, internal_steps, output_clipped_steps, outputs and state_fnv1a. Drivers are rodas5p-fast-banded-v1 and rodas5p-fast-banded-fixed2-v1. n=1e4: attempts 18, rejected 4, state_fnv1a 65f83f600a55e274, work factor 4,139,190 / solve 18,716,256 (= 144 x (13n-26)). n=1e5: attempts 17, rejected 3, state_fnv1a 259689109a197dae, work 39,099,235 / 176,796,464."
+    },
+    {
+     "id": "F5",
+     "severity": "note",
+     "claim": "The non-ignored tests of banded_kernel_entry_identity pass. Among them, the only (2,2) case that runs FixedWidth2's fixed-offset path against Indexed is the exchange chain. The measured Brusselator (2,2) case is compared in-process only by the ignored diagnostic.",
+     "evidence": "Run without arguments: 'test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.38s', exit 0. With --nocapture: V22_D1_ENDPOINT prints allen-cahn-strip lower=16 upper=16, brusselator-strip n=256 lower=8 upper=8, exchange-chain n=120 lower=2 upper=2. At (8,8) and (16,16) FixedWidth2 falls back to Slices. Exchange chain: largest_step 0.72, diagonal 7.55 < below 1e3, so rows are exchanged. The budget-stop test uses Allen-Cahn (16,16), so the fixed-offset path is not exercised under a budget stop. brusselator_strip(1, rows) at (2,2) is checked by the ignored diagnostic: the three series runs (diag_1..3) pass with attempts 18/17 equal to the probe. It is also checked by the probe's printed fields."
+    },
+    {
+     "id": "F6",
+     "severity": "minor",
+     "claim": "fixed_offsets_match_slices_under_pivoting_and_singular_columns is a normal, non-ignored test that covers bit identity under pivoting. It runs in the lib unit tests, not in the banded_kernel_entry_identity binary that KS-N1's identity item runs. Its reference is Slices, not Indexed, so identity with Indexed under pivoting rests on a chain of tests.",
+     "evidence": "banded_exact_tests.rs:180-217 is a plain #[test] in `#[cfg(test)] #[path = \"banded_exact_tests.rs\"] mod banded_exact_tests;` (rodas5p_fast.rs:2944-2946). It runs n in {5,6,7,8,9,13,64}, 24 seeds, and singular columns {None, 0, n/2, n-3, n-1}, with a weak diagonal so that every pivot choice occurs (it asserts each offset 0/1/2 more than 100 times). It compares the Debug text of the factor result, the BandedWork after errors, the pivots, the factor bits, the solve bits and the work, all against BandedKernel::Slices. exact_fixed_width_parity_including_pivot_swaps (85-94) also uses Slices as reference. FixedWidth2 = Indexed under pivoting therefore follows from three things: this test, Slices = Indexed (tests/spd03_banded_arm.rs::slices_kernel_equals_the_indexed_kernel_on_the_int03_cases), and the whole-solve exchange-chain comparison against the Indexed base in endpoint/dense_output_twins_equal_the_existing_entry_points. No single unit test compares FixedWidth2 with Indexed directly under pivoting. Reading the code confirms the order is the same (F2). The probe's Brusselator case is not built to exercise pivoting: nb*s >= 81.92 plus 1/(h gamma) sits on the diagonal. Row exchanges are therefore not expected in the measured cells, and the swap paths have similar cost in both kernels.",
+     "correction": "Optional hardening, not needed for KS-N1: add BandedKernel::Indexed as a second reference in fixed_offsets_match_slices_under_pivoting_and_singular_columns."
+    },
+    {
+     "id": "F7",
+     "severity": "note",
+     "claim": "The producer's numbers and quiet-rule facts match my recomputation from the raw logs. I recomputed from logs only and measured no cycles myself.",
+     "evidence": "From logs/ks_n1/*.perf.csv: instructions ratios 0.465635 and 0.469248 (per-round spread under 1e-7). Cycles ratios 0.654872 and 0.669980; per round 0.6482/0.6494/0.6583 and 0.6180/0.6724/0.6646; spreads 0.0156 and 0.0880. 24 processes, largest load1_before 2.97 (r1_n1e5_indexed_s13). These equal KS_N1_OWNER_HOST.json (verdict PASS, problems [], cycles_decidable true). The n=1e5 cycles spread (0.088) is close to the 0.10 undecidability rule, but the worst per-round cycles ratio (0.672) is far below 0.80. The protocol was frozen and pushed before the series: commit 3dff0183 at 07:05:30, env.json start 07:08:14 with head 3dff0183. The deviation from the PLAN's 'run the test under perf stat' is documented in why_a_probe."
+    }
+   ],
+   "ran": [
+    {
+     "command": "git log --oneline -8; git status --short; ls owner_host, logs, results (worktree read-only)",
+     "exit_code": 0,
+     "result": "head af12afd8, clean tree; probe, script, parser, protocol, logs and results present"
+    },
+    {
+     "command": "sha256sum tests/banded_kernel_entry_identity.rs ks_n1_probe/src/main.rs src/rodas5p_fast.rs ks_n1_probe/Cargo.toml ks_n1_probe/Cargo.lock PLAN.json",
+     "exit_code": 0,
+     "result": "all six hashes equal the KS_N1_PROTOCOL.json values"
+    },
+    {
+     "command": "sha256sum <probe> <test binary>; stat mtimes; dep-info path check",
+     "exit_code": 0,
+     "result": "a988aaa7... and 2684fcac... equal env.json; probe built 07:01:51 after its last source edit (07:00:43); dep-info lists only worktree crates; test binary built 07:07:52-07:08:07 from the test source with sha f6a4d7a4"
+    },
+    {
+     "command": "python3 -I (compare probe Cargo.lock with workspace Cargo.lock)",
+     "exit_code": 0,
+     "result": "88/88 probe packages have the same version and checksum in the workspace lock"
+    },
+    {
+     "command": "diff test brusselator_strip (147-234) against probe (61-148); diff case() (50-74 against 34-57)",
+     "exit_code": 1,
+     "result": "brusselator_strip identical (exit 0); case() differs only by the Case field `name` (exit 1)"
+    },
+    {
+     "command": "git show 3f9762a1^:crates/vigilode/src/solve.rs | grep BANDED_SLICES_MIN_HALF_WIDTH/ENTRY_BANDED; git diff 3f9762a1^ 3f9762a1 -- rodas5p_fast.rs; git diff 3f9762a1 af12afd8 -- rodas5p_fast.rs",
+     "exit_code": 0,
+     "result": "before SL-N12: threshold 6, (2,2) mapped to Indexed via integrate_rodas5p_fast_banded_observed; the SL-N12 diff touches only FixedWidth2; no driver change after SL-N12"
+    },
+    {
+     "command": "perf stat -x, -e instructions:u -o rv_n1e4_indexed_s1.perf.csv -- taskset -c 5 ks-n1-probe indexed 5000 1",
+     "exit_code": 0,
+     "result": "442,251,051"
+    },
+    {
+     "command": "perf stat -x, -e instructions:u -o rv_n1e4_indexed_s101.perf.csv -- taskset -c 5 ks-n1-probe indexed 5000 101",
+     "exit_code": 0,
+     "result": "44,485,315,364"
+    },
+    {
+     "command": "perf stat -x, -e instructions:u -o rv_n1e4_fixed2_s1.perf.csv -- taskset -c 5 ks-n1-probe fixed2 5000 1",
+     "exit_code": 0,
+     "result": "206,899,776"
+    },
+    {
+     "command": "perf stat -x, -e instructions:u -o rv_n1e4_fixed2_s101.perf.csv -- taskset -c 5 ks-n1-probe fixed2 5000 101",
+     "exit_code": 0,
+     "result": "20,714,909,214"
+    },
+    {
+     "command": "perf stat -x, -e instructions:u -o rv_n1e5_indexed_s1.perf.csv -- taskset -c 5 ks-n1-probe indexed 50000 1",
+     "exit_code": 0,
+     "result": "4,198,660,239"
+    },
+    {
+     "command": "perf stat -x, -e instructions:u -o rv_n1e5_indexed_s13.perf.csv -- taskset -c 5 ks-n1-probe indexed 50000 13",
+     "exit_code": 0,
+     "result": "54,471,090,695"
+    },
+    {
+     "command": "perf stat -x, -e instructions:u -o rv_n1e5_fixed2_s1.perf.csv -- taskset -c 5 ks-n1-probe fixed2 50000 1",
+     "exit_code": 0,
+     "result": "1,975,144,869"
+    },
+    {
+     "command": "perf stat -x, -e instructions:u -o rv_n1e5_fixed2_s13.perf.csv -- taskset -c 5 ks-n1-probe fixed2 50000 13",
+     "exit_code": 0,
+     "result": "25,565,390,056"
+    },
+    {
+     "command": "python3 -I scratchpad/ks_n1_review_probe_identity/compare.py <scratch> <logs/ks_n1>",
+     "exit_code": 0,
+     "result": "largest deviation from logged counts 3,977 (rel <= 3.65e-6); ratios 0.465635 and 0.469248 equal the logged ratios; 16/16 lines per cell agree on all identity fields"
+    },
+    {
+     "command": "python3 -I scratchpad/ks_n1_review_probe_identity/recompute_logged.py <logs/ks_n1> <results>",
+     "exit_code": 0,
+     "result": "instructions 0.465635/0.469248, cycles 0.654872/0.669980, spreads 0.0156/0.0880, largest load1 2.97; equal to KS_N1_OWNER_HOST.json (PASS)"
+    },
+    {
+     "command": "taskset -c 5 banded_kernel_entry_identity-519bc46678f9d2b9",
+     "exit_code": 0,
+     "result": "test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.38s"
+    },
+    {
+     "command": "taskset -c 5 banded_kernel_entry_identity-519bc46678f9d2b9 --nocapture --test-threads=1",
+     "exit_code": 0,
+     "result": "same 5 passed / 1 ignored; bands printed: allen-cahn 16/16, brusselator 8/8, exchange-chain 2/2; exchange largest_step 0.72, diagonal 7.55 < 1e3"
+    },
+    {
+     "command": "grep/sed reads of the diag_1..3 logs and of the facade solve.rs/fd.rs and rodas5p_fast.rs",
+     "exit_code": 0,
+     "result": "the three diagnostic runs pass with exit 0 (wall ratios 0.6526-0.6571); facade guard wrappers identified (F3)"
+    }
+   ],
+   "recomputed": {
+    "rerun_core": 5,
+    "per_solve_instructions_mine": {
+     "n1e4_indexed": 440430643.1,
+     "n1e4_fixed2": 205080094.4,
+     "n1e5_indexed": 4189369204.7,
+     "n1e5_fixed2": 1965853765.6
+    },
+    "per_solve_instructions_logged_median": {
+     "n1e4_indexed": 440430605.8,
+     "n1e4_fixed2": 205080075,
+     "n1e5_indexed": 4189369306.8,
+     "n1e5_fixed2": 1965853636.6
+    },
+    "instructions_ratio_mine": {
+     "n1e4": 0.465635,
+     "n1e5": 0.469248
+    },
+    "instructions_ratio_logged": {
+     "n1e4": 0.465635,
+     "n1e5": 0.469248
+    },
+    "max_abs_count_deviation_vs_logged": 3977,
+    "max_rel_count_deviation_vs_logged": 3.65e-06,
+    "cycles_ratio_from_logs": {
+     "n1e4": 0.654872,
+     "n1e5": 0.66998
+    },
+    "cycles_spread_from_logs": {
+     "n1e4": 0.0156,
+     "n1e5": 0.088
+    },
+    "max_load1_before": 2.97,
+    "identity": {
+     "n1e4": {
+      "lines": 16,
+      "mismatches": 0,
+      "attempts": 18,
+      "rejected": 4,
+      "state_fnv1a": "65f83f600a55e274"
+     },
+     "n1e5": {
+      "lines": 16,
+      "mismatches": 0,
+      "attempts": 17,
+      "rejected": 3,
+      "state_fnv1a": "259689109a197dae"
+     }
+    },
+    "facade_overhead_break_even_fraction_of_indexed": {
+     "instructions_n1e4": 0.3359,
+     "instructions_n1e5": 0.3269,
+     "cycles_n1e4": 0.7256,
+     "cycles_n1e5": 0.6501
+    },
+    "facade_instruction_ratio_estimate_n1e4": "0.483-0.488 (3-4 instr per element visit); 0.519 at 10",
+    "identity_tests": "ok. 5 passed; 0 failed; 1 ignored",
+    "scratch_dir": "/tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/ks_n1_review_probe_identity"
+   }
+  }
+ ],
+ "orchestrator_actions": [
+  "Both verdicts confirm; no blocking or major finding. The PASS verdict of results/KS_N1_OWNER_HOST.json stands.",
+  "Statistics F4/F5 (minor): recorded in RUN.json stage KS-N1 (cycles spread 0.088 at n = 1e5 under the 0.10 cap; another project's unpinned batch job ran during the series, at times on CPU 15, the SMT sibling of core 3; instructions are unaffected).",
+  "Equivalence F3 (minor): the claim in RUN.json is worded as a driver-entry cell; the facade's callback guards add arm-independent work (review estimate of the facade-level instruction ratio 0.48-0.49 at n = 1e4).",
+  "Equivalence F6 (minor): the pivoting unit test compares FixedWidth2 with Slices; adding Indexed as a second reference is outside the files of KS-N1 and is left as a suggestion."
+ ]
+}

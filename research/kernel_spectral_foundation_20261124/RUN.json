@@ -21,7 +21,8 @@
     {"id": "C2", "title": "SL-N6: research-gates feature with self dev-dependencies", "status": "complete", "evidence": ["crates/rodas5p-integrators/Cargo.toml", "crates/rodas5p-integrators/src/lib.rs", "research/kernel_spectral_foundation_20261124/results/SL_N6_FEATURE_GATE.json"]},
     {"id": "C3", "title": "SL-N5: rustfft dependency and the separable stage solver (sphere, box)", "status": "complete", "evidence": ["crates/vigilode/src/spatial/separable.rs", "crates/vigilode/src/unified/mod.rs", "crates/vigilode/tests/spatial_separable.rs"]},
     {"id": "C4", "title": "SL-N5 diagnostics: whole solves and stage solves", "status": "complete", "evidence": ["research/kernel_spectral_foundation_20261124/results/SL_N5_TIMING.jsonl"]},
-    {"id": "C5", "title": "Validation: suites, lint, format, run verifier", "status": "complete", "evidence": ["research/kernel_spectral_foundation_20261124/results/VALIDATION.json"]}
+    {"id": "C5", "title": "Validation: suites, lint, format, run verifier", "status": "complete", "evidence": ["research/kernel_spectral_foundation_20261124/results/VALIDATION.json"]},
+    {"id": "KS-N1", "title": "Owner-host cells of SL-N12: FixedWidth2 against Indexed on the (2,2) band, instructions:u and cycles:u per whole solve through the driver entry point, three rounds", "status": "complete", "environment": {"host": "owner host, AMD Ryzen 9 5900X (24 threads), governor performance, kernel 7.0.0-43-generic, core 3", "toolchain": "rustc 1.94.1 (pinned)", "perf": "7.0.14"}, "note": "protocol frozen and pushed before any cell (3dff0183, 07:05 KST); a one-kernel probe replaces whole-process perf stat of the alternating diagnostic test (registered with its reason); PLAN's 'nothing else running' was replaced before any data by a load gate (1-minute load <= 3.0, all 24 processes <= 2.97) because another project's single-threaded batch job ran unpinned, at times on CPU 15, the SMT sibling of core 3 (review F5); instructions repeat to about 1e-8, cycles spread 0.016 and 0.088 under the 0.10 cap", "evidence": ["research/kernel_spectral_foundation_20261124/owner_host/KS_N1_PROTOCOL.json", "research/kernel_spectral_foundation_20261124/results/KS_N1_OWNER_HOST.json", "research/kernel_spectral_foundation_20261124/results/KS_N1_OWNER_HOST.jsonl", "research/kernel_spectral_foundation_20261124/results/KS_N1_VALIDATION.json", "research/kernel_spectral_foundation_20261124/owner_host/KS_N1_REVIEW.json", "research/kernel_spectral_foundation_20261124/owner_host/logs/ks_n1/env.json"]}
   ],
   "claims": [
     {"id": "K1", "status": "T", "claim": "The longitude DFT block-diagonalizes the sphere heat operator into tridiagonal blocks depending on m only through cos(2 pi m/np).", "evidence": "FOUNDATION_CHECKS.json F3"},
@@ -38,7 +39,8 @@
     {"id": "K12", "status": "T", "claim": "The facade builds without research-gates; 24 modules and 19,750 lines leave the default build; integrator library release build 43.2 s vs 60.5 s.", "evidence": "results/SL_N6_FEATURE_GATE.json"},
     {"id": "K13", "status": "N", "claim": "The eight RODAS5P stages can run in parallel.", "evidence": "unchanged negative (V05 depth 8); THEORY.md section 6"},
     {"id": "K14", "status": "P", "claim": "The Gershgorin stiffness certificate selects the cheaper of DOPRI5 and the separable route.", "evidence": "PLAN.json KS-N5"},
-    {"id": "K15", "status": "O", "claim": "A field-of-values certificate replaces inertia for advection.", "evidence": "PLAN.json KS-N8"}
+    {"id": "K15", "status": "O", "claim": "A field-of-values certificate replaces inertia for advection.", "evidence": "PLAN.json KS-N8"},
+    {"id": "K16", "status": "T", "claim": "On the owner host (Ryzen 9 5900X, toolchain 1.94.1) whole solves of the band (2,2) through the driver entry point need 0.466 (n = 1e4) and 0.469 (n = 1e5) of the user-space instructions and 0.655 and 0.670 of the cycles on FixedWidth2 compared with Indexed, with identical attempts, work and state bits: the SL-N12 acceptance (<= 0.60, <= 0.80) holds (PASS under the protocol frozen at 3dff0183; two independent reviews confirm). The facade's callback guards add arm-independent work, so facade-level ratios lie slightly closer to 1 (review estimate 0.48-0.49 for instructions at n = 1e4).", "evidence": "results/KS_N1_OWNER_HOST.json; owner_host/KS_N1_PROTOCOL.json; owner_host/KS_N1_REVIEW.json"}
   ],
   "checks": {
     "foundation": "python3 -I research/kernel_spectral_foundation_20261124/scripts/verify_foundation.py -> all_ok",
@@ -47,12 +49,14 @@
   "decisions": [
     {"id": "SL-N12", "decision": "promote (owner)", "commit": "3f9762a1", "detail": "band (2,2) only; other narrow bands stay on Indexed per the V22 width scan"},
     {"id": "SL-N6", "decision": "cargo feature (owner)", "commit": "67b71bd2", "detail": "five modules reclassified to the default build (kill fallback)"},
-    {"id": "SL-N5", "decision": "new dependency rustfft 6.4.1 (owner)", "commit": "a0ec98ba", "detail": "route opt-in through VigilODE::solve_separable; promotion waits for KS-N3"}
+    {"id": "SL-N5", "decision": "new dependency rustfft 6.4.1 (owner)", "commit": "a0ec98ba", "detail": "route opt-in through VigilODE::solve_separable; promotion waits for KS-N3"},
+    {"id": "KS-N1", "decision": "PASS under the frozen protocol; the SL-N12 promotion of the (2,2) route stands on owner-host instruction and cycle cells", "commit": "af12afd8", "detail": "instructions 0.466/0.469, cycles 0.655/0.670 (n = 1e4/1e5); identity of the probe lines, 5 identity tests and 3 diagnostic runs; independent reviews confirm (minor: cycles spread close to the cap at n = 1e5, driver-entry rather than facade-level cell, pivoting unit test referenced to Slices)"}
   ],
   "failures": [
     {"id": "F1", "what": "Dense output on a JVP problem is refused by the facade's validation (JvpWithMassOrDenseOutput) before the separable refusal; the test was adjusted to accept the earlier typed refusal."},
     {"id": "F2", "what": "The shipped matrix-free route at 128x256 did not finish three repetitions within about 26 minutes on the host; no median recorded."},
     {"id": "F3", "what": "Unpreconditioned GMRES did not converge within 3000 Arnoldi vectors at 128x256, h = 0.1 (stage diagnostic); recorded as converged=false."},
-    {"id": "F4", "what": "Pinned toolchain 1.94.1 not installable; stable 1.97.0 used for every command."}
+    {"id": "F4", "what": "Pinned toolchain 1.94.1 not installable; stable 1.97.0 used for every command."},
+    {"id": "F5", "what": "KS-N1 parser: the first diagnostic JSON line follows libtest's 'test <name> ... ' prefix and was dropped by the first parser version; corrected after the series in af12afd8 (reported-only field; the frozen parser gives the same numbers and verdict, review F3)."}
   ]
 }

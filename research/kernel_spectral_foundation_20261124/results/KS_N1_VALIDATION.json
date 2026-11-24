@@ -1,0 +1,41 @@
+{
+ "task": "KS-N1",
+ "head": "af12afd82cc0cff87383ada4558c00b077b7c657",
+ "date_kst": "2026-11-25 07:17-07:24",
+ "host": "owner host, AMD Ryzen 9 5900X (24 threads), kernel 7.0.0-43-generic",
+ "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25), the pinned toolchain; CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/ws",
+ "checks": [
+  {
+   "command": "cargo test --locked -p vigilode --release --no-fail-fast",
+   "result": "exit 0; 578 passed, 0 failed, 3 ignored over 70 result lines (69 binaries + doc-tests); the same counts as the default-feature run of results/VALIDATION.json"
+  },
+  {
+   "command": "cargo clippy --locked -p vigilode --all-targets --release --no-deps -- -D warnings",
+   "result": "exit 0"
+  },
+  {
+   "command": "cargo clippy --locked -p rodas5p-integrators --lib --release --no-deps -- -D warnings",
+   "result": "exit 0"
+  },
+  {
+   "command": "cargo fmt -p vigilode -p rodas5p-integrators -- --check",
+   "result": "exit 0"
+  },
+  {
+   "command": "python3 -I research/kernel_spectral_foundation_20261124/scripts/verify_run.py",
+   "result": "exit 0 before the RUN.json append (OK: 10 stages, 15 claims, 8 plan tasks, 3 timed grids, foundation checks pass) and exit 0 after it (OK: 11 stages, 16 claims, 8 plan tasks, 3 timed grids, foundation checks pass)"
+  },
+  {
+   "command": "cargo test --locked -p rodas5p-integrators --release --test banded_kernel_entry_identity",
+   "result": "exit 0; 5 passed, 0 failed, 1 ignored (owner_host/logs/ks_n1/identity_tests.log)"
+  },
+  {
+   "command": "CARGO_TARGET_DIR=<probe target> cargo clippy --locked --offline --release --manifest-path research/kernel_spectral_foundation_20261124/owner_host/ks_n1_probe/Cargo.toml -- -D warnings",
+   "result": "exit 0"
+  },
+  {
+   "command": "rustfmt +1.94.1 --edition 2024 --check research/kernel_spectral_foundation_20261124/owner_host/ks_n1_probe/src/main.rs",
+   "result": "exit 1: one line-wrap difference (the usage assert_eq! in main); not applied, so that the probe source stays byte-identical to the sha256 frozen in owner_host/KS_N1_PROTOCOL.json from which the measured binary was built. The probe is not a workspace member and no CI job formats it."
+  }
+ ]
+}
