@@ -7,6 +7,7 @@
 
 pub mod assembly;
 pub mod banded_tight;
+pub mod banded_two_way;
 pub mod dense_lu;
 pub mod dense_lu_reuse;
 pub mod krylov;
@@ -15,5 +16,6 @@ pub mod speculative;
 pub mod timed;
 
 pub use banded_tight::BandedTightStageLu;
+pub use banded_two_way::{BANDED_TWO_WAY_CLIENT_ID, BandedTwoWayStageLu, TwoWayExecution};
 pub use dense_lu::{DenseLuMode, DenseLuStageClient};
 pub use timed::{PhaseTimes, PhaseTimesHandle, TimedStageClient};

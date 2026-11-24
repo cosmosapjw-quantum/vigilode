@@ -802,7 +802,7 @@ fn q10_singular_w_linear_solve_error_preserves_state_and_counts_entered_solve() 
         );
         let c = sess.counters();
         assert_eq!(sess.state(), &s);
-        assert_eq!(c.linear_solves as u64, want, "threads={threads} {c:?}");
+        assert_eq!(c.linear_solves, want, "threads={threads} {c:?}");
         qual(
             "q10_singular_w",
             json!({"threads": threads, "outcome": format!("{r:?}"),
