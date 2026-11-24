@@ -103,3 +103,10 @@ cargo test --locked -p rodas5p-integrators --release --test banded_kernel_entry_
 cargo test --locked -p vigilode --release --no-fail-fast
 cargo clippy --locked -p vigilode --all-targets --release --no-deps -- -D warnings
 ```
+
+## 7. 검증 결과 (2026-11-25)
+
+- facade 전체(기본 feature): 578 통과 / 0 실패 / 3 무시, 결과 줄 70개.
+- facade 전체(`--features structured`, 직전 run과 같은 조건): 583 통과 / 0 실패 / 3 무시. 직전 run의 577/0/1에 새 테스트 6개(통과)와 timing 진단 2개(무시)가 더해진 값이다.
+- 그 밖의 검증: clippy(-D warnings), fmt, verify_foundation.py, verify_run.py, 직전 run의 verify.py가 모두 통과했다. 상세는 `results/VALIDATION.json`에 있다.
+- 커밋: 3f9762a1(SL-N12), 67b71bd2(SL-N6), a0ec98ba(SL-N5, 이론, handoff). 원격 브랜치 SHA를 확인했다.
