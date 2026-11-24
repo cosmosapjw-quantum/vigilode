@@ -1,6 +1,6 @@
 # V26 조립 클라이언트 전체 패턴 검사: 병렬화, 벡터화, 다중 채색 검사
 
-이 보고서는 `parse_results.py`가 `logs/`의 원시 로그만 읽어 `RESULTS.json`과 함께 생성했다. 숫자를 손으로 적지 않았다. 동결 설계: `PREDECLARED.json` (sha256 `b8e75141d59f6627...`), 사전등록 부록 A7. 생성 시점 HEAD: `851061514443be687bb252f67c0d86ed7501d9b9`.
+이 보고서는 `parse_results.py`가 `logs/`의 원시 로그만 읽어 `RESULTS.json`과 함께 생성했다. 숫자를 손으로 적지 않았다. 동결 설계: `PREDECLARED.json` (sha256 `b8e75141d59f6627...`), 사전등록 부록 A7. 생성 시점 HEAD: `b71abd08ff5cafd6325f762cf4809668730603ad`.
 
 ## 1. 결론
 

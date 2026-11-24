@@ -967,9 +967,11 @@ def main():
     results["cost"]["summary"] = cost_summary(results)
     results["cost"]["wall_multiples"] = wall_table(results["cost"]["timing"])
     results["verdicts"] = verdicts(results)
+    # The report also records its per-cell picks (verdicts.cheapest) in the results.
+    report = render_report(results)
     text = json.dumps(results, indent=1, ensure_ascii=False, allow_nan=False, sort_keys=False)
     (HERE / "RESULTS.json").write_text(text + "\n", encoding="utf-8")
-    (HERE / "REPORT_KO.md").write_text(render_report(results), encoding="utf-8")
+    (HERE / "REPORT_KO.md").write_text(report, encoding="utf-8")
     print("RESULTS.json and REPORT_KO.md written")
 
 
