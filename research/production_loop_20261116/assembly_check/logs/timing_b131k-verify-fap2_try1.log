@@ -1,0 +1,42 @@
+# node V26 log
+# date: 2026-11-24T19:16:45+09:00
+# git head: fed4a25caf4e6bfb80b876b06dd69022f1d44c35
+# git status (tracked changes): 1
+# binary: /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_check_measure-bae05b015b51428f
+# binary sha256: 547232213bffe97e06bbed7935304de4e14f8d63ad31b8ceba39e6c9f885694b
+# rustc: rustc 1.94.1 (e408947bf 2026-03-25)
+# host: 7.0.0-43-generic, 24 logical cpus
+# loadavg at start: 2.75 4.27 5.52 5/6063 77745
+# command: V26_MODE=timing V26_CELL=bruss1d-n131072 V26_WHAT=verify V26_ARMS=None@seq,S8@seq,None@t2,FA_P@t2 V26_ROUNDS=1+3 flock /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/timing.lock taskset -c 6-11 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_check_measure-bae05b015b51428f --ignored --nocapture --exact v26_measure
+# running compilers at start: 0
+
+running 1 test
+V26_META_JSON {"action_env":null,"arm_env":null,"arms_env":"None@seq,S8@seq,None@t2,FA_P@t2","atol":1e-8,"cell":"bruss1d-n131072","cpus_allowed_list":"6-11","max_attempts":48,"mode":"timing","rounds_env":"1+3","rtol":1e-6,"what_env":"verify"}
+V26_LOAD_JSON {"cell":"bruss1d-n131072","loadavg":{"load_15m":5.52,"load_1m":2.75,"load_5m":4.27,"raw":"2.75 4.27 5.52 6/6064 77808"},"what":"verify","when":"before"}
+V26_RHS_COST_JSON {"batches":7,"calls_per_batch":26,"cell":"bruss1d-n131072","n":131072,"per_call_ns":[162690.46153846153,164402.92307692306,164405.61538461538,183772.15384615384,164755.5,164635.65384615384,164174.42307692306]}
+V26_TIMING_JSON {"arm":"None@seq","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(0)","position_in_round":0,"rhs_calls":6,"round":0,"verification_rhs_calls":0,"verified_columns":0,"wall_ns":4802834,"warm_up":true,"what":"first_linearization"}
+V26_TIMING_JSON {"arm":"S8@seq","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(8)","position_in_round":1,"rhs_calls":14,"round":0,"verification_rhs_calls":8,"verified_columns":8,"wall_ns":7288825,"warm_up":true,"what":"first_linearization"}
+V26_TIMING_JSON {"arm":"None@t2","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(0)","position_in_round":2,"rhs_calls":6,"round":0,"verification_rhs_calls":0,"verified_columns":0,"wall_ns":2877300,"warm_up":true,"what":"first_linearization"}
+V26_TIMING_JSON {"arm":"FA_P@t2","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(131072)","position_in_round":3,"rhs_calls":131079,"round":0,"verification_rhs_calls":131073,"verified_columns":131072,"wall_ns":22672746917,"warm_up":true,"what":"first_linearization"}
+V26_TIMING_JSON {"arm":"S8@seq","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(8)","position_in_round":0,"rhs_calls":14,"round":1,"verification_rhs_calls":8,"verified_columns":8,"wall_ns":5250157,"warm_up":false,"what":"first_linearization"}
+V26_TIMING_JSON {"arm":"None@t2","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(0)","position_in_round":1,"rhs_calls":6,"round":1,"verification_rhs_calls":0,"verified_columns":0,"wall_ns":3667389,"warm_up":false,"what":"first_linearization"}
+V26_TIMING_JSON {"arm":"FA_P@t2","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(131072)","position_in_round":2,"rhs_calls":131079,"round":1,"verification_rhs_calls":131073,"verified_columns":131072,"wall_ns":22759135755,"warm_up":false,"what":"first_linearization"}
+V26_TIMING_JSON {"arm":"None@seq","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(0)","position_in_round":3,"rhs_calls":6,"round":1,"verification_rhs_calls":0,"verified_columns":0,"wall_ns":2782550,"warm_up":false,"what":"first_linearization"}
+V26_TIMING_JSON {"arm":"None@t2","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(0)","position_in_round":0,"rhs_calls":6,"round":2,"verification_rhs_calls":0,"verified_columns":0,"wall_ns":3454157,"warm_up":false,"what":"first_linearization"}
+test v26_measure has been running for over 60 seconds
+V26_TIMING_JSON {"arm":"FA_P@t2","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(131072)","position_in_round":1,"rhs_calls":131079,"round":2,"verification_rhs_calls":131073,"verified_columns":131072,"wall_ns":22919993011,"warm_up":false,"what":"first_linearization"}
+V26_TIMING_JSON {"arm":"None@seq","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(0)","position_in_round":2,"rhs_calls":6,"round":2,"verification_rhs_calls":0,"verified_columns":0,"wall_ns":2788120,"warm_up":false,"what":"first_linearization"}
+V26_TIMING_JSON {"arm":"S8@seq","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(8)","position_in_round":3,"rhs_calls":14,"round":2,"verification_rhs_calls":8,"verified_columns":8,"wall_ns":5285392,"warm_up":false,"what":"first_linearization"}
+V26_TIMING_JSON {"arm":"FA_P@t2","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(131072)","position_in_round":0,"rhs_calls":131079,"round":3,"verification_rhs_calls":131073,"verified_columns":131072,"wall_ns":22919119353,"warm_up":false,"what":"first_linearization"}
+V26_TIMING_JSON {"arm":"None@seq","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(0)","position_in_round":1,"rhs_calls":6,"round":3,"verification_rhs_calls":0,"verified_columns":0,"wall_ns":2733046,"warm_up":false,"what":"first_linearization"}
+V26_TIMING_JSON {"arm":"S8@seq","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(8)","position_in_round":2,"rhs_calls":14,"round":3,"verification_rhs_calls":8,"verified_columns":8,"wall_ns":5246548,"warm_up":false,"what":"first_linearization"}
+V26_TIMING_JSON {"arm":"None@t2","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(0)","position_in_round":3,"rhs_calls":6,"round":3,"verification_rhs_calls":0,"verified_columns":0,"wall_ns":2735552,"warm_up":false,"what":"first_linearization"}
+V26_LOAD_JSON {"cell":"bruss1d-n131072","loadavg":{"load_15m":5.37,"load_1m":3.74,"load_5m":4.18,"raw":"3.74 4.18 5.37 3/6040 85264"},"what":"verify","when":"after"}
+test v26_measure ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 92.00s
+
+# exit code: 0
+# loadavg at end: 3.74 4.18 5.37 2/6038 85265
+# running compilers at end: 0
+# date at end: 2026-11-24T19:18:17+09:00
