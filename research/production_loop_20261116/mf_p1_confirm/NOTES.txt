@@ -132,3 +132,26 @@ STEP 3
   after 5 minutes. All four first-attempt logs and files are kept in logs/reference/first_attempt_blas_threads_default/.
   The four references are recomputed with OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 (one thread each); those files are
   the references of the node.
+- References (commit ad643f6e, single-threaded BLAS): u_ref ac3d 2.98e-13, robertson_rd1d 9.18e-11 (DOP853 1e-11 against
+  1e-13; stiffness-limited, 3.4e6 right-hand sides), schnakenberg2d 3.35e-9 (Turing pattern: the 1e-11 and 1e-13 runs
+  differ by 3.3e-9), porous2d 5.95e-13. Probe (exploratory): the multi-threaded first attempt of schnakenberg2d differs
+  from the final reference by 4.7e-9 (only the order of BLAS sums differs), below 10 u_ref = 3.3e-8.
+
+== 2026-11-24 18:40 KST: steps 4 and 5 ==
+STEP 4 (commit A = 8efb5d23): logs/record_a, 160 runs of S and P1 (route under perf, router, router_ls, audit with the
+  per-solve log), binary 9582b047; RECORDING_A.json: in every cell the four entries of an arm agree in every result field.
+  The parser was committed before (bd0f87a2).
+STEP 5: P2 (40 runs, logs/p2); timing try 1 of the 20 cells (18:26-18:36, one invocation per cell, longest 82 s under the
+  lock, waited 1 minute for load 3.0 and no compiler); RESULTS.json by parse_results.py.
+  First parse: D0 PASS (no edit, one binary), V PASS (9287 completed solves of P1 recounted from the per-solve logs,
+  0 violations, largest residual/threshold 0.99991), A PASS (largest error ratio 1.00002), S PASS (robertson_rd1d
+  geometric mean 1.034, largest cell 1.059; the other families 1.000), E PASS (0.198, 0.791, 0.516, 0.470; largest cell
+  0.905), W PASS on try 1 (no authoritative cell slower; nine cells diagnostic_only by load or spread),
+  B FAIL: robertson_rd1d rtol 1e-3 (S 11, P1 12), 1e-4 (9, 10), 1e-7 (0, 1) budget-exhausting stage solves.
+  Frozen verdict: KEEP (V holds, B fails). Step 6 (the switch) is not carried out; no default changes.
+- Robertson per-solve logs: S completes 20, 26, 23, 17, 3 solves with exactly 200 columns (the whole budget) per
+  tolerance; P1 none (its largest solve 189 to 199 columns) and no failed confirmation. The trajectories of S and P1
+  differ (attempts 35/37, 34/36, 40/40, 43/43, 36/38), so the cells do not compare identical systems: the exploratory
+  replay (PROTOCOL.json amendment P-1) answers which kernel loses which system.
+- Timing try 2 for the nine cells that missed the rule started 18:36 (load 12.2 at that moment; waits up to 19 minutes).
+- Loop checker (18:38): PASS.
