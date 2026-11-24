@@ -1,0 +1,30 @@
+# V25_REFERENCE_BEGIN {"family": "schnakenberg2d", "date": "2026-11-24T18:03:20+0900", "git_head": "43d0880a902b816069e46cfd3a18a7f6fa3318a9", "command": "taskset -c 0-5,12-17 python3 -I reference/make_reference.py --family schnakenberg2d --out reference/schnakenberg2d.json", "loadavg": "3.72 4.00 3.85 6/6100 3781072"}
+family schnakenberg2d n 2048 span [0.0, 1.0] (PROTOCOL.json families (final spans after the sizing pilot))
+reference {'method': 'DOP853', 'rtol': 1e-13, 'atol': 1e-13, 'rhs_evaluations': 45233, 'nfev': 45233, 'njev': 0, 'nlu': 0, 'wall_seconds': 14.849412202835083}
+cross-check 1 {'method': 'DOP853', 'rtol': 1e-11, 'atol': 1e-11, 'rhs_evaluations': 21893, 'nfev': 21893, 'njev': 0, 'nlu': 0, 'wall_seconds': 5.472533941268921, 'difference': {'max_abs': 1.8352910302610326e-09, 'max_scaled_1_plus_abs': 7.615214955306935e-10, 'rms': 8.947964050486762e-11}}
+cross-check 2 {'method': 'Radau', 'rtol': 1e-11, 'atol': 1e-11, 'rhs_evaluations': 22269, 'nfev': 21645, 'njev': 52, 'nlu': 192, 'wall_seconds': 14.703958749771118, 'difference': {'max_abs': 3.900215261865014e-09, 'max_scaled_1_plus_abs': 1.6183252193439016e-09, 'rms': 1.565690054542614e-10}}
+wrote reference/schnakenberg2d.json: uncertainty 1.618e-09
+	Command being timed: "taskset -c 0-5,12-17 python3 -I reference/make_reference.py --family schnakenberg2d --out reference/schnakenberg2d.json"
+	User time (seconds): 54.69
+	System time (seconds): 74.92
+	Percent of CPU this job got: 365%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:35.41
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 84784
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 121
+	Minor (reclaiming a frame) page faults: 38927
+	Voluntary context switches: 913
+	Involuntary context switches: 55387071
+	Swaps: 0
+	File system inputs: 23384
+	File system outputs: 208
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+# V25_REFERENCE_END {"exit_code": 0, "date": "2026-11-24T18:03:56+0900"}

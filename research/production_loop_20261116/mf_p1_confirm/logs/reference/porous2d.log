@@ -1,0 +1,34 @@
+# V25_REFERENCE_BEGIN {"family": "porous2d", "date": "2026-11-24T18:08:27+0900", "git_head": "43d0880a902b816069e46cfd3a18a7f6fa3318a9", "command": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 taskset -c 0-5,12-17 python3 -I reference/make_reference.py --family porous2d --out reference/porous2d.json", "loadavg": "16.98 16.04 9.50 6/6103 3808014"}
+family porous2d n 2304 span [0.0, 0.1] (PROTOCOL.json families (final spans after the sizing pilot))
+reference {'method': 'DOP853', 'rtol': 1e-13, 'atol': 1e-13, 'rhs_evaluations': 3053, 'nfev': 3053, 'njev': 0, 'nlu': 0, 'wall_seconds': 0.17065668106079102}
+/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v25/research/production_loop_20261116/mf_p1_confirm/reference/families.py:208: RuntimeWarning: overflow encountered in multiply
+  return _laplace_2d(u * u, scale).ravel()
+/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v25/research/production_loop_20261116/mf_p1_confirm/reference/families.py:27: RuntimeWarning: invalid value encountered in subtract
+  return scale * (xm + xp + ym + yp - 4.0 * w)
+cross-check 1 {'method': 'DOP853', 'rtol': 1e-11, 'atol': 1e-11, 'rhs_evaluations': 2885, 'nfev': 2885, 'njev': 0, 'nlu': 0, 'wall_seconds': 0.16176676750183105, 'difference': {'max_abs': 7.195910534107952e-13, 'max_scaled_1_plus_abs': 5.950958987511889e-13, 'rms': 9.487716585297409e-14}}
+cross-check 2 {'method': 'Radau', 'rtol': 1e-11, 'atol': 1e-11, 'rhs_evaluations': 4792, 'nfev': 4762, 'njev': 3, 'nlu': 60, 'wall_seconds': 1.4054205417633057, 'difference': {'max_abs': 2.183808689437683e-13, 'max_scaled_1_plus_abs': 1.8059918735533262e-13, 'rms': 3.904729116400519e-14}}
+wrote reference/porous2d.json: uncertainty 5.951e-13
+	Command being timed: "taskset -c 0-5,12-17 python3 -I reference/make_reference.py --family porous2d --out reference/porous2d.json"
+	User time (seconds): 1.89
+	System time (seconds): 0.07
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.97
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 80444
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 24617
+	Voluntary context switches: 37
+	Involuntary context switches: 11
+	Swaps: 0
+	File system inputs: 288
+	File system outputs: 224
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+# V25_REFERENCE_END {"exit_code": 0, "date": "2026-11-24T18:08:29+0900"}
