@@ -1,0 +1,192 @@
+V27 PHASE 2 NOTES (node V27_ROUTER_HYPERPARAMETER_FREE, research loop L1, wave 3 group 8)
+=====================================================================================
+
+Written before any run of the deciding set (step 0 of the phase-2 order of work).
+Frozen inputs, read and checked before this file:
+  PREDECLARED.json            sha256 325c9d67bccae6e0fc403877e5a80f64c62e62aa7db6dbd63c150716624862ff (commit 1ffbda20)
+  AMENDMENT_A8_2.json         on origin/research/production-loop-20261116 (7012e9d5): fixture spans; N_prod, N_cont not run
+  PREREGISTRATION.md          addendum A8, errata A8.1 and A8.3 (research/production-loop-20261116 at ad329b09)
+  DESIGN_RECOMMENDED.md       sha256 e7f811e5... (sections 4 and 8), IMPLEMENTATION_NOTES.md, PHASE1_BUILD.json
+Phase-1 head of this branch: c998963d. Nothing of the router, the session pass-throughs or any test
+assertion changes in phase 2; a defect found is reported, not fixed.
+
+---------------------------------------------------------------------------------------------
+1. BINARIES AND ARMS
+---------------------------------------------------------------------------------------------
+N  runner/ built with --features pilots against this worktree, CARGO_TARGET_DIR
+   /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27 (FBP route).
+T  the copy runner_t (same src/main.rs) against the base checkout 1ffbda20 (read-only),
+   CARGO_TARGET_DIR .../w3-v27base (today's Auto route).
+D  Dopri5::solve, R  Rodas5p::solve, same options; run from the N binary for the evaluation and
+   once more from the T binary for the sanity rule of PREDECLARED arms.sanity: D and R of the two
+   builds must agree bit for bit (final time and state bits, status, counters, attempts, closure
+   entries by kind); a disagreement is reported and stops the evaluation.
+Runner changes allowed in phase 2 and made BEFORE the first deciding run (step 0b, own commit):
+  --repeat k : run the case k times in one process, a fresh problem and fresh entry counters each
+               time, one JSON line per run with fields "repeat" (1..k) and "pid";
+  E5 fields  : the base point of every non-stage right-hand-side entry (see section 6, E5) and the
+               accepted points of the RODAS5P leg (inner_solution t, y) as bit strings/digests.
+  Nothing that a run computes changes; the toy plumbing check is rerun after the change and both
+  binaries are rebuilt with runner/build.sh (--locked).
+
+---------------------------------------------------------------------------------------------
+2. CASE LIST  (case = problem x tolerance pair x options; every case runs arms T, N, D, R)
+---------------------------------------------------------------------------------------------
+Tolerance pairs: A = (rtol 1e-6, atol 1e-9), L = (1e-3, 1e-6), S = (1e-8, 1e-11).
+Options: Options::default() (h0 1e-3, max_steps 100000), regime Unknown, unless stated.
+Group stiff_or_late_stiff, 25 cases
+  at A : P_scalar_fd, lin_2000, lin_3200, lin_3400, P_heat_fd, robertson_40, robertson_1e5, hires,
+         orego, vdp_1000, flame_1e-2, flame_1e-3, flame_1e-4, heat_64_fd, kt_vanishing
+  at L and S : P_scalar_fd, P_heat_fd, lin_3200, robertson_40, vdp_1000
+Group non_stiff, 36 cases
+  at A, L and S : osc_1, osc_10, osc_1000, lotka_volterra, lorenz, arenstorf, brusselator_2, vdp_1,
+                  damped_osc, nonnormal, lorenz96_40, pleiades
+Group callback_budget_declared, 15 cases, at A only
+  F2, N2, P_fatal, P_blowup (span [0,2]), P_mass (span [0,1]),
+  start rule: P_heat_dense, P_scalar_dense, P_heat_jvp, P_heat_banded (spans of AMENDMENT_A8_2),
+  declared:   robertson_40 --regime stiff, robertson_40 --regime nonstiff,
+              osc_10 --regime stiff, osc_10 --regime nonstiff,
+  budget:     robertson_40 --max-steps 500, robertson_40 --max-steps 50
+Reading fixed here: the "also" tolerance pairs of PREDECLARED apply to the listed problems with the
+default options; the option variants of the third group run at A only (as in DESIGN_RECOMMENDED 8
+and the model run v3_budget). D and R do not read the regime option (an option of VigilODE::solve);
+they run on the regime cases anyway and are reported. Total: 76 cases x 4 arms.
+Case id: <problem>|<A|L|S>|<options tag: default | regime=stiff | regime=nonstiff | max_steps=500 | max_steps=50>
+
+---------------------------------------------------------------------------------------------
+3. RUNS (step 2)
+---------------------------------------------------------------------------------------------
+Driver run_phase2.py (taskset -c 0-5,12-17, one process at a time). Per case, arms in the order
+T, N, D, R; per arm: process 1 with --repeat 2 (runs 1 and 2), then a fresh process 2 with
+--repeat 1 (run 3); entry log on. D and R from the N binary; then D and R once more from the T
+binary (sanity, --repeat 1). Raw stdout, stderr and exit code of every process are kept under
+logs/phase2/raw/ (one file per process) and indexed in logs/phase2/RUNS_INDEX.jsonl with the UTC
+start time; the UTC time of the first deciding run is the first index row. A non-zero exit or a
+missing line is a result, kept and reported. Dopri5::solve at max_steps is a result.
+
+---------------------------------------------------------------------------------------------
+4. REFERENCES (step 1, before the deciding runs) -> logs/phase2/references.json
+---------------------------------------------------------------------------------------------
+Closed form (references.py, mpmath at 50 digits, rounded to the nearest double; formula recorded):
+  lin_L            y(t) = exp(-L t)                                   (L = 2000, 3200, 3400), t1 = 1
+  osc_1/10/1000    y = (cos t, -sin t); also the declared osc_10 cases
+  damped_osc       y1 = e^{-a t}(cos(w t) + (a/w) sin(w t)), y2 = y1', a = 0.1, w = sqrt(1e4 - a^2)
+  nonnormal        y1 = 1001 e^{-t} - 1000 e^{-2t}, y2 = e^{-2t}
+  F2               y = e^{-t};   N2: y = (1, e^{-1000 t})
+  P_scalar_fd and P_scalar_dense, y' = -k (y - cos t), y(0) = 1, k = 1e6:
+                   y(t) = (k^2 cos t + k sin t)/(1 + k^2) + e^{-k t}/(1 + k^2)
+                   (particular solution A cos t + B sin t with B + kA = k, kB - A = 0, so
+                   A = k^2/(1+k^2), B = k/(1+k^2); homogeneous C e^{-kt}, C = 1 - A)
+  heat (P_heat_fd n 8, heat_64_fd n 64, P_heat_dense, P_heat_jvp, P_heat_banded n 8): the
+                   semi-discrete system y' = K y, K = tridiag(1, -2, 1)/dx^2, dx = 1/(n+1), by its
+                   modes: v_k,i = sin(k pi i/(n+1)), lambda_k = -4 (n+1)^2 sin^2(k pi/(2(n+1))),
+                   y(t) = sum_k c_k e^{lambda_k t} v_k, c_k = (2/(n+1)) sum_i y0_i v_k,i
+Otherwise Rodas5p::solve at rtol 1e-12, atol 1e-14 (runner --arm R --rtol 1e-12 --atol 1e-14
+--no-log, N binary, default h0 and max_steps; if that run does not succeed: once more with
+--max-steps 10000000, recorded): robertson_40 (and its option variants), robertson_1e5, hires,
+orego, vdp_1000, vdp_1, flame_1e-2/1e-3/1e-4, kt_vanishing, lotka_volterra, lorenz, arenstorf,
+brusselator_2, lorenz96_40, pleiades, P_mass.
+No reference: P_fatal (fatal for t > 0.3, no arm reaches t1) and P_blowup (y' = y^2, y(0) = 1
+blows up at t = 1 < t1 = 2).
+Error of a run: only when it succeeded with final time = t1; weighted RMS
+  err = sqrt( (1/n) sum_i ((y_i - yref_i) / (atol + rtol |yref_i|))^2 ), the run's rtol and atol.
+
+---------------------------------------------------------------------------------------------
+5. MEASURES PER RUN (runner fields; parse_results.py reads only raw output and references.json)
+---------------------------------------------------------------------------------------------
+charged callbacks cb = run.counters.rhs_calls + run.counters.jvp_calls + run.counters.ft_calls
+                       + charged Jacobian callbacks (the counter field is identified in step 0b
+                       from the counters struct and stated in the addendum below, before any run)
+by kind: the four terms; closure entries: entries.rhs, jacobian, jvp, time_derivative, fatal;
+         rhs_by_kind: stage, fd_column, fd_time_derivative, at_t0, at_t0_not_y0, first_is_t0_y0
+operations op = int(run.operations3) / 3  (the one formula: 52n per DOPRI5 attempt, 128n per
+         RODAS5P attempt, 2n^3/3 per factorization, 2n^2 per solve pair and per FD build)
+attempts run.attempts, run.dopri5_attempts, run.rodas5p_attempts
+pilots (N) run.pilots[]: count, verdicts, h, window_callbacks, window_operations,
+         pilot_attempts, pilot_callbacks, pilot_operations
+handover (N) the route_history entry whose reason starts with "handover": time; DOPRI5 attempts
+         before it = attempts of the Tier1Explicit leg
+status run.status, run.stop, run.success; error vs reference (section 4)
+bits run.final_time_bits, run.final_state_bits, run.route_digest of the three runs
+A run "succeeds" iff run.success is true (and the process exited 0 with one line).
+
+---------------------------------------------------------------------------------------------
+6. DISCRIMINATORS (u in {cb, op}; run 1 of each arm unless stated; thresholds as frozen)
+---------------------------------------------------------------------------------------------
+E1  C1 = cases where T and N succeed, problem != kt_vanishing.
+    G_u = exp(mean over C1 of ln(u(N)/u(T))); need G_cb < 1 and G_op < 1.
+    For X in {N, T}: M_u(X) = max over cases of C1 in which D or R succeeds of
+    u(X) / min{u(Y): Y in {D, R}, Y succeeds}; need M_u(N) < M_u(T) for both units.
+E2  fails iff some case has T succeeding and N not (same options, hence same max_steps).
+E3  (a) every N run on the break-even route (run.analysis_basis.kind == "break-even") with no
+        handover (no leg after the Tier1Explicit leg): final_time_bits and final_state_bits equal
+        D's; the Tier1Explicit leg's counters equal D's counters field by field and its attempts
+        equal D's attempts; N's charged rhs+ft calls = D's + sum pilot_callbacks; N.attempts =
+        D.attempts + sum pilot_attempts; 3*op(N) = 3*op(D) + sum 3*pilot_operations (exact);
+        and u(N) <= 2 u(D) for both units.
+    (b) every N run decided by a declared fact (analysis basis not break-even: declared regime,
+        supplied derivative, mass matrix, ...) equals T bit for bit: final time and state bits,
+        success, status, stop, all counters, attempts, accepted and rejected steps, closure
+        entries by kind. (route_history text and route_digest are not compared: the digest of N
+        hashes "pilots": [] where T has null, and D5 renamed route names; both are reported.)
+E4  every N run: A_all = sum of legs' attempts + attempts of pilots outside a leg (lost, fatal,
+    refused; the accepted pilot is inside the RODAS5P leg) <= max_steps; A_all == run.attempts is
+    checked and reported; a run that stops on the budget reports status MaxStepsReached with
+    max_steps equal to the options' max_steps.
+E5  every N run: (i) uncharged entries = 0: entries.rhs - counters.rhs_calls, entries.jvp -
+    counters.jvp_calls, entries.time_derivative - counters.ft_calls, entries.jacobian - charged
+    Jacobian callbacks, all 0.
+    N runs where DOPRI5 runs first (break-even route; declared Nonstiff):
+    (ii) first_is_t0_y0 true, and at_t0 and at_t0_not_y0 equal those of D (only DOPRI5's stage
+         at t0);
+    (iii) every right-hand-side entry that is not a stage (fd_column + fd_time_derivative) has its
+         base point (column: the unshifted entry at the same time; time derivative: the entry
+         with the same state next to it, i.e. the attempt's start point) equal, bit for bit, to
+         either the start point of a pilot (time = pilot record t, state = the state of a DOPRI5
+         stage entry at that time made before the pilot) or an accepted point of the RODAS5P leg
+         (its start, or a point (t, y) of its recorded solution).
+    Classification of a closure entry: as the runner's classify(): column = another entry at the
+    same time whose state differs in exactly one component by the facade's FD increment
+    sqrt(eps) max(|y_j|, 1); time derivative = same state as an adjacent entry at a time within
+    4 sqrt(eps) max(|t|, 1); every other entry is a stage.
+    N runs that start RODAS5P by a declared fact (D2, mass matrix, declared Stiff): (ii) and (iii)
+    have no DOPRI5 stage to refer to and are reported as not applicable; E3(b) covers them.
+E6  for every case and arm: the three runs have equal route_digest (N, T), counters, attempts,
+    status, final time and state bits, and closure entries.
+E7  every case except kt_vanishing where N succeeds and at least one of D, R succeeds (and has an
+    error): err(N) <= 3 max{err(Y): Y in {D, R} succeeding}.
+E8  F2: N succeeds. P_fatal: N's stop carries CallbackFailed with callback Rhs and message
+    "sensor offline". N2: N ends with CallbackFailed at its first pilot: pilots has exactly one
+    record, verdict fatal, and the run fails with a CallbackFailed stop.
+E9  P_heat_fd|A|default: N's charged rhs_calls <= 5890 and a recorded handover; P_scalar_fd|A|
+    default: <= 181818 and a recorded handover. (Also reported for L and S without a rule.)
+E10 every N run with pilots: count <= 1 + floor(log2(A_D / b)) with A_D = DOPRI5 attempts
+    (Tier1Explicit leg attempts) and b = analysis_basis.b; and sum over pilots of
+    (pilot_callbacks, pilot_operations) <= DOPRI5 spend (DOPRI5 leg charged rhs calls; 52 n A_D)
+    in each unit.
+Frozen decision (PREDECLARED): the Auto route becomes N iff E1 to E10 all pass; otherwise today's
+route stays and the implementation stays on its branch.
+
+---------------------------------------------------------------------------------------------
+7. READINGS FIXED BEFORE ANY RUN (reported as rulings / open issues, not as changed criteria)
+---------------------------------------------------------------------------------------------
+R1 E3(a) and E8 on N2: D1 (and E8) make N2 end with CallbackFailed at its first pilot, while
+   Dopri5::solve completes N2 (model and phase-1 test d1). N2 is a run without a handover, so
+   E3(a) as written requires D's final-state bits, which D1 excludes. E3 is evaluated as written
+   over every run without a handover; runs ended by a fatal pilot are listed separately so that the
+   cause of a failure is visible. The frozen decision is applied to E3 as written; the conflict is
+   reported to the owner as an open issue. The same holds for a run that stops on the shared budget
+   after lost pilots (U2), should one occur.
+R2 E5 (ii)/(iii) refer to DOPRI5's first stage; for runs that start RODAS5P by a declared rule they
+   are reported as not applicable (section 6); (i) applies to every run.
+R3 E1 cases where neither D nor R succeeds enter the geometric means but not the maxima.
+R4 E7 needs an error of N; a case without a reference or where N fails is not counted.
+R5 The also-tolerance reading of section 2.
+
+---------------------------------------------------------------------------------------------
+8. OUTPUTS
+---------------------------------------------------------------------------------------------
+references.py -> logs/phase2/references.json; run_phase2.py -> logs/phase2/raw/*, RUNS_INDEX.jsonl;
+parse_results.py -> RESULTS.json (strict JSON) and REPORT_KO.md (Korean; rendered by the script);
+step 4 logs under logs/phase2/ (contracts tests and the example). The run of step 5 regenerates
+RESULTS.json and REPORT_KO.md and compares bytes.
