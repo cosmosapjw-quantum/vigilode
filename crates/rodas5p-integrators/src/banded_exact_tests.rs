@@ -150,3 +150,68 @@ fn cache_storage_is_only_allocated_for_opt_in_kernel() {
     assert_eq!(a.work.stored_slots, b.work.stored_slots);
     assert_eq!(c.work.stored_slots - a.work.stored_slots, n * 5);
 }
+
+/// A (2, 2) band whose diagonal does not dominate, so partial pivoting picks rows `k + 1`
+/// and `k + 2` throughout; `singular` empties column `singular` of `W = inv I - J`.
+fn weak_fixture(n: usize, seed: u64, inv: f64, singular: Option<usize>) -> Vec<f64> {
+    let mut j = vec![0.0; n * 5];
+    let mut z = seed.wrapping_mul(0x9E37_79B9_7F4A_7C15) ^ 0x2545_F491_4F6C_DD1D;
+    for i in 0..n {
+        for col in i.saturating_sub(2)..=(i + 2).min(n - 1) {
+            z ^= z << 13;
+            z ^= z >> 7;
+            z ^= z << 17;
+            let v = (z >> 11) as f64 / (1u64 << 53) as f64 * 2.0 - 1.0;
+            j[i * 5 + (col + 2 - i)] = if col == i { inv + 0.05 * v } else { v };
+        }
+    }
+    if let Some(c) = singular {
+        for i in c.saturating_sub(2)..=(c + 2).min(n - 1) {
+            j[i * 5 + (c + 2 - i)] = if i == c { inv } else { 0.0 };
+        }
+    }
+    j
+}
+
+/// SL-N12: the fixed-offset factorization and substitutions of `FixedWidth2` return the
+/// pivots, factors, solutions, errors and counted operations of the Slices kernel under
+/// pivoting in every interior column and under singular columns at the start, in the
+/// interior and in the general tail.
+#[test]
+fn fixed_offsets_match_slices_under_pivoting_and_singular_columns() {
+    let inv = 0.5;
+    let mut swaps = [0usize; 3];
+    for n in [5, 6, 7, 8, 9, 13, 64] {
+        for seed in 0..24 {
+            let singulars = [None, Some(0), Some(n / 2), Some(n - 3), Some(n - 1)];
+            for singular in singulars {
+                let j = weak_fixture(n, seed, inv, singular);
+                let rhs: Vec<f64> = (0..n).map(|i| ((i * 5 + 1) as f64).cos()).collect();
+                let mut old = band_state(n, 2, 2, BandedKernel::Slices);
+                let mut new = band_state(n, 2, 2, BandedKernel::FixedWidth2);
+                old.jacobian.copy_from_slice(&j);
+                new.jacobian.copy_from_slice(&j);
+                let a = old.factor(n, inv);
+                let b = new.factor(n, inv);
+                assert_eq!(format!("{a:?}"), format!("{b:?}"), "n={n} seed={seed}");
+                assert_eq!(old.work, new.work, "n={n} seed={seed} {singular:?}");
+                if a.is_err() {
+                    assert!(singular.is_some(), "n={n} seed={seed}: unexpected singular");
+                    continue;
+                }
+                assert_eq!(old.pivots, new.pivots);
+                assert_eq!(bits(&old.factors), bits(&new.factors));
+                for (k, p) in old.pivots.iter().enumerate() {
+                    swaps[p - k] += 1;
+                }
+                let (mut x, mut y) = (rhs.clone(), rhs.clone());
+                old.solve(n, &mut x);
+                new.solve(n, &mut y);
+                assert_eq!(bits(&x), bits(&y), "n={n} seed={seed}");
+                assert_eq!(old.work, new.work);
+            }
+        }
+    }
+    // Every pivot choice of the fixed-offset branch is exercised.
+    assert!(swaps.iter().all(|&count| count > 100), "{swaps:?}");
+}

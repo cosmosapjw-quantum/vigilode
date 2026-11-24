@@ -135,7 +135,7 @@ pub mod stage_clients;
 // Loop L1 node V22 (owner decision OD-L1-9): banded entry points that take the kernel.
 pub use rodas5p_fast::integrate_rodas5p_fast_banded_observed_with_atol_and_kernel;
 pub use rodas5p_fast_dense::{
-    RODAS5P_FAST_BANDED_DENSE_SLICES_DRIVER_ID,
+    RODAS5P_FAST_BANDED_DENSE_FIXED2_DRIVER_ID, RODAS5P_FAST_BANDED_DENSE_SLICES_DRIVER_ID,
     integrate_rodas5p_fast_banded_dense_observed_with_atol_and_kernel,
     integrate_rodas5p_fast_banded_dense_observed_with_kernel,
 };

@@ -31,6 +31,7 @@
 //! sequential path itself is untouched; this driver has its own identifier
 //! and records.
 
+use std::cell::Cell;
 use std::sync::{Arc, Mutex, PoisonError};
 
 #[path = "exact_band_cache.rs"]
@@ -192,8 +193,11 @@ pub enum BandedKernel {
     Indexed,
     /// The row update and the back substitution over row slices.
     Slices,
-    /// Opt-in Slices specialization for lower=upper=2. Arithmetic order
-    /// and pivot ties are unchanged; all other widths fall back to Slices.
+    /// Slices specialization for lower=upper=2. Arithmetic order, pivot
+    /// ties and counted operations are unchanged; all other widths fall back
+    /// to Slices. From six unknowns on, factorization and substitutions run on
+    /// fixed row offsets (the V21 tight-kernel arithmetic); since SL-N12 the
+    /// facade's (2, 2) banded routes run this kernel.
     FixedWidth2,
     /// FixedWidth2 plus exact finite shifted-matrix LU reuse. This still
     /// evaluates J and f at every new state, and never freezes J approximately.
@@ -557,7 +561,145 @@ impl BandState {
         }
     }
 
+    /// [`BandedKernel::FixedWidth2`] factorization. From six unknowns on, the interior
+    /// columns run on fixed row offsets (the arithmetic of the V21 tight kernel,
+    /// `stage_clients::BandedTightStageLu`); the last four columns and smaller systems run
+    /// the general loop. Both perform the operations of the Indexed kernel in the same
+    /// order and charge the same counted operations.
     fn factor_fixed2(&mut self, n: usize, inv: f64) -> CoreResult<()> {
+        if n < 6 {
+            return self.factor_fixed2_general(n, inv);
+        }
+        let jw = 5usize;
+        {
+            let (rows, _) = self.factors.as_chunks_mut::<7>();
+            let (src, _) = self.jacobian.as_chunks::<5>();
+            for (d, s) in rows.iter_mut().zip(src) {
+                d[0] = -s[0];
+                d[1] = -s[1];
+                d[2] = -s[2] + inv;
+                d[3] = -s[3];
+                d[4] = -s[4];
+                d[5] = 0.0;
+                d[6] = 0.0;
+            }
+        }
+        self.work.factor_operations += (n * jw) as u64;
+        let mut updates = 0u64;
+        {
+            let (rows, _) = self.factors.as_chunks_mut::<7>();
+            for k in 0..n - 4 {
+                let [r0, r1, r2, ..] = &mut rows[k..] else {
+                    unreachable!("k + 2 < n")
+                };
+                // Column k sits at offset 2 of row k, 1 of row k + 1 and 0 of row k + 2.
+                let mut p = 0usize;
+                let mut max = r0[2].abs();
+                let a1 = r1[1].abs();
+                if a1 > max {
+                    max = a1;
+                    p = 1;
+                }
+                let a2 = r2[0].abs();
+                if a2 > max {
+                    max = a2;
+                    p = 2;
+                }
+                if !(max > 0.0 && max.is_finite()) {
+                    self.work.factor_operations += 9 * updates;
+                    return Err(CoreError::LinearSolve(format!(
+                        "RODAS5P fast banded LU: singular or non-finite pivot at column {k}"
+                    )));
+                }
+                self.pivots[k] = k + p;
+                if p == 1 {
+                    for t in 0..5 {
+                        std::mem::swap(&mut r0[2 + t], &mut r1[1 + t]);
+                    }
+                } else if p == 2 {
+                    for t in 0..5 {
+                        std::mem::swap(&mut r0[2 + t], &mut r2[t]);
+                    }
+                }
+                let pivot = r0[2];
+                // An interior row update charges 1 + 2 (last_col - k) = 9 operations.
+                if r1[1] != 0.0 {
+                    let m = r1[1] / pivot;
+                    r1[1] = m;
+                    r1[2] -= m * r0[3];
+                    r1[3] -= m * r0[4];
+                    r1[4] -= m * r0[5];
+                    r1[5] -= m * r0[6];
+                    updates += 1;
+                }
+                if r2[0] != 0.0 {
+                    let m = r2[0] / pivot;
+                    r2[0] = m;
+                    r2[1] -= m * r0[3];
+                    r2[2] -= m * r0[4];
+                    r2[3] -= m * r0[5];
+                    r2[4] -= m * r0[6];
+                    updates += 1;
+                }
+            }
+        }
+        self.work.factor_operations += 9 * updates;
+        for k in n - 4..n {
+            self.factor_fixed2_column(n, k)?;
+        }
+        Ok(())
+    }
+
+    /// The general elimination of column `k` for `lower = upper = 2` (any `n`).
+    fn factor_fixed2_column(&mut self, n: usize, k: usize) -> CoreResult<()> {
+        let (l, u, width) = (2usize, 2usize, 7usize);
+        let at = |i: usize, j: usize| i * 7 + (j + 2 - i);
+        let last_row = (k + l).min(n - 1);
+        let mut p = k;
+        let mut max = self.factors[at(k, k)].abs();
+        for i in k + 1..=last_row {
+            let v = self.factors[at(i, k)].abs();
+            if v > max {
+                max = v;
+                p = i;
+            }
+        }
+        if !(max > 0.0 && max.is_finite()) {
+            return Err(CoreError::LinearSolve(format!(
+                "RODAS5P fast banded LU: singular or non-finite pivot at column {k}"
+            )));
+        }
+        self.pivots[k] = p;
+        let last_col = (k + u + l).min(n - 1);
+        if p != k {
+            for j in k..=last_col {
+                let (a, b) = (at(k, j), at(p, j));
+                self.factors.swap(a, b);
+            }
+        }
+        let span = last_col - k + 1;
+        let (top, bottom) = self.factors.split_at_mut((k + 1) * width);
+        let pivot_row = &top[k * width + l..k * width + l + span];
+        let pivot = pivot_row[0];
+        for i in k + 1..=last_row {
+            let start = (i - k - 1) * width + (k + l - i);
+            let row = &mut bottom[start..start + span];
+            if row[0] == 0.0 {
+                continue;
+            }
+            let m = row[0] / pivot;
+            row[0] = m;
+            for (x, r) in row[1..].iter_mut().zip(&pivot_row[1..]) {
+                *x -= m * r;
+            }
+            self.work.factor_operations += 1 + 2 * (last_col - k) as u64;
+        }
+        Ok(())
+    }
+
+    /// The general-loop [`BandedKernel::FixedWidth2`] factorization (systems with fewer
+    /// than six unknowns).
+    fn factor_fixed2_general(&mut self, n: usize, inv: f64) -> CoreResult<()> {
         let (l, u, width) = (2usize, 2usize, 7usize);
         let at = |i: usize, j: usize| i * 7 + (j + 2 - i);
         let jw = l + u + 1;
@@ -616,8 +758,87 @@ impl BandState {
         Ok(())
     }
 
-    #[allow(clippy::needless_range_loop)] // the band offsets index both arrays
+    /// [`BandedKernel::FixedWidth2`] substitutions. From six unknowns on, the forward
+    /// sweep carries three values and the back sweep four (the arithmetic of the V21
+    /// tight kernel); both perform the operations of the Indexed kernel in the same order
+    /// and charge the same counted operations.
     fn solve_fixed2(&mut self, n: usize, b: &mut [f64]) {
+        if n < 6 {
+            return self.solve_fixed2_general(n, b);
+        }
+        let (rows, _) = self.factors.as_chunks::<7>();
+        {
+            let cells = Cell::from_mut(&mut b[..n]).as_slice_of_cells();
+            let (mut w0, mut w1, mut w2) = (cells[0].get(), cells[1].get(), cells[2].get());
+            let steps = cells[..n - 3]
+                .iter()
+                .zip(&cells[3..])
+                .zip(rows[1..].windows(2))
+                .zip(&self.pivots[..n - 3])
+                .enumerate();
+            for (k, (((out, next), below), &p)) in steps {
+                match p.wrapping_sub(k) {
+                    0 => {}
+                    1 => std::mem::swap(&mut w0, &mut w1),
+                    _ => std::mem::swap(&mut w0, &mut w2),
+                }
+                w1 -= below[0][1] * w0;
+                w2 -= below[1][0] * w0;
+                out.set(w0);
+                w0 = w1;
+                w1 = w2;
+                w2 = next.get();
+            }
+            // Column n - 3.
+            match self.pivots[n - 3].wrapping_sub(n - 3) {
+                0 => {}
+                1 => std::mem::swap(&mut w0, &mut w1),
+                _ => std::mem::swap(&mut w0, &mut w2),
+            }
+            w1 -= rows[n - 2][1] * w0;
+            w2 -= rows[n - 1][0] * w0;
+            cells[n - 3].set(w0);
+            // Column n - 2.
+            if self.pivots[n - 2] != n - 2 {
+                std::mem::swap(&mut w1, &mut w2);
+            }
+            w2 -= rows[n - 1][1] * w1;
+            cells[n - 2].set(w1);
+            // Column n - 1.
+            cells[n - 1].set(w2);
+        }
+        // The last four rows over row slices, then the interior on four carried unknowns.
+        for i in (n - 4..n).rev() {
+            let last = (i + 4).min(n - 1);
+            let row = &rows[i][2..2 + (last - i) + 1];
+            let mut sum = b[i];
+            for (f, x) in row[1..].iter().zip(&b[i + 1..=last]) {
+                sum -= f * x;
+            }
+            b[i] = sum / row[0];
+        }
+        let (mut x1, mut x2, mut x3, mut x4) = (b[n - 4], b[n - 3], b[n - 2], b[n - 1]);
+        for (r, bi) in rows[..n - 4].iter().zip(b[..n - 4].iter_mut()).rev() {
+            let mut s = *bi;
+            s -= r[3] * x1;
+            s -= r[4] * x2;
+            s -= r[5] * x3;
+            s -= r[6] * x4;
+            let x = s / r[2];
+            *bi = x;
+            x4 = x3;
+            x3 = x2;
+            x2 = x1;
+            x1 = x;
+        }
+        // Forward sweep 4 (n - 2) + 2, back sweep 9 (n - 4) + 7 + 5 + 3 + 1.
+        self.work.solve_operations += (13 * n - 26) as u64;
+    }
+
+    /// The general-loop [`BandedKernel::FixedWidth2`] substitutions (systems with fewer
+    /// than six unknowns).
+    #[allow(clippy::needless_range_loop)] // the band offsets index both arrays
+    fn solve_fixed2_general(&mut self, n: usize, b: &mut [f64]) {
         let (l, u, width) = (2usize, 2usize, 7usize);
         for k in 0..n {
             b.swap(k, self.pivots[k]);

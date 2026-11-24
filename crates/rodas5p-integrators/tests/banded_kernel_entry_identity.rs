@@ -13,7 +13,8 @@ use rodas5p_core::{CoreError, CoreResult};
 use rodas5p_integrators::{
     AdaptiveStepConfig, BandedJacobian, BandedKernel, FastInteriorControl, OdeProblem,
     OutputSchedule, RODAS5P_FAST_BANDED_DENSE_DRIVER_ID,
-    RODAS5P_FAST_BANDED_DENSE_SLICES_DRIVER_ID, RODAS5P_FAST_BANDED_DRIVER_ID,
+    RODAS5P_FAST_BANDED_DENSE_FIXED2_DRIVER_ID, RODAS5P_FAST_BANDED_DENSE_SLICES_DRIVER_ID,
+    RODAS5P_FAST_BANDED_DRIVER_ID, RODAS5P_FAST_BANDED_FIXED2_DRIVER_ID,
     RODAS5P_FAST_BANDED_SLICES_DRIVER_ID, Rodas5pFastBandedResult, Rodas5pFastDenseResult,
     Rodas5pFastResult, integrate_rodas5p_fast_banded_dense_observed,
     integrate_rodas5p_fast_banded_dense_observed_with_atol,
@@ -30,7 +31,13 @@ type Callback4 = Arc<dyn Fn(f64, &[f64], &[f64], &mut [f64]) -> CoreResult<()> +
 /// The stage coefficient gamma of RODAS5P: the stage matrix is `I / (h gamma) - J`.
 const GAMMA: f64 = 0.211_937_563_194_290_14;
 const CELL: f64 = 1.0 / 64.0;
-const KERNELS: [BandedKernel; 2] = [BandedKernel::Indexed, BandedKernel::Slices];
+/// The kernels with an endpoint and a dense-output twin. `FixedWidth2` joined the dense twins
+/// with SL-N12 (the facade's (2, 2) banded routes run it).
+const KERNELS: [BandedKernel; 3] = [
+    BandedKernel::Indexed,
+    BandedKernel::Slices,
+    BandedKernel::FixedWidth2,
+];
 
 struct Case {
     name: &'static str,
@@ -366,6 +373,7 @@ fn assert_same_banded(
     assert_eq!(base.fast.driver, RODAS5P_FAST_BANDED_DRIVER_ID, "{label}");
     let expected = match kernel {
         BandedKernel::Slices => RODAS5P_FAST_BANDED_SLICES_DRIVER_ID,
+        BandedKernel::FixedWidth2 => RODAS5P_FAST_BANDED_FIXED2_DRIVER_ID,
         _ => RODAS5P_FAST_BANDED_DRIVER_ID,
     };
     assert_eq!(twin.fast.driver, expected, "{label}: driver identifier");
@@ -412,6 +420,7 @@ fn assert_same_dense(
     );
     let expected = match kernel {
         BandedKernel::Slices => RODAS5P_FAST_BANDED_DENSE_SLICES_DRIVER_ID,
+        BandedKernel::FixedWidth2 => RODAS5P_FAST_BANDED_DENSE_FIXED2_DRIVER_ID,
         _ => RODAS5P_FAST_BANDED_DENSE_DRIVER_ID,
     };
     assert_eq!(twin.fast.driver, expected, "{label}: driver identifier");
@@ -671,10 +680,7 @@ fn the_dense_output_twins_refuse_the_other_kernels() {
     let case = brusselator_strip(1, 16);
     let n = case.problem.dimension;
     let config = adaptive(1_000_000);
-    for kernel in [
-        BandedKernel::FixedWidth2,
-        BandedKernel::FixedWidth2ExactCache,
-    ] {
+    for kernel in [BandedKernel::FixedWidth2ExactCache] {
         let scalar = integrate_rodas5p_fast_banded_dense_observed_with_kernel(
             &case.problem,
             &case.band,
@@ -698,7 +704,7 @@ fn the_dense_output_twins_refuse_the_other_kernels() {
             match result {
                 Err(CoreError::InvalidInput(message)) => assert_eq!(
                     message,
-                    "the RODAS5P fast banded dense driver runs the Indexed and the Slices kernel only"
+                    "the RODAS5P fast banded dense driver runs the Indexed, the Slices and the FixedWidth2 kernel only"
                 ),
                 other => panic!(
                     "{kernel:?} was not refused: {:?}",
@@ -706,5 +712,59 @@ fn the_dense_output_twins_refuse_the_other_kernels() {
                 ),
             }
         }
+    }
+}
+
+/// SL-N12 diagnostic: whole endpoint solves of the band (2, 2) on the Indexed kernel (the
+/// facade's route before SL-N12) and on the FixedWidth2 kernel (after), alternating, with the
+/// median wall time of each arm; every pair is first checked for identical bits. Host wall
+/// time only; the owner-host instruction and cycle cells of SL-N12 stay preregistered.
+#[test]
+#[ignore = "timing diagnostic; run with --ignored --nocapture"]
+fn measure_fixed_width_against_indexed_whole_solves() {
+    use std::time::Instant;
+    for rows in [5_000usize, 50_000] {
+        let case = brusselator_strip(1, rows);
+        let n = case.problem.dimension;
+        let span = (0.0, case.t1);
+        let output = OutputSchedule::new(vec![0.0, case.t1]).unwrap();
+        let config = adaptive(10_000_000);
+        let run = |kernel| {
+            integrate_rodas5p_fast_banded_observed_with_kernel(
+                &case.problem,
+                &case.band,
+                span,
+                &case.y0,
+                &config,
+                &output,
+                kernel,
+            )
+            .unwrap()
+        };
+        let base = run(BandedKernel::Indexed);
+        let twin = run(BandedKernel::FixedWidth2);
+        assert_same_banded("timing", &twin, &base, BandedKernel::FixedWidth2);
+        let repeats = if n > 50_000 { 7 } else { 15 };
+        let (mut indexed, mut fixed) = (Vec::new(), Vec::new());
+        for _ in 0..repeats {
+            for (kernel, times) in [
+                (BandedKernel::Indexed, &mut indexed),
+                (BandedKernel::FixedWidth2, &mut fixed),
+            ] {
+                let start = Instant::now();
+                std::hint::black_box(run(kernel));
+                times.push(start.elapsed().as_secs_f64());
+            }
+        }
+        let median = |v: &mut Vec<f64>| {
+            v.sort_by(f64::total_cmp);
+            v[v.len() / 2]
+        };
+        let (a, b) = (median(&mut indexed), median(&mut fixed));
+        println!(
+            "{{\"sl_n12\":\"whole_solve\",\"n\":{n},\"attempts\":{},\"repeats\":{repeats},\"indexed_s\":{a:.6},\"fixed2_s\":{b:.6},\"ratio\":{:.4}}}",
+            base.fast.attempts,
+            b / a
+        );
     }
 }

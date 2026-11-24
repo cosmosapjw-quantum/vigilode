@@ -59,6 +59,10 @@ pub const RODAS5P_FAST_BANDED_DENSE_DRIVER_ID: &str = "rodas5p-fast-banded-dense
 /// [`BandedKernel::Slices`] kernel (loop L1 node V22).
 pub const RODAS5P_FAST_BANDED_DENSE_SLICES_DRIVER_ID: &str = "rodas5p-fast-banded-dense-v1-slices";
 
+/// Identifier of the banded fast driver with a continuous extension on the
+/// [`BandedKernel::FixedWidth2`] kernel (`lower = upper = 2`; stage-lattice task SL-N12).
+pub const RODAS5P_FAST_BANDED_DENSE_FIXED2_DRIVER_ID: &str = "rodas5p-fast-banded-dense-v1-fixed2";
+
 /// The number of RODAS5P stages (columns of the dense-output rows).
 const STAGES: usize = 8;
 
@@ -522,6 +526,7 @@ fn run_dense(
     )?;
     fast.driver = match band {
         Some((_, BandedKernel::Slices)) => RODAS5P_FAST_BANDED_DENSE_SLICES_DRIVER_ID,
+        Some((_, BandedKernel::FixedWidth2)) => RODAS5P_FAST_BANDED_DENSE_FIXED2_DRIVER_ID,
         Some(_) => RODAS5P_FAST_BANDED_DENSE_DRIVER_ID,
         None => RODAS5P_FAST_DENSE_DRIVER_ID,
     };
@@ -574,7 +579,8 @@ pub fn integrate_rodas5p_fast_banded_dense_observed(
 /// [`integrate_rodas5p_fast_banded_dense_observed`] with an explicit
 /// [`BandedKernel`] (loop L1 node V22). `Indexed` is that function;
 /// `Slices` returns the same bits under
-/// [`RODAS5P_FAST_BANDED_DENSE_SLICES_DRIVER_ID`]. Every other kernel is
+/// [`RODAS5P_FAST_BANDED_DENSE_SLICES_DRIVER_ID`] and `FixedWidth2` under
+/// [`RODAS5P_FAST_BANDED_DENSE_FIXED2_DRIVER_ID`] (SL-N12). `FixedWidth2ExactCache` is
 /// refused.
 #[allow(clippy::too_many_arguments)]
 pub fn integrate_rodas5p_fast_banded_dense_observed_with_kernel(
@@ -600,9 +606,12 @@ fn run_banded_dense(
     kernel: BandedKernel,
     atol_vector: &[f64],
 ) -> CoreResult<Rodas5pFastDenseResult> {
-    if !matches!(kernel, BandedKernel::Indexed | BandedKernel::Slices) {
+    if !matches!(
+        kernel,
+        BandedKernel::Indexed | BandedKernel::Slices | BandedKernel::FixedWidth2
+    ) {
         return Err(CoreError::InvalidInput(
-            "the RODAS5P fast banded dense driver runs the Indexed and the Slices kernel only"
+            "the RODAS5P fast banded dense driver runs the Indexed, the Slices and the FixedWidth2 kernel only"
                 .into(),
         ));
     }

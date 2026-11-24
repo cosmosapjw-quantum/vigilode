@@ -244,9 +244,18 @@ impl BandedStagePolicy {
 }
 
 /// The kernel of the facade's banded routes for `band`.
+///
+/// The band `(2, 2)` runs [`BandedKernel::FixedWidth2`] (stage-lattice task SL-N12, owner
+/// decision of 2026-11-24): fixed row offsets with the operations, pivot ties and counted
+/// work of the Indexed kernel, so the states are the same bits and only the route labels
+/// change. Other bands below [`BANDED_SLICES_MIN_HALF_WIDTH`] keep the Indexed kernel: their
+/// only same-bits alternative is the Slices kernel, which the V22 width scan measured as
+/// slower there.
 fn banded_kernel(band: &BandedJacobian) -> BandedKernel {
     if band.lower.min(band.upper) >= BANDED_SLICES_MIN_HALF_WIDTH {
         BandedKernel::Slices
+    } else if band.lower == 2 && band.upper == 2 {
+        BandedKernel::FixedWidth2
     } else {
         BandedKernel::Indexed
     }

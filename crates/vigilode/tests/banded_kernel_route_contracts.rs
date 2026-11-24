@@ -6,6 +6,9 @@
 //! every banded facade run used the Indexed kernel of the protected banded driver. Since the
 //! facade chooses the kernel by band width ([`BANDED_SLICES_MIN_HALF_WIDTH`]), the runs on the
 //! Slices kernel differ from that first version in their two route labels and in nothing else.
+//! Since stage-lattice task SL-N12 (owner decision of 2026-11-24) the band (2, 2) runs the
+//! FixedWidth2 kernel (fixed row offsets, the same operations in the same order); those runs
+//! too differ from the first version in their two route labels only.
 //! `VIGILODE_BLESS_BANDED_KERNEL_ROUTE=1` writes the file instead of comparing.
 
 use std::f64::consts::PI;
@@ -391,6 +394,8 @@ fn banded_facade_runs_keep_their_record() {
 /// The route labels the rule gives a run: the entry point and the driver identifier.
 fn expected_labels(variant: &str, lower: usize, upper: usize) -> (String, &'static str) {
     let slices = lower.min(upper) >= BANDED_SLICES_MIN_HALF_WIDTH;
+    let fixed2 = lower == 2 && upper == 2;
+    let kernel = slices || fixed2;
     let dense = variant.starts_with("dense-output");
     let vector = variant.ends_with("vector-atol");
     let stem = if dense {
@@ -398,24 +403,26 @@ fn expected_labels(variant: &str, lower: usize, upper: usize) -> (String, &'stat
     } else {
         "integrate_rodas5p_fast_banded_observed"
     };
-    let suffix = match (vector, slices) {
+    let suffix = match (vector, kernel) {
         (false, false) => "",
         (true, false) => "_with_atol",
         (false, true) => "_with_kernel",
         (true, true) => "_with_atol_and_kernel",
     };
-    let driver = match (dense, slices) {
-        (false, false) => "rodas5p-fast-banded-v1",
-        (false, true) => "rodas5p-fast-banded-v1-slices",
-        (true, false) => "rodas5p-fast-banded-dense-v1",
-        (true, true) => "rodas5p-fast-banded-dense-v1-slices",
+    let driver = match (dense, slices, fixed2) {
+        (false, true, _) => "rodas5p-fast-banded-v1-slices",
+        (false, false, true) => "rodas5p-fast-banded-fixed2-v1",
+        (false, false, false) => "rodas5p-fast-banded-v1",
+        (true, true, _) => "rodas5p-fast-banded-dense-v1-slices",
+        (true, false, true) => "rodas5p-fast-banded-dense-v1-fixed2",
+        (true, false, false) => "rodas5p-fast-banded-dense-v1",
     };
     (format!("{stem}{suffix}"), driver)
 }
 
 #[test]
 fn the_route_labels_follow_the_width_rule() {
-    let (mut on_slices, mut on_indexed) = (0, 0);
+    let (mut on_slices, mut on_fixed2, mut on_indexed) = (0, 0, 0);
     for record in run_all() {
         let case = record["case"].as_str().unwrap();
         // "<problem>/<shape>/<variant>"
@@ -429,14 +436,16 @@ fn the_route_labels_follow_the_width_rule() {
         assert_eq!(record["driver_id"], json!(driver), "{case}");
         if driver.ends_with("-slices") {
             on_slices += 1;
+        } else if driver.contains("fixed2") {
+            on_fixed2 += 1;
         } else {
             on_indexed += 1;
         }
     }
     // Both branches of the rule are exercised, and a band with one narrow side stays on Indexed.
-    assert!(on_slices > 0 && on_indexed > 0);
+    assert!(on_slices > 0 && on_fixed2 > 0 && on_indexed > 0);
     println!(
-        "V22_D2_LABELS width={BANDED_SLICES_MIN_HALF_WIDTH} runs_on_slices={on_slices} runs_on_indexed={on_indexed}"
+        "V22_D2_LABELS width={BANDED_SLICES_MIN_HALF_WIDTH} runs_on_slices={on_slices} runs_on_fixed2={on_fixed2} runs_on_indexed={on_indexed}"
     );
 }
 
@@ -462,5 +471,33 @@ fn the_kernel_changes_at_the_declared_width() {
             solution.stats.route.driver_id, driver,
             "half band width {width}"
         );
+    }
+}
+
+/// SL-N12: the band (2, 2) runs the FixedWidth2 kernel on all four banded routes, and its
+/// neighbours (1, 1) and (3, 3) stay on the Indexed kernel.
+#[test]
+fn the_band_two_two_runs_the_fixed_width_kernel() {
+    for (width, driver) in [
+        (1, "rodas5p-fast-banded-v1"),
+        (2, "rodas5p-fast-banded-fixed2-v1"),
+        (3, "rodas5p-fast-banded-v1"),
+    ] {
+        let case = allen_cahn_strip(width, 24);
+        for (variant, options) in variants(case.y0.len()) {
+            let solution = Rodas5p::solve(&case.problem, (0.0, 0.5), &case.y0, &options).unwrap();
+            assert!(solution.is_success(), "{variant}");
+            let expected = if variant.starts_with("dense-output") {
+                driver
+                    .replace("banded-v1", "banded-dense-v1")
+                    .replace("banded-fixed2-v1", "banded-dense-v1-fixed2")
+            } else {
+                driver.to_string()
+            };
+            assert_eq!(
+                solution.stats.route.driver_id, expected,
+                "half band width {width}, {variant}"
+            );
+        }
     }
 }
