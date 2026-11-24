@@ -226,14 +226,16 @@ COST CELLS
 
 WHAT THE OWNER GETS (numbers in RESULTS.json / REPORT_KO.md, all parsed from logs)
 - (a) parallel: FA_P decides exactly as FA and divides the check by about the worker count where the right-hand
-  side is expensive (nlkpp-dense-n400: the 400-column check falls from about one sequential build to about a
-  third of one at 6 workers); it does not change the n right-hand sides or the O(n^2) row comparisons, so on
-  bruss1d-n131072 the first linearization still takes about 11 s at 6 workers (about 45 s sequential).
+  side is expensive (nlkpp-dense-n400: the first linearization with the full check is 1.99 sequential builds
+  with FA and 0.345 of one with FA_P on 6 workers, which also builds on 6 workers; authoritative); it does not
+  change the n right-hand sides or the O(n^2) row comparisons, so on bruss1d-n131072 the first linearization
+  still takes about 11 s on 6 workers (about 42 s sequential; both diagnostic_only).
 - (b) vectorised: possible only with a problem-specific batched right-hand side (FA_B, exploratory): bit-identical,
   0.37 of the instructions per evaluation on nlkpp-dense-n400; the client's interface takes one state per call.
 - (c) multi-colouring: MC detects every corpus case FA detects (and the same single rounding-limited miss) with
   150 instead of 4096 and 59 instead of 131072 right-hand sides; first linearization about 4 builds
-  (nlkpp-band) and about 18 builds (bruss1d-n131072, where one build is only 6 right-hand sides); whole
-  capped solve +4 to +9 percent. It needs a declared pattern (coloured route); on the dense route only FA and
-  FA_P keep D.
+  (nlkpp-band) and about 18 builds (bruss1d-n131072, where one build is only 6 right-hand sides) in
+  instructions; whole capped solve 1.02 to 1.09 times the solve with S8 (instructions 1.025, 1.046, 1.091;
+  authoritative walls 1.016, 1.042, 1.081 on bruss1d-n128, nlkpp-band, bruss1d-n131072). It needs a declared
+  pattern (coloured route); on the dense route only FA and FA_P keep D.
 - Default unchanged (Sample(8)); the owner decides.
