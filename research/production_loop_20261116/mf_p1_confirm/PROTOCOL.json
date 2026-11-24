@@ -310,5 +310,13 @@
   "sentinels": "g3 of ppsw1_6b_contracts.rs and h2 of ptsw2b_contracts.rs re-pinned with a comment naming OD-L1-15; SENTINEL_REPIN.json with old and new pins",
   "then": "D0 with the new binary, G, R; if G or R does not hold the switch is taken back (git revert) and the verdict is HOLD"
  },
- "amendments": []
+ "amendments": [
+  {
+   "id": "P-1",
+   "date": "2026-11-24T18:28:49+0900",
+   "status": "written after the deciding runs of S, P1 (commit A, 8efb5d23) and P2 and after a first parse showed discriminator B failing on robertson_rd1d; during timing try 1; nothing declared before is changed",
+   "what": "exploratory replay of the stage systems (mode SHADOW of mf_confirm_measure.rs, the replay of node V24 adapted): every stage system of the runs of S and of P1 is solved again by the shipped kernel, P1 and P2 on its own operator, to count on identical systems which kernel exhausts the Krylov budget. It needs a new measurement binary built after the timing runs; the driver and the kernels are not changed. Runs under logs/shadow, labelled exploratory; no verdict, threshold or choice depends on them.",
+   "also": "OUT_OF_LIST_EDITS.json (out_of_list_pins.py): the lines that a switch of the default would have to change, found by a search of the sources; for the owner's decision, nothing is edited"
+  }
+ ]
 }

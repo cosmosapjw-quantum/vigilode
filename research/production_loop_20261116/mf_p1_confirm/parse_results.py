@@ -829,6 +829,69 @@ def rhs0_consistency(family, reference):
     return out
 
 
+def collect_shadow(store):
+    """Exploratory: the replay of every stage system of a run with the three kernels."""
+    directory = os.path.join(LOGS, "shadow")
+    out = {"label": "exploratory, added after the deciding runs (PROTOCOL.json amendment P-1); decides nothing",
+           "note": "paired on identical stage systems: the systems of the run of the named arm, each solved again by the shipped kernel, P1 and P2 with their own operator; kernel order [shipped, P1, P2]",
+           "runs": {}}
+    for path in sorted(glob.glob(os.path.join(directory, "*.log"))):
+        log = read_log(path)
+        record = first(log, "V25_SHADOW_JSON")
+        name = os.path.basename(path)[:-len(".log")]
+        begin, end = log["begin"] or {}, log["end"] or {}
+        note_identity(store, {"binary_sha256": begin.get("binary_sha256"), "git_head": begin.get("git_head"),
+                              "git_dirty_tracked": begin.get("git_dirty_tracked")})
+        row = {"log": log["path"], "exit_code": end.get("exit_code"), "binary_sha256": begin.get("binary_sha256")}
+        if record:
+            for key in ("family", "rtol", "arm", "success", "attempts", "state_sha256", "systems", "driver_completed",
+                        "driver_failed", "replay_differs_from_driver", "solved", "budget", "other", "columns_of_solved",
+                        "all_solved", "columns_where_all_solved", "shipped_solved_p1_budget", "shipped_budget_p1_solved",
+                        "shipped_solved_p2_budget", "shipped_budget_p2_solved", "shipped_solved_with_the_whole_budget",
+                        "disagreements_first_40"):
+                row[key] = record.get(key)
+        out["runs"][name] = row
+    totals = {}
+    for row in out["runs"].values():
+        if row.get("family") is None:
+            continue
+        key = f"{row['family']} {row['arm']}"
+        block = totals.setdefault(key, {"systems": 0, "budget": [0, 0, 0], "shipped_solved_p1_budget": 0,
+                                        "shipped_budget_p1_solved": 0, "shipped_solved_p2_budget": 0,
+                                        "shipped_budget_p2_solved": 0, "replay_differs_from_driver": 0,
+                                        "shipped_solved_with_the_whole_budget": 0})
+        block["systems"] += row["systems"]
+        block["budget"] = [a + b for a, b in zip(block["budget"], row["budget"])]
+        for name in ("shipped_solved_p1_budget", "shipped_budget_p1_solved", "shipped_solved_p2_budget",
+                     "shipped_budget_p2_solved", "replay_differs_from_driver", "shipped_solved_with_the_whole_budget"):
+            block[name] += row[name] or 0
+    out["totals_by_family_and_arm"] = totals
+    return out
+
+
+def reference_rounding_probe():
+    """Exploratory: the first reference attempt (multi-threaded OpenBLAS) against
+    the reference of the node (one thread): the same DOP853 1e-13 run with
+    another order of the BLAS sums."""
+    out = {"label": "exploratory; u_ref stays the frozen V17 statistic", "families": {}}
+    for family in FAMILIES:
+        first_path = os.path.join(LOGS, "reference", "first_attempt_blas_threads_default", family + ".json")
+        final_path = os.path.join(NODE, "reference", family + ".json")
+        if not (os.path.exists(first_path) and os.path.exists(final_path)):
+            out["families"][family] = None
+            continue
+        with open(first_path, encoding="utf-8") as handle:
+            first_ref = json.load(handle)
+        with open(final_path, encoding="utf-8") as handle:
+            final_ref = json.load(handle)
+        a, b = v17.unhex(first_ref["state_hex"]), v17.unhex(final_ref["state_hex"])
+        out["families"][family] = {
+            "max_scaled_difference": max(abs(x - y) / (1.0 + abs(y)) for x, y in zip(a, b)),
+            "u_ref": final_ref["uncertainty_max_scaled_1_plus_abs"],
+        }
+    return out
+
+
 def build_results():
     spans = protocol_spans()
     results = {
@@ -977,6 +1040,59 @@ def build_results():
         else:
             final = "HOLD"
     results["verdict"] = {"verdict": final, "G": discriminators["G"]["verdict"], "R": discriminators["R"]["verdict"]}
+
+    # Timing runs must use the binary of the instruction runs.
+    timing_binaries = sorted({binary for family in FAMILIES for label in RTOL_LABELS
+                              for entry in families[family]["timing_cells"][label]["tries"] for binary in entry["binaries"]}, key=str)
+    discriminators["D0"]["binaries_of_the_timing_runs"] = timing_binaries
+    if timing_binaries and timing_binaries != binaries_of_runs:
+        problems.append(f"timing binaries {timing_binaries} differ from the binaries of the runs {binaries_of_runs}")
+
+    # Exploratory, decides nothing.
+    profile = {}
+    for family in FAMILIES:
+        profile[family] = {}
+        for label in RTOL_LABELS:
+            row = {}
+            for arm in ("S", "P1", "P2"):
+                cell = families[family]["arms"][arm][label]
+                recount = (cell.get("audit") or {}).get("recount_from_the_solve_log") or {}
+                row[arm] = {"columns_per_solve": recount.get("columns_per_solve"), "max_columns": recount.get("max_columns"),
+                            "failed_confirmations": recount.get("failed_confirmations"),
+                            "columns_histogram_by_10": recount.get("columns_histogram_by_10")}
+            profile[family][label] = row
+    results["exploratory"] = {
+        "stage_solve_profile": profile,
+        "budget_replay": collect_shadow({"binaries": {}, "git_heads": {}}),
+        "reference_rounding_probe": reference_rounding_probe(),
+    }
+
+    # Texts for the report, built from the numbers above.
+    notes, impact = [], []
+    failing_b = [(family, label, cell["S"], cell["P1"]) for family in FAMILIES
+                 for label, cell in families[family]["discriminators"]["B"]["cells"].items() if cell["verdict"] == "FAIL"]
+    if failing_b:
+        notes.append("B 실패 셀: " + ", ".join(f"{family} rtol {label} (S {s}, P1 {p})" for family, label, s, p in failing_b)
+                     + ". 동결 규칙은 셀 하나라도 P1의 예산 소진 풀이가 S보다 많으면 B를 실패로 봅니다.")
+    numbers = discriminators["E"]["family_numbers"]
+    notes.append("같은 달성 오차에서 P1의 명령어 수 / S: " + ", ".join(f"{family} {numbers[family]:.3f}" for family in FAMILIES if numbers[family] is not None)
+                 + " (모두 1.00 미만).")
+    notes.append(f"V: P1이 끝낸 단계 풀이 {totals['completed_solves']}개를 풀이 로그로 다시 세었고 위반 {all_violations['P1']}개, 가장 큰 잔차/임계값 {max_ratio:.6f}.")
+    replay = results["exploratory"]["budget_replay"]["totals_by_family_and_arm"]
+    for key, block in sorted(replay.items()):
+        notes.append(f"탐색용 재풀이 ({key}의 같은 단계 계 {block['systems']}개): S가 풀고 P1이 예산을 다 쓴 계 {block['shipped_solved_p1_budget']}개, "
+                     f"S가 예산을 다 쓰고 P1이 푼 계 {block['shipped_budget_p1_solved']}개; 예산 소진 수 [S, P1, P2] = {block['budget']}.")
+    if final in ("KEEP", "NOT_DECIDABLE", "KILL", "HOLD"):
+        impact.append("행렬 없는 경로의 기본값은 바뀌지 않습니다: 라우터와 파사드는 계속 S(rodas5p-mf-fast-transformed-v1)를 씁니다. 골든 기록과 기존 결과도 그대로입니다.")
+        impact.append("P1은 계속 선택 사항(opt-in)입니다: RoutingOptions { matrix_free_policy: MfStageSolvePolicy::ColumnTested, .. } 또는 "
+                      "integrate_rodas5p_mf_fast_observed_with_stage_solve_policy(.., MfStageSolvePolicy::ColumnTested, ..)로 고르면, 이 시험의 네 문제족에서 "
+                      "같은 달성 오차의 명령어 수가 S의 " + ", ".join(f"{numbers[family]:.2f}" for family in FAMILIES if numbers[family] is not None)
+                      + "배였습니다 (식별자 rodas5p-mf-fast-transformed-v2-candidate-p1).")
+        impact.append("기본값을 P1로 바꿀지는 소유자 결정입니다. 바꾸려면 동결 규칙 B를 넘어서는 결정이 필요하고, 작성 허용 목록 밖의 V24 테스트 두 줄 묶음(OUT_OF_LIST_EDITS.json)도 함께 바뀌어야 합니다.")
+    elif final == "SWITCH":
+        impact.append("행렬 없는 경로의 기본값이 P1(rodas5p-mf-fast-transformed-v3)이 됩니다; S는 MfStageSolvePolicy::Shipped로 계속 고를 수 있습니다.")
+    results["report_notes_ko"] = notes
+    results["user_impact_ko"] = impact
     return results
 
 
