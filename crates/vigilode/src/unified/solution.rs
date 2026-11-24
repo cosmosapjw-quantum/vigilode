@@ -4,12 +4,15 @@
 use serde::{Deserialize, Serialize};
 
 use super::analyzer::PreflightAnalysis;
+use super::breakeven::PilotRecord;
 use super::legs::{UnifiedLeg, UnifiedStop};
 use crate::explicit::ExplicitSolution;
 use crate::solution::{Solution, Stats, Status};
 use crate::switching::SwitchingSolution;
 
-/// One executed leg in the route history, written after the leg ran.
+/// One executed leg in the route history, written after the leg ran. On the break-even
+/// route the entry of the RODAS5P leg after an accepted pilot is the handover: its `time` is
+/// the pilot's start `t_D`, and its `reason` states `H`, the window and the pilot costs.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct RouteTransitionRecord {
     /// Driver identifier of the leg before this one; `preflight` for the first leg.
@@ -19,7 +22,8 @@ pub struct RouteTransitionRecord {
     pub to_tier: String,
     /// Start time of the leg.
     pub time: f64,
-    /// Why the leg was started: the basis of the analysis, or the stop of the leg before.
+    /// Why the leg was started: the basis of the analysis, the stop of the leg before, or
+    /// the handover after an accepted pilot.
     pub reason: String,
     /// Accepted steps of the legs before this one.
     pub step_index: usize,
@@ -43,13 +47,14 @@ pub struct VigilodeSolution {
     pub final_state: Vec<f64>,
     /// The record of the whole solve in the facade's `Stats` type: the span and the
     /// initial state of the solve; `counters`, `attempts`, `accepted_steps` and
-    /// `rejected_steps` summed over the preflight and every leg; `route` naming the driver
+    /// `rejected_steps` summed over every leg and every pilot; `route` naming the driver
     /// of the last leg. When the last leg is RODAS5P, the driver-specific fields
     /// (`driver_work`, `driver_counters`, `adaptive`, `stop`, `driver_message`) are those
     /// of that leg; otherwise they are the empty placeholders of the type, and the
     /// driver's own record is in [`VigilodeSolution::explicit_solution`] or
     /// [`VigilodeSolution::switching_solution`]. `counters.fallback_steps` counts the
-    /// RODAS5P legs that were started because another route did not finish.
+    /// RODAS5P legs that were started because another route did not finish or after an
+    /// accepted pilot.
     pub stats: Stats,
     /// One record per executed leg, in order.
     pub route_history: Vec<RouteTransitionRecord>,
@@ -63,12 +68,19 @@ pub struct VigilodeSolution {
     /// Why the solve stopped before the end time, as the driver that stopped reported it;
     /// `None` after a success.
     pub stop: Option<UnifiedStop>,
-    /// Every executed leg in order, with its driver, its span, its work and its stop.
+    /// Every executed leg in order, with its driver, its span, its work and its stop. After
+    /// a handover the RODAS5P leg starts with the accepted pilot: its span, attempts, steps
+    /// and work include the pilot's step.
     pub legs: Vec<UnifiedLeg>,
-    /// The preflight analysis: the first entry point, why, and what the analysis cost.
+    /// Every pilot of the break-even route in order (empty on the other routes). The work
+    /// of the pilots that are not the first step of a leg is in `stats.counters` and
+    /// `stats.attempts`, not in a leg.
+    pub pilots: Vec<PilotRecord>,
+    /// The preflight analysis: the first entry point and why.
     pub analysis: PreflightAnalysis,
-    /// The solution of the RODAS5P leg, unchanged from `Rodas5p::solve`. It covers that
-    /// leg only: after an explicit trial it starts where the trial stopped.
+    /// The solution of the last RODAS5P run, unchanged from `Rodas5p::solve`. It covers that
+    /// run only: after DOPRI5 it starts where DOPRI5 stopped, after a handover where the
+    /// accepted pilot ended.
     #[serde(skip)]
     pub inner_solution: Option<Solution>,
     /// The solution of the DOPRI5 leg, unchanged from `Dopri5::solve`.

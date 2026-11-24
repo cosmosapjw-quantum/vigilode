@@ -5,7 +5,7 @@
 //!
 //! | [`SelectedTier`] | Entry point | Driver that runs |
 //! | --- | --- | --- |
-//! | `Tier1Explicit` | `Dopri5::solve` | Dormand-Prince 5(4), right-hand side only |
+//! | `Tier1Explicit` | `Dopri5::solve`, or its persistent session on the break-even route | Dormand-Prince 5(4), right-hand side only |
 //! | `TierProtectedReference` | `Rodas5p::solve` | the RODAS5P driver family that the facade selects from the declared structure: dense, banded, matrix-free (GMRES), fast dense with a continuous extension, or sequential dense (mass matrix) |
 //! | `Tier5AdaptiveSwitching` | `SwitchingSolver::solve` | windows of DOPRI5 and RODAS5P |
 //!
@@ -13,23 +13,25 @@
 //!
 //! * **Routing by declared facts.** [`PreflightAnalyzer::analyze`] reads the strategy, the
 //!   declared regime ([`VigilodeOptions::regime`]) and the declared structure of the
-//!   problem. The method of a regime, the admission of the explicit method and the planned
-//!   RODAS5P driver family come from the method registry (`MethodRegistry`). The
-//!   logarithmic norm is not computed and contractivity is not taken for non-stiffness.
-//! * **A charged stiffness screen** for a problem of dimension at most
-//!   [`EXPLICIT_TRIAL_MAX_DIMENSION`] that declares nothing ([`StiffnessScreen`]): `n + 1`
-//!   right-hand-side calls, all in the counters. It can only replace the explicit trial by
+//!   problem, and makes no callback. The method of a regime, the admission of the explicit
+//!   method and the planned RODAS5P driver family come from the method registry
+//!   (`MethodRegistry`). The logarithmic norm is not computed and contractivity is not
+//!   taken for non-stiffness. A supplied Jacobian, Jacobian-vector product or band starts
 //!   RODAS5P.
-//! * **A budgeted explicit trial with a fallback.** Without a declaration and without
-//!   evidence of stiffness, DOPRI5 gets [`FallbackEngine::explicit_trial_attempts`]
-//!   attempts; if it does not finish for a numerical reason, RODAS5P continues from its
-//!   last accepted state with the attempts that are left of `Options::max_steps`.
+//! * **Forward break-even pilots** for a request that declares nothing, of any dimension
+//!   ([`RouteBasis::BreakEven`]): DOPRI5 integrates; when it has made `b 2^k` attempts
+//!   ([`break_even_length`] `b`), one RODAS5P attempt from its last accepted state asks
+//!   whether RODAS5P covers in one attempt what DOPRI5 covered in its last `b`. An accepted
+//!   pilot is the first step of a RODAS5P leg to the end time; a lost one leaves DOPRI5
+//!   bit for bit unchanged. Every pilot is charged and recorded ([`PilotRecord`]). After a
+//!   numerical DOPRI5 stop, RODAS5P continues from its last accepted state
+//!   ([`FallbackEngine`]). Legs and pilots share one attempt budget, `Options::max_steps`.
 //! * **The executed route.** Every executed leg is a [`UnifiedLeg`] whose driver
 //!   identifier is read from the leg's own run record after it ran;
 //!   [`VigilodeSolution::route_history`] carries the same identifiers.
 //! * **Typed stops.** A run that stops early is `Ok` with its accepted prefix, the work of
-//!   every leg and of the preflight, and [`VigilodeSolution::stop`]: the reason the driver
-//!   that stopped gave ([`UnifiedStop`]).
+//!   every leg and pilot, and [`VigilodeSolution::stop`]: the reason the driver that
+//!   stopped gave ([`UnifiedStop`]). A fatal callback inside a pilot ends the solve.
 //!
 //! What it does not do: it does not batch or vectorize the eight RODAS5P stages, it has no
 //! exponential integrator, it attaches no Krylov recycling of its own (the matrix-free
@@ -46,6 +48,7 @@
 //! exactly as [`SolverStrategy::Auto`].
 
 mod analyzer;
+mod breakeven;
 mod fallback;
 mod legs;
 mod options;
@@ -53,11 +56,9 @@ mod router;
 mod solution;
 mod workspace;
 
-pub use analyzer::{
-    DOPRI5_REAL_STABILITY_BOUND, EXPLICIT_TRIAL_MAX_DIMENSION, PreflightAnalysis,
-    PreflightAnalyzer, RouteBasis, SelectedTier, StiffnessScreen,
-};
-pub use fallback::{EXPLICIT_TRIAL_ATTEMPT_LIMIT, FallbackEngine};
+pub use analyzer::{PreflightAnalysis, PreflightAnalyzer, RouteBasis, SelectedTier};
+pub use breakeven::{PilotRecord, PilotVerdict, break_even_length};
+pub use fallback::FallbackEngine;
 pub use legs::{CallbackStop, UnifiedLeg, UnifiedStop};
 pub use options::{PerformanceProfile, SolverStrategy, VigilodeOptions};
 pub use router::VigilodeRouter;

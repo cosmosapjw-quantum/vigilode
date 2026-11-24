@@ -16,8 +16,8 @@ use crate::options::{Atol, InteriorError, Options, Tier};
 pub enum SolverStrategy {
     /// Route by declared facts ([`super::PreflightAnalyzer::analyze`] lists the rules):
     /// the declared regime, what the explicit method admits, a supplied derivative or
-    /// band, the dimension, and for a small problem without any declaration a charged
-    /// stiffness screen followed by a budgeted explicit trial.
+    /// band; without any declaration DOPRI5 with forward break-even pilots of RODAS5P
+    /// ([`super::RouteBasis::BreakEven`]).
     #[default]
     Auto,
     /// Routes exactly as [`SolverStrategy::Auto`]: no route of this release is faster

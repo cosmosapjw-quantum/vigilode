@@ -1,35 +1,26 @@
 //! Preflight analysis: which entry point the router calls first, and why.
 //!
-//! The analysis reads declared facts. It asks the method registry which method a declared
-//! regime selects, whether the explicit method admits the request and which driver family
-//! of the RODAS5P facade is planned; it keeps no rule of its own about drivers. It makes
-//! callbacks in one case only, the stiffness screen of a small problem that declares
-//! nothing, and reports their number so that the router charges them.
+//! The analysis reads declared facts and makes no callback. It asks the method registry
+//! which method a declared regime selects, whether the explicit method admits the request
+//! and which driver family of the RODAS5P facade is planned; it keeps no rule of its own
+//! about drivers. A request that declares nothing runs the break-even route
+//! ([`super::breakeven`]): DOPRI5 with forward break-even pilots of RODAS5P.
 //!
-//! The analysis does not classify a problem as non-stiff. The logarithmic norm is not
-//! computed: a contractive problem (the heat equation, `y' = -1e6 y`) is the standard
+//! The analysis does not classify a problem as stiff or non-stiff. The logarithmic norm is
+//! not computed: a contractive problem (the heat equation, `y' = -1e6 y`) is the standard
 //! stiff case, not evidence for an explicit method.
 
 use serde::Serialize;
 
-use super::fallback::FallbackEngine;
-use super::legs::CallbackStop;
+use super::breakeven::break_even_length;
 use super::options::{SolverStrategy, VigilodeOptions};
-use crate::error::{CallbackError, SolveError};
+use crate::error::SolveError;
 use crate::explicit::ExplicitSolveError;
 use crate::problem::Problem;
 use crate::{
-    Callback, JacobianForm, MethodChoice, MethodFacts, MethodRefusalReason, MethodRegistry,
-    MethodRoute, MethodRouteRefusal, ProblemRegime,
+    JacobianForm, MethodChoice, MethodFacts, MethodRefusalReason, MethodRegistry, MethodRoute,
+    MethodRouteRefusal, ProblemRegime,
 };
-
-/// Largest dimension for which a problem that declares nothing gets an explicit trial.
-/// Above it the request runs RODAS5P directly (the limit of the first unified router).
-pub const EXPLICIT_TRIAL_MAX_DIMENSION: usize = 10;
-
-/// Length of the negative real stability interval of DOPRI5, to two digits: an explicit
-/// step `h` is stable on a decaying mode `lambda` only while `h |lambda| <= 3.3`.
-pub const DOPRI5_REAL_STABILITY_BOUND: f64 = 3.3;
 
 /// The entry point the router calls first. Each value has a driver of its own.
 ///
@@ -91,28 +82,15 @@ pub enum RouteBasis {
         reasons: Vec<MethodRefusalReason>,
     },
     /// The caller supplied a Jacobian, a Jacobian-vector product or a band. RODAS5P can
-    /// use it, and nothing shows that the problem is non-stiff.
+    /// use it, and nothing shows that the problem is non-stiff (owner decision D2: the
+    /// request starts on RODAS5P).
     SuppliedDerivative,
-    /// Nothing is declared and the dimension is above [`EXPLICIT_TRIAL_MAX_DIMENSION`].
-    DimensionAboveTrialLimit {
-        /// The dimension.
-        dimension: usize,
-        /// The limit.
-        limit: usize,
+    /// Nothing is declared: DOPRI5 with forward break-even pilots ([`super::breakeven`]);
+    /// RODAS5P continues after an accepted pilot or after a numerical DOPRI5 stop.
+    BreakEven {
+        /// The break-even length of the dimension ([`super::break_even_length`]).
+        b: usize,
     },
-    /// Nothing is declared and the attempt budget leaves no explicit trial.
-    NoBudgetForTrial {
-        /// `Options::max_steps`.
-        max_steps: usize,
-    },
-    /// Nothing is declared and the stiffness screen found that an explicit trial cannot
-    /// cover the span within its attempt budget ([`StiffnessScreen`]).
-    StiffnessScreen,
-    /// Nothing is declared and the screen found nothing: a budgeted explicit trial, then
-    /// RODAS5P from its last accepted state if it does not finish.
-    UndeclaredRegimeTrial,
-    /// A callback of the stiffness screen failed fatally; no leg is started.
-    PreflightCallbackFailed,
 }
 
 impl RouteBasis {
@@ -127,72 +105,14 @@ impl RouteBasis {
             Self::SuppliedDerivative => {
                 "a derivative or a band is supplied and no regime is declared".into()
             }
-            Self::DimensionAboveTrialLimit { dimension, limit } => format!(
-                "no declaration; dimension {dimension} is above the explicit trial limit {limit}"
+            Self::BreakEven { b } => format!(
+                "no declaration: DOPRI5 with forward break-even pilots of RODAS5P (b = {b})"
             ),
-            Self::NoBudgetForTrial { max_steps } => {
-                format!("no declaration; an attempt budget of {max_steps} leaves no explicit trial")
-            }
-            Self::StiffnessScreen => {
-                "no declaration; the charged stiffness screen shows that an explicit trial \
-                 cannot cover the span within its attempt budget"
-                    .into()
-            }
-            Self::UndeclaredRegimeTrial => {
-                "no declaration and no evidence of stiffness at t0: budgeted explicit trial".into()
-            }
-            Self::PreflightCallbackFailed => {
-                "a callback of the stiffness screen failed fatally".into()
-            }
         }
     }
 }
 
-/// The stiffness screen: a lower bound of the Lipschitz constant of the right-hand side
-/// at the initial point, compared with what an explicit trial can cover.
-///
-/// With `f0 = f(t0, y0)` and, for every coordinate `j`,
-/// `delta_j = sqrt(eps) max(|y0_j|, 1)`, the screen forms
-/// `L = max_j |f(t0, y0 + delta_j e_j) - f0|_2 / delta_j`. Every quotient is a difference
-/// quotient of `f` along a segment, so `L` is a lower bound of the Lipschitz constant of
-/// `f(t0, .)` near `y0`, up to rounding (for the linearisation, `L >= |J|_2 / sqrt(n)`).
-/// DOPRI5 needs about `L (t1 - t0) / 3.3` steps for stability alone when `L` belongs to a
-/// decaying mode. If that exceeds the attempt budget `B` of the trial,
-/// `L (t1 - t0) > 3.3 B`, the trial is skipped and RODAS5P runs.
-///
-/// The screen can move a request from the explicit trial to RODAS5P, never the other way,
-/// and a negative result is not evidence of non-stiffness: stiffness that develops after
-/// `t0` (Robertson) is left to the trial budget and the fallback. A strongly oscillatory
-/// or non-normal problem can be moved to RODAS5P although DOPRI5 would have finished; the
-/// result is still error controlled.
-///
-/// The screen has a third outcome. Its probe points `y0 + delta_j e_j` are not on the
-/// trajectory. A fatal callback error at one of them ends the solve with that error before
-/// any leg runs, also for a problem that DOPRI5 alone would integrate (a finite-difference
-/// Jacobian of `Rodas5p::solve` meets the same right-hand side).
-///
-/// Cost: `n + 1` right-hand-side calls and `O(n)` storage, with `n` at most
-/// [`EXPLICIT_TRIAL_MAX_DIMENSION`]. Every call is charged.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
-pub struct StiffnessScreen {
-    /// `L`, when every difference quotient was formed and is finite.
-    pub lipschitz_lower_bound: Option<f64>,
-    /// `t1 - t0`.
-    pub span: f64,
-    /// Attempt budget `B` of the explicit trial.
-    pub trial_attempts: usize,
-    /// `3.3 B`.
-    pub threshold: f64,
-    /// `L (t1 - t0) > 3.3 B`.
-    pub stiffness_evidence: bool,
-    /// Whether every quotient was formed. A recoverable callback error or a non-finite
-    /// value ends the screen early; it then shows nothing.
-    pub completed: bool,
-    /// Right-hand-side calls the screen made.
-    pub rhs_calls: u64,
-}
-
-/// What the analysis decided and what it cost.
+/// What the analysis decided. It makes no callback.
 #[derive(Clone, Debug, Serialize)]
 pub struct PreflightAnalysis {
     /// The entry point the router calls first.
@@ -207,18 +127,11 @@ pub struct PreflightAnalysis {
     /// switching adapter, which the registry does not list. It is a plan: the route that
     /// ran is read from the run record after the leg.
     pub planned_route: Option<MethodRoute>,
-    /// Attempt budget of the first leg.
+    /// Attempt budget of the first leg: `Options::max_steps`, the budget of the whole solve.
     pub first_leg_attempts: usize,
-    /// Whether RODAS5P continues from the last accepted state when the explicit leg stops
-    /// for a numerical reason.
+    /// Whether RODAS5P may continue from DOPRI5's last accepted state: after an accepted
+    /// pilot or a numerical stop of DOPRI5 (the break-even route only).
     pub fallback_to_rodas5p: bool,
-    /// The stiffness screen, when it ran.
-    pub screen: Option<StiffnessScreen>,
-    /// Right-hand-side calls the analysis made (those of the screen). The router adds
-    /// them to the counters of the solve.
-    pub rhs_calls: u64,
-    /// The fatal error of a screen callback. With it no leg is started.
-    pub callback_failure: Option<CallbackStop>,
 }
 
 /// The preflight analysis of the router.
@@ -271,15 +184,12 @@ impl PreflightAnalyzer {
     /// 3. The registry does not admit DOPRI5 for the declared facts (a mass matrix, dense
     ///    output, events): RODAS5P.
     /// 4. A Jacobian, a Jacobian-vector product or a band is supplied: RODAS5P.
-    /// 5. The dimension is above [`EXPLICIT_TRIAL_MAX_DIMENSION`], or the attempt budget
-    ///    leaves no trial: RODAS5P with a finite-difference Jacobian.
-    /// 6. Otherwise the [`StiffnessScreen`]. With evidence of stiffness RODAS5P runs;
-    ///    without it DOPRI5 gets a trial of
-    ///    [`FallbackEngine::explicit_trial_attempts`] attempts, and RODAS5P continues from
-    ///    its last accepted state if it does not finish.
+    /// 5. Otherwise the break-even route ([`RouteBasis::BreakEven`]): DOPRI5 with forward
+    ///    break-even pilots of RODAS5P, for every dimension.
     ///
-    /// Rules 1 to 5 make no callback. `Err` is a refusal before any callback: malformed
-    /// input, or a request that the RODAS5P facade does not support.
+    /// No rule makes a callback. `Err` is a refusal before any callback: malformed input,
+    /// or a request that the RODAS5P facade does not support; for the break-even route both
+    /// entry points are checked, so that a refusal never follows a callback.
     pub fn analyze(
         problem: &Problem,
         span: (f64, f64),
@@ -303,17 +213,14 @@ impl PreflightAnalyzer {
 
         let facts = MethodFacts::of(problem, &opts.options);
         let total = opts.options.max_steps;
-        let analysis = |tier, basis, planned_route, attempts, fallback| PreflightAnalysis {
+        let analysis = |tier, basis, planned_route, fallback| PreflightAnalysis {
             suggested_tier: tier,
             basis,
             facts,
             regime: opts.regime,
             planned_route,
-            first_leg_attempts: attempts,
+            first_leg_attempts: total,
             fallback_to_rodas5p: fallback,
-            screen: None,
-            rhs_calls: 0,
-            callback_failure: None,
         };
         let implicit_route = || {
             let choice = MethodChoice::Explicit(method_id(ProblemRegime::Stiff));
@@ -327,7 +234,6 @@ impl PreflightAnalyzer {
                 SelectedTier::TierProtectedReference,
                 basis,
                 Some(route),
-                total,
                 false,
             ))
         };
@@ -346,7 +252,6 @@ impl PreflightAnalyzer {
                         strategy: opts.strategy,
                     },
                     None,
-                    total,
                     false,
                 ));
             }
@@ -379,139 +284,30 @@ impl PreflightAnalyzer {
                 SelectedTier::Tier1Explicit,
                 declared,
                 Some(explicit_route),
-                total,
                 false,
             ));
         }
 
-        // 4. and 5.: no regime is declared
+        // 4. a supplied derivative or band starts RODAS5P (owner decision D2)
         if facts.jacobian != JacobianForm::FiniteDifference || facts.declared_band {
             return implicit(RouteBasis::SuppliedDerivative);
         }
-        if n > EXPLICIT_TRIAL_MAX_DIMENSION {
-            return implicit(RouteBasis::DimensionAboveTrialLimit {
-                dimension: n,
-                limit: EXPLICIT_TRIAL_MAX_DIMENSION,
-            });
-        }
-        let trial = FallbackEngine::explicit_trial_attempts(total);
-        if trial == 0 {
-            return implicit(RouteBasis::NoBudgetForTrial { max_steps: total });
-        }
 
-        // 6. the screen. Its callbacks are made only for a request that both methods
-        // accept, so that a refusal never follows a callback.
-        let fallback_route = implicit_route()?;
-        let mut trial_options = opts.options.clone();
-        trial_options.max_steps = trial;
-        if let Err(error) = crate::explicit::validate(problem, span, y0, &trial_options) {
+        // 5. the break-even route. Both entry points are checked before any callback.
+        implicit_route()?;
+        if let Err(error) = crate::explicit::validate(problem, span, y0, &opts.options) {
             return Err(SolveError::InvalidInput(match error {
                 ExplicitSolveError::InvalidInput(message) => message,
                 other => other.to_string(),
             }));
         }
-        let (screen, failure) = stiffness_screen(problem, span, y0, trial);
-        let mut decided = if failure.is_some() {
-            analysis(
-                SelectedTier::Tier1Explicit,
-                RouteBasis::PreflightCallbackFailed,
-                Some(explicit_route),
-                0,
-                false,
-            )
-        } else if screen.stiffness_evidence {
-            analysis(
-                SelectedTier::TierProtectedReference,
-                RouteBasis::StiffnessScreen,
-                Some(fallback_route),
-                total,
-                false,
-            )
-        } else {
-            analysis(
-                SelectedTier::Tier1Explicit,
-                RouteBasis::UndeclaredRegimeTrial,
-                Some(explicit_route),
-                trial,
-                true,
-            )
-        };
-        decided.screen = Some(screen);
-        decided.rhs_calls = screen.rhs_calls;
-        decided.callback_failure = failure;
-        Ok(decided)
+        Ok(analysis(
+            SelectedTier::Tier1Explicit,
+            RouteBasis::BreakEven {
+                b: break_even_length(n),
+            },
+            Some(explicit_route),
+            true,
+        ))
     }
-}
-
-/// The [`StiffnessScreen`] of `(problem, span, y0)` for a trial of `trial_attempts`
-/// attempts, and the fatal callback error that ended it, if any.
-fn stiffness_screen(
-    problem: &Problem,
-    span: (f64, f64),
-    y0: &[f64],
-    trial_attempts: usize,
-) -> (StiffnessScreen, Option<CallbackStop>) {
-    let n = y0.len();
-    let length = span.1 - span.0;
-    let threshold = DOPRI5_REAL_STABILITY_BOUND * trial_attempts as f64;
-    let mut screen = StiffnessScreen {
-        lipschitz_lower_bound: None,
-        span: length,
-        trial_attempts,
-        threshold,
-        stiffness_evidence: false,
-        completed: false,
-        rhs_calls: 0,
-    };
-    let rhs = problem.rhs_fn();
-    // One call of the right-hand side; `Ok(true)` if the output is finite.
-    let call = |y: &[f64], out: &mut [f64], calls: &mut u64| {
-        out.fill(f64::NAN);
-        *calls += 1;
-        match rhs(span.0, y, out) {
-            Ok(()) => Ok(out.iter().all(|v| v.is_finite())),
-            Err(CallbackError::Recoverable(_)) => Ok(false),
-            Err(CallbackError::Fatal(message)) => Err(CallbackStop {
-                callback: Callback::Rhs,
-                t: span.0,
-                message,
-            }),
-        }
-    };
-
-    let mut f0 = vec![0.0; n];
-    match call(y0, &mut f0, &mut screen.rhs_calls) {
-        Ok(true) => {}
-        Ok(false) => return (screen, None),
-        Err(failure) => return (screen, Some(failure)),
-    }
-    let mut shifted = y0.to_vec();
-    let mut f1 = vec![0.0; n];
-    let mut bound = 0.0f64;
-    for j in 0..n {
-        let delta = f64::EPSILON.sqrt() * y0[j].abs().max(1.0);
-        shifted[j] = y0[j] + delta;
-        // the represented increment, as the finite-difference Jacobian of the facade takes it
-        let step = shifted[j] - y0[j];
-        let outcome = call(&shifted, &mut f1, &mut screen.rhs_calls);
-        shifted[j] = y0[j];
-        match outcome {
-            Ok(true) => {}
-            Ok(false) => return (screen, None),
-            Err(failure) => return (screen, Some(failure)),
-        }
-        let difference = f1
-            .iter()
-            .zip(&f0)
-            .map(|(a, b)| (a - b) * (a - b))
-            .sum::<f64>()
-            .sqrt();
-        bound = bound.max(difference / step.abs());
-    }
-    if bound.is_finite() {
-        screen.completed = true;
-        screen.lipschitz_lower_bound = Some(bound);
-        screen.stiffness_evidence = bound * length > threshold;
-    }
-    (screen, None)
 }

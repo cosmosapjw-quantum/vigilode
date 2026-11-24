@@ -26,7 +26,7 @@ pub struct VigilodeWorkspace {
     pub stage_scratch: Vec<f64>,
     /// Time of the checkpoint.
     pub checkpoint_time: f64,
-    /// The work of the solve so far: the preflight and every leg.
+    /// The work of the solve so far: every leg and every pilot.
     pub work_counters: WorkCounters,
 }
 

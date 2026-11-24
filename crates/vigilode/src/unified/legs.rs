@@ -14,7 +14,7 @@ use serde::Serialize;
 
 use super::analyzer::{SelectedTier, refusal_error};
 use crate::error::{CallbackError, SolveError};
-use crate::explicit::{ExplicitCallbackFailure, ExplicitSolveError};
+use crate::explicit::{ExplicitCallbackFailure, ExplicitSolution, ExplicitSolveError};
 use crate::options::Options;
 use crate::problem::{Jacobian, Problem};
 use crate::solution::{Callback, FailureReason, StopRecord};
@@ -79,11 +79,6 @@ pub enum UnifiedStop {
         max_steps: usize,
         /// Whether every driver it entered returned a work record.
         accounting_complete: bool,
-    },
-    /// A callback of the preflight stiffness screen failed fatally; no leg was started.
-    Preflight {
-        /// The failure.
-        callback: CallbackStop,
     },
     /// The entry point of a further leg refused its input after an earlier leg had
     /// integrated a prefix. The prefix and its work are kept.
@@ -171,7 +166,6 @@ impl UnifiedStop {
                     _ => too_small,
                 }
             }
-            Self::Preflight { callback } => failed(callback),
             Self::Refused { prior, .. } => match prior {
                 Some(prior) => prior.facade_reason(budget),
                 None => too_small,
@@ -183,7 +177,7 @@ impl UnifiedStop {
     /// Whether [`UnifiedStop::facade_reason`] states this stop exactly.
     pub fn is_exact(&self) -> bool {
         match self {
-            Self::Rodas5p { .. } | Self::Preflight { .. } => true,
+            Self::Rodas5p { .. } => true,
             Self::Dopri5 {
                 reason, callback, ..
             } => {
@@ -234,7 +228,7 @@ impl UnifiedStop {
             Self::Refused { prior, .. } => prior
                 .as_ref()
                 .is_some_and(|prior| prior.is_attempt_budget()),
-            Self::Preflight { .. } | Self::Other { .. } => false,
+            Self::Other { .. } => false,
         }
     }
 }
@@ -348,6 +342,55 @@ pub(super) fn registry_leg(
         stop: view.failure().map(stop_of),
     };
     Ok((leg, solution.into_result()))
+}
+
+/// The leg of a DOPRI5 run that the router drove itself (the break-even route), read from
+/// its record as [`registry_leg`] reads the record of `Dopri5::solve`. `route_id` is the
+/// registry's route of the explicit method for the same request.
+pub(super) fn explicit_leg(
+    native: &ExplicitSolution,
+    route_id: String,
+    span: (f64, f64),
+    attempt_budget: usize,
+) -> UnifiedLeg {
+    let stats = &native.stats;
+    UnifiedLeg {
+        tier: SelectedTier::Tier1Explicit,
+        driver_id: stats.method.to_owned(),
+        route_id,
+        segment_drivers: Vec::new(),
+        t_start: span.0,
+        t_end: native.final_time,
+        target: span.1,
+        success: native.success,
+        attempt_budget,
+        attempts: stats.attempts,
+        accepted_steps: stats.accepted_steps,
+        rejected_steps: stats.rejected_steps,
+        counters: (&stats.counters).into(),
+        stop: (!native.success).then(|| UnifiedStop::Dopri5 {
+            reason: native.stop_reason,
+            callback: native.callback_failure.clone(),
+            message: native.message.clone(),
+        }),
+    }
+}
+
+/// One RODAS5P leg from an accepted pilot and the RODAS5P run that continued from its end
+/// point: the pilot is the leg's first step. Span, attempts, steps and work are those of
+/// both runs; driver, route, success and stop are those of the run that continued.
+pub(super) fn rodas5p_leg_after_pilot(pilot: UnifiedLeg, rest: UnifiedLeg) -> UnifiedLeg {
+    let mut counters = WorkCounters::from(&pilot.counters);
+    counters.accumulate(WorkCounters::from(&rest.counters));
+    UnifiedLeg {
+        t_start: pilot.t_start,
+        attempt_budget: pilot.attempt_budget + rest.attempt_budget,
+        attempts: pilot.attempts + rest.attempts,
+        accepted_steps: pilot.accepted_steps + rest.accepted_steps,
+        rejected_steps: pilot.rejected_steps + rest.rejected_steps,
+        counters: (&counters).into(),
+        ..rest
+    }
 }
 
 type Callback3 = Arc<dyn Fn(f64, &[f64], &mut [f64]) -> Result<(), CallbackError> + Send + Sync>;
