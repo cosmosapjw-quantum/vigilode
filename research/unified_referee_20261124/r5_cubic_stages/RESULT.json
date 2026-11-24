@@ -1,0 +1,104 @@
+{
+  "schema": "vigilode.r5.native-raw-u-from-cooperative-cubic.v1",
+  "rustc": "1.94.1",
+  "donor": {
+    "example": "crates/vigilode-coupled/examples/coupled_achieved_wp.rs",
+    "fixture_blob": "1bfc17ec2ed4b902cc06073807388f6e332e31d6",
+    "theory": "docs/vigilode_r5_newtonfree_algebraic_homotopy_20261101/THEORY_R5.md#theorem-b"
+  },
+  "method": "source-owned unscaled W stage client on native fast RODAS5P, original tableau/embedded controller/stage RHS; D-lambda*C split and lazy protected LU",
+  "results": {
+    "Protected": {
+      "ivps": 12,
+      "attempts": 1086,
+      "accepted": 1078,
+      "rejected": 8,
+      "rhs": 8680,
+      "native_stages": 8688,
+      "certified_stages": 0,
+      "fallback": 0,
+      "sweeps": 0,
+      "interval_checks": 0,
+      "negative_rhs_stages": 0,
+      "achieved_parity_1pct": 12
+    },
+    "Direct": {
+      "ivps": 12,
+      "attempts": 1086,
+      "accepted": 1078,
+      "rejected": 8,
+      "rhs": 8680,
+      "native_stages": 8688,
+      "certified_stages": 7618,
+      "fallback": 1070,
+      "sweeps": 38445,
+      "interval_checks": 7625,
+      "negative_rhs_stages": 6857,
+      "achieved_parity_1pct": 7
+    },
+    "Continued": {
+      "ivps": 12,
+      "attempts": 1086,
+      "accepted": 1078,
+      "rejected": 8,
+      "rhs": 8680,
+      "native_stages": 8688,
+      "certified_stages": 7622,
+      "fallback": 1066,
+      "sweeps": 73890,
+      "interval_checks": 7628,
+      "negative_rhs_stages": 6857,
+      "achieved_parity_1pct": 7
+    },
+    "Capped": {
+      "ivps": 12,
+      "attempts": 1086,
+      "accepted": 1078,
+      "rejected": 8,
+      "rhs": 8680,
+      "native_stages": 8688,
+      "certified_stages": 318,
+      "fallback": 8370,
+      "sweeps": 7656,
+      "interval_checks": 318,
+      "negative_rhs_stages": 6857,
+      "achieved_parity_1pct": 10
+    }
+  },
+  "raw_trajectory_archive_sha256": "0c097af3f6890fcd05d88b05f61a776eedbd8bb7eaf381a2476ea160ce48f720",
+  "status": {
+    "eight_native_original_stages": "implemented_and_run",
+    "complete_adaptive_IVPs": 48,
+    "general_derivative_free": "not_applicable_known_diagonal_source_slope",
+    "generic_parallel_stage_compression": "not_established",
+    "nonlinear_BE_root_scope": "separate",
+    "default_policy": "unchanged",
+    "physical_global_error_certificate": "not_established",
+    "external_human_referee": "not_run",
+    "wall_qualification": "single-host paired timings at empirically matched achieved error",
+    "decision": "retain protected solver as default"
+  },
+  "matched_wall_seconds_candidate_over_protected": {
+    "Direct": {
+      "matched_conditions": 7,
+      "minimum_median_ratio": 2.382899694028973,
+      "median_of_condition_ratios": 4.548643375472054,
+      "maximum_median_ratio": 6.424660648587387,
+      "speedup_conditions": 0
+    },
+    "Continued": {
+      "matched_conditions": 7,
+      "minimum_median_ratio": 2.6621247683759703,
+      "median_of_condition_ratios": 5.212759126567892,
+      "maximum_median_ratio": 6.941586966316136,
+      "speedup_conditions": 0
+    },
+    "Capped": {
+      "matched_conditions": 10,
+      "minimum_median_ratio": 1.8344213078910947,
+      "median_of_condition_ratios": 1.9165649414471266,
+      "maximum_median_ratio": 2.1027392716864926,
+      "speedup_conditions": 0
+    }
+  }
+}
