@@ -285,3 +285,7 @@ Reason: owner decision OD-L1-22 of 2026-11-24 (verbatim in `docs/agent/productio
 | V27 FBP Auto route (arms T = today's Auto, N = FBP; references D = Dopri5::solve, R = Rodas5p::solve; 35 problems in four groups, three tolerance pairs; counters only) | iff E1 (geometric mean of cost(N)/cost(T) < 1 in callbacks and operations, and a smaller worst ratio to the better single method than T), E2 (no new failure), E3 (neutrality without handover, cost <= 2 D), E4 (one attempt budget), E5 (no callback before DOPRI5's first stage, none at t0 except its stages, no uncharged entry), E6 (determinism over three runs), E7 (error <= 3 x the better of D and R), E8 (F2 succeeds, P_fatal typed, N2 ends at its first pilot), E9 (V03b work bounds 5890 and 181818 with a recorded handover) and E10 (pilot count and spend bounds) all pass | otherwise; E3, E4, E5, E6 or E10 failing refutes the unconditional properties, E1 the economic claim, E2 blocks adoption |
 
 No measurement run of the deciding set may start before this commit is on origin/research/production-loop-20261116.
+
+## Erratum A8.1 (2026-11-24 20:15 KST): date field of the V27 pre-registration
+
+The field date_kst of router_hyperparameter_free/PREDECLARED.json reads "2026-11-24 20:20"; it was typed in error. The file was committed at 2026-11-24 20:04:58 KST (commit 1ffbda20) and has not changed since. Nothing else changes.
