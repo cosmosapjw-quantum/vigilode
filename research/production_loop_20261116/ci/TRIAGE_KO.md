@@ -233,7 +233,7 @@ head 8f840859(group 3 병합 포함)의 호스티드 실행(run 45203782039, 452
 
 ## 11. 2026-11-24: 선택 v3, 측정한 입력 (소유자 결정 OD-L1-21, "전부 승인")
 
-v1/v2 검토(`SELECTION_REVIEW.json`, 지적 26건)는 정적 규칙(package 단위 규칙, 문자열 literal 대조)이 test의 입력을 다 알지 못한다는 것을 보였다. v3는 입력을 추측하지 않고 매 run 측정한다. 구현: `tools/ci/select_tests.py`(v3), `production.yml`, `ignored-tests.yml`, `a1-inner-tolerance-parity.yml`, `tools/check_ignored_tests_in_ci.py`. 설계가 열어 둔 선택은 `V3_NOTES.md`의 R1-R23에 적었다. 로그는 `v3_logs/`.
+v1/v2 검토(`SELECTION_REVIEW.json`, 지적 26건)는 정적 규칙(package 단위 규칙, 문자열 literal 대조)이 test의 입력을 다 알지 못한다는 것을 보였다. v3는 입력을 추측하지 않고 매 run 측정한다. 구현: `tools/ci/select_tests.py`(v3), `production.yml`, `ignored-tests.yml`, `a1-inner-tolerance-parity.yml`, `tools/check_ignored_tests_in_ci.py`. 설계가 열어 둔 선택은 `V3_NOTES.md`의 R1-R23에, 검토 두 건을 반영한 수정 라운드의 결정은 R24-R36에 적었다(11.6). 로그는 `v3_logs/`.
 
 ### 11.1 무엇을 측정하는가
 
@@ -351,7 +351,7 @@ v1/v2 검토(`SELECTION_REVIEW.json`, 지적 26건)는 정적 규칙(package 단
 | build script 입력 | `rerun-if-changed` 입력은 기록하지 않는다. fair-ab는 HEAD와 dirty 표시만 넣고 test 결과는 그 값에 의존하지 않는다(v1 검토 확인) | build script가 코드를 생성하게 되면 입력 기록이 필요하다 |
 | `--skip`한 test | 걸러진 test의 입력은 측정되지 않는다. 선언한 음성대조 두 개는 따로 측정한다 | 새 skip은 `--control`로 선언 |
 | strace가 못 보는 읽기 | io_uring, 다른 process(daemon)를 통한 읽기, 추적 전에 연 descriptor. workspace에는 없다 | 없음 |
-| hosted full 실행 시간 | coverage와 strace를 함께 쓴 full 실행은 hosted에서 재지 않았다. 300·330분을 넘기면 outcome이 없어 다음 run도 full이다 | 첫 hosted full 실행으로 확인. 넘으면 job 분할 |
+| hosted full 실행 시간 | coverage와 strace를 함께 쓴 full 실행은 hosted에서 재지 않았다. 300·330분을 넘기면 outcome이 없어 다음 run도 full이다. strace 없는 v2 full 실행 두 개는 13:26Z에 157분째 진행 중이었다(11.6) | 첫 hosted full 실행으로 확인. 넘으면 job 분할 |
 | 첫 run | schema와 `tools/ci/`가 바뀌었으므로 두 job의 첫 v3 run은 full이다 | 한 번뿐 |
 | merge commit 검사 | PR은 merge commit을 검사하고 head끼리 diff한다. base sha가 같을 때만 맞으므로 base가 바뀌면 full | 소유자 선택 |
 
@@ -361,3 +361,59 @@ strace 비용(`strace_cost_probe.log`, 이 host, 부하 약 190):
 - 로컬 target은 추적 호출이 95-126개(loader, libtest 시작, 파일 읽기), `generic_scope_contracts`만 1007개였다. 0.4 ms로 잡아도 target당 0.05 s 이하, `generic_scope_contracts` 0.4 s.
 - python3를 띄우는 target 8개(integrators `production_audit_*` 5개, `all_dag_*` 2개, krylov `givens_production_differential_contracts`)는 import 때문에 호출이 수천 개일 수 있다: target당 수 초.
 - 따라서 full 실행(약 500 target)의 strace 비용은 수십 초 수준으로, 92-109분인 full test job에 비해 작다. 그 밖에 thread마다 trace 파일이 생기고(integrators `lib` 154개) Python이 그것을 해석하는 시간이 든다.
+
+### 11.6 수정 라운드: b0d4bc97에 대한 검토 두 건
+
+두 검토자가 b0d4bc97을 검토했다. 건전성 검토는 새 지적 S-N1~S-N6(모두 minor)과 이전 지적 S-F1~S-F14의 상태를, CI 동작 검토는 새 지적 M-N1~M-N8(M-N1, M-N2가 major)과 이전 지적 M-F-01~M-F-12의 상태를 냈다. 작업 지시문에는 CI 동작 검토가 14000자에서 잘려 있었으므로 이 run의 workflow journal에서 전체 JSON을 읽었다. 고치기 전에 지적마다 재현했다. 규칙은 `V3_NOTES.md`의 R24~R36, 로그는 `v3_logs/fix_*`.
+
+무엇을 바꿨나:
+1. 기준점(M-N1): hosted runner는 같은 시각에 image version 두 개를 섞어 준다. run 45358324432에서 08:41:48Z에 함께 시작한 `fmt`는 20261116.88.1, `clippy`는 20261116.202.1이었다(job 로그로 확인). 그대로면 run 10개 중 약 3개가 코드 변경 없이 full이다. 이제 기준점은 같은 runner image(`ImageOS`, `ImageVersion`)에서 돈 가장 새로운 완료 run이다. 이 image의 run이 하나도 없을 때만 다른 image의 run을 기준점으로 쓰고, 규칙 1에 따라 full이다. "image가 바뀌면 full"이라는 소유자 규칙은 그대로이고 image마다 기준점 사슬이 따로 이어진다. 조상인 완료 run은 어느 것이든 올바른 기준점이다: 그 뒤의 변경이 모두 diff에 들어간다(R24).
+2. 기준점 후보는 같은 event, 같은 저장소(`head_repository`)의 run뿐이다(M-N3, M-N5, R25). 기록하는 PR base는 checkout한 merge commit의 첫 부모다(S-F8, M-F-04의 남은 가정, R26).
+3. rodas5p-cli, rodas5p-fair-ab의 test job(M-N2): A1에서 지운 workspace test 단계가 이 두 package의 일반 test를 돌리던 유일한 곳이었다(hosted run 45358324393, coverage 없는 debug: cli 08:55-09:06, 그중 `triage_cli` 438 s; fair-ab 09:07-09:10). production.yml에 job `test-cli-fair-ab`를 더했다. 같은 selector와 측정, 자기 artifact(`ci-test-outcome-test-cli-fair-ab`), 대기 concurrency, 120분 제한. 처음에는 `test` job의 scope에 넣었으나(1288945b) 되돌렸다: 그 job의 v2 full 실행이 strace 없이도 157분을 넘겼고 300분 제한은 고정이며, production gate는 production crate만 맡는 것이 낫다(R27, R36).
+4. trigger의 path filter 제거(S-N2, M-N4, S-F14 일부): 측정한 입력은 `docs/`, `research/`, `fixtures/`, `tools/`에도 있다(`docs/CONSTANTS_PROVENANCE.toml`, `FROZEN_ZETA34_POLICY.json`, `fixtures/rodas5p_coefficients_snapshot.json` 등). 두 test workflow는 모든 PR과 main push에서 돈다. 영향받는 test가 없으면 선택 단계에서 끝난다(R28).
+5. tokenizer(S-N1): 사이에 아무것도 없는 두 구두점 사이에 표시 token을 넣는다. `&&`→`& &`, `=>`→`= >`, `..`→`. .`, `->`→`- >`, `+=`→`+ =`는 이제 noop이 아니다. 검토자 사례(`integrate.rs`의 `success & &collector`)는 body로 분류되고, 그 파일을 실행한 cli `alg02_predictive_controller`를 고른다(R29).
+6. 추가된 경로가 만드는 디렉터리를 읽거나 연 target도 고른다(S-N3, R30). `.gitattributes`는 어느 깊이든 전역 파일이다(S-N4, R31).
+7. strace는 경로를 만들고 지우고 이름을 바꾸고 속성을 바꾸는 호출(`mkdir`, `rename`, `link`, `symlink`, `unlink`, `rmdir`, `utimensat`, `chmod`, `truncate`, `statfs`, `getxattr` 등)도 추적한다. 성공은 read, ENOENT·ENOTDIR은 absent. 실패한 `chdir`은 absent이고 cwd를 바꾸지 않는다(S-N5, R32).
+8. self-test의 `check_sources`가 R8, R10의 전제를 member의 `src/`에서 검사한다: `line!()`, `column!()`, `Location::caller`, `track_caller`, 자기 `.rs`의 text include, doc test 안의 파일 접근. 지금은 264개 파일에서 0건(S-N6, R33).
+9. strace 설치 실패가 job을 멈추지 않는다(M-N6, R34). A1 workflow가 없어도 self-test가 실패하지 않는다(M-N8, R35).
+
+| 지적 | 상태 | 방법 |
+|---|---|---|
+| S-F1~S-F7, S-F9~S-F11, S-F13 | 해결 | 검토자가 v3에서 원래 사례를 재현해 닫혔음을 확인했다. 이번 변경 뒤에도 선택 사례 F1-F7, F11이 같은 target을 고른다 |
+| S-F8 | 해결 | 검토자 확인. 남은 가정(payload의 base = merge의 base)은 merge commit의 첫 부모를 기록해 없앴다(R26) |
+| S-F12 | 해당 없음 | literal 대조가 없다 |
+| S-F14 | 해결 | image 촉발(검토자 확인)에 더해 trigger의 path filter를 없앴다(R28). 주기적 full 실행은 OD-L1-21 4항에 따라 넣지 않았다 |
+| S-N1 | 해결 | 붙은 구두점 표시(R29). self-test 9개 쌍, 검토자 사례 재현(`fix_tokenizer_probe.log`) |
+| S-N2 | 해결 | path filter 제거(R28). 다시 넣으면 self-test가 실패한다 |
+| S-N3 | 해결 | 추가 경로가 만드는 디렉터리를 read, dirs와도 대조(R30). self-test, 사례 S-N3 |
+| S-N4 | 해결 | `.gitattributes`는 전역(R31). self-test, 사례 S-N4(full) |
+| S-N5 | 해결 | 추적 호출 확대, 실패한 chdir은 absent(R32). strace 6.8 탐침(`fix_strace_calls_probe.log`) |
+| S-N6 | 해결 | `check_sources`(R33) |
+| M-F-01~M-F-12 | 해결 | 검토자가 재현해 닫혔음을 확인했다 |
+| M-N1 | 해결 | 같은 image의 run을 기준점으로(R24). self-test: 오래된 같은 image run 선택, 같은 image run이 없을 때의 대체와 full |
+| M-N2 | 해결 | job `test-cli-fair-ab`(R27). self-test: 각 workflow의 선택 job이 모든 member를 덮고 artifact 이름이 겹치지 않는지 검사 |
+| M-N3 | 해결 | 같은 event의 run만(R25) |
+| M-N4 | 해결 | S-N2와 같다(R28) |
+| M-N5 | 해결 | 같은 저장소의 run만(R25) |
+| M-N6 | 해결 | strace 설치 단계에 `continue-on-error: true`(R34) |
+| M-N7 | 미해결(기록) | v2 hosted full 실행 두 개가 13:26Z에 157분째 진행 중이었다(완료된 v1 full 실행은 92-109분). 제한 300·330분은 설계대로 유지. 첫 v3 full 실행이 제한의 2/3를 넘으면 full mode 분할을 소유자에게 묻는다(R36) |
+| M-N8 | 해결 | A1 workflow가 있을 때만 검사(R35) |
+
+검증(`v3_logs/fix_*`):
+- self-test(`fix_self_test.log`) 통과. 새 사례: 구두점 9쌍, `.gitattributes`, 새 추적 호출 12줄과 인자 분리, 만들어진 디렉터리 규칙, 가짜 `gh`로 같은 image 기준점·대체·fork·다른 event, merge commit의 base, `check_sources` 탐침 workspace, workflow 변형(path filter, strace 설치, scope, artifact 이름, A1 없음).
+- 같은 workflow 점검을 b0d4bc97의 workflow에 돌리면 6건을 지적한다(`fix_checks_against_b0d4bc97_workflows.log`).
+- strace 6.8 탐침(`fix_strace_calls_probe.log`): 늘린 호출 목록을 `--seccomp-bpf`와 함께 받아들이고, 해석 결과가 기대와 같다. 탐침은 지우거나 바꾸는 호출을 모두 없는 경로에 대고 하므로 아무것도 지우지 않는다.
+- tokenizer 탐침(`fix_tokenizer_probe.log`).
+<!-- E2E -->
+- 도달성 검사 99/99, workflow YAML 3개 구문 통과, loop 검사기 통과(`fix_checks.log`).
+
+남는 틈과 비용(11.5에 더해):
+
+| 틈 또는 비용 | 내용 |
+|---|---|
+| image마다 기준점 사슬 | 새 image version의 첫 run은 full이다(전과 같다). 그 run은 같은 image의 run을 찾으려고 목록의 run artifact를 최대 100개 받는다 |
+| path filter 없음 | 측정한 입력에 닿지 않는 PR도 두 workflow를 선택 단계까지 돌린다(수 분). production.yml의 다른 job(fmt, clippy, docs, semver, bench)도 돈다. PR의 path filter는 PR 전체 diff를 보므로 `crates/**`를 한 번 건드린 PR은 전에도 매 push마다 돌았다. 새로 도는 것은 data만 바꾸는 PR과 main push다 |
+| `test-cli-fair-ab` | 무언가를 고르면 다른 runner에서 workspace를 coverage로 한 번 더 build한다. 아무것도 고르지 않으면 선택 단계에서 끝난다 |
+| 늘린 추적 호출 | 파일을 많이 만들고 지우는 test는 호출마다 약 0.2-0.4 ms(이 host)를 더 쓴다 |
+| `check_sources`의 한계 | 한 줄 pattern이다. 여러 줄에 걸친 구문, 다른 crate의 macro 뒤의 사용, block doc 주석(`/** */`)은 보지 않는다. 걸리면 두 test job이 self-test에서 실패하고, 고칠 것은 코드나 규칙이다 |
+| 소유자 확인 | `test-cli-fair-ab`는 연구 crate 두 개에 새 CI job을 준다. 대안은 그 test를 release 전 full suite에서만 돌리는 것이다(R27) |

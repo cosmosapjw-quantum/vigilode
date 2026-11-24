@@ -1584,23 +1584,28 @@ def baseline(args):
                 got = sh(["gh", "run", "download", str(r["id"]), "-R", repository, "-n", args.artifact,
                           "-D", tmp], check=False)
                 path = os.path.join(tmp, "outcome.json")
+                outcome, why = None, None
                 if got.returncode != 0 or not os.path.exists(path):
                     if got.returncode == 0 or "no valid artifacts found" in got.stderr:
-                        counts["without the artifact"] += 1
+                        why = "without the artifact"
                     else:
                         out["errors"].append(f"download of run {r['id']} failed (exit {got.returncode}): "
                                              f"{got.stderr.strip()[-300:]}")
-                    continue
-                outcome = load_json(path)
-                if outcome.get("schema") != SCHEMA_OUTCOME or not outcome.get("complete"):
-                    counts["not complete"] += 1
-                    continue
-                if args.head and not is_ancestor(root, outcome["head"], args.head):
-                    counts["not an ancestor"] += 1
-                    continue
-                if runner_image(outcome.get("environment") or {}) != image_now:
-                    counts["on another runner image"] += 1
-                    fallback = fallback or (r, outcome, tmp)
+                else:
+                    outcome = load_json(path)
+                    if outcome.get("schema") != SCHEMA_OUTCOME or not outcome.get("complete"):
+                        why = "not complete"
+                    elif args.head and not is_ancestor(root, outcome["head"], args.head):
+                        why = "not an ancestor"
+                    elif runner_image(outcome.get("environment") or {}) != image_now:
+                        why = "on another runner image"
+                        if fallback is None:
+                            fallback = (r, outcome, tmp)
+                if why:
+                    counts[why] += 1
+                if outcome is None or why:
+                    if fallback is None or fallback[2] != tmp:
+                        shutil.rmtree(tmp, ignore_errors=True)  # a passed-over run's artifact
                     continue
                 chosen = (r, outcome, tmp)
                 break
