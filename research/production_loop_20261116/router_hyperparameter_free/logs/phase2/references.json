@@ -1,0 +1,1074 @@
+{
+ "finished_utc": "2026-11-24T14:49:00Z",
+ "mpmath_dps": 50,
+ "references": {
+  "F2": {
+   "formula": "e^{-t}, t = 1",
+   "kind": "closed-form",
+   "y": [
+    0.36787944117144233
+   ],
+   "y_50_digits": [
+    "0.36787944117144232159552377016146086744581113103177"
+   ],
+   "y_bits": [
+    "3fd78b56362cef38"
+   ]
+  },
+  "N2": {
+   "formula": "(1, e^{-1000 t}), t = 1",
+   "kind": "closed-form",
+   "y": [
+    1.0,
+    0.0
+   ],
+   "y_50_digits": [
+    "1.0",
+    "5.0759588975494567652918094795743369193055992828928e-435"
+   ],
+   "y_bits": [
+    "3ff0000000000000",
+    "0000000000000000"
+   ]
+  },
+  "P_blowup": {
+   "kind": "none",
+   "why": "y' = y^2, y(0) = 1 blows up at t = 1 < t1 = 2",
+   "y": null
+  },
+  "P_fatal": {
+   "kind": "none",
+   "why": "fatal for t > 0.3: no arm reaches t1",
+   "y": null
+  },
+  "P_heat_banded": {
+   "formula": "heat modes, n = 8, y0 = 1, t = 0.01",
+   "kind": "closed-form",
+   "y": [
+    0.5696129114677337,
+    0.8688966501533036,
+    0.9697366700080241,
+    0.9936514953980963,
+    0.9936514953980963,
+    0.9697366700080241,
+    0.8688966501533036,
+    0.5696129114677337
+   ],
+   "y_50_digits": [
+    "0.56961291146773378948405892407002803373820556628968",
+    "0.86889665015330363329390469155739361352236011030392",
+    "0.96973667000802408979707422031978773148915090595518",
+    "0.99365149539809628829651817652162306940997119046582",
+    "0.99365149539809628829651817652162306940997119046582",
+    "0.96973667000802408979707422031978773148915090595517",
+    "0.86889665015330363329390469155739361352236011030392",
+    "0.56961291146773378948405892407002803373820556628969"
+   ],
+   "y_bits": [
+    "3fe23a44db4443aa",
+    "3febce0059006585",
+    "3fef0815326d5336",
+    "3fefcbfe388b66f5",
+    "3fefcbfe388b66f5",
+    "3fef0815326d5336",
+    "3febce0059006585",
+    "3fe23a44db4443aa"
+   ]
+  },
+  "P_heat_dense": {
+   "formula": "heat modes, n = 8, y0 = sin(pi x), t = 10",
+   "kind": "closed-form",
+   "y": [
+    1.271654777664274e-43,
+    2.3899292215165265e-43,
+    3.2199429296551074e-43,
+    3.6615839991808004e-43,
+    3.6615839991808004e-43,
+    3.2199429296551074e-43,
+    2.3899292215165265e-43,
+    1.271654777664274e-43
+   ],
+   "y_50_digits": [
+    "1.2716547776642740137553472575288881125309576511844e-43",
+    "2.3899292215165265595449910182935005429818844946124e-43",
+    "3.2199429296551072432929874996616887785139728901111e-43",
+    "3.6615839991808005733003382758223886555128421457968e-43",
+    "3.6615839991808005733003382758223886555128421457968e-43",
+    "3.2199429296551072432929874996616887785139728901111e-43",
+    "2.3899292215165265595449910182935005429818844946124e-43",
+    "1.2716547776642740137553472575288881125309576511844e-43"
+   ],
+   "y_bits": [
+    "3706afe46e8690ae",
+    "371551a23029faa3",
+    "371cb90cbeda7a3b",
+    "372054ca33b6a17d",
+    "372054ca33b6a17d",
+    "371cb90cbeda7a3b",
+    "371551a23029faa3",
+    "3706afe46e8690ae"
+   ]
+  },
+  "P_heat_fd": {
+   "formula": "heat modes, n = 8, y0 = sin(pi x), t = 100",
+   "kind": "closed-form",
+   "y": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "y_50_digits": [
+    "1.7267406413121025905015691110457387567963229528045e-425",
+    "3.2452108773042197361427149336831687018189787722899e-425",
+    "4.3722607872817758443156991179462205864630073274639e-425",
+    "4.9719515186163223266442840447289074586153017250944e-425",
+    "4.9719515186163223266442840447289074586153017250944e-425",
+    "4.3722607872817758443156991179462205864630073274639e-425",
+    "3.2452108773042197361427149336831687018189787722899e-425",
+    "1.7267406413121025905015691110457387567963229528045e-425"
+   ],
+   "y_bits": [
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000"
+   ]
+  },
+  "P_heat_jvp": {
+   "formula": "heat modes, n = 8, y0 = 1, t = 0.01",
+   "kind": "closed-form",
+   "y": [
+    0.5696129114677337,
+    0.8688966501533036,
+    0.9697366700080241,
+    0.9936514953980963,
+    0.9936514953980963,
+    0.9697366700080241,
+    0.8688966501533036,
+    0.5696129114677337
+   ],
+   "y_50_digits": [
+    "0.56961291146773378948405892407002803373820556628968",
+    "0.86889665015330363329390469155739361352236011030392",
+    "0.96973667000802408979707422031978773148915090595518",
+    "0.99365149539809628829651817652162306940997119046582",
+    "0.99365149539809628829651817652162306940997119046582",
+    "0.96973667000802408979707422031978773148915090595517",
+    "0.86889665015330363329390469155739361352236011030392",
+    "0.56961291146773378948405892407002803373820556628969"
+   ],
+   "y_bits": [
+    "3fe23a44db4443aa",
+    "3febce0059006585",
+    "3fef0815326d5336",
+    "3fefcbfe388b66f5",
+    "3fefcbfe388b66f5",
+    "3fef0815326d5336",
+    "3febce0059006585",
+    "3fe23a44db4443aa"
+   ]
+  },
+  "P_mass": {
+   "atol": 1e-14,
+   "attempts": 183,
+   "kind": "rodas5p",
+   "rtol": 1e-12,
+   "runs": [
+    {
+     "command": "taskset -c 0-5,12-17 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/v27-runner --arm R --problem P_mass --rtol 1e-12 --atol 1e-14 --no-log",
+     "exit_code": 0,
+     "stderr": "",
+     "stdout": "{\"arm\":\"R\",\"build\":\"N\",\"e5\":null,\"entries\":{\"fatal\":0,\"jacobian\":183,\"jvp\":0,\"rhs\":1464,\"rhs_by_kind\":null,\"time_derivative\":0},\"jacobian_callback\":true,\"n\":3,\"options\":{\"atol\":{\"kind\":\"scalar\",\"value\":1e-14},\"dense_output\":false,\"h0\":0.001,\"interior_error\":\"w-filtered-enforce\",\"max_steps\":100000,\"rtol\":1e-12,\"tier\":\"protected\"},\"pid\":1145099,\"problem\":\"P_mass\",\"regime\":\"Unknown\",\"repeat\":1,\"run\":{\"accepted_steps\":176,\"attempts\":183,\"counters\":{\"accepted_steps\":176,\"block_linear_iterations\":0,\"block_linear_solves\":0,\"block_matvecs\":0,\"block_preconditioner_apps\":0,\"diagnostic_matvecs\":1464,\"direct_factorizations\":183,\"direct_solve_calls\":1464,\"fallback_steps\":0,\"fast_accepts\":0,\"fast_attempts\":0,\"forced_stage_solves\":0,\"ft_calls\":183,\"harmonic_ritz_solves\":0,\"jacobian_builds\":183,\"jacobian_matvecs\":2745,\"jvp_calls\":0,\"jvp_vectors\":0,\"linear_iterations\":0,\"linear_matvec_vectors\":1464,\"linear_matvecs\":0,\"linear_solve_failures\":0,\"linear_solves\":1464,\"local_error_failures\":7,\"mass_matvecs\":1464,\"nonfinite_step_failures\":0,\"nonlinear_failures\":0,\"nonlinear_iterations\":0,\"nonlinear_jacobian_evaluations\":0,\"nonlinear_residual_evaluations\":0,\"nonlinear_solve_failures\":0,\"nonlinear_solves\":0,\"orthogonalization_inner_products\":0,\"orthogonalization_vector_updates\":0,\"phi_actions\":0,\"phi_dense_oracle_calls\":0,\"phi_krylov_vectors\":0,\"phi_projected_exponentials\":0,\"phi_restarts\":0,\"preconditioner_apps\":0,\"recycle_cross_operator_refreshes\":0,\"recycle_dropped_vectors\":0,\"recycle_projection_calls\":0,\"recycle_refresh_matvecs\":0,\"recycle_same_operator_uses\":0,\"recycle_updates\":0,\"recycle_vectors_selected\":0,\"rejected_steps\":7,\"rhs_batch_calls\":0,\"rhs_calls\":1464,\"rhs_evaluations\":1464},\"dopri5_attempts\":0,\"driver_id\":\"rodas5p-sequential-dense-v2\",\"final_state\":[0.9664597373330115,0.000030746265785699723,0.033509516401202956],\"final_state_bits\":[\"3feeed3cf897df84\",\"3f001eb1a5efc179\",\"3fa12828ca188be5\"],\"final_time\":1.0,\"final_time_bits\":\"3ff0000000000000\",\"operations\":103212.0,\"operations3\":\"309636\",\"rejected_steps\":7,\"rodas5p_attempts\":183,\"status\":{\"status\":\"success\"},\"stop\":null,\"success\":true},\"schema\":\"vigilode.v27.runner.v1\",\"span\":[0.0,1.0],\"span_bits\":[\"0000000000000000\",\"3ff0000000000000\"],\"y0_bits\":[\"3ff0000000000000\",\"0000000000000000\",\"0000000000000000\"]}"
+    }
+   ],
+   "t1_bits": "3ff0000000000000",
+   "y": [
+    0.9664597373330115,
+    3.0746265785699723e-05,
+    0.033509516401202956
+   ],
+   "y_bits": [
+    "3feeed3cf897df84",
+    "3f001eb1a5efc179",
+    "3fa12828ca188be5"
+   ]
+  },
+  "P_scalar_dense": {
+   "formula": "(k^2 cos t + k sin t)/(1 + k^2) + e^{-k t}/(1 + k^2), k = 1e6, t = 1",
+   "kind": "closed-form",
+   "y": [
+    0.5403031473385842
+   ],
+   "y_50_digits": [
+    "0.54030314733858422215010467572314812935558689505163"
+   ],
+   "y_bits": [
+    "3fe14a29d377d7c4"
+   ]
+  },
+  "P_scalar_fd": {
+   "formula": "(k^2 cos t + k sin t)/(1 + k^2) + e^{-k t}/(1 + k^2), k = 1e6, t = 1",
+   "kind": "closed-form",
+   "y": [
+    0.5403031473385842
+   ],
+   "y_50_digits": [
+    "0.54030314733858422215010467572314812935558689505163"
+   ],
+   "y_bits": [
+    "3fe14a29d377d7c4"
+   ]
+  },
+  "arenstorf": {
+   "atol": 1e-14,
+   "attempts": 5655,
+   "kind": "rodas5p",
+   "rtol": 1e-12,
+   "runs": [
+    {
+     "command": "taskset -c 0-5,12-17 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/v27-runner --arm R --problem arenstorf --rtol 1e-12 --atol 1e-14 --no-log",
+     "exit_code": 0,
+     "stderr": "",
+     "stdout": "{\"arm\":\"R\",\"build\":\"N\",\"e5\":null,\"entries\":{\"fatal\":0,\"jacobian\":0,\"jvp\":0,\"rhs\":73371,\"rhs_by_kind\":null,\"time_derivative\":0},\"jacobian_callback\":false,\"n\":4,\"options\":{\"atol\":{\"kind\":\"scalar\",\"value\":1e-14},\"dense_output\":false,\"h0\":0.001,\"interior_error\":\"w-filtered-enforce\",\"max_steps\":100000,\"rtol\":1e-12,\"tier\":\"protected\"},\"pid\":1145075,\"problem\":\"arenstorf\",\"regime\":\"Unknown\",\"repeat\":1,\"run\":{\"accepted_steps\":5631,\"attempts\":5655,\"counters\":{\"accepted_steps\":5631,\"block_linear_iterations\":0,\"block_linear_solves\":0,\"block_matvecs\":0,\"block_preconditioner_apps\":0,\"diagnostic_matvecs\":0,\"direct_factorizations\":5655,\"direct_solve_calls\":45240,\"fallback_steps\":0,\"fast_accepts\":0,\"fast_attempts\":0,\"forced_stage_solves\":0,\"ft_calls\":0,\"harmonic_ritz_solves\":0,\"jacobian_builds\":5631,\"jvp_calls\":0,\"jvp_vectors\":0,\"linear_iterations\":0,\"linear_matvecs\":0,\"linear_solve_failures\":0,\"linear_solves\":45240,\"local_error_failures\":24,\"mass_matvecs\":0,\"nonfinite_step_failures\":0,\"nonlinear_failures\":0,\"nonlinear_iterations\":0,\"nonlinear_jacobian_evaluations\":0,\"nonlinear_residual_evaluations\":0,\"nonlinear_solve_failures\":0,\"nonlinear_solves\":0,\"orthogonalization_inner_products\":0,\"orthogonalization_vector_updates\":0,\"phi_actions\":0,\"phi_dense_oracle_calls\":0,\"phi_krylov_vectors\":0,\"phi_projected_exponentials\":0,\"phi_restarts\":0,\"preconditioner_apps\":0,\"recycle_cross_operator_refreshes\":0,\"recycle_dropped_vectors\":0,\"recycle_projection_calls\":0,\"recycle_refresh_matvecs\":0,\"recycle_same_operator_uses\":0,\"recycle_updates\":0,\"recycle_vectors_selected\":0,\"rejected_steps\":24,\"rhs_batch_calls\":0,\"rhs_calls\":73371,\"rhs_evaluations\":73371},\"dopri5_attempts\":0,\"driver_id\":\"rodas5p-fast-transformed-v2\",\"final_state\":[0.9939999999757823,-6.409562354298639e-11,-1.0492937100853711e-8,-2.001585110150181],\"final_state_bits\":[\"3fefced91683d6ec\",\"bdd19e541aef81e3\",\"be46888d9cf07d7a\",\"c000033f0de20b70\"],\"final_time\":17.065216560157964,\"final_time_bits\":\"403110b20851093c\",\"operations\":4764512.0,\"operations3\":\"14293536\",\"rejected_steps\":24,\"rodas5p_attempts\":5655,\"status\":{\"status\":\"success\"},\"stop\":null,\"success\":true},\"schema\":\"vigilode.v27.runner.v1\",\"span\":[0.0,17.065216560157964],\"span_bits\":[\"0000000000000000\",\"403110b20851093c\"],\"y0_bits\":[\"3fefced916872b02\",\"0000000000000000\",\"0000000000000000\",\"c000033f0d607881\"]}"
+    }
+   ],
+   "t1_bits": "403110b20851093c",
+   "y": [
+    0.9939999999757823,
+    -6.409562354298639e-11,
+    -1.0492937100853711e-08,
+    -2.001585110150181
+   ],
+   "y_bits": [
+    "3fefced91683d6ec",
+    "bdd19e541aef81e3",
+    "be46888d9cf07d7a",
+    "c000033f0de20b70"
+   ]
+  },
+  "brusselator_2": {
+   "atol": 1e-14,
+   "attempts": 3035,
+   "kind": "rodas5p",
+   "rtol": 1e-12,
+   "runs": [
+    {
+     "command": "taskset -c 0-5,12-17 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/v27-runner --arm R --problem brusselator_2 --rtol 1e-12 --atol 1e-14 --no-log",
+     "exit_code": 0,
+     "stderr": "",
+     "stdout": "{\"arm\":\"R\",\"build\":\"N\",\"e5\":null,\"entries\":{\"fatal\":0,\"jacobian\":0,\"jvp\":0,\"rhs\":33309,\"rhs_by_kind\":null,\"time_derivative\":0},\"jacobian_callback\":false,\"n\":2,\"options\":{\"atol\":{\"kind\":\"scalar\",\"value\":1e-14},\"dense_output\":false,\"h0\":0.001,\"interior_error\":\"w-filtered-enforce\",\"max_steps\":100000,\"rtol\":1e-12,\"tier\":\"protected\"},\"pid\":1145076,\"problem\":\"brusselator_2\",\"regime\":\"Unknown\",\"repeat\":1,\"run\":{\"accepted_steps\":3016,\"attempts\":3035,\"counters\":{\"accepted_steps\":3016,\"block_linear_iterations\":0,\"block_linear_solves\":0,\"block_matvecs\":0,\"block_preconditioner_apps\":0,\"diagnostic_matvecs\":0,\"direct_factorizations\":3035,\"direct_solve_calls\":24280,\"fallback_steps\":0,\"fast_accepts\":0,\"fast_attempts\":0,\"forced_stage_solves\":0,\"ft_calls\":0,\"harmonic_ritz_solves\":0,\"jacobian_builds\":3016,\"jvp_calls\":0,\"jvp_vectors\":0,\"linear_iterations\":0,\"linear_matvecs\":0,\"linear_solve_failures\":0,\"linear_solves\":24280,\"local_error_failures\":19,\"mass_matvecs\":0,\"nonfinite_step_failures\":0,\"nonlinear_failures\":0,\"nonlinear_iterations\":0,\"nonlinear_jacobian_evaluations\":0,\"nonlinear_residual_evaluations\":0,\"nonlinear_solve_failures\":0,\"nonlinear_solves\":0,\"orthogonalization_inner_products\":0,\"orthogonalization_vector_updates\":0,\"phi_actions\":0,\"phi_dense_oracle_calls\":0,\"phi_krylov_vectors\":0,\"phi_projected_exponentials\":0,\"phi_restarts\":0,\"preconditioner_apps\":0,\"recycle_cross_operator_refreshes\":0,\"recycle_dropped_vectors\":0,\"recycle_projection_calls\":0,\"recycle_refresh_matvecs\":0,\"recycle_same_operator_uses\":0,\"recycle_updates\":0,\"recycle_vectors_selected\":0,\"rejected_steps\":19,\"rhs_batch_calls\":0,\"rhs_calls\":33309,\"rhs_evaluations\":33309},\"dopri5_attempts\":0,\"driver_id\":\"rodas5p-fast-transformed-v2\",\"final_state\":[0.4986370712644761,4.5967803494486414],\"final_state_bits\":[\"3fdfe9ab7669dd88\",\"4012631a634f1c06\"],\"final_time\":20.0,\"final_time_bits\":\"4034000000000000\",\"operations\":1011514.6666666666,\"operations3\":\"3034544\",\"rejected_steps\":19,\"rodas5p_attempts\":3035,\"status\":{\"status\":\"success\"},\"stop\":null,\"success\":true},\"schema\":\"vigilode.v27.runner.v1\",\"span\":[0.0,20.0],\"span_bits\":[\"0000000000000000\",\"4034000000000000\"],\"y0_bits\":[\"3ff8000000000000\",\"4008000000000000\"]}"
+    }
+   ],
+   "t1_bits": "4034000000000000",
+   "y": [
+    0.4986370712644761,
+    4.5967803494486414
+   ],
+   "y_bits": [
+    "3fdfe9ab7669dd88",
+    "4012631a634f1c06"
+   ]
+  },
+  "damped_osc": {
+   "formula": "y1 = e^{-a t}(cos w t + (a/w) sin w t), y2 = -e^{-a t} (1e4/w) sin w t, a = 0.1, w = sqrt(1e4 - a^2), t = 10",
+   "kind": "closed-form",
+   "y": [
+    0.20734385912812664,
+    -30.40886534356537
+   ],
+   "y_50_digits": [
+    "0.2073438591281266525714884537891050834190759363388",
+    "-30.408865343565371105398347839718061951060690679409"
+   ],
+   "y_bits": [
+    "3fca8a3e5afda97e",
+    "c03e68ab662f14c1"
+   ]
+  },
+  "flame_1e-2": {
+   "atol": 1e-14,
+   "attempts": 981,
+   "kind": "rodas5p",
+   "rtol": 1e-12,
+   "runs": [
+    {
+     "command": "taskset -c 0-5,12-17 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/v27-runner --arm R --problem flame_1e-2 --rtol 1e-12 --atol 1e-14 --no-log",
+     "exit_code": 0,
+     "stderr": "",
+     "stdout": "{\"arm\":\"R\",\"build\":\"N\",\"e5\":null,\"entries\":{\"fatal\":0,\"jacobian\":0,\"jvp\":0,\"rhs\":9792,\"rhs_by_kind\":null,\"time_derivative\":0},\"jacobian_callback\":false,\"n\":1,\"options\":{\"atol\":{\"kind\":\"scalar\",\"value\":1e-14},\"dense_output\":false,\"h0\":0.001,\"interior_error\":\"w-filtered-enforce\",\"max_steps\":100000,\"rtol\":1e-12,\"tier\":\"protected\"},\"pid\":1145069,\"problem\":\"flame_1e-2\",\"regime\":\"Unknown\",\"repeat\":1,\"run\":{\"accepted_steps\":975,\"attempts\":981,\"counters\":{\"accepted_steps\":975,\"block_linear_iterations\":0,\"block_linear_solves\":0,\"block_matvecs\":0,\"block_preconditioner_apps\":0,\"diagnostic_matvecs\":0,\"direct_factorizations\":981,\"direct_solve_calls\":7848,\"fallback_steps\":0,\"fast_accepts\":0,\"fast_attempts\":0,\"forced_stage_solves\":0,\"ft_calls\":0,\"harmonic_ritz_solves\":0,\"jacobian_builds\":975,\"jvp_calls\":0,\"jvp_vectors\":0,\"linear_iterations\":0,\"linear_matvecs\":0,\"linear_solve_failures\":0,\"linear_solves\":7848,\"local_error_failures\":6,\"mass_matvecs\":0,\"nonfinite_step_failures\":0,\"nonlinear_failures\":0,\"nonlinear_iterations\":0,\"nonlinear_jacobian_evaluations\":0,\"nonlinear_residual_evaluations\":0,\"nonlinear_solve_failures\":0,\"nonlinear_solves\":0,\"orthogonalization_inner_products\":0,\"orthogonalization_vector_updates\":0,\"phi_actions\":0,\"phi_dense_oracle_calls\":0,\"phi_krylov_vectors\":0,\"phi_projected_exponentials\":0,\"phi_restarts\":0,\"preconditioner_apps\":0,\"recycle_cross_operator_refreshes\":0,\"recycle_dropped_vectors\":0,\"recycle_projection_calls\":0,\"recycle_refresh_matvecs\":0,\"recycle_same_operator_uses\":0,\"recycle_updates\":0,\"recycle_vectors_selected\":0,\"rejected_steps\":6,\"rhs_batch_calls\":0,\"rhs_calls\":9792,\"rhs_evaluations\":9792},\"dopri5_attempts\":0,\"driver_id\":\"rodas5p-fast-transformed-v2\",\"final_state\":[1.0],\"final_state_bits\":[\"3ff0000000000000\"],\"final_time\":200.0,\"final_time_bits\":\"4069000000000000\",\"operations\":143868.0,\"operations3\":\"431604\",\"rejected_steps\":6,\"rodas5p_attempts\":981,\"status\":{\"status\":\"success\"},\"stop\":null,\"success\":true},\"schema\":\"vigilode.v27.runner.v1\",\"span\":[0.0,200.0],\"span_bits\":[\"0000000000000000\",\"4069000000000000\"],\"y0_bits\":[\"3f847ae147ae147b\"]}"
+    }
+   ],
+   "t1_bits": "4069000000000000",
+   "y": [
+    1.0
+   ],
+   "y_bits": [
+    "3ff0000000000000"
+   ]
+  },
+  "flame_1e-3": {
+   "atol": 1e-14,
+   "attempts": 1505,
+   "kind": "rodas5p",
+   "rtol": 1e-12,
+   "runs": [
+    {
+     "command": "taskset -c 0-5,12-17 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/v27-runner --arm R --problem flame_1e-3 --rtol 1e-12 --atol 1e-14 --no-log",
+     "exit_code": 0,
+     "stderr": "",
+     "stdout": "{\"arm\":\"R\",\"build\":\"N\",\"e5\":null,\"entries\":{\"fatal\":0,\"jacobian\":0,\"jvp\":0,\"rhs\":15035,\"rhs_by_kind\":null,\"time_derivative\":0},\"jacobian_callback\":false,\"n\":1,\"options\":{\"atol\":{\"kind\":\"scalar\",\"value\":1e-14},\"dense_output\":false,\"h0\":0.001,\"interior_error\":\"w-filtered-enforce\",\"max_steps\":100000,\"rtol\":1e-12,\"tier\":\"protected\"},\"pid\":1145070,\"problem\":\"flame_1e-3\",\"regime\":\"Unknown\",\"repeat\":1,\"run\":{\"accepted_steps\":1500,\"attempts\":1505,\"counters\":{\"accepted_steps\":1500,\"block_linear_iterations\":0,\"block_linear_solves\":0,\"block_matvecs\":0,\"block_preconditioner_apps\":0,\"diagnostic_matvecs\":0,\"direct_factorizations\":1505,\"direct_solve_calls\":12040,\"fallback_steps\":0,\"fast_accepts\":0,\"fast_attempts\":0,\"forced_stage_solves\":0,\"ft_calls\":0,\"harmonic_ritz_solves\":0,\"jacobian_builds\":1500,\"jvp_calls\":0,\"jvp_vectors\":0,\"linear_iterations\":0,\"linear_matvecs\":0,\"linear_solve_failures\":0,\"linear_solves\":12040,\"local_error_failures\":5,\"mass_matvecs\":0,\"nonfinite_step_failures\":0,\"nonlinear_failures\":0,\"nonlinear_iterations\":0,\"nonlinear_jacobian_evaluations\":0,\"nonlinear_residual_evaluations\":0,\"nonlinear_solve_failures\":0,\"nonlinear_solves\":0,\"orthogonalization_inner_products\":0,\"orthogonalization_vector_updates\":0,\"phi_actions\":0,\"phi_dense_oracle_calls\":0,\"phi_krylov_vectors\":0,\"phi_projected_exponentials\":0,\"phi_restarts\":0,\"preconditioner_apps\":0,\"recycle_cross_operator_refreshes\":0,\"recycle_dropped_vectors\":0,\"recycle_projection_calls\":0,\"recycle_refresh_matvecs\":0,\"recycle_same_operator_uses\":0,\"recycle_updates\":0,\"recycle_vectors_selected\":0,\"rejected_steps\":5,\"rhs_batch_calls\":0,\"rhs_calls\":15035,\"rhs_evaluations\":15035},\"dopri5_attempts\":0,\"driver_id\":\"rodas5p-fast-transformed-v2\",\"final_state\":[1.0],\"final_state_bits\":[\"3ff0000000000000\"],\"final_time\":2000.0,\"final_time_bits\":\"409f400000000000\",\"operations\":220723.33333333334,\"operations3\":\"662170\",\"rejected_steps\":5,\"rodas5p_attempts\":1505,\"status\":{\"status\":\"success\"},\"stop\":null,\"success\":true},\"schema\":\"vigilode.v27.runner.v1\",\"span\":[0.0,2000.0],\"span_bits\":[\"0000000000000000\",\"409f400000000000\"],\"y0_bits\":[\"3f50624dd2f1a9fc\"]}"
+    }
+   ],
+   "t1_bits": "409f400000000000",
+   "y": [
+    1.0
+   ],
+   "y_bits": [
+    "3ff0000000000000"
+   ]
+  },
+  "flame_1e-4": {
+   "atol": 1e-14,
+   "attempts": 2077,
+   "kind": "rodas5p",
+   "rtol": 1e-12,
+   "runs": [
+    {
+     "command": "taskset -c 0-5,12-17 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/v27-runner --arm R --problem flame_1e-4 --rtol 1e-12 --atol 1e-14 --no-log",
+     "exit_code": 0,
+     "stderr": "",
+     "stdout": "{\"arm\":\"R\",\"build\":\"N\",\"e5\":null,\"entries\":{\"fatal\":0,\"jacobian\":0,\"jvp\":0,\"rhs\":20752,\"rhs_by_kind\":null,\"time_derivative\":0},\"jacobian_callback\":false,\"n\":1,\"options\":{\"atol\":{\"kind\":\"scalar\",\"value\":1e-14},\"dense_output\":false,\"h0\":0.001,\"interior_error\":\"w-filtered-enforce\",\"max_steps\":100000,\"rtol\":1e-12,\"tier\":\"protected\"},\"pid\":1145071,\"problem\":\"flame_1e-4\",\"regime\":\"Unknown\",\"repeat\":1,\"run\":{\"accepted_steps\":2071,\"attempts\":2077,\"counters\":{\"accepted_steps\":2071,\"block_linear_iterations\":0,\"block_linear_solves\":0,\"block_matvecs\":0,\"block_preconditioner_apps\":0,\"diagnostic_matvecs\":0,\"direct_factorizations\":2077,\"direct_solve_calls\":16616,\"fallback_steps\":0,\"fast_accepts\":0,\"fast_attempts\":0,\"forced_stage_solves\":0,\"ft_calls\":0,\"harmonic_ritz_solves\":0,\"jacobian_builds\":2071,\"jvp_calls\":0,\"jvp_vectors\":0,\"linear_iterations\":0,\"linear_matvecs\":0,\"linear_solve_failures\":0,\"linear_solves\":16616,\"local_error_failures\":6,\"mass_matvecs\":0,\"nonfinite_step_failures\":0,\"nonlinear_failures\":0,\"nonlinear_iterations\":0,\"nonlinear_jacobian_evaluations\":0,\"nonlinear_residual_evaluations\":0,\"nonlinear_solve_failures\":0,\"nonlinear_solves\":0,\"orthogonalization_inner_products\":0,\"orthogonalization_vector_updates\":0,\"phi_actions\":0,\"phi_dense_oracle_calls\":0,\"phi_krylov_vectors\":0,\"phi_projected_exponentials\":0,\"phi_restarts\":0,\"preconditioner_apps\":0,\"recycle_cross_operator_refreshes\":0,\"recycle_dropped_vectors\":0,\"recycle_projection_calls\":0,\"recycle_refresh_matvecs\":0,\"recycle_same_operator_uses\":0,\"recycle_updates\":0,\"recycle_vectors_selected\":0,\"rejected_steps\":6,\"rhs_batch_calls\":0,\"rhs_calls\":20752,\"rhs_evaluations\":20752},\"dopri5_attempts\":0,\"driver_id\":\"rodas5p-fast-transformed-v2\",\"final_state\":[1.0],\"final_state_bits\":[\"3ff0000000000000\"],\"final_time\":20000.0,\"final_time_bits\":\"40d3880000000000\",\"operations\":304614.6666666667,\"operations3\":\"913844\",\"rejected_steps\":6,\"rodas5p_attempts\":2077,\"status\":{\"status\":\"success\"},\"stop\":null,\"success\":true},\"schema\":\"vigilode.v27.runner.v1\",\"span\":[0.0,20000.0],\"span_bits\":[\"0000000000000000\",\"40d3880000000000\"],\"y0_bits\":[\"3f1a36e2eb1c432d\"]}"
+    }
+   ],
+   "t1_bits": "40d3880000000000",
+   "y": [
+    1.0
+   ],
+   "y_bits": [
+    "3ff0000000000000"
+   ]
+  },
+  "heat_64_fd": {
+   "formula": "heat modes, n = 64, y0 = sin(pi x), t = 10",
+   "kind": "closed-form",
+   "y": [
+    6.749374058125324e-45,
+    1.3482984640403307e-44,
+    2.0185105087314862e-44,
+    2.6840082286011146e-44,
+    3.343237322888393e-44,
+    3.9946581314980047e-44,
+    4.636749230947633e-44,
+    5.268010987722999e-44,
+    5.886969060741422e-44,
+    6.49217784474373e-44,
+    7.082223846572327e-44,
+    7.655728986449957e-44,
+    8.211353816548874e-44,
+    8.747800649333314e-44,
+    9.26381658836886e-44,
+    9.758196454520116e-44,
+    1.0229785600702424e-43,
+    1.0677482608613625e-43,
+    1.1100241861147552e-43,
+    1.149707598448121e-43,
+    1.186705815413211e-43,
+    1.220932425959978e-43,
+    1.2523074922535879e-43,
+    1.2807577363729376e-43,
+    1.3062167114546346e-43,
+    1.3286249568827247e-43,
+    1.3479301371617171e-43,
+    1.3640871641485579e-43,
+    1.377058302358078e-43,
+    1.3868132570959667e-43,
+    1.3933292452134343e-43,
+    1.3965910483183124e-43,
+    1.3965910483183124e-43,
+    1.3933292452134343e-43,
+    1.3868132570959667e-43,
+    1.377058302358078e-43,
+    1.3640871641485579e-43,
+    1.3479301371617171e-43,
+    1.3286249568827247e-43,
+    1.3062167114546346e-43,
+    1.2807577363729376e-43,
+    1.2523074922535879e-43,
+    1.220932425959978e-43,
+    1.186705815413211e-43,
+    1.149707598448121e-43,
+    1.1100241861147552e-43,
+    1.0677482608613625e-43,
+    1.0229785600702424e-43,
+    9.758196454520116e-44,
+    9.26381658836886e-44,
+    8.747800649333314e-44,
+    8.211353816548874e-44,
+    7.655728986449957e-44,
+    7.082223846572327e-44,
+    6.49217784474373e-44,
+    5.886969060741422e-44,
+    5.268010987722999e-44,
+    4.636749230947633e-44,
+    3.9946581314980047e-44,
+    3.343237322888393e-44,
+    2.6840082286011146e-44,
+    2.0185105087314862e-44,
+    1.3482984640403307e-44,
+    6.749374058125324e-45
+   ],
+   "y_50_digits": [
+    "6.7493740581253240488199325574056719720552156700553e-45",
+    "1.3482984640403308578642638751710004824341188042326e-44",
+    "2.0185105087314861652447643758675163930195029960916e-44",
+    "2.6840082286011145977602150084981859677832639289192e-44",
+    "3.3432373228883929778076034374532443127086692437077e-44",
+    "3.9946581314980046467962278599660384130067555175517e-44",
+    "4.6367492309476327617106156560238799264496891996211e-44",
+    "5.2680109877229989308159339284715391724940752436709e-44",
+    "5.8869690607414218498340997773685519135976893707535e-44",
+    "6.4921778447437300095320749721623365586166755388531e-44",
+    "7.0822238465723271118352480639043336331981088806395e-44",
+    "7.6557289864499563316714375470380490377674928679606e-44",
+    "8.2113538165488739047154763170295136029473698613494e-44",
+    "8.7478006493333146026012663755172617085720591069497e-44",
+    "9.2638165883688603146508255935974969400840027531552e-44",
+    "9.758196454520116022194449237183059025779854894858e-44",
+    "1.0229785600702422906859771166125129221139228031016e-43",
+    "1.0677482608613625544368466728576607840808367965129e-43",
+    "1.1100241861147551187557762312050117310573184793139e-43",
+    "1.1497075984481210264090518824527278688651575421756e-43",
+    "1.186705815413211027713407894639257971566864653629e-43",
+    "1.2209324259599779400427408279194498719456560629745e-43",
+    "1.252307492253587918996450678483627566178906601322e-43",
+    "1.2807577363729376601443832616554445781721349437444e-43",
+    "1.3062167114546344936831525476711921316518897053173e-43",
+    "1.3286249568827246764770986715094529676532992521853e-43",
+    "1.3479301371617170802879361049450566790117941725157e-43",
+    "1.3640871641485578946395146271076608606173124505727e-43",
+    "1.3770583023580779037382116673989481735932742373134e-43",
+    "1.3868132570959665859692864659452890059214835361087e-43",
+    "1.3933292452134343912879008309044404071274270014041e-43",
+    "1.3965910483183124043141437620587477659768315497721e-43",
+    "1.3965910483183124043141437620587477659768315497721e-43",
+    "1.3933292452134343912879008309044404071274270014041e-43",
+    "1.3868132570959665859692864659452890059214835361087e-43",
+    "1.3770583023580779037382116673989481735932742373134e-43",
+    "1.3640871641485578946395146271076608606173124505727e-43",
+    "1.3479301371617170802879361049450566790117941725157e-43",
+    "1.3286249568827246764770986715094529676532992521853e-43",
+    "1.3062167114546344936831525476711921316518897053173e-43",
+    "1.2807577363729376601443832616554445781721349437444e-43",
+    "1.252307492253587918996450678483627566178906601322e-43",
+    "1.2209324259599779400427408279194498719456560629745e-43",
+    "1.186705815413211027713407894639257971566864653629e-43",
+    "1.1497075984481210264090518824527278688651575421755e-43",
+    "1.1100241861147551187557762312050117310573184793139e-43",
+    "1.0677482608613625544368466728576607840808367965129e-43",
+    "1.0229785600702422906859771166125129221139228031015e-43",
+    "9.758196454520116022194449237183059025779854894858e-44",
+    "9.2638165883688603146508255935974969400840027531552e-44",
+    "8.7478006493333146026012663755172617085720591069497e-44",
+    "8.2113538165488739047154763170295136029473698613493e-44",
+    "7.6557289864499563316714375470380490377674928679606e-44",
+    "7.0822238465723271118352480639043336331981088806395e-44",
+    "6.492177844743730009532074972162336558616675538853e-44",
+    "5.8869690607414218498340997773685519135976893707535e-44",
+    "5.2680109877229989308159339284715391724940752436708e-44",
+    "4.6367492309476327617106156560238799264496891996211e-44",
+    "3.9946581314980046467962278599660384130067555175517e-44",
+    "3.3432373228883929778076034374532443127086692437076e-44",
+    "2.6840082286011145977602150084981859677832639289192e-44",
+    "2.0185105087314861652447643758675163930195029960916e-44",
+    "1.3482984640403308578642638751710004824341188042326e-44",
+    "6.7493740581253240488199325574056719720552156700552e-45"
+   ],
+   "y_bits": [
+    "36c3441c517db428",
+    "36d33e59dd3bece4",
+    "36dccf241ac8e0a9",
+    "36e3275a5fe7923c",
+    "36e7dbaefb9ba851",
+    "36ec81bfced4164d",
+    "36f08b62a7a567e7",
+    "36f2cc0111c72e16",
+    "36f50162632c044c",
+    "36f72a349167c7e5",
+    "36f9452d1462dc8e",
+    "36fb5109abfa1f76",
+    "36fd4c9120ab551d",
+    "36ff3693fedadecd",
+    "370086f6a6215fa7",
+    "370168c19b8f3a1e",
+    "37024023df5573e5",
+    "37030c9caa4ade07",
+    "3703cdb1bb7db51e",
+    "370482efa14c119b",
+    "37052be9fe6a04aa",
+    "3705c83bcaac1ca6",
+    "370657878f6f940f",
+    "3706d9779f7c0d03",
+    "37074dbe4a3d6fc8",
+    "3707b4160a374ba4",
+    "37080c41ae95f431",
+    "3708560c7fc480c7",
+    "3708914a5ef1ce26",
+    "3708bdd7e071a9d6",
+    "3708db9a60ea6192",
+    "3708ea8015420d32",
+    "3708ea8015420d32",
+    "3708db9a60ea6192",
+    "3708bdd7e071a9d6",
+    "3708914a5ef1ce26",
+    "3708560c7fc480c7",
+    "37080c41ae95f431",
+    "3707b4160a374ba4",
+    "37074dbe4a3d6fc8",
+    "3706d9779f7c0d03",
+    "370657878f6f940f",
+    "3705c83bcaac1ca6",
+    "37052be9fe6a04aa",
+    "370482efa14c119b",
+    "3703cdb1bb7db51e",
+    "37030c9caa4ade07",
+    "37024023df5573e5",
+    "370168c19b8f3a1e",
+    "370086f6a6215fa7",
+    "36ff3693fedadecd",
+    "36fd4c9120ab551d",
+    "36fb5109abfa1f76",
+    "36f9452d1462dc8e",
+    "36f72a349167c7e5",
+    "36f50162632c044c",
+    "36f2cc0111c72e16",
+    "36f08b62a7a567e7",
+    "36ec81bfced4164d",
+    "36e7dbaefb9ba851",
+    "36e3275a5fe7923c",
+    "36dccf241ac8e0a9",
+    "36d33e59dd3bece4",
+    "36c3441c517db428"
+   ]
+  },
+  "hires": {
+   "atol": 1e-14,
+   "attempts": 4134,
+   "kind": "rodas5p",
+   "rtol": 1e-12,
+   "runs": [
+    {
+     "command": "taskset -c 0-5,12-17 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/v27-runner --arm R --problem hires --rtol 1e-12 --atol 1e-14 --no-log",
+     "exit_code": 0,
+     "stderr": "",
+     "stdout": "{\"arm\":\"R\",\"build\":\"N\",\"e5\":null,\"entries\":{\"fatal\":0,\"jacobian\":0,\"jvp\":0,\"rhs\":70238,\"rhs_by_kind\":null,\"time_derivative\":0},\"jacobian_callback\":false,\"n\":8,\"options\":{\"atol\":{\"kind\":\"scalar\",\"value\":1e-14},\"dense_output\":false,\"h0\":0.001,\"interior_error\":\"w-filtered-enforce\",\"max_steps\":100000,\"rtol\":1e-12,\"tier\":\"protected\"},\"pid\":1145065,\"problem\":\"hires\",\"regime\":\"Unknown\",\"repeat\":1,\"run\":{\"accepted_steps\":4130,\"attempts\":4134,\"counters\":{\"accepted_steps\":4130,\"block_linear_iterations\":0,\"block_linear_solves\":0,\"block_matvecs\":0,\"block_preconditioner_apps\":0,\"diagnostic_matvecs\":0,\"direct_factorizations\":4134,\"direct_solve_calls\":33072,\"fallback_steps\":0,\"fast_accepts\":0,\"fast_attempts\":0,\"forced_stage_solves\":0,\"ft_calls\":0,\"harmonic_ritz_solves\":0,\"jacobian_builds\":4130,\"jvp_calls\":0,\"jvp_vectors\":0,\"linear_iterations\":0,\"linear_matvecs\":0,\"linear_solve_failures\":0,\"linear_solves\":33072,\"local_error_failures\":4,\"mass_matvecs\":0,\"nonfinite_step_failures\":0,\"nonlinear_failures\":0,\"nonlinear_iterations\":0,\"nonlinear_jacobian_evaluations\":0,\"nonlinear_residual_evaluations\":0,\"nonlinear_solve_failures\":0,\"nonlinear_solves\":0,\"orthogonalization_inner_products\":0,\"orthogonalization_vector_updates\":0,\"phi_actions\":0,\"phi_dense_oracle_calls\":0,\"phi_krylov_vectors\":0,\"phi_projected_exponentials\":0,\"phi_restarts\":0,\"preconditioner_apps\":0,\"recycle_cross_operator_refreshes\":0,\"recycle_dropped_vectors\":0,\"recycle_projection_calls\":0,\"recycle_refresh_matvecs\":0,\"recycle_same_operator_uses\":0,\"recycle_updates\":0,\"recycle_vectors_selected\":0,\"rejected_steps\":4,\"rhs_batch_calls\":0,\"rhs_calls\":70238,\"rhs_evaluations\":70238},\"dopri5_attempts\":0,\"driver_id\":\"rodas5p-fast-transformed-v2\",\"final_state\":[0.0007371312573325543,0.00014424857263161593,0.000058887297409673326,0.0011756513432831252,0.0023863561988309375,0.006238968252740746,0.002849998395186522,0.0028500016048133847],\"final_state_bits\":[\"3f4827815251304b\",\"3f22e82dcdcc0f16\",\"3f0edfb821d787ba\",\"3f53430a04899e06\",\"3f638c8d3a942891\",\"3f798e0849b36b94\",\"3f6758e13cd4d110\",\"3f6758e2f5f585c0\"],\"final_time\":321.8122,\"final_time_bits\":\"40741cfec56d5cfb\",\"operations\":10406144.0,\"operations3\":\"31218432\",\"rejected_steps\":4,\"rodas5p_attempts\":4134,\"status\":{\"status\":\"success\"},\"stop\":null,\"success\":true},\"schema\":\"vigilode.v27.runner.v1\",\"span\":[0.0,321.8122],\"span_bits\":[\"0000000000000000\",\"40741cfec56d5cfb\"],\"y0_bits\":[\"3ff0000000000000\",\"0000000000000000\",\"0000000000000000\",\"0000000000000000\",\"0000000000000000\",\"0000000000000000\",\"0000000000000000\",\"3f7758e219652bd4\"]}"
+    }
+   ],
+   "t1_bits": "40741cfec56d5cfb",
+   "y": [
+    0.0007371312573325543,
+    0.00014424857263161593,
+    5.8887297409673326e-05,
+    0.0011756513432831252,
+    0.0023863561988309375,
+    0.006238968252740746,
+    0.002849998395186522,
+    0.0028500016048133847
+   ],
+   "y_bits": [
+    "3f4827815251304b",
+    "3f22e82dcdcc0f16",
+    "3f0edfb821d787ba",
+    "3f53430a04899e06",
+    "3f638c8d3a942891",
+    "3f798e0849b36b94",
+    "3f6758e13cd4d110",
+    "3f6758e2f5f585c0"
+   ]
+  },
+  "kt_vanishing": {
+   "atol": 1e-14,
+   "attempts": 2110,
+   "kind": "rodas5p",
+   "rtol": 1e-12,
+   "runs": [
+    {
+     "command": "taskset -c 0-5,12-17 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/v27-runner --arm R --problem kt_vanishing --rtol 1e-12 --atol 1e-14 --no-log",
+     "exit_code": 0,
+     "stderr": "",
+     "stdout": "{\"arm\":\"R\",\"build\":\"N\",\"e5\":null,\"entries\":{\"fatal\":0,\"jacobian\":0,\"jvp\":0,\"rhs\":25250,\"rhs_by_kind\":null,\"time_derivative\":0},\"jacobian_callback\":false,\"n\":1,\"options\":{\"atol\":{\"kind\":\"scalar\",\"value\":1e-14},\"dense_output\":false,\"h0\":0.001,\"interior_error\":\"w-filtered-enforce\",\"max_steps\":100000,\"rtol\":1e-12,\"tier\":\"protected\"},\"pid\":1145072,\"problem\":\"kt_vanishing\",\"regime\":\"Unknown\",\"repeat\":1,\"run\":{\"accepted_steps\":2096,\"attempts\":2110,\"counters\":{\"accepted_steps\":2096,\"block_linear_iterations\":0,\"block_linear_solves\":0,\"block_matvecs\":0,\"block_preconditioner_apps\":0,\"diagnostic_matvecs\":0,\"direct_factorizations\":2110,\"direct_solve_calls\":16880,\"fallback_steps\":0,\"fast_accepts\":0,\"fast_attempts\":0,\"forced_stage_solves\":0,\"ft_calls\":2096,\"harmonic_ritz_solves\":0,\"jacobian_builds\":2096,\"jvp_calls\":0,\"jvp_vectors\":0,\"linear_iterations\":0,\"linear_matvecs\":0,\"linear_solve_failures\":0,\"linear_solves\":16880,\"local_error_failures\":14,\"mass_matvecs\":0,\"nonfinite_step_failures\":0,\"nonlinear_failures\":0,\"nonlinear_iterations\":0,\"nonlinear_jacobian_evaluations\":0,\"nonlinear_residual_evaluations\":0,\"nonlinear_solve_failures\":0,\"nonlinear_solves\":0,\"orthogonalization_inner_products\":0,\"orthogonalization_vector_updates\":0,\"phi_actions\":0,\"phi_dense_oracle_calls\":0,\"phi_krylov_vectors\":0,\"phi_projected_exponentials\":0,\"phi_restarts\":0,\"preconditioner_apps\":0,\"recycle_cross_operator_refreshes\":0,\"recycle_dropped_vectors\":0,\"recycle_projection_calls\":0,\"recycle_refresh_matvecs\":0,\"recycle_same_operator_uses\":0,\"recycle_updates\":0,\"recycle_vectors_selected\":0,\"rejected_steps\":14,\"rhs_batch_calls\":0,\"rhs_calls\":25250,\"rhs_evaluations\":25250},\"dopri5_attempts\":0,\"driver_id\":\"rodas5p-fast-transformed-v2\",\"final_state\":[0.1475659639028926],\"final_state_bits\":[\"3fc2e371067b9a19\"],\"final_time\":10.0,\"final_time_bits\":\"4024000000000000\",\"operations\":309438.6666666667,\"operations3\":\"928316\",\"rejected_steps\":14,\"rodas5p_attempts\":2110,\"status\":{\"status\":\"success\"},\"stop\":null,\"success\":true},\"schema\":\"vigilode.v27.runner.v1\",\"span\":[0.0,10.0],\"span_bits\":[\"0000000000000000\",\"4024000000000000\"],\"y0_bits\":[\"0000000000000000\"]}"
+    }
+   ],
+   "t1_bits": "4024000000000000",
+   "y": [
+    0.1475659639028926
+   ],
+   "y_bits": [
+    "3fc2e371067b9a19"
+   ]
+  },
+  "lin_2000": {
+   "formula": "exp(-2000 t), t = 1",
+   "kind": "closed-form",
+   "y": [
+    0.0
+   ],
+   "y_50_digits": [
+    "2.5765358729611496521901504995073529127221305737606e-869"
+   ],
+   "y_bits": [
+    "0000000000000000"
+   ]
+  },
+  "lin_3200": {
+   "formula": "exp(-3200 t), t = 1",
+   "kind": "closed-form",
+   "y": [
+    0.0
+   ],
+   "y_50_digits": [
+    "1.8099138758159008378439521589822046813323176938655e-1390"
+   ],
+   "y_bits": [
+    "0000000000000000"
+   ]
+  },
+  "lin_3400": {
+   "formula": "exp(-3400 t), t = 1",
+   "kind": "closed-form",
+   "y": [
+    0.0
+   ],
+   "y_50_digits": [
+    "2.5047335264342520646081258108946772945175048879328e-1477"
+   ],
+   "y_bits": [
+    "0000000000000000"
+   ]
+  },
+  "lorenz": {
+   "atol": 1e-14,
+   "attempts": 7236,
+   "kind": "rodas5p",
+   "rtol": 1e-12,
+   "runs": [
+    {
+     "command": "taskset -c 0-5,12-17 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/v27-runner --arm R --problem lorenz --rtol 1e-12 --atol 1e-14 --no-log",
+     "exit_code": 0,
+     "stderr": "",
+     "stdout": "{\"arm\":\"R\",\"build\":\"N\",\"e5\":null,\"entries\":{\"fatal\":0,\"jacobian\":0,\"jvp\":0,\"rhs\":86752,\"rhs_by_kind\":null,\"time_derivative\":0},\"jacobian_callback\":false,\"n\":3,\"options\":{\"atol\":{\"kind\":\"scalar\",\"value\":1e-14},\"dense_output\":false,\"h0\":0.001,\"interior_error\":\"w-filtered-enforce\",\"max_steps\":100000,\"rtol\":1e-12,\"tier\":\"protected\"},\"pid\":1145074,\"problem\":\"lorenz\",\"regime\":\"Unknown\",\"repeat\":1,\"run\":{\"accepted_steps\":7220,\"attempts\":7236,\"counters\":{\"accepted_steps\":7220,\"block_linear_iterations\":0,\"block_linear_solves\":0,\"block_matvecs\":0,\"block_preconditioner_apps\":0,\"diagnostic_matvecs\":0,\"direct_factorizations\":7236,\"direct_solve_calls\":57888,\"fallback_steps\":0,\"fast_accepts\":0,\"fast_attempts\":0,\"forced_stage_solves\":0,\"ft_calls\":0,\"harmonic_ritz_solves\":0,\"jacobian_builds\":7220,\"jvp_calls\":0,\"jvp_vectors\":0,\"linear_iterations\":0,\"linear_matvecs\":0,\"linear_solve_failures\":0,\"linear_solves\":57888,\"local_error_failures\":16,\"mass_matvecs\":0,\"nonfinite_step_failures\":0,\"nonlinear_failures\":0,\"nonlinear_iterations\":0,\"nonlinear_jacobian_evaluations\":0,\"nonlinear_residual_evaluations\":0,\"nonlinear_solve_failures\":0,\"nonlinear_solves\":0,\"orthogonalization_inner_products\":0,\"orthogonalization_vector_updates\":0,\"phi_actions\":0,\"phi_dense_oracle_calls\":0,\"phi_krylov_vectors\":0,\"phi_projected_exponentials\":0,\"phi_restarts\":0,\"preconditioner_apps\":0,\"recycle_cross_operator_refreshes\":0,\"recycle_dropped_vectors\":0,\"recycle_projection_calls\":0,\"recycle_refresh_matvecs\":0,\"recycle_same_operator_uses\":0,\"recycle_updates\":0,\"recycle_vectors_selected\":0,\"rejected_steps\":16,\"rhs_batch_calls\":0,\"rhs_calls\":86752,\"rhs_evaluations\":86752},\"dopri5_attempts\":0,\"driver_id\":\"rodas5p-fast-transformed-v2\",\"final_state\":[-4.902687541147952,-3.7438729218803086,24.690858102707463],\"final_state_bits\":[\"c0139c5a1f6ef2cc\",\"c00df373a57ed8dc\",\"4038b0dc139d4e1f\"],\"final_time\":10.0,\"final_time_bits\":\"4024000000000000\",\"operations\":4080816.0,\"operations3\":\"12242448\",\"rejected_steps\":16,\"rodas5p_attempts\":7236,\"status\":{\"status\":\"success\"},\"stop\":null,\"success\":true},\"schema\":\"vigilode.v27.runner.v1\",\"span\":[0.0,10.0],\"span_bits\":[\"0000000000000000\",\"4024000000000000\"],\"y0_bits\":[\"3ff0000000000000\",\"3ff0000000000000\",\"3ff0000000000000\"]}"
+    }
+   ],
+   "t1_bits": "4024000000000000",
+   "y": [
+    -4.902687541147952,
+    -3.7438729218803086,
+    24.690858102707463
+   ],
+   "y_bits": [
+    "c0139c5a1f6ef2cc",
+    "c00df373a57ed8dc",
+    "4038b0dc139d4e1f"
+   ]
+  },
+  "lorenz96_40": {
+   "atol": 1e-14,
+   "attempts": 12001,
+   "kind": "rodas5p",
+   "rtol": 1e-12,
+   "runs": [
+    {
+     "command": "taskset -c 0-5,12-17 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/v27-runner --arm R --problem lorenz96_40 --rtol 1e-12 --atol 1e-14 --no-log",
+     "exit_code": 0,
+     "stderr": "",
+     "stdout": "{\"arm\":\"R\",\"build\":\"N\",\"e5\":null,\"entries\":{\"fatal\":0,\"jacobian\":0,\"jvp\":0,\"rhs\":579397,\"rhs_by_kind\":null,\"time_derivative\":0},\"jacobian_callback\":false,\"n\":40,\"options\":{\"atol\":{\"kind\":\"scalar\",\"value\":1e-14},\"dense_output\":false,\"h0\":0.001,\"interior_error\":\"w-filtered-enforce\",\"max_steps\":100000,\"rtol\":1e-12,\"tier\":\"protected\"},\"pid\":1145077,\"problem\":\"lorenz96_40\",\"regime\":\"Unknown\",\"repeat\":1,\"run\":{\"accepted_steps\":11795,\"attempts\":12001,\"counters\":{\"accepted_steps\":11795,\"block_linear_iterations\":0,\"block_linear_solves\":0,\"block_matvecs\":0,\"block_preconditioner_apps\":0,\"diagnostic_matvecs\":0,\"direct_factorizations\":12001,\"direct_solve_calls\":96008,\"fallback_steps\":0,\"fast_accepts\":0,\"fast_attempts\":0,\"forced_stage_solves\":0,\"ft_calls\":0,\"harmonic_ritz_solves\":0,\"jacobian_builds\":11795,\"jvp_calls\":0,\"jvp_vectors\":0,\"linear_iterations\":0,\"linear_matvecs\":0,\"linear_solve_failures\":0,\"linear_solves\":96008,\"local_error_failures\":206,\"mass_matvecs\":0,\"nonfinite_step_failures\":0,\"nonlinear_failures\":0,\"nonlinear_iterations\":0,\"nonlinear_jacobian_evaluations\":0,\"nonlinear_residual_evaluations\":0,\"nonlinear_solve_failures\":0,\"nonlinear_solves\":0,\"orthogonalization_inner_products\":0,\"orthogonalization_vector_updates\":0,\"phi_actions\":0,\"phi_dense_oracle_calls\":0,\"phi_krylov_vectors\":0,\"phi_projected_exponentials\":0,\"phi_restarts\":0,\"preconditioner_apps\":0,\"recycle_cross_operator_refreshes\":0,\"recycle_dropped_vectors\":0,\"recycle_projection_calls\":0,\"recycle_refresh_matvecs\":0,\"recycle_same_operator_uses\":0,\"recycle_updates\":0,\"recycle_vectors_selected\":0,\"rejected_steps\":206,\"rhs_batch_calls\":0,\"rhs_calls\":579397,\"rhs_evaluations\":579397},\"dopri5_attempts\":0,\"driver_id\":\"rodas5p-fast-transformed-v2\",\"final_state\":[6.20113070048928,3.379167230344033,-5.8063102021200494,3.5208225274745666,5.064344944417673,5.715469940488943,-1.1081833483794572,1.8575501316789116,0.19295068840028054,7.223785364934003,5.978234623121475,-2.0494705476055524,3.456557882660919,7.330813761323896,0.9658011575500386,0.4871846254531264,5.857549559993515,8.159795975382668,2.5011280855966396,3.7108765945345987,-0.4542229092378554,-4.015950421894136,-0.28169793125191683,4.770523289865304,7.929483808287278,1.5003264179551692,3.070466884459916,1.5610022205576575,-2.5537437866690773,2.306278001204062,4.451705368274225,5.825857283652553,-2.02742124053386,-3.8521481208670005,0.45867162825637053,5.787206331399068,2.749958453900897,-2.764513963192515,2.10021058039948,2.700382055245275],\"final_state_bits\":[\"4018cdf534d34ac8\",\"400b0888d4305715\",\"c01739a961b225a5\",\"400c2aa500542fc5\",\"401441e3a41fbf54\",\"4016dca426eeaf2f\",\"bff1bb1e76742f48\",\"3ffdb8867ca3dcda\",\"3fc8b29bb035bf01\",\"401ce527fd9edc21\",\"4017e9b656487c8a\",\"c0006550d080a602\",\"400ba707d1b613c5\",\"401d52c0d7b7cfc1\",\"3feee7d7d443b937\",\"3fdf2e086c5bda1b\",\"40176e2178cb7c40\",\"402051d0c7309a1a\",\"4004024f7115f50e\",\"400dafe0116824c5\",\"bfdd11fcf71150f1\",\"c01010554eb19224\",\"bfd20756c284fb51\",\"401315040eab1c7a\",\"401fb7ca9a7b0586\",\"3ff8015646271393\",\"40089050f121a69b\",\"3ff8f9dd76e474cf\",\"c0046e1138f0dae8\",\"40027341e1753edd\",\"4011ce8bda20a967\",\"40174dad8821cdf0\",\"c0003828a09a782c\",\"c00ed13308b3c5e2\",\"3fdd5ae03ebdb524\",\"401726196aa240a6\",\"4005ffea37c6e795\",\"c0061db97f29fa44\",\"4000cd3b346c3b48\",\"40059a61e82fdea9\"],\"final_time\":10.0,\"final_time_bits\":\"4024000000000000\",\"operations\":918457386.6666666,\"operations3\":\"2755372160\",\"rejected_steps\":206,\"rodas5p_attempts\":12001,\"status\":{\"status\":\"success\"},\"stop\":null,\"success\":true},\"schema\":\"vigilode.v27.runner.v1\",\"span\":[0.0,10.0],\"span_bits\":[\"0000000000000000\",\"4024000000000000\"],\"y0_bits\":[\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020051eb851eb85\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\",\"4020000000000000\"]}"
+    }
+   ],
+   "t1_bits": "4024000000000000",
+   "y": [
+    6.20113070048928,
+    3.379167230344033,
+    -5.8063102021200494,
+    3.5208225274745666,
+    5.064344944417673,
+    5.715469940488943,
+    -1.1081833483794572,
+    1.8575501316789116,
+    0.19295068840028054,
+    7.223785364934003,
+    5.978234623121475,
+    -2.0494705476055524,
+    3.456557882660919,
+    7.330813761323896,
+    0.9658011575500386,
+    0.4871846254531264,
+    5.857549559993515,
+    8.159795975382668,
+    2.5011280855966396,
+    3.7108765945345987,
+    -0.4542229092378554,
+    -4.015950421894136,
+    -0.28169793125191683,
+    4.770523289865304,
+    7.929483808287278,
+    1.5003264179551692,
+    3.070466884459916,
+    1.5610022205576575,
+    -2.5537437866690773,
+    2.306278001204062,
+    4.451705368274225,
+    5.825857283652553,
+    -2.02742124053386,
+    -3.8521481208670005,
+    0.45867162825637053,
+    5.787206331399068,
+    2.749958453900897,
+    -2.764513963192515,
+    2.10021058039948,
+    2.700382055245275
+   ],
+   "y_bits": [
+    "4018cdf534d34ac8",
+    "400b0888d4305715",
+    "c01739a961b225a5",
+    "400c2aa500542fc5",
+    "401441e3a41fbf54",
+    "4016dca426eeaf2f",
+    "bff1bb1e76742f48",
+    "3ffdb8867ca3dcda",
+    "3fc8b29bb035bf01",
+    "401ce527fd9edc21",
+    "4017e9b656487c8a",
+    "c0006550d080a602",
+    "400ba707d1b613c5",
+    "401d52c0d7b7cfc1",
+    "3feee7d7d443b937",
+    "3fdf2e086c5bda1b",
+    "40176e2178cb7c40",
+    "402051d0c7309a1a",
+    "4004024f7115f50e",
+    "400dafe0116824c5",
+    "bfdd11fcf71150f1",
+    "c01010554eb19224",
+    "bfd20756c284fb51",
+    "401315040eab1c7a",
+    "401fb7ca9a7b0586",
+    "3ff8015646271393",
+    "40089050f121a69b",
+    "3ff8f9dd76e474cf",
+    "c0046e1138f0dae8",
+    "40027341e1753edd",
+    "4011ce8bda20a967",
+    "40174dad8821cdf0",
+    "c0003828a09a782c",
+    "c00ed13308b3c5e2",
+    "3fdd5ae03ebdb524",
+    "401726196aa240a6",
+    "4005ffea37c6e795",
+    "c0061db97f29fa44",
+    "4000cd3b346c3b48",
+    "40059a61e82fdea9"
+   ]
+  },
+  "lotka_volterra": {
+   "atol": 1e-14,
+   "attempts": 23607,
+   "kind": "rodas5p",
+   "rtol": 1e-12,
+   "runs": [
+    {
+     "command": "taskset -c 0-5,12-17 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/v27-runner --arm R --problem lotka_volterra --rtol 1e-12 --atol 1e-14 --no-log",
+     "exit_code": 0,
+     "stderr": "",
+     "stdout": "{\"arm\":\"R\",\"build\":\"N\",\"e5\":null,\"entries\":{\"fatal\":0,\"jacobian\":0,\"jvp\":0,\"rhs\":259577,\"rhs_by_kind\":null,\"time_derivative\":0},\"jacobian_callback\":false,\"n\":2,\"options\":{\"atol\":{\"kind\":\"scalar\",\"value\":1e-14},\"dense_output\":false,\"h0\":0.001,\"interior_error\":\"w-filtered-enforce\",\"max_steps\":100000,\"rtol\":1e-12,\"tier\":\"protected\"},\"pid\":1145073,\"problem\":\"lotka_volterra\",\"regime\":\"Unknown\",\"repeat\":1,\"run\":{\"accepted_steps\":23582,\"attempts\":23607,\"counters\":{\"accepted_steps\":23582,\"block_linear_iterations\":0,\"block_linear_solves\":0,\"block_matvecs\":0,\"block_preconditioner_apps\":0,\"diagnostic_matvecs\":0,\"direct_factorizations\":23607,\"direct_solve_calls\":188856,\"fallback_steps\":0,\"fast_accepts\":0,\"fast_attempts\":0,\"forced_stage_solves\":0,\"ft_calls\":0,\"harmonic_ritz_solves\":0,\"jacobian_builds\":23582,\"jvp_calls\":0,\"jvp_vectors\":0,\"linear_iterations\":0,\"linear_matvecs\":0,\"linear_solve_failures\":0,\"linear_solves\":188856,\"local_error_failures\":25,\"mass_matvecs\":0,\"nonfinite_step_failures\":0,\"nonlinear_failures\":0,\"nonlinear_iterations\":0,\"nonlinear_jacobian_evaluations\":0,\"nonlinear_residual_evaluations\":0,\"nonlinear_solve_failures\":0,\"nonlinear_solves\":0,\"orthogonalization_inner_products\":0,\"orthogonalization_vector_updates\":0,\"phi_actions\":0,\"phi_dense_oracle_calls\":0,\"phi_krylov_vectors\":0,\"phi_projected_exponentials\":0,\"phi_restarts\":0,\"preconditioner_apps\":0,\"recycle_cross_operator_refreshes\":0,\"recycle_dropped_vectors\":0,\"recycle_projection_calls\":0,\"recycle_refresh_matvecs\":0,\"recycle_same_operator_uses\":0,\"recycle_updates\":0,\"recycle_vectors_selected\":0,\"rejected_steps\":25,\"rhs_batch_calls\":0,\"rhs_calls\":259577,\"rhs_evaluations\":259577},\"dopri5_attempts\":0,\"driver_id\":\"rodas5p-fast-transformed-v2\",\"final_state\":[1.49242493662447,0.4248882504932474],\"final_state_bits\":[\"3ff7e0f8f868976f\",\"3fdb315e7d14ae8c\"],\"final_time\":100.0,\"final_time_bits\":\"4059000000000000\",\"operations\":7868800.0,\"operations3\":\"23606400\",\"rejected_steps\":25,\"rodas5p_attempts\":23607,\"status\":{\"status\":\"success\"},\"stop\":null,\"success\":true},\"schema\":\"vigilode.v27.runner.v1\",\"span\":[0.0,100.0],\"span_bits\":[\"0000000000000000\",\"4059000000000000\"],\"y0_bits\":[\"3ff0000000000000\",\"3ff0000000000000\"]}"
+    }
+   ],
+   "t1_bits": "4059000000000000",
+   "y": [
+    1.49242493662447,
+    0.4248882504932474
+   ],
+   "y_bits": [
+    "3ff7e0f8f868976f",
+    "3fdb315e7d14ae8c"
+   ]
+  },
+  "nonnormal": {
+   "formula": "y1 = 1001 e^{-t} - 1000 e^{-2t}, y2 = e^{-2t}, t = 10",
+   "kind": "closed-form",
+   "y": [
+    0.0454432685386249,
+    2.061153622438558e-09
+   ],
+   "y_50_digits": [
+    "0.045443268538624897829299141135731005027179631148156",
+    "0.0000000020611536224385578279659403801558209763758072755991"
+   ],
+   "y_bits": [
+    "3fa744571064bb0f",
+    "3e21b48655f37267"
+   ]
+  },
+  "orego": {
+   "atol": 1e-14,
+   "attempts": 30136,
+   "kind": "rodas5p",
+   "rtol": 1e-12,
+   "runs": [
+    {
+     "command": "taskset -c 0-5,12-17 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/v27-runner --arm R --problem orego --rtol 1e-12 --atol 1e-14 --no-log",
+     "exit_code": 0,
+     "stderr": "",
+     "stdout": "{\"arm\":\"R\",\"build\":\"N\",\"e5\":null,\"entries\":{\"fatal\":0,\"jacobian\":0,\"jvp\":0,\"rhs\":360177,\"rhs_by_kind\":null,\"time_derivative\":0},\"jacobian_callback\":false,\"n\":3,\"options\":{\"atol\":{\"kind\":\"scalar\",\"value\":1e-14},\"dense_output\":false,\"h0\":0.001,\"interior_error\":\"w-filtered-enforce\",\"max_steps\":100000,\"rtol\":1e-12,\"tier\":\"protected\"},\"pid\":1145066,\"problem\":\"orego\",\"regime\":\"Unknown\",\"repeat\":1,\"run\":{\"accepted_steps\":29845,\"attempts\":30136,\"counters\":{\"accepted_steps\":29845,\"block_linear_iterations\":0,\"block_linear_solves\":0,\"block_matvecs\":0,\"block_preconditioner_apps\":0,\"diagnostic_matvecs\":0,\"direct_factorizations\":30136,\"direct_solve_calls\":241088,\"fallback_steps\":0,\"fast_accepts\":0,\"fast_attempts\":0,\"forced_stage_solves\":0,\"ft_calls\":0,\"harmonic_ritz_solves\":0,\"jacobian_builds\":29845,\"jvp_calls\":0,\"jvp_vectors\":0,\"linear_iterations\":0,\"linear_matvecs\":0,\"linear_solve_failures\":0,\"linear_solves\":241088,\"local_error_failures\":291,\"mass_matvecs\":0,\"nonfinite_step_failures\":0,\"nonlinear_failures\":0,\"nonlinear_iterations\":0,\"nonlinear_jacobian_evaluations\":0,\"nonlinear_residual_evaluations\":0,\"nonlinear_solve_failures\":0,\"nonlinear_solves\":0,\"orthogonalization_inner_products\":0,\"orthogonalization_vector_updates\":0,\"phi_actions\":0,\"phi_dense_oracle_calls\":0,\"phi_krylov_vectors\":0,\"phi_projected_exponentials\":0,\"phi_restarts\":0,\"preconditioner_apps\":0,\"recycle_cross_operator_refreshes\":0,\"recycle_dropped_vectors\":0,\"recycle_projection_calls\":0,\"recycle_refresh_matvecs\":0,\"recycle_same_operator_uses\":0,\"recycle_updates\":0,\"recycle_vectors_selected\":0,\"rejected_steps\":291,\"rhs_batch_calls\":0,\"rhs_calls\":360177,\"rhs_evaluations\":360177},\"dopri5_attempts\":0,\"driver_id\":\"rodas5p-fast-transformed-v2\",\"final_state\":[1.00081487031852,1228.1785215499046,132.05549428466273],\"final_state_bits\":[\"3ff003567415e57a\",\"409330b6ce5a69e3\",\"406081c69bf337b9\"],\"final_time\":360.0,\"final_time_bits\":\"4076800000000000\",\"operations\":16991466.0,\"operations3\":\"50974398\",\"rejected_steps\":291,\"rodas5p_attempts\":30136,\"status\":{\"status\":\"success\"},\"stop\":null,\"success\":true},\"schema\":\"vigilode.v27.runner.v1\",\"span\":[0.0,360.0],\"span_bits\":[\"0000000000000000\",\"4076800000000000\"],\"y0_bits\":[\"3ff0000000000000\",\"4000000000000000\",\"4008000000000000\"]}"
+    }
+   ],
+   "t1_bits": "4076800000000000",
+   "y": [
+    1.00081487031852,
+    1228.1785215499046,
+    132.05549428466273
+   ],
+   "y_bits": [
+    "3ff003567415e57a",
+    "409330b6ce5a69e3",
+    "406081c69bf337b9"
+   ]
+  },
+  "osc_1": {
+   "formula": "(cos t, -sin t), t = 1",
+   "kind": "closed-form",
+   "y": [
+    0.5403023058681398,
+    -0.8414709848078965
+   ],
+   "y_50_digits": [
+    "0.54030230586813971740093660744297660373231042061792",
+    "-0.84147098480789650665250232163029899962256306079837"
+   ],
+   "y_bits": [
+    "3fe14a280fb5068c",
+    "bfeaed548f090cee"
+   ]
+  },
+  "osc_10": {
+   "formula": "(cos t, -sin t), t = 10",
+   "kind": "closed-form",
+   "y": [
+    -0.8390715290764524,
+    0.5440211108893698
+   ],
+   "y_50_digits": [
+    "-0.83907152907645245225886394782406483451993016513317",
+    "0.54402111088936981340474766185137728168364301291622"
+   ],
+   "y_bits": [
+    "bfead9ac890c6b1f",
+    "3fe1689ef5f34f52"
+   ]
+  },
+  "osc_1000": {
+   "formula": "(cos t, -sin t), t = 1000",
+   "kind": "closed-form",
+   "y": [
+    0.5623790762907029,
+    -0.8268795405320025
+   ],
+   "y_50_digits": [
+    "0.5623790762907029910782492266053959687558118217382",
+    "-0.82687954053200256025588742910921814121272496784779"
+   ],
+   "y_bits": [
+    "3fe1ff026793f1bb",
+    "bfea75cc150a206b"
+   ]
+  },
+  "pleiades": {
+   "atol": 1e-14,
+   "attempts": 4479,
+   "kind": "rodas5p",
+   "rtol": 1e-12,
+   "runs": [
+    {
+     "command": "taskset -c 0-5,12-17 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/v27-runner --arm R --problem pleiades --rtol 1e-12 --atol 1e-14 --no-log",
+     "exit_code": 0,
+     "stderr": "",
+     "stdout": "{\"arm\":\"R\",\"build\":\"N\",\"e5\":null,\"entries\":{\"fatal\":0,\"jacobian\":0,\"jvp\":0,\"rhs\":165423,\"rhs_by_kind\":null,\"time_derivative\":0},\"jacobian_callback\":false,\"n\":28,\"options\":{\"atol\":{\"kind\":\"scalar\",\"value\":1e-14},\"dense_output\":false,\"h0\":0.001,\"interior_error\":\"w-filtered-enforce\",\"max_steps\":100000,\"rtol\":1e-12,\"tier\":\"protected\"},\"pid\":1145098,\"problem\":\"pleiades\",\"regime\":\"Unknown\",\"repeat\":1,\"run\":{\"accepted_steps\":4469,\"attempts\":4479,\"counters\":{\"accepted_steps\":4469,\"block_linear_iterations\":0,\"block_linear_solves\":0,\"block_matvecs\":0,\"block_preconditioner_apps\":0,\"diagnostic_matvecs\":0,\"direct_factorizations\":4479,\"direct_solve_calls\":35832,\"fallback_steps\":0,\"fast_accepts\":0,\"fast_attempts\":0,\"forced_stage_solves\":0,\"ft_calls\":0,\"harmonic_ritz_solves\":0,\"jacobian_builds\":4469,\"jvp_calls\":0,\"jvp_vectors\":0,\"linear_iterations\":0,\"linear_matvecs\":0,\"linear_solve_failures\":0,\"linear_solves\":35832,\"local_error_failures\":10,\"mass_matvecs\":0,\"nonfinite_step_failures\":0,\"nonlinear_failures\":0,\"nonlinear_iterations\":0,\"nonlinear_jacobian_evaluations\":0,\"nonlinear_residual_evaluations\":0,\"nonlinear_solve_failures\":0,\"nonlinear_solves\":0,\"orthogonalization_inner_products\":0,\"orthogonalization_vector_updates\":0,\"phi_actions\":0,\"phi_dense_oracle_calls\":0,\"phi_krylov_vectors\":0,\"phi_projected_exponentials\":0,\"phi_restarts\":0,\"preconditioner_apps\":0,\"recycle_cross_operator_refreshes\":0,\"recycle_dropped_vectors\":0,\"recycle_projection_calls\":0,\"recycle_refresh_matvecs\":0,\"recycle_same_operator_uses\":0,\"recycle_updates\":0,\"recycle_vectors_selected\":0,\"rejected_steps\":10,\"rhs_batch_calls\":0,\"rhs_calls\":165423,\"rhs_evaluations\":165423},\"dopri5_attempts\":0,\"driver_id\":\"rodas5p-fast-transformed-v2\",\"final_state\":[0.3706139145585883,3.2372840920528696,-3.2225590323445408,0.6597091455369503,0.34255817066136174,1.5621721013975025,-0.7003092922100687,-3.9434375857330317,-3.271380973980859,5.225081843690455,-2.590612434973237,1.1982136933679062,-0.242968234490837,1.0914492403746374,3.4170038064761203,1.354584501621873,-2.590065597829788,2.0250537346591275,-1.1558151003692818,-0.8072988170336987,0.5952396355973518,-3.7412449612352208,0.37734596856295616,0.9386858871558809,0.3667922226836473,-0.34740463547102884,2.3449154481818764,-1.9470204342612611],\"final_state_bits\":[\"3fd7b8236c9e2fec\",\"4009e5f533b9d335\",\"c009c7cd07aacb2e\",\"3fe51c565a9e817b\",\"3fd5ec791afdf5ee\",\"3ff8fea82c639d29\",\"bfe668ef086411a2\",\"c00f8c2901445315\",\"c00a2bc9c9c0090b\",\"4014e67bdad64ba9\",\"c004b9930326915e\",\"3ff32be21f2a2708\",\"bfcf1995468d70c6\",\"3ff176937a8a7324\",\"400b56061778fac7\",\"3ff5ac60cc622684\",\"c004b8744fe96397\",\"4000334f5f580767\",\"bff27e37f984f1c2\",\"bfe9d56454284b8f\",\"3fe30c33fe058dff\",\"c00dee11d696a3f7\",\"3fd8266fb4905781\",\"3fee09b6fc51a3e1\",\"3fd7798616369e58\",\"bfd63be0a6f4eb72\",\"4002c26307ce9c59\",\"bfff26fee61cbbbd\"],\"final_time\":3.0,\"final_time_bits\":\"4008000000000000\",\"operations\":144793376.0,\"operations3\":\"434380128\",\"rejected_steps\":10,\"rodas5p_attempts\":4479,\"status\":{\"status\":\"success\"},\"stop\":null,\"success\":true},\"schema\":\"vigilode.v27.runner.v1\",\"span\":[0.0,3.0],\"span_bits\":[\"0000000000000000\",\"4008000000000000\"],\"y0_bits\":[\"4008000000000000\",\"4008000000000000\",\"bff0000000000000\",\"c008000000000000\",\"4000000000000000\",\"c000000000000000\",\"4000000000000000\",\"4008000000000000\",\"c008000000000000\",\"4000000000000000\",\"0000000000000000\",\"0000000000000000\",\"c010000000000000\",\"4010000000000000\",\"0000000000000000\",\"0000000000000000\",\"0000000000000000\",\"0000000000000000\",\"0000000000000000\",\"3ffc000000000000\",\"bff8000000000000\",\"0000000000000000\",\"0000000000000000\",\"0000000000000000\",\"bff4000000000000\",\"3ff0000000000000\",\"0000000000000000\",\"0000000000000000\"]}"
+    }
+   ],
+   "t1_bits": "4008000000000000",
+   "y": [
+    0.3706139145585883,
+    3.2372840920528696,
+    -3.2225590323445408,
+    0.6597091455369503,
+    0.34255817066136174,
+    1.5621721013975025,
+    -0.7003092922100687,
+    -3.9434375857330317,
+    -3.271380973980859,
+    5.225081843690455,
+    -2.590612434973237,
+    1.1982136933679062,
+    -0.242968234490837,
+    1.0914492403746374,
+    3.4170038064761203,
+    1.354584501621873,
+    -2.590065597829788,
+    2.0250537346591275,
+    -1.1558151003692818,
+    -0.8072988170336987,
+    0.5952396355973518,
+    -3.7412449612352208,
+    0.37734596856295616,
+    0.9386858871558809,
+    0.3667922226836473,
+    -0.34740463547102884,
+    2.3449154481818764,
+    -1.9470204342612611
+   ],
+   "y_bits": [
+    "3fd7b8236c9e2fec",
+    "4009e5f533b9d335",
+    "c009c7cd07aacb2e",
+    "3fe51c565a9e817b",
+    "3fd5ec791afdf5ee",
+    "3ff8fea82c639d29",
+    "bfe668ef086411a2",
+    "c00f8c2901445315",
+    "c00a2bc9c9c0090b",
+    "4014e67bdad64ba9",
+    "c004b9930326915e",
+    "3ff32be21f2a2708",
+    "bfcf1995468d70c6",
+    "3ff176937a8a7324",
+    "400b56061778fac7",
+    "3ff5ac60cc622684",
+    "c004b8744fe96397",
+    "4000334f5f580767",
+    "bff27e37f984f1c2",
+    "bfe9d56454284b8f",
+    "3fe30c33fe058dff",
+    "c00dee11d696a3f7",
+    "3fd8266fb4905781",
+    "3fee09b6fc51a3e1",
+    "3fd7798616369e58",
+    "bfd63be0a6f4eb72",
+    "4002c26307ce9c59",
+    "bfff26fee61cbbbd"
+   ]
+  },
+  "robertson_1e5": {
+   "atol": 1e-14,
+   "attempts": 135727,
+   "kind": "rodas5p",
+   "rtol": 1e-12,
+   "runs": [
+    {
+     "command": "taskset -c 0-5,12-17 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/v27-runner --arm R --problem robertson_1e5 --rtol 1e-12 --atol 1e-14 --no-log",
+     "exit_code": 0,
+     "stderr": "",
+     "stdout": "{\"arm\":\"R\",\"build\":\"N\",\"e5\":null,\"entries\":{\"fatal\":0,\"jacobian\":0,\"jvp\":0,\"rhs\":1199960,\"rhs_by_kind\":null,\"time_derivative\":0},\"jacobian_callback\":false,\"n\":3,\"options\":{\"atol\":{\"kind\":\"scalar\",\"value\":1e-14},\"dense_output\":false,\"h0\":0.001,\"interior_error\":\"w-filtered-enforce\",\"max_steps\":100000,\"rtol\":1e-12,\"tier\":\"protected\"},\"pid\":1145063,\"problem\":\"robertson_1e5\",\"regime\":\"Unknown\",\"repeat\":1,\"run\":{\"accepted_steps\":99992,\"attempts\":100000,\"counters\":{\"accepted_steps\":99992,\"block_linear_iterations\":0,\"block_linear_solves\":0,\"block_matvecs\":0,\"block_preconditioner_apps\":0,\"diagnostic_matvecs\":0,\"direct_factorizations\":100000,\"direct_solve_calls\":800000,\"fallback_steps\":0,\"fast_accepts\":0,\"fast_attempts\":0,\"forced_stage_solves\":0,\"ft_calls\":0,\"harmonic_ritz_solves\":0,\"jacobian_builds\":99992,\"jvp_calls\":0,\"jvp_vectors\":0,\"linear_iterations\":0,\"linear_matvecs\":0,\"linear_solve_failures\":0,\"linear_solves\":800000,\"local_error_failures\":8,\"mass_matvecs\":0,\"nonfinite_step_failures\":0,\"nonlinear_failures\":0,\"nonlinear_iterations\":0,\"nonlinear_jacobian_evaluations\":0,\"nonlinear_residual_evaluations\":0,\"nonlinear_solve_failures\":0,\"nonlinear_solves\":0,\"orthogonalization_inner_products\":0,\"orthogonalization_vector_updates\":0,\"phi_actions\":0,\"phi_dense_oracle_calls\":0,\"phi_krylov_vectors\":0,\"phi_projected_exponentials\":0,\"phi_restarts\":0,\"preconditioner_apps\":0,\"recycle_cross_operator_refreshes\":0,\"recycle_dropped_vectors\":0,\"recycle_projection_calls\":0,\"recycle_refresh_matvecs\":0,\"recycle_same_operator_uses\":0,\"recycle_updates\":0,\"recycle_vectors_selected\":0,\"rejected_steps\":8,\"rhs_batch_calls\":0,\"rhs_calls\":1199960,\"rhs_evaluations\":1199960},\"dopri5_attempts\":0,\"driver_id\":\"rodas5p-fast-transformed-v2\",\"final_state\":[0.03575492487355841,1.4825461612518346e-7,0.9642449268718386],\"final_state_bits\":[\"3fa24e7832017837\",\"3e83e5fd64f7fa80\",\"3feedb182d47f35f\"],\"final_time\":44476.317724266715,\"final_time_bits\":\"40e5b78a2acc14d6\",\"operations\":56399856.0,\"operations3\":\"169199568\",\"rejected_steps\":8,\"rodas5p_attempts\":100000,\"status\":{\"kind\":\"max-steps-reached\",\"max_steps\":100000,\"status\":\"failed\"},\"stop\":{\"last_failure\":null,\"reason\":\"attempt-budget\",\"t\":44476.317724266715},\"success\":false},\"schema\":\"vigilode.v27.runner.v1\",\"span\":[0.0,100000.0],\"span_bits\":[\"0000000000000000\",\"40f86a0000000000\"],\"y0_bits\":[\"3ff0000000000000\",\"0000000000000000\",\"0000000000000000\"]}"
+    },
+    {
+     "command": "taskset -c 0-5,12-17 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/v27-runner --arm R --problem robertson_1e5 --rtol 1e-12 --atol 1e-14 --no-log --max-steps 10000000",
+     "exit_code": 0,
+     "stderr": "",
+     "stdout": "{\"arm\":\"R\",\"build\":\"N\",\"e5\":null,\"entries\":{\"fatal\":0,\"jacobian\":0,\"jvp\":0,\"rhs\":1628684,\"rhs_by_kind\":null,\"time_derivative\":0},\"jacobian_callback\":false,\"n\":3,\"options\":{\"atol\":{\"kind\":\"scalar\",\"value\":1e-14},\"dense_output\":false,\"h0\":0.001,\"interior_error\":\"w-filtered-enforce\",\"max_steps\":10000000,\"rtol\":1e-12,\"tier\":\"protected\"},\"pid\":1145064,\"problem\":\"robertson_1e5\",\"regime\":\"Unknown\",\"repeat\":1,\"run\":{\"accepted_steps\":135719,\"attempts\":135727,\"counters\":{\"accepted_steps\":135719,\"block_linear_iterations\":0,\"block_linear_solves\":0,\"block_matvecs\":0,\"block_preconditioner_apps\":0,\"diagnostic_matvecs\":0,\"direct_factorizations\":135727,\"direct_solve_calls\":1085816,\"fallback_steps\":0,\"fast_accepts\":0,\"fast_attempts\":0,\"forced_stage_solves\":0,\"ft_calls\":0,\"harmonic_ritz_solves\":0,\"jacobian_builds\":135719,\"jvp_calls\":0,\"jvp_vectors\":0,\"linear_iterations\":0,\"linear_matvecs\":0,\"linear_solve_failures\":0,\"linear_solves\":1085816,\"local_error_failures\":8,\"mass_matvecs\":0,\"nonfinite_step_failures\":0,\"nonlinear_failures\":0,\"nonlinear_iterations\":0,\"nonlinear_jacobian_evaluations\":0,\"nonlinear_residual_evaluations\":0,\"nonlinear_solve_failures\":0,\"nonlinear_solves\":0,\"orthogonalization_inner_products\":0,\"orthogonalization_vector_updates\":0,\"phi_actions\":0,\"phi_dense_oracle_calls\":0,\"phi_krylov_vectors\":0,\"phi_projected_exponentials\":0,\"phi_restarts\":0,\"preconditioner_apps\":0,\"recycle_cross_operator_refreshes\":0,\"recycle_dropped_vectors\":0,\"recycle_projection_calls\":0,\"recycle_refresh_matvecs\":0,\"recycle_same_operator_uses\":0,\"recycle_updates\":0,\"recycle_vectors_selected\":0,\"rejected_steps\":8,\"rhs_batch_calls\":0,\"rhs_calls\":1628684,\"rhs_evaluations\":1628684},\"dopri5_attempts\":0,\"driver_id\":\"rodas5p-fast-transformed-v2\",\"final_state\":[0.017865921142077162,7.274751468426906e-8,0.9821340061104455],\"final_state_bits\":[\"3f924b71ac129258\",\"3e73872bd0063239\",\"3fef6da44b91151e\"],\"final_time\":100000.0,\"final_time_bits\":\"40f86a0000000000\",\"operations\":76549884.0,\"operations3\":\"229649652\",\"rejected_steps\":8,\"rodas5p_attempts\":135727,\"status\":{\"status\":\"success\"},\"stop\":null,\"success\":true},\"schema\":\"vigilode.v27.runner.v1\",\"span\":[0.0,100000.0],\"span_bits\":[\"0000000000000000\",\"40f86a0000000000\"],\"y0_bits\":[\"3ff0000000000000\",\"0000000000000000\",\"0000000000000000\"]}"
+    }
+   ],
+   "t1_bits": "40f86a0000000000",
+   "y": [
+    0.017865921142077162,
+    7.274751468426906e-08,
+    0.9821340061104455
+   ],
+   "y_bits": [
+    "3f924b71ac129258",
+    "3e73872bd0063239",
+    "3fef6da44b91151e"
+   ]
+  },
+  "robertson_40": {
+   "atol": 1e-14,
+   "attempts": 22577,
+   "kind": "rodas5p",
+   "rtol": 1e-12,
+   "runs": [
+    {
+     "command": "taskset -c 0-5,12-17 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/v27-runner --arm R --problem robertson_40 --rtol 1e-12 --atol 1e-14 --no-log",
+     "exit_code": 0,
+     "stderr": "",
+     "stdout": "{\"arm\":\"R\",\"build\":\"N\",\"e5\":null,\"entries\":{\"fatal\":0,\"jacobian\":0,\"jvp\":0,\"rhs\":270884,\"rhs_by_kind\":null,\"time_derivative\":0},\"jacobian_callback\":false,\"n\":3,\"options\":{\"atol\":{\"kind\":\"scalar\",\"value\":1e-14},\"dense_output\":false,\"h0\":0.001,\"interior_error\":\"w-filtered-enforce\",\"max_steps\":100000,\"rtol\":1e-12,\"tier\":\"protected\"},\"pid\":1145062,\"problem\":\"robertson_40\",\"regime\":\"Unknown\",\"repeat\":1,\"run\":{\"accepted_steps\":22569,\"attempts\":22577,\"counters\":{\"accepted_steps\":22569,\"block_linear_iterations\":0,\"block_linear_solves\":0,\"block_matvecs\":0,\"block_preconditioner_apps\":0,\"diagnostic_matvecs\":0,\"direct_factorizations\":22577,\"direct_solve_calls\":180616,\"fallback_steps\":0,\"fast_accepts\":0,\"fast_attempts\":0,\"forced_stage_solves\":0,\"ft_calls\":0,\"harmonic_ritz_solves\":0,\"jacobian_builds\":22569,\"jvp_calls\":0,\"jvp_vectors\":0,\"linear_iterations\":0,\"linear_matvecs\":0,\"linear_solve_failures\":0,\"linear_solves\":180616,\"local_error_failures\":8,\"mass_matvecs\":0,\"nonfinite_step_failures\":0,\"nonlinear_failures\":0,\"nonlinear_iterations\":0,\"nonlinear_jacobian_evaluations\":0,\"nonlinear_residual_evaluations\":0,\"nonlinear_solve_failures\":0,\"nonlinear_solves\":0,\"orthogonalization_inner_products\":0,\"orthogonalization_vector_updates\":0,\"phi_actions\":0,\"phi_dense_oracle_calls\":0,\"phi_krylov_vectors\":0,\"phi_projected_exponentials\":0,\"phi_restarts\":0,\"preconditioner_apps\":0,\"recycle_cross_operator_refreshes\":0,\"recycle_dropped_vectors\":0,\"recycle_projection_calls\":0,\"recycle_refresh_matvecs\":0,\"recycle_same_operator_uses\":0,\"recycle_updates\":0,\"recycle_vectors_selected\":0,\"rejected_steps\":8,\"rhs_batch_calls\":0,\"rhs_calls\":270884,\"rhs_evaluations\":270884},\"dopri5_attempts\":0,\"driver_id\":\"rodas5p-fast-transformed-v2\",\"final_state\":[0.7158270687193582,9.18553476392013e-6,0.28416374574585646],\"final_state_bits\":[\"3fe6e80e2b37b7d0\",\"3ee3437248f7fa97\",\"3fd22fbd22abfcee\"],\"final_time\":40.0,\"final_time_bits\":\"4044000000000000\",\"operations\":12733284.0,\"operations3\":\"38199852\",\"rejected_steps\":8,\"rodas5p_attempts\":22577,\"status\":{\"status\":\"success\"},\"stop\":null,\"success\":true},\"schema\":\"vigilode.v27.runner.v1\",\"span\":[0.0,40.0],\"span_bits\":[\"0000000000000000\",\"4044000000000000\"],\"y0_bits\":[\"3ff0000000000000\",\"0000000000000000\",\"0000000000000000\"]}"
+    }
+   ],
+   "t1_bits": "4044000000000000",
+   "y": [
+    0.7158270687193582,
+    9.18553476392013e-06,
+    0.28416374574585646
+   ],
+   "y_bits": [
+    "3fe6e80e2b37b7d0",
+    "3ee3437248f7fa97",
+    "3fd22fbd22abfcee"
+   ]
+  },
+  "vdp_1": {
+   "atol": 1e-14,
+   "attempts": 4198,
+   "kind": "rodas5p",
+   "rtol": 1e-12,
+   "runs": [
+    {
+     "command": "taskset -c 0-5,12-17 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/v27-runner --arm R --problem vdp_1 --rtol 1e-12 --atol 1e-14 --no-log",
+     "exit_code": 0,
+     "stderr": "",
+     "stdout": "{\"arm\":\"R\",\"build\":\"N\",\"e5\":null,\"entries\":{\"fatal\":0,\"jacobian\":0,\"jvp\":0,\"rhs\":46026,\"rhs_by_kind\":null,\"time_derivative\":0},\"jacobian_callback\":false,\"n\":2,\"options\":{\"atol\":{\"kind\":\"scalar\",\"value\":1e-14},\"dense_output\":false,\"h0\":0.001,\"interior_error\":\"w-filtered-enforce\",\"max_steps\":100000,\"rtol\":1e-12,\"tier\":\"protected\"},\"pid\":1145068,\"problem\":\"vdp_1\",\"regime\":\"Unknown\",\"repeat\":1,\"run\":{\"accepted_steps\":4160,\"attempts\":4198,\"counters\":{\"accepted_steps\":4160,\"block_linear_iterations\":0,\"block_linear_solves\":0,\"block_matvecs\":0,\"block_preconditioner_apps\":0,\"diagnostic_matvecs\":0,\"direct_factorizations\":4198,\"direct_solve_calls\":33584,\"fallback_steps\":0,\"fast_accepts\":0,\"fast_attempts\":0,\"forced_stage_solves\":0,\"ft_calls\":0,\"harmonic_ritz_solves\":0,\"jacobian_builds\":4160,\"jvp_calls\":0,\"jvp_vectors\":0,\"linear_iterations\":0,\"linear_matvecs\":0,\"linear_solve_failures\":0,\"linear_solves\":33584,\"local_error_failures\":38,\"mass_matvecs\":0,\"nonfinite_step_failures\":0,\"nonlinear_failures\":0,\"nonlinear_iterations\":0,\"nonlinear_jacobian_evaluations\":0,\"nonlinear_residual_evaluations\":0,\"nonlinear_solve_failures\":0,\"nonlinear_solves\":0,\"orthogonalization_inner_products\":0,\"orthogonalization_vector_updates\":0,\"phi_actions\":0,\"phi_dense_oracle_calls\":0,\"phi_krylov_vectors\":0,\"phi_projected_exponentials\":0,\"phi_restarts\":0,\"preconditioner_apps\":0,\"recycle_cross_operator_refreshes\":0,\"recycle_dropped_vectors\":0,\"recycle_projection_calls\":0,\"recycle_refresh_matvecs\":0,\"recycle_same_operator_uses\":0,\"recycle_updates\":0,\"recycle_vectors_selected\":0,\"rejected_steps\":38,\"rhs_batch_calls\":0,\"rhs_calls\":46026,\"rhs_evaluations\":46026},\"dopri5_attempts\":0,\"driver_id\":\"rodas5p-fast-transformed-v2\",\"final_state\":[2.008149762175113,-0.0425088752653138],\"final_state_bits\":[\"400010b0d290192b\",\"bfa5c3b92a1bc8c4\"],\"final_time\":20.0,\"final_time_bits\":\"4034000000000000\",\"operations\":1399029.3333333333,\"operations3\":\"4197088\",\"rejected_steps\":38,\"rodas5p_attempts\":4198,\"status\":{\"status\":\"success\"},\"stop\":null,\"success\":true},\"schema\":\"vigilode.v27.runner.v1\",\"span\":[0.0,20.0],\"span_bits\":[\"0000000000000000\",\"4034000000000000\"],\"y0_bits\":[\"4000000000000000\",\"0000000000000000\"]}"
+    }
+   ],
+   "t1_bits": "4034000000000000",
+   "y": [
+    2.008149762175113,
+    -0.0425088752653138
+   ],
+   "y_bits": [
+    "400010b0d290192b",
+    "bfa5c3b92a1bc8c4"
+   ]
+  },
+  "vdp_1000": {
+   "atol": 1e-14,
+   "attempts": 139,
+   "kind": "rodas5p",
+   "rtol": 1e-12,
+   "runs": [
+    {
+     "command": "taskset -c 0-5,12-17 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/v27-runner --arm R --problem vdp_1000 --rtol 1e-12 --atol 1e-14 --no-log",
+     "exit_code": 0,
+     "stderr": "",
+     "stdout": "{\"arm\":\"R\",\"build\":\"N\",\"e5\":null,\"entries\":{\"fatal\":0,\"jacobian\":0,\"jvp\":0,\"rhs\":1517,\"rhs_by_kind\":null,\"time_derivative\":0},\"jacobian_callback\":false,\"n\":2,\"options\":{\"atol\":{\"kind\":\"scalar\",\"value\":1e-14},\"dense_output\":false,\"h0\":0.001,\"interior_error\":\"w-filtered-enforce\",\"max_steps\":100000,\"rtol\":1e-12,\"tier\":\"protected\"},\"pid\":1145067,\"problem\":\"vdp_1000\",\"regime\":\"Unknown\",\"repeat\":1,\"run\":{\"accepted_steps\":136,\"attempts\":139,\"counters\":{\"accepted_steps\":136,\"block_linear_iterations\":0,\"block_linear_solves\":0,\"block_matvecs\":0,\"block_preconditioner_apps\":0,\"diagnostic_matvecs\":0,\"direct_factorizations\":139,\"direct_solve_calls\":1112,\"fallback_steps\":0,\"fast_accepts\":0,\"fast_attempts\":0,\"forced_stage_solves\":0,\"ft_calls\":0,\"harmonic_ritz_solves\":0,\"jacobian_builds\":136,\"jvp_calls\":0,\"jvp_vectors\":0,\"linear_iterations\":0,\"linear_matvecs\":0,\"linear_solve_failures\":0,\"linear_solves\":1112,\"local_error_failures\":3,\"mass_matvecs\":0,\"nonfinite_step_failures\":0,\"nonlinear_failures\":0,\"nonlinear_iterations\":0,\"nonlinear_jacobian_evaluations\":0,\"nonlinear_residual_evaluations\":0,\"nonlinear_solve_failures\":0,\"nonlinear_solves\":0,\"orthogonalization_inner_products\":0,\"orthogonalization_vector_updates\":0,\"phi_actions\":0,\"phi_dense_oracle_calls\":0,\"phi_krylov_vectors\":0,\"phi_projected_exponentials\":0,\"phi_restarts\":0,\"preconditioner_apps\":0,\"recycle_cross_operator_refreshes\":0,\"recycle_dropped_vectors\":0,\"recycle_projection_calls\":0,\"recycle_refresh_matvecs\":0,\"recycle_same_operator_uses\":0,\"recycle_updates\":0,\"recycle_vectors_selected\":0,\"rejected_steps\":3,\"rhs_batch_calls\":0,\"rhs_calls\":1517,\"rhs_evaluations\":1517},\"dopri5_attempts\":0,\"driver_id\":\"rodas5p-fast-transformed-v2\",\"final_state\":[1.9993333705063032,-0.0006670371231732559],\"final_state_bits\":[\"3ffffd44fd020431\",\"bf45db83508b2ae7\"],\"final_time\":1.0,\"final_time_bits\":\"3ff0000000000000\",\"operations\":46309.333333333336,\"operations3\":\"138928\",\"rejected_steps\":3,\"rodas5p_attempts\":139,\"status\":{\"status\":\"success\"},\"stop\":null,\"success\":true},\"schema\":\"vigilode.v27.runner.v1\",\"span\":[0.0,1.0],\"span_bits\":[\"0000000000000000\",\"3ff0000000000000\"],\"y0_bits\":[\"4000000000000000\",\"0000000000000000\"]}"
+    }
+   ],
+   "t1_bits": "3ff0000000000000",
+   "y": [
+    1.9993333705063032,
+    -0.0006670371231732559
+   ],
+   "y_bits": [
+    "3ffffd44fd020431",
+    "bf45db83508b2ae7"
+   ]
+  }
+ },
+ "runner": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/v27-runner",
+ "schema": "vigilode.v27.phase2.references.v1",
+ "started_utc": "2026-11-24T14:49:00Z"
+}
