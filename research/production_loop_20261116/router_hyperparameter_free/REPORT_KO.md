@@ -161,5 +161,7 @@ handover 없는 실행 중 치명적 pilot(D1)로 끝난 실행을 빼면 (a)가
 - E5 (iii)은 runner의 재생 분해(e5_split)로 판정했습니다: N의 콜백 항목이 비트 단위로 Dopri5::solve 항목의 접두부, 각 pilot의 재생(Dopri5::solve가 같은 시도 수 뒤 수락한 점에서 Rodas5p::solve, h0 = H, max_steps = 1), handover 뒤 RODAS5P 재생으로 정확히 나뉘어야 합니다. Solution은 dense output 없이 t0와 t1만 기록하므로 수락점 목록 대신 이 방법을 썼습니다.
 - runner의 분류기는 비자율 문제에서 RODAS5P 시도의 첫 단계 f(t, y)를 옆의 유한차분 시간미분 호출과 같은 상태라는 이유로 시간미분으로 표시합니다. 종류별 수는 측정값으로만 보고하며 어떤 판정에도 쓰지 않았습니다.
 - 탐색용 팔 N_prod와 N_cont는 AMENDMENT_A8_2에 따라 실행하지 않았습니다.
-- 예제 examples/unified_production_solver.rs와 contract_4의 주석은 break-even 경로를 설명하도록 고쳤습니다(코드와 단언은 그대로).
+- 예제 crates/vigilode/examples/unified_production_solver.rs의 주석(모듈 문서 2·4항, 문제 4의 설명)은 break-even 경로를 설명하도록 고쳤습니다(코드 변경 없음). contract_4_fail_closed_protected_fallback은 과제가 적은 tests/unified_router_contracts.rs가 아니라 tests/unified_production_solver_contracts.rs(247-250행)에 있어 허용 경로 밖이므로 그 주석은 고치지 않았습니다. tests/unified_router_contracts.rs 1864-1865행의 주석도 제거된 스크린과 시험 예산을 설명하지만 허용 범위(contract_4의 주석) 밖이라 그대로 두었습니다.
+- E1의 최대비 조건은 엄격한 부등식이고 사례 집합에 선언된 사실의 케이스가 들어 있어, 두 경로가 같은 경로를 실행하는 케이스가 두 최대를 함께 정하면 조건이 성립할 수 없습니다. 이번에는 Robertson에 Nonstiff를 선언한 케이스가 그렇습니다. 사전 등록 문구 그대로 적용했고, 이 구조는 소유자 판단이 필요한 열린 문제입니다.
+- E7은 상대 비교(err(N) <= 3 max(err(D), err(R)))이며 절대 하한이 없습니다. 실패한 케이스에서 N의 가중 오차는 허용오차 수준(가중 노름 1)보다 훨씬 작지만 R의 3배를 넘습니다(수치는 1절과 RESULTS.json의 E7 항목). 원인은 이번 평가에서 분석하지 않았습니다(가설: handover 뒤 RODAS5P가 h0 = H로 시작해 R과 다른 단계 순서를 밟음). 문구 그대로 실패로 판정했습니다.
 

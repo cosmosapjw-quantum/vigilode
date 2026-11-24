@@ -6,11 +6,12 @@
 //! 1. One call (`VigilODE::solve`) over `Dopri5::solve`, `Rodas5p::solve` and
 //!    `SwitchingSolver::solve`.
 //! 2. Routing by declared facts: a supplied Jacobian or JVP runs RODAS5P (the facade picks
-//!    the dense or the matrix-free driver family), a small problem that declares nothing
-//!    gets a budgeted DOPRI5 trial.
+//!    the dense or the matrix-free driver family); a problem that declares nothing starts
+//!    DOPRI5 with forward break-even pilots of RODAS5P.
 //! 3. The end-point drift of registered invariants.
-//! 4. The fallback: RODAS5P continues from the last accepted state of a DOPRI5 trial that
-//!    used up its attempt budget; both legs share `Options::max_steps`.
+//! 4. The handover: when a pilot (one RODAS5P attempt from DOPRI5's accepted state with the
+//!    step DOPRI5 advanced in its last `b` attempts) is accepted, RODAS5P continues from the
+//!    pilot's end point; DOPRI5, the pilots and RODAS5P share `Options::max_steps`.
 //!
 //! "Route taken" prints the driver identifier of each executed leg, read from the leg's
 //! own run record.
@@ -137,10 +138,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Problem 4: Fail-Closed Protected Fallback Demonstration
     // -------------------------------------------------------------------------
     println!("--- 4. Fail-Closed Fallback Demonstration ---");
-    // System with stiff kinetics but without explicit Jacobian: nothing is declared and
-    // the Jacobian at t0 is small, so DOPRI5 gets a trial of min(1000, max_steps / 2)
-    // attempts. It does not finish, and RODAS5P (finite-difference Jacobian) continues
-    // from its last accepted state with the attempts that are left.
+    // System with stiff kinetics but without explicit Jacobian: nothing is declared, so
+    // DOPRI5 starts with forward break-even pilots. When DOPRI5 has made b 2^k attempts
+    // (b = 4 for n = 3), one RODAS5P attempt from DOPRI5's accepted state tries the step
+    // that DOPRI5 advanced in its last b attempts; once a pilot is accepted, RODAS5P
+    // (finite-difference Jacobian) continues from the pilot's end point with the attempts
+    // that are left.
     let fallback_prob = Problem::new(3, |_t, y, dy| {
         dy[0] = -0.04 * y[0] + 1.0e4 * y[1] * y[2];
         dy[1] = 0.04 * y[0] - 1.0e4 * y[1] * y[2] - 3.0e7 * y[1] * y[1];

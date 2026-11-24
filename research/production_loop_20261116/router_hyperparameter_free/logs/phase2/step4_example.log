@@ -1,0 +1,47 @@
+# step 4, 2026-11-24T15:00:44Z, head 2f3a0133 + example comment edits (uncommitted at run time)
+# CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27 taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --example unified_production_solver
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 7.11s
+     Running unittests examples/unified_production_solver.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/examples/unified_production_solver-92820856b2e49e30)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+exit=0
+
+# CARGO_TARGET_DIR=... taskset -c 0-5,12-17 cargo +1.94.1 run --locked -j 4 --release -p vigilode --example unified_production_solver
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 24.65s
+     Running `/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/release/examples/unified_production_solver`
+============================================================
+    VigilODE — Unified Production Solver Demonstration      
+============================================================
+
+--- 1. Robertson Stiff Chemical Kinetics ---
+Status: Success
+Final time: 40
+Final state: [0.715826808932855, 9.185525016783394e-6, 0.2841640055421296]
+Route taken: [RouteTransitionRecord { from_tier: "preflight", to_tier: "rodas5p-fast-transformed-v2", time: 0.0, reason: "a derivative or a band is supplied and no regime is declared", step_index: 0 }]
+Invariant drift: [("total_mass", 1.3322676295501878e-15)]
+Work counters: RHS=348, LU=44, Solves=352, Steps=40
+
+--- 2. Nonstiff Harmonic Oscillator ---
+Status: Success
+Final state: [0.9999992481164662, -3.0169707921322286e-7]
+Route taken: [RouteTransitionRecord { from_tier: "preflight", to_tier: "dopri5-5(4)-fsal", time: 0.0, reason: "no declaration: DOPRI5 with forward break-even pilots of RODAS5P (b = 4)", step_index: 0 }]
+Invariant drift: [("energy", 1.5037664111705595e-6)]
+
+--- 3. 1D Heat Diffusion (Matrix-Free Krylov) ---
+Status: Success
+Route taken: [RouteTransitionRecord { from_tier: "preflight", to_tier: "rodas5p-mf-fast-transformed-v1", time: 0.0, reason: "a derivative or a band is supplied and no regime is declared", step_index: 0 }]
+Work counters: JVP vectors=6297, Linear solves=216
+
+--- 4. Fail-Closed Fallback Demonstration ---
+Status: Success
+Success: true
+Route transitions: [RouteTransitionRecord { from_tier: "preflight", to_tier: "dopri5-5(4)-fsal", time: 0.0, reason: "no declaration: DOPRI5 with forward break-even pilots of RODAS5P (b = 4)", step_index: 0 }, RouteTransitionRecord { from_tier: "dopri5-5(4)-fsal", to_tier: "rodas5p-fast-transformed-v2", time: 0.0017904743728214573, reason: "handover at t = 1.7904743728214573e-3: one RODAS5P attempt from DOPRI5's accepted state advanced H = 9.918121723858898e-4, the length DOPRI5 advanced in its last 4 attempts (window 24 callbacks and 624 operations, pilot 15 callbacks and 564 operations); RODAS5P continues from t = 2.7822865452073473e-3 with h0 = H and the 990 attempts left of 1000", step_index: 5 }]
+Fallback steps recorded: 1
+
+All unified production solver demonstrations completed successfully!
+exit=0
