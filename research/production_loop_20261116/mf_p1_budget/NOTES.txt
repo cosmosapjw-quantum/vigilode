@@ -107,3 +107,43 @@ two rustc processes of other agents.
    pair against the unperturbed reference of its family (V25: mf_p1_confirm/reference/<id>.json; V24:
    mf_stage_solve/reference/<id>.json), ratio E_P1 / E_S; the perturbation of the start (relative 1e-8) is not
    removed from the reference, which is stated next to the numbers.
+
+== 2026-11-25 00:00-00:11 KST: step 1 (target and protocol, before any run of a cell) ==
+- The first plumbing run of the contract tests (development instances only: dev_robertson_rd1d rtol 1e-3,
+  dev_cusp1d rtol 1e-4, arms S and P1) failed: on dev_cusp1d arm S two attempts ended with a non-finite stage
+  right-hand side (counters.nonfinite_step_failures 2), an error the driver's statistics do not classify, and the
+  first version of the replay assumed that every failed attempt failed in a classified stage solve. The replay now
+  knows three classes (budget, other linear error, elsewhere); for "elsewhere" the system of the stage at which the
+  attempt ended is replayed if its right-hand side can be rebuilt (the rule of the V25 replay) and counted apart
+  otherwise. The contract tests then passed. No cell of the node was built or run in either plumbing run.
+- 41ab625b (00:07): target crates/rodas5p-integrators/tests/mf_budget_measure.rs and run_measurements.py.
+  Binary built at 41ab625b, copied to
+  /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v28/v28-bins/mf_budget_measure.41ab625b
+  (sha256 d80edd53628a6edf0caebbc4f298ec7e432473211cea08bbdac62f04680fab24); plumbing log logs/plumbing (3 passed).
+- 1db2ca36 (00:10:40): PROTOCOL.json (40 cells read from the V25 and V24 protocols, perturbation code, K/V/T rules,
+  coverage rules, binary hash) and build_protocol.py. This is the protocol commit; every run below is after it.
+
+== 2026-11-25 00:10-00:31 KST: steps 2 and 3 (runs; all with binary d80edd53, git tree clean at each start) ==
+- cells   00:10:46, 1 process: the 40 cells as the target builds them; 0 differences to PROTOCOL.json.
+- replay  00:10:52-00:13:21, 80 SHADOW runs (K, V), exit 0 each; committed 0d1c947f.
+- ensemble 00:14:16-00:30:14, 640 RUN runs (T), exit 0 each; V25 cells committed 0795f277, V24 cells 7e2c07e8.
+- reproduction 00:30:26-00:31:22, 80 RUN runs with j = 0 (reported only); committed f70ab326.
+- A helper loop of this session that waited for the runner matched its own command line with pgrep and never
+  ended; it was stopped. It ran no measurement.
+
+== 2026-11-25 00:32 KST: step 4 (parser; numbers from RESULTS.json) ==
+- K PASS: 94126 replayed stage systems in 80 runs; 0 systems on which P1 exhausts the budget and S does not, 0 on
+  which S exhausts it and P1 does not; both kernels exhaust it on the same 377 systems (robertson_rd1d 38 + 41,
+  cusp1d 149 + 149 along the trajectories of S and P1); 0 coverage issues (every replay of the driver's own kernel
+  reproduces the driver).
+- V PASS: 93749 completed P1 solves in the replay, 0 violations (independent residual and kernel report),
+  largest independent residual over threshold 0.999991; the P1 kernel's threshold equals the target's bitwise.
+- T FAIL: 320 pairs, d != 0 only in robertson_rd1d; W = 25, n = 30, P(X >= 25) = 174437/1073741824 = 1.62e-4 < 1/20.
+  cusp1d: d = 0 in all 40 pairs (1192 budget-exhausting solves in each arm); the six other families never exhaust
+  the budget.
+- Reproduction (reported): 80 of 80 unperturbed rows equal to the V25/V24 recordings in end-state sha256, attempts,
+  accepted, rejected and the recorded budget counts.
+- Frozen verdict KEEP (V holds, T fails): the shipped policy stays the default of the matrix-free route, P1 stays
+  opt-in; step 5 (step 6 of V25) is not run; no protected file and no default changed. D0, G, R: NOT_RUN.
+- Observation, not a rule: the replay shows the two kernels equivalent on identical systems; the excess of P1 in
+  robertson_rd1d comes with its trajectories (attempts ratio P1/S geometric mean 1.06 there).
