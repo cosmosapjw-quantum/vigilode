@@ -1,0 +1,20 @@
+# node V26 log
+# date: 2026-11-24T18:38:07+09:00
+# git head: ef11551e10b026e219ccc342a91d36c1c0e9ad74
+# git status (tracked changes): 1
+# binary: /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_check_measure-bae05b015b51428f
+# binary sha256: 547232213bffe97e06bbed7935304de4e14f8d63ad31b8ceba39e6c9f885694b
+# rustc: rustc 1.94.1 (e408947bf 2026-03-25)
+# host: 7.0.0-43-generic, 24 logical cpus
+# loadavg at start: 15.18 10.77 8.37 13/6134 4118882
+# command: V26_MODE=perf V26_CELL=bruss1d-n131072 V26_ARM=None@t6 V26_ACTION=verify flock /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/timing.lock taskset -c 6-11 perf stat -e instructions:u -x, /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_check_measure-bae05b015b51428f --ignored --nocapture --exact v26_measure
+
+running 1 test
+V26_META_JSON {"action_env":"verify","arm_env":"None@t6","arms_env":null,"atol":1e-8,"cell":"bruss1d-n131072","cpus_allowed_list":"6-11","max_attempts":48,"mode":"perf","rounds_env":null,"rtol":1e-6,"what_env":null}
+V26_PERF_JSON {"action":"verify","arm":"None@t6","assembly_rhs_calls":6,"cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(0)","rhs_calls":6,"verification_rhs_calls":0,"verified_columns":0,"wall_ns":7660142,"what":"first_linearization"}
+test v26_measure ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+262957384,,instructions:u,75345439,100.00,,
+# exit code: 0

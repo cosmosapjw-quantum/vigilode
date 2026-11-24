@@ -1,0 +1,32 @@
+# node V26 log
+# date: 2026-11-24T19:18:17+09:00
+# git head: fed4a25caf4e6bfb80b876b06dd69022f1d44c35
+# git status (tracked changes): 1
+# binary: /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_check_measure-bae05b015b51428f
+# binary sha256: 547232213bffe97e06bbed7935304de4e14f8d63ad31b8ceba39e6c9f885694b
+# rustc: rustc 1.94.1 (e408947bf 2026-03-25)
+# host: 7.0.0-43-generic, 24 logical cpus
+# loadavg at start: 3.74 4.18 5.37 2/6037 85335
+# command: V26_MODE=timing V26_CELL=bruss1d-n131072 V26_WHAT=verify V26_ARMS=None@seq,S8@seq,FA@seq V26_ROUNDS=0+2 flock /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/timing.lock taskset -c 6-11 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_check_measure-bae05b015b51428f --ignored --nocapture --exact v26_measure
+# running compilers at start: 0
+
+running 1 test
+V26_META_JSON {"action_env":null,"arm_env":null,"arms_env":"None@seq,S8@seq,FA@seq","atol":1e-8,"cell":"bruss1d-n131072","cpus_allowed_list":"6-11","max_attempts":48,"mode":"timing","rounds_env":"0+2","rtol":1e-6,"what_env":"verify"}
+V26_LOAD_JSON {"cell":"bruss1d-n131072","loadavg":{"load_15m":5.37,"load_1m":3.74,"load_5m":4.18,"raw":"3.74 4.18 5.37 1/6039 85340"},"what":"verify","when":"before"}
+V26_RHS_COST_JSON {"batches":7,"calls_per_batch":27,"cell":"bruss1d-n131072","n":131072,"per_call_ns":[161900.25925925927,162926.62962962964,163403.07407407407,163317.03703703705,163613.4814814815,163723.7037037037,164097.37037037036]}
+V26_TIMING_JSON {"arm":"None@seq","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(0)","position_in_round":0,"rhs_calls":6,"round":0,"verification_rhs_calls":0,"verified_columns":0,"wall_ns":4391856,"warm_up":false,"what":"first_linearization"}
+V26_TIMING_JSON {"arm":"S8@seq","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(8)","position_in_round":1,"rhs_calls":14,"round":0,"verification_rhs_calls":8,"verified_columns":8,"wall_ns":7179625,"warm_up":false,"what":"first_linearization"}
+V26_TIMING_JSON {"arm":"FA@seq","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(131072)","position_in_round":2,"rhs_calls":131078,"round":0,"verification_rhs_calls":131072,"verified_columns":131072,"wall_ns":41578137949,"warm_up":false,"what":"first_linearization"}
+V26_TIMING_JSON {"arm":"S8@seq","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(8)","position_in_round":0,"rhs_calls":14,"round":1,"verification_rhs_calls":8,"verified_columns":8,"wall_ns":5499414,"warm_up":false,"what":"first_linearization"}
+test v26_measure has been running for over 60 seconds
+V26_TIMING_JSON {"arm":"FA@seq","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(131072)","position_in_round":1,"rhs_calls":131078,"round":1,"verification_rhs_calls":131072,"verified_columns":131072,"wall_ns":41830440369,"warm_up":false,"what":"first_linearization"}
+V26_TIMING_JSON {"arm":"None@seq","assembly_rhs_calls":6,"backend":"banded_tight","cell":"bruss1d-n131072","jacobian_fingerprint":"30bdf8dc58eb4e92","outcome":"Ok(0)","position_in_round":2,"rhs_calls":6,"round":1,"verification_rhs_calls":0,"verified_columns":0,"wall_ns":2781115,"warm_up":false,"what":"first_linearization"}
+V26_LOAD_JSON {"cell":"bruss1d-n131072","loadavg":{"load_15m":5.1,"load_1m":2.67,"load_5m":3.71,"raw":"2.67 3.71 5.10 1/6023 90223"},"what":"verify","when":"after"}
+test v26_measure ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 83.71s
+
+# exit code: 0
+# loadavg at end: 2.67 3.71 5.10 1/6021 90224
+# running compilers at end: 0
+# date at end: 2026-11-24T19:19:41+09:00
