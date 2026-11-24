@@ -151,3 +151,54 @@ fn a_declared_lawson_residual_cannot_be_integrated_as_the_full_rhs() {
     .unwrap_err();
     assert!(matches!(error, PortfolioError::SplitRequiresLawson));
 }
+#[test]
+fn nonlinear_rhs_only_convergence_has_a_closed_form_reference() {
+    use vigilode::{Atol, MethodParams, VigilODE};
+    for id in ["bdf1-bdf2-variable", "radau-iia3"] {
+        let mut previous_error = f64::INFINITY;
+        for rtol in [1e-4, 1e-6, 1e-8] {
+            let problem = Problem::new(2, |_, y, dy| {
+                for ((out, &state), rate) in dy.iter_mut().zip(y).zip([1.0, 50.0]) {
+                    *out = -rate * state * (1.0 + state);
+                }
+                Ok(())
+            })
+            .autonomous();
+            let options = Options {
+                rtol,
+                atol: Atol::Scalar(rtol * 1e-3),
+                ..Options::default()
+            };
+            let run = VigilODE::solve_method(
+                &problem,
+                (0.0, 0.1),
+                &[1.0, 1.0],
+                &options,
+                MethodChoice::Explicit(id),
+                &MethodParams::default(),
+            )
+            .unwrap();
+            let view = run.view();
+            assert!(view.is_success(), "{id}: {:?}", view.failure());
+            let error = view
+                .final_state()
+                .unwrap()
+                .iter()
+                .zip([1.0_f64, 50.0])
+                .map(|(y, rate)| {
+                    let e = (-0.1 * rate).exp();
+                    (y - e / (2.0 - e)).abs()
+                })
+                .fold(0.0, f64::max);
+            println!(
+                "nonlinear {id} rtol={rtol:e} max_abs={error:e} rhs={}",
+                run.total_work().rhs_calls
+            );
+            assert!(
+                error < previous_error && error < rtol,
+                "{id}: {error:e} at {rtol:e} after {previous_error:e}"
+            );
+            previous_error = error;
+        }
+    }
+}
