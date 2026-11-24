@@ -117,7 +117,10 @@ def main():
             diagnostics.append({"run": k, "present": False})
             continue
         text = text_path.read_text()
-        lines = [json.loads(l) for l in text.splitlines() if l.startswith('{"sl_n12"')]
+        # libtest prints "test <name> ... " in front of the first line of the test's output
+        # (correction after the series: the first version matched only lines that start with
+        # the JSON object and dropped the n = 1e4 line; reported-only field, no verdict input).
+        lines = [json.loads(m.group(0)) for m in re.finditer(r'\{"sl_n12".*?\}', text)]
         ok = "test result: ok. 1 passed" in text and text.rstrip().endswith("exit 0")
         counts = perf_counts(LOGS / f"diag_{k}.perf.csv")
         meta = json.loads((LOGS / f"diag_{k}.meta.json").read_text())

@@ -1,0 +1,262 @@
+{
+ "schema": "vigilode.ks-n1-results.v1",
+ "task": "KS-N1",
+ "protocol": "research/kernel_spectral_foundation_20261124/owner_host/KS_N1_PROTOCOL.json",
+ "environment": {
+  "start": "2026-11-25T07:08:14+09:00",
+  "head": "3dff01839ac46114424743ee4fb6e6c711862a1b",
+  "kernel": "7.0.0-43-generic",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "perf": "perf version 7.0.14",
+  "governor": "performance",
+  "core": 3,
+  "probe_sha256": "a988aaa73c6b372bb32d1456d9d5709068495279642c2309a625ee1147a53b86",
+  "test_binary_sha256": "2684fcac19c51c35d73eb6a4922443450e977e4ebd0b01f15ebd4d547a8fe4e8",
+  "loadavg": "10.47 6.02 3.08 28/5948 2316390"
+ },
+ "end": {
+  "end": "2026-11-25T07:16:33+09:00",
+  "loadavg": "2.56 4.19 3.45 2/5867 2336663"
+ },
+ "cells": {
+  "n1e4": {
+   "rows": 5000,
+   "n": 10000,
+   "N": 100,
+   "per_solve": {
+    "indexed": {
+     "instructions": [
+      440430605.55,
+      440430605.8,
+      440430616.98
+     ],
+     "cycles": [
+      129838281.58,
+      132619994.75,
+      129158557.16
+     ]
+    },
+    "fixed2": {
+     "instructions": [
+      205080075.02,
+      205080074.64,
+      205080079.03
+     ],
+     "cycles": [
+      84161324.08,
+      86122891.16,
+      85027397.49
+     ]
+    }
+   },
+   "instructions_ratio": 0.4656353857323146,
+   "instructions_ratio_per_round": [
+    0.4656353859966215,
+    0.46563538486952255,
+    0.4656353830172363
+   ],
+   "instructions_ratio_spread": 6.3985370335473135e-09,
+   "cycles_ratio": 0.6548715560257186,
+   "cycles_ratio_per_round": [
+    0.6482011549740352,
+    0.649395977750934,
+    0.6583179570879623
+   ],
+   "cycles_ratio_spread": 0.015607503992078442
+  },
+  "n1e5": {
+   "rows": 50000,
+   "n": 100000,
+   "N": 12,
+   "per_solve": {
+    "indexed": {
+     "instructions": [
+      4189369331.4166665,
+      4189369306.75,
+      4189369192.0833335
+     ],
+     "cycles": [
+      1442061009.8333333,
+      1330120716.5,
+      1279014289.3333333
+     ]
+    },
+    "fixed2": {
+     "instructions": [
+      1965853713.5833333,
+      1965853636.5833333,
+      1965853606.3333333
+     ],
+     "cycles": [
+      891154491.8333334,
+      894335543.3333334,
+      849980198.25
+     ]
+    }
+   },
+   "instructions_ratio": 0.4692481117422397,
+   "instructions_ratio_per_round": [
+    0.4692481273591997,
+    0.4692481117422397,
+    0.4692481173653098
+   ],
+   "instructions_ratio_spread": 3.328081588094278e-08,
+   "cycles_ratio": 0.6699801610324994,
+   "cycles_ratio_per_round": [
+    0.61797280819369,
+    0.6723717120101959,
+    0.664558797613621
+   ],
+   "cycles_ratio_spread": 0.08802798941188317
+  }
+ },
+ "identity": {
+  "probe": {
+   "n1e4": {
+    "lines": 12,
+    "mismatches": [],
+    "drivers": [
+     [
+      "fixed2",
+      "rodas5p-fast-banded-fixed2-v1"
+     ],
+     [
+      "indexed",
+      "rodas5p-fast-banded-v1"
+     ]
+    ],
+    "attempts": 18,
+    "state_fnv1a": "65f83f600a55e274"
+   },
+   "n1e5": {
+    "lines": 12,
+    "mismatches": [],
+    "drivers": [
+     [
+      "fixed2",
+      "rodas5p-fast-banded-fixed2-v1"
+     ],
+     [
+      "indexed",
+      "rodas5p-fast-banded-v1"
+     ]
+    ],
+    "attempts": 17,
+    "state_fnv1a": "259689109a197dae"
+   }
+  },
+  "probe_ok": true,
+  "identity_tests": [
+   [
+    "ok",
+    "5",
+    "0"
+   ]
+  ],
+  "identity_tests_ok": true,
+  "diagnostic_runs_ok": true
+ },
+ "quiet_rule": {
+  "processes_above_load_3": [],
+  "cells_with_cycles_spread_above_0_10": [],
+  "cycles_decidable": true
+ },
+ "diagnostic_runs": [
+  {
+   "run": 1,
+   "present": true,
+   "passed": true,
+   "wall_medians": [
+    {
+     "sl_n12": "whole_solve",
+     "n": 10000,
+     "attempts": 18,
+     "repeats": 15,
+     "indexed_s": 0.026919,
+     "fixed2_s": 0.01758,
+     "ratio": 0.6531
+    },
+    {
+     "sl_n12": "whole_solve",
+     "n": 100000,
+     "attempts": 17,
+     "repeats": 7,
+     "indexed_s": 0.271586,
+     "fixed2_s": 0.178457,
+     "ratio": 0.6571
+    }
+   ],
+   "whole_process": {
+    "instructions:u": 59540553498.0,
+    "cycles:u": 20447413170.0,
+    "task-clock": 4333.5
+   },
+   "load1_before": 2.81
+  },
+  {
+   "run": 2,
+   "present": true,
+   "passed": true,
+   "wall_medians": [
+    {
+     "sl_n12": "whole_solve",
+     "n": 10000,
+     "attempts": 18,
+     "repeats": 15,
+     "indexed_s": 0.026806,
+     "fixed2_s": 0.01756,
+     "ratio": 0.6551
+    },
+    {
+     "sl_n12": "whole_solve",
+     "n": 100000,
+     "attempts": 17,
+     "repeats": 7,
+     "indexed_s": 0.269191,
+     "fixed2_s": 0.176535,
+     "ratio": 0.6558
+    }
+   ],
+   "whole_process": {
+    "instructions:u": 59540552843.0,
+    "cycles:u": 20417091354.0,
+    "task-clock": 4332.85
+   },
+   "load1_before": 2.75
+  },
+  {
+   "run": 3,
+   "present": true,
+   "passed": true,
+   "wall_medians": [
+    {
+     "sl_n12": "whole_solve",
+     "n": 10000,
+     "attempts": 18,
+     "repeats": 15,
+     "indexed_s": 0.026935,
+     "fixed2_s": 0.017578,
+     "ratio": 0.6526
+    },
+    {
+     "sl_n12": "whole_solve",
+     "n": 100000,
+     "attempts": 17,
+     "repeats": 7,
+     "indexed_s": 0.272905,
+     "fixed2_s": 0.178676,
+     "ratio": 0.6547
+    }
+   ],
+   "whole_process": {
+    "instructions:u": 59540553831.0,
+    "cycles:u": 20506865913.0,
+    "task-clock": 4350.18
+   },
+   "load1_before": 2.61
+  }
+ ],
+ "problems": [],
+ "verdict": "PASS",
+ "fallback": null
+}
