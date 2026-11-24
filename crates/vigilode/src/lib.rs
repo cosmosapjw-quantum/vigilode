@@ -216,6 +216,7 @@ mod session;
 mod solution;
 mod solve;
 mod switching;
+pub mod spatial;
 pub mod unified;
 pub mod work_model;
 

@@ -1,0 +1,22 @@
+    Blocking waiting for file lock on artifact directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 58.92s
+     Running tests/spatial_diffusion.rs (/tmp/vigilode-spatial-review-target-20261124/debug/deps/spatial_diffusion-471a8f22a38ba461)
+
+running 6 tests
+test checked_grid_construction_and_buffers ... ok
+SPATIAL {"grid":"sphere_Y11","n_theta":12,"relative_spatial_residual_area_norm":0.00962253713121806}
+SPATIAL {"grid":"sphere_Y11","n_theta":24,"relative_spatial_residual_area_norm":0.0026512010634017922}
+SPATIAL {"grid":"sphere_Y11","n_theta":48,"relative_spatial_residual_area_norm":0.0007174422398399379}
+test nonzonal_spherical_harmonic_refines_in_the_area_norm ... ok
+test dense_output_on_small_mesh_has_an_explicit_rhs_only_fallback ... ok
+test arbitrary_fields_conserve_weighted_mass_and_dissipate_energy ... ok
+SPATIAL {"accepted_steps":6,"direct_factorizations":0,"eigenvector_defect":2.3092638912203256e-14,"endpoint_max_error":1.975298813405857e-10,"grid":"box2","jvp_vectors":805,"n":96,"routes":[{"from_tier":"preflight","reason":"a derivative or a band is supplied and no regime is declared","step_index":0,"time":0.0,"to_tier":"rodas5p-mf-fast-transformed-v1"}],"semidiscrete_eigenvalue":-4.928460746153837}
+SPATIAL {"accepted_steps":6,"direct_factorizations":0,"eigenvector_defect":1.9095836023552692e-14,"endpoint_max_error":1.76057168843613e-10,"grid":"box3","jvp_vectors":768,"n":336,"routes":[{"from_tier":"preflight","reason":"a derivative or a band is supplied and no regime is declared","step_index":0,"time":0.0,"to_tier":"rodas5p-mf-fast-transformed-v1"}],"semidiscrete_eigenvalue":-6.694577704496269}
+SPATIAL {"accepted_steps":4,"direct_factorizations":0,"eigenvector_defect":1.249000902703301e-16,"endpoint_max_error":3.3306690738754696e-16,"grid":"sphere","jvp_vectors":160,"n":200,"routes":[{"from_tier":"preflight","reason":"a derivative or a band is supplied and no regime is declared","step_index":0,"time":0.0,"to_tier":"rodas5p-mf-fast-transformed-v1"}],"semidiscrete_eigenvalue":-0.17460916741126611}
+test unified_solver_tracks_semidiscrete_spectrum_without_assembling_a_jacobian ... ok
+SPATIAL {"accepted_steps":17,"case":"multimode","direct_factorizations":0,"endpoint_max_error":4.7196573038643663e-11,"grid":"box2","jvp_vectors":4604,"rhs_calls":143}
+SPATIAL {"accepted_steps":17,"case":"multimode","direct_factorizations":0,"endpoint_max_error":3.931313607985487e-11,"grid":"box3","jvp_vectors":5712,"rhs_calls":136}
+SPATIAL {"accepted_steps":16,"case":"multimode","direct_factorizations":0,"endpoint_max_error":2.846821112179043e-10,"grid":"sphere","jvp_vectors":5712,"rhs_calls":135}
+test multimode_endpoints_match_independent_face_assembly_exponential ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.01s
