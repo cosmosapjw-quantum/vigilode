@@ -10,9 +10,10 @@ scratch commit on top of --base in that clone with plumbing on a temporary index
 working-tree change) and evaluates it twice:
   restricted  the selector's own rules (select_tests.decide) on the real diff, the real change
               classification and the measured input map, with the targets of every package
-              restricted to the measured ones. In CI every target has a map entry after the first
-              full run; the local run measured only a few targets, and rule 5 would otherwise add
-              every unmeasured target to every case.
+              restricted to the measured ones and the scope restricted to the packages whose library
+              and binary inputs the run recorded. In CI every target and package has a map entry
+              after the first full run; the local run measured only a few, and rule 5 would
+              otherwise add every unmeasured target and package to every case.
   cli         the real `select` subcommand in the clone on the unrestricted workspace, where rule 5
               adds every unmeasured target; recorded as counts and as the presence of the expected
               targets.
@@ -91,13 +92,15 @@ def cases(st, repo, base, cmap):
     alg01 = "crates/rodas5p-integrators/tests/alg01_common/mod.rs"
     krylov_lib = "crates/rodas5p-krylov/src/lib.rs"
     vig_lib = "crates/vigilode/src/lib.rs"
-    # N2: the integrators source executed by the fewest measured targets (at least one)
+    # N2: the integrators source executed by the fewest measured targets, at least one of them an
+    # integration test (a file that only the lib unit tests execute shows less)
     executed = {}
     for key, item in cmap.items():
         for f in item.get("executed", []):
             if f.startswith("crates/rodas5p-integrators/src/") and f.endswith(".rs"):
                 executed.setdefault(f, set()).add(key)
-    body_file = sorted(executed, key=lambda f: (len(executed[f]), f))[0]
+    body_file = sorted((f for f in executed if any(not k.endswith("::lib") for k in executed[f])),
+                       key=lambda f: (len(executed[f]), f))[0]
     out = [
         dict(id="F1", desc="numeric change in the identity fixture of gain_witness.rs (replays 95d589e86)",
              edits={gain: show(repo, base, gain).replace("let identity = [[1.0, 0.0], [0.0, 1.0]];",
@@ -143,6 +146,31 @@ def cases(st, repo, base, cmap):
              edits={body_file: insert_in_first_body(st, show(repo, base, body_file), "let _ci_v3_probe = 0u8;")},
              expect=sorted(f"{k.split('::')[0]}:{k.split('::')[1]}" for k in executed[body_file] if "#" not in k),
              only="executed+readers+unit-tests+doc", body_file=body_file),
+    ]
+    # C1 (when the map holds a measured negative control): a body change in a file that the control
+    # executes selects the control's target, so the control step runs (R11). The file is the one
+    # with the fewest other executors; the control's own target entry executes nothing (the
+    # selector's run of it skips the control, its only ignored test).
+    controls = {k: v for k, v in cmap.items() if "#" in k}
+    for key, item in sorted(controls.items()):
+        others = {}
+        for k, v in cmap.items():
+            for f in v.get("executed", []):
+                if k != key:
+                    others.setdefault(f, set()).add(k)
+        files = sorted((f for f in item.get("executed", [])
+                        if f.startswith("crates/rodas5p-integrators/src/") and f.endswith(".rs")),
+                       key=lambda f: (len(others.get(f, ())), f))
+        if files:
+            pkg, target, test = st.split_key(key)
+            target_key = f"{pkg}::{target}"
+            out.append(dict(id="C1", desc=f"body change in {files[0]}, executed by the negative control {test} "
+                                          f"and by {sorted(others.get(files[0], ())) or 'no other target'}; the "
+                                          f"control's own target entry executed {len(cmap.get(target_key, {}).get('executed', []))} files",
+                            edits={files[0]: insert_in_first_body(st, show(repo, base, files[0]), "let _ci_v3_probe = 0u8;")},
+                            expect=[f"{pkg}:{target}"]))
+            break
+    out += [
         dict(id="S1", desc="structural change: a new const in crates/rodas5p-core/src/lib.rs",
              edits={"crates/rodas5p-core/src/lib.rs": show(repo, base, "crates/rodas5p-core/src/lib.rs")
                     + "\npub const CI_V3_PROBE: u32 = 1;\n"},
@@ -192,11 +220,12 @@ def main():
         head = commit_with(repo, args.base, case["edits"], f"ci-v3 selection case {case['id']}")
         changes = st.changed_entries(repo, args.base, head)
         drop = set(case.get("drop", []))
-        sel = st.decide(changes, restricted(drop), SCOPE, {k: v for k, v in cmap.items() if k not in drop}, pmap,
+        measured_scope = [p for p in SCOPE if p in pmap]
+        sel = st.decide(changes, restricted(drop), measured_scope, {k: v for k, v in cmap.items() if k not in drop}, pmap,
                         lambda path: st.classify_source_change(repo, args.base, head, path),
                         lambda side, dirs: st.existing_dirs(repo, args.base if side == "base" else head, dirs))
         got = chosen(sel)
-        missing = [t for t in case["expect"] if t not in got]
+        missing = [t for t in case["expect"] if t not in got and t.split(":")[0] + ":*" not in got]
         problems = [f"not selected: {t}" for t in missing]
         only = case.get("only")
         if only == "executed+readers+unit-tests+doc":
@@ -235,7 +264,10 @@ def main():
                 cli_sel = st.load_json(out_json)
                 cli_got = chosen(cli_sel)
                 unmapped = sum(1 for e in cli_sel["packages"].values() for w in e["why"].values() if "no map entry" in w)
+                unrecorded = sorted(p for p, e in cli_sel["packages"].items()
+                                    if any("not in the map" in x for x in e["why"].get("*", [])))
                 cli.update(mode=cli_sel["mode"], units=len(cli_got), units_by_rule5=unmapped,
+                           whole_packages_without_recorded_inputs=unrecorded,
                            expected_selected=all(t in cli_got or t.split(":")[0] + ":*" in cli_got for t in case["expect"]),
                            classified=cli_sel["classified"], changed=cli_sel["changed"])
                 if not cli["expected_selected"]:

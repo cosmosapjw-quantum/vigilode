@@ -1,0 +1,64 @@
+{
+ "schema": "vigilode.ci.test-selection.v3",
+ "head": "4c2e41d468493c8c28b3ec34bb32a4591dfd14a3",
+ "base": null,
+ "mode": "selected",
+ "scope": [
+  "rodas5p-core",
+  "rodas5p-krylov",
+  "rodas5p-integrators",
+  "rodas5p-cli"
+ ],
+ "reasons": [
+  "hand-made selection of the local end-to-end measurement (task ci-v3, verification 2)"
+ ],
+ "environment": {
+  "image_os": null,
+  "image_version": null,
+  "pr_base": null
+ },
+ "changed": [],
+ "notes": [],
+ "classified": {},
+ "owners": {},
+ "controls": [],
+ "baseline_failures_added": [],
+ "baseline_failures_dropped": [],
+ "packages": {
+  "rodas5p-core": {
+   "all": false,
+   "lib": false,
+   "doc": false,
+   "targets": [
+    "residual_gain_contract"
+   ],
+   "examples": [],
+   "why": {}
+  },
+  "rodas5p-integrators": {
+   "all": false,
+   "lib": true,
+   "doc": false,
+   "targets": [
+    "constants_provenance_contracts",
+    "generic_scope_contracts",
+    "ppsw1_6b_contracts",
+    "ptsw2b_contracts"
+   ],
+   "examples": [
+    "sp01_dupfix_profile"
+   ],
+   "why": {}
+  },
+  "rodas5p-cli": {
+   "all": false,
+   "lib": false,
+   "doc": false,
+   "targets": [
+    "alg02_predictive_controller"
+   ],
+   "examples": [],
+   "why": {}
+  }
+ }
+}

@@ -29,7 +29,9 @@ or records where the implementation reads the design in a particular way. The re
   calls without a directory descriptor. `-y` prints the cwd of `AT_FDCWD` and the path of every
   descriptor, so relative and descriptor-relative paths resolve. Command (one value of
   `CARGO_TARGET_<HOST>_RUNNER`, set per target run):
-  `strace -ff --seccomp-bpf -qq -y -o <work>/<target>/trace/t -e trace=<the list above>`.
+  `strace -ff --seccomp-bpf -qq -y -o <work>/<target>/trace/t -e trace=<the list above>`, where the
+  legacy and newer names carry strace's `?` qualifier (an unknown name is not an error: the legacy
+  calls do not exist on aarch64). `-e status` keeps its default (successful and failed calls).
   A successful open is recorded under both its lexical path and the resolved path from `-y`
   (a symlink and its target both count).
 - **R4 Package inputs.** The dep-info of a test artifact lists only that crate's files; a test that
@@ -77,8 +79,9 @@ or records where the implementation reads the design in a particular way. The re
   package's lib (and bin) unit tests run for every body change in its sources: their dep-info lists
   every source of the crate. The alternative, exempting them as in R8 and relying on their coverage,
   would skip the `cfg(test)` compilation of the changed body; it is not adopted because rule 3 as
-  approved counts compile sets. Cost: one more target per body change (integrators lib unit tests:
-  see the end-to-end log). The doc tests of the package and its dependents run as in v2.
+  approved counts compile sets. Cost: one more target per body change; the integrators lib unit
+  tests took 14.9 s locally (141 tests, debug, coverage and strace, host load about 190;
+  `v3_logs/e2e_run.log`). The doc tests of the package and its dependents run as in v2.
 - **R10 Doc tests.** They run whenever their package runs whole or has any selected target (the
   design: "they always run for a selected package"), and for body changes of the package or a
   dependency (v2). They are not traced: cargo 1.94.1 passes the target runner to doc tests
@@ -99,8 +102,8 @@ or records where the implementation reads the design in a particular way. The re
   (`kill-gate`, `stop-diff`).
 - **R12 Literal matcher: removed** (task rule C8). Every reviewer link that the literal matcher
   found (F1-F4, F6) is in a measured set, and F5 and F7 were never literal. The note for a changed
-  path that selects nothing comes from the map: "no mapped target compiles, executes or reads
-  <path>". Doc tests are the only unmeasured consumers, and literals in doc comments would not be a
+  path that selects nothing comes from the map: `no mapped target compiles, executes or reads
+  <path>`. Doc tests are the only unmeasured consumers, and literals in doc comments would not be a
   sound guard either; they run with their package (R10).
 - **R13 Unmapped targets (rule 5).** Every current target in scope without an entry (new, measurement
   lost, new example) runs or is compiled whenever the diff is not empty; with an empty diff only

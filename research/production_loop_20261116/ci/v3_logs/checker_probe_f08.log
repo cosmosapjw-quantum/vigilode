@@ -1,0 +1,12 @@
+## probe A: ignored tests in a member (reached by the selector run), the two controls (reached only by the control steps) and one in crates/vigilode-bench (outside the members)
+ignored tests not run by any workflow:
+  crates/vigilode-bench/tests/probe_bench.rs::bench_only_probe
+exit=1
+## probe B: the same without the vigilode-bench test
+3 ignored tests: 3 reachable from CI, 0 documented exclusion(s)
+exit=0
+## probe C: the control steps removed from ignored-tests.yml (lines with 'select_tests.py control' dropped)
+ignored tests not run by any workflow:
+  crates/rodas5p-integrators/tests/dense_wfiltered_contracts.rs::prothero_robinson_wfiltered_enforce_kill_gate
+  crates/rodas5p-integrators/tests/stage_clients_krylov_contracts.rs::merged_hook_solution_meets_the_protected_threshold
+exit=1

@@ -1,0 +1,86 @@
+# control subcommand smoke test, 2026-11-24T12:19:01Z, dev profile (the workflow uses measurement), taskset -c 0-5,12-17
+## 1: recorded signature
+strace: strace -- version 6.8
++ cargo test --locked --no-run --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test dense_wfiltered_contracts
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.95s
++ cargo test --locked --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test dense_wfiltered_contracts -- --ignored --exact prothero_robinson_wfiltered_enforce_kill_gate
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.15s
+     Running tests/dense_wfiltered_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/dense_wfiltered_contracts-3b1e1e72ee60e083)
+
+running 1 test
+test prothero_robinson_wfiltered_enforce_kill_gate ... FAILED
+
+failures:
+
+---- prothero_robinson_wfiltered_enforce_kill_gate stdout ----
+PR rtol 1e-6 (Off / Enforce / WFilteredEnforce): interior 311.467 / 1.052 / 0.350; accepted steps [7, 12, 15]; attempts [7, 26, 15]; jacobian builds [7, 50, 15]; LU [7, 50, 15]; WF/Off accepted 2.143
+
+thread 'prothero_robinson_wfiltered_enforce_kill_gate' (641751) panicked at crates/rodas5p-integrators/tests/dense_wfiltered_contracts.rs:316:5:
+KILL GATE: 2.143x the Off accepted-step count > 1.3x
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    prothero_robinson_wfiltered_enforce_kill_gate
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.15s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test dense_wfiltered_contracts`
+prothero_robinson_wfiltered_enforce_kill_gate fails with its recorded signature
+# exit 0
+## 2: a wrong signature (the step must fail and write the target)
+strace: strace -- version 6.8
++ cargo test --locked --no-run --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test dense_wfiltered_contracts
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.09s
++ cargo test --locked --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test dense_wfiltered_contracts -- --ignored --exact prothero_robinson_wfiltered_enforce_kill_gate
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running tests/dense_wfiltered_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/dense_wfiltered_contracts-3b1e1e72ee60e083)
+
+running 1 test
+test prothero_robinson_wfiltered_enforce_kill_gate ... FAILED
+
+failures:
+
+---- prothero_robinson_wfiltered_enforce_kill_gate stdout ----
+PR rtol 1e-6 (Off / Enforce / WFilteredEnforce): interior 311.467 / 1.052 / 0.350; accepted steps [7, 12, 15]; attempts [7, 26, 15]; jacobian builds [7, 50, 15]; LU [7, 50, 15]; WF/Off accepted 2.143
+
+thread 'prothero_robinson_wfiltered_enforce_kill_gate' (641854) panicked at crates/rodas5p-integrators/tests/dense_wfiltered_contracts.rs:316:5:
+KILL GATE: 2.143x the Off accepted-step count > 1.3x
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    prothero_robinson_wfiltered_enforce_kill_gate
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test dense_wfiltered_contracts`
+the test failed without its recorded signature
+# exit 1
+## 3: target not selected
+not affected by the changes since the baseline: not run
+# exit 0 (map fragment written: no)
+## failed-controls.txt:
+rodas5p-integrators:dense_wfiltered_contracts
+# run --measure on an empty selection: carries the e2e map over, merges the measured control fragment and the failed control (2026-11-24T12:19:36Z)
+# exit 0
+map keys: ['rodas5p-cli::alg02_predictive_controller', 'rodas5p-core::residual_gain_contract', 'rodas5p-integrators::constants_provenance_contracts', 'rodas5p-integrators::dense_wfiltered_contracts#prothero_robinson_wfiltered_enforce_kill_gate', 'rodas5p-integrators::example:sp01_dupfix_profile', 'rodas5p-integrators::generic_scope_contracts', 'rodas5p-integrators::lib', 'rodas5p-integrators::ppsw1_6b_contracts', 'rodas5p-integrators::ptsw2b_contracts']
+packages: ['rodas5p-cli', 'rodas5p-core', 'rodas5p-fair-ab', 'rodas5p-integrators', 'rodas5p-krylov']
+outcome complete: True failed: [{'negative_control': True, 'package': 'rodas5p-integrators', 'target': 'dense_wfiltered_contracts'}] negative_controls_failed: ['rodas5p-integrators:dense_wfiltered_contracts']
+measurement: {'refreshed': 1, 'lost': [], 'map_targets': 9, 'strace': 'strace -- version 6.8'}
+# the selector's own run of the control's target in ignored mode, the control skipped, on top of the merged map (2026-11-24T12:20:26Z)
++ cargo test --locked --no-run --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test dense_wfiltered_contracts
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test dense_wfiltered_contracts -- --ignored --skip prothero_robinson_wfiltered_enforce_kill_gate
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.15s
+     Running tests/dense_wfiltered_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/dense_wfiltered_contracts-3b1e1e72ee60e083)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.00s
+
+# exit 0
+own entry of the control target: {'absent': 0, 'compile': 1, 'dirs': 0, 'executed': 0, 'head': '4c2e41d468493c8c28b3ec34bb32a4591dfd14a3', 'read': 0}
+executed: []
+map keys: 10

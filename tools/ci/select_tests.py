@@ -90,8 +90,10 @@ SCHEMA_CONTROL = "vigilode.ci.control-measurement.v1"
 GLOBAL_FILES = ("Cargo.toml", "Cargo.lock")
 GLOBAL_PREFIXES = (".cargo/", "tools/ci/", "rust-toolchain")
 SETS = ("compile", "executed", "read", "dirs", "absent")
-TRACED = ("open,openat,openat2,creat,execve,execveat,stat,lstat,newfstatat,statx,access,faccessat,"
-          "faccessat2,readlink,readlinkat,chdir,fchdir")
+# '?' makes a name that this architecture or strace does not know non-fatal (the legacy calls do
+# not exist on aarch64; openat2, faccessat2, execveat and statx are newer).
+TRACED = ("openat,?open,?openat2,?creat,execve,?execveat,?stat,?lstat,newfstatat,?statx,?access,faccessat,"
+          "?faccessat2,?readlink,readlinkat,chdir,fchdir")
 MESSAGES = "--message-format=json-diagnostic-rendered-ansi"
 RERUN = re.compile(r"`-p (\S+) (--lib|--doc|--test (\S+)|--bin (\S+))`")
 ORDER = ("rodas5p-core", "rodas5p-krylov", "rodas5p-integrators", "rodas5p-fair-ab", "rodas5p-cli",
@@ -720,15 +722,15 @@ def strace_runner(strace, trace_dir):
 
 
 def strace_works(strace, work):
-    """strace path and version when it can trace a child here, else (None, reason)."""
+    """(path, version, None) when strace can trace a child here, else (None, None, reason)."""
     if not strace:
-        return None, "strace is not installed"
+        return None, None, "strace is not installed"
     probe = os.path.join(work, "_strace_probe")
     os.makedirs(probe, exist_ok=True)
     r = sh(strace_runner(strace, probe).split() + ["true"], check=False)
-    if r.returncode != 0 or not glob.glob(os.path.join(probe, "t.*")):
-        return None, f"strace cannot trace here (exit {r.returncode}): {r.stderr.strip()[-300:]}"
-    return sh([strace, "-V"], check=False).stdout.splitlines()[0], None
+    if r.returncode != 0 or not glob.glob(os.path.join(glob.escape(probe), "t.*")):
+        return None, None, f"strace cannot trace here (exit {r.returncode}): {r.stderr.strip()[-300:]}"
+    return strace, (sh([strace, "-V"], check=False).stdout.splitlines() or ["?"])[0], None
 
 
 def host_triple():
@@ -1240,7 +1242,7 @@ def run(args):
             if previous:
                 base_targets, base_packages = previous["targets"], previous.get("packages", {})
         llvm = llvm_bin()
-        strace, strace_note = strace_works(shutil.which(args.strace), work)
+        strace, strace_version, strace_note = strace_works(shutil.which(args.strace), work)
         strace_ok = strace is not None
         clean_env = {k: v for k, v in os.environ.items()
                      if not (k.startswith("CARGO_TARGET_") and k.endswith("_RUNNER"))}
@@ -1324,7 +1326,7 @@ def run(args):
         outcome["measurement"] = {
             "refreshed": len(measured), "lost": lost, "map_targets": len(cmap),
             "packages_recorded": sorted(recorded), "packages_lost": sorted(arts.inputs_failed),
-            "llvm_bin": llvm, "strace": strace, "strace_note": strace_note, "work_dir": work,
+            "llvm_bin": llvm, "strace": strace_version, "strace_note": strace_note, "work_dir": work,
             "stats": stats}
     write_json(args.outcome, outcome)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
@@ -1382,7 +1384,8 @@ def control(args):
     clean_env = {k: v for k, v in os.environ.items()
                  if not (k.startswith("CARGO_TARGET_") and k.endswith("_RUNNER"))}
     build_env = dict(clean_env, LLVM_PROFILE_FILE=os.path.join(work, "_unused", "%p-%m.profraw"))
-    strace, strace_note = strace_works(shutil.which(args.strace), work)
+    strace, strace_version, strace_note = strace_works(shutil.which(args.strace), work)
+    print(f"strace: {strace_version or strace_note}", flush=True)
     prof_dir, trace_dir = os.path.join(work, "profiles"), os.path.join(work, "trace")
     os.makedirs(prof_dir, exist_ok=True)
     os.makedirs(trace_dir, exist_ok=True)
@@ -1667,6 +1670,13 @@ impl S {
     assert not any(p == "/r/docs/T.toml" and k != "read" for k, p in events), events
     assert len(events) == 9, events
     assert unescape(r"a\x41\101\n\"") == 'aAA\n"', unescape(r"a\x41\101\n\"")
+    with tempfile.TemporaryDirectory() as d:
+        assert strace_works(None, d) == (None, None, "strace is not installed")
+        found = shutil.which("strace")
+        if found:
+            path, version, note = strace_works(found, d)
+            assert (path, note) == (found, None) and version.startswith("strace") or (path, version) == (None, None), (
+                path, version, note)  # a sandbox may refuse ptrace: then no runner, and every entry is lost
     assert strace_runner("/usr/bin/strace", "/w/t").startswith("/usr/bin/strace -ff --seccomp-bpf -qq -y -o /w/t/t -e trace=")
     try:
         strace_runner("/usr/bin/strace", "/w w/t")
