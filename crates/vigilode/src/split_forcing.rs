@@ -50,7 +50,7 @@ fn evaluate(
         if values.iter().all(|v| v.is_finite()) {
             Ok(values)
         } else {
-            Err(CallbackError::Recoverable(
+            Err(CallbackError::Fatal(
                 "split forcing did not produce a complete finite vector".into(),
             ))
         }
@@ -162,7 +162,7 @@ impl SplitForcing {
             out.fill(f64::NAN);
             state(clock, y, out)?;
             if out.iter().any(|v| !v.is_finite()) {
-                return Err(CallbackError::Recoverable(
+                return Err(CallbackError::Fatal(
                     "split state callback did not produce a complete finite vector".into(),
                 ));
             }
@@ -177,6 +177,9 @@ impl SplitForcing {
             };
             for (value, addition) in out.iter_mut().zip(g) {
                 *value += addition;
+                if !value.is_finite() {
+                    return Err(CallbackError::Fatal("split RHS sum is nonfinite".into()));
+                }
             }
             Ok(())
         })

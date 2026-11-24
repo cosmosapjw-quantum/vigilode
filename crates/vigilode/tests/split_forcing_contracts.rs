@@ -271,7 +271,7 @@ fn incomplete_forcing_is_delayed_and_rejected_on_hit_miss_and_direct() {
     assert_eq!(out, [2.0, 3.0]);
     for (p, t) in [(&ready, 1.0), (&ready, 0.3), (&split.direct_problem(), 0.3)] {
         let e = (p.rhs_fn())(t, &[0.0; 2], &mut out).unwrap_err();
-        assert!(matches!(e, CallbackError::Recoverable(_)));
+        assert!(matches!(e,CallbackError::Fatal(message) if message.contains("split forcing")));
     }
     assert_eq!(
         split.work(),
@@ -298,9 +298,8 @@ fn incomplete_state_takes_precedence_and_does_not_consume_row() {
     .unwrap();
     let p = split.prepare_rodas5p_trial(0.0, 1.0).unwrap();
     let mut out = [1.0; 2];
-    assert!(matches!(
-        (p.rhs_fn())(0.0, &[1.0; 2], &mut out),
-        Err(CallbackError::Recoverable(_))
-    ));
+    assert!(
+        matches!((p.rhs_fn())(0.0,&[1.0;2],&mut out),Err(CallbackError::Fatal(message)) if message.contains("state callback"))
+    );
     assert_eq!(split.work().hits, 0);
 }
