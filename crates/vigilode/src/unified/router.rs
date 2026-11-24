@@ -284,7 +284,9 @@ impl Run<'_> {
         self.ws.work_counters.fallback_steps += 1;
         let total = self.opts.options.max_steps;
         let record = self.pilots.last().cloned();
-        let (t_d, h) = record.as_ref().map_or((pilot_leg.t_start, 0.0), |r| (r.t, r.h));
+        let (t_d, h) = record
+            .as_ref()
+            .map_or((pilot_leg.t_start, 0.0), |r| (r.t, r.h));
         let window = record.as_ref().map_or_else(String::new, |r| {
             format!(
                 "window {} callbacks and {} operations, pilot {} callbacks and {} operations",
@@ -405,10 +407,18 @@ impl Run<'_> {
         let final_state = self.ws.y_checkpoint[..dimension].to_vec();
         let total = self.opts.options.max_steps;
         let attempts = self.used_attempts();
-        let accepted_steps: usize =
-            self.legs.iter().map(|leg| leg.accepted_steps).sum::<usize>() + self.spare_accepted;
-        let rejected_steps: usize =
-            self.legs.iter().map(|leg| leg.rejected_steps).sum::<usize>() + self.spare_rejected;
+        let accepted_steps: usize = self
+            .legs
+            .iter()
+            .map(|leg| leg.accepted_steps)
+            .sum::<usize>()
+            + self.spare_accepted;
+        let rejected_steps: usize = self
+            .legs
+            .iter()
+            .map(|leg| leg.rejected_steps)
+            .sum::<usize>()
+            + self.spare_rejected;
 
         let last = self.legs.last();
         let success = self.refusal.is_none()
