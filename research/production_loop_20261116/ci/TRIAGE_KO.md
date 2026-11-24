@@ -202,3 +202,31 @@ head 8f840859(group 3 병합 포함)의 호스티드 실행(run 45203782039, 452
 데이터 파일 대조 예: `fixtures/rodas5p_coefficients_snapshot.json` → core의 `coefficients.rs`(include_str)와 `core_contracts.rs` → core 변경이므로 사실상 전체. `research/generic_timing_replication_continuation_transaction_v37/results/` 안의 다른 파일 → 읽는 test 없음(v37 test는 V4 snapshot 하나만 읽는다).
 
 한계: 실행 시간에 환경변수 등으로 조립하는 경로는 literal 대조에 잡히지 않는다. crate 안에서 더 잘게(파일 단위) 고르려면 coverage 기반 test 영향 지도가 필요하다. 최종 release 전 full suite가 이 둘을 덮는다.
+
+## 10. 2026-11-24: coverage 기반 세분 선택 (소유자 결정 OD-L1-20, "잘게 고르는 단계 승인")
+
+9절의 규칙에 두 가지를 더했다.
+
+1. 변경 분류(Rust tokenizer): 수정된 package source 파일의 token이 같으면(주석이나 공백만 바뀜, doc 주석 제외) 효과가 없다. 바뀐 줄이 old, new 양쪽 모두 const fn이 아닌 함수의 본문 안에만 있으면 본문 변경이다. 나머지는 구조 변경이다: item, signature, const, static, type, trait, macro, attribute, doc 주석, const fn 본문, 새 파일, 삭제, 이름 변경, `Cargo.toml`, `build.rs`.
+2. coverage 지도: 두 test job은 선택한 target을 coverage 계측(`-C instrument-coverage`)으로 하나씩 실행한다. target마다 실제로 실행한 workspace 소스 파일을 기록하고, 지도를 outcome과 함께 artifact로 다음 run에 넘긴다. 실행된 target의 항목은 매번 새 값으로 바뀐다. profile을 남기지 못한 target은 항목을 잃고, 다음에 해당 package가 변경되면 선택된다.
+
+선택 규칙은 다음과 같다.
+
+- 구조 변경: 9절과 같다(package와 그 의존 package의 test 전부).
+- 본문 변경: 지도에서 바뀐 파일을 실행한 target만 선택한다. 그 package와 의존 package의 target 가운데 지도 항목이 없는 target도 넣는다. doc test는 stable에서 coverage가 없으므로 그 package와 의존 package의 doc test를 돌린다.
+- 지도가 없으면: 본문 변경도 구조 변경으로 다룬다(9절 규칙).
+
+근거: 함수 본문의 변경은 그 함수가 실행될 때만 행동을 바꾼다. 어떤 target이 마지막 실행 때 그 파일을 실행하지 않았고, 그 뒤로 그 target이 실행한 파일이 하나도 바뀌지 않았다면, 그 target은 같은 코드를 다시 실행한다. 지도가 매 run 갱신되므로 이 논리가 run마다 이어진다. 가정은 test가 결정적이고 CI 기본값 밖의 환경에 의존하지 않는다는 것이다. 남는 틈은 impl Trait 뒤 hidden type의 auto trait가 본문 변경으로 바뀌어 선택되지 않은 target의 컴파일이 깨지는 경우다. release 전 full suite가 이를 덮는다.
+
+로컬 검증:
+- self-test: 분류 사례 9개 포함 통과.
+- 합성 지도와 scratch commit으로 모의 실행:
+  - `unified/analyzer.rs`의 함수 본문 변경 → 그 파일을 실행한 target 2개와 doc test만 선택(vigilode target 56개 중).
+  - 같은 파일의 const 변경 → vigilode 전체.
+- 실제 계측 실행(LLVM 21.1.8, rustc 1.94.1과 같은 버전):
+  - target 3개 모두 지도 갱신, 누락 0.
+  - 실행 파일 수: `banded_kernel_route_contracts` 18개(solve.rs 포함, unified 없음), `unified_router_contracts` 56개(unified 전부), krylov `staged_solve_telemetry` 10개(`gmres_staged.rs`).
+  - 같은 target을 다시 실행하면 같은 파일 목록이 나왔다.
+  - 계측 상태에서 doc test(RUSTFLAGS, RUSTDOCFLAGS 모두 설정)도 통과했다.
+
+비용: full 실행은 target마다 cargo test를 한 번씩 돌리고 지도 export를 병렬로 하므로 길어진다. timeout은 test job 300분, ignored job 330분으로 올렸다.

@@ -49,15 +49,21 @@ jobs:
   ignored-tests:
     runs-on: ubuntu-latest
     # The whole-workspace run took 67 and 95 minutes on hosted runners
-    # (2026-11-23); a selection is shorter.
-    timeout-minutes: 180
+    # (2026-11-23) without coverage instrumentation; a selection is shorter.
+    timeout-minutes: 330
+    # Coverage instrumentation (OD-L1-20): every selected target records the
+    # source files it executes; the map is the input of the next selection.
+    env:
+      RUSTFLAGS: '-C instrument-coverage'
+      RUSTDOCFLAGS: '-C instrument-coverage'
+      LLVM_PROFILE_FILE: '${{ github.workspace }}/../coverage-unused/%p-%m.profraw'
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Install the pinned Rust toolchain
         run: |
-          rustup toolchain install 1.94.1 --profile minimal
+          rustup toolchain install 1.94.1 --profile minimal --component llvm-tools
           rustup override set 1.94.1
       - name: Every ignored test is reachable from CI
         run: python3 tools/check_ignored_tests_in_ci.py
@@ -127,8 +133,8 @@ jobs:
         if: ${{ !cancelled() }}
         env:
           RAYON_NUM_THREADS: '1'
-        run: python3 tools/ci/select_tests.py run --selection selection.json --mode ignored --profile measurement --skip prothero_robinson_wfiltered_enforce_kill_gate --skip merged_hook_solution_meets_the_protected_threshold --outcome outcome.json
-      - name: Keep the outcome for the next run
+        run: python3 tools/ci/select_tests.py run --selection selection.json --mode ignored --profile measurement --skip prothero_robinson_wfiltered_enforce_kill_gate --skip merged_hook_solution_meets_the_protected_threshold --coverage --baseline baseline.json --map-out map.json --outcome outcome.json
+      - name: Keep the outcome and the coverage map for the next run
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
@@ -136,4 +142,5 @@ jobs:
           path: |
             outcome.json
             selection.json
+            map.json
           if-no-files-found: ignore

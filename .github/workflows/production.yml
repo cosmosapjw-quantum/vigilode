@@ -4,10 +4,11 @@ name: Production CI
 # it) on the toolchain pinned in rust-toolchain.toml. That pin equals the
 # workspace rust-version, so every job here is also the MSRV check.
 #
-# The test job does not re-run the whole suite at every push (owner decision
-# OD-L1-19): tools/ci/select_tests.py runs the tests that the changes since the
-# last complete run of this job can affect, new tests and the tests that failed
-# in that run. The whole suite runs on main, when it is asked for
+# The test job does not re-run the whole suite at every push (owner decisions
+# OD-L1-19 and OD-L1-20): tools/ci/select_tests.py runs the tests that the
+# changes since the last complete run of this job can affect, new tests and the
+# tests that failed in that run; for a change inside function bodies it uses
+# the coverage map that every run refreshes. The whole suite runs on main, when it is asked for
 # (workflow_dispatch with full), when no baseline is known and when a global
 # file changes (workspace manifest or lock file, toolchain, tools/ci/, this
 # file). The owner runs the whole suite before a release.
@@ -96,14 +97,22 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    # A full run executes every target with coverage instrumentation; a
+    # selection is much shorter.
+    timeout-minutes: 300
+    # Coverage instrumentation (OD-L1-20): every selected target records the
+    # source files it executes; the map is the input of the next selection.
+    env:
+      RUSTFLAGS: '-C instrument-coverage'
+      RUSTDOCFLAGS: '-C instrument-coverage'
+      LLVM_PROFILE_FILE: '${{ github.workspace }}/../coverage-unused/%p-%m.profraw'
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Install the pinned Rust toolchain
         run: |
-          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --component llvm-tools
           rustup override set "$RUST_TOOLCHAIN"
       - uses: Swatinem/rust-cache@v2.7.8
         with:
@@ -120,10 +129,10 @@ jobs:
       # One cargo test --no-fail-fast per package: a failing test binary does
       # not hide the binaries after it, and every package runs.
       - name: Run the selected tests
-        run: python3 tools/ci/select_tests.py run --selection selection.json --mode normal --outcome outcome.json
+        run: python3 tools/ci/select_tests.py run --selection selection.json --mode normal --coverage --baseline baseline.json --map-out map.json --outcome outcome.json
       # The outcome (failing targets; complete = every selected command ran its
-      # tests) is the baseline of the next run of this job.
-      - name: Keep the outcome for the next run
+      # tests) and the coverage map are the baseline of the next run of this job.
+      - name: Keep the outcome and the coverage map for the next run
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
@@ -131,6 +140,7 @@ jobs:
           path: |
             outcome.json
             selection.json
+            map.json
           if-no-files-found: ignore
 
   docs:
