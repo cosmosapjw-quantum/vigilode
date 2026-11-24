@@ -192,7 +192,8 @@ step 4 logs under logs/phase2/ (contracts tests and the example). The run of ste
 RESULTS.json and REPORT_KO.md and compares bytes.
 
 ---------------------------------------------------------------------------------------------
-ADDENDUM 0b (2026-11-24 ~23:50 KST, before any run of the deciding set or of a reference)
+ADDENDUM 0b (committed 2026-11-24 23:48:12 KST in 9ba7abe9, before any run of the deciding set
+(first run 23:49:52 KST) or of a reference)
 ---------------------------------------------------------------------------------------------
 Runner change (runner/src/main.rs, both copies through runner/build.sh, --locked; log
 logs/phase2/runner_build.log; binaries N 06e5782d..., T 0c8459657...; main.rs 82dc5058...):
@@ -235,8 +236,10 @@ Refinements of section 6 (computation only; criteria unchanged):
     field by field against D, as in section 6.
 
 ---------------------------------------------------------------------------------------------
-ERRATUM E5-i (2026-11-25 ~00:20 KST, AFTER the deciding runs; reported in RESULTS.json and
-REPORT_KO.md next to the verdict; it does not change the frozen decision)
+ERRATUM E5-i (committed 2026-11-24 23:59:05 KST in 76b5db08, AFTER the deciding runs; reported in
+RESULTS.json and REPORT_KO.md next to the verdict; it does not change the frozen decision.
+The times first typed in the headers of addendum 0b and of this erratum were wrong and were
+corrected to the commit times in the next commit.)
 ---------------------------------------------------------------------------------------------
 Section 6 wrote E5 (i) as "entries - charged counter = 0" for every kind, with the time-derivative
 kind mapped to counters.ft_calls. The deciding runs show ft_calls > time-derivative closure
