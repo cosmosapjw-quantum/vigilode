@@ -1,0 +1,155 @@
+{
+  "schema": "vigilode-plan-v1",
+  "branch": "research/stage-lattice-referee-20261124",
+  "base": "aca935815252937e805ab5f4a81e65f4feb82b4a",
+  "date": "2026-11-25",
+  "rules": [
+    "One task per session; read the THEORY.md section named in the task before editing.",
+    "Never merge main, never force-push; push research branches only.",
+    "CARGO_TARGET_DIR per worktree; run cargo clean -p rodas5p-integrators -p vigilode after switching worktrees on a shared target.",
+    "Without --no-fail-fast cargo stops at the first failing test binary.",
+    "Performance verdicts need owner-host preregistered cells; host wall time is diagnostic only.",
+    "Cargo.lock changes only through cargo itself; never hand-edit it.",
+    "research/LEDGER.jsonl is append-only, rows only via the DESIGN.md 13.2 script."
+  ],
+  "decisions_applied": {
+    "SL-N12": {
+      "owner_decision": "1. 기본 경로로 올려줘",
+      "commit": "3f9762a1",
+      "what": "BandedKernel::FixedWidth2 runs the V21 tight-kernel arithmetic on fixed row offsets; the facade's (2,2) banded routes (endpoint and dense output) choose it; other bands below BANDED_SLICES_MIN_HALF_WIDTH stay on Indexed (V22 measured Slices slower there).",
+      "evidence": [
+        "research/kernel_spectral_foundation_20261124/results/SL_N12_GOLDEN_LABEL_DIFF.json",
+        "crates/rodas5p-integrators/src/banded_exact_tests.rs::fixed_offsets_match_slices_under_pivoting_and_singular_columns",
+        "crates/rodas5p-integrators/tests/banded_kernel_entry_identity.rs::measure_fixed_width_against_indexed_whole_solves"
+      ],
+      "open": "owner-host instruction and cycle cells (KS-N1)"
+    },
+    "SL-N6": {
+      "owner_decision": "2. cargo feature",
+      "commit": "67b71bd2",
+      "what": "feature research-gates in rodas5p-core, rodas5p-integrators, vigilode-coupled; self dev-dependencies keep every own test target building; rodas5p-fair-ab and rodas5p-cli enable it; five modules reclassified to the default build because default routes import them.",
+      "evidence": [
+        "research/kernel_spectral_foundation_20261124/results/SL_N6_FEATURE_GATE.json"
+      ],
+      "open": "owner-host compile-time cells and a CI feature matrix (KS-N2)"
+    },
+    "SL-N5": {
+      "owner_decision": "3. 새 의존성으로 추가",
+      "commit": "see RUN.json decisions",
+      "what": "rustfft 6.4.1 (MIT OR Apache-2.0) in the workspace; vigilode::spatial::SeparableStages and VigilODE::solve_separable; exact Fourier stage solves on the sphere and the periodic box with inertia and mass certificates and a Verified mode.",
+      "evidence": [
+        "research/kernel_spectral_foundation_20261124/THEORY.md",
+        "research/kernel_spectral_foundation_20261124/results/FOUNDATION_CHECKS.json",
+        "research/kernel_spectral_foundation_20261124/results/SL_N5_TIMING.jsonl",
+        "crates/vigilode/tests/spatial_separable.rs"
+      ],
+      "open": "owner-host cells (KS-N3), router wiring (KS-N5)"
+    }
+  },
+  "tasks": [
+    {
+      "id": "KS-N1",
+      "title": "Owner-host preregistered cells for the (2,2) fixed-offset default route",
+      "depends_on": [],
+      "owner_decision": false,
+      "files": ["research/kernel_spectral_foundation_20261124/owner_host/**"],
+      "question": "Does the SL-N12 acceptance hold on the owner host: instructions <= 0.60 and cycles <= 0.80 of the Indexed route at n >= 1e4?",
+      "implementation": "Run banded_kernel_entry_identity::measure_fixed_width_against_indexed_whole_solves under perf stat (instructions, cycles) on the pinned toolchain, three times, nothing else running. Record JSON lines and the toolchain.",
+      "acceptance": ["both ratios inside the preregistered bounds at n = 1e4 and 1e5", "the identity assertions of the measurement pass"],
+      "kill": "cycles ratio above 0.95 at both sizes",
+      "fallback": "keep the promotion (bits are identical) and record the negative performance cell",
+      "commands": ["cargo test --locked -p rodas5p-integrators --release --test banded_kernel_entry_identity -- --ignored --nocapture"]
+    },
+    {
+      "id": "KS-N2",
+      "title": "Feature matrix in CI and compile-time cells for research-gates",
+      "depends_on": [],
+      "owner_decision": true,
+      "files": [".github/workflows/** (owner edit only)", "research/kernel_spectral_foundation_20261124/owner_host/**"],
+      "question": "Does every job build and test both with and without research-gates, and what is the owner-host compile time of each?",
+      "implementation": "Owner adds a job that runs cargo build -p vigilode (no feature) and cargo test -p rodas5p-integrators (feature through the self dev-dependency). Agents may not edit .github/**.",
+      "acceptance": ["both legs green", "compile seconds recorded for both legs"],
+      "kill": "a default facade route needs a gated module",
+      "fallback": "reclassify the module in the inventory (as done for five modules here)",
+      "commands": ["cargo build --locked -p vigilode --release", "cargo check --locked --release -p rodas5p-integrators --all-targets"]
+    },
+    {
+      "id": "KS-N3",
+      "title": "Owner-host cells for the separable route against the shipped matrix-free route",
+      "depends_on": [],
+      "owner_decision": false,
+      "files": ["research/kernel_spectral_foundation_20261124/owner_host/**"],
+      "question": "Is the separable route cheaper per accepted step than the shipped route and than GMRES with the longitude preconditioner at matched achieved error on 32x64, 64x128 and 128x256?",
+      "implementation": "Run both ignored diagnostics of crates/vigilode/tests/spatial_separable.rs three times on the owner host with perf stat; record JSON lines.",
+      "acceptance": ["separable wall time and instructions below the shipped route on every grid", "relative error within a factor 10 of the shipped route", "mass drift <= 1e-13 on the separable route"],
+      "kill": "slower than GMRES with the longitude preconditioner on every grid at the stage level",
+      "fallback": "keep the route opt-in; record the negative cells",
+      "commands": ["cargo test --locked -p vigilode --release --test spatial_separable -- --ignored --nocapture"]
+    },
+    {
+      "id": "KS-N4",
+      "title": "Mode-parallel and ring-pair-parallel separable solves",
+      "depends_on": ["KS-N3"],
+      "owner_decision": false,
+      "files": ["crates/vigilode/src/spatial/separable.rs", "crates/vigilode/tests/spatial_separable.rs"],
+      "question": "Does running the floor(np/2)+1 mode systems and the nt/2 ring-pair FFTs on rayon give the same bits as the serial solve and a wall-time gain on 2 and 12 workers (THEORY.md §6)?",
+      "implementation": "Add SpatialRows to SeparableStages; chunk modes and ring pairs with par_chunks_mut; identical per-chunk arithmetic so the bits do not depend on the worker count.",
+      "acceptance": ["serial == parallel bits on every grid of spatial_separable", "owner-host wall time <= 0.6 of serial on 12 workers at 128x256"],
+      "kill": "no gain on 12 workers at 128x256",
+      "fallback": "serial only",
+      "commands": ["cargo test --locked -p vigilode --release --test spatial_separable"]
+    },
+    {
+      "id": "KS-N5",
+      "title": "Stiffness certificate in the automatic router",
+      "depends_on": ["KS-N3"],
+      "owner_decision": true,
+      "files": ["crates/vigilode/src/unified/analyzer.rs", "crates/vigilode/src/spatial/separable.rs"],
+      "question": "Should the automatic router use SeparableStages::spectral_bounds (THEORY.md §5.3) to choose between DOPRI5 and the separable RODAS5P route when a DiffusionGrid problem declares its stages?",
+      "implementation": "A declared SeparableStages on the problem (new optional field) lets the preflight compare 6 T rho_bar / beta RHS calls against the measured per-step cost of the separable route.",
+      "acceptance": ["the choice matches the cheaper route on the owner-host cells of KS-N3 and on three non-stiff grids"],
+      "kill": "the certificate picks the slower route on any preregistered cell",
+      "fallback": "keep the user-selected entry point only",
+      "commands": ["cargo test --locked -p vigilode --release --test spatial_separable --test spatial_diffusion"]
+    },
+    {
+      "id": "KS-N6",
+      "title": "Per-ring linear rates c_r and GMRES with the separable preconditioner",
+      "depends_on": [],
+      "owner_decision": false,
+      "files": ["crates/vigilode/src/spatial/separable.rs"],
+      "question": "THEORY.md §8: a ring-constant diagonal commutes with Z_np, so c_r per ring keeps exactness; for longitude-dependent reactions, is GMRES preconditioned by W_sep cheaper than Verified defect correction?",
+      "implementation": "Replace the scalar c by a per-ring vector in the mode systems; add a Preconditioner impl of the separable solve for the matrix-free route's GMRES.",
+      "acceptance": ["exactness tests with c_r", "Verified corrections per solve and GMRES iterations reported on the T5 problem"],
+      "kill": "neither variant beats Verified defect correction on the T5 problem",
+      "fallback": "scalar c only",
+      "commands": ["cargo test --locked -p vigilode --release --test spatial_separable"]
+    },
+    {
+      "id": "KS-N7",
+      "title": "Two-for-one real FFT on the periodic box",
+      "depends_on": [],
+      "owner_decision": false,
+      "files": ["crates/vigilode/src/spatial/separable.rs"],
+      "question": "The box solve transforms a real field as complex data; does pairing rows (the involution of §2.3) halve its FFT work without changing the backward error?",
+      "implementation": "Pack rows y and y+1 as u + i v along x, separate by R Z(m) = conj Z(nx-m), transform the Hermitian half along y and z.",
+      "acceptance": ["T1/T2 bounds unchanged", "box stage solve time <= 0.6 of the current one at 256x256"],
+      "kill": "no gain at 256x256",
+      "fallback": "full complex transform",
+      "commands": ["cargo test --locked -p vigilode --release --test spatial_separable"]
+    },
+    {
+      "id": "KS-N8",
+      "title": "Field-of-values replacement for advection (open)",
+      "depends_on": [],
+      "owner_decision": false,
+      "files": ["research/kernel_spectral_foundation_20261124/THEORY.md"],
+      "question": "THEORY.md §8: for non-normal J (advection-diffusion with ring-constant velocity), what replaces the inertia certificate and the contractivity bound?",
+      "implementation": "Theory first: numerical range of the per-mode tridiagonal blocks, then a computable certificate.",
+      "acceptance": ["a stated, checked bound on 3 small grids"],
+      "kill": "no computable bound tighter than Gershgorin",
+      "fallback": "keep the separable route diffusion-only",
+      "commands": ["python3 -I research/kernel_spectral_foundation_20261124/scripts/verify_foundation.py"]
+    }
+  ]
+}

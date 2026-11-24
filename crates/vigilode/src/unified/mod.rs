@@ -197,6 +197,43 @@ impl VigilODE {
         )
     }
 
+    /// Solve on the protected client driver with the separable (Fourier) stage solver of a
+    /// [`crate::spatial::DiffusionGrid`] (stage-lattice task SL-N5; derivations in
+    /// `research/kernel_spectral_foundation_20261124/THEORY.md`).
+    ///
+    /// `stages` declares the Jacobian `L + c I` ([`crate::spatial::DiffusionGrid::separable_stages`]).
+    /// The DFT in longitude (sphere) or in every axis (box) turns each stage matrix into one
+    /// tridiagonal system per Fourier mode or one scalar per wave vector, so no Krylov
+    /// iteration runs. Every preparation reads the inertia of the mode systems and refuses a
+    /// step beyond the stage pencil, and every solve checks the stage mass identity. In
+    /// [`crate::spatial::SeparableMode::Verified`] (the default) every solve forms the true
+    /// residual with the problem's JVP and corrects it.
+    ///
+    /// The problem must reach the matrix-free route: identity mass, endpoint output and the
+    /// grid's dimension; `Verified` mode also needs a JVP. Every other request is refused
+    /// with [`crate::Unsupported::SeparableStagesRequireMatrixFreeRoute`] before any
+    /// callback. `stats.driver_work` is [`crate::DriverWork::SeparableClient`] with the
+    /// client's report, and `stats.tier_executed` is the performance tier.
+    pub fn solve_separable(
+        problem: &Problem,
+        span: (f64, f64),
+        y0: &[f64],
+        options: &crate::Options,
+        stages: &crate::spatial::SeparableStages,
+    ) -> Result<crate::Solution, SolveError> {
+        crate::Rodas5p::solve_with_clients(
+            problem,
+            span,
+            y0,
+            options,
+            &[],
+            None,
+            MfStageSolvePolicy::Shipped,
+            crate::BandedStagePolicy::Shipped,
+            Some(stages),
+        )
+    }
+
     /// Select and run a registered integrator, preserving the driver's native result,
     /// route, work and typed stop. Use [`crate::MethodParams::default`] for ordinary
     /// ODEs. A Lawson split requires its declared flow and residual RHS.

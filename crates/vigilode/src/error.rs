@@ -50,6 +50,12 @@ pub enum Unsupported {
          mass and endpoint output, and one or two workers"
     )]
     BandedPolicyRequiresBandedRoute,
+    /// The separable (Fourier) stage solver needs the matrix-free fast route throughout.
+    #[error(
+        "separable stages require a problem of the grid's dimension on the matrix-free route: \
+         identity mass, endpoint output, the shipped stage policies, and a JVP in Verified mode"
+    )]
+    SeparableStagesRequireMatrixFreeRoute,
     /// A mass matrix or dense output on a JVP-only problem.
     #[error(
         "a mass matrix or dense output on a JVP-only problem: the stage matrix \

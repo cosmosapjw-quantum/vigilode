@@ -1,0 +1,70 @@
+{
+ "toolchain": "stable 1.97.0 (RUSTUP_TOOLCHAIN=stable)",
+ "checks": [
+  {
+   "command": "cargo test --locked -p vigilode --release --no-fail-fast",
+   "result": "578 passed, 0 failed, 3 ignored over 70 result lines (69 binaries + doc-tests)",
+   "note": "default features; the previous run counted 577/0/1 with --features structured"
+  },
+  {
+   "command": "cargo test --locked -p vigilode --features structured --release --no-fail-fast",
+   "result": "pending at the time of writing; see the final line appended below"
+  },
+  {
+   "command": "cargo test --locked -p vigilode --release --test spatial_separable",
+   "result": "5 passed, 2 ignored (timing diagnostics)"
+  },
+  {
+   "command": "cargo test --locked -p vigilode --release --test banded_kernel_route_contracts --test default_path_golden --test banded_stage_policy",
+   "result": "4 + 11 + 3 passed after the label-only golden rewrite"
+  },
+  {
+   "command": "cargo test --locked -p rodas5p-integrators --release --lib",
+   "result": "146 passed, 1 ignored (with research-gates via the self dev-dependency); banded_exact filter 6 passed incl. the new pivoting/singular parity test"
+  },
+  {
+   "command": "cargo test --locked -p rodas5p-integrators --release --no-fail-fast --test banded_kernel_entry_identity --test fast_driver_golden_digest_contracts --test banded_recovery_contract --test stage_clients_banded_tight_identity",
+   "result": "5 + 1 + 10 + 7 passed, 1 ignored"
+  },
+  {
+   "command": "cargo test --locked --release --no-fail-fast -p rodas5p-core -p vigilode-coupled",
+   "result": "all result lines ok, 0 failed"
+  },
+  {
+   "command": "cargo check --locked --release -p <each of rodas5p-cli, rodas5p-fair-ab, vigilode, vigilode --features structured, vigilode-coupled, rodas5p-core, rodas5p-krylov, rodas5p-integrators (+ audit2 features)> --all-targets",
+   "result": "all finished"
+  },
+  {
+   "command": "cargo build --locked -p vigilode --release",
+   "result": "finished without the research-gates feature"
+  },
+  {
+   "command": "cargo clippy --locked -p vigilode --all-targets --release --no-deps -- -D warnings",
+   "result": "clean"
+  },
+  {
+   "command": "cargo clippy --locked -p rodas5p-integrators --lib --tests --release --no-deps -- -D warnings",
+   "result": "clean"
+  },
+  {
+   "command": "cargo clippy --locked -p rodas5p-integrators --lib --release --no-deps -- -D warnings (fresh, feature off)",
+   "result": "clean"
+  },
+  {
+   "command": "cargo clippy --locked -p rodas5p-core -p vigilode-coupled --lib --release --no-deps -- -D warnings",
+   "result": "clean"
+  },
+  {
+   "command": "cargo fmt -p vigilode -p rodas5p-integrators -p rodas5p-core -p vigilode-coupled -- --check",
+   "result": "clean"
+  },
+  {
+   "command": "python3 -I research/kernel_spectral_foundation_20261124/scripts/verify_foundation.py",
+   "result": "F1-F8 ok"
+  },
+  {
+   "command": "python3 -I research/stage_lattice_referee_20261124/verify.py",
+   "result": "OK after the addendum"
+  }
+ ]
+}

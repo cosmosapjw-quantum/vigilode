@@ -1,7 +1,7 @@
 //! [`Rodas5p::solve`]: validation, routing to a protected driver, and the
 //! run record.
 
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, PoisonError};
 
 use std::fmt::Display;
 
@@ -38,6 +38,7 @@ use crate::{
         FiniteDifferenceWork, JacobianRecord, KrylovStartRecord, RouteRecord, STATS_SCHEMA,
         Solution, Stats, Status, StopRecord,
     },
+    spatial::{SEPARABLE_STAGE_CLIENT_ID, SeparableMode, SeparableReport, SeparableStages},
 };
 
 type CoreRhs = Arc<dyn Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
@@ -68,6 +69,8 @@ const ENTRY_FAST_BANDED_DENSE_ATOL_KERNEL: &str =
     "integrate_rodas5p_fast_banded_dense_observed_with_atol_and_kernel";
 /// The fast driver with a client-owned banded stage solver ([`BandedStagePolicy`]).
 const ENTRY_BANDED_CLIENT: &str = "integrate_rodas5p_fast_client_observed_with_atol";
+/// The same client driver, with the separable stage client (SL-N5).
+const ENTRY_SEPARABLE_CLIENT: &str = ENTRY_BANDED_CLIENT;
 /// Identifier of the same-bits banded stage client (loop L1 node V21).
 const BANDED_TIGHT_CLIENT_ID: &str = "rodas5p-fast-client-banded-tight-v21";
 /// Dense output under a mass matrix or `InteriorError::Enforce`.
@@ -373,6 +376,34 @@ impl Rodas5p {
         stage_policy: crate::MfStageSolvePolicy,
         banded_policy: BandedStagePolicy,
     ) -> Result<Solution, SolveError> {
+        Self::solve_with_clients(
+            problem,
+            t_span,
+            y0,
+            opts,
+            interior,
+            work_ceiling,
+            stage_policy,
+            banded_policy,
+            None,
+        )
+    }
+
+    /// [`Self::solve_with_policies`] with an optional separable (Fourier) stage solver
+    /// (SL-N5). A separable request is refused before any callback unless the plan is the
+    /// matrix-free route with identity mass, endpoint output and the shipped policies.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn solve_with_clients(
+        problem: &Problem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        opts: &Options,
+        interior: &[f64],
+        work_ceiling: Option<u64>,
+        stage_policy: crate::MfStageSolvePolicy,
+        banded_policy: BandedStagePolicy,
+        separable: Option<&SeparableStages>,
+    ) -> Result<Solution, SolveError> {
         let atol = validate(problem, t_span, y0, opts)?;
         let adaptive = AdaptiveStepConfig {
             rtol: opts.rtol,
@@ -430,6 +461,23 @@ impl Rodas5p {
                 Unsupported::BandedPolicyRequiresBandedRoute,
             ));
         }
+        // The separable stage solver replaces the stage linear algebra of the matrix-free
+        // route only; `Verified` mode needs the problem's JVP. No callback has run yet.
+        if let Some(stages) = separable {
+            let needs_jvp = matches!(stages.mode(), SeparableMode::Verified { .. });
+            if sequential
+                || opts.dense_output
+                || banded_policy.is_candidate()
+                || stage_policy.is_adaptive()
+                || stages.dimension() != problem.dimension
+                || !matches!(plan, Plan::Routed { declaration: None } | Plan::DenseFast)
+                || (needs_jvp && ode.jvp_callback().is_none())
+            {
+                return Err(SolveError::Unsupported(
+                    Unsupported::SeparableStagesRequireMatrixFreeRoute,
+                ));
+            }
+        }
         if let Some(ceiling) = work_ceiling {
             // The ceiling bounds driver work. A declared band on a dense
             // provider is verified before any step with a band fill and a
@@ -445,6 +493,47 @@ impl Rodas5p {
         }
 
         let run = match plan {
+            _ if separable.is_some() => {
+                let stages = separable.expect("the guard checked the separable request");
+                let n = problem.dimension;
+                let report = Arc::new(Mutex::new(SeparableReport::default()));
+                let client = stages.client(Arc::clone(&report));
+                // The client driver takes a vector; equal entries give the scalar's run.
+                let component_atol = match &atol {
+                    AtolSpec::Scalar(value) => vec![*value; n],
+                    AtolSpec::Vector(values) => values.to_vec(),
+                };
+                let (fast, partial, _client) = integrate_rodas5p_fast_client_observed_with_atol(
+                    &ode,
+                    client,
+                    t_span,
+                    y0,
+                    &adaptive,
+                    &schedule,
+                    &component_atol,
+                )
+                .map_err(|e| driver_error(e, &guard))?;
+                let report = *report.lock().unwrap_or_else(PoisonError::into_inner);
+                Run {
+                    route: RouteRecord {
+                        entry_point: ENTRY_SEPARABLE_CLIENT,
+                        driver_id: fast.driver,
+                        routing: None,
+                    },
+                    observed: fast.observed,
+                    attempts: fast.attempts,
+                    accepted_steps: fast.accepted_steps,
+                    rejected_steps: fast.rejected_steps,
+                    matrix_free: true,
+                    driver_work: DriverWork::SeparableClient {
+                        jacobian_reuses: fast.jacobian_reuses,
+                        client: SEPARABLE_STAGE_CLIENT_ID,
+                        report,
+                    },
+                    partial,
+                    segments: None,
+                }
+            }
             Plan::Routed { declaration } => {
                 let ode = match declaration {
                     Some(declaration) => ode
@@ -936,7 +1025,10 @@ impl Rodas5p {
             jacobian: jacobian_record,
             tier_requested: opts.tier,
             // The named matrix-free entry point explicitly opts into the candidate.
-            tier_executed: if stage_policy.is_adaptive() || banded_policy.is_candidate() {
+            tier_executed: if stage_policy.is_adaptive()
+                || banded_policy.is_candidate()
+                || separable.is_some()
+            {
                 Tier::Performance
             } else {
                 Tier::Protected

@@ -239,5 +239,21 @@
   "source": "research/unified_referee_20261124/NEXT_PLAN.json",
   "tasks": ["gmres-path", "sphere-lines", "modal-modes", "split-attempts", "implicit-roots", "radau-blocks", "exponential", "graph-transport", "routing", "singular-geometry", "discrete-topology"],
   "note": "unchanged by this run; SL-N10 replaces 'peer', SL-N14 replaces 'release'"
+ },
+ "addenda": {
+  "kernel_spectral_foundation_20261124": {
+   "date": "2026-11-25",
+   "owner_decisions": {
+    "SL-N12": "1. 기본 경로로 올려줘",
+    "SL-N6": "2. cargo feature",
+    "SL-N5": "3. 새 의존성으로 추가"
+   },
+   "status": {
+    "SL-N12": "done in 3f9762a1 for the band (2,2) (endpoint and dense output, FixedWidth2 with the V21 fixed-offset arithmetic); other bands below 6 stay on Indexed; owner-host cells moved to KS-N1",
+    "SL-N6": "done in 67b71bd2 as feature research-gates; five modules reclassified to the default build; CI matrix moved to KS-N2",
+    "SL-N5": "done as vigilode::spatial::SeparableStages + VigilODE::solve_separable with rustfft 6.4.1 (sphere and periodic box); owner-host cells moved to KS-N3"
+   },
+   "continued_in": "research/kernel_spectral_foundation_20261124/PLAN.json"
+  }
  }
 }

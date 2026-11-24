@@ -715,7 +715,9 @@ fn executed_facade_route(driver_work: &DriverWork) -> FacadeRoute {
         DriverWork::Dense { .. } => FacadeRoute::DenseFast,
         // A banded stage client runs the banded fast route's driver family.
         DriverWork::Banded { .. } | DriverWork::BandedClient { .. } => FacadeRoute::BandedFast,
-        DriverWork::MatrixFree { .. } => FacadeRoute::MatrixFree,
+        DriverWork::MatrixFree { .. } | DriverWork::SeparableClient { .. } => {
+            FacadeRoute::MatrixFree
+        }
         DriverWork::FastDense { banded: false, .. } => FacadeRoute::FastDense,
         DriverWork::FastDense { banded: true, .. } => FacadeRoute::FastBandedDense,
         DriverWork::SequentialDense { .. } => FacadeRoute::SequentialDense,

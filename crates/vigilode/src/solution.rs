@@ -313,6 +313,17 @@ pub enum DriverWork {
         /// Worker threads of the stage client.
         workers: usize,
     },
+    /// The protected client driver with the separable (Fourier) stage solver of a
+    /// [`crate::spatial::DiffusionGrid`], selected through
+    /// [`crate::VigilODE::solve_separable`] (stage-lattice task SL-N5).
+    SeparableClient {
+        /// Attempts that reused the Jacobian of a rejected attempt.
+        jacobian_reuses: usize,
+        /// Identifier of the stage client ([`crate::spatial::SEPARABLE_STAGE_CLIENT_ID`]).
+        client: &'static str,
+        /// Preparations, solves, refusals, corrections and certificates of the client.
+        report: crate::spatial::SeparableReport,
+    },
     /// The matrix-free U-form driver (`Rodas5pMfFastResult`).
     MatrixFree {
         /// Attempts that reused `f(t, y)`, `f_t` and the JVP operator of a
