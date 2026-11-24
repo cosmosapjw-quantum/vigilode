@@ -347,9 +347,13 @@ pub enum CheckColumns {
     /// declared entry is compared bit for bit with the entry of the
     /// client's own colouring, and every row a group does not cover must
     /// keep its bits. [`CheckColourings::total_groups`] right-hand sides,
-    /// for example 59 for a band `(2, 2)` of order 131072. The default
-    /// first-use check of the coloured route (loop node V29); what it
-    /// detects and what it misses (ledger L-0338) is stated at the type.
+    /// for example 59 for a band `(2, 2)` of order 131072. For wide declared
+    /// bands the groups can outnumber the columns: the review of loop node
+    /// V29 counted more than `n` groups for 59 of 75 random patterns whose
+    /// band half-width lies between `0.2 n` and `0.45 n`, at most `1.85 n`;
+    /// [`CheckColumns::All`] is then cheaper and exact up to rounding. The
+    /// default first-use check of the coloured route (loop node V29); what
+    /// it detects and what it misses (ledger L-0338) is stated at the type.
     MultiColouring,
     /// [`CheckColumns::MultiColouring`] with the groups handed to the
     /// threads of the client's pool; decides as the check on the calling
@@ -409,8 +413,10 @@ impl AssemblyOptions {
     ///   `research/production_loop_20261116/assembly_check/review_probe`,
     ///   subcommands `cancel` and `collapse`). [`CheckColumns::All`] or
     ///   [`CheckColumns::AllPooled`] is the exact choice up to rounding, at
-    ///   the cost of `n` right-hand sides; [`CheckColumns`] states the
-    ///   details.
+    ///   the cost of `n` right-hand sides; it is also the cheaper choice when
+    ///   [`CheckColourings::total_groups`] of the pattern exceeds `n`, which
+    ///   happens for wide declared bands ([`CheckColumns::MultiColouring`]).
+    ///   [`CheckColumns`] states the details.
     /// - The dense route ([`ColumnRoute::Dense`]): `Sample(8)`
     ///   ([`Self::DEFAULT_CHECK_COLUMNS`]). The multi-colouring check needs a
     ///   declared pattern and does not apply; the sequential dense route
