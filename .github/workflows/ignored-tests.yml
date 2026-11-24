@@ -1,13 +1,19 @@
 name: Ignored long tests
 
-# Every #[ignore]d test runs here in the measurement profile (audit F-003).
+# Every #[ignore]d test is reachable from this job (audit F-003): in full mode
+# it runs the ignored tests of the whole workspace in the measurement profile.
+# It does not re-run them at every push (owner decision OD-L1-19):
+# tools/ci/select_tests.py runs the ignored tests that the changes since the
+# last complete run of this job can affect, new ones and the ones that failed
+# in that run. Full mode: workflow_dispatch with full, main, no baseline, or a
+# global file changed (workspace manifest or lock file, toolchain, tools/ci/,
+# this file). The owner runs the whole suite before a release.
 # Two ignored tests fail by design and are negative controls: the recorded
 # kill gate and the stopping-test difference of the merged stage hook. Each
-# runs in a step of its own that passes only while the test fails with its
-# recorded signature.
+# runs in a step of its own, when its target is selected, and passes only
+# while the test fails with its recorded signature.
 # tools/check_ignored_tests_in_ci.py fails if a new ignored test is not
-# reachable from a workflow, or if a workflow skips a test that no other step
-# runs and that the script does not list as a documented exclusion.
+# reachable from a workflow.
 
 on:
   pull_request:
@@ -18,32 +24,49 @@ on:
       - 'Cargo.toml'
       - 'Cargo.lock'
       - 'tools/check_ignored_tests_in_ci.py'
+      - 'tools/ci/**'
   push:
     branches: [main]
     paths:
       - 'crates/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
+      - 'tools/ci/**'
   workflow_dispatch:
+    inputs:
+      full:
+        description: 'Run every ignored test instead of the change-based selection'
+        type: boolean
+        default: true
 
 permissions:
   contents: read
+  # Earlier runs of this workflow and their outcome artifacts give the
+  # baseline of the selection.
+  actions: read
 
 jobs:
   ignored-tests:
     runs-on: ubuntu-latest
-    # The whole-workspace step has never completed on a hosted runner: it was
-    # stopped by a failing test until 2026-11-23 and then by the limit of 60
-    # minutes. The first complete run gives the time this job needs.
+    # The whole-workspace run took 67 and 95 minutes on hosted runners
+    # (2026-11-23); a selection is shorter.
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Install the pinned Rust toolchain
         run: |
           rustup toolchain install 1.94.1 --profile minimal
           rustup override set 1.94.1
       - name: Every ignored test is reachable from CI
         run: python3 tools/check_ignored_tests_in_ci.py
+      - name: Baseline of the test selection
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/ci/select_tests.py baseline --workflow ignored-tests.yml --artifact ci-test-outcome-ignored-tests --branch "${{ github.head_ref || github.ref_name }}" --run-id "${{ github.run_id }}" --out baseline.json
+      - name: Select the tests
+        run: python3 tools/ci/select_tests.py select --baseline baseline.json --head "${{ github.event.pull_request.head.sha || github.sha }}" --workflow-file .github/workflows/ignored-tests.yml --profile measurement --full "${{ (github.event_name == 'workflow_dispatch' && inputs.full) || github.ref == 'refs/heads/main' }}" --out selection.json --scope rodas5p-core rodas5p-krylov rodas5p-integrators rodas5p-fair-ab rodas5p-cli vigilode vigilode-coupled
       # Negative control (research/qualification/negative_controls/
       # negative_fixture_manifest.json): the kill gate failed on 2026-10-21 and
       # its threshold is frozen. The step passes only if the test still fails
@@ -54,6 +77,10 @@ jobs:
         env:
           RAYON_NUM_THREADS: '1'
         run: |
+          if [ "$(python3 tools/ci/select_tests.py has --selection selection.json --target rodas5p-integrators:dense_wfiltered_contracts)" != yes ]; then
+            echo "not affected by the changes since the baseline: not run"
+            exit 0
+          fi
           set +e
           out=$(cargo test --profile measurement --locked -p rodas5p-integrators --test dense_wfiltered_contracts -- --ignored --exact prothero_robinson_wfiltered_enforce_kill_gate 2>&1)
           code=$?
@@ -77,6 +104,10 @@ jobs:
         env:
           RAYON_NUM_THREADS: '1'
         run: |
+          if [ "$(python3 tools/ci/select_tests.py has --selection selection.json --target rodas5p-integrators:stage_clients_krylov_contracts)" != yes ]; then
+            echo "not affected by the changes since the baseline: not run"
+            exit 0
+          fi
           set +e
           out=$(cargo test --profile measurement --locked -p rodas5p-integrators --test stage_clients_krylov_contracts -- --ignored --exact merged_hook_solution_meets_the_protected_threshold 2>&1)
           code=$?
@@ -90,14 +121,19 @@ jobs:
             exit 1
           fi
           echo "the stopping-test difference fails with its recorded signature"
-      # The two tests that fail by design are skipped here; the two steps before
-      # this one run them. --no-fail-fast: without it cargo stops at the first
-      # failing test binary and the binaries after it are not run. The step is
-      # long (one measurement test alone ran 28 minutes and more than 46
-      # minutes on hosted runners), so it runs last and the job has a wide
-      # time limit.
-      - name: Run the ignored tests in the measurement profile
+      # The two tests that fail by design are skipped here; the two steps above
+      # run them. One cargo test --no-fail-fast per package.
+      - name: Run the selected ignored tests in the measurement profile
         if: ${{ !cancelled() }}
         env:
           RAYON_NUM_THREADS: '1'
-        run: cargo test --workspace --profile measurement --locked --no-fail-fast -- --ignored --skip prothero_robinson_wfiltered_enforce_kill_gate --skip merged_hook_solution_meets_the_protected_threshold
+        run: python3 tools/ci/select_tests.py run --selection selection.json --mode ignored --profile measurement --skip prothero_robinson_wfiltered_enforce_kill_gate --skip merged_hook_solution_meets_the_protected_threshold --outcome outcome.json
+      - name: Keep the outcome for the next run
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-test-outcome-ignored-tests
+          path: |
+            outcome.json
+            selection.json
+          if-no-files-found: ignore

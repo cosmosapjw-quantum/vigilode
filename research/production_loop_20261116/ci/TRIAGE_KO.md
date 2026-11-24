@@ -173,3 +173,32 @@ head 8f840859(group 3 병합 포함)의 호스티드 실행(run 45203782039, 452
 
 - Production CI: fmt, docs, clippy, semver 통과, bench는 같은 이유로 실패. test job 두 단계 모두 끝까지 실행: Facade and light crates 1247 passed, 1 failed, 22 ignored; Integrators 1472 passed, 1 failed, 67 ignored. 실패는 앞 실행과 같은 host 의존 bit anchor 두 개뿐이다(V03b, V08, V18 병합 뒤에도 그대로).
 - Ignored long tests: 도달성 검사와 음성대조 두 단계(kill gate, 병합 hook의 정지 검사 차이)가 runner에서 통과했다. 전체 workspace 단계는 확인 시점에 실행 중이었다(제한 180분). 이 단계가 처음 완주하면 걸린 시간과 그 뒤 test binary들의 결과를 다음 세션에서 읽는다.
+
+## 9. 2026-11-24: 변경 기반 test 선택 (소유자 결정 OD-L1-19)
+
+소유자 지시(원문): "test job은 누적해서 실행하지 말고 새로 실행해야 하는 것이나 이전 변경에 영향받는 것만 재실행하는 방향으로 수정. full suite는 최종 release 전에 실행 예정." 8절 끝의 분리안(A, B)은 이 지시로 대체됐다.
+
+`tools/ci/select_tests.py`가 Production CI의 test job과 Ignored long tests job이 돌릴 test를 고른다. 조정할 숫자는 없다.
+
+- 기준점(baseline): 같은 branch에서 같은 job이 selection을 끝까지 실행한(outcome이 complete) 가장 최근 run의 head. 취소된 run이나 test 전에 깨진 run은 complete outcome을 남기지 않으므로 그 변경은 다음 diff에 그대로 남는다. outcome과 selection은 artifact(`ci-test-outcome-test`, `ci-test-outcome-ignored-tests`)로 남는다.
+- full: 수동 실행(workflow_dispatch, 입력 full 기본값 true), main branch, 기준점이 없거나 head의 조상이 아닐 때, 전역 파일 변경(workspace manifest, lock 파일, toolchain, `.cargo/`, `tools/ci/`, 그 job의 workflow 파일).
+- package source 변경(`src/**/*.rs`, `build.rs`, `Cargo.toml`): 그 package와, 그 package에 의존하는 모든 workspace package(일반, dev, build 의존, 전이)의 test 전부. Rust integration test는 crate 전체를 link하므로 이것이 정적으로 안전한 가장 작은 단위다.
+- `examples/`, `benches/` 변경: 그 package만.
+- test source 변경(`tests/**/*.rs`): cargo가 test binary를 만들 때 쓰는 dep-info에 그 파일이 들어 있는 target만. 어느 target에도 없으면 그 package의 test target 전부.
+- 데이터 파일(위가 아닌 모든 파일): test는 문자열 literal로 적힌 경로로만 파일을 읽는다. 모든 workspace Rust source의 경로형 문자열 literal(주석 제외)을 변경 파일과 그 상위 디렉터리에 대조한다(같거나 '/' 뒤 접미사). src의 literal이 맞으면 그 package 변경, tests의 literal이 맞으면 그 test source 변경. 맞는 literal이 없으면 읽는 test가 없다.
+- 기준점 run에서 실패한 target은 다시 넣는다(호스트 의존 anchor 두 개는 고쳐질 때까지 매번 돈다).
+- 범위: test job은 core, krylov, integrators, vigilode, vigilode-coupled; ignored job은 workspace 7개 전부. 음성대조 두 단계는 해당 target이 선택됐을 때만 돈다. `tools/check_ignored_tests_in_ci.py`는 selector의 ignored 실행을 full mode의 workspace 실행으로 보고 도달성을 계속 검사한다(99개 전부 도달).
+
+로컬 모의 실행(과거 commit을 head로, 그 부모를 기준점으로):
+
+| commit | 내용 | 선택 |
+|---|---|---|
+| 2f663808 | research 문서만 | test 없음 |
+| 8b76ebd4 | ignored-tests.yml과 triage(Production CI 기준) | test 없음 |
+| 1cd674a6 | vigilode `solve.rs`, golden 파일, research | vigilode 전체 |
+| 1d811039 | integrators `stage_clients/banded_tight.rs`와 test | integrators, vigilode, vigilode-coupled 전체 |
+| 66c558a0 | vigilode test 파일 하나와 그 golden 파일 | `banded_kernel_route_contracts` 하나(기준점 실패 하나를 넣으면 그 target도) |
+
+데이터 파일 대조 예: `fixtures/rodas5p_coefficients_snapshot.json` → core의 `coefficients.rs`(include_str)와 `core_contracts.rs` → core 변경이므로 사실상 전체. `research/generic_timing_replication_continuation_transaction_v37/results/` 안의 다른 파일 → 읽는 test 없음(v37 test는 V4 snapshot 하나만 읽는다).
+
+한계: 실행 시간에 환경변수 등으로 조립하는 경로는 literal 대조에 잡히지 않는다. crate 안에서 더 잘게(파일 단위) 고르려면 coverage 기반 test 영향 지도가 필요하다. 최종 release 전 full suite가 이 둘을 덮는다.

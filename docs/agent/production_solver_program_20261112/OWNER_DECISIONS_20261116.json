@@ -122,6 +122,13 @@
       "topic": "split of the ignored-tests job (measurement programs against contract tests)",
       "selected": "4. 필요한 경우 먼저 설명하고 지시 승인 후 진행",
       "meaning": "If a split is needed, the agent first explains it and changes the workflows only after the owner approves."
+    },
+    {
+      "id": "OD-L1-19",
+      "date_kst": "2026-11-24 17:50",
+      "topic": "CI test jobs (answer to the split of the ignored-tests job, item 4 of 2026-11-24)",
+      "selected": "test job은 누적해서 실행하지 말고 새로 실행해야 하는 것이나 이전 변경에 영향받는 것만 재실행하는 방향으로 수정. full suite는 최종 release 전에 실행 예정.",
+      "meaning": "The CI test jobs no longer re-run the whole suite at every push: they run new tests and the tests that the changes since the last complete run can affect. The whole suite runs before the final release. Supersedes the split proposed for the ignored-tests job (options A and B)."
     }
   ],
   "plan_approval": {

@@ -6,6 +6,11 @@ A test counts as reachable when some workflow step runs
 or runs `-- --ignored` with `--test <file stem>` naming the test's file,
 and that step does not leave the test out: `--skip <text>` leaves out every
 test whose name contains <text>, and `--exact <name>` runs only that test.
+A step `tools/ci/select_tests.py run --mode ignored` counts as a
+whole-workspace run (with its `--skip` filters) when the same workflow
+selects with `--scope` naming every workspace package: in full mode it runs
+the ignored tests of every package (owner decision OD-L1-19: otherwise it
+runs the affected ones).
 
 A test that no step runs must be listed in DOCUMENTED_EXCLUSIONS. The script
 also fails when a listed test does not exist or is run by a workflow.
@@ -13,6 +18,7 @@ also fails when a listed test does not exist or is run by a workflow.
 
 import re
 import sys
+import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,11 +43,37 @@ def ignored_tests():
     return found
 
 
+def workspace_packages():
+    manifest = tomllib.loads((ROOT / "Cargo.toml").read_text())
+    names = set()
+    for member in manifest["workspace"]["members"]:
+        package = tomllib.loads((ROOT / member / "Cargo.toml").read_text())["package"]["name"]
+        names.add(package)
+    return names
+
+
+def selector_scope_covers_workspace(lines):
+    """True if a select command of the change-based selector names every workspace package."""
+    packages = workspace_packages()
+    for line in lines:
+        if "select_tests.py select" in line and "--scope" in line:
+            scope = line.split("--scope", 1)[1].split(" --", 1)[0].split()
+            if packages <= set(scope):
+                return True
+    return False
+
+
 def workflow_commands():
     commands = []
     for path in sorted((ROOT / ".github/workflows").glob("*.yml")):
         text = path.read_text().replace("\\\n", " ")
-        commands += [line for line in text.splitlines() if "cargo test" in line and "--ignored" in line]
+        lines = text.splitlines()
+        commands += [line for line in lines if "cargo test" in line and "--ignored" in line]
+        if selector_scope_covers_workspace(lines):
+            for line in lines:
+                if "select_tests.py run" in line and "--mode ignored" in line:
+                    skips = " ".join(f"--skip {s}" for s in re.findall(r"--skip[ =](\S+)", line))
+                    commands.append(f"cargo test --workspace -- --ignored {skips}")
     return commands
 
 

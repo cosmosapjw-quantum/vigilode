@@ -4,11 +4,21 @@ name: Production CI
 # it) on the toolchain pinned in rust-toolchain.toml. That pin equals the
 # workspace rust-version, so every job here is also the MSRV check.
 #
-# The test job runs whole packages (no hand-maintained --test list), so a new
-# test target is picked up without editing this file.
+# The test job does not re-run the whole suite at every push (owner decision
+# OD-L1-19): tools/ci/select_tests.py runs the tests that the changes since the
+# last complete run of this job can affect, new tests and the tests that failed
+# in that run. The whole suite runs on main, when it is asked for
+# (workflow_dispatch with full), when no baseline is known and when a global
+# file changes (workspace manifest or lock file, toolchain, tools/ci/, this
+# file). The owner runs the whole suite before a release.
 
 on:
   workflow_dispatch:
+    inputs:
+      full:
+        description: 'Run the whole suite instead of the change-based selection'
+        type: boolean
+        default: true
   pull_request:
     paths:
       - 'crates/**'
@@ -16,6 +26,7 @@ on:
       - 'Cargo.lock'
       - 'rust-toolchain.toml'
       - '.github/workflows/production.yml'
+      - 'tools/ci/**'
   push:
     branches: [main]
     paths:
@@ -24,9 +35,13 @@ on:
       - 'Cargo.lock'
       - 'rust-toolchain.toml'
       - '.github/workflows/production.yml'
+      - 'tools/ci/**'
 
 permissions:
   contents: read
+  # The test job reads earlier runs of this workflow and their outcome
+  # artifacts to find the baseline of its selection.
+  actions: read
 
 concurrency:
   group: production-${{ github.ref }}
@@ -84,6 +99,8 @@ jobs:
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Install the pinned Rust toolchain
         run: |
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
@@ -91,17 +108,30 @@ jobs:
       - uses: Swatinem/rust-cache@v2.7.8
         with:
           shared-key: root
-      # --no-fail-fast: without it cargo stops at the first failing test binary
-      # and the binaries after it are not run.
-      - name: Facade and light crates
-        run: cargo test --locked --no-fail-fast -p vigilode -p rodas5p-core -p rodas5p-krylov -p vigilode-coupled
-      # Every non-ignored target of the package (lib, integration tests, doc
-      # tests), so new test files are included automatically. #[ignore]d tests
-      # run in ignored-tests.yml. The step also runs when the step above
-      # failed, so one run of the job reports every failing test binary.
-      - name: Integrators
+      - name: Baseline of the test selection
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/ci/select_tests.py baseline --workflow production.yml --artifact ci-test-outcome-test --branch "${{ github.head_ref || github.ref_name }}" --run-id "${{ github.run_id }}" --out baseline.json
+      # Packages of the production gate; whole packages in full mode (lib,
+      # integration and doc tests), so a new test target needs no edit here.
+      # #[ignore]d tests run in ignored-tests.yml.
+      - name: Select the tests
+        run: python3 tools/ci/select_tests.py select --baseline baseline.json --head "${{ github.event.pull_request.head.sha || github.sha }}" --workflow-file .github/workflows/production.yml --full "${{ (github.event_name == 'workflow_dispatch' && inputs.full) || github.ref == 'refs/heads/main' }}" --out selection.json --scope rodas5p-core rodas5p-krylov rodas5p-integrators vigilode vigilode-coupled
+      # One cargo test --no-fail-fast per package: a failing test binary does
+      # not hide the binaries after it, and every package runs.
+      - name: Run the selected tests
+        run: python3 tools/ci/select_tests.py run --selection selection.json --mode normal --outcome outcome.json
+      # The outcome (failing targets; complete = every selected command ran its
+      # tests) is the baseline of the next run of this job.
+      - name: Keep the outcome for the next run
         if: ${{ !cancelled() }}
-        run: cargo test --locked --no-fail-fast -p rodas5p-integrators
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-test-outcome-test
+          path: |
+            outcome.json
+            selection.json
+          if-no-files-found: ignore
 
   docs:
     runs-on: ubuntu-latest
