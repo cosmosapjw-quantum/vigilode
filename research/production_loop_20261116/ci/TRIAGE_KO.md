@@ -427,3 +427,15 @@ strace 비용(`strace_cost_probe.log`, 이 host, 부하 약 190):
 | 늘린 추적 호출 | 파일을 많이 만들고 지우는 test는 호출마다 약 0.2-0.4 ms(이 host)를 더 쓴다 |
 | `check_sources`의 한계 | 한 줄 pattern이다. 여러 줄에 걸친 구문, 다른 crate의 macro 뒤의 사용, block doc 주석(`/** */`)은 보지 않는다. 걸리면 두 test job이 self-test에서 실패하고, 고칠 것은 코드나 규칙이다 |
 | 소유자 확인 | `test-cli-fair-ab`는 연구 crate 두 개에 새 CI job을 준다. 대안은 그 test를 release 전 full suite에서만 돌리는 것이다(R27) |
+
+## 12. 2026-11-25 01:03 KST: v3 첫 hosted run (head 7012e9d5)과 `test-cli-fair-ab` 실패
+
+기록 시점 상태: Production CI run 45414722991의 `test` job은 진행 중(14:29:53Z 시작), Ignored long tests run 45414722588도 진행 중이다. 그 전 head a66215e7의 ignored run(45378440571, v2 선택)은 10:49:42Z부터 진행 중이며 job 제한은 330분이다. 완료되면 시간과 실패를 이 절에 더한다(M-N7).
+
+### 12.1 `test-cli-fair-ab` (job 138517747499, 14:29:53Z → 15:10:33Z, 40분 40초)
+
+- 선택된 test는 모두 실행되었고 실패는 하나다: `rodas5p-cli` `cli_contracts::stage_batch_feasibility_cli_emits_deterministic_within_step_report` (`crates/rodas5p-cli/tests/cli_contracts.rs:496`). 이 test는 같은 host에서 CLI `stage-batch-feasibility --profile smoke`를 두 번 실행하고 두 `scientific_checksum`이 같기를 요구한다. hosted 값: 첫 실행 `4079849b…`, 두 번째 실행 `577161eb…`(`v3_first_hosted/hosted_job_138517747499_excerpt.log`).
+- 원인(확정): `crates/rodas5p-integrators/src/stage_batch.rs`의 `scientific_checksum`은 행 외에 `parallel-observed=<bool>` 한 줄을 해시한다. 이 값은 동시성 probe(작업 8개, 각 1 ms sleep, rayon 4 thread)가 동시에 활성인 작업을 2개 이상 본 적이 있는지다. 로컬 보고서에서 이 한 줄만 false로 바꾸면 hosted 두 번째 값 `577161eb…`이 정확히 나온다. 행 하나의 `actual_stage_parallel`을 바꾸는 것으로는 나오지 않고, 0이 아닌 `max_abs_difference` 행도 없다(`v3_first_hosted/checksum_flip.py`, `local_runs.log`). 즉 hosted 두 번째 실행에서 probe가 동시 실행을 한 번도 보지 못했다. 4 vCPU runner에서 coverage 계측 debug build와 같은 binary의 다른 test들이 함께 돌 때 생길 수 있는 scheduler 의존 결과다. 코드 주석은 최대 동시 작업 수를 진단값으로 보면서 이 boolean은 안정된 계약으로 해시한다.
+- 로컬 재현 시도(12회, head 1b0aac36의 dev build): 고정 없이 3회, `taskset -c 0` 3회, `taskset -c 0-3`과 CI의 strace runner로 6회 모두 `4079849b…`, 관측 동시 작업 4다. 로컬에서는 재현되지 않았다.
+- 분류: 이 loop 이전부터 있던 flaky test다(`stage_batch.rs`는 2026-08-19 baseline 이후 바뀌지 않았다). A1 workflow의 workspace 단계가 없어진 뒤 이 test를 hosted에서 돌린 것은 이번이 처음이다. 루프 변경(V25-V29)과 관계없다.
+- 수정은 소유자 결정이다. `stage_batch.rs`는 CHECKPOINT 보호 파일이다. 권고안: probe 작업이 두 번째 작업이 활성이 될 때까지 상한(예: 1초) 안에서 기다리게 해(rendezvous) 결과를 결정적으로 만든다. checksum 구성과 로컬 값은 바뀌지 않는다. 대안: 이 boolean을 checksum에서 빼고 보고서에만 남긴다(checksum 값이 바뀐다).

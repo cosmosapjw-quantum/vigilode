@@ -1,0 +1,36 @@
+2026-11-24T14:51:35.5764002Z test adaptive_global_error_command_emits_current_family_report ... ok
+2026-11-24T14:51:35.6341732Z test generic_q1_q2_adaptive_cli_emits_bounded_decision_report ... ok
+2026-11-24T14:51:35.7164297Z test generic_q1_q2_gate_is_deterministic_and_strictly_matrix_free ... ok
+2026-11-24T14:51:36.0530894Z test homotopy_design_check_is_deterministic_and_exposes_required_screens ... ok
+2026-11-24T14:51:36.1281024Z test early_defect_attempt_geometry_cli_is_threshold_free_and_machine_readable ... ok
+2026-11-24T14:51:36.4573024Z test enforced_prefix_budget_cli_emits_transactional_fields ... ok
+2026-11-24T14:51:36.7591058Z test global_error_pareto_command_emits_deterministic_method_independent_report ... ok
+2026-11-24T14:51:37.5125795Z test homotopy_path_controller_cli_is_deterministic_and_emits_schedule_telemetry ... ok
+2026-11-24T14:51:38.5661036Z test homotopy_rhs_telemetry_cli_is_deterministic_and_read_only ... ok
+2026-11-24T14:51:38.7500888Z test native_integrator_gates_command_emits_deterministic_bdf_and_radau_rows ... ok
+2026-11-24T14:51:39.2071015Z test homotopy_experiment_screen_emits_deterministic_safety_and_control_rows ... ok
+2026-11-24T14:51:39.2972044Z test stage_batch_feasibility_cli_emits_deterministic_within_step_report ... FAILED
+2026-11-24T14:51:39.5451047Z test stage_growth_safety_cli_exposes_independent_calibration192_profile ... ok
+2026-11-24T14:51:41.0731167Z test stage_growth_safety_audit_cli_emits_explicit_budget_and_audit_fields ... ok
+2026-11-24T14:51:41.6461055Z test tolerance_scaled_early_defect_cli_is_threshold_free_and_machine_readable ... ok
+2026-11-24T14:51:44.2351072Z test validate_trace_and_benchmark_commands_emit_machine_readable_artifacts ... ok
+2026-11-24T14:51:52.5428578Z test homotopy_order_policy_screen_is_deterministic_and_thread_count_independent ... ok
+2026-11-24T14:52:14.7280552Z test unified_candidate_screen_combines_linear_and_nonlinear_tiers ... ok
+2026-11-24T14:52:25.4054142Z test matrix_free_common_w_cli_emits_strict_jf_report ... ok
+2026-11-24T14:52:25.4054456Z 
+2026-11-24T14:52:25.4054537Z failures:
+2026-11-24T14:52:25.4054657Z 
+2026-11-24T14:52:25.4054910Z ---- stage_batch_feasibility_cli_emits_deterministic_within_step_report stdout ----
+2026-11-24T14:52:25.4055513Z 
+2026-11-24T14:52:25.4056138Z thread 'stage_batch_feasibility_cli_emits_deterministic_within_step_report' (9284) panicked at crates/rodas5p-cli/tests/cli_contracts.rs:496:5:
+2026-11-24T14:52:25.4056770Z assertion `left == right` failed
+2026-11-24T14:52:25.4057165Z   left: String("4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950")
+2026-11-24T14:52:25.4057712Z  right: String("577161ebffb8eaf60ff44b02624e192d18853d72bff697bb34c27aa8ba52d6ea")
+2026-11-24T14:52:25.4058247Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2026-11-24T14:52:25.4058555Z 
+2026-11-24T14:52:25.4058559Z 
+2026-11-24T14:52:25.4058641Z failures:
+2026-11-24T14:52:25.4058928Z     stage_batch_feasibility_cli_emits_deterministic_within_step_report
+2026-11-24T14:52:25.4059206Z 
+2026-11-24T14:52:25.4059476Z test result: FAILED. 24 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 50.93s
+2026-11-24T14:52:25.4060214Z 
