@@ -261,3 +261,5 @@ pub use unified::*;
 pub use explicit::ExplicitErrorControl;
 /// Sparse affine physical-space embedded-error controller for explicit solves.
 pub use rodas5p_integrators::AffineErrorNorm;
+pub mod adaptive_modal;
+pub mod modal_rodas5p;
