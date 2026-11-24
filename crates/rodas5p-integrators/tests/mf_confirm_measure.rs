@@ -27,6 +27,14 @@
 //!   arm once per round in the order rotated by the round index plus
 //!   `V25_ROUND_OFFSET`, through the entry `route`. Prints one
 //!   `V25_TIMING_JSON` per run and a `V25_TIMING_META_JSON`.
+//! * `SHADOW` (exploratory, added after the deciding runs): one arm through
+//!   the workspace; the attempt observer rebuilds every stage system of the
+//!   run (the completed solves and the solve in which an attempt failed) and
+//!   solves each of them again with the three kernels: the shipped one, P1
+//!   and P2, with their own operator and counters (the replay of node V24,
+//!   `mf_adaptive_measure.rs`, unchanged in substance). Prints
+//!   `V25_SHADOW_JSON`: a paired count, on identical systems, of which
+//!   kernel exhausts the Krylov budget.
 //!
 //! Families (`V25_FAMILY`): `ac3d`, `robertson_rd1d`, `schnakenberg2d`,
 //! `porous2d` (`mf_confirm_problems.rs`); the end time is `V25_T1`
@@ -67,8 +75,9 @@ use problems::{
     declared, with_end,
 };
 use rodas5p_core::{
-    ApplyCategory, CoreError, CoreResult, DenseMatrix, LinearOperator, WorkCounters, apply_counted,
-    rodas5p_coefficients, safe_l2,
+    ApplyCategory, CoreError, CoreResult, DenseMatrix, IdentityPreconditioner, LinearOperator,
+    LinearSolverConfig, ShiftedOperator, WorkCounters, apply_counted, rodas5p_coefficients,
+    safe_l2,
 };
 use rodas5p_integrators::{
     MfStageSolvePolicy, MfStageSolveRecord, MfStageSolveStatistics, OdeProblem, OutputSchedule,
@@ -76,6 +85,10 @@ use rodas5p_integrators::{
     integrate_rodas5p_mf_fast_observed_gmres_into,
     integrate_rodas5p_mf_fast_observed_with_stage_solve_policy,
     integrate_rodas5p_routed_observed_with_options, raw_absolute_residual_budget,
+};
+use rodas5p_krylov::{
+    GmresCapacity, GmresConfig, GmresIntoOptions, GmresWorkspace, ResidualAccounting,
+    StagedGmresWorkspace, solve_gmres_into_with_accounting,
 };
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -862,6 +875,356 @@ fn mode_timing(family_id: &str, family: &Family) {
     println!("V25_TIMING_META_JSON {meta}");
 }
 
+/// The outcome of one kernel on one replayed stage system.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Replay {
+    /// An iterate was returned after this many Arnoldi columns.
+    Solved(u64),
+    /// `GMRES exhausted ... Arnoldi vectors`.
+    Budget,
+    /// Any other error.
+    Other,
+}
+
+impl Replay {
+    fn of<T>(outcome: CoreResult<T>, columns: impl Fn(&T) -> u64) -> Self {
+        match outcome {
+            Ok(report) => Self::Solved(columns(&report)),
+            Err(CoreError::LinearSolve(text)) if text.starts_with("GMRES exhausted") => {
+                Self::Budget
+            }
+            Err(_) => Self::Other,
+        }
+    }
+
+    fn solved(self) -> bool {
+        matches!(self, Self::Solved(_))
+    }
+
+    fn code(self) -> i64 {
+        match self {
+            Self::Solved(columns) => columns as i64,
+            Self::Budget => -1,
+            Self::Other => -2,
+        }
+    }
+}
+
+/// Paired counts of the three kernels (shipped, P1, P2) over the replayed
+/// stage systems of one run.
+#[derive(Clone, Debug, Default)]
+struct ShadowTally {
+    systems: u64,
+    driver_completed: u64,
+    driver_failed: u64,
+    /// Replays of the driver's own kernel that do not reproduce the driver:
+    /// another column count for a completed solve, or a solved system where
+    /// the driver failed.
+    replay_differs_from_driver: u64,
+    solved: [u64; 3],
+    budget: [u64; 3],
+    other: [u64; 3],
+    columns: [u64; 3],
+    columns_where_all_solved: [u64; 3],
+    all_solved: u64,
+    shipped_solved_p1_budget: u64,
+    shipped_budget_p1_solved: u64,
+    shipped_solved_p2_budget: u64,
+    shipped_budget_p2_solved: u64,
+    /// Systems the shipped kernel solves with exactly the whole budget.
+    shipped_at_the_budget: u64,
+    /// The first systems on which the kernels disagree about the budget:
+    /// `[attempt, stage, h bits, shipped, P1, P2]` with the column count, -1
+    /// (budget) or -2 (other).
+    disagreements: Vec<Value>,
+}
+
+/// The exploratory replay of every stage system of a run.
+struct Shadow {
+    gamma: f64,
+    a: DenseMatrix,
+    c_matrix: DenseMatrix,
+    c: Vec<f64>,
+    config: GmresConfig,
+    state: Vec<f64>,
+    rhs: Vec<f64>,
+    out: Vec<f64>,
+    counters: WorkCounters,
+    shipped: GmresWorkspace,
+    adaptive: StagedGmresWorkspace,
+    logged: usize,
+    attempt: u64,
+    /// The kernel of the driver's own policy: 0 shipped, 1 P1, 2 P2.
+    driver_kernel: usize,
+    tally: ShadowTally,
+}
+
+impl Shadow {
+    fn new(n: usize, linear: &LinearSolverConfig, policy: MfStageSolvePolicy) -> CoreResult<Self> {
+        let coeffs = rodas5p_coefficients()?;
+        Ok(Self {
+            gamma: coeffs.gamma,
+            a: coeffs.a.clone(),
+            c_matrix: coeffs.c_matrix.clone(),
+            c: coeffs.c.clone(),
+            // The configuration the driver hands its kernel.
+            config: GmresConfig {
+                restart: linear.restart,
+                max_arnoldi: linear.maxiter.max(linear.restart),
+                rtol: linear.rtol,
+                atol: raw_absolute_residual_budget(linear.atol, coeffs.gamma)?,
+            },
+            state: vec![0.0; n],
+            rhs: vec![0.0; n],
+            out: vec![0.0; n],
+            counters: WorkCounters::default(),
+            shipped: GmresWorkspace::default(),
+            adaptive: StagedGmresWorkspace::default(),
+            logged: 0,
+            attempt: 0,
+            driver_kernel: match policy {
+                MfStageSolvePolicy::Shipped => 0,
+                MfStageSolvePolicy::ColumnTested => 1,
+                MfStageSolvePolicy::ColumnTestedDoubling => 2,
+            },
+            tally: ShadowTally::default(),
+        })
+    }
+
+    /// The right-hand side of stage `i` of the attempt `(t, y, h)` from the
+    /// stage equations of the driver's U form, in the driver's order of
+    /// operations.
+    fn stage_rhs(
+        &mut self,
+        problem: &OdeProblem,
+        t: f64,
+        y: &[f64],
+        h: f64,
+        i: usize,
+        work: &Rodas5pMfFastWorkspace,
+    ) -> CoreResult<()> {
+        let hg = h * self.gamma;
+        if i == 0 {
+            problem.eval_rhs_into(t, y, &mut self.rhs, &mut self.counters)?;
+        } else {
+            self.state.copy_from_slice(y);
+            for j in 0..i {
+                let aij = self.a[(i, j)];
+                if aij != 0.0 {
+                    for (x, v) in self.state.iter_mut().zip(work.stage(j)) {
+                        *x += aij * v;
+                    }
+                }
+            }
+            problem.eval_rhs_into(
+                t + self.c[i] * h,
+                &self.state,
+                &mut self.rhs,
+                &mut self.counters,
+            )?;
+        }
+        for x in self.rhs.iter_mut() {
+            *x *= hg;
+        }
+        for j in 0..i {
+            let cij = self.c_matrix[(i, j)];
+            if cij != 0.0 {
+                let weight = self.gamma * cij;
+                for (x, v) in self.rhs.iter_mut().zip(work.stage(j)) {
+                    *x += weight * v;
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// The three kernels on the system in `self.rhs`.
+    fn replay(&mut self, operator: &dyn LinearOperator) -> [Replay; 3] {
+        let n = self.rhs.len();
+        let shipped = Replay::of(
+            solve_gmres_into_with_accounting(
+                operator,
+                &IdentityPreconditioner::new(n),
+                &self.rhs,
+                None,
+                &self.config,
+                None,
+                &mut self.out,
+                &mut self.shipped,
+                GmresCapacity::unbounded(),
+                GmresIntoOptions::default(),
+                ResidualAccounting::DEFAULT,
+                &mut self.counters,
+            ),
+            |report| report.iterations,
+        );
+        let mut adaptive = |first_cycle: usize| {
+            Replay::of(
+                self.adaptive.solve_column_tested_into(
+                    operator,
+                    &self.rhs,
+                    None,
+                    &self.config,
+                    first_cycle,
+                    ResidualAccounting::DEFAULT,
+                    &mut self.out,
+                    &mut self.counters,
+                    None,
+                ),
+                |report| report.columns,
+            )
+        };
+        let p1 = adaptive(self.config.restart);
+        let p2 = adaptive(MfStageSolvePolicy::DOUBLING_FIRST_CYCLE.min(self.config.restart));
+        [shipped, p1, p2]
+    }
+
+    fn observe(
+        &mut self,
+        problem: &OdeProblem,
+        t: f64,
+        y: &[f64],
+        h: f64,
+        error: Option<f64>,
+        work: &Rodas5pMfFastWorkspace,
+    ) {
+        let log = work.solve_log().unwrap_or_default();
+        let completed = log.len().saturating_sub(self.logged);
+        let first_entry = self.logged;
+        self.logged = log.len();
+        let attempt = self.attempt;
+        self.attempt += 1;
+        // The solve in which the attempt failed, if it failed in one.
+        let failed = usize::from(error.is_none() && completed < self.c.len());
+        let Ok(jacobian) = problem.linearize_matrix_free(t, y) else {
+            self.tally.other[0] += (completed + failed) as u64;
+            return;
+        };
+        let Ok(operator) = ShiftedOperator::new_counted_jvp(None, jacobian, h, self.gamma) else {
+            self.tally.other[0] += (completed + failed) as u64;
+            return;
+        };
+        for i in 0..completed + failed {
+            if self.stage_rhs(problem, t, y, h, i, work).is_err() {
+                continue;
+            }
+            let outcome = self.replay(&operator);
+            let budget_columns = self.config.max_arnoldi as u64;
+            let tally = &mut self.tally;
+            tally.systems += 1;
+            let own = outcome[self.driver_kernel];
+            if i < completed {
+                tally.driver_completed += 1;
+                if own != Replay::Solved(log[first_entry + i].iterations) {
+                    tally.replay_differs_from_driver += 1;
+                }
+            } else {
+                tally.driver_failed += 1;
+                if own.solved() {
+                    tally.replay_differs_from_driver += 1;
+                }
+            }
+            let all = outcome.iter().all(|kernel| kernel.solved());
+            tally.all_solved += u64::from(all);
+            for (k, kernel) in outcome.iter().enumerate() {
+                match kernel {
+                    Replay::Solved(columns) => {
+                        tally.solved[k] += 1;
+                        tally.columns[k] += columns;
+                        if all {
+                            tally.columns_where_all_solved[k] += columns;
+                        }
+                    }
+                    Replay::Budget => tally.budget[k] += 1,
+                    Replay::Other => tally.other[k] += 1,
+                }
+            }
+            let [shipped, p1, p2] = outcome;
+            let budget = |kernel: Replay| kernel == Replay::Budget;
+            tally.shipped_solved_p1_budget += u64::from(shipped.solved() && budget(p1));
+            tally.shipped_budget_p1_solved += u64::from(budget(shipped) && p1.solved());
+            tally.shipped_solved_p2_budget += u64::from(shipped.solved() && budget(p2));
+            tally.shipped_budget_p2_solved += u64::from(budget(shipped) && p2.solved());
+            tally.shipped_at_the_budget += u64::from(shipped == Replay::Solved(budget_columns));
+            let disagree = outcome.iter().any(|kernel| budget(*kernel))
+                && !outcome.iter().all(|kernel| budget(*kernel));
+            if disagree && tally.disagreements.len() < 40 {
+                tally.disagreements.push(json!([
+                    attempt,
+                    i,
+                    bits(h),
+                    shipped.code(),
+                    p1.code(),
+                    p2.code()
+                ]));
+            }
+        }
+    }
+}
+
+fn mode_shadow(family_id: &str, family: &Family) {
+    let rtol: f64 = number("V25_RTOL").expect("V25_RTOL");
+    let arm = Arm::parse(&variable("V25_ARM").expect("V25_ARM"));
+    let config = adaptive(family, rtol);
+    let output = OutputSchedule::new(vec![family.span.0, family.span.1]).expect("schedule");
+    let linear = RoutingOptions::default().matrix_free;
+    let mut work = Rodas5pMfFastWorkspace::new(&family.problem, &linear).expect("workspace");
+    work.set_gmres_into(true);
+    work.set_stage_solve_policy(arm.policy).expect("policy");
+    work.set_solve_log(true);
+    let mut shadow = Shadow::new(family.problem.dimension, &linear, arm.policy).expect("shadow");
+    let mut observer =
+        |t: f64, y: &[f64], h: f64, error: Option<f64>, work: &Rodas5pMfFastWorkspace| {
+            shadow.observe(&family.problem, t, y, h, error, work);
+        };
+    let (result, ..) = work
+        .integrate_observed_with_observer(
+            &family.problem,
+            family.span,
+            &family.y0,
+            &config,
+            &output,
+            &mut observer,
+        )
+        .expect("integration");
+    let statistics = work.stage_solve_policy_statistics();
+    let tally = &shadow.tally;
+    let mut record = header("SHADOW", family_id, family);
+    merge(
+        &mut record,
+        json!({
+            "rtol": config.rtol,
+            "arm": arm.label,
+            "policy": arm.policy.id(),
+            "kernels": ["shipped", "P1", "P2"],
+            "success": result.observed.success,
+            "attempts": result.attempts,
+            "state_sha256": sha256(result.observed.y.last().map_or(&[], Vec::as_slice)),
+            "counters": counters_json(&result.observed.counters),
+            "policy_statistics": serde_json::to_value(statistics).expect("statistics"),
+            "systems": tally.systems,
+            "driver_completed": tally.driver_completed,
+            "driver_failed": tally.driver_failed,
+            "replay_differs_from_driver": tally.replay_differs_from_driver,
+            "solved": tally.solved,
+            "budget": tally.budget,
+            "other": tally.other,
+            "columns_of_solved": tally.columns,
+            "all_solved": tally.all_solved,
+            "columns_where_all_solved": tally.columns_where_all_solved,
+            "shipped_solved_p1_budget": tally.shipped_solved_p1_budget,
+            "shipped_budget_p1_solved": tally.shipped_budget_p1_solved,
+            "shipped_solved_p2_budget": tally.shipped_solved_p2_budget,
+            "shipped_budget_p2_solved": tally.shipped_budget_p2_solved,
+            "shipped_solved_with_the_whole_budget": tally.shipped_at_the_budget,
+            "disagreements_first_40": tally.disagreements,
+            "disagreement_columns": ["attempt", "stage", "h_bits", "shipped", "P1", "P2"],
+            "replay_jvp_calls": shadow.counters.jvp_calls,
+        }),
+    );
+    println!("V25_SHADOW_JSON {record}");
+}
+
 fn mode_consist(family_id: &str, family: &Family) {
     let path = variable("V25_CONSIST_OUT").expect("V25_CONSIST_OUT");
     let n = family.problem.dimension;
@@ -932,6 +1295,7 @@ fn v25_run() {
         "CONSIST" => mode_consist(&family_id, &family),
         "RUN" => mode_run(&family_id, &family),
         "TIMING" => mode_timing(&family_id, &family),
+        "SHADOW" => mode_shadow(&family_id, &family),
         other => panic!("unknown V25_MODE {other}"),
     }
 }
