@@ -767,6 +767,19 @@ fn ks_n7_box_grids() -> Vec<(&'static str, DiffusionGrid, usize)> {
             ks_n7_box([64, 48], [1.0, 0.75], [0.01, 0.02]),
             64,
         ),
+        // Added at merge (review of KS-N7, finding F2): two packing batches with a lone odd
+        // row in the later one, and more than 4096 cells along x (one pair per batch, then a
+        // lone row).
+        (
+            "box-100x97",
+            ks_n7_box([100, 97], [1.0, 1.0], [0.02, 0.03]),
+            100,
+        ),
+        (
+            "box-4097x3",
+            ks_n7_box([4097, 3], [1.0, 1.0], [0.01, 0.5]),
+            4097,
+        ),
     ]
 }
 

@@ -271,5 +271,6 @@ pub use longitude::LongitudeLinePreconditioner;
 
 mod separable;
 pub use separable::{
-    SEPARABLE_STAGE_CLIENT_ID, SeparableMode, SeparableReport, SeparableStages, SpectralBounds,
+    BoxTransform, SEPARABLE_STAGE_CLIENT_ID, SeparableMode, SeparableReport, SeparableStages,
+    SpectralBounds,
 };
