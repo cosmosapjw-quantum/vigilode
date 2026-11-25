@@ -1,0 +1,91 @@
+# 2026-11-25 09:53:59 KST stage_batch.rs blob c2f44c327c53d7c6dfe7ba80b26cd43486d56b43 (d4e2772f, before node V32); tests of node V32; loadavg 14.06 27.03 21.22 4/5954 2830203
+# cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_batch_probe_late_workers --test stage_batch_probe_contracts -- --nocapture
+   Compiling num-traits v0.2.19
+   Compiling bytemuck v1.25.2
+   Compiling bitflags v2.13.1
+   Compiling cfg-if v1.0.4
+   Compiling libm v0.2.16
+   Compiling raw-cpuid v11.6.0
+   Compiling reborrow v0.5.5
+   Compiling pulp-wasm-simd-flag v0.1.1
+   Compiling dyn-stack v0.13.2
+   Compiling once_cell v1.21.4
+   Compiling nano-gemm-core v0.2.1
+   Compiling typenum v1.20.1
+   Compiling num-complex v0.4.6
+   Compiling syn v3.0.3
+   Compiling serde_core v1.0.229
+   Compiling generic-array v0.14.7
+   Compiling libc v0.2.189
+   Compiling pulp v0.22.3
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling num_cpus v1.17.0
+   Compiling equator v0.2.2
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling nano-gemm-f32 v0.2.1
+   Compiling nano-gemm-f64 v0.2.1
+   Compiling gemm-common v0.19.0
+   Compiling gemm-c32 v0.19.0
+   Compiling gemm-c64 v0.19.0
+   Compiling gemm-f32 v0.19.0
+   Compiling gemm-f64 v0.19.0
+   Compiling qd v0.8.0
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling crossbeam-utils v0.8.22
+   Compiling generativity v1.2.1
+   Compiling equator v0.6.0
+   Compiling faer-traits v0.24.0
+   Compiling crossbeam-epoch v0.9.20
+   Compiling private-gemm-x86 v0.1.20
+   Compiling gemm v0.19.0
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.19
+   Compiling digest v0.10.7
+   Compiling zmij v1.0.23
+   Compiling cpufeatures v0.2.17
+   Compiling memchr v2.8.3
+   Compiling itoa v1.0.18
+   Compiling serde_json v1.0.151
+   Compiling serde v1.0.229
+   Compiling nano-gemm v0.2.2
+   Compiling sha2 v0.10.9
+   Compiling faer v0.24.4
+   Compiling thiserror v2.0.19
+   Compiling crossbeam-deque v0.8.7
+   Compiling hex v0.4.3
+   Compiling rayon-core v1.13.0
+   Compiling either v1.17.0
+   Compiling rayon v1.12.0
+   Compiling rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 1m 39s
+     Running tests/stage_batch_probe_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v32/release/deps/stage_batch_probe_contracts-94411aecb8a6c404)
+
+running 1 test
+repeats=16 distinct_checksums=1 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 pinned_comparisons=16
+test repeated_smoke_reports_observe_concurrency_with_one_unchanged_checksum ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/stage_batch_probe_late_workers.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v32/release/deps/stage_batch_probe_late_workers-0fc24072b1b91d49)
+
+running 1 test
+
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2838424) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test probe_observes_concurrency_when_pool_workers_start_late ... FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test stage_batch_probe_late_workers`
+error: 1 target failed:
+    `-p rodas5p-integrators --test stage_batch_probe_late_workers`
+exit=101

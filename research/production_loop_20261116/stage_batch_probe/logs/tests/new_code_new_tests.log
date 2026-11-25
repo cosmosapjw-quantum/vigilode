@@ -1,0 +1,24 @@
+# 2026-11-25 09:55:55 KST stage_batch.rs blob 1a44222f2e8b64738bbfc4e67d8b2482407ea287 (node V32 bounded rendezvous); tests of node V32; loadavg 9.12 21.05 19.71 9/5970 2839653
+# cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_batch_probe_late_workers --test stage_batch_probe_contracts -- --nocapture
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 52.55s
+     Running tests/stage_batch_probe_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v32/release/deps/stage_batch_probe_contracts-94411aecb8a6c404)
+
+running 1 test
+repeats=16 distinct_checksums=1 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 pinned_comparisons=16
+test repeated_smoke_reports_observe_concurrency_with_one_unchanged_checksum ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/stage_batch_probe_late_workers.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v32/release/deps/stage_batch_probe_late_workers-0fc24072b1b91d49)
+
+running 1 test
+repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+test probe_observes_concurrency_when_pool_workers_start_late ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.23s
+
+exit=0

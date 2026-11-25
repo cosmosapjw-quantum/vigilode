@@ -87,3 +87,37 @@ report with only `parallel-observed` flipped to false).
 - Step 5: parse_results.py -> RESULTS.json, REPORT_KO.md.
 - Step 6: cli_contracts, stage_batch_contracts, generic_scope_contracts, the new test, clippy,
   fmt, loop checker.
+
+5. Findings during the work (numbers: RESULTS.json / REPORT_KO.md, parsed from logs/)
+--------------------------------------------------------------------------------------
+- Step 1, task-text conditions (strace -f -qq -e trace=none, taskset 1 CPU and 2 CPUs, 40 runs
+  each, old binary): no failure. As in the triage's 12 local runs, a traced run alone does not
+  starve the other workers on this host.
+- Additional conditions (provoke.sh): the failure appears only when the tracer itself is short of
+  CPU: busy loops pinned to the same CPU as strace and the traced CLI (hog1, hog4). The failing runs
+  report observed_max_parallel_tasks = 1 and exactly the hosted checksum 577161eb... (checked with
+  ci/v3_first_hosted/checksum_flip.py). The same busy loops WITHOUT strace (hogonly1) never failed:
+  the ptrace stops at thread creation are the necessary ingredient, as on the hosted runner.
+- Script defect, kept and documented instead of rerun: with_hogs kills only the wrapper subshell;
+  each `timeout 30 sh -c 'while :; do :; done'` runs its full 30 s, so the busy loops of consecutive
+  runs accumulate on CPU 8 (about 30 live loops in hog1, about 44 in hog4, rebuilt per run from the
+  start times in runs.tsv by parse_results.py). This holds for every hog run of b1, b1h and b2; in
+  b2 old and new binaries alternate run by run under the same accumulated load.
+- The provoked rate is low (about 1 in 40-60 runs), so the CLI comparison old vs new is weak
+  evidence by itself. The deterministic evidence is the late-worker test:
+- tests/stage_batch_probe_late_workers.rs: an integration test cannot reach the probe's private
+  pool, so the test binary's global allocator delays every rayon worker with index >= 1 by 300 ms at
+  its first allocation after it registered as a worker (crossbeam-epoch registration at its first
+  steal, i.e. before it can take a job). Worker 0 starts normally and runs alone for 300 ms in every
+  pool, the probe's included - the hosted start order, made deterministic. Built against the old
+  stage_batch.rs it fails ("probe observed 1"), 20 of 20 executable runs; against the new one it
+  passes, 20 of 20 (late workers per smoke report: 7 = 1 + 3 + 3 for the three pools).
+  300 ms: far above the ~8 ms the old probe needs on one worker, far below the 2 s bound.
+- tests/stage_batch_probe_contracts.rs: 16 smoke reports in one process; concurrency observed in
+  each, one checksum, the composition rebuilt from the report fields equals the checksum, and the
+  checksum equals 4079849b... whenever every row has max_abs_difference == 0 (all rows on this host
+  and on the hosted runner; a host with last-bit differences would have another deterministic
+  checksum, which is not turned into a new host-dependent bit anchor).
+- Loop checker: stops at its first complaint, the expected protected blob of stage_batch.rs
+  (c2f44c32 -> 1a44222f; re-pinned by the orchestrator under OD-L1-28). loop_checker_rest.py runs
+  the checker's remaining checks with only that line reported instead of raised: PASS.

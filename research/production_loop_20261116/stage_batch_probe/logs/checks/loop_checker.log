@@ -1,0 +1,14 @@
+# check loop_checker
+# head 02eb3afb482a715aa39e9db6463c5cfcc61638f4 stage_batch.rs blob 1a44222f2e8b64738bbfc4e67d8b2482407ea287
+# start 2026-11-25 10:04:28 KST loadavg 40.80 31.88 23.95 47/6030 2970628
+# command: python3 -I research/production_loop_20261116/check_checkpoint.py
+Traceback (most recent call last):
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/research/production_loop_20261116/check_checkpoint.py", line 95, in <module>
+    main()
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/research/production_loop_20261116/check_checkpoint.py", line 77, in main
+    require(git('hash-object', path) == expected, 'protected file changed: ' + path)
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/research/production_loop_20261116/check_checkpoint.py", line 28, in require
+    raise ValueError(message)
+ValueError: protected file changed: crates/rodas5p-integrators/src/stage_batch.rs
+# end 2026-11-25 10:04:28 KST
+exit=1
