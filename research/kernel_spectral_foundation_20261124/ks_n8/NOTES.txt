@@ -89,3 +89,18 @@ the contractivity bound (5.1) and the Gershgorin spectral/stiffness bound (5.2-5
      alpha_F <= alpha_G (DERIVATION P3 iv) holds in every case, and every (c) metric is finite.
      The D2 verdict (PASS/FAIL/KILL) is a measurement and is reported in the JSON, not in the exit code.
    - Derivation written to ks_n8/DERIVATION.txt before the script.
+
+7. Run record
+   - 09:52 KST smoke run of the committed-to-be script into the scratchpad (runtime errors only); it
+     printed D1 PASS, D2 FAIL. Numbers are identical to the official run (same seeds, deterministic).
+   - Descriptive summary fields added afterwards (looser-case list, per-family ratios, near-threshold
+     resolvent ratios); no rule, threshold, grid, velocity, z or c value changed (commit fa45a7d7).
+   - 09:54 official run at fa45a7d7, then wall time moved out of the JSON (e6345b14) and the official
+     run repeated at 09:55 (log ks_n8/logs/verify_fov.log). A repeat into the scratchpad gave a
+     byte-identical KS_N8_FOV.json (sha256 d59cadcefcd8da399c14e18b3f98e923d976a510d2075f49d54e1c1a58a204d2).
+   - Outcome: every validity check holds (D1 PASS). D2 FAIL under the frozen rule: rho_F > rho_G in 9 of
+     225 cases, all of them the upwind Hadley-plus-jet flow at cell Peclet 30 (all three c values on all
+     three grids): rho_F / rho_G = 1.104 (G1), 1.037 (G2), 1.033 (G3). Every case is strictly tighter in
+     rho or alpha (225 of 225), so KILL does not apply. The excess comes from the left end of the
+     Hermitian part (left_ratio max 1.104): the numerical range extends further left than the
+     Gershgorin discs of B_m, which enclose only the spectrum.
