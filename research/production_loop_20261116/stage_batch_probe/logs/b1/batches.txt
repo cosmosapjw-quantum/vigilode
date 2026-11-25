@@ -1,0 +1,8 @@
+batch b1 (2026-11-25 09:41-09:45 KST): old binary only (d4e2772f, sha256 1dc4cb0a8741016401c51d6ae3e413553bac911b8d3b7c8506e9d4c61e502e9f)
+produced by the first version of provoke.sh (not committed; commands written out here). <file> = old/<condition>/run_NNN.json
+old/strace1: runs 1..40   taskset -c 8 strace -f -qq -e trace=none <bin> stage-batch-feasibility --profile smoke --output <file>
+old/strace2: runs 1..40   taskset -c 8,9 strace -f -qq -e trace=none <bin> stage-batch-feasibility --profile smoke --output <file>
+old/hog1: runs 1..40      as strace1; before each run two busy loops `taskset -c 8 timeout 30 sh -c 'while :; do :; done'` are started, they are killed after the run
+old/shared1: runs 1..40   per 4 runs: taskset -c 8 strace -f -qq -e trace=none bash -c '<4 runs of: <bin> stage-batch-feasibility --profile smoke --output <file>, in the background>; wait'
+                          (the tracer's own stderr, signal lines of the bash wrapper, went to the agent terminal)
+runs.tsv per condition: index, exit status, start and end (date +%s.%N; diagnostic), /proc/loadavg fields 1-3 at the start
