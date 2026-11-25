@@ -1,0 +1,874 @@
+{
+ "schema": "vigilode.v30.fresh_set_checks.v1",
+ "note": "definition checks only: closed forms, an independent scipy integration and a stiffness estimate per problem; no VigilODE driver and no arm ran",
+ "problems": [
+  {
+   "id": "pr_sin2t",
+   "group": "stiff_or_late_stiff",
+   "n": 1,
+   "b": 3,
+   "closed_form": {
+    "y0_matches": true,
+    "max_relative_residual": 0.0
+   },
+   "scipy": {
+    "method": "Radau",
+    "rtol": 1e-09,
+    "success": true,
+    "nfev": 1345,
+    "steps": 183,
+    "final_max_abs": 0.5440211,
+    "final_finite": true,
+    "max_abs_diff_to_closed_form_at_t1": 4.149114e-11
+   },
+   "stiffness": {
+    "rho_max": 10000.0,
+    "rho_at_t0": 10000.0,
+    "rho_at_t1": 10000.0,
+    "dopri5_stability_attempts_S": 15151.52,
+    "S_over_max_steps": 0.1515152
+   }
+  },
+  {
+   "id": "kaps_1e6",
+   "group": "stiff_or_late_stiff",
+   "n": 2,
+   "b": 4,
+   "closed_form": {
+    "y0_matches": true,
+    "max_relative_residual": 6.033848e-11
+   },
+   "scipy": {
+    "method": "Radau",
+    "rtol": 1e-09,
+    "success": true,
+    "nfev": 1274,
+    "steps": 126,
+    "final_max_abs": 0.1353353,
+    "final_finite": true,
+    "max_abs_diff_to_closed_form_at_t1": 4.060641e-14
+   },
+   "stiffness": {
+    "rho_max": 1000004.0,
+    "rho_at_t0": 1000004.0,
+    "rho_at_t1": 1000002.0,
+    "dopri5_stability_attempts_S": 606062.3,
+    "S_over_max_steps": 6.060623
+   }
+  },
+  {
+   "id": "a3_linear4",
+   "group": "stiff_or_late_stiff",
+   "n": 4,
+   "b": 5,
+   "closed_form": {
+    "y0_matches": true,
+    "max_relative_residual": 3.060052e-15
+   },
+   "scipy": {
+    "method": "Radau",
+    "rtol": 1e-09,
+    "success": true,
+    "nfev": 8148,
+    "steps": 1161,
+    "final_max_abs": 1.503725,
+    "final_finite": true,
+    "max_abs_diff_to_closed_form_at_t1": 5.293543e-13
+   },
+   "stiffness": {
+    "rho_max": 10000.0,
+    "rho_at_t0": 10000.0,
+    "rho_at_t1": 10000.0,
+    "dopri5_stability_attempts_S": 60606.06,
+    "S_over_max_steps": 0.6060606
+   }
+  },
+  {
+   "id": "b1_linear4",
+   "group": "stiff_or_late_stiff",
+   "n": 4,
+   "b": 5,
+   "closed_form": {
+    "y0_matches": true,
+    "max_relative_residual": 8.673617e-19
+   },
+   "scipy": {
+    "method": "Radau",
+    "rtol": 1e-09,
+    "success": true,
+    "nfev": 52403,
+    "steps": 7371,
+    "final_max_abs": 1.799994e-08,
+    "final_finite": true,
+    "max_abs_diff_to_closed_form_at_t1": 5.796161e-14
+   },
+   "stiffness": {
+    "rho_max": 141.4214,
+    "rho_at_t0": 141.4214,
+    "rho_at_t1": 141.4214,
+    "dopri5_stability_attempts_S": 857.0991,
+    "S_over_max_steps": 0.008570991
+   }
+  },
+  {
+   "id": "chem_d4",
+   "group": "stiff_or_late_stiff",
+   "n": 3,
+   "b": 4,
+   "scipy": {
+    "method": "Radau",
+    "rtol": 1e-09,
+    "success": true,
+    "nfev": 668,
+    "steps": 93,
+    "final_max_abs": 1.402343,
+    "final_finite": true
+   },
+   "stiffness": {
+    "rho_max": 4103.511,
+    "rho_at_t0": 3500.004,
+    "rho_at_t1": 4103.511,
+    "dopri5_stability_attempts_S": 57857.85,
+    "S_over_max_steps": 0.5785785
+   }
+  },
+  {
+   "id": "c1_nonlinear4",
+   "group": "stiff_or_late_stiff",
+   "n": 4,
+   "b": 5,
+   "scipy": {
+    "method": "Radau",
+    "rtol": 1e-09,
+    "success": true,
+    "nfev": 8307,
+    "steps": 1183,
+    "final_max_abs": 0.02,
+    "final_finite": true
+   },
+   "stiffness": {
+    "rho_max": 100.0,
+    "rho_at_t0": 100.0,
+    "rho_at_t1": 100.0,
+    "dopri5_stability_attempts_S": 151.5152,
+    "S_over_max_steps": 0.001515152
+   }
+  },
+  {
+   "id": "lin20_dense",
+   "group": "stiff_or_late_stiff",
+   "n": 20,
+   "b": 15,
+   "closed_form": {
+    "y0_matches": true,
+    "max_relative_residual": 5.587544e-15
+   },
+   "scipy": {
+    "method": "Radau",
+    "rtol": 1e-09,
+    "success": true,
+    "nfev": 12920,
+    "steps": 1835,
+    "final_max_abs": 3.872894e-05,
+    "final_finite": true,
+    "max_abs_diff_to_closed_form_at_t1": 2.38e-15
+   },
+   "stiffness": {
+    "rho_max": 10000.0,
+    "rho_at_t0": 10000.0,
+    "rho_at_t1": 10000.0,
+    "dopri5_stability_attempts_S": 30303.03,
+    "S_over_max_steps": 0.3030303
+   }
+  },
+  {
+   "id": "ac_100",
+   "group": "stiff_or_late_stiff",
+   "n": 100,
+   "b": 166,
+   "scipy": {
+    "method": "Radau",
+    "rtol": 1e-09,
+    "success": true,
+    "nfev": 5477,
+    "steps": 750,
+    "final_max_abs": 0.9999831,
+    "final_finite": true
+   },
+   "stiffness": {
+    "rho_max": 103.8248,
+    "rho_at_t0": 102.1245,
+    "rho_at_t1": 103.8248,
+    "dopri5_stability_attempts_S": 1253.466,
+    "S_over_max_steps": 0.01253466
+   }
+  },
+  {
+   "id": "burgers_80",
+   "group": "stiff_or_late_stiff",
+   "n": 80,
+   "b": 113,
+   "scipy": {
+    "method": "Radau",
+    "rtol": 1e-09,
+    "success": true,
+    "nfev": 4841,
+    "steps": 657,
+    "final_max_abs": 0.5801073,
+    "final_finite": true
+   },
+   "stiffness": {
+    "rho_max": 524.8798,
+    "rho_at_t0": 524.8798,
+    "rho_at_t1": 523.13,
+    "dopri5_stability_attempts_S": 158.9297,
+    "S_over_max_steps": 0.001589297
+   }
+  },
+  {
+   "id": "pendulum_tracker",
+   "group": "stiff_or_late_stiff",
+   "n": 3,
+   "b": 4,
+   "scipy": {
+    "method": "Radau",
+    "rtol": 1e-09,
+    "success": true,
+    "nfev": 5228,
+    "steps": 522,
+    "final_max_abs": 0.9989498,
+    "final_finite": true
+   },
+   "stiffness": {
+    "rho_max": 1000000.0,
+    "rho_at_t0": 1000000.0,
+    "rho_at_t1": 1000000.0,
+    "dopri5_stability_attempts_S": 3030303.0,
+    "S_over_max_steps": 30.30303
+   }
+  },
+  {
+   "id": "late_linear4",
+   "group": "stiff_or_late_stiff",
+   "n": 4,
+   "b": 5,
+   "closed_form": {
+    "y0_matches": true,
+    "max_relative_residual": 4.996004e-15
+   },
+   "scipy": {
+    "method": "Radau",
+    "rtol": 1e-09,
+    "success": true,
+    "nfev": 41911,
+    "steps": 5939,
+    "final_max_abs": 1.343695e-07,
+    "final_finite": true,
+    "max_abs_diff_to_closed_form_at_t1": 2.608323e-14
+   },
+   "stiffness": {
+    "rho_max": 2000.0,
+    "rho_at_t0": 2000.0,
+    "rho_at_t1": 2000.0,
+    "dopri5_stability_attempts_S": 18181.82,
+    "S_over_max_steps": 0.1818182
+   }
+  },
+  {
+   "id": "fhn_relax",
+   "group": "stiff_or_late_stiff",
+   "n": 2,
+   "b": 4,
+   "scipy": {
+    "method": "Radau",
+    "rtol": 1e-09,
+    "success": true,
+    "nfev": 101166,
+    "steps": 12928,
+    "final_max_abs": 1.579403,
+    "final_finite": true
+   },
+   "stiffness": {
+    "rho_max": 2880.054,
+    "rho_at_t0": 998.9998,
+    "rho_at_t1": 1493.844,
+    "dopri5_stability_attempts_S": 8612.245,
+    "S_over_max_steps": 0.08612245
+   }
+  },
+  {
+   "id": "pr_ramp",
+   "group": "stiff_or_late_stiff",
+   "n": 1,
+   "b": 3,
+   "closed_form": {
+    "y0_matches": true,
+    "max_relative_residual": 2.110559e-12
+   },
+   "scipy": {
+    "method": "Radau",
+    "rtol": 1e-09,
+    "success": true,
+    "nfev": 3656,
+    "steps": 303,
+    "final_max_abs": 0.843854,
+    "final_finite": true,
+    "max_abs_diff_to_closed_form_at_t1": 2.381776e-10
+   },
+   "stiffness": {
+    "rho_max": 18823.53,
+    "rho_at_t0": 0.0,
+    "rho_at_t1": 18823.53,
+    "dopri5_stability_attempts_S": 16207.31,
+    "S_over_max_steps": 0.1620731
+   }
+  },
+  {
+   "id": "decay_chain6",
+   "group": "stiff_or_late_stiff",
+   "n": 6,
+   "b": 5,
+   "closed_form": {
+    "y0_matches": true,
+    "max_relative_residual": 1.387779e-17
+   },
+   "scipy": {
+    "method": "Radau",
+    "rtol": 1e-09,
+    "success": true,
+    "nfev": 15435,
+    "steps": 2203,
+    "final_max_abs": 0.1520602,
+    "final_finite": true,
+    "max_abs_diff_to_closed_form_at_t1": 8.160139e-15
+   },
+   "stiffness": {
+    "rho_max": 10000.0,
+    "rho_at_t0": 10000.0,
+    "rho_at_t1": 10000.0,
+    "dopri5_stability_attempts_S": 60606.06,
+    "S_over_max_steps": 0.6060606
+   }
+  },
+  {
+   "id": "pre_equilibrium",
+   "group": "stiff_or_late_stiff",
+   "n": 3,
+   "b": 4,
+   "closed_form": {
+    "y0_matches": true,
+    "max_relative_residual": 2.918304e-12
+   },
+   "scipy": {
+    "method": "Radau",
+    "rtol": 1e-09,
+    "success": true,
+    "nfev": 3212,
+    "steps": 456,
+    "final_max_abs": 0.9643257,
+    "final_finite": true,
+    "max_abs_diff_to_closed_form_at_t1": 2.331468e-13
+   },
+   "stiffness": {
+    "rho_max": 300000.7,
+    "rho_at_t0": 300000.7,
+    "rho_at_t1": 300000.7,
+    "dopri5_stability_attempts_S": 909092.9,
+    "S_over_max_steps": 9.090929
+   }
+  },
+  {
+   "id": "detest_a2",
+   "group": "non_stiff",
+   "n": 1,
+   "b": 3,
+   "closed_form": {
+    "y0_matches": true,
+    "max_relative_residual": 1.387779e-17
+   },
+   "scipy": {
+    "method": "DOP853",
+    "rtol": 1e-10,
+    "success": true,
+    "nfev": 392,
+    "steps": 26,
+    "final_max_abs": 0.2182179,
+    "final_finite": true,
+    "max_abs_diff_to_closed_form_at_t1": 1.944278e-13
+   },
+   "stiffness": {
+    "rho_max": 1.5,
+    "rho_at_t0": 1.5,
+    "rho_at_t1": 0.07142858,
+    "dopri5_stability_attempts_S": 1.393108,
+    "S_over_max_steps": 1.393108e-05
+   }
+  },
+  {
+   "id": "detest_a3",
+   "group": "non_stiff",
+   "n": 1,
+   "b": 3,
+   "closed_form": {
+    "y0_matches": true,
+    "max_relative_residual": 0.0
+   },
+   "scipy": {
+    "method": "DOP853",
+    "rtol": 1e-10,
+    "success": true,
+    "nfev": 1676,
+    "steps": 86,
+    "final_max_abs": 2.49165,
+    "final_finite": true,
+    "max_abs_diff_to_closed_form_at_t1": 2.964526e-10
+   },
+   "stiffness": {
+    "rho_max": 1.0,
+    "rho_at_t0": 1.0,
+    "rho_at_t1": 0.4080821,
+    "dopri5_stability_attempts_S": 3.909313,
+    "S_over_max_steps": 3.909313e-05
+   }
+  },
+  {
+   "id": "logistic",
+   "group": "non_stiff",
+   "n": 1,
+   "b": 3,
+   "closed_form": {
+    "y0_matches": true,
+    "max_relative_residual": 0.0
+   },
+   "scipy": {
+    "method": "DOP853",
+    "rtol": 1e-10,
+    "success": true,
+    "nfev": 278,
+    "steps": 16,
+    "final_max_abs": 17.73017,
+    "final_finite": true,
+    "max_abs_diff_to_closed_form_at_t1": 3.971223e-11
+   },
+   "stiffness": {
+    "rho_max": 0.225,
+    "rho_at_t0": 0.225,
+    "rho_at_t1": 0.1932542,
+    "dopri5_stability_attempts_S": 0.7793758,
+    "S_over_max_steps": 7.793758e-06
+   }
+  },
+  {
+   "id": "detest_b3",
+   "group": "non_stiff",
+   "n": 3,
+   "b": 4,
+   "scipy": {
+    "method": "DOP853",
+    "rtol": 1e-10,
+    "success": true,
+    "nfev": 671,
+    "steps": 43,
+    "final_max_abs": 0.9474277,
+    "final_finite": true
+   },
+   "stiffness": {
+    "rho_max": 1.030239,
+    "rho_at_t0": 1.0,
+    "rho_at_t1": 1.0,
+    "dopri5_stability_attempts_S": 6.066202,
+    "S_over_max_steps": 6.066202e-05
+   }
+  },
+  {
+   "id": "spiral_b4",
+   "group": "non_stiff",
+   "n": 3,
+   "b": 4,
+   "closed_form": {
+    "y0_matches": true,
+    "max_relative_residual": 1.717503e-16
+   },
+   "scipy": {
+    "method": "DOP853",
+    "rtol": 1e-10,
+    "success": true,
+    "nfev": 1544,
+    "steps": 98,
+    "final_max_abs": 2.198447,
+    "final_finite": true,
+    "max_abs_diff_to_closed_form_at_t1": 3.863747e-09
+   },
+   "stiffness": {
+    "rho_max": 1.185533,
+    "rho_at_t0": 1.0,
+    "rho_at_t1": 1.102508,
+    "dopri5_stability_attempts_S": 6.632929,
+    "S_over_max_steps": 6.632929e-05
+   }
+  },
+  {
+   "id": "rigid_body",
+   "group": "non_stiff",
+   "n": 3,
+   "b": 4,
+   "closed_form": {
+    "y0_matches": true,
+    "max_relative_residual": 1.110223e-16
+   },
+   "scipy": {
+    "method": "DOP853",
+    "rtol": 1e-10,
+    "success": true,
+    "nfev": 1502,
+    "steps": 92,
+    "final_max_abs": 0.9396571,
+    "final_finite": true,
+    "max_abs_diff_to_closed_form_at_t1": 7.19228e-11
+   },
+   "stiffness": {
+    "rho_max": 1.228821,
+    "rho_at_t0": 1.228821,
+    "rho_at_t1": 0.6711273,
+    "dopri5_stability_attempts_S": 5.380561,
+    "S_over_max_steps": 5.380561e-05
+   }
+  },
+  {
+   "id": "cascade10",
+   "group": "non_stiff",
+   "n": 10,
+   "b": 8,
+   "closed_form": {
+    "y0_matches": true,
+    "max_relative_residual": 2.775558e-17
+   },
+   "scipy": {
+    "method": "DOP853",
+    "rtol": 1e-10,
+    "success": true,
+    "nfev": 752,
+    "steps": 50,
+    "final_max_abs": 0.002908153,
+    "final_finite": true,
+    "max_abs_diff_to_closed_form_at_t1": 2.424727e-13
+   },
+   "stiffness": {
+    "rho_max": 1.0,
+    "rho_at_t0": 1.0,
+    "rho_at_t1": 1.0,
+    "dopri5_stability_attempts_S": 6.060606,
+    "S_over_max_steps": 6.060606e-05
+   }
+  },
+  {
+   "id": "kepler_e05",
+   "group": "non_stiff",
+   "n": 4,
+   "b": 5,
+   "closed_form": {
+    "y0_matches": true,
+    "max_relative_residual": 1.110223e-16
+   },
+   "scipy": {
+    "method": "DOP853",
+    "rtol": 1e-10,
+    "success": true,
+    "nfev": 2414,
+    "steps": 132,
+    "final_max_abs": 0.9595084,
+    "final_finite": true,
+    "max_abs_diff_to_closed_form_at_t1": 3.515863e-09
+   },
+   "stiffness": {
+    "rho_max": 4.0,
+    "rho_at_t0": 4.0,
+    "rho_at_t1": 1.335298,
+    "dopri5_stability_attempts_S": 9.37691,
+    "S_over_max_steps": 9.37691e-05
+   }
+  },
+  {
+   "id": "kepler_e09",
+   "group": "non_stiff",
+   "n": 4,
+   "b": 5,
+   "closed_form": {
+    "y0_matches": true,
+    "max_relative_residual": 1.110223e-16
+   },
+   "scipy": {
+    "method": "DOP853",
+    "rtol": 1e-10,
+    "success": true,
+    "nfev": 5330,
+    "steps": 276,
+    "final_max_abs": 1.295266,
+    "final_finite": true,
+    "max_abs_diff_to_closed_form_at_t1": 2.102727e-09
+   },
+   "stiffness": {
+    "rho_max": 44.72135,
+    "rho_at_t0": 44.72135,
+    "rho_at_t1": 0.8958815,
+    "dopri5_stability_attempts_S": 12.67392,
+    "S_over_max_steps": 0.0001267392
+   }
+  },
+  {
+   "id": "henon_heiles",
+   "group": "non_stiff",
+   "n": 4,
+   "b": 5,
+   "scipy": {
+    "method": "DOP853",
+    "rtol": 1e-10,
+    "success": true,
+    "nfev": 3698,
+    "steps": 240,
+    "final_max_abs": 0.3797069,
+    "final_finite": true
+   },
+   "stiffness": {
+    "rho_max": 1.400677,
+    "rho_at_t0": 1.095445,
+    "rho_at_t1": 1.308036,
+    "dopri5_stability_attempts_S": 19.7567,
+    "S_over_max_steps": 0.000197567
+   }
+  },
+  {
+   "id": "fput_30",
+   "group": "non_stiff",
+   "n": 30,
+   "b": 25,
+   "scipy": {
+    "method": "DOP853",
+    "rtol": 1e-10,
+    "success": true,
+    "nfev": 2186,
+    "steps": 136,
+    "final_max_abs": 0.7395334,
+    "final_finite": true
+   },
+   "stiffness": {
+    "rho_max": 2.034648,
+    "rho_at_t0": 2.033756,
+    "rho_at_t1": 2.019947,
+    "dopri5_stability_attempts_S": 61.0667,
+    "S_over_max_steps": 0.000610667
+   }
+  },
+  {
+   "id": "duffing_e3",
+   "group": "non_stiff",
+   "n": 2,
+   "b": 4,
+   "scipy": {
+    "method": "DOP853",
+    "rtol": 1e-10,
+    "success": true,
+    "nfev": 2864,
+    "steps": 158,
+    "final_max_abs": 2.736522,
+    "final_finite": true
+   },
+   "stiffness": {
+    "rho_max": 2.966634,
+    "rho_at_t0": 1.0,
+    "rho_at_t1": 1.656586,
+    "dopri5_stability_attempts_S": 8.767339,
+    "S_over_max_steps": 8.767339e-05
+   }
+  },
+  {
+   "id": "kuramoto_50",
+   "group": "non_stiff",
+   "n": 50,
+   "b": 52,
+   "scipy": {
+    "method": "DOP853",
+    "rtol": 1e-10,
+    "success": true,
+    "nfev": 695,
+    "steps": 43,
+    "final_max_abs": 24.99834,
+    "final_finite": true
+   },
+   "stiffness": {
+    "rho_max": 0.566966,
+    "rho_at_t0": 0.5,
+    "rho_at_t1": 0.509281,
+    "dopri5_stability_attempts_S": 3.114789,
+    "S_over_max_steps": 3.114789e-05
+   }
+  },
+  {
+   "id": "cb_probe",
+   "group": "callback_budget_declared",
+   "n": 1,
+   "b": 3,
+   "closed_form": {
+    "y0_matches": true,
+    "max_relative_residual": 5.551115e-17
+   },
+   "scipy": {
+    "method": "DOP853",
+    "rtol": 1e-10,
+    "success": true,
+    "nfev": 182,
+    "steps": 12,
+    "final_max_abs": 0.2694047,
+    "final_finite": true,
+    "max_abs_diff_to_closed_form_at_t1": 4.894418e-13
+   },
+   "stiffness": {
+    "rho_max": 4.0,
+    "rho_at_t0": 4.0,
+    "rho_at_t1": 1.217737,
+    "dopri5_stability_attempts_S": 0.586431,
+    "S_over_max_steps": 5.86431e-06
+   }
+  },
+  {
+   "id": "cb_column",
+   "group": "callback_budget_declared",
+   "n": 2,
+   "b": 4,
+   "closed_form": {
+    "y0_matches": true,
+    "max_relative_residual": 0.0
+   },
+   "scipy": {
+    "method": "Radau",
+    "rtol": 1e-09,
+    "success": true,
+    "nfev": 1796,
+    "steps": 255,
+    "final_max_abs": 2.0,
+    "final_finite": true,
+    "max_abs_diff_to_closed_form_at_t1": 0.0
+   },
+   "stiffness": {
+    "rho_max": 1500.0,
+    "rho_at_t0": 1500.0,
+    "rho_at_t1": 1500.0,
+    "dopri5_stability_attempts_S": 454.5455,
+    "S_over_max_steps": 0.004545455
+   }
+  },
+  {
+   "id": "cb_time",
+   "group": "callback_budget_declared",
+   "n": 1,
+   "b": 3
+  },
+  {
+   "id": "cb_blowup",
+   "group": "callback_budget_declared",
+   "n": 1,
+   "b": 3,
+   "scipy": {
+    "method": "DOP853",
+    "rtol": 1e-10,
+    "success": false,
+    "nfev": 7385,
+    "steps": 277,
+    "final_max_abs": 61388990000000.0,
+    "final_finite": true
+   }
+  },
+  {
+   "id": "cb_mass",
+   "group": "callback_budget_declared",
+   "n": 3,
+   "b": 4,
+   "closed_form": {
+    "y0_matches": true
+   }
+  },
+  {
+   "id": "sr_chem_dense",
+   "group": "callback_budget_declared",
+   "n": 3,
+   "b": 4
+  },
+  {
+   "id": "sr_pr_dense_ft",
+   "group": "callback_budget_declared",
+   "n": 1,
+   "b": 3,
+   "closed_form": {
+    "y0_matches": true
+   }
+  },
+  {
+   "id": "sr_ac_jvp",
+   "group": "callback_budget_declared",
+   "n": 100,
+   "b": 166
+  },
+  {
+   "id": "sr_ac_band",
+   "group": "callback_budget_declared",
+   "n": 100,
+   "b": 166
+  }
+ ],
+ "derivative_callbacks": [
+  {
+   "callback": "sr_chem_dense J",
+   "max_rel_diff": 4.399201e-12
+  },
+  {
+   "callback": "sr_chem_dense J",
+   "max_rel_diff": 5.789965e-13
+  },
+  {
+   "callback": "sr_chem_dense J",
+   "max_rel_diff": 8.19964e-12
+  },
+  {
+   "callback": "sr_pr_dense_ft J and f_t",
+   "J_rel_diff": 0.0,
+   "ft_rel_diff": 3.409299e-12
+  },
+  {
+   "callback": "sr_pr_dense_ft J and f_t",
+   "J_rel_diff": 0.0,
+   "ft_rel_diff": 2.070203e-10
+  },
+  {
+   "callback": "sr_pr_dense_ft J and f_t",
+   "J_rel_diff": 0.0,
+   "ft_rel_diff": 1.409332e-10
+  },
+  {
+   "callback": "sr_ac_band band",
+   "max_rel_diff": 9.223212e-10
+  },
+  {
+   "callback": "sr_ac_jvp JVP",
+   "max_rel_diff": 4.551991e-10
+  },
+  {
+   "callback": "cb_blowup J",
+   "max_rel_diff": 4.257475e-09
+  },
+  {
+   "callback": "cb_mass J",
+   "max_rel_diff": 0.0
+  }
+ ],
+ "cb_mass_closed_form": {
+  "max_residual_of_the_dae": 2.672765e-51,
+  "y0": [
+   1.0,
+   0.0,
+   0.0
+  ]
+ },
+ "scipy_version": "1.11.4",
+ "numpy_version": "1.26.4",
+ "mpmath_version": "1.2.1"
+}
