@@ -1,0 +1,32 @@
+jobs: 5; logs: 4
+  run 45378440406 job 138390975174 test: failure, 191.6 min
+  run 45378440571 job 138390831970 ignored-tests: cancelled, 330.28 min
+  run 45414722588 job 138517744396 ignored-tests: cancelled, 330.27 min
+  run 45414722991 job 138517746819 test: failure, 276.28 min
+  run 45414722991 job 138517747499 test-cli-fair-ab: failure, 40.67 min
+  log 138390831970: 260 commands (0 builds, 259 finished tests), tail None s, cut {'command': '-p rodas5p-integrators --test ppsw1_linear_backend_contracts', 'build': False, 'seconds': 16284.6, 'cut_by_the_end_of_the_step': True}
+       1190.9 s  -p rodas5p-integrators --test int01_gcrodr_verified_reuse
+        966.1 s  -p rodas5p-integrators --test krylov_workspace_driver_contract
+        342.5 s  -p rodas5p-core --test pp12b_chain_symmetrizer
+     share of finished test commands below: {'5 min': 0.9884, '10 min': 0.9923, '20 min': 1.0, '30 min': 1.0}
+  log 138517744396: 270 commands (9 builds, 260 finished tests), tail None s, cut {'command': '-p rodas5p-integrators --test ppsw1_linear_backend_contracts', 'build': False, 'seconds': 13317.4, 'cut_by_the_end_of_the_step': True}
+       2402.8 s  -p rodas5p-integrators --test int01_gcrodr_verified_reuse
+       2052.3 s  -p rodas5p-integrators --test krylov_workspace_driver_contract
+        689.4 s  -p rodas5p-core --test pp12b_chain_symmetrizer
+     share of finished test commands below: {'5 min': 0.9846, '10 min': 0.9885, '20 min': 0.9923, '30 min': 0.9923}
+  log 138517746819: 475 commands (5 builds, 470 finished tests), tail 72.5 s, cut None
+       7743.6 s  -p rodas5p-integrators --test stage_clients_assembly_check_mc
+       1845.8 s  -p rodas5p-integrators --test ppsw1_linear_backend_contracts
+       1283.4 s  -p rodas5p-integrators --test stage_clients_dense_lu_reuse_identity
+     share of finished test commands below: {'5 min': 0.9809, '10 min': 0.9915, '20 min': 0.9936, '30 min': 0.9957}
+  log 138517747499: 40 commands (2 builds, 38 finished tests), tail 30.4 s, cut None
+        670.2 s  -p rodas5p-cli --test triage_cli
+        616.9 s  -p rodas5p-fair-ab --test two_arm_v3_campaign_contracts
+        153.7 s  -p rodas5p-cli --test me01_cli_contracts
+     share of finished test commands below: {'5 min': 0.9474, '10 min': 0.9474, '20 min': 1.0, '30 min': 1.0}
+set up job max 1.0 s; steps after the run step max 2.0 s; measurement tail max 72.5 s
+  before the run step: test (run 45378440406): 34 s
+  before the run step: ignored-tests (run 45378440571): 129 s
+  before the run step: ignored-tests (run 45414722588): 125 s
+  before the run step: test (run 45414722991): 37 s
+  before the run step: test-cli-fair-ab (run 45414722991): 40 s

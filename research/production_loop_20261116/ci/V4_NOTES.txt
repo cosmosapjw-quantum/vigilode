@@ -1,0 +1,141 @@
+CI test selection v4: a run that cannot finish inside its job limit still seeds the next run
+(node V33_CI_IGNORED_LIVENESS, owner decision OD-L1-29, 2026-11-25)
+
+Implementation: tools/ci/select_tests.py, .github/workflows/production.yml,
+.github/workflows/ignored-tests.yml. Evidence: v4_logs/. Rulings R1-R36 of v3: V3_NOTES.md.
+The defect with its hosted evidence: TRIAGE_KO.md sections 12.2 and 12.3.
+
+1. Defect
+A selection that cannot finish inside the job limit leaves no baseline. The job timeout cancels
+the run step, the save step (if: ${{ !cancelled() }}) is skipped, and the baseline step accepts
+only complete outcomes, so every later run is full again. Hosted: the ignored runs 45378440571
+(v2) and 45414722588 (v3) were cancelled at 330 minutes; the test job of run 45414722991 took
+276 of its 300 minutes.
+
+2. What the hosted logs add
+Source: v4_hosted_durations.py reads the raw GitHub job listings and job logs of the four runs of
+TRIAGE 12.2 and 12.3 (v4_logs/hosted/) and writes v4_logs/hosted_durations.json.
+- Both cancelled ignored runs spent their end in one command,
+  `-p rodas5p-integrators --test ppsw1_linear_backend_contracts -- --ignored`: started at
+  11:48:31Z (v2) and 16:18:08Z (v3), still running at the cancellation, 16285 s and 13317 s. The
+  v3 log shows `c5_measured_crossover_paired_interleaved has been running for over 60 seconds`
+  and nothing after it. Every other finished test command of these runs took at most 1191 s (v2)
+  and 2403 s (v3).
+- Test job (v3, complete): 470 test commands, the longest stage_clients_assembly_check_mc
+  7744 s (129 minutes), then ppsw1_linear_backend_contracts 1846 s; 99.15% of them under
+  10 minutes.
+- Steps around the run step: Set up job at most 1 s; the steps after the run step (upload, post
+  steps, complete job) at most 2 s; the steps before it 34-40 s in the test jobs and 125-129 s in
+  the ignored job (the kill-gate control took 87-102 s of that).
+- The silent tail of the run step after the last test output, which is the coverage export and
+  trace parsing of all targets in a pool of 4 (R22): 72.5 s for the 557 targets of the test job,
+  30.4 s for the 38 targets of test-cli-fair-ab.
+Consequence: a budget that only stops new targets cannot end the run step before the job limit,
+because one command can run longer than any margin. The run step therefore also stops the command
+that is still running when the budget ends (R39), and the next run runs that unit last (R43).
+
+3. Rulings
+- R37 Incremental outcome and map (requirement 1). The run step plans its commands (measured
+  mode: one build per package, then one command per test target or doc test; unmeasured mode:
+  one command per package, one for its examples, one for its doc tests). Before each command it
+  writes the outcome with `running` set to that command and its units; after each command it
+  measures the target, then writes the input map and then the outcome. Every write goes to a
+  temporary file in the same directory that then replaces the file (os.replace), so the save step
+  and any other reader see the old or the new file, never a part of one. The map is written
+  first: a run that dies between the two writes leaves an outcome that still lists the target as
+  not run beside a map that already has its new entry, which only over-selects. The measurement of
+  a target (coverage export, trace parsing) runs right after its command instead of in a pool
+  after the last command (R22 is superseded). Cost: the hosted pool took 72.5 s for 557 targets on
+  4 workers, so measuring one target at a time adds at most about 4 x 72.5 s = 4.8 minutes to a
+  full test job. The profiles and traces of a target are deleted as soon as it is measured
+  (triage_cli wrote 1.9 GB of profiles in the local v3 run). `--jobs` is still accepted and has no
+  effect.
+- R38 Outcome schema `vigilode.ci.test-outcome.v3`. Added fields: `measured` (the map keys this
+  run measured, the negative controls included), `not_run` (package, target and why, for every
+  planned unit that has not run its tests: not run yet, not started, stopped, its command did
+  not run its tests, not compiled by its build), `running`, `stop` (reason, minutes since the
+  start, the units it stopped), `run_last` (R43), `budget` (minutes, started_at, deadline) and
+  `seconds` per command and per measured target (recorded only; no rule reads a duration).
+  `complete` is true when not_run is empty and every command ran its tests (as before). At every
+  write each planned unit has either run its tests or is in not_run. The baseline lookup accepts
+  only v3 outcomes; the first run of each job after this change is full anyway, because tools/ci/
+  is a global path (rule 1).
+- R39 Time budget (requirement 2). `run --budget-minutes B --started-at T0`: no command starts
+  at or after T0 + B minutes, and a command that is still running then is stopped: SIGTERM to its
+  process group, SIGKILL 10 s later. Every command runs in a session of its own, so the stop
+  reaches cargo, strace, the test process and its children. The stopped units count as not run
+  ("stopped when the time budget ended"), so do the units not started ("not started: the time
+  budget ended"). The run step writes the map and the outcome, prints an error (an `::error::`
+  annotation in GitHub Actions) and exits with 1. A stopped command is not measured. T0 comes from
+  the first step of each selecting job (`JOB_STARTED_AT=$(date +%s)` into GITHUB_ENV), so the
+  budget is counted from the start of the job and the margin only covers the work after the
+  budget. Without --started-at the budget counts from the start of the run command. A signal
+  (SIGTERM, SIGINT) to the selector is handled the same way: it stops the running command, writes
+  the outcome (stop reason "signal ...") and exits with 1.
+- R40 Margins: B = job limit - 10 minutes in each selecting job: ignored-tests 330 -> 320,
+  test 300 -> 290, test-cli-fair-ab 120 -> 110. After the budget the job must still: finish the
+  measurement of a target that ended just before it (at most the hosted silent tail, 72.5 s,
+  which bounds the measurement of any one target), stop the running command (at most 20 s),
+  write two files, and run the save step and the post steps (at most 2 s hosted); the record step
+  starts after Set up job (at most 1 s). Sum: about 1.6 minutes. Ten minutes is six times that
+  and leaves room for retries of the artifact service; a margin that is too short would let the
+  timeout cancel the save step, which is the defect itself, while a long margin costs only test
+  time of a run that the budget stops. The test job's full run is expected to fit: 276.3 minutes
+  hosted plus at most 4.8 minutes of one-at-a-time measurement is about 281 < 290. If it does
+  not, the budget stops it and the next run continues. check_workflows requires at least 5
+  minutes (three times the sum).
+- R41 Save on cancellation (requirement 3). The three upload steps run with `if: always()`. With
+  R37 the files on disk after a cancellation describe every command that finished and name the
+  command that was cut (`running`). The hosted logs show that after the job timeout python3,
+  cargo, strace and the test binary were still alive until "Cleaning up orphan processes", so the
+  runner may never signal the selector; the incremental writes, not the signal handler of R39,
+  are what the save step relies on. The run step keeps its condition (ignored job: !cancelled();
+  test jobs: the earlier steps succeeded).
+- R42 A baseline from an incomplete outcome (requirement 4). An outcome qualifies when its schema
+  is v3, its fields have the expected types (head a string; failed, not_run, run_last lists of
+  objects naming a package and a target) and it is complete or lists not_run. An outcome file
+  that is empty, not JSON or of the wrong shape passes the run over ("unreadable outcome"), like
+  a run without the artifact; an incomplete outcome without a not_run list passes over as before
+  ("not complete"). A map that is unreadable or of the wrong shape makes the select step full
+  ("the baseline run left no input map"), like a missing map. The baseline file hands over
+  not_run and run_last together with failed. In the next selection:
+  * the targets that the partial run measured keep their measured entries and are selected only
+    by rules 3-6; their failures carry over by rule 6, as today;
+  * every unit in not_run that is still a target and whose required features are enabled runs
+    ("not run in the baseline run: <why>"); the others are dropped with a note, as rule 6 drops
+    failures. The run that did not run them dropped their map entries (a run carries over the
+    entries of the targets it did not select, never of the targets it selected), so they are
+    also unmapped (rule 5);
+  * a complete outcome has an empty not_run, and the selection is exactly as before.
+  Soundness: every planned unit of the partial run either ran its tests at its head, with the
+  inputs measured there, so that only a change after that head can affect it and the diff from
+  that head shows that change, or it is selected again. The runner image and the pull-request
+  base of the partial run are compared as before (rule 1). A command that did not run its tests
+  (a build failure) makes its units not run. Before, such an outcome was no baseline at all, and
+  the next run selected again everything since the last complete run; now those units run again,
+  together with what changed since.
+- R43 Order. The units that the baseline run stopped or was running when it was cancelled, and
+  its own run_last units that it did not run, run after all other selected units (the builds stay
+  first). This orders; it selects nothing. Without it the first unit of the standard order among
+  the not-run units of the next run would be ppsw1_linear_backend_contracts (section 2), and no
+  unit after it would ever run.
+- R44 Unchanged: selection rules 1-9 apart from the not-run units of R42 (requirement 4), the map
+  schema (coverage-map.v2), the selection schema test-selection.v3 (three added fields:
+  baseline_not_run_added, baseline_not_run_dropped, run_last), the full-mode triggers, the image
+  rule, the job time limits (300, 330, 120 minutes), the coverage instrumentation, the queueing
+  (cancel-in-progress false) and the negative controls.
+- R45 Not green when units did not run: a run stopped by its budget or by a signal exits with 1
+  after it has written the outcome; the step summary and the annotation name the number of units
+  not run. A cancelled job is red anyway.
+- R46 check_workflows (part of the self-test, so of every CI test job): each selecting job starts
+  with the record step; its run step passes --budget-minutes B with --started-at
+  "$JOB_STARTED_AT", with B at least 5 minutes under the job limit; its upload step has
+  `if: always()`. Self-test probes: an upload with !cancelled(), a run step without a budget, a
+  budget equal to the limit, a job without the record step.
+
+4. Open (owner)
+ppsw1_linear_backend_contracts with --ignored, measured on a hosted runner, did not end within
+13317 s (v3) or 16285 s (v2). With this change the ignored job stops it at its budget in every run
+that selects it (it stays unmapped until it finishes once), runs it last, and fails. The other
+units converge over the runs. Fixing that test or excluding it is an owner decision; the test file
+is outside this node's write allowlist.
