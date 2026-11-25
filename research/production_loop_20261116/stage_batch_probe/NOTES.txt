@@ -1,0 +1,89 @@
+V32_STAGE_BATCH_PROBE - working notes (owner decision OD-L1-28, 2026-11-25 09:21 KST)
+=====================================================================================
+
+Scope: crates/rodas5p-integrators/src/stage_batch.rs, only run_concurrency_probe and private
+helpers it needs; new tests crates/rodas5p-integrators/tests/stage_batch_probe_*.rs; this folder.
+Base commit d4e2772f. Context: research/production_loop_20261116/ci/TRIAGE_KO.md section 12.1 and
+ci/v3_first_hosted/ (hosted job 138517747499: second CLI run gave 577161eb..., which is the local
+report with only `parallel-observed` flipped to false).
+
+1. Why the old probe can report 1
+---------------------------------
+- run_concurrency_probe builds a fresh local pool, ParallelExecution::rayon(4)
+  (rayon ThreadPoolBuilder::build; rayon-core 1.13.0 spawns the 4 workers and returns WITHOUT
+  waiting for them to start - only build_global calls wait_until_primed).
+- It then calls eval_rhs_stage_rows on 8 stage rows -> map_ordered -> pool.install(par_iter).
+  The job is injected at once. The first worker that runs takes the whole job and splits it with
+  join: it pushes the right halves onto its own deque and runs task 0 itself. Other workers can
+  only take part by stealing those halves, i.e. only once they are running (or awake).
+- A task counts as active only while it runs: fetch_add, 1 ms sleep, copy, fetch_sub. One worker
+  runs all 8 tasks in about 8 ms (8 x >= 1 ms sleep).
+- So if no second worker starts (or wakes) and steals within that window of about 8 ms, the
+  maximum stays 1, stage_parallelism_observed = false, verdict = stage-concurrency-not-observed,
+  and the checksum line `parallel-observed=false` gives 577161eb... instead of 4079849b...
+- What can delay the other workers: thread creation and start under `strace -f` (the parent stops
+  at every clone event and each new thread starts in a ptrace stop until the single tracer process
+  resumes it; on the hosted runner the same strace traces the test binary, its parallel tests and
+  their CLI child processes), CPU contention on a 4 vCPU runner, a slow coverage build, scheduler
+  wake-up latency of already started but sleeping workers. Nothing in the probe waits for them.
+- The sleeping worker frees its CPU, so a single CPU is not enough by itself: with taskset -c 0 the
+  local runs still saw 4 (ci/v3_first_hosted/local_runs.log). The failure needs the other workers to
+  be not runnable or not scheduled for about 8 ms.
+
+2. Design: bounded rendezvous (the change)
+------------------------------------------
+- Each probe task, as before, marks itself active (active.fetch_add) and raises the shared maximum
+  (fetch_max). New: it then waits in short sleeps while
+      maximum < 2  and  now < deadline
+  and only then does the old 1 ms dwell, copies its row and marks itself inactive.
+- deadline = (arrival time of the FIRST task) + RENDEZVOUS_BOUND, set once (OnceLock<Instant>)
+  and shared by all 8 tasks. Measured from the first task, not from the probe start, so that a
+  late first worker does not eat the window. Shared, so a pool that can never run two tasks waits
+  once, not 8 times.
+- While the first task waits, its worker sleeps (frees the CPU, also on one CPU) and its deque
+  still holds the stolen-able halves. The first late worker that runs steals one of them, marks
+  itself active -> maximum = 2 -> every waiting task stops waiting. From then on the condition
+  maximum >= 2 is permanent (maximum only grows), so no later task waits at all.
+- RENDEZVOUS_BOUND = 2 s, poll interval 100 us (std::thread::sleep; a sleep, not a spin, so a
+  late worker on the same CPU can run).
+  Why 2 s: it has to cover the start/wake-up latency of a runnable thread on a loaded or traced
+  host. The old window was about 8 ms and was exceeded only on the hosted runner under strace -f
+  with coverage and load; Linux fair scheduling runs a runnable normal-priority thread within one
+  scheduling period (milliseconds to tens of ms even with dozens of runnable threads per CPU) and
+  a tracer backlog of a few tens of ms already exceeds 8 ms. 2 s is 250x the old window and still
+  short enough to be harmless when it is paid. The bound is the only constant added; it is not a
+  tolerance or a scientific threshold and does not enter the report or the checksum.
+- One-thread pool (or a host that never runs a second worker within 2 s): it can never see 2; the
+  deadline ends the wait after 2 s once, the remaining tasks do not wait, the result is
+  maximum = 1, stage_parallelism_observed = false - the same result as today, only 2 s later.
+  (ParallelExecution::rayon(4) is never a one-thread pool, so this is only the safety net.)
+- Unchanged: the checksum composition (scientific_checksum: parallel-observed line, case lines,
+  row lines), the report schema and fields, the 8 tasks x 1 ms dwell, the 4-thread local pool,
+  observed_max_parallel_tasks stays the diagnostic maximum (2..4 on a multi-thread pool).
+
+3. Effect on run time
+---------------------
+- Normal case (second worker running within microseconds): the first task waits until the second
+  task is active, at most one poll interval longer (about 0.1-0.2 ms); the probe stays at about
+  2-3 ms (8 tasks x 1 ms on 4 workers). No change to the rest of the report.
+- Late workers: the probe waits exactly as long as the second worker needs to start (this is the
+  case that used to fail), plus at most one poll interval.
+- Worst case (no second task ever active): + 2 s once per report.
+- Diagnostic wall times of the CLI runs before/after are recorded in logs/ (diagnostic only;
+  no wall-time number decides anything in this node).
+
+4. Plan / evidence
+------------------
+- Step 1 (old code): CLI release binary built from d4e2772f; 40 runs each of
+  `rodas5p stage-batch-feasibility --profile smoke --output <file>` under
+  `strace -f -qq -e trace=none` with taskset on 1 CPU and on 2 CPUs; count runs with
+  stage_parallelism_observed == false. Raw outputs in logs/. If nothing fails: NOT_DECIDABLE.
+- Step 2: the change above.
+- Step 3: tests/stage_batch_probe_contracts.rs: repeated smoke runs - stage_parallelism_observed
+  true every time, one checksum, equal to 4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+  and equal to the composition rebuilt from the report fields; plus a test that starts the probe
+  while the pool workers are delayed (mechanism chosen after step 1; recorded below).
+- Step 4: provocation of step 1 again with the new binary.
+- Step 5: parse_results.py -> RESULTS.json, REPORT_KO.md.
+- Step 6: cli_contracts, stage_batch_contracts, generic_scope_contracts, the new test, clippy,
+  fmt, loop checker.
