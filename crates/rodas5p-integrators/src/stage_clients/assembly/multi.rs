@@ -120,6 +120,28 @@ fn refinement_primes(largest: usize) -> Vec<usize> {
     primes
 }
 
+/// The moduli of the band construction for a pattern of order `n` whose
+/// declared entries lie in the band `(lower, upper)`, and the total of its
+/// non-empty groups.
+fn band_plan(n: usize, lower: usize, upper: usize) -> (Vec<usize>, usize) {
+    let moduli = band_moduli(lower + upper + 1, n);
+    let total = moduli.iter().map(|&m| m.min(n)).sum();
+    (moduli, total)
+}
+
+/// The primes of the refinement construction for the classes of the
+/// client's colouring of sizes `sizes`, and the total of its non-empty
+/// groups.
+fn refinement_plan(sizes: &[usize]) -> (Vec<usize>, usize) {
+    let largest = sizes.iter().copied().max().unwrap_or(1);
+    let primes = refinement_primes(largest);
+    let total = primes
+        .iter()
+        .map(|&p| sizes.iter().map(|&size| size.min(p)).sum::<usize>())
+        .sum::<usize>();
+    (primes, total)
+}
+
 /// The columns of one group, increasing.
 pub(super) enum GroupColumns<'a> {
     Band(StepBy<Range<usize>>),
@@ -181,14 +203,8 @@ impl CheckColourings {
             members[next[c]] = j as u32;
             next[c] += 1;
         }
-        let moduli = band_moduli(lower + upper + 1, n);
-        let total_band: usize = moduli.iter().map(|&m| m.min(n)).sum();
-        let largest = sizes.iter().copied().max().unwrap_or(1);
-        let primes = refinement_primes(largest);
-        let total_refinement = primes
-            .iter()
-            .map(|&p| sizes.iter().map(|&size| size.min(p)).sum::<usize>())
-            .sum::<usize>();
+        let (moduli, total_band) = band_plan(n, lower, upper);
+        let (primes, total_refinement) = refinement_plan(&sizes);
         let (construction, offsets, groups): (_, _, Vec<usize>) = if total_band <= total_refinement
         {
             let groups = moduli.iter().map(|&m| m.min(n)).collect();
@@ -267,6 +283,26 @@ impl CheckColourings {
     /// one check.
     pub fn total_groups(&self) -> usize {
         self.group_start[self.groups.len()]
+    }
+
+    /// [`CheckColourings::total_groups`] of the colourings that
+    /// [`CheckColourings::of`] builds for `pattern`, without building them:
+    /// the smaller of the totals of the two constructions (the band
+    /// construction on ties), computed from the client's colouring of the
+    /// pattern ([`colour_columns`]), its band ([`SparsityPattern::bandwidth`])
+    /// and its order. A function of the declared pattern alone: no state and
+    /// no right-hand side enter. It decides the default first-use check of the
+    /// coloured route ([`super::AssemblyOptions::default_first_use_check`]).
+    pub fn total_groups_of(pattern: &SparsityPattern) -> usize {
+        let (colour, classes) = colour_columns(pattern);
+        let mut sizes = vec![0_usize; classes];
+        for &c in &colour {
+            sizes[c] += 1;
+        }
+        let (lower, upper) = pattern.bandwidth();
+        let (_, total_band) = band_plan(pattern.n(), lower, upper);
+        let (_, total_refinement) = refinement_plan(&sizes);
+        total_band.min(total_refinement)
     }
 
     /// The total of the band construction, whether it is used or not.

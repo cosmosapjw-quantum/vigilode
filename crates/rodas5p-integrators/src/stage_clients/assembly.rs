@@ -61,8 +61,9 @@
 //! - First linearization of a client, and again on request
 //!   ([`AssemblyReportHandle::request_check`], [`AssemblyStageClient::verify`]):
 //!   a check ([`CheckColumns`]) after the build. The default first-use check
-//!   follows the route ([`AssemblyOptions::default_first_use_check`]; loop
-//!   node V29, owner decision OD-L1-24):
+//!   follows the route and, on the coloured route, the declared pattern
+//!   ([`AssemblyOptions::default_first_use_check`]; loop nodes V29 and V31,
+//!   owner decisions OD-L1-24 and OD-L1-27):
 //!   - coloured route, whatever the back end (the band back ends included)
 //!     and the execution: the multi-colouring check
 //!     [`CheckColumns::MultiColouring`], on the calling thread. Every group
@@ -72,7 +73,10 @@
 //!     client's own colouring, and every row the group does not cover must
 //!     keep its bits. [`CheckColourings::total_groups`] right-hand sides: 18,
 //!     59 and 150 for the bands of the cells bruss1d-n128, bruss1d-n131072
-//!     and nlkpp-band-n4096-r24 of node V08;
+//!     and nlkpp-band-n4096-r24 of node V08. Where the further colourings
+//!     have `n` groups or more (wide declared bands), the full check
+//!     [`CheckColumns::All`] instead: every column alone, on the calling
+//!     thread, `n` right-hand sides, exact up to rounding;
 //!   - dense route: 8 evenly spread check columns ([`CheckColumns::Sample`]),
 //!     one at a time on the calling thread; each must have the bits of the
 //!     assembled column. The multi-colouring check needs a declared pattern
@@ -112,9 +116,10 @@
 //! the client reports assembly and verification calls separately
 //! ([`AssemblyStats`]). The sequential routes allocate nothing after
 //! [`AssemblyStageClient::new`] (with an allocation-free back end; the
-//! further colourings of a multi-colouring first-use check are built there,
-//! those of a requested multi-colouring check at its first use); the
-//! threaded routes leave allocation to rayon.
+//! single-column checks work in the client's own scratch, the further
+//! colourings of a multi-colouring first-use check are built there, those
+//! of a requested multi-colouring check at its first use); the threaded
+//! routes leave allocation to rayon.
 
 mod engine;
 mod multi;
@@ -274,11 +279,13 @@ pub enum ColumnRoute {
 /// What a check evaluates after a build (module documentation).
 ///
 /// The default first-use check follows the route
-/// ([`AssemblyOptions::default_first_use_check`], loop node V29):
-/// `MultiColouring` on the coloured route (the band back ends included) and
-/// `Sample(8)` ([`AssemblyOptions::DEFAULT_CHECK_COLUMNS`]) on the dense
-/// route, where the multi-colouring check does not apply (no declared
-/// pattern). Every variant can be chosen instead
+/// ([`AssemblyOptions::default_first_use_check`], loop nodes V29 and V31):
+/// on the coloured route (the band back ends included) `MultiColouring`
+/// where [`CheckColourings::total_groups_of`] the declared pattern is below
+/// `n` and `All` where it is `n` or more; `Sample(8)`
+/// ([`AssemblyOptions::DEFAULT_CHECK_COLUMNS`]) on the dense route, where the
+/// multi-colouring check does not apply (no declared pattern). Every variant
+/// can be chosen instead
 /// ([`AssemblyOptions::with_first_use_check`],
 /// [`AssemblyReportHandle::request_check`], [`AssemblyStageClient::verify`]);
 /// the multi-colouring checks need the coloured route.
@@ -333,7 +340,8 @@ pub enum CheckColumns {
     /// dense route.
     Sample(usize),
     /// Every column, one at a time on the calling thread: `n` right-hand
-    /// sides.
+    /// sides. The default first-use check of the coloured route where the
+    /// multi-colouring check would need `n` or more (loop node V31).
     All,
     /// Every column with the comparisons of [`CheckColumns::All`], the `n`
     /// single-column evaluations handed to the threads of the client's pool
@@ -351,9 +359,11 @@ pub enum CheckColumns {
     /// bands the groups can outnumber the columns: the review of loop node
     /// V29 counted more than `n` groups for 59 of 75 random patterns whose
     /// band half-width lies between `0.2 n` and `0.45 n`, at most `1.85 n`;
-    /// [`CheckColumns::All`] is then cheaper and exact up to rounding. The
-    /// default first-use check of the coloured route (loop node V29); what
-    /// it detects and what it misses (ledger L-0338) is stated at the type.
+    /// [`CheckColumns::All`] is then cheaper and exact up to rounding, and
+    /// the default first-use check takes it (loop node V31). The default
+    /// first-use check of the coloured route where it needs fewer than `n`
+    /// right-hand sides (loop nodes V29 and V31); what it detects and what
+    /// it misses (ledger L-0338) is stated at the type.
     MultiColouring,
     /// [`CheckColumns::MultiColouring`] with the groups handed to the
     /// threads of the client's pool; decides as the check on the calling
@@ -399,24 +409,40 @@ impl AssemblyOptions {
     /// the default first-use check of every route.
     pub const DEFAULT_CHECK_COLUMNS: usize = 8;
 
-    /// The first-use check of `route` unless stated otherwise (loop node
-    /// V29, owner decision OD-L1-24):
+    /// The first-use check of `route` unless stated otherwise (loop nodes
+    /// V29 and V31, owner decisions OD-L1-24 and OD-L1-27):
     ///
     /// - [`ColumnRoute::Coloured`], whatever the back end (the band back
-    ///   ends included) and the execution: [`CheckColumns::MultiColouring`],
-    ///   on the calling thread. On the frozen corpus of loop node V26 it
-    ///   detects every wrong declaration that the full check detects (one
-    ///   rounding-limited case escapes both), where `Sample(8)` passes 576
-    ///   wrong declarations. It is not exact in general: rows whose
-    ///   undeclared couplings cancel in pairs and entry collapse pass it
-    ///   (ledger L-0338; reproducible with
-    ///   `research/production_loop_20261116/assembly_check/review_probe`,
-    ///   subcommands `cancel` and `collapse`). [`CheckColumns::All`] or
-    ///   [`CheckColumns::AllPooled`] is the exact choice up to rounding, at
-    ///   the cost of `n` right-hand sides; it is also the cheaper choice when
-    ///   [`CheckColourings::total_groups`] of the pattern exceeds `n`, which
-    ///   happens for wide declared bands ([`CheckColumns::MultiColouring`]).
-    ///   [`CheckColumns`] states the details.
+    ///   ends included) and the execution, decided from the declared pattern
+    ///   alone by the number of right-hand sides the multi-colouring check
+    ///   would spend, [`CheckColourings::total_groups_of`] the pattern
+    ///   (no state and no right-hand side enter):
+    ///   - fewer than `n`: [`CheckColumns::MultiColouring`], on the calling
+    ///     thread. On the frozen corpus of loop node V26 it detects every
+    ///     wrong declaration that the full check detects (one
+    ///     rounding-limited case escapes both), where `Sample(8)` passes 576
+    ///     wrong declarations. It is not exact in general: rows whose
+    ///     undeclared couplings cancel in pairs and entry collapse pass it
+    ///     (ledger L-0338; reproducible with
+    ///     `research/production_loop_20261116/assembly_check/review_probe`,
+    ///     subcommands `cancel` and `collapse`);
+    ///   - `n` or more: [`CheckColumns::All`], on the calling thread. The
+    ///     full check shifts every column alone, is the exact choice up to
+    ///     rounding, and costs `n` right-hand sides, so it is not more
+    ///     expensive there; at equality it costs as much and is exact. The
+    ///     further colourings outnumber the columns for wide declared
+    ///     bands: the review of loop node V29 counted more than `n` groups
+    ///     for 59 of 75 random banded patterns with half-width between
+    ///     `0.2 n` and `0.45 n` (at most `1.85 n`), and the survey of loop
+    ///     node V31 (`research/production_loop_20261116/assembly_wide_band/`)
+    ///     `n` or more for 184 of 378 random banded patterns of order 60 to
+    ///     500 with half-width between `0.05 n` and `0.45 n`.
+    ///
+    ///   A pattern whose own colouring already shifts every column alone (a
+    ///   declared dense pattern, for example) has no further colourings: its
+    ///   multi-colouring check spends no right-hand side and it stays the
+    ///   default. [`CheckColumns::AllPooled`] and the multi-colouring checks
+    ///   stay selectable; [`CheckColumns`] states what each check detects.
     /// - The dense route ([`ColumnRoute::Dense`]): `Sample(8)`
     ///   ([`Self::DEFAULT_CHECK_COLUMNS`]). The multi-colouring check needs a
     ///   declared pattern and does not apply; the sequential dense route
@@ -424,7 +450,13 @@ impl AssemblyOptions {
     pub fn default_first_use_check(route: &ColumnRoute) -> CheckColumns {
         match route {
             ColumnRoute::Dense => CheckColumns::Sample(Self::DEFAULT_CHECK_COLUMNS),
-            ColumnRoute::Coloured(_) => CheckColumns::MultiColouring,
+            ColumnRoute::Coloured(pattern) => {
+                if CheckColourings::total_groups_of(pattern) >= pattern.n() {
+                    CheckColumns::All
+                } else {
+                    CheckColumns::MultiColouring
+                }
+            }
         }
     }
 
@@ -440,7 +472,10 @@ impl AssemblyOptions {
     }
 
     /// The sequential coloured route of `pattern`, with the default
-    /// first-use check of the coloured route.
+    /// first-use check of the coloured route, decided here from `pattern`
+    /// ([`Self::default_first_use_check`]: the multi-colouring check, or the
+    /// full check where the multi-colouring check would need `n` or more
+    /// right-hand sides).
     pub fn coloured(pattern: SparsityPattern) -> Self {
         let route = ColumnRoute::Coloured(pattern);
         Self {
@@ -613,9 +648,11 @@ impl AssemblyStageClient {
     /// back end, a pattern of another order or outside the band, a band
     /// outside the matrix, zero workers and the multi-colouring check as the
     /// first-use check of the dense route. With a multi-colouring first-use
-    /// check (the default of the coloured route) the further colourings of
-    /// the check are built here, so that the first linearization allocates
-    /// nothing for them.
+    /// check (the default of the coloured route unless the declared pattern
+    /// needs `n` or more of its right-hand sides,
+    /// [`AssemblyOptions::default_first_use_check`]) the further colourings
+    /// of the check are built here, so that the first linearization
+    /// allocates nothing for them; the full check needs nothing built.
     pub fn new(
         n: usize,
         backend: LinearBackend,
