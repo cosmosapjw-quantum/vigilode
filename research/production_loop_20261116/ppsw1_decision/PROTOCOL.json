@@ -1,0 +1,18 @@
+{
+  "schema": "vigilode.loop-l1.v10-ppsw1-decision.protocol.v1",
+  "node": "V10_PPSW1_DECISION",
+  "date_kst": "2026-11-25 12:40",
+  "committed_before": "any timed run (and any other measured run) of this node",
+  "full_design": "PREDECLARED.json (same commit)",
+  "timing_prefix": {
+    "one_thread_arms_and_rodas5p": "flock -w 14400 /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/locks/timing.lock taskset -c 9-11",
+    "six_thread_arms": "flock -w 14400 /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/locks/timing.lock taskset -c 6-11",
+    "counters": "perf stat -x, -e instructions:u,cycles:u around every timed process, one arm per process (perf_event_paranoid 1)"
+  },
+  "load_record": "the 1-minute load average read from /proc/loadavg by the timed process at its start, recorded in its log",
+  "quality_rule": "a wall comparison (one arm against R in one regime) is decidable only if every process it uses (all timed processes of both arms in that regime and measurement) started at a 1-minute load average <= 3.0, or if the measured ratio clears the frozen threshold 1.15 by a factor of 2 on the deciding side (>= 2.30 decides PASS, <= 0.575 decides FAIL); otherwise it is NOT_DECIDABLE",
+  "remeasurement": "at most 3 measurements per regime; a comparison is decided by the first measurement in which it is decidable; every measurement is kept; no measurement is discarded for its result",
+  "cost_per_attempt_label": "a wall value of the cost-per-attempt measurement is authoritative if all its processes started at a 1-minute load average <= 3.0, otherwise diagnostic_only (no threshold)",
+  "frozen_thresholds": {"step_ratio_max": 1.5, "wall_ratio_min": 1.15},
+  "never": "a frozen threshold is never moved; a timed process is never re-run to replace a kept measurement"
+}

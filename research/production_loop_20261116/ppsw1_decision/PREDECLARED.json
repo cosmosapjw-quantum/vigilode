@@ -1,0 +1,129 @@
+{
+  "schema": "vigilode.loop-l1.v10-ppsw1-decision.predeclared.v1",
+  "node": "V10_PPSW1_DECISION",
+  "date_kst": "2026-11-25 12:40",
+  "committed_before": "any build of the runner, any run of any arm on any problem, any stability scan, any timing run",
+  "base_commit": "45d0da19862ecaf23e00b6946d1b18d3670a83db",
+  "frozen_text": {
+    "preregistration_row_V10": {
+      "pass": "stable for sigma in {1.2, 1.3, 1.5} with the independent oracle, matched-error step ratio <= 1.5 on new problems, and measured wall >= 1.15x in >= 1 pre-registered regime",
+      "kill_or_fallback": "unstable for sigma > 1.1, or the ratios fail: freeze as opt-in comparator"
+    },
+    "task_contract": "TASK_CONTRACTS.json V10_PPSW1_DECISION: Unstable for sigma > 1.1: freeze. Continue only if the matched-error step ratio is <= 1.5 and a pre-registered regime shows measured wall >= 1.15x. Failure action: freeze as opt-in comparator.",
+    "not_changed": "thresholds 1.5 (step ratio), 1.15 (wall); the crate constant ACCEPTED_STEP_SIGMA_MAX = 1.10 in crates/rodas5p-integrators/src/ppsw1.rs (protected, not edited)"
+  },
+  "sources": {
+    "ppsw1_rs_sha256": "d2b27044d1ae75cfda80ff6cd93dc80884ceae09bba2b56c513e50e32297e20d",
+    "ppsw1_linear_backend_rs_sha256": "0b2410895ee6581eecb981c8910e6dbe1b867ce38248495973fe9c763cbd3978",
+    "peer_adapter_rs_sha256": "8053325f939da490ee043e0f3b097f17da151d05bad0ca18bcfaf6614e75fc17",
+    "independent_oracle": "research/production_unification_20261115/peer_qualification/oracle_coefficients.py sha256 9341105b1d7b9308b6fad24900e74a78c2d76a60d3ded304c661394de5576ea8 (route R1: order conditions (14), (15), beta (23), A = beta - Gamma; mpmath; it does not use the closed forms of the implementation)"
+  },
+  "runner": {
+    "path": "research/production_loop_20261116/ppsw1_decision/runner",
+    "package": "standalone Cargo package with its own [workspace] table; path dependencies on rodas5p-core, rodas5p-krylov, rodas5p-integrators and vigilode; the release profile of the repository workspace (opt-level 3, fat LTO, codegen-units 1, panic abort); toolchain 1.94.1; --locked; CARGO_TARGET_DIR /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v10",
+    "research_copy": "runner/src/ppsw1.rs is crates/rodas5p-integrators/src/ppsw1.rs (sha256 above) with exactly three changes: (1) the step-ratio cap is the parameter Config::step_ratio_cap with admitted range (0, 1.5] (PAPER_STEP_RATIO_BOUND); check_sigma and propose_ratio use the configured cap without the min with 1.10; arms 1.10 (control), 1.2, 1.3, 1.5; (2) an optional tableau(sigma) cache keyed by the exact bits of sigma (Config::tableau_cache), with an audit mode that recomputes tableau(sigma) on every hit and counts bitwise differences; (3) the Session borrows its ParallelExecution, so one persistent pool serves every solve of a process. Plus a header comment. runner/src/ppsw1_linear_backend.rs is a byte copy of the crate file; the crate paths used by both files resolve through re-exports at the runner's crate root, so no import line changes. A script writes the diff against the crate file and both sha256 values to logs/.",
+    "driver": "runner/src/driver.rs: the PeerOde::solve loop of crates/vigilode/src/selection/peer.rs (h0 rule with h_max = h0_rule_h_max min endpoint cap, starter with step-doubling control, try_step loop with h = hh * next_ratio and exact landing) over the research Session, without the callback latch (the declared problems have no failing callbacks).",
+    "fidelity_gates": {
+      "F1": "research tableau(sigma) equals rodas5p_integrators::ppsw1::tableau(sigma) bit for bit on 2001 sigma values in [0.01, 2.01] and the special values 0.5, 1, 1.1, 1.2, 1.3, 1.5",
+      "F2": "control arm (cap 1.10, cache off, 1 thread) equals vigilode::PeerOde::solve (threads 1) bit for bit in every accepted time and state, success flag, h0, starter record (h0_requested, halvings, estimate bits, covers_span), startup work counters and step work counters, on the 4 new problems at all 7 tolerances and on the 3 cost problems at rtol 1e-6; also with 6 threads (research persistent pool against PeerOde threads 6) on d4, kaps and burgers64",
+      "F3": "every cached run of the campaign runs with the audit on: 0 bitwise differences between the cached and a freshly computed tableau for every sigma looked up; and cache on versus cache off bit for bit (times, states, counters) for every cap on d4, kaps and burgers64 at all tolerances",
+      "F4": "threads 6 with the persistent pool equal threads 1 bit for bit for every cap on d4, kaps and burgers64",
+      "F5": "the unit tests of the research copy pass; the RHS multiplier of the regimes returns the bits of one RHS call",
+      "rule": "any fidelity failure stops the node before the measured runs are evaluated; it is reported, not repaired by changing a measured arm"
+    }
+  },
+  "arms": {
+    "R": "vigilode::Rodas5p::solve, Problem with Jacobian::dense and autonomous(), Options default except rtol and atol = Atol::Scalar(1e-2 rtol); single thread",
+    "P(c, th)": "research driver, cap c in {1.10, 1.2, 1.3, 1.5}, tableau cache on, threads th in {1, 6} (persistent pool for 6); rtol, atol = 1e-2 rtol, h0 rule with h0_rule_h_max = (t_end - t0)/100 (as U11), max_attempts 1000000",
+    "C(th)": "vigilode::PeerOde::solve with the same options, threads th in {1, 6} (pool built inside every solve, no cache): the U11 configuration, used for fidelity and the cost decomposition only",
+    "X(1.10)": "control arm of the research copy: cap 1.10, cache off, 1 thread (fidelity only)"
+  },
+  "problems_new": {
+    "rule": "not the consumed holdout (HIRES, Oregonator, Brusselator MOL32); none of these was used in any PPSW1 run before; all autonomous with analytic dense Jacobians; chosen by type before any run: chemical kinetics, singular perturbation, advection-diffusion MOL, reaction-diffusion MOL with n >= 1000",
+    "d4": {"n": 3, "t_span": [0.0, 50.0], "y0": [1.0, 1.0, 0.0], "source": "Stiff DETEST D4 (Enright, Hull, Lindberg 1975)", "f": "y1' = -0.013 y1 - 1000 y1 y3; y2' = -2500 y2 y3; y3' = -0.013 y1 - 1000 y1 y3 - 2500 y2 y3"},
+    "kaps": {"n": 2, "t_span": [0.0, 1.0], "y0": [1.0, 1.0], "eps": 1e-4, "source": "Kaps singular perturbation problem", "f": "y1' = -(2 + 1/eps) y1 + y2^2/eps; y2' = y1 - y2 - y2^2", "exact": "y1 = exp(-2t), y2 = exp(-t)"},
+    "burgers64": {"n": 64, "t_span": [0.0, 1.0], "nu": 0.05, "grid": "N = 64 interior points of [0, 1], dx = 1/65, u = 0 at both ends", "u0": "sin(2 pi x_i)", "f": "f_i = -(u_{i+1}^2 - u_{i-1}^2)/(4 dx) + nu (u_{i+1} - 2 u_i + u_{i-1})/dx^2"},
+    "ac1d1000": {"n": 1000, "t_span": [0.0, 5.0], "D": 1e-3, "grid": "N = 1000 interior points of [0, 1], dx = 1/1001, u(0) = -1, u(1) = 1", "u0": "-cos(pi x_i) + 0.4 sin(6 pi x_i)", "f": "f_i = D (u_{i-1} - 2 u_i + u_{i+1})/dx^2 + u_i - u_i^3"}
+  },
+  "problems_cost_only": {
+    "rule": "the three U11 problems, definitions copied from research/production_unification_20261115/production_holdout/runner/src/main.rs; used only to measure cost per attempt at n = 3, 8, 64 and to decompose the U11 result; no step, error or wall claim is made on them",
+    "oregonator": {"n": 3, "t_span": [0.0, 360.0]},
+    "hires": {"n": 8, "t_span": [0.0, 321.8122]},
+    "brusselator_mol32": {"n": 64, "t_span": [0.0, 10.0]}
+  },
+  "tolerances": {"rtol": [1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9], "atol_rule": "atol = 1e-2 rtol for every arm (U11 rule)"},
+  "budgets": "PPSW1 max_attempts 1000000; RODAS5P max_steps 100000 (facade default); a process running longer than 3600 s is killed and recorded as a failed run (WALL_LIMIT); failed runs are kept and are not admissible points",
+  "reference": {
+    "kaps": "exact solution; U_ref = 0",
+    "d4_burgers64_ac1d1000": "SciPy solve_ivp Radau with the analytic Jacobian (sparse for ac1d1000) at rtol 1e-13, atol 1e-15 (R13) and at rtol 1e-12 (R12); second method DOP853 rtol 1e-13 atol 1e-15, LSODA at the same tolerances if DOP853 fails; componentwise U_ref = |R13 - R12| + |R13 - M2|; y_ref = R13 at t_end",
+    "independence": "Python/NumPy/SciPy, no Rust code; the problem functions are re-implemented in Python from the definitions above"
+  },
+  "error_metric": {
+    "E": "WRMS over components of (y_end - y_ref) with weights |y_ref| + 1e-6, plus U_ref,WRMS (the WRMS of U_ref with the same weights) (U11 rule)",
+    "admissible": "the run succeeded (landed on t_end) and U_ref,WRMS <= 0.1 E",
+    "steps": "step attempts after the start: accepted + rejected steps (PPSW1: try_step attempts of the session; the starter and its control solves are reported separately; RODAS5P: accepted + rejected)"
+  },
+  "interpolation_rule": {
+    "overlap": "for arms X and R on one problem: lo = max(min E_X, min E_R), hi = min(max E_X, max E_R) over admissible points; lo > hi: NOT_COMPARABLE",
+    "points": "E*_k = lo (hi/lo)^(k/4), k = 0..4 (one point if lo = hi)",
+    "value": "for each arm, sort its admissible points by E; at E* take the first adjacent pair with E_a <= E* <= E_b and E_a < E_b and interpolate log(value) linearly in log(E) (an exact match takes that point); no extrapolation (U11 interp)",
+    "ratio": "per problem: geometric mean over the E* points of value_X(E*)/value_R(E*) (steps) or value_R(E*)/value_X(E*) (wall)"
+  },
+  "stability": {
+    "oracle": "coefficients B(sigma), A(sigma), Gamma(sigma), beta(sigma) from the U03 route-R1 oracle (imported unchanged, sha256 above). Structural checks in mpmath (dps 60). Scans use a float64 transcription of the same R1 equations, valid only if it agrees with the mpmath oracle at sigma in {0.5, 0.525, ..., 1.5} to max |difference| <= 1e-11 max|coefficient|; the largest scan candidates are recomputed in mpmath (dps 40, R1 coefficients of every sigma of the sequence) and only the recomputed values enter the verdict",
+    "ratio_set": "Sigma(c) = [0.5, c]; 0.5 is the lower clip of a proposed ratio (RATIO_CLIP.0); grid G(c) = {0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3, 1.4, 1.5} restricted to [0.5, c], with c added",
+    "test_equation": "y' = lambda y with T = lambda (exact Jacobian): Y_m = M(z_m, sigma_m) Y_{m-1}, M(z, sigma) = (B(sigma) + z beta(sigma))/(1 - gamma z), z_m = h_m lambda = sigma_m z_{m-1}",
+    "Z_zero_stability": "structural: for every sigma in {0.5, 0.51, ..., c} V^-1 B(sigma) V has first column e1 and a strictly upper triangular trailing 5x5 block (entries on and below its diagonal <= 1e-40), so that every product of 5 matrices B is rank one (Lemma 3.2); numerical: every float64 product of 5 matrices B over G(c) has second/first singular value <= 1e-9 and maps the ones vector to itself within 1e-9. Reported: K0(c) = max infinity norm of products of length 1..5 over G(c) (the supremum over all lengths, since longer products are rank one and depend on their five earliest factors), and the APNUM random test bnorm (sigma uniform in [0.5, c], m <= 10000, 20 seeds). Z holds iff the structural and numerical checks hold",
+    "L_stiff_limit": "structural: for every sigma in {0.5, 0.51, ..., c} V^-1 beta(sigma) V is strictly lower triangular (entries on and above the diagonal <= 1e-40), so that every product of 6 matrices beta vanishes. L holds iff this holds",
+    "V_variable_step": {
+      "families": "F_exh(c): all periodic sequences of period p in {1, 2, 3, 4}: ratios sigma_1..sigma_{p-1} in G(c) and the closing ratio sigma_p = 1/prod(sigma_1..sigma_{p-1}), admitted iff in [0.5, c] (p = 1 is sigma = 1). F_struct(c): a in {1..4} steps of ratio c, then e in {0..6} steps of ratio 1, then b in {1..6} steps of ratio c^(-a/b), admitted iff c^(-a/b) >= 0.5 (rotations are covered by the z scan, because the spectral radius of a cyclic product does not change under rotation). F_rand(c): 4000 periodic sequences, p uniform in {2..16}, first p-1 ratios uniform in [0.5, c], closing ratio as above (redrawn if outside), seed 20261125",
+      "z_grid": "z_0 = -10^x, x in {-3, -2.98, ..., 6} (451 points); then for the 20 largest values a local scan of x in [x* - 0.02, x* + 0.02] with 81 points",
+      "statistic": "g(c) = max over the families and z_0 of rho(M(z_p, sigma_p) ... M(z_1, sigma_1))^(1/p), z_i = sigma_i z_{i-1}, the period closes z_p = z_0; g(c) is the largest mpmath-recomputed value among the 10 largest scan values",
+      "criterion": "V holds iff g(c) <= 1 + eps_s, eps_s = ln(2)/10^4 = 6.93e-5 (worst-case amplification of a decaying linear mode at most 2 over 10^4 steps); g(c) <= 1 + 1e-9 is reported as the strict reading"
+    },
+    "E_executed_runs": {
+      "linear": "Rust research copy, cap c, cache on, 1 thread, Session::attempt + accept without the controller; y' = -y; exact start data Y_0j = exp(-(t_0 + h_0 (c_j - 1))), F = -Y; forced periodic sequence = the argmax sequence of g(c) with h_0 = |z_0*| (z_0 = z_0*); N = 2000 steps if g(c) <= 1, else N = min(20000, max(2000, ceil(ln(1e3)/ln g(c)))), rounded up to a multiple of p; A = max over steps of |Y_m6| / |Y_06|",
+      "prothero_robinson": "y' = lambda (y - cos t) - sin t, lambda = -1e4, exact y = cos t, start data on cos; the same forced sequence with h_0 = |z_0*|/1e4, N_pr = min(N, 2000); Q = (max over steps of |Y_m6 - cos t_m|) / (the same quantity of the run with constant h = h_0 and the same number of steps)",
+      "reading": "no growth iff A <= 10 and Q <= 100; growth iff A >= 1e3"
+    },
+    "verdict_per_cap": "STABLE iff Z, L, V hold and the executed runs show no growth; UNSTABLE iff V fails and the executed linear run shows growth; otherwise NOT_ESTABLISHED (counts as not stable). Evaluated for c in {1.10 (control, reported), 1.2, 1.3, 1.5}",
+    "reported_without_verdict": "the constant-step stability angle at sigma = 1; the frozen-z indicator max rho(M(z, sigma)) over z grid and G(c) (the U03 theta-oracle quantity); g(c) of F_exh(c) on the rays z = -r exp(+-i theta), theta in {15, 30, 45, 60} degrees"
+  },
+  "matched_error_step_ratio": {
+    "runs": "count runs (deterministic, no timing rule): the 4 new problems x 7 tolerances x arms R and P(c, 1) for c in {1.10, 1.2, 1.3, 1.5} with the cache audit on; plus X(1.10) and C(1) for fidelity gate F2; pinned taskset -c 0-5, one process at a time",
+    "criterion_R(a)": "for arm P(a, 1): on each of the 4 new problems the per-problem matched-error step ratio (interpolation rule) exists and is <= 1.5; NOT_COMPARABLE on a problem fails R(a)"
+  },
+  "cost_per_attempt": {
+    "sizes": "n = 3 oregonator, n = 8 hires, n = 64 brusselator_mol32, n = 1000 ac1d1000; rtol 1e-6, atol 1e-8",
+    "arms": "R, C(1), C(6), P(1.10, 1) (research, cache on), P(1.10, 6) (research, persistent pool)",
+    "method": "two processes per arm and size with attempt budgets K0 = 1 and K = 201 (n <= 64) or K = 21 (n = 1000) (RODAS5P max_steps, PPSW1 max_attempts); each process runs w warm-up and r measured solves of the same configuration (w = 2, r = 200 for n = 3 and 8; w = 2, r = 50 for n = 64; w = 1, r = 3 for n = 1000); instructions per attempt = (I(K) - I(K0)) / ((w + r) (A(K) - A(K0))), I = perf stat instructions:u of the process, A = attempts actually made; wall per attempt = (median solve wall(K) - median solve wall(K0)) / (A(K) - A(K0)); cycles:u likewise",
+    "status": "descriptive (no frozen threshold); a wall value is authoritative if all its processes started at 1-minute load <= 3.0, otherwise diagnostic_only; pinning and lock as for timing"
+  },
+  "regimes": {
+    "rationale": "six concurrent stages can win only where the per-step right-hand side cost dominates the sequential remainder (Jacobian, factorization, stage assembly): PPSW1 then evaluates 6 right-hand sides concurrently per step against 8 sequential ones of RODAS5P; a dense factorization at n = 1000 dominates both methods, so no large-n regime is declared",
+    "W1": "d4 with a right-hand-side multiplier m1 (the RHS is evaluated m1 times per call, black_box on the output, the bits of one call are returned), target cost of one call 25 microseconds",
+    "W2": "burgers64 with a right-hand-side multiplier m2, target cost of one call 100 microseconds",
+    "calibration": "before any timed run: the runner's calibrate mode times blocks of bare RHS calls at y0 (taskset -c 9-11, under the timing lock), t_bare = median over 11 blocks; m = max(1, round(target / t_bare)); the calibration log and m1, m2 are committed before the first timed run and not changed afterwards; the Jacobian stays analytic and is not multiplied",
+    "arms_timed": "R (taskset -c 9-11); P(c, 1) for c in {1.10, 1.2, 1.3, 1.5} (taskset -c 9-11); P(c, 6) (taskset -c 6-11); C(1) (9-11) and C(6) (6-11) as the U11 configuration (descriptive)",
+    "tolerances": "the 7 declared tolerances",
+    "process": "one arm, one regime, one tolerance per process; 2 warm-up + 7 measured solves; wall of each solve by std::time::Instant; statistic median of the 7; the process records the 1-minute load average read from /proc/loadavg at its start, its CPU affinity and the end-state hash of every solve; perf stat -x, -e instructions:u,cycles:u around the process; the timing lock is held for the process",
+    "validity": "every solve of a timed process must reproduce the end-state hash and the step counts of the count run of the same problem, arm cap and tolerance (the multiplier and the thread count change no bit); a process that does not is invalid and reported",
+    "interleaving": "within one measurement the tolerances run in order; at each tolerance the arms run as consecutive processes in an order rotated by the tolerance index and the measurement index",
+    "criterion_W(a)": "for arm P(a, th), th in {1, 6}, in regime W1 or W2: matched-error wall ratio = wall_R / wall_P (interpolation rule on the count-run E values and the timed medians); W(a) holds iff in at least one regime and for at least one th the ratio is >= 1.15 and decidable"
+  },
+  "timing_quality_rule": {
+    "rule": "a wall comparison (one arm against R in one regime) is decidable only if every process it uses (all timed processes of both arms in that regime and measurement) started at a 1-minute load average <= 3.0, or if the measured ratio clears the frozen threshold 1.15 by a factor of 2 on the deciding side (>= 2.30 decides PASS, <= 0.575 decides FAIL); otherwise it is NOT_DECIDABLE",
+    "remeasurement": "at most 3 measurements per regime; a comparison is decided by the first measurement in which it is decidable; every measurement is kept; no measurement is discarded for its result",
+    "counters": "instructions:u and cycles:u are reported for every timed process beside the wall time",
+    "copy": "PROTOCOL.json repeats this rule verbatim"
+  },
+  "decision": {
+    "S": "STABLE at 1.2, 1.3 and 1.5 (stability.verdict_per_cap)",
+    "kill": "UNSTABLE at any c in {1.2, 1.3, 1.5}: freeze",
+    "CONTINUE": "S holds and at least one arm a in {1.2, 1.3, 1.5} meets R(a) and W(a)",
+    "FREEZE": "otherwise: PPSW1 stays an opt-in comparator; every cell is reported",
+    "not_tuned": "no arm, problem, tolerance, regime, multiplier target or threshold changes after a measured run; a change for a technical reason is written as an amendment with the reason before the affected runs"
+  },
+  "u11_decomposition": "descriptive: from the U11 EVALUATION.json (attempt ratios and speed ratios at its matched points) and the cost per attempt here: method factors = matched-error attempt ratio and the intrinsic per-attempt cost P(1.10, 1)/R; implementation factors = tableau rebuild C(1)/P(1.10, 1), thread overhead and pool construction C(6)/C(1) against P(1.10, 6)/P(1.10, 1), and the starter share of the U11 wall; reported per U11 problem",
+  "outputs": "logs/ (raw logs, never edited), parse_results.py -> RESULTS.json (numbers only from logs), render_report.py -> REPORT_KO.md (Korean, from RESULTS.json)"
+}
