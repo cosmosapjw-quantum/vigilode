@@ -1,7 +1,7 @@
 use std::{
     hint::black_box,
     sync::{
-        Arc,
+        Arc, OnceLock,
         atomic::{AtomicUsize, Ordering},
     },
     time::{Duration, Instant},
@@ -495,24 +495,33 @@ fn push_row(
     });
 }
 
+/// Largest number of probe tasks that were active at the same time on a fresh 4-thread pool.
+///
+/// The pool is new and rayon returns from `build` before its workers run; the first worker that
+/// runs takes the whole job and splits it onto its own deque, so the other workers join only once
+/// they run. Without a wait, a worker that stays alone for the ~8 ms of eight 1 ms tasks (late
+/// thread start under a tracer, a loaded host) reports 1, which flips `parallel-observed` in the
+/// scientific checksum. Each task therefore stays active, sleeping in short steps, until two
+/// tasks have been active at the same time or a deadline passes (bounded rendezvous). The
+/// deadline is set once, by the first task to arrive, and is shared: a pool that can never run
+/// two tasks waits once and then reports 1 as before.
 fn run_concurrency_probe() -> CoreResult<usize> {
+    // Covers the start or wake-up latency of a second runnable worker on a loaded or traced host
+    // (the unbounded version failed when that latency exceeded ~8 ms); paid in full only when no
+    // second task can become active.
+    const RENDEZVOUS_BOUND: Duration = Duration::from_secs(2);
+    const RENDEZVOUS_POLL: Duration = Duration::from_micros(100);
     let active = Arc::new(AtomicUsize::new(0));
     let maximum = Arc::new(AtomicUsize::new(0));
     let active_rhs = Arc::clone(&active);
     let maximum_rhs = Arc::clone(&maximum);
+    let deadline = OnceLock::new();
     let rhs = Arc::new(move |_t: f64, y: &[f64], out: &mut [f64]| {
         let now = active_rhs.fetch_add(1, Ordering::SeqCst) + 1;
-        let mut observed = maximum_rhs.load(Ordering::Relaxed);
-        while now > observed {
-            match maximum_rhs.compare_exchange_weak(
-                observed,
-                now,
-                Ordering::Relaxed,
-                Ordering::Relaxed,
-            ) {
-                Ok(_) => break,
-                Err(value) => observed = value,
-            }
+        maximum_rhs.fetch_max(now, Ordering::SeqCst);
+        let until = *deadline.get_or_init(|| Instant::now() + RENDEZVOUS_BOUND);
+        while maximum_rhs.load(Ordering::SeqCst) < 2 && Instant::now() < until {
+            std::thread::sleep(RENDEZVOUS_POLL);
         }
         std::thread::sleep(Duration::from_millis(1));
         out.copy_from_slice(y);
