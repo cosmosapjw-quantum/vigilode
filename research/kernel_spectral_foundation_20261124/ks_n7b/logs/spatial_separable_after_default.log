@@ -1,0 +1,78 @@
+# command: cargo +1.94.1 test --locked -j 4 --release -p vigilode --test spatial_separable -- --nocapture
+# wrapper: flock -w 14400 /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/locks/cargo_b.lock taskset -c 0-5,12-17
+# cargo_target_dir: /home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain
+# started: 2026-11-25T12:05:41+09:00
+# head: f5bdf295c6ad597e03a99644717b4c2c955c0b4c
+# dirty: 0
+# load: 5.12 4.94 6.51 3/5971 3760765
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-stage-lattice-kschain/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 36.58s
+     Running tests/spatial_separable.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/spatial_separable-3d3a502cd0e35586)
+
+running 14 tests
+test measure_box_transform_one_arm ... ignored, timing measurement; one arm per process, see KS_N7_ARM/KS_N7_GRID/KS_N7_SOLVES
+test measure_separable_against_preconditioned_gmres_stage_solves ... ignored, timing diagnostic; run with --ignored --nocapture
+test measure_separable_against_the_shipped_matrix_free_route ... ignored, timing diagnostic; run with --ignored --nocapture
+test box_transform_selection_defaults_parses_and_reuses_prepared_solvers ... ok
+test inertia_counts_the_modes_beyond_the_stage_pencil ... ok
+test separable_requests_outside_the_matrix_free_route_are_refused_before_any_callback ... ok
+SL_N5_T1T2 {"max_backward_error":3.373e-16,"max_mass_defect":5.110e-17}
+test separable_stage_solves_are_exact_and_mass_consistent ... ok
+
+KS_N7B_RECORD {"box_12x10":["complex","paired-real"],"sphere_7x10":null}
+test the_run_record_names_the_box_transform_that_ran ... ok
+
+KS_N7_T3 {"case":"box-12x10","mode":"Trusted","transform":"complex","error":6.635e-11,"attempts":34,"solves":272,"max_mass_defect":1.258e-15,"max_backward_error":0.000e0}
+
+KS_N7_T3 {"case":"box-12x10","mode":"Trusted","transform":"paired-real","error":6.635e-11,"attempts":34,"solves":272,"max_mass_defect":1.231e-15,"max_backward_error":0.000e0}
+
+KS_N7_T3_ROUTES {"case":"box-12x10","mode":"Trusted","max_difference":1.110e-15,"relative_difference":1.796e-15}
+
+KS_N7_T3 {"case":"box-12x10","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","transform":"complex","error":6.635e-11,"attempts":34,"solves":272,"max_mass_defect":1.258e-15,"max_backward_error":4.926e-16}
+
+KS_N7_T3 {"case":"box-12x10","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","transform":"paired-real","error":6.635e-11,"attempts":34,"solves":272,"max_mass_defect":1.231e-15,"max_backward_error":4.572e-16}
+
+KS_N7_T3_ROUTES {"case":"box-12x10","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","max_difference":1.110e-15,"relative_difference":1.796e-15}
+SL_N5_T3 {"case":"sphere-8x16","mode":"Trusted","error":8.600e-11,"attempts":61,"solves":488,"mass_drift":4.282e-16}
+SL_N5_T3 {"case":"sphere-8x16","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","error":8.600e-11,"attempts":61,"solves":488,"mass_drift":4.282e-16}
+SL_N5_T5 {"mode":"verified","error":5.165e-11,"corrections_per_solve":2.222,"refused_solves":0,"attempts":63}
+
+KS_N7B_DEFAULT {"default":"paired-real","default_record":"paired-real","complex_record":"complex","sphere_record":null,"default_equals_paired_bits":true,"attempts_default":34,"attempts_complex":34,"error_default":6.635e-11,"error_complex":6.635e-11,"default_vs_complex":1.110e-15,"max_mass_defect_default":1.231e-15,"max_mass_defect_complex":1.258e-15,"max_backward_error_default":4.572e-16,"max_backward_error_complex":4.926e-16}
+test the_box_defaults_to_the_paired_real_transform ... ok
+
+KS_N7_T3 {"case":"box-4x6x5","mode":"Trusted","transform":"complex","error":5.079e-11,"attempts":46,"solves":368,"max_mass_defect":9.494e-16,"max_backward_error":0.000e0}
+
+KS_N7_T3 {"case":"box-4x6x5","mode":"Trusted","transform":"paired-real","error":5.079e-11,"attempts":46,"solves":368,"max_mass_defect":1.175e-15,"max_backward_error":0.000e0}
+
+KS_N7_T3_ROUTES {"case":"box-4x6x5","mode":"Trusted","max_difference":1.332e-15,"relative_difference":2.197e-15}
+SL_N5_T5 {"mode":"trusted-mismatched","error":2.291e-9,"attempts":819}
+
+KS_N7_T3 {"case":"box-4x6x5","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","transform":"complex","error":5.079e-11,"attempts":46,"solves":368,"max_mass_defect":9.494e-16,"max_backward_error":6.120e-16}
+
+KS_N7_T3 {"case":"box-4x6x5","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","transform":"paired-real","error":5.079e-11,"attempts":46,"solves":368,"max_mass_defect":1.175e-15,"max_backward_error":6.062e-16}
+
+KS_N7_T3_ROUTES {"case":"box-4x6x5","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","max_difference":1.332e-15,"relative_difference":2.197e-15}
+test paired_real_box_route_matches_the_reference_and_the_complex_route ... ok
+
+KS_N7_T1T2 {"transform":"paired-real","solves":360,"max_backward_error":1.680e-15,"max_mass_defect":4.545e-17,"bound":1e-13}
+
+KS_N7_AGREEMENT {"cases":360,"differing_cases":276,"max_relative_difference":5.215e-14,"max_normalized_difference":6.964e-16,"bound_normalized":1e-13,"worst_case":"box-4097x3 z=0.5 c=0 seed17"}
+test paired_real_box_transform_agrees_with_the_complex_transform ... ok
+
+KS_N7_T1T2 {"transform":"complex","solves":360,"max_backward_error":1.187e-15,"max_mass_defect":4.545e-17,"bound":1e-13}
+test paired_real_box_solves_meet_the_t1_t2_bounds ... ok
+SL_N5_T3 {"case":"sphere-8x16","mode":"shipped","error":8.600e-11,"attempts":61,"mass_drift":1.427e-16}
+SL_N5_T3 {"case":"sphere-7x10","mode":"Trusted","error":1.169e-10,"attempts":42,"solves":336,"mass_drift":4.308e-16}
+SL_N5_T3 {"case":"sphere-7x10","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","error":1.169e-10,"attempts":42,"solves":336,"mass_drift":4.308e-16}
+SL_N5_T3 {"case":"sphere-7x10","mode":"shipped","error":1.169e-10,"attempts":42,"mass_drift":4.308e-16}
+SL_N5_T3 {"case":"box-12x10","mode":"Trusted","error":6.635e-11,"attempts":34,"solves":272,"mass_drift":3.935e-1}
+SL_N5_T3 {"case":"box-12x10","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","error":6.635e-11,"attempts":34,"solves":272,"mass_drift":3.935e-1}
+SL_N5_T3 {"case":"box-12x10","mode":"shipped","error":6.635e-11,"attempts":34,"mass_drift":3.935e-1}
+test separable_route_conserves_mass_and_matches_the_reference ... ok
+SL_N5_T5 {"mode":"far-mismatch","success":false,"refused_solves":50003,"attempts":100000}
+test verified_mode_corrects_a_mismatched_reaction_and_refuses_beyond_its_reach ... ok
+
+test result: ok. 11 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 1.34s
+
+# exit: 0
+# finished: 2026-11-25T12:06:19+09:00
