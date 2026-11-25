@@ -1,0 +1,49 @@
+    Checking rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+error[E0282]: type annotations needed
+   --> crates/rodas5p-integrators/src/retro_dae_evolution.rs:570:35
+    |
+570 |         .try_fold(0.0_f64, |m, v| Ok(m.max(v?)))?;
+    |                                   ^^ cannot infer type of the type parameter `E` declared on the enum `Result`
+    |
+help: consider specifying the generic arguments
+    |
+570 |         .try_fold(0.0_f64, |m, v| Ok::<f64, E>(m.max(v?)))?;
+    |                                     ++++++++++
+
+error[E0283]: type annotations needed
+   --> crates/rodas5p-integrators/src/retro_dae_evolution.rs:570:35
+    |
+570 |         .try_fold(0.0_f64, |m, v| Ok(m.max(v?)))?;
+    |                                   ^^            - type must be known at this point
+    |                                   |
+    |                                   cannot infer type of the type parameter `E` declared on the enum `Result`
+    |
+note: multiple `impl`s satisfying `CoreError: From<_>` found
+   --> crates/rodas5p-integrators/src/packet_window.rs:685:1
+    |
+685 | impl From<PacketError> for CoreError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: and another `impl` found in the `core` crate: `impl<T> From<T> for T;`
+help: consider specifying the generic arguments
+    |
+570 |         .try_fold(0.0_f64, |m, v| Ok::<f64, E>(m.max(v?)))?;
+    |                                     ++++++++++
+
+error[E0507]: cannot move out of a shared reference
+   --> crates/rodas5p-integrators/src/retro_dae_evolution.rs:121:13
+    |
+121 |     let h = rodas5p_core::rodas5p_coefficients()?.dense_h;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ move occurs because value has type `DenseMatrix`, which does not implement the `Copy` trait
+    |
+help: consider borrowing here
+    |
+121 |     let h = &rodas5p_core::rodas5p_coefficients()?.dense_h;
+    |             +
+help: consider cloning the value if the performance cost is acceptable
+    |
+121 |     let h = rodas5p_core::rodas5p_coefficients()?.dense_h.clone();
+    |                                                          ++++++++
+
+Some errors have detailed explanations: E0282, E0283, E0507.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `rodas5p-integrators` (lib) due to 3 previous errors

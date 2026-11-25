@@ -1,0 +1,29 @@
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 1m 04s
+     Running tests/dae_evolution_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/dae_evolution_contracts-4ef63716e2c528ac)
+
+running 6 tests
+test dense_constraint_projection ... 
+thread 'dense_constraint_projection' (1615378) panicked at crates/vigilode/tests/dae_evolution_contracts.rs:283:5:
+assertion failed: r.branch_qualified
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test holdout ... ignored, frozen selected paths
+test physical_tube_and_schur_reconstruction ... 
+thread 'physical_tube_and_schur_reconstruction' (1615379) panicked at crates/vigilode/tests/dae_evolution_contracts.rs:300:9:
+assertion failed: r.branch_qualified
+FAILED
+test rank_loss_ambiguity_and_false_global_claim ... ok
+test training ... ignored, finite candidate campaign
+test warp_is_real_pencil_and_original_projection ... ok
+
+failures:
+
+failures:
+    dense_constraint_projection
+    physical_tube_and_schur_reconstruction
+
+test result: FAILED. 2 passed; 2 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+error: test failed, to rerun pass `-p vigilode --test dae_evolution_contracts`

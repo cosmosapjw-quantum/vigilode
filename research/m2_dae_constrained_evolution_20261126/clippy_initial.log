@@ -1,0 +1,47 @@
+    Blocking waiting for file lock on build directory
+    Checking rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+error: this function has too many arguments (8/7)
+   --> crates/rodas5p-integrators/src/retro_dae_evolution.rs:275:1
+    |
+275 | / pub fn project(
+276 | |     src: &DaeSource,
+277 | |     t: f64,
+278 | |     x: &[f64],
+...   |
+283 | |     warp: Option<&WarpSeed>,
+284 | | ) -> CoreResult<InitReport> {
+    | |___________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#too_many_arguments
+    = note: `-D clippy::too-many-arguments` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_arguments)]`
+
+error: this function has too many arguments (9/7)
+   --> crates/rodas5p-integrators/src/retro_dae_evolution.rs:316:1
+    |
+316 | / pub fn reconstruct(
+317 | |     src: &DaeSource,
+318 | |     times: [f64; 2],
+319 | |     x: &[Poly],
+...   |
+325 | |     nodes: usize,
+326 | | ) -> CoreResult<(Vec<Poly>, Vec<InitWork>)> {
+    | |___________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#too_many_arguments
+
+error: this function has too many arguments (8/7)
+   --> crates/rodas5p-integrators/src/retro_dae_evolution.rs:380:1
+    |
+380 | / pub fn certify_slab(
+381 | |     src: &DaeSource,
+382 | |     times: [f64; 2],
+383 | |     y: &[Poly],
+...   |
+388 | |     condition_cap: f64,
+389 | | ) -> CoreResult<SlabCertificate> {
+    | |________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#too_many_arguments
+
+error: could not compile `rodas5p-integrators` (lib) due to 3 previous errors

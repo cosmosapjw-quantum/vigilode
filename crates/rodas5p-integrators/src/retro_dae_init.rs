@@ -22,13 +22,13 @@ fn p(v: f64) -> CoreResult<Iv> {
 fn z() -> Iv {
     Iv { lo: 0., hi: 0. }
 }
-fn mid(v: Iv) -> f64 {
+pub(crate) fn mid(v: Iv) -> f64 {
     (v.lo * 0.5 + v.hi * 0.5).clamp(v.lo, v.hi)
 }
-fn points(v: &[f64]) -> CoreResult<Vec<Iv>> {
+pub(crate) fn points(v: &[f64]) -> CoreResult<Vec<Iv>> {
     v.iter().map(|&x| p(x)).collect()
 }
-fn norm(v: &[Iv]) -> f64 {
+pub(crate) fn norm(v: &[Iv]) -> f64 {
     v.iter().map(Iv::mag).fold(0., f64::max)
 }
 fn distance(v: Iv, c: f64) -> CoreResult<f64> {
@@ -37,15 +37,15 @@ fn distance(v: Iv, c: f64) -> CoreResult<f64> {
 fn box_at(c: &[f64], r: f64) -> CoreResult<Vec<Iv>> {
     c.iter().map(|&x| p(x)?.add(Iv::new(-r, r)?)).collect()
 }
-fn subset(a: &[Iv], b: &[Iv]) -> bool {
+pub(crate) fn subset(a: &[Iv], b: &[Iv]) -> bool {
     a.iter().zip(b).all(|(x, y)| y.lo <= x.lo && x.hi <= y.hi)
 }
-fn rows_norm(a: &[Vec<Iv>]) -> CoreResult<f64> {
+pub(crate) fn rows_norm(a: &[Vec<Iv>]) -> CoreResult<f64> {
     a.iter()
         .map(|r| r.iter().try_fold(0., |s, v| add_up(s, v.mag())))
         .try_fold(0.0_f64, |s, v| Ok(s.max(v?)))
 }
-fn matvec(a: &DenseMatrix, v: &[Iv]) -> CoreResult<Vec<Iv>> {
+pub(crate) fn matvec(a: &DenseMatrix, v: &[Iv]) -> CoreResult<Vec<Iv>> {
     (0..a.nrows())
         .map(|i| {
             a.row(i)
@@ -55,7 +55,7 @@ fn matvec(a: &DenseMatrix, v: &[Iv]) -> CoreResult<Vec<Iv>> {
         })
         .collect()
 }
-fn iv_matvec(a: &[Vec<Iv>], v: &[Iv]) -> CoreResult<Vec<Iv>> {
+pub(crate) fn iv_matvec(a: &[Vec<Iv>], v: &[Iv]) -> CoreResult<Vec<Iv>> {
     a.iter()
         .map(|r| {
             r.iter()
@@ -64,7 +64,7 @@ fn iv_matvec(a: &[Vec<Iv>], v: &[Iv]) -> CoreResult<Vec<Iv>> {
         })
         .collect()
 }
-fn defect(c: &DenseMatrix, j: &[Vec<Iv>]) -> CoreResult<Vec<Vec<Iv>>> {
+pub(crate) fn defect(c: &DenseMatrix, j: &[Vec<Iv>]) -> CoreResult<Vec<Vec<Iv>>> {
     let n = c.nrows();
     (0..n)
         .map(|i| {
@@ -79,11 +79,11 @@ fn defect(c: &DenseMatrix, j: &[Vec<Iv>]) -> CoreResult<Vec<Vec<Iv>>> {
         .collect()
 }
 #[derive(Clone)]
-struct Eval {
-    v: Vec<Iv>,
-    j: Vec<Vec<Iv>>,
+pub(crate) struct Eval {
+    pub(crate) v: Vec<Iv>,
+    pub(crate) j: Vec<Vec<Iv>>,
 } // derivative columns: t, x, z
-fn evaluate(polys: &[DeclaredPolynomial], t: Iv, y: &[Iv]) -> CoreResult<Eval> {
+pub(crate) fn evaluate(polys: &[DeclaredPolynomial], t: Iv, y: &[Iv]) -> CoreResult<Eval> {
     let mut v = Vec::with_capacity(polys.len());
     let mut j = Vec::with_capacity(polys.len());
     for eq in polys {
@@ -123,8 +123,8 @@ fn evaluate(polys: &[DeclaredPolynomial], t: Iv, y: &[Iv]) -> CoreResult<Eval> {
 /// Immutable polynomial source. f and g share state ordering [x,z].
 #[derive(Clone, Debug, Serialize)]
 pub struct DaeSource {
-    f: Vec<DeclaredPolynomial>,
-    g: Vec<DeclaredPolynomial>,
+    pub(crate) f: Vec<DeclaredPolynomial>,
+    pub(crate) g: Vec<DeclaredPolynomial>,
 }
 impl DaeSource {
     pub fn new(f: Vec<DeclaredPolynomial>, g: Vec<DeclaredPolynomial>) -> CoreResult<Self> {
@@ -152,6 +152,12 @@ impl DaeSource {
     }
     /// Ordinary rounded source evaluation for the existing mass driver.
     /// Its result is not by itself an interval certificate.
+    pub fn constraint_upper(&self, t: f64, y: &[f64]) -> CoreResult<f64> {
+        if y.len() != self.nx() + self.nz() {
+            return Err(bad("state shape"));
+        }
+        Ok(norm(&evaluate(&self.g, p(t)?, &points(y)?)?.v))
+    }
     pub fn rhs_values(&self, t: f64, y: &[f64]) -> CoreResult<Vec<f64>> {
         if y.len() != self.nx() + self.nz() {
             return Err(bad("state shape"));
@@ -266,7 +272,7 @@ pub struct InitReport {
     pub work: InitWork,
     pub qualified: bool,
 }
-fn center_matrix(j: &[Vec<Iv>]) -> CoreResult<DenseMatrix> {
+pub(crate) fn center_matrix(j: &[Vec<Iv>]) -> CoreResult<DenseMatrix> {
     DenseMatrix::new(
         j.len(),
         j.len(),
@@ -322,7 +328,7 @@ fn batch(
         }
     }
 }
-fn preconditioner(
+pub(crate) fn preconditioner(
     a: &DenseMatrix,
     route: InitRoute,
     exec: &ParallelExecution,

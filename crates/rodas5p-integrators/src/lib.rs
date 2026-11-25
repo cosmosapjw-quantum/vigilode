@@ -717,3 +717,7 @@ pub mod retro_hybrid_reset;
 /// Source-owned consistent DAE initialization research.
 #[cfg(feature = "polynomial-events")]
 pub mod retro_dae_init;
+
+/// Original-source constrained DAE evolution certificates.
+#[cfg(feature = "polynomial-events")]
+pub mod retro_dae_evolution;

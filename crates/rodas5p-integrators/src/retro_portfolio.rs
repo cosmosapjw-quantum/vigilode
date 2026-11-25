@@ -122,6 +122,20 @@ pub enum Route {
     DaePreparedRayon,
     #[cfg(feature = "polynomial-events")]
     DaeScalarRoot,
+    #[cfg(feature = "polynomial-events")]
+    EvolutionMass,
+    #[cfg(feature = "polynomial-events")]
+    EvolutionReduced3,
+    #[cfg(feature = "polynomial-events")]
+    EvolutionReduced5,
+    #[cfg(feature = "polynomial-events")]
+    EvolutionPrepared5,
+    #[cfg(feature = "polynomial-events")]
+    EvolutionWarpDirect,
+    #[cfg(feature = "polynomial-events")]
+    EvolutionWarpFolded,
+    #[cfg(feature = "polynomial-events")]
+    EvolutionScalar5,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
 pub enum AttemptStatus {

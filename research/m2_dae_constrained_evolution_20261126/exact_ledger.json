@@ -1,0 +1,849 @@
+{
+  "schema_version": "3.1.0",
+  "events": [
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "DENSE-POWER",
+      "payload": {
+        "claim_id": "DENSE-POWER",
+        "statement": "(1-u)*a+u*(b+(1-u)*(d0+u*(d1+u*d2))) = a+(b-a+d0)*u+(d1-d0)*u^2+(d2-d1)*u^3-d2*u^4",
+        "formal_statement": "POLY_IDENTITY: -d2*u^4 - d1*u^3 + d2*u^3 - d0*u^2 + d1*u^2 - a*u + b*u + d0*u + a = -d2*u^4 - d1*u^3 + d2*u^3 - d0*u^2 + d1*u^2 - a*u + b*u + d0*u + a",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite DAE algebraic and dense polynomial identity"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795622529.9810033,
+      "seq": 0,
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "cd02dac088087c9edee6095a69be13c0b8c9a66286dd87f757465f6df43c968a"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "DENSE-POWER",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "255c4b4549d71cc768df5b6fb3350121c981fb4def3588d881db0c9d548e496b",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "(1-u)*a+u*(b+(1-u)*(d0+u*(d1+u*d2)))",
+            "rhs": "a+(b-a+d0)*u+(d1-d0)*u^2+(d2-d1)*u^3-d2*u^4"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: -d2*u^4 - d1*u^3 + d2*u^3 - d0*u^2 + d1*u^2 - a*u + b*u + d0*u + a = -d2*u^4 - d1*u^3 + d2*u^3 - d0*u^2 + d1*u^2 - a*u + b*u + d0*u + a",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T16:02:09Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795622529.9836414,
+      "seq": 1,
+      "prev_hash": "cd02dac088087c9edee6095a69be13c0b8c9a66286dd87f757465f6df43c968a",
+      "hash": "8419442991ad7342025f5d1c22e92c5753682b9de9da150ad7fe62cd654c4f5a"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "SCHUR-CLEARED",
+      "payload": {
+        "claim_id": "SCHUR-CLEARED",
+        "statement": "g*a+b*(-c) = g*a-b*c",
+        "formal_statement": "POLY_IDENTITY: a*g - b*c = a*g - b*c",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite DAE algebraic and dense polynomial identity"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795622529.9839582,
+      "seq": 2,
+      "prev_hash": "8419442991ad7342025f5d1c22e92c5753682b9de9da150ad7fe62cd654c4f5a",
+      "hash": "aa9925b15fa39952b097edfa9e1545611c6d2055abb08edafbcb4db58dbb5184"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "SCHUR-CLEARED",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "a1183c6954776958e064539beccde262e4ea1eb566013809c84592a2f4b22a31",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "g*a+b*(-c)",
+            "rhs": "g*a-b*c"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: a*g - b*c = a*g - b*c",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T16:02:09Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795622529.9847207,
+      "seq": 3,
+      "prev_hash": "aa9925b15fa39952b097edfa9e1545611c6d2055abb08edafbcb4db58dbb5184",
+      "hash": "8bd8dabe92811496e78ebc50a3b6881eb7338a5f444255624ca32d8198ec125f"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "WARP-JET",
+      "payload": {
+        "claim_id": "WARP-JET",
+        "statement": "(1+s)*(1-s+s^2-s^3+s^4-s^5) = 1-s^6",
+        "formal_statement": "POLY_IDENTITY: -s^6 + 1 = -s^6 + 1",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite DAE algebraic and dense polynomial identity"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795622529.9852395,
+      "seq": 4,
+      "prev_hash": "8bd8dabe92811496e78ebc50a3b6881eb7338a5f444255624ca32d8198ec125f",
+      "hash": "7e37ff9bc53b96a4a0b0936e0ff0c28b6bac77b7358d2b946ac53aa1b2eaa1f2"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "WARP-JET",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "51dbf90dc6859bec1f5428cb81ca9baf1c4ed36de0f1576f7d5254393a89a200",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "(1+s)*(1-s+s^2-s^3+s^4-s^5)",
+            "rhs": "1-s^6"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: -s^6 + 1 = -s^6 + 1",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T16:02:09Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795622529.9862852,
+      "seq": 5,
+      "prev_hash": "7e37ff9bc53b96a4a0b0936e0ff0c28b6bac77b7358d2b946ac53aa1b2eaa1f2",
+      "hash": "6ce2561a9a671a0e634c37a6cbb37e1739effcd38b5dca7e086ee4f34c7c154d"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "CONSTRAINT-TRANSPORT",
+      "payload": {
+        "claim_id": "CONSTRAINT-TRANSPORT",
+        "statement": "(x+e)^2-x^2 = 2*x*e+e^2",
+        "formal_statement": "POLY_IDENTITY: 2*e*x + e^2 = 2*e*x + e^2",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite DAE algebraic and dense polynomial identity"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795622529.9867616,
+      "seq": 6,
+      "prev_hash": "6ce2561a9a671a0e634c37a6cbb37e1739effcd38b5dca7e086ee4f34c7c154d",
+      "hash": "758c724449f147deeb173ee730ff3eb4ef345835d82122fcb65507999a3bf32b"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "CONSTRAINT-TRANSPORT",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "5e37bd221fbe000ded58457b875a93e12853ecfb06d37ab591a1120d45c607c5",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "(x+e)^2-x^2",
+            "rhs": "2*x*e+e^2"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: 2*e*x + e^2 = 2*e*x + e^2",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T16:02:09Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795622529.9883308,
+      "seq": 7,
+      "prev_hash": "758c724449f147deeb173ee730ff3eb4ef345835d82122fcb65507999a3bf32b",
+      "hash": "10414db569726e2b422179085f0099bc0c31160fe544c9084b9d2ed543e78035"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "BERNSTEIN-MONOMIAL-0",
+      "payload": {
+        "claim_id": "BERNSTEIN-MONOMIAL-0",
+        "statement": "x^0 = (1/1)*1*x^0*(1-x)^4+(1/1)*4*x^1*(1-x)^3+(1/1)*6*x^2*(1-x)^2+(1/1)*4*x^3*(1-x)^1+(1/1)*1*x^4*(1-x)^0",
+        "formal_statement": "POLY_IDENTITY: 1 = 1",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite DAE algebraic and dense polynomial identity"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795622529.9893503,
+      "seq": 8,
+      "prev_hash": "10414db569726e2b422179085f0099bc0c31160fe544c9084b9d2ed543e78035",
+      "hash": "208e724593f60c4ea3b2714510ead78cf0e3b62e323df9a068bffdfe1a5395f4"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "BERNSTEIN-MONOMIAL-0",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "a79cdf8924a9c871d932268a3ebe46f8d249ac3a33c0da4ee12fb2446cd53969",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "x^0",
+            "rhs": "(1/1)*1*x^0*(1-x)^4+(1/1)*4*x^1*(1-x)^3+(1/1)*6*x^2*(1-x)^2+(1/1)*4*x^3*(1-x)^1+(1/1)*1*x^4*(1-x)^0"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: 1 = 1",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T16:02:09Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795622529.991341,
+      "seq": 9,
+      "prev_hash": "208e724593f60c4ea3b2714510ead78cf0e3b62e323df9a068bffdfe1a5395f4",
+      "hash": "658edb54a48d472b5ba35e10428ed03b1b9e847cecb5abbfd663307dcb9814f6"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "BERNSTEIN-MONOMIAL-1",
+      "payload": {
+        "claim_id": "BERNSTEIN-MONOMIAL-1",
+        "statement": "x^1 = (1/4)*4*x^1*(1-x)^3+(2/4)*6*x^2*(1-x)^2+(3/4)*4*x^3*(1-x)^1+(4/4)*1*x^4*(1-x)^0",
+        "formal_statement": "POLY_IDENTITY: x = x",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite DAE algebraic and dense polynomial identity"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795622529.9926808,
+      "seq": 10,
+      "prev_hash": "658edb54a48d472b5ba35e10428ed03b1b9e847cecb5abbfd663307dcb9814f6",
+      "hash": "f60aeada8772793f81dc740aa49820f7b19966b83cf66567f0f048b2064d354a"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "BERNSTEIN-MONOMIAL-1",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "abf585970a797b6139c7355865082da00a122b29cb9c834c229b8eb9c66f58e3",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "x^1",
+            "rhs": "(1/4)*4*x^1*(1-x)^3+(2/4)*6*x^2*(1-x)^2+(3/4)*4*x^3*(1-x)^1+(4/4)*1*x^4*(1-x)^0"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: x = x",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T16:02:09Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795622529.9943912,
+      "seq": 11,
+      "prev_hash": "f60aeada8772793f81dc740aa49820f7b19966b83cf66567f0f048b2064d354a",
+      "hash": "79436184820c8f65e34e82ca036f19eda4581eb1d89f90e87240a823eb99bad0"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "BERNSTEIN-MONOMIAL-2",
+      "payload": {
+        "claim_id": "BERNSTEIN-MONOMIAL-2",
+        "statement": "x^2 = (1/6)*6*x^2*(1-x)^2+(3/6)*4*x^3*(1-x)^1+(6/6)*1*x^4*(1-x)^0",
+        "formal_statement": "POLY_IDENTITY: x^2 = x^2",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite DAE algebraic and dense polynomial identity"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795622529.9951985,
+      "seq": 12,
+      "prev_hash": "79436184820c8f65e34e82ca036f19eda4581eb1d89f90e87240a823eb99bad0",
+      "hash": "f951cda7c7eed777cfdb0fd59afb55fa12ae16e6aa960248974f3e7774caf697"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "BERNSTEIN-MONOMIAL-2",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "abde885521c27ba8e5a8e1d2a1e52e30e7bc4c152727d2e04965e3b9439b9bf9",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "x^2",
+            "rhs": "(1/6)*6*x^2*(1-x)^2+(3/6)*4*x^3*(1-x)^1+(6/6)*1*x^4*(1-x)^0"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: x^2 = x^2",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T16:02:09Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795622529.996602,
+      "seq": 13,
+      "prev_hash": "f951cda7c7eed777cfdb0fd59afb55fa12ae16e6aa960248974f3e7774caf697",
+      "hash": "8a6006e9270dd37932ea73a4a74a43346832db0ad26d703cb69170a6a4c84cdf"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "BERNSTEIN-MONOMIAL-3",
+      "payload": {
+        "claim_id": "BERNSTEIN-MONOMIAL-3",
+        "statement": "x^3 = (1/4)*4*x^3*(1-x)^1+(4/4)*1*x^4*(1-x)^0",
+        "formal_statement": "POLY_IDENTITY: x^3 = x^3",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite DAE algebraic and dense polynomial identity"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795622529.997352,
+      "seq": 14,
+      "prev_hash": "8a6006e9270dd37932ea73a4a74a43346832db0ad26d703cb69170a6a4c84cdf",
+      "hash": "3c32efdf920a774eb58ad8614dc9a524b7aafe3cdc972caca485651e76deda41"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "BERNSTEIN-MONOMIAL-3",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "1c38ff017a8faac67a57f6af8a0f12e9ef3b725aa23188abfab28a7b33730b55",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "x^3",
+            "rhs": "(1/4)*4*x^3*(1-x)^1+(4/4)*1*x^4*(1-x)^0"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: x^3 = x^3",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T16:02:09Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795622529.998636,
+      "seq": 15,
+      "prev_hash": "3c32efdf920a774eb58ad8614dc9a524b7aafe3cdc972caca485651e76deda41",
+      "hash": "70b95734496a315f3650c6d3c9ef0ccf8d593f6751c272fd8a98551ee957c4bf"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "BERNSTEIN-MONOMIAL-4",
+      "payload": {
+        "claim_id": "BERNSTEIN-MONOMIAL-4",
+        "statement": "x^4 = (1/1)*1*x^4*(1-x)^0",
+        "formal_statement": "POLY_IDENTITY: x^4 = x^4",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite DAE algebraic and dense polynomial identity"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795622529.9993336,
+      "seq": 16,
+      "prev_hash": "70b95734496a315f3650c6d3c9ef0ccf8d593f6751c272fd8a98551ee957c4bf",
+      "hash": "666c81878ce7eb42ce4a7611373fb9384558d0eeec3c6b6ba45789a99ece8de9"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "BERNSTEIN-MONOMIAL-4",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "c760d34c8b200c69bc7ddb64c21ad656bb565527b49a0ce3b20d72b091dadea0",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "x^4",
+            "rhs": "(1/1)*1*x^4*(1-x)^0"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: x^4 = x^4",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T16:02:10Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795622530.0004687,
+      "seq": 17,
+      "prev_hash": "666c81878ce7eb42ce4a7611373fb9384558d0eeec3c6b6ba45789a99ece8de9",
+      "hash": "6adc1c1abfc8f8b102dcf5e15192dad2618d59f69eb560735ddf03949cd2ad81"
+    }
+  ],
+  "claims": {
+    "DENSE-POWER": {
+      "claim_id": "DENSE-POWER",
+      "statement": "(1-u)*a+u*(b+(1-u)*(d0+u*(d1+u*d2))) = a+(b-a+d0)*u+(d1-d0)*u^2+(d2-d1)*u^3-d2*u^4",
+      "formal_statement": "POLY_IDENTITY: -d2*u^4 - d1*u^3 + d2*u^3 - d0*u^2 + d1*u^2 - a*u + b*u + d0*u + a = -d2*u^4 - d1*u^3 + d2*u^3 - d0*u^2 + d1*u^2 - a*u + b*u + d0*u + a",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite DAE algebraic and dense polynomial identity"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "255c4b4549d71cc768df5b6fb3350121c981fb4def3588d881db0c9d548e496b",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "(1-u)*a+u*(b+(1-u)*(d0+u*(d1+u*d2)))",
+              "rhs": "a+(b-a+d0)*u+(d1-d0)*u^2+(d2-d1)*u^3-d2*u^4"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: -d2*u^4 - d1*u^3 + d2*u^3 - d0*u^2 + d1*u^2 - a*u + b*u + d0*u + a = -d2*u^4 - d1*u^3 + d2*u^3 - d0*u^2 + d1*u^2 - a*u + b*u + d0*u + a",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T16:02:09Z"
+        }
+      ]
+    },
+    "SCHUR-CLEARED": {
+      "claim_id": "SCHUR-CLEARED",
+      "statement": "g*a+b*(-c) = g*a-b*c",
+      "formal_statement": "POLY_IDENTITY: a*g - b*c = a*g - b*c",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite DAE algebraic and dense polynomial identity"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "a1183c6954776958e064539beccde262e4ea1eb566013809c84592a2f4b22a31",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "g*a+b*(-c)",
+              "rhs": "g*a-b*c"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: a*g - b*c = a*g - b*c",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T16:02:09Z"
+        }
+      ]
+    },
+    "WARP-JET": {
+      "claim_id": "WARP-JET",
+      "statement": "(1+s)*(1-s+s^2-s^3+s^4-s^5) = 1-s^6",
+      "formal_statement": "POLY_IDENTITY: -s^6 + 1 = -s^6 + 1",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite DAE algebraic and dense polynomial identity"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "51dbf90dc6859bec1f5428cb81ca9baf1c4ed36de0f1576f7d5254393a89a200",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "(1+s)*(1-s+s^2-s^3+s^4-s^5)",
+              "rhs": "1-s^6"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: -s^6 + 1 = -s^6 + 1",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T16:02:09Z"
+        }
+      ]
+    },
+    "CONSTRAINT-TRANSPORT": {
+      "claim_id": "CONSTRAINT-TRANSPORT",
+      "statement": "(x+e)^2-x^2 = 2*x*e+e^2",
+      "formal_statement": "POLY_IDENTITY: 2*e*x + e^2 = 2*e*x + e^2",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite DAE algebraic and dense polynomial identity"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "5e37bd221fbe000ded58457b875a93e12853ecfb06d37ab591a1120d45c607c5",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "(x+e)^2-x^2",
+              "rhs": "2*x*e+e^2"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: 2*e*x + e^2 = 2*e*x + e^2",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T16:02:09Z"
+        }
+      ]
+    },
+    "BERNSTEIN-MONOMIAL-0": {
+      "claim_id": "BERNSTEIN-MONOMIAL-0",
+      "statement": "x^0 = (1/1)*1*x^0*(1-x)^4+(1/1)*4*x^1*(1-x)^3+(1/1)*6*x^2*(1-x)^2+(1/1)*4*x^3*(1-x)^1+(1/1)*1*x^4*(1-x)^0",
+      "formal_statement": "POLY_IDENTITY: 1 = 1",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite DAE algebraic and dense polynomial identity"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "a79cdf8924a9c871d932268a3ebe46f8d249ac3a33c0da4ee12fb2446cd53969",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "x^0",
+              "rhs": "(1/1)*1*x^0*(1-x)^4+(1/1)*4*x^1*(1-x)^3+(1/1)*6*x^2*(1-x)^2+(1/1)*4*x^3*(1-x)^1+(1/1)*1*x^4*(1-x)^0"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: 1 = 1",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T16:02:09Z"
+        }
+      ]
+    },
+    "BERNSTEIN-MONOMIAL-1": {
+      "claim_id": "BERNSTEIN-MONOMIAL-1",
+      "statement": "x^1 = (1/4)*4*x^1*(1-x)^3+(2/4)*6*x^2*(1-x)^2+(3/4)*4*x^3*(1-x)^1+(4/4)*1*x^4*(1-x)^0",
+      "formal_statement": "POLY_IDENTITY: x = x",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite DAE algebraic and dense polynomial identity"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "abf585970a797b6139c7355865082da00a122b29cb9c834c229b8eb9c66f58e3",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "x^1",
+              "rhs": "(1/4)*4*x^1*(1-x)^3+(2/4)*6*x^2*(1-x)^2+(3/4)*4*x^3*(1-x)^1+(4/4)*1*x^4*(1-x)^0"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: x = x",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T16:02:09Z"
+        }
+      ]
+    },
+    "BERNSTEIN-MONOMIAL-2": {
+      "claim_id": "BERNSTEIN-MONOMIAL-2",
+      "statement": "x^2 = (1/6)*6*x^2*(1-x)^2+(3/6)*4*x^3*(1-x)^1+(6/6)*1*x^4*(1-x)^0",
+      "formal_statement": "POLY_IDENTITY: x^2 = x^2",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite DAE algebraic and dense polynomial identity"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "abde885521c27ba8e5a8e1d2a1e52e30e7bc4c152727d2e04965e3b9439b9bf9",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "x^2",
+              "rhs": "(1/6)*6*x^2*(1-x)^2+(3/6)*4*x^3*(1-x)^1+(6/6)*1*x^4*(1-x)^0"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: x^2 = x^2",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T16:02:09Z"
+        }
+      ]
+    },
+    "BERNSTEIN-MONOMIAL-3": {
+      "claim_id": "BERNSTEIN-MONOMIAL-3",
+      "statement": "x^3 = (1/4)*4*x^3*(1-x)^1+(4/4)*1*x^4*(1-x)^0",
+      "formal_statement": "POLY_IDENTITY: x^3 = x^3",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite DAE algebraic and dense polynomial identity"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "1c38ff017a8faac67a57f6af8a0f12e9ef3b725aa23188abfab28a7b33730b55",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "x^3",
+              "rhs": "(1/4)*4*x^3*(1-x)^1+(4/4)*1*x^4*(1-x)^0"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: x^3 = x^3",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T16:02:09Z"
+        }
+      ]
+    },
+    "BERNSTEIN-MONOMIAL-4": {
+      "claim_id": "BERNSTEIN-MONOMIAL-4",
+      "statement": "x^4 = (1/1)*1*x^4*(1-x)^0",
+      "formal_statement": "POLY_IDENTITY: x^4 = x^4",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite DAE algebraic and dense polynomial identity"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "c760d34c8b200c69bc7ddb64c21ad656bb565527b49a0ce3b20d72b091dadea0",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "x^4",
+              "rhs": "(1/1)*1*x^4*(1-x)^0"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: x^4 = x^4",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T16:02:10Z"
+        }
+      ]
+    }
+  },
+  "head": "6adc1c1abfc8f8b102dcf5e15192dad2618d59f69eb560735ddf03949cd2ad81",
+  "trust": [
+    "PROVED_EXACT_CERTIFICATE",
+    "PROVED_FORMAL_KERNEL"
+  ]
+}

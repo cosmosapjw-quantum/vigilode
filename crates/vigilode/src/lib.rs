@@ -284,3 +284,7 @@ pub mod retro_research {
 /// Exact represented-polynomial event transaction, distinct from opaque events.
 #[cfg(feature = "polynomial-events")]
 pub mod polynomial_events;
+
+/// Source-owned constrained DAE evolution, opt-in research client.
+#[cfg(feature = "polynomial-events")]
+pub mod dae_evolution;
