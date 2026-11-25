@@ -65,6 +65,21 @@ def recomposed(report):
     return hashlib.sha256("".join(lines).encode()).hexdigest()
 
 
+def read_stderr(directory):
+    """{file name: text} of the non-empty stderr files of the runs (packed or loose)."""
+    out = {}
+    archive = os.path.join(directory, "reports.tar.xz")
+    if os.path.exists(archive):
+        with tarfile.open(archive, "r:xz") as tar:
+            for member in tar.getmembers():
+                if member.name.endswith(".stderr"):
+                    out[member.name] = tar.extractfile(member).read().decode(errors="replace")
+    for name in os.listdir(directory):
+        if name.startswith("run_") and name.endswith(".stderr"):
+            out[name] = read(os.path.join(directory, name))
+    return out
+
+
 def read_reports(directory):
     """{run index: report bytes} from reports.tar.xz and loose run_NNN.json files."""
     blobs = {}
@@ -137,7 +152,7 @@ def provocation():
         "runs": 0, "exit_nonzero": 0, "missing_report": 0, "parallel_observed_false": 0,
         "checksums": collections.Counter(), "observed_max_parallel_tasks": collections.Counter(),
         "composition_mismatches": 0, "wall": [], "loadavg_1min": [], "busy_loops": [],
-        "batches": []})
+        "batches": [], "stderr": {}})
     live = live_busy_loops()
     failing = []
     per_batch = collections.defaultdict(lambda: {"runs": 0, "parallel_observed_false": 0})
@@ -153,6 +168,8 @@ def provocation():
                 runs = read_runs_tsv(directory)
                 cell = cells[(binary, condition)]
                 cell["batches"].append(f"{batch}:{len(runs)}")
+                for name, text in read_stderr(directory).items():
+                    cell["stderr"][f"{batch}/{name}"] = text.strip()
                 for index, meta in sorted(runs.items()):
                     per_batch[(batch, binary, condition)]["runs"] += 1
                     cell["runs"] += 1
@@ -186,6 +203,7 @@ def provocation():
             "runs": cell["runs"],
             "exit_nonzero": cell["exit_nonzero"],
             "missing_report": cell["missing_report"],
+            "nonempty_stderr": cell["stderr"],
             "parallel_observed_false": cell["parallel_observed_false"],
             "checksums": dict(cell["checksums"]),
             "composition_mismatches": cell["composition_mismatches"],
@@ -312,6 +330,29 @@ def checks():
                                and not line.startswith("exit=")]
         out[name[:-4]] = entry
     return out
+
+
+def provenance():
+    """Binaries of the provocation batches (meta_*.txt) and stage_batch.rs blobs named in the logs."""
+    binaries = {}
+    for batch in sorted(d for d in os.listdir(LOGS) if re.fullmatch(r"b\d+\w*", d)):
+        for name in sorted(os.listdir(os.path.join(LOGS, batch))):
+            if name.startswith("meta_") and not name.startswith("meta_end"):
+                text = read(os.path.join(LOGS, batch, name))
+                for label, path, digest in re.findall(r"^binary (\w+)=(\S+) sha256=([0-9a-f]{64})", text, re.M):
+                    binaries.setdefault(batch, {})[label] = {"path": path, "sha256": digest}
+                single = re.search(r"^binary=(\S+)\nbinary_sha256=([0-9a-f]{64})", text, re.M)
+                if single:
+                    binaries.setdefault(batch, {})["old"] = {"path": single.group(1), "sha256": single.group(2)}
+    blobs = collections.defaultdict(list)
+    for sub in ("tests", "checks"):
+        directory = os.path.join(LOGS, sub)
+        if os.path.isdir(directory):
+            for name in sorted(os.listdir(directory)):
+                match = re.search(r"stage_batch\.rs blob ([0-9a-f]{40})", read(os.path.join(directory, name)))
+                if match:
+                    blobs[match.group(1)].append(f"{sub}/{name}")
+    return {"provocation_binaries": binaries, "stage_batch_blobs_in_logs": dict(blobs)}
 
 
 def code():
@@ -470,6 +511,16 @@ def render(results):
         f"pool은 그대로다. `stage_batch.rs` blob `{code_info['stage_batch_blob_before'][:8]}` → "
         f"`{code_info['stage_batch_blob_after'][:8]}` (CHECKPOINT 재고정은 OD-L1-28에 따라 orchestrator가 한다).",
         "",
+        "출처: 로그에 적힌 `stage_batch.rs` blob과 로그 — "
+        + "; ".join(f"`{blob[:8]}`: {', '.join(files)}"
+                    for blob, files in results["provenance"]["stage_batch_blobs_in_logs"].items())
+        + ". 유발 실험의 binary — "
+        + "; ".join(f"{batch} {label}: `{os.path.basename(info['path'])}` (sha256 `{info['sha256'][:12]}…`)"
+                    for batch, labels in results["provenance"]["provocation_binaries"].items()
+                    for label, info in labels.items())
+        + ". 새 binary 이름의 commit(02eb3afb)의 blob은 `1a44222f`이고, 그 뒤 최종 blob까지의 차이는 probe 안 "
+          "주석 문구(2줄)뿐이다(`git diff 02eb3afb f55a1d69 -- crates/rodas5p-integrators/src/stage_batch.rs`).",
+        "",
         "## 3. 판정",
         "",
         fmt_table(disc_rows),
@@ -584,6 +635,7 @@ def main():
         "smoke_checksum_parallel_observed_true": SMOKE_CHECKSUM,
         "hosted_checksum_parallel_observed_false": HOSTED_FALSE_CHECKSUM,
         "code": code(),
+        "provenance": provenance(),
         "provocation": {"batches": batches, "by_binary_condition": table, "failing_runs": failing,
                         "totals": {b: totals(table, b) for b in table},
                         "task_text_conditions": {b: totals(table, b, TASK_TEXT_CONDITIONS) for b in table}},

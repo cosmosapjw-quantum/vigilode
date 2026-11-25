@@ -38,5 +38,5 @@ for condition in "$@"; do
     --nocapture --test-threads=1 >> "$log" 2>&1
   echo "exit=$?" >> "$log"
   if [ "${#pids[@]}" -gt 0 ]; then kill "${pids[@]}" 2>/dev/null; wait "${pids[@]}" 2>/dev/null; fi
-  echo "# end $(date '+%F %T %Z') busy loops left on CPU $cpu1: $(pgrep -fc "sh -c while :; do :; done" || true)" >> "$log"
+  echo "# end $(date '+%F %T %Z') busy loops left: $(pgrep -fc '^sh -c while :' || true)" >> "$log"
 done

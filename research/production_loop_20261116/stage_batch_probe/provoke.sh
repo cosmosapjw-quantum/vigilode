@@ -12,13 +12,19 @@
 # conditions:
 #   strace1   taskset -c $CPU1 strace -f -qq -e trace=none <cmd>        (task text, step 1)
 #   strace2   taskset -c $CPU2 strace -f -qq -e trace=none <cmd>        (task text, step 1)
-#   hog1      like strace1, plus two busy loops pinned to $CPU1 for the duration of each run
-#   hog4      like strace1, plus four busy loops pinned to $CPU1
-#   hogonly1  no strace: taskset -c $CPU1 <cmd>, plus two busy loops pinned to $CPU1
+#   hog1      like strace1, plus two busy loops started on $CPU1 before each run
+#   hog4      like strace1, plus four busy loops started on $CPU1 before each run
+#   hogonly1  no strace: taskset -c $CPU1 <cmd>, plus two busy loops started on $CPU1 before each run
 #   shared1   one `strace -f -qq -e trace=none` on $CPU1 traces 4 concurrent runs of one binary (one
 #             tracer for several processes, as on the hosted runner); RUNS counts runs, not batches
 #   (hog1, hog4, hogonly1 and shared1 are additions to the task text: strace1/strace2 alone did not
 #   provoke the failure; see NOTES.txt)
+# KNOWN DEFECT, kept so that this file is the script that produced logs/b1h and logs/b2 (b1 used an
+# earlier version with the same busy-loop code): the kill in with_hogs reaches only the subshell that
+# runs hog(), not `taskset ... timeout 30 sh -c 'while :; do :; done'`, so every busy loop runs its
+# full 30 s and the loops of consecutive runs accumulate on $CPU1 (tens of live loops). parse_results.py
+# rebuilds the number alive at each run's start from the start times in runs.tsv (RESULTS.json,
+# busy_loops_on_cpu8_at_start). latency.sh starts its loops so that they can be stopped.
 # environment: BINARIES (required), CPU1 (default 8), CPU2 (default 8,9), OUT (default: logs/ here)
 set -u
 batch=$1; runs=$2; shift 2
