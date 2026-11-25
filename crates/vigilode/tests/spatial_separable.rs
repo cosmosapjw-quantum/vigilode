@@ -1132,3 +1132,64 @@ fn measure_box_transform_one_arm() {
         times[solves - 1],
     );
 }
+
+// KS-N7b: the run record names the box transform that ran (finding F5 of the KS-N7 review),
+// then `PairedReal` becomes the box default.
+// Notes: research/kernel_spectral_foundation_20261124/ks_n7b/NOTES.txt.
+
+/// `stats.driver_work` of a separable run, serialized: the run record a Solution carries.
+fn ks_n7b_record(solution: &Solution) -> serde_json::Value {
+    let record = serde_json::to_value(&solution.stats.driver_work).unwrap();
+    assert_eq!(record["driver"], "separable-client", "{record}");
+    record
+}
+
+/// KS-N7b (review F5 of KS-N7): a Solution tells which box transform ran. Whole IVPs on the
+/// 12x10 box of T3 with each transform selected by name, and on the 7x10 sphere of T3: the
+/// serialized run record carries `report.box_transform`, `"complex"` or `"paired-real"` on the
+/// box and `null` on the sphere (its kernel always pairs rings). The client id stays the same.
+#[test]
+fn the_run_record_names_the_box_transform_that_ran() {
+    let opts = options(1.0e-8, 1.0e-10);
+    let span = (0.0, 1.0);
+    let grid = ks_n7_box([12, 10], [1.0, 1.0], [0.02, 0.05]);
+    let c = -0.5;
+    let y0 = smooth_field(&grid, 12);
+    let zeros = vec![0.0; grid.dimension()];
+    let p = problem(&grid, c, zeros, Arc::new(AtomicUsize::new(0)));
+    let mut recorded = Vec::new();
+    for transform in ["complex", "paired-real"] {
+        let stages = ks_n7_with(grid.separable_stages(c).unwrap(), transform);
+        let solution = VigilODE::solve_separable(&p, span, &y0, &opts, &stages).unwrap();
+        assert!(solution.is_success(), "box-12x10 {transform}");
+        let record = ks_n7b_record(&solution);
+        assert_eq!(record["client"], SEPARABLE_STAGE_CLIENT_ID, "{record}");
+        assert_eq!(
+            record["report"]["box_transform"], transform,
+            "box-12x10: the run record must name the transform that ran: {record}"
+        );
+        recorded.push(record["report"]["box_transform"].clone());
+    }
+    assert_ne!(
+        recorded[0], recorded[1],
+        "the two transforms must be told apart"
+    );
+    let ball = sphere(7, 10, 0.4);
+    let y0 = smooth_field(&ball, 10);
+    let zeros = vec![0.0; ball.dimension()];
+    let p = problem(&ball, 0.0, zeros, Arc::new(AtomicUsize::new(0)));
+    let stages = ball.separable_stages(0.0).unwrap();
+    let solution = VigilODE::solve_separable(&p, span, &y0, &opts, &stages).unwrap();
+    assert!(solution.is_success(), "sphere-7x10");
+    let record = ks_n7b_record(&solution);
+    assert_eq!(
+        record["report"].get("box_transform"),
+        Some(&serde_json::Value::Null),
+        "sphere-7x10: the record carries the key, null: {record}"
+    );
+    println!(
+        "\nKS_N7B_RECORD {{\"box_12x10\":{},\"sphere_7x10\":{}}}",
+        serde_json::Value::Array(recorded),
+        record["report"]["box_transform"]
+    );
+}
