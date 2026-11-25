@@ -6,10 +6,11 @@
 //! system per longitude mode on the sphere, one scalar per wave vector on the box.
 //! Reflection makes the blocks of modes `m` and `np - m` equal. Complex conjugation makes the
 //! spectra of real data Hermitian. So the sphere needs `floor(np/2) + 1` factorizations, and
-//! one complex FFT per pair of rings in each direction. The box transforms its real field as
-//! complex data by default; [`BoxTransform::PairedReal`] applies the same pairing to its x-rows
-//! and transforms only the Hermitian half along y and z (task KS-N7). A run records the box
-//! transform that ran in [`SeparableReport::box_transform`] (task KS-N7b).
+//! one complex FFT per pair of rings in each direction. By default the box applies the same
+//! pairing to its x-rows and transforms only the Hermitian half along y and z
+//! ([`BoxTransform::PairedReal`], tasks KS-N7 and KS-N7b); [`BoxTransform::Complex`] transforms
+//! its real field as complex data. A run records the box transform that ran in
+//! [`SeparableReport::box_transform`].
 //!
 //! The derivations, with their claim status, are in
 //! `research/kernel_spectral_foundation_20261124/THEORY.md`:
@@ -74,13 +75,16 @@ impl Default for SeparableMode {
 #[non_exhaustive]
 pub enum BoxTransform {
     /// Full complex FFTs of the real field (imaginary part zero) along x, y and z, forward
-    /// and inverse; the real part of the result is kept. The default.
-    #[default]
+    /// and inverse; the real part of the result is kept. The default until task KS-N7b; still
+    /// selectable with [`SeparableStages::with_box_transform`].
     Complex,
-    /// Two-for-one real FFT: rows `2q` and `2q + 1` are packed as `u + i v` along x and
-    /// separated by the involution `R Z(m) = conj Z(nx - m)`; only the Hermitian half
-    /// `k <= nx/2` of the x-spectra is transformed along y and z. About half the FFTs and half
-    /// the buffer memory of [`Self::Complex`].
+    /// Two-for-one real FFT, the default (task KS-N7b): rows `2q` and `2q + 1` are packed as
+    /// `u + i v` along x and separated by the involution `R Z(m) = conj Z(nx - m)`; only the
+    /// Hermitian half `k <= nx/2` of the x-spectra is transformed along y and z. About half the
+    /// FFT lines of [`Self::Complex`]. Its buffer holds `(nx/2 + 1) ny nz` complex values plus
+    /// one batch of packed lines (at most 4096 values, or one line when `nx > 4096`), against
+    /// `nx ny nz` for [`Self::Complex`] (0.57 of it at 256x256).
+    #[default]
     PairedReal,
 }
 
@@ -168,8 +172,10 @@ pub struct SeparableStages {
 impl DiffusionGrid {
     /// The separable (Fourier) stage solver for problems whose Jacobian is
     /// `L + linear_rate I`, with `L` this grid's heat operator ([`Self::apply`]). The mode is
-    /// [`SeparableMode::default`] (`Verified`); see [`SeparableStages::with_mode`]. Run it
-    /// with [`crate::VigilODE::solve_separable`].
+    /// [`SeparableMode::default`] (`Verified`); see [`SeparableStages::with_mode`]. A periodic
+    /// box uses [`BoxTransform::default`] (`PairedReal`); see
+    /// [`SeparableStages::with_box_transform`]. Run it with
+    /// [`crate::VigilODE::solve_separable`].
     pub fn separable_stages(&self, linear_rate: f64) -> Result<SeparableStages, SolveError> {
         if !linear_rate.is_finite() {
             return Err(invalid("the declared linear rate must be finite"));
@@ -203,7 +209,8 @@ impl SeparableStages {
     }
 
     /// The same solver with the periodic box's transform `transform` (default
-    /// [`BoxTransform::Complex`]). A sphere grid ignores it.
+    /// [`BoxTransform::PairedReal`]; [`BoxTransform::Complex`] stays selectable). A sphere grid
+    /// ignores it.
     pub fn with_box_transform(mut self, transform: BoxTransform) -> Self {
         self.box_transform = transform;
         self

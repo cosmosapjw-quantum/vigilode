@@ -688,8 +688,8 @@ fn measure_separable_against_preconditioned_gmres_stage_solves() {
 }
 
 // KS-N7: the two-for-one real FFT of the periodic box (`BoxTransform::PairedReal`), against
-// the full complex transform (`BoxTransform::Complex`, the default). `BoxTransform` is selected
-// by name (`FromStr`), so these tests do not depend on its re-export path.
+// the full complex transform (`BoxTransform::Complex`, the default until KS-N7b). `BoxTransform`
+// is selected by name (`FromStr`), so these tests do not depend on its re-export path.
 // Notes: research/kernel_spectral_foundation_20261124/ks_n7/NOTES.txt.
 
 /// The `(z, c)` range of `separable_stage_solves_are_exact_and_mass_consistent`.
@@ -822,7 +822,7 @@ fn paired_real_box_transform_agrees_with_the_complex_transform() {
     let mut worst_case = String::new();
     for (name, grid, nx) in ks_n7_box_grids() {
         for (z, c) in KS_N7_SHIFTS {
-            let complex = grid.separable_stages(c).unwrap();
+            let complex = ks_n7_with(grid.separable_stages(c).unwrap(), "complex");
             assert_eq!(complex.box_transform().to_string(), "complex", "{name}");
             let paired = ks_n7_with(complex.clone(), "paired-real");
             assert_eq!(paired.box_transform().to_string(), "paired-real", "{name}");
@@ -975,14 +975,14 @@ fn paired_real_box_route_matches_the_reference_and_the_complex_route() {
     }
 }
 
-/// KS-N7 selection: `Complex` is the default; names parse and print; a sphere ignores the
+/// KS-N7 selection: `PairedReal` is the default; names parse and print; a sphere ignores the
 /// setting (identical bits); `stage_solver` reuses its plans and buffers without carrying
 /// state from one solve to the next (identical bits to fresh `solve_stage` calls).
 #[test]
 fn box_transform_selection_defaults_parses_and_reuses_prepared_solvers() {
     let box_grid = ks_n7_box([7, 5, 3], [1.0, 1.0, 1.0], [0.4, 0.5, 0.6]);
     let stages = box_grid.separable_stages(0.0).unwrap();
-    assert_eq!(stages.box_transform().to_string(), "complex");
+    assert_eq!(stages.box_transform().to_string(), "paired-real");
     for (name, canonical) in [
         ("complex", "complex"),
         ("paired-real", "paired-real"),
@@ -1191,5 +1191,97 @@ fn the_run_record_names_the_box_transform_that_ran() {
         "\nKS_N7B_RECORD {{\"box_12x10\":{},\"sphere_7x10\":{}}}",
         serde_json::Value::Array(recorded),
         record["report"]["box_transform"]
+    );
+}
+
+use vigilode::spatial::BoxTransform;
+
+/// KS-N7b default: `PairedReal` is the box's default transform. A default whole IVP on the
+/// 12x10 box of T3 records it (typed report and serialized record) and returns the bits, the
+/// work and the report of the explicit `PairedReal` run. `Complex` stays selectable, is
+/// recorded as such and agrees within the T3 envelope. A sphere grid keeps the setting but
+/// ignores it, so its record names no box transform.
+#[test]
+fn the_box_defaults_to_the_paired_real_transform() {
+    assert_eq!(BoxTransform::default(), BoxTransform::PairedReal);
+    let grid = ks_n7_box([12, 10], [1.0, 1.0], [0.02, 0.05]);
+    let c = -0.5;
+    let n = grid.dimension();
+    let default_stages = grid.separable_stages(c).unwrap();
+    assert_eq!(default_stages.box_transform(), BoxTransform::PairedReal);
+    let opts = options(1.0e-8, 1.0e-10);
+    let span = (0.0, 1.0);
+    let y0 = smooth_field(&grid, 12);
+    let zeros = vec![0.0; n];
+    let reference = expm_apply(&dense_jacobian(&grid, c, &zeros), n, span.1, &y0);
+    let scale = max_abs(&reference);
+    let p = problem(&grid, c, zeros, Arc::new(AtomicUsize::new(0)));
+    let run = |stages: &SeparableStages| {
+        let solution = VigilODE::solve_separable(&p, span, &y0, &opts, stages).unwrap();
+        assert!(solution.is_success(), "{:?}", stages.box_transform());
+        solution
+    };
+    let default_run = run(&default_stages);
+    let paired_run = run(&default_stages
+        .clone()
+        .with_box_transform(BoxTransform::PairedReal));
+    let complex_run = run(&default_stages
+        .clone()
+        .with_box_transform(BoxTransform::Complex));
+    let mut errors = Vec::new();
+    for (arm, solution, expected) in [
+        ("default", &default_run, BoxTransform::PairedReal),
+        ("paired-real", &paired_run, BoxTransform::PairedReal),
+        ("complex", &complex_run, BoxTransform::Complex),
+    ] {
+        assert_eq!(report(solution).box_transform, Some(expected), "{arm}");
+        assert_eq!(
+            ks_n7b_record(solution)["report"]["box_transform"],
+            expected.name(),
+            "{arm}"
+        );
+        let error = max_diff(solution.final_state().unwrap(), &reference);
+        assert!(error <= 1.0e-6 * scale, "{arm}: error {error:.2e}");
+        errors.push(error);
+    }
+    // The default run is the explicit PairedReal run: same bits, same work, same report.
+    assert_eq!(default_run.final_state(), paired_run.final_state());
+    assert_eq!(default_run.stats.attempts, paired_run.stats.attempts);
+    assert_eq!(report(&default_run), report(&paired_run));
+    let (yd, yc) = (
+        default_run.final_state().unwrap(),
+        complex_run.final_state().unwrap(),
+    );
+    let between = max_diff(yd, yc);
+    assert!(
+        between <= 1.0e-6 * scale,
+        "default against complex: {between:.2e}"
+    );
+    // A sphere grid keeps the setting but ignores it: its record names no box transform.
+    let ball = sphere(7, 10, 0.4);
+    let ball_stages = ball.separable_stages(0.0).unwrap();
+    assert_eq!(ball_stages.box_transform(), BoxTransform::PairedReal);
+    let y0 = smooth_field(&ball, 10);
+    let zeros = vec![0.0; ball.dimension()];
+    let p = problem(&ball, 0.0, zeros, Arc::new(AtomicUsize::new(0)));
+    let sphere_run = VigilODE::solve_separable(&p, span, &y0, &opts, &ball_stages).unwrap();
+    assert!(sphere_run.is_success());
+    assert_eq!(report(&sphere_run).box_transform, None);
+    let (rd, rc) = (report(&default_run), report(&complex_run));
+    println!(
+        "\nKS_N7B_DEFAULT {{\"default\":\"{}\",\"default_record\":{},\"complex_record\":{},\"sphere_record\":{},\"default_equals_paired_bits\":{},\"attempts_default\":{},\"attempts_complex\":{},\"error_default\":{:.3e},\"error_complex\":{:.3e},\"default_vs_complex\":{between:.3e},\"max_mass_defect_default\":{:.3e},\"max_mass_defect_complex\":{:.3e},\"max_backward_error_default\":{:.3e},\"max_backward_error_complex\":{:.3e}}}",
+        BoxTransform::default(),
+        ks_n7b_record(&default_run)["report"]["box_transform"],
+        ks_n7b_record(&complex_run)["report"]["box_transform"],
+        ks_n7b_record(&sphere_run)["report"]["box_transform"],
+        default_run.final_state() == paired_run.final_state(),
+        default_run.stats.attempts,
+        complex_run.stats.attempts,
+        errors[0],
+        errors[2],
+        rd.max_mass_defect,
+        rc.max_mass_defect,
+        rd.max_backward_error,
+        rc.max_backward_error,
     );
 }
