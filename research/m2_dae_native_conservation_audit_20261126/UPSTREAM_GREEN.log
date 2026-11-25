@@ -1,0 +1,20 @@
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-m2-conservation-20261126/crates/rodas5p-integrators)
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-m2-conservation-20261126/crates/vigilode)
+warning: unused imports: `AffineFactor as F`, `DeclaredPolynomial as P`, and `EventTerm as T`
+ --> crates/vigilode/tests/dae_conservation_contracts.rs:4:5
+  |
+4 |     AffineFactor as F, DeclaredPolynomial as P, EventTerm as T, retro_dae...
+  |     ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vigilode` (test "dae_conservation_contracts") generated 1 warning (run `cargo fix --test "dae_conservation_contracts" -p vigilode` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 1m 08s
+     Running tests/dae_conservation_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/dae_conservation_contracts-e127aa1227a3cf1b)
+
+running 2 tests
+test actual_native_clock_reset_carries_l1_authority ... ok
+test native_conservation_resolves_robertson_bootstrap ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
