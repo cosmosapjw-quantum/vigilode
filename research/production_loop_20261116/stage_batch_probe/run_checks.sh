@@ -32,9 +32,11 @@ check() {  # <name> <command...>
 check cli_contracts cargo_locked test --locked -j 4 --release -p rodas5p-cli --test cli_contracts --no-fail-fast
 check integrators_stage_batch_tests cargo_locked test --locked -j 4 --release -p rodas5p-integrators \
   --test stage_batch_contracts --test generic_scope_contracts \
-  --test stage_batch_probe_contracts --test stage_batch_probe_late_workers --no-fail-fast -- --nocapture
+  --test stage_batch_probe_contracts --test stage_batch_probe_late_workers \
+  --test stage_batch_probe_latency --no-fail-fast -- --nocapture
 check clippy cargo_locked clippy --locked -j 4 --release -p rodas5p-integrators --no-deps \
-  --lib --test stage_batch_probe_contracts --test stage_batch_probe_late_workers -- -D warnings
+  --lib --test stage_batch_probe_contracts --test stage_batch_probe_late_workers \
+  --test stage_batch_probe_latency -- -D warnings
 check fmt cargo +1.94.1 fmt -p rodas5p-integrators -- --check
 check loop_checker python3 -I research/production_loop_20261116/check_checkpoint.py
 # the checker stops at its first complaint; this runs its other checks too (see loop_checker_rest.py)

@@ -507,8 +507,8 @@ fn push_row(
 /// two tasks waits once and then reports 1 as before.
 fn run_concurrency_probe() -> CoreResult<usize> {
     // Covers the start or wake-up latency of a second runnable worker on a loaded or traced host
-    // (the unbounded version failed when that latency exceeded ~8 ms); paid in full only when no
-    // second task can become active.
+    // (without the wait the probe failed when that latency exceeded ~8 ms); paid in full only when
+    // no second task can become active.
     const RENDEZVOUS_BOUND: Duration = Duration::from_secs(2);
     const RENDEZVOUS_POLL: Duration = Duration::from_micros(100);
     let active = Arc::new(AtomicUsize::new(0));

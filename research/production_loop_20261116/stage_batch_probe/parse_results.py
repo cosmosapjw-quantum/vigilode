@@ -265,6 +265,30 @@ def late_worker_repeats():
     return summary
 
 
+def latency():
+    """Rendezvous waits on fresh pools (latency.sh, ignored test stage_batch_probe_latency)."""
+    out = {}
+    directory = os.path.join(LOGS, "latency")
+    if not os.path.isdir(directory):
+        return out
+    for name in sorted(os.listdir(directory)):
+        if not name.endswith(".log"):
+            continue
+        text = read(os.path.join(directory, name))
+        line = re.search(r"diagnostic pools=(\d+) second_task_never=(\d+) wait_seconds min=([\d.]+) "
+                         r"median=([\d.]+) p90=([\d.]+) p99=([\d.]+) max=([\d.]+)", text)
+        status = re.search(r"^exit=(\d+)", text, re.M)
+        entry = {"exit": int(status.group(1)) if status else None,
+                 "header": re.search(r"^# condition .*$", text, re.M).group(0)}
+        if line:
+            keys = ["pools", "second_task_never", "min", "median", "p90", "p99", "max"]
+            values = [int(line.group(1)), int(line.group(2))] + [float(v) for v in line.groups()[2:]]
+            entry.update(dict(zip(keys, values)))
+            entry["largest"] = [float(v) for v in re.findall(r"diagnostic largest\[\d+\]=([\d.]+)", text)]
+        out[name[:-4]] = entry
+    return out
+
+
 def checks():
     out = {}
     directory = os.path.join(LOGS, "checks")
@@ -504,11 +528,22 @@ def render(results):
         "(OD-L1-28에 따라 orchestrator가 재고정), `loop_checker_rest.py`는 그 한 줄만 보고로 바꾸어 나머지 검사(증거 "
         "identity, strict JSON, 변경 경로 allowlist)를 돌린다.",
         "",
-        "## 7. 실행 시간 영향 (진단)",
+        "## 7. 실행 시간 영향과 상한 (진단)",
         "",
-        "정상인 경우 첫 작업은 두 번째 작업이 활성이 될 때까지만 기다린다(대개 poll 한 번 이하). 늦은 worker가 있으면 그 "
-        "worker가 시작할 때까지 기다리며, 이것이 예전에 실패하던 경우다. 두 번째 작업이 끝내 오지 않으면 보고서당 한 번 "
-        f"최대 {code_info['rendezvous_bound_seconds']:g} s가 든다. 위 표의 wall 중앙값은 진단값이다.",
+        "정상인 경우 첫 작업은 두 번째 작업이 활성이 될 때까지만 기다린다. 늦은 worker가 있으면 그 worker가 시작할 "
+        "때까지 기다리며, 이것이 예전에 실패하던 경우다. 두 번째 작업이 끝내 오지 않으면 보고서당 한 번 최대 "
+        f"{code_info['rendezvous_bound_seconds']:g} s가 든다. 아래는 새 pool마다 첫 작업이 기다린 시간(첫 작업 도착부터 "
+        "두 번째 작업이 동시에 활성이 될 때까지)이다. probe와 같은 구성(새 `ParallelExecution::rayon(4)`, 작업 8개, "
+        "같은 rendezvous)을 무시된 test `stage_batch_probe_latency`가 재현하고 `latency.sh`가 조건별로 돌렸다. "
+        "진단값이며 판정에 쓰지 않는다.",
+        "",
+        fmt_table([["조건", "pool 수", "두 번째 작업 없음", "최소 s", "중앙값 s", "p90 s", "p99 s", "최대 s"]] + [
+            [f"{name}: {entry['header'][2:]}", entry.get("pools"), entry.get("second_task_never"),
+             entry.get("min"), entry.get("median"), entry.get("p90"), entry.get("p99"), entry.get("max")]
+            for name, entry in results["rendezvous_wait_diagnostic"].items()])
+        if results["rendezvous_wait_diagnostic"] else "(실행 안 함)",
+        "",
+        "CLI run 전체의 wall 중앙값(4절 표)도 진단값이다.",
         "",
         "## 8. 남는 점",
         "",
@@ -555,6 +590,7 @@ def main():
         "statistics": statistics_block,
         "node_tests": tests,
         "late_worker_test_repeats": repeats,
+        "rendezvous_wait_diagnostic": latency(),
         "checks": check_results,
     }
     results["discriminators"] = discriminators(table, failing, tests, repeats, check_results)
